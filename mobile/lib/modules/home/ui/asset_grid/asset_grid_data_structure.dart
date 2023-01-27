@@ -42,8 +42,13 @@ class _AssetGroupsToRenderListComputeParameters {
   final Map<String, List<Asset>> groups;
   final int perRow;
 
-  _AssetGroupsToRenderListComputeParameters(this.monthFormat, this.dayFormat,
-      this.dayFormatYear, this.groups, this.perRow);
+  _AssetGroupsToRenderListComputeParameters(
+    this.monthFormat,
+    this.dayFormat,
+    this.dayFormatYear,
+    this.groups,
+    this.perRow,
+  );
 }
 
 class RenderList {
@@ -52,7 +57,8 @@ class RenderList {
   RenderList(this.elements);
 
   static Future<RenderList> _processAssetGroupData(
-      _AssetGroupsToRenderListComputeParameters data) async {
+    _AssetGroupsToRenderListComputeParameters data,
+  ) async {
     final monthFormat = DateFormat(data.monthFormat);
     final dayFormatSameYear = DateFormat(data.dayFormat);
     final dayFormatOtherYear = DateFormat(data.dayFormatYear);

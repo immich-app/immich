@@ -1,0 +1,31 @@
+name: Static Code Analysis
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  mobile-dart-analyze:
+    name: Run Dart Code Analysis
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.3.10'
+
+      - name: Install dependencies
+        run: dart pub get
+        working-directory: ./mobile
+
+      - name: Run dart analyze
+        run: dart analyze --fatal-infos
+        working-directory: ./mobile
+

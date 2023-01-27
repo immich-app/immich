@@ -96,7 +96,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
       if (isSuccess) {
         Navigator.pop(context);
         ref.watch(assetSelectionProvider.notifier).disableMultiselection();
-        ref.refresh(sharedAlbumDetailProvider(albumId));
+        ref.invalidate(sharedAlbumDetailProvider(albumId));
       } else {
         Navigator.pop(context);
         ImmichToast.show(

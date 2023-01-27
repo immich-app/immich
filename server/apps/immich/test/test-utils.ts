@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext } from '@nestjs/common';
 import { TestingModuleBuilder } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
 import { AuthUserDto } from '../src/decorators/auth-user.decorator';
-import { AuthGuard } from '../src/modules/immich-jwt/guards/auth.guard';
+import { AuthGuard } from '../src/modules/immich-auth/guards/auth.guard';
 
 type CustomAuthCallback = () => AuthUserDto;
 

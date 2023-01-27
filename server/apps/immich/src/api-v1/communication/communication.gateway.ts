@@ -19,8 +19,7 @@ export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisco
   async handleConnection(client: Socket) {
     try {
       this.logger.log(`New websocket connection: ${client.id}`);
-
-      const user = await this.authService.validateSocket(client);
+      const user = await this.authService.validate(client.request.headers);
       if (user) {
         client.join(user.id);
       } else {
@@ -28,7 +27,8 @@ export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisco
         client.disconnect();
       }
     } catch (e) {
-      // Logger.error(`Error establish websocket conneciton ${e}`, 'HandleWebscoketConnection');
+      client.emit('error', 'unauthorized');
+      client.disconnect();
     }
   }
 }

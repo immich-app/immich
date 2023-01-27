@@ -40,6 +40,7 @@ class ShareService {
       }
     });
 
+    // ignore: deprecated_member_use
     Share.shareFiles(
       await Future.wait(downloadedFilePaths),
       sharePositionOrigin: Rect.zero,

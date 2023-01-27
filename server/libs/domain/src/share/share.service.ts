@@ -25,7 +25,7 @@ export class ShareService {
     @Inject(IUserRepository) userRepository: IUserRepository,
   ) {
     this.shareCore = new ShareCore(sharedLinkRepository, cryptoRepository);
-    this.userCore = new UserCore(userRepository);
+    this.userCore = new UserCore(userRepository, cryptoRepository);
   }
 
   async validate(key: string): Promise<AuthUserDto> {

@@ -2506,78 +2506,6 @@
       }
     },
     "/device-info": {
-      "post": {
-        "operationId": "createDeviceInfo",
-        "description": "@deprecated",
-        "deprecated": true,
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpsertDeviceInfoDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeviceInfoResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Device Info"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      },
-      "patch": {
-        "operationId": "updateDeviceInfo",
-        "description": "@deprecated",
-        "deprecated": true,
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpsertDeviceInfoDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeviceInfoResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Device Info"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      },
       "put": {
         "operationId": "upsertDeviceInfo",
         "description": "",
@@ -2794,8 +2722,6 @@
         "scheme": "Bearer",
         "bearerFormat": "JWT",
         "type": "http",
-        "name": "JWT",
-        "description": "Enter JWT token",
         "in": "header"
       }
     },
@@ -3207,7 +3133,7 @@
             "default": null
           },
           "exposureTime": {
-            "type": "number",
+            "type": "string",
             "nullable": true,
             "default": null
           },
@@ -4610,10 +4536,14 @@
         "properties": {
           "command": {
             "$ref": "#/components/schemas/JobCommand"
+          },
+          "includeAllAssets": {
+            "type": "boolean"
           }
         },
         "required": [
-          "command"
+          "command",
+          "includeAllAssets"
         ]
       }
     }

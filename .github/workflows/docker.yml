@@ -78,6 +78,16 @@ jobs:
             type=ref,event=tag
             type=raw,value=release,enable=${{ github.event_name == 'release' }}
 
+      - name: Determine build cache output
+        id: cache-target
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # Essentially just ignore the cache output (PR can't write to registry cache)
+            echo "cache-to=type=local,dest=/tmp/discard,ignore-error=true" >> $GITHUB_OUTPUT
+          else
+            echo "cache-to=type=registry,mode=max,ref=ghcr.io/${{ github.repository_owner }}/immich-build-cache:${{ matrix.image }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push image
         uses: docker/build-push-action@v3.3.0
         with:
@@ -85,6 +95,6 @@ jobs:
           platforms: linux/arm/v7,linux/amd64,linux/arm64
           # Skip pushing when PR from a fork
           push: ${{ !github.event.pull_request.head.repo.fork }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/immich-build-cache:${{matrix.image}}
+          cache-to: ${{ steps.cache-target.outputs.cache-to }}
           tags: ${{ steps.metadata.outputs.tags }}

@@ -22,7 +22,7 @@ class LibraryPage extends HookConsumerWidget {
       [],
     );
 
-    Widget _buildAppBar() {
+    Widget buildAppBar() {
       return const SliverAppBar(
         centerTitle: true,
         floating: true,
@@ -40,7 +40,7 @@ class LibraryPage extends HookConsumerWidget {
       );
     }
 
-    Widget _buildCreateAlbumButton() {
+    Widget buildCreateAlbumButton() {
       return GestureDetector(
         onTap: () {
           AutoRouter.of(context).push(CreateAlbumRoute(isSharedAlbum: false));
@@ -83,7 +83,7 @@ class LibraryPage extends HookConsumerWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          _buildAppBar(),
+          buildAppBar(),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(12.0),
@@ -99,7 +99,7 @@ class LibraryPage extends HookConsumerWidget {
               child: Wrap(
                 spacing: 12,
                 children: [
-                  _buildCreateAlbumButton(),
+                  buildCreateAlbumButton(),
                   for (var album in albums)
                     AlbumThumbnailCard(
                       album: album,

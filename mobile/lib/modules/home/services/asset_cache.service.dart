@@ -8,7 +8,8 @@ class AssetCacheService extends JsonCache<List<Asset>> {
   AssetCacheService() : super("asset_cache");
 
   static Future<List<Map<String, dynamic>>> _computeSerialize(
-      List<Asset> assets) async {
+    List<Asset> assets,
+  ) async {
     return assets.map((e) => e.toJson()).toList();
   }
 

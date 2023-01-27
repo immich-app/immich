@@ -1,6 +1,6 @@
 import { APIKeyEntity } from '@app/infra/db/entities';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
-import { authStub, entityStub, newCryptoRepositoryMock, newKeyRepositoryMock } from '../../test';
+import { authStub, userEntityStub, newCryptoRepositoryMock, newKeyRepositoryMock } from '../../test';
 import { ICryptoRepository } from '../auth';
 import { IKeyRepository } from './api-key.repository';
 import { APIKeyService } from './api-key.service';
@@ -10,10 +10,10 @@ const adminKey = Object.freeze({
   name: 'My Key',
   key: 'my-api-key (hashed)',
   userId: authStub.admin.id,
-  user: entityStub.admin,
+  user: userEntityStub.admin,
 } as APIKeyEntity);
 
-const token = Buffer.from('1:my-api-key', 'utf8').toString('base64');
+const token = Buffer.from('my-api-key', 'utf8').toString('base64');
 
 describe(APIKeyService.name, () => {
   let sut: APIKeyService;
@@ -38,7 +38,7 @@ describe(APIKeyService.name, () => {
         userId: authStub.admin.id,
       });
       expect(cryptoMock.randomBytes).toHaveBeenCalled();
-      expect(cryptoMock.hash).toHaveBeenCalled();
+      expect(cryptoMock.hashSha256).toHaveBeenCalled();
     });
 
     it('should not require a name', async () => {
@@ -52,7 +52,7 @@ describe(APIKeyService.name, () => {
         userId: authStub.admin.id,
       });
       expect(cryptoMock.randomBytes).toHaveBeenCalled();
-      expect(cryptoMock.hash).toHaveBeenCalled();
+      expect(cryptoMock.hashSha256).toHaveBeenCalled();
     });
   });
 
@@ -126,8 +126,7 @@ describe(APIKeyService.name, () => {
 
       await expect(sut.validate(token)).rejects.toBeInstanceOf(UnauthorizedException);
 
-      expect(keyMock.getKey).toHaveBeenCalledWith(1);
-      expect(cryptoMock.compareSync).not.toHaveBeenCalled();
+      expect(keyMock.getKey).toHaveBeenCalledWith('bXktYXBpLWtleQ== (hashed)');
     });
 
     it('should validate the token', async () => {
@@ -135,8 +134,7 @@ describe(APIKeyService.name, () => {
 
       await expect(sut.validate(token)).resolves.toEqual(authStub.admin);
 
-      expect(keyMock.getKey).toHaveBeenCalledWith(1);
-      expect(cryptoMock.compareSync).toHaveBeenCalledWith('my-api-key', 'my-api-key (hashed)');
+      expect(keyMock.getKey).toHaveBeenCalledWith('bXktYXBpLWtleQ== (hashed)');
     });
   });
 });

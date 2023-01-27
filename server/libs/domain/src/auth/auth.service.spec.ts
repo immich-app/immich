@@ -3,13 +3,13 @@ import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { generators, Issuer } from 'openid-client';
 import { Socket } from 'socket.io';
 import {
-  authStub,
-  entityStub,
+  userEntityStub,
   loginResponseStub,
   newCryptoRepositoryMock,
   newSystemConfigRepositoryMock,
   newUserRepositoryMock,
   systemConfigStub,
+  userTokenEntityStub,
 } from '../../test';
 import { ISystemConfigRepository } from '../system-config';
 import { IUserRepository } from '../user';
@@ -17,6 +17,9 @@ import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE } from './auth.
 import { AuthService } from './auth.service';
 import { ICryptoRepository } from './crypto.repository';
 import { SignUpDto } from './dto';
+import { IUserTokenRepository } from '@app/domain';
+import { newUserTokenRepositoryMock } from '../../test/user-token.repository.mock';
+import { IncomingHttpHeaders } from 'http';
 
 const email = 'test@immich.com';
 const sub = 'my-auth-user-sub';
@@ -47,6 +50,7 @@ describe('AuthService', () => {
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let userMock: jest.Mocked<IUserRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
+  let userTokenMock: jest.Mocked<IUserTokenRepository>;
   let callbackMock: jest.Mock;
   let create: (config: SystemConfig) => AuthService;
 
@@ -76,8 +80,9 @@ describe('AuthService', () => {
     cryptoMock = newCryptoRepositoryMock();
     userMock = newUserRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
+    userTokenMock = newUserTokenRepositoryMock();
 
-    create = (config) => new AuthService(cryptoMock, configMock, userMock, config);
+    create = (config) => new AuthService(cryptoMock, configMock, userMock, userTokenMock, config);
 
     sut = create(systemConfigStub.enabled);
   });
@@ -106,13 +111,15 @@ describe('AuthService', () => {
     });
 
     it('should successfully log the user in', async () => {
-      userMock.getByEmail.mockResolvedValue(entityStub.user1);
+      userMock.getByEmail.mockResolvedValue(userEntityStub.user1);
+      userTokenMock.create.mockResolvedValue(userTokenEntityStub.userToken);
       await expect(sut.login(fixtures.login, CLIENT_IP, true)).resolves.toEqual(loginResponseStub.user1password);
       expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
     });
 
     it('should generate the cookie headers (insecure)', async () => {
-      userMock.getByEmail.mockResolvedValue(entityStub.user1);
+      userMock.getByEmail.mockResolvedValue(userEntityStub.user1);
+      userTokenMock.create.mockResolvedValue(userTokenEntityStub.userToken);
       await expect(sut.login(fixtures.login, CLIENT_IP, false)).resolves.toEqual(loginResponseStub.user1insecure);
       expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
     });
@@ -131,7 +138,7 @@ describe('AuthService', () => {
       await sut.changePassword(authUser, dto);
 
       expect(userMock.getByEmail).toHaveBeenCalledWith(authUser.email, true);
-      expect(cryptoMock.compareSync).toHaveBeenCalledWith('old-password', 'hash-password');
+      expect(cryptoMock.compareBcrypt).toHaveBeenCalledWith('old-password', 'hash-password');
     });
 
     it('should throw when auth user email is not found', async () => {
@@ -147,7 +154,7 @@ describe('AuthService', () => {
       const authUser = { email: 'test@imimch.com' } as UserEntity;
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
-      cryptoMock.compareSync.mockReturnValue(false);
+      cryptoMock.compareBcrypt.mockReturnValue(false);
 
       userMock.getByEmail.mockResolvedValue({
         email: 'test@immich.com',
@@ -160,8 +167,6 @@ describe('AuthService', () => {
     it('should throw when user does not have a password', async () => {
       const authUser = { email: 'test@imimch.com' } as UserEntity;
       const dto = { password: 'old-password', newPassword: 'new-password' };
-
-      cryptoMock.compareSync.mockReturnValue(false);
 
       userMock.getByEmail.mockResolvedValue({
         email: 'test@immich.com',
@@ -212,52 +217,64 @@ describe('AuthService', () => {
     });
   });
 
-  describe('validateSocket', () => {
+  describe('validate - socket connections', () => {
     it('should validate using authorization header', async () => {
-      userMock.get.mockResolvedValue(entityStub.user1);
-      const client = { handshake: { headers: { authorization: 'Bearer jwt-token' } } };
-      await expect(sut.validateSocket(client as Socket)).resolves.toEqual(entityStub.user1);
+      userMock.get.mockResolvedValue(userEntityStub.user1);
+      userTokenMock.get.mockResolvedValue(userTokenEntityStub.userToken);
+      const client = { request: { headers: { authorization: 'Bearer auth_token' } } };
+      await expect(sut.validate((client as Socket).request.headers)).resolves.toEqual(userEntityStub.user1);
     });
   });
 
-  describe('validatePayload', () => {
+  describe('validate - api request', () => {
     it('should throw if no user is found', async () => {
       userMock.get.mockResolvedValue(null);
-      await expect(sut.validatePayload({ email: 'a', userId: 'test' })).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(sut.validate({ email: 'a', userId: 'test' })).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('should return an auth dto', async () => {
-      userMock.get.mockResolvedValue(entityStub.admin);
-      await expect(sut.validatePayload({ email: 'a', userId: 'test' })).resolves.toEqual(authStub.admin);
+      userMock.get.mockResolvedValue(userEntityStub.user1);
+      userTokenMock.get.mockResolvedValue(userTokenEntityStub.userToken);
+      await expect(
+        sut.validate({ cookie: 'immich_access_token=auth_token', email: 'a', userId: 'test' }),
+      ).resolves.toEqual(userEntityStub.user1);
     });
   });
 
-  describe('extractJwtFromCookie', () => {
+  describe('extractTokenFromHeader - Cookie', () => {
     it('should extract the access token', () => {
-      const cookie = { [IMMICH_ACCESS_COOKIE]: 'signed-jwt', [IMMICH_AUTH_TYPE_COOKIE]: 'password' };
-      expect(sut.extractJwtFromCookie(cookie)).toEqual('signed-jwt');
+      const cookie: IncomingHttpHeaders = {
+        cookie: `${IMMICH_ACCESS_COOKIE}=signed-jwt;${IMMICH_AUTH_TYPE_COOKIE}=password`,
+      };
+      expect(sut.extractTokenFromHeader(cookie)).toEqual('signed-jwt');
     });
 
     it('should work with no cookies', () => {
-      expect(sut.extractJwtFromCookie(undefined as any)).toBeNull();
+      const cookie: IncomingHttpHeaders = {
+        cookie: undefined,
+      };
+      expect(sut.extractTokenFromHeader(cookie)).toBeNull();
     });
 
     it('should work on empty cookies', () => {
-      expect(sut.extractJwtFromCookie({})).toBeNull();
+      const cookie: IncomingHttpHeaders = {
+        cookie: '',
+      };
+      expect(sut.extractTokenFromHeader(cookie)).toBeNull();
     });
   });
 
-  describe('extractJwtFromHeader', () => {
+  describe('extractTokenFromHeader - Bearer Auth', () => {
     it('should extract the access token', () => {
-      expect(sut.extractJwtFromHeader({ authorization: `Bearer signed-jwt` })).toEqual('signed-jwt');
+      expect(sut.extractTokenFromHeader({ authorization: `Bearer signed-jwt` })).toEqual('signed-jwt');
     });
 
     it('should work without the auth header', () => {
-      expect(sut.extractJwtFromHeader({})).toBeNull();
+      expect(sut.extractTokenFromHeader({})).toBeNull();
     });
 
     it('should ignore basic auth', () => {
-      expect(sut.extractJwtFromHeader({ authorization: `Basic stuff` })).toBeNull();
+      expect(sut.extractTokenFromHeader({ authorization: `Basic stuff` })).toBeNull();
     });
   });
 });

@@ -83,6 +83,7 @@ class ImmichLogger {
     }
 
     // Share file
+    // ignore: deprecated_member_use
     await Share.shareFiles(
       [filePath],
       subject: "Immich logs $dateTime",

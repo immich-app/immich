@@ -86,7 +86,7 @@ void main() {
       // TODO
     });
 
-    // num exposureTime
+    // String exposureTime
     test('to test the property `exposureTime`', () async {
       // TODO
     });

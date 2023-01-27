@@ -3,11 +3,11 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { clearDb, authCustom } from './test-utils';
 import { InfraModule } from '@app/infra';
-import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
 import { DomainModule, CreateUserDto, UserService, AuthUserDto } from '@app/domain';
 import { DataSource } from 'typeorm';
 import { UserController } from '../src/controllers';
 import { AuthService } from '@app/domain';
+import { AppModule } from '../src/app.module';
 
 function _createUser(userService: UserService, data: CreateUserDto) {
   return userService.createUser(data);
@@ -25,7 +25,7 @@ describe('User', () => {
   describe('without auth', () => {
     beforeAll(async () => {
       const moduleFixture: TestingModule = await Test.createTestingModule({
-        imports: [DomainModule.register({ imports: [InfraModule] }), ImmichJwtModule],
+        imports: [DomainModule.register({ imports: [InfraModule] }), AppModule],
         controllers: [UserController],
       }).compile();
 

@@ -1,26 +1,26 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount, onDestroy } from 'svelte';
-	import { fly } from 'svelte/transition';
-	import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
-	import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
-	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
-	import PhotoViewer from './photo-viewer.svelte';
-	import DetailPanel from './detail-panel.svelte';
 	import { goto } from '$app/navigation';
 	import { downloadAssets } from '$lib/stores/download';
-	import VideoViewer from './video-viewer.svelte';
-	import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
 	import {
+		AlbumResponseDto,
 		api,
 		AssetResponseDto,
 		AssetTypeEnum,
-		AlbumResponseDto,
 		SharedLinkResponseDto
 	} from '@api';
+	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
+	import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
+	import { fly } from 'svelte/transition';
+	import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
 	import {
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
+	import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
+	import DetailPanel from './detail-panel.svelte';
+	import PhotoViewer from './photo-viewer.svelte';
+	import VideoViewer from './video-viewer.svelte';
 
 	import { assetStore } from '$lib/stores/assets.store';
 	import { addAssetsToAlbum } from '$lib/utils/asset-utils';
@@ -217,6 +217,7 @@
 		});
 
 		asset.isFavorite = data.isFavorite;
+		assetStore.updateAsset(asset.id, data.isFavorite);
 	};
 
 	const openAlbumPicker = (shared: boolean) => {
