@@ -5488,86 +5488,6 @@ export class AuthenticationApi extends BaseAPI {
 export const DeviceInfoApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * @deprecated
-         * @param {UpsertDeviceInfoDto} upsertDeviceInfoDto 
-         * @param {*} [options] Override http request option.
-         * @deprecated
-         * @throws {RequiredError}
-         */
-        createDeviceInfo: async (upsertDeviceInfoDto: UpsertDeviceInfoDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'upsertDeviceInfoDto' is not null or undefined
-            assertParamExists('createDeviceInfo', 'upsertDeviceInfoDto', upsertDeviceInfoDto)
-            const localVarPath = `/device-info`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(upsertDeviceInfoDto, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * @deprecated
-         * @param {UpsertDeviceInfoDto} upsertDeviceInfoDto 
-         * @param {*} [options] Override http request option.
-         * @deprecated
-         * @throws {RequiredError}
-         */
-        updateDeviceInfo: async (upsertDeviceInfoDto: UpsertDeviceInfoDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'upsertDeviceInfoDto' is not null or undefined
-            assertParamExists('updateDeviceInfo', 'upsertDeviceInfoDto', upsertDeviceInfoDto)
-            const localVarPath = `/device-info`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(upsertDeviceInfoDto, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
          * 
          * @param {UpsertDeviceInfoDto} upsertDeviceInfoDto 
          * @param {*} [options] Override http request option.
@@ -5617,28 +5537,6 @@ export const DeviceInfoApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = DeviceInfoApiAxiosParamCreator(configuration)
     return {
         /**
-         * @deprecated
-         * @param {UpsertDeviceInfoDto} upsertDeviceInfoDto 
-         * @param {*} [options] Override http request option.
-         * @deprecated
-         * @throws {RequiredError}
-         */
-        async createDeviceInfo(upsertDeviceInfoDto: UpsertDeviceInfoDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DeviceInfoResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createDeviceInfo(upsertDeviceInfoDto, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * @deprecated
-         * @param {UpsertDeviceInfoDto} upsertDeviceInfoDto 
-         * @param {*} [options] Override http request option.
-         * @deprecated
-         * @throws {RequiredError}
-         */
-        async updateDeviceInfo(upsertDeviceInfoDto: UpsertDeviceInfoDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DeviceInfoResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateDeviceInfo(upsertDeviceInfoDto, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
          * 
          * @param {UpsertDeviceInfoDto} upsertDeviceInfoDto 
          * @param {*} [options] Override http request option.
@@ -5659,26 +5557,6 @@ export const DeviceInfoApiFactory = function (configuration?: Configuration, bas
     const localVarFp = DeviceInfoApiFp(configuration)
     return {
         /**
-         * @deprecated
-         * @param {UpsertDeviceInfoDto} upsertDeviceInfoDto 
-         * @param {*} [options] Override http request option.
-         * @deprecated
-         * @throws {RequiredError}
-         */
-        createDeviceInfo(upsertDeviceInfoDto: UpsertDeviceInfoDto, options?: any): AxiosPromise<DeviceInfoResponseDto> {
-            return localVarFp.createDeviceInfo(upsertDeviceInfoDto, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * @deprecated
-         * @param {UpsertDeviceInfoDto} upsertDeviceInfoDto 
-         * @param {*} [options] Override http request option.
-         * @deprecated
-         * @throws {RequiredError}
-         */
-        updateDeviceInfo(upsertDeviceInfoDto: UpsertDeviceInfoDto, options?: any): AxiosPromise<DeviceInfoResponseDto> {
-            return localVarFp.updateDeviceInfo(upsertDeviceInfoDto, options).then((request) => request(axios, basePath));
-        },
-        /**
          * 
          * @param {UpsertDeviceInfoDto} upsertDeviceInfoDto 
          * @param {*} [options] Override http request option.
@@ -5697,30 +5575,6 @@ export const DeviceInfoApiFactory = function (configuration?: Configuration, bas
  * @extends {BaseAPI}
  */
 export class DeviceInfoApi extends BaseAPI {
-    /**
-     * @deprecated
-     * @param {UpsertDeviceInfoDto} upsertDeviceInfoDto 
-     * @param {*} [options] Override http request option.
-     * @deprecated
-     * @throws {RequiredError}
-     * @memberof DeviceInfoApi
-     */
-    public createDeviceInfo(upsertDeviceInfoDto: UpsertDeviceInfoDto, options?: AxiosRequestConfig) {
-        return DeviceInfoApiFp(this.configuration).createDeviceInfo(upsertDeviceInfoDto, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * @deprecated
-     * @param {UpsertDeviceInfoDto} upsertDeviceInfoDto 
-     * @param {*} [options] Override http request option.
-     * @deprecated
-     * @throws {RequiredError}
-     * @memberof DeviceInfoApi
-     */
-    public updateDeviceInfo(upsertDeviceInfoDto: UpsertDeviceInfoDto, options?: AxiosRequestConfig) {
-        return DeviceInfoApiFp(this.configuration).updateDeviceInfo(upsertDeviceInfoDto, options).then((request) => request(this.axios, this.basePath));
-    }
-
     /**
      * 
      * @param {UpsertDeviceInfoDto} upsertDeviceInfoDto 

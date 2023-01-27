@@ -1,4 +1,4 @@
-import { Body, Controller, Patch, Post, Put, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Put, ValidationPipe } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { Authenticated } from '../../decorators/authenticated.decorator';
@@ -12,24 +12,6 @@ import { DeviceInfoResponseDto, mapDeviceInfoResponse } from './response-dto/dev
 @Controller('device-info')
 export class DeviceInfoController {
   constructor(private readonly deviceInfoService: DeviceInfoService) {}
-
-  /** @deprecated */
-  @Post()
-  public async createDeviceInfo(
-    @GetAuthUser() user: AuthUserDto,
-    @Body(ValidationPipe) dto: UpsertDeviceInfoDto,
-  ): Promise<DeviceInfoResponseDto> {
-    return this.upsertDeviceInfo(user, dto);
-  }
-
-  /** @deprecated */
-  @Patch()
-  public async updateDeviceInfo(
-    @GetAuthUser() user: AuthUserDto,
-    @Body(ValidationPipe) dto: UpsertDeviceInfoDto,
-  ): Promise<DeviceInfoResponseDto> {
-    return this.upsertDeviceInfo(user, dto);
-  }
 
   @Put()
   public async upsertDeviceInfo(
