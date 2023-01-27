@@ -10,7 +10,7 @@ import {
 import { IncomingHttpHeaders } from 'http';
 import { OAuthCore } from '../oauth/oauth.core';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
-import { IUserRepository, UserCore, UserResponseDto } from '../user';
+import { IUserRepository, UserCore } from '../user';
 import { AuthType } from './auth.constant';
 import { AuthCore } from './auth.core';
 import { ICryptoRepository } from './crypto.repository';
@@ -115,7 +115,7 @@ export class AuthService {
     }
   }
 
-  public async validate(headers: IncomingHttpHeaders): Promise<UserResponseDto> {
+  public async validate(headers: IncomingHttpHeaders): Promise<AuthUserDto> {
     const tokenValue = this.extractTokenFromHeader(headers);
     if (!tokenValue) {
       throw new UnauthorizedException('No access token provided in request');
@@ -124,7 +124,13 @@ export class AuthService {
     const hashedToken = this.cryptoRepository.hashSha256(tokenValue);
     const user = await this.userTokenCore.getUserByToken(hashedToken);
     if (user) {
-      return user;
+      return {
+        ...user,
+        isPublicUser: false,
+        isAllowUpload: true,
+        isAllowDownload: true,
+        isShowExif: true,
+      };
     }
 
     throw new UnauthorizedException('Invalid access token provided');

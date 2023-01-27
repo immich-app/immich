@@ -88,6 +88,8 @@ export const authStub = {
     isAdmin: false,
     isPublicUser: false,
     isAllowUpload: true,
+    isAllowDownload: true,
+    isShowExif: true,
   }),
   adminSharedLink: Object.freeze<AuthUserDto>({
     id: 'admin_id',
