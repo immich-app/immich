@@ -5,6 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/modules/album/ui/add_to_album_bottom_sheet.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_list.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
@@ -115,8 +116,8 @@ class GalleryViewerPage extends HookConsumerWidget {
         backgroundColor: Colors.transparent,
         context: context,
         builder: (BuildContext _) {
-          return AddToAlbumList(
-            asset: addToAlbumAsset,
+          return AddToAlbumBottomSheet(
+            assets: [addToAlbumAsset],
           );
         },
       );

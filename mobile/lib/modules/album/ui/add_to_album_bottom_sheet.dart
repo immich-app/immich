@@ -6,6 +6,7 @@ import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
+import 'package:immich_mobile/modules/album/ui/add_to_album_sliverlist.dart';
 import 'package:immich_mobile/modules/album/ui/album_thumbnail_listtile.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -13,12 +14,12 @@ import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:openapi/api.dart';
 
-class AddToAlbumList extends HookConsumerWidget {
+class AddToAlbumBottomSheet extends HookConsumerWidget {
 
   /// The asset to add to an album
   final List<Asset> assets;
 
-  const AddToAlbumList({
+  const AddToAlbumBottomSheet({
     Key? key,
     required this.assets,
   }) : super(key: key);
@@ -66,6 +67,7 @@ class AddToAlbumList extends HookConsumerWidget {
       Navigator.pop(context);
     }
 
+
     return Card(
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
@@ -73,62 +75,55 @@ class AddToAlbumList extends HookConsumerWidget {
           topRight: Radius.circular(15),
         ),
       ),
-      child: ListView(
-        padding: const EdgeInsets.all(18.0),
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Align(
-                alignment: Alignment.center,
-                child: CustomDraggingHandle(),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Add to album',
-                    style: Theme.of(context).textTheme.headline2,
+                  const Align(
+                    alignment: Alignment.center,
+                    child: CustomDraggingHandle(),
                   ),
-                  TextButton.icon(
-                    icon: const Icon(Icons.add),
-                    label: const Text('New album'),
-                    onPressed: () {
-                      ref.watch(assetSelectionProvider.notifier).removeAll();
-                      ref.watch(assetSelectionProvider.notifier).addNewAssets(assets);
-                      AutoRouter.of(context).push(
-                        CreateAlbumRoute(
-                          isSharedAlbum: false,
-                          initialAssets: assets,
-                        ),
-                      );
-                    },
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Add to album',
+                        style: Theme.of(context).textTheme.headline2,
+                      ),
+                      TextButton.icon(
+                        icon: const Icon(Icons.add),
+                        label: const Text('Create new album'),
+                        onPressed: () {
+                          ref.watch(assetSelectionProvider.notifier).removeAll();
+                          ref.watch(assetSelectionProvider.notifier).addNewAssets(assets);
+                          AutoRouter.of(context).push(
+                            CreateAlbumRoute(
+                              isSharedAlbum: false,
+                              initialAssets: assets,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
-          if (sharedAlbums.isNotEmpty)
-            ExpansionTile(
-              title: const Text('Shared'),
-              tilePadding: const EdgeInsets.symmetric(horizontal: 10.0),
-              leading: const Icon(Icons.group),
-              children: sharedAlbums.map((album) => 
-                AlbumThumbnailListTile(
-                  album: album,
-                  onTap: () => addToAlbum(album),
-                ),
-              ).toList(),
             ),
-            const SizedBox(height: 12),
-            ... albums.map((album) =>
-              AlbumThumbnailListTile(
-                album: album,
-                onTap: () => addToAlbum(album),
-              ),
-            ).toList(),
-          ],
-        ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            sliver: AddToAlbumSliverList(
+              albums: albums,
+              sharedAlbums: sharedAlbums,
+              onAddToAlbum: addToAlbum,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
