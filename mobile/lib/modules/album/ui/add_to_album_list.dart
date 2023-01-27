@@ -16,11 +16,11 @@ import 'package:openapi/api.dart';
 class AddToAlbumList extends HookConsumerWidget {
 
   /// The asset to add to an album
-  final Asset asset;
+  final List<Asset> assets;
 
   const AddToAlbumList({
     Key? key,
-    required this.asset,
+    required this.assets,
   }) : super(key: key);
 
   @override
@@ -42,7 +42,7 @@ class AddToAlbumList extends HookConsumerWidget {
 
     void addToAlbum(AlbumResponseDto album) async {
       final result = await albumService.addAdditionalAssetToAlbum(
-        [asset],
+        assets,
         album.id,
       );
       
@@ -92,11 +92,11 @@ class AddToAlbumList extends HookConsumerWidget {
                 label: const Text('New album'),
                 onPressed: () {
                   ref.watch(assetSelectionProvider.notifier).removeAll();
-                  ref.watch(assetSelectionProvider.notifier).addNewAssets([asset]);
+                  ref.watch(assetSelectionProvider.notifier).addNewAssets(assets);
                   AutoRouter.of(context).push(
                     CreateAlbumRoute(
                       isSharedAlbum: false,
-                      initialAssets: [asset],
+                      initialAssets: assets,
                     ),
                   );
                 },
