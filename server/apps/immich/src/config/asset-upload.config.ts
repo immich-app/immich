@@ -1,16 +1,15 @@
 import { APP_UPLOAD_LOCATION } from '@app/common/constants';
-import { BadRequestException, Logger, UnauthorizedException } from '@nestjs/common';
+import { UnauthorizedException } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import { createHash, randomUUID } from 'crypto';
 import { Request } from 'express';
 import { existsSync, mkdirSync } from 'fs';
 import { diskStorage, StorageEngine } from 'multer';
-import { extname, join } from 'path';
+import { join } from 'path';
 import sanitize from 'sanitize-filename';
 import { AuthUserDto } from '../decorators/auth-user.decorator';
 import { patchFormData } from '../utils/path-form-data.util';
 
-const logger = new Logger('AssetUploadConfig');
 
 export interface ImmichFile extends Express.Multer.File {
   /** sha1 hash of file */
@@ -53,7 +52,7 @@ function fileFilter(req: Request, file: any, cb: any) {
     return cb(new UnauthorizedException());
   }
   // TODO: Create new API endpoint for mimetypes and use that here as browser's
-  //  file mimetype is not to be trusted blindly.
+  //  file mimetype is not to be trusted.
   // Reference about issue with it: https://stackoverflow.com/questions/26149389/mime-type-missing-for-rar-and-tar/26222177#26222177
   cb(null, true);
   //if (
