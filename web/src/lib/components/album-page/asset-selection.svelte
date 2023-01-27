@@ -46,7 +46,9 @@
 			{#if $selectedAssets.size == 0}
 				<p class="text-lg dark:text-immich-dark-fg">Add to album</p>
 			{:else}
-				<p class="text-lg dark:text-immich-dark-fg">{$selectedAssets.size.toLocaleString(locale)} selected</p>
+				<p class="text-lg dark:text-immich-dark-fg">
+					{$selectedAssets.size.toLocaleString(locale)} selected
+				</p>
 			{/if}
 		</svelte:fragment>
 
