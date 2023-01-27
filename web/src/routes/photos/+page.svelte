@@ -1,33 +1,33 @@
 <script lang="ts">
-	import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
-	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
+	import { goto } from '$app/navigation';
 	import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
+	import AlbumSelectionModal from '$lib/components/shared-components/album-selection-modal.svelte';
+	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
 	import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-	import AlbumSelectionModal from '$lib/components/shared-components/album-selection-modal.svelte';
-	import { goto } from '$app/navigation';
-	import type { PageData } from './$types';
-	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
-	import { openFileUploadDialog } from '$lib/utils/file-uploader';
+	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+	import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
+	import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
+	import {
+		notificationController,
+		NotificationType
+	} from '$lib/components/shared-components/notification/notification';
+	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import {
 		assetInteractionStore,
 		isMultiSelectStoreState,
 		selectedAssets
 	} from '$lib/stores/asset-interaction.store';
-	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-	import Close from 'svelte-material-icons/Close.svelte';
-	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
-	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
-	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
-	import Plus from 'svelte-material-icons/Plus.svelte';
-	import { AlbumResponseDto, api, SharedLinkType } from '@api';
-	import {
-		notificationController,
-		NotificationType
-	} from '$lib/components/shared-components/notification/notification';
 	import { assetStore } from '$lib/stores/assets.store';
 	import { addAssetsToAlbum, bulkDownload } from '$lib/utils/asset-utils';
-	import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
+	import { openFileUploadDialog } from '$lib/utils/file-uploader';
+	import { AlbumResponseDto, api, SharedLinkType } from '@api';
+	import Close from 'svelte-material-icons/Close.svelte';
+	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
+	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+	import Plus from 'svelte-material-icons/Plus.svelte';
+	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
+	import type { PageData } from './$types';
 
 	export let data: PageData;
 	let isShowCreateSharedLinkModal = false;
@@ -71,6 +71,28 @@
 		};
 
 		isShowAddMenu = !isShowAddMenu;
+	};
+
+	const handleAddToFavorites = () => {
+		isShowAddMenu = false;
+
+		let cnt = 0;
+		for (const asset of $selectedAssets) {
+			if (!asset.isFavorite) {
+				api.assetApi.updateAsset(asset.id, {
+					isFavorite: true
+				});
+				assetStore.updateAsset(asset.id, true);
+				cnt = cnt + 1;
+			}
+		}
+
+		notificationController.show({
+			message: `Added ${cnt} to favorites`,
+			type: NotificationType.Info
+		});
+
+		assetInteractionStore.clearMultiselect();
 	};
 
 	const handleShowAlbumPicker = (shared: boolean) => {
@@ -163,6 +185,7 @@
 	{#if isShowAddMenu}
 		<ContextMenu {...contextMenuPosition} on:clickoutside={() => (isShowAddMenu = false)}>
 			<div class="flex flex-col rounded-lg ">
+				<MenuOption on:click={handleAddToFavorites} text="Add to Favorites" />
 				<MenuOption on:click={() => handleShowAlbumPicker(false)} text="Add to Album" />
 				<MenuOption on:click={() => handleShowAlbumPicker(true)} text="Add to Shared Album" />
 			</div>
