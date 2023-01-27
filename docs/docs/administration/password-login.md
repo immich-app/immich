@@ -14,19 +14,19 @@ To toggle the password login setting via the web, navigate to the "Administratio
 
 ### Server Command
 
-There are two [Server Commands](/docs/features/server-commands.md) for password login:
+There are two [Server Commands](/docs/administration/server-commands.md) for password login:
 
 1. `enable-password-login`
 2. `disable-password-login`
 
-See [Server Commands](/docs/features/server-commands.md) for more details about how to run them.
+See [Server Commands](/docs/administration/server-commands.md) for more details about how to run them.
 
 ## Password Reset
 
 ### Admin
 
-To reset the administrator password, use the `reset-admin-password` [Server Command](/docs/features/server-commands.md).
+To reset the administrator password, use the `reset-admin-password` [Server Command](/docs/administration/server-commands.md).
 
 ### User
 
-Immich does not currently support self-service password reset. However, the administration can reset passwords for other users. See [User Management: Password Reset](/docs/features/user-management.mdx#password-reset) for more information about how to do this.
+Immich does not currently support self-service password reset. However, the administration can reset passwords for other users. See [User Management: Password Reset](/docs/administration/user-management.mdx#password-reset) for more information about how to do this.

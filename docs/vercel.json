@@ -13,9 +13,15 @@
     { "source": "/docs/overview/technology-stack", "destination": "/docs/developer/architecture" },
     { "source": "/docs/usage/automatic-backup", "destination": "/docs/features/automatic-backup" },
     { "source": "/docs/usage/bulk-upload", "destination": "/docs/features/bulk-upload" },
-    { "source": "/docs/usage/oauth", "destination": "/docs/features/oauth" },
+    { "source": "/docs/usage/oauth", "destination": "/docs/administration/oauth" },
     { "source": "/docs/usage/post-installation", "destination": "/docs/install/post-install" },
     { "source": "/docs/usage/update", "destination": "/docs/install/docker-compose#step-4---upgrading" },
-    { "source": "/docs/usage/server-commands", "destination": "/docs/features/server-commands" }
+    { "source": "/docs/usage/server-commands", "destination": "/docs/administration/server-commands" },
+    { "source": "/docs/features/jobs", "destination": "/docs/administration/jobs" },
+    { "source": "/docs/features/oauth", "destination": "/docs/administration/oauth" },
+    { "source": "/docs/features/password-login", "destination": "/docs/administration/password-login" },
+    { "source": "/docs/features/server-commands", "destination": "/docs/administration/server-commands" },
+    { "source": "/docs/features/storage-template", "destination": "/docs/administration/storage-template" },
+    { "source": "/docs/features/user-management", "destination": "/docs/administration/user-management" }
   ]
 }
