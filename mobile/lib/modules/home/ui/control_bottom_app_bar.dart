@@ -99,15 +99,14 @@ class ControlBottomAppBar extends ConsumerWidget {
                     ],
                   ),
                 ),
-                if (doShowAddToAlbum)
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    sliver: AddToAlbumSliverList(
-                      albums: albums,
-                      sharedAlbums: sharedAlbums,
-                      onAddToAlbum: onAddToAlbum,
-                    ),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  sliver: AddToAlbumSliverList(
+                    albums: albums,
+                    sharedAlbums: sharedAlbums,
+                    onAddToAlbum: onAddToAlbum,
                   ),
+                ),
                 const SliverToBoxAdapter(
                   child: SizedBox(height: 200),
                 )
