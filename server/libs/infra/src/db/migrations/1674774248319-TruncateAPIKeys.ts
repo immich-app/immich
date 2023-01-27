@@ -7,7 +7,7 @@ export class TruncateAPIKeys1674774248319 implements MigrationInterface {
         await queryRunner.query(`TRUNCATE TABLE "api_keys"`);
     }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
+    public async down(): Promise<void> {
         //noop
     }
 
