@@ -15,9 +15,9 @@ Users can change their own passwords.
 ![Change Password](./img/user-change-password.png)
 
 :::tip Reset Password
-The admin can reset a password through the [User Management](/docs/features/user-management.mdx) screen.
+The admin can reset a password through the [User Management](/docs/administration/user-management.mdx) screen.
 :::
 
 :::tip Reset Admin Password
-The admin password can be reset using a [Server Command](/docs/features/server-commands.md)
+The admin password can be reset using a [Server Command](/docs/administration/server-commands.md)
 :::
