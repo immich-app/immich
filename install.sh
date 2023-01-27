@@ -45,12 +45,6 @@ populate_upload_location() {
   replace_env_value "UPLOAD_LOCATION" $upload_location
 }
 
-generate_jwt_secret() {
-  echo "Generating JWT_SECRET value..."
-  jwt_secret=$(openssl rand -base64 128)
-  replace_env_value "JWT_SECRET" $jwt_secret
-}
-
 start_docker_compose() {
   echo "Starting Immich's docker containers"
 
@@ -92,5 +86,4 @@ create_immich_directory
 download_docker_compose_file
 download_dot_env_file
 populate_upload_location
-generate_jwt_secret
 start_docker_compose

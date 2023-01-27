@@ -4,8 +4,9 @@ import { ISystemConfigRepository } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE } from './auth.constant';
 import { ICryptoRepository } from './crypto.repository';
-import { JwtPayloadDto } from './dto/jwt-payload.dto';
 import { LoginResponseDto, mapLoginResponse } from './response-dto';
+import { IUserTokenRepository, UserTokenCore } from '@app/domain';
+import cookieParser from 'cookie';
 
 export type JwtValidationResult = {
   status: boolean;
@@ -13,11 +14,14 @@ export type JwtValidationResult = {
 };
 
 export class AuthCore {
+  private userTokenCore: UserTokenCore;
   constructor(
     private cryptoRepository: ICryptoRepository,
     configRepository: ISystemConfigRepository,
+    userTokenRepository: IUserTokenRepository,
     private config: SystemConfig,
   ) {
+    this.userTokenCore = new UserTokenCore(cryptoRepository, userTokenRepository);
     const configCore = new SystemConfigCore(configRepository);
     configCore.config$.subscribe((config) => (this.config = config));
   }
@@ -33,8 +37,8 @@ export class AuthCore {
     let accessTokenCookie = '';
 
     if (isSecure) {
-      accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; Secure; Path=/; Max-Age=${maxAge}; SameSite=Strict;`;
-      authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; Secure; Path=/; Max-Age=${maxAge}; SameSite=Strict;`;
+      accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Secure; Path=/; Max-Age=${maxAge}; SameSite=Strict;`;
+      authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; HttpOnly; Secure; Path=/; Max-Age=${maxAge}; SameSite=Strict;`;
     } else {
       accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Strict;`;
       authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Strict;`;
@@ -42,9 +46,8 @@ export class AuthCore {
     return [accessTokenCookie, authTypeCookie];
   }
 
-  public createLoginResponse(user: UserEntity, authType: AuthType, isSecure: boolean) {
-    const payload: JwtPayloadDto = { userId: user.id, email: user.email };
-    const accessToken = this.generateToken(payload);
+  public async createLoginResponse(user: UserEntity, authType: AuthType, isSecure: boolean) {
+    const accessToken = await this.userTokenCore.createToken(user);
     const response = mapLoginResponse(user, accessToken);
     const cookie = this.getCookies(response, authType, isSecure);
     return { response, cookie };
@@ -54,12 +57,12 @@ export class AuthCore {
     if (!user || !user.password) {
       return false;
     }
-    return this.cryptoRepository.compareSync(inputPassword, user.password);
+    return this.cryptoRepository.compareBcrypt(inputPassword, user.password);
   }
 
-  extractJwtFromHeader(headers: IncomingHttpHeaders) {
+  extractTokenFromHeader(headers: IncomingHttpHeaders) {
     if (!headers.authorization) {
-      return null;
+      return this.extractTokenFromCookie(cookieParser.parse(headers.cookie || ''));
     }
 
     const [type, accessToken] = headers.authorization.split(' ');
@@ -70,11 +73,7 @@ export class AuthCore {
     return accessToken;
   }
 
-  extractJwtFromCookie(cookies: Record<string, string>) {
+  extractTokenFromCookie(cookies: Record<string, string>) {
     return cookies?.[IMMICH_ACCESS_COOKIE] || null;
-  }
-
-  private generateToken(payload: JwtPayloadDto) {
-    return this.cryptoRepository.signJwt({ ...payload });
   }
 }

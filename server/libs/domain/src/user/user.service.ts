@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { ReadStream } from 'fs';
-import { AuthUserDto } from '../auth';
+import { AuthUserDto, ICryptoRepository } from '../auth';
 import { IUserRepository } from '../user';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -17,8 +17,11 @@ import { UserCore } from './user.core';
 @Injectable()
 export class UserService {
   private userCore: UserCore;
-  constructor(@Inject(IUserRepository) userRepository: IUserRepository) {
-    this.userCore = new UserCore(userRepository);
+  constructor(
+    @Inject(IUserRepository) userRepository: IUserRepository,
+    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
+  ) {
+    this.userCore = new UserCore(userRepository, cryptoRepository);
   }
 
   async getAllUsers(authUser: AuthUserDto, isAll: boolean): Promise<UserResponseDto[]> {
