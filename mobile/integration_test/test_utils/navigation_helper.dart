@@ -12,10 +12,8 @@ class ImmichTestNavigationHelper {
   }
 
   Future<void> closeSideDrawer() async {
-    final ScaffoldState state = tester.firstState(find.byType(Scaffold));
-    state.openDrawer();
-
-    await tester.pump(const Duration(seconds: 1));
+    // Not nice but the only thing that worked....
+    await tester.tap(find.byType(IconButton).at(1));
   }
 
   Future<void> openSettings() async {
