@@ -4540,8 +4540,7 @@
             "$ref": "#/components/schemas/JobCommand"
           },
           "includeAllAssets": {
-            "type": "object",
-            "default": false
+            "type": "boolean"
           }
         },
         "required": [

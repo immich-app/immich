@@ -12,5 +12,5 @@ export class JobCommandDto {
 
   @IsOptional()
   @IsBoolean()
-  includeAllAssets = false;
+  includeAllAssets!: boolean;
 }

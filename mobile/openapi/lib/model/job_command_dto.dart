@@ -14,18 +14,12 @@ class JobCommandDto {
   /// Returns a new [JobCommandDto] instance.
   JobCommandDto({
     required this.command,
-    this.includeAllAssets,
+    required this.includeAllAssets,
   });
 
   JobCommand command;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? includeAllAssets;
+  bool includeAllAssets;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is JobCommandDto &&
@@ -36,7 +30,7 @@ class JobCommandDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (command.hashCode) +
-    (includeAllAssets == null ? 0 : includeAllAssets!.hashCode);
+    (includeAllAssets.hashCode);
 
   @override
   String toString() => 'JobCommandDto[command=$command, includeAllAssets=$includeAllAssets]';
@@ -44,11 +38,7 @@ class JobCommandDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'command'] = this.command;
-    if (this.includeAllAssets != null) {
       json[r'includeAllAssets'] = this.includeAllAssets;
-    } else {
-      // json[r'includeAllAssets'] = null;
-    }
     return json;
   }
 
@@ -72,7 +62,7 @@ class JobCommandDto {
 
       return JobCommandDto(
         command: JobCommand.fromJson(json[r'command'])!,
-        includeAllAssets: mapValueOfType<bool>(json, r'includeAllAssets'),
+        includeAllAssets: mapValueOfType<bool>(json, r'includeAllAssets')!,
       );
     }
     return null;
@@ -123,6 +113,7 @@ class JobCommandDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'command',
+    'includeAllAssets',
   };
 }
 
