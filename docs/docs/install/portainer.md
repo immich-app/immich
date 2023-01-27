@@ -40,11 +40,6 @@ Install Immich using Portainer's Stack feature.
 
 * Populate custom database information if necessary.
 * Populate `UPLOAD_LOCATION` with your preferred location for storing backup assets.
-* Populate a secret value for `JWT_SECRET`. You can use the command below to generate a secure key:
-
-```bash title="Generate secure JWT_SECRET key"
-openssl rand -base64 128
-```
 
 11. Click on "**Deploy the stack**".
 

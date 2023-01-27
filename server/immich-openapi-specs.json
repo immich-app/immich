@@ -2722,8 +2722,6 @@
         "scheme": "Bearer",
         "bearerFormat": "JWT",
         "type": "http",
-        "name": "JWT",
-        "description": "Enter JWT token",
         "in": "header"
       }
     },

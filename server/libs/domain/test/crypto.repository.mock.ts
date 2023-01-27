@@ -6,7 +6,5 @@ export const newCryptoRepositoryMock = (): jest.Mocked<ICryptoRepository> => {
     compareBcrypt: jest.fn().mockReturnValue(true),
     hashBcrypt: jest.fn().mockImplementation((input) => Promise.resolve(`${input} (hashed)`)),
     hashSha256: jest.fn().mockImplementation((input) => `${input} (hashed)`),
-    signJwt: jest.fn().mockReturnValue('signed-jwt'),
-    verifyJwtAsync: jest.fn().mockResolvedValue({ userId: 'test', email: 'test' }),
   };
 };
