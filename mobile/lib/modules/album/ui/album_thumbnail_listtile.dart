@@ -56,9 +56,10 @@ class AlbumThumbnailListTile extends StatelessWidget {
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: onTap ?? () {
-        AutoRouter.of(context).push(AlbumViewerRoute(albumId: album.id));
-      },
+      onTap: onTap ??
+          () {
+            AutoRouter.of(context).push(AlbumViewerRoute(albumId: album.id));
+          },
       child: Padding(
         padding: const EdgeInsets.only(bottom: 12.0),
         child: Row(

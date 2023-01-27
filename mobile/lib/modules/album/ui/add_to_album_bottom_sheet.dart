@@ -7,7 +7,6 @@ import 'package:immich_mobile/modules/album/providers/asset_selection.provider.d
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_sliverlist.dart';
-import 'package:immich_mobile/modules/album/ui/album_thumbnail_listtile.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
@@ -15,7 +14,6 @@ import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:openapi/api.dart';
 
 class AddToAlbumBottomSheet extends HookConsumerWidget {
-
   /// The asset to add to an album
   final List<Asset> assets;
 
@@ -38,7 +36,7 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
 
         return null;
       },
-      [], 
+      [],
     );
 
     void addToAlbum(AlbumResponseDto album) async {
@@ -46,7 +44,7 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
         assets,
         album.id,
       );
-      
+
       if (result != null) {
         if (result.alreadyInAlbum.isNotEmpty) {
           ImmichToast.show(
@@ -59,14 +57,13 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
             msg: 'Added to ${album.albumName}',
           );
         }
-      } 
+      }
 
       ref.read(albumProvider.notifier).getAllAlbums();
       ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
 
       Navigator.pop(context);
     }
-
 
     return Card(
       shape: const RoundedRectangleBorder(
@@ -91,15 +88,20 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Add to album',
+                      Text(
+                        'Add to album',
                         style: Theme.of(context).textTheme.headline2,
                       ),
                       TextButton.icon(
                         icon: const Icon(Icons.add),
                         label: const Text('Create new album'),
                         onPressed: () {
-                          ref.watch(assetSelectionProvider.notifier).removeAll();
-                          ref.watch(assetSelectionProvider.notifier).addNewAssets(assets);
+                          ref
+                              .watch(assetSelectionProvider.notifier)
+                              .removeAll();
+                          ref
+                              .watch(assetSelectionProvider.notifier)
+                              .addNewAssets(assets);
                           AutoRouter.of(context).push(
                             CreateAlbumRoute(
                               isSharedAlbum: false,
