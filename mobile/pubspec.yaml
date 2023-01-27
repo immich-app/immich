@@ -78,6 +78,8 @@ flutter:
       fonts:
         - asset: fonts/Inconsolata-Regular.ttf
 flutter_icons:
+  adaptive_icon_foreground: "assets/immich-logo-no-outline.png"
+  adaptive_icon_background: "#f6f8fe"
   image_path_android: "assets/immich-logo-no-outline.png"
   image_path_ios: "assets/immich-logo-no-outline.png"
   android: true # can specify file name here e.g. "ic_launcher"
