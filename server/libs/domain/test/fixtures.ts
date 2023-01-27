@@ -231,8 +231,8 @@ export const loginResponseStub = {
       shouldChangePassword: false,
     },
     cookie: [
-      'immich_access_token=cmFuZG9tLWJ5dGVz; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
-      'immich_auth_type=oauth; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
+      'immich_access_token=cmFuZG9tLWJ5dGVz; HttpOnly; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
+      'immich_auth_type=oauth; HttpOnly; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
     ],
   },
   user1password: {
@@ -247,8 +247,8 @@ export const loginResponseStub = {
       shouldChangePassword: false,
     },
     cookie: [
-      'immich_access_token=cmFuZG9tLWJ5dGVz; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
-      'immich_auth_type=password; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
+      'immich_access_token=cmFuZG9tLWJ5dGVz; HttpOnly; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
+      'immich_auth_type=password; HttpOnly; Secure; Path=/; Max-Age=604800; SameSite=Strict;',
     ],
   },
   user1insecure: {
