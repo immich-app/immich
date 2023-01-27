@@ -10,7 +10,6 @@ import sanitize from 'sanitize-filename';
 import { AuthUserDto } from '../decorators/auth-user.decorator';
 import { patchFormData } from '../utils/path-form-data.util';
 
-
 export interface ImmichFile extends Express.Multer.File {
   /** sha1 hash of file */
   checksum: Buffer;
