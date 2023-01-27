@@ -5,7 +5,7 @@ import { IAssetRepository } from '../asset/asset-repository';
 import { AssetType } from '@app/infra';
 import { JobId } from './dto/get-job.dto';
 import { MACHINE_LEARNING_ENABLED } from '@app/common';
-
+import { getFileNameWithoutExtension } from '../../utils/file-name.util';
 const jobIds = Object.values(JobId) as JobId[];
 
 @Injectable()
@@ -19,8 +19,8 @@ export class JobService {
     }
   }
 
-  start(jobId: JobId): Promise<number> {
-    return this.run(this.asQueueName(jobId));
+  start(jobId: JobId, includeAllAssets: boolean): Promise<number> {
+    return this.run(this.asQueueName(jobId), includeAllAssets);
   }
 
   async stop(jobId: JobId): Promise<number> {
@@ -36,7 +36,7 @@ export class JobService {
     return response;
   }
 
-  private async run(name: QueueName): Promise<number> {
+  private async run(name: QueueName, includeAllAssets: boolean): Promise<number> {
     const isActive = await this.jobRepository.isActive(name);
     if (isActive) {
       throw new BadRequestException(`Job is already running`);
@@ -44,7 +44,9 @@ export class JobService {
 
     switch (name) {
       case QueueName.VIDEO_CONVERSION: {
-        const assets = await this._assetRepository.getAssetWithNoEncodedVideo();
+        const assets = includeAllAssets
+          ? await this._assetRepository.getAllVideos()
+          : await this._assetRepository.getAssetWithNoEncodedVideo();
         for (const asset of assets) {
           await this.jobRepository.add({ name: JobName.VIDEO_CONVERSION, data: { asset } });
         }
@@ -61,7 +63,10 @@ export class JobService {
           throw new BadRequestException('Machine learning is not enabled.');
         }
 
-        const assets = await this._assetRepository.getAssetWithNoSmartInfo();
+        const assets = includeAllAssets
+          ? await this._assetRepository.getAll()
+          : await this._assetRepository.getAssetWithNoSmartInfo();
+
         for (const asset of assets) {
           await this.jobRepository.add({ name: JobName.IMAGE_TAGGING, data: { asset } });
           await this.jobRepository.add({ name: JobName.OBJECT_DETECTION, data: { asset } });
@@ -70,19 +75,37 @@ export class JobService {
       }
 
       case QueueName.METADATA_EXTRACTION: {
-        const assets = await this._assetRepository.getAssetWithNoEXIF();
+        const assets = includeAllAssets
+          ? await this._assetRepository.getAll()
+          : await this._assetRepository.getAssetWithNoEXIF();
+
         for (const asset of assets) {
           if (asset.type === AssetType.VIDEO) {
-            await this.jobRepository.add({ name: JobName.EXTRACT_VIDEO_METADATA, data: { asset, fileName: asset.id } });
+            await this.jobRepository.add({
+              name: JobName.EXTRACT_VIDEO_METADATA,
+              data: {
+                asset,
+                fileName: asset.exifInfo?.imageName ?? getFileNameWithoutExtension(asset.originalPath),
+              },
+            });
           } else {
-            await this.jobRepository.add({ name: JobName.EXIF_EXTRACTION, data: { asset, fileName: asset.id } });
+            await this.jobRepository.add({
+              name: JobName.EXIF_EXTRACTION,
+              data: {
+                asset,
+                fileName: asset.exifInfo?.imageName ?? getFileNameWithoutExtension(asset.originalPath),
+              },
+            });
           }
         }
         return assets.length;
       }
 
       case QueueName.THUMBNAIL_GENERATION: {
-        const assets = await this._assetRepository.getAssetWithNoThumbnail();
+        const assets = includeAllAssets
+          ? await this._assetRepository.getAll()
+          : await this._assetRepository.getAssetWithNoThumbnail();
+
         for (const asset of assets) {
           await this.jobRepository.add({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { asset } });
         }

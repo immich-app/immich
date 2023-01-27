@@ -11,6 +11,7 @@ import { Repository } from 'typeorm';
 
 @Processor(QueueName.VIDEO_CONVERSION)
 export class VideoTranscodeProcessor {
+  readonly logger = new Logger(VideoTranscodeProcessor.name);
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
@@ -20,7 +21,6 @@ export class VideoTranscodeProcessor {
   @Process({ name: JobName.VIDEO_CONVERSION, concurrency: 2 })
   async videoConversion(job: Job<IVideoConversionProcessor>) {
     const { asset } = job.data;
-
     const basePath = APP_UPLOAD_LOCATION;
     const encodedVideoPath = `${basePath}/${asset.userId}/encoded-video`;
 
@@ -30,17 +30,14 @@ export class VideoTranscodeProcessor {
 
     const savedEncodedPath = `${encodedVideoPath}/${asset.id}.mp4`;
 
-    if (!asset.encodedVideoPath) {
-      // Put the processing into its own async function to prevent the job exist right away
-      await this.runVideoEncode(asset, savedEncodedPath);
-    }
+    await this.runVideoEncode(asset, savedEncodedPath);
   }
 
   async runFFProbePipeline(asset: AssetEntity): Promise<FfprobeData> {
     return new Promise((resolve, reject) => {
       ffmpeg.ffprobe(asset.originalPath, (err, data) => {
         if (err || !data) {
-          Logger.error(`Cannot probe video ${err}`, 'mp4Conversion');
+          this.logger.error(`Cannot probe video ${err}`, 'runFFProbePipeline');
           reject(err);
         }
 
@@ -88,14 +85,14 @@ export class VideoTranscodeProcessor {
         ])
         .output(savedEncodedPath)
         .on('start', () => {
-          Logger.log('Start Converting Video', 'mp4Conversion');
+          this.logger.log('Start Converting Video');
         })
         .on('error', (error) => {
-          Logger.error(`Cannot Convert Video ${error}`, 'mp4Conversion');
+          this.logger.error(`Cannot Convert Video ${error}`);
           reject();
         })
         .on('end', async () => {
-          Logger.log(`Converting Success ${asset.id}`, 'mp4Conversion');
+          this.logger.log(`Converting Success ${asset.id}`);
           await this.assetRepository.update({ id: asset.id }, { encodedVideoPath: savedEncodedPath });
           resolve();
         })

@@ -123,6 +123,8 @@ describe('AssetService', () => {
     assetRepositoryMock = {
       create: jest.fn(),
       update: jest.fn(),
+      getAll: jest.fn(),
+      getAllVideos: jest.fn(),
       getAllByUserId: jest.fn(),
       getAllByDeviceId: jest.fn(),
       getAssetCountByTimeBucket: jest.fn(),

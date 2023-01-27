@@ -64,15 +64,6 @@ UPLOAD_LOCATION=absolute_location_on_your_machine_where_you_want_to_store_the_ba
 LOG_LEVEL=simple
 
 ###################################################################################
-# JWT SECRET
-###################################################################################
-
-# This JWT_SECRET is used to sign the authentication keys for user login
-# You should set it to a long randomly generated value
-# You can use this command to generate one: openssl rand -base64 128
-JWT_SECRET=
-
-###################################################################################
 # Reverse Geocoding
 ####################################################################################
 
@@ -102,11 +93,6 @@ PUBLIC_LOGIN_PAGE_MESSAGE="My Family Photos and Videos Backup Server"
 
 - Populate custom database information if necessary.
 - Populate `UPLOAD_LOCATION` with your preferred location for storing backup assets.
-- Populate a secret value for `JWT_SECRET`. You can use the command below to generate a secure key:
-
-```bash title="Command to generate secure JWT_SECRET key"
-openssl rand -base64 128
-```
 
 ### Step 3 - Start the containers
 

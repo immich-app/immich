@@ -18,6 +18,6 @@ Several Immich functionalities are implemented as jobs, which run in the backgro
 
 ## Storage Migration
 
-This job can be run after changing the [Storage Template](/docs/features/storage-template.mdx), in order to apply the change to the existing library.
+This job can be run after changing the [Storage Template](/docs/administration/storage-template.mdx), in order to apply the change to the existing library.
 
 ![Storage Migration](./img/admin-jobs-template.png)

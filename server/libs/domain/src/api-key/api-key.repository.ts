@@ -10,7 +10,7 @@ export interface IKeyRepository {
    * Includes the hashed `key` for verification
    * @param id
    */
-  getKey(id: number): Promise<APIKeyEntity | null>;
+  getKey(hashedToken: string): Promise<APIKeyEntity | null>;
   getById(userId: string, id: number): Promise<APIKeyEntity | null>;
   getByUserId(userId: string): Promise<APIKeyEntity[]>;
 }

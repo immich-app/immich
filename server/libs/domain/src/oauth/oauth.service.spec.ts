@@ -3,17 +3,20 @@ import { BadRequestException } from '@nestjs/common';
 import { generators, Issuer } from 'openid-client';
 import {
   authStub,
-  entityStub,
+  userEntityStub,
   loginResponseStub,
   newCryptoRepositoryMock,
   newSystemConfigRepositoryMock,
   newUserRepositoryMock,
   systemConfigStub,
+  userTokenEntityStub,
 } from '../../test';
 import { ICryptoRepository } from '../auth';
 import { OAuthService } from '../oauth';
 import { ISystemConfigRepository } from '../system-config';
 import { IUserRepository } from '../user';
+import { IUserTokenRepository } from '@app/domain';
+import { newUserTokenRepositoryMock } from '../../test/user-token.repository.mock';
 
 const email = 'user@immich.com';
 const sub = 'my-auth-user-sub';
@@ -35,6 +38,7 @@ describe('OAuthService', () => {
   let userMock: jest.Mocked<IUserRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
+  let userTokenMock: jest.Mocked<IUserTokenRepository>;
   let callbackMock: jest.Mock;
   let create: (config: SystemConfig) => OAuthService;
 
@@ -60,8 +64,9 @@ describe('OAuthService', () => {
     cryptoMock = newCryptoRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     userMock = newUserRepositoryMock();
+    userTokenMock = newUserTokenRepositoryMock();
 
-    create = (config) => new OAuthService(cryptoMock, configMock, userMock, config);
+    create = (config) => new OAuthService(cryptoMock, configMock, userMock, userTokenMock, config);
 
     sut = create(systemConfigStub.disabled);
   });
@@ -106,23 +111,25 @@ describe('OAuthService', () => {
 
     it('should link an existing user', async () => {
       sut = create(systemConfigStub.noAutoRegister);
-      userMock.getByEmail.mockResolvedValue(entityStub.user1);
-      userMock.update.mockResolvedValue(entityStub.user1);
+      userMock.getByEmail.mockResolvedValue(userEntityStub.user1);
+      userMock.update.mockResolvedValue(userEntityStub.user1);
+      userTokenMock.create.mockResolvedValue(userTokenEntityStub.userToken);
 
       await expect(sut.login({ url: 'http://immich/auth/login?code=abc123' }, true)).resolves.toEqual(
         loginResponseStub.user1oauth,
       );
 
       expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
-      expect(userMock.update).toHaveBeenCalledWith(entityStub.user1.id, { oauthId: sub });
+      expect(userMock.update).toHaveBeenCalledWith(userEntityStub.user1.id, { oauthId: sub });
     });
 
     it('should allow auto registering by default', async () => {
       sut = create(systemConfigStub.enabled);
 
       userMock.getByEmail.mockResolvedValue(null);
-      userMock.getAdmin.mockResolvedValue(entityStub.user1);
-      userMock.create.mockResolvedValue(entityStub.user1);
+      userMock.getAdmin.mockResolvedValue(userEntityStub.user1);
+      userMock.create.mockResolvedValue(userEntityStub.user1);
+      userTokenMock.create.mockResolvedValue(userTokenEntityStub.userToken);
 
       await expect(sut.login({ url: 'http://immich/auth/login?code=abc123' }, true)).resolves.toEqual(
         loginResponseStub.user1oauth,
@@ -135,7 +142,8 @@ describe('OAuthService', () => {
     it('should use the mobile redirect override', async () => {
       sut = create(systemConfigStub.override);
 
-      userMock.getByOAuthId.mockResolvedValue(entityStub.user1);
+      userMock.getByOAuthId.mockResolvedValue(userEntityStub.user1);
+      userTokenMock.create.mockResolvedValue(userTokenEntityStub.userToken);
 
       await sut.login({ url: `app.immich:/?code=abc123` }, true);
 
@@ -147,7 +155,7 @@ describe('OAuthService', () => {
     it('should link an account', async () => {
       sut = create(systemConfigStub.enabled);
 
-      userMock.update.mockResolvedValue(entityStub.user1);
+      userMock.update.mockResolvedValue(userEntityStub.user1);
 
       await sut.link(authStub.user1, { url: 'http://immich/user-settings?code=abc123' });
 
@@ -171,7 +179,7 @@ describe('OAuthService', () => {
     it('should unlink an account', async () => {
       sut = create(systemConfigStub.enabled);
 
-      userMock.update.mockResolvedValue(entityStub.user1);
+      userMock.update.mockResolvedValue(userEntityStub.user1);
 
       await sut.unlink(authStub.user1);
 
