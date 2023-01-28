@@ -50,7 +50,6 @@ jobs:
 
       - name: Publish Android Artefacts
         uses: actions/upload-artifact@v1
-        working-directory: ./mobile
         with:
           name: release-aab-signed
-          path: build/app/outputs/bundle/release/app-release-signed.aab
+          path: mobile/build/app/outputs/bundle/release/app-release-signed.aab
