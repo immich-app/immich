@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AuthUserDto, ICryptoRepository } from '../auth';
 import { IKeyRepository } from './api-key.repository';
 import { APIKeyCreateDto } from './dto/api-key-create.dto';
@@ -56,7 +56,7 @@ export class APIKeyService {
     return keys.map(mapKey);
   }
 
-  async validate(token: string): Promise<AuthUserDto> {
+  async validate(token: string): Promise<AuthUserDto | null> {
     const hashedToken = this.crypto.hashSha256(token);
     const keyEntity = await this.repository.getKey(hashedToken);
     if (keyEntity?.user) {
@@ -71,6 +71,6 @@ export class APIKeyService {
       };
     }
 
-    throw new UnauthorizedException('Invalid API Key');
+    return null;
   }
 }

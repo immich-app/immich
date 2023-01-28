@@ -1,24 +1,18 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { AuthService, AuthUserDto } from '@app/domain';
+import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { AuthService, AuthUserDto, UserService } from '@app/domain';
-import { Strategy } from 'passport-custom';
 import { Request } from 'express';
+import { Strategy } from 'passport-custom';
 
 export const AUTH_COOKIE_STRATEGY = 'auth-cookie';
 
 @Injectable()
 export class UserAuthStrategy extends PassportStrategy(Strategy, AUTH_COOKIE_STRATEGY) {
-  constructor(private userService: UserService, private authService: AuthService) {
+  constructor(private authService: AuthService) {
     super();
   }
 
-  async validate(request: Request): Promise<AuthUserDto> {
-    const authUser = await this.authService.validate(request.headers);
-
-    if (!authUser) {
-      throw new UnauthorizedException('Incorrect token provided');
-    }
-
-    return authUser;
+  validate(request: Request): Promise<AuthUserDto | null> {
+    return this.authService.validate(request.headers);
   }
 }
