@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AuthUserDto, ICryptoRepository } from '../auth';
 import { IKeyRepository } from './api-key.repository';
 import { APIKeyCreateDto } from './dto/api-key-create.dto';
