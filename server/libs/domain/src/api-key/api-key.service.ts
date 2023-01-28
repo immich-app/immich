@@ -1,5 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { AuthUserDto, ICryptoRepository } from '../auth';
+import { AuthUserDto } from '../auth';
+import { ICryptoRepository } from '../crypto';
+// import { APIKeyCore } from './api-key.core';
 import { IKeyRepository } from './api-key.repository';
 import { APIKeyCreateDto } from './dto/api-key-create.dto';
 import { APIKeyCreateResponseDto } from './response-dto/api-key-create-response.dto';
@@ -7,10 +9,14 @@ import { APIKeyResponseDto, mapKey } from './response-dto/api-key-response.dto';
 
 @Injectable()
 export class APIKeyService {
+  // private core: APIKeyCore;
+
   constructor(
     @Inject(ICryptoRepository) private crypto: ICryptoRepository,
     @Inject(IKeyRepository) private repository: IKeyRepository,
-  ) {}
+  ) {
+    // this.core = new APIKeyCore(crypto, repository);
+  }
 
   async create(authUser: AuthUserDto, dto: APIKeyCreateDto): Promise<APIKeyCreateResponseDto> {
     const secret = this.crypto.randomBytes(32).toString('base64').replace(/\W/g, '');
@@ -54,23 +60,5 @@ export class APIKeyService {
   async getAll(authUser: AuthUserDto): Promise<APIKeyResponseDto[]> {
     const keys = await this.repository.getByUserId(authUser.id);
     return keys.map(mapKey);
-  }
-
-  async validate(token: string): Promise<AuthUserDto | null> {
-    const hashedToken = this.crypto.hashSha256(token);
-    const keyEntity = await this.repository.getKey(hashedToken);
-    if (keyEntity?.user) {
-      const user = keyEntity.user;
-
-      return {
-        id: user.id,
-        email: user.email,
-        isAdmin: user.isAdmin,
-        isPublicUser: false,
-        isAllowUpload: true,
-      };
-    }
-
-    return null;
   }
 }

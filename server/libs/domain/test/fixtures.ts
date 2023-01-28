@@ -275,6 +275,7 @@ export const sharedLinkStub = {
   valid: Object.freeze({
     id: '123',
     userId: authStub.admin.id,
+    user: userEntityStub.admin,
     key: Buffer.from('secret-key', 'utf8'),
     type: SharedLinkType.ALBUM,
     createdAt: today.toISOString(),
@@ -288,6 +289,7 @@ export const sharedLinkStub = {
   expired: Object.freeze({
     id: '123',
     userId: authStub.admin.id,
+    user: userEntityStub.admin,
     key: Buffer.from('secret-key', 'utf8'),
     type: SharedLinkType.ALBUM,
     createdAt: today.toISOString(),
@@ -300,6 +302,7 @@ export const sharedLinkStub = {
   readonly: Object.freeze<SharedLinkEntity>({
     id: '123',
     userId: authStub.admin.id,
+    user: userEntityStub.admin,
     key: Buffer.from('secret-key', 'utf8'),
     type: SharedLinkType.ALBUM,
     createdAt: today.toISOString(),

@@ -1,8 +1,46 @@
-import { Injectable } from '@nestjs/common';
-import { AuthGuard as PassportAuthGuard } from '@nestjs/passport';
-import { API_KEY_STRATEGY } from '../strategies/api-key.strategy';
-import { AUTH_COOKIE_STRATEGY } from '../strategies/user-auth.strategy';
-import { PUBLIC_SHARE_STRATEGY } from '../strategies/public-share.strategy';
+import { AuthService } from '@app/domain';
+import { CanActivate, ExecutionContext, Injectable, Logger } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { Request } from 'express';
+import { Metadata } from '../../../decorators/authenticated.decorator';
 
 @Injectable()
-export class AuthGuard extends PassportAuthGuard([PUBLIC_SHARE_STRATEGY, AUTH_COOKIE_STRATEGY, API_KEY_STRATEGY]) {}
+export class AuthGuard implements CanActivate {
+  private logger = new Logger(AuthGuard.name);
+
+  constructor(private reflector: Reflector, private authService: AuthService) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const targets = [context.getHandler(), context.getClass()];
+
+    const isAuthRoute = this.reflector.getAllAndOverride(Metadata.AUTH_ROUTE, targets);
+    const isAdminRoute = this.reflector.getAllAndOverride(Metadata.ADMIN_ROUTE, targets);
+    const isSharedRoute = this.reflector.getAllAndOverride(Metadata.SHARED_ROUTE, targets);
+
+    if (!isAuthRoute) {
+      return true;
+    }
+
+    const req = context.switchToHttp().getRequest<Request>();
+
+    const authDto = await this.authService.validate(req.headers, req.query as Record<string, string>);
+    if (!authDto) {
+      this.logger.warn(`Denied access to authenticated route: ${req.path}`);
+      return false;
+    }
+
+    if (authDto.isPublicUser && !isSharedRoute) {
+      this.logger.warn(`Denied access to non-shared route: ${req.path}`);
+      return false;
+    }
+
+    if (isAdminRoute && !authDto.isAdmin) {
+      this.logger.warn(`Denied access to admin only route: ${req.path}`);
+      return false;
+    }
+
+    req.user = authDto;
+
+    return true;
+  }
+}

@@ -22,9 +22,8 @@ import {
   SystemConfigController,
   UserController,
 } from './controllers';
-import { PublicShareStrategy } from './modules/immich-auth/strategies/public-share.strategy';
-import { APIKeyStrategy } from './modules/immich-auth/strategies/api-key.strategy';
-import { UserAuthStrategy } from './modules/immich-auth/strategies/user-auth.strategy';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from './modules/immich-auth/guards/auth.guard';
 
 @Module({
   imports: [
@@ -64,7 +63,7 @@ import { UserAuthStrategy } from './modules/immich-auth/strategies/user-auth.str
     SystemConfigController,
     UserController,
   ],
-  providers: [UserAuthStrategy, APIKeyStrategy, PublicShareStrategy],
+  providers: [{ provide: APP_GUARD, useClass: AuthGuard }],
 })
 export class AppModule implements NestModule {
   // TODO: check if consumer is needed or remove

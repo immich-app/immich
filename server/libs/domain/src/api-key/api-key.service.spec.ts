@@ -1,7 +1,7 @@
 import { APIKeyEntity } from '@app/infra/db/entities';
 import { BadRequestException } from '@nestjs/common';
 import { authStub, userEntityStub, newCryptoRepositoryMock, newKeyRepositoryMock } from '../../test';
-import { ICryptoRepository } from '../auth';
+import { ICryptoRepository } from '../crypto';
 import { IKeyRepository } from './api-key.repository';
 import { APIKeyService } from './api-key.service';
 
@@ -12,8 +12,6 @@ const adminKey = Object.freeze({
   userId: authStub.admin.id,
   user: userEntityStub.admin,
 } as APIKeyEntity);
-
-const token = Buffer.from('my-api-key', 'utf8').toString('base64');
 
 describe(APIKeyService.name, () => {
   let sut: APIKeyService;
@@ -117,24 +115,6 @@ describe(APIKeyService.name, () => {
       await expect(sut.getAll(authStub.admin)).resolves.toHaveLength(1);
 
       expect(keyMock.getByUserId).toHaveBeenCalledWith(authStub.admin.id);
-    });
-  });
-
-  describe('validate', () => {
-    it('should throw an error for an invalid id', async () => {
-      keyMock.getKey.mockResolvedValue(null);
-
-      await expect(sut.validate(token)).resolves.toBeNull();
-
-      expect(keyMock.getKey).toHaveBeenCalledWith('bXktYXBpLWtleQ== (hashed)');
-    });
-
-    it('should validate the token', async () => {
-      keyMock.getKey.mockResolvedValue(adminKey);
-
-      await expect(sut.validate(token)).resolves.toEqual(authStub.admin);
-
-      expect(keyMock.getKey).toHaveBeenCalledWith('bXktYXBpLWtleQ== (hashed)');
     });
   });
 });
