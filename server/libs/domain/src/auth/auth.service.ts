@@ -115,10 +115,10 @@ export class AuthService {
     }
   }
 
-  public async validate(headers: IncomingHttpHeaders): Promise<AuthUserDto> {
+  public async validate(headers: IncomingHttpHeaders): Promise<AuthUserDto | null> {
     const tokenValue = this.extractTokenFromHeader(headers);
     if (!tokenValue) {
-      throw new UnauthorizedException('No access token provided in request');
+      return null;
     }
 
     const hashedToken = this.cryptoRepository.hashSha256(tokenValue);
@@ -133,7 +133,7 @@ export class AuthService {
       };
     }
 
-    throw new UnauthorizedException('Invalid access token provided');
+    return null;
   }
 
   extractTokenFromHeader(headers: IncomingHttpHeaders) {

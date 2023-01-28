@@ -1,11 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Inject,
-  Injectable,
-  Logger,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
 import { AuthUserDto, ICryptoRepository } from '../auth';
 import { IUserRepository, UserCore } from '../user';
 import { EditSharedLinkDto } from './dto';
@@ -28,7 +21,7 @@ export class ShareService {
     this.userCore = new UserCore(userRepository, cryptoRepository);
   }
 
-  async validate(key: string): Promise<AuthUserDto> {
+  async validate(key: string): Promise<AuthUserDto | null> {
     const link = await this.shareCore.getByKey(key);
     if (link) {
       if (!link.expiresAt || new Date(link.expiresAt) > new Date()) {
@@ -47,7 +40,7 @@ export class ShareService {
         }
       }
     }
-    throw new UnauthorizedException();
+    return null;
   }
 
   async getAll(authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {

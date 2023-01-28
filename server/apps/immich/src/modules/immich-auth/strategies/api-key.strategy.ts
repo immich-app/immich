@@ -15,7 +15,7 @@ export class APIKeyStrategy extends PassportStrategy(Strategy, API_KEY_STRATEGY)
     super(options);
   }
 
-  validate(token: string): Promise<AuthUserDto> {
+  validate(token: string): Promise<AuthUserDto | null> {
     return this.apiKeyService.validate(token);
   }
 }
