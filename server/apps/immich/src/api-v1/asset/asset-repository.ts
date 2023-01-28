@@ -18,7 +18,9 @@ import { IsNull, Not } from 'typeorm';
 import { AssetSearchDto } from './dto/asset-search.dto';
 
 export interface IAssetRepository {
+  get(id: string): Promise<AssetEntity | null>;
   create(asset: Omit<AssetEntity, 'id'>): Promise<AssetEntity>;
+  remove(asset: AssetEntity): Promise<void>;
 
   update(userId: string, asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
   getAll(): Promise<AssetEntity[]>;
@@ -274,8 +276,16 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  get(id: string): Promise<AssetEntity | null> {
+    return this.assetRepository.findOne({ where: { id } });
+  }
+
   async create(asset: Omit<AssetEntity, 'id'>): Promise<AssetEntity> {
     return this.assetRepository.save(asset);
+  }
+
+  async remove(asset: AssetEntity): Promise<void> {
+    await this.assetRepository.remove(asset);
   }
 
   /**

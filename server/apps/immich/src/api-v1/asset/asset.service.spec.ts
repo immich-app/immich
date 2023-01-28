@@ -111,9 +111,12 @@ describe('AssetService', () => {
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
 
-  beforeAll(() => {
+  beforeEach(() => {
     assetRepositoryMock = {
+      get: jest.fn(),
       create: jest.fn(),
+      remove: jest.fn(),
+
       update: jest.fn(),
       getAll: jest.fn(),
       getAllVideos: jest.fn(),
@@ -257,6 +260,55 @@ describe('AssetService', () => {
       });
       expect(storageServiceMock.moveAsset).not.toHaveBeenCalled();
     });
+
+    it('should handle a live photo', async () => {
+      const file = {
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+      };
+      const asset = {
+        id: 'live-photo-asset',
+        originalPath: file.originalPath,
+        userId: authStub.user1.id,
+        type: AssetType.IMAGE,
+        isVisible: true,
+      } as AssetEntity;
+
+      const livePhotoFile = {
+        originalPath: 'fake_path/asset_1.mp4',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('live photo file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+      };
+
+      const livePhotoAsset = {
+        id: 'live-photo-motion',
+        originalPath: livePhotoFile.originalPath,
+        userId: authStub.user1.id,
+        type: AssetType.VIDEO,
+        isVisible: false,
+      } as AssetEntity;
+
+      const dto = _getCreateAssetDto();
+      const error = new QueryFailedError('', [], '');
+      (error as any).constraint = 'UQ_userid_checksum';
+
+      assetRepositoryMock.create.mockResolvedValueOnce(livePhotoAsset);
+      assetRepositoryMock.create.mockResolvedValueOnce(asset);
+      storageServiceMock.moveAsset.mockImplementation((asset) => Promise.resolve(asset));
+
+      await expect(sut.uploadFile(authStub.user1, dto, file, livePhotoFile)).resolves.toEqual({
+        duplicate: false,
+        id: 'live-photo-asset',
+      });
+
+      expect(jobMock.add.mock.calls).toEqual([
+        [{ name: JobName.ASSET_UPLOADED, data: { asset: livePhotoAsset, fileName: file.originalName } }],
+        [{ name: JobName.ASSET_UPLOADED, data: { asset, fileName: file.originalName } }],
+      ]);
+    });
   });
 
   it('get assets by device id', async () => {
@@ -298,6 +350,58 @@ describe('AssetService', () => {
     const result = await sut.getAssetCountByUserId(authStub.user1);
 
     expect(result).toEqual(assetCount);
+  });
+
+  describe('deleteAll', () => {
+    it('should return failed status when an asset is missing', async () => {
+      assetRepositoryMock.get.mockResolvedValue(null);
+
+      await expect(sut.deleteAll(authStub.user1, { ids: ['asset1'] })).resolves.toEqual([
+        { id: 'asset1', status: 'FAILED' },
+      ]);
+
+      expect(jobMock.add).not.toHaveBeenCalled();
+    });
+
+    it('should return failed status a delete fails', async () => {
+      assetRepositoryMock.get.mockResolvedValue({ id: 'asset1' } as AssetEntity);
+      assetRepositoryMock.remove.mockRejectedValue('delete failed');
+
+      await expect(sut.deleteAll(authStub.user1, { ids: ['asset1'] })).resolves.toEqual([
+        { id: 'asset1', status: 'FAILED' },
+      ]);
+
+      expect(jobMock.add).not.toHaveBeenCalled();
+    });
+
+    it('should delete a live photo', async () => {
+      assetRepositoryMock.get.mockResolvedValueOnce({ id: 'asset1', livePhotoVideoId: 'live-photo' } as AssetEntity);
+      assetRepositoryMock.get.mockResolvedValueOnce({ id: 'live-photo' } as AssetEntity);
+
+      await expect(sut.deleteAll(authStub.user1, { ids: ['asset1'] })).resolves.toEqual([
+        { id: 'asset1', status: 'SUCCESS' },
+        { id: 'live-photo', status: 'SUCCESS' },
+      ]);
+
+      expect(jobMock.add).toHaveBeenCalledWith({
+        name: JobName.DELETE_FILE_ON_DISK,
+        data: { assets: [{ id: 'asset1', livePhotoVideoId: 'live-photo' }, { id: 'live-photo' }] },
+      });
+    });
+
+    it('should delete a batch of assets', async () => {
+      assetRepositoryMock.get.mockImplementation((id) => Promise.resolve({ id } as AssetEntity));
+      assetRepositoryMock.remove.mockImplementation(() => Promise.resolve());
+
+      await expect(sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'] })).resolves.toEqual([
+        { id: 'asset1', status: 'SUCCESS' },
+        { id: 'asset2', status: 'SUCCESS' },
+      ]);
+
+      expect(jobMock.add.mock.calls).toEqual([
+        [{ name: JobName.DELETE_FILE_ON_DISK, data: { assets: [{ id: 'asset1' }, { id: 'asset2' }] } }],
+      ]);
+    });
   });
 
   describe('checkDownloadAccess', () => {

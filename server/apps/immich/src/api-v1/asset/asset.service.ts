@@ -446,33 +446,29 @@ export class AssetService {
   }
 
   public async deleteAll(authUser: AuthUserDto, dto: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
-    const assets: AssetResponseDto[] = [];
+    const deleteQueue: AssetEntity[] = [];
+    const result: DeleteAssetResponseDto[] = [];
 
-    for (const id of dto.ids) {
-      const asset = await this.getAssetById(authUser, id);
+    const ids = dto.ids.slice();
+    for (const id of ids) {
+      const asset = await this._assetRepository.get(id);
       if (!asset) {
+        result.push({ id, status: DeleteAssetStatusEnum.FAILED });
         continue;
       }
 
-      assets.push(asset);
+      try {
+        await this._assetRepository.remove(asset);
 
-      if (asset.livePhotoVideoId) {
-        const livePhotoVideo = await this.getAssetById(authUser, asset.livePhotoVideoId);
-        if (livePhotoVideo) {
-          assets.push(livePhotoVideo);
-        }
-      }
-    }
-
-    const deleteQueue: AssetEntity[] = [];
-    const result: DeleteAssetResponseDto[] = [];
-    for (const asset of assets) {
-      const res = await this.assetRepository.delete({ id: asset.id });
-      if (res.affected) {
-        deleteQueue.push(asset as any);
         result.push({ id: asset.id, status: DeleteAssetStatusEnum.SUCCESS });
-      } else {
-        result.push({ id: asset.id, status: DeleteAssetStatusEnum.FAILED });
+        deleteQueue.push(asset as any);
+
+        // TODO refactor this to use cascades
+        if (asset.livePhotoVideoId && !ids.includes(asset.livePhotoVideoId)) {
+          ids.push(asset.livePhotoVideoId);
+        }
+      } catch {
+        result.push({ id, status: DeleteAssetStatusEnum.FAILED });
       }
     }
 
