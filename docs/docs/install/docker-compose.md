@@ -13,11 +13,11 @@ Download [`docker-compose.yml`][compose-file] [`example.env`][env-file].
 From a directory of your choice (e.g. `./immich-app`) run the following commands:
 
 ```bash title="Get docker-compose.yml file"
-wget https://raw.githubusercontent.com/immich-app/immich/main/docker/docker-compose.yml
+wget https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
 ```
 
 ```bash title="Get .env file"
-wget -O .env https://raw.githubusercontent.com/immich-app/immich/main/docker/example.env
+wget -O .env https://github.com/immich-app/immich/releases/latest/download/example.env
 ```
 
 ### Step 2 - Populate the .env file with custom values
@@ -116,6 +116,6 @@ docker-compose pull && docker-compose up -d # Or `docker compose`
 Immich is currently under heavy development, which means you can expect breaking changes and bugs. Therefore, we recommend reading the release notes prior to updating and to take special care when using automated tools like [Watchtower][watchtower].
 :::
 
-[compose-file]: https://raw.githubusercontent.com/immich-app/immich/main/docker/docker-compose.yml
-[env-file]: https://raw.githubusercontent.com/immich-app/immich/main/docker/example.env
+[compose-file]: https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
+[env-file]: https://github.com/immich-app/immich/releases/latest/download/example.env
 [watchtower]: https://containrrr.dev/watchtower/
