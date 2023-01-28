@@ -24,7 +24,7 @@ All the services are packaged to run as with single Docker Compose command.
 
 1. Clone the project repo.
 2. Run `cp docker/example.env docker/.env`.
-3. Edit `docker/.env` to provide values for the required variables `UPLOAD_LOCATION` and `JWT_SECRET`.
+3. Edit `docker/.env` to provide values for the required variable `UPLOAD_LOCATION`.
 4. From the root directory, run:
 
 ```bash title="Start development server"

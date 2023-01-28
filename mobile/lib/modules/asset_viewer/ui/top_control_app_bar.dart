@@ -11,6 +11,7 @@ class TopControlAppBar extends HookConsumerWidget with PreferredSizeWidget {
     required this.onDownloadPressed,
     required this.onSharePressed,
     required this.onDeletePressed,
+    required this.onAddToAlbumPressed,
     required this.onToggleMotionVideo,
     required this.isPlayingMotionVideo,
   }) : super(key: key);
@@ -20,6 +21,7 @@ class TopControlAppBar extends HookConsumerWidget with PreferredSizeWidget {
   final VoidCallback? onDownloadPressed;
   final VoidCallback onToggleMotionVideo;
   final VoidCallback onDeletePressed;
+  final VoidCallback onAddToAlbumPressed;
   final Function onSharePressed;
   final bool isPlayingMotionVideo;
 
@@ -80,6 +82,18 @@ class TopControlAppBar extends HookConsumerWidget with PreferredSizeWidget {
             color: Colors.grey[200],
           ),
         ),
+        if (asset.isRemote)
+          IconButton(
+            iconSize: iconSize,
+            splashRadius: iconSize,
+            onPressed: () {
+              onAddToAlbumPressed();
+            },
+            icon: Icon(
+              Icons.add,
+              color: Colors.grey[200],
+            ),
+          ),
         IconButton(
           iconSize: iconSize,
           splashRadius: iconSize,

@@ -12,7 +12,7 @@
 			<p class="text-md text-center">
 				To re-enable, use a
 				<a
-					href="https://immich.app/docs/features/server-commands"
+					href="https://immich.app/docs/administration/server-commands"
 					rel="noreferrer"
 					target="_blank"
 					class="underline"

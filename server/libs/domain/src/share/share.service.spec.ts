@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import {
   authStub,
-  entityStub,
+  userEntityStub,
   newCryptoRepositoryMock,
   newSharedLinkRepositoryMock,
   newUserRepositoryMock,
@@ -50,7 +50,7 @@ describe(ShareService.name, () => {
 
     it('should accept a valid key', async () => {
       shareMock.getByKey.mockResolvedValue(sharedLinkStub.valid);
-      userMock.get.mockResolvedValue(entityStub.admin);
+      userMock.get.mockResolvedValue(userEntityStub.admin);
       await expect(sut.validate('key')).resolves.toEqual(authStub.adminSharedLink);
     });
   });

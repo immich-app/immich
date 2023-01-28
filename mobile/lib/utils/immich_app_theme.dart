@@ -31,6 +31,11 @@ ThemeData immichDarkTheme = ThemeData(
   snackBarTheme: const SnackBarThemeData(
     contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
   ),
+  textButtonTheme: TextButtonThemeData(
+    style: TextButton.styleFrom(
+      foregroundColor: immichDarkThemePrimaryColor,
+    ),
+  ),
   appBarTheme: AppBarTheme(
     titleTextStyle: TextStyle(
       fontFamily: 'WorkSans',
@@ -59,7 +64,7 @@ ThemeData immichDarkTheme = ThemeData(
     headline2: const TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.bold,
-      color: Color.fromARGB(255, 148, 151, 155),
+      color: Color.fromARGB(255, 255, 255, 255),
     ),
     headline3: TextStyle(
       fontSize: 12,

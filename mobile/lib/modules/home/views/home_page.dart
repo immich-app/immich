@@ -8,6 +8,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
+import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
@@ -37,6 +38,7 @@ class HomePage extends HookConsumerWidget {
 
     final selection = useState(<Asset>{});
     final albums = ref.watch(albumProvider);
+    final sharedAlbums = ref.watch(sharedAlbumProvider);
     final albumService = ref.watch(albumServiceProvider);
 
     final tipOneOpacity = useState(0.0);
@@ -46,6 +48,7 @@ class HomePage extends HookConsumerWidget {
         ref.read(websocketProvider.notifier).connect();
         ref.read(assetProvider.notifier).getAllAsset();
         ref.read(albumProvider.notifier).getAllAlbums();
+        ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
         ref.watch(serverInfoProvider.notifier).getServerVersion();
 
         selectionEnabledHook.addListener(() {
@@ -147,6 +150,7 @@ class HomePage extends HookConsumerWidget {
 
         if (result != null) {
           ref.watch(albumProvider.notifier).getAllAlbums();
+          ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
           selectionEnabledHook.value = false;
 
           AutoRouter.of(context).push(AlbumViewerRoute(albumId: result.id));
@@ -220,6 +224,7 @@ class HomePage extends HookConsumerWidget {
                 onDelete: onDelete,
                 onAddToAlbum: onAddToAlbum,
                 albums: albums,
+                sharedAlbums: sharedAlbums,
                 onCreateNewAlbum: onCreateNewAlbum,
               ),
           ],
