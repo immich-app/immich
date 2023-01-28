@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-sign-android:
-    name: Run mobile unit tests
+    name: Build and sign Android
     runs-on: ubuntu-latest
     
     steps:
@@ -42,14 +42,14 @@ jobs:
 
       - name: Build Android App Bundle
         working-directory: ./mobile
-        run: flutter build appbundle --release
+        run: flutter build apk --release
 
       - name: Sign Android App Bundle
         working-directory: ./mobile
-        run: jarsigner -keystore $RUNNER_TEMP/my_production.keystore -storepass ${{ secrets.ANDROID_KEY_PASSWORD }} -keypass ${{ secrets.ANDROID_STORE_PASSWORD }} -sigalg SHA256withRSA -digestalg SHA-256 -signedjar build/app/outputs/bundle/release/app-release-signed.aab build/app/outputs/bundle/release/*.aab ${{ secrets.ALIAS }}
+        run: jarsigner -keystore $RUNNER_TEMP/my_production.keystore -storepass ${{ secrets.ANDROID_KEY_PASSWORD }} -keypass ${{ secrets.ANDROID_STORE_PASSWORD }} -sigalg SHA256withRSA -digestalg SHA-256 -signedjar build/app/outputs/apk/release/app-release-signed.apk build/app/outputs/apk/release/*.apk ${{ secrets.ALIAS }}
 
-      - name: Publish Android Artefacts
+      - name: Publish Android Artifact
         uses: actions/upload-artifact@v1
         with:
           name: release-aab-signed
-          path: mobile/build/app/outputs/bundle/release/app-release-signed.aab
+          path: mobile/build/app/outputs/apk/release/app-release-signed.apk
