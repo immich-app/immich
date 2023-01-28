@@ -7,7 +7,7 @@ export class JobUploadCore {
   constructor(private repository: IJobRepository) {}
 
   /**
-   * Post processing uploaded asset to perform the following function if missing
+   * Post processing uploaded asset to perform the following function
    * 1. Generate JPEG Thumbnail
    * 2. Generate Webp Thumbnail
    * 3. EXIF extractor
