@@ -80,6 +80,7 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const SizedBox(height: 12),
                   const Align(
                     alignment: Alignment.center,
                     child: CustomDraggingHandle(),
