@@ -51,5 +51,5 @@ jobs:
       - name: Publish Android Artifact
         uses: actions/upload-artifact@v1
         with:
-          name: release-aab-signed
+          name: release-apk-signed
           path: mobile/build/app/outputs/apk/release/app-release-signed.apk
