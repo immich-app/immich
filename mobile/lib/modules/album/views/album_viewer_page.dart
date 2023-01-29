@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -248,14 +250,14 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
-    Future<bool> onWillPop() async {
+    FutureOr<bool> onWillPop() async {
       final isMultiselectEnable = ref.read(assetSelectionProvider).selectedAssetsInAlbumViewer.isNotEmpty;
       if (isMultiselectEnable) {
         ref.watch(assetSelectionProvider.notifier).removeAll();
-        return Future.value(false);
+        return false;
       }
 
-      return Future.value(true);
+      return true;
     }
 
     Widget buildBody(AlbumResponseDto albumInfo) {

@@ -200,13 +200,13 @@ class HomePage extends HookConsumerWidget {
         );
       }
 
-      Future<bool> onWillPop() {
+      Future<bool> onWillPop() async {
         if (multiselectEnabled.state) {
           selectionEnabledHook.value = false;
-          return Future.value(false);
+          return false;
         }
 
-        return Future.value(false);
+        return true;
       }
 
       return WillPopScope(
