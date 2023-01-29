@@ -248,32 +248,45 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
+    Future<bool> onWillPop() async {
+      final isMultiselectEnable = ref.read(assetSelectionProvider).selectedAssetsInAlbumViewer.isNotEmpty;
+      if (isMultiselectEnable) {
+        ref.watch(assetSelectionProvider.notifier).removeAll();
+        return Future.value(false);
+      }
+
+      return Future.value(true);
+    }
+
     Widget buildBody(AlbumResponseDto albumInfo) {
-      return GestureDetector(
-        onTap: () {
-          titleFocusNode.unfocus();
-        },
-        child: DraggableScrollbar.semicircle(
-          backgroundColor: Theme.of(context).hintColor,
-          controller: scrollController,
-          heightScrollThumb: 48.0,
-          child: CustomScrollView(
+      return WillPopScope(
+        onWillPop: onWillPop,
+        child: GestureDetector(
+          onTap: () {
+            titleFocusNode.unfocus();
+          },
+          child: DraggableScrollbar.semicircle(
+            backgroundColor: Theme.of(context).hintColor,
             controller: scrollController,
-            slivers: [
-              buildHeader(albumInfo),
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: ImmichSliverPersistentAppBarDelegate(
-                  minHeight: 50,
-                  maxHeight: 50,
-                  child: Container(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    child: buildControlButton(albumInfo),
+            heightScrollThumb: 48.0,
+            child: CustomScrollView(
+              controller: scrollController,
+              slivers: [
+                buildHeader(albumInfo),
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: ImmichSliverPersistentAppBarDelegate(
+                    minHeight: 50,
+                    maxHeight: 50,
+                    child: Container(
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                      child: buildControlButton(albumInfo),
+                    ),
                   ),
                 ),
-              ),
-              buildImageGrid(albumInfo)
-            ],
+                buildImageGrid(albumInfo)
+              ],
+            ),
           ),
         ),
       );
