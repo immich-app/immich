@@ -22,7 +22,7 @@ class ShareService {
   }
 
   Future<void> shareAssets(List<Asset> assets) async {
-    final downloadedFilePaths = assets.map<Future<XFile>>((asset) async {
+    final downloadedXFiles = assets.map<Future<XFile>>((asset) async {
       if (asset.isRemote) {
         final tempDir = await getTemporaryDirectory();
         final fileName = basename(asset.remote!.originalPath);
@@ -42,7 +42,7 @@ class ShareService {
 
     // ignore: deprecated_member_use
     Share.shareXFiles(
-      await Future.wait(downloadedFilePaths),
+      await Future.wait(downloadedXFiles),
       sharePositionOrigin: Rect.zero,
     );
   }
