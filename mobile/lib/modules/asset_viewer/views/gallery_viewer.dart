@@ -155,7 +155,7 @@ class GalleryViewerPage extends HookConsumerWidget {
           pageController: controller,
           scrollPhysics: isZoomed.value
               ? const NeverScrollableScrollPhysics()
-              : const BouncingScrollPhysics(),
+              : const ImmichPageViewScrollPhysics(),
           itemCount: assetList.length,
           scrollDirection: Axis.horizontal,
           onPageChanged: (value) {
@@ -165,7 +165,7 @@ class GalleryViewerPage extends HookConsumerWidget {
           builder: (context, index) {
             getAssetExif();
 
-            final child;
+            final Widget child;
             if (assetList[index].isImage) {
               if (isPlayingMotionVideo.value) {
                  child = VideoViewerPage(
@@ -216,4 +216,20 @@ class GalleryViewerPage extends HookConsumerWidget {
       ),
     );
   }
+}
+
+class ImmichPageViewScrollPhysics extends ScrollPhysics {
+  const ImmichPageViewScrollPhysics({super.parent});
+
+  @override
+  ImmichPageViewScrollPhysics applyTo(ScrollPhysics? ancestor) {
+    return ImmichPageViewScrollPhysics(parent: buildParent(ancestor)!);
+  }
+
+  @override
+  SpringDescription get spring => const SpringDescription(
+    mass: 100,
+    stiffness: 100,
+    damping: .90,
+  );
 }
