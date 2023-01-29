@@ -1,0 +1,55 @@
+name: Build Mobile
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+
+
+jobs:
+  build-sign-android:
+    name: Build and sign Android
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: "12.x"
+          cache: 'gradle' 
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.3.10'
+          cache: true
+
+      - name: Create the Keystore
+        
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_SIGN_KEY_CONTENT }}
+        run: |
+          # import keystore from secrets
+          echo $KEYSTORE_BASE64 | base64 -d > $RUNNER_TEMP/my_production.keystore
+
+      - name: Restore packages
+        working-directory: ./mobile
+        run: flutter pub get
+
+      - name: Build Android App Bundle
+        working-directory: ./mobile
+        run: flutter build apk --release
+
+      - name: Sign Android App Bundle
+        working-directory: ./mobile
+        run: jarsigner -keystore $RUNNER_TEMP/my_production.keystore -storepass ${{ secrets.ANDROID_KEY_PASSWORD }} -keypass ${{ secrets.ANDROID_STORE_PASSWORD }} -sigalg SHA256withRSA -digestalg SHA-256 -signedjar build/app/outputs/apk/release/app-release-signed.apk build/app/outputs/apk/release/*.apk ${{ secrets.ALIAS }}
+
+      - name: Publish Android Artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: release-apk-signed
+          path: mobile/build/app/outputs/apk/release/app-release-signed.apk

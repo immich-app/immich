@@ -4,7 +4,25 @@ sidebar_position: 60
 
 # Unraid
 
-Immich can easily be installed and updated on Unraid using the [Docker Compose Manager](https://forums.unraid.net/topic/114415-plugin-docker-compose-manager/) plugin from the Unraid Community Apps.
+Immich can easily be installed and updated on Unraid via:
+1. [Docker Compose Manager](https://forums.unraid.net/topic/114415-plugin-docker-compose-manager/) plugin from the Unraid Community Apps
+2. Community made template on the Unraid Community Apps
+
+## Community Applications Template
+
+:::info
+
+- The Unraid template uses a community made image and is not officially supported by Immich
+
+:::
+
+In order to install Immich from the Unraid CA, you will need an existing Redis and PostgreSQL 14 container, If you do not already have Redis or PostgreSQL you can install them from the Unraid CA, just make sure you choose PostgreSQL **14**.
+
+Once you have Redis and PostgreSQL running, search for Immich on the Unraid CA, Choose either of the templates listed and fill out the example variables.
+
+For more information about setting up the community image see [here](https://github.com/imagegenius/docker-immich#application-setup) 
+
+## Docker-Compose Method (Official)
 
 :::info
 
@@ -27,7 +45,7 @@ alt="Select Plugins > Compose.Manager > Add New Stack > Label it Immich"
 />
 
 3.  Select the cog ⚙️ next to Immich then click "**Edit Stack**"
-4.  Click "**Compose File**" and then paste the entire contents of the [Immich Docker Compose](https://raw.githubusercontent.com/immich-app/immich/main/docker/docker-compose.yml) file into the Unraid editor
+4.  Click "**Compose File**" and then paste the entire contents of the [Immich Docker Compose](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml) file into the Unraid editor
     <details >
         <summary>Using an existing Postgres container? Click me! Otherwise proceed to step 5.</summary>
         <ul>
@@ -53,7 +71,7 @@ alt="Select Plugins > Compose.Manager > Add New Stack > Label it Immich"
     </details>
 5.  Click "**Save Changes**", you will be promoted to edit stack UI labels, just leave this blank and click "**Ok**"
 6.  Select the cog ⚙️ next to Immich, click "**Edit Stack**", then click "**Env File**"
-7.  Past the entire contents of the [Immich example.env](https://raw.githubusercontent.com/immich-app/immich/main/docker/example.env) file into the Unraid editor, then **before saving** edit the following:
+7.  Past the entire contents of the [Immich example.env](https://github.com/immich-app/immich/releases/latest/download/example.env) file into the Unraid editor, then **before saving** edit the following:
 
     - `UPLOAD_LOCATION`: Create a folder in your Images Unraid share and place the **absolute** location here > For example my _"images"_ share has a folder within it called _"immich"_. If I browse to this directory in the terminal and type `pwd` the output is `/mnt/user/images/immich`. This is the exact value I need to enter as my `UPLOAD_LOCATION`
 

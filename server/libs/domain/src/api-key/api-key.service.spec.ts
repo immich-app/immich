@@ -1,5 +1,5 @@
 import { APIKeyEntity } from '@app/infra/db/entities';
-import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { authStub, userEntityStub, newCryptoRepositoryMock, newKeyRepositoryMock } from '../../test';
 import { ICryptoRepository } from '../auth';
 import { IKeyRepository } from './api-key.repository';
@@ -124,7 +124,7 @@ describe(APIKeyService.name, () => {
     it('should throw an error for an invalid id', async () => {
       keyMock.getKey.mockResolvedValue(null);
 
-      await expect(sut.validate(token)).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(sut.validate(token)).resolves.toBeNull();
 
       expect(keyMock.getKey).toHaveBeenCalledWith('bXktYXBpLWtleQ== (hashed)');
     });

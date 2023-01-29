@@ -229,7 +229,7 @@ describe('AuthService', () => {
   describe('validate - api request', () => {
     it('should throw if no user is found', async () => {
       userMock.get.mockResolvedValue(null);
-      await expect(sut.validate({ email: 'a', userId: 'test' })).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(sut.validate({ email: 'a', userId: 'test' })).resolves.toBeNull();
     });
 
     it('should return an auth dto', async () => {

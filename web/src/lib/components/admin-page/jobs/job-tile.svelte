@@ -22,6 +22,8 @@
 	const run = (includeAllAssets: boolean) => {
 		dispatch('click', { includeAllAssets });
 	};
+
+	const locale = navigator.language;
 </script>
 
 <div class="flex justify-between rounded-3xl bg-gray-100 dark:bg-immich-dark-gray">
@@ -43,7 +45,7 @@
 					<p>Active</p>
 					<p class="text-2xl">
 						{#if jobCounts.active !== undefined}
-							{jobCounts.active}
+							{jobCounts.active.toLocaleString(locale)}
 						{:else}
 							<LoadingSpinner />
 						{/if}
@@ -55,7 +57,7 @@
 				>
 					<p class="text-2xl">
 						{#if jobCounts.waiting !== undefined}
-							{jobCounts.waiting}
+							{jobCounts.waiting.toLocaleString(locale)}
 						{:else}
 							<LoadingSpinner />
 						{/if}
