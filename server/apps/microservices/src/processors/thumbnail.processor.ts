@@ -50,7 +50,7 @@ export class ThumbnailGeneratorProcessor {
 
     if (asset.type == AssetType.IMAGE) {
       try {
-        await sharp(asset.originalPath, { failOnError: true })
+        await sharp(asset.originalPath, { failOnError: false })
           .resize(1440, 2560, { fit: 'inside' })
           .jpeg()
           .rotate()
