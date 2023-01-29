@@ -17,6 +17,7 @@ import 'package:immich_mobile/modules/settings/providers/app_settings.provider.d
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 
 // ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
@@ -150,10 +151,9 @@ class GalleryViewerPage extends HookConsumerWidget {
         onAddToAlbumPressed: () => addToAlbum(assetList[indexOfAsset.value]),
       ),
       body: SafeArea(
-        child: PageView.builder(
-          controller: controller,
-          pageSnapping: true,
-          physics: isZoomed.value
+        child: PhotoViewGallery.builder(
+          pageController: controller,
+          scrollPhysics: isZoomed.value
               ? const NeverScrollableScrollPhysics()
               : const BouncingScrollPhysics(),
           itemCount: assetList.length,
@@ -162,12 +162,13 @@ class GalleryViewerPage extends HookConsumerWidget {
             indexOfAsset.value = value;
             HapticFeedback.selectionClick();
           },
-          itemBuilder: (context, index) {
+          builder: (context, index) {
             getAssetExif();
 
+            final child;
             if (assetList[index].isImage) {
               if (isPlayingMotionVideo.value) {
-                return VideoViewerPage(
+                 child = VideoViewerPage(
                   asset: assetList[index],
                   isMotionVideo: true,
                   onVideoEnded: () {
@@ -175,7 +176,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                   },
                 );
               } else {
-                return ImageViewerPage(
+                child = ImageViewerPage(
                   authToken: 'Bearer ${box.get(accessTokenKey)}',
                   isZoomedFunction: isZoomedMethod,
                   isZoomedListener: isZoomedListener,
@@ -187,7 +188,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 );
               }
             } else {
-              return GestureDetector(
+              child = GestureDetector(
                 onVerticalDragUpdate: (details) {
                   const int sensitivity = 15;
                   if (details.delta.dy > sensitivity) {
@@ -208,6 +209,8 @@ class GalleryViewerPage extends HookConsumerWidget {
                 ),
               );
             }
+
+            return PhotoViewGalleryPageOptions.customChild(child: child);
           },
         ),
       ),
