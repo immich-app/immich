@@ -49,7 +49,7 @@ jobs:
         run: jarsigner -keystore $RUNNER_TEMP/my_production.keystore -storepass ${{ secrets.ANDROID_KEY_PASSWORD }} -keypass ${{ secrets.ANDROID_STORE_PASSWORD }} -sigalg SHA256withRSA -digestalg SHA-256 -signedjar build/app/outputs/apk/release/app-release-signed.apk build/app/outputs/apk/release/*.apk ${{ secrets.ALIAS }}
 
       - name: Publish Android Artifact
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: release-apk-signed
           path: mobile/build/app/outputs/apk/release/app-release-signed.apk
