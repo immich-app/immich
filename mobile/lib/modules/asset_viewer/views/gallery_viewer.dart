@@ -214,6 +214,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               gestureDetectorBehavior: HitTestBehavior.translucent,
               heroAttributes: PhotoViewHeroAttributes(tag: assetList[index].id),
               disableGestures: !assetList[index].isImage,
+              minScale: PhotoViewComputedScale.contained,
               child: GestureDetector(
                 onVerticalDragStart: (down) => localPosition = down.localPosition,
                 onVerticalDragUpdate: handleSwipeUpDown,
