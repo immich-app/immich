@@ -3725,10 +3725,14 @@
         "properties": {
           "id": {
             "type": "string"
+          },
+          "duplicate": {
+            "type": "boolean"
           }
         },
         "required": [
-          "id"
+          "id",
+          "duplicate"
         ]
       },
       "DownloadFilesDto": {
