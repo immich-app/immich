@@ -101,7 +101,7 @@ export class AlbumService {
     const album = await this._getAlbum({ authUser, albumId });
 
     for (const sharedLink of album.sharedLinks) {
-      await this.shareCore.remove(sharedLink.id, authUser.id);
+      await this.shareCore.remove(authUser.id, sharedLink.id);
     }
 
     await this._albumRepository.delete(album);
