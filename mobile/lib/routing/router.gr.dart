@@ -57,11 +57,8 @@ class _$AppRouter extends RootStackRouter {
               heroTag: args.heroTag,
               asset: args.asset,
               authToken: args.authToken,
-              isZoomedFunction: args.isZoomedFunction,
-              isZoomedListener: args.isZoomedListener,
               loadPreview: args.loadPreview,
-              loadOriginal: args.loadOriginal,
-              showExifSheet: args.showExifSheet));
+              loadOriginal: args.loadOriginal));
     },
     VideoViewerRoute.name: (routeData) {
       final args = routeData.argsAs<VideoViewerRouteArgs>();
@@ -307,11 +304,8 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
       required String heroTag,
       required Asset asset,
       required String authToken,
-      required void Function() isZoomedFunction,
-      required ValueNotifier<bool> isZoomedListener,
       required bool loadPreview,
-      required bool loadOriginal,
-      void Function()? showExifSheet})
+      required bool loadOriginal})
       : super(ImageViewerRoute.name,
             path: '/image-viewer-page',
             args: ImageViewerRouteArgs(
@@ -319,11 +313,8 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
                 heroTag: heroTag,
                 asset: asset,
                 authToken: authToken,
-                isZoomedFunction: isZoomedFunction,
-                isZoomedListener: isZoomedListener,
                 loadPreview: loadPreview,
-                loadOriginal: loadOriginal,
-                showExifSheet: showExifSheet));
+                loadOriginal: loadOriginal));
 
   static const String name = 'ImageViewerRoute';
 }
@@ -334,11 +325,8 @@ class ImageViewerRouteArgs {
       required this.heroTag,
       required this.asset,
       required this.authToken,
-      required this.isZoomedFunction,
-      required this.isZoomedListener,
       required this.loadPreview,
-      required this.loadOriginal,
-      this.showExifSheet});
+      required this.loadOriginal});
 
   final Key? key;
 
@@ -348,19 +336,13 @@ class ImageViewerRouteArgs {
 
   final String authToken;
 
-  final void Function() isZoomedFunction;
-
-  final ValueNotifier<bool> isZoomedListener;
-
   final bool loadPreview;
 
   final bool loadOriginal;
 
-  final void Function()? showExifSheet;
-
   @override
   String toString() {
-    return 'ImageViewerRouteArgs{key: $key, heroTag: $heroTag, asset: $asset, authToken: $authToken, isZoomedFunction: $isZoomedFunction, isZoomedListener: $isZoomedListener, loadPreview: $loadPreview, loadOriginal: $loadOriginal, showExifSheet: $showExifSheet}';
+    return 'ImageViewerRouteArgs{key: $key, heroTag: $heroTag, asset: $asset, authToken: $authToken, loadPreview: $loadPreview, loadOriginal: $loadOriginal}';
   }
 }
 

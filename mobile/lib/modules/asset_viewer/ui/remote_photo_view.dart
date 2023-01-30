@@ -5,10 +5,12 @@ import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart'
     show AssetEntityImageProvider, ThumbnailSize;
-import 'package:photo_view/photo_view.dart';
 
 enum _RemoteImageStatus { empty, thumbnail, preview, full }
 
+/// The Remote Photo View downloads and displays a remote Photo
+/// with the optional callback of playing a "onImageLoaded" on 
+/// completion
 class RemotePhotoView extends StatefulWidget {
   const RemotePhotoView({
     Key? key,
@@ -16,21 +18,17 @@ class RemotePhotoView extends StatefulWidget {
     required this.authToken,
     required this.loadPreview,
     required this.loadOriginal,
-    required this.isZoomedFunction,
-    required this.isZoomedListener,
-    required this.onSwipeDown,
-    required this.onSwipeUp,
+    this.onImageLoaded,
   }) : super(key: key);
 
   final Asset asset;
   final String authToken;
   final bool loadPreview;
   final bool loadOriginal;
-  final void Function() onSwipeDown;
-  final void Function() onSwipeUp;
-  final void Function() isZoomedFunction;
 
-  final ValueNotifier<bool> isZoomedListener;
+  /// Called when the image is ready to allow zoom and is no longer a 
+  /// thumbnail
+  final void Function()? onImageLoaded;
 
   @override
   State<StatefulWidget> createState() {
@@ -41,57 +39,14 @@ class RemotePhotoView extends StatefulWidget {
 class _RemotePhotoViewState extends State<RemotePhotoView> {
   late ImageProvider _imageProvider;
   _RemoteImageStatus _status = _RemoteImageStatus.empty;
-  bool _zoomedIn = false;
 
   late ImageProvider _fullProvider;
   late ImageProvider _previewProvider;
   late ImageProvider _thumbnailProvider;
-  late Offset _down;
 
   @override
   Widget build(BuildContext context) {
-    final bool forbidZoom = _status == _RemoteImageStatus.thumbnail;
-
-    return IgnorePointer(
-      ignoring: forbidZoom,
-      child: Listener(
-        onPointerDown: (down) => _down = down.localPosition,
-        onPointerMove: handleSwipeUpDown,
-        child: Image(image: _imageProvider),
-      ),
-    );
-  }
-
-  void handleSwipeUpDown(PointerMoveEvent details) {
-    int sensitivity = 15;
-    int dxThreshhold = 50;
-
-    if (_zoomedIn) {
-      return;
-    }
-
-    // Check for delta from initial down point
-    final d = details.localPosition - _down;
-    // If the magnitude of the dx swipe is large, we probably didn't mean to go down
-    if (d.dx.abs() > dxThreshhold) {
-      return;
-    }
-
-    if (details.delta.dy > sensitivity) {
-      widget.onSwipeDown();
-    } else if (details.delta.dy < -sensitivity) {
-      widget.onSwipeUp();
-    }
-  }
-
-  void _scaleStateChanged(PhotoViewScaleState state) {
-    _zoomedIn = state != PhotoViewScaleState.initial;
-    if (_zoomedIn) {
-      widget.isZoomedListener.value = true;
-    } else {
-      widget.isZoomedListener.value = false;
-    }
-    widget.isZoomedFunction();
+    return Image(image: _imageProvider);
   }
 
   CachedNetworkImageProvider _authorizedImageProvider(
@@ -121,6 +76,12 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
         newStatus == _RemoteImageStatus.preview) return;
 
     if (!mounted) return;
+
+    /// Image is loaded
+    if (_status == _RemoteImageStatus.empty &&
+      newStatus != _RemoteImageStatus.thumbnail) {
+      widget.onImageLoaded?.call();
+    }
 
     setState(() {
       _status = newStatus;

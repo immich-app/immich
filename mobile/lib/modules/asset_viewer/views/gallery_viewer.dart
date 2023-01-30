@@ -89,15 +89,6 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
     }
 
-    //make isZoomed listener call instead
-    void isZoomedMethod() {
-      if (isZoomedListener.value) {
-        isZoomed.value = true;
-      } else {
-        isZoomed.value = false;
-      }
-    }
-
     void handleDelete(Asset deleteAsset) {
       showDialog(
         context: context,
@@ -208,13 +199,9 @@ class GalleryViewerPage extends HookConsumerWidget {
               } else {
                 child = RemotePhotoView(
                   authToken: 'Bearer ${box.get(accessTokenKey)}',
-                  isZoomedFunction: isZoomedMethod,
-                  isZoomedListener: isZoomedListener,
                   asset: assetList[index],
                   loadPreview: isLoadPreview.value,
                   loadOriginal: isLoadOriginal.value,
-                  onSwipeDown: () => {},
-                  onSwipeUp: () => {},
                 );
               }
             } else {
