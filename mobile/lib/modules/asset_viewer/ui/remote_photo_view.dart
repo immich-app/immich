@@ -46,7 +46,10 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
 
   @override
   Widget build(BuildContext context) {
-    return Image(image: _imageProvider);
+    return Image(
+      gaplessPlayback: true,
+      image: _imageProvider,
+    );
   }
 
   CachedNetworkImageProvider _authorizedImageProvider(
@@ -90,6 +93,62 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   }
 
   void _loadImages() {
+    if (widget.asset.isLocal) {
+      _imageProvider = AssetEntityImageProvider(
+        widget.asset.local!,
+        isOriginal: false,
+        thumbnailSize: const ThumbnailSize.square(250),
+      );
+      _fullProvider = AssetEntityImageProvider(widget.asset.local!);
+      _fullProvider.resolve(const ImageConfiguration()).addListener(
+        ImageStreamListener((ImageInfo image, _) {
+          _performStateTransition(
+            _RemoteImageStatus.full,
+            _fullProvider,
+          );
+        }),
+      );
+      return;
+    }
+
+    _thumbnailProvider = _authorizedImageProvider(
+      getThumbnailUrl(widget.asset.remote!),
+      getThumbnailCacheKey(widget.asset.remote!),
+    );
+    _imageProvider = _thumbnailProvider;
+
+    _thumbnailProvider.resolve(const ImageConfiguration()).addListener(
+      ImageStreamListener((ImageInfo imageInfo, _) {
+        _performStateTransition(
+          _RemoteImageStatus.thumbnail,
+          _thumbnailProvider,
+        );
+      }),
+    );
+
+    if (widget.loadPreview) {
+      _previewProvider = _authorizedImageProvider(
+        getThumbnailUrl(widget.asset.remote!, type: ThumbnailFormat.JPEG),
+        getThumbnailCacheKey(widget.asset.remote!, type: ThumbnailFormat.JPEG),
+      );
+      _previewProvider.resolve(const ImageConfiguration()).addListener(
+        ImageStreamListener((ImageInfo imageInfo, _) {
+          _performStateTransition(_RemoteImageStatus.preview, _previewProvider);
+        }),
+      );
+    }
+
+    if (widget.loadOriginal) {
+      _fullProvider = _authorizedImageProvider(
+        getImageUrl(widget.asset.remote!),
+        getImageCacheKey(widget.asset.remote!),
+      );
+      _fullProvider.resolve(const ImageConfiguration()).addListener(
+        ImageStreamListener((ImageInfo imageInfo, _) {
+          _performStateTransition(_RemoteImageStatus.full, _fullProvider);
+        }),
+      );
+    }
     if (widget.asset.isLocal) {
       _imageProvider = AssetEntityImageProvider(
         widget.asset.local!,

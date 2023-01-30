@@ -15,10 +15,12 @@ import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/photo_view/photo_view_gallery.dart';
+import 'package:immich_mobile/photo_view/src/photo_view_computed_scale.dart';
+import 'package:immich_mobile/photo_view/src/photo_view_scale_state.dart';
+import 'package:immich_mobile/photo_view/src/utils/photo_view_hero_attributes.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view_gallery.dart';
 
 // ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
