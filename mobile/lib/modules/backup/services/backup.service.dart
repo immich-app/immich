@@ -283,7 +283,6 @@ class BackupService {
             ),
           );
 
-          // var response = await req.send(cancellationToken: cancelToken);
           var response =
               await httpClient.send(req, cancellationToken: cancelToken);
 
@@ -337,7 +336,6 @@ class BackupService {
 
   Future<MultipartFile?> _getLivePhotoFile(AssetEntity entity) async {
     var motionFilePath = await entity.getMediaUrl();
-    // var motionFilePath = '/var/mobile/Media/DCIM/103APPLE/IMG_3371.MOV'
 
     if (motionFilePath != null) {
       var validPath = motionFilePath.replaceAll('file://', '');
