@@ -200,34 +200,46 @@ class HomePage extends HookConsumerWidget {
         );
       }
 
-      return SafeArea(
-        bottom: !multiselectEnabled.state,
-        top: true,
-        child: Stack(
-          children: [
-            ref.watch(assetProvider).renderList == null ||
-                    ref.watch(assetProvider).allAssets.isEmpty
-                ? buildLoadingIndicator()
-                : ImmichAssetGrid(
-                    renderList: ref.watch(assetProvider).renderList!,
-                    allAssets: ref.watch(assetProvider).allAssets,
-                    assetsPerRow: appSettingService
-                        .getSetting(AppSettingsEnum.tilesPerRow),
-                    showStorageIndicator: appSettingService
-                        .getSetting(AppSettingsEnum.storageIndicator),
-                    listener: selectionListener,
-                    selectionActive: selectionEnabledHook.value,
-                  ),
-            if (selectionEnabledHook.value)
-              ControlBottomAppBar(
-                onShare: onShareAssets,
-                onDelete: onDelete,
-                onAddToAlbum: onAddToAlbum,
-                albums: albums,
-                sharedAlbums: sharedAlbums,
-                onCreateNewAlbum: onCreateNewAlbum,
-              ),
-          ],
+      Future<bool> onWillPop() async {
+        if (multiselectEnabled.state) {
+          selectionEnabledHook.value = false;
+          return false;
+        }
+
+        return true;
+      }
+
+      return WillPopScope(
+        onWillPop: onWillPop,
+        child: SafeArea(
+          bottom: !multiselectEnabled.state,
+          top: true,
+          child: Stack(
+            children: [
+              ref.watch(assetProvider).renderList == null ||
+                      ref.watch(assetProvider).allAssets.isEmpty
+                  ? buildLoadingIndicator()
+                  : ImmichAssetGrid(
+                      renderList: ref.watch(assetProvider).renderList!,
+                      allAssets: ref.watch(assetProvider).allAssets,
+                      assetsPerRow: appSettingService
+                          .getSetting(AppSettingsEnum.tilesPerRow),
+                      showStorageIndicator: appSettingService
+                          .getSetting(AppSettingsEnum.storageIndicator),
+                      listener: selectionListener,
+                      selectionActive: selectionEnabledHook.value,
+                    ),
+              if (selectionEnabledHook.value)
+                ControlBottomAppBar(
+                  onShare: onShareAssets,
+                  onDelete: onDelete,
+                  onAddToAlbum: onAddToAlbum,
+                  albums: albums,
+                  sharedAlbums: sharedAlbums,
+                  onCreateNewAlbum: onCreateNewAlbum,
+                ),
+            ],
+          ),
         ),
       );
     }
