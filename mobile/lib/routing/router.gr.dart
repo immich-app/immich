@@ -48,18 +48,6 @@ class _$AppRouter extends RootStackRouter {
           child: GalleryViewerPage(
               key: args.key, assetList: args.assetList, asset: args.asset));
     },
-    ImageViewerRoute.name: (routeData) {
-      final args = routeData.argsAs<ImageViewerRouteArgs>();
-      return MaterialPageX<dynamic>(
-          routeData: routeData,
-          child: ImageViewerPage(
-              key: args.key,
-              heroTag: args.heroTag,
-              asset: args.asset,
-              authToken: args.authToken,
-              loadPreview: args.loadPreview,
-              loadOriginal: args.loadOriginal));
-    },
     VideoViewerRoute.name: (routeData) {
       final args = routeData.argsAs<VideoViewerRouteArgs>();
       return MaterialPageX<dynamic>(
@@ -201,8 +189,6 @@ class _$AppRouter extends RootStackRouter {
             ]),
         RouteConfig(GalleryViewerRoute.name,
             path: '/gallery-viewer-page', guards: [authGuard]),
-        RouteConfig(ImageViewerRoute.name,
-            path: '/image-viewer-page', guards: [authGuard]),
         RouteConfig(VideoViewerRoute.name,
             path: '/video-viewer-page', guards: [authGuard]),
         RouteConfig(BackupControllerRoute.name,
@@ -293,56 +279,6 @@ class GalleryViewerRouteArgs {
   @override
   String toString() {
     return 'GalleryViewerRouteArgs{key: $key, assetList: $assetList, asset: $asset}';
-  }
-}
-
-/// generated route for
-/// [ImageViewerPage]
-class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
-  ImageViewerRoute(
-      {Key? key,
-      required String heroTag,
-      required Asset asset,
-      required String authToken,
-      required bool loadPreview,
-      required bool loadOriginal})
-      : super(ImageViewerRoute.name,
-            path: '/image-viewer-page',
-            args: ImageViewerRouteArgs(
-                key: key,
-                heroTag: heroTag,
-                asset: asset,
-                authToken: authToken,
-                loadPreview: loadPreview,
-                loadOriginal: loadOriginal));
-
-  static const String name = 'ImageViewerRoute';
-}
-
-class ImageViewerRouteArgs {
-  const ImageViewerRouteArgs(
-      {this.key,
-      required this.heroTag,
-      required this.asset,
-      required this.authToken,
-      required this.loadPreview,
-      required this.loadOriginal});
-
-  final Key? key;
-
-  final String heroTag;
-
-  final Asset asset;
-
-  final String authToken;
-
-  final bool loadPreview;
-
-  final bool loadOriginal;
-
-  @override
-  String toString() {
-    return 'ImageViewerRouteArgs{key: $key, heroTag: $heroTag, asset: $asset, authToken: $authToken, loadPreview: $loadPreview, loadOriginal: $loadOriginal}';
   }
 }
 

@@ -10,7 +10,6 @@ import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_s
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/remote_photo_view.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
-import 'package:immich_mobile/modules/asset_viewer/views/image_viewer_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
@@ -43,7 +42,6 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isZoomed = useState<bool>(false);
     final indexOfAsset = useState(assetList.indexOf(asset));
     final isPlayingMotionVideo = useState(false);
-    ValueNotifier<bool> isZoomedListener = ValueNotifier<bool>(false);
     late Offset localPosition;
 
     PageController controller =
@@ -223,7 +221,6 @@ class GalleryViewerPage extends HookConsumerWidget {
                 onSecondaryTapUp: (_) => isZoomed.value = false,
                 child: child,
               ),
-              minScale: PhotoViewComputedScale.contained,
             );
           },
         ),
