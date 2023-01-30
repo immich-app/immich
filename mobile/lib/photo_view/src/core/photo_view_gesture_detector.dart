@@ -92,7 +92,7 @@ class PhotoViewGestureRecognizer extends ScaleGestureRecognizer {
     this.hitDetector,
     Object? debugOwner,
     this.validateAxis,
-    this.touchSlopFactor = 2,
+    this.touchSlopFactor = 1,
     PointerDeviceKind? kind,
   }) : super(debugOwner: debugOwner, kind: kind);
   final HitCornersDetector? hitDetector;
@@ -231,7 +231,7 @@ class PhotoViewGestureRecognizer extends ScaleGestureRecognizer {
 class PhotoViewGestureDetectorScope extends InheritedWidget {
   PhotoViewGestureDetectorScope({
     this.axis,
-    this.touchSlopFactor = .3,
+    this.touchSlopFactor = .1,
     required Widget child,
   }) : super(child: child);
 

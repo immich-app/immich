@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -21,6 +22,9 @@ import 'package:immich_mobile/photo_view/src/photo_view_scale_state.dart';
 import 'package:immich_mobile/photo_view/src/utils/photo_view_hero_attributes.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 // ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
@@ -128,7 +132,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
 
       // Check for delta from initial down point
-      final d = details.localPosition - localPosition;
+      final d = details.localPosition;// - localPosition;
       // If the magnitude of the dx swipe is large, we probably didn't mean to go down
       if (d.dx.abs() > dxThreshhold) {
         return;
@@ -181,6 +185,23 @@ class GalleryViewerPage extends HookConsumerWidget {
             indexOfAsset.value = value;
             HapticFeedback.selectionClick();
           },
+          loadingBuilder: (context, event) {
+            if (!asset.isLocal) {
+              return CachedNetworkImage(
+                imageUrl: getThumbnailUrl(assetList[indexOfAsset.value].remote!),
+                cacheKey: getImageCacheKey(assetList[indexOfAsset.value].remote!),
+                placeholder: (context, url) => ImmichLoadingIndicator(),
+              );
+            } else {
+              return Image(
+                image: AssetEntityImageProvider(
+                  assetList[indexOfAsset.value].local!,
+                  isOriginal: false,
+                  thumbnailSize: const ThumbnailSize.square(250),
+                ),
+              );
+            }
+          },
           builder: (context, index) {
             getAssetExif();
             final downloadAssetStatus =
@@ -212,17 +233,21 @@ class GalleryViewerPage extends HookConsumerWidget {
               );
             }
 
-            return PhotoViewGalleryPageOptions.customChild(
+            final ImageProvider provider;
+            if (assetList[index].isLocal) {
+              provider = AssetEntityImageProvider(assetList[index].local!);
+            } else {
+              provider = CachedNetworkImageProvider(
+                getImageUrl(assetList[index].remote!),
+                cacheKey: getThumbnailCacheKey(assetList[index].remote!),
+              );
+            }
+
+            return PhotoViewGalleryPageOptions(
+              imageProvider: provider,
               heroAttributes: PhotoViewHeroAttributes(tag: assetList[index].id),
               disableGestures: !assetList[index].isImage,
               minScale: PhotoViewComputedScale.contained,
-              child: GestureDetector(
-                onVerticalDragStart: (down) => localPosition = down.localPosition,
-                onVerticalDragUpdate: handleSwipeUpDown,
-                //onSecondaryTapDown: (_) => isZoomed.value = true,
-                //onSecondaryTapUp: (_) => isZoomed.value = false,
-                child: child,
-              ),
             );
           },
         ),
