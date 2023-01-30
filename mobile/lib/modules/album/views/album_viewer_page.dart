@@ -250,7 +250,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       );
     }
 
-    FutureOr<bool> onWillPop() async {
+    Future<bool> onWillPop() async {
       final isMultiselectEnable = ref.read(assetSelectionProvider).selectedAssetsInAlbumViewer.isNotEmpty;
       if (isMultiselectEnable) {
         ref.watch(assetSelectionProvider.notifier).removeAll();
