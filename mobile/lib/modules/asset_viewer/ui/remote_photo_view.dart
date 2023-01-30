@@ -9,6 +9,35 @@ import 'package:photo_view/photo_view.dart';
 
 enum _RemoteImageStatus { empty, thumbnail, preview, full }
 
+class RemotePhotoView extends StatefulWidget {
+  const RemotePhotoView({
+    Key? key,
+    required this.asset,
+    required this.authToken,
+    required this.loadPreview,
+    required this.loadOriginal,
+    required this.isZoomedFunction,
+    required this.isZoomedListener,
+    required this.onSwipeDown,
+    required this.onSwipeUp,
+  }) : super(key: key);
+
+  final Asset asset;
+  final String authToken;
+  final bool loadPreview;
+  final bool loadOriginal;
+  final void Function() onSwipeDown;
+  final void Function() onSwipeUp;
+  final void Function() isZoomedFunction;
+
+  final ValueNotifier<bool> isZoomedListener;
+
+  @override
+  State<StatefulWidget> createState() {
+    return _RemotePhotoViewState();
+  }
+}
+
 class _RemotePhotoViewState extends State<RemotePhotoView> {
   late ImageProvider _imageProvider;
   _RemoteImageStatus _status = _RemoteImageStatus.empty;
@@ -23,19 +52,12 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   Widget build(BuildContext context) {
     final bool forbidZoom = _status == _RemoteImageStatus.thumbnail;
 
-
-
     return IgnorePointer(
       ignoring: forbidZoom,
       child: Listener(
         onPointerDown: (down) => _down = down.localPosition,
         onPointerMove: handleSwipeUpDown,
-        child: PhotoView(
-          imageProvider: _imageProvider,
-          minScale: PhotoViewComputedScale.contained,
-          enablePanAlways: false,
-          scaleStateChangedCallback: _scaleStateChanged,
-        ),
+        child: Image(image: _imageProvider),
       ),
     );
   }
@@ -51,7 +73,6 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     // Check for delta from initial down point
     final d = details.localPosition - _down;
     // If the magnitude of the dx swipe is large, we probably didn't mean to go down
-    print(d.dx.abs());
     if (d.dx.abs() > dxThreshhold) {
       return;
     }
@@ -188,31 +209,3 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   }
 }
 
-class RemotePhotoView extends StatefulWidget {
-  const RemotePhotoView({
-    Key? key,
-    required this.asset,
-    required this.authToken,
-    required this.loadPreview,
-    required this.loadOriginal,
-    required this.isZoomedFunction,
-    required this.isZoomedListener,
-    required this.onSwipeDown,
-    required this.onSwipeUp,
-  }) : super(key: key);
-
-  final Asset asset;
-  final String authToken;
-  final bool loadPreview;
-  final bool loadOriginal;
-  final void Function() onSwipeDown;
-  final void Function() onSwipeUp;
-  final void Function() isZoomedFunction;
-
-  final ValueNotifier<bool> isZoomedListener;
-
-  @override
-  State<StatefulWidget> createState() {
-    return _RemotePhotoViewState();
-  }
-}
