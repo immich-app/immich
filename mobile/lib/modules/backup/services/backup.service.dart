@@ -29,6 +29,7 @@ final backupServiceProvider = Provider(
 );
 
 class BackupService {
+  final httpClient = http.Client();
   final ApiService _apiService;
 
   BackupService(this._apiService);
@@ -282,7 +283,9 @@ class BackupService {
             ),
           );
 
-          var response = await req.send(cancellationToken: cancelToken);
+          // var response = await req.send(cancellationToken: cancelToken);
+          var response =
+              await httpClient.send(req, cancellationToken: cancelToken);
 
           if (response.statusCode == 200) {
             // asset is a duplicate (already exists on the server)
