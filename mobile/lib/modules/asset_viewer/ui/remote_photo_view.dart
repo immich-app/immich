@@ -17,15 +17,19 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
   late ImageProvider _fullProvider;
   late ImageProvider _previewProvider;
   late ImageProvider _thumbnailProvider;
+  late Offset _down;
 
   @override
   Widget build(BuildContext context) {
     final bool forbidZoom = _status == _RemoteImageStatus.thumbnail;
 
+
+
     return IgnorePointer(
       ignoring: forbidZoom,
       child: Listener(
-        onPointerMove: handleSwipUpDown,
+        onPointerDown: (down) => _down = down.localPosition,
+        onPointerMove: handleSwipeUpDown,
         child: PhotoView(
           imageProvider: _imageProvider,
           minScale: PhotoViewComputedScale.contained,
@@ -36,10 +40,19 @@ class _RemotePhotoViewState extends State<RemotePhotoView> {
     );
   }
 
-  void handleSwipUpDown(PointerMoveEvent details) {
+  void handleSwipeUpDown(PointerMoveEvent details) {
     int sensitivity = 15;
+    int dxThreshhold = 50;
 
     if (_zoomedIn) {
+      return;
+    }
+
+    // Check for delta from initial down point
+    final d = details.localPosition - _down;
+    // If the magnitude of the dx swipe is large, we probably didn't mean to go down
+    print(d.dx.abs());
+    if (d.dx.abs() > dxThreshhold) {
       return;
     }
 
