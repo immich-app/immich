@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import {
   authStub,
   userEntityStub,
@@ -34,18 +34,18 @@ describe(ShareService.name, () => {
   describe('validate', () => {
     it('should not accept a non-existant key', async () => {
       shareMock.getByKey.mockResolvedValue(null);
-      await expect(sut.validate('key')).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(sut.validate('key')).resolves.toBeNull();
     });
 
     it('should not accept an expired key', async () => {
       shareMock.getByKey.mockResolvedValue(sharedLinkStub.expired);
-      await expect(sut.validate('key')).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(sut.validate('key')).resolves.toBeNull();
     });
 
     it('should not accept a key without a user', async () => {
       shareMock.getByKey.mockResolvedValue(sharedLinkStub.expired);
       userMock.get.mockResolvedValue(null);
-      await expect(sut.validate('key')).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(sut.validate('key')).resolves.toBeNull();
     });
 
     it('should accept a valid key', async () => {

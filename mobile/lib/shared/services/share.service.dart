@@ -22,7 +22,7 @@ class ShareService {
   }
 
   Future<void> shareAssets(List<Asset> assets) async {
-    final downloadedFilePaths = assets.map((asset) async {
+    final downloadedXFiles = assets.map<Future<XFile>>((asset) async {
       if (asset.isRemote) {
         final tempDir = await getTemporaryDirectory();
         final fileName = basename(asset.remote!.originalPath);
@@ -33,16 +33,16 @@ class ShareService {
           isWeb: false,
         );
         tempFile.writeAsBytesSync(res.bodyBytes);
-        return tempFile.path;
+        return XFile(tempFile.path);
       } else {
         File? f = await asset.local!.file;
-        return f!.path;
+        return XFile(f!.path);
       }
     });
 
     // ignore: deprecated_member_use
-    Share.shareFiles(
-      await Future.wait(downloadedFilePaths),
+    Share.shareXFiles(
+      await Future.wait(downloadedXFiles),
       sharePositionOrigin: Rect.zero,
     );
   }

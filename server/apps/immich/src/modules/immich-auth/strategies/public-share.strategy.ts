@@ -16,7 +16,7 @@ export class PublicShareStrategy extends PassportStrategy(Strategy, PUBLIC_SHARE
     super(options);
   }
 
-  async validate(key: string): Promise<AuthUserDto> {
+  validate(key: string): Promise<AuthUserDto | null> {
     return this.shareService.validate(key);
   }
 }

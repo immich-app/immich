@@ -8,3 +8,4 @@ uploads
 coverage
 
 mobile/gradle.properties
+mobile/openapi/pubspec.lock
