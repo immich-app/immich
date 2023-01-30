@@ -213,15 +213,14 @@ class GalleryViewerPage extends HookConsumerWidget {
             }
 
             return PhotoViewGalleryPageOptions.customChild(
-              gestureDetectorBehavior: HitTestBehavior.translucent,
               heroAttributes: PhotoViewHeroAttributes(tag: assetList[index].id),
               disableGestures: !assetList[index].isImage,
               minScale: PhotoViewComputedScale.contained,
               child: GestureDetector(
                 onVerticalDragStart: (down) => localPosition = down.localPosition,
                 onVerticalDragUpdate: handleSwipeUpDown,
-                onSecondaryTapDown: (_) => isZoomed.value = true,
-                onSecondaryTapUp: (_) => isZoomed.value = false,
+                //onSecondaryTapDown: (_) => isZoomed.value = true,
+                //onSecondaryTapUp: (_) => isZoomed.value = false,
                 child: child,
               ),
             );

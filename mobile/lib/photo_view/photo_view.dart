@@ -13,7 +13,7 @@ import 'package:immich_mobile/photo_view/src/utils/photo_view_hero_attributes.da
 export 'src/controller/photo_view_controller.dart';
 export 'src/controller/photo_view_scalestate_controller.dart';
 export 'src/core/photo_view_gesture_detector.dart'
-    show PhotoViewGestureDetectorScope;
+    show PhotoViewGestureDetectorScope, PhotoViewPageViewScrollPhysics;
 export 'src/photo_view_computed_scale.dart';
 export 'src/photo_view_scale_state.dart';
 export 'src/utils/photo_view_hero_attributes.dart';

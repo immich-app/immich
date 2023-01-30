@@ -327,14 +327,14 @@ class PhotoViewCoreState extends State<PhotoViewCore>
               constraints: widget.tightMode
                   ? BoxConstraints.tight(scaleBoundaries.childSize * scale)
                   : null,
+              decoration: widget.backgroundDecoration ?? _defaultDecoration,
               child: Center(
                 child: Transform(
-                  child: customChildLayout,
                   transform: matrix,
                   alignment: basePosition,
+                  child: customChildLayout,
                 ),
               ),
-              decoration: widget.backgroundDecoration ?? _defaultDecoration,
             );
 
             if (widget.disableGestures) {
@@ -342,7 +342,6 @@ class PhotoViewCoreState extends State<PhotoViewCore>
             }
 
             return PhotoViewGestureDetector(
-              child: child,
               onDoubleTap: nextScaleState,
               onScaleStart: onScaleStart,
               onScaleUpdate: onScaleUpdate,
@@ -354,6 +353,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
               onTapDown: widget.onTapDown != null
                   ? (details) => widget.onTapDown!(context, details, value)
                   : null,
+              child: child,
             );
           } else {
             return Container();
