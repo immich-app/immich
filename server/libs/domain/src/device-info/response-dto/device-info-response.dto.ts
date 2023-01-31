@@ -1,4 +1,4 @@
-import { DeviceInfoEntity, DeviceType } from '@app/infra';
+import { DeviceInfoEntity, DeviceType } from '@app/infra/db/entities';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class DeviceInfoResponseDto {
