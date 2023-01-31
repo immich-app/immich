@@ -1,1 +1,1 @@
-export * from './app.config';
+export * from '../../../infra/src/infra.config';

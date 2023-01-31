@@ -1,8 +1,6 @@
-import { immichAppConfig } from '@app/common/config';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AssetModule } from './api-v1/asset/asset.module';
 import { DeviceInfoModule } from './api-v1/device-info/device-info.module';
-import { ConfigModule } from '@nestjs/config';
 import { ServerInfoModule } from './api-v1/server-info/server-info.module';
 import { CommunicationModule } from './api-v1/communication/communication.module';
 import { AlbumModule } from './api-v1/album/album.module';
@@ -11,7 +9,6 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
 import { JobModule } from './api-v1/job/job.module';
 import { TagModule } from './api-v1/tag/tag.module';
-import { DomainModule } from '@app/domain';
 import { InfraModule } from '@app/infra';
 import {
   APIKeyController,
@@ -27,11 +24,7 @@ import { UserAuthStrategy } from './modules/immich-auth/strategies/user-auth.str
 
 @Module({
   imports: [
-    ConfigModule.forRoot(immichAppConfig),
-
-    DomainModule.register({
-      imports: [InfraModule],
-    }),
+    InfraModule,
 
     AssetModule,
 

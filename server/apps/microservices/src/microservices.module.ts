@@ -1,8 +1,6 @@
-import { immichAppConfig } from '@app/common/config';
 import { AssetEntity, ExifEntity, SmartInfoEntity, UserEntity, APIKeyEntity, InfraModule } from '@app/infra';
 import { StorageModule } from '@app/storage';
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommunicationModule } from '../../immich/src/api-v1/communication/communication.module';
 import { MicroservicesService } from './microservices.service';
@@ -15,14 +13,10 @@ import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { UserDeletionProcessor } from './processors/user-deletion.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
 import { BackgroundTaskProcessor } from './processors/background-task.processor';
-import { DomainModule } from '@app/domain';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(immichAppConfig),
-    DomainModule.register({
-      imports: [InfraModule],
-    }),
+    InfraModule,
     TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity, APIKeyEntity]),
     StorageModule,
     CommunicationModule,

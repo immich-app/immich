@@ -1,23 +1,32 @@
 import {
+  DomainModule,
   ICryptoRepository,
   IJobRepository,
   IKeyRepository,
   ISharedLinkRepository,
   ISystemConfigRepository,
   IUserRepository,
-  QueueName,
 } from '@app/domain';
-import { databaseConfig, UserEntity, UserTokenEntity } from './db';
-import { BullModule } from '@nestjs/bull';
-import { Global, Module, Provider } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { APIKeyEntity, SharedLinkEntity, SystemConfigEntity, UserRepository } from './db';
-import { APIKeyRepository, SharedLinkRepository } from './db/repository';
-import { CryptoRepository } from './auth/crypto.repository';
-import { SystemConfigRepository } from './db/repository/system-config.repository';
-import { JobRepository } from './job';
 import { IUserTokenRepository } from '@app/domain/user-token';
 import { UserTokenRepository } from '@app/infra/db/repository/user-token.repository';
+import { BullModule } from '@nestjs/bull';
+import { Global, Module, Provider } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { CryptoRepository } from './auth/crypto.repository';
+import {
+  APIKeyEntity,
+  APIKeyRepository,
+  SharedLinkEntity,
+  SharedLinkRepository,
+  SystemConfigEntity,
+  SystemConfigRepository,
+  UserEntity,
+  UserRepository,
+  UserTokenEntity,
+} from './db';
+import { bullConfig, bullQueues, databaseConfig, immichAppConfig } from './infra.config';
+import { JobRepository } from './job';
 
 const providers: Provider[] = [
   { provide: ICryptoRepository, useClass: CryptoRepository },
@@ -29,41 +38,33 @@ const providers: Provider[] = [
   { provide: IUserTokenRepository, useClass: UserTokenRepository },
 ];
 
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([APIKeyEntity, UserEntity, SharedLinkEntity, SystemConfigEntity, UserTokenEntity]),
+  ],
+  providers: [...providers],
+  exports: [...providers],
+})
+class InfraRepositoryModule {}
+
 @Global()
 @Module({
   imports: [
+    InfraRepositoryModule,
+    DomainModule.register({ imports: [InfraRepositoryModule] }),
+
+    ConfigModule.forRoot(immichAppConfig),
+
     TypeOrmModule.forRoot(databaseConfig),
-    TypeOrmModule.forFeature([APIKeyEntity, UserEntity, SharedLinkEntity, SystemConfigEntity, UserTokenEntity]),
-    BullModule.forRootAsync({
-      useFactory: async () => ({
-        prefix: 'immich_bull',
-        redis: {
-          host: process.env.REDIS_HOSTNAME || 'immich_redis',
-          port: parseInt(process.env.REDIS_PORT || '6379'),
-          db: parseInt(process.env.REDIS_DBINDEX || '0'),
-          password: process.env.REDIS_PASSWORD || undefined,
-          path: process.env.REDIS_SOCKET || undefined,
-        },
-        defaultJobOptions: {
-          attempts: 3,
-          removeOnComplete: true,
-          removeOnFail: false,
-        },
-      }),
-    }),
-    BullModule.registerQueue(
-      { name: QueueName.USER_DELETION },
-      { name: QueueName.THUMBNAIL_GENERATION },
-      { name: QueueName.ASSET_UPLOADED },
-      { name: QueueName.METADATA_EXTRACTION },
-      { name: QueueName.VIDEO_CONVERSION },
-      { name: QueueName.CHECKSUM_GENERATION },
-      { name: QueueName.MACHINE_LEARNING },
-      { name: QueueName.CONFIG },
-      { name: QueueName.BACKGROUND_TASK },
-    ),
+
+    BullModule.forRoot(bullConfig),
+    BullModule.registerQueue(...bullQueues),
   ],
-  providers: [...providers],
-  exports: [...providers, BullModule],
+  exports: [
+    // TODO: remove this import once no services (outside of domain) depend on these providers
+    InfraRepositoryModule,
+    DomainModule,
+    BullModule,
+  ],
 })
 export class InfraModule {}
