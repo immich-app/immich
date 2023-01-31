@@ -232,7 +232,7 @@ class PhotoView extends StatefulWidget {
   /// image providers, ie: [AssetImage] or [NetworkImage]
   ///
   /// Internally, the image is rendered within an [Image] widget.
-  PhotoView({
+  const PhotoView({
     Key? key,
     required this.imageProvider,
     this.loadingBuilder,

@@ -17,8 +17,8 @@ import 'package:immich_mobile/photo_view/src/core/photo_view_gesture_detector.da
 import 'package:immich_mobile/photo_view/src/core/photo_view_hit_corners.dart';
 import 'package:immich_mobile/photo_view/src/utils/photo_view_utils.dart';
 
-const _defaultDecoration = const BoxDecoration(
-  color: const Color.fromRGBO(0, 0, 0, 1.0),
+const _defaultDecoration = BoxDecoration(
+  color: Color.fromRGBO(0, 0, 0, 1.0),
 );
 
 /// Internal widget in which controls all animations lifecycle, core responses
@@ -174,33 +174,33 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   }
 
   void onScaleEnd(ScaleEndDetails details) {
-    final double _scale = scale;
-    final Offset _position = controller.position;
+    final double s = scale;
+    final Offset p = controller.position;
     final double maxScale = scaleBoundaries.maxScale;
     final double minScale = scaleBoundaries.minScale;
 
     widget.onScaleEnd?.call(context, details, controller.value);
 
     //animate back to maxScale if gesture exceeded the maxScale specified
-    if (_scale > maxScale) {
-      final double scaleComebackRatio = maxScale / _scale;
-      animateScale(_scale, maxScale);
+    if (s > maxScale) {
+      final double scaleComebackRatio = maxScale / s;
+      animateScale(s, maxScale);
       final Offset clampedPosition = clampPosition(
-        position: _position * scaleComebackRatio,
+        position: p * scaleComebackRatio,
         scale: maxScale,
       );
-      animatePosition(_position, clampedPosition);
+      animatePosition(p, clampedPosition);
       return;
     }
 
     //animate back to minScale if gesture fell smaller than the minScale specified
-    if (_scale < minScale) {
-      final double scaleComebackRatio = minScale / _scale;
-      animateScale(_scale, minScale);
+    if (s < minScale) {
+      final double scaleComebackRatio = minScale / s;
+      animateScale(s, minScale);
       animatePosition(
-        _position,
+        p,
         clampPosition(
-          position: _position * scaleComebackRatio,
+          position: p * scaleComebackRatio,
           scale: minScale,
         ),
       );
@@ -210,11 +210,11 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     final double magnitude = details.velocity.pixelsPerSecond.distance;
 
     // animate velocity only if there is no scale change and a significant magnitude
-    if (_scaleBefore! / _scale == 1.0 && magnitude >= 400.0) {
+    if (_scaleBefore! / s == 1.0 && magnitude >= 400.0) {
       final Offset direction = details.velocity.pixelsPerSecond / magnitude;
       animatePosition(
-        _position,
-        clampPosition(position: _position + direction * 100.0),
+        p,
+        clampPosition(position: p + direction * 100.0),
       );
     }
   }
@@ -310,77 +310,78 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     }
 
     return StreamBuilder(
-        stream: controller.outputStateStream,
-        initialData: controller.prevValue,
-        builder: (
-          BuildContext context,
-          AsyncSnapshot<PhotoViewControllerValue> snapshot,
-        ) {
-          if (snapshot.hasData) {
-            final PhotoViewControllerValue value = snapshot.data!;
-            final useImageScale = widget.filterQuality != FilterQuality.none;
+      stream: controller.outputStateStream,
+      initialData: controller.prevValue,
+      builder: (
+        BuildContext context,
+        AsyncSnapshot<PhotoViewControllerValue> snapshot,
+      ) {
+        if (snapshot.hasData) {
+          final PhotoViewControllerValue value = snapshot.data!;
+          final useImageScale = widget.filterQuality != FilterQuality.none;
 
-            final computedScale = useImageScale ? 1.0 : scale;
+          final computedScale = useImageScale ? 1.0 : scale;
 
-            final matrix = Matrix4.identity()
-              ..translate(value.position.dx, value.position.dy)
-              ..scale(computedScale)
-              ..rotateZ(value.rotation);
+          final matrix = Matrix4.identity()
+            ..translate(value.position.dx, value.position.dy)
+            ..scale(computedScale)
+            ..rotateZ(value.rotation);
 
-            final Widget customChildLayout = CustomSingleChildLayout(
-              delegate: _CenterWithOriginalSizeDelegate(
-                scaleBoundaries.childSize,
-                basePosition,
-                useImageScale,
+          final Widget customChildLayout = CustomSingleChildLayout(
+            delegate: _CenterWithOriginalSizeDelegate(
+              scaleBoundaries.childSize,
+              basePosition,
+              useImageScale,
+            ),
+            child: _buildHero(),
+          );
+
+          final child = Container(
+            constraints: widget.tightMode
+                ? BoxConstraints.tight(scaleBoundaries.childSize * scale)
+                : null,
+            decoration: widget.backgroundDecoration ?? _defaultDecoration,
+            child: Center(
+              child: Transform(
+                transform: matrix,
+                alignment: basePosition,
+                child: customChildLayout,
               ),
-              child: _buildHero(),
-            );
+            ),
+          );
 
-            final child = Container(
-              constraints: widget.tightMode
-                  ? BoxConstraints.tight(scaleBoundaries.childSize * scale)
-                  : null,
-              decoration: widget.backgroundDecoration ?? _defaultDecoration,
-              child: Center(
-                child: Transform(
-                  transform: matrix,
-                  alignment: basePosition,
-                  child: customChildLayout,
-                ),
-              ),
-            );
-
-            if (widget.disableGestures) {
-              return child;
-            }
-
-            return PhotoViewGestureDetector(
-              onDoubleTap: nextScaleState,
-              onScaleStart: onScaleStart,
-              onScaleUpdate: onScaleUpdate,
-              onScaleEnd: onScaleEnd,
-              onDragStart:  widget.onDragStart != null 
-                 ? (details) => widget.onDragStart!(context, details, value)
-                 : null,
-              onDragEnd:  widget.onDragEnd != null 
-                 ? (details) => widget.onDragEnd!(context, details, value)
-                 : null,
-              onDragUpdate: widget.onDragUpdate != null 
-                 ? (details) => widget.onDragUpdate!(context, details, value)
-                 : null,
-              hitDetector: this,
-              onTapUp: widget.onTapUp != null
-                  ? (details) => widget.onTapUp!(context, details, value)
-                  : null,
-              onTapDown: widget.onTapDown != null
-                  ? (details) => widget.onTapDown!(context, details, value)
-                  : null,
-              child: child,
-            );
-          } else {
-            return Container();
+          if (widget.disableGestures) {
+            return child;
           }
-        });
+
+          return PhotoViewGestureDetector(
+            onDoubleTap: nextScaleState,
+            onScaleStart: onScaleStart,
+            onScaleUpdate: onScaleUpdate,
+            onScaleEnd: onScaleEnd,
+            onDragStart:  widget.onDragStart != null 
+               ? (details) => widget.onDragStart!(context, details, value)
+               : null,
+            onDragEnd:  widget.onDragEnd != null 
+               ? (details) => widget.onDragEnd!(context, details, value)
+               : null,
+            onDragUpdate: widget.onDragUpdate != null 
+               ? (details) => widget.onDragUpdate!(context, details, value)
+               : null,
+            hitDetector: this,
+            onTapUp: widget.onTapUp != null
+                ? (details) => widget.onTapUp!(context, details, value)
+                : null,
+            onTapDown: widget.onTapDown != null
+                ? (details) => widget.onTapDown!(context, details, value)
+                : null,
+            child: child,
+          );
+        } else {
+          return Container();
+        }
+      },
+    );
   }
 
   Widget _buildHero() {

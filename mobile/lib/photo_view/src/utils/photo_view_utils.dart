@@ -16,9 +16,12 @@ double getScaleForScaleState(
       return _clampSize(scaleBoundaries.initialScale, scaleBoundaries);
     case PhotoViewScaleState.covering:
       return _clampSize(
-          _scaleForCovering(
-              scaleBoundaries.outerSize, scaleBoundaries.childSize),
-          scaleBoundaries);
+        _scaleForCovering(
+          scaleBoundaries.outerSize, 
+          scaleBoundaries.childSize,
+        ),
+        scaleBoundaries,
+      );
     case PhotoViewScaleState.originalSize:
       return _clampSize(1.0, scaleBoundaries);
     // Will never be reached

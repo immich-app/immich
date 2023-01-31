@@ -25,7 +25,9 @@ typedef PhotoViewGalleryPageChangedCallback = void Function(int index);
 
 /// A type definition for a [Function] that defines a page in [PhotoViewGallery.build]
 typedef PhotoViewGalleryBuilder = PhotoViewGalleryPageOptions Function(
-    BuildContext context, int index);
+  BuildContext context, 
+  int index,
+);
 
 /// A [StatefulWidget] that shows multiple [PhotoView] widgets in a [PageView]
 ///
@@ -251,7 +253,6 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
     final PhotoView photoView = isCustomChild
         ? PhotoView.customChild(
             key: ObjectKey(index),
-            child: pageOption.child,
             childSize: pageOption.childSize,
             backgroundDecoration: widget.backgroundDecoration,
             wantKeepAlive: widget.wantKeepAlive,
@@ -276,6 +277,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             filterQuality: pageOption.filterQuality,
             basePosition: pageOption.basePosition,
             disableGestures: pageOption.disableGestures,
+            child: pageOption.child,
           )
         : PhotoView(
             key: ObjectKey(index),
@@ -313,8 +315,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
     );
   }
 
-  PhotoViewGalleryPageOptions _buildPageOption(
-      BuildContext context, int index) {
+  PhotoViewGalleryPageOptions _buildPageOption(BuildContext context, int index) {
     if (widget._isBuilder) {
       return widget.builder!(context, index);
     }

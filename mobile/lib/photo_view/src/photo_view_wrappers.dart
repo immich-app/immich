@@ -66,7 +66,7 @@ class ImageWrapper extends StatefulWidget {
   final bool? enablePanAlways;
 
   @override
-  _ImageWrapperState createState() => _ImageWrapperState();
+  createState() => _ImageWrapperState();
 }
 
 class _ImageWrapperState extends State<ImageWrapper> {
@@ -116,7 +116,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
     }
 
     void handleImageFrame(ImageInfo info, bool synchronousCall) {
-      final setupCB = () {
+      setupCB() {
         _imageSize = Size(
           info.image.width.toDouble(),
           info.image.height.toDouble(),
@@ -127,7 +127,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
         _loadingProgress = null;
         _lastException = null;
         _lastStack = null;
-      };
+      }
       synchronousCall ? setupCB() : setState(setupCB);
     }
 

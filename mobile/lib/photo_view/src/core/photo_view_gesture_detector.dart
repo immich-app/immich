@@ -114,7 +114,7 @@ class PhotoViewGestureRecognizer extends ScaleGestureRecognizer {
     this.validateAxis,
     this.touchSlopFactor = 1,
     PointerDeviceKind? kind,
-  }) : super(debugOwner: debugOwner, kind: kind);
+  }) : super(debugOwner: debugOwner, supportedDevices: kind == null ? {} : <PointerDeviceKind>{kind});
   final HitCornersDetector? hitDetector;
   final Axis? validateAxis;
   final double touchSlopFactor;
@@ -170,20 +170,6 @@ class PhotoViewGestureRecognizer extends ScaleGestureRecognizer {
       _decideIfWeAcceptEvent(event);
     }
     super.handleEvent(event);
-  }
-
-  void _computeEvent(PointerEvent event) {
-    if (event is PointerMoveEvent) {
-      if (!event.synthesized) {
-        _pointerLocations[event.pointer] = event.position;
-      }
-    } else if (event is PointerDownEvent) {
-      _pointerLocations[event.pointer] = event.position;
-    } else if (event is PointerUpEvent || event is PointerCancelEvent) {
-      _pointerLocations.remove(event.pointer);
-    }
-
-    _initialFocalPoint = _currentFocalPoint;
   }
 
   void _updateDistances() {
@@ -249,7 +235,8 @@ class PhotoViewGestureRecognizer extends ScaleGestureRecognizer {
 /// );
 /// ```
 class PhotoViewGestureDetectorScope extends InheritedWidget {
-  PhotoViewGestureDetectorScope({
+  const PhotoViewGestureDetectorScope({
+    super.key, 
     this.axis,
     this.touchSlopFactor = .1,
     required Widget child,
