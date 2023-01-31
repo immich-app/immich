@@ -18,8 +18,12 @@ on:
         type: boolean
 
 jobs:
+  build_mobile:
+    uses: ./.github/workflows/build-mobile.yml
+
   tag_release:
     runs-on: ubuntu-latest
+    needs: build_mobile
     
     steps:
       - name: Checkout
@@ -38,6 +42,11 @@ jobs:
           message: "Version ${{ env.IMMICH_VERSION }}"
           tag: ${{ env.IMMICH_VERSION }}
           push: true
+
+      - name: Download APK
+        uses: actions/download-artifact@v3
+        with:
+          name: release-apk-signed
           
       - name: Create draft release
         uses: softprops/action-gh-release@v1
@@ -49,3 +58,4 @@ jobs:
           files: |
             docker/docker-compose.yml
             docker/example.env
+            *.apk
