@@ -82,14 +82,27 @@ class GalleryViewerPage extends HookConsumerWidget {
         if (asset.isLocal) {
           precacheImage(AssetEntityImageProvider(assetList[index].local!), context);
         } else {
-          precacheImage(
-            CachedNetworkImageProvider(
-              getImageUrl(asset.remote!),
-              headers: {"Authorization": authToken},
-              cacheKey: getImageCacheKey(asset.remote!),
-            ),
-            context,
-          );
+          if (isLoadPreview.value) {
+            precacheImage(
+              CachedNetworkImageProvider(
+                getThumbnailUrl(asset.remote!),
+                cacheKey: getThumbnailCacheKey(asset.remote!),
+                headers: {"Authorization": authToken},
+              ),
+              context,
+            );
+          }
+          if (isLoadOriginal.value) {
+            precacheImage(
+              CachedNetworkImageProvider(
+                getImageUrl(asset.remote!),
+                cacheKey: getImageCacheKey(asset.remote!),
+                headers: {"Authorization": authToken},
+              ),
+              context,
+            );
+          }
+
         }
       }
     }
