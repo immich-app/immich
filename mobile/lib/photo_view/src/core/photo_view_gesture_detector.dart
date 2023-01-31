@@ -238,7 +238,7 @@ class PhotoViewGestureDetectorScope extends InheritedWidget {
   const PhotoViewGestureDetectorScope({
     super.key, 
     this.axis,
-    this.touchSlopFactor = .1,
+    this.touchSlopFactor = .2,
     required Widget child,
   }) : super(child: child);
 

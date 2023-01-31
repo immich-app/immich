@@ -272,7 +272,7 @@ class PhotoView extends StatefulWidget {
   ///
   /// Instead of a [imageProvider], this constructor will receive a [child] and a [childSize].
   ///
-  PhotoView.customChild({
+  const PhotoView.customChild({
     Key? key,
     required this.child,
     this.childSize,
@@ -517,7 +517,6 @@ class _PhotoViewState extends State<PhotoView>
 
         return widget._isCustomChild
             ? CustomChildWrapper(
-                child: widget.child,
                 childSize: widget.childSize,
                 backgroundDecoration: backgroundDecoration,
                 heroAttributes: widget.heroAttributes,
@@ -542,6 +541,7 @@ class _PhotoViewState extends State<PhotoView>
                 filterQuality: widget.filterQuality,
                 disableGestures: widget.disableGestures,
                 enablePanAlways: widget.enablePanAlways,
+                child: widget.child,
               )
             : ImageWrapper(
                 imageProvider: widget.imageProvider!,

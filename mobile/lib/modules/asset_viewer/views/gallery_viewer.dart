@@ -9,7 +9,6 @@ import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
-import 'package:immich_mobile/modules/asset_viewer/ui/remote_photo_view.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
@@ -89,7 +88,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               headers: {"Authorization": authToken},
               cacheKey: getImageCacheKey(asset.remote!),
             ),
-            context
+            context,
           );
         }
       }

@@ -35,7 +35,7 @@ class PhotoViewDefaultLoading extends StatelessWidget {
         : null;
 
     return Center(
-      child: Container(
+      child: SizedBox(
         width: 20.0,
         height: 20.0,
         child: CircularProgressIndicator(value: value),

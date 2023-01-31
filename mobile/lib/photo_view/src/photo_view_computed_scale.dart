@@ -13,8 +13,8 @@ class PhotoViewComputedScale {
   @override
   String toString() => 'Enum.$_value';
 
-  static const contained = const PhotoViewComputedScale._internal('contained');
-  static const covered = const PhotoViewComputedScale._internal('covered');
+  static const contained = PhotoViewComputedScale._internal('contained');
+  static const covered = PhotoViewComputedScale._internal('covered');
 
   PhotoViewComputedScale operator *(double multiplier) {
     return PhotoViewComputedScale._internal(_value, multiplier);

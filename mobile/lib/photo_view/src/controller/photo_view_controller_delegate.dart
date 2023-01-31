@@ -55,7 +55,7 @@ mixin PhotoViewControllerDelegate on State<PhotoViewCore> {
   }
 
   void addAnimateOnScaleStateUpdate(
-    void animateScale(double prevScale, double nextScale),
+    void Function(double prevScale, double nextScale) animateScale,
   ) {
     _animateScale = animateScale;
   }
@@ -152,9 +152,9 @@ mixin PhotoViewControllerDelegate on State<PhotoViewCore> {
   }
 
   CornersRange cornersX({double? scale}) {
-    final double _scale = scale ?? this.scale;
+    final double s = scale ?? this.scale;
 
-    final double computedWidth = scaleBoundaries.childSize.width * _scale;
+    final double computedWidth = scaleBoundaries.childSize.width * s;
     final double screenWidth = scaleBoundaries.outerSize.width;
 
     final double positionX = basePosition.x;
@@ -166,9 +166,9 @@ mixin PhotoViewControllerDelegate on State<PhotoViewCore> {
   }
 
   CornersRange cornersY({double? scale}) {
-    final double _scale = scale ?? this.scale;
+    final double s = scale ?? this.scale;
 
-    final double computedHeight = scaleBoundaries.childSize.height * _scale;
+    final double computedHeight = scaleBoundaries.childSize.height * s;
     final double screenHeight = scaleBoundaries.outerSize.height;
 
     final double positionY = basePosition.y;
@@ -180,25 +180,25 @@ mixin PhotoViewControllerDelegate on State<PhotoViewCore> {
   }
 
   Offset clampPosition({Offset? position, double? scale}) {
-    final double _scale = scale ?? this.scale;
-    final Offset _position = position ?? this.position;
+    final double s = scale ?? this.scale;
+    final Offset p = position ?? this.position;
 
-    final double computedWidth = scaleBoundaries.childSize.width * _scale;
-    final double computedHeight = scaleBoundaries.childSize.height * _scale;
+    final double computedWidth = scaleBoundaries.childSize.width * s;
+    final double computedHeight = scaleBoundaries.childSize.height * s;
 
     final double screenWidth = scaleBoundaries.outerSize.width;
     final double screenHeight = scaleBoundaries.outerSize.height;
 
     double finalX = 0.0;
     if (screenWidth < computedWidth) {
-      final cornersX = this.cornersX(scale: _scale);
-      finalX = _position.dx.clamp(cornersX.min, cornersX.max);
+      final cornersX = this.cornersX(scale: s);
+      finalX = p.dx.clamp(cornersX.min, cornersX.max);
     }
 
     double finalY = 0.0;
     if (screenHeight < computedHeight) {
-      final cornersY = this.cornersY(scale: _scale);
-      finalY = _position.dy.clamp(cornersY.min, cornersY.max);
+      final cornersY = this.cornersY(scale: s);
+      finalY = p.dy.clamp(cornersY.min, cornersY.max);
     }
 
     return Offset(finalX, finalY);
