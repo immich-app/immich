@@ -175,6 +175,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       ),
       body: SafeArea(
         child: PhotoViewGallery.builder(
+          gaplessPlayback: true,
           scaleStateChangedCallback: (state) => isZoomed.value = state != PhotoViewScaleState.initial,
           pageController: controller,
           scrollPhysics: isZoomed.value
@@ -200,7 +201,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 image: AssetEntityImageProvider(
                   assetList[indexOfAsset.value].local!,
                   isOriginal: false,
-                  thumbnailSize: const ThumbnailSize.square(250),
+                  thumbnailSize: ThumbnailSize.square(MediaQuery.of(context).size.width.floor()),
                 ),
               );
             }
