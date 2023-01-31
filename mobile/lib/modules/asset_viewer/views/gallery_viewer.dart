@@ -191,7 +191,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               return CachedNetworkImage(
                 imageUrl: getThumbnailUrl(assetList[indexOfAsset.value].remote!),
                 cacheKey: getThumbnailCacheKey(assetList[indexOfAsset.value].remote!),
-                placeholder: (context, url) => const Center(child: ImmichLoadingIndicator(),),
+                progressIndicatorBuilder: (_, __, ___) => const Center(child: ImmichLoadingIndicator(),),
                 httpHeaders: { 'Authorization': authToken },
                 fit: BoxFit.fitWidth,
               );
@@ -208,51 +208,41 @@ class GalleryViewerPage extends HookConsumerWidget {
           builder: (context, index) {
             getAssetExif();
 
-            final Widget child;
-            if (assetList[index].isImage) {
-              if (isPlayingMotionVideo.value) {
-                 child = VideoViewerPage(
-                  asset: assetList[index],
-                  isMotionVideo: true,
-                  onVideoEnded: () {
-                    isPlayingMotionVideo.value = false;
-                  },
-                );
+            if (assetList[index].isImage && !isPlayingMotionVideo.value) {
+              // Show photo
+              final ImageProvider provider;
+              if (assetList[index].isLocal) {
+                provider = AssetEntityImageProvider(assetList[index].local!);
               } else {
-                child = RemotePhotoView(
-                  authToken: 'Bearer ${box.get(accessTokenKey)}',
-                  asset: assetList[index],
-                  loadPreview: isLoadPreview.value,
-                  loadOriginal: isLoadOriginal.value,
+                provider = CachedNetworkImageProvider(
+                  getImageUrl(assetList[index].remote!),
+                  headers: {"Authorization": authToken},
+                  cacheKey: getImageCacheKey(assetList[index].remote!),
                 );
               }
+              return PhotoViewGalleryPageOptions(
+                onDragStart: (_, details, __) => localPosition = details.localPosition,
+                onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
+                imageProvider: provider,
+                heroAttributes: PhotoViewHeroAttributes(tag: assetList[index].id),
+                minScale: PhotoViewComputedScale.contained,
+              );
             } else {
-              child = VideoViewerPage(
-                asset: assetList[index],
-                isMotionVideo: false,
-                onVideoEnded: () {},
+              return PhotoViewGalleryPageOptions.customChild(
+                onDragStart: (_, details, __) => localPosition = details.localPosition,
+                onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
+                heroAttributes: PhotoViewHeroAttributes(tag: assetList[index].id),
+                child: VideoViewerPage(
+                  asset: assetList[index],
+                  isMotionVideo: isPlayingMotionVideo.value,
+                  onVideoEnded: () {
+                    if (isPlayingMotionVideo.value) {
+                      isPlayingMotionVideo.value = false;
+                    }
+                  },
+                ),
               );
             }
-
-            final ImageProvider provider;
-            if (assetList[index].isLocal) {
-              provider = AssetEntityImageProvider(assetList[index].local!);
-            } else {
-              provider = CachedNetworkImageProvider(
-                getImageUrl(assetList[index].remote!),
-                headers: {"Authorization": authToken},
-                cacheKey: getImageCacheKey(assetList[index].remote!),
-              );
-            }
-
-            return PhotoViewGalleryPageOptions(
-              onDragStart: (_, details, __) => localPosition = details.localPosition,
-              onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
-              imageProvider: provider,
-              heroAttributes: PhotoViewHeroAttributes(tag: assetList[index].id),
-              disableGestures: !assetList[index].isImage,
-              minScale: PhotoViewComputedScale.contained,
-            );
           },
         ),
       ),
