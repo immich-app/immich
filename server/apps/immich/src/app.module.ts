@@ -23,7 +23,7 @@ import {
   UserController,
 } from './controllers';
 import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from './modules/immich-auth/guards/auth.guard';
+import { AuthGuard } from './middlewares/auth.guard';
 
 @Module({
   imports: [

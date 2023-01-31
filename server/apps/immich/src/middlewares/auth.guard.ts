@@ -2,7 +2,7 @@ import { AuthService } from '@app/domain';
 import { CanActivate, ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
-import { Metadata } from '../../../decorators/authenticated.decorator';
+import { Metadata } from '../decorators/authenticated.decorator';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
