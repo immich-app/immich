@@ -24,6 +24,7 @@ import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:openapi/api.dart' as api;
 
 // ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
@@ -76,29 +77,60 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
     }
 
+    /// Thumbnail image of a remote asset. Required asset.remote != null
+    ImageProvider remoteThumbnailImageProvider(Asset asset) {
+      return CachedNetworkImageProvider(
+        getThumbnailUrl(
+          asset.remote!,
+          type: api.ThumbnailFormat.JPEG,
+        ),
+        cacheKey: getThumbnailCacheKey(
+          asset.remote!,
+          type: api.ThumbnailFormat.JPEG,
+        ),
+        headers: {"Authorization": authToken},
+      );
+    }
+
+    /// Original (large) image of a remote asset. Required asset.remote != null
+    ImageProvider originalImageProvider(Asset asset) {
+      return CachedNetworkImageProvider(
+        getImageUrl(asset.remote!),
+        cacheKey: getImageCacheKey(asset.remote!),
+        headers: {"Authorization": authToken},
+      );
+    }
+
+    /// Thumbnail image of a local asset. Required asset.local != null
+    ImageProvider localThumbnailImageProvider(Asset asset) {
+      return AssetEntityImageProvider(
+        asset.local!,
+        isOriginal: false,
+        thumbnailSize: ThumbnailSize.square(MediaQuery.of(context).size.width.floor()),
+      );
+
+    }
+
+    /// Original (large) image of a local asset. Required asset.local != null
+    ImageProvider localImageProvider(Asset asset) {
+      return AssetEntityImageProvider(asset.local!);
+    }
+
     void precacheNextImage(int index) {
       if (index < assetList.length && index > 0) {
         final asset = assetList[index];
         if (asset.isLocal) {
-          precacheImage(AssetEntityImageProvider(assetList[index].local!), context);
+          precacheImage(localImageProvider(asset), context);
         } else {
           if (isLoadPreview.value) {
             precacheImage(
-              CachedNetworkImageProvider(
-                getThumbnailUrl(asset.remote!),
-                cacheKey: getThumbnailCacheKey(asset.remote!),
-                headers: {"Authorization": authToken},
-              ),
+              remoteThumbnailImageProvider(asset),
               context,
             );
           }
           if (isLoadOriginal.value) {
             precacheImage(
-              CachedNetworkImageProvider(
-                getImageUrl(asset.remote!),
-                cacheKey: getImageCacheKey(asset.remote!),
-                headers: {"Authorization": authToken},
-              ),
+              originalImageProvider(asset),
               context,
             );
           }
@@ -235,11 +267,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               );
             } else {
               return Image(
-                image: AssetEntityImageProvider(
-                  assetList[indexOfAsset.value].local!,
-                  isOriginal: false,
-                  thumbnailSize: ThumbnailSize.square(MediaQuery.of(context).size.width.floor()),
-                ),
+                image: localThumbnailImageProvider(assetList[indexOfAsset.value]),
               );
             }
           } : null,
@@ -249,20 +277,12 @@ class GalleryViewerPage extends HookConsumerWidget {
               // Show photo
               final ImageProvider provider;
               if (assetList[index].isLocal) {
-                provider = AssetEntityImageProvider(assetList[index].local!);
+                provider = localImageProvider(assetList[index]);
               } else {
                 if (isLoadOriginal.value) {
-                  provider = CachedNetworkImageProvider(
-                    getImageUrl(assetList[index].remote!),
-                    cacheKey: getImageCacheKey(assetList[index].remote!),
-                    headers: {"Authorization": authToken},
-                  );
+                  provider = originalImageProvider(assetList[index]);
                 } else {
-                  provider = CachedNetworkImageProvider(
-                    getThumbnailUrl(assetList[index].remote!),
-                    cacheKey: getThumbnailCacheKey(assetList[index].remote!),
-                    headers: {"Authorization": authToken},
-                  );
+                  provider = remoteThumbnailImageProvider(assetList[index]);
                 }
               }
               return PhotoViewGalleryPageOptions(
