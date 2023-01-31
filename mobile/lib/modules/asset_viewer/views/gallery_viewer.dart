@@ -66,7 +66,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       [],
     );
 
-    getAssetExif() async {
+    void getAssetExif() async {
       if (assetList[indexOfAsset.value].isRemote) {
         assetDetail = await ref
             .watch(assetServiceProvider)
@@ -74,6 +74,24 @@ class GalleryViewerPage extends HookConsumerWidget {
       } else {
         // TODO local exif parsing?
         assetDetail = assetList[indexOfAsset.value];
+      }
+    }
+
+    void precacheNextImage(int index) {
+      if (index < assetList.length && index > 0) {
+        final asset = assetList[index];
+        if (asset.isLocal) {
+          precacheImage(AssetEntityImageProvider(assetList[index].local!), context);
+        } else {
+          precacheImage(
+            CachedNetworkImageProvider(
+              getImageUrl(asset.remote!),
+              headers: {"Authorization": authToken},
+              cacheKey: getImageCacheKey(asset.remote!),
+            ),
+            context
+          );
+        }
       }
     }
 
@@ -175,7 +193,6 @@ class GalleryViewerPage extends HookConsumerWidget {
       ),
       body: SafeArea(
         child: PhotoViewGallery.builder(
-          gaplessPlayback: true,
           scaleStateChangedCallback: (state) => isZoomed.value = state != PhotoViewScaleState.initial,
           pageController: controller,
           scrollPhysics: isZoomed.value
@@ -184,6 +201,14 @@ class GalleryViewerPage extends HookConsumerWidget {
           itemCount: assetList.length,
           scrollDirection: Axis.horizontal,
           onPageChanged: (value) {
+            // Precache image
+            if (indexOfAsset.value < value) {
+              // Moving forwards, so precache the next asset
+              precacheNextImage(value + 1);
+            } else {
+              // Moving backwards, so precache previous asset
+              precacheNextImage(value - 1);
+            }
             indexOfAsset.value = value;
             HapticFeedback.selectionClick();
           },
