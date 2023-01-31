@@ -235,6 +235,10 @@ export class MetadataExtractionProcessor {
   async extractVideoMetadata(job: Job<IVideoLengthExtractionProcessor>) {
     const { asset, fileName } = job.data;
 
+    if (!asset.isVisible) {
+      return;
+    }
+
     try {
       const data = await new Promise<ffmpeg.FfprobeData>((resolve, reject) =>
         ffmpeg.ffprobe(asset.originalPath, (err, data) => {
