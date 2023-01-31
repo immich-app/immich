@@ -300,41 +300,4 @@ describe('AuthService', () => {
       expect(keyMock.getKey).toHaveBeenCalledWith('auth_token (hashed)');
     });
   });
-
-  // describe('extractTokenFromHeader - Cookie', () => {
-  //   it('should extract the access token', () => {
-  //     const cookie: IncomingHttpHeaders = {
-  //       cookie: `${IMMICH_ACCESS_COOKIE}=signed-jwt;${IMMICH_AUTH_TYPE_COOKIE}=password`,
-  //     };
-  //     expect(sut.extractTokenFromHeader(cookie)).toEqual('signed-jwt');
-  //   });
-
-  //   it('should work with no cookies', () => {
-  //     const cookie: IncomingHttpHeaders = {
-  //       cookie: undefined,
-  //     };
-  //     expect(sut.extractTokenFromHeader(cookie)).toBeNull();
-  //   });
-
-  //   it('should work on empty cookies', () => {
-  //     const cookie: IncomingHttpHeaders = {
-  //       cookie: '',
-  //     };
-  //     expect(sut.extractTokenFromHeader(cookie)).toBeNull();
-  //   });
-  // });
-
-  // describe('extractTokenFromHeader - Bearer Auth', () => {
-  //   it('should extract the access token', () => {
-  //     expect(sut.extractTokenFromHeader({ authorization: `Bearer signed-jwt` })).toEqual('signed-jwt');
-  //   });
-
-  //   it('should work without the auth header', () => {
-  //     expect(sut.extractTokenFromHeader({})).toBeNull();
-  //   });
-
-  //   it('should ignore basic auth', () => {
-  //     expect(sut.extractTokenFromHeader({ authorization: `Basic stuff` })).toBeNull();
-  //   });
-  // });
 });

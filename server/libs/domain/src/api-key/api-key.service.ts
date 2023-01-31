@@ -1,7 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
-// import { APIKeyCore } from './api-key.core';
 import { IKeyRepository } from './api-key.repository';
 import { APIKeyCreateDto } from './dto/api-key-create.dto';
 import { APIKeyCreateResponseDto } from './response-dto/api-key-create-response.dto';
@@ -9,14 +8,10 @@ import { APIKeyResponseDto, mapKey } from './response-dto/api-key-response.dto';
 
 @Injectable()
 export class APIKeyService {
-  // private core: APIKeyCore;
-
   constructor(
     @Inject(ICryptoRepository) private crypto: ICryptoRepository,
     @Inject(IKeyRepository) private repository: IKeyRepository,
-  ) {
-    // this.core = new APIKeyCore(crypto, repository);
-  }
+  ) {}
 
   async create(authUser: AuthUserDto, dto: APIKeyCreateDto): Promise<APIKeyCreateResponseDto> {
     const secret = this.crypto.randomBytes(32).toString('base64').replace(/\W/g, '');
