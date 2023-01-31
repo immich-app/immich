@@ -24,6 +24,9 @@ class ImageWrapper extends StatefulWidget {
     required this.scaleStateCycle,
     required this.onTapUp,
     required this.onTapDown,
+    required this.onDragStart,
+    required this.onDragEnd,
+    required this.onDragUpdate,
     required this.onScaleEnd,
     required this.outerSize,
     required this.gestureDetectorBehavior,
@@ -51,6 +54,9 @@ class ImageWrapper extends StatefulWidget {
   final ScaleStateCycle? scaleStateCycle;
   final PhotoViewImageTapUpCallback? onTapUp;
   final PhotoViewImageTapDownCallback? onTapDown;
+  final PhotoViewImageDragStartCallback? onDragStart;
+  final PhotoViewImageDragEndCallback? onDragEnd;
+  final PhotoViewImageDragUpdateCallback? onDragUpdate;
   final PhotoViewImageScaleEndCallback? onScaleEnd;
   final Size outerSize;
   final HitTestBehavior? gestureDetectorBehavior;
@@ -192,6 +198,9 @@ class _ImageWrapperState extends State<ImageWrapper> {
       scaleBoundaries: scaleBoundaries,
       onTapUp: widget.onTapUp,
       onTapDown: widget.onTapDown,
+      onDragStart: widget.onDragStart,
+      onDragEnd: widget.onDragEnd,
+      onDragUpdate: widget.onDragUpdate,
       onScaleEnd: widget.onScaleEnd,
       gestureDetectorBehavior: widget.gestureDetectorBehavior,
       tightMode: widget.tightMode ?? false,
@@ -241,6 +250,9 @@ class CustomChildWrapper extends StatelessWidget {
     required this.scaleStateCycle,
     this.onTapUp,
     this.onTapDown,
+    this.onDragStart,
+    this.onDragEnd,
+    this.onDragUpdate,
     this.onScaleEnd,
     required this.outerSize,
     this.gestureDetectorBehavior,
@@ -268,6 +280,9 @@ class CustomChildWrapper extends StatelessWidget {
   final ScaleStateCycle? scaleStateCycle;
   final PhotoViewImageTapUpCallback? onTapUp;
   final PhotoViewImageTapDownCallback? onTapDown;
+  final PhotoViewImageDragStartCallback? onDragStart;
+  final PhotoViewImageDragEndCallback? onDragEnd;
+  final PhotoViewImageDragUpdateCallback? onDragUpdate;
   final PhotoViewImageScaleEndCallback? onScaleEnd;
   final Size outerSize;
   final HitTestBehavior? gestureDetectorBehavior;
@@ -298,6 +313,9 @@ class CustomChildWrapper extends StatelessWidget {
       scaleBoundaries: scaleBoundaries,
       onTapUp: onTapUp,
       onTapDown: onTapDown,
+      onDragStart: onDragStart,
+      onDragEnd: onDragEnd,
+      onDragUpdate: onDragUpdate,
       onScaleEnd: onScaleEnd,
       gestureDetectorBehavior: gestureDetectorBehavior,
       tightMode: tightMode ?? false,

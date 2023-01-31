@@ -251,6 +251,9 @@ class PhotoView extends StatefulWidget {
     this.scaleStateCycle,
     this.onTapUp,
     this.onTapDown,
+    this.onDragStart,
+    this.onDragEnd,
+    this.onDragUpdate,
     this.onScaleEnd,
     this.customSize,
     this.gestureDetectorBehavior,
@@ -287,6 +290,9 @@ class PhotoView extends StatefulWidget {
     this.scaleStateCycle,
     this.onTapUp,
     this.onTapDown,
+    this.onDragStart,
+    this.onDragEnd,
+    this.onDragUpdate,
     this.onScaleEnd,
     this.customSize,
     this.gestureDetectorBehavior,
@@ -378,6 +384,18 @@ class PhotoView extends StatefulWidget {
   /// A pointer that might cause a tap has contacted the screen at a particular
   /// location.
   final PhotoViewImageTapDownCallback? onTapDown;
+
+  /// A pointer that might cause a tap has contacted the screen at a particular
+  /// location.
+  final PhotoViewImageDragStartCallback? onDragStart;
+
+  /// A pointer that might cause a tap has contacted the screen at a particular
+  /// location.
+  final PhotoViewImageDragEndCallback? onDragEnd;
+
+  /// A pointer that might cause a tap has contacted the screen at a particular
+  /// location.
+  final PhotoViewImageDragUpdateCallback? onDragUpdate;
 
   /// A pointer that will trigger a scale has stopped contacting the screen at a
   /// particular location.
@@ -514,6 +532,9 @@ class _PhotoViewState extends State<PhotoView>
                 scaleStateCycle: widget.scaleStateCycle,
                 onTapUp: widget.onTapUp,
                 onTapDown: widget.onTapDown,
+                onDragStart: widget.onDragStart,
+                onDragEnd: widget.onDragEnd,
+                onDragUpdate: widget.onDragUpdate,
                 onScaleEnd: widget.onScaleEnd,
                 outerSize: computedOuterSize,
                 gestureDetectorBehavior: widget.gestureDetectorBehavior,
@@ -539,6 +560,9 @@ class _PhotoViewState extends State<PhotoView>
                 scaleStateCycle: widget.scaleStateCycle,
                 onTapUp: widget.onTapUp,
                 onTapDown: widget.onTapDown,
+                onDragStart: widget.onDragStart,
+                onDragEnd: widget.onDragEnd,
+                onDragUpdate: widget.onDragUpdate,
                 onScaleEnd: widget.onScaleEnd,
                 outerSize: computedOuterSize,
                 gestureDetectorBehavior: widget.gestureDetectorBehavior,
@@ -591,6 +615,27 @@ typedef PhotoViewImageTapUpCallback = Function(
 typedef PhotoViewImageTapDownCallback = Function(
   BuildContext context,
   TapDownDetails details,
+  PhotoViewControllerValue controllerValue,
+);
+
+/// A type definition for a callback when the user drags up
+typedef PhotoViewImageDragStartCallback = Function(
+  BuildContext context,
+  DragStartDetails details,
+  PhotoViewControllerValue controllerValue,
+);
+
+/// A type definition for a callback when the user drags 
+typedef PhotoViewImageDragUpdateCallback = Function(
+  BuildContext context,
+  DragUpdateDetails details,
+  PhotoViewControllerValue controllerValue,
+);
+
+/// A type definition for a callback when the user taps down the photoview region
+typedef PhotoViewImageDragEndCallback = Function(
+  BuildContext context,
+  DragEndDetails details,
   PhotoViewControllerValue controllerValue,
 );
 

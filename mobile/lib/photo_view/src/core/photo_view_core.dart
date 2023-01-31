@@ -6,6 +6,9 @@ import 'package:immich_mobile/photo_view/photo_view.dart'
         PhotoViewImageTapDownCallback,
         PhotoViewImageTapUpCallback,
         PhotoViewImageScaleEndCallback,
+        PhotoViewImageDragEndCallback,
+        PhotoViewImageDragStartCallback,
+        PhotoViewImageDragUpdateCallback,
         ScaleStateCycle;
 import 'package:immich_mobile/photo_view/src/controller/photo_view_controller.dart';
 import 'package:immich_mobile/photo_view/src/controller/photo_view_controller_delegate.dart';
@@ -30,6 +33,9 @@ class PhotoViewCore extends StatefulWidget {
     required this.enableRotation,
     required this.onTapUp,
     required this.onTapDown,
+    required this.onDragStart,
+    required this.onDragEnd,
+    required this.onDragUpdate,
     required this.onScaleEnd,
     required this.gestureDetectorBehavior,
     required this.controller,
@@ -52,6 +58,9 @@ class PhotoViewCore extends StatefulWidget {
     required this.enableRotation,
     this.onTapUp,
     this.onTapDown,
+    this.onDragStart,
+    this.onDragEnd,
+    this.onDragUpdate,
     this.onScaleEnd,
     this.gestureDetectorBehavior,
     required this.controller,
@@ -83,6 +92,10 @@ class PhotoViewCore extends StatefulWidget {
   final PhotoViewImageTapUpCallback? onTapUp;
   final PhotoViewImageTapDownCallback? onTapDown;
   final PhotoViewImageScaleEndCallback? onScaleEnd;
+
+  final PhotoViewImageDragStartCallback? onDragStart;
+  final PhotoViewImageDragEndCallback? onDragEnd;
+  final PhotoViewImageDragUpdateCallback? onDragUpdate;
 
   final HitTestBehavior? gestureDetectorBehavior;
   final bool tightMode;
@@ -346,6 +359,15 @@ class PhotoViewCoreState extends State<PhotoViewCore>
               onScaleStart: onScaleStart,
               onScaleUpdate: onScaleUpdate,
               onScaleEnd: onScaleEnd,
+              onDragStart:  widget.onDragStart != null 
+                 ? (details) => widget.onDragStart!(context, details, value)
+                 : null,
+              onDragEnd:  widget.onDragEnd != null 
+                 ? (details) => widget.onDragEnd!(context, details, value)
+                 : null,
+              onDragUpdate: widget.onDragUpdate != null 
+                 ? (details) => widget.onDragUpdate!(context, details, value)
+                 : null,
               hitDetector: this,
               onTapUp: widget.onTapUp != null
                   ? (details) => widget.onTapUp!(context, details, value)

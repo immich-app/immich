@@ -8,6 +8,9 @@ import 'package:immich_mobile/photo_view/photo_view.dart'
         PhotoView,
         PhotoViewImageTapDownCallback,
         PhotoViewImageTapUpCallback,
+        PhotoViewImageDragStartCallback,
+        PhotoViewImageDragEndCallback,
+        PhotoViewImageDragUpdateCallback,
         PhotoViewImageScaleEndCallback,
         ScaleStateCycle;
 
@@ -264,6 +267,9 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             scaleStateCycle: pageOption.scaleStateCycle,
             onTapUp: pageOption.onTapUp,
             onTapDown: pageOption.onTapDown,
+            onDragStart: pageOption.onDragStart,
+            onDragEnd: pageOption.onDragEnd,
+            onDragUpdate: pageOption.onDragUpdate,
             onScaleEnd: pageOption.onScaleEnd,
             gestureDetectorBehavior: pageOption.gestureDetectorBehavior,
             tightMode: pageOption.tightMode,
@@ -290,6 +296,9 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             scaleStateCycle: pageOption.scaleStateCycle,
             onTapUp: pageOption.onTapUp,
             onTapDown: pageOption.onTapDown,
+            onDragStart: pageOption.onDragStart,
+            onDragEnd: pageOption.onDragEnd,
+            onDragUpdate: pageOption.onDragUpdate,
             onScaleEnd: pageOption.onScaleEnd,
             gestureDetectorBehavior: pageOption.gestureDetectorBehavior,
             tightMode: pageOption.tightMode,
@@ -331,6 +340,9 @@ class PhotoViewGalleryPageOptions {
     this.scaleStateCycle,
     this.onTapUp,
     this.onTapDown,
+    this.onDragStart,
+    this.onDragEnd,
+    this.onDragUpdate,
     this.onScaleEnd,
     this.gestureDetectorBehavior,
     this.tightMode,
@@ -354,6 +366,9 @@ class PhotoViewGalleryPageOptions {
     this.scaleStateCycle,
     this.onTapUp,
     this.onTapDown,
+    this.onDragStart,
+    this.onDragEnd,
+    this.onDragUpdate,
     this.onScaleEnd,
     this.gestureDetectorBehavior,
     this.tightMode,
@@ -397,6 +412,15 @@ class PhotoViewGalleryPageOptions {
 
   /// Mirror to [PhotoView.onTapUp]
   final PhotoViewImageTapUpCallback? onTapUp;
+
+  /// Mirror to [PhotoView.onDragUp]
+  final PhotoViewImageDragStartCallback? onDragStart;
+
+  /// Mirror to [PhotoView.onDragDown]
+  final PhotoViewImageDragEndCallback? onDragEnd;
+
+  /// Mirror to [PhotoView.onDraUpdate]
+  final PhotoViewImageDragUpdateCallback? onDragUpdate;
 
   /// Mirror to [PhotoView.onTapDown]
   final PhotoViewImageTapDownCallback? onTapDown;

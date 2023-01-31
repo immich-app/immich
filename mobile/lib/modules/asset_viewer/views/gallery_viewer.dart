@@ -132,7 +132,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
 
       // Check for delta from initial down point
-      final d = details.localPosition;// - localPosition;
+      final d = details.localPosition - localPosition;
       // If the magnitude of the dx swipe is large, we probably didn't mean to go down
       if (d.dx.abs() > dxThreshhold) {
         return;
@@ -190,7 +190,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               return CachedNetworkImage(
                 imageUrl: getThumbnailUrl(assetList[indexOfAsset.value].remote!),
                 cacheKey: getImageCacheKey(assetList[indexOfAsset.value].remote!),
-                placeholder: (context, url) => ImmichLoadingIndicator(),
+                placeholder: (context, url) => const ImmichLoadingIndicator(),
               );
             } else {
               return Image(
@@ -244,6 +244,8 @@ class GalleryViewerPage extends HookConsumerWidget {
             }
 
             return PhotoViewGalleryPageOptions(
+              onDragStart: (_, details, __) => localPosition = details.localPosition,
+              onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
               imageProvider: provider,
               heroAttributes: PhotoViewHeroAttributes(tag: assetList[index].id),
               disableGestures: !assetList[index].isImage,
