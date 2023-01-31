@@ -211,7 +211,7 @@ class GalleryViewerPage extends HookConsumerWidget {
             indexOfAsset.value = value;
             HapticFeedback.selectionClick();
           },
-          loadingBuilder: (context, event) {
+          loadingBuilder: isLoadPreview.value ? (context, event) {
             if (!asset.isLocal) {
               return CachedNetworkImage(
                 imageUrl: getThumbnailUrl(assetList[indexOfAsset.value].remote!),
@@ -229,21 +229,28 @@ class GalleryViewerPage extends HookConsumerWidget {
                 ),
               );
             }
-          },
+          } : null,
           builder: (context, index) {
             getAssetExif();
-
             if (assetList[index].isImage && !isPlayingMotionVideo.value) {
               // Show photo
               final ImageProvider provider;
               if (assetList[index].isLocal) {
                 provider = AssetEntityImageProvider(assetList[index].local!);
               } else {
-                provider = CachedNetworkImageProvider(
-                  getImageUrl(assetList[index].remote!),
-                  headers: {"Authorization": authToken},
-                  cacheKey: getImageCacheKey(assetList[index].remote!),
-                );
+                if (isLoadOriginal.value) {
+                  provider = CachedNetworkImageProvider(
+                    getImageUrl(assetList[index].remote!),
+                    cacheKey: getImageCacheKey(assetList[index].remote!),
+                    headers: {"Authorization": authToken},
+                  );
+                } else {
+                  provider = CachedNetworkImageProvider(
+                    getThumbnailUrl(assetList[index].remote!),
+                    cacheKey: getThumbnailCacheKey(assetList[index].remote!),
+                    headers: {"Authorization": authToken},
+                  );
+                }
               }
               return PhotoViewGalleryPageOptions(
                 onDragStart: (_, details, __) => localPosition = details.localPosition,
