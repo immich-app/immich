@@ -1,5 +1,5 @@
 import { UserEntity } from '@app/infra/db/entities';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ICryptoRepository } from '../crypto';
 import { IUserTokenRepository } from './user-token.repository';
 
@@ -20,7 +20,7 @@ export class UserTokenCore {
       };
     }
 
-    return null;
+    throw new UnauthorizedException('Invalid user token');
   }
 
   public async getUserByToken(tokenValue: string): Promise<UserEntity | null> {

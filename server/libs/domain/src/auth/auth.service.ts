@@ -127,7 +127,7 @@ export class AuthService {
 
   public async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthUserDto | null> {
     const shareKey = (headers['x-immich-share-key'] || params.key) as string;
-    const userToken = (headers['x-user-token'] ||
+    const userToken = (headers['x-immich-user-token'] ||
       params.userToken ||
       this.getBearerToken(headers) ||
       this.getCookieToken(headers)) as string;
@@ -145,7 +145,7 @@ export class AuthService {
       return this.keyCore.validate(apiKey);
     }
 
-    return null;
+    throw new UnauthorizedException('Authentication required');
   }
 
   private getBearerToken(headers: IncomingHttpHeaders): string | null {

@@ -1,25 +1,32 @@
 import { SystemConfig, UserEntity } from '@app/infra/db/entities';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { IncomingHttpHeaders } from 'http';
 import { generators, Issuer } from 'openid-client';
+import { Socket } from 'socket.io';
 import {
-  userEntityStub,
+  authStub,
+  keyStub,
   loginResponseStub,
   newCryptoRepositoryMock,
+  newKeyRepositoryMock,
+  newSharedLinkRepositoryMock,
   newSystemConfigRepositoryMock,
   newUserRepositoryMock,
+  newUserTokenRepositoryMock,
+  sharedLinkStub,
   systemConfigStub,
+  userEntityStub,
   userTokenEntityStub,
 } from '../../test';
+import { IKeyRepository } from '../api-key';
+import { ICryptoRepository } from '../crypto/crypto.repository';
+import { ISharedLinkRepository } from '../share';
 import { ISystemConfigRepository } from '../system-config';
 import { IUserRepository } from '../user';
+import { IUserTokenRepository } from '../user-token';
 import { AuthType } from './auth.constant';
 import { AuthService } from './auth.service';
-import { ICryptoRepository } from '../crypto/crypto.repository';
 import { SignUpDto } from './dto';
-import { IUserTokenRepository } from '../user-token';
-import { newUserTokenRepositoryMock } from '../../test/user-token.repository.mock';
-import { ISharedLinkRepository } from '../share';
-import { IKeyRepository } from '../api-key';
 
 // const token = Buffer.from('my-api-key', 'utf8').toString('base64');
 
@@ -85,6 +92,8 @@ describe('AuthService', () => {
     userMock = newUserRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     userTokenMock = newUserTokenRepositoryMock();
+    shareMock = newSharedLinkRepositoryMock();
+    keyMock = newKeyRepositoryMock();
 
     create = (config) => new AuthService(cryptoMock, configMock, userMock, userTokenMock, shareMock, keyMock, config);
 
@@ -221,53 +230,76 @@ describe('AuthService', () => {
     });
   });
 
-  // describe('validate - socket connections', () => {
-  //   it('should validate using authorization header', async () => {
-  //     userMock.get.mockResolvedValue(userEntityStub.user1);
-  //     userTokenMock.get.mockResolvedValue(userTokenEntityStub.userToken);
-  //     const client = { request: { headers: { authorization: 'Bearer auth_token' } } };
-  //     await expect(sut.validate((client as Socket).request.headers)).resolves.toEqual(userEntityStub.user1);
-  //   });
-  // });
+  describe('validate - socket connections', () => {
+    it('should throw token is not provided', async () => {
+      await expect(sut.validate({}, {})).rejects.toBeInstanceOf(UnauthorizedException);
+    });
 
-  // describe('validate', () => {
-  //   it('should not accept a non-existant key', async () => {
-  //     shareMock.getByKey.mockResolvedValue(null);
-  //     await expect(sut.validate('key')).resolves.toBeNull();
-  //   });
+    it('should validate using authorization header', async () => {
+      userMock.get.mockResolvedValue(userEntityStub.user1);
+      userTokenMock.get.mockResolvedValue(userTokenEntityStub.userToken);
+      const client = { request: { headers: { authorization: 'Bearer auth_token' } } };
+      await expect(sut.validate((client as Socket).request.headers, {})).resolves.toEqual(userEntityStub.user1);
+    });
+  });
 
-  //   it('should not accept an expired key', async () => {
-  //     shareMock.getByKey.mockResolvedValue(sharedLinkStub.expired);
-  //     await expect(sut.validate('key')).resolves.toBeNull();
-  //   });
+  describe('validate - shared key', () => {
+    it('should not accept a non-existent key', async () => {
+      shareMock.getByKey.mockResolvedValue(null);
+      const headers: IncomingHttpHeaders = { 'x-immich-share-key': 'key' };
+      await expect(sut.validate(headers, {})).rejects.toBeInstanceOf(UnauthorizedException);
+    });
 
-  //   it('should not accept a key without a user', async () => {
-  //     shareMock.getByKey.mockResolvedValue(sharedLinkStub.expired);
-  //     userMock.get.mockResolvedValue(null);
-  //     await expect(sut.validate('key')).resolves.toBeNull();
-  //   });
+    it('should not accept an expired key', async () => {
+      shareMock.getByKey.mockResolvedValue(sharedLinkStub.expired);
+      const headers: IncomingHttpHeaders = { 'x-immich-share-key': 'key' };
+      await expect(sut.validate(headers, {})).rejects.toBeInstanceOf(UnauthorizedException);
+    });
 
-  //   it('should accept a valid key', async () => {
-  //     shareMock.getByKey.mockResolvedValue(sharedLinkStub.valid);
-  //     userMock.get.mockResolvedValue(userEntityStub.admin);
-  //     await expect(sut.validate('key')).resolves.toEqual(authStub.adminSharedLink);
-  //   });
-  // });
+    it('should not accept a key without a user', async () => {
+      shareMock.getByKey.mockResolvedValue(sharedLinkStub.expired);
+      userMock.get.mockResolvedValue(null);
+      const headers: IncomingHttpHeaders = { 'x-immich-share-key': 'key' };
+      await expect(sut.validate(headers, {})).rejects.toBeInstanceOf(UnauthorizedException);
+    });
 
-  // describe('validate - api request', () => {
-  //   it('should throw if no user is found', async () => {
-  //     userMock.get.mockResolvedValue(null);
-  //     await expect(sut.validate({ email: 'a', userId: 'test' })).resolves.toBeNull();
-  //   });
+    it('should accept a valid key', async () => {
+      shareMock.getByKey.mockResolvedValue(sharedLinkStub.valid);
+      userMock.get.mockResolvedValue(userEntityStub.admin);
+      const headers: IncomingHttpHeaders = { 'x-immich-share-key': 'key' };
+      await expect(sut.validate(headers, {})).resolves.toEqual(authStub.adminSharedLink);
+    });
+  });
 
-  //   it('should return an auth dto', async () => {
-  //     userMock.get.mockResolvedValue(userEntityStub.user1);
-  //     userTokenMock.get.mockResolvedValue(userTokenEntityStub.userToken);
-  //     await expect(
-  //       sut.validate({ cookie: 'immich_access_token=auth_token', email: 'a', userId: 'test' }),
-  //     ).resolves.toEqual(userEntityStub.user1);
-  //   });
-  // });
+  describe('validate - user token', () => {
+    it('should throw if no token is found', async () => {
+      userTokenMock.get.mockResolvedValue(null);
+      const headers: IncomingHttpHeaders = { 'x-immich-user-token': 'auth_token' };
+      await expect(sut.validate(headers, {})).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+
+    it('should return an auth dto', async () => {
+      userTokenMock.get.mockResolvedValue(userTokenEntityStub.userToken);
+      const headers: IncomingHttpHeaders = { cookie: 'immich_access_token=auth_token' };
+      await expect(sut.validate(headers, {})).resolves.toEqual(userEntityStub.user1);
+    });
+  });
+
+  describe('validate - api key', () => {
+    it('should throw an error if no api key is found', async () => {
+      keyMock.getKey.mockResolvedValue(null);
+      const headers: IncomingHttpHeaders = { 'x-api-key': 'auth_token' };
+      await expect(sut.validate(headers, {})).rejects.toBeInstanceOf(UnauthorizedException);
+      expect(keyMock.getKey).toHaveBeenCalledWith('auth_token (hashed)');
+    });
+
+    it('should return an auth dto', async () => {
+      keyMock.getKey.mockResolvedValue(keyStub.admin);
+      const headers: IncomingHttpHeaders = { 'x-api-key': 'auth_token' };
+      await expect(sut.validate(headers, {})).resolves.toEqual(authStub.admin);
+      expect(keyMock.getKey).toHaveBeenCalledWith('auth_token (hashed)');
+    });
+  });
 
   // describe('extractTokenFromHeader - Cookie', () => {
   //   it('should extract the access token', () => {
@@ -303,38 +335,6 @@ describe('AuthService', () => {
 
   //   it('should ignore basic auth', () => {
   //     expect(sut.extractTokenFromHeader({ authorization: `Basic stuff` })).toBeNull();
-  //   });
-  // });
-
-  // describe('getByKey', () => {
-  //   it('should not work on a missing key', async () => {
-  //     shareMock.getByKey.mockResolvedValue(null);
-  //     await expect(sut.getByKey('secret-key')).rejects.toBeInstanceOf(BadRequestException);
-  //     expect(shareMock.getByKey).toHaveBeenCalledWith('secret-key');
-  //   });
-
-  //   it('should find a key', async () => {
-  //     shareMock.getByKey.mockResolvedValue(sharedLinkStub.valid);
-  //     await expect(sut.getByKey('secret-key')).resolves.toEqual(sharedLinkResponseStub.valid);
-  //     expect(shareMock.getByKey).toHaveBeenCalledWith('secret-key');
-  //   });
-  // });
-
-  // describe('validate', () => {
-  //   it('should throw an error for an invalid id', async () => {
-  //     keyMock.getKey.mockResolvedValue(null);
-
-  //     await expect(sut.validate(token)).resolves.toBeNull();
-
-  //     expect(keyMock.getKey).toHaveBeenCalledWith('bXktYXBpLWtleQ== (hashed)');
-  //   });
-
-  //   it('should validate the token', async () => {
-  //     keyMock.getKey.mockResolvedValue(adminKey);
-
-  //     await expect(sut.validate(token)).resolves.toEqual(authStub.admin);
-
-  //     expect(keyMock.getKey).toHaveBeenCalledWith('bXktYXBpLWtleQ== (hashed)');
   //   });
   // });
 });

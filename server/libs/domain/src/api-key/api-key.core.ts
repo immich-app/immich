@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { IKeyRepository } from './api-key.repository';
@@ -22,6 +22,6 @@ export class APIKeyCore {
       };
     }
 
-    return null;
+    throw new UnauthorizedException('Invalid API key');
   }
 }

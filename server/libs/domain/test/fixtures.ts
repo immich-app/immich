@@ -1,4 +1,5 @@
 import {
+  APIKeyEntity,
   AssetType,
   SharedLinkEntity,
   SharedLinkType,
@@ -146,6 +147,16 @@ export const userTokenEntityStub = {
     createdAt: '2021-01-01',
     updatedAt: '2021-01-01',
   }),
+};
+
+export const keyStub = {
+  admin: Object.freeze({
+    id: 1,
+    name: 'My Key',
+    key: 'my-api-key (hashed)',
+    userId: authStub.admin.id,
+    user: userEntityStub.admin,
+  } as APIKeyEntity),
 };
 
 export const systemConfigStub = {

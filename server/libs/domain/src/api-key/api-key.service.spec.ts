@@ -1,17 +1,8 @@
-import { APIKeyEntity } from '@app/infra/db/entities';
 import { BadRequestException } from '@nestjs/common';
-import { authStub, userEntityStub, newCryptoRepositoryMock, newKeyRepositoryMock } from '../../test';
+import { authStub, keyStub, newCryptoRepositoryMock, newKeyRepositoryMock } from '../../test';
 import { ICryptoRepository } from '../crypto';
 import { IKeyRepository } from './api-key.repository';
 import { APIKeyService } from './api-key.service';
-
-const adminKey = Object.freeze({
-  id: 1,
-  name: 'My Key',
-  key: 'my-api-key (hashed)',
-  userId: authStub.admin.id,
-  user: userEntityStub.admin,
-} as APIKeyEntity);
 
 describe(APIKeyService.name, () => {
   let sut: APIKeyService;
@@ -26,10 +17,8 @@ describe(APIKeyService.name, () => {
 
   describe('create', () => {
     it('should create a new key', async () => {
-      keyMock.create.mockResolvedValue(adminKey);
-
+      keyMock.create.mockResolvedValue(keyStub.admin);
       await sut.create(authStub.admin, { name: 'Test Key' });
-
       expect(keyMock.create).toHaveBeenCalledWith({
         key: 'cmFuZG9tLWJ5dGVz (hashed)',
         name: 'Test Key',
@@ -40,7 +29,7 @@ describe(APIKeyService.name, () => {
     });
 
     it('should not require a name', async () => {
-      keyMock.create.mockResolvedValue(adminKey);
+      keyMock.create.mockResolvedValue(keyStub.admin);
 
       await sut.create(authStub.admin, {});
 
@@ -64,7 +53,7 @@ describe(APIKeyService.name, () => {
     });
 
     it('should update a key', async () => {
-      keyMock.getById.mockResolvedValue(adminKey);
+      keyMock.getById.mockResolvedValue(keyStub.admin);
 
       await sut.update(authStub.admin, 1, { name: 'New Name' });
 
@@ -82,7 +71,7 @@ describe(APIKeyService.name, () => {
     });
 
     it('should delete a key', async () => {
-      keyMock.getById.mockResolvedValue(adminKey);
+      keyMock.getById.mockResolvedValue(keyStub.admin);
 
       await sut.delete(authStub.admin, 1);
 
@@ -100,7 +89,7 @@ describe(APIKeyService.name, () => {
     });
 
     it('should get a key by id', async () => {
-      keyMock.getById.mockResolvedValue(adminKey);
+      keyMock.getById.mockResolvedValue(keyStub.admin);
 
       await sut.getById(authStub.admin, 1);
 
@@ -110,7 +99,7 @@ describe(APIKeyService.name, () => {
 
   describe('getAll', () => {
     it('should return all the keys for a user', async () => {
-      keyMock.getByUserId.mockResolvedValue([adminKey]);
+      keyMock.getByUserId.mockResolvedValue([keyStub.admin]);
 
       await expect(sut.getAll(authStub.admin)).resolves.toHaveLength(1);
 
