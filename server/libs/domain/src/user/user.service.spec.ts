@@ -3,7 +3,8 @@ import { UserEntity } from '@app/infra/db/entities';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { when } from 'jest-when';
 import { newCryptoRepositoryMock, newUserRepositoryMock } from '../../test';
-import { AuthUserDto, ICryptoRepository } from '../auth';
+import { AuthUserDto } from '../auth';
+import { ICryptoRepository } from '../crypto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 

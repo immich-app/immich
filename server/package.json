@@ -43,7 +43,6 @@
     "@nestjs/config": "^2.2.0",
     "@nestjs/core": "^9.2.1",
     "@nestjs/mapped-types": "1.2.0",
-    "@nestjs/passport": "^9.0.0",
     "@nestjs/platform-express": "^9.2.1",
     "@nestjs/platform-socket.io": "^9.2.1",
     "@nestjs/schedule": "^2.1.0",
@@ -75,9 +74,6 @@
     "mv": "^2.1.1",
     "nest-commander": "^3.3.0",
     "openid-client": "^5.2.1",
-    "passport": "^0.6.0",
-    "passport-custom": "^1.1.1",
-    "passport-http-header-strategy": "^1.1.0",
     "pg": "^8.8.0",
     "redis": "^4.5.1",
     "reflect-metadata": "^0.1.13",
@@ -147,10 +143,10 @@
         "statements": 20
       },
       "./libs/domain/": {
-        "branches": 75,
-        "functions": 85,
-        "lines": 90,
-        "statements": 90
+        "branches": 80,
+        "functions": 90,
+        "lines": 95,
+        "statements": 95
       }
     },
     "testEnvironment": "node",

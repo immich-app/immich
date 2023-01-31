@@ -1,25 +1,34 @@
 import { SystemConfig, UserEntity } from '@app/infra/db/entities';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { IncomingHttpHeaders } from 'http';
 import { generators, Issuer } from 'openid-client';
 import { Socket } from 'socket.io';
 import {
-  userEntityStub,
+  authStub,
+  keyStub,
   loginResponseStub,
   newCryptoRepositoryMock,
+  newKeyRepositoryMock,
+  newSharedLinkRepositoryMock,
   newSystemConfigRepositoryMock,
   newUserRepositoryMock,
+  newUserTokenRepositoryMock,
+  sharedLinkStub,
   systemConfigStub,
+  userEntityStub,
   userTokenEntityStub,
 } from '../../test';
+import { IKeyRepository } from '../api-key';
+import { ICryptoRepository } from '../crypto/crypto.repository';
+import { ISharedLinkRepository } from '../share';
 import { ISystemConfigRepository } from '../system-config';
 import { IUserRepository } from '../user';
-import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE } from './auth.constant';
+import { IUserTokenRepository } from '../user-token';
+import { AuthType } from './auth.constant';
 import { AuthService } from './auth.service';
-import { ICryptoRepository } from './crypto.repository';
 import { SignUpDto } from './dto';
-import { IUserTokenRepository } from '@app/domain';
-import { newUserTokenRepositoryMock } from '../../test/user-token.repository.mock';
-import { IncomingHttpHeaders } from 'http';
+
+// const token = Buffer.from('my-api-key', 'utf8').toString('base64');
 
 const email = 'test@immich.com';
 const sub = 'my-auth-user-sub';
@@ -51,6 +60,8 @@ describe('AuthService', () => {
   let userMock: jest.Mocked<IUserRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let userTokenMock: jest.Mocked<IUserTokenRepository>;
+  let shareMock: jest.Mocked<ISharedLinkRepository>;
+  let keyMock: jest.Mocked<IKeyRepository>;
   let callbackMock: jest.Mock;
   let create: (config: SystemConfig) => AuthService;
 
@@ -81,8 +92,10 @@ describe('AuthService', () => {
     userMock = newUserRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     userTokenMock = newUserTokenRepositoryMock();
+    shareMock = newSharedLinkRepositoryMock();
+    keyMock = newKeyRepositoryMock();
 
-    create = (config) => new AuthService(cryptoMock, configMock, userMock, userTokenMock, config);
+    create = (config) => new AuthService(cryptoMock, configMock, userMock, userTokenMock, shareMock, keyMock, config);
 
     sut = create(systemConfigStub.enabled);
   });
@@ -218,63 +231,73 @@ describe('AuthService', () => {
   });
 
   describe('validate - socket connections', () => {
+    it('should throw token is not provided', async () => {
+      await expect(sut.validate({}, {})).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+
     it('should validate using authorization header', async () => {
       userMock.get.mockResolvedValue(userEntityStub.user1);
       userTokenMock.get.mockResolvedValue(userTokenEntityStub.userToken);
       const client = { request: { headers: { authorization: 'Bearer auth_token' } } };
-      await expect(sut.validate((client as Socket).request.headers)).resolves.toEqual(userEntityStub.user1);
+      await expect(sut.validate((client as Socket).request.headers, {})).resolves.toEqual(userEntityStub.user1);
     });
   });
 
-  describe('validate - api request', () => {
-    it('should throw if no user is found', async () => {
+  describe('validate - shared key', () => {
+    it('should not accept a non-existent key', async () => {
+      shareMock.getByKey.mockResolvedValue(null);
+      const headers: IncomingHttpHeaders = { 'x-immich-share-key': 'key' };
+      await expect(sut.validate(headers, {})).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+
+    it('should not accept an expired key', async () => {
+      shareMock.getByKey.mockResolvedValue(sharedLinkStub.expired);
+      const headers: IncomingHttpHeaders = { 'x-immich-share-key': 'key' };
+      await expect(sut.validate(headers, {})).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+
+    it('should not accept a key without a user', async () => {
+      shareMock.getByKey.mockResolvedValue(sharedLinkStub.expired);
       userMock.get.mockResolvedValue(null);
-      await expect(sut.validate({ email: 'a', userId: 'test' })).resolves.toBeNull();
+      const headers: IncomingHttpHeaders = { 'x-immich-share-key': 'key' };
+      await expect(sut.validate(headers, {})).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+
+    it('should accept a valid key', async () => {
+      shareMock.getByKey.mockResolvedValue(sharedLinkStub.valid);
+      userMock.get.mockResolvedValue(userEntityStub.admin);
+      const headers: IncomingHttpHeaders = { 'x-immich-share-key': 'key' };
+      await expect(sut.validate(headers, {})).resolves.toEqual(authStub.adminSharedLink);
+    });
+  });
+
+  describe('validate - user token', () => {
+    it('should throw if no token is found', async () => {
+      userTokenMock.get.mockResolvedValue(null);
+      const headers: IncomingHttpHeaders = { 'x-immich-user-token': 'auth_token' };
+      await expect(sut.validate(headers, {})).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('should return an auth dto', async () => {
-      userMock.get.mockResolvedValue(userEntityStub.user1);
       userTokenMock.get.mockResolvedValue(userTokenEntityStub.userToken);
-      await expect(
-        sut.validate({ cookie: 'immich_access_token=auth_token', email: 'a', userId: 'test' }),
-      ).resolves.toEqual(userEntityStub.user1);
+      const headers: IncomingHttpHeaders = { cookie: 'immich_access_token=auth_token' };
+      await expect(sut.validate(headers, {})).resolves.toEqual(userEntityStub.user1);
     });
   });
 
-  describe('extractTokenFromHeader - Cookie', () => {
-    it('should extract the access token', () => {
-      const cookie: IncomingHttpHeaders = {
-        cookie: `${IMMICH_ACCESS_COOKIE}=signed-jwt;${IMMICH_AUTH_TYPE_COOKIE}=password`,
-      };
-      expect(sut.extractTokenFromHeader(cookie)).toEqual('signed-jwt');
+  describe('validate - api key', () => {
+    it('should throw an error if no api key is found', async () => {
+      keyMock.getKey.mockResolvedValue(null);
+      const headers: IncomingHttpHeaders = { 'x-api-key': 'auth_token' };
+      await expect(sut.validate(headers, {})).rejects.toBeInstanceOf(UnauthorizedException);
+      expect(keyMock.getKey).toHaveBeenCalledWith('auth_token (hashed)');
     });
 
-    it('should work with no cookies', () => {
-      const cookie: IncomingHttpHeaders = {
-        cookie: undefined,
-      };
-      expect(sut.extractTokenFromHeader(cookie)).toBeNull();
-    });
-
-    it('should work on empty cookies', () => {
-      const cookie: IncomingHttpHeaders = {
-        cookie: '',
-      };
-      expect(sut.extractTokenFromHeader(cookie)).toBeNull();
-    });
-  });
-
-  describe('extractTokenFromHeader - Bearer Auth', () => {
-    it('should extract the access token', () => {
-      expect(sut.extractTokenFromHeader({ authorization: `Bearer signed-jwt` })).toEqual('signed-jwt');
-    });
-
-    it('should work without the auth header', () => {
-      expect(sut.extractTokenFromHeader({})).toBeNull();
-    });
-
-    it('should ignore basic auth', () => {
-      expect(sut.extractTokenFromHeader({ authorization: `Basic stuff` })).toBeNull();
+    it('should return an auth dto', async () => {
+      keyMock.getKey.mockResolvedValue(keyStub.admin);
+      const headers: IncomingHttpHeaders = { 'x-api-key': 'auth_token' };
+      await expect(sut.validate(headers, {})).resolves.toEqual(authStub.admin);
+      expect(keyMock.getKey).toHaveBeenCalledWith('auth_token (hashed)');
     });
   });
 });

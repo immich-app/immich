@@ -11,12 +11,16 @@ import { IncomingHttpHeaders } from 'http';
 import { OAuthCore } from '../oauth/oauth.core';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
 import { IUserRepository, UserCore } from '../user';
-import { AuthType } from './auth.constant';
+import { AuthType, IMMICH_ACCESS_COOKIE } from './auth.constant';
 import { AuthCore } from './auth.core';
-import { ICryptoRepository } from './crypto.repository';
+import { ICryptoRepository } from '../crypto/crypto.repository';
 import { AuthUserDto, ChangePasswordDto, LoginCredentialDto, SignUpDto } from './dto';
 import { AdminSignupResponseDto, LoginResponseDto, LogoutResponseDto, mapAdminSignupResponse } from './response-dto';
-import { IUserTokenRepository, UserTokenCore } from '@app/domain/user-token';
+import { IUserTokenRepository, UserTokenCore } from '../user-token';
+import cookieParser from 'cookie';
+import { ISharedLinkRepository, ShareCore } from '../share';
+import { APIKeyCore } from '../api-key/api-key.core';
+import { IKeyRepository } from '../api-key';
 
 @Injectable()
 export class AuthService {
@@ -24,14 +28,18 @@ export class AuthService {
   private authCore: AuthCore;
   private oauthCore: OAuthCore;
   private userCore: UserCore;
+  private shareCore: ShareCore;
+  private keyCore: APIKeyCore;
 
   private logger = new Logger(AuthService.name);
 
   constructor(
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) userRepository: IUserRepository,
     @Inject(IUserTokenRepository) userTokenRepository: IUserTokenRepository,
+    @Inject(ISharedLinkRepository) shareRepository: ISharedLinkRepository,
+    @Inject(IKeyRepository) keyRepository: IKeyRepository,
     @Inject(INITIAL_SYSTEM_CONFIG)
     initialConfig: SystemConfig,
   ) {
@@ -39,6 +47,8 @@ export class AuthService {
     this.authCore = new AuthCore(cryptoRepository, configRepository, userTokenRepository, initialConfig);
     this.oauthCore = new OAuthCore(configRepository, initialConfig);
     this.userCore = new UserCore(userRepository, cryptoRepository);
+    this.shareCore = new ShareCore(shareRepository, cryptoRepository);
+    this.keyCore = new APIKeyCore(cryptoRepository, keyRepository);
   }
 
   public async login(
@@ -115,28 +125,40 @@ export class AuthService {
     }
   }
 
-  public async validate(headers: IncomingHttpHeaders): Promise<AuthUserDto | null> {
-    const tokenValue = this.extractTokenFromHeader(headers);
-    if (!tokenValue) {
-      return null;
+  public async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthUserDto | null> {
+    const shareKey = (headers['x-immich-share-key'] || params.key) as string;
+    const userToken = (headers['x-immich-user-token'] ||
+      params.userToken ||
+      this.getBearerToken(headers) ||
+      this.getCookieToken(headers)) as string;
+    const apiKey = (headers['x-api-key'] || params.apiKey) as string;
+
+    if (shareKey) {
+      return this.shareCore.validate(shareKey);
     }
 
-    const hashedToken = this.cryptoRepository.hashSha256(tokenValue);
-    const user = await this.userTokenCore.getUserByToken(hashedToken);
-    if (user) {
-      return {
-        ...user,
-        isPublicUser: false,
-        isAllowUpload: true,
-        isAllowDownload: true,
-        isShowExif: true,
-      };
+    if (userToken) {
+      return this.userTokenCore.validate(userToken);
+    }
+
+    if (apiKey) {
+      return this.keyCore.validate(apiKey);
+    }
+
+    throw new UnauthorizedException('Authentication required');
+  }
+
+  private getBearerToken(headers: IncomingHttpHeaders): string | null {
+    const [type, token] = (headers.authorization || '').split(' ');
+    if (type.toLowerCase() === 'bearer') {
+      return token;
     }
 
     return null;
   }
 
-  extractTokenFromHeader(headers: IncomingHttpHeaders) {
-    return this.authCore.extractTokenFromHeader(headers);
+  private getCookieToken(headers: IncomingHttpHeaders): string | null {
+    const cookies = cookieParser.parse(headers.cookie || '');
+    return cookies[IMMICH_ACCESS_COOKIE] || null;
   }
 }

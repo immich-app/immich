@@ -1,4 +1,5 @@
 import {
+  APIKeyEntity,
   AssetType,
   SharedLinkEntity,
   SharedLinkType,
@@ -148,6 +149,16 @@ export const userTokenEntityStub = {
   }),
 };
 
+export const keyStub = {
+  admin: Object.freeze({
+    id: 1,
+    name: 'My Key',
+    key: 'my-api-key (hashed)',
+    userId: authStub.admin.id,
+    user: userEntityStub.admin,
+  } as APIKeyEntity),
+};
+
 export const systemConfigStub = {
   defaults: Object.freeze({
     ffmpeg: {
@@ -275,6 +286,7 @@ export const sharedLinkStub = {
   valid: Object.freeze({
     id: '123',
     userId: authStub.admin.id,
+    user: userEntityStub.admin,
     key: Buffer.from('secret-key', 'utf8'),
     type: SharedLinkType.ALBUM,
     createdAt: today.toISOString(),
@@ -288,6 +300,7 @@ export const sharedLinkStub = {
   expired: Object.freeze({
     id: '123',
     userId: authStub.admin.id,
+    user: userEntityStub.admin,
     key: Buffer.from('secret-key', 'utf8'),
     type: SharedLinkType.ALBUM,
     createdAt: today.toISOString(),
@@ -300,6 +313,7 @@ export const sharedLinkStub = {
   readonly: Object.freeze<SharedLinkEntity>({
     id: '123',
     userId: authStub.admin.id,
+    user: userEntityStub.admin,
     key: Buffer.from('secret-key', 'utf8'),
     type: SharedLinkType.ALBUM,
     createdAt: today.toISOString(),

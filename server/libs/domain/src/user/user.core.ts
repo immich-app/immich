@@ -10,7 +10,8 @@ import {
 import { hash } from 'bcrypt';
 import { constants, createReadStream, ReadStream } from 'fs';
 import fs from 'fs/promises';
-import { AuthUserDto, ICryptoRepository } from '../auth';
+import { AuthUserDto } from '../auth';
+import { ICryptoRepository } from '../crypto';
 import { CreateAdminDto, CreateUserDto, CreateUserOAuthDto } from './dto/create-user.dto';
 import { IUserRepository, UserListFilter } from './user.repository';
 
