@@ -78,15 +78,15 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     /// Thumbnail image of a remote asset. Required asset.remote != null
-    ImageProvider remoteThumbnailImageProvider(Asset asset) {
+    ImageProvider remoteThumbnailImageProvider(Asset asset, api.ThumbnailFormat type) {
       return CachedNetworkImageProvider(
         getThumbnailUrl(
           asset.remote!,
-          type: api.ThumbnailFormat.JPEG,
+          type: type,
         ),
         cacheKey: getThumbnailCacheKey(
           asset.remote!,
-          type: api.ThumbnailFormat.JPEG,
+          type: type,
         ),
         headers: {"Authorization": authToken},
       );
@@ -120,15 +120,29 @@ class GalleryViewerPage extends HookConsumerWidget {
       if (index < assetList.length && index > 0) {
         final asset = assetList[index];
         if (asset.isLocal) {
+          // Preload the local asset
           precacheImage(localImageProvider(asset), context);
         } else {
+          // Probably load WEBP either way
+          precacheImage(
+            remoteThumbnailImageProvider(
+              asset, 
+              api.ThumbnailFormat.WEBP,
+            ),
+            context,
+          );
           if (isLoadPreview.value) {
+            // Precache the JPEG thumbnail
             precacheImage(
-              remoteThumbnailImageProvider(asset),
+              remoteThumbnailImageProvider(
+                asset,
+                api.ThumbnailFormat.JPEG,
+              ),
               context,
             );
           }
           if (isLoadOriginal.value) {
+            // Preload the original asset
             precacheImage(
               originalImageProvider(asset),
               context,
@@ -257,17 +271,28 @@ class GalleryViewerPage extends HookConsumerWidget {
             HapticFeedback.selectionClick();
           },
           loadingBuilder: isLoadPreview.value ? (context, event) {
+            final asset = assetList[indexOfAsset.value];
             if (!asset.isLocal) {
-              return CachedNetworkImage(
-                imageUrl: getThumbnailUrl(assetList[indexOfAsset.value].remote!),
-                cacheKey: getThumbnailCacheKey(assetList[indexOfAsset.value].remote!),
-                progressIndicatorBuilder: (_, __, ___) => const Center(child: ImmichLoadingIndicator(),),
+              // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to acheive
+              // Three-Stage Loading (WEBP -> JPEG -> Original)
+              final webPThumbnail = CachedNetworkImage(
+                imageUrl: getThumbnailUrl(asset.remote!, type: api.ThumbnailFormat.WEBP),
+                cacheKey: getThumbnailCacheKey(asset.remote!, type: api.ThumbnailFormat.WEBP),
                 httpHeaders: { 'Authorization': authToken },
-                fit: BoxFit.fitWidth,
+                progressIndicatorBuilder: (_, __, ___) => const Center(child: ImmichLoadingIndicator(),),
+                fit: BoxFit.contain,
+              );
+
+              return CachedNetworkImage(
+                imageUrl: getThumbnailUrl(asset.remote!, type: api.ThumbnailFormat.JPEG),
+                cacheKey: getThumbnailCacheKey(asset.remote!, type: api.ThumbnailFormat.JPEG),
+                httpHeaders: { 'Authorization': authToken },
+                fit: BoxFit.contain,
+                placeholder: (_, __) => webPThumbnail,
               );
             } else {
               return Image(
-                image: localThumbnailImageProvider(assetList[indexOfAsset.value]),
+                image: localThumbnailImageProvider(asset),
               );
             }
           } : null,
@@ -282,7 +307,10 @@ class GalleryViewerPage extends HookConsumerWidget {
                 if (isLoadOriginal.value) {
                   provider = originalImageProvider(assetList[index]);
                 } else {
-                  provider = remoteThumbnailImageProvider(assetList[index]);
+                  provider = remoteThumbnailImageProvider(
+                    assetList[index], 
+                    api.ThumbnailFormat.JPEG,
+                  );
                 }
               }
               return PhotoViewGalleryPageOptions(
