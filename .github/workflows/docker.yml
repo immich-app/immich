@@ -89,7 +89,7 @@ jobs:
           fi
 
       - name: Build and push image
-        uses: docker/build-push-action@v3.3.0
+        uses: docker/build-push-action@v4.0.0
         with:
           context: ${{ matrix.context }}
           platforms: linux/arm/v7,linux/amd64,linux/arm64
