@@ -49,6 +49,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     final indexOfAsset = useState(assetList.indexOf(asset));
     final isPlayingMotionVideo = useState(false);
     late Offset localPosition;
+    final authToken = 'Bearer ${box.get(accessTokenKey)}';
 
     PageController controller =
         PageController(initialPage: assetList.indexOf(asset));
@@ -189,8 +190,10 @@ class GalleryViewerPage extends HookConsumerWidget {
             if (!asset.isLocal) {
               return CachedNetworkImage(
                 imageUrl: getThumbnailUrl(assetList[indexOfAsset.value].remote!),
-                cacheKey: getImageCacheKey(assetList[indexOfAsset.value].remote!),
-                placeholder: (context, url) => const ImmichLoadingIndicator(),
+                cacheKey: getThumbnailCacheKey(assetList[indexOfAsset.value].remote!),
+                placeholder: (context, url) => const Center(child: ImmichLoadingIndicator(),),
+                httpHeaders: { 'Authorization': authToken },
+                fit: BoxFit.fitWidth,
               );
             } else {
               return Image(
@@ -204,8 +207,6 @@ class GalleryViewerPage extends HookConsumerWidget {
           },
           builder: (context, index) {
             getAssetExif();
-            final downloadAssetStatus =
-              ref.watch(imageViewerStateProvider).downloadAssetStatus;
 
             final Widget child;
             if (assetList[index].isImage) {
@@ -239,7 +240,8 @@ class GalleryViewerPage extends HookConsumerWidget {
             } else {
               provider = CachedNetworkImageProvider(
                 getImageUrl(assetList[index].remote!),
-                cacheKey: getThumbnailCacheKey(assetList[index].remote!),
+                headers: {"Authorization": authToken},
+                cacheKey: getImageCacheKey(assetList[index].remote!),
               );
             }
 
