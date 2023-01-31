@@ -2,7 +2,7 @@ import { assetUtils } from '@app/common/utils';
 import { Process, Processor } from '@nestjs/bull';
 import { Job } from 'bull';
 import { JobName, QueueName } from '@app/domain';
-import { AssetEntity } from '@app/infra';
+import { AssetEntity } from '@app/infra/db/entities';
 
 @Processor(QueueName.BACKGROUND_TASK)
 export class BackgroundTaskProcessor {

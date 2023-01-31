@@ -4,7 +4,6 @@ import { AssetModule } from './api-v1/asset/asset.module';
 import { DeviceInfoModule } from './api-v1/device-info/device-info.module';
 import { ConfigModule } from '@nestjs/config';
 import { ServerInfoModule } from './api-v1/server-info/server-info.module';
-import { BackgroundTaskModule } from './modules/background-task/background-task.module';
 import { CommunicationModule } from './api-v1/communication/communication.module';
 import { AlbumModule } from './api-v1/album/album.module';
 import { AppController } from './app.controller';
@@ -38,8 +37,6 @@ import { AuthGuard } from './middlewares/auth.guard';
     DeviceInfoModule,
 
     ServerInfoModule,
-
-    BackgroundTaskModule,
 
     CommunicationModule,
 

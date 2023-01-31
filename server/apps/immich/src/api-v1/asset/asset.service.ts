@@ -23,8 +23,8 @@ import { SearchAssetDto } from './dto/search-asset.dto';
 import fs from 'fs/promises';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import { AssetResponseDto, mapAsset, mapAssetWithoutExif } from '@app/domain';
-import { CreateAssetDto } from './dto/create-asset.dto';
+import { AssetResponseDto, JobName, mapAsset, mapAssetWithoutExif } from '@app/domain';
+import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
@@ -37,13 +37,12 @@ import {
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
-import { timeUtils } from '@app/common/utils';
+import { AssetCore } from './asset.core';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
-import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
-import { ICryptoRepository, IJobRepository, JobName } from '@app/domain';
+import { ICryptoRepository, IJobRepository } from '@app/domain';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
 import { IAlbumRepository } from '../album/album-repository';
@@ -55,7 +54,6 @@ import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { mapSharedLink, SharedLinkResponseDto } from '@app/domain';
 import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
-import { ImmichFile } from '../../config/asset-upload.config';
 
 const fileInfo = promisify(stat);
 
@@ -63,140 +61,67 @@ const fileInfo = promisify(stat);
 export class AssetService {
   readonly logger = new Logger(AssetService.name);
   private shareCore: ShareCore;
+  private assetCore: AssetCore;
 
   constructor(
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
     @Inject(IAlbumRepository) private _albumRepository: IAlbumRepository,
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
-    private backgroundTaskService: BackgroundTaskService,
     private downloadService: DownloadService,
-    private storageService: StorageService,
+    storageService: StorageService,
     @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
   ) {
+    this.assetCore = new AssetCore(_assetRepository, jobRepository, storageService);
     this.shareCore = new ShareCore(sharedLinkRepository, cryptoRepository);
   }
 
-  public async handleUploadedAsset(
+  public async uploadFile(
     authUser: AuthUserDto,
-    createAssetDto: CreateAssetDto,
-    res: Res,
-    originalAssetData: ImmichFile,
-    livePhotoAssetData?: ImmichFile,
-  ) {
-    const checksum = originalAssetData.checksum;
-    const isLivePhoto = livePhotoAssetData !== undefined;
-    let livePhotoAssetEntity: AssetEntity | undefined;
+    dto: CreateAssetDto,
+    file: UploadFile,
+    livePhotoFile?: UploadFile,
+  ): Promise<AssetFileUploadResponseDto> {
+    if (livePhotoFile) {
+      livePhotoFile.originalName = file.originalName;
+    }
+
+    let livePhotoAsset: AssetEntity | null = null;
 
     try {
-      if (isLivePhoto) {
-        const livePhotoChecksum = livePhotoAssetData.checksum;
-        livePhotoAssetEntity = await this.createUserAsset(
-          authUser,
-          createAssetDto,
-          livePhotoAssetData.path,
-          livePhotoAssetData.mimetype,
-          livePhotoChecksum,
-          false,
-        );
-
-        if (!livePhotoAssetEntity) {
-          await this.backgroundTaskService.deleteFileOnDisk([
-            {
-              originalPath: livePhotoAssetData.path,
-            } as any,
-          ]);
-          throw new BadRequestException('Asset not created');
-        }
-
-        await this.storageService.moveAsset(livePhotoAssetEntity, originalAssetData.originalname);
-
-        await this.jobRepository.add({ name: JobName.VIDEO_CONVERSION, data: { asset: livePhotoAssetEntity } });
+      if (livePhotoFile) {
+        const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false };
+        livePhotoAsset = await this.assetCore.create(authUser, livePhotoDto, livePhotoFile);
       }
 
-      const assetEntity = await this.createUserAsset(
-        authUser,
-        createAssetDto,
-        originalAssetData.path,
-        originalAssetData.mimetype,
-        checksum,
-        true,
-        livePhotoAssetEntity,
-      );
+      const asset = await this.assetCore.create(authUser, dto, file, livePhotoAsset?.id);
 
-      if (!assetEntity) {
-        await this.backgroundTaskService.deleteFileOnDisk([
-          {
-            originalPath: originalAssetData.path,
-          } as any,
-        ]);
-        throw new BadRequestException('Asset not created');
-      }
-
-      const movedAsset = await this.storageService.moveAsset(assetEntity, originalAssetData.originalname);
-
+      return { id: asset.id, duplicate: false };
+    } catch (error: any) {
+      // clean up files
       await this.jobRepository.add({
-        name: JobName.ASSET_UPLOADED,
-        data: { asset: movedAsset, fileName: originalAssetData.originalname },
+        name: JobName.DELETE_FILE_ON_DISK,
+        data: {
+          assets: [
+            {
+              originalPath: file.originalPath,
+              resizePath: livePhotoFile?.originalPath || null,
+            } as AssetEntity,
+          ],
+        },
       });
 
-      return new AssetFileUploadResponseDto(movedAsset.id);
-    } catch (err) {
-      await this.backgroundTaskService.deleteFileOnDisk([
-        {
-          originalPath: originalAssetData.path,
-        } as any,
-      ]); // simulate asset to make use of delete queue (or use fs.unlink instead)
-
-      if (isLivePhoto) {
-        await this.backgroundTaskService.deleteFileOnDisk([
-          {
-            originalPath: livePhotoAssetData.path,
-          } as any,
-        ]);
+      // handle duplicates with a success response
+      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_userid_checksum') {
+        const duplicate = await this.getAssetByChecksum(authUser.id, file.checksum);
+        return { id: duplicate.id, duplicate: true };
       }
 
-      if (err instanceof QueryFailedError && (err as any).constraint === 'UQ_userid_checksum') {
-        const existedAsset = await this.getAssetByChecksum(authUser.id, checksum);
-        res.status(200); // normal POST is 201. we use 200 to indicate the asset already exists
-        return new AssetFileUploadResponseDto(existedAsset.id);
-      }
-
-      Logger.error(`Error uploading file ${err}`);
-      throw new BadRequestException(`Error uploading file`, `${err}`);
+      this.logger.error(`Error uploading file ${error}`, error?.stack);
+      throw new BadRequestException(`Error uploading file`, `${error}`);
     }
-  }
-
-  public async createUserAsset(
-    authUser: AuthUserDto,
-    createAssetDto: CreateAssetDto,
-    originalPath: string,
-    mimeType: string,
-    checksum: Buffer,
-    isVisible: boolean,
-    livePhotoAssetEntity?: AssetEntity,
-  ): Promise<AssetEntity> {
-    if (!timeUtils.checkValidTimestamp(createAssetDto.createdAt)) {
-      createAssetDto.createdAt = new Date().toISOString();
-    }
-
-    if (!timeUtils.checkValidTimestamp(createAssetDto.modifiedAt)) {
-      createAssetDto.modifiedAt = new Date().toISOString();
-    }
-
-    const assetEntity = await this._assetRepository.create(
-      createAssetDto,
-      authUser.id,
-      originalPath,
-      mimeType,
-      isVisible,
-      checksum,
-      livePhotoAssetEntity,
-    );
-
-    return assetEntity;
   }
 
   public async getUserAssetsByDeviceId(authUser: AuthUserDto, deviceId: string) {
@@ -520,26 +445,35 @@ export class AssetService {
     }
   }
 
-  public async deleteAssetById(assetIds: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
+  public async deleteAll(authUser: AuthUserDto, dto: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
+    const deleteQueue: AssetEntity[] = [];
     const result: DeleteAssetResponseDto[] = [];
 
-    const target = assetIds.ids;
-    for (const assetId of target) {
-      const res = await this.assetRepository.delete({
-        id: assetId,
-      });
-
-      if (res.affected) {
-        result.push({
-          id: assetId,
-          status: DeleteAssetStatusEnum.SUCCESS,
-        });
-      } else {
-        result.push({
-          id: assetId,
-          status: DeleteAssetStatusEnum.FAILED,
-        });
+    const ids = dto.ids.slice();
+    for (const id of ids) {
+      const asset = await this._assetRepository.get(id);
+      if (!asset) {
+        result.push({ id, status: DeleteAssetStatusEnum.FAILED });
+        continue;
       }
+
+      try {
+        await this._assetRepository.remove(asset);
+
+        result.push({ id: asset.id, status: DeleteAssetStatusEnum.SUCCESS });
+        deleteQueue.push(asset as any);
+
+        // TODO refactor this to use cascades
+        if (asset.livePhotoVideoId && !ids.includes(asset.livePhotoVideoId)) {
+          ids.push(asset.livePhotoVideoId);
+        }
+      } catch {
+        result.push({ id, status: DeleteAssetStatusEnum.FAILED });
+      }
+    }
+
+    if (deleteQueue.length > 0) {
+      await this.jobRepository.add({ name: JobName.DELETE_FILE_ON_DISK, data: { assets: deleteQueue } });
     }
 
     return result;
