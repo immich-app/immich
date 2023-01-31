@@ -2,11 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { clearDb, getAuthUser, authCustom } from './test-utils';
-import { InfraModule } from '@app/infra';
-import { AlbumModule } from '../src/api-v1/album/album.module';
 import { CreateAlbumDto } from '../src/api-v1/album/dto/create-album.dto';
 import { AuthUserDto } from '../src/decorators/auth-user.decorator';
-import { AuthService, DomainModule, UserService } from '@app/domain';
+import { AuthService, UserService } from '@app/domain';
 import { DataSource } from 'typeorm';
 import { AppModule } from '../src/app.module';
 
@@ -20,9 +18,7 @@ describe('Album', () => {
 
   describe('without auth', () => {
     beforeAll(async () => {
-      const moduleFixture: TestingModule = await Test.createTestingModule({
-        imports: [DomainModule.register({ imports: [InfraModule] }), AppModule],
-      }).compile();
+      const moduleFixture: TestingModule = await Test.createTestingModule({ imports: [AppModule] }).compile();
 
       app = moduleFixture.createNestApplication();
       database = app.get(DataSource);
@@ -46,9 +42,7 @@ describe('Album', () => {
     let authService: AuthService;
 
     beforeAll(async () => {
-      const builder = Test.createTestingModule({
-        imports: [DomainModule.register({ imports: [InfraModule] }), AlbumModule],
-      });
+      const builder = Test.createTestingModule({ imports: [AppModule] });
       authUser = getAuthUser(); // set default auth user
       const moduleFixture: TestingModule = await authCustom(builder, () => authUser).compile();
 

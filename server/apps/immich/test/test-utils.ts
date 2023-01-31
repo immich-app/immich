@@ -34,5 +34,5 @@ export function authCustom(builder: TestingModuleBuilder, callback: CustomAuthCa
       return true;
     },
   };
-  return builder.overrideGuard(AuthGuard).useValue(canActivate);
+  return builder.overrideProvider(AuthGuard).useValue(canActivate);
 }

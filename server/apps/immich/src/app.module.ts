@@ -60,7 +60,7 @@ import { AuthGuard } from './middlewares/auth.guard';
     SystemConfigController,
     UserController,
   ],
-  providers: [{ provide: APP_GUARD, useClass: AuthGuard }],
+  providers: [{ provide: APP_GUARD, useExisting: AuthGuard }, AuthGuard],
 })
 export class AppModule implements NestModule {
   // TODO: check if consumer is needed or remove
