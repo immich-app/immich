@@ -2,7 +2,7 @@ library photo_view_gallery;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:immich_mobile/photo_view/photo_view.dart'
+import 'package:immich_mobile/shared/ui/photo_view/photo_view.dart'
     show
         LoadingBuilder,
         PhotoView,
@@ -14,11 +14,11 @@ import 'package:immich_mobile/photo_view/photo_view.dart'
         PhotoViewImageScaleEndCallback,
         ScaleStateCycle;
 
-import 'package:immich_mobile/photo_view/src/controller/photo_view_controller.dart';
-import 'package:immich_mobile/photo_view/src/controller/photo_view_scalestate_controller.dart';
-import 'package:immich_mobile/photo_view/src/core/photo_view_gesture_detector.dart';
-import 'package:immich_mobile/photo_view/src/photo_view_scale_state.dart';
-import 'package:immich_mobile/photo_view/src/utils/photo_view_hero_attributes.dart';
+import 'package:immich_mobile/shared/ui/photo_view/src/controller/photo_view_controller.dart';
+import 'package:immich_mobile/shared/ui/photo_view/src/controller/photo_view_scalestate_controller.dart';
+import 'package:immich_mobile/shared/ui/photo_view/src/core/photo_view_gesture_detector.dart';
+import 'package:immich_mobile/shared/ui/photo_view/src/photo_view_scale_state.dart';
+import 'package:immich_mobile/shared/ui/photo_view/src/utils/photo_view_hero_attributes.dart';
 
 /// A type definition for a [Function] that receives a index after a page change in [PhotoViewGallery]
 typedef PhotoViewGalleryPageChangedCallback = void Function(int index);

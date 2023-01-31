@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:immich_mobile/photo_view/photo_view.dart'
+import 'package:immich_mobile/shared/ui/photo_view/photo_view.dart'
     show
         PhotoViewScaleState,
         PhotoViewHeroAttributes,
@@ -10,12 +10,12 @@ import 'package:immich_mobile/photo_view/photo_view.dart'
         PhotoViewImageDragStartCallback,
         PhotoViewImageDragUpdateCallback,
         ScaleStateCycle;
-import 'package:immich_mobile/photo_view/src/controller/photo_view_controller.dart';
-import 'package:immich_mobile/photo_view/src/controller/photo_view_controller_delegate.dart';
-import 'package:immich_mobile/photo_view/src/controller/photo_view_scalestate_controller.dart';
-import 'package:immich_mobile/photo_view/src/core/photo_view_gesture_detector.dart';
-import 'package:immich_mobile/photo_view/src/core/photo_view_hit_corners.dart';
-import 'package:immich_mobile/photo_view/src/utils/photo_view_utils.dart';
+import 'package:immich_mobile/shared/ui/photo_view/src/controller/photo_view_controller.dart';
+import 'package:immich_mobile/shared/ui/photo_view/src/controller/photo_view_controller_delegate.dart';
+import 'package:immich_mobile/shared/ui/photo_view/src/controller/photo_view_scalestate_controller.dart';
+import 'package:immich_mobile/shared/ui/photo_view/src/core/photo_view_gesture_detector.dart';
+import 'package:immich_mobile/shared/ui/photo_view/src/core/photo_view_hit_corners.dart';
+import 'package:immich_mobile/shared/ui/photo_view/src/utils/photo_view_utils.dart';
 
 const _defaultDecoration = BoxDecoration(
   color: Color.fromRGBO(0, 0, 0, 1.0),
