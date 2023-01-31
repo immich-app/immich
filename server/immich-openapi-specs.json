@@ -301,6 +301,43 @@
         ]
       }
     },
+    "/device-info": {
+      "put": {
+        "operationId": "upsertDeviceInfo",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertDeviceInfoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceInfoResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Device Info"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
     "/oauth/mobile-redirect": {
       "get": {
         "operationId": "mobileRedirect",
@@ -2505,43 +2542,6 @@
         ]
       }
     },
-    "/device-info": {
-      "put": {
-        "operationId": "upsertDeviceInfo",
-        "description": "",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpsertDeviceInfoDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeviceInfoResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Device Info"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
     "/server-info": {
       "get": {
         "operationId": "getServerInfo",
@@ -2991,6 +2991,63 @@
         "required": [
           "successful",
           "redirectUri"
+        ]
+      },
+      "DeviceTypeEnum": {
+        "type": "string",
+        "enum": [
+          "IOS",
+          "ANDROID",
+          "WEB"
+        ]
+      },
+      "UpsertDeviceInfoDto": {
+        "type": "object",
+        "properties": {
+          "deviceType": {
+            "$ref": "#/components/schemas/DeviceTypeEnum"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "isAutoBackup": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "deviceType",
+          "deviceId"
+        ]
+      },
+      "DeviceInfoResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "deviceType": {
+            "$ref": "#/components/schemas/DeviceTypeEnum"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "isAutoBackup": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "deviceType",
+          "userId",
+          "deviceId",
+          "createdAt",
+          "isAutoBackup"
         ]
       },
       "OAuthConfigDto": {
@@ -4263,63 +4320,6 @@
         },
         "required": [
           "albumId"
-        ]
-      },
-      "DeviceTypeEnum": {
-        "type": "string",
-        "enum": [
-          "IOS",
-          "ANDROID",
-          "WEB"
-        ]
-      },
-      "UpsertDeviceInfoDto": {
-        "type": "object",
-        "properties": {
-          "deviceType": {
-            "$ref": "#/components/schemas/DeviceTypeEnum"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "isAutoBackup": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "deviceType",
-          "deviceId"
-        ]
-      },
-      "DeviceInfoResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "deviceType": {
-            "$ref": "#/components/schemas/DeviceTypeEnum"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "isAutoBackup": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "deviceType",
-          "userId",
-          "deviceId",
-          "createdAt",
-          "isAutoBackup"
         ]
       },
       "ServerInfoResponseDto": {

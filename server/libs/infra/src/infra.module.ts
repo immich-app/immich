@@ -18,6 +18,7 @@ import {
   APIKeyEntity,
   APIKeyRepository,
   databaseConfig,
+  DeviceInfoEntity,
   DeviceInfoRepository,
   SharedLinkEntity,
   SharedLinkRepository,
@@ -44,7 +45,14 @@ const providers: Provider[] = [
 @Module({
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
-    TypeOrmModule.forFeature([APIKeyEntity, UserEntity, SharedLinkEntity, SystemConfigEntity, UserTokenEntity]),
+    TypeOrmModule.forFeature([
+      APIKeyEntity,
+      DeviceInfoEntity,
+      UserEntity,
+      SharedLinkEntity,
+      SystemConfigEntity,
+      UserTokenEntity,
+    ]),
     BullModule.forRootAsync({
       useFactory: async () => ({
         prefix: 'immich_bull',
