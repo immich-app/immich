@@ -27,11 +27,7 @@ import { AlbumResponseDto } from '@app/domain';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { Response as Res } from 'express';
-import {
-  IMMICH_ARCHIVE_COMPLETE,
-  IMMICH_ARCHIVE_FILE_COUNT,
-  IMMICH_CONTENT_LENGTH_HINT,
-} from '../../constants/download.constant';
+import { IMMICH_ARCHIVE_COMPLETE, IMMICH_ARCHIVE_FILE_COUNT, IMMICH_CONTENT_LENGTH_HINT } from '@app/domain';
 import { DownloadDto } from '../asset/dto/download-library.dto';
 import { CreateAlbumShareLinkDto as CreateAlbumSharedLinkDto } from './dto/create-album-shared-link.dto';
 

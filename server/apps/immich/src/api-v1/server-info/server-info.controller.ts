@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { ServerInfoService } from './server-info.service';
-import { serverVersion } from '../../constants/server_version.constant';
+import { serverVersion } from '@app/domain';
 import { ApiTags } from '@nestjs/swagger';
 import { ServerPingResponse } from './response-dto/server-ping-response.dto';
 import { ServerVersionReponseDto } from './response-dto/server-version-response.dto';

@@ -6,7 +6,7 @@ import cookieParser from 'cookie-parser';
 import { writeFileSync } from 'fs';
 import path from 'path';
 import { AppModule } from './app.module';
-import { SERVER_VERSION } from './constants/server_version.constant';
+import { SERVER_VERSION } from '@app/domain';
 import { RedisIoAdapter } from './middlewares/redis-io.adapter.middleware';
 import { json } from 'body-parser';
 import { patchOpenAPI } from './utils/patch-open-api.util';

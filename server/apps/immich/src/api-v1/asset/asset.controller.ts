@@ -43,11 +43,7 @@ import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { DownloadDto } from './dto/download-library.dto';
-import {
-  IMMICH_ARCHIVE_COMPLETE,
-  IMMICH_ARCHIVE_FILE_COUNT,
-  IMMICH_CONTENT_LENGTH_HINT,
-} from '../../constants/download.constant';
+import { IMMICH_ARCHIVE_COMPLETE, IMMICH_ARCHIVE_FILE_COUNT, IMMICH_CONTENT_LENGTH_HINT } from '@app/domain';
 import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { SharedLinkResponseDto } from '@app/domain';
