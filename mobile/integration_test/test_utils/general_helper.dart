@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +11,7 @@ import 'package:meta/meta.dart';
 import 'package:immich_mobile/main.dart' as app;
 import 'package:path_provider/path_provider.dart';
 
+import 'album_helper.dart';
 import 'asset_grid_helper.dart';
 import 'login_helper.dart';
 import 'navigation_helper.dart';
@@ -21,6 +24,7 @@ class ImmichTestHelper {
   ImmichTestLoginHelper? _loginHelper;
   ImmichTestNavigationHelper? _navigationHelper;
   ImmichTestAssetGridHelper? _assetGridHelper;
+  ImmichTestAlbumHelper? _albumHelper;
 
   ImmichTestLoginHelper get loginHelper {
     _loginHelper ??= ImmichTestLoginHelper(tester);
@@ -37,6 +41,11 @@ class ImmichTestHelper {
     return _assetGridHelper!;
   }
 
+  ImmichTestAlbumHelper get albumHelper {
+    _albumHelper ??= ImmichTestAlbumHelper(tester);
+    return _albumHelper!;
+  }
+
   static Future<IntegrationTestWidgetsFlutterBinding> initialize() async {
     final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
     binding.framePolicy = LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
@@ -49,7 +58,9 @@ class ImmichTestHelper {
 
   static Future<void> clearCacheFiles() async {
     final temp = await getTemporaryDirectory();
-    temp.listSync().forEach((element) { element.deleteSync(recursive: true); });
+    temp.listSync().forEach((element) {
+      element.deleteSync(recursive: true);
+    });
   }
 
   static Future<void> loadApp(WidgetTester tester) async {
@@ -65,22 +76,21 @@ class ImmichTestHelper {
     await EasyLocalization.ensureInitialized();
   }
 
+  String createRandomAlbumName() {
+    return "Album_${DateTime.now().year}_${DateTime.now().month}_${DateTime.now().day}_${Random().nextInt(20000)}";
+  }
 }
 
 class ImmichTestFindUtils {
-
   static Finder findByWidgetKeyStartsWith(String expression) {
-    return find.byWidgetPredicate(
-            (widget) {
-          if (widget.key == null || widget.key is! ValueKey<String>) {
-            return false;
-          }
-          final keyValue = (widget.key as ValueKey<String>).value;
-          return keyValue.startsWith(expression);
-        }
-    );
+    return find.byWidgetPredicate((widget) {
+      if (widget.key == null || widget.key is! ValueKey<String>) {
+        return false;
+      }
+      final keyValue = (widget.key as ValueKey<String>).value;
+      return keyValue.startsWith(expression);
+    });
   }
-
 }
 
 @isTest

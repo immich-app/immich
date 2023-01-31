@@ -32,6 +32,19 @@ class ImmichTestNavigationHelper {
     await _clickOnByI18nText("profile_drawer_sign_out");
   }
 
+  Future<void> navigateToLibrary() async {
+    await _clickOnByI18nText("tab_controller_nav_library");
+  }
+
+  Future<void> navigateToPhotos() async {
+    await _clickOnByI18nText("tab_controller_nav_photos");
+  }
+
+  Future<void> closeAlbum() async {
+    await _tapFirstOf(IconButton);
+    await tester.pump();
+  }
+
   Future<void> _clickOnByI18nText(String text) async {
     final btn = find.textContaining(text.tr());
     expect(btn, findsOneWidget);

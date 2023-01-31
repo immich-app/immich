@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import '../test_utils/general_helper.dart';
 import '../test_utils/login_helper.dart';
 
@@ -73,5 +74,42 @@ void main() async {
         findsNothing,
       );
     });
+
+    immichWidgetTest("Test add to album from selection",
+        (tester, helper) async {
+      final albumName = helper.createRandomAlbumName();
+
+      await helper.loginHelper.loginTo(LoginCredentials.testInstance);
+      await helper.navigationHelper.navigateToLibrary();
+      await helper.albumHelper.createAlbum(albumName);
+      await helper.navigationHelper.closeAlbum();
+      await helper.navigationHelper.navigateToPhotos();
+
+      // Select second image
+      await tester.longPress(
+        helper.assetGridHelper.findThumbnailImagesInRow(0).at(1),
+      );
+
+      await tester.pump(const Duration(seconds: 1));
+      await tester.tap(find.text(albumName).first);
+      await tester.pump(const Duration(seconds: 2));
+
+      // Wait for toast message
+      for (var i = 0; i < 60; i++) {
+        if (tester.any(find.byType(FToast))) {
+          final result = find.text(
+            "home_page_add_to_album_success".tr(
+              namedArgs: {
+                "added": "1",
+                "album": albumName,
+              },
+            ),
+          );
+          expect(result, findsOneWidget);
+        }
+        await tester.pump(const Duration(milliseconds: 300));
+      }
+    });
+
   });
 }
