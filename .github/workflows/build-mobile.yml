@@ -32,7 +32,7 @@ jobs:
           ALIAS: ${{ secrets.ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
-          run: echo $KEYSTORE_BASE64 | base64 -d > key.jks
+          run: echo $KEYSTORE_BASE64 > mobile/android/key.jks
 
       - name: Restore packages
         working-directory: ./mobile
