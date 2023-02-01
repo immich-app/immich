@@ -30,9 +30,9 @@ jobs:
 
       - name: Create the Keystore
         env:
-          KEY_JKS: ${{ secrets.ANDROID_SIGN_KEY_CONTENT }}
+          KEY_JKS: ${{ secrets.KEY_JKS }}
         working-directory: ./mobile
-        run: echo $ANDROID_SIGN_KEY_CONTENT > android/key.jks
+        run: echo $KEY_JKS | base64 -d > android/key.jks
 
       - name: Get Packages
         working-directory: ./mobile

@@ -59,10 +59,14 @@ android {
 
    signingConfigs {
        release {
-           keyAlias "$System.env.ALIAS" ? "$System.env.ALIAS" : keystoreProperties['keyAlias']
-           keyPassword "$System.env.ANDROID_KEY_PASSWORD" ? "$System.env.ANDROID_KEY_PASSWORD" :keystoreProperties['keyPassword']
-           storeFile file("../key.jks") ? file("../key.jks") : file(keystoreProperties['storeFile'])
-           storePassword "$System.env.ANDROID_STORE_PASSWORD" ? "$System.env.ANDROID_STORE_PASSWORD" : keystoreProperties['storePassword']
+            def keyAliasVal = System.getenv("ALIAS")
+            def keyPasswordVal = System.getenv("ANDROID_KEY_PASSWORD")
+            def storePasswordVal = System.getenv("ANDROID_STORE_PASSWORD")
+
+            keyAlias keyAliasVal ? keyAliasVal : keystoreProperties['keyAlias']
+            keyPassword keyPasswordVal ? keyPasswordVal : keystoreProperties['keyPassword']
+            storeFile file("../key.jks") ? file("../key.jks") : file(keystoreProperties['storeFile'])
+            storePassword storePasswordVal ? storePasswordVal : keystoreProperties['storePassword']
        }
    }
 
