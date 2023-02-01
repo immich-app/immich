@@ -28,14 +28,14 @@ jobs:
           flutter-version: "3.3.10"
           cache: true
 
-      - name: Restore packages
+      - name: Build and Sign
         env:
-          KEYSTORE_BASE64: ${{ secrets.ANDROID_SIGN_KEY_CONTENT }}
+          KEY_JKS: ${{ secrets.KEY_JKS }}
           ALIAS: ${{ secrets.ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
         working-directory: ./mobile
-        run: echo $KEYSTORE_BASE64 > ./android/key.jks && flutter pub get && flutter build apk --release
+        run: echo $KEY_JKS > android/key.jks && flutter pub get && flutter build apk --release
 
       # - name: Build Android App Bundle
       #   working-directory: ./mobile
