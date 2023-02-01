@@ -28,18 +28,23 @@ jobs:
           flutter-version: "3.3.10"
           cache: true
 
-      - name: Build and Sign
+      - name: Create the Keystore
         env:
           KEY_JKS: ${{ secrets.KEY_JKS }}
+        working-directory: ./mobile
+        run: echo $KEY_JKS > ./android/key.jks
+
+      - name: Get Packages
+        working-directory: ./mobile
+        run: flutter pub get
+
+      - name: Build Android App Bundle
+        working-directory: ./mobile
+        env:
           ALIAS: ${{ secrets.ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
-        working-directory: ./mobile
-        run: echo $KEY_JKS > android/key.jks && flutter pub get && flutter build apk --release
-
-      # - name: Build Android App Bundle
-      #   working-directory: ./mobile
-      #   run: flutter build apk --release
+        run: flutter build apk --release
 
       - name: Publish Android Artifact
         uses: actions/upload-artifact@v3
