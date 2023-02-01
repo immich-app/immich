@@ -35,13 +35,13 @@ class SplashScreenPage extends HookConsumerWidget {
           if (isSuccess) {
             // Resume backup (if enable) then navigate
             ref.watch(backupProvider.notifier).resumeBackup();
-            AutoRouter.of(context).replace(const TabControllerRoute());
+            //AutoRouter.of(context).replace(const TabControllerRoute());
           } else {
-            AutoRouter.of(context).replace(const LoginRoute());
+            //AutoRouter.of(context).replace(const LoginRoute());
           }
         }
       } catch (_) {
-        AutoRouter.of(context).replace(const LoginRoute());
+        //AutoRouter.of(context).replace(const LoginRoute());
       }
     }
 
@@ -56,13 +56,19 @@ class SplashScreenPage extends HookConsumerWidget {
       },
       [],
     );
+          print(MediaQuery.of(context).viewPadding.bottom);
 
-    return const Scaffold(
-      body: Center(
-        child: Image(
-          image: AssetImage('assets/immich-logo-no-outline.png'),
-          width: 200,
-          filterQuality: FilterQuality.high,
+    return Scaffold(
+      body: Padding(
+        padding: EdgeInsets.only(
+          top: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: const Center(
+          child: Image(
+            image: AssetImage('assets/immich-logo-no-outline.png'),
+            width: 160,
+            filterQuality: FilterQuality.high,
+          ),
         ),
       ),
     );
