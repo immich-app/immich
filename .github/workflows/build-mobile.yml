@@ -27,14 +27,12 @@ jobs:
           channel: "stable"
           flutter-version: "3.3.10"
           cache: true
-
-      - name: Create the Keystore
-
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_SIGN_KEY_CONTENT }}
-        run: |
-          # import keystore from secrets
-          echo $KEYSTORE_BASE64 | base64 -d > $RUNNER_TEMP/my_production.keystore
+          ALIAS: ${{ secrets.ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          run: echo $KEYSTORE_BASE64 | base64 -d > key.jks
 
       - name: Restore packages
         working-directory: ./mobile
@@ -44,19 +42,8 @@ jobs:
         working-directory: ./mobile
         run: flutter build apk --release
 
-      - uses: r0adkll/sign-android-release@v1
-        name: Sign apk
-        id: sign_app
-        with:
-          releaseDirectory: mobile/build/app/outputs/flutter-apk/
-          signingKeyBase64: ${{ secrets.ANDROID_SIGN_KEY_CONTENT }}
-          alias: ${{ secrets.ALIAS }}
-          keyStorePassword: ${{ secrets.ANDROID_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
-
       - name: Publish Android Artifact
         uses: actions/upload-artifact@v3
         with:
           name: release-apk-signed
-          # path: mobile/build/app/outputs/flutter-apk/app-release-signed.apk
-          path: ${{steps.sign_app.outputs.signedReleaseFile}}
+          path: mobile/build/app/outputs/flutter-apk/app-release.apk
