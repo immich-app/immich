@@ -106,7 +106,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       return AssetEntityImageProvider(
         asset.local!,
         isOriginal: false,
-        thumbnailSize: ThumbnailSize.square(MediaQuery.of(context).size.width.floor()),
+        thumbnailSize: const ThumbnailSize.square(250),
       );
 
     }
@@ -293,6 +293,7 @@ class GalleryViewerPage extends HookConsumerWidget {
             } else {
               return Image(
                 image: localThumbnailImageProvider(asset),
+                fit: BoxFit.contain,
               );
             }
           } : null,
