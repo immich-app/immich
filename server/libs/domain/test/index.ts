@@ -1,5 +1,6 @@
 export * from './api-key.repository.mock';
 export * from './crypto.repository.mock';
+export * from './device-info.repository.mock';
 export * from './fixtures';
 export * from './job.repository.mock';
 export * from './shared-link.repository.mock';
