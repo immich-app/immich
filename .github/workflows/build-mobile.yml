@@ -32,7 +32,7 @@ jobs:
         env:
           KEY_JKS: ${{ secrets.ANDROID_SIGN_KEY_CONTENT }}
         working-directory: ./mobile
-        run: echo $ANDROID_SIGN_KEY_CONTENT | base64 -d > android/key.jks
+        run: echo $ANDROID_SIGN_KEY_CONTENT > android/key.jks
 
       - name: Get Packages
         working-directory: ./mobile
