@@ -1,6 +1,7 @@
 import { Column, Entity, Index, ManyToMany, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { AlbumEntity } from './album.entity';
 import { AssetEntity } from './asset.entity';
+import { UserEntity } from './user.entity';
 
 @Entity('shared_links')
 @Unique('UQ_sharedlink_key', ['key'])
@@ -13,6 +14,9 @@ export class SharedLinkEntity {
 
   @Column()
   userId!: string;
+
+  @ManyToOne(() => UserEntity)
+  user!: UserEntity;
 
   @Index('IDX_sharedlink_key')
   @Column({ type: 'bytea' })

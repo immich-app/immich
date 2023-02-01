@@ -11,11 +11,11 @@ import {
   systemConfigStub,
   userTokenEntityStub,
 } from '../../test';
-import { ICryptoRepository } from '../auth';
+import { ICryptoRepository } from '../crypto';
 import { OAuthService } from '../oauth';
 import { ISystemConfigRepository } from '../system-config';
 import { IUserRepository } from '../user';
-import { IUserTokenRepository } from '@app/domain';
+import { IUserTokenRepository } from '../user-token';
 import { newUserTokenRepositoryMock } from '../../test/user-token.repository.mock';
 
 const email = 'user@immich.com';
