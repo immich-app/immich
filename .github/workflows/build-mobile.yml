@@ -32,7 +32,7 @@ jobs:
         env:
           KEY_JKS: ${{ secrets.KEY_JKS }}
         working-directory: ./mobile
-        run: echo $KEY_JKS > ./android/key.jks
+        run: echo $KEY_JKS > /android/key.jks
 
       - name: Get Packages
         working-directory: ./mobile
