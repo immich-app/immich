@@ -143,13 +143,67 @@ class LibraryPage extends HookConsumerWidget {
       );
     }
 
+    Widget buildLibraryNavButton(
+        String label, IconData icon, Function() onClick) {
+      return Expanded(
+        child: TextButton.icon(
+          onPressed: onClick,
+          label: Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).primaryColor,
+            ),
+          ),
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all(
+              Theme.of(context).focusColor,
+            ),
+            padding: MaterialStateProperty.all(const EdgeInsets.all(12.0)),
+            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6.0),
+              ),
+            ),
+            alignment: Alignment.centerLeft,
+          ),
+          icon: Icon(icon),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: buildAppBar(),
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(12.0),
+              padding: const EdgeInsets.only(
+                left: 12.0,
+                right: 12.0,
+                top: 24.0,
+                bottom: 12.0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  buildLibraryNavButton("Favorites", Icons.star_border, () {}),
+                  const SizedBox(width: 12.0),
+                  buildLibraryNavButton("Sharing", Icons.group_outlined, () {
+                    AutoRouter.of(context).navigate(const SharingRoute());
+                  }),
+                ],
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(
+                top: 12.0,
+                left: 12.0,
+                right: 12.0,
+                bottom: 20.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
