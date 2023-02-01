@@ -187,7 +187,9 @@ class LibraryPage extends HookConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  buildLibraryNavButton("Favorites", Icons.star_border, () {}),
+                  buildLibraryNavButton("Favorites", Icons.star_border, () {
+                    AutoRouter.of(context).navigate(const FavoritesRoute());
+                  }),
                   const SizedBox(width: 12.0),
                   buildLibraryNavButton("Sharing", Icons.group_outlined, () {
                     AutoRouter.of(context).navigate(const SharingRoute());
