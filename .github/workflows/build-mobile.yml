@@ -32,15 +32,15 @@ jobs:
           ALIAS: ${{ secrets.ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
-          run: echo $KEYSTORE_BASE64 > mobile/android/key.jks
+          run: echo $KEYSTORE_BASE64 > ./mobile/android/key.jks && flutter pub get && flutter build apk --release
 
-      - name: Restore packages
-        working-directory: ./mobile
-        run: flutter pub get
+      # - name: Restore packages
+      #   working-directory: ./mobile
+      #   run: flutter pub get
 
-      - name: Build Android App Bundle
-        working-directory: ./mobile
-        run: flutter build apk --release
+      # - name: Build Android App Bundle
+      #   working-directory: ./mobile
+      #   run: flutter build apk --release
 
       - name: Publish Android Artifact
         uses: actions/upload-artifact@v3
