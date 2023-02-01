@@ -9,6 +9,3 @@ create_app_icon:
 
 build_release_android:
 	flutter build appbundle
-
-create_splash:
-	flutter pub run flutter_native_splash:create
