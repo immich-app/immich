@@ -25,11 +25,11 @@ class LibraryPage extends HookConsumerWidget {
       [],
     );
 
-    Widget buildAppBar() {
-      return const SliverAppBar(
+    AppBar buildAppBar() {
+      return AppBar(
         centerTitle: true,
         automaticallyImplyLeading: false,
-        title: Text(
+        title: const Text(
           'IMMICH',
           style: TextStyle(
             fontFamily: 'SnowburstOne',
@@ -144,9 +144,9 @@ class LibraryPage extends HookConsumerWidget {
     }
 
     return Scaffold(
+      appBar: buildAppBar(),
       body: CustomScrollView(
         slivers: [
-          buildAppBar(),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(12.0),
