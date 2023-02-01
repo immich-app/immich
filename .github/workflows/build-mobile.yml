@@ -44,9 +44,6 @@ jobs:
         working-directory: ./mobile
         run: flutter build apk --release
 
-      # - name: Sign Android App Bundle
-      #   working-directory: ./mobile
-      #   run: jarsigner -keystore $RUNNER_TEMP/my_production.keystore -storepass ${{ secrets.ANDROID_KEY_PASSWORD }} -keypass ${{ secrets.ANDROID_STORE_PASSWORD }} -sigalg SHA256withRSA -digestalg SHA-256 -signedjar build/app/outputs/flutter-apk/app-release-signed.apk build/app/outputs/flutter-apk/app-release.apk ${{ secrets.ALIAS }}
       - uses: r0adkll/sign-android-release@v1
         name: Sign apk
         id: sign_app
