@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -254,8 +256,11 @@ class GalleryViewerPage extends HookConsumerWidget {
           scaleStateChangedCallback: (state) => isZoomed.value = state != PhotoViewScaleState.initial,
           pageController: controller,
           scrollPhysics: isZoomed.value
-              ? const NeverScrollableScrollPhysics()
-              : const ImmichPageViewScrollPhysics(),
+              ? const NeverScrollableScrollPhysics() // Don't allow paging while scrolled in
+              : (Platform.isIOS 
+                ? const BouncingScrollPhysics()  // Use bouncing physics for iOS
+                : const ImmichPageViewScrollPhysics() // Use heavy physics for Android
+              ),
           itemCount: assetList.length,
           scrollDirection: Axis.horizontal,
           onPageChanged: (value) {
