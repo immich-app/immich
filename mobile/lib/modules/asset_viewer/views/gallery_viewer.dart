@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:auto_route/auto_route.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -9,14 +12,21 @@ import 'package:immich_mobile/modules/album/ui/add_to_album_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
-import 'package:immich_mobile/modules/asset_viewer/views/image_viewer_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/shared/ui/photo_view/photo_view_gallery.dart';
+import 'package:immich_mobile/shared/ui/photo_view/src/photo_view_computed_scale.dart';
+import 'package:immich_mobile/shared/ui/photo_view/src/photo_view_scale_state.dart';
+import 'package:immich_mobile/shared/ui/photo_view/src/utils/photo_view_hero_attributes.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:photo_manager/photo_manager.dart';
+import 'package:openapi/api.dart' as api;
 
 // ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
@@ -40,7 +50,8 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isZoomed = useState<bool>(false);
     final indexOfAsset = useState(assetList.indexOf(asset));
     final isPlayingMotionVideo = useState(false);
-    ValueNotifier<bool> isZoomedListener = ValueNotifier<bool>(false);
+    late Offset localPosition;
+    final authToken = 'Bearer ${box.get(accessTokenKey)}';
 
     PageController controller =
         PageController(initialPage: assetList.indexOf(asset));
@@ -57,7 +68,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       [],
     );
 
-    getAssetExif() async {
+    void getAssetExif() async {
       if (assetList[indexOfAsset.value].isRemote) {
         assetDetail = await ref
             .watch(assetServiceProvider)
@@ -68,27 +79,96 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
     }
 
-    void showInfo() {
-      showModalBottomSheet(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.0),
+    /// Thumbnail image of a remote asset. Required asset.remote != null
+    ImageProvider remoteThumbnailImageProvider(Asset asset, api.ThumbnailFormat type) {
+      return CachedNetworkImageProvider(
+        getThumbnailUrl(
+          asset.remote!,
+          type: type,
         ),
-        barrierColor: Colors.transparent,
-        backgroundColor: Colors.transparent,
-        isScrollControlled: true,
-        context: context,
-        builder: (context) {
-          return ExifBottomSheet(assetDetail: assetDetail!);
-        },
+        cacheKey: getThumbnailCacheKey(
+          asset.remote!,
+          type: type,
+        ),
+        headers: {"Authorization": authToken},
       );
     }
 
-    //make isZoomed listener call instead
-    void isZoomedMethod() {
-      if (isZoomedListener.value) {
-        isZoomed.value = true;
-      } else {
-        isZoomed.value = false;
+    /// Original (large) image of a remote asset. Required asset.remote != null
+    ImageProvider originalImageProvider(Asset asset) {
+      return CachedNetworkImageProvider(
+        getImageUrl(asset.remote!),
+        cacheKey: getImageCacheKey(asset.remote!),
+        headers: {"Authorization": authToken},
+      );
+    }
+
+    /// Thumbnail image of a local asset. Required asset.local != null
+    ImageProvider localThumbnailImageProvider(Asset asset) {
+      return AssetEntityImageProvider(
+        asset.local!,
+        isOriginal: false,
+        thumbnailSize: const ThumbnailSize.square(250),
+      );
+
+    }
+
+    /// Original (large) image of a local asset. Required asset.local != null
+    ImageProvider localImageProvider(Asset asset) {
+      return AssetEntityImageProvider(asset.local!);
+    }
+
+    void precacheNextImage(int index) {
+      if (index < assetList.length && index > 0) {
+        final asset = assetList[index];
+        if (asset.isLocal) {
+          // Preload the local asset
+          precacheImage(localImageProvider(asset), context);
+        } else {
+          // Probably load WEBP either way
+          precacheImage(
+            remoteThumbnailImageProvider(
+              asset, 
+              api.ThumbnailFormat.WEBP,
+            ),
+            context,
+          );
+          if (isLoadPreview.value) {
+            // Precache the JPEG thumbnail
+            precacheImage(
+              remoteThumbnailImageProvider(
+                asset,
+                api.ThumbnailFormat.JPEG,
+              ),
+              context,
+            );
+          }
+          if (isLoadOriginal.value) {
+            // Preload the original asset
+            precacheImage(
+              originalImageProvider(asset),
+              context,
+            );
+          }
+
+        }
+      }
+    }
+
+    void showInfo() {
+      if (assetList[indexOfAsset.value].isRemote) {
+        showModalBottomSheet(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+          barrierColor: Colors.transparent,
+          backgroundColor: Colors.transparent,
+          isScrollControlled: true,
+          context: context,
+          builder: (context) {
+            return ExifBottomSheet(assetDetail: assetDetail!);
+          },
+        );
       }
     }
 
@@ -122,6 +202,28 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
+    void handleSwipeUpDown(DragUpdateDetails details) {
+      int sensitivity = 15;
+      int dxThreshhold = 50;
+
+      if (isZoomed.value) {
+        return;
+      }
+
+      // Check for delta from initial down point
+      final d = details.localPosition - localPosition;
+      // If the magnitude of the dx swipe is large, we probably didn't mean to go down
+      if (d.dx.abs() > dxThreshhold) {
+        return;
+      }
+
+      if (details.delta.dy > sensitivity) {
+        AutoRouter.of(context).pop();
+      } else if (details.delta.dy < -sensitivity) {
+        showInfo();
+      }
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: TopControlAppBar(
@@ -150,61 +252,93 @@ class GalleryViewerPage extends HookConsumerWidget {
         onAddToAlbumPressed: () => addToAlbum(assetList[indexOfAsset.value]),
       ),
       body: SafeArea(
-        child: PageView.builder(
-          controller: controller,
-          pageSnapping: true,
-          physics: isZoomed.value
-              ? const NeverScrollableScrollPhysics()
-              : const BouncingScrollPhysics(),
+        child: PhotoViewGallery.builder(
+          scaleStateChangedCallback: (state) => isZoomed.value = state != PhotoViewScaleState.initial,
+          pageController: controller,
+          scrollPhysics: isZoomed.value
+              ? const NeverScrollableScrollPhysics() // Don't allow paging while scrolled in
+              : (Platform.isIOS 
+                ? const BouncingScrollPhysics()  // Use bouncing physics for iOS
+                : const ImmichPageViewScrollPhysics() // Use heavy physics for Android
+              ),
           itemCount: assetList.length,
           scrollDirection: Axis.horizontal,
           onPageChanged: (value) {
+            // Precache image
+            if (indexOfAsset.value < value) {
+              // Moving forwards, so precache the next asset
+              precacheNextImage(value + 1);
+            } else {
+              // Moving backwards, so precache previous asset
+              precacheNextImage(value - 1);
+            }
             indexOfAsset.value = value;
             HapticFeedback.selectionClick();
           },
-          itemBuilder: (context, index) {
-            getAssetExif();
+          loadingBuilder: isLoadPreview.value ? (context, event) {
+            final asset = assetList[indexOfAsset.value];
+            if (!asset.isLocal) {
+              // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to acheive
+              // Three-Stage Loading (WEBP -> JPEG -> Original)
+              final webPThumbnail = CachedNetworkImage(
+                imageUrl: getThumbnailUrl(asset.remote!, type: api.ThumbnailFormat.WEBP),
+                cacheKey: getThumbnailCacheKey(asset.remote!, type: api.ThumbnailFormat.WEBP),
+                httpHeaders: { 'Authorization': authToken },
+                progressIndicatorBuilder: (_, __, ___) => const Center(child: ImmichLoadingIndicator(),),
+                fit: BoxFit.contain,
+              );
 
-            if (assetList[index].isImage) {
-              if (isPlayingMotionVideo.value) {
-                return VideoViewerPage(
-                  asset: assetList[index],
-                  isMotionVideo: true,
-                  onVideoEnded: () {
-                    isPlayingMotionVideo.value = false;
-                  },
-                );
-              } else {
-                return ImageViewerPage(
-                  authToken: 'Bearer ${box.get(accessTokenKey)}',
-                  isZoomedFunction: isZoomedMethod,
-                  isZoomedListener: isZoomedListener,
-                  asset: assetList[index],
-                  heroTag: assetList[index].id,
-                  loadPreview: isLoadPreview.value,
-                  loadOriginal: isLoadOriginal.value,
-                  showExifSheet: showInfo,
-                );
-              }
+              return CachedNetworkImage(
+                imageUrl: getThumbnailUrl(asset.remote!, type: api.ThumbnailFormat.JPEG),
+                cacheKey: getThumbnailCacheKey(asset.remote!, type: api.ThumbnailFormat.JPEG),
+                httpHeaders: { 'Authorization': authToken },
+                fit: BoxFit.contain,
+                placeholder: (_, __) => webPThumbnail,
+              );
             } else {
-              return GestureDetector(
-                onVerticalDragUpdate: (details) {
-                  const int sensitivity = 15;
-                  if (details.delta.dy > sensitivity) {
-                    // swipe down
-                    AutoRouter.of(context).pop();
-                  } else if (details.delta.dy < -sensitivity) {
-                    // swipe up
-                    showInfo();
-                  }
-                },
-                child: Hero(
-                  tag: assetList[index].id,
-                  child: VideoViewerPage(
-                    asset: assetList[index],
-                    isMotionVideo: false,
-                    onVideoEnded: () {},
-                  ),
+              return Image(
+                image: localThumbnailImageProvider(asset),
+                fit: BoxFit.contain,
+              );
+            }
+          } : null,
+          builder: (context, index) {
+            getAssetExif();
+            if (assetList[index].isImage && !isPlayingMotionVideo.value) {
+              // Show photo
+              final ImageProvider provider;
+              if (assetList[index].isLocal) {
+                provider = localImageProvider(assetList[index]);
+              } else {
+                if (isLoadOriginal.value) {
+                  provider = originalImageProvider(assetList[index]);
+                } else {
+                  provider = remoteThumbnailImageProvider(
+                    assetList[index], 
+                    api.ThumbnailFormat.JPEG,
+                  );
+                }
+              }
+              return PhotoViewGalleryPageOptions(
+                onDragStart: (_, details, __) => localPosition = details.localPosition,
+                onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
+                imageProvider: provider,
+                heroAttributes: PhotoViewHeroAttributes(tag: assetList[index].id),
+                minScale: PhotoViewComputedScale.contained,
+              );
+            } else {
+              return PhotoViewGalleryPageOptions.customChild(
+                onDragStart: (_, details, __) => localPosition = details.localPosition,
+                onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
+                heroAttributes: PhotoViewHeroAttributes(tag: assetList[index].id),
+                child: VideoViewerPage(
+                  asset: assetList[index],
+                  isMotionVideo: isPlayingMotionVideo.value,
+                  onVideoEnded: () {
+                    if (isPlayingMotionVideo.value) {
+                      isPlayingMotionVideo.value = false;
+                    }
+                  },
                 ),
               );
             }
@@ -213,4 +347,20 @@ class GalleryViewerPage extends HookConsumerWidget {
       ),
     );
   }
+}
+
+class ImmichPageViewScrollPhysics extends ScrollPhysics {
+  const ImmichPageViewScrollPhysics({super.parent});
+
+  @override
+  ImmichPageViewScrollPhysics applyTo(ScrollPhysics? ancestor) {
+    return ImmichPageViewScrollPhysics(parent: buildParent(ancestor)!);
+  }
+
+  @override
+  SpringDescription get spring => const SpringDescription(
+    mass: 100,
+    stiffness: 100,
+    damping: .90,
+  );
 }
