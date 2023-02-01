@@ -259,7 +259,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               ? const NeverScrollableScrollPhysics() // Don't allow paging while scrolled in
               : (Platform.isIOS 
                 ? const BouncingScrollPhysics()  // Use bouncing physics for iOS
-                : const ImmichPageViewScrollPhysics() // Use heavy physics for Android
+                : const ClampingScrollPhysics() // Use heavy physics for Android
               ),
           itemCount: assetList.length,
           scrollDirection: Axis.horizontal,
@@ -349,18 +349,3 @@ class GalleryViewerPage extends HookConsumerWidget {
   }
 }
 
-class ImmichPageViewScrollPhysics extends ScrollPhysics {
-  const ImmichPageViewScrollPhysics({super.parent});
-
-  @override
-  ImmichPageViewScrollPhysics applyTo(ScrollPhysics? ancestor) {
-    return ImmichPageViewScrollPhysics(parent: buildParent(ancestor)!);
-  }
-
-  @override
-  SpringDescription get spring => const SpringDescription(
-    mass: 100,
-    stiffness: 100,
-    damping: .90,
-  );
-}
