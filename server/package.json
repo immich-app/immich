@@ -58,6 +58,7 @@
     "cookie-parser": "^1.4.6",
     "diskusage": "^1.1.3",
     "exiftool-vendored": "^19.0.0",
+    "exiftool-vendored.pl": "^12.54.0",
     "fluent-ffmpeg": "^2.1.2",
     "handlebars": "^4.7.7",
     "i18n-iso-countries": "^7.5.0",
