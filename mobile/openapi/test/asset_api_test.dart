@@ -47,7 +47,7 @@ void main() {
 
     // 
     //
-    //Future<Object> downloadFile(String assetId, { bool isThumb, bool isWeb }) async
+    //Future<Object> downloadFile(String assetId) async
     test('test downloadFile', () async {
       // TODO
     });
