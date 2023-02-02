@@ -5,8 +5,6 @@ import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart'
 import 'package:immich_mobile/modules/favorite/ui/favorite_image.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
-import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/ui/immich_image.dart';
 
 class FavoritesPage extends HookConsumerWidget {
   const FavoritesPage({Key? key}) : super(key: key);
@@ -30,8 +28,6 @@ class FavoritesPage extends HookConsumerWidget {
 
     Widget buildImageGrid() {
       final appSettingService = ref.watch(appSettingsServiceProvider);
-      final bool showStorageIndicator =
-          appSettingService.getSetting(AppSettingsEnum.storageIndicator);
 
       if (ref.watch(favoriteProvider).isNotEmpty) {
         return SliverPadding(
@@ -49,8 +45,8 @@ class FavoritesPage extends HookConsumerWidget {
                 int index,
               ) {
                 return FavoriteImage(
-                    ref.watch(favoriteProvider)[index],
-                    ref.watch(favoriteProvider)
+                  ref.watch(favoriteProvider)[index],
+                  ref.watch(favoriteProvider),
                 );
               },
               childCount: ref.watch(favoriteProvider).length,
@@ -62,9 +58,10 @@ class FavoritesPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-        appBar: buildAppBar(),
-        body: CustomScrollView(
-          slivers: [buildImageGrid()],
-        ));
+      appBar: buildAppBar(),
+      body: CustomScrollView(
+        slivers: [buildImageGrid()],
+      ),
+    );
   }
 }
