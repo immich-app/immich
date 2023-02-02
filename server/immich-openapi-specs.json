@@ -1110,24 +1110,6 @@
         "description": "",
         "parameters": [
           {
-            "name": "isThumb",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "title": "Is serve thumbnail (resize) file",
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isWeb",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "title": "Is request made from web",
-              "type": "boolean"
-            }
-          },
-          {
             "name": "assetId",
             "required": true,
             "in": "path",

@@ -15,6 +15,7 @@ import {
   Put,
   UploadedFiles,
   Patch,
+  StreamableFile,
 } from '@nestjs/common';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AssetService } from './asset.service';
@@ -28,7 +29,7 @@ import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
-import { AssetResponseDto } from '@app/domain';
+import { AssetResponseDto, ImmichReadStream } from '@app/domain';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { AssetFileUploadDto } from './dto/asset-file-upload.dto';
 import { CreateAssetDto, mapToUploadFile } from './dto/create-asset.dto';
@@ -54,6 +55,10 @@ import { SharedLinkResponseDto } from '@app/domain';
 import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config';
+
+function asStreamableFile({ stream, type, length }: ImmichReadStream) {
+  return new StreamableFile(stream, { type, length });
+}
 
 @ApiBearerAuth()
 @ApiTags('Asset')
@@ -103,12 +108,9 @@ export class AssetController {
   async downloadFile(
     @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
-    @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
     @Param('assetId') assetId: string,
   ): Promise<any> {
-    this.assetService.checkDownloadAccess(authUser);
-    await this.assetService.checkAssetsAccess(authUser, [assetId]);
-    return this.assetService.downloadFile(query, assetId, res);
+    return this.assetService.downloadFile(authUser, assetId).then(asStreamableFile);
   }
 
   @Authenticated({ isShared: true })
