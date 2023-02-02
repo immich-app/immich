@@ -1,11 +1,11 @@
 import { APP_UPLOAD_LOCATION } from '@app/common/constants';
-import { UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Logger, UnauthorizedException } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import { createHash, randomUUID } from 'crypto';
 import { Request } from 'express';
 import { existsSync, mkdirSync } from 'fs';
 import { diskStorage, StorageEngine } from 'multer';
-import { join } from 'path';
+import { extname, join } from 'path';
 import sanitize from 'sanitize-filename';
 import { AuthUserDto } from '../decorators/auth-user.decorator';
 import { patchFormData } from '../utils/path-form-data.util';
@@ -46,6 +46,8 @@ export function customStorage(): StorageEngine {
 
 export const multerUtils = { fileFilter, filename, destination };
 
+const logger = new Logger('AssetUploadConfig');
+
 function fileFilter(req: Request, file: any, cb: any) {
   if (!req.user || (req.user.isPublicUser && !req.user.isAllowUpload)) {
     return cb(new UnauthorizedException());
@@ -53,17 +55,18 @@ function fileFilter(req: Request, file: any, cb: any) {
   // TODO: Create new API endpoint for mimetypes and use that here as browser's
   //  file mimetype is not to be trusted.
   // Reference about issue with it: https://stackoverflow.com/questions/26149389/mime-type-missing-for-rar-and-tar/26222177#26222177
-  cb(null, true);
-  //if (
-  //  file.mimetype.match(
-  //    /\/(jpg|jpeg|png|gif|mp4|webm|x-msvideo|quicktime|heic|heif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef)$/,
-  //  )
-  //) {
-  //  cb(null, true);
-  //} else {
-  //  logger.error(`Unsupported file type ${extname(file.originalname)} file MIME type ${filetype}`);
-  //  cb(new BadRequestException(`Unsupported file type ${extname(file.originalname)}`), false);
-  // }
+  if (
+    file.mimetype.match(
+      /\/(jpg|jpeg|png|gif|mp4|webm|x-msvideo|quicktime|heic|heif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef|x-fuji-raf|x-samsung-srw)$/,
+    ) ||
+    (file.mimetype.match('application/octet-stream') && extname(file.originalname.toLowerCase()) == '.raf') ||
+    (file.mimetype.match('application/octet-stream') && extname(file.originalname.toLowerCase()) == '.srw')
+  ) {
+    cb(null, true);
+  } else {
+    logger.error(`Unsupported file type ${extname(file.originalname)} file MIME type ${file.mimetype}`);
+    cb(new BadRequestException(`Unsupported file type ${extname(file.originalname)}`), false);
+  }
 }
 
 function destination(req: Request, file: Express.Multer.File, cb: any) {
