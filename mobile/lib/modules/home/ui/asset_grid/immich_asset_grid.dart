@@ -224,13 +224,28 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     }
   }
 
+
+  Future<bool> onWillPop() async {
+    if (widget.selectionActive && _selectedAssets.isNotEmpty) {
+      _deselectAll();
+      return false;
+    }
+
+    return true;
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        _buildAssetGrid(),
-        if (widget.selectionActive) _buildMultiSelectIndicator(),
-      ],
+    return WillPopScope(
+      onWillPop: onWillPop,
+      child: Stack(
+        children: [
+          _buildAssetGrid(),
+          if (widget.selectionActive) _buildMultiSelectIndicator(),
+        ],
+      ),
     );
   }
 }
