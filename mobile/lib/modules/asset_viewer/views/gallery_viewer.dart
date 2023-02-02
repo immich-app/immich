@@ -344,7 +344,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               return PhotoViewGalleryPageOptions(
                 onDragStart: (_, details, __) => localPosition = details.localPosition,
                 onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
-                onTapDown: (_, __, ___) => showAppBar.value = true,
+                onTapDown: (_, __, ___) => showAppBar.value = !showAppBar.value,
                 imageProvider: provider,
                 heroAttributes: PhotoViewHeroAttributes(tag: assetList[index].id),
                 minScale: PhotoViewComputedScale.contained,
@@ -353,7 +353,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               return PhotoViewGalleryPageOptions.customChild(
                 onDragStart: (_, details, __) => localPosition = details.localPosition,
                 onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
-                onTapDown: (_, __, ___) => showAppBar.value = true,
+                onTapDown: (_, __, ___) => showAppBar.value = !showAppBar.value,
                 heroAttributes: PhotoViewHeroAttributes(tag: assetList[index].id),
                 child: VideoViewerPage(
                   asset: assetList[index],
