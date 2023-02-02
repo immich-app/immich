@@ -31,7 +31,6 @@
     "@tensorflow/tfjs-converter": "^3.19.0",
     "@tensorflow/tfjs-core": "^3.19.0",
     "@tensorflow/tfjs-node": "^3.19.0",
-    "@tensorflow/tfjs-node-gpu": "^3.19.0",
     "@trpc/server": "^9.20.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
