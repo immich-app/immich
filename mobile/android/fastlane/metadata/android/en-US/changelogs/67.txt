@@ -1,0 +1,9 @@
+* feat(mobile) reused HTTP client for uploading assets
+* fix(mobile): top padding missing from drag handle in add to album bottom sheet
+* fix(mobile): Generate 1 splash screen on Android
+* fix(mobile): Improve the gallery to improve scale, double tap, and swipe gesture detection
+* fix(mobile): Uses clamping scroll physics on android
+* fix(mobile): Fix back button closing the app from multi selection in Android
+* fix(mobile) add and delete operation asset in album viewer doesn't update count in album list
+* chore(mobile): Update share_file to latest version and migrate to using cross platform shareXFile
+* chore(mobile): Adaptive launcher icon for Android
