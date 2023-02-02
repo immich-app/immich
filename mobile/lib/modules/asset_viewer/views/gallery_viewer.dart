@@ -108,7 +108,10 @@ class GalleryViewerPage extends HookConsumerWidget {
       return AssetEntityImageProvider(
         asset.local!,
         isOriginal: false,
-        thumbnailSize: const ThumbnailSize.square(250),
+        thumbnailSize: ThumbnailSize(
+          MediaQuery.of(context).size.width.floor(),
+          MediaQuery.of(context).size.height.floor(),
+        ),
       );
 
     }
@@ -285,6 +288,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 cacheKey: getThumbnailCacheKey(asset.remote!, type: api.ThumbnailFormat.WEBP),
                 httpHeaders: { 'Authorization': authToken },
                 progressIndicatorBuilder: (_, __, ___) => const Center(child: ImmichLoadingIndicator(),),
+                fadeInDuration: const Duration(milliseconds: 0),
                 fit: BoxFit.contain,
               );
 
@@ -293,6 +297,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 cacheKey: getThumbnailCacheKey(asset.remote!, type: api.ThumbnailFormat.JPEG),
                 httpHeaders: { 'Authorization': authToken },
                 fit: BoxFit.contain,
+                fadeInDuration: const Duration(milliseconds: 0),
                 placeholder: (_, __) => webPThumbnail,
               );
             } else {
