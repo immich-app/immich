@@ -1,17 +1,15 @@
 import { IAssetRepository } from './asset-repository';
-import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetService } from './asset.service';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { AssetEntity, AssetType } from '@app/infra';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { DownloadService } from '../../modules/download/download.service';
-import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 import { AlbumRepository, IAlbumRepository } from '../album/album-repository';
 import { StorageService } from '@app/storage';
-import { ICryptoRepository, IJobRepository, ISharedLinkRepository } from '@app/domain';
+import { ICryptoRepository, IJobRepository, ISharedLinkRepository, JobName } from '@app/domain';
 import {
   authStub,
   newCryptoRepositoryMock,
@@ -23,105 +21,102 @@ import {
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 
+const _getCreateAssetDto = (): CreateAssetDto => {
+  const createAssetDto = new CreateAssetDto();
+  createAssetDto.deviceAssetId = 'deviceAssetId';
+  createAssetDto.deviceId = 'deviceId';
+  createAssetDto.assetType = AssetType.OTHER;
+  createAssetDto.createdAt = '2022-06-19T23:41:36.910Z';
+  createAssetDto.modifiedAt = '2022-06-19T23:41:36.910Z';
+  createAssetDto.isFavorite = false;
+  createAssetDto.duration = '0:00:00.000000';
+
+  return createAssetDto;
+};
+
+const _getAsset_1 = () => {
+  const asset_1 = new AssetEntity();
+
+  asset_1.id = 'id_1';
+  asset_1.userId = 'user_id_1';
+  asset_1.deviceAssetId = 'device_asset_id_1';
+  asset_1.deviceId = 'device_id_1';
+  asset_1.type = AssetType.VIDEO;
+  asset_1.originalPath = 'fake_path/asset_1.jpeg';
+  asset_1.resizePath = '';
+  asset_1.createdAt = '2022-06-19T23:41:36.910Z';
+  asset_1.modifiedAt = '2022-06-19T23:41:36.910Z';
+  asset_1.isFavorite = false;
+  asset_1.mimeType = 'image/jpeg';
+  asset_1.webpPath = '';
+  asset_1.encodedVideoPath = '';
+  asset_1.duration = '0:00:00.000000';
+  return asset_1;
+};
+
+const _getAsset_2 = () => {
+  const asset_2 = new AssetEntity();
+
+  asset_2.id = 'id_2';
+  asset_2.userId = 'user_id_1';
+  asset_2.deviceAssetId = 'device_asset_id_2';
+  asset_2.deviceId = 'device_id_1';
+  asset_2.type = AssetType.VIDEO;
+  asset_2.originalPath = 'fake_path/asset_2.jpeg';
+  asset_2.resizePath = '';
+  asset_2.createdAt = '2022-06-19T23:41:36.910Z';
+  asset_2.modifiedAt = '2022-06-19T23:41:36.910Z';
+  asset_2.isFavorite = false;
+  asset_2.mimeType = 'image/jpeg';
+  asset_2.webpPath = '';
+  asset_2.encodedVideoPath = '';
+  asset_2.duration = '0:00:00.000000';
+
+  return asset_2;
+};
+
+const _getAssets = () => {
+  return [_getAsset_1(), _getAsset_2()];
+};
+
+const _getAssetCountByTimeBucket = (): AssetCountByTimeBucket[] => {
+  const result1 = new AssetCountByTimeBucket();
+  result1.count = 2;
+  result1.timeBucket = '2022-06-01T00:00:00.000Z';
+
+  const result2 = new AssetCountByTimeBucket();
+  result1.count = 5;
+  result1.timeBucket = '2022-07-01T00:00:00.000Z';
+
+  return [result1, result2];
+};
+
+const _getAssetCountByUserId = (): AssetCountByUserIdResponseDto => {
+  const result = new AssetCountByUserIdResponseDto();
+
+  result.videos = 2;
+  result.photos = 2;
+
+  return result;
+};
+
 describe('AssetService', () => {
-  let sui: AssetService;
+  let sut: AssetService;
   let a: Repository<AssetEntity>; // TO BE DELETED AFTER FINISHED REFACTORING
   let assetRepositoryMock: jest.Mocked<IAssetRepository>;
   let albumRepositoryMock: jest.Mocked<IAlbumRepository>;
   let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
-  let backgroundTaskServiceMock: jest.Mocked<BackgroundTaskService>;
-  let storageSeriveMock: jest.Mocked<StorageService>;
+  let storageServiceMock: jest.Mocked<StorageService>;
   let sharedLinkRepositoryMock: jest.Mocked<ISharedLinkRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
-  const authUser: AuthUserDto = Object.freeze({
-    id: 'user_id_1',
-    email: 'auth@test.com',
-    isAdmin: false,
-  });
 
-  const _getCreateAssetDto = (): CreateAssetDto => {
-    const createAssetDto = new CreateAssetDto();
-    createAssetDto.deviceAssetId = 'deviceAssetId';
-    createAssetDto.deviceId = 'deviceId';
-    createAssetDto.assetType = AssetType.OTHER;
-    createAssetDto.createdAt = '2022-06-19T23:41:36.910Z';
-    createAssetDto.modifiedAt = '2022-06-19T23:41:36.910Z';
-    createAssetDto.isFavorite = false;
-    createAssetDto.duration = '0:00:00.000000';
-
-    return createAssetDto;
-  };
-
-  const _getAsset_1 = () => {
-    const asset_1 = new AssetEntity();
-
-    asset_1.id = 'id_1';
-    asset_1.userId = 'user_id_1';
-    asset_1.deviceAssetId = 'device_asset_id_1';
-    asset_1.deviceId = 'device_id_1';
-    asset_1.type = AssetType.VIDEO;
-    asset_1.originalPath = 'fake_path/asset_1.jpeg';
-    asset_1.resizePath = '';
-    asset_1.createdAt = '2022-06-19T23:41:36.910Z';
-    asset_1.modifiedAt = '2022-06-19T23:41:36.910Z';
-    asset_1.isFavorite = false;
-    asset_1.mimeType = 'image/jpeg';
-    asset_1.webpPath = '';
-    asset_1.encodedVideoPath = '';
-    asset_1.duration = '0:00:00.000000';
-    return asset_1;
-  };
-
-  const _getAsset_2 = () => {
-    const asset_2 = new AssetEntity();
-
-    asset_2.id = 'id_2';
-    asset_2.userId = 'user_id_1';
-    asset_2.deviceAssetId = 'device_asset_id_2';
-    asset_2.deviceId = 'device_id_1';
-    asset_2.type = AssetType.VIDEO;
-    asset_2.originalPath = 'fake_path/asset_2.jpeg';
-    asset_2.resizePath = '';
-    asset_2.createdAt = '2022-06-19T23:41:36.910Z';
-    asset_2.modifiedAt = '2022-06-19T23:41:36.910Z';
-    asset_2.isFavorite = false;
-    asset_2.mimeType = 'image/jpeg';
-    asset_2.webpPath = '';
-    asset_2.encodedVideoPath = '';
-    asset_2.duration = '0:00:00.000000';
-
-    return asset_2;
-  };
-
-  const _getAssets = () => {
-    return [_getAsset_1(), _getAsset_2()];
-  };
-
-  const _getAssetCountByTimeBucket = (): AssetCountByTimeBucket[] => {
-    const result1 = new AssetCountByTimeBucket();
-    result1.count = 2;
-    result1.timeBucket = '2022-06-01T00:00:00.000Z';
-
-    const result2 = new AssetCountByTimeBucket();
-    result1.count = 5;
-    result1.timeBucket = '2022-07-01T00:00:00.000Z';
-
-    return [result1, result2];
-  };
-
-  const _getAssetCountByUserId = (): AssetCountByUserIdResponseDto => {
-    const result = new AssetCountByUserIdResponseDto();
-
-    result.videos = 2;
-    result.photos = 2;
-
-    return result;
-  };
-
-  beforeAll(() => {
+  beforeEach(() => {
     assetRepositoryMock = {
+      get: jest.fn(),
       create: jest.fn(),
+      remove: jest.fn(),
+
       update: jest.fn(),
       getAll: jest.fn(),
       getAllVideos: jest.fn(),
@@ -151,18 +146,21 @@ describe('AssetService', () => {
       downloadArchive: jest.fn(),
     };
 
-    sharedLinkRepositoryMock = newSharedLinkRepositoryMock();
+    storageServiceMock = {
+      moveAsset: jest.fn(),
+      removeEmptyDirectories: jest.fn(),
+    } as unknown as jest.Mocked<StorageService>;
 
+    sharedLinkRepositoryMock = newSharedLinkRepositoryMock();
     jobMock = newJobRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
 
-    sui = new AssetService(
+    sut = new AssetService(
       assetRepositoryMock,
       albumRepositoryMock,
       a,
-      backgroundTaskServiceMock,
       downloadServiceMock as DownloadService,
-      storageSeriveMock,
+      storageServiceMock,
       sharedLinkRepositoryMock,
       jobMock,
       cryptoMock,
@@ -178,7 +176,7 @@ describe('AssetService', () => {
       assetRepositoryMock.countByIdAndUser.mockResolvedValue(1);
       sharedLinkRepositoryMock.create.mockResolvedValue(sharedLinkStub.valid);
 
-      await expect(sui.createAssetsSharedLink(authStub.user1, dto)).resolves.toEqual(sharedLinkResponseStub.valid);
+      await expect(sut.createAssetsSharedLink(authStub.user1, dto)).resolves.toEqual(sharedLinkResponseStub.valid);
 
       expect(assetRepositoryMock.getById).toHaveBeenCalledWith(asset1.id);
       expect(assetRepositoryMock.countByIdAndUser).toHaveBeenCalledWith(asset1.id, authStub.user1.id);
@@ -196,7 +194,7 @@ describe('AssetService', () => {
       sharedLinkRepositoryMock.get.mockResolvedValue(null);
       sharedLinkRepositoryMock.hasAssetAccess.mockResolvedValue(true);
 
-      await expect(sui.updateAssetsInSharedLink(authDto, dto)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.updateAssetsInSharedLink(authDto, dto)).rejects.toBeInstanceOf(BadRequestException);
 
       expect(assetRepositoryMock.getById).toHaveBeenCalledWith(asset1.id);
       expect(sharedLinkRepositoryMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
@@ -215,7 +213,7 @@ describe('AssetService', () => {
       sharedLinkRepositoryMock.hasAssetAccess.mockResolvedValue(true);
       sharedLinkRepositoryMock.save.mockResolvedValue(sharedLinkStub.valid);
 
-      await expect(sui.updateAssetsInSharedLink(authDto, dto)).resolves.toEqual(sharedLinkResponseStub.valid);
+      await expect(sut.updateAssetsInSharedLink(authDto, dto)).resolves.toEqual(sharedLinkResponseStub.valid);
 
       expect(assetRepositoryMock.getById).toHaveBeenCalledWith(asset1.id);
       expect(sharedLinkRepositoryMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
@@ -223,27 +221,94 @@ describe('AssetService', () => {
     });
   });
 
-  // Currently failing due to calculate checksum from a file
-  it('create an asset', async () => {
-    const assetEntity = _getAsset_1();
+  describe('uploadFile', () => {
+    it('should handle a file upload', async () => {
+      const assetEntity = _getAsset_1();
+      const file = {
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+      };
+      const dto = _getCreateAssetDto();
 
-    assetRepositoryMock.create.mockImplementation(() => Promise.resolve<AssetEntity>(assetEntity));
+      assetRepositoryMock.create.mockImplementation(() => Promise.resolve(assetEntity));
+      storageServiceMock.moveAsset.mockResolvedValue({ ...assetEntity, originalPath: 'fake_new_path/asset_123.jpeg' });
 
-    const originalPath = 'fake_path/asset_1.jpeg';
-    const mimeType = 'image/jpeg';
-    const createAssetDto = _getCreateAssetDto();
-    const result = await sui.createUserAsset(
-      authUser,
-      createAssetDto,
-      originalPath,
-      mimeType,
-      Buffer.from('0x5041E6328F7DF8AFF650BEDAED9251897D9A6241', 'hex'),
-      true,
-    );
+      await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({ duplicate: false, id: 'id_1' });
+    });
 
-    expect(result.userId).toEqual(authUser.id);
-    expect(result.resizePath).toEqual('');
-    expect(result.webpPath).toEqual('');
+    it('should handle a duplicate', async () => {
+      const file = {
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+      };
+      const dto = _getCreateAssetDto();
+      const error = new QueryFailedError('', [], '');
+      (error as any).constraint = 'UQ_userid_checksum';
+
+      assetRepositoryMock.create.mockRejectedValue(error);
+      assetRepositoryMock.getAssetByChecksum.mockResolvedValue(_getAsset_1());
+
+      await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({ duplicate: true, id: 'id_1' });
+
+      expect(jobMock.add).toHaveBeenCalledWith({
+        name: JobName.DELETE_FILE_ON_DISK,
+        data: { assets: [{ originalPath: 'fake_path/asset_1.jpeg', resizePath: null }] },
+      });
+      expect(storageServiceMock.moveAsset).not.toHaveBeenCalled();
+    });
+
+    it('should handle a live photo', async () => {
+      const file = {
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+      };
+      const asset = {
+        id: 'live-photo-asset',
+        originalPath: file.originalPath,
+        userId: authStub.user1.id,
+        type: AssetType.IMAGE,
+        isVisible: true,
+      } as AssetEntity;
+
+      const livePhotoFile = {
+        originalPath: 'fake_path/asset_1.mp4',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('live photo file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+      };
+
+      const livePhotoAsset = {
+        id: 'live-photo-motion',
+        originalPath: livePhotoFile.originalPath,
+        userId: authStub.user1.id,
+        type: AssetType.VIDEO,
+        isVisible: false,
+      } as AssetEntity;
+
+      const dto = _getCreateAssetDto();
+      const error = new QueryFailedError('', [], '');
+      (error as any).constraint = 'UQ_userid_checksum';
+
+      assetRepositoryMock.create.mockResolvedValueOnce(livePhotoAsset);
+      assetRepositoryMock.create.mockResolvedValueOnce(asset);
+      storageServiceMock.moveAsset.mockImplementation((asset) => Promise.resolve(asset));
+
+      await expect(sut.uploadFile(authStub.user1, dto, file, livePhotoFile)).resolves.toEqual({
+        duplicate: false,
+        id: 'live-photo-asset',
+      });
+
+      expect(jobMock.add.mock.calls).toEqual([
+        [{ name: JobName.ASSET_UPLOADED, data: { asset: livePhotoAsset, fileName: file.originalName } }],
+        [{ name: JobName.ASSET_UPLOADED, data: { asset, fileName: file.originalName } }],
+      ]);
+    });
   });
 
   it('get assets by device id', async () => {
@@ -254,7 +319,7 @@ describe('AssetService', () => {
     );
 
     const deviceId = 'device_id_1';
-    const result = await sui.getUserAssetsByDeviceId(authUser, deviceId);
+    const result = await sut.getUserAssetsByDeviceId(authStub.user1, deviceId);
 
     expect(result.length).toEqual(2);
     expect(result).toEqual(assets.map((asset) => asset.deviceAssetId));
@@ -267,7 +332,7 @@ describe('AssetService', () => {
       Promise.resolve<AssetCountByTimeBucket[]>(assetCountByTimeBucket),
     );
 
-    const result = await sui.getAssetCountByTimeBucket(authUser, {
+    const result = await sut.getAssetCountByTimeBucket(authStub.user1, {
       timeGroup: TimeGroupEnum.Month,
     });
 
@@ -282,18 +347,70 @@ describe('AssetService', () => {
       Promise.resolve<AssetCountByUserIdResponseDto>(assetCount),
     );
 
-    const result = await sui.getAssetCountByUserId(authUser);
+    const result = await sut.getAssetCountByUserId(authStub.user1);
 
     expect(result).toEqual(assetCount);
   });
 
+  describe('deleteAll', () => {
+    it('should return failed status when an asset is missing', async () => {
+      assetRepositoryMock.get.mockResolvedValue(null);
+
+      await expect(sut.deleteAll(authStub.user1, { ids: ['asset1'] })).resolves.toEqual([
+        { id: 'asset1', status: 'FAILED' },
+      ]);
+
+      expect(jobMock.add).not.toHaveBeenCalled();
+    });
+
+    it('should return failed status a delete fails', async () => {
+      assetRepositoryMock.get.mockResolvedValue({ id: 'asset1' } as AssetEntity);
+      assetRepositoryMock.remove.mockRejectedValue('delete failed');
+
+      await expect(sut.deleteAll(authStub.user1, { ids: ['asset1'] })).resolves.toEqual([
+        { id: 'asset1', status: 'FAILED' },
+      ]);
+
+      expect(jobMock.add).not.toHaveBeenCalled();
+    });
+
+    it('should delete a live photo', async () => {
+      assetRepositoryMock.get.mockResolvedValueOnce({ id: 'asset1', livePhotoVideoId: 'live-photo' } as AssetEntity);
+      assetRepositoryMock.get.mockResolvedValueOnce({ id: 'live-photo' } as AssetEntity);
+
+      await expect(sut.deleteAll(authStub.user1, { ids: ['asset1'] })).resolves.toEqual([
+        { id: 'asset1', status: 'SUCCESS' },
+        { id: 'live-photo', status: 'SUCCESS' },
+      ]);
+
+      expect(jobMock.add).toHaveBeenCalledWith({
+        name: JobName.DELETE_FILE_ON_DISK,
+        data: { assets: [{ id: 'asset1', livePhotoVideoId: 'live-photo' }, { id: 'live-photo' }] },
+      });
+    });
+
+    it('should delete a batch of assets', async () => {
+      assetRepositoryMock.get.mockImplementation((id) => Promise.resolve({ id } as AssetEntity));
+      assetRepositoryMock.remove.mockImplementation(() => Promise.resolve());
+
+      await expect(sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'] })).resolves.toEqual([
+        { id: 'asset1', status: 'SUCCESS' },
+        { id: 'asset2', status: 'SUCCESS' },
+      ]);
+
+      expect(jobMock.add.mock.calls).toEqual([
+        [{ name: JobName.DELETE_FILE_ON_DISK, data: { assets: [{ id: 'asset1' }, { id: 'asset2' }] } }],
+      ]);
+    });
+  });
+
   describe('checkDownloadAccess', () => {
     it('should validate download access', async () => {
-      await sui.checkDownloadAccess(authStub.adminSharedLink);
+      await sut.checkDownloadAccess(authStub.adminSharedLink);
     });
 
     it('should not allow when user is not allowed to download', async () => {
-      expect(() => sui.checkDownloadAccess(authStub.readonlySharedLink)).toThrow(ForbiddenException);
+      expect(() => sut.checkDownloadAccess(authStub.readonlySharedLink)).toThrow(ForbiddenException);
     });
   });
 });

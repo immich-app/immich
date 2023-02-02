@@ -57,12 +57,30 @@ class SplashScreenPage extends HookConsumerWidget {
       [],
     );
 
-    return const Scaffold(
+    return Scaffold(
       body: Center(
-        child: Image(
-          image: AssetImage('assets/immich-logo-no-outline.png'),
-          width: 200,
-          filterQuality: FilterQuality.high,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Image(
+              image: AssetImage('assets/immich-logo-no-outline.png'),
+              width: 200,
+              filterQuality: FilterQuality.high,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'IMMICH',
+                style: TextStyle(
+                  fontFamily: 'SnowburstOne',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 48,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

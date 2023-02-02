@@ -1,11 +1,27 @@
 import { UserEntity } from '@app/infra/db/entities';
-import { Injectable } from '@nestjs/common';
-import { ICryptoRepository } from '../auth';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ICryptoRepository } from '../crypto';
 import { IUserTokenRepository } from './user-token.repository';
 
 @Injectable()
 export class UserTokenCore {
   constructor(private crypto: ICryptoRepository, private repository: IUserTokenRepository) {}
+
+  async validate(tokenValue: string) {
+    const hashedToken = this.crypto.hashSha256(tokenValue);
+    const user = await this.getUserByToken(hashedToken);
+    if (user) {
+      return {
+        ...user,
+        isPublicUser: false,
+        isAllowUpload: true,
+        isAllowDownload: true,
+        isShowExif: true,
+      };
+    }
+
+    throw new UnauthorizedException('Invalid user token');
+  }
 
   public async getUserByToken(tokenValue: string): Promise<UserEntity | null> {
     const token = await this.repository.get(tokenValue);

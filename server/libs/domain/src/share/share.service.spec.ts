@@ -1,15 +1,12 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import {
   authStub,
-  userEntityStub,
   newCryptoRepositoryMock,
   newSharedLinkRepositoryMock,
-  newUserRepositoryMock,
   sharedLinkResponseStub,
   sharedLinkStub,
 } from '../../test';
-import { ICryptoRepository } from '../auth';
-import { IUserRepository } from '../user';
+import { ICryptoRepository } from '../crypto';
 import { ShareService } from './share.service';
 import { ISharedLinkRepository } from './shared-link.repository';
 
@@ -17,42 +14,16 @@ describe(ShareService.name, () => {
   let sut: ShareService;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let shareMock: jest.Mocked<ISharedLinkRepository>;
-  let userMock: jest.Mocked<IUserRepository>;
 
   beforeEach(async () => {
     cryptoMock = newCryptoRepositoryMock();
     shareMock = newSharedLinkRepositoryMock();
-    userMock = newUserRepositoryMock();
 
-    sut = new ShareService(cryptoMock, shareMock, userMock);
+    sut = new ShareService(cryptoMock, shareMock);
   });
 
   it('should work', () => {
     expect(sut).toBeDefined();
-  });
-
-  describe('validate', () => {
-    it('should not accept a non-existant key', async () => {
-      shareMock.getByKey.mockResolvedValue(null);
-      await expect(sut.validate('key')).resolves.toBeNull();
-    });
-
-    it('should not accept an expired key', async () => {
-      shareMock.getByKey.mockResolvedValue(sharedLinkStub.expired);
-      await expect(sut.validate('key')).resolves.toBeNull();
-    });
-
-    it('should not accept a key without a user', async () => {
-      shareMock.getByKey.mockResolvedValue(sharedLinkStub.expired);
-      userMock.get.mockResolvedValue(null);
-      await expect(sut.validate('key')).resolves.toBeNull();
-    });
-
-    it('should accept a valid key', async () => {
-      shareMock.getByKey.mockResolvedValue(sharedLinkStub.valid);
-      userMock.get.mockResolvedValue(userEntityStub.admin);
-      await expect(sut.validate('key')).resolves.toEqual(authStub.adminSharedLink);
-    });
   });
 
   describe('getAll', () => {
@@ -128,20 +99,6 @@ describe(ShareService.name, () => {
       await sut.remove(authStub.user1, sharedLinkStub.valid.id);
       expect(shareMock.get).toHaveBeenCalledWith(authStub.user1.id, sharedLinkStub.valid.id);
       expect(shareMock.remove).toHaveBeenCalledWith(sharedLinkStub.valid);
-    });
-  });
-
-  describe('getByKey', () => {
-    it('should not work on a missing key', async () => {
-      shareMock.getByKey.mockResolvedValue(null);
-      await expect(sut.getByKey('secret-key')).rejects.toBeInstanceOf(BadRequestException);
-      expect(shareMock.getByKey).toHaveBeenCalledWith('secret-key');
-    });
-
-    it('should find a key', async () => {
-      shareMock.getByKey.mockResolvedValue(sharedLinkStub.valid);
-      await expect(sut.getByKey('secret-key')).resolves.toEqual(sharedLinkResponseStub.valid);
-      expect(shareMock.getByKey).toHaveBeenCalledWith('secret-key');
     });
   });
 

@@ -1,13 +1,14 @@
 import { SystemConfig } from '@app/infra/db/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
-import { AuthType, AuthUserDto, ICryptoRepository, LoginResponseDto } from '../auth';
+import { AuthType, AuthUserDto, LoginResponseDto } from '../auth';
+import { ICryptoRepository } from '../crypto';
 import { AuthCore } from '../auth/auth.core';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
 import { IUserRepository, UserCore, UserResponseDto } from '../user';
 import { OAuthCallbackDto, OAuthConfigDto } from './dto';
 import { OAuthCore } from './oauth.core';
 import { OAuthConfigResponseDto } from './response-dto';
-import { IUserTokenRepository } from '@app/domain/user-token';
+import { IUserTokenRepository } from '../user-token';
 
 @Injectable()
 export class OAuthService {

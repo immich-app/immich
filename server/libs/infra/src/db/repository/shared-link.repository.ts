@@ -73,6 +73,7 @@ export class SharedLinkRepository implements ISharedLinkRepository {
             assetInfo: true,
           },
         },
+        user: true,
       },
       order: {
         createdAt: 'DESC',

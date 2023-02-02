@@ -6,7 +6,7 @@
 # usage: './scripts/pump-version.sh -s <major|minor|patch> <-m>
 #
 # examples:
-#    ./scripts/pump-version.sh -s major        # 1.0.0+50 => 2.0.0+50 
+#    ./scripts/pump-version.sh -s major        # 1.0.0+50 => 2.0.0+50
 #    ./scripts/pump-version.sh -s minor -m     # 1.0.0+50 => 1.1.0+51
 #    ./scripts/pump-version.sh -m              # 1.0.0+50 => 1.0.0+51
 #
@@ -16,10 +16,12 @@ MOBILE_PUMP="false"
 
 while getopts 's:m:' flag; do
   case "${flag}" in
-    s) SERVER_PUMP=${OPTARG} ;;
-    m) MOBILE_PUMP=${OPTARG} ;;
-    *) echo "Invalid args"
-       exit 1 ;;
+  s) SERVER_PUMP=${OPTARG} ;;
+  m) MOBILE_PUMP=${OPTARG} ;;
+  *)
+    echo "Invalid args"
+    exit 1
+    ;;
   esac
 done
 
@@ -30,8 +32,11 @@ PATCH=$(echo $CURRENT_SERVER | cut -d '.' -f3)
 
 if [[ $SERVER_PUMP == "major" ]]; then
   MAJOR=$((MAJOR + 1))
+  MINOR=0
+  PATCH=0
 elif [[ $SERVER_PUMP == "minor" ]]; then
   MINOR=$((MINOR + 1))
+  PATCH=0
 elif [[ $SERVER_PUMP == "patch" ]]; then
   PATCH=$((PATCH + 1))
 elif [[ $SERVER_PUMP == "false" ]]; then
@@ -54,8 +59,6 @@ else
   exit 1
 fi
 
-
-
 if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
 
   echo "Pumping Server: $CURRENT_SERVER => $NEXT_SERVER"
@@ -66,8 +69,6 @@ if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
   sed -i "s/version_number: \"$CURRENT_SERVER\"$/version_number: \"$NEXT_SERVER\"/" mobile/ios/fastlane/Fastfile
 fi
 
-
-
 if [ "$CURRENT_MOBILE" != "$NEXT_MOBILE" ]; then
 
   echo "Pumping Mobile: $CURRENT_MOBILE => $NEXT_MOBILE"
@@ -76,4 +77,4 @@ if [ "$CURRENT_MOBILE" != "$NEXT_MOBILE" ]; then
   sed -i "s/^version: $CURRENT_SERVER+$CURRENT_MOBILE$/version: $NEXT_SERVER+$NEXT_MOBILE/" mobile/pubspec.yaml
 fi
 
-echo "IMMICH_VERSION=v$NEXT_SERVER" >> $GITHUB_ENV
+echo "IMMICH_VERSION=v$NEXT_SERVER" >>$GITHUB_ENV
