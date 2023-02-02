@@ -46,7 +46,7 @@ export const fileUploadHandler = async (
 	if (files.length > 50) {
 		notificationController.show({
 			type: NotificationType.Error,
-			message: `Cannot upload more than 50 files at a time - you are uploading ${files.length} files. 
+			message: `Cannot upload more than 50 files at a time - you are uploading ${files.length} files.
 			Please check out <u>the bulk upload documentation</u> if you need to upload more than 50 files.`,
 			timeout: 10000,
 			action: { type: 'link', target: 'https://immich.app/docs/features/bulk-upload' }
@@ -93,12 +93,7 @@ async function fileUploader(
 		formData.append('deviceId', 'WEB');
 
 		// Get asset type
-		if (fileExtension.toLowerCase() == 'raf' || fileExtension.toLowerCase() == 'srw') {
-			// Workaround for annoying RAW types.
-			formData.append('assetType', 'IMAGE');
-		} else {
-			formData.append('assetType', assetType);
-		}
+		formData.append('assetType', isRawImageType(fileExtension) || assetType);
 
 		// Get Asset Created Date
 		formData.append('createdAt', createdAt);
@@ -195,6 +190,14 @@ async function fileUploader(
 	} catch (e) {
 		console.log('error uploading file ', e);
 	}
+}
+
+function isRawImageType(fileExtension: string): string | null {
+	const RAW_TYPES = ['raf', 'srw'];
+	if (RAW_TYPES.includes(fileExtension.toLowerCase())) {
+		return 'IMAGE';
+	}
+	return null;
 }
 
 function handleUploadError(asset: File, respBody = '{}', extraMessage?: string) {
