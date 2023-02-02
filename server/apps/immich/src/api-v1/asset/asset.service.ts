@@ -10,7 +10,6 @@ import {
   StreamableFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { createHash } from 'node:crypto';
 import { QueryFailedError, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetEntity, AssetType, SharedLinkType } from '@app/infra';
@@ -548,18 +547,6 @@ export class AssetService {
 
   getAssetByChecksum(userId: string, checksum: Buffer) {
     return this._assetRepository.getAssetByChecksum(userId, checksum);
-  }
-
-  calculateChecksum(filePath: string): Promise<Buffer> {
-    const fileReadStream = createReadStream(filePath);
-    const sha1Hash = createHash('sha1');
-    const deferred = new Promise<Buffer>((resolve, reject) => {
-      sha1Hash.once('error', (err) => reject(err));
-      sha1Hash.once('finish', () => resolve(sha1Hash.read()));
-    });
-
-    fileReadStream.pipe(sha1Hash);
-    return deferred;
   }
 
   getAssetCountByUserId(authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
