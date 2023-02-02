@@ -4,27 +4,28 @@ on:
   workflow_dispatch:
     inputs:
       serverBump:
-        description: 'Bump server version'
+        description: "Bump server version"
         required: true
-        default: 'false'
+        default: "false"
         type: choice
         options:
-        - false
-        - minor
-        - patch
+          - "false"
+          - minor
+          - patch
       mobileBump:
-        description: 'Bump mobile build number'
+        description: "Bump mobile build number"
         required: false
         type: boolean
 
 jobs:
   build_mobile:
     uses: ./.github/workflows/build-mobile.yml
+    secrets: inherit
 
   tag_release:
     runs-on: ubuntu-latest
     needs: build_mobile
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -33,7 +34,7 @@ jobs:
 
       - name: Bump version
         run: misc/release/pump-version.sh -s "${{ inputs.serverBump }}" -m "${{ inputs.mobileBump }}"
-          
+
       - name: Commit and tag
         uses: EndBug/add-and-commit@v9
         with:
@@ -47,7 +48,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: release-apk-signed
-          
+
       - name: Create draft release
         uses: softprops/action-gh-release@v1
         with:
