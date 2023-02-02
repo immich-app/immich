@@ -9,12 +9,13 @@ import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-use
 import { DownloadService } from '../../modules/download/download.service';
 import { AlbumRepository, IAlbumRepository } from '../album/album-repository';
 import { StorageService } from '@app/storage';
-import { ICryptoRepository, IJobRepository, ISharedLinkRepository, JobName } from '@app/domain';
+import { ICryptoRepository, IJobRepository, ISharedLinkRepository, IStorageRepository, JobName } from '@app/domain';
 import {
   authStub,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
   newSharedLinkRepositoryMock,
+  newStorageRepositoryMock,
   sharedLinkResponseStub,
   sharedLinkStub,
 } from '@app/domain/../test';
@@ -110,6 +111,7 @@ describe('AssetService', () => {
   let sharedLinkRepositoryMock: jest.Mocked<ISharedLinkRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
+  let storageMock: jest.Mocked<IStorageRepository>;
 
   beforeEach(() => {
     assetRepositoryMock = {
@@ -154,6 +156,7 @@ describe('AssetService', () => {
     sharedLinkRepositoryMock = newSharedLinkRepositoryMock();
     jobMock = newJobRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
+    storageMock = newStorageRepositoryMock();
 
     sut = new AssetService(
       assetRepositoryMock,
@@ -164,6 +167,7 @@ describe('AssetService', () => {
       sharedLinkRepositoryMock,
       jobMock,
       cryptoMock,
+      storageMock,
     );
   });
 
@@ -411,6 +415,17 @@ describe('AssetService', () => {
 
     it('should not allow when user is not allowed to download', async () => {
       expect(() => sut.checkDownloadAccess(authStub.readonlySharedLink)).toThrow(ForbiddenException);
+    });
+  });
+
+  describe('downloadFile', () => {
+    it('should download a single file', async () => {
+      assetRepositoryMock.countByIdAndUser.mockResolvedValue(1);
+      assetRepositoryMock.get.mockResolvedValue(_getAsset_1());
+
+      await sut.downloadFile(authStub.admin, 'id_1');
+
+      expect(storageMock.createReadStream).toHaveBeenCalledWith('fake_path/asset_1.jpeg', 'image/jpeg');
     });
   });
 });
