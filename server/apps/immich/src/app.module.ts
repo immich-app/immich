@@ -1,5 +1,5 @@
 import { immichAppConfig } from '@app/common/config';
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AssetModule } from './api-v1/asset/asset.module';
 import { ConfigModule } from '@nestjs/config';
 import { ServerInfoModule } from './api-v1/server-info/server-info.module';
@@ -61,12 +61,4 @@ import { AuthGuard } from './middlewares/auth.guard';
   ],
   providers: [{ provide: APP_GUARD, useExisting: AuthGuard }, AuthGuard],
 })
-export class AppModule implements NestModule {
-  // TODO: check if consumer is needed or remove
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  configure(consumer: MiddlewareConsumer): void {
-    if (process.env.NODE_ENV == 'development') {
-      // consumer.apply(AppLoggerMiddleware).forRoutes('*');
-    }
-  }
-}
+export class AppModule {}
