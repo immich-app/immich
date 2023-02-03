@@ -233,7 +233,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         duration: const Duration(milliseconds: 100),
         opacity: (showAppBar.value || !isZoomed.value) ? 1.0 : 0.0,
         child: Container(
-          color: Colors.black,
+          color: Colors.black.withOpacity(0.4),
           child: TopControlAppBar(
             isPlayingMotionVideo: isPlayingMotionVideo.value,
             asset: assetList[indexOfAsset.value],
@@ -351,14 +351,18 @@ class GalleryViewerPage extends HookConsumerWidget {
               onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
               onTapDown: (_, __, ___) => showAppBar.value = !showAppBar.value,
               heroAttributes: PhotoViewHeroAttributes(tag: assetList[index].id),
-              child: VideoViewerPage(
-                asset: assetList[index],
-                isMotionVideo: isPlayingMotionVideo.value,
-                onVideoEnded: () {
-                  if (isPlayingMotionVideo.value) {
-                    isPlayingMotionVideo.value = false;
-                  }
-                },
+              maxScale: 1.0,
+              minScale: 1.0,
+              child: SafeArea(
+                child: VideoViewerPage(
+                  asset: assetList[index],
+                  isMotionVideo: isPlayingMotionVideo.value,
+                  onVideoEnded: () {
+                    if (isPlayingMotionVideo.value) {
+                      isPlayingMotionVideo.value = false;
+                    }
+                  },
+                ),
               ),
             );
           }

@@ -31,7 +31,6 @@ class TopControlAppBar extends HookConsumerWidget {
 
     return AppBar(
       foregroundColor: Colors.grey[100],
-      toolbarHeight: 60,
       backgroundColor: Colors.transparent,
       leading: IconButton(
         onPressed: () {
