@@ -228,9 +228,13 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     buildAppBar() {
+      final isVideo = !assetList[indexOfAsset.value].isImage;
+      final show = (showAppBar.value || // onTap has the final say
+          (showAppBar.value && !isZoomed.value));
+
       return AnimatedOpacity(
         duration: const Duration(milliseconds: 100),
-        opacity: (showAppBar.value || !isZoomed.value) ? 1.0 : 0.0,
+        opacity: show ? 1.0 : 0.0,
         child: Container(
           color: Colors.black.withOpacity(0.4),
           child: TopControlAppBar(
