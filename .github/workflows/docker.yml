@@ -98,3 +98,4 @@ jobs:
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/immich-build-cache:${{matrix.image}}
           cache-to: ${{ steps.cache-target.outputs.cache-to }}
           tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
