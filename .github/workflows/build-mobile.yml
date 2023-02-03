@@ -3,6 +3,10 @@ name: Build Mobile
 on:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      ref:
+        required: false
+        type: string
   pull_request:
   push:
     branches: [main]
@@ -13,7 +17,17 @@ jobs:
     runs-on: macos-12
 
     steps:
+      - name: Determine ref
+        id: get-ref
+        run: |
+          input_ref="${{ inputs.ref }}"
+          github_ref="${{ github.sha }}"
+          ref="${input_ref:-$github_ref}"
+          echo "ref=$ref" >> $GITHUB_OUTPUT
+          
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ steps.get-ref.outputs.ref }}
 
       - uses: actions/setup-java@v3
         with:
