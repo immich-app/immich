@@ -1,7 +1,6 @@
 import { immichAppConfig } from '@app/common/config';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AssetModule } from './api-v1/asset/asset.module';
-import { DeviceInfoModule } from './api-v1/device-info/device-info.module';
 import { ConfigModule } from '@nestjs/config';
 import { ServerInfoModule } from './api-v1/server-info/server-info.module';
 import { CommunicationModule } from './api-v1/communication/communication.module';
@@ -16,6 +15,7 @@ import { InfraModule } from '@app/infra';
 import {
   APIKeyController,
   AuthController,
+  DeviceInfoController,
   OAuthController,
   ShareController,
   SystemConfigController,
@@ -33,8 +33,6 @@ import { AuthGuard } from './middlewares/auth.guard';
     }),
 
     AssetModule,
-
-    DeviceInfoModule,
 
     ServerInfoModule,
 
@@ -55,6 +53,7 @@ import { AuthGuard } from './middlewares/auth.guard';
     AppController,
     APIKeyController,
     AuthController,
+    DeviceInfoController,
     OAuthController,
     ShareController,
     SystemConfigController,

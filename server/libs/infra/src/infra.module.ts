@@ -1,5 +1,6 @@
 import {
   ICryptoRepository,
+  IDeviceInfoRepository,
   IJobRepository,
   IKeyRepository,
   ISharedLinkRepository,
@@ -7,20 +8,31 @@ import {
   IUserRepository,
   QueueName,
 } from '@app/domain';
-import { databaseConfig, UserEntity, UserTokenEntity } from './db';
+import { IUserTokenRepository } from '@app/domain/user-token';
+import { UserTokenRepository } from '@app/infra/db/repository/user-token.repository';
 import { BullModule } from '@nestjs/bull';
 import { Global, Module, Provider } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { APIKeyEntity, SharedLinkEntity, SystemConfigEntity, UserRepository } from './db';
-import { APIKeyRepository, SharedLinkRepository } from './db/repository';
 import { CryptoRepository } from './auth/crypto.repository';
-import { SystemConfigRepository } from './db/repository/system-config.repository';
+import {
+  APIKeyEntity,
+  APIKeyRepository,
+  databaseConfig,
+  DeviceInfoEntity,
+  DeviceInfoRepository,
+  SharedLinkEntity,
+  SharedLinkRepository,
+  SystemConfigEntity,
+  SystemConfigRepository,
+  UserEntity,
+  UserRepository,
+  UserTokenEntity,
+} from './db';
 import { JobRepository } from './job';
-import { IUserTokenRepository } from '@app/domain/user-token';
-import { UserTokenRepository } from '@app/infra/db/repository/user-token.repository';
 
 const providers: Provider[] = [
   { provide: ICryptoRepository, useClass: CryptoRepository },
+  { provide: IDeviceInfoRepository, useClass: DeviceInfoRepository },
   { provide: IKeyRepository, useClass: APIKeyRepository },
   { provide: IJobRepository, useClass: JobRepository },
   { provide: ISharedLinkRepository, useClass: SharedLinkRepository },
@@ -33,7 +45,14 @@ const providers: Provider[] = [
 @Module({
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
-    TypeOrmModule.forFeature([APIKeyEntity, UserEntity, SharedLinkEntity, SystemConfigEntity, UserTokenEntity]),
+    TypeOrmModule.forFeature([
+      APIKeyEntity,
+      DeviceInfoEntity,
+      UserEntity,
+      SharedLinkEntity,
+      SystemConfigEntity,
+      UserTokenEntity,
+    ]),
     BullModule.forRootAsync({
       useFactory: async () => ({
         prefix: 'immich_bull',

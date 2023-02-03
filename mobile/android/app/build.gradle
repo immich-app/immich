@@ -57,21 +57,22 @@ android {
         versionName flutterVersionName
     }
 
-  //  signingConfigs {
-  //      release {
-  //          keyAlias keystoreProperties['keyAlias']
-  //          keyPassword keystoreProperties['keyPassword']
-  //          storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
-  //          storePassword keystoreProperties['storePassword']
-  //      }
-  //  }
+   signingConfigs {
+       release {
+            def keyAliasVal = System.getenv("ALIAS")
+            def keyPasswordVal = System.getenv("ANDROID_KEY_PASSWORD")
+            def storePasswordVal = System.getenv("ANDROID_STORE_PASSWORD")
+
+            keyAlias keyAliasVal ? keyAliasVal : keystoreProperties['keyAlias']
+            keyPassword keyPasswordVal ? keyPasswordVal : keystoreProperties['keyPassword']
+            storeFile file("../key.jks") ? file("../key.jks") : file(keystoreProperties['storeFile'])
+            storePassword storePasswordVal ? storePasswordVal : keystoreProperties['storePassword']
+       }
+   }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            // signingConfig signingConfigs.release
-            signingConfig null
+            signingConfig signingConfigs.release
         }
     }
 }

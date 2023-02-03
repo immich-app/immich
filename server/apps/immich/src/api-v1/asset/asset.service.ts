@@ -460,7 +460,7 @@ export class AssetService {
       try {
         await this._assetRepository.remove(asset);
 
-        result.push({ id: asset.id, status: DeleteAssetStatusEnum.SUCCESS });
+        result.push({ id, status: DeleteAssetStatusEnum.SUCCESS });
         deleteQueue.push(asset as any);
 
         // TODO refactor this to use cascades
