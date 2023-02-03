@@ -14,6 +14,8 @@ class TopControlAppBar extends HookConsumerWidget with PreferredSizeWidget {
     required this.onAddToAlbumPressed,
     required this.onToggleMotionVideo,
     required this.isPlayingMotionVideo,
+    required this.onFavorite,
+    required this.isFavorite,
   }) : super(key: key);
 
   final Asset asset;
@@ -22,12 +24,28 @@ class TopControlAppBar extends HookConsumerWidget with PreferredSizeWidget {
   final VoidCallback onToggleMotionVideo;
   final VoidCallback onDeletePressed;
   final VoidCallback onAddToAlbumPressed;
+  final VoidCallback onFavorite;
   final Function onSharePressed;
   final bool isPlayingMotionVideo;
+  final bool isFavorite;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     double iconSize = 18.0;
+
+    Widget buildFavoriteButton() {
+        return IconButton(
+          iconSize: iconSize,
+          splashRadius: iconSize,
+          onPressed: () {
+            onFavorite();
+          },
+          icon: Icon(
+            isFavorite ? Icons.star : Icons.star_border,
+            color: Colors.grey[200],
+          ),
+        );
+    }
 
     return AppBar(
       foregroundColor: Colors.grey[100],
@@ -44,6 +62,7 @@ class TopControlAppBar extends HookConsumerWidget with PreferredSizeWidget {
         ),
       ),
       actions: [
+        if (asset.isRemote) buildFavoriteButton(),
         if (asset.remote?.livePhotoVideoId != null)
           IconButton(
             iconSize: iconSize,

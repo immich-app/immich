@@ -38,6 +38,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isLoadPreview = useState(AppSettingsEnum.loadPreview.defaultValue);
     final isLoadOriginal = useState(AppSettingsEnum.loadOriginal.defaultValue);
     final isZoomed = useState<bool>(false);
+    final favorites = useState<Set<String>>({});
     final indexOfAsset = useState(assetList.indexOf(asset));
     final isPlayingMotionVideo = useState(false);
     ValueNotifier<bool> isZoomedListener = ValueNotifier<bool>(false);
@@ -52,10 +53,26 @@ class GalleryViewerPage extends HookConsumerWidget {
         isLoadOriginal.value =
             settings.getSetting<bool>(AppSettingsEnum.loadOriginal);
         isPlayingMotionVideo.value = false;
+        favorites.value = assetList
+            .where((element) => element.remote?.isFavorite == true)
+            .map((e) => e.id).toSet();
         return null;
       },
       [],
     );
+
+    void toggleFavorite(String id) {
+      if (favorites.value.contains(id)) {
+        favorites.value = favorites.value.difference({id});
+      } else {
+        favorites.value = favorites.value.union({id});
+      }
+
+      ref.watch(assetProvider.notifier).toggleFavorite(
+        assetList[indexOfAsset.value].remote!,
+        favorites.value.contains(id),
+      );
+    }
 
     getAssetExif() async {
       if (assetList[indexOfAsset.value].isRemote) {
@@ -127,8 +144,12 @@ class GalleryViewerPage extends HookConsumerWidget {
       appBar: TopControlAppBar(
         isPlayingMotionVideo: isPlayingMotionVideo.value,
         asset: assetList[indexOfAsset.value],
+        isFavorite: favorites.value.contains(assetList[indexOfAsset.value].id),
         onMoreInfoPressed: () {
           showInfo();
+        },
+        onFavorite: () {
+          toggleFavorite(assetList[indexOfAsset.value].id);
         },
         onDownloadPressed: assetList[indexOfAsset.value].isLocal
             ? null
