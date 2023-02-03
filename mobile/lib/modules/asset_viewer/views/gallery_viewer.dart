@@ -263,9 +263,9 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
-    return Container(
-      color: Colors.black,
-      child: Stack(
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
         children: [
           PhotoViewGallery.builder(
           scaleStateChangedCallback: (state) {
