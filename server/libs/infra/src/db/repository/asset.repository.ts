@@ -1,62 +1,30 @@
-import { SearchPropertiesDto } from './dto/search-properties.dto';
-import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
-import { AssetEntity, AssetType } from '@app/infra';
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  AssetCountByTimeBucket,
+  AssetCountByUserIdResponseDto,
+  AssetSearchDto,
+  CheckExistingAssetsDto,
+  CheckExistingAssetsResponseDto,
+  CuratedLocationsResponseDto,
+  CuratedObjectsResponseDto,
+  GetAssetByTimeBucketDto,
+  IAssetRepository,
+  SearchPropertiesDto,
+  TimeGroupEnum,
+  UpdateAssetDto,
+} from '@app/domain';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm/repository/Repository';
-import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
-import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
-import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
-import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
-import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
-import { In } from 'typeorm/find-options/operator/In';
-import { UpdateAssetDto } from './dto/update-asset.dto';
-import { ITagRepository } from '../tag/tag.repository';
 import { IsNull, Not } from 'typeorm';
-import { AssetSearchDto } from './dto/asset-search.dto';
-
-export interface IAssetRepository {
-  get(id: string): Promise<AssetEntity | null>;
-  create(asset: Omit<AssetEntity, 'id'>): Promise<AssetEntity>;
-  remove(asset: AssetEntity): Promise<void>;
-
-  update(userId: string, asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
-  getAll(): Promise<AssetEntity[]>;
-  getAllVideos(): Promise<AssetEntity[]>;
-  getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
-  getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
-  getById(assetId: string): Promise<AssetEntity>;
-  getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
-  getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
-  getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
-  getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum): Promise<AssetCountByTimeBucket[]>;
-  getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
-  getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
-  getAssetByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity>;
-  getAssetWithNoThumbnail(): Promise<AssetEntity[]>;
-  getAssetWithNoEncodedVideo(): Promise<AssetEntity[]>;
-  getAssetWithNoEXIF(): Promise<AssetEntity[]>;
-  getAssetWithNoSmartInfo(): Promise<AssetEntity[]>;
-  getExistingAssets(
-    userId: string,
-    checkDuplicateAssetDto: CheckExistingAssetsDto,
-  ): Promise<CheckExistingAssetsResponseDto>;
-  countByIdAndUser(assetId: string, userId: string): Promise<number>;
-}
-
-export const IAssetRepository = 'IAssetRepository';
+import { In } from 'typeorm/find-options/operator/In';
+import { Repository } from 'typeorm/repository/Repository';
+import { AssetEntity, AssetType, TagEntity } from '../entities';
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
   constructor(
-    @InjectRepository(AssetEntity)
-    private assetRepository: Repository<AssetEntity>,
-
-    @Inject(ITagRepository) private _tagRepository: ITagRepository,
+    @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
+    @InjectRepository(TagEntity) private tagRepository: Repository<TagEntity>,
   ) {}
-
   async getAllVideos(): Promise<AssetEntity[]> {
     return await this.assetRepository.find({
       where: { type: AssetType.VIDEO },
@@ -284,6 +252,10 @@ export class AssetRepository implements IAssetRepository {
     return this.assetRepository.save(asset);
   }
 
+  save(asset: AssetEntity): Promise<AssetEntity> {
+    return this.assetRepository.save(asset);
+  }
+
   async remove(asset: AssetEntity): Promise<void> {
     await this.assetRepository.remove(asset);
   }
@@ -295,7 +267,12 @@ export class AssetRepository implements IAssetRepository {
     asset.isFavorite = dto.isFavorite ?? asset.isFavorite;
 
     if (dto.tagIds) {
-      const tags = await this._tagRepository.getByIds(userId, dto.tagIds);
+      const tags = await this.tagRepository.find({
+        where: { id: In(dto.tagIds), userId },
+        relations: {
+          user: true,
+        },
+      });
       asset.tags = tags;
     }
 
@@ -359,6 +336,35 @@ export class AssetRepository implements IAssetRepository {
     return await this.assetRepository.count({
       where: {
         id: assetId,
+        userId,
+      },
+    });
+  }
+
+  async searchAsset(userId: string, term: string): Promise<AssetEntity[]> {
+    const query = `
+    SELECT a.*
+    FROM assets a
+             LEFT JOIN smart_info si ON a.id = si."assetId"
+             LEFT JOIN exif e ON a.id = e."assetId"
+
+    WHERE a."userId" = $1
+       AND
+       (
+         TO_TSVECTOR('english', ARRAY_TO_STRING(si.tags, ',')) @@ PLAINTO_TSQUERY('english', $2) OR
+         TO_TSVECTOR('english', ARRAY_TO_STRING(si.objects, ',')) @@ PLAINTO_TSQUERY('english', $2) OR
+         e."exifTextSearchableColumn" @@ PLAINTO_TSQUERY('english', $2)
+        );
+    `;
+
+    return this.assetRepository.query(query, [userId, term]);
+  }
+
+  checkExistingAsset(userId: string, deviceId: string, deviceAssetId: string): Promise<AssetEntity | null> {
+    return this.assetRepository.findOne({
+      where: {
+        deviceAssetId,
+        deviceId,
         userId,
       },
     });

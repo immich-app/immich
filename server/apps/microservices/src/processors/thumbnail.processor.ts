@@ -1,4 +1,4 @@
-import { APP_UPLOAD_LOCATION } from '@app/common';
+import { APP_UPLOAD_LOCATION } from '@app/domain';
 import { AssetEntity, AssetType } from '@app/infra';
 import { WebpGeneratorProcessor, JpegGeneratorProcessor, QueueName, JobName } from '@app/domain';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';

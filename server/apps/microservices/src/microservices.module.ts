@@ -1,6 +1,5 @@
 import { immichAppConfig } from '@app/common/config';
 import { AssetEntity, ExifEntity, SmartInfoEntity, UserEntity, APIKeyEntity, InfraModule } from '@app/infra';
-import { StorageModule } from '@app/storage';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -24,7 +23,6 @@ import { DomainModule } from '@app/domain';
       imports: [InfraModule],
     }),
     TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity, APIKeyEntity]),
-    StorageModule,
     CommunicationModule,
   ],
   controllers: [],

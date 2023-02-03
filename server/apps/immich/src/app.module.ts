@@ -1,10 +1,8 @@
 import { immichAppConfig } from '@app/common/config';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { AssetModule } from './api-v1/asset/asset.module';
 import { ConfigModule } from '@nestjs/config';
 import { ServerInfoModule } from './api-v1/server-info/server-info.module';
 import { CommunicationModule } from './api-v1/communication/communication.module';
-import { AlbumModule } from './api-v1/album/album.module';
 import { AppController } from './app.controller';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
@@ -13,7 +11,9 @@ import { TagModule } from './api-v1/tag/tag.module';
 import { DomainModule } from '@app/domain';
 import { InfraModule } from '@app/infra';
 import {
+  AlbumController,
   APIKeyController,
+  AssetController,
   AuthController,
   DeviceInfoController,
   OAuthController,
@@ -32,13 +32,9 @@ import { AuthGuard } from './middlewares/auth.guard';
       imports: [InfraModule],
     }),
 
-    AssetModule,
-
     ServerInfoModule,
 
     CommunicationModule,
-
-    AlbumModule,
 
     ScheduleModule.forRoot(),
 
@@ -52,6 +48,8 @@ import { AuthGuard } from './middlewares/auth.guard';
     //
     AppController,
     APIKeyController,
+    AlbumController,
+    AssetController,
     AuthController,
     DeviceInfoController,
     OAuthController,

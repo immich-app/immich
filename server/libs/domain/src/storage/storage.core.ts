@@ -1,8 +1,7 @@
-import { APP_UPLOAD_LOCATION } from '@app/common';
-import { AssetEntity, AssetType, SystemConfig } from '@app/infra';
-import { SystemConfigService, INITIAL_SYSTEM_CONFIG } from '@app/domain';
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { APP_UPLOAD_LOCATION } from '../domain.constants';
+import { AssetEntity, AssetType, SystemConfig } from '@app/infra/db/entities';
+import { ISystemConfigRepository } from '../system-config';
+import { Logger } from '@nestjs/common';
 import fsPromise from 'fs/promises';
 import handlebar from 'handlebars';
 import * as luxon from 'luxon';
@@ -11,7 +10,6 @@ import { constants } from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import sanitize from 'sanitize-filename';
-import { Repository } from 'typeorm';
 import {
   supportedDayTokens,
   supportedHourTokens,
@@ -19,27 +17,30 @@ import {
   supportedMonthTokens,
   supportedSecondTokens,
   supportedYearTokens,
-} from '@app/domain';
+} from '../system-config';
+import { SystemConfigCore } from '../system-config/system-config.core';
+import { IAssetRepository } from '../asset';
 
 const moveFile = promisify<string, string, mv.Options>(mv);
 
-@Injectable()
-export class StorageService {
-  private readonly logger = new Logger(StorageService.name);
+export class StorageCore {
+  private readonly logger = new Logger(StorageCore.name);
 
   private storageTemplate: HandlebarsTemplateDelegate<any>;
 
+  private configCore: SystemConfigCore;
+
   constructor(
-    @InjectRepository(AssetEntity)
-    private assetRepository: Repository<AssetEntity>,
-    private systemConfigService: SystemConfigService,
-    @Inject(INITIAL_SYSTEM_CONFIG) config: SystemConfig,
+    private assetRepository: IAssetRepository,
+    configRepository: ISystemConfigRepository,
+    config: SystemConfig,
   ) {
+    this.configCore = new SystemConfigCore(configRepository);
+
     this.storageTemplate = this.compile(config.storageTemplate.template);
 
-    this.systemConfigService.addValidator((config) => this.validateConfig(config));
-
-    this.systemConfigService.config$.subscribe((config) => {
+    this.configCore.addValidator((config) => this.validateConfig(config));
+    this.configCore.config$.subscribe((config) => {
       this.logger.debug(`Received new config, recompiling storage template: ${config.storageTemplate.template}`);
       this.storageTemplate = this.compile(config.storageTemplate.template);
     });
@@ -101,7 +102,7 @@ export class StorageService {
       await this.safeMove(source, destination);
 
       asset.originalPath = destination;
-      return await this.assetRepository.save(asset);
+      return this.assetRepository.save(asset);
     } catch (error: any) {
       this.logger.error(error);
       return asset;

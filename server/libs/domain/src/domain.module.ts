@@ -1,5 +1,7 @@
 import { DynamicModule, Global, Module, ModuleMetadata, Provider } from '@nestjs/common';
+import { AlbumService } from './album';
 import { APIKeyService } from './api-key';
+import { AssetService } from './asset';
 import { AuthService } from './auth';
 import { DeviceInfoService } from './device-info';
 import { JobService } from './job';
@@ -10,6 +12,8 @@ import { UserService } from './user';
 
 const providers: Provider[] = [
   APIKeyService,
+  AlbumService,
+  AssetService,
   AuthService,
   DeviceInfoService,
   JobService,

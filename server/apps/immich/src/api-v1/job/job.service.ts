@@ -1,7 +1,7 @@
 import { JobName, IJobRepository, QueueName } from '@app/domain';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AllJobStatusResponseDto } from './response-dto/all-job-status-response.dto';
-import { IAssetRepository } from '../asset/asset-repository';
+import { IAssetRepository } from '@app/domain';
 import { AssetType } from '@app/infra';
 import { JobId } from './dto/get-job.dto';
 import { MACHINE_LEARNING_ENABLED } from '@app/common';
@@ -11,7 +11,7 @@ const jobIds = Object.values(JobId) as JobId[];
 @Injectable()
 export class JobService {
   constructor(
-    @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
+    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     for (const jobId of jobIds) {
@@ -45,8 +45,8 @@ export class JobService {
     switch (name) {
       case QueueName.VIDEO_CONVERSION: {
         const assets = includeAllAssets
-          ? await this._assetRepository.getAllVideos()
-          : await this._assetRepository.getAssetWithNoEncodedVideo();
+          ? await this.assetRepository.getAllVideos()
+          : await this.assetRepository.getAssetWithNoEncodedVideo();
         for (const asset of assets) {
           await this.jobRepository.add({ name: JobName.VIDEO_CONVERSION, data: { asset } });
         }
@@ -64,8 +64,8 @@ export class JobService {
         }
 
         const assets = includeAllAssets
-          ? await this._assetRepository.getAll()
-          : await this._assetRepository.getAssetWithNoSmartInfo();
+          ? await this.assetRepository.getAll()
+          : await this.assetRepository.getAssetWithNoSmartInfo();
 
         for (const asset of assets) {
           await this.jobRepository.add({ name: JobName.IMAGE_TAGGING, data: { asset } });
@@ -76,8 +76,8 @@ export class JobService {
 
       case QueueName.METADATA_EXTRACTION: {
         const assets = includeAllAssets
-          ? await this._assetRepository.getAll()
-          : await this._assetRepository.getAssetWithNoEXIF();
+          ? await this.assetRepository.getAll()
+          : await this.assetRepository.getAssetWithNoEXIF();
 
         for (const asset of assets) {
           if (asset.type === AssetType.VIDEO) {
@@ -103,8 +103,8 @@ export class JobService {
 
       case QueueName.THUMBNAIL_GENERATION: {
         const assets = includeAllAssets
-          ? await this._assetRepository.getAll()
-          : await this._assetRepository.getAssetWithNoThumbnail();
+          ? await this.assetRepository.getAll()
+          : await this.assetRepository.getAssetWithNoThumbnail();
 
         for (const asset of assets) {
           await this.jobRepository.add({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { asset } });

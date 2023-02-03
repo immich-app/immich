@@ -1,4 +1,4 @@
-import { APP_UPLOAD_LOCATION } from '@app/common/constants';
+import { APP_UPLOAD_LOCATION } from '@app/domain';
 import { AssetEntity } from '@app/infra';
 import { IVideoConversionProcessor, JobName, QueueName, SystemConfigService } from '@app/domain';
 import { Process, Processor } from '@nestjs/bull';

@@ -1,39 +1,38 @@
 import {
-  Controller,
-  Get,
-  Post,
+  AddAssetsDto,
+  AddAssetsResponseDto,
+  AddUsersDto,
+  AlbumCountResponseDto,
+  AlbumResponseDto,
+  AlbumService,
+  AuthUserDto,
+  CreateAlbumDto,
+  CreateAlbumShareLinkDto as CreateAlbumSharedLinkDto,
+  DownloadDto,
+  GetAlbumsDto,
+  RemoveAssetsDto,
+  UpdateAlbumDto,
+} from '@app/domain';
+import {
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  ValidationPipe,
+  Get,
+  Param,
   ParseUUIDPipe,
+  Patch,
+  Post,
   Put,
   Query,
   Response,
+  ValidationPipe,
 } from '@nestjs/common';
-import { ParseMeUUIDPipe } from '../validation/parse-me-uuid-pipe';
-import { AlbumService } from './album.service';
-import { CreateAlbumDto } from './dto/create-album.dto';
-import { Authenticated } from '../../decorators/authenticated.decorator';
-import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
-import { AddAssetsDto } from './dto/add-assets.dto';
-import { AddUsersDto } from './dto/add-users.dto';
-import { RemoveAssetsDto } from './dto/remove-assets.dto';
-import { UpdateAlbumDto } from './dto/update-album.dto';
-import { GetAlbumsDto } from './dto/get-albums.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AlbumResponseDto } from '@app/domain';
-import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
-import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { Response as Res } from 'express';
-import {
-  IMMICH_ARCHIVE_COMPLETE,
-  IMMICH_ARCHIVE_FILE_COUNT,
-  IMMICH_CONTENT_LENGTH_HINT,
-} from '../../constants/download.constant';
-import { DownloadDto } from '../asset/dto/download-library.dto';
-import { CreateAlbumShareLinkDto as CreateAlbumSharedLinkDto } from './dto/create-album-shared-link.dto';
+import { ParseMeUUIDPipe } from '../api-v1/validation/parse-me-uuid-pipe';
+import { IMMICH_ARCHIVE_COMPLETE, IMMICH_ARCHIVE_FILE_COUNT, IMMICH_CONTENT_LENGTH_HINT } from '../constants';
+import { GetAuthUser } from '../decorators/auth-user.decorator';
+import { Authenticated } from '../decorators/authenticated.decorator';
 
 // TODO might be worth creating a AlbumParamsDto that validates `albumId` instead of using the pipe.
 

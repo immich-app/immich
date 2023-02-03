@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
-import { toBoolean } from '../../../utils/transform.util';
+import { toBoolean } from '../../domain.utils';
 
 export class AssetSearchDto {
   @IsOptional()

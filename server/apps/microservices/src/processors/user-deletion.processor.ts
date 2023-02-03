@@ -1,4 +1,5 @@
-import { APP_UPLOAD_LOCATION, userUtils } from '@app/common';
+import { userUtils } from '@app/common';
+import { APP_UPLOAD_LOCATION } from '@app/domain';
 import { APIKeyEntity, AssetEntity, UserEntity } from '@app/infra';
 import { QueueName, JobName } from '@app/domain';
 import { IUserDeletionJob } from '@app/domain';

@@ -1,7 +1,6 @@
-import { AssetType } from '@app/infra';
+import { AssetType } from '@app/infra/db/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsOptional } from 'class-validator';
-import { ImmichFile } from '../../../config/asset-upload.config';
 
 export class CreateAssetDto {
   @IsNotEmpty()
@@ -39,13 +38,4 @@ export interface UploadFile {
   checksum: Buffer;
   originalPath: string;
   originalName: string;
-}
-
-export function mapToUploadFile(file: ImmichFile): UploadFile {
-  return {
-    checksum: file.checksum,
-    mimeType: file.mimetype,
-    originalPath: file.path,
-    originalName: file.originalname,
-  };
 }

@@ -1,24 +1,32 @@
-import { APP_UPLOAD_LOCATION } from '@app/common';
-import { AssetEntity } from '@app/infra';
-import { SystemConfigService } from '@app/domain';
-import { QueueName, JobName } from '@app/domain';
-import { StorageService } from '@app/storage';
+import {
+  APP_UPLOAD_LOCATION,
+  IAssetRepository,
+  INITIAL_SYSTEM_CONFIG,
+  ISystemConfigRepository,
+  JobName,
+  QueueName,
+  StorageCore,
+} from '@app/domain';
+import { AssetEntity, SystemConfig } from '@app/infra';
 import { Process, Processor } from '@nestjs/bull';
-import { Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Inject, Logger } from '@nestjs/common';
+import { SystemConfigCore } from '@app/domain';
 
 @Processor(QueueName.CONFIG)
 export class StorageMigrationProcessor {
   readonly logger: Logger = new Logger(StorageMigrationProcessor.name);
 
-  constructor(
-    private storageService: StorageService,
-    private systemConfigService: SystemConfigService,
+  private storageCore: StorageCore;
+  private configCore: SystemConfigCore;
 
-    @InjectRepository(AssetEntity)
-    private assetRepository: Repository<AssetEntity>,
-  ) {}
+  constructor(
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(INITIAL_SYSTEM_CONFIG) config: SystemConfig,
+  ) {
+    this.storageCore = new StorageCore(assetRepository, configRepository, config);
+    this.configCore = new SystemConfigCore(configRepository);
+  }
 
   /**
    * Migration process when a new user set a new storage template.
@@ -27,9 +35,7 @@ export class StorageMigrationProcessor {
   @Process({ name: JobName.TEMPLATE_MIGRATION, concurrency: 100 })
   async templateMigration() {
     console.time('migrating-time');
-    const assets = await this.assetRepository.find({
-      relations: ['exifInfo'],
-    });
+    const assets = await this.assetRepository.getAll();
 
     const livePhotoMap: Record<string, AssetEntity> = {};
 
@@ -42,10 +48,10 @@ export class StorageMigrationProcessor {
     for (const asset of assets) {
       const livePhotoParentAsset = livePhotoMap[asset.id];
       const filename = asset.exifInfo?.imageName || livePhotoParentAsset?.exifInfo?.imageName || asset.id;
-      await this.storageService.moveAsset(asset, filename);
+      await this.storageCore.moveAsset(asset, filename);
     }
 
-    await this.storageService.removeEmptyDirectories(APP_UPLOAD_LOCATION);
+    await this.storageCore.removeEmptyDirectories(APP_UPLOAD_LOCATION);
     console.timeEnd('migrating-time');
   }
 
@@ -56,6 +62,6 @@ export class StorageMigrationProcessor {
    */
   @Process({ name: JobName.CONFIG_CHANGE, concurrency: 1 })
   async updateTemplate() {
-    await this.systemConfigService.refreshConfig();
+    await this.configCore.refreshConfig();
   }
 }

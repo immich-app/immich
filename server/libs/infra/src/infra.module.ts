@@ -1,4 +1,6 @@
 import {
+  IAlbumRepository,
+  IAssetRepository,
   ICryptoRepository,
   IDeviceInfoRepository,
   IJobRepository,
@@ -7,17 +9,22 @@ import {
   IStorageRepository,
   ISystemConfigRepository,
   IUserRepository,
+  IUserTokenRepository,
   QueueName,
 } from '@app/domain';
-import { IUserTokenRepository } from '@app/domain/user-token';
 import { UserTokenRepository } from '@app/infra/db/repository/user-token.repository';
 import { BullModule } from '@nestjs/bull';
 import { Global, Module, Provider } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CryptoRepository } from './auth/crypto.repository';
 import {
+  AlbumEntity,
+  AlbumRepository,
   APIKeyEntity,
   APIKeyRepository,
+  AssetAlbumEntity,
+  AssetEntity,
+  AssetRepository,
   databaseConfig,
   DeviceInfoEntity,
   DeviceInfoRepository,
@@ -25,6 +32,8 @@ import {
   SharedLinkRepository,
   SystemConfigEntity,
   SystemConfigRepository,
+  TagEntity,
+  UserAlbumEntity,
   UserEntity,
   UserRepository,
   UserTokenEntity,
@@ -33,6 +42,8 @@ import { JobRepository } from './job';
 import { FilesystemProvider } from './storage';
 
 const providers: Provider[] = [
+  { provide: IAssetRepository, useClass: AssetRepository },
+  { provide: IAlbumRepository, useClass: AlbumRepository },
   { provide: ICryptoRepository, useClass: CryptoRepository },
   { provide: IDeviceInfoRepository, useClass: DeviceInfoRepository },
   { provide: IKeyRepository, useClass: APIKeyRepository },
@@ -49,12 +60,17 @@ const providers: Provider[] = [
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
     TypeOrmModule.forFeature([
+      AssetEntity,
+      AssetAlbumEntity,
+      AlbumEntity,
       APIKeyEntity,
       DeviceInfoEntity,
+      UserAlbumEntity,
       UserEntity,
+      UserTokenEntity,
       SharedLinkEntity,
       SystemConfigEntity,
-      UserTokenEntity,
+      TagEntity,
     ]),
     BullModule.forRootAsync({
       useFactory: async () => ({

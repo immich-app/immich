@@ -1,60 +1,70 @@
 import {
-  Controller,
-  Post,
-  UseInterceptors,
+  AssetCountByTimeBucketResponseDto,
+  AssetCountByUserIdResponseDto,
+  AssetFileUploadDto,
+  AssetFileUploadResponseDto,
+  AssetResponseDto,
+  AssetSearchDto,
+  AssetService,
+  AuthUserDto,
+  CheckDuplicateAssetDto,
+  CheckDuplicateAssetResponseDto,
+  CheckExistingAssetsDto,
+  CheckExistingAssetsResponseDto,
+  CreateAssetDto,
+  CreateAssetsShareLinkDto,
+  CuratedLocationsResponseDto,
+  CuratedObjectsResponseDto,
+  DeleteAssetDto,
+  DeleteAssetResponseDto,
+  DownloadDto,
+  DownloadFilesDto,
+  GetAssetByTimeBucketDto,
+  GetAssetCountByTimeBucketDto,
+  GetAssetThumbnailDto,
+  ImmichReadStream,
+  SearchAssetDto,
+  ServeFileDto,
+  SharedLinkResponseDto,
+  UpdateAssetDto,
+  UpdateAssetsToSharedLinkDto,
+  UploadFile,
+} from '@app/domain';
+import {
   Body,
+  Controller,
+  Delete,
   Get,
+  Header,
+  Headers,
+  HttpCode,
   Param,
-  ValidationPipe,
+  Patch,
+  Post,
+  Put,
   Query,
   Response,
-  Headers,
-  Delete,
-  HttpCode,
-  Header,
-  Put,
-  UploadedFiles,
-  Patch,
   StreamableFile,
+  UploadedFiles,
+  UseInterceptors,
+  ValidationPipe,
 } from '@nestjs/common';
-import { Authenticated } from '../../decorators/authenticated.decorator';
-import { AssetService } from './asset.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
-import { ServeFileDto } from './dto/serve-file.dto';
-import { Response as Res } from 'express';
-import { DeleteAssetDto } from './dto/delete-asset.dto';
-import { SearchAssetDto } from './dto/search-asset.dto';
-import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
-import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
-import { AssetResponseDto, ImmichReadStream } from '@app/domain';
-import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
-import { AssetFileUploadDto } from './dto/asset-file-upload.dto';
-import { CreateAssetDto, mapToUploadFile } from './dto/create-asset.dto';
-import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
-import { DeleteAssetResponseDto } from './response-dto/delete-asset-response.dto';
-import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
-import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by-time-group-response.dto';
-import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
-import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
-import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
-import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
-import { UpdateAssetDto } from './dto/update-asset.dto';
-import { DownloadDto } from './dto/download-library.dto';
-import {
-  IMMICH_ARCHIVE_COMPLETE,
-  IMMICH_ARCHIVE_FILE_COUNT,
-  IMMICH_CONTENT_LENGTH_HINT,
-} from '../../constants/download.constant';
-import { DownloadFilesDto } from './dto/download-files.dto';
-import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
-import { SharedLinkResponseDto } from '@app/domain';
-import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
-import { AssetSearchDto } from './dto/asset-search.dto';
-import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config';
+import { Response as Res } from 'express';
+import { assetUploadOption, ImmichFile } from '../config/asset-upload.config';
+import { IMMICH_ARCHIVE_COMPLETE, IMMICH_ARCHIVE_FILE_COUNT, IMMICH_CONTENT_LENGTH_HINT } from '../constants';
+import { GetAuthUser } from '../decorators/auth-user.decorator';
+import { Authenticated } from '../decorators/authenticated.decorator';
+
+function mapToUploadFile(file: ImmichFile): UploadFile {
+  return {
+    checksum: file.checksum,
+    mimeType: file.mimetype,
+    originalPath: file.path,
+    originalName: file.originalname,
+  };
+}
 
 function asStreamableFile({ stream, type, length }: ImmichReadStream) {
   return new StreamableFile(stream, { type, length });

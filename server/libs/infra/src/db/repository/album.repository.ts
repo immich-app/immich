@@ -1,33 +1,18 @@
-import { AlbumEntity, AssetAlbumEntity, UserAlbumEntity } from '@app/infra';
+import {
+  AddAssetsDto,
+  AddAssetsResponseDto,
+  AddUsersDto,
+  AlbumCountResponseDto,
+  CreateAlbumDto,
+  GetAlbumsDto,
+  IAlbumRepository,
+  RemoveAssetsDto,
+  UpdateAlbumDto,
+} from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository, SelectQueryBuilder, DataSource, Brackets, Not, IsNull } from 'typeorm';
-import { AddAssetsDto } from './dto/add-assets.dto';
-import { AddUsersDto } from './dto/add-users.dto';
-import { CreateAlbumDto } from './dto/create-album.dto';
-import { GetAlbumsDto } from './dto/get-albums.dto';
-import { RemoveAssetsDto } from './dto/remove-assets.dto';
-import { UpdateAlbumDto } from './dto/update-album.dto';
-import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
-import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
-
-export interface IAlbumRepository {
-  create(ownerId: string, createAlbumDto: CreateAlbumDto): Promise<AlbumEntity>;
-  getList(ownerId: string, getAlbumsDto: GetAlbumsDto): Promise<AlbumEntity[]>;
-  getPublicSharingList(ownerId: string): Promise<AlbumEntity[]>;
-  get(albumId: string): Promise<AlbumEntity | undefined>;
-  delete(album: AlbumEntity): Promise<void>;
-  addSharedUsers(album: AlbumEntity, addUsersDto: AddUsersDto): Promise<AlbumEntity>;
-  removeUser(album: AlbumEntity, userId: string): Promise<void>;
-  removeAssets(album: AlbumEntity, removeAssets: RemoveAssetsDto): Promise<number>;
-  addAssets(album: AlbumEntity, addAssetsDto: AddAssetsDto): Promise<AddAssetsResponseDto>;
-  updateAlbum(album: AlbumEntity, updateAlbumDto: UpdateAlbumDto): Promise<AlbumEntity>;
-  getListByAssetId(userId: string, assetId: string): Promise<AlbumEntity[]>;
-  getCountByUserId(userId: string): Promise<AlbumCountResponseDto>;
-  getSharedWithUserAlbumCount(userId: string, assetId: string): Promise<number>;
-}
-
-export const IAlbumRepository = 'IAlbumRepository';
+import { Brackets, DataSource, In, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm';
+import { AlbumEntity, AssetAlbumEntity, UserAlbumEntity } from '../entities';
 
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {

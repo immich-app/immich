@@ -1,15 +1,6 @@
-import { IAssetRepository } from './asset-repository';
-import { AssetService } from './asset.service';
-import { QueryFailedError, Repository } from 'typeorm';
-import { AssetEntity, AssetType } from '@app/infra';
-import { CreateAssetDto } from './dto/create-asset.dto';
-import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
-import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
-import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
-import { DownloadService } from '../../modules/download/download.service';
-import { AlbumRepository, IAlbumRepository } from '../album/album-repository';
-import { StorageService } from '@app/storage';
-import { ICryptoRepository, IJobRepository, ISharedLinkRepository, IStorageRepository, JobName } from '@app/domain';
+import { AssetEntity, AssetType } from '@app/infra/db/entities';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { QueryFailedError } from 'typeorm';
 import {
   authStub,
   newCryptoRepositoryMock,
@@ -18,9 +9,19 @@ import {
   newStorageRepositoryMock,
   sharedLinkResponseStub,
   sharedLinkStub,
-} from '@app/domain/../test';
+} from '../../test';
+import { IAlbumRepository } from '../album/album.repository';
+import { ICryptoRepository } from '../crypto';
+import { IJobRepository, JobName } from '../job';
+import { ISharedLinkRepository } from '../share';
+import { IStorageRepository } from '../storage';
+import { IAssetRepository } from './asset.repository';
+import { AssetService } from './asset.service';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { CreateAssetDto } from './dto/create-asset.dto';
+import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
+import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
+import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 
 const _getCreateAssetDto = (): CreateAssetDto => {
   const createAssetDto = new CreateAssetDto();
@@ -103,11 +104,8 @@ const _getAssetCountByUserId = (): AssetCountByUserIdResponseDto => {
 
 describe('AssetService', () => {
   let sut: AssetService;
-  let a: Repository<AssetEntity>; // TO BE DELETED AFTER FINISHED REFACTORING
   let assetRepositoryMock: jest.Mocked<IAssetRepository>;
   let albumRepositoryMock: jest.Mocked<IAlbumRepository>;
-  let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
-  let storageServiceMock: jest.Mocked<StorageService>;
   let sharedLinkRepositoryMock: jest.Mocked<ISharedLinkRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
@@ -118,6 +116,7 @@ describe('AssetService', () => {
       get: jest.fn(),
       create: jest.fn(),
       remove: jest.fn(),
+      save: jest.fn(),
 
       update: jest.fn(),
       getAll: jest.fn(),
@@ -138,20 +137,13 @@ describe('AssetService', () => {
       getAssetWithNoEncodedVideo: jest.fn(),
       getExistingAssets: jest.fn(),
       countByIdAndUser: jest.fn(),
+      checkExistingAsset: jest.fn(),
+      searchAsset: jest.fn(),
     };
 
     albumRepositoryMock = {
       getSharedWithUserAlbumCount: jest.fn(),
-    } as unknown as jest.Mocked<AlbumRepository>;
-
-    downloadServiceMock = {
-      downloadArchive: jest.fn(),
-    };
-
-    storageServiceMock = {
-      moveAsset: jest.fn(),
-      removeEmptyDirectories: jest.fn(),
-    } as unknown as jest.Mocked<StorageService>;
+    } as unknown as jest.Mocked<IAlbumRepository>;
 
     sharedLinkRepositoryMock = newSharedLinkRepositoryMock();
     jobMock = newJobRepositoryMock();
@@ -161,13 +153,12 @@ describe('AssetService', () => {
     sut = new AssetService(
       assetRepositoryMock,
       albumRepositoryMock,
-      a,
-      downloadServiceMock as DownloadService,
-      storageServiceMock,
       sharedLinkRepositoryMock,
       jobMock,
       cryptoMock,
       storageMock,
+      null as any,
+      null as any,
     );
   });
 
@@ -237,7 +228,6 @@ describe('AssetService', () => {
       const dto = _getCreateAssetDto();
 
       assetRepositoryMock.create.mockImplementation(() => Promise.resolve(assetEntity));
-      storageServiceMock.moveAsset.mockResolvedValue({ ...assetEntity, originalPath: 'fake_new_path/asset_123.jpeg' });
 
       await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({ duplicate: false, id: 'id_1' });
     });
@@ -262,7 +252,6 @@ describe('AssetService', () => {
         name: JobName.DELETE_FILE_ON_DISK,
         data: { assets: [{ originalPath: 'fake_path/asset_1.jpeg', resizePath: null }] },
       });
-      expect(storageServiceMock.moveAsset).not.toHaveBeenCalled();
     });
 
     it('should handle a live photo', async () => {
@@ -301,7 +290,6 @@ describe('AssetService', () => {
 
       assetRepositoryMock.create.mockResolvedValueOnce(livePhotoAsset);
       assetRepositoryMock.create.mockResolvedValueOnce(asset);
-      storageServiceMock.moveAsset.mockImplementation((asset) => Promise.resolve(asset));
 
       await expect(sut.uploadFile(authStub.user1, dto, file, livePhotoFile)).resolves.toEqual({
         duplicate: false,

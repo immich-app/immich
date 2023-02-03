@@ -1,4 +1,4 @@
-import { APP_UPLOAD_LOCATION } from '@app/common/constants';
+import { APP_UPLOAD_LOCATION } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { ServerInfoResponseDto } from './response-dto/server-info-response.dto';
 import diskusage from 'diskusage';
@@ -7,7 +7,7 @@ import { UsageByUserDto } from './response-dto/usage-by-user-response.dto';
 import { AssetEntity } from '@app/infra';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { asHumanReadable } from '../../utils/human-readable.util';
+import { asHumanReadable } from '@app/domain';
 
 @Injectable()
 export class ServerInfoService {

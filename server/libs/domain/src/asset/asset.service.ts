@@ -1,4 +1,4 @@
-import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
+import { AssetEntity, AssetType, SharedLinkType, SystemConfig } from '@app/infra/db/entities';
 import {
   BadRequestException,
   ForbiddenException,
@@ -9,57 +9,55 @@ import {
   NotFoundException,
   StreamableFile,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { QueryFailedError, Repository } from 'typeorm';
-import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { AssetEntity, AssetType, SharedLinkType } from '@app/infra';
-import { constants, createReadStream, ReadStream, stat } from 'fs';
-import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
-import { promisify } from 'util';
-import { DeleteAssetDto } from './dto/delete-asset.dto';
-import { SearchAssetDto } from './dto/search-asset.dto';
+import { constants, createReadStream, ReadStream, stat } from 'fs';
 import fs from 'fs/promises';
-import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
-import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
+import { QueryFailedError } from 'typeorm';
+import { promisify } from 'util';
+import { IAlbumRepository } from '../album/album.repository';
+import { AuthUserDto } from '../auth';
+import { ICryptoRepository } from '../crypto';
+import { IJobRepository, JobName } from '../job';
+import { ISharedLinkRepository, mapSharedLink, ShareCore, SharedLinkResponseDto } from '../share';
+import { ImmichReadStream, IStorageRepository } from '../storage';
+import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
+import { IAssetRepository } from './asset.repository';
+import { AssetCore } from './asset.core';
 import {
-  AssetResponseDto,
-  ImmichReadStream,
-  IStorageRepository,
-  JobName,
-  mapAsset,
-  mapAssetWithoutExif,
-} from '@app/domain';
-import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
-import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
-import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
-import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
-import { IAssetRepository } from './asset-repository';
-import { SearchPropertiesDto } from './dto/search-properties.dto';
+  AssetSearchDto,
+  CheckDuplicateAssetDto,
+  CheckExistingAssetsDto,
+  CreateAssetDto,
+  CreateAssetsShareLinkDto,
+  DeleteAssetDto,
+  DownloadDto,
+  DownloadFilesDto,
+  GetAssetByTimeBucketDto,
+  GetAssetCountByTimeBucketDto,
+  GetAssetThumbnailDto,
+  GetAssetThumbnailFormatEnum,
+  SearchAssetDto,
+  SearchPropertiesDto,
+  ServeFileDto,
+  UpdateAssetDto,
+  UpdateAssetsToSharedLinkDto,
+  UploadFile,
+} from './dto';
 import {
   AssetCountByTimeBucketResponseDto,
+  AssetCountByUserIdResponseDto,
+  AssetFileUploadResponseDto,
+  AssetResponseDto,
+  CheckDuplicateAssetResponseDto,
+  CheckExistingAssetsResponseDto,
+  CuratedLocationsResponseDto,
+  CuratedObjectsResponseDto,
+  DeleteAssetResponseDto,
+  DeleteAssetStatusEnum,
+  mapAsset,
   mapAssetCountByTimeBucket,
-} from './response-dto/asset-count-by-time-group-response.dto';
-import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
-import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
-import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
-import { AssetCore } from './asset.core';
-import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
-import { UpdateAssetDto } from './dto/update-asset.dto';
-import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
-import { ICryptoRepository, IJobRepository } from '@app/domain';
-import { DownloadService } from '../../modules/download/download.service';
-import { DownloadDto } from './dto/download-library.dto';
-import { IAlbumRepository } from '../album/album-repository';
-import { StorageService } from '@app/storage';
-import { ShareCore } from '@app/domain';
-import { ISharedLinkRepository } from '@app/domain';
-import { DownloadFilesDto } from './dto/download-files.dto';
-import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
-import { mapSharedLink, SharedLinkResponseDto } from '@app/domain';
-import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
-import { AssetSearchDto } from './dto/asset-search.dto';
+  mapAssetWithoutExif,
+} from './response-dto';
 
 const fileInfo = promisify(stat);
 
@@ -72,16 +70,14 @@ export class AssetService {
   constructor(
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
     @Inject(IAlbumRepository) private _albumRepository: IAlbumRepository,
-    @InjectRepository(AssetEntity)
-    private assetRepository: Repository<AssetEntity>,
-    private downloadService: DownloadService,
-    storageService: StorageService,
     @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(IStorageRepository) private storage: IStorageRepository,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(INITIAL_SYSTEM_CONFIG) config: SystemConfig,
   ) {
-    this.assetCore = new AssetCore(_assetRepository, jobRepository, storageService);
+    this.assetCore = new AssetCore(_assetRepository, jobRepository, configRepository, config);
     this.shareCore = new ShareCore(sharedLinkRepository, cryptoRepository);
   }
 
@@ -175,7 +171,7 @@ export class AssetService {
   public async downloadLibrary(user: AuthUserDto, dto: DownloadDto) {
     const assets = await this._assetRepository.getAllByUserId(user.id, dto);
 
-    return this.downloadService.downloadArchive(dto.name || `library`, assets);
+    return this.assetCore.downloadArchive(dto.name || `library`, assets);
   }
 
   public async downloadFiles(dto: DownloadFilesDto) {
@@ -193,7 +189,7 @@ export class AssetService {
     }
 
     const now = new Date().toISOString();
-    return this.downloadService.downloadArchive(`immich-${now}`, assetToDownload);
+    return this.assetCore.downloadArchive(`immich-${now}`, assetToDownload);
   }
 
   public async downloadFile(authUser: AuthUserDto, assetId: string): Promise<ImmichReadStream> {
@@ -493,10 +489,10 @@ export class AssetService {
         );
     `;
 
-    const searchResults: AssetEntity[] = await this.assetRepository.query(query, [
+    const searchResults: AssetEntity[] = await this._assetRepository.searchAsset(
       authUser.id,
       searchAssetDto.searchTerm,
-    ]);
+    );
 
     return searchResults.map((asset) => mapAsset(asset));
   }
@@ -513,17 +509,15 @@ export class AssetService {
     authUser: AuthUserDto,
     checkDuplicateAssetDto: CheckDuplicateAssetDto,
   ): Promise<CheckDuplicateAssetResponseDto> {
-    const res = await this.assetRepository.findOne({
-      where: {
-        deviceAssetId: checkDuplicateAssetDto.deviceAssetId,
-        deviceId: checkDuplicateAssetDto.deviceId,
-        userId: authUser.id,
-      },
-    });
+    const exists = await this._assetRepository.checkExistingAsset(
+      checkDuplicateAssetDto.deviceAssetId,
+      checkDuplicateAssetDto.deviceId,
+      authUser.id,
+    );
 
-    const isDuplicated = res ? true : false;
+    const isDuplicated = exists ? true : false;
 
-    return new CheckDuplicateAssetResponseDto(isDuplicated, res?.id);
+    return new CheckDuplicateAssetResponseDto(isDuplicated, exists?.id);
   }
 
   async checkExistingAssets(
