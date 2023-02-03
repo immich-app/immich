@@ -50,7 +50,7 @@ jobs:
     with:
       ref: ${{ needs.bump_version.outputs.ref }}
 
-  tag_release:
+  prepare_release:
     runs-on: ubuntu-latest
     needs: build_mobile
 
