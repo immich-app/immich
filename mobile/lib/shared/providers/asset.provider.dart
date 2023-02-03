@@ -275,7 +275,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
           return Asset.remote(newAsset);
         }
         return a;
-      }).toList()
+      }).toList(),
     );
 
     return newAsset.isFavorite;

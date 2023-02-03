@@ -49,7 +49,7 @@ class LibraryPage extends HookConsumerWidget {
     }
 
     Widget buildSortButton() {
-      const options = ["Most recently created", "Album title"];
+      final options = ["library_page_sort_created".tr(), "library_page_sort_title".tr()];
 
       return PopupMenuButton(
         position: PopupMenuPosition.over,
@@ -189,11 +189,11 @@ class LibraryPage extends HookConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  buildLibraryNavButton("Favorites", Icons.star_border, () {
+                  buildLibraryNavButton("library_page_favorites".tr(), Icons.star_border, () {
                     AutoRouter.of(context).navigate(const FavoritesRoute());
                   }),
                   const SizedBox(width: 12.0),
-                  buildLibraryNavButton("Sharing", Icons.group_outlined, () {
+                  buildLibraryNavButton("library_page_sharing".tr(), Icons.group_outlined, () {
                     AutoRouter.of(context).navigate(const SharingRoute());
                   }),
                 ],
