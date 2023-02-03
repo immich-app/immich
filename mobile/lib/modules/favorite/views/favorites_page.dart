@@ -30,7 +30,7 @@ class FavoritesPage extends HookConsumerWidget {
     Widget buildImageGrid() {
       final appSettingService = ref.watch(appSettingsServiceProvider);
 
-      if (ref.watch(favoriteProvider).isNotEmpty) {
+      if (ref.watch(favoriteAssetProvider).isNotEmpty) {
         return SliverPadding(
           padding: const EdgeInsets.only(top: 10.0),
           sliver: SliverGrid(
@@ -46,11 +46,11 @@ class FavoritesPage extends HookConsumerWidget {
                 int index,
               ) {
                 return FavoriteImage(
-                  ref.watch(favoriteProvider)[index],
-                  ref.watch(favoriteProvider),
+                  ref.watch(favoriteAssetProvider)[index],
+                  ref.watch(favoriteAssetProvider),
                 );
               },
-              childCount: ref.watch(favoriteProvider).length,
+              childCount: ref.watch(favoriteAssetProvider).length,
             ),
           ),
         );

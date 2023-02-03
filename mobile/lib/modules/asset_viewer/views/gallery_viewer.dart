@@ -13,6 +13,7 @@ import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_s
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
+import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
 import 'package:immich_mobile/modules/home/services/asset.service.dart';
 import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
@@ -48,7 +49,6 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isLoadPreview = useState(AppSettingsEnum.loadPreview.defaultValue);
     final isLoadOriginal = useState(AppSettingsEnum.loadOriginal.defaultValue);
     final isZoomed = useState<bool>(false);
-    final favorites = useState<Set<String>>({});
     final indexOfAsset = useState(assetList.indexOf(asset));
     final isPlayingMotionVideo = useState(false);
     late Offset localPosition;
@@ -64,25 +64,13 @@ class GalleryViewerPage extends HookConsumerWidget {
         isLoadOriginal.value =
             settings.getSetting<bool>(AppSettingsEnum.loadOriginal);
         isPlayingMotionVideo.value = false;
-        favorites.value = assetList
-            .where((element) => element.remote?.isFavorite == true)
-            .map((e) => e.id).toSet();
         return null;
       },
       [],
     );
 
-    void toggleFavorite(String id) {
-      if (favorites.value.contains(id)) {
-        favorites.value = favorites.value.difference({id});
-      } else {
-        favorites.value = favorites.value.union({id});
-      }
-
-      ref.watch(assetProvider.notifier).toggleFavorite(
-        assetList[indexOfAsset.value].remote!,
-        favorites.value.contains(id),
-      );
+    void toggleFavorite(Asset asset) {
+      ref.watch(favoriteProvider.notifier).toggleFavorite(asset.remote!);
     }
 
     getAssetExif() async {
@@ -97,7 +85,10 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     /// Thumbnail image of a remote asset. Required asset.remote != null
-    ImageProvider remoteThumbnailImageProvider(Asset asset, api.ThumbnailFormat type) {
+    ImageProvider remoteThumbnailImageProvider(
+      Asset asset,
+      api.ThumbnailFormat type,
+    ) {
       return CachedNetworkImageProvider(
         getThumbnailUrl(
           asset.remote!,
@@ -130,7 +121,6 @@ class GalleryViewerPage extends HookConsumerWidget {
           MediaQuery.of(context).size.height.floor(),
         ),
       );
-
     }
 
     /// Original (large) image of a local asset. Required asset.local != null
@@ -170,7 +160,6 @@ class GalleryViewerPage extends HookConsumerWidget {
               context,
             );
           }
-
         }
       }
     }
@@ -249,12 +238,14 @@ class GalleryViewerPage extends HookConsumerWidget {
       appBar: TopControlAppBar(
         isPlayingMotionVideo: isPlayingMotionVideo.value,
         asset: assetList[indexOfAsset.value],
-        isFavorite: favorites.value.contains(assetList[indexOfAsset.value].id),
+        isFavorite: ref.watch(favoriteProvider).contains(
+              assetList[indexOfAsset.value].id,
+            ),
         onMoreInfoPressed: () {
           showInfo();
         },
         onFavorite: () {
-          toggleFavorite(assetList[indexOfAsset.value].id);
+          toggleFavorite(assetList[indexOfAsset.value]);
         },
         onDownloadPressed: assetList[indexOfAsset.value].isLocal
             ? null
@@ -277,13 +268,14 @@ class GalleryViewerPage extends HookConsumerWidget {
       ),
       body: SafeArea(
         child: PhotoViewGallery.builder(
-          scaleStateChangedCallback: (state) => isZoomed.value = state != PhotoViewScaleState.initial,
+          scaleStateChangedCallback: (state) =>
+              isZoomed.value = state != PhotoViewScaleState.initial,
           pageController: controller,
           scrollPhysics: isZoomed.value
               ? const NeverScrollableScrollPhysics() // Don't allow paging while scrolled in
               : (Platform.isIOS
-                ? const BouncingScrollPhysics()  // Use bouncing physics for iOS
-                : const ClampingScrollPhysics() // Use heavy physics for Android
+                  ? const BouncingScrollPhysics() // Use bouncing physics for iOS
+                  : const ClampingScrollPhysics() // Use heavy physics for Android
               ),
           itemCount: assetList.length,
           scrollDirection: Axis.horizontal,
@@ -299,35 +291,51 @@ class GalleryViewerPage extends HookConsumerWidget {
             indexOfAsset.value = value;
             HapticFeedback.selectionClick();
           },
-          loadingBuilder: isLoadPreview.value ? (context, event) {
-            final asset = assetList[indexOfAsset.value];
-            if (!asset.isLocal) {
-              // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to acheive
-              // Three-Stage Loading (WEBP -> JPEG -> Original)
-              final webPThumbnail = CachedNetworkImage(
-                imageUrl: getThumbnailUrl(asset.remote!, type: api.ThumbnailFormat.WEBP),
-                cacheKey: getThumbnailCacheKey(asset.remote!, type: api.ThumbnailFormat.WEBP),
-                httpHeaders: { 'Authorization': authToken },
-                progressIndicatorBuilder: (_, __, ___) => const Center(child: ImmichLoadingIndicator(),),
-                fadeInDuration: const Duration(milliseconds: 0),
-                fit: BoxFit.contain,
-              );
+          loadingBuilder: isLoadPreview.value
+              ? (context, event) {
+                  final asset = assetList[indexOfAsset.value];
+                  if (!asset.isLocal) {
+                    // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to acheive
+                    // Three-Stage Loading (WEBP -> JPEG -> Original)
+                    final webPThumbnail = CachedNetworkImage(
+                      imageUrl: getThumbnailUrl(
+                        asset.remote!,
+                        type: api.ThumbnailFormat.WEBP,
+                      ),
+                      cacheKey: getThumbnailCacheKey(
+                        asset.remote!,
+                        type: api.ThumbnailFormat.WEBP,
+                      ),
+                      httpHeaders: {'Authorization': authToken},
+                      progressIndicatorBuilder: (_, __, ___) => const Center(
+                        child: ImmichLoadingIndicator(),
+                      ),
+                      fadeInDuration: const Duration(milliseconds: 0),
+                      fit: BoxFit.contain,
+                    );
 
-              return CachedNetworkImage(
-                imageUrl: getThumbnailUrl(asset.remote!, type: api.ThumbnailFormat.JPEG),
-                cacheKey: getThumbnailCacheKey(asset.remote!, type: api.ThumbnailFormat.JPEG),
-                httpHeaders: { 'Authorization': authToken },
-                fit: BoxFit.contain,
-                fadeInDuration: const Duration(milliseconds: 0),
-                placeholder: (_, __) => webPThumbnail,
-              );
-            } else {
-              return Image(
-                image: localThumbnailImageProvider(asset),
-                fit: BoxFit.contain,
-              );
-            }
-          } : null,
+                    return CachedNetworkImage(
+                      imageUrl: getThumbnailUrl(
+                        asset.remote!,
+                        type: api.ThumbnailFormat.JPEG,
+                      ),
+                      cacheKey: getThumbnailCacheKey(
+                        asset.remote!,
+                        type: api.ThumbnailFormat.JPEG,
+                      ),
+                      httpHeaders: {'Authorization': authToken},
+                      fit: BoxFit.contain,
+                      fadeInDuration: const Duration(milliseconds: 0),
+                      placeholder: (_, __) => webPThumbnail,
+                    );
+                  } else {
+                    return Image(
+                      image: localThumbnailImageProvider(asset),
+                      fit: BoxFit.contain,
+                    );
+                  }
+                }
+              : null,
           builder: (context, index) {
             getAssetExif();
             if (assetList[index].isImage && !isPlayingMotionVideo.value) {
@@ -346,17 +354,21 @@ class GalleryViewerPage extends HookConsumerWidget {
                 }
               }
               return PhotoViewGalleryPageOptions(
-                onDragStart: (_, details, __) => localPosition = details.localPosition,
+                onDragStart: (_, details, __) =>
+                    localPosition = details.localPosition,
                 onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
                 imageProvider: provider,
-                heroAttributes: PhotoViewHeroAttributes(tag: assetList[index].id),
+                heroAttributes:
+                    PhotoViewHeroAttributes(tag: assetList[index].id),
                 minScale: PhotoViewComputedScale.contained,
               );
             } else {
               return PhotoViewGalleryPageOptions.customChild(
-                onDragStart: (_, details, __) => localPosition = details.localPosition,
+                onDragStart: (_, details, __) =>
+                    localPosition = details.localPosition,
                 onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
-                heroAttributes: PhotoViewHeroAttributes(tag: assetList[index].id),
+                heroAttributes:
+                    PhotoViewHeroAttributes(tag: assetList[index].id),
                 child: VideoViewerPage(
                   asset: assetList[index],
                   isMotionVideo: isPlayingMotionVideo.value,
@@ -374,4 +386,3 @@ class GalleryViewerPage extends HookConsumerWidget {
     );
   }
 }
-

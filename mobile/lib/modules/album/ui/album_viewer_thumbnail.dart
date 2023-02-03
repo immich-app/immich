@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -94,6 +95,18 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
       );
     }
 
+    buildAssetFavoriteIcon() {
+      return const Positioned(
+        left: 10,
+        bottom: 5,
+        child: Icon(
+          Icons.star,
+          color: Colors.white,
+          size: 18,
+        ),
+      );
+    }
+
     buildAssetSelectionIcon() {
       bool isSelected = selectedAssetsInAlbumViewer.contains(asset);
 
@@ -141,6 +154,8 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
       child: Stack(
         children: [
           buildThumbnailImage(),
+          if (ref.watch(favoriteProvider).contains(asset.id))
+            buildAssetFavoriteIcon(),
           if (showStorageIndicator) buildAssetStoreLocationIcon(),
           if (!asset.isImage) buildVideoLabel(),
           if (isMultiSelectionEnable) buildAssetSelectionIcon(),
