@@ -2,7 +2,7 @@ FROM node:16-alpine3.14 as builder
 
 WORKDIR /usr/src/app
 
-RUN apk add --update-cache build-base python3 libheif vips-dev ffmpeg perl
+RUN apk add --update-cache build-base python3 libheif vips-dev ffmpeg exiftool perl
 
 COPY package.json package-lock.json ./
 
@@ -14,14 +14,14 @@ COPY . .
 FROM builder as prod
 
 RUN npm run build
-RUN npm prune --omit=dev --omit=optional
+RUN npm prune --omit=dev
 
 
 FROM node:16-alpine3.14
 
 WORKDIR /usr/src/app
 
-RUN apk add --no-cache libheif vips ffmpeg perl
+RUN apk add --no-cache libheif vips ffmpeg exiftool perl
 
 COPY --from=prod /usr/src/app/node_modules ./node_modules
 COPY --from=prod /usr/src/app/dist ./dist
@@ -32,7 +32,7 @@ COPY LICENSE /LICENSE
 COPY package.json package-lock.json ./
 COPY start-server.sh start-microservices.sh ./
 
-RUN npm link && npm cache clean --force
+RUN npm link
 
 VOLUME /usr/src/app/upload
 
