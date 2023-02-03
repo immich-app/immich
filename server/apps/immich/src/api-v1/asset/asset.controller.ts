@@ -92,7 +92,7 @@ export class AssetController {
 
     const responseDto = await this.assetService.uploadFile(authUser, dto, file, livePhotoFile);
     if (responseDto.duplicate) {
-      res.send(200);
+      res.status(200);
     }
 
     return responseDto;
