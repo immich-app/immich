@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 
-class TopControlAppBar extends HookConsumerWidget with PreferredSizeWidget {
+class TopControlAppBar extends HookConsumerWidget {
   const TopControlAppBar({
     Key? key,
     required this.asset,
@@ -31,7 +31,6 @@ class TopControlAppBar extends HookConsumerWidget with PreferredSizeWidget {
 
     return AppBar(
       foregroundColor: Colors.grey[100],
-      toolbarHeight: 60,
       backgroundColor: Colors.transparent,
       leading: IconButton(
         onPressed: () {
@@ -120,7 +119,4 @@ class TopControlAppBar extends HookConsumerWidget with PreferredSizeWidget {
       ],
     );
   }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

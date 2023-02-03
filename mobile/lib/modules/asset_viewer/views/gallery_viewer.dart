@@ -48,6 +48,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isLoadPreview = useState(AppSettingsEnum.loadPreview.defaultValue);
     final isLoadOriginal = useState(AppSettingsEnum.loadOriginal.defaultValue);
     final isZoomed = useState<bool>(false);
+    final showAppBar = useState<bool>(true);
     final indexOfAsset = useState(assetList.indexOf(asset));
     final isPlayingMotionVideo = useState(false);
     late Offset localPosition;
@@ -227,36 +228,50 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
     }
 
+    buildAppBar() {
+      return AnimatedOpacity(
+        duration: const Duration(milliseconds: 100),
+        opacity: (showAppBar.value || !isZoomed.value) ? 1.0 : 0.0,
+        child: Container(
+          color: Colors.black.withOpacity(0.4),
+          child: TopControlAppBar(
+            isPlayingMotionVideo: isPlayingMotionVideo.value,
+            asset: assetList[indexOfAsset.value],
+            onMoreInfoPressed: () {
+              showInfo();
+            },
+            onDownloadPressed: assetList[indexOfAsset.value].isLocal
+                ? null
+                : () {
+                    ref.watch(imageViewerStateProvider.notifier).downloadAsset(
+                          assetList[indexOfAsset.value].remote!,
+                          context,
+                        );
+                  },
+            onSharePressed: () {
+              ref
+                  .watch(imageViewerStateProvider.notifier)
+                  .shareAsset(assetList[indexOfAsset.value], context);
+            },
+            onToggleMotionVideo: (() {
+              isPlayingMotionVideo.value = !isPlayingMotionVideo.value;
+            }),
+            onDeletePressed: () => handleDelete((assetList[indexOfAsset.value])),
+            onAddToAlbumPressed: () => addToAlbum(assetList[indexOfAsset.value]),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: TopControlAppBar(
-        isPlayingMotionVideo: isPlayingMotionVideo.value,
-        asset: assetList[indexOfAsset.value],
-        onMoreInfoPressed: () {
-          showInfo();
-        },
-        onDownloadPressed: assetList[indexOfAsset.value].isLocal
-            ? null
-            : () {
-                ref.watch(imageViewerStateProvider.notifier).downloadAsset(
-                      assetList[indexOfAsset.value].remote!,
-                      context,
-                    );
-              },
-        onSharePressed: () {
-          ref
-              .watch(imageViewerStateProvider.notifier)
-              .shareAsset(assetList[indexOfAsset.value], context);
-        },
-        onToggleMotionVideo: (() {
-          isPlayingMotionVideo.value = !isPlayingMotionVideo.value;
-        }),
-        onDeletePressed: () => handleDelete((assetList[indexOfAsset.value])),
-        onAddToAlbumPressed: () => addToAlbum(assetList[indexOfAsset.value]),
-      ),
-      body: SafeArea(
-        child: PhotoViewGallery.builder(
-          scaleStateChangedCallback: (state) => isZoomed.value = state != PhotoViewScaleState.initial,
+      body: Stack(
+        children: [
+          PhotoViewGallery.builder(
+          scaleStateChangedCallback: (state) {
+            isZoomed.value = state != PhotoViewScaleState.initial;
+            showAppBar.value = !isZoomed.value;
+          },
           pageController: controller,
           scrollPhysics: isZoomed.value
               ? const NeverScrollableScrollPhysics() // Don't allow paging while scrolled in
@@ -327,6 +342,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               return PhotoViewGalleryPageOptions(
                 onDragStart: (_, details, __) => localPosition = details.localPosition,
                 onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
+                onTapDown: (_, __, ___) => showAppBar.value = !showAppBar.value,
                 imageProvider: provider,
                 heroAttributes: PhotoViewHeroAttributes(tag: assetList[index].id),
                 minScale: PhotoViewComputedScale.contained,
@@ -335,20 +351,32 @@ class GalleryViewerPage extends HookConsumerWidget {
               return PhotoViewGalleryPageOptions.customChild(
                 onDragStart: (_, details, __) => localPosition = details.localPosition,
                 onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
+                onTapDown: (_, __, ___) => showAppBar.value = !showAppBar.value,
                 heroAttributes: PhotoViewHeroAttributes(tag: assetList[index].id),
-                child: VideoViewerPage(
-                  asset: assetList[index],
-                  isMotionVideo: isPlayingMotionVideo.value,
-                  onVideoEnded: () {
-                    if (isPlayingMotionVideo.value) {
-                      isPlayingMotionVideo.value = false;
-                    }
-                  },
+                maxScale: 1.0,
+                minScale: 1.0,
+                child: SafeArea(
+                  child: VideoViewerPage(
+                    asset: assetList[index],
+                    isMotionVideo: isPlayingMotionVideo.value,
+                    onVideoEnded: () {
+                      if (isPlayingMotionVideo.value) {
+                        isPlayingMotionVideo.value = false;
+                      }
+                    },
+                  ),
                 ),
               );
             }
           },
         ),
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: buildAppBar(),
+        ),
+      ],
       ),
     );
   }
