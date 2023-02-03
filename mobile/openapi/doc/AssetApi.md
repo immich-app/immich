@@ -230,7 +230,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **downloadFile**
-> Object downloadFile(assetId, isThumb, isWeb)
+> Object downloadFile(assetId)
 
 
 
@@ -248,11 +248,9 @@ import 'package:openapi/api.dart';
 
 final api_instance = AssetApi();
 final assetId = assetId_example; // String | 
-final isThumb = true; // bool | 
-final isWeb = true; // bool | 
 
 try {
-    final result = api_instance.downloadFile(assetId, isThumb, isWeb);
+    final result = api_instance.downloadFile(assetId);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->downloadFile: $e\n');
@@ -264,8 +262,6 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **assetId** | **String**|  | 
- **isThumb** | **bool**|  | [optional] 
- **isWeb** | **bool**|  | [optional] 
 
 ### Return type
 

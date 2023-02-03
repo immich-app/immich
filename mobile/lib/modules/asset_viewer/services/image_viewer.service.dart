@@ -26,14 +26,10 @@ class ImageViewerService {
       if (asset.type == AssetTypeEnum.IMAGE && asset.livePhotoVideoId != null) {
         var imageResponse = await _apiService.assetApi.downloadFileWithHttpInfo(
           asset.id,
-          isThumb: false,
-          isWeb: false,
         );
 
         var motionReponse = await _apiService.assetApi.downloadFileWithHttpInfo(
           asset.livePhotoVideoId!,
-          isThumb: false,
-          isWeb: false,
         );
 
         final AssetEntity? entity;
@@ -54,8 +50,6 @@ class ImageViewerService {
       } else {
         var res = await _apiService.assetApi.downloadFileWithHttpInfo(
           asset.id,
-          isThumb: false,
-          isWeb: false,
         );
 
         final AssetEntity? entity;
