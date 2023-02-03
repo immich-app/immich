@@ -110,6 +110,16 @@ class ThumbnailImage extends HookConsumerWidget {
                   size: 18,
                 ),
               ),
+            if (asset.remote?.isFavorite == true)
+              const Positioned(
+                left: 10,
+                bottom: 5,
+                child: Icon(
+                  Icons.star,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
             if (!asset.isImage)
               Positioned(
                 top: 5,
