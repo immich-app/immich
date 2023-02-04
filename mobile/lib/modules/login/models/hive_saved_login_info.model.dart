@@ -13,9 +13,6 @@ class HiveSavedLoginInfo {
   @HiveField(2)
   String serverUrl;
 
-  @HiveField(3, defaultValue: false)
-  bool isSaveLogin;
-
   @HiveField(4, defaultValue: "")
   String accessToken;
 
@@ -23,7 +20,6 @@ class HiveSavedLoginInfo {
     required this.email,
     required this.password,
     required this.serverUrl,
-    required this.isSaveLogin,
     required this.accessToken,
   });
 }

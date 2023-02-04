@@ -29,7 +29,6 @@ class LoginForm extends HookConsumerWidget {
         useTextEditingController.fromValue(TextEditingValue.empty);
     final apiService = ref.watch(apiServiceProvider);
     final serverEndpointFocusNode = useFocusNode();
-    final isSaveLoginInfo = useState<bool>(false);
     final isLoading = useState<bool>(false);
     final isOauthEnable = useState<bool>(false);
     final oAuthButtonLabel = useState<String>('OAuth');
@@ -75,7 +74,6 @@ class LoginForm extends HookConsumerWidget {
           usernameController.text = loginInfo.email;
           passwordController.text = loginInfo.password;
           serverEndpointController.text = loginInfo.serverUrl;
-          isSaveLoginInfo.value = loginInfo.isSaveLogin;
         }
 
         getServeLoginConfig();
@@ -88,7 +86,6 @@ class LoginForm extends HookConsumerWidget {
       usernameController.text = 'testuser@email.com';
       passwordController.text = 'password';
       serverEndpointController.text = 'http://10.1.15.216:2283/api';
-      isSaveLoginInfo.value = true;
     }
 
     return Center(
@@ -302,7 +299,6 @@ class LoginButton extends ConsumerWidget {
                   emailController.text,
                   passwordController.text,
                   serverEndpointController.text,
-                  true,
                 );
 
         if (isAuthenticated) {
@@ -378,7 +374,6 @@ class OAuthLoginButton extends ConsumerWidget {
               .watch(authenticationProvider.notifier)
               .setSuccessLoginInfo(
                 accessToken: loginResponseDto.accessToken,
-                isSavedLoginInfo: true,
                 serverUrl: serverEndpointController.text,
               );
 
