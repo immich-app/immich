@@ -1,11 +1,14 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
 import 'package:immich_mobile/modules/favorite/ui/favorite_image.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 
 class FavoritesPage extends HookConsumerWidget {
   const FavoritesPage({Key? key}) : super(key: key);
@@ -28,41 +31,44 @@ class FavoritesPage extends HookConsumerWidget {
     }
 
     Widget buildImageGrid() {
-      final appSettingService = ref.watch(appSettingsServiceProvider);
+      final favorites = ref.watch(favoriteAssetProvider);
 
-      if (ref.watch(favoriteAssetProvider).isNotEmpty) {
-        return SliverPadding(
-          padding: const EdgeInsets.only(top: 10.0),
-          sliver: SliverGrid(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount:
-                  appSettingService.getSetting(AppSettingsEnum.tilesPerRow),
-              crossAxisSpacing: 5.0,
-              mainAxisSpacing: 5,
-            ),
-            delegate: SliverChildBuilderDelegate(
-              (
-                BuildContext context,
-                int index,
-              ) {
-                return FavoriteImage(
-                  ref.watch(favoriteAssetProvider)[index],
-                  ref.watch(favoriteAssetProvider),
-                );
-              },
-              childCount: ref.watch(favoriteAssetProvider).length,
-            ),
+      void viewAsset(Asset asset) {
+        AutoRouter.of(context).push(
+          GalleryViewerRoute(
+            asset: asset,
+            assetList: favorites,
           ),
         );
       }
-      return const SliverToBoxAdapter();
+
+      return GridView.builder(
+        itemCount: favorites.length,
+        gridDelegate: SliverQuiltedGridDelegate(
+          crossAxisCount: 4,
+          mainAxisSpacing: 5,
+          crossAxisSpacing: 5,
+          repeatPattern: QuiltedGridRepeatPattern.inverted,
+          pattern: [
+            const QuiltedGridTile(2, 2),
+            const QuiltedGridTile(1, 1),
+            const QuiltedGridTile(1, 1),
+            const QuiltedGridTile(1, 2),
+          ],
+        ),
+        itemBuilder: (
+                BuildContext context,
+                int index,
+              ) => FavoriteImage(
+                  asset: favorites[index],
+                  onTap: () => viewAsset(favorites[index]),
+                ),
+      );
     }
 
     return Scaffold(
       appBar: buildAppBar(),
-      body: CustomScrollView(
-        slivers: [buildImageGrid()],
-      ),
+      body:  buildImageGrid(),
     );
   }
 }
