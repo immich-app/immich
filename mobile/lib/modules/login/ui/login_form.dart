@@ -124,30 +124,6 @@ class LoginForm extends HookConsumerWidget {
                   controller: serverEndpointController,
                   focusNode: serverEndpointFocusNode,
                 ),
-                CheckboxListTile(
-                  activeColor: Theme.of(context).primaryColor,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                  dense: true,
-                  side: const BorderSide(color: Colors.grey, width: 1.5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  enableFeedback: true,
-                  title: const Text(
-                    "login_form_save_login",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
-                    ),
-                  ).tr(),
-                  value: isSaveLoginInfo.value,
-                  onChanged: (switchValue) {
-                    if (switchValue != null) {
-                      isSaveLoginInfo.value = switchValue;
-                    }
-                  },
-                ),
                 if (isLoading.value)
                   const SizedBox(
                     width: 24,
@@ -165,7 +141,6 @@ class LoginForm extends HookConsumerWidget {
                         emailController: usernameController,
                         passwordController: passwordController,
                         serverEndpointController: serverEndpointController,
-                        isSavedLoginInfo: isSaveLoginInfo.value,
                       ),
                       if (isOauthEnable.value) ...[
                         Padding(
@@ -181,7 +156,6 @@ class LoginForm extends HookConsumerWidget {
                         ),
                         OAuthLoginButton(
                           serverEndpointController: serverEndpointController,
-                          isSavedLoginInfo: isSaveLoginInfo.value,
                           buttonLabel: oAuthButtonLabel.value,
                           isLoading: isLoading,
                           onLoginSuccess: () {
@@ -304,14 +278,12 @@ class LoginButton extends ConsumerWidget {
   final TextEditingController emailController;
   final TextEditingController passwordController;
   final TextEditingController serverEndpointController;
-  final bool isSavedLoginInfo;
 
   const LoginButton({
     Key? key,
     required this.emailController,
     required this.passwordController,
     required this.serverEndpointController,
-    required this.isSavedLoginInfo,
   }) : super(key: key);
 
   @override
@@ -329,7 +301,7 @@ class LoginButton extends ConsumerWidget {
                   emailController.text,
                   passwordController.text,
                   serverEndpointController.text,
-                  isSavedLoginInfo,
+                  true,
                 );
 
         if (isAuthenticated) {
@@ -361,7 +333,6 @@ class LoginButton extends ConsumerWidget {
 
 class OAuthLoginButton extends ConsumerWidget {
   final TextEditingController serverEndpointController;
-  final bool isSavedLoginInfo;
   final ValueNotifier<bool> isLoading;
   final VoidCallback onLoginSuccess;
   final String buttonLabel;
@@ -369,7 +340,6 @@ class OAuthLoginButton extends ConsumerWidget {
   const OAuthLoginButton({
     Key? key,
     required this.serverEndpointController,
-    required this.isSavedLoginInfo,
     required this.isLoading,
     required this.onLoginSuccess,
     required this.buttonLabel,
@@ -407,7 +377,7 @@ class OAuthLoginButton extends ConsumerWidget {
               .watch(authenticationProvider.notifier)
               .setSuccessLoginInfo(
                 accessToken: loginResponseDto.accessToken,
-                isSavedLoginInfo: isSavedLoginInfo,
+                isSavedLoginInfo: true,
                 serverUrl: serverEndpointController.text,
               );
 
