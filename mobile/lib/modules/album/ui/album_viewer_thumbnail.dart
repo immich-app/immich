@@ -27,6 +27,7 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
         ref.watch(assetSelectionProvider).selectedAssetsInAlbumViewer;
     final isMultiSelectionEnable =
         ref.watch(assetSelectionProvider).isMultiselectEnable;
+    final isFavorite = ref.watch(favoriteProvider).contains(asset.id);
 
     viewAsset() {
       AutoRouter.of(context).push(
@@ -154,8 +155,7 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
       child: Stack(
         children: [
           buildThumbnailImage(),
-          if (ref.watch(favoriteProvider).contains(asset.id))
-            buildAssetFavoriteIcon(),
+          if (isFavorite) buildAssetFavoriteIcon(),
           if (showStorageIndicator) buildAssetStoreLocationIcon(),
           if (!asset.isImage) buildVideoLabel(),
           if (isMultiSelectionEnable) buildAssetSelectionIcon(),
