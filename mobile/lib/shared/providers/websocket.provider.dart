@@ -5,6 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -91,14 +92,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
           state = WebsocketState(isConnected: false, socket: null);
         });
 
-        socket.on('on_upload_success', (data) {
-          var jsonString = jsonDecode(data.toString());
-          AssetResponseDto? newAsset = AssetResponseDto.fromJson(jsonString);
-
-          if (newAsset != null) {
-            ref.watch(assetProvider.notifier).onNewAssetUploaded(newAsset);
-          }
-        });
+        socket.on('on_upload_success', _handleOnUploadSuccess);
       } catch (e) {
         debugPrint("[WEBSOCKET] Catch Websocket Error - ${e.toString()}");
       }
@@ -122,14 +116,16 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
   listenUploadEvent() {
     debugPrint("Start listening to event on_upload_success");
-    state.socket?.on('on_upload_success', (data) {
-      var jsonString = jsonDecode(data.toString());
-      AssetResponseDto? newAsset = AssetResponseDto.fromJson(jsonString);
+    state.socket?.on('on_upload_success', _handleOnUploadSuccess);
+  }
 
-      if (newAsset != null) {
-        ref.watch(assetProvider.notifier).onNewAssetUploaded(newAsset);
-      }
-    });
+  _handleOnUploadSuccess(dynamic data) {
+    final jsonString = jsonDecode(data.toString());
+    final dto = AssetResponseDto.fromJson(jsonString);
+    if (dto != null) {
+      final newAsset = Asset.remote(dto);
+      ref.watch(assetProvider.notifier).onNewAssetUploaded(newAsset);
+    }
   }
 }
 

@@ -23,17 +23,15 @@ class AssetCacheService extends JsonCache<List<Asset>> {
   }
 
   @override
-  Future<List<Asset>> get() async {
+  Future<List<Asset>?> get() async {
     try {
       final mapList = await readRawData() as List<dynamic>;
-
       final responseData = await compute(_computeEncode, mapList);
-
       return responseData;
     } catch (e) {
       debugPrint(e.toString());
-
-      return [];
+      await invalidate();
+      return null;
     }
   }
 }

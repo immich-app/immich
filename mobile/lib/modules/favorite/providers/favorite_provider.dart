@@ -1,11 +1,11 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:openapi/api.dart';
 
 class FavoriteSelectionNotifier extends StateNotifier<Set<String>> {
   FavoriteSelectionNotifier(this.ref) : super({}) {
     state = ref.watch(assetProvider).allAssets
-        .where((asset) => asset.remote?.isFavorite == true)
+        .where((asset) => asset.isFavorite)
         .map((asset) => asset.id)
         .toSet();
   }
@@ -24,7 +24,9 @@ class FavoriteSelectionNotifier extends StateNotifier<Set<String>> {
     return state.contains(id);
   }
 
-  Future<void> toggleFavorite(AssetResponseDto asset) async {
+  Future<void> toggleFavorite(Asset asset) async {
+    if (!asset.isRemote) return; // TODO support local favorite assets
+
     _setFavoriteForAssetId(asset.id, !_isFavorite(asset.id));
 
     await ref.watch(assetProvider.notifier).toggleFavorite(
