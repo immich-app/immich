@@ -75,6 +75,9 @@ class BackupService {
     final filter = FilterOptionGroup(
       containsPathModified: true,
       orders: [const OrderOption(type: OrderOptionType.updateDate)],
+      // title is needed to create Assets
+      imageOption: const FilterOption(needTitle: true),
+      videoOption: const FilterOption(needTitle: true),
     );
     final now = DateTime.now();
     final List<AssetPathEntity?> selectedAlbums =

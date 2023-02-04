@@ -43,7 +43,7 @@ class TopControlAppBar extends HookConsumerWidget {
         ),
       ),
       actions: [
-        if (asset.remote?.livePhotoVideoId != null)
+        if (asset.livePhotoVideoId != null)
           IconButton(
             iconSize: iconSize,
             splashRadius: iconSize,
@@ -104,18 +104,17 @@ class TopControlAppBar extends HookConsumerWidget {
             color: Colors.grey[200],
           ),
         ),
-        if (asset.isRemote)
-          IconButton(
-            iconSize: iconSize,
-            splashRadius: iconSize,
-            onPressed: () {
-              onMoreInfoPressed();
-            },
-            icon: Icon(
-              Icons.more_horiz_rounded,
-              color: Colors.grey[200],
-            ),
+        IconButton(
+          iconSize: iconSize,
+          splashRadius: iconSize,
+          onPressed: () {
+            onMoreInfoPressed();
+          },
+          icon: Icon(
+            Icons.more_horiz_rounded,
+            color: Colors.grey[200],
           ),
+        ),
       ],
     );
   }

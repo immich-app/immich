@@ -85,9 +85,11 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
         right: 10,
         bottom: 5,
         child: Icon(
-          (deviceId != asset.deviceId)
-              ? Icons.cloud_done_outlined
-              : Icons.photo_library_rounded,
+          asset.isRemote
+              ? (deviceId == asset.deviceId
+                  ? Icons.cloud_done_outlined
+                  : Icons.cloud_outlined)
+              : Icons.cloud_off_outlined,
           color: Colors.white,
           size: 18,
         ),
