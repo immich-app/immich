@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:openapi/api.dart';
 
 void main() {
   final List<Asset> testAssets = [];
@@ -13,24 +12,14 @@ void main() {
     DateTime date = DateTime(2022, month, day);
 
     testAssets.add(
-      Asset.remote(
-        AssetResponseDto(
-          type: AssetTypeEnum.IMAGE,
-          id: '$i',
-          deviceAssetId: '',
-          ownerId: '',
-          deviceId: '',
-          originalPath: '',
-          resizePath: '',
-          createdAt: date.toIso8601String(),
-          modifiedAt: date.toIso8601String(),
-          isFavorite: false,
-          mimeType: 'image/jpeg',
-          duration: '',
-          webpPath: '',
-          encodedVideoPath: '',
-          livePhotoVideoId: '',
-        ),
+      Asset(
+        deviceAssetId: '$i',
+        deviceId: '',
+        ownerId: '',
+        createdAt: date,
+        modifiedAt: date,
+        durationInSeconds: 0,
+        fileName: '',
       ),
     );
   }
@@ -70,11 +59,20 @@ void main() {
       // Day 1
       // 15 Assets => 5 Rows
       expect(renderList.elements.length, 18);
-      expect(renderList.elements[0].type, RenderAssetGridElementType.monthTitle);
+      expect(
+        renderList.elements[0].type,
+        RenderAssetGridElementType.monthTitle,
+      );
       expect(renderList.elements[0].date.month, 1);
-      expect(renderList.elements[7].type, RenderAssetGridElementType.monthTitle);
+      expect(
+        renderList.elements[7].type,
+        RenderAssetGridElementType.monthTitle,
+      );
       expect(renderList.elements[7].date.month, 2);
-      expect(renderList.elements[11].type, RenderAssetGridElementType.monthTitle);
+      expect(
+        renderList.elements[11].type,
+        RenderAssetGridElementType.monthTitle,
+      );
       expect(renderList.elements[11].date.month, 10);
     });
 

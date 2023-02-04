@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
-import 'package:openapi/api.dart';
-import 'package:path/path.dart' as p;
 import 'package:latlong2/latlong.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 
@@ -68,7 +67,7 @@ class ExifBottomSheet extends HookConsumerWidget {
 
     final textColor = Theme.of(context).primaryColor;
 
-    ExifResponseDto? exifInfo = assetDetail.remote?.exifInfo;
+    ExifInfo? exifInfo = assetDetail.exifInfo;
 
     buildLocationText() {
       return Text(
@@ -79,6 +78,17 @@ class ExifBottomSheet extends HookConsumerWidget {
           color: textColor,
         ),
       );
+    }
+
+    buildSizeText(Asset a) {
+      String resolution = a.width != null && a.height != null
+          ? "${a.height} x ${a.width}  "
+          : "";
+      String fileSize = a.exifInfo?.fileSize != null
+          ? formatBytes(a.exifInfo!.fileSize!)
+          : "";
+      String text = resolution + fileSize;
+      return text.isEmpty ? null : Text(text);
     }
 
     return SingleChildScrollView(
@@ -101,19 +111,18 @@ class ExifBottomSheet extends HookConsumerWidget {
                 child: CustomDraggingHandle(),
               ),
               const SizedBox(height: 12),
-              if (exifInfo?.dateTimeOriginal != null)
-                Text(
-                  DateFormat('date_format'.tr()).format(
-                    exifInfo!.dateTimeOriginal!.toLocal(),
-                  ),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
+              Text(
+                DateFormat('date_format'.tr()).format(
+                  assetDetail.createdAt.toLocal(),
                 ),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
 
               // Location
-              if (assetDetail.latitude != null)
+              if (assetDetail.latitude != null && assetDetail.longitude != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 32.0),
                   child: Column(
@@ -126,74 +135,67 @@ class ExifBottomSheet extends HookConsumerWidget {
                         "exif_bottom_sheet_location",
                         style: TextStyle(fontSize: 11, color: textColor),
                       ).tr(),
-                      if (assetDetail.latitude != null &&
-                          assetDetail.longitude != null)
-                        buildMap(),
+                      buildMap(),
                       if (exifInfo != null &&
                           exifInfo.city != null &&
                           exifInfo.state != null)
                         buildLocationText(),
                       Text(
-                        "${assetDetail.latitude?.toStringAsFixed(4)}, ${assetDetail.longitude?.toStringAsFixed(4)}",
+                        "${assetDetail.latitude!.toStringAsFixed(4)}, ${assetDetail.longitude!.toStringAsFixed(4)}",
                         style: const TextStyle(fontSize: 12),
                       )
                     ],
                   ),
                 ),
               // Detail
-              if (exifInfo != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 32.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Divider(
-                        thickness: 1,
-                        color: Colors.grey[600],
+              Padding(
+                padding: const EdgeInsets.only(top: 32.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Divider(
+                      thickness: 1,
+                      color: Colors.grey[600],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Text(
+                        "exif_bottom_sheet_details",
+                        style: TextStyle(fontSize: 11, color: textColor),
+                      ).tr(),
+                    ),
+                    ListTile(
+                      contentPadding: const EdgeInsets.all(0),
+                      dense: true,
+                      leading: const Icon(Icons.image),
+                      title: Text(
+                        assetDetail.fileName,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: textColor,
+                        ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: Text(
-                          "exif_bottom_sheet_details",
-                          style: TextStyle(fontSize: 11, color: textColor),
-                        ).tr(),
-                      ),
+                      subtitle: buildSizeText(assetDetail),
+                    ),
+                    if (exifInfo?.make != null)
                       ListTile(
                         contentPadding: const EdgeInsets.all(0),
                         dense: true,
-                        leading: const Icon(Icons.image),
+                        leading: const Icon(Icons.camera),
                         title: Text(
-                          "${exifInfo.imageName!}${p.extension(assetDetail.remote!.originalPath)}",
+                          "${exifInfo!.make} ${exifInfo.model}",
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,
                             color: textColor,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        subtitle: exifInfo.exifImageHeight != null
-                            ? Text(
-                                "${exifInfo.exifImageHeight} x ${exifInfo.exifImageWidth}  ${formatBytes(exifInfo.fileSizeInByte ?? 0)} ",
-                              )
-                            : null,
+                        subtitle: Text(
+                          "ƒ/${exifInfo.fNumber}   ${exifInfo.exposureTime}   ${exifInfo.focalLength} mm   ISO${exifInfo.iso} ",
+                        ),
                       ),
-                      if (exifInfo.make != null)
-                        ListTile(
-                          contentPadding: const EdgeInsets.all(0),
-                          dense: true,
-                          leading: const Icon(Icons.camera),
-                          title: Text(
-                            "${exifInfo.make} ${exifInfo.model}",
-                            style: TextStyle(
-                              color: textColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          subtitle: Text(
-                            "ƒ/${exifInfo.fNumber}   ${exifInfo.exposureTime}   ${exifInfo.focalLength} mm   ISO${exifInfo.iso} ",
-                          ),
-                        ),
-                    ],
-                  ),
+                  ],
                 ),
+              ),
               const SizedBox(
                 height: 50,
               ),

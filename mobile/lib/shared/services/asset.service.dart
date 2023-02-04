@@ -62,10 +62,11 @@ class AssetService {
       }
       final box = await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
       final HiveBackupAlbums? backupAlbumInfo = box.get(backupInfoKey);
+      final String userId = Hive.box(userInfoBox).get(userIdKey);
       if (backupAlbumInfo != null) {
         return (await _backupService
                 .buildUploadCandidates(backupAlbumInfo.deepCopy()))
-            .map(Asset.local)
+            .map((e) => Asset.local(e, userId))
             .toList(growable: false);
       }
     } catch (e) {
@@ -76,21 +77,24 @@ class AssetService {
 
   Future<Asset?> getAssetById(String assetId) async {
     try {
-      return Asset.remote(await _apiService.assetApi.getAssetById(assetId));
+      final dto = await _apiService.assetApi.getAssetById(assetId);
+      if (dto != null) {
+        return Asset.remote(dto);
+      }
     } catch (e) {
       debugPrint("Error [getAssetById]  ${e.toString()}");
-      return null;
     }
+    return null;
   }
 
   Future<List<DeleteAssetResponseDto>?> deleteAssets(
-    Iterable<AssetResponseDto> deleteAssets,
+    Iterable<Asset> deleteAssets,
   ) async {
     try {
       final List<String> payload = [];
 
       for (final asset in deleteAssets) {
-        payload.add(asset.id);
+        payload.add(asset.remoteId!);
       }
 
       return await _apiService.assetApi

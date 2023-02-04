@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -15,13 +16,28 @@ class ImmichImage extends StatelessWidget {
     this.useGrayBoxPlaceholder = false,
     super.key,
   });
-  final Asset asset;
+  final Asset? asset;
   final bool useGrayBoxPlaceholder;
   final double width;
   final double height;
 
   @override
   Widget build(BuildContext context) {
+    if (this.asset == null) {
+      return Container(
+        decoration: const BoxDecoration(
+          color: Colors.grey,
+        ),
+        child: SizedBox(
+          width: width,
+          height: height,
+          child: const Center(
+            child: Icon(Icons.no_photography),
+          ),
+        ),
+      );
+    }
+    final Asset asset = this.asset!;
     if (asset.isLocal) {
       return Image(
         image: AssetEntityImageProvider(
@@ -49,7 +65,16 @@ class ImmichImage extends StatelessWidget {
                 ));
         },
         errorBuilder: (context, error, stackTrace) {
-          debugPrint("Error getting thumb for assetId=${asset.id}: $error");
+          if (error is PlatformException &&
+              error.code == "The asset not found!") {
+            debugPrint(
+              "Asset ${asset.localId} does not exist anymore on device!",
+            );
+          } else {
+            debugPrint(
+              "Error getting thumb for assetId=${asset.localId}: $error",
+            );
+          }
           return Icon(
             Icons.image_not_supported_outlined,
             color: Theme.of(context).primaryColor,
@@ -57,12 +82,12 @@ class ImmichImage extends StatelessWidget {
         },
       );
     }
-    final String token = Hive.box(userInfoBox).get(accessTokenKey);
-    final String thumbnailRequestUrl = getThumbnailUrl(asset.remote!);
+    final String? token = Hive.box(userInfoBox).get(accessTokenKey);
+    final String thumbnailRequestUrl = getThumbnailUrl(asset);
     return CachedNetworkImage(
       imageUrl: thumbnailRequestUrl,
       httpHeaders: {"Authorization": "Bearer $token"},
-      cacheKey: getThumbnailCacheKey(asset.remote!),
+      cacheKey: getThumbnailCacheKey(asset),
       width: width,
       height: height,
       // keeping memCacheWidth, memCacheHeight, maxWidthDiskCache and

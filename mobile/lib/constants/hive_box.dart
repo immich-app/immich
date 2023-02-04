@@ -5,6 +5,7 @@ const String deviceIdKey = 'immichBoxDeviceIdKey'; // Key 2
 const String isLoggedInKey = 'immichIsLoggedInKey'; // Key 3
 const String serverEndpointKey = 'immichBoxServerEndpoint'; // Key 4
 const String assetEtagKey = 'immichAssetEtagKey'; // Key 5
+const String userIdKey = 'immichUserIdKey'; // Key 6
 
 // Login Info
 const String hiveLoginInfoBox = "immichLoginInfoBox"; // Box
