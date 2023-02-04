@@ -42,27 +42,33 @@ class FavoritesPage extends HookConsumerWidget {
         );
       }
 
-      return GridView.builder(
-        itemCount: favorites.length,
-        gridDelegate: SliverQuiltedGridDelegate(
-          crossAxisCount: 4,
-          mainAxisSpacing: 5,
-          crossAxisSpacing: 5,
-          repeatPattern: QuiltedGridRepeatPattern.inverted,
-          pattern: [
-            const QuiltedGridTile(2, 2),
-            const QuiltedGridTile(1, 1),
-            const QuiltedGridTile(1, 1),
-            const QuiltedGridTile(1, 2),
-          ],
-        ),
-        itemBuilder: (
-                BuildContext context,
-                int index,
-              ) => FavoriteImage(
-                  asset: favorites[index],
-                  onTap: () => viewAsset(favorites[index]),
-                ),
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final crossAxisCount = constraints.maxWidth > 500 ? 4 : 2;
+          return  GridView.builder(
+            itemCount: favorites.length,
+            gridDelegate: SliverQuiltedGridDelegate(
+              crossAxisCount: crossAxisCount,
+              mainAxisSpacing: 5,
+              crossAxisSpacing: 5,
+              repeatPattern: QuiltedGridRepeatPattern.inverted,
+              pattern: [
+                const QuiltedGridTile(2, 2),
+                const QuiltedGridTile(1, 1),
+                const QuiltedGridTile(1, 1),
+                const QuiltedGridTile(1, 2),
+                const QuiltedGridTile(1, 1),
+              ],
+            ),
+            itemBuilder: (
+                    BuildContext context,
+                    int index,
+                  ) => FavoriteImage(
+                      asset: favorites[index],
+                      onTap: () => viewAsset(favorites[index]),
+                    ),
+          );
+        },
       );
     }
 
