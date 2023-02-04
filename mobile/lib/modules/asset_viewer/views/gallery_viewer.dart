@@ -275,104 +275,16 @@ class GalleryViewerPage extends HookConsumerWidget {
       body: Stack(
         children: [
           PhotoViewGallery.builder(
-          scaleStateChangedCallback: (state) {
-            isZoomed.value = state != PhotoViewScaleState.initial;
-            showAppBar.value = !isZoomed.value;
-          },
-          pageController: controller,
-          scrollPhysics: isZoomed.value
-              ? const NeverScrollableScrollPhysics() // Don't allow paging while scrolled in
-              : (Platform.isIOS 
-                ? const BouncingScrollPhysics()  // Use bouncing physics for iOS
-                : const ClampingScrollPhysics() // Use heavy physics for Android
-              ),
-          itemCount: assetList.length,
-          scrollDirection: Axis.horizontal,
-          onPageChanged: (value) {
-            // Precache image
-            if (indexOfAsset.value < value) {
-              // Moving forwards, so precache the next asset
-              precacheNextImage(value + 1);
-            } else {
-              // Moving backwards, so precache previous asset
-              precacheNextImage(value - 1);
-            }
-            indexOfAsset.value = value;
-            HapticFeedback.selectionClick();
-          },
-          loadingBuilder: isLoadPreview.value ? (context, event) {
-            final asset = assetList[indexOfAsset.value];
-            if (!asset.isLocal) {
-              // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to acheive
-              // Three-Stage Loading (WEBP -> JPEG -> Original)
-              final webPThumbnail = CachedNetworkImage(
-                imageUrl: getThumbnailUrl(asset.remote!, type: api.ThumbnailFormat.WEBP),
-                cacheKey: getThumbnailCacheKey(asset.remote!, type: api.ThumbnailFormat.WEBP),
-                httpHeaders: { 'Authorization': authToken },
-                progressIndicatorBuilder: (_, __, ___) => const Center(child: ImmichLoadingIndicator(),),
-                fadeInDuration: const Duration(milliseconds: 0),
-                fit: BoxFit.contain,
-              );
-
-              return CachedNetworkImage(
-                imageUrl: getThumbnailUrl(asset.remote!, type: api.ThumbnailFormat.JPEG),
-                cacheKey: getThumbnailCacheKey(asset.remote!, type: api.ThumbnailFormat.JPEG),
-                httpHeaders: { 'Authorization': authToken },
-                fit: BoxFit.contain,
-                fadeInDuration: const Duration(milliseconds: 0),
-                placeholder: (_, __) => webPThumbnail,
-              );
-            } else {
-              return Image(
-                image: localThumbnailImageProvider(asset),
-                fit: BoxFit.contain,
-              );
-            }
-          } : null,
-          builder: (context, index) {
-            getAssetExif();
-            if (assetList[index].isImage && !isPlayingMotionVideo.value) {
-              // Show photo
-              final ImageProvider provider;
-              if (assetList[index].isLocal) {
-                provider = localImageProvider(assetList[index]);
-              } else {
-                if (isLoadOriginal.value) {
-                  provider = originalImageProvider(assetList[index]);
-                } else {
-                  provider = remoteThumbnailImageProvider(
-                    assetList[index], 
-                    api.ThumbnailFormat.JPEG,
-                  );
-                }
-              }
-              return PhotoViewGalleryPageOptions(
-                onDragStart: (_, details, __) => localPosition = details.localPosition,
-                onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
-                onTapDown: (_, __, ___) => showAppBar.value = !showAppBar.value,
-                imageProvider: provider,
-                heroAttributes: PhotoViewHeroAttributes(tag: assetList[index].id),
-                minScale: PhotoViewComputedScale.contained,
-              );
-            } else {
-              return PhotoViewGalleryPageOptions.customChild(
-                onDragStart: (_, details, __) => localPosition = details.localPosition,
-                onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
-                heroAttributes: PhotoViewHeroAttributes(tag: assetList[index].id),
-                maxScale: 1.0,
-                minScale: 1.0,
-                child: SafeArea(
-                  child: VideoViewerPage(
-                    onPlaying: () => isPlayingVideo.value = true,
-                    onPaused: () => isPlayingVideo.value = false,
-                    asset: assetList[index],
-                    isMotionVideo: isPlayingMotionVideo.value,
-                    onVideoEnded: () {
-                      if (isPlayingMotionVideo.value) {
-                        isPlayingMotionVideo.value = false;
-                      }
-                    },
-                  ),
+            scaleStateChangedCallback: (state) {
+              isZoomed.value = state != PhotoViewScaleState.initial;
+              showAppBar.value = !isZoomed.value;
+            },
+            pageController: controller,
+            scrollPhysics: isZoomed.value
+                ? const NeverScrollableScrollPhysics() // Don't allow paging while scrolled in
+                : (Platform.isIOS 
+                  ? const BouncingScrollPhysics()  // Use bouncing physics for iOS
+                  : const ClampingScrollPhysics() // Use heavy physics for Android
                 ),
             itemCount: assetList.length,
             scrollDirection: Axis.horizontal,
@@ -388,45 +300,35 @@ class GalleryViewerPage extends HookConsumerWidget {
               indexOfAsset.value = value;
               HapticFeedback.selectionClick();
             },
-            loadingBuilder: isLoadPreview.value
-                ? (context, event) {
-                    final asset = assetList[indexOfAsset.value];
-                    if (!asset.isLocal) {
-                      // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to acheive
-                      // Three-Stage Loading (WEBP -> JPEG -> Original)
-                      final webPThumbnail = CachedNetworkImage(
-                        imageUrl: getThumbnailUrl(asset),
-                        cacheKey: getThumbnailCacheKey(asset),
-                        httpHeaders: {'Authorization': authToken},
-                        progressIndicatorBuilder: (_, __, ___) => const Center(
-                          child: ImmichLoadingIndicator(),
-                        ),
-                        fadeInDuration: const Duration(milliseconds: 0),
-                        fit: BoxFit.contain,
-                      );
+            loadingBuilder: isLoadPreview.value ? (context, event) {
+              final asset = assetList[indexOfAsset.value];
+              if (!asset.isLocal) {
+                // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to acheive
+                // Three-Stage Loading (WEBP -> JPEG -> Original)
+                final webPThumbnail = CachedNetworkImage(
+                  imageUrl: getThumbnailUrl(asset, type: api.ThumbnailFormat.WEBP),
+                  cacheKey: getThumbnailCacheKey(asset, type: api.ThumbnailFormat.WEBP),
+                  httpHeaders: { 'Authorization': authToken },
+                  progressIndicatorBuilder: (_, __, ___) => const Center(child: ImmichLoadingIndicator(),),
+                  fadeInDuration: const Duration(milliseconds: 0),
+                  fit: BoxFit.contain,
+                );
 
-                      return CachedNetworkImage(
-                        imageUrl: getThumbnailUrl(
-                          asset,
-                          type: api.ThumbnailFormat.JPEG,
-                        ),
-                        cacheKey: getThumbnailCacheKey(
-                          asset,
-                          type: api.ThumbnailFormat.JPEG,
-                        ),
-                        httpHeaders: {'Authorization': authToken},
-                        fit: BoxFit.contain,
-                        fadeInDuration: const Duration(milliseconds: 0),
-                        placeholder: (_, __) => webPThumbnail,
-                      );
-                    } else {
-                      return Image(
-                        image: localThumbnailImageProvider(asset),
-                        fit: BoxFit.contain,
-                      );
-                    }
-                  }
-                : null,
+                return CachedNetworkImage(
+                  imageUrl: getThumbnailUrl(asset, type: api.ThumbnailFormat.JPEG),
+                  cacheKey: getThumbnailCacheKey(asset, type: api.ThumbnailFormat.JPEG),
+                  httpHeaders: { 'Authorization': authToken },
+                  fit: BoxFit.contain,
+                  fadeInDuration: const Duration(milliseconds: 0),
+                  placeholder: (_, __) => webPThumbnail,
+                );
+              } else {
+                return Image(
+                  image: localThumbnailImageProvider(asset),
+                  fit: BoxFit.contain,
+                );
+              }
+            } : null,
             builder: (context, index) {
               getAssetExif();
               if (assetList[index].isImage && !isPlayingMotionVideo.value) {
@@ -439,35 +341,30 @@ class GalleryViewerPage extends HookConsumerWidget {
                     provider = originalImageProvider(assetList[index]);
                   } else {
                     provider = remoteThumbnailImageProvider(
-                      assetList[index],
+                      assetList[index], 
                       api.ThumbnailFormat.JPEG,
                     );
                   }
                 }
                 return PhotoViewGalleryPageOptions(
-                  onDragStart: (_, details, __) =>
-                      localPosition = details.localPosition,
+                  onDragStart: (_, details, __) => localPosition = details.localPosition,
                   onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
-                  onTapDown: (_, __, ___) =>
-                      showAppBar.value = !showAppBar.value,
+                  onTapDown: (_, __, ___) => showAppBar.value = !showAppBar.value,
                   imageProvider: provider,
-                  heroAttributes:
-                      PhotoViewHeroAttributes(tag: assetList[index].id),
+                  heroAttributes: PhotoViewHeroAttributes(tag: assetList[index].id),
                   minScale: PhotoViewComputedScale.contained,
                 );
               } else {
                 return PhotoViewGalleryPageOptions.customChild(
-                  onDragStart: (_, details, __) =>
-                      localPosition = details.localPosition,
+                  onDragStart: (_, details, __) => localPosition = details.localPosition,
                   onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
-                  onTapDown: (_, __, ___) =>
-                      showAppBar.value = !showAppBar.value,
-                  heroAttributes:
-                      PhotoViewHeroAttributes(tag: assetList[index].id),
+                  heroAttributes: PhotoViewHeroAttributes(tag: assetList[index].id),
                   maxScale: 1.0,
                   minScale: 1.0,
                   child: SafeArea(
                     child: VideoViewerPage(
+                      onPlaying: () => isPlayingVideo.value = true,
+                      onPaused: () => isPlayingVideo.value = false,
                       asset: assetList[index],
                       isMotionVideo: isPlayingMotionVideo.value,
                       onVideoEnded: () {
