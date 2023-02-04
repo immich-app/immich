@@ -10,7 +10,6 @@ import {
   StreamableFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { createHash } from 'node:crypto';
 import { QueryFailedError, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetEntity, AssetType, SharedLinkType } from '@app/infra';
@@ -23,7 +22,14 @@ import { SearchAssetDto } from './dto/search-asset.dto';
 import fs from 'fs/promises';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import { AssetResponseDto, JobName, mapAsset, mapAssetWithoutExif } from '@app/domain';
+import {
+  AssetResponseDto,
+  ImmichReadStream,
+  IStorageRepository,
+  JobName,
+  mapAsset,
+  mapAssetWithoutExif,
+} from '@app/domain';
 import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
@@ -73,6 +79,7 @@ export class AssetService {
     @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
+    @Inject(IStorageRepository) private storage: IStorageRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository, storageService);
     this.shareCore = new ShareCore(sharedLinkRepository, cryptoRepository);
@@ -189,62 +196,21 @@ export class AssetService {
     return this.downloadService.downloadArchive(`immich-${now}`, assetToDownload);
   }
 
-  public async downloadFile(query: ServeFileDto, assetId: string, res: Res) {
+  public async downloadFile(authUser: AuthUserDto, assetId: string): Promise<ImmichReadStream> {
+    this.checkDownloadAccess(authUser);
+    await this.checkAssetsAccess(authUser, [assetId]);
+
     try {
-      let fileReadStream = null;
-      const asset = await this._assetRepository.getById(assetId);
-
-      // Download Video
-      if (asset.type === AssetType.VIDEO) {
-        const { size } = await fileInfo(asset.originalPath);
-
-        res.set({
-          'Content-Type': asset.mimeType,
-          'Content-Length': size,
-        });
-
-        await fs.access(asset.originalPath, constants.R_OK | constants.W_OK);
-        fileReadStream = createReadStream(asset.originalPath);
-      } else {
-        // Download Image
-        if (!query.isThumb) {
-          /**
-           * Download Image Original File
-           */
-          const { size } = await fileInfo(asset.originalPath);
-
-          res.set({
-            'Content-Type': asset.mimeType,
-            'Content-Length': size,
-          });
-
-          await fs.access(asset.originalPath, constants.R_OK | constants.W_OK);
-          fileReadStream = createReadStream(asset.originalPath);
-        } else {
-          /**
-           * Download Image Resize File
-           */
-          if (!asset.resizePath) {
-            throw new NotFoundException('resizePath not set');
-          }
-
-          const { size } = await fileInfo(asset.resizePath);
-
-          res.set({
-            'Content-Type': 'image/jpeg',
-            'Content-Length': size,
-          });
-
-          await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
-          fileReadStream = createReadStream(asset.resizePath);
-        }
+      const asset = await this._assetRepository.get(assetId);
+      if (asset && asset.originalPath && asset.mimeType) {
+        return this.storage.createReadStream(asset.originalPath, asset.mimeType);
       }
-
-      return new StreamableFile(fileReadStream);
     } catch (e) {
       Logger.error(`Error download asset ${e}`, 'downloadFile');
       throw new InternalServerErrorException(`Failed to download asset ${e}`, 'DownloadFile');
     }
+
+    throw new NotFoundException();
   }
 
   public async getAssetThumbnail(
@@ -255,8 +221,7 @@ export class AssetService {
   ) {
     let fileReadStream: ReadStream;
 
-    const asset = await this.assetRepository.findOne({ where: { id: assetId } });
-
+    const asset = await this._assetRepository.get(assetId);
     if (!asset) {
       throw new NotFoundException('Asset not found');
     }
@@ -582,18 +547,6 @@ export class AssetService {
 
   getAssetByChecksum(userId: string, checksum: Buffer) {
     return this._assetRepository.getAssetByChecksum(userId, checksum);
-  }
-
-  calculateChecksum(filePath: string): Promise<Buffer> {
-    const fileReadStream = createReadStream(filePath);
-    const sha1Hash = createHash('sha1');
-    const deferred = new Promise<Buffer>((resolve, reject) => {
-      sha1Hash.once('error', (err) => reject(err));
-      sha1Hash.once('finish', () => resolve(sha1Hash.read()));
-    });
-
-    fileReadStream.pipe(sha1Hash);
-    return deferred;
   }
 
   getAssetCountByUserId(authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {

@@ -6,11 +6,6 @@ import { ICryptoRepository } from '../crypto/crypto.repository';
 import { LoginResponseDto, mapLoginResponse } from './response-dto';
 import { IUserTokenRepository, UserTokenCore } from '../user-token';
 
-export type JwtValidationResult = {
-  status: boolean;
-  userId: string | null;
-};
-
 export class AuthCore {
   private userTokenCore: UserTokenCore;
   constructor(

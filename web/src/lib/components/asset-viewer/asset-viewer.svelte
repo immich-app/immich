@@ -136,10 +136,8 @@
 
 			$downloadAssets[imageFileName] = 0;
 
-			const { data, status } = await api.assetApi.downloadFile(assetId, false, false, {
-				params: {
-					key
-				},
+			const { data, status } = await api.assetApi.downloadFile(assetId, {
+				params: { key },
 				responseType: 'blob',
 				onDownloadProgress: (progressEvent) => {
 					if (progressEvent.lengthComputable) {

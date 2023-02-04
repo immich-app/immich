@@ -4,6 +4,7 @@ import {
   IJobRepository,
   IKeyRepository,
   ISharedLinkRepository,
+  IStorageRepository,
   ISystemConfigRepository,
   IUserRepository,
   QueueName,
@@ -29,6 +30,7 @@ import {
   UserTokenEntity,
 } from './db';
 import { JobRepository } from './job';
+import { FilesystemProvider } from './storage';
 
 const providers: Provider[] = [
   { provide: ICryptoRepository, useClass: CryptoRepository },
@@ -36,6 +38,7 @@ const providers: Provider[] = [
   { provide: IKeyRepository, useClass: APIKeyRepository },
   { provide: IJobRepository, useClass: JobRepository },
   { provide: ISharedLinkRepository, useClass: SharedLinkRepository },
+  { provide: IStorageRepository, useClass: FilesystemProvider },
   { provide: ISystemConfigRepository, useClass: SystemConfigRepository },
   { provide: IUserRepository, useClass: UserRepository },
   { provide: IUserTokenRepository, useClass: UserTokenRepository },

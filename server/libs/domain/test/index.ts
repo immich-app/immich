@@ -4,6 +4,7 @@ export * from './device-info.repository.mock';
 export * from './fixtures';
 export * from './job.repository.mock';
 export * from './shared-link.repository.mock';
+export * from './storage.repository.mock';
 export * from './system-config.repository.mock';
 export * from './user-token.repository.mock';
 export * from './user.repository.mock';
