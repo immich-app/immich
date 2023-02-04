@@ -137,6 +137,7 @@ class LoginForm extends HookConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      const SizedBox(height: 18),
                       LoginButton(
                         emailController: usernameController,
                         passwordController: passwordController,
