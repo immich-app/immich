@@ -55,11 +55,13 @@ export const fileUploadHandler = async (
 		return;
 	}
 
-  const acceptedFile = files.filter(
-    (e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
-  );
+  // NOT USABLE, due to type being empty on .srw and .raf files and
+  // since it's readonly field.
+  // const acceptedFile = files.filter(
+  //   (e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
+  // );
 
-  for (const asset of acceptedFile) {
+  for (const asset of files) {
     await fileUploader(asset, albumId, sharedKey, onDone);
   }
 };
