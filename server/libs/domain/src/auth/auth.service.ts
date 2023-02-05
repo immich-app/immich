@@ -77,6 +77,10 @@ export class AuthService {
   }
 
   public async logout(authType: AuthType, tokenValue?: string): Promise<LogoutResponseDto> {
+    if (tokenValue) {
+      await this.userTokenCore.deleteToken(tokenValue);
+    }
+
     if (authType === AuthType.OAUTH) {
       const url = await this.oauthCore.getLogoutEndpoint();
       if (url) {
@@ -84,10 +88,6 @@ export class AuthService {
       }
     }
 
-    if (tokenValue) {
-      await this.userTokenCore.deleteToken(tokenValue);
-    }
-    
     return { successful: true, redirectUri: '/auth/login?autoLaunch=0' };
   }
 
