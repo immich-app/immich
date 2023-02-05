@@ -55,9 +55,13 @@ export const fileUploadHandler = async (
 		return;
 	}
 
-	for (const asset of files) {
-		await fileUploader(asset, albumId, sharedKey, onDone);
-	}
+  const acceptedFile = files.filter(
+    (e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
+  );
+
+  for (const asset of acceptedFile) {
+    await fileUploader(asset, albumId, sharedKey, onDone);
+  }
 };
 
 function getMimeType(file: File) {
