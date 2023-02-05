@@ -101,12 +101,12 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
 
     return Row(
       key: Key("asset-row-${row.assets.first.id}"),
-      children: row.assets.map((Asset asset) {
+      children: row.assets.mapIndexed((int index, Asset asset) {
         bool last = asset.id == row.assets.last.id;
 
         return Container(
           key: Key("asset-${asset.id}"),
-          width: size,
+          width: size * row.widthDistribution[index],
           height: size,
           margin: EdgeInsets.only(
             top: widget.margin,

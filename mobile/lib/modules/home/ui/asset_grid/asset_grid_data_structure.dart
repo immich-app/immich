@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -15,8 +16,9 @@ enum RenderAssetGridElementType {
 
 class RenderAssetGridRow {
   final List<Asset> assets;
+  final List<double> widthDistribution;
 
-  RenderAssetGridRow(this.assets);
+  RenderAssetGridRow(this.assets, this.widthDistribution);
 }
 
 class RenderAssetGridElement {
@@ -121,12 +123,32 @@ class RenderList {
         int cursor = 0;
         while (cursor < assets.length) {
           int rowElements = min(assets.length - cursor, perRow);
+          final rowAssets = assets.sublist(cursor, cursor + rowElements);
+
+          final aspectRatios = rowAssets
+              .map((e) => (e.width ?? 1) / (e.height ?? 1)).toList();
+          final meanAspectRatio = aspectRatios.sum / rowElements;
+
+          // 1: mean width
+          // 0.5: width < mean - threshold
+          // 1.5: width > mean + threshold
+          final arConfiguration = aspectRatios.map((e) {
+            if (e - meanAspectRatio > 0.3) return 1.5;
+            if (e - meanAspectRatio < -0.3) return 0.5;
+            return 1.0;
+          });
+
+          // Normalize:
+          final sum = arConfiguration.sum;
+          final widthDistribution = arConfiguration
+              .map((e) => (e * rowElements) / sum).toList();
 
           final rowElement = RenderAssetGridElement(
             RenderAssetGridElementType.assetRow,
             date: date,
             assetRow: RenderAssetGridRow(
-              assets.sublist(cursor, cursor + rowElements),
+              rowAssets,
+              widthDistribution,
             ),
           );
 
