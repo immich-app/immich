@@ -77,6 +77,10 @@ class _$AppRouter extends RootStackRouter {
               isSharedAlbum: args.isSharedAlbum,
               initialAssets: args.initialAssets));
     },
+    FavoritesRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+          routeData: routeData, child: const FavoritesPage());
+    },
     AssetSelectionRoute.name: (routeData) {
       return CustomPage<AssetSelectionPageResult?>(
           routeData: routeData,
@@ -197,6 +201,8 @@ class _$AppRouter extends RootStackRouter {
             path: '/search-result-page', guards: [authGuard]),
         RouteConfig(CreateAlbumRoute.name,
             path: '/create-album-page', guards: [authGuard]),
+        RouteConfig(FavoritesRoute.name,
+            path: '/favorites-page', guards: [authGuard]),
         RouteConfig(AssetSelectionRoute.name,
             path: '/asset-selection-page', guards: [authGuard]),
         RouteConfig(SelectUserForSharingRoute.name,
@@ -384,6 +390,14 @@ class CreateAlbumRouteArgs {
   String toString() {
     return 'CreateAlbumRouteArgs{key: $key, isSharedAlbum: $isSharedAlbum, initialAssets: $initialAssets}';
   }
+}
+
+/// generated route for
+/// [FavoritesPage]
+class FavoritesRoute extends PageRouteInfo<void> {
+  const FavoritesRoute() : super(FavoritesRoute.name, path: '/favorites-page');
+
+  static const String name = 'FavoritesRoute';
 }
 
 /// generated route for

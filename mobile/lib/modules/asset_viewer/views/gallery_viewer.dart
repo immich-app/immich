@@ -13,6 +13,7 @@ import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_s
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
+import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
 import 'package:immich_mobile/shared/services/asset.service.dart';
 import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
@@ -69,7 +70,11 @@ class GalleryViewerPage extends HookConsumerWidget {
       [],
     );
 
-    void getAssetExif() async {
+    void toggleFavorite(Asset asset) {
+      ref.watch(favoriteProvider.notifier).toggleFavorite(asset);
+    }
+
+    getAssetExif() async {
       if (assetList[indexOfAsset.value].isRemote) {
         assetDetail = await ref
             .watch(assetServiceProvider)
@@ -236,8 +241,14 @@ class GalleryViewerPage extends HookConsumerWidget {
           child: TopControlAppBar(
             isPlayingMotionVideo: isPlayingMotionVideo.value,
             asset: assetList[indexOfAsset.value],
+            isFavorite: ref.watch(favoriteProvider).contains(
+              assetList[indexOfAsset.value].id,
+            ),
             onMoreInfoPressed: () {
               showInfo();
+            },
+            onFavorite: () {
+              toggleFavorite(assetList[indexOfAsset.value]);
             },
             onDownloadPressed: assetList[indexOfAsset.value].isLocal
                 ? null
