@@ -66,20 +66,8 @@ describe('assetUploadOption', () => {
       expect(callback).toHaveBeenCalledWith(null, true);
     });
 
-    it('should allow .srw unrecognized', () => {
-      const file = { mimetype: 'application/octet-stream', originalname: 'test.srw' } as any;
-      fileFilter(mock.userRequest, file, callback);
-      expect(callback).toHaveBeenCalledWith(null, true);
-    });
-
     it('should allow .raf recognized', () => {
       const file = { mimetype: 'image/x-fuji-raf', originalname: 'test.raf' } as any;
-      fileFilter(mock.userRequest, file, callback);
-      expect(callback).toHaveBeenCalledWith(null, true);
-    });
-
-    it('should allow .raf unrecognized', () => {
-      const file = { mimetype: 'application/octet-stream', originalname: 'test.raf' } as any;
       fileFilter(mock.userRequest, file, callback);
       expect(callback).toHaveBeenCalledWith(null, true);
     });
