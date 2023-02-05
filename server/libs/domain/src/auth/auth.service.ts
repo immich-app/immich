@@ -76,9 +76,9 @@ export class AuthService {
     return this.authCore.createLoginResponse(user, AuthType.PASSWORD, isSecure);
   }
 
-  public async logout(authType: AuthType, tokenValue?: string): Promise<LogoutResponseDto> {
-    if (tokenValue) {
-      await this.userTokenCore.deleteToken(tokenValue);
+  public async logout(authType: AuthType, authUser: AuthUserDto): Promise<LogoutResponseDto> {
+    if (authUser.accessTokenId) {
+      await this.userTokenCore.deleteToken(authUser.accessTokenId);
     }
 
     if (authType === AuthType.OAUTH) {

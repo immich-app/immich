@@ -7,4 +7,5 @@ export class AuthUserDto {
   isAllowUpload?: boolean;
   isAllowDownload?: boolean;
   isShowExif?: boolean;
+  accessTokenId?: string;
 }
