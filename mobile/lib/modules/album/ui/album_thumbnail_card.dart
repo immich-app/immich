@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
@@ -14,7 +15,7 @@ class AlbumThumbnailCard extends StatelessWidget {
     required this.album,
   }) : super(key: key);
 
-  final AlbumResponseDto album;
+  final Album album;
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +73,7 @@ class AlbumThumbnailCard extends StatelessWidget {
               child: SizedBox(
                 width: cardSize,
                 child: Text(
-                  album.albumName,
+                  album.name,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                   ),

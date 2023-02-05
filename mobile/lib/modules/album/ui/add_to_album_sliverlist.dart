@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/ui/album_thumbnail_listtile.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/album.dart';
 
 class AddToAlbumSliverList extends HookConsumerWidget {
-
   /// The asset to add to an album
-  final List<AlbumResponseDto> albums;
-  final List<AlbumResponseDto> sharedAlbums;
-  final void Function(AlbumResponseDto) onAddToAlbum;
+  final List<Album> albums;
+  final List<Album> sharedAlbums;
+  final void Function(Album) onAddToAlbum;
 
   const AddToAlbumSliverList({
     Key? key,
@@ -21,36 +20,36 @@ class AddToAlbumSliverList extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
-        childCount: albums.length + (sharedAlbums.isEmpty ? 0 : 1),
-        (context, index) {
-          // Build shared expander
-          if (index == 0 && sharedAlbums.isNotEmpty) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: ExpansionTile(
-                  title: const Text('Shared'),
-                  tilePadding: const EdgeInsets.symmetric(horizontal: 10.0),
-                  leading: const Icon(Icons.group),
-                  children: sharedAlbums.map((album) => 
-                    AlbumThumbnailListTile(
+          childCount: albums.length + (sharedAlbums.isEmpty ? 0 : 1),
+          (context, index) {
+        // Build shared expander
+        if (index == 0 && sharedAlbums.isNotEmpty) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: ExpansionTile(
+              title: const Text('Shared'),
+              tilePadding: const EdgeInsets.symmetric(horizontal: 10.0),
+              leading: const Icon(Icons.group),
+              children: sharedAlbums
+                  .map(
+                    (album) => AlbumThumbnailListTile(
                       album: album,
                       onTap: () => onAddToAlbum(album),
                     ),
-                  ).toList(),
-                ),
-              );
-          }
-
-          // Build albums list
-          final offset = index - (sharedAlbums.isNotEmpty ? 1 : 0);
-          final album = albums[offset];
-          return AlbumThumbnailListTile(
-            album: album,
-            onTap: () => onAddToAlbum(album),
+                  )
+                  .toList(),
+            ),
           );
         }
-      ),
 
+        // Build albums list
+        final offset = index - (sharedAlbums.isNotEmpty ? 1 : 0);
+        final album = albums[offset];
+        return AlbumThumbnailListTile(
+          album: album,
+          onTap: () => onAddToAlbum(album),
+        );
+      }),
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
@@ -15,7 +16,7 @@ class AlbumThumbnailListTile extends StatelessWidget {
     this.onTap,
   }) : super(key: key);
 
-  final AlbumResponseDto album;
+  final Album album;
   final void Function()? onTap;
 
   @override
@@ -80,7 +81,7 @@ class AlbumThumbnailListTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    album.albumName,
+                    album.name,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                     ),
