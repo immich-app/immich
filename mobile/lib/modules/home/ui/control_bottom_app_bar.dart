@@ -43,12 +43,7 @@ class ControlBottomAppBar extends ConsumerWidget {
             iconData: Icons.star_rounded,
             label: "Favorite",
             onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  onFavorite();
-               },
-              );
+              onFavorite();
             },
           ),
           ControlBoxButton(

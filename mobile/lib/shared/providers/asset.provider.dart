@@ -271,20 +271,20 @@ class AssetNotifier extends StateNotifier<AssetsState> {
 
   Future<bool> toggleFavorite(Asset asset, bool status) async {
     final newAsset = await _assetService.changeFavoriteStatus(asset, status);
+    print('favoriting ${asset.id}');
 
     if (newAsset == null) {
       log.severe("Change favorite status failed for asset ${asset.id}");
       return asset.isFavorite;
     }
 
-    await _updateAssetsState(
-      state.allAssets.map((a) {
-        if (asset.id == a.id) {
-          return Asset.remote(newAsset);
-        }
-        return a;
-      }).toList(),
-    );
+    final index = state.allAssets.indexWhere((a) => asset.id == a.id);
+    if (index > 0) {
+      state.allAssets.removeAt(index);
+      print('and ${asset.id} is favorite? ${newAsset.isFavorite}');
+      state.allAssets.insert(index, Asset.remote(newAsset));
+      _updateAssetsState(state.allAssets);
+    }
 
     return newAsset.isFavorite;
   }

@@ -35,14 +35,15 @@ class FavoriteSelectionNotifier extends StateNotifier<Set<String>> {
     );
   }
 
-  void addToFavorites(Iterable<Asset> assets) {
+  Future<void> addToFavorites(Iterable<Asset> assets) {
     state = state.union(assets.map((a) => a.id).toSet());
-    for (final a in assets) {
-      ref.watch(assetProvider.notifier).toggleFavorite(
-        a,
-        true,
-      );
-    }
+    return Future.wait(
+      assets.map((a) => 
+        ref.watch(assetProvider.notifier).toggleFavorite(
+          a,
+          true,
+        ),),
+    );
   }
 }
 
