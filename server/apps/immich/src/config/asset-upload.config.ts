@@ -50,7 +50,7 @@ const logger = new Logger('AssetUploadConfig');
 
 function getMimeType(file: Express.Multer.File) {
   const extension = file.originalname.split('.').pop() as string;
-  switch (extension) {
+  switch (extension.toLowerCase()) {
     case 'raf':
       return 'image/x-fuji-raf';
     case 'srw':

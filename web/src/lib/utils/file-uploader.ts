@@ -68,7 +68,7 @@ export const fileUploadHandler = async (
 
 function getMimeType(file: File) {
 	const extension = file.name.split('.').pop() as string;
-	switch (extension) {
+	switch (extension.toLowerCase()) {
 		case 'raf':
 			return 'image/x-fuji-raf';
 		case 'srw':
