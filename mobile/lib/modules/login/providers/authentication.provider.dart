@@ -55,7 +55,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     String email,
     String password,
     String serverUrl,
-    bool isSavedLoginInfo,
   ) async {
     try {
       // Resolve API server endpoint from user provided serverUrl
@@ -83,7 +82,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       return setSuccessLoginInfo(
         accessToken: loginResponse.accessToken,
         serverUrl: serverUrl,
-        isSavedLoginInfo: isSavedLoginInfo,
       );
     } catch (e) {
       HapticFeedback.vibrate();
@@ -100,21 +98,9 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       _assetCacheService.invalidate(),
       _albumCacheService.invalidate(),
       _sharedAlbumCacheService.invalidate(),
+      Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).delete(savedLoginInfoKey)
     ]);
 
-    // Remove login info from local storage
-    var loginInfo =
-        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).get(savedLoginInfoKey);
-    if (loginInfo != null) {
-      loginInfo.email = "";
-      loginInfo.password = "";
-      loginInfo.isSaveLogin = false;
-
-      await Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).put(
-        savedLoginInfoKey,
-        loginInfo,
-      );
-    }
     return true;
   }
 
@@ -156,7 +142,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   Future<bool> setSuccessLoginInfo({
     required String accessToken,
     required String serverUrl,
-    required bool isSavedLoginInfo,
   }) async {
     _apiService.setAccessToken(accessToken);
     var userResponseDto = await _apiService.userApi.getMyUserInfo();
@@ -181,22 +166,16 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         deviceType: deviceInfo["deviceType"],
       );
 
-      if (isSavedLoginInfo) {
-        // Save login info to local storage
-        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).put(
-          savedLoginInfoKey,
-          HiveSavedLoginInfo(
-            email: "",
-            password: "",
-            isSaveLogin: true,
-            serverUrl: serverUrl,
-            accessToken: accessToken,
-          ),
-        );
-      } else {
-        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox)
-            .delete(savedLoginInfoKey);
-      }
+      // Save login info to local storage
+      Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).put(
+        savedLoginInfoKey,
+        HiveSavedLoginInfo(
+          email: "",
+          password: "",
+          serverUrl: serverUrl,
+          accessToken: accessToken,
+        ),
+      );
     }
 
     // Register device info
