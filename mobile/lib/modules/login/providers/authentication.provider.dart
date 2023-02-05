@@ -93,6 +93,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   Future<bool> logout() async {
     state = state.copyWith(isAuthenticated: false);
     await Future.wait([
+      _apiService.authenticationApi.logout(),
       Hive.box(userInfoBox).delete(accessTokenKey),
       Hive.box(userInfoBox).delete(assetEtagKey),
       _assetCacheService.invalidate(),
