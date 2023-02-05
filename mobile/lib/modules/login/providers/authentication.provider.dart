@@ -91,7 +91,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   }
 
   Future<bool> logout() async {
-    state = state.copyWith(isAuthenticated: false);
     await Future.wait([
       _apiService.authenticationApi.logout(),
       Hive.box(userInfoBox).delete(accessTokenKey),
@@ -101,6 +100,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       _sharedAlbumCacheService.invalidate(),
       Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).delete(savedLoginInfoKey)
     ]);
+
+    state = state.copyWith(isAuthenticated: false);
 
     return true;
   }
