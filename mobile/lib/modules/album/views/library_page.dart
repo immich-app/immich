@@ -49,7 +49,10 @@ class LibraryPage extends HookConsumerWidget {
     }
 
     Widget buildSortButton() {
-      final options = ["library_page_sort_created".tr(), "library_page_sort_title".tr()];
+      final options = [
+        "library_page_sort_created".tr(),
+        "library_page_sort_title".tr()
+      ];
 
       return PopupMenuButton(
         position: PopupMenuPosition.over,
@@ -148,28 +151,34 @@ class LibraryPage extends HookConsumerWidget {
       Function() onClick,
     ) {
       return Expanded(
-        child: TextButton.icon(
+        child: OutlinedButton.icon(
           onPressed: onClick,
-          label: Text(
-            label,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).primaryColor,
-            ),
-          ),
-          style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all(
-              Theme.of(context).focusColor,
-            ),
-            padding: MaterialStateProperty.all(const EdgeInsets.all(12.0)),
-            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6.0),
+          label: Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 12.0,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
               ),
             ),
-            alignment: Alignment.centerLeft,
           ),
-          icon: Icon(icon),
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.all(12),
+            side: BorderSide(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey[600]!
+                  : Colors.grey[300]!,
+            ),
+            alignment: Alignment.centerLeft,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(6.0),
+            ),
+          ),
+          icon: Icon(icon, color: Theme.of(context).primaryColor),
         ),
       );
     }
@@ -189,11 +198,13 @@ class LibraryPage extends HookConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  buildLibraryNavButton("library_page_favorites".tr(), Icons.star_border, () {
+                  buildLibraryNavButton(
+                      "library_page_favorites".tr(), Icons.star_border, () {
                     AutoRouter.of(context).navigate(const FavoritesRoute());
                   }),
                   const SizedBox(width: 12.0),
-                  buildLibraryNavButton("library_page_sharing".tr(), Icons.group_outlined, () {
+                  buildLibraryNavButton(
+                      "library_page_sharing".tr(), Icons.group_outlined, () {
                     AutoRouter.of(context).navigate(const SharingRoute());
                   }),
                 ],
