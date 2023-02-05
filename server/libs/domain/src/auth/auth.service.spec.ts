@@ -192,14 +192,14 @@ describe('AuthService', () => {
 
   describe('logout', () => {
     it('should return the end session endpoint', async () => {
-      await expect(sut.logout(AuthType.OAUTH)).resolves.toEqual({
+      await expect(sut.logout(AuthType.OAUTH, "")).resolves.toEqual({
         successful: true,
         redirectUri: 'http://end-session-endpoint',
       });
     });
 
     it('should return the default redirect', async () => {
-      await expect(sut.logout(AuthType.PASSWORD)).resolves.toEqual({
+      await expect(sut.logout(AuthType.PASSWORD, "")).resolves.toEqual({
         successful: true,
         redirectUri: '/auth/login?autoLaunch=0',
       });

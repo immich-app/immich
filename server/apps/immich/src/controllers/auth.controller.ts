@@ -61,11 +61,12 @@ export class AuthController {
 
   @Post('logout')
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<LogoutResponseDto> {
+    const token = req.headers.authorization?.split(' ')[1] || req.cookies[IMMICH_ACCESS_COOKIE];
     const authType: AuthType = req.cookies[IMMICH_AUTH_TYPE_COOKIE];
 
     res.clearCookie(IMMICH_ACCESS_COOKIE);
     res.clearCookie(IMMICH_AUTH_TYPE_COOKIE);
 
-    return this.authService.logout(authType);
+    return this.authService.logout(authType, token);
   }
 }

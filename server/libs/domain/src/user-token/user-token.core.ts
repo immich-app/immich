@@ -41,4 +41,9 @@ export class UserTokenCore {
 
     return key;
   }
+
+  public async deleteToken(tokenValue: string): Promise<void> {
+    const token = this.crypto.hashSha256(tokenValue);
+    await this.repository.delete(token);
+  }
 }
