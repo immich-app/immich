@@ -306,10 +306,14 @@ class GalleryViewerPage extends HookConsumerWidget {
                       // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to acheive
                       // Three-Stage Loading (WEBP -> JPEG -> Original)
                       final webPThumbnail = CachedNetworkImage(
-                        imageUrl: getThumbnailUrl(asset,
-                            type: api.ThumbnailFormat.WEBP),
-                        cacheKey: getThumbnailCacheKey(asset,
-                            type: api.ThumbnailFormat.WEBP),
+                        imageUrl: getThumbnailUrl(
+                          asset,
+                          type: api.ThumbnailFormat.WEBP,
+                        ),
+                        cacheKey: getThumbnailCacheKey(
+                          asset,
+                          type: api.ThumbnailFormat.WEBP,
+                        ),
                         httpHeaders: {'Authorization': authToken},
                         progressIndicatorBuilder: (_, __, ___) => const Center(
                           child: ImmichLoadingIndicator(),
@@ -319,10 +323,14 @@ class GalleryViewerPage extends HookConsumerWidget {
                       );
 
                       return CachedNetworkImage(
-                        imageUrl: getThumbnailUrl(asset,
-                            type: api.ThumbnailFormat.JPEG),
-                        cacheKey: getThumbnailCacheKey(asset,
-                            type: api.ThumbnailFormat.JPEG),
+                        imageUrl: getThumbnailUrl(
+                          asset,
+                          type: api.ThumbnailFormat.JPEG,
+                        ),
+                        cacheKey: getThumbnailCacheKey(
+                          asset,
+                          type: api.ThumbnailFormat.JPEG,
+                        ),
                         httpHeaders: {'Authorization': authToken},
                         fit: BoxFit.contain,
                         fadeInDuration: const Duration(milliseconds: 0),
