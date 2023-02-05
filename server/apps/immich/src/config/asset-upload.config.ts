@@ -48,19 +48,27 @@ export const multerUtils = { fileFilter, filename, destination };
 
 const logger = new Logger('AssetUploadConfig');
 
+function getMimeType(file: Express.Multer.File) {
+  const extension = file.originalname.split('.').pop() as string;
+  switch (extension) {
+    case 'raf':
+      return 'image/x-fuji-raf';
+    case 'srw':
+      return 'image/x-samsung-srw';
+    default:
+      return file.mimetype;
+  }
+}
+
 function fileFilter(req: Request, file: any, cb: any) {
   if (!req.user || (req.user.isPublicUser && !req.user.isAllowUpload)) {
     return cb(new UnauthorizedException());
   }
-  // TODO: Create new API endpoint for mimetypes and use that here as browser's
-  //  file mimetype is not to be trusted.
-  // Reference about issue with it: https://stackoverflow.com/questions/26149389/mime-type-missing-for-rar-and-tar/26222177#26222177
+  file.mimetype = getMimeType(file);
   if (
     file.mimetype.match(
       /\/(jpg|jpeg|png|gif|mp4|webm|x-msvideo|quicktime|heic|heif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef|x-fuji-raf|x-samsung-srw)$/,
-    ) ||
-    (file.mimetype.match('application/octet-stream') && extname(file.originalname.toLowerCase()) == '.raf') ||
-    (file.mimetype.match('application/octet-stream') && extname(file.originalname.toLowerCase()) == '.srw')
+    )
   ) {
     cb(null, true);
   } else {
