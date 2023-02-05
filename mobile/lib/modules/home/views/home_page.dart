@@ -84,16 +84,25 @@ class HomePage extends HookConsumerWidget {
         selectionEnabledHook.value = false;
       }
 
-      void onFavoriteAssets() {
-        if (!selection.value.every((a) => a.isRemote)) {
+      Iterable<Asset> remoteOnlySelection({String? localErrorMessage}) {
+        final Set<Asset> assets = selection.value;
+        final bool onlyRemote = assets.every((e) => e.isRemote);
+        if (!onlyRemote && localErrorMessage != null) {
           ImmichToast.show(
             context: context,
-            msg: "Can not favorite local assets yet, skipping",
+            msg: localErrorMessage,
             gravity: ToastGravity.BOTTOM,
           );
+          return assets.where((a) => a.isRemote);
         }
-        final remotes = selection.value.where((a) => a.isRemote);
-        ref.watch(favoriteProvider.notifier).addToFavorites(remotes);
+        return assets;
+      }
+
+      void onFavoriteAssets() {
+        final remoteAssests = remoteOnlySelection(
+          localErrorMessage: 'Can not favorite local assets yet, skipping',
+        );
+        ref.watch(favoriteProvider.notifier).addToFavorites(remoteAssests);
         selectionEnabledHook.value = false;
       }
 
@@ -118,6 +127,10 @@ class HomePage extends HookConsumerWidget {
 
       void onAddToAlbum(Album album) async {
         final Iterable<Asset> assets = remoteOnlySelection();
+      void onAddToAlbum(AlbumResponseDto album) async {
+        final Iterable<Asset> assets = remoteOnlySelection(
+          localErrorMessage: "Can not add local assets to albums yet, skipping",
+        );
         if (assets.isEmpty) {
           return;
         }
@@ -156,7 +169,9 @@ class HomePage extends HookConsumerWidget {
       }
 
       void onCreateNewAlbum() async {
-        final Iterable<Asset> assets = remoteOnlySelection();
+        final Iterable<Asset> assets = remoteOnlySelection(
+          localErrorMessage: "Can not add local assets to albums yet, skipping",
+        );
         if (assets.isEmpty) {
           return;
         }
