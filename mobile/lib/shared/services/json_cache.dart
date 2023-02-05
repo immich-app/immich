@@ -60,5 +60,5 @@ abstract class JsonCache<T> {
   }
 
   void put(T data);
-  Future<T> get();
+  Future<T?> get();
 }

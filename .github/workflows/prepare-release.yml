@@ -18,14 +18,12 @@ on:
         type: boolean
 
 jobs:
-  build_mobile:
-    uses: ./.github/workflows/build-mobile.yml
-    secrets: inherit
-
-  tag_release:
+  bump_version:
     runs-on: ubuntu-latest
-    needs: build_mobile
-
+    
+    outputs:
+      ref: ${{ steps.push-tag.outputs.commit_long_sha }}
+    
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -36,6 +34,7 @@ jobs:
         run: misc/release/pump-version.sh -s "${{ inputs.serverBump }}" -m "${{ inputs.mobileBump }}"
 
       - name: Commit and tag
+        id: push-tag
         uses: EndBug/add-and-commit@v9
         with:
           author_name: Immich Release Bot
@@ -43,7 +42,19 @@ jobs:
           message: "Version ${{ env.IMMICH_VERSION }}"
           tag: ${{ env.IMMICH_VERSION }}
           push: true
+          
+  build_mobile:
+    uses: ./.github/workflows/build-mobile.yml
+    needs: bump_version
+    secrets: inherit
+    with:
+      ref: ${{ needs.bump_version.outputs.ref }}
 
+  prepare_release:
+    runs-on: ubuntu-latest
+    needs: build_mobile
+
+    steps:
       - name: Download APK
         uses: actions/download-artifact@v3
         with:

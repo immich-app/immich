@@ -2,10 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
-import 'package:openapi/api.dart';
-import 'package:path/path.dart' as p;
 
 import 'package:photo_manager/photo_manager.dart';
 import 'package:path_provider/path_provider.dart';
@@ -18,22 +17,16 @@ class ImageViewerService {
 
   ImageViewerService(this._apiService);
 
-  Future<bool> downloadAssetToDevice(AssetResponseDto asset) async {
+  Future<bool> downloadAssetToDevice(Asset asset) async {
     try {
-      String fileName = p.basename(asset.originalPath);
-
       // Download LivePhotos image and motion part
-      if (asset.type == AssetTypeEnum.IMAGE && asset.livePhotoVideoId != null) {
+      if (asset.isImage && asset.livePhotoVideoId != null) {
         var imageResponse = await _apiService.assetApi.downloadFileWithHttpInfo(
-          asset.id,
-          isThumb: false,
-          isWeb: false,
+          asset.remoteId!,
         );
 
         var motionReponse = await _apiService.assetApi.downloadFileWithHttpInfo(
           asset.livePhotoVideoId!,
-          isThumb: false,
-          isWeb: false,
         );
 
         final AssetEntity? entity;
@@ -47,30 +40,28 @@ class ImageViewerService {
         entity = await PhotoManager.editor.darwin.saveLivePhoto(
           imageFile: imageFile,
           videoFile: videoFile,
-          title: p.basename(asset.originalPath),
+          title: asset.fileName,
         );
 
         return entity != null;
       } else {
-        var res = await _apiService.assetApi.downloadFileWithHttpInfo(
-          asset.id,
-          isThumb: false,
-          isWeb: false,
-        );
+        var res = await _apiService.assetApi
+            .downloadFileWithHttpInfo(asset.remoteId!);
 
         final AssetEntity? entity;
 
-        if (asset.type == AssetTypeEnum.IMAGE) {
+        if (asset.isImage) {
           entity = await PhotoManager.editor.saveImage(
             res.bodyBytes,
-            title: p.basename(asset.originalPath),
+            title: asset.fileName,
           );
         } else {
           final tempDir = await getTemporaryDirectory();
-          File tempFile = await File('${tempDir.path}/$fileName').create();
+          File tempFile =
+              await File('${tempDir.path}/${asset.fileName}').create();
           tempFile.writeAsBytesSync(res.bodyBytes);
-          entity =
-              await PhotoManager.editor.saveVideo(tempFile, title: fileName);
+          entity = await PhotoManager.editor
+              .saveVideo(tempFile, title: asset.fileName);
         }
         return entity != null;
       }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:openapi/api.dart';
@@ -24,10 +25,14 @@ class SearchService {
     }
   }
 
-  Future<List<AssetResponseDto>?> searchAsset(String searchTerm) async {
+  Future<List<Asset>?> searchAsset(String searchTerm) async {
     try {
-      return await _apiService.assetApi
+      final List<AssetResponseDto>? results = await _apiService.assetApi
           .searchAsset(SearchAssetDto(searchTerm: searchTerm));
+      if (results == null) {
+        return null;
+      }
+      return results.map((e) => Asset.remote(e)).toList();
     } catch (e) {
       debugPrint("[ERROR] [searchAsset] ${e.toString()}");
       return null;
@@ -50,7 +55,7 @@ class SearchService {
       return await _apiService.assetApi.getCuratedObjects();
     } catch (e) {
       debugPrint("Error [getCuratedObjects] ${e.toString()}");
-      throw [];
+      return [];
     }
   }
 }

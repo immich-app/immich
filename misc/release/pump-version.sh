@@ -65,6 +65,7 @@ if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
 
   sed -i "s/^  \"version\": \"$CURRENT_SERVER\",$/  \"version\": \"$NEXT_SERVER\",/" server/package.json
   sed -i "s/^  \"version\": \"$CURRENT_SERVER\",$/  \"version\": \"$NEXT_SERVER\",/" server/package-lock.json
+  sed -i "s/\"version\": \"$CURRENT_SERVER\",$/\"version\": \"$NEXT_SERVER\",/" server/immich-openapi-specs.json
   sed -i "s/\"android\.injected\.version\.name\" => \"$CURRENT_SERVER\",/\"android\.injected\.version\.name\" => \"$NEXT_SERVER\",/" mobile/android/fastlane/Fastfile
   sed -i "s/version_number: \"$CURRENT_SERVER\"$/version_number: \"$NEXT_SERVER\"/" mobile/ios/fastlane/Fastfile
 fi

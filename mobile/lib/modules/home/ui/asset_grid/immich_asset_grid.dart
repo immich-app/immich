@@ -24,7 +24,6 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   bool _scrolling = false;
   final Set<String> _selectedAssets = HashSet();
 
-
   Set<Asset> _getSelectedAssets() {
     return _selectedAssets
         .map((e) => widget.allAssets.firstWhereOrNull((a) => a.id == e))
@@ -103,7 +102,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     return Row(
       key: Key("asset-row-${row.assets.first.id}"),
       children: row.assets.map((Asset asset) {
-        bool last = asset == row.assets.last;
+        bool last = asset.id == row.assets.last.id;
 
         return Container(
           key: Key("asset-${asset.id}"),
@@ -224,13 +223,25 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     }
   }
 
+  Future<bool> onWillPop() async {
+    if (widget.selectionActive && _selectedAssets.isNotEmpty) {
+      _deselectAll();
+      return false;
+    }
+
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        _buildAssetGrid(),
-        if (widget.selectionActive) _buildMultiSelectIndicator(),
-      ],
+    return WillPopScope(
+      onWillPop: onWillPop,
+      child: Stack(
+        children: [
+          _buildAssetGrid(),
+          if (widget.selectionActive) _buildMultiSelectIndicator(),
+        ],
+      ),
     );
   }
 }

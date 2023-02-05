@@ -30,9 +30,7 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
       isSuccess: false,
     );
 
-    List<Asset>? assets = (await _searchService.searchAsset(searchTerm))
-        ?.map((e) => Asset.remote(e))
-        .toList();
+    List<Asset>? assets = await _searchService.searchAsset(searchTerm);
 
     if (assets != null) {
       state = state.copyWith(

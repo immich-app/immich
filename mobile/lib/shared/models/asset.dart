@@ -1,62 +1,127 @@
 import 'package:hive/hive.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:immich_mobile/utils/builtin_extensions.dart';
+import 'package:path/path.dart' as p;
 
 /// Asset (online or local)
 class Asset {
-  Asset.remote(this.remote) {
-    local = null;
-  }
+  Asset.remote(AssetResponseDto remote)
+      : remoteId = remote.id,
+        createdAt = DateTime.parse(remote.createdAt),
+        modifiedAt = DateTime.parse(remote.modifiedAt),
+        durationInSeconds = remote.duration.toDuration().inSeconds,
+        fileName = p.basename(remote.originalPath),
+        height = remote.exifInfo?.exifImageHeight?.toInt(),
+        width = remote.exifInfo?.exifImageWidth?.toInt(),
+        livePhotoVideoId = remote.livePhotoVideoId,
+        deviceAssetId = remote.deviceAssetId,
+        deviceId = remote.deviceId,
+        ownerId = remote.ownerId,
+        latitude = remote.exifInfo?.latitude?.toDouble(),
+        longitude = remote.exifInfo?.longitude?.toDouble(),
+        exifInfo =
+            remote.exifInfo != null ? ExifInfo.fromDto(remote.exifInfo!) : null;
 
-  Asset.local(this.local) {
-    remote = null;
-  }
-
-  late final AssetResponseDto? remote;
-  late final AssetEntity? local;
-
-  bool get isRemote => remote != null;
-  bool get isLocal => local != null;
-
-  String get deviceId =>
-      isRemote ? remote!.deviceId : Hive.box(userInfoBox).get(deviceIdKey);
-
-  String get deviceAssetId => isRemote ? remote!.deviceAssetId : local!.id;
-
-  String get id => isLocal ? local!.id : remote!.id;
-
-  double? get latitude =>
-      isLocal ? local!.latitude : remote!.exifInfo?.latitude?.toDouble();
-
-  double? get longitude =>
-      isLocal ? local!.longitude : remote!.exifInfo?.longitude?.toDouble();
-
-  DateTime get createdAt {
-    if (isLocal) {
-      if (local!.createDateTime.year == 1970) {
-        return local!.modifiedDateTime;
-      }
-      return local!.createDateTime;
-    } else {
-      return DateTime.parse(remote!.createdAt);
+  Asset.local(AssetEntity local, String owner)
+      : localId = local.id,
+        latitude = local.latitude,
+        longitude = local.longitude,
+        durationInSeconds = local.duration,
+        height = local.height,
+        width = local.width,
+        fileName = local.title!,
+        deviceAssetId = local.id,
+        deviceId = Hive.box(userInfoBox).get(deviceIdKey),
+        ownerId = owner,
+        modifiedAt = local.modifiedDateTime.toUtc(),
+        createdAt = local.createDateTime.toUtc() {
+    if (createdAt.year == 1970) {
+      createdAt = modifiedAt;
     }
   }
 
-  bool get isImage => isLocal
-      ? local!.type == AssetType.image
-      : remote!.type == AssetTypeEnum.IMAGE;
+  Asset({
+    this.localId,
+    this.remoteId,
+    required this.deviceAssetId,
+    required this.deviceId,
+    required this.ownerId,
+    required this.createdAt,
+    required this.modifiedAt,
+    this.latitude,
+    this.longitude,
+    required this.durationInSeconds,
+    this.width,
+    this.height,
+    required this.fileName,
+    this.livePhotoVideoId,
+    this.exifInfo,
+  });
 
-  String get duration => isRemote
-      ? remote!.duration
-      : Duration(seconds: local!.duration).toString();
+  AssetEntity? _local;
 
-  /// use only for tests
-  set createdAt(DateTime val) {
-    if (isRemote) {
-      remote!.createdAt = val.toIso8601String();
+  AssetEntity? get local {
+    if (isLocal && _local == null) {
+      _local = AssetEntity(
+        id: localId!.toString(),
+        typeInt: isImage ? 1 : 2,
+        width: width!,
+        height: height!,
+        duration: durationInSeconds,
+        createDateSecond: createdAt.millisecondsSinceEpoch ~/ 1000,
+        latitude: latitude,
+        longitude: longitude,
+        modifiedDateSecond: modifiedAt.millisecondsSinceEpoch ~/ 1000,
+        title: fileName,
+      );
     }
+    return _local;
   }
+
+  String? localId;
+
+  String? remoteId;
+
+  String deviceAssetId;
+
+  String deviceId;
+
+  String ownerId;
+
+  DateTime createdAt;
+
+  DateTime modifiedAt;
+
+  double? latitude;
+
+  double? longitude;
+
+  int durationInSeconds;
+
+  int? width;
+
+  int? height;
+
+  String fileName;
+
+  String? livePhotoVideoId;
+
+  ExifInfo? exifInfo;
+
+  String get id => isLocal ? localId.toString() : remoteId!;
+
+  String get name => p.withoutExtension(fileName);
+
+  bool get isRemote => remoteId != null;
+
+  bool get isLocal => localId != null;
+
+  bool get isImage => durationInSeconds == 0;
+
+  Duration get duration => Duration(seconds: durationInSeconds);
 
   @override
   bool operator ==(other) {
@@ -67,12 +132,26 @@ class Asset {
   @override
   int get hashCode => id.hashCode;
 
+  // methods below are only required for caching as JSON
+
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (isLocal) {
-      json["local"] = _assetEntityToJson(local!);
-    } else {
-      json["remote"] = remote!.toJson();
+    json["localId"] = localId;
+    json["remoteId"] = remoteId;
+    json["deviceAssetId"] = deviceAssetId;
+    json["deviceId"] = deviceId;
+    json["ownerId"] = ownerId;
+    json["createdAt"] = createdAt.millisecondsSinceEpoch;
+    json["modifiedAt"] = modifiedAt.millisecondsSinceEpoch;
+    json["latitude"] = latitude;
+    json["longitude"] = longitude;
+    json["durationInSeconds"] = durationInSeconds;
+    json["width"] = width;
+    json["height"] = height;
+    json["fileName"] = fileName;
+    json["livePhotoVideoId"] = livePhotoVideoId;
+    if (exifInfo != null) {
+      json["exifInfo"] = exifInfo!.toJson();
     }
     return json;
   }
@@ -80,55 +159,28 @@ class Asset {
   static Asset? fromJson(dynamic value) {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
-      final l = json["local"];
-      if (l != null) {
-        return Asset.local(_assetEntityFromJson(l));
-      } else {
-        return Asset.remote(AssetResponseDto.fromJson(json["remote"]));
-      }
+      return Asset(
+        localId: json["localId"],
+        remoteId: json["remoteId"],
+        deviceAssetId: json["deviceAssetId"],
+        deviceId: json["deviceId"],
+        ownerId: json["ownerId"],
+        createdAt:
+            DateTime.fromMillisecondsSinceEpoch(json["createdAt"], isUtc: true),
+        modifiedAt: DateTime.fromMillisecondsSinceEpoch(
+          json["modifiedAt"],
+          isUtc: true,
+        ),
+        latitude: json["latitude"],
+        longitude: json["longitude"],
+        durationInSeconds: json["durationInSeconds"],
+        width: json["width"],
+        height: json["height"],
+        fileName: json["fileName"],
+        livePhotoVideoId: json["livePhotoVideoId"],
+        exifInfo: ExifInfo.fromJson(json["exifInfo"]),
+      );
     }
     return null;
   }
-}
-
-Map<String, dynamic> _assetEntityToJson(AssetEntity a) {
-  final json = <String, dynamic>{};
-  json["id"] = a.id;
-  json["typeInt"] = a.typeInt;
-  json["width"] = a.width;
-  json["height"] = a.height;
-  json["duration"] = a.duration;
-  json["orientation"] = a.orientation;
-  json["isFavorite"] = a.isFavorite;
-  json["title"] = a.title;
-  json["createDateSecond"] = a.createDateSecond;
-  json["modifiedDateSecond"] = a.modifiedDateSecond;
-  json["latitude"] = a.latitude;
-  json["longitude"] = a.longitude;
-  json["mimeType"] = a.mimeType;
-  json["subtype"] = a.subtype;
-  return json;
-}
-
-AssetEntity? _assetEntityFromJson(dynamic value) {
-  if (value is Map) {
-    final json = value.cast<String, dynamic>();
-    return AssetEntity(
-      id: json["id"],
-      typeInt: json["typeInt"],
-      width: json["width"],
-      height: json["height"],
-      duration: json["duration"],
-      orientation: json["orientation"],
-      isFavorite: json["isFavorite"],
-      title: json["title"],
-      createDateSecond: json["createDateSecond"],
-      modifiedDateSecond: json["modifiedDateSecond"],
-      latitude: json["latitude"],
-      longitude: json["longitude"],
-      mimeType: json["mimeType"],
-      subtype: json["subtype"],
-    );
-  }
-  return null;
 }
