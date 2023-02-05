@@ -29,7 +29,6 @@ class SplashScreenPage extends HookConsumerWidget {
               .read(authenticationProvider.notifier)
               .setSuccessLoginInfo(
                 accessToken: loginInfo.accessToken,
-                isSavedLoginInfo: true,
                 serverUrl: loginInfo.serverUrl,
               );
           if (isSuccess) {
@@ -47,7 +46,7 @@ class SplashScreenPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        if (loginInfo?.isSaveLogin == true) {
+        if (loginInfo != null) {
           performLoggingIn();
         } else {
           AutoRouter.of(context).replace(const LoginRoute());
