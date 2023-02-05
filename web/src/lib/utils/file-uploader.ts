@@ -60,6 +60,18 @@ export const fileUploadHandler = async (
 	}
 };
 
+function getMimeType(file: File) {
+	const extension = file.name.split('.').pop() as string;
+	switch (extension) {
+		case 'raf':
+			return 'image/x-fuji-raf';
+		case 'srw':
+			return 'image/x-samsung-srw';
+		default:
+			return file.type;
+	}
+}
+
 //TODO: should probably use the @api SDK
 async function fileUploader(
 	asset: File,
@@ -67,7 +79,8 @@ async function fileUploader(
 	sharedKey: string | undefined = undefined,
 	onDone?: (id: string) => void
 ) {
-	const assetType = asset.type.split('/')[0].toUpperCase();
+	const mimeType = getMimeType(asset);
+	const assetType = mimeType.split('/')[0].toUpperCase();
 	const temp = asset.name.split('.');
 	const fileExtension = temp[temp.length - 1];
 	const formData = new FormData();
