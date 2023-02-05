@@ -57,7 +57,6 @@ class FavoritesPage extends HookConsumerWidget {
                 const QuiltedGridTile(1, 1),
                 const QuiltedGridTile(1, 1),
                 const QuiltedGridTile(1, 2),
-                const QuiltedGridTile(1, 1),
               ],
             ),
             itemBuilder: (
