@@ -74,9 +74,10 @@ class LibraryPage extends HookConsumerWidget {
                   ),
                   Text(
                     option,
-                    style: selected
-                        ? TextStyle(color: Theme.of(context).primaryColor)
-                        : null,
+                    style: TextStyle(
+                      color: selected ? Theme.of(context).primaryColor : null,
+                      fontSize: 12.0,
+                    ),
                   )
                 ],
               ),
@@ -89,8 +90,8 @@ class LibraryPage extends HookConsumerWidget {
         child: Row(
           children: [
             Icon(
-              Icons.swap_vert,
-              size: 28,
+              Icons.swap_vert_rounded,
+              size: 18,
               color: Theme.of(context).primaryColor,
             ),
             Text(
@@ -98,6 +99,7 @@ class LibraryPage extends HookConsumerWidget {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).primaryColor,
+                fontSize: 12.0,
               ),
             ),
           ],
