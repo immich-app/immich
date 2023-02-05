@@ -104,4 +104,13 @@ class AssetService {
       return null;
     }
   }
+
+  Future<AssetResponseDto?> updateAsset(Asset asset, UpdateAssetDto updateAssetDto) async {
+    return await _apiService.assetApi.updateAsset(asset.id, updateAssetDto);
+  }
+
+  Future<AssetResponseDto?> changeFavoriteStatus(Asset asset, bool isFavorite) {
+    return updateAsset(asset, UpdateAssetDto(isFavorite: isFavorite));
+  }
+
 }

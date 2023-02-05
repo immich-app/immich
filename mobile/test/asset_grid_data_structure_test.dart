@@ -20,6 +20,7 @@ void main() {
         modifiedAt: date,
         durationInSeconds: 0,
         fileName: '',
+        isFavorite: false,
       ),
     );
   }

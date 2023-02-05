@@ -23,7 +23,8 @@ class Asset {
         latitude = remote.exifInfo?.latitude?.toDouble(),
         longitude = remote.exifInfo?.longitude?.toDouble(),
         exifInfo =
-            remote.exifInfo != null ? ExifInfo.fromDto(remote.exifInfo!) : null;
+            remote.exifInfo != null ? ExifInfo.fromDto(remote.exifInfo!) : null,
+        isFavorite = remote.isFavorite;
 
   Asset.local(AssetEntity local, String owner)
       : localId = local.id,
@@ -37,6 +38,7 @@ class Asset {
         deviceId = Hive.box(userInfoBox).get(deviceIdKey),
         ownerId = owner,
         modifiedAt = local.modifiedDateTime.toUtc(),
+        isFavorite = local.isFavorite,
         createdAt = local.createDateTime.toUtc() {
     if (createdAt.year == 1970) {
       createdAt = modifiedAt;
@@ -59,6 +61,7 @@ class Asset {
     required this.fileName,
     this.livePhotoVideoId,
     this.exifInfo,
+    required this.isFavorite,
   });
 
   AssetEntity? _local;
@@ -111,6 +114,8 @@ class Asset {
 
   ExifInfo? exifInfo;
 
+  bool isFavorite;
+
   String get id => isLocal ? localId.toString() : remoteId!;
 
   String get name => p.withoutExtension(fileName);
@@ -150,6 +155,7 @@ class Asset {
     json["height"] = height;
     json["fileName"] = fileName;
     json["livePhotoVideoId"] = livePhotoVideoId;
+    json["isFavorite"] = isFavorite;
     if (exifInfo != null) {
       json["exifInfo"] = exifInfo!.toJson();
     }
@@ -179,6 +185,7 @@ class Asset {
         fileName: json["fileName"],
         livePhotoVideoId: json["livePhotoVideoId"],
         exifInfo: ExifInfo.fromJson(json["exifInfo"]),
+        isFavorite: json["isFavorite"],
       );
     }
     return null;
