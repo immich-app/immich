@@ -17,12 +17,16 @@ class VideoViewerPage extends HookConsumerWidget {
   final Asset asset;
   final bool isMotionVideo;
   final VoidCallback onVideoEnded;
+  final VoidCallback? onPlaying;
+  final VoidCallback? onPaused;
 
   const VideoViewerPage({
     Key? key,
     required this.asset,
     required this.isMotionVideo,
     required this.onVideoEnded,
+    this.onPlaying,
+    this.onPaused,
   }) : super(key: key);
 
   @override
@@ -63,6 +67,8 @@ class VideoViewerPage extends HookConsumerWidget {
           jwtToken: jwtToken,
           isMotionVideo: isMotionVideo,
           onVideoEnded: onVideoEnded,
+          onPaused: onPaused,
+          onPlaying: onPlaying,
         ),
         if (downloadAssetStatus == DownloadAssetStatus.loading)
           const Center(
@@ -89,6 +95,9 @@ class VideoThumbnailPlayer extends StatefulWidget {
   final bool isMotionVideo;
   final VoidCallback onVideoEnded;
 
+  final Function()? onPlaying;
+  final Function()? onPaused;
+
   const VideoThumbnailPlayer({
     Key? key,
     this.url,
@@ -96,6 +105,8 @@ class VideoThumbnailPlayer extends StatefulWidget {
     this.file,
     required this.onVideoEnded,
     required this.isMotionVideo,
+    this.onPlaying,
+    this.onPaused,
   }) : super(key: key);
 
   @override
@@ -112,6 +123,11 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
     initializePlayer();
 
     videoPlayerController.addListener(() {
+      if (videoPlayerController.value.isPlaying) {
+        widget.onPlaying?.call();
+      } else if (!videoPlayerController.value.isPlaying) {
+        widget.onPaused?.call();
+      }
       if (videoPlayerController.value.position ==
           videoPlayerController.value.duration) {
         widget.onVideoEnded();

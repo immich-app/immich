@@ -52,6 +52,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     final showAppBar = useState<bool>(true);
     final indexOfAsset = useState(assetList.indexOf(asset));
     final isPlayingMotionVideo = useState(false);
+    final isPlayingVideo = useState(false);
     late Offset localPosition;
     final authToken = 'Bearer ${box.get(accessTokenKey)}';
 
@@ -233,9 +234,13 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     buildAppBar() {
+      final show = (showAppBar.value || // onTap has the final say
+              (showAppBar.value && !isZoomed.value)) &&
+          !isPlayingVideo.value;
+
       return AnimatedOpacity(
         duration: const Duration(milliseconds: 100),
-        opacity: (showAppBar.value || !isZoomed.value) ? 1.0 : 0.0,
+        opacity: show ? 1.0 : 0.0,
         child: Container(
           color: Colors.black.withOpacity(0.4),
           child: TopControlAppBar(
@@ -312,8 +317,14 @@ class GalleryViewerPage extends HookConsumerWidget {
                       // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to acheive
                       // Three-Stage Loading (WEBP -> JPEG -> Original)
                       final webPThumbnail = CachedNetworkImage(
-                        imageUrl: getThumbnailUrl(asset),
-                        cacheKey: getThumbnailCacheKey(asset),
+                        imageUrl: getThumbnailUrl(
+                          asset,
+                          type: api.ThumbnailFormat.WEBP,
+                        ),
+                        cacheKey: getThumbnailCacheKey(
+                          asset,
+                          type: api.ThumbnailFormat.WEBP,
+                        ),
                         httpHeaders: {'Authorization': authToken},
                         progressIndicatorBuilder: (_, __, ___) => const Center(
                           child: ImmichLoadingIndicator(),
@@ -377,14 +388,14 @@ class GalleryViewerPage extends HookConsumerWidget {
                   onDragStart: (_, details, __) =>
                       localPosition = details.localPosition,
                   onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
-                  onTapDown: (_, __, ___) =>
-                      showAppBar.value = !showAppBar.value,
                   heroAttributes:
                       PhotoViewHeroAttributes(tag: assetList[index].id),
                   maxScale: 1.0,
                   minScale: 1.0,
                   child: SafeArea(
                     child: VideoViewerPage(
+                      onPlaying: () => isPlayingVideo.value = true,
+                      onPaused: () => isPlayingVideo.value = false,
                       asset: assetList[index],
                       isMotionVideo: isPlayingMotionVideo.value,
                       onVideoEnded: () {
