@@ -26,7 +26,7 @@ import { IUserRepository } from '../user';
 import { IUserTokenRepository } from '../user-token';
 import { AuthType } from './auth.constant';
 import { AuthService } from './auth.service';
-import { SignUpDto } from './dto';
+import { AuthUserDto, SignUpDto } from './dto';
 
 // const token = Buffer.from('my-api-key', 'utf8').toString('base64');
 
@@ -192,14 +192,18 @@ describe('AuthService', () => {
 
   describe('logout', () => {
     it('should return the end session endpoint', async () => {
-      await expect(sut.logout(AuthType.OAUTH)).resolves.toEqual({
+      const authUser = { id: '123' } as AuthUserDto;
+
+      await expect(sut.logout(authUser, AuthType.OAUTH)).resolves.toEqual({
         successful: true,
         redirectUri: 'http://end-session-endpoint',
       });
     });
 
     it('should return the default redirect', async () => {
-      await expect(sut.logout(AuthType.PASSWORD)).resolves.toEqual({
+      const authUser = { id: '123' } as AuthUserDto;
+
+      await expect(sut.logout(authUser, AuthType.PASSWORD)).resolves.toEqual({
         successful: true,
         redirectUri: '/auth/login?autoLaunch=0',
       });

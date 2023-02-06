@@ -9,26 +9,20 @@ export class UserTokenCore {
 
   async validate(tokenValue: string) {
     const hashedToken = this.crypto.hashSha256(tokenValue);
-    const user = await this.getUserByToken(hashedToken);
-    if (user) {
+    const token = await this.repository.get(hashedToken);
+
+    if (token?.user) {
       return {
-        ...user,
+        ...token.user,
         isPublicUser: false,
         isAllowUpload: true,
         isAllowDownload: true,
         isShowExif: true,
+        accessTokenId: token.id,
       };
     }
 
     throw new UnauthorizedException('Invalid user token');
-  }
-
-  public async getUserByToken(tokenValue: string): Promise<UserEntity | null> {
-    const token = await this.repository.get(tokenValue);
-    if (token?.user) {
-      return token.user;
-    }
-    return null;
   }
 
   public async createToken(user: UserEntity): Promise<string> {
@@ -40,5 +34,9 @@ export class UserTokenCore {
     });
 
     return key;
+  }
+
+  public async deleteToken(id: string): Promise<void> {
+    await this.repository.delete(id);
   }
 }

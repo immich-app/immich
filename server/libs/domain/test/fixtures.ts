@@ -91,6 +91,7 @@ export const authStub = {
     isAllowUpload: true,
     isAllowDownload: true,
     isShowExif: true,
+    accessTokenId: 'token-id',
   }),
   adminSharedLink: Object.freeze<AuthUserDto>({
     id: 'admin_id',
@@ -111,6 +112,7 @@ export const authStub = {
     isPublicUser: true,
     isShowExif: true,
     sharedLinkId: '123',
+    accessTokenId: 'token-id',
   }),
 };
 
