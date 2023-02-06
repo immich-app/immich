@@ -352,6 +352,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.14.0"
+  flutter_native_splash:
+    dependency: "direct dev"
+    description:
+      name: flutter_native_splash
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.2.16"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -457,7 +464,7 @@ packages:
       name: html
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.15.0"
+    version: "0.15.1"
   http:
     dependency: "direct main"
     description:
@@ -485,7 +492,7 @@ packages:
       name: image
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.2.0"
+    version: "3.3.0"
   image_picker:
     dependency: "direct main"
     description:
@@ -1091,6 +1098,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.3.1"
+  universal_io:
+    dependency: transitive
+    description:
+      name: universal_io
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.4"
   url_launcher:
     dependency: "direct main"
     description:
