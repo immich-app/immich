@@ -8,6 +8,7 @@ import 'package:immich_mobile/shared/models/album.dart';
 
 class ControlBottomAppBar extends ConsumerWidget {
   final Function onShare;
+  final Function onFavorite;
   final Function onDelete;
   final Function(Album album) onAddToAlbum;
   final void Function() onCreateNewAlbum;
@@ -18,6 +19,7 @@ class ControlBottomAppBar extends ConsumerWidget {
   const ControlBottomAppBar({
     Key? key,
     required this.onShare,
+    required this.onFavorite,
     required this.onDelete,
     required this.sharedAlbums,
     required this.albums,
@@ -38,6 +40,13 @@ class ControlBottomAppBar extends ConsumerWidget {
             },
           ),
           ControlBoxButton(
+            iconData: Icons.star_rounded,
+            label: "Favorite",
+            onPressed: () {
+              onFavorite();
+            },
+          ),
+          ControlBoxButton(
             iconData: Icons.delete_outline_rounded,
             label: "control_bottom_app_bar_delete".tr(),
             onPressed: () {
@@ -51,6 +60,7 @@ class ControlBottomAppBar extends ConsumerWidget {
               );
             },
           ),
+
         ],
       );
     }
