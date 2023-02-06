@@ -45,9 +45,11 @@ class SearchResultPageState {
       isLoading: map['isLoading'] ?? false,
       isSuccess: map['isSuccess'] ?? false,
       isError: map['isError'] ?? false,
-      searchResult: List<Asset>.from(
+      searchResult: List.from(
         map['searchResult']
-            ?.map((x) => Asset.remote(AssetResponseDto.fromJson(x))),
+            .map(AssetResponseDto.fromJson)
+            .where((e) => e != null)
+            .map(Asset.remote),
       ),
     );
   }

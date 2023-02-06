@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -26,6 +27,7 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
         ref.watch(assetSelectionProvider).selectedAssetsInAlbumViewer;
     final isMultiSelectionEnable =
         ref.watch(assetSelectionProvider).isMultiselectEnable;
+    final isFavorite = ref.watch(favoriteProvider).contains(asset.id);
 
     viewAsset() {
       AutoRouter.of(context).push(
@@ -85,9 +87,23 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
         right: 10,
         bottom: 5,
         child: Icon(
-          (deviceId != asset.deviceId)
-              ? Icons.cloud_done_outlined
-              : Icons.photo_library_rounded,
+          asset.isRemote
+              ? (deviceId == asset.deviceId
+                  ? Icons.cloud_done_outlined
+                  : Icons.cloud_outlined)
+              : Icons.cloud_off_outlined,
+          color: Colors.white,
+          size: 18,
+        ),
+      );
+    }
+
+    buildAssetFavoriteIcon() {
+      return const Positioned(
+        left: 10,
+        bottom: 5,
+        child: Icon(
+          Icons.star,
           color: Colors.white,
           size: 18,
         ),
@@ -141,6 +157,7 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
       child: Stack(
         children: [
           buildThumbnailImage(),
+          if (isFavorite) buildAssetFavoriteIcon(),
           if (showStorageIndicator) buildAssetStoreLocationIcon(),
           if (!asset.isImage) buildVideoLabel(),
           if (isMultiSelectionEnable) buildAssetSelectionIcon(),

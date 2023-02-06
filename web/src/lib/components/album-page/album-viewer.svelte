@@ -383,7 +383,7 @@
 		>
 			<svelte:fragment slot="leading">
 				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
-					Selected {multiSelectAsset.size}
+					Selected {multiSelectAsset.size.toLocaleString(locale)}
 				</p>
 			</svelte:fragment>
 			<svelte:fragment slot="trailing">

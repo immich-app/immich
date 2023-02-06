@@ -23,7 +23,7 @@ import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { GetAlbumsDto } from './dto/get-albums.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AlbumResponseDto } from './response-dto/album-response.dto';
+import { AlbumResponseDto } from '@app/domain';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { Response as Res } from 'express';

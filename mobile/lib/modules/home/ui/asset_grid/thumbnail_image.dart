@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -106,6 +107,16 @@ class ThumbnailImage extends HookConsumerWidget {
                           ? Icons.cloud_done_outlined
                           : Icons.cloud_outlined)
                       : Icons.cloud_off_outlined,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+            if (ref.watch(favoriteProvider).contains(asset.id))
+              const Positioned(
+                left: 10,
+                bottom: 5,
+                child: Icon(
+                  Icons.star,
                   color: Colors.white,
                   size: 18,
                 ),

@@ -28,7 +28,7 @@ download_docker_compose_file() {
 
 download_dot_env_file() {
   echo "Downloading .env file..."
-  curl -L https://raw.githubusercontent.com/immich-app/immich/$release_version/docker/.env.example -o ./.env >/dev/null 2>&1
+  curl -L https://raw.githubusercontent.com/immich-app/immich/$release_version/docker/example.env -o ./.env >/dev/null 2>&1
 }
 
 replace_env_value() {
@@ -43,12 +43,6 @@ populate_upload_location() {
   echo "Populating default UPLOAD_LOCATION value..."
   upload_location=$(pwd)/immich-data
   replace_env_value "UPLOAD_LOCATION" $upload_location
-}
-
-generate_jwt_secret() {
-  echo "Generating JWT_SECRET value..."
-  jwt_secret=$(openssl rand -base64 128)
-  replace_env_value "JWT_SECRET" $jwt_secret
 }
 
 start_docker_compose() {
@@ -92,5 +86,4 @@ create_immich_directory
 download_docker_compose_file
 download_dot_env_file
 populate_upload_location
-generate_jwt_secret
 start_docker_compose

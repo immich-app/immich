@@ -14,6 +14,7 @@ import { StorageMigrationProcessor } from './processors/storage-migration.proces
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { UserDeletionProcessor } from './processors/user-deletion.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
+import { BackgroundTaskProcessor } from './processors/background-task.processor';
 import { DomainModule } from '@app/domain';
 
 @Module({
@@ -37,6 +38,7 @@ import { DomainModule } from '@app/domain';
     MachineLearningProcessor,
     UserDeletionProcessor,
     StorageMigrationProcessor,
+    BackgroundTaskProcessor,
   ],
 })
 export class MicroservicesModule {}

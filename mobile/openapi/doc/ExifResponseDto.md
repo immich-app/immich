@@ -22,7 +22,7 @@ Name | Type | Description | Notes
 **fNumber** | **num** |  | [optional] 
 **focalLength** | **num** |  | [optional] 
 **iso** | **num** |  | [optional] 
-**exposureTime** | **num** |  | [optional] 
+**exposureTime** | **String** |  | [optional] 
 **latitude** | **num** |  | [optional] 
 **longitude** | **num** |  | [optional] 
 **city** | **String** |  | [optional] 

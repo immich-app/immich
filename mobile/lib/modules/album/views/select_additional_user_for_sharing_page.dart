@@ -118,7 +118,6 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
       appBar: AppBar(
         title: const Text(
           'share_invite',
-          style: TextStyle(color: Colors.black),
         ).tr(),
         elevation: 0,
         centerTitle: false,

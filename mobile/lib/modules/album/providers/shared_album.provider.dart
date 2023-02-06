@@ -6,10 +6,10 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:openapi/api.dart';
 
 class SharedAlbumNotifier extends StateNotifier<List<AlbumResponseDto>> {
-  SharedAlbumNotifier(this._sharedAlbumService, this._sharedAlbumCacheService)
+  SharedAlbumNotifier(this._albumService, this._sharedAlbumCacheService)
       : super([]);
 
-  final AlbumService _sharedAlbumService;
+  final AlbumService _albumService;
   final SharedAlbumCacheService _sharedAlbumCacheService;
 
   _cacheState() {
@@ -22,7 +22,7 @@ class SharedAlbumNotifier extends StateNotifier<List<AlbumResponseDto>> {
     List<String> sharedUserIds,
   ) async {
     try {
-      var newAlbum = await _sharedAlbumService.createAlbum(
+      var newAlbum = await _albumService.createAlbum(
         albumName,
         assets,
         sharedUserIds,
@@ -47,7 +47,7 @@ class SharedAlbumNotifier extends StateNotifier<List<AlbumResponseDto>> {
     }
 
     List<AlbumResponseDto>? sharedAlbums =
-        await _sharedAlbumService.getAlbums(isShared: true);
+        await _albumService.getAlbums(isShared: true);
 
     if (sharedAlbums != null) {
       state = sharedAlbums;
@@ -61,7 +61,7 @@ class SharedAlbumNotifier extends StateNotifier<List<AlbumResponseDto>> {
   }
 
   Future<bool> leaveAlbum(String albumId) async {
-    var res = await _sharedAlbumService.leaveAlbum(albumId);
+    var res = await _albumService.leaveAlbum(albumId);
 
     if (res) {
       state = state.where((album) => album.id != albumId).toList();
@@ -76,7 +76,7 @@ class SharedAlbumNotifier extends StateNotifier<List<AlbumResponseDto>> {
     String albumId,
     List<String> assetIds,
   ) async {
-    var res = await _sharedAlbumService.removeAssetFromAlbum(albumId, assetIds);
+    var res = await _albumService.removeAssetFromAlbum(albumId, assetIds);
 
     if (res) {
       return true;

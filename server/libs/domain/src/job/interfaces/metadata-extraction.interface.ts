@@ -25,7 +25,7 @@ export interface IVideoLengthExtractionProcessor {
 }
 
 export interface IReverseGeocodingProcessor {
-  exifId: string;
+  exifId: number;
   latitude: number;
   longitude: number;
 }
