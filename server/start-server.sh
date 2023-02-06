@@ -1,10 +1,5 @@
 #! /bin/sh
 
-if [ "$JWT_SECRET_FILE" ]; then
-	export JWT_SECRET=$(cat $JWT_SECRET_FILE)
-	unset JWT_SECRET_FILE
-fi
-
 if [ "$DB_HOSTNAME_FILE" ]; then
 	export DB_HOSTNAME=$(cat $DB_HOSTNAME_FILE)
 	unset DB_HOSTNAME_FILE
