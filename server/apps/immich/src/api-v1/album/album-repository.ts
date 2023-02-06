@@ -213,18 +213,27 @@ export class AlbumRepository implements IAlbumRepository {
   }
 
   async get(albumId: string): Promise<AlbumEntity | undefined> {
-    const query = this.albumRepository.createQueryBuilder('album');
-
-    const album = await query
-      .where('album.id = :albumId', { albumId })
-      .leftJoinAndSelect('album.sharedUsers', 'sharedUser')
-      .leftJoinAndSelect('sharedUser.userInfo', 'userInfo')
-      .leftJoinAndSelect('album.assets', 'assets')
-      .leftJoinAndSelect('assets.assetInfo', 'assetInfo')
-      .leftJoinAndSelect('assetInfo.exifInfo', 'exifInfo')
-      .leftJoinAndSelect('album.sharedLinks', 'sharedLinks')
-      .orderBy('"assetInfo"."createdAt"::timestamptz', 'ASC')
-      .getOne();
+    const album = await this.albumRepository.findOne({
+      where: { id: albumId },
+      relations: {
+        sharedUsers: {
+          userInfo: true,
+        },
+        assets: {
+          assetInfo: {
+            exifInfo: true,
+          },
+        },
+        sharedLinks: true,
+      },
+      order: {
+        assets: {
+          assetInfo: {
+            createdAt: 'ASC',
+          },
+        },
+      },
+    });
 
     if (!album) {
       return;
@@ -249,11 +258,14 @@ export class AlbumRepository implements IAlbumRepository {
     }
 
     await this.userAlbumRepository.save([...newRecords]);
+    await this.albumRepository.update({ id: album.id }, { updatedAt: new Date().toISOString() });
+
     return this.get(album.id) as Promise<AlbumEntity>; // There is an album for sure
   }
 
   async removeUser(album: AlbumEntity, userId: string): Promise<void> {
     await this.userAlbumRepository.delete({ albumId: album.id, sharedUserId: userId });
+    await this.albumRepository.update({ id: album.id }, { updatedAt: new Date().toISOString() });
   }
 
   async removeAssets(album: AlbumEntity, removeAssetsDto: RemoveAssetsDto): Promise<number> {
@@ -261,6 +273,8 @@ export class AlbumRepository implements IAlbumRepository {
       albumId: album.id,
       assetId: In(removeAssetsDto.assetIds),
     });
+
+    await this.albumRepository.update({ id: album.id }, { updatedAt: new Date().toISOString() });
 
     return res.affected || 0;
   }
@@ -289,6 +303,8 @@ export class AlbumRepository implements IAlbumRepository {
     }
 
     await this.assetAlbumRepository.save([...newRecords]);
+
+    await this.albumRepository.update({ id: album.id }, { updatedAt: new Date().toISOString() });
 
     return {
       successfullyAdded: newRecords.length,

@@ -22,6 +22,7 @@ class AssetResponseDto {
     required this.resizePath,
     required this.createdAt,
     required this.modifiedAt,
+    required this.updatedAt,
     required this.isFavorite,
     required this.mimeType,
     required this.duration,
@@ -50,6 +51,8 @@ class AssetResponseDto {
   String createdAt;
 
   String modifiedAt;
+
+  String updatedAt;
 
   bool isFavorite;
 
@@ -92,6 +95,7 @@ class AssetResponseDto {
      other.resizePath == resizePath &&
      other.createdAt == createdAt &&
      other.modifiedAt == modifiedAt &&
+     other.updatedAt == updatedAt &&
      other.isFavorite == isFavorite &&
      other.mimeType == mimeType &&
      other.duration == duration &&
@@ -114,6 +118,7 @@ class AssetResponseDto {
     (resizePath == null ? 0 : resizePath!.hashCode) +
     (createdAt.hashCode) +
     (modifiedAt.hashCode) +
+    (updatedAt.hashCode) +
     (isFavorite.hashCode) +
     (mimeType == null ? 0 : mimeType!.hashCode) +
     (duration.hashCode) +
@@ -125,7 +130,7 @@ class AssetResponseDto {
     (tags.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, resizePath=$resizePath, createdAt=$createdAt, modifiedAt=$modifiedAt, isFavorite=$isFavorite, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags]';
+  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, resizePath=$resizePath, createdAt=$createdAt, modifiedAt=$modifiedAt, updatedAt=$updatedAt, isFavorite=$isFavorite, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -142,6 +147,7 @@ class AssetResponseDto {
     }
       json[r'createdAt'] = this.createdAt;
       json[r'modifiedAt'] = this.modifiedAt;
+      json[r'updatedAt'] = this.updatedAt;
       json[r'isFavorite'] = this.isFavorite;
     if (this.mimeType != null) {
       json[r'mimeType'] = this.mimeType;
@@ -206,6 +212,7 @@ class AssetResponseDto {
         resizePath: mapValueOfType<String>(json, r'resizePath'),
         createdAt: mapValueOfType<String>(json, r'createdAt')!,
         modifiedAt: mapValueOfType<String>(json, r'modifiedAt')!,
+        updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
         mimeType: mapValueOfType<String>(json, r'mimeType'),
         duration: mapValueOfType<String>(json, r'duration')!,
@@ -273,6 +280,7 @@ class AssetResponseDto {
     'resizePath',
     'createdAt',
     'modifiedAt',
+    'updatedAt',
     'isFavorite',
     'mimeType',
     'duration',

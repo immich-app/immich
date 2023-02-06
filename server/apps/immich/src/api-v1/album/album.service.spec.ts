@@ -32,6 +32,7 @@ describe('Album service', () => {
     albumEntity.id = albumId;
     albumEntity.albumName = 'name';
     albumEntity.createdAt = 'date';
+    albumEntity.updatedAt = 'date';
     albumEntity.sharedUsers = [];
     albumEntity.assets = [];
     albumEntity.albumThumbnailAssetId = null;
@@ -183,6 +184,7 @@ describe('Album service', () => {
       albumName: 'name',
       albumThumbnailAssetId: null,
       createdAt: 'date',
+      updatedAt: 'date',
       id: 'f19ab956-4761-41ea-a5d6-bae948308d58',
       ownerId,
       shared: false,

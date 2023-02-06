@@ -31,6 +31,7 @@ const adminUser: UserEntity = Object.freeze({
   shouldChangePassword: false,
   profileImagePath: '',
   createdAt: '2021-01-01',
+  updatedAt: '2021-01-01',
   tags: [],
 });
 
@@ -45,6 +46,7 @@ const immichUser: UserEntity = Object.freeze({
   shouldChangePassword: false,
   profileImagePath: '',
   createdAt: '2021-01-01',
+  updatedAt: '2021-01-01',
   tags: [],
 });
 
@@ -59,6 +61,7 @@ const updatedImmichUser: UserEntity = Object.freeze({
   shouldChangePassword: true,
   profileImagePath: '',
   createdAt: '2021-01-01',
+  updatedAt: '2021-01-01',
   tags: [],
 });
 
