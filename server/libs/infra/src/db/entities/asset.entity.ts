@@ -32,7 +32,7 @@ export class AssetEntity {
   webpPath!: string | null;
 
   @Column({ type: 'varchar', nullable: true, default: '' })
-  encodedVideoPath!: string;
+  encodedVideoPath!: string | null;
 
   @Column({ type: 'timestamptz' })
   createdAt!: string;

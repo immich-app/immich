@@ -48,20 +48,6 @@ class _$AppRouter extends RootStackRouter {
           child: GalleryViewerPage(
               key: args.key, assetList: args.assetList, asset: args.asset));
     },
-    ImageViewerRoute.name: (routeData) {
-      final args = routeData.argsAs<ImageViewerRouteArgs>();
-      return MaterialPageX<dynamic>(
-          routeData: routeData,
-          child: ImageViewerPage(
-              key: args.key,
-              heroTag: args.heroTag,
-              asset: args.asset,
-              authToken: args.authToken,
-              isZoomedFunction: args.isZoomedFunction,
-              isZoomedListener: args.isZoomedListener,
-              loadPreview: args.loadPreview,
-              loadOriginal: args.loadOriginal));
-    },
     VideoViewerRoute.name: (routeData) {
       final args = routeData.argsAs<VideoViewerRouteArgs>();
       return MaterialPageX<dynamic>(
@@ -87,7 +73,13 @@ class _$AppRouter extends RootStackRouter {
       return MaterialPageX<dynamic>(
           routeData: routeData,
           child: CreateAlbumPage(
-              key: args.key, isSharedAlbum: args.isSharedAlbum));
+              key: args.key,
+              isSharedAlbum: args.isSharedAlbum,
+              initialAssets: args.initialAssets));
+    },
+    FavoritesRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+          routeData: routeData, child: const FavoritesPage());
     },
     AssetSelectionRoute.name: (routeData) {
       return CustomPage<AssetSelectionPageResult?>(
@@ -201,8 +193,6 @@ class _$AppRouter extends RootStackRouter {
             ]),
         RouteConfig(GalleryViewerRoute.name,
             path: '/gallery-viewer-page', guards: [authGuard]),
-        RouteConfig(ImageViewerRoute.name,
-            path: '/image-viewer-page', guards: [authGuard]),
         RouteConfig(VideoViewerRoute.name,
             path: '/video-viewer-page', guards: [authGuard]),
         RouteConfig(BackupControllerRoute.name,
@@ -211,6 +201,8 @@ class _$AppRouter extends RootStackRouter {
             path: '/search-result-page', guards: [authGuard]),
         RouteConfig(CreateAlbumRoute.name,
             path: '/create-album-page', guards: [authGuard]),
+        RouteConfig(FavoritesRoute.name,
+            path: '/favorites-page', guards: [authGuard]),
         RouteConfig(AssetSelectionRoute.name,
             path: '/asset-selection-page', guards: [authGuard]),
         RouteConfig(SelectUserForSharingRoute.name,
@@ -297,66 +289,6 @@ class GalleryViewerRouteArgs {
 }
 
 /// generated route for
-/// [ImageViewerPage]
-class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
-  ImageViewerRoute(
-      {Key? key,
-      required String heroTag,
-      required Asset asset,
-      required String authToken,
-      required void Function() isZoomedFunction,
-      required ValueNotifier<bool> isZoomedListener,
-      required bool loadPreview,
-      required bool loadOriginal})
-      : super(ImageViewerRoute.name,
-            path: '/image-viewer-page',
-            args: ImageViewerRouteArgs(
-                key: key,
-                heroTag: heroTag,
-                asset: asset,
-                authToken: authToken,
-                isZoomedFunction: isZoomedFunction,
-                isZoomedListener: isZoomedListener,
-                loadPreview: loadPreview,
-                loadOriginal: loadOriginal));
-
-  static const String name = 'ImageViewerRoute';
-}
-
-class ImageViewerRouteArgs {
-  const ImageViewerRouteArgs(
-      {this.key,
-      required this.heroTag,
-      required this.asset,
-      required this.authToken,
-      required this.isZoomedFunction,
-      required this.isZoomedListener,
-      required this.loadPreview,
-      required this.loadOriginal});
-
-  final Key? key;
-
-  final String heroTag;
-
-  final Asset asset;
-
-  final String authToken;
-
-  final void Function() isZoomedFunction;
-
-  final ValueNotifier<bool> isZoomedListener;
-
-  final bool loadPreview;
-
-  final bool loadOriginal;
-
-  @override
-  String toString() {
-    return 'ImageViewerRouteArgs{key: $key, heroTag: $heroTag, asset: $asset, authToken: $authToken, isZoomedFunction: $isZoomedFunction, isZoomedListener: $isZoomedListener, loadPreview: $loadPreview, loadOriginal: $loadOriginal}';
-  }
-}
-
-/// generated route for
 /// [VideoViewerPage]
 class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
   VideoViewerRoute(
@@ -432,25 +364,40 @@ class SearchResultRouteArgs {
 /// generated route for
 /// [CreateAlbumPage]
 class CreateAlbumRoute extends PageRouteInfo<CreateAlbumRouteArgs> {
-  CreateAlbumRoute({Key? key, required bool isSharedAlbum})
+  CreateAlbumRoute(
+      {Key? key, required bool isSharedAlbum, List<Asset>? initialAssets})
       : super(CreateAlbumRoute.name,
             path: '/create-album-page',
-            args: CreateAlbumRouteArgs(key: key, isSharedAlbum: isSharedAlbum));
+            args: CreateAlbumRouteArgs(
+                key: key,
+                isSharedAlbum: isSharedAlbum,
+                initialAssets: initialAssets));
 
   static const String name = 'CreateAlbumRoute';
 }
 
 class CreateAlbumRouteArgs {
-  const CreateAlbumRouteArgs({this.key, required this.isSharedAlbum});
+  const CreateAlbumRouteArgs(
+      {this.key, required this.isSharedAlbum, this.initialAssets});
 
   final Key? key;
 
   final bool isSharedAlbum;
 
+  final List<Asset>? initialAssets;
+
   @override
   String toString() {
-    return 'CreateAlbumRouteArgs{key: $key, isSharedAlbum: $isSharedAlbum}';
+    return 'CreateAlbumRouteArgs{key: $key, isSharedAlbum: $isSharedAlbum, initialAssets: $initialAssets}';
   }
+}
+
+/// generated route for
+/// [FavoritesPage]
+class FavoritesRoute extends PageRouteInfo<void> {
+  const FavoritesRoute() : super(FavoritesRoute.name, path: '/favorites-page');
+
+  static const String name = 'FavoritesRoute';
 }
 
 /// generated route for

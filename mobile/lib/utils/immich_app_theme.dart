@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
@@ -32,6 +31,11 @@ ThemeData immichDarkTheme = ThemeData(
   snackBarTheme: const SnackBarThemeData(
     contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
   ),
+  textButtonTheme: TextButtonThemeData(
+    style: TextButton.styleFrom(
+      foregroundColor: immichDarkThemePrimaryColor,
+    ),
+  ),
   appBarTheme: AppBarTheme(
     titleTextStyle: TextStyle(
       fontFamily: 'WorkSans',
@@ -41,7 +45,6 @@ ThemeData immichDarkTheme = ThemeData(
     foregroundColor: immichDarkThemePrimaryColor,
     elevation: 1,
     centerTitle: true,
-    systemOverlayStyle: SystemUiOverlayStyle.light,
   ),
   bottomNavigationBarTheme: BottomNavigationBarThemeData(
     type: BottomNavigationBarType.fixed,
@@ -61,7 +64,7 @@ ThemeData immichDarkTheme = ThemeData(
     headline2: const TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.bold,
-      color: Color.fromARGB(255, 148, 151, 155),
+      color: Color.fromARGB(255, 255, 255, 255),
     ),
     headline3: TextStyle(
       fontSize: 12,
@@ -97,7 +100,6 @@ ThemeData immichLightTheme = ThemeData(
     foregroundColor: Colors.indigo,
     elevation: 1,
     centerTitle: true,
-    systemOverlayStyle: SystemUiOverlayStyle.dark,
   ),
   bottomNavigationBarTheme: BottomNavigationBarThemeData(
     type: BottomNavigationBarType.fixed,

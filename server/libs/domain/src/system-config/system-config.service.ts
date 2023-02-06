@@ -7,7 +7,7 @@ import {
   supportedPresetTokens,
   supportedSecondTokens,
   supportedYearTokens,
-} from './system-config.datetime-variables';
+} from './system-config.constants';
 import { Inject, Injectable } from '@nestjs/common';
 import { IJobRepository, JobName } from '../job';
 import { mapConfig, SystemConfigDto } from './dto/system-config.dto';

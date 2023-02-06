@@ -230,7 +230,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **downloadFile**
-> Object downloadFile(assetId, isThumb, isWeb)
+> Object downloadFile(assetId)
 
 
 
@@ -248,11 +248,9 @@ import 'package:openapi/api.dart';
 
 final api_instance = AssetApi();
 final assetId = assetId_example; // String | 
-final isThumb = true; // bool | 
-final isWeb = true; // bool | 
 
 try {
-    final result = api_instance.downloadFile(assetId, isThumb, isWeb);
+    final result = api_instance.downloadFile(assetId);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->downloadFile: $e\n');
@@ -264,8 +262,6 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **assetId** | **String**|  | 
- **isThumb** | **bool**|  | [optional] 
- **isWeb** | **bool**|  | [optional] 
 
 ### Return type
 
@@ -336,7 +332,7 @@ Name | Type | Description  | Notes
 
 
 
-
+Current this is not used in any UI element
 
 ### Example
 ```dart
@@ -381,7 +377,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAllAssets**
-> List<AssetResponseDto> getAllAssets(ifNoneMatch)
+> List<AssetResponseDto> getAllAssets(isFavorite, skip, ifNoneMatch)
 
 
 
@@ -398,10 +394,12 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
+final isFavorite = true; // bool | 
+final skip = 8.14; // num | 
 final ifNoneMatch = ifNoneMatch_example; // String | ETag of data already cached on the client
 
 try {
-    final result = api_instance.getAllAssets(ifNoneMatch);
+    final result = api_instance.getAllAssets(isFavorite, skip, ifNoneMatch);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getAllAssets: $e\n');
@@ -412,6 +410,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
+ **isFavorite** | **bool**|  | [optional] 
+ **skip** | **num**|  | [optional] 
  **ifNoneMatch** | **String**| ETag of data already cached on the client | [optional] 
 
 ### Return type

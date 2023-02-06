@@ -21,8 +21,8 @@ void main() {
       // TODO
     });
 
-    // String expiredAt
-    test('to test the property `expiredAt`', () async {
+    // String expiresAt
+    test('to test the property `expiresAt`', () async {
       // TODO
     });
 

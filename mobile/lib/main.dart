@@ -57,12 +57,6 @@ Future<void> initApp() async {
 
   await openBoxes();
 
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarIconBrightness: Brightness.light,
-    ),
-  );
-
   if (kReleaseMode && Platform.isAndroid) {
     try {
       await FlutterDisplayMode.setHighRefreshRate();
@@ -161,6 +155,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   Widget build(BuildContext context) {
     var router = ref.watch(appRouterProvider);
     ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
+
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
     return MaterialApp(
       localizationsDelegates: context.localizationDelegates,

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { AlbumResponseDto } from './album-response.dto';
+import { AlbumResponseDto } from '@app/domain';
 
 export class AddAssetsResponseDto {
   @ApiProperty({ type: 'integer' })

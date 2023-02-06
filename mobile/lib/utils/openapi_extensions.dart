@@ -31,7 +31,9 @@ extension WithETag on AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       final etag = response.headers[HttpHeaders.etagHeader];
       final data = (await apiClient.deserializeAsync(
-              responseBody, 'List<AssetResponseDto>') as List)
+        responseBody,
+        'List<AssetResponseDto>',
+      ) as List)
           .cast<AssetResponseDto>()
           .toList();
       return Pair(data, etag);

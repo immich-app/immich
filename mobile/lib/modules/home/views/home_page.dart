@@ -2,16 +2,18 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
+import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
-import 'package:immich_mobile/modules/home/ui/immich_sliver_appbar.dart';
+import 'package:immich_mobile/modules/home/ui/home_page_app_bar.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
@@ -36,6 +38,7 @@ class HomePage extends HookConsumerWidget {
 
     final selection = useState(<Asset>{});
     final albums = ref.watch(albumProvider);
+    final sharedAlbums = ref.watch(sharedAlbumProvider);
     final albumService = ref.watch(albumServiceProvider);
 
     final tipOneOpacity = useState(0.0);
@@ -45,6 +48,7 @@ class HomePage extends HookConsumerWidget {
         ref.read(websocketProvider.notifier).connect();
         ref.read(assetProvider.notifier).getAllAsset();
         ref.read(albumProvider.notifier).getAllAlbums();
+        ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
         ref.watch(serverInfoProvider.notifier).getServerVersion();
 
         selectionEnabledHook.addListener(() {
@@ -52,7 +56,10 @@ class HomePage extends HookConsumerWidget {
         });
 
         return () {
-          selectionEnabledHook.dispose();
+          // This does not work in tests
+          if (kReleaseMode) {
+            selectionEnabledHook.dispose();
+          }
         };
       },
       [],
@@ -143,6 +150,7 @@ class HomePage extends HookConsumerWidget {
 
         if (result != null) {
           ref.watch(albumProvider.notifier).getAllAlbums();
+          ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
           selectionEnabledHook.value = false;
 
           AutoRouter.of(context).push(AlbumViewerRoute(albumId: result.id));
@@ -162,28 +170,28 @@ class HomePage extends HookConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 16.0),
                 child: Text(
-                  'Building the timeline',
+                  'home_page_building_timeline',
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
                     color: Theme.of(context).primaryColor,
                   ),
-                ),
+                ).tr(),
               ),
               AnimatedOpacity(
                 duration: const Duration(milliseconds: 500),
                 opacity: tipOneOpacity.value,
-                child: const SizedBox(
+                child: SizedBox(
                   width: 250,
                   child: Padding(
-                    padding: EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      'If this is your first time using the app, please make sure to choose a backup album(s) so that the timeline can populate photos and videos in the album(s).',
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: const Text(
+                      'home_page_first_time_notice',
                       textAlign: TextAlign.justify,
                       style: TextStyle(
                         fontSize: 12,
                       ),
-                    ),
+                    ).tr(),
                   ),
                 ),
               )
@@ -197,39 +205,26 @@ class HomePage extends HookConsumerWidget {
         top: true,
         child: Stack(
           children: [
-            CustomScrollView(
-              slivers: [
-                if (!multiselectEnabled.state)
-                  ImmichSliverAppBar(
-                    onPopBack: reloadAllAsset,
+            ref.watch(assetProvider).renderList == null ||
+                    ref.watch(assetProvider).allAssets.isEmpty
+                ? buildLoadingIndicator()
+                : ImmichAssetGrid(
+                    renderList: ref.watch(assetProvider).renderList!,
+                    allAssets: ref.watch(assetProvider).allAssets,
+                    assetsPerRow: appSettingService
+                        .getSetting(AppSettingsEnum.tilesPerRow),
+                    showStorageIndicator: appSettingService
+                        .getSetting(AppSettingsEnum.storageIndicator),
+                    listener: selectionListener,
+                    selectionActive: selectionEnabledHook.value,
                   ),
-              ],
-            ),
-            Padding(
-              padding: EdgeInsets.only(
-                top: selectionEnabledHook.value ? 0 : 60,
-                bottom: 0.0,
-              ),
-              child: ref.watch(assetProvider).renderList == null ||
-                      ref.watch(assetProvider).allAssets.isEmpty
-                  ? buildLoadingIndicator()
-                  : ImmichAssetGrid(
-                      renderList: ref.watch(assetProvider).renderList!,
-                      allAssets: ref.watch(assetProvider).allAssets,
-                      assetsPerRow: appSettingService
-                          .getSetting(AppSettingsEnum.tilesPerRow),
-                      showStorageIndicator: appSettingService
-                          .getSetting(AppSettingsEnum.storageIndicator),
-                      listener: selectionListener,
-                      selectionActive: selectionEnabledHook.value,
-                    ),
-            ),
             if (selectionEnabledHook.value)
               ControlBottomAppBar(
                 onShare: onShareAssets,
                 onDelete: onDelete,
                 onAddToAlbum: onAddToAlbum,
                 albums: albums,
+                sharedAlbums: sharedAlbums,
                 onCreateNewAlbum: onCreateNewAlbum,
               ),
           ],
@@ -238,6 +233,11 @@ class HomePage extends HookConsumerWidget {
     }
 
     return Scaffold(
+      appBar: multiselectEnabled.state
+          ? null
+          : HomePageAppBar(
+              onPopBack: reloadAllAsset,
+            ),
       drawer: const ProfileDrawer(),
       body: buildBody(),
     );

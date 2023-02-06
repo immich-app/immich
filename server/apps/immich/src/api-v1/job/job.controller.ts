@@ -21,12 +21,12 @@ export class JobController {
   @Put('/:jobId')
   async sendJobCommand(
     @Param(ValidationPipe) params: GetJobDto,
-    @Body(ValidationPipe) body: JobCommandDto,
+    @Body(ValidationPipe) dto: JobCommandDto,
   ): Promise<number> {
-    if (body.command === 'start') {
-      return await this.jobService.start(params.jobId);
+    if (dto.command === 'start') {
+      return await this.jobService.start(params.jobId, dto.includeAllAssets);
     }
-    if (body.command === 'stop') {
+    if (dto.command === 'stop') {
       return await this.jobService.stop(params.jobId);
     }
     return 0;

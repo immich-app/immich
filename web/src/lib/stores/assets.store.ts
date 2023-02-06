@@ -1,8 +1,8 @@
-import { writable } from 'svelte/store';
-import lodash from 'lodash-es';
-import { api, AssetCountByTimeBucketResponseDto } from '@api';
 import { AssetGridState } from '$lib/models/asset-grid-state';
 import { calculateViewportHeightByNumberOfAsset } from '$lib/utils/viewport-utils';
+import { api, AssetCountByTimeBucketResponseDto } from '@api';
+import lodash from 'lodash-es';
+import { writable } from 'svelte/store';
 
 /**
  * The state that holds information about the asset grid
@@ -141,12 +141,24 @@ function createAssetStore() {
 		});
 	};
 
+	const updateAsset = (assetId: string, isFavorite: boolean) => {
+		assetGridState.update((state) => {
+			const bucketIndex = state.buckets.findIndex((b) => b.assets.some((a) => a.id === assetId));
+			const assetIndex = state.buckets[bucketIndex].assets.findIndex((a) => a.id === assetId);
+			state.buckets[bucketIndex].assets[assetIndex].isFavorite = isFavorite;
+
+			state.assets = lodash.flatMap(state.buckets, (b) => b.assets);
+			return state;
+		});
+	};
+
 	return {
 		setInitialState,
 		getAssetsByBucket,
 		removeAsset,
 		updateBucketHeight,
-		cancelBucketRequest
+		cancelBucketRequest,
+		updateAsset
 	};
 }
 

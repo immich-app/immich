@@ -63,7 +63,7 @@ class ExifResponseDto {
 
   num? iso;
 
-  num? exposureTime;
+  String? exposureTime;
 
   num? latitude;
 
@@ -273,9 +273,7 @@ class ExifResponseDto {
         iso: json[r'iso'] == null
             ? null
             : num.parse(json[r'iso'].toString()),
-        exposureTime: json[r'exposureTime'] == null
-            ? null
-            : num.parse(json[r'exposureTime'].toString()),
+        exposureTime: mapValueOfType<String>(json, r'exposureTime'),
         latitude: json[r'latitude'] == null
             ? null
             : num.parse(json[r'latitude'].toString()),

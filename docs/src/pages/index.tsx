@@ -15,7 +15,7 @@ function HomepageHeader() {
           <p>ON MOBILE DEVICE</p>
         </div>
 
-        <div className="flex place-items-center place-content-center mt-9 mb-16 gap-4 ">
+        <div className="flex flex-col sm:flex-row place-items-center place-content-center mt-9 mb-16 gap-4 ">
           <Link
             className="flex place-items-center place-content-center py-3 px-8 border bg-immich-primary dark:bg-immich-dark-primary rounded-full no-underline hover:no-underline text-white hover:text-gray-50 dark:text-immich-dark-bg font-bold"
             to="docs/overview/introduction"

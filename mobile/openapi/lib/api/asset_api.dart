@@ -234,11 +234,7 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [String] assetId (required):
-  ///
-  /// * [bool] isThumb:
-  ///
-  /// * [bool] isWeb:
-  Future<Response> downloadFileWithHttpInfo(String assetId, { bool? isThumb, bool? isWeb, }) async {
+  Future<Response> downloadFileWithHttpInfo(String assetId,) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/download/{assetId}'
       .replaceAll('{assetId}', assetId);
@@ -249,13 +245,6 @@ class AssetApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
-
-    if (isThumb != null) {
-      queryParams.addAll(_queryParams('', 'isThumb', isThumb));
-    }
-    if (isWeb != null) {
-      queryParams.addAll(_queryParams('', 'isWeb', isWeb));
-    }
 
     const contentTypes = <String>[];
 
@@ -276,12 +265,8 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [String] assetId (required):
-  ///
-  /// * [bool] isThumb:
-  ///
-  /// * [bool] isWeb:
-  Future<Object?> downloadFile(String assetId, { bool? isThumb, bool? isWeb, }) async {
-    final response = await downloadFileWithHttpInfo(assetId,  isThumb: isThumb, isWeb: isWeb, );
+  Future<Object?> downloadFile(String assetId,) async {
+    final response = await downloadFileWithHttpInfo(assetId,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -347,7 +332,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
+  /// Current this is not used in any UI element
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -383,7 +368,7 @@ class AssetApi {
     );
   }
 
-  /// 
+  /// Current this is not used in any UI element
   ///
   /// Parameters:
   ///
@@ -409,9 +394,13 @@ class AssetApi {
   ///
   /// Parameters:
   ///
+  /// * [bool] isFavorite:
+  ///
+  /// * [num] skip:
+  ///
   /// * [String] ifNoneMatch:
   ///   ETag of data already cached on the client
-  Future<Response> getAllAssetsWithHttpInfo({ String? ifNoneMatch, }) async {
+  Future<Response> getAllAssetsWithHttpInfo({ bool? isFavorite, num? skip, String? ifNoneMatch, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset';
 
@@ -421,6 +410,13 @@ class AssetApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (isFavorite != null) {
+      queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
+    }
+    if (skip != null) {
+      queryParams.addAll(_queryParams('', 'skip', skip));
+    }
 
     if (ifNoneMatch != null) {
       headerParams[r'if-none-match'] = parameterToString(ifNoneMatch);
@@ -444,10 +440,14 @@ class AssetApi {
   ///
   /// Parameters:
   ///
+  /// * [bool] isFavorite:
+  ///
+  /// * [num] skip:
+  ///
   /// * [String] ifNoneMatch:
   ///   ETag of data already cached on the client
-  Future<List<AssetResponseDto>?> getAllAssets({ String? ifNoneMatch, }) async {
-    final response = await getAllAssetsWithHttpInfo( ifNoneMatch: ifNoneMatch, );
+  Future<List<AssetResponseDto>?> getAllAssets({ bool? isFavorite, num? skip, String? ifNoneMatch, }) async {
+    final response = await getAllAssetsWithHttpInfo( isFavorite: isFavorite, skip: skip, ifNoneMatch: ifNoneMatch, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

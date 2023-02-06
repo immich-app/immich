@@ -111,7 +111,7 @@
 			<form autocomplete="off" on:submit|preventDefault class="flex flex-col mx-4 gap-4 py-4">
 				<p class="text-sm dark:text-immich-dark-fg">
 					For more details about this feature, refer to the <a
-						href="http://immich.app/docs/features/oauth#mobile-redirect-uri"
+						href="http://immich.app/docs/administration/oauth#mobile-redirect-uri"
 						class="underline"
 						target="_blank"
 						rel="noreferrer">docs</a
