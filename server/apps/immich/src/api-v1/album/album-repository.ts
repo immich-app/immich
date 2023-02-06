@@ -213,18 +213,27 @@ export class AlbumRepository implements IAlbumRepository {
   }
 
   async get(albumId: string): Promise<AlbumEntity | undefined> {
-    const query = this.albumRepository.createQueryBuilder('album');
-
-    const album = await query
-      .where('album.id = :albumId', { albumId })
-      .leftJoinAndSelect('album.sharedUsers', 'sharedUser')
-      .leftJoinAndSelect('sharedUser.userInfo', 'userInfo')
-      .leftJoinAndSelect('album.assets', 'assets')
-      .leftJoinAndSelect('assets.assetInfo', 'assetInfo')
-      .leftJoinAndSelect('assetInfo.exifInfo', 'exifInfo')
-      .leftJoinAndSelect('album.sharedLinks', 'sharedLinks')
-      .orderBy('"assetInfo"."createdAt"::timestamptz', 'ASC')
-      .getOne();
+    const album = await this.albumRepository.findOne({
+      where: { id: albumId },
+      relations: {
+        sharedUsers: {
+          userInfo: true,
+        },
+        assets: {
+          assetInfo: {
+            exifInfo: true,
+          },
+        },
+        sharedLinks: true,
+      },
+      order: {
+        assets: {
+          assetInfo: {
+            createdAt: 'ASC',
+          },
+        },
+      },
+    });
 
     if (!album) {
       return;

@@ -61,6 +61,11 @@ void main() {
       // TODO
     });
 
+    // String updatedAt
+    test('to test the property `updatedAt`', () async {
+      // TODO
+    });
+
     // bool isFavorite
     test('to test the property `isFavorite`', () async {
       // TODO
