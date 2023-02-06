@@ -3386,6 +3386,9 @@
             "items": {
               "$ref": "#/components/schemas/AssetResponseDto"
             }
+          },
+          "owner": {
+            "$ref": "#/components/schemas/UserResponseDto"
           }
         },
         "required": [

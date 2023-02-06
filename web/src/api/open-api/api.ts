@@ -276,6 +276,12 @@ export interface AlbumResponseDto {
      * @memberof AlbumResponseDto
      */
     'assets': Array<AssetResponseDto>;
+    /**
+     * 
+     * @type {UserResponseDto}
+     * @memberof AlbumResponseDto
+     */
+    'owner'?: UserResponseDto;
 }
 /**
  * 
