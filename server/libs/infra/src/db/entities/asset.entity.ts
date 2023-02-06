@@ -1,4 +1,14 @@
-import { Column, Entity, Index, JoinTable, ManyToMany, OneToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinTable,
+  ManyToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  Unique,
+  UpdateDateColumn,
+} from 'typeorm';
 import { ExifEntity } from './exif.entity';
 import { SharedLinkEntity } from './shared-link.entity';
 import { SmartInfoEntity } from './smart-info.entity';
@@ -39,6 +49,9 @@ export class AssetEntity {
 
   @Column({ type: 'timestamptz' })
   modifiedAt!: string;
+
+  @UpdateDateColumn({ type: 'timestamptz' })
+  updatedAt!: string;
 
   @Column({ type: 'boolean', default: false })
   isFavorite!: boolean;

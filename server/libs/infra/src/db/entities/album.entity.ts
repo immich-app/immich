@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { AssetAlbumEntity } from './asset-album.entity';
 import { SharedLinkEntity } from './shared-link.entity';
 import { UserAlbumEntity } from './user-album.entity';
@@ -16,6 +16,9 @@ export class AlbumEntity {
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: string;
+
+  @UpdateDateColumn({ type: 'timestamptz' })
+  updatedAt!: string;
 
   @Column({ comment: 'Asset ID to be used as thumbnail', type: 'varchar', nullable: true })
   albumThumbnailAssetId!: string | null;

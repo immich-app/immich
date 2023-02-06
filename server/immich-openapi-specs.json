@@ -3291,6 +3291,9 @@
           "modifiedAt": {
             "type": "string"
           },
+          "updatedAt": {
+            "type": "string"
+          },
           "isFavorite": {
             "type": "boolean"
           },
@@ -3336,6 +3339,7 @@
           "resizePath",
           "createdAt",
           "modifiedAt",
+          "updatedAt",
           "isFavorite",
           "mimeType",
           "duration",
@@ -3359,6 +3363,9 @@
             "type": "string"
           },
           "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
             "type": "string"
           },
           "albumThumbnailAssetId": {
@@ -3387,6 +3394,7 @@
           "ownerId",
           "albumName",
           "createdAt",
+          "updatedAt",
           "albumThumbnailAssetId",
           "shared",
           "sharedUsers",

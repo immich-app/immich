@@ -17,6 +17,7 @@ Name | Type | Description | Notes
 **resizePath** | **String** |  | 
 **createdAt** | **String** |  | 
 **modifiedAt** | **String** |  | 
+**updatedAt** | **String** |  | 
 **isFavorite** | **bool** |  | 
 **mimeType** | **String** |  | 
 **duration** | **String** |  | 

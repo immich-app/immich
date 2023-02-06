@@ -48,6 +48,7 @@ const assetResponse: AssetResponseDto = {
   resizePath: '',
   createdAt: today.toISOString(),
   modifiedAt: today.toISOString(),
+  updatedAt: today.toISOString(),
   isFavorite: false,
   mimeType: 'image/jpeg',
   smartInfo: {
@@ -67,6 +68,7 @@ const albumResponse: AlbumResponseDto = {
   albumName: 'Test Album',
   albumThumbnailAssetId: null,
   createdAt: today.toISOString(),
+  updatedAt: today.toISOString(),
   id: 'album-123',
   ownerId: 'admin_id',
   sharedUsers: [],
@@ -126,6 +128,7 @@ export const userEntityStub = {
     shouldChangePassword: false,
     profileImagePath: '',
     createdAt: '2021-01-01',
+    updatedAt: '2021-01-01',
     tags: [],
   }),
   user1: Object.freeze<UserEntity>({
@@ -137,6 +140,7 @@ export const userEntityStub = {
     shouldChangePassword: false,
     profileImagePath: '',
     createdAt: '2021-01-01',
+    updatedAt: '2021-01-01',
     tags: [],
   }),
 };
@@ -329,6 +333,7 @@ export const sharedLinkStub = {
       ownerId: authStub.admin.id,
       albumName: 'Test Album',
       createdAt: today.toISOString(),
+      updatedAt: today.toISOString(),
       albumThumbnailAssetId: null,
       sharedUsers: [],
       sharedLinks: [],
@@ -348,6 +353,7 @@ export const sharedLinkStub = {
             resizePath: '',
             createdAt: today.toISOString(),
             modifiedAt: today.toISOString(),
+            updatedAt: today.toISOString(),
             isFavorite: false,
             mimeType: 'image/jpeg',
             smartInfo: {
