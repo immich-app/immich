@@ -183,6 +183,7 @@
   "tab_controller_nav_photos": "Photos",
   "tab_controller_nav_search": "Search",
   "tab_controller_nav_sharing": "Sharing",
+  "theme_setting_asset_list_dynamic_layout_title": "Dynamic grid layout",
   "theme_setting_asset_list_storage_indicator_title": "Show storage indicator on asset tiles",
   "theme_setting_asset_list_tiles_per_row_title": "Number of assets per row ({})",
   "theme_setting_dark_mode_switch": "Dark mode",

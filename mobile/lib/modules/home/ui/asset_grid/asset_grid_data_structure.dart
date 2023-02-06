@@ -37,19 +37,26 @@ class RenderAssetGridElement {
   });
 }
 
+class AssetGridLayoutParameters {
+  final int perRow;
+  final bool dynamicLayout;
+
+  AssetGridLayoutParameters(this.perRow, this.dynamicLayout);
+}
+
 class _AssetGroupsToRenderListComputeParameters {
   final String monthFormat;
   final String dayFormat;
   final String dayFormatYear;
   final Map<String, List<Asset>> groups;
-  final int perRow;
+  final AssetGridLayoutParameters layout;
 
   _AssetGroupsToRenderListComputeParameters(
     this.monthFormat,
     this.dayFormat,
     this.dayFormatYear,
     this.groups,
-    this.perRow,
+    this.layout,
   );
 }
 
@@ -65,7 +72,8 @@ class RenderList {
     final dayFormatSameYear = DateFormat(data.dayFormat);
     final dayFormatOtherYear = DateFormat(data.dayFormatYear);
     final groups = data.groups;
-    final perRow = data.perRow;
+    final perRow = data.layout.perRow;
+    final dynamicLayout = data.layout.dynamicLayout;
 
     List<RenderAssetGridElement> elements = [];
     DateTime? lastDate;
@@ -125,23 +133,28 @@ class RenderList {
           int rowElements = min(assets.length - cursor, perRow);
           final rowAssets = assets.sublist(cursor, cursor + rowElements);
 
-          final aspectRatios = rowAssets
-              .map((e) => (e.width ?? 1) / (e.height ?? 1)).toList();
-          final meanAspectRatio = aspectRatios.sum / rowElements;
+          // Default: All assets have the same width
+          var widthDistribution = List.filled(rowElements, 1.0);
 
-          // 1: mean width
-          // 0.5: width < mean - threshold
-          // 1.5: width > mean + threshold
-          final arConfiguration = aspectRatios.map((e) {
-            if (e - meanAspectRatio > 0.3) return 1.5;
-            if (e - meanAspectRatio < -0.3) return 0.5;
-            return 1.0;
-          });
+          if (dynamicLayout) {
+            final aspectRatios =
+                rowAssets.map((e) => (e.width ?? 1) / (e.height ?? 1)).toList();
+            final meanAspectRatio = aspectRatios.sum / rowElements;
 
-          // Normalize:
-          final sum = arConfiguration.sum;
-          final widthDistribution = arConfiguration
-              .map((e) => (e * rowElements) / sum).toList();
+            // 1: mean width
+            // 0.5: width < mean - threshold
+            // 1.5: width > mean + threshold
+            final arConfiguration = aspectRatios.map((e) {
+              if (e - meanAspectRatio > 0.3) return 1.5;
+              if (e - meanAspectRatio < -0.3) return 0.5;
+              return 1.0;
+            });
+
+            // Normalize:
+            final sum = arConfiguration.sum;
+            widthDistribution =
+                arConfiguration.map((e) => (e * rowElements) / sum).toList();
+          }
 
           final rowElement = RenderAssetGridElement(
             RenderAssetGridElementType.assetRow,
@@ -167,7 +180,7 @@ class RenderList {
 
   static Future<RenderList> fromAssetGroups(
     Map<String, List<Asset>> assetGroups,
-    int assetsPerRow,
+    AssetGridLayoutParameters layout,
   ) async {
     // Compute only allows for one parameter. Therefore we pass all parameters in a map
     return compute(
@@ -177,7 +190,7 @@ class RenderList {
         "daily_title_text_date".tr(),
         "daily_title_text_date_year".tr(),
         assetGroups,
-        assetsPerRow,
+        layout,
       ),
     );
   }

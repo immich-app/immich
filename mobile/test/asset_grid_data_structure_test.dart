@@ -46,7 +46,13 @@ void main() {
 
   group('Test grouped', () {
     test('test grouped check months', () async {
-      final renderList = await RenderList.fromAssetGroups(groups, 3);
+      final renderList = await RenderList.fromAssetGroups(
+        groups,
+        AssetGridLayoutParameters(
+          3,
+          false,
+        ),
+      );
 
       // Jan
       // Day 1
@@ -78,7 +84,13 @@ void main() {
     });
 
     test('test grouped check types', () async {
-      final renderList = await RenderList.fromAssetGroups(groups, 5);
+      final renderList = await RenderList.fromAssetGroups(
+        groups,
+        AssetGridLayoutParameters(
+          5,
+          false,
+        ),
+      );
 
       // Jan
       // Day 1

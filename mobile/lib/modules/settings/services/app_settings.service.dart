@@ -6,6 +6,7 @@ enum AppSettingsEnum<T> {
   loadOriginal<bool>("loadOriginal", false),
   themeMode<String>("themeMode", "system"), // "light","dark","system"
   tilesPerRow<int>("tilesPerRow", 4),
+  dynamicLayout<bool>("dynamicLayout", false),
   uploadErrorNotificationGracePeriod<int>(
     "uploadErrorNotificationGracePeriod",
     2,

@@ -72,7 +72,11 @@ final searchRenderListProvider = FutureProvider((ref) {
   var assetGroups = ref.watch(searchResultGroupByDateTimeProvider);
 
   var settings = ref.watch(appSettingsServiceProvider);
-  final assetsPerRow = settings.getSetting(AppSettingsEnum.tilesPerRow);
 
-  return RenderList.fromAssetGroups(assetGroups, assetsPerRow);
+  final layout = AssetGridLayoutParameters(
+    settings.getSetting(AppSettingsEnum.tilesPerRow),
+    settings.getSetting(AppSettingsEnum.dynamicLayout),
+  );
+
+  return RenderList.fromAssetGroups(assetGroups, layout);
 });

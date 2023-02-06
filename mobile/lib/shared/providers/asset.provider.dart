@@ -24,11 +24,15 @@ class AssetsState {
 
   AssetsState(this.allAssets, {this.renderList});
 
-  Future<AssetsState> withRenderDataStructure(int groupSize) async {
+  Future<AssetsState> withRenderDataStructure(
+    AssetGridLayoutParameters layout,
+  ) async {
     return AssetsState(
       allAssets,
-      renderList:
-          await RenderList.fromAssetGroups(await _groupByDate(), groupSize),
+      renderList: await RenderList.fromAssetGroups(
+        await _groupByDate(),
+        layout,
+      ),
     );
   }
 
@@ -90,10 +94,13 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       _assetCacheService.put(newAssetList);
     }
 
-    state =
-        await AssetsState.fromAssetList(newAssetList).withRenderDataStructure(
+    final layout = AssetGridLayoutParameters(
       _settingsService.getSetting(AppSettingsEnum.tilesPerRow),
+      _settingsService.getSetting(AppSettingsEnum.dynamicLayout),
     );
+
+    state = await AssetsState.fromAssetList(newAssetList)
+        .withRenderDataStructure(layout);
   }
 
   getAllAsset() async {
