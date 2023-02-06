@@ -103,6 +103,11 @@ class AssetNotifier extends StateNotifier<AssetsState> {
         .withRenderDataStructure(layout);
   }
 
+  // Just a little helper to trigger a rebuild of the state object
+  Future<void> rebuildAssetGridDataStructure() async {
+    await _updateAssetsState(state.allAssets, cache: false);
+  }
+
   getAllAsset() async {
     if (_getAllAssetInProgress || _deleteInProgress) {
       // guard against multiple calls to this method while it's still working

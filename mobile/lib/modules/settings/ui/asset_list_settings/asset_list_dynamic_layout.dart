@@ -20,8 +20,7 @@ class DynamicLayout extends HookConsumerWidget {
     void switchChanged(bool value) {
       appSettingService.setSetting(AppSettingsEnum.dynamicLayout, value);
       useDynamicLayout.value = value;
-
-      ref.invalidate(assetProvider);
+      ref.watch(assetProvider.notifier).rebuildAssetGridDataStructure();
     }
 
     useEffect(
