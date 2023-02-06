@@ -66,12 +66,11 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @GetAuthUser() authUser: AuthUserDto,
   ): Promise<LogoutResponseDto> {
-    const token = req.headers.authorization?.split(' ')[1] || req.cookies[IMMICH_ACCESS_COOKIE];
     const authType: AuthType = req.cookies[IMMICH_AUTH_TYPE_COOKIE];
 
     res.clearCookie(IMMICH_ACCESS_COOKIE);
     res.clearCookie(IMMICH_AUTH_TYPE_COOKIE);
 
-    return this.authService.logout(authType, authUser);
+    return this.authService.logout(authUser, authType);
   }
 }

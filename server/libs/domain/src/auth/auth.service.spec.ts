@@ -194,7 +194,7 @@ describe('AuthService', () => {
     it('should return the end session endpoint', async () => {
       const authUser = { id: '123' } as AuthUserDto;
 
-      await expect(sut.logout(AuthType.OAUTH, authUser)).resolves.toEqual({
+      await expect(sut.logout(authUser, AuthType.OAUTH)).resolves.toEqual({
         successful: true,
         redirectUri: 'http://end-session-endpoint',
       });
@@ -203,7 +203,7 @@ describe('AuthService', () => {
     it('should return the default redirect', async () => {
       const authUser = { id: '123' } as AuthUserDto;
 
-      await expect(sut.logout(AuthType.PASSWORD, authUser)).resolves.toEqual({
+      await expect(sut.logout(authUser, AuthType.PASSWORD)).resolves.toEqual({
         successful: true,
         redirectUri: '/auth/login?autoLaunch=0',
       });
