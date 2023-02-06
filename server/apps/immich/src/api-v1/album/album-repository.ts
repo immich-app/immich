@@ -258,11 +258,14 @@ export class AlbumRepository implements IAlbumRepository {
     }
 
     await this.userAlbumRepository.save([...newRecords]);
+    await this.albumRepository.update({ id: album.id }, { updatedAt: new Date().toISOString() });
+
     return this.get(album.id) as Promise<AlbumEntity>; // There is an album for sure
   }
 
   async removeUser(album: AlbumEntity, userId: string): Promise<void> {
     await this.userAlbumRepository.delete({ albumId: album.id, sharedUserId: userId });
+    await this.albumRepository.update({ id: album.id }, { updatedAt: new Date().toISOString() });
   }
 
   async removeAssets(album: AlbumEntity, removeAssetsDto: RemoveAssetsDto): Promise<number> {
@@ -270,6 +273,8 @@ export class AlbumRepository implements IAlbumRepository {
       albumId: album.id,
       assetId: In(removeAssetsDto.assetIds),
     });
+
+    await this.albumRepository.update({ id: album.id }, { updatedAt: new Date().toISOString() });
 
     return res.affected || 0;
   }
@@ -298,6 +303,8 @@ export class AlbumRepository implements IAlbumRepository {
     }
 
     await this.assetAlbumRepository.save([...newRecords]);
+
+    await this.albumRepository.update({ id: album.id }, { updatedAt: new Date().toISOString() });
 
     return {
       successfullyAdded: newRecords.length,
