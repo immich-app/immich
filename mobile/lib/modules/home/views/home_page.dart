@@ -87,12 +87,14 @@ class HomePage extends HookConsumerWidget {
       Iterable<Asset> remoteOnlySelection({String? localErrorMessage}) {
         final Set<Asset> assets = selection.value;
         final bool onlyRemote = assets.every((e) => e.isRemote);
-        if (!onlyRemote && localErrorMessage != null) {
-          ImmichToast.show(
-            context: context,
-            msg: localErrorMessage,
-            gravity: ToastGravity.BOTTOM,
-          );
+        if (!onlyRemote) {
+          if (localErrorMessage != null && localErrorMessage.isNotEmpty) {
+            ImmichToast.show(
+              context: context,
+              msg: localErrorMessage,
+              gravity: ToastGravity.BOTTOM,
+            );
+          }
           return assets.where((a) => a.isRemote);
         }
         return assets;
