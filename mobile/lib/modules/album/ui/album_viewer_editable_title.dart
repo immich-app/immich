@@ -3,21 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album_viewer.provider.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/album.dart';
 
 class AlbumViewerEditableTitle extends HookConsumerWidget {
-  final AlbumResponseDto albumInfo;
+  final Album album;
   final FocusNode titleFocusNode;
   const AlbumViewerEditableTitle({
     Key? key,
-    required this.albumInfo,
+    required this.album,
     required this.titleFocusNode,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final titleTextEditController =
-        useTextEditingController(text: albumInfo.albumName);
+    final titleTextEditController = useTextEditingController(text: album.name);
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     void onFocusModeChange() {
@@ -50,9 +49,7 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
       onTap: () {
         FocusScope.of(context).requestFocus(titleFocusNode);
 
-        ref
-            .watch(albumViewerProvider.notifier)
-            .setEditTitleText(albumInfo.albumName);
+        ref.watch(albumViewerProvider.notifier).setEditTitleText(album.name);
         ref.watch(albumViewerProvider.notifier).enableEditAlbum();
 
         if (titleTextEditController.text == 'Untitled') {

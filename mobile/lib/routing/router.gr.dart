@@ -108,7 +108,7 @@ class _$AppRouter extends RootStackRouter {
       return CustomPage<List<String>?>(
           routeData: routeData,
           child: SelectAdditionalUserForSharingPage(
-              key: args.key, albumInfo: args.albumInfo),
+              key: args.key, album: args.album),
           transitionsBuilder: TransitionsBuilders.slideBottom,
           opaque: true,
           barrierDismissible: false);
@@ -447,27 +447,26 @@ class AlbumViewerRouteArgs {
 /// [SelectAdditionalUserForSharingPage]
 class SelectAdditionalUserForSharingRoute
     extends PageRouteInfo<SelectAdditionalUserForSharingRouteArgs> {
-  SelectAdditionalUserForSharingRoute(
-      {Key? key, required AlbumResponseDto albumInfo})
+  SelectAdditionalUserForSharingRoute({Key? key, required Album album})
       : super(SelectAdditionalUserForSharingRoute.name,
             path: '/select-additional-user-for-sharing-page',
             args: SelectAdditionalUserForSharingRouteArgs(
-                key: key, albumInfo: albumInfo));
+                key: key, album: album));
 
   static const String name = 'SelectAdditionalUserForSharingRoute';
 }
 
 class SelectAdditionalUserForSharingRouteArgs {
   const SelectAdditionalUserForSharingRouteArgs(
-      {this.key, required this.albumInfo});
+      {this.key, required this.album});
 
   final Key? key;
 
-  final AlbumResponseDto albumInfo;
+  final Album album;
 
   @override
   String toString() {
-    return 'SelectAdditionalUserForSharingRouteArgs{key: $key, albumInfo: $albumInfo}';
+    return 'SelectAdditionalUserForSharingRouteArgs{key: $key, album: $album}';
   }
 }
 

@@ -8,10 +8,10 @@ import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_sliverlist.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
-import 'package:openapi/api.dart';
 
 class AddToAlbumBottomSheet extends HookConsumerWidget {
   /// The asset to add to an album
@@ -39,22 +39,22 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
       [],
     );
 
-    void addToAlbum(AlbumResponseDto album) async {
+    void addToAlbum(Album album) async {
       final result = await albumService.addAdditionalAssetToAlbum(
         assets,
-        album.id,
+        album,
       );
 
       if (result != null) {
         if (result.alreadyInAlbum.isNotEmpty) {
           ImmichToast.show(
             context: context,
-            msg: 'Already in ${album.albumName}',
+            msg: 'Already in ${album.name}',
           );
         } else {
           ImmichToast.show(
             context: context,
-            msg: 'Added to ${album.albumName}',
+            msg: 'Added to ${album.name}',
           );
         }
       }
