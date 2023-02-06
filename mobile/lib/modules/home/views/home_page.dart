@@ -111,23 +111,7 @@ class HomePage extends HookConsumerWidget {
         selectionEnabledHook.value = false;
       }
 
-      Iterable<Asset> remoteOnlySelection() {
-        final Set<Asset> assets = selection.value;
-        final bool onlyRemote = assets.every((e) => e.isRemote);
-        if (!onlyRemote) {
-          ImmichToast.show(
-            context: context,
-            msg: "Can not add local assets to albums yet, skipping",
-            gravity: ToastGravity.BOTTOM,
-          );
-          return assets.where((a) => a.isRemote);
-        }
-        return assets;
-      }
-
       void onAddToAlbum(Album album) async {
-        final Iterable<Asset> assets = remoteOnlySelection();
-      void onAddToAlbum(AlbumResponseDto album) async {
         final Iterable<Asset> assets = remoteOnlySelection(
           localErrorMessage: "Can not add local assets to albums yet, skipping",
         );
