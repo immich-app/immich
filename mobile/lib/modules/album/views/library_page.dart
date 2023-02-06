@@ -7,7 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_thumbnail_card.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/album.dart';
 
 class LibraryPage extends HookConsumerWidget {
   const LibraryPage({Key? key}) : super(key: key);
@@ -41,11 +41,11 @@ class LibraryPage extends HookConsumerWidget {
 
     final selectedAlbumSortOrder = useState(0);
 
-    List<AlbumResponseDto> sortedAlbums() {
+    List<Album> sortedAlbums() {
       if (selectedAlbumSortOrder.value == 0) {
         return albums.sortedBy((album) => album.createdAt).reversed.toList();
       }
-      return albums.sortedBy((album) => album.albumName);
+      return albums.sortedBy((album) => album.name);
     }
 
     Widget buildSortButton() {
