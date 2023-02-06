@@ -10,6 +10,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
+import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
@@ -83,27 +84,39 @@ class HomePage extends HookConsumerWidget {
         selectionEnabledHook.value = false;
       }
 
-      void onDelete() {
-        ref.watch(assetProvider.notifier).deleteAssets(selection.value);
-        selectionEnabledHook.value = false;
-      }
-
-      Iterable<Asset> remoteOnlySelection() {
+      Iterable<Asset> remoteOnlySelection({String? localErrorMessage}) {
         final Set<Asset> assets = selection.value;
         final bool onlyRemote = assets.every((e) => e.isRemote);
         if (!onlyRemote) {
-          ImmichToast.show(
-            context: context,
-            msg: "Can not add local assets to albums yet, skipping",
-            gravity: ToastGravity.BOTTOM,
-          );
+          if (localErrorMessage != null && localErrorMessage.isNotEmpty) {
+            ImmichToast.show(
+              context: context,
+              msg: localErrorMessage,
+              gravity: ToastGravity.BOTTOM,
+            );
+          }
           return assets.where((a) => a.isRemote);
         }
         return assets;
       }
 
+      void onFavoriteAssets() {
+        final remoteAssests = remoteOnlySelection(
+          localErrorMessage: 'Can not favorite local assets yet, skipping',
+        );
+        ref.watch(favoriteProvider.notifier).addToFavorites(remoteAssests);
+        selectionEnabledHook.value = false;
+      }
+
+      void onDelete() {
+        ref.watch(assetProvider.notifier).deleteAssets(selection.value);
+        selectionEnabledHook.value = false;
+      }
+
       void onAddToAlbum(Album album) async {
-        final Iterable<Asset> assets = remoteOnlySelection();
+        final Iterable<Asset> assets = remoteOnlySelection(
+          localErrorMessage: "Can not add local assets to albums yet, skipping",
+        );
         if (assets.isEmpty) {
           return;
         }
@@ -142,7 +155,9 @@ class HomePage extends HookConsumerWidget {
       }
 
       void onCreateNewAlbum() async {
-        final Iterable<Asset> assets = remoteOnlySelection();
+        final Iterable<Asset> assets = remoteOnlySelection(
+          localErrorMessage: "Can not add local assets to albums yet, skipping",
+        );
         if (assets.isEmpty) {
           return;
         }
@@ -221,6 +236,7 @@ class HomePage extends HookConsumerWidget {
             if (selectionEnabledHook.value)
               ControlBottomAppBar(
                 onShare: onShareAssets,
+                onFavorite: onFavoriteAssets,
                 onDelete: onDelete,
                 onAddToAlbum: onAddToAlbum,
                 albums: albums,
