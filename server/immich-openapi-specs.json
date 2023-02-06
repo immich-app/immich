@@ -3343,8 +3343,7 @@
           "isFavorite",
           "mimeType",
           "duration",
-          "webpPath",
-          "tags"
+          "webpPath"
         ]
       },
       "AlbumResponseDto": {

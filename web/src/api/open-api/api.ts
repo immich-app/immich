@@ -533,7 +533,7 @@ export interface AssetResponseDto {
      * @type {Array<TagResponseDto>}
      * @memberof AssetResponseDto
      */
-    'tags': Array<TagResponseDto>;
+    'tags'?: Array<TagResponseDto>;
 }
 /**
  * 

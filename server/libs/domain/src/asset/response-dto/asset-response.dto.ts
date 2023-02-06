@@ -25,7 +25,7 @@ export class AssetResponseDto {
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
   livePhotoVideoId?: string | null;
-  tags!: TagResponseDto[];
+  tags?: TagResponseDto[];
 }
 
 export function mapAsset(entity: AssetEntity): AssetResponseDto {
