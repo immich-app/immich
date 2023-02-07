@@ -1,7 +1,16 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { AssetAlbumEntity } from './asset-album.entity';
 import { SharedLinkEntity } from './shared-link.entity';
 import { UserAlbumEntity } from './user-album.entity';
+import { UserEntity } from './user.entity';
 
 @Entity('albums')
 export class AlbumEntity {
@@ -10,6 +19,9 @@ export class AlbumEntity {
 
   @Column()
   ownerId!: string;
+
+  @ManyToOne(() => UserEntity)
+  owner!: UserEntity;
 
   @Column({ default: 'Untitled Album' })
   albumName!: string;

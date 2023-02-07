@@ -3343,8 +3343,7 @@
           "isFavorite",
           "mimeType",
           "duration",
-          "webpPath",
-          "tags"
+          "webpPath"
         ]
       },
       "AlbumResponseDto": {
@@ -3386,6 +3385,9 @@
             "items": {
               "$ref": "#/components/schemas/AssetResponseDto"
             }
+          },
+          "owner": {
+            "$ref": "#/components/schemas/UserResponseDto"
           }
         },
         "required": [
