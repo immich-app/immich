@@ -221,7 +221,7 @@ class AssetResponseDto {
         exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
         smartInfo: SmartInfoResponseDto.fromJson(json[r'smartInfo']),
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
-        tags: TagResponseDto.listFromJson(json[r'tags'])!,
+        tags: TagResponseDto.listFromJson(json[r'tags']) ?? const [],
       );
     }
     return null;
@@ -285,7 +285,6 @@ class AssetResponseDto {
     'mimeType',
     'duration',
     'webpPath',
-    'tags',
   };
 }
 

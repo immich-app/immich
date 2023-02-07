@@ -66,6 +66,11 @@ void main() {
       // TODO
     });
 
+    // UserResponseDto owner
+    test('to test the property `owner`', () async {
+      // TODO
+    });
+
 
   });
 

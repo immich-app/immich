@@ -7,75 +7,20 @@ import {
   UserEntity,
   UserTokenEntity,
 } from '@app/infra/db/entities';
-import { AlbumResponseDto, AssetResponseDto, AuthUserDto, ExifResponseDto, SharedLinkResponseDto } from '../src';
+import {
+  AlbumResponseDto,
+  AssetResponseDto,
+  AuthUserDto,
+  ExifResponseDto,
+  mapUser,
+  SharedLinkResponseDto,
+} from '../src';
 
 const today = new Date();
 const tomorrow = new Date();
 const yesterday = new Date();
 tomorrow.setDate(today.getDate() + 1);
 yesterday.setDate(yesterday.getDate() - 1);
-
-const assetInfo: ExifResponseDto = {
-  id: 1,
-  make: 'camera-make',
-  model: 'camera-model',
-  imageName: 'fancy-image',
-  exifImageWidth: 500,
-  exifImageHeight: 500,
-  fileSizeInByte: 100,
-  orientation: 'orientation',
-  dateTimeOriginal: today,
-  modifyDate: today,
-  lensModel: 'fancy',
-  fNumber: 100,
-  focalLength: 100,
-  iso: 100,
-  exposureTime: '1/16',
-  latitude: 100,
-  longitude: 100,
-  city: 'city',
-  state: 'state',
-  country: 'country',
-};
-
-const assetResponse: AssetResponseDto = {
-  id: 'id_1',
-  deviceAssetId: 'device_asset_id_1',
-  ownerId: 'user_id_1',
-  deviceId: 'device_id_1',
-  type: AssetType.VIDEO,
-  originalPath: 'fake_path/jpeg',
-  resizePath: '',
-  createdAt: today.toISOString(),
-  modifiedAt: today.toISOString(),
-  updatedAt: today.toISOString(),
-  isFavorite: false,
-  mimeType: 'image/jpeg',
-  smartInfo: {
-    id: 'should-be-a-number',
-    tags: [],
-    objects: ['a', 'b', 'c'],
-  },
-  webpPath: '',
-  encodedVideoPath: '',
-  duration: '0:00:00.00000',
-  exifInfo: assetInfo,
-  livePhotoVideoId: null,
-  tags: [],
-};
-
-const albumResponse: AlbumResponseDto = {
-  albumName: 'Test Album',
-  albumThumbnailAssetId: null,
-  createdAt: today.toISOString(),
-  updatedAt: today.toISOString(),
-  id: 'album-123',
-  ownerId: 'admin_id',
-  sharedUsers: [],
-  shared: false,
-  assets: [],
-  assetCount: 1,
-};
 
 export const authStub = {
   admin: Object.freeze<AuthUserDto>({
@@ -143,6 +88,69 @@ export const userEntityStub = {
     updatedAt: '2021-01-01',
     tags: [],
   }),
+};
+
+const assetInfo: ExifResponseDto = {
+  id: 1,
+  make: 'camera-make',
+  model: 'camera-model',
+  imageName: 'fancy-image',
+  exifImageWidth: 500,
+  exifImageHeight: 500,
+  fileSizeInByte: 100,
+  orientation: 'orientation',
+  dateTimeOriginal: today,
+  modifyDate: today,
+  lensModel: 'fancy',
+  fNumber: 100,
+  focalLength: 100,
+  iso: 100,
+  exposureTime: '1/16',
+  latitude: 100,
+  longitude: 100,
+  city: 'city',
+  state: 'state',
+  country: 'country',
+};
+
+const assetResponse: AssetResponseDto = {
+  id: 'id_1',
+  deviceAssetId: 'device_asset_id_1',
+  ownerId: 'user_id_1',
+  deviceId: 'device_id_1',
+  type: AssetType.VIDEO,
+  originalPath: 'fake_path/jpeg',
+  resizePath: '',
+  createdAt: today.toISOString(),
+  modifiedAt: today.toISOString(),
+  updatedAt: today.toISOString(),
+  isFavorite: false,
+  mimeType: 'image/jpeg',
+  smartInfo: {
+    id: 'should-be-a-number',
+    tags: [],
+    objects: ['a', 'b', 'c'],
+  },
+  webpPath: '',
+  encodedVideoPath: '',
+  duration: '0:00:00.00000',
+  exifInfo: assetInfo,
+  livePhotoVideoId: null,
+  tags: [],
+};
+
+const albumResponse: AlbumResponseDto = {
+  albumName: 'Test Album',
+  albumThumbnailAssetId: null,
+  createdAt: today.toISOString(),
+  updatedAt: today.toISOString(),
+  id: 'album-123',
+  ownerId: 'admin_id',
+  owner: mapUser(userEntityStub.admin),
+  sharedUsers: [],
+  shared: false,
+  assets: [],
+  assetCount: 1,
 };
 
 export const userTokenEntityStub = {
@@ -331,6 +339,7 @@ export const sharedLinkStub = {
     album: {
       id: 'album-123',
       ownerId: authStub.admin.id,
+      owner: userEntityStub.admin,
       albumName: 'Test Album',
       createdAt: today.toISOString(),
       updatedAt: today.toISOString(),
