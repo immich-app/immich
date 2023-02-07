@@ -13,7 +13,7 @@ export class AlbumResponseDto {
   shared!: boolean;
   sharedUsers!: UserResponseDto[];
   assets!: AssetResponseDto[];
-  owner?: UserResponseDto;
+  owner!: UserResponseDto;
   @ApiProperty({ type: 'integer' })
   assetCount!: number;
 }
@@ -35,7 +35,7 @@ export function mapAlbum(entity: AlbumEntity): AlbumResponseDto {
     updatedAt: entity.updatedAt,
     id: entity.id,
     ownerId: entity.ownerId,
-    owner: entity.owner ? mapUser(entity.owner) : undefined,
+    owner: mapUser(entity.owner),
     sharedUsers,
     shared: sharedUsers.length > 0 || entity.sharedLinks?.length > 0,
     assets: entity.assets?.map((assetAlbum) => mapAsset(assetAlbum.assetInfo)) || [],
@@ -60,7 +60,7 @@ export function mapAlbumExcludeAssetInfo(entity: AlbumEntity): AlbumResponseDto 
     updatedAt: entity.updatedAt,
     id: entity.id,
     ownerId: entity.ownerId,
-    owner: entity.owner ? mapUser(entity.owner) : undefined,
+    owner: mapUser(entity.owner),
     sharedUsers,
     shared: sharedUsers.length > 0 || entity.sharedLinks?.length > 0,
     assets: [],

@@ -1,8 +1,8 @@
 import { AlbumService } from './album.service';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { AlbumEntity } from '@app/infra';
-import { AlbumResponseDto, ICryptoRepository } from '@app/domain';
+import { AlbumEntity, UserEntity } from '@app/infra';
+import { AlbumResponseDto, ICryptoRepository, mapUser } from '@app/domain';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { IAlbumRepository } from './album-repository';
 import { DownloadService } from '../../modules/download/download.service';
@@ -21,6 +21,18 @@ describe('Album service', () => {
     email: 'auth@test.com',
     isAdmin: false,
   });
+
+  const albumOwner: UserEntity = Object.freeze({
+    ...authUser,
+    firstName: 'auth',
+    lastName: 'user',
+    createdAt: 'date',
+    updatedAt: 'date',
+    profileImagePath: '',
+    shouldChangePassword: false,
+    oauthId: '',
+    tags: [],
+  });
   const albumId = 'f19ab956-4761-41ea-a5d6-bae948308d58';
   const sharedAlbumOwnerId = '2222';
   const sharedAlbumSharedAlsoWithId = '3333';
@@ -28,7 +40,8 @@ describe('Album service', () => {
 
   const _getOwnedAlbum = () => {
     const albumEntity = new AlbumEntity();
-    albumEntity.ownerId = authUser.id;
+    albumEntity.ownerId = albumOwner.id;
+    albumEntity.owner = albumOwner;
     albumEntity.id = albumId;
     albumEntity.albumName = 'name';
     albumEntity.createdAt = 'date';
@@ -42,7 +55,8 @@ describe('Album service', () => {
 
   const _getOwnedSharedAlbum = () => {
     const albumEntity = new AlbumEntity();
-    albumEntity.ownerId = authUser.id;
+    albumEntity.ownerId = albumOwner.id;
+    albumEntity.owner = albumOwner;
     albumEntity.id = albumId;
     albumEntity.albumName = 'name';
     albumEntity.createdAt = 'date';
@@ -68,6 +82,7 @@ describe('Album service', () => {
   const _getSharedWithAuthUserAlbum = () => {
     const albumEntity = new AlbumEntity();
     albumEntity.ownerId = sharedAlbumOwnerId;
+    albumEntity.owner = albumOwner;
     albumEntity.id = albumId;
     albumEntity.albumName = 'name';
     albumEntity.createdAt = 'date';
@@ -174,22 +189,22 @@ describe('Album service', () => {
   });
 
   it('gets an owned album', async () => {
-    const ownerId = authUser.id;
     const albumId = 'f19ab956-4761-41ea-a5d6-bae948308d58';
 
     const albumEntity = _getOwnedAlbum();
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
 
     const expectedResult: AlbumResponseDto = {
+      ownerId: albumOwner.id,
+      owner: mapUser(albumOwner),
+      id: albumId,
       albumName: 'name',
-      albumThumbnailAssetId: null,
       createdAt: 'date',
       updatedAt: 'date',
-      id: 'f19ab956-4761-41ea-a5d6-bae948308d58',
-      ownerId,
-      shared: false,
-      assets: [],
       sharedUsers: [],
+      assets: [],
+      albumThumbnailAssetId: null,
+      shared: false,
       assetCount: 0,
     };
     await expect(sut.getAlbumInfo(authUser, albumId)).resolves.toEqual(expectedResult);
@@ -473,6 +488,7 @@ describe('Album service', () => {
     const albumEntity = new AlbumEntity();
 
     albumEntity.ownerId = authUser.id;
+    albumEntity.owner = albumOwner;
     albumEntity.id = albumId;
     albumEntity.albumName = 'name';
     albumEntity.createdAt = 'date';
