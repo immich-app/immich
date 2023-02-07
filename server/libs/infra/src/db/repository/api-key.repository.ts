@@ -12,12 +12,12 @@ export class APIKeyRepository implements IKeyRepository {
     return this.repository.save(dto);
   }
 
-  async update(userId: string, id: number, dto: Partial<APIKeyEntity>): Promise<APIKeyEntity> {
+  async update(userId: string, id: string, dto: Partial<APIKeyEntity>): Promise<APIKeyEntity> {
     await this.repository.update({ userId, id }, dto);
     return this.repository.findOneOrFail({ where: { id: dto.id } });
   }
 
-  async delete(userId: string, id: number): Promise<void> {
+  async delete(userId: string, id: string): Promise<void> {
     await this.repository.delete({ userId, id });
   }
 
@@ -35,7 +35,7 @@ export class APIKeyRepository implements IKeyRepository {
     });
   }
 
-  getById(userId: string, id: number): Promise<APIKeyEntity | null> {
+  getById(userId: string, id: string): Promise<APIKeyEntity | null> {
     return this.repository.findOne({ where: { userId, id } });
   }
 

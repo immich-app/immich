@@ -165,7 +165,7 @@ export const userTokenEntityStub = {
 
 export const keyStub = {
   admin: Object.freeze({
-    id: 1,
+    id: 'my-random-guid',
     name: 'My Key',
     key: 'my-api-key (hashed)',
     userId: authStub.admin.id,
