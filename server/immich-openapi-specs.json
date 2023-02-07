@@ -3400,7 +3400,8 @@
           "albumThumbnailAssetId",
           "shared",
           "sharedUsers",
-          "assets"
+          "assets",
+          "owner"
         ]
       },
       "SharedLinkResponseDto": {

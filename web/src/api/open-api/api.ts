@@ -281,7 +281,7 @@ export interface AlbumResponseDto {
      * @type {UserResponseDto}
      * @memberof AlbumResponseDto
      */
-    'owner'?: UserResponseDto;
+    'owner': UserResponseDto;
 }
 /**
  * 

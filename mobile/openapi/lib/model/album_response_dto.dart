@@ -23,7 +23,7 @@ class AlbumResponseDto {
     required this.shared,
     this.sharedUsers = const [],
     this.assets = const [],
-    this.owner,
+    required this.owner,
   });
 
   int assetCount;
@@ -46,13 +46,7 @@ class AlbumResponseDto {
 
   List<AssetResponseDto> assets;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  UserResponseDto? owner;
+  UserResponseDto owner;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AlbumResponseDto &&
@@ -81,7 +75,7 @@ class AlbumResponseDto {
     (shared.hashCode) +
     (sharedUsers.hashCode) +
     (assets.hashCode) +
-    (owner == null ? 0 : owner!.hashCode);
+    (owner.hashCode);
 
   @override
   String toString() => 'AlbumResponseDto[assetCount=$assetCount, id=$id, ownerId=$ownerId, albumName=$albumName, createdAt=$createdAt, updatedAt=$updatedAt, albumThumbnailAssetId=$albumThumbnailAssetId, shared=$shared, sharedUsers=$sharedUsers, assets=$assets, owner=$owner]';
@@ -102,11 +96,7 @@ class AlbumResponseDto {
       json[r'shared'] = this.shared;
       json[r'sharedUsers'] = this.sharedUsers;
       json[r'assets'] = this.assets;
-    if (this.owner != null) {
       json[r'owner'] = this.owner;
-    } else {
-      // json[r'owner'] = null;
-    }
     return json;
   }
 
@@ -139,7 +129,7 @@ class AlbumResponseDto {
         shared: mapValueOfType<bool>(json, r'shared')!,
         sharedUsers: UserResponseDto.listFromJson(json[r'sharedUsers'])!,
         assets: AssetResponseDto.listFromJson(json[r'assets'])!,
-        owner: UserResponseDto.fromJson(json[r'owner']),
+        owner: UserResponseDto.fromJson(json[r'owner'])!,
       );
     }
     return null;
@@ -199,6 +189,7 @@ class AlbumResponseDto {
     'shared',
     'sharedUsers',
     'assets',
+    'owner',
   };
 }
 
