@@ -66,11 +66,6 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
         assets.firstWhereOrNull((e) => !_selectedAssets.contains(e.id)) == null;
   }
 
-  double _getItemSize(BuildContext context) {
-    return MediaQuery.of(context).size.width / widget.assetsPerRow -
-        widget.margin * (widget.assetsPerRow - 1) / widget.assetsPerRow;
-  }
-
   Widget _buildThumbnailOrPlaceholder(
     Asset asset,
     bool placeholder,
@@ -119,7 +114,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
             );
           }).toList(),
         );
-      }
+      },
     );
   }
 
