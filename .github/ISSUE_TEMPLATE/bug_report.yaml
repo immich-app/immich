@@ -31,6 +31,7 @@ body:
       required: true
     attributes:
       label: The OS that Immich Server is running on
+      placeholder: Ubuntu 22.10, Debian, Arch...etc
 
   - type: input
     id: version
