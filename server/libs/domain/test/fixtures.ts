@@ -7,13 +7,88 @@ import {
   UserEntity,
   UserTokenEntity,
 } from '@app/infra/db/entities';
-import { AlbumResponseDto, AssetResponseDto, AuthUserDto, ExifResponseDto, SharedLinkResponseDto } from '../src';
+import {
+  AlbumResponseDto,
+  AssetResponseDto,
+  AuthUserDto,
+  ExifResponseDto,
+  mapUser,
+  SharedLinkResponseDto,
+} from '../src';
 
 const today = new Date();
 const tomorrow = new Date();
 const yesterday = new Date();
 tomorrow.setDate(today.getDate() + 1);
 yesterday.setDate(yesterday.getDate() - 1);
+
+export const authStub = {
+  admin: Object.freeze<AuthUserDto>({
+    id: 'admin_id',
+    email: 'admin@test.com',
+    isAdmin: true,
+    isPublicUser: false,
+    isAllowUpload: true,
+  }),
+  user1: Object.freeze<AuthUserDto>({
+    id: 'immich_id',
+    email: 'immich@test.com',
+    isAdmin: false,
+    isPublicUser: false,
+    isAllowUpload: true,
+    isAllowDownload: true,
+    isShowExif: true,
+    accessTokenId: 'token-id',
+  }),
+  adminSharedLink: Object.freeze<AuthUserDto>({
+    id: 'admin_id',
+    email: 'admin@test.com',
+    isAdmin: true,
+    isAllowUpload: true,
+    isAllowDownload: true,
+    isPublicUser: true,
+    isShowExif: true,
+    sharedLinkId: '123',
+  }),
+  readonlySharedLink: Object.freeze<AuthUserDto>({
+    id: 'admin_id',
+    email: 'admin@test.com',
+    isAdmin: true,
+    isAllowUpload: false,
+    isAllowDownload: false,
+    isPublicUser: true,
+    isShowExif: true,
+    sharedLinkId: '123',
+    accessTokenId: 'token-id',
+  }),
+};
+
+export const userEntityStub = {
+  admin: Object.freeze<UserEntity>({
+    ...authStub.admin,
+    password: 'admin_password',
+    firstName: 'admin_first_name',
+    lastName: 'admin_last_name',
+    oauthId: '',
+    shouldChangePassword: false,
+    profileImagePath: '',
+    createdAt: '2021-01-01',
+    updatedAt: '2021-01-01',
+    tags: [],
+  }),
+  user1: Object.freeze<UserEntity>({
+    ...authStub.user1,
+    password: 'immich_password',
+    firstName: 'immich_first_name',
+    lastName: 'immich_last_name',
+    oauthId: '',
+    shouldChangePassword: false,
+    profileImagePath: '',
+    createdAt: '2021-01-01',
+    updatedAt: '2021-01-01',
+    tags: [],
+  }),
+};
 
 const assetInfo: ExifResponseDto = {
   id: 1,
@@ -48,6 +123,7 @@ const assetResponse: AssetResponseDto = {
   resizePath: '',
   createdAt: today.toISOString(),
   modifiedAt: today.toISOString(),
+  updatedAt: today.toISOString(),
   isFavorite: false,
   mimeType: 'image/jpeg',
   smartInfo: {
@@ -67,76 +143,14 @@ const albumResponse: AlbumResponseDto = {
   albumName: 'Test Album',
   albumThumbnailAssetId: null,
   createdAt: today.toISOString(),
+  updatedAt: today.toISOString(),
   id: 'album-123',
   ownerId: 'admin_id',
+  owner: mapUser(userEntityStub.admin),
   sharedUsers: [],
   shared: false,
   assets: [],
   assetCount: 1,
-};
-
-export const authStub = {
-  admin: Object.freeze<AuthUserDto>({
-    id: 'admin_id',
-    email: 'admin@test.com',
-    isAdmin: true,
-    isPublicUser: false,
-    isAllowUpload: true,
-  }),
-  user1: Object.freeze<AuthUserDto>({
-    id: 'immich_id',
-    email: 'immich@test.com',
-    isAdmin: false,
-    isPublicUser: false,
-    isAllowUpload: true,
-    isAllowDownload: true,
-    isShowExif: true,
-  }),
-  adminSharedLink: Object.freeze<AuthUserDto>({
-    id: 'admin_id',
-    email: 'admin@test.com',
-    isAdmin: true,
-    isAllowUpload: true,
-    isAllowDownload: true,
-    isPublicUser: true,
-    isShowExif: true,
-    sharedLinkId: '123',
-  }),
-  readonlySharedLink: Object.freeze<AuthUserDto>({
-    id: 'admin_id',
-    email: 'admin@test.com',
-    isAdmin: true,
-    isAllowUpload: false,
-    isAllowDownload: false,
-    isPublicUser: true,
-    isShowExif: true,
-    sharedLinkId: '123',
-  }),
-};
-
-export const userEntityStub = {
-  admin: Object.freeze<UserEntity>({
-    ...authStub.admin,
-    password: 'admin_password',
-    firstName: 'admin_first_name',
-    lastName: 'admin_last_name',
-    oauthId: '',
-    shouldChangePassword: false,
-    profileImagePath: '',
-    createdAt: '2021-01-01',
-    tags: [],
-  }),
-  user1: Object.freeze<UserEntity>({
-    ...authStub.user1,
-    password: 'immich_password',
-    firstName: 'immich_first_name',
-    lastName: 'immich_last_name',
-    oauthId: '',
-    shouldChangePassword: false,
-    profileImagePath: '',
-    createdAt: '2021-01-01',
-    tags: [],
-  }),
 };
 
 export const userTokenEntityStub = {
@@ -325,8 +339,10 @@ export const sharedLinkStub = {
     album: {
       id: 'album-123',
       ownerId: authStub.admin.id,
+      owner: userEntityStub.admin,
       albumName: 'Test Album',
       createdAt: today.toISOString(),
+      updatedAt: today.toISOString(),
       albumThumbnailAssetId: null,
       sharedUsers: [],
       sharedLinks: [],
@@ -346,6 +362,7 @@ export const sharedLinkStub = {
             resizePath: '',
             createdAt: today.toISOString(),
             modifiedAt: today.toISOString(),
+            updatedAt: today.toISOString(),
             isFavorite: false,
             mimeType: 'image/jpeg',
             smartInfo: {

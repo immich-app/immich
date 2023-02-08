@@ -34,6 +34,18 @@ class FavoriteSelectionNotifier extends StateNotifier<Set<String>> {
       state.contains(asset.id),
     );
   }
+
+  Future<void> addToFavorites(Iterable<Asset> assets) {
+    state = state.union(assets.map((a) => a.id).toSet());
+    final futures = assets.map((a) => 
+        ref.watch(assetProvider.notifier).toggleFavorite(
+          a,
+          true,
+        ),
+      );
+
+    return Future.wait(futures);
+  }
 }
 
 final favoriteProvider =

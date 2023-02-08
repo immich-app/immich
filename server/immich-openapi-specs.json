@@ -3291,6 +3291,9 @@
           "modifiedAt": {
             "type": "string"
           },
+          "updatedAt": {
+            "type": "string"
+          },
           "isFavorite": {
             "type": "boolean"
           },
@@ -3336,11 +3339,11 @@
           "resizePath",
           "createdAt",
           "modifiedAt",
+          "updatedAt",
           "isFavorite",
           "mimeType",
           "duration",
-          "webpPath",
-          "tags"
+          "webpPath"
         ]
       },
       "AlbumResponseDto": {
@@ -3361,6 +3364,9 @@
           "createdAt": {
             "type": "string"
           },
+          "updatedAt": {
+            "type": "string"
+          },
           "albumThumbnailAssetId": {
             "type": "string",
             "nullable": true
@@ -3379,6 +3385,9 @@
             "items": {
               "$ref": "#/components/schemas/AssetResponseDto"
             }
+          },
+          "owner": {
+            "$ref": "#/components/schemas/UserResponseDto"
           }
         },
         "required": [
@@ -3387,10 +3396,12 @@
           "ownerId",
           "albumName",
           "createdAt",
+          "updatedAt",
           "albumThumbnailAssetId",
           "shared",
           "sharedUsers",
-          "assets"
+          "assets",
+          "owner"
         ]
       },
       "SharedLinkResponseDto": {

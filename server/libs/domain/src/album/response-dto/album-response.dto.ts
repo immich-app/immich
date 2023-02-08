@@ -8,11 +8,12 @@ export class AlbumResponseDto {
   ownerId!: string;
   albumName!: string;
   createdAt!: string;
+  updatedAt!: string;
   albumThumbnailAssetId!: string | null;
   shared!: boolean;
   sharedUsers!: UserResponseDto[];
   assets!: AssetResponseDto[];
-
+  owner!: UserResponseDto;
   @ApiProperty({ type: 'integer' })
   assetCount!: number;
 }
@@ -26,12 +27,15 @@ export function mapAlbum(entity: AlbumEntity): AlbumResponseDto {
       sharedUsers.push(user);
     }
   });
+
   return {
     albumName: entity.albumName,
     albumThumbnailAssetId: entity.albumThumbnailAssetId,
     createdAt: entity.createdAt,
+    updatedAt: entity.updatedAt,
     id: entity.id,
     ownerId: entity.ownerId,
+    owner: mapUser(entity.owner),
     sharedUsers,
     shared: sharedUsers.length > 0 || entity.sharedLinks?.length > 0,
     assets: entity.assets?.map((assetAlbum) => mapAsset(assetAlbum.assetInfo)) || [],
@@ -48,12 +52,15 @@ export function mapAlbumExcludeAssetInfo(entity: AlbumEntity): AlbumResponseDto 
       sharedUsers.push(user);
     }
   });
+
   return {
     albumName: entity.albumName,
     albumThumbnailAssetId: entity.albumThumbnailAssetId,
     createdAt: entity.createdAt,
+    updatedAt: entity.updatedAt,
     id: entity.id,
     ownerId: entity.ownerId,
+    owner: mapUser(entity.owner),
     sharedUsers,
     shared: sharedUsers.length > 0 || entity.sharedLinks?.length > 0,
     assets: [],

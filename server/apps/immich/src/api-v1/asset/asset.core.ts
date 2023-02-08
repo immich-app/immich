@@ -27,6 +27,7 @@ export class AssetCore {
 
       createdAt: timeUtils.checkValidTimestamp(dto.createdAt) ? dto.createdAt : new Date().toISOString(),
       modifiedAt: timeUtils.checkValidTimestamp(dto.modifiedAt) ? dto.modifiedAt : new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
 
       deviceAssetId: dto.deviceAssetId,
       deviceId: dto.deviceId,

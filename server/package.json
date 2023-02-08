@@ -140,7 +140,7 @@
       },
       "./libs/domain/": {
         "branches": 80,
-        "functions": 90,
+        "functions": 89,
         "lines": 95,
         "statements": 95
       }

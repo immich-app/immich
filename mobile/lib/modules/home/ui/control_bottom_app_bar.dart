@@ -4,20 +4,22 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_sliverlist.dart';
 import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/album.dart';
 
 class ControlBottomAppBar extends ConsumerWidget {
   final Function onShare;
+  final Function onFavorite;
   final Function onDelete;
-  final Function(AlbumResponseDto album) onAddToAlbum;
+  final Function(Album album) onAddToAlbum;
   final void Function() onCreateNewAlbum;
 
-  final List<AlbumResponseDto> albums;
-  final List<AlbumResponseDto> sharedAlbums;
+  final List<Album> albums;
+  final List<Album> sharedAlbums;
 
   const ControlBottomAppBar({
     Key? key,
     required this.onShare,
+    required this.onFavorite,
     required this.onDelete,
     required this.sharedAlbums,
     required this.albums,
@@ -38,6 +40,13 @@ class ControlBottomAppBar extends ConsumerWidget {
             },
           ),
           ControlBoxButton(
+            iconData: Icons.star_rounded,
+            label: "Favorite",
+            onPressed: () {
+              onFavorite();
+            },
+          ),
+          ControlBoxButton(
             iconData: Icons.delete_outline_rounded,
             label: "control_bottom_app_bar_delete".tr(),
             onPressed: () {
@@ -51,6 +60,7 @@ class ControlBottomAppBar extends ConsumerWidget {
               );
             },
           ),
+
         ],
       );
     }

@@ -16,6 +16,7 @@ export class AssetResponseDto {
   resizePath!: string | null;
   createdAt!: string;
   modifiedAt!: string;
+  updatedAt!: string;
   isFavorite!: boolean;
   mimeType!: string | null;
   duration!: string;
@@ -24,7 +25,7 @@ export class AssetResponseDto {
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
   livePhotoVideoId?: string | null;
-  tags!: TagResponseDto[];
+  tags?: TagResponseDto[];
 }
 
 export function mapAsset(entity: AssetEntity): AssetResponseDto {
@@ -38,6 +39,7 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     resizePath: entity.resizePath,
     createdAt: entity.createdAt,
     modifiedAt: entity.modifiedAt,
+    updatedAt: entity.updatedAt,
     isFavorite: entity.isFavorite,
     mimeType: entity.mimeType,
     webpPath: entity.webpPath,
@@ -61,6 +63,7 @@ export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
     resizePath: entity.resizePath,
     createdAt: entity.createdAt,
     modifiedAt: entity.modifiedAt,
+    updatedAt: entity.updatedAt,
     isFavorite: entity.isFavorite,
     mimeType: entity.mimeType,
     webpPath: entity.webpPath,

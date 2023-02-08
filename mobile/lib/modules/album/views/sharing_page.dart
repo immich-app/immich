@@ -9,8 +9,8 @@ import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/sharing_sliver_appbar.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
-import 'package:openapi/api.dart';
 
 class SharingPage extends HookConsumerWidget {
   const SharingPage({Key? key}) : super(key: key);
@@ -18,7 +18,7 @@ class SharingPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var box = Hive.box(userInfoBox);
-    final List<AlbumResponseDto> sharedAlbums = ref.watch(sharedAlbumProvider);
+    final List<Album> sharedAlbums = ref.watch(sharedAlbumProvider);
 
     useEffect(
       () {
@@ -52,7 +52,7 @@ class SharingPage extends HookConsumerWidget {
                 ),
               ),
               title: Text(
-                sharedAlbums[index].albumName,
+                sharedAlbums[index].name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
