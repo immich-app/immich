@@ -20,89 +20,93 @@ class AlbumThumbnailCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var box = Hive.box(userInfoBox);
-    var cardSize = MediaQuery.of(context).size.width / 2 - 18;
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+      var cardSize = constraints.maxWidth / 2 - 18;
 
-    buildEmptyThumbnail() {
-      return Container(
-        decoration: BoxDecoration(
-          color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
-        ),
-        child: SizedBox(
-          height: cardSize,
-          width: cardSize,
-          child: const Center(
-            child: Icon(Icons.no_photography),
+      buildEmptyThumbnail() {
+        return Container(
+          decoration: BoxDecoration(
+            color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
           ),
-        ),
-      );
-    }
-
-    buildAlbumThumbnail() {
-      return CachedNetworkImage(
-        width: cardSize,
-        height: cardSize,
-        fit: BoxFit.cover,
-        fadeInDuration: const Duration(milliseconds: 200),
-        imageUrl: getAlbumThumbnailUrl(
-          album,
-          type: ThumbnailFormat.JPEG,
-        ),
-        httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
-        cacheKey: getAlbumThumbNailCacheKey(album, type: ThumbnailFormat.JPEG),
-      );
-    }
-
-    return GestureDetector(
-      onTap: () {
-        AutoRouter.of(context).push(AlbumViewerRoute(albumId: album.id));
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 32.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: album.albumThumbnailAssetId == null
-                  ? buildEmptyThumbnail()
-                  : buildAlbumThumbnail(),
+          child: SizedBox(
+            height: cardSize,
+            width: cardSize,
+            child: const Center(
+              child: Icon(Icons.no_photography),
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: SizedBox(
-                width: cardSize,
-                child: Text(
-                  album.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
+          ),
+        );
+      }
+
+      buildAlbumThumbnail() {
+        return CachedNetworkImage(
+          width: cardSize,
+          height: cardSize,
+          fit: BoxFit.cover,
+          fadeInDuration: const Duration(milliseconds: 200),
+          imageUrl: getAlbumThumbnailUrl(
+            album,
+            type: ThumbnailFormat.JPEG,
+          ),
+          httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
+          cacheKey: getAlbumThumbNailCacheKey(album, type: ThumbnailFormat.JPEG),
+        );
+      }
+
+      return GestureDetector(
+        onTap: () {
+          AutoRouter.of(context).push(AlbumViewerRoute(albumId: album.id));
+        },
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 32.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: album.albumThumbnailAssetId == null
+                    ? buildEmptyThumbnail()
+                    : buildAlbumThumbnail(),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: SizedBox(
+                  width: cardSize,
+                  child: Text(
+                    album.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  album.assetCount == 1
-                      ? 'album_thumbnail_card_item'
-                      : 'album_thumbnail_card_items',
-                  style: const TextStyle(
-                    fontSize: 12,
-                  ),
-                ).tr(args: ['${album.assetCount}']),
-                if (album.shared)
-                  const Text(
-                    'album_thumbnail_card_shared',
-                    style: TextStyle(
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    album.assetCount == 1
+                        ? 'album_thumbnail_card_item'
+                        : 'album_thumbnail_card_items',
+                    style: const TextStyle(
                       fontSize: 12,
                     ),
-                  ).tr()
-              ],
-            )
-          ],
+                  ).tr(args: ['${album.assetCount}']),
+                  if (album.shared)
+                    const Text(
+                      'album_thumbnail_card_shared',
+                      style: TextStyle(
+                        fontSize: 12,
+                      ),
+                    ).tr()
+                ],
+              )
+            ],
+          ),
         ),
-      ),
+      );
+      },
     );
   }
 }

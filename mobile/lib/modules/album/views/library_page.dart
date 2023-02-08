@@ -116,22 +116,26 @@ class LibraryPage extends HookConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: MediaQuery.of(context).size.width / 2 - 18,
-              height: MediaQuery.of(context).size.width / 2 - 18,
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.grey,
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Center(
-                child: Icon(
-                  Icons.add_rounded,
-                  size: 28,
-                  color: Theme.of(context).primaryColor,
-                ),
-              ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return Container(
+                  width: constraints.maxWidth / 2 - 18,
+                  height: constraints.maxWidth / 2 - 18,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.grey,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.add_rounded,
+                      size: 28,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                );
+              }
             ),
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
