@@ -1,5 +1,6 @@
-title: "[Feature Request] "
-labels: ["Feature Request"]
+title: "[Feature] <feature-name-goes-here>"
+labels: ["feature"]
+
 body:
   - type: markdown
     attributes:
