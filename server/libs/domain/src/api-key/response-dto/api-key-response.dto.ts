@@ -1,7 +1,6 @@
 import { APIKeyEntity } from '@app/infra/db/entities';
 
 export class APIKeyResponseDto {
-  @ApiProperty({ type: 'integer' })
   id!: string;
   name!: string;
   createdAt!: string;
