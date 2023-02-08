@@ -20,6 +20,13 @@ class TabControllerPage extends ConsumerWidget {
           HapticFeedback.selectionClick();
           tabsRouter.setActiveIndex(index);
         },
+        selectedIconTheme: IconThemeData(
+          color: Theme.of(context).primaryColor,
+        ),
+        selectedLabelTextStyle: TextStyle(
+          color: Theme.of(context).primaryColor,
+        ),
+        useIndicator: false,
         destinations: [
           NavigationRailDestination(
             padding: EdgeInsets.only(
@@ -29,21 +36,25 @@ class TabControllerPage extends ConsumerWidget {
               bottom: 4,
             ),
             icon: const Icon(Icons.photo_outlined), 
+            selectedIcon: const Icon(Icons.photo),
             label: const Text('tab_controller_nav_photos').tr(),
           ),
           NavigationRailDestination(
             padding: const EdgeInsets.all(4),
             icon: const Icon(Icons.search_rounded), 
+            selectedIcon: const Icon(Icons.search), 
             label: const Text('tab_controller_nav_search').tr(),
           ),
           NavigationRailDestination(
             padding: const EdgeInsets.all(4),
             icon: const Icon(Icons.share_rounded), 
+            selectedIcon: const Icon(Icons.share), 
             label: const Text('tab_controller_nav_sharing').tr(),
           ),
           NavigationRailDestination(
             padding: const EdgeInsets.all(4),
             icon: const Icon(Icons.photo_album_outlined), 
+            selectedIcon: const Icon(Icons.photo_album), 
             label: const Text('tab_controller_nav_library').tr(),
           ),
         ],
