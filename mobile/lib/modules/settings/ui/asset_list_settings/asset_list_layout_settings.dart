@@ -50,7 +50,7 @@ class LayoutSettings extends HookConsumerWidget {
         SwitchListTile.adaptive(
           activeColor: Theme.of(context).primaryColor,
           title: const Text(
-            "theme_setting_asset_list_dynamic_layout_title",
+            "asset_list_layout_settings_dynamic_layout_title",
             style: TextStyle(
               fontSize: 12,
             ),
@@ -60,7 +60,7 @@ class LayoutSettings extends HookConsumerWidget {
         ),
         ListTile(
           title: const Text(
-            "Group assets by",
+            "asset_list_layout_settings_group_by",
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
@@ -70,7 +70,7 @@ class LayoutSettings extends HookConsumerWidget {
         RadioListTile(
           activeColor: Theme.of(context).primaryColor,
           title: const Text(
-            "Year + Month + Day",
+            "asset_list_layout_settings_group_by_month_day",
             style: TextStyle(
               fontSize: 12,
             ),
@@ -83,7 +83,7 @@ class LayoutSettings extends HookConsumerWidget {
         RadioListTile(
           activeColor: Theme.of(context).primaryColor,
           title: const Text(
-            "Year + Month",
+            "asset_list_layout_settings_group_by_month",
             style: TextStyle(
               fontSize: 12,
             ),

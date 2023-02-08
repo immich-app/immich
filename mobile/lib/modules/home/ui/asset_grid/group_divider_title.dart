@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class DailyTitleText extends ConsumerWidget {
-  const DailyTitleText({
+class GroupDividerTitle extends ConsumerWidget {
+  const GroupDividerTitle({
     Key? key,
     required this.text,
     required this.multiselectEnabled,

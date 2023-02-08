@@ -115,17 +115,17 @@ void main() {
       // 5 Assets => 1 Row
       final types = [
         RenderAssetGridElementType.monthTitle,
-        RenderAssetGridElementType.dayTitle,
+        RenderAssetGridElementType.groupDividerTitle,
         RenderAssetGridElementType.assetRow,
         RenderAssetGridElementType.assetRow,
         RenderAssetGridElementType.assetRow,
         RenderAssetGridElementType.monthTitle,
-        RenderAssetGridElementType.dayTitle,
+        RenderAssetGridElementType.groupDividerTitle,
         RenderAssetGridElementType.assetRow,
         RenderAssetGridElementType.monthTitle,
-        RenderAssetGridElementType.dayTitle,
+        RenderAssetGridElementType.groupDividerTitle,
         RenderAssetGridElementType.assetRow,
-        RenderAssetGridElementType.dayTitle,
+        RenderAssetGridElementType.groupDividerTitle,
         RenderAssetGridElementType.assetRow,
       ];
 

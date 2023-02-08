@@ -10,7 +10,7 @@ final log = Logger('AssetGridDataStructure');
 
 enum RenderAssetGridElementType {
   assetRow,
-  dayTitle,
+  groupDividerTitle,
   monthTitle;
 }
 
@@ -118,7 +118,7 @@ class RenderList {
         final date = assets[0].createdAt;
 
         // Month title
-        if (lastDate == null || lastDate!.month != date.month) {
+        if (groupBy == GroupAssetsBy.yearMonthDay && (lastDate == null || lastDate!.month != date.month)) {
           elements.add(
             RenderAssetGridElement(
               RenderAssetGridElementType.monthTitle,
@@ -128,22 +128,27 @@ class RenderList {
           );
         }
 
-        // Day title
-        if (groupBy == GroupAssetsBy.yearMonthDay) {
-          var currentYear = DateTime.now().year;
-          var groupYear = date.year;
-          var formatDate =
-          currentYear == groupYear ? dayFormatSameYear : dayFormatOtherYear;
+        // Group divider title (day or month)
+        var currentYear = DateTime.now().year;
+        var groupYear = date.year;
+        var formatDate = dayFormatOtherYear;
 
-          elements.add(
-            RenderAssetGridElement(
-              RenderAssetGridElementType.dayTitle,
-              title: formatDate.format(date),
-              date: date,
-              relatedAssetList: assets,
-            ),
-          );
+        if (currentYear == groupYear) {
+          formatDate = dayFormatSameYear;
         }
+
+        if (groupBy == GroupAssetsBy.yearMonth) {
+          formatDate = monthFormat;
+        }
+
+        elements.add(
+          RenderAssetGridElement(
+            RenderAssetGridElementType.groupDividerTitle,
+            title: formatDate.format(date),
+            date: date,
+            relatedAssetList: assets,
+          ),
+        );
 
         // Add rows
         int cursor = 0;
