@@ -1,18 +1,19 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
 class AlbumThumbnailCard extends StatelessWidget {
+  final Function()? onTap;
+
   const AlbumThumbnailCard({
     Key? key,
     required this.album,
+    this.onTap,
   }) : super(key: key);
 
   final Album album;
@@ -20,89 +21,94 @@ class AlbumThumbnailCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var box = Hive.box(userInfoBox);
-    var cardSize = MediaQuery.of(context).size.width / 2 - 18;
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+      var cardSize = constraints.maxWidth;
 
-    buildEmptyThumbnail() {
-      return Container(
-        decoration: BoxDecoration(
-          color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
-        ),
-        child: SizedBox(
+      buildEmptyThumbnail() {
+        return Container(
           height: cardSize,
           width: cardSize,
-          child: const Center(
-            child: Icon(Icons.no_photography),
+          decoration: BoxDecoration(
+            color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
           ),
-        ),
-      );
-    }
-
-    buildAlbumThumbnail() {
-      return CachedNetworkImage(
-        width: cardSize,
-        height: cardSize,
-        fit: BoxFit.cover,
-        fadeInDuration: const Duration(milliseconds: 200),
-        imageUrl: getAlbumThumbnailUrl(
-          album,
-          type: ThumbnailFormat.JPEG,
-        ),
-        httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
-        cacheKey: getAlbumThumbNailCacheKey(album, type: ThumbnailFormat.JPEG),
-      );
-    }
-
-    return GestureDetector(
-      onTap: () {
-        AutoRouter.of(context).push(AlbumViewerRoute(albumId: album.id));
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 32.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: album.albumThumbnailAssetId == null
-                  ? buildEmptyThumbnail()
-                  : buildAlbumThumbnail(),
+          child: Center(
+            child: Icon(
+              Icons.no_photography,
+              size: cardSize * .15,
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: SizedBox(
-                width: cardSize,
-                child: Text(
-                  album.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
+          ),
+        );
+      }
+
+      buildAlbumThumbnail() {
+        return CachedNetworkImage(
+          width: cardSize,
+          height: cardSize,
+          fit: BoxFit.cover,
+          fadeInDuration: const Duration(milliseconds: 200),
+          imageUrl: getAlbumThumbnailUrl(
+            album,
+            type: ThumbnailFormat.JPEG,
+          ),
+          httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
+          cacheKey: getAlbumThumbNailCacheKey(album, type: ThumbnailFormat.JPEG),
+        );
+      }
+
+      return GestureDetector(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 32.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: album.albumThumbnailAssetId == null
+                    ? buildEmptyThumbnail()
+                    : buildAlbumThumbnail(),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: SizedBox(
+                  width: cardSize,
+                  child: Text(
+                    album.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  album.assetCount == 1
-                      ? 'album_thumbnail_card_item'
-                      : 'album_thumbnail_card_items',
-                  style: const TextStyle(
-                    fontSize: 12,
-                  ),
-                ).tr(args: ['${album.assetCount}']),
-                if (album.shared)
-                  const Text(
-                    'album_thumbnail_card_shared',
-                    style: TextStyle(
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    album.assetCount == 1
+                        ? 'album_thumbnail_card_item'
+                        : 'album_thumbnail_card_items',
+                    style: const TextStyle(
                       fontSize: 12,
                     ),
-                  ).tr()
-              ],
-            )
-          ],
+                  ).tr(args: ['${album.assetCount}']),
+                  if (album.shared)
+                    const Text(
+                      'album_thumbnail_card_shared',
+                      style: TextStyle(
+                        fontSize: 12,
+                      ),
+                    ).tr()
+                ],
+              )
+            ],
+          ),
         ),
-      ),
+      );
+      },
     );
   }
 }

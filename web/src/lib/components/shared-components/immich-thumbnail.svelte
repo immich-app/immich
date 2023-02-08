@@ -34,6 +34,7 @@
 	let calculateVideoDurationIntervalHandler: NodeJS.Timer;
 	let videoProgress = '00:00';
 	let videoUrl: string;
+	$: isPublicShared = publicSharedKey !== '';
 
 	const loadVideoData = async (isLivePhoto: boolean) => {
 		isThumbnailVideoPlaying = false;
@@ -183,7 +184,7 @@
 			</div>
 		{/if}
 
-		{#if asset.isFavorite}
+		{#if asset.isFavorite && !isPublicShared}
 			<div class="w-full absolute bottom-2 left-2 z-10">
 				<Star size="24" color={'white'} />
 			</div>
