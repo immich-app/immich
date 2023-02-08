@@ -112,37 +112,43 @@ class LibraryPage extends HookConsumerWidget {
         onTap: () {
           AutoRouter.of(context).push(CreateAlbumRoute(isSharedAlbum: false));
         },
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: MediaQuery.of(context).size.width / 2 - 18,
-              height: MediaQuery.of(context).size.width / 2 - 18,
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.grey,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.grey,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.add_rounded,
+                      size: 28,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
                 ),
-                borderRadius: BorderRadius.circular(8),
               ),
-              child: Center(
-                child: Icon(
-                  Icons.add_rounded,
-                  size: 28,
-                  color: Theme.of(context).primaryColor,
+              Padding(
+                padding: const EdgeInsets.only(
+                  top: 8.0,
+                  bottom: 16,
                 ),
+                child: const Text(
+                  'library_page_new_album',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ).tr(),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: const Text(
-                'library_page_new_album',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ).tr(),
-            )
-          ],
+            ],
+          ),
         ),
       );
     }
@@ -184,6 +190,8 @@ class LibraryPage extends HookConsumerWidget {
         ),
       );
     }
+
+    final sorted = sortedAlbums();
 
     return Scaffold(
       appBar: buildAppBar(),
@@ -234,20 +242,33 @@ class LibraryPage extends HookConsumerWidget {
             ),
           ),
           SliverPadding(
-            padding: const EdgeInsets.only(left: 12.0, right: 12, bottom: 50),
-            sliver: SliverToBoxAdapter(
-              child: Wrap(
-                spacing: 12,
-                children: [
-                  buildCreateAlbumButton(),
-                  for (var album in sortedAlbums())
-                    AlbumThumbnailCard(
-                      album: album,
+            padding: const EdgeInsets.all(12.0),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 250,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: .7,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                childCount: sorted.length + 1,
+                (context, index) {
+                  if (index  == 0) {
+                    return buildCreateAlbumButton();
+                  }
+
+                  return AlbumThumbnailCard(
+                    album: sorted[index - 1],
+                    onTap: () => AutoRouter.of(context).push(
+                      AlbumViewerRoute(
+                        albumId: sorted[index - 1].id,
+                      ),
                     ),
-                ],
+                  );
+                },
               ),
             ),
-          )
+          ),
         ],
       ),
     );

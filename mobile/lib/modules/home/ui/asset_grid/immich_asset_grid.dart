@@ -66,11 +66,6 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
         assets.firstWhereOrNull((e) => !_selectedAssets.contains(e.id)) == null;
   }
 
-  double _getItemSize(BuildContext context) {
-    return MediaQuery.of(context).size.width / widget.assetsPerRow -
-        widget.margin * (widget.assetsPerRow - 1) / widget.assetsPerRow;
-  }
-
   Widget _buildThumbnailOrPlaceholder(
     Asset asset,
     bool placeholder,
@@ -97,24 +92,29 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     RenderAssetGridRow row,
     bool scrolling,
   ) {
-    double size = _getItemSize(context);
 
-    return Row(
-      key: Key("asset-row-${row.assets.first.id}"),
-      children: row.assets.map((Asset asset) {
-        bool last = asset.id == row.assets.last.id;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = constraints.maxWidth / widget.assetsPerRow -
+          widget.margin * (widget.assetsPerRow - 1) / widget.assetsPerRow;
+        return Row(
+          key: Key("asset-row-${row.assets.first.id}"),
+          children: row.assets.map((Asset asset) {
+            bool last = asset.id == row.assets.last.id;
 
-        return Container(
-          key: Key("asset-${asset.id}"),
-          width: size,
-          height: size,
-          margin: EdgeInsets.only(
-            top: widget.margin,
-            right: last ? 0.0 : widget.margin,
-          ),
-          child: _buildThumbnailOrPlaceholder(asset, scrolling),
+            return Container(
+              key: Key("asset-${asset.id}"),
+              width: size,
+              height: size,
+              margin: EdgeInsets.only(
+                top: widget.margin,
+                right: last ? 0.0 : widget.margin,
+              ),
+              child: _buildThumbnailOrPlaceholder(asset, scrolling),
+            );
+          }).toList(),
         );
-      }).toList(),
+      },
     );
   }
 
