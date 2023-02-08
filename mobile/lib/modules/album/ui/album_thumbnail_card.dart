@@ -10,9 +10,12 @@ import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
 class AlbumThumbnailCard extends StatelessWidget {
+  final Function()? onTap;
+
   const AlbumThumbnailCard({
     Key? key,
     required this.album,
+    this.onTap,
   }) : super(key: key);
 
   final Album album;
@@ -23,18 +26,19 @@ class AlbumThumbnailCard extends StatelessWidget {
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return LayoutBuilder(
       builder: (context, constraints) {
-      var cardSize = constraints.maxWidth / 2 - 18;
+      var cardSize = constraints.maxWidth;
 
       buildEmptyThumbnail() {
         return Container(
+          height: cardSize,
+          width: cardSize,
           decoration: BoxDecoration(
             color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
           ),
-          child: SizedBox(
-            height: cardSize,
-            width: cardSize,
-            child: const Center(
-              child: Icon(Icons.no_photography),
+          child: Center(
+            child: Icon(
+              Icons.no_photography,
+              size: cardSize * .15,
             ),
           ),
         );
@@ -56,19 +60,19 @@ class AlbumThumbnailCard extends StatelessWidget {
       }
 
       return GestureDetector(
-        onTap: () {
-          AutoRouter.of(context).push(AlbumViewerRoute(albumId: album.id));
-        },
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.only(bottom: 32.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: album.albumThumbnailAssetId == null
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: album.albumThumbnailAssetId == null
                     ? buildEmptyThumbnail()
                     : buildAlbumThumbnail(),
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
