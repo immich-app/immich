@@ -10,7 +10,6 @@ body:
     id: feature
     attributes:
       label: The feature
-      render: markdown
     validations:
       required: true
 
