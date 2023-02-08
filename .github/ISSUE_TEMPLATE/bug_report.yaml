@@ -27,7 +27,7 @@ body:
         ## Environment
 
   - type: textarea
-    validation:
+    validations:
       required: true
     attributes:
       label: The OS that Immich Server is running on
@@ -52,26 +52,25 @@ body:
       required: true
     attributes:
       label: Platform with the issue
-      multiple: true
       options:
         - label: Server
         - label: Web
         - label: Mobile
 
   - type: textarea
-    validation:
+    validations:
       required: true
     attributes:
       label: Your docker-compose.yml content
-    render: YAML
+      render: YAML
 
   - type: textarea
-    validation:
+    validations:
       required: true
     attributes:
       label: Your .env content
       description: Please provide the redacted .env content of your setup
-    render: Shell
+      render: Shell
 
   - type: textarea
     id: repro
