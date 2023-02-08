@@ -84,7 +84,11 @@ export class AlbumRepository implements IAlbumRepository {
       newAlbum.ownerId = ownerId;
       newAlbum.albumName = createAlbumDto.albumName;
 
-      const album = await transactionalEntityManager.save(newAlbum);
+      let album = await transactionalEntityManager.save(newAlbum);
+      album = await transactionalEntityManager.findOneOrFail(AlbumEntity, {
+        where: { id: album.id },
+        relations: ['owner'],
+      });
 
       // Add shared users
       if (createAlbumDto.sharedWithUserIds?.length) {
