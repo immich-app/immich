@@ -11,6 +11,81 @@ class TabControllerPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
+    navigationRail(TabsRouter tabsRouter) {
+      return NavigationRail(
+        leading: Padding(padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top)),
+        labelType: NavigationRailLabelType.all,
+        selectedIndex: tabsRouter.activeIndex,
+        onDestinationSelected: (index) {
+          HapticFeedback.selectionClick();
+          tabsRouter.setActiveIndex(index);
+        },
+        destinations: [
+          NavigationRailDestination(
+            padding: const EdgeInsets.all(4),
+            icon: const Icon(Icons.photo_outlined), 
+            label: const Text('tab_controller_nav_photos').tr(),
+          ),
+          NavigationRailDestination(
+            padding: const EdgeInsets.all(4),
+            icon: const Icon(Icons.search_rounded), 
+            label: const Text('tab_controller_nav_search').tr(),
+          ),
+          NavigationRailDestination(
+            padding: const EdgeInsets.all(4),
+            icon: const Icon(Icons.share_rounded), 
+            label: const Text('tab_controller_nav_sharing').tr(),
+          ),
+          NavigationRailDestination(
+            padding: const EdgeInsets.all(4),
+            icon: const Icon(Icons.photo_album_outlined), 
+            label: const Text('tab_controller_nav_library').tr(),
+          ),
+        ],
+      );
+    }
+
+    bottomNavigationBar(TabsRouter tabsRouter) {
+      return BottomNavigationBar(
+        selectedLabelStyle: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+        currentIndex: tabsRouter.activeIndex,
+        onTap: (index) {
+          HapticFeedback.selectionClick();
+          tabsRouter.setActiveIndex(index);
+        },
+        items: [
+          BottomNavigationBarItem(
+            label: 'tab_controller_nav_photos'.tr(),
+            icon: const Icon(Icons.photo_outlined),
+            activeIcon: const Icon(Icons.photo),
+          ),
+          BottomNavigationBarItem(
+            label: 'tab_controller_nav_search'.tr(),
+            icon: const Icon(Icons.search_rounded),
+            activeIcon: const Icon(Icons.search),
+          ),
+          BottomNavigationBarItem(
+            label: 'tab_controller_nav_sharing'.tr(),
+            icon: const Icon(Icons.group_outlined),
+            activeIcon: const Icon(Icons.group),
+          ),
+          BottomNavigationBarItem(
+            label: 'tab_controller_nav_library'.tr(),
+            icon: const Icon(Icons.photo_album_outlined),
+            activeIcon: const Icon(Icons.photo_album_rounded),
+          )
+        ],
+      );
+    }
+
     final multiselectEnabled = ref.watch(multiselectProvider);
     return AutoTabsRouter(
       routes: [
@@ -32,51 +107,39 @@ class TabControllerPage extends ConsumerWidget {
             }
             return atHomeTab;
           },
-          child: Scaffold(
-            body: FadeTransition(
-              opacity: animation,
-              child: child,
-            ),
-            bottomNavigationBar: multiselectEnabled
-                ? null
-                : BottomNavigationBar(
-                    selectedLabelStyle: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              const medium = 600;
+              final Widget? bottom;
+              final Widget body;
+              if (constraints.maxWidth < medium) {
+                // Normal phone width
+                bottom = bottomNavigationBar(tabsRouter);
+                body = FadeTransition(
+                  opacity: animation,
+                  child: child,
+                );
+              } else {
+                // Medium tablet width
+                bottom = null;
+                body = Row(
+                  children: [
+                    navigationRail(tabsRouter),
+                    Expanded(
+                      child: FadeTransition(
+                        opacity: animation,
+                        child: child,
+                      ),
                     ),
-                    unselectedLabelStyle: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    currentIndex: tabsRouter.activeIndex,
-                    onTap: (index) {
-                      HapticFeedback.selectionClick();
-                      tabsRouter.setActiveIndex(index);
-                    },
-                    items: [
-                      BottomNavigationBarItem(
-                        label: 'tab_controller_nav_photos'.tr(),
-                        icon: const Icon(Icons.photo_outlined),
-                        activeIcon: const Icon(Icons.photo),
-                      ),
-                      BottomNavigationBarItem(
-                        label: 'tab_controller_nav_search'.tr(),
-                        icon: const Icon(Icons.search_rounded),
-                        activeIcon: const Icon(Icons.search),
-                      ),
-                      BottomNavigationBarItem(
-                        label: 'tab_controller_nav_sharing'.tr(),
-                        icon: const Icon(Icons.group_outlined),
-                        activeIcon: const Icon(Icons.group),
-                      ),
-                      BottomNavigationBarItem(
-                        label: 'tab_controller_nav_library'.tr(),
-                        icon: const Icon(Icons.photo_album_outlined),
-                        activeIcon: const Icon(Icons.photo_album_rounded),
-                      )
-                    ],
-                  ),
-          ),
+                  ],
+                );
+              }              return Scaffold(
+               body: body,
+               bottomNavigationBar: multiselectEnabled
+                  ? null
+                  : bottom,
+            );
+          },),
         );
       },
     );
