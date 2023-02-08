@@ -1,0 +1,25 @@
+title: "[Feature] <feature-name-goes-here>"
+labels: ["feature"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please use this form to request new feature for Immich
+  - type: textarea
+    id: feature
+    attributes:
+      label: The feature
+      render: markdown
+    validations:
+      required: true
+
+  - type: checkboxes
+    validations:
+      required: true
+    attributes:
+      label: Platform
+      options:
+        - label: Server
+        - label: Web
+        - label: Mobile
