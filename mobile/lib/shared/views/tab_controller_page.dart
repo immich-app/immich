@@ -14,7 +14,6 @@ class TabControllerPage extends ConsumerWidget {
 
     navigationRail(TabsRouter tabsRouter) {
       return NavigationRail(
-        leading: Padding(padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top)),
         labelType: NavigationRailLabelType.all,
         selectedIndex: tabsRouter.activeIndex,
         onDestinationSelected: (index) {
@@ -23,7 +22,12 @@ class TabControllerPage extends ConsumerWidget {
         },
         destinations: [
           NavigationRailDestination(
-            padding: const EdgeInsets.all(4),
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 4,
+              left: 4,
+              right: 4,
+              bottom: 4,
+            ),
             icon: const Icon(Icons.photo_outlined), 
             label: const Text('tab_controller_nav_photos').tr(),
           ),
