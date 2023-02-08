@@ -29,8 +29,8 @@ class AssetsState {
   ) async {
     return AssetsState(
       allAssets,
-      renderList: await RenderList.fromAssetGroups(
-        await _groupByDate(),
+      renderList: await RenderList.fromAssets(
+        allAssets,
         layout,
       ),
     );
@@ -38,20 +38,6 @@ class AssetsState {
 
   AssetsState withAdditionalAssets(List<Asset> toAdd) {
     return AssetsState([...allAssets, ...toAdd]);
-  }
-
-  Future<Map<String, List<Asset>>> _groupByDate() async {
-    sortCompare(List<Asset> assets) {
-      assets.sortByCompare<DateTime>(
-        (e) => e.createdAt,
-        (a, b) => b.compareTo(a),
-      );
-      return assets.groupListsBy(
-        (element) => DateFormat('y-MM-dd').format(element.createdAt.toLocal()),
-      );
-    }
-
-    return await compute(sortCompare, allAssets.toList());
   }
 
   static AssetsState fromAssetList(List<Asset> assets) {
@@ -97,6 +83,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     final layout = AssetGridLayoutParameters(
       _settingsService.getSetting(AppSettingsEnum.tilesPerRow),
       _settingsService.getSetting(AppSettingsEnum.dynamicLayout),
+      GroupAssetsBy.values[_settingsService.getSetting(AppSettingsEnum.groupAssetsBy)],
     );
 
     state = await AssetsState.fromAssetList(newAssetList)

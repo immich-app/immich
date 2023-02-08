@@ -37,25 +37,35 @@ class RenderAssetGridElement {
   });
 }
 
+enum GroupAssetsBy {
+  yearMonthDay,
+  yearMonth;
+}
+
 class AssetGridLayoutParameters {
   final int perRow;
   final bool dynamicLayout;
+  final GroupAssetsBy groupBy;
 
-  AssetGridLayoutParameters(this.perRow, this.dynamicLayout);
+  AssetGridLayoutParameters(
+    this.perRow,
+    this.dynamicLayout,
+    this.groupBy,
+  );
 }
 
 class _AssetGroupsToRenderListComputeParameters {
   final String monthFormat;
   final String dayFormat;
   final String dayFormatYear;
-  final Map<String, List<Asset>> groups;
+  final List<Asset> assets;
   final AssetGridLayoutParameters layout;
 
   _AssetGroupsToRenderListComputeParameters(
     this.monthFormat,
     this.dayFormat,
     this.dayFormatYear,
-    this.groups,
+    this.assets,
     this.layout,
   );
 }
@@ -65,67 +75,75 @@ class RenderList {
 
   RenderList(this.elements);
 
+  static Map<String, List<Asset>> _groupAssets(
+    List<Asset> assets,
+    GroupAssetsBy groupBy,
+  ) {
+    assets.sortByCompare<DateTime>(
+      (e) => e.createdAt,
+      (a, b) => b.compareTo(a),
+    );
+
+    if (groupBy == GroupAssetsBy.yearMonthDay) {
+      return assets.groupListsBy(
+        (element) => DateFormat('y-MM-dd').format(element.createdAt.toLocal()),
+      );
+    } else if (groupBy == GroupAssetsBy.yearMonth) {
+      return assets.groupListsBy(
+        (element) => DateFormat('y-MM').format(element.createdAt.toLocal()),
+      );
+    }
+
+    return {};
+  }
+
   static Future<RenderList> _processAssetGroupData(
     _AssetGroupsToRenderListComputeParameters data,
   ) async {
     final monthFormat = DateFormat(data.monthFormat);
     final dayFormatSameYear = DateFormat(data.dayFormat);
     final dayFormatOtherYear = DateFormat(data.dayFormatYear);
-    final groups = data.groups;
+    final allAssets = data.assets;
     final perRow = data.layout.perRow;
     final dynamicLayout = data.layout.dynamicLayout;
+    final groupBy = data.layout.groupBy;
 
     List<RenderAssetGridElement> elements = [];
     DateTime? lastDate;
 
+    final groups = _groupAssets(allAssets, groupBy);
+
     groups.forEach((groupName, assets) {
       try {
-        final date = DateTime.parse(groupName);
+        final date = assets[0].createdAt;
 
+        // Month title
         if (lastDate == null || lastDate!.month != date.month) {
-          // Month title
-
-          var monthTitleText = groupName;
-
-          var groupDate = DateTime.tryParse(groupName);
-          if (groupDate != null) {
-            monthTitleText = monthFormat.format(groupDate);
-          } else {
-            log.severe("Failed to format date for day title: $groupName");
-          }
-
           elements.add(
             RenderAssetGridElement(
               RenderAssetGridElementType.monthTitle,
-              title: monthTitleText,
+              title: monthFormat.format(date),
               date: date,
             ),
           );
         }
 
-        // Add group title
-        var currentYear = DateTime.now().year;
-        var groupYear = DateTime.parse(groupName).year;
-        var formatDate =
-            currentYear == groupYear ? dayFormatSameYear : dayFormatOtherYear;
+        // Day title
+        if (groupBy == GroupAssetsBy.yearMonthDay) {
+          var currentYear = DateTime.now().year;
+          var groupYear = date.year;
+          var formatDate =
+          currentYear == groupYear ? dayFormatSameYear : dayFormatOtherYear;
 
-        var dateText = groupName;
-
-        var groupDate = DateTime.tryParse(groupName);
-        if (groupDate != null) {
-          dateText = formatDate.format(groupDate);
-        } else {
-          log.severe("Failed to format date for day title: $groupName");
+          elements.add(
+            RenderAssetGridElement(
+              RenderAssetGridElementType.dayTitle,
+              title: formatDate.format(date),
+              date: date,
+              relatedAssetList: assets,
+            ),
+          );
         }
-
-        elements.add(
-          RenderAssetGridElement(
-            RenderAssetGridElementType.dayTitle,
-            title: dateText,
-            date: date,
-            relatedAssetList: assets,
-          ),
-        );
 
         // Add rows
         int cursor = 0;
@@ -178,8 +196,8 @@ class RenderList {
     return RenderList(elements);
   }
 
-  static Future<RenderList> fromAssetGroups(
-    Map<String, List<Asset>> assetGroups,
+  static Future<RenderList> fromAssets(
+    List<Asset> assets,
     AssetGridLayoutParameters layout,
   ) async {
     // Compute only allows for one parameter. Therefore we pass all parameters in a map
@@ -189,7 +207,7 @@ class RenderList {
         "monthly_title_text_date_format".tr(),
         "daily_title_text_date".tr(),
         "daily_title_text_date_year".tr(),
-        assetGroups,
+        assets,
         layout,
       ),
     );

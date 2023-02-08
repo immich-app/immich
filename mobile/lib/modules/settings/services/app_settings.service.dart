@@ -7,6 +7,7 @@ enum AppSettingsEnum<T> {
   themeMode<String>("themeMode", "system"), // "light","dark","system"
   tilesPerRow<int>("tilesPerRow", 4),
   dynamicLayout<bool>("dynamicLayout", false),
+  groupAssetsBy<int>("groupBy", 0),
   uploadErrorNotificationGracePeriod<int>(
     "uploadErrorNotificationGracePeriod",
     2,
