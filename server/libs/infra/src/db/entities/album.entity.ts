@@ -20,7 +20,7 @@ export class AlbumEntity {
   @Column()
   ownerId!: string;
 
-  @ManyToOne(() => UserEntity)
+  @ManyToOne(() => UserEntity, { eager: true })
   owner!: UserEntity;
 
   @Column({ default: 'Untitled Album' })
