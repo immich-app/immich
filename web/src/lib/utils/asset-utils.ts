@@ -142,6 +142,10 @@ export function getFileMimeType(file: File): string {
 			return 'video/3gpp';
 		case 'nef':
 			return 'image/nef';
+    case 'raf':
+      return 'image/raf';
+    case 'srw':
+      return 'image/srw';
 		default:
 			return '';
 	}
