@@ -130,11 +130,9 @@ class RenderList {
         }
 
         // Group divider title (day or month)
-        var currentYear = DateTime.now().year;
-        var groupYear = date.year;
         var formatDate = dayFormatOtherYear;
 
-        if (currentYear == groupYear) {
+        if (DateTime.now().year == date.year) {
           formatDate = dayFormatSameYear;
         }
 
