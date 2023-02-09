@@ -221,6 +221,7 @@ class HomePage extends HookConsumerWidget {
         child: Stack(
           children: [
             ref.watch(assetProvider).renderList == null
+                || ref.watch(assetProvider).allAssets.isEmpty
                 ? buildLoadingIndicator()
                 : ImmichAssetGrid(
                     renderList: ref.watch(assetProvider).renderList!,
