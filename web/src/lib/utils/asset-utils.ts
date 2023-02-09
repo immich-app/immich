@@ -113,12 +113,12 @@ export async function bulkDownload(
 }
 
 /**
- * Returns the filename extension without a dot (.) and an empty
- * string when not found.
+ * Returns the lowercase filename extension without a dot (.) and
+ * an empty string when not found.
  */
 export function getFilenameExtension(filename: string): string {
 	const lastIndex = filename.lastIndexOf('.');
-	return filename.slice(lastIndex + 1);
+	return filename.slice(lastIndex + 1).toLowerCase();
 }
 
 /**
