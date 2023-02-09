@@ -38,8 +38,8 @@ class RenderAssetGridElement {
 }
 
 enum GroupAssetsBy {
-  yearMonthDay,
-  yearMonth;
+  day,
+  month;
 }
 
 class AssetGridLayoutParameters {
