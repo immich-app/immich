@@ -59,7 +59,7 @@ void main() {
         AssetGridLayoutParameters(
           3,
           false,
-          GroupAssetsBy.yearMonthDay,
+          GroupAssetsBy.day,
         ),
       );
 
@@ -98,7 +98,7 @@ void main() {
         AssetGridLayoutParameters(
           5,
           false,
-          GroupAssetsBy.yearMonthDay,
+          GroupAssetsBy.day,
         ),
       );
 
