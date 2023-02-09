@@ -7,7 +7,7 @@ import * as exifr from 'exifr';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import type { UploadAsset } from '../models/upload-asset';
 import { api, AssetFileUploadResponseDto } from '@api';
-import { addAssetsToAlbum } from '$lib/utils/asset-utils';
+import { addAssetsToAlbum, getFileMimeType, getFilenameExtension } from '$lib/utils/asset-utils';
 
 export const openFileUploadDialog = (
 	albumId: string | undefined = undefined,
@@ -19,6 +19,9 @@ export const openFileUploadDialog = (
 
 		fileSelector.type = 'file';
 		fileSelector.multiple = true;
+
+		// When adding a content type that is unsupported by browsers, make sure
+		// to also add it to getFileMimeType() otherwise the upload will fail.
 		fileSelector.accept = 'image/*,video/*,.heic,.heif,.dng,.3gp,.nef';
 
 		fileSelector.onchange = async (e: Event) => {
@@ -55,9 +58,10 @@ export const fileUploadHandler = async (
 		return;
 	}
 
-	const acceptedFile = files.filter(
-		(e) => e.type.split('/')[0] === 'video' || e.type.split('/')[0] === 'image'
-	);
+	const acceptedFile = files.filter((file) => {
+		const assetType = getFileMimeType(file).split('/')[0];
+		return assetType === 'video' || assetType === 'image';
+	});
 
 	for (const asset of acceptedFile) {
 		await fileUploader(asset, albumId, sharedKey, onDone);
@@ -71,9 +75,9 @@ async function fileUploader(
 	sharedKey: string | undefined = undefined,
 	onDone?: (id: string) => void
 ) {
-	const assetType = asset.type.split('/')[0].toUpperCase();
-	const temp = asset.name.split('.');
-	const fileExtension = temp[temp.length - 1];
+	const mimeType = getFileMimeType(asset);
+	const assetType = mimeType.split('/')[0].toUpperCase();
+	const fileExtension = getFilenameExtension(asset.name);
 	const formData = new FormData();
 
 	try {
@@ -114,8 +118,10 @@ async function fileUploader(
 		// Get asset file extension
 		formData.append('fileExtension', '.' + fileExtension);
 
-		// Get asset binary data.
-		formData.append('assetData', asset);
+		// Get asset binary data with a custom MIME type, because browsers will
+		// use application/octet-stream for unsupported MIME types, leading to
+		// failed uploads.
+		formData.append('assetData', new File([asset], asset.name, { type: mimeType }));
 
 		// Check if asset upload on server before performing upload
 		const { data, status } = await api.assetApi.checkDuplicateAsset(
