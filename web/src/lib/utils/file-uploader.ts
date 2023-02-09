@@ -7,7 +7,7 @@ import * as exifr from 'exifr';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import type { UploadAsset } from '../models/upload-asset';
 import { api, AssetFileUploadResponseDto } from '@api';
-import { addAssetsToAlbum } from '$lib/utils/asset-utils';
+import { addAssetsToAlbum, getFileMimeType, getFilenameExtension } from '$lib/utils/asset-utils';
 
 export const openFileUploadDialog = (
 	albumId: string | undefined = undefined,
@@ -19,7 +19,10 @@ export const openFileUploadDialog = (
 
 		fileSelector.type = 'file';
 		fileSelector.multiple = true;
-		fileSelector.accept = 'image/*,video/*,.heic,.heif,.dng,.3gp,.nef,.srw,.raf';
+
+		// When adding a content type that is unsupported by browsers, make sure
+		// to also add it to getFileMimeType() otherwise the upload will fail.
+		fileSelector.accept = 'image/*,video/*,.heic,.heif,.dng,.3gp,.nef';
 
 		fileSelector.onchange = async (e: Event) => {
 			const target = e.target as HTMLInputElement;
@@ -46,7 +49,7 @@ export const fileUploadHandler = async (
 	if (files.length > 50) {
 		notificationController.show({
 			type: NotificationType.Error,
-			message: `Cannot upload more than 50 files at a time - you are uploading ${files.length} files.
+			message: `Cannot upload more than 50 files at a time - you are uploading ${files.length} files. 
 			Please check out <u>the bulk upload documentation</u> if you need to upload more than 50 files.`,
 			timeout: 10000,
 			action: { type: 'link', target: 'https://immich.app/docs/features/bulk-upload' }
@@ -55,22 +58,15 @@ export const fileUploadHandler = async (
 		return;
 	}
 
-	for (const asset of files) {
+	const acceptedFile = files.filter((file) => {
+		const assetType = getFileMimeType(file).split('/')[0];
+		return assetType === 'video' || assetType === 'image';
+	});
+
+	for (const asset of acceptedFile) {
 		await fileUploader(asset, albumId, sharedKey, onDone);
 	}
 };
-
-function getMimeType(file: File) {
-	const extension = file.name.split('.').pop() as string;
-	switch (extension.toLowerCase()) {
-		case 'raf':
-			return 'image/x-fuji-raf';
-		case 'srw':
-			return 'image/x-samsung-srw';
-		default:
-			return file.type;
-	}
-}
 
 //TODO: should probably use the @api SDK
 async function fileUploader(
@@ -79,10 +75,9 @@ async function fileUploader(
 	sharedKey: string | undefined = undefined,
 	onDone?: (id: string) => void
 ) {
-	const mimeType = getMimeType(asset);
+	const mimeType = getFileMimeType(asset);
 	const assetType = mimeType.split('/')[0].toUpperCase();
-	const temp = asset.name.split('.');
-	const fileExtension = temp[temp.length - 1];
+	const fileExtension = getFilenameExtension(asset.name);
 	const formData = new FormData();
 
 	try {
@@ -123,8 +118,10 @@ async function fileUploader(
 		// Get asset file extension
 		formData.append('fileExtension', '.' + fileExtension);
 
-		// Get asset binary data.
-		formData.append('assetData', asset);
+		// Get asset binary data with a custom MIME type, because browsers will
+		// use application/octet-stream for unsupported MIME types, leading to
+		// failed uploads.
+		formData.append('assetData', new File([asset], asset.name, { type: mimeType }));
 
 		// Check if asset upload on server before performing upload
 		const { data, status } = await api.assetApi.checkDuplicateAsset(

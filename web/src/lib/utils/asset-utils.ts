@@ -111,3 +111,38 @@ export async function bulkDownload(
 		});
 	}
 }
+
+/**
+ * Returns the lowercase filename extension without a dot (.) and
+ * an empty string when not found.
+ */
+export function getFilenameExtension(filename: string): string {
+	const lastIndex = filename.lastIndexOf('.');
+	return filename.slice(lastIndex + 1).toLowerCase();
+}
+
+/**
+ * Returns the MIME type of the file and an empty string when not found.
+ */
+export function getFileMimeType(file: File): string {
+	if (file.type !== '') {
+		// Return the MIME type determined by the browser.
+		return file.type;
+	}
+
+	// Return MIME type based on the file extension.
+	switch (getFilenameExtension(file.name)) {
+		case 'heic':
+			return 'image/heic';
+		case 'heif':
+			return 'image/heif';
+		case 'dng':
+			return 'image/dng';
+		case '3gp':
+			return 'video/3gpp';
+		case 'nef':
+			return 'image/nef';
+		default:
+			return '';
+	}
+}
