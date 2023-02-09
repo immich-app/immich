@@ -25,30 +25,20 @@ class AssetsState {
 
   AssetsState(this.allAssets, {this.renderList});
 
-  Future<AssetsState> withRenderDataStructure(int groupSize) async {
+  Future<AssetsState> withRenderDataStructure(
+    AssetGridLayoutParameters layout,
+  ) async {
     return AssetsState(
       allAssets,
-      renderList:
-          await RenderList.fromAssetGroups(await _groupByDate(), groupSize),
+      renderList: await RenderList.fromAssets(
+        allAssets,
+        layout,
+      ),
     );
   }
 
   AssetsState withAdditionalAssets(List<Asset> toAdd) {
     return AssetsState([...allAssets, ...toAdd]);
-  }
-
-  Future<Map<String, List<Asset>>> _groupByDate() async {
-    sortCompare(List<Asset> assets) {
-      assets.sortByCompare<DateTime>(
-        (e) => e.createdAt,
-        (a, b) => b.compareTo(a),
-      );
-      return assets.groupListsBy(
-        (element) => DateFormat('y-MM-dd').format(element.createdAt.toLocal()),
-      );
-    }
-
-    return await compute(sortCompare, allAssets.toList());
   }
 
   static AssetsState fromAssetList(List<Asset> assets) {
@@ -91,10 +81,19 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       _assetCacheService.put(newAssetList);
     }
 
-    state =
-        await AssetsState.fromAssetList(newAssetList).withRenderDataStructure(
+    final layout = AssetGridLayoutParameters(
       _settingsService.getSetting(AppSettingsEnum.tilesPerRow),
+      _settingsService.getSetting(AppSettingsEnum.dynamicLayout),
+      GroupAssetsBy.values[_settingsService.getSetting(AppSettingsEnum.groupAssetsBy)],
     );
+
+    state = await AssetsState.fromAssetList(newAssetList)
+        .withRenderDataStructure(layout);
+  }
+
+  // Just a little helper to trigger a rebuild of the state object
+  Future<void> rebuildAssetGridDataStructure() async {
+    await _updateAssetsState(state.allAssets, cache: false);
   }
 
   getAllAsset() async {
