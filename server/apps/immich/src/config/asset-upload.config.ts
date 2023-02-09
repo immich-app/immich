@@ -48,10 +48,23 @@ export const multerUtils = { fileFilter, filename, destination };
 
 const logger = new Logger('AssetUploadConfig');
 
+function getMimeType(file: Express.Multer.File) {
+  const extension = file.originalname.split('.').pop() as string;
+  switch (extension.toLowerCase()) {
+    case 'raf':
+      return 'image/x-fuji-raf';
+    case 'srw':
+      return 'image/x-samsung-srw';
+    default:
+      return file.mimetype;
+  }
+}
+
 function fileFilter(req: Request, file: any, cb: any) {
   if (!req.user || (req.user.isPublicUser && !req.user.isAllowUpload)) {
     return cb(new UnauthorizedException());
   }
+  file.mimetype = getMimeType(file);
   if (
     file.mimetype.match(
       /\/(jpg|jpeg|png|gif|mp4|webm|x-msvideo|quicktime|heic|heif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef|x-fuji-raf|x-samsung-srw)$/,
