@@ -82,6 +82,7 @@ Future<Isar> loadDb() async {
   Isar db = await Isar.open(
     [StoreValueSchema],
     directory: dir.path,
+    maxSizeMiB: 256,
   );
   Store.init(db);
   return db;
