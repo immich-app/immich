@@ -118,7 +118,8 @@ class RenderList {
         final date = assets[0].createdAt;
 
         // Month title
-        if (groupBy == GroupAssetsBy.day && (lastDate == null || lastDate!.month != date.month)) {
+        if (groupBy == GroupAssetsBy.day &&
+            (lastDate == null || lastDate!.month != date.month)) {
           elements.add(
             RenderAssetGridElement(
               RenderAssetGridElementType.monthTitle,
