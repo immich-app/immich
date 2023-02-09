@@ -4,6 +4,7 @@ import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/album/services/album_cache.service.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/services/asset_cache.service.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
@@ -94,7 +95,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     await Future.wait([
       _apiService.authenticationApi.logout(),
       Hive.box(userInfoBox).delete(accessTokenKey),
-      Hive.box(userInfoBox).delete(assetEtagKey),
+      Store.delete(StoreKey.assetETag),
+      Store.delete(StoreKey.userRemoteId),
       _assetCacheService.invalidate(),
       _albumCacheService.invalidate(),
       _sharedAlbumCacheService.invalidate(),
@@ -153,7 +155,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       var deviceInfo = await _deviceInfoService.getDeviceInfo();
       userInfoHiveBox.put(deviceIdKey, deviceInfo["deviceId"]);
       userInfoHiveBox.put(accessTokenKey, accessToken);
-      userInfoHiveBox.put(userIdKey, userResponseDto.id);
+      Store.put(StoreKey.userRemoteId, userResponseDto.id);
 
       state = state.copyWith(
         isAuthenticated: true,

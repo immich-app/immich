@@ -17,8 +17,10 @@ import 'package:immich_mobile/modules/login/providers/authentication.provider.da
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
 import 'package:immich_mobile/shared/models/immich_logger_message.model.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/providers/release_info.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
@@ -26,11 +28,16 @@ import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
+import 'package:immich_mobile/utils/migration.dart';
+import 'package:isar/isar.dart';
+import 'package:path_provider/path_provider.dart';
 import 'constants/hive_box.dart';
 
 void main() async {
   await initApp();
-  runApp(getMainWidget());
+  final db = await loadDb();
+  await migrateHiveToStoreIfNecessary();
+  runApp(getMainWidget(db));
 }
 
 Future<void> openBoxes() async {
@@ -70,13 +77,27 @@ Future<void> initApp() async {
   ImmichLogger().init();
 }
 
-Widget getMainWidget() {
+Future<Isar> loadDb() async {
+  final dir = await getApplicationDocumentsDirectory();
+  Isar db = await Isar.open(
+    [StoreValueSchema],
+    directory: dir.path,
+    maxSizeMiB: 256,
+  );
+  Store.init(db);
+  return db;
+}
+
+Widget getMainWidget(Isar db) {
   return EasyLocalization(
     supportedLocales: locales,
     path: translationsPath,
     useFallbackTranslations: true,
     fallbackLocale: locales.first,
-    child: const ProviderScope(child: ImmichApp()),
+    child: ProviderScope(
+      overrides: [dbProvider.overrideWithValue(db)],
+      child: const ImmichApp(),
+    ),
   );
 }
 

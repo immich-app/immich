@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/services/asset.service.dart';
 import 'package:immich_mobile/shared/services/asset_cache.service.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
@@ -106,7 +107,6 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       _getAllAssetInProgress = true;
       bool isCacheValid = await _assetCacheService.isValid();
       stopwatch.start();
-      final Box box = Hive.box(userInfoBox);
       if (isCacheValid && state.allAssets.isEmpty) {
         final List<Asset>? cachedData = await _assetCacheService.get();
         if (cachedData == null) {
@@ -122,7 +122,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       }
       final localTask = _assetService.getLocalAssets(urgent: !isCacheValid);
       final remoteTask = _assetService.getRemoteAssets(
-        etag: isCacheValid ? box.get(assetEtagKey) : null,
+        etag: isCacheValid ? Store.get(StoreKey.assetETag) : null,
       );
 
       int remoteBegin = state.allAssets.indexWhere((a) => a.isRemote);
@@ -151,7 +151,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
 
       log.info("Combining assets: ${stopwatch.elapsedMilliseconds}ms");
 
-      box.put(assetEtagKey, remoteResult.second);
+      Store.put(StoreKey.assetETag, remoteResult.second);
     } finally {
       _getAllAssetInProgress = false;
     }
@@ -279,8 +279,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
 
     final index = state.allAssets.indexWhere((a) => asset.id == a.id);
     if (index > 0) {
-      state.allAssets.removeAt(index);
-      state.allAssets.insert(index, Asset.remote(newAsset));
+      state.allAssets[index] = newAsset;
       _updateAssetsState(state.allAssets);
     }
 

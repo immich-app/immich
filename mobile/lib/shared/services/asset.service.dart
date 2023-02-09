@@ -8,6 +8,7 @@ import 'package:immich_mobile/modules/backup/background_service/background.servi
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/utils/openapi_extensions.dart';
@@ -37,7 +38,7 @@ class AssetService {
       final Pair<List<AssetResponseDto>, String?>? remote =
           await _apiService.assetApi.getAllAssetsWithETag(eTag: etag);
       if (remote == null) {
-        return const Pair(null, null);
+        return Pair(null, etag);
       }
       return Pair(
         remote.first.map(Asset.remote).toList(growable: false),
@@ -45,7 +46,7 @@ class AssetService {
       );
     } catch (e, stack) {
       log.severe('Error while getting remote assets', e, stack);
-      return const Pair(null, null);
+      return Pair(null, etag);
     }
   }
 
@@ -62,7 +63,7 @@ class AssetService {
       }
       final box = await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
       final HiveBackupAlbums? backupAlbumInfo = box.get(backupInfoKey);
-      final String userId = Hive.box(userInfoBox).get(userIdKey);
+      final String userId = Store.get(StoreKey.userRemoteId);
       if (backupAlbumInfo != null) {
         return (await _backupService
                 .buildUploadCandidates(backupAlbumInfo.deepCopy()))
@@ -105,12 +106,16 @@ class AssetService {
     }
   }
 
-  Future<AssetResponseDto?> updateAsset(Asset asset, UpdateAssetDto updateAssetDto) async {
-    return await _apiService.assetApi.updateAsset(asset.id, updateAssetDto);
+  Future<Asset?> updateAsset(
+    Asset asset,
+    UpdateAssetDto updateAssetDto,
+  ) async {
+    final dto =
+        await _apiService.assetApi.updateAsset(asset.remoteId!, updateAssetDto);
+    return dto == null ? null : Asset.remote(dto);
   }
 
-  Future<AssetResponseDto?> changeFavoriteStatus(Asset asset, bool isFavorite) {
+  Future<Asset?> changeFavoriteStatus(Asset asset, bool isFavorite) {
     return updateAsset(asset, UpdateAssetDto(isFavorite: isFavorite));
   }
-
 }
