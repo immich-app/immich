@@ -17,7 +17,7 @@ class LayoutSettings extends HookConsumerWidget {
     final appSettingService = ref.watch(appSettingsServiceProvider);
 
     final useDynamicLayout = useState(true);
-    final groupBy = useState(GroupAssetsBy.yearMonthDay);
+    final groupBy = useState(GroupAssetsBy.day);
 
     void switchChanged(bool value) {
       appSettingService.setSetting(AppSettingsEnum.dynamicLayout, value);
@@ -75,7 +75,7 @@ class LayoutSettings extends HookConsumerWidget {
               fontSize: 12,
             ),
           ).tr(),
-          value: GroupAssetsBy.yearMonthDay,
+          value: GroupAssetsBy.day,
           groupValue: groupBy.value,
           onChanged: changeGroupValue,
           controlAffinity: ListTileControlAffinity.trailing,
@@ -88,7 +88,7 @@ class LayoutSettings extends HookConsumerWidget {
               fontSize: 12,
             ),
           ).tr(),
-          value: GroupAssetsBy.yearMonth,
+          value: GroupAssetsBy.month,
           groupValue: groupBy.value,
           onChanged: changeGroupValue,
           controlAffinity: ListTileControlAffinity.trailing,

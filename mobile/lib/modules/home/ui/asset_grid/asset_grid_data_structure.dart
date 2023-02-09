@@ -84,11 +84,11 @@ class RenderList {
       (a, b) => b.compareTo(a),
     );
 
-    if (groupBy == GroupAssetsBy.yearMonthDay) {
+    if (groupBy == GroupAssetsBy.day) {
       return assets.groupListsBy(
         (element) => DateFormat('y-MM-dd').format(element.createdAt.toLocal()),
       );
-    } else if (groupBy == GroupAssetsBy.yearMonth) {
+    } else if (groupBy == GroupAssetsBy.month) {
       return assets.groupListsBy(
         (element) => DateFormat('y-MM').format(element.createdAt.toLocal()),
       );
@@ -118,7 +118,7 @@ class RenderList {
         final date = assets[0].createdAt;
 
         // Month title
-        if (groupBy == GroupAssetsBy.yearMonthDay && (lastDate == null || lastDate!.month != date.month)) {
+        if (groupBy == GroupAssetsBy.day && (lastDate == null || lastDate!.month != date.month)) {
           elements.add(
             RenderAssetGridElement(
               RenderAssetGridElementType.monthTitle,
@@ -137,7 +137,7 @@ class RenderList {
           formatDate = dayFormatSameYear;
         }
 
-        if (groupBy == GroupAssetsBy.yearMonth) {
+        if (groupBy == GroupAssetsBy.month) {
           formatDate = monthFormat;
         }
 
