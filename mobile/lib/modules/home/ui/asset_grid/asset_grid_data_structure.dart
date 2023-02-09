@@ -115,7 +115,7 @@ class RenderList {
 
     groups.forEach((groupName, assets) {
       try {
-        final date = assets[0].createdAt;
+        final date = assets.first.createdAt.toLocal();
 
         // Month title
         if (groupBy == GroupAssetsBy.day &&
