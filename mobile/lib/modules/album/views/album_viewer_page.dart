@@ -20,12 +20,13 @@ import 'package:immich_mobile/modules/settings/providers/app_settings.provider.d
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_sliver_persistent_app_bar_delegate.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
 class AlbumViewerPage extends HookConsumerWidget {
-  final String albumId;
+  final int albumId;
 
   const AlbumViewerPage({Key? key, required this.albumId}) : super(key: key);
 
@@ -101,7 +102,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     Widget buildTitle(Album album) {
       return Padding(
         padding: const EdgeInsets.only(left: 8, right: 8, top: 16),
-        child: userId == album.ownerId
+        child: userId == album.ownerId && album.isRemote
             ? AlbumViewerEditableTitle(
                 album: album,
                 titleFocusNode: titleFocusNode,
@@ -122,9 +123,10 @@ class AlbumViewerPage extends HookConsumerWidget {
     Widget buildAlbumDateRange(Album album) {
       final DateTime startDate = album.assets.first.fileCreatedAt;
       final DateTime endDate = album.assets.last.fileCreatedAt; //Need default.
-      final String startDateText =
-          (startDate.year == endDate.year ? DateFormat.MMMd() : DateFormat.yMMMd())
-              .format(startDate);
+      final String startDateText = (startDate.year == endDate.year
+              ? DateFormat.MMMd()
+              : DateFormat.yMMMd())
+          .format(startDate);
       final String endDateText = DateFormat.yMMMd().format(endDate);
 
       return Padding(
@@ -189,6 +191,7 @@ class AlbumViewerPage extends HookConsumerWidget {
           appSettingService.getSetting(AppSettingsEnum.storageIndicator);
 
       if (album.assets.isNotEmpty) {
+        final List<Asset> assets = album.assets.toList(growable: false);
         return SliverPadding(
           padding: const EdgeInsets.only(top: 10.0),
           sliver: SliverGrid(
@@ -201,8 +204,8 @@ class AlbumViewerPage extends HookConsumerWidget {
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
                 return AlbumViewerThumbnail(
-                  asset: album.assets[index],
-                  assetList: album.assets,
+                  asset: assets[index],
+                  assetList: assets,
                   showStorageIndicator: showStorageIndicator,
                 );
               },
@@ -267,17 +270,18 @@ class AlbumViewerPage extends HookConsumerWidget {
               controller: scrollController,
               slivers: [
                 buildHeader(album),
-                SliverPersistentHeader(
-                  pinned: true,
-                  delegate: ImmichSliverPersistentAppBarDelegate(
-                    minHeight: 50,
-                    maxHeight: 50,
-                    child: Container(
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                      child: buildControlButton(album),
+                if (album.isRemote)
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: ImmichSliverPersistentAppBarDelegate(
+                      minHeight: 50,
+                      maxHeight: 50,
+                      child: Container(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        child: buildControlButton(album),
+                      ),
                     ),
                   ),
-                ),
                 SliverSafeArea(
                   sliver: buildImageGrid(album),
                 ),

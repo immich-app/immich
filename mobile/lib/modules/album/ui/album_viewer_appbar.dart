@@ -208,11 +208,12 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
           : null,
       centerTitle: false,
       actions: [
-        IconButton(
-          splashRadius: 25,
-          onPressed: buildBottomSheet,
-          icon: const Icon(Icons.more_horiz_rounded),
-        ),
+        if (album.isRemote)
+          IconButton(
+            splashRadius: 25,
+            onPressed: buildBottomSheet,
+            icon: const Icon(Icons.more_horiz_rounded),
+          ),
       ],
     );
   }

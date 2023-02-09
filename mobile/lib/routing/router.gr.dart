@@ -719,7 +719,7 @@ class AlbumViewerRouteArgs {
 
   final Key? key;
 
-  final String albumId;
+  final int albumId;
 
   @override
   String toString() {

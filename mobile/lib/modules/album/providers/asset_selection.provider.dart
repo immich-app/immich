@@ -58,7 +58,7 @@ class AssetSelectionNotifier extends StateNotifier<AssetSelectionState> {
     );
   }
 
-  void addNewAssets(List<Asset> assets) {
+  void addNewAssets(Iterable<Asset> assets) {
     state = state.copyWith(
       selectedNewAssetsForAlbum: {
         ...state.selectedNewAssetsForAlbum,

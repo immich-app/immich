@@ -22,6 +22,7 @@ class UserResponseDto {
     required this.shouldChangePassword,
     required this.isAdmin,
     this.deletedAt,
+    this.updatedAt,
     required this.oauthId,
   });
 
@@ -49,6 +50,14 @@ class UserResponseDto {
   ///
   DateTime? deletedAt;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? updatedAt;
+
   String oauthId;
 
   @override
@@ -62,6 +71,7 @@ class UserResponseDto {
      other.shouldChangePassword == shouldChangePassword &&
      other.isAdmin == isAdmin &&
      other.deletedAt == deletedAt &&
+     other.updatedAt == updatedAt &&
      other.oauthId == oauthId;
 
   @override
@@ -76,10 +86,11 @@ class UserResponseDto {
     (shouldChangePassword.hashCode) +
     (isAdmin.hashCode) +
     (deletedAt == null ? 0 : deletedAt!.hashCode) +
+    (updatedAt == null ? 0 : updatedAt!.hashCode) +
     (oauthId.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, createdAt=$createdAt, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin, deletedAt=$deletedAt, oauthId=$oauthId]';
+  String toString() => 'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, createdAt=$createdAt, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin, deletedAt=$deletedAt, updatedAt=$updatedAt, oauthId=$oauthId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -95,6 +106,11 @@ class UserResponseDto {
       json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
     } else {
       // json[r'deletedAt'] = null;
+    }
+    if (this.updatedAt != null) {
+      json[r'updatedAt'] = this.updatedAt;
+    } else {
+      // json[r'updatedAt'] = null;
     }
       json[r'oauthId'] = this.oauthId;
     return json;
@@ -128,6 +144,7 @@ class UserResponseDto {
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         deletedAt: mapDateTime(json, r'deletedAt', ''),
+        updatedAt: mapValueOfType<String>(json, r'updatedAt'),
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
       );
     }

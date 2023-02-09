@@ -1,37 +1,39 @@
+import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
-import 'package:immich_mobile/modules/album/services/album_cache.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/shared/providers/db.provider.dart';
+import 'package:isar/isar.dart';
 
 class AlbumNotifier extends StateNotifier<List<Album>> {
-  AlbumNotifier(this._albumService, this._albumCacheService) : super([]);
+  AlbumNotifier(this._albumService, this._db) : super([]);
   final AlbumService _albumService;
-  final AlbumCacheService _albumCacheService;
-
-  void _cacheState() {
-    _albumCacheService.put(state);
-  }
+  final Isar _db;
 
   Future<void> getAllAlbums() async {
-    if (await _albumCacheService.isValid() && state.isEmpty) {
-      final albums = await _albumCacheService.get();
-      if (albums != null) {
-        state = albums;
-      }
+    if (state.isEmpty && 0 < await _db.albums.count()) {
+      state = await _db.albums.where().findAll();
     }
-
-    final albums = await _albumService.getAlbums(isShared: false);
-
-    if (albums != null) {
+    await Future.wait([
+      _albumService.refreshDeviceAlbums(),
+      _albumService.refreshRemoteAlbums(isShared: false),
+    ]);
+    final User me = Store.get(StoreKey.currentUser);
+    final albums = await _db.albums
+        .filter()
+        .owner((q) => q.isarIdEqualTo(me.isarId))
+        .findAll();
+    if (!const ListEquality().equals(albums, state)) {
       state = albums;
-      _cacheState();
     }
   }
 
-  void deleteAlbum(Album album) {
-    state = state.where((a) => a.id != album.id).toList();
-    _cacheState();
+  Future<void> deleteAlbum(Album album) async {
+    _albumService.deleteAlbum(album);
+    state = state.where((album) => album.id != album.id).toList();
   }
 
   Future<Album?> createAlbum(
@@ -42,8 +44,6 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
 
     if (album != null) {
       state = [...state, album];
-      _cacheState();
-
       return album;
     }
     return null;
@@ -53,6 +53,6 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
 final albumProvider = StateNotifierProvider<AlbumNotifier, List<Album>>((ref) {
   return AlbumNotifier(
     ref.watch(albumServiceProvider),
-    ref.watch(albumCacheServiceProvider),
+    ref.watch(dbProvider),
   );
 });

@@ -1,8 +1,5 @@
-import 'dart:convert';
-
 import 'package:collection/collection.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:openapi/api.dart';
 
 class SearchResultPageState {
   final bool isLoading;
@@ -30,34 +27,6 @@ class SearchResultPageState {
       searchResult: searchResult ?? this.searchResult,
     );
   }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'isLoading': isLoading,
-      'isSuccess': isSuccess,
-      'isError': isError,
-      'searchResult': searchResult.map((x) => x.toJson()).toList(),
-    };
-  }
-
-  factory SearchResultPageState.fromMap(Map<String, dynamic> map) {
-    return SearchResultPageState(
-      isLoading: map['isLoading'] ?? false,
-      isSuccess: map['isSuccess'] ?? false,
-      isError: map['isError'] ?? false,
-      searchResult: List.from(
-        map['searchResult']
-            .map(AssetResponseDto.fromJson)
-            .where((e) => e != null)
-            .map(Asset.remote),
-      ),
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory SearchResultPageState.fromJson(String source) =>
-      SearchResultPageState.fromMap(json.decode(source));
 
   @override
   String toString() {

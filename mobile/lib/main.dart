@@ -19,8 +19,12 @@ import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.pr
 import 'package:immich_mobile/modules/settings/providers/notification_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
+import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/immich_logger_message.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
@@ -42,6 +46,7 @@ void main() async {
   await initApp();
   final db = await loadDb();
   await migrateHiveToStoreIfNecessary();
+  await migrateJsonCacheIfNecessary();
   runApp(getMainWidget(db));
 }
 
@@ -93,7 +98,13 @@ Future<void> initApp() async {
 Future<Isar> loadDb() async {
   final dir = await getApplicationDocumentsDirectory();
   Isar db = await Isar.open(
-    [StoreValueSchema],
+    [
+      StoreValueSchema,
+      ExifInfoSchema,
+      AssetSchema,
+      AlbumSchema,
+      UserSchema,
+    ],
     directory: dir.path,
     maxSizeMiB: 256,
   );
