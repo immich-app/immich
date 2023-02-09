@@ -55,6 +55,11 @@ jobs:
     needs: build_mobile
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.ORG_RELEASE_TOKEN }}
+          
       - name: Download APK
         uses: actions/download-artifact@v3
         with:
