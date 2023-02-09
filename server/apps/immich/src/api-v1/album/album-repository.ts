@@ -49,6 +49,7 @@ export class AlbumRepository implements IAlbumRepository {
       relations: {
         sharedLinks: true,
         assets: true,
+        owner: true,
       },
       where: {
         ownerId,
@@ -83,7 +84,11 @@ export class AlbumRepository implements IAlbumRepository {
       newAlbum.ownerId = ownerId;
       newAlbum.albumName = createAlbumDto.albumName;
 
-      const album = await transactionalEntityManager.save(newAlbum);
+      let album = await transactionalEntityManager.save(newAlbum);
+      album = await transactionalEntityManager.findOneOrFail(AlbumEntity, {
+        where: { id: album.id },
+        relations: ['owner'],
+      });
 
       // Add shared users
       if (createAlbumDto.sharedWithUserIds?.length) {
@@ -180,6 +185,9 @@ export class AlbumRepository implements IAlbumRepository {
     // Get information of shared links in albums
     query = query.leftJoinAndSelect('album.sharedLinks', 'sharedLink');
 
+    // get information of owner of albums
+    query = query.leftJoinAndSelect('album.owner', 'owner');
+
     const albums = await query.getMany();
 
     albums.sort((a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf());
@@ -202,6 +210,7 @@ export class AlbumRepository implements IAlbumRepository {
           .getQuery();
         return `album.id IN ${subQuery}`;
       })
+      .leftJoinAndSelect('album.owner', 'owner')
       .leftJoinAndSelect('album.assets', 'assets')
       .leftJoinAndSelect('assets.assetInfo', 'assetInfo')
       .leftJoinAndSelect('album.sharedUsers', 'sharedUser')
@@ -216,6 +225,7 @@ export class AlbumRepository implements IAlbumRepository {
     const album = await this.albumRepository.findOne({
       where: { id: albumId },
       relations: {
+        owner: true,
         sharedUsers: {
           userInfo: true,
         },

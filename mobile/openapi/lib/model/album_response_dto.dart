@@ -23,6 +23,7 @@ class AlbumResponseDto {
     required this.shared,
     this.sharedUsers = const [],
     this.assets = const [],
+    required this.owner,
   });
 
   int assetCount;
@@ -45,6 +46,8 @@ class AlbumResponseDto {
 
   List<AssetResponseDto> assets;
 
+  UserResponseDto owner;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AlbumResponseDto &&
      other.assetCount == assetCount &&
@@ -56,7 +59,8 @@ class AlbumResponseDto {
      other.albumThumbnailAssetId == albumThumbnailAssetId &&
      other.shared == shared &&
      other.sharedUsers == sharedUsers &&
-     other.assets == assets;
+     other.assets == assets &&
+     other.owner == owner;
 
   @override
   int get hashCode =>
@@ -70,10 +74,11 @@ class AlbumResponseDto {
     (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
     (shared.hashCode) +
     (sharedUsers.hashCode) +
-    (assets.hashCode);
+    (assets.hashCode) +
+    (owner.hashCode);
 
   @override
-  String toString() => 'AlbumResponseDto[assetCount=$assetCount, id=$id, ownerId=$ownerId, albumName=$albumName, createdAt=$createdAt, updatedAt=$updatedAt, albumThumbnailAssetId=$albumThumbnailAssetId, shared=$shared, sharedUsers=$sharedUsers, assets=$assets]';
+  String toString() => 'AlbumResponseDto[assetCount=$assetCount, id=$id, ownerId=$ownerId, albumName=$albumName, createdAt=$createdAt, updatedAt=$updatedAt, albumThumbnailAssetId=$albumThumbnailAssetId, shared=$shared, sharedUsers=$sharedUsers, assets=$assets, owner=$owner]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -91,6 +96,7 @@ class AlbumResponseDto {
       json[r'shared'] = this.shared;
       json[r'sharedUsers'] = this.sharedUsers;
       json[r'assets'] = this.assets;
+      json[r'owner'] = this.owner;
     return json;
   }
 
@@ -123,6 +129,7 @@ class AlbumResponseDto {
         shared: mapValueOfType<bool>(json, r'shared')!,
         sharedUsers: UserResponseDto.listFromJson(json[r'sharedUsers'])!,
         assets: AssetResponseDto.listFromJson(json[r'assets'])!,
+        owner: UserResponseDto.fromJson(json[r'owner'])!,
       );
     }
     return null;
@@ -182,6 +189,7 @@ class AlbumResponseDto {
     'shared',
     'sharedUsers',
     'assets',
+    'owner',
   };
 }
 
