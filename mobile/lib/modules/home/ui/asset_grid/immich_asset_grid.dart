@@ -7,7 +7,7 @@ import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'asset_grid_data_structure.dart';
-import 'daily_title_text.dart';
+import 'group_divider_title.dart';
 import 'disable_multi_select_button.dart';
 import 'draggable_scrollbar_custom.dart';
 
@@ -99,12 +99,12 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
           widget.margin * (widget.assetsPerRow - 1) / widget.assetsPerRow;
         return Row(
           key: Key("asset-row-${row.assets.first.id}"),
-          children: row.assets.map((Asset asset) {
+          children: row.assets.mapIndexed((int index, Asset asset) {
             bool last = asset.id == row.assets.last.id;
 
             return Container(
               key: Key("asset-${asset.id}"),
-              width: size,
+              width: size * row.widthDistribution[index],
               height: size,
               margin: EdgeInsets.only(
                 top: widget.margin,
@@ -123,7 +123,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     String title,
     List<Asset> assets,
   ) {
-    return DailyTitleText(
+    return GroupDividerTitle(
       text: title,
       multiselectEnabled: widget.selectionActive,
       onSelect: () => _selectAssets(assets),
@@ -150,7 +150,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   Widget _itemBuilder(BuildContext c, int position) {
     final item = widget.renderList.elements[position];
 
-    if (item.type == RenderAssetGridElementType.dayTitle) {
+    if (item.type == RenderAssetGridElementType.groupDividerTitle) {
       return _buildTitle(c, item.title!, item.relatedAssetList!);
     } else if (item.type == RenderAssetGridElementType.monthTitle) {
       return _buildMonthTitle(c, item.title!);
