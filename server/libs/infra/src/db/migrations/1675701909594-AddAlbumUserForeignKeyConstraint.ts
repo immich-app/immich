@@ -4,6 +4,7 @@ export class AddAlbumUserForeignKeyConstraint1675701909594 implements MigrationI
   name = 'AddAlbumUserForeignKeyConstraint1675701909594';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`DELETE FROM "albums" WHERE "ownerId"::uuid NOT IN (SELECT id FROM "users") `)
     await queryRunner.query(`ALTER TABLE "albums" ALTER COLUMN "ownerId" TYPE varchar(36)`);
     await queryRunner.query(`ALTER TABLE "albums" ALTER COLUMN "ownerId" TYPE uuid using "ownerId"::uuid`);
     await queryRunner.query(
