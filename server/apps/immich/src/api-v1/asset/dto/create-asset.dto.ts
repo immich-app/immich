@@ -12,7 +12,7 @@ export class CreateAssetDto {
 
   @IsNotEmpty()
   @IsEnum(AssetType)
-  @ApiProperty({ enum: Object.keys(AssetType) })
+  @ApiProperty({ enum: Object.values(AssetType) })
   assetType!: AssetType;
 
   @IsNotEmpty()
