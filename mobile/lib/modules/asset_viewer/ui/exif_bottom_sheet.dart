@@ -212,34 +212,37 @@ class ExifBottomSheet extends HookConsumerWidget {
             builder: (context, constraints) {
               if (constraints.maxWidth > 600) {
                 // Two column
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    buildDragHeader(),
-                    buildDate(),
-                    const SizedBox(height: 32.0),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Flexible(
-                          flex: 5,
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: buildLocation(),
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      buildDragHeader(),
+                      buildDate(),
+                      const SizedBox(height: 32.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Flexible(
+                            flex: 5,
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: buildLocation(),
+                            ),
                           ),
-                        ),
-                        Flexible(
-                          flex: 5,
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
-                            child: buildDetail(),
+                          Flexible(
+                            flex: 5,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: buildDetail(),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 50),
-                  ],
+                        ],
+                      ),
+                      const SizedBox(height: 50),
+                    ],
+                  ),
                 );
               }
 
