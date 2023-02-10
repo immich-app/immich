@@ -216,7 +216,6 @@ class HomePage extends HookConsumerWidget {
       }
 
       return SafeArea(
-        bottom: !multiselectEnabled.state,
         top: true,
         child: Stack(
           children: [
@@ -234,14 +233,17 @@ class HomePage extends HookConsumerWidget {
                     selectionActive: selectionEnabledHook.value,
                   ),
             if (selectionEnabledHook.value)
-              ControlBottomAppBar(
-                onShare: onShareAssets,
-                onFavorite: onFavoriteAssets,
-                onDelete: onDelete,
-                onAddToAlbum: onAddToAlbum,
-                albums: albums,
-                sharedAlbums: sharedAlbums,
-                onCreateNewAlbum: onCreateNewAlbum,
+              SafeArea(
+                bottom: true,
+                child: ControlBottomAppBar(
+                  onShare: onShareAssets,
+                  onFavorite: onFavoriteAssets,
+                  onDelete: onDelete,
+                  onAddToAlbum: onAddToAlbum,
+                  albums: albums,
+                  sharedAlbums: sharedAlbums,
+                  onCreateNewAlbum: onCreateNewAlbum,
+                ),
               ),
           ],
         ),
@@ -249,11 +251,9 @@ class HomePage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: multiselectEnabled.state
-          ? null
-          : HomePageAppBar(
-              onPopBack: reloadAllAsset,
-            ),
+      appBar: HomePageAppBar(
+        onPopBack: reloadAllAsset,
+      ),
       drawer: const ProfileDrawer(),
       body: buildBody(),
     );
