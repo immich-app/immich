@@ -16,6 +16,7 @@ import {
   UploadedFiles,
   Patch,
   StreamableFile,
+  ParseFilePipe,
 } from '@nestjs/common';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AssetService } from './asset.service';
@@ -31,7 +32,6 @@ import { CuratedObjectsResponseDto } from './response-dto/curated-objects-respon
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { AssetResponseDto, ImmichReadStream } from '@app/domain';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
-import { AssetFileUploadDto } from './dto/asset-file-upload.dto';
 import { CreateAssetDto, mapToUploadFile } from './dto/create-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { DeleteAssetResponseDto } from './response-dto/delete-asset-response.dto';
@@ -55,6 +55,7 @@ import { SharedLinkResponseDto } from '@app/domain';
 import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config';
+import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 
 function asStreamableFile({ stream, type, length }: ImmichReadStream) {
   return new StreamableFile(stream, { type, length });
@@ -80,12 +81,13 @@ export class AssetController {
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     description: 'Asset Upload Information',
-    type: AssetFileUploadDto,
+    type: CreateAssetDto,
   })
   async uploadFile(
     @GetAuthUser() authUser: AuthUserDto,
-    @UploadedFiles() files: { assetData: ImmichFile[]; livePhotoData?: ImmichFile[] },
-    @Body(ValidationPipe) dto: CreateAssetDto,
+    @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] }))
+    files: { assetData: ImmichFile[]; livePhotoData?: ImmichFile[] },
+    @Body(new ValidationPipe()) dto: CreateAssetDto,
     @Response({ passthrough: true }) res: Res,
   ): Promise<AssetFileUploadResponseDto> {
     const file = mapToUploadFile(files.assetData[0]);

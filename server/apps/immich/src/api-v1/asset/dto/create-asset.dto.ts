@@ -1,6 +1,6 @@
 import { AssetType } from '@app/infra';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsBoolean, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 import { ImmichFile } from '../../../config/asset-upload.config';
 
 export class CreateAssetDto {
@@ -11,7 +11,8 @@ export class CreateAssetDto {
   deviceId!: string;
 
   @IsNotEmpty()
-  @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
+  @IsEnum(AssetType)
+  @ApiProperty({ enum: Object.keys(AssetType) })
   assetType!: AssetType;
 
   @IsNotEmpty()
@@ -32,6 +33,12 @@ export class CreateAssetDto {
 
   @IsOptional()
   duration?: string;
+
+  @ApiProperty({ type: 'string', format: 'binary' })
+  assetData!: any;
+
+  @ApiProperty({ type: 'string', format: 'binary' })
+  livePhotoData?: any;
 }
 
 export interface UploadFile {
