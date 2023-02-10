@@ -101,10 +101,20 @@ class HomePage extends HookConsumerWidget {
       }
 
       void onFavoriteAssets() {
-        final remoteAssests = remoteOnlySelection(
+        final remoteAssets = remoteOnlySelection(
           localErrorMessage: 'Can not favorite local assets yet, skipping',
         );
-        ref.watch(favoriteProvider.notifier).addToFavorites(remoteAssests);
+        if (remoteAssets.isNotEmpty) {
+          ref.watch(favoriteProvider.notifier).addToFavorites(remoteAssets);
+
+          final assetOrAssets = remoteAssets.length > 1 ? 'assets' : 'asset';
+          ImmichToast.show(
+            context: context,
+            msg: 'Added ${remoteAssets.length} $assetOrAssets to favorites',
+            gravity: ToastGravity.BOTTOM,
+          );
+        }
+
         selectionEnabledHook.value = false;
       }
 
