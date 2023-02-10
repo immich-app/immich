@@ -189,6 +189,9 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     }
 
     final listWidget = ScrollablePositionedList.builder(
+      padding: const EdgeInsets.only(
+        bottom: 220,
+      ),
       itemBuilder: _itemBuilder,
       itemPositionsListener: _itemPositionsListener,
       itemScrollController: _itemScrollController,
