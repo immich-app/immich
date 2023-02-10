@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
+	import ImmichLogo from './immich-logo.svelte';
 
 	export let dropHandler: (event: DragEvent) => void;
 	export let dragOverHandler: (event: DragEvent) => void;
@@ -14,13 +15,6 @@
 	on:dragleave={dragLeaveHandler}
 	class="fixed inset-0 w-full h-full z-[1000] flex flex-col items-center justify-center bg-gray-100/90 dark:bg-immich-dark-bg/90 text-immich-dark-gray dark:text-immich-gray"
 >
-	<img
-		src="/immich-logo.svg"
-		alt="immich logo"
-		height="200"
-		width="200"
-		class="animate-bounce pb-16"
-		draggable="false"
-	/>
+	<ImmichLogo height="200" width="200" class="animate-bounce pb-16" />
 	<div class="text-2xl">Drop files anywhere to upload</div>
 </div>
