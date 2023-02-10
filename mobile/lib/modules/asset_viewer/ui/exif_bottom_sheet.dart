@@ -253,10 +253,11 @@ class ExifBottomSheet extends HookConsumerWidget {
                   buildDragHeader(),
                   buildDate(),
                   const SizedBox(height: 16.0),
-                  Divider(
-                    thickness: 1,
-                    color: Colors.grey[600],
-                  ),
+                  if (assetDetail.latitude != null && assetDetail.longitude != null)
+                    Divider(
+                      thickness: 1,
+                      color: Colors.grey[600],
+                    ),
                   const SizedBox(height: 16.0),
                   buildLocation(),
                   const SizedBox(height: 16.0),
