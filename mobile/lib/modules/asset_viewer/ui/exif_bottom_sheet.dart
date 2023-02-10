@@ -14,6 +14,8 @@ class ExifBottomSheet extends HookConsumerWidget {
   const ExifBottomSheet({Key? key, required this.assetDetail})
       : super(key: key);
 
+  bool get showMap => assetDetail.latitude != null && assetDetail.longitude != null;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     buildMap() {
@@ -112,7 +114,7 @@ class ExifBottomSheet extends HookConsumerWidget {
 
     buildLocation() {
       // Guard no lat/lng
-      if (assetDetail.latitude == null || assetDetail.longitude == null) {
+      if (!showMap) {
         return Container();
       }
 
@@ -225,7 +227,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Flexible(
-                            flex: 5,
+                            flex: showMap ? 5 : 0,
                             child: Padding(
                               padding: const EdgeInsets.only(right: 8.0),
                               child: buildLocation(),
@@ -253,7 +255,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                   buildDragHeader(),
                   buildDate(),
                   const SizedBox(height: 16.0),
-                  if (assetDetail.latitude != null && assetDetail.longitude != null)
+                  if (showMap)
                     Divider(
                       thickness: 1,
                       color: Colors.grey[600],
