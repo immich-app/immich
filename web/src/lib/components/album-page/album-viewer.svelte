@@ -330,12 +330,8 @@
 		}
 	};
 
-	const showAlbumOptionsMenu = (event: CustomEvent) => {
-		contextMenuPosition = {
-			x: event.detail.mouseEvent.x,
-			y: event.detail.mouseEvent.y
-		};
-
+	const showAlbumOptionsMenu = ({ x, y }: MouseEvent) => {
+		contextMenuPosition = { x, y };
 		isShowAlbumOptions = !isShowAlbumOptions;
 	};
 
@@ -467,7 +463,7 @@
 					{#if !isPublicShared}
 						<CircleIconButton
 							title="Album options"
-							on:click={(event) => showAlbumOptionsMenu(event)}
+							on:click={showAlbumOptionsMenu}
 							logo={DotsVertical}
 						/>
 					{/if}
