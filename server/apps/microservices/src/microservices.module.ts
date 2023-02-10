@@ -1,5 +1,14 @@
 import { immichAppConfig } from '@app/common/config';
-import { AssetEntity, ExifEntity, SmartInfoEntity, UserEntity, APIKeyEntity, InfraModule, UserTokenEntity, AlbumEntity } from '@app/infra';
+import {
+  AssetEntity,
+  ExifEntity,
+  SmartInfoEntity,
+  UserEntity,
+  APIKeyEntity,
+  InfraModule,
+  UserTokenEntity,
+  AlbumEntity,
+} from '@app/infra';
 import { StorageModule } from '@app/storage';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
@@ -23,7 +32,15 @@ import { DomainModule } from '@app/domain';
     DomainModule.register({
       imports: [InfraModule],
     }),
-    TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity, APIKeyEntity, UserTokenEntity, AlbumEntity]),
+    TypeOrmModule.forFeature([
+      UserEntity,
+      ExifEntity,
+      AssetEntity,
+      SmartInfoEntity,
+      APIKeyEntity,
+      UserTokenEntity,
+      AlbumEntity,
+    ]),
     StorageModule,
     CommunicationModule,
   ],
@@ -41,4 +58,4 @@ import { DomainModule } from '@app/domain';
     BackgroundTaskProcessor,
   ],
 })
-export class MicroservicesModule { }
+export class MicroservicesModule {}

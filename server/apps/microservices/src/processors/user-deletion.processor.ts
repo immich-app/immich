@@ -29,7 +29,7 @@ export class UserDeletionProcessor {
 
     @InjectRepository(AlbumEntity)
     private albumRepository: Repository<AlbumEntity>,
-  ) { }
+  ) {}
 
   @Process(JobName.USER_DELETION)
   async processUserDeletion(job: Job<IUserDeletionJob>) {
@@ -50,10 +50,14 @@ export class UserDeletionProcessor {
       fs.rmSync(userAssetDir, { recursive: true, force: true });
 
       this.logger.warn(`Removing user from database: ${user.id}`);
-      const userTokens = await this.userTokenRepository.find({ where: { user: { id: user.id } }, relations: { user: true }, withDeleted: true, });
+      const userTokens = await this.userTokenRepository.find({
+        where: { user: { id: user.id } },
+        relations: { user: true },
+        withDeleted: true,
+      });
       await this.userTokenRepository.remove(userTokens);
 
-      const albums = await this.albumRepository.find({ where: { ownerId: user.id } })
+      const albums = await this.albumRepository.find({ where: { ownerId: user.id } });
       await this.albumRepository.remove(albums);
 
       await this.apiKeyRepository.delete({ userId: user.id });
