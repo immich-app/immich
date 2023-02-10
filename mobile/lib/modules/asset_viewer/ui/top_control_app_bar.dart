@@ -85,7 +85,7 @@ class TopControlAppBar extends HookConsumerWidget {
             splashRadius: iconSize,
             onPressed: onDownloadPressed,
             icon: Icon(
-              Icons.cloud_download_rounded,
+              Icons.cloud_download_outlined,
               color: Colors.grey[200],
             ),
           ),
