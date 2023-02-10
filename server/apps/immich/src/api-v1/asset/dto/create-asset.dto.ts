@@ -12,7 +12,7 @@ export class CreateAssetDto {
 
   @IsNotEmpty()
   @IsEnum(AssetType)
-  @ApiProperty({ enum: Object.values(AssetType) })
+  @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   assetType!: AssetType;
 
   @IsNotEmpty()
@@ -34,6 +34,8 @@ export class CreateAssetDto {
   @IsOptional()
   duration?: string;
 
+  // The properties below are added to correctly generate the API docs
+  // and client SDKs. Validation should be handled in the controller.
   @ApiProperty({ type: 'string', format: 'binary' })
   assetData!: any;
 

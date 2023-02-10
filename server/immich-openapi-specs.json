@@ -3762,13 +3762,7 @@
         "type": "object",
         "properties": {
           "assetType": {
-            "enum": [
-              "IMAGE",
-              "VIDEO",
-              "AUDIO",
-              "OTHER"
-            ],
-            "type": "string"
+            "$ref": "#/components/schemas/AssetTypeEnum"
           },
           "assetData": {
             "type": "string",
