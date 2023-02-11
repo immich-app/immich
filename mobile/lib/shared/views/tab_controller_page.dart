@@ -60,6 +60,7 @@ class TabControllerPage extends ConsumerWidget {
       );
     }
 
+    // ignore: unused_element
     bottomNavigationBar(TabsRouter tabsRouter) {
       return BottomNavigationBar(
         selectedLabelStyle: const TextStyle(
