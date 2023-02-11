@@ -92,11 +92,10 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     RenderAssetGridRow row,
     bool scrolling,
   ) {
-
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = constraints.maxWidth / widget.assetsPerRow -
-          widget.margin * (widget.assetsPerRow - 1) / widget.assetsPerRow;
+            widget.margin * (widget.assetsPerRow - 1) / widget.assetsPerRow;
         return Row(
           key: Key("asset-row-${row.assets.first.id}"),
           children: row.assets.mapIndexed((int index, Asset asset) {
@@ -141,7 +140,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
         style: TextStyle(
           fontSize: 26,
           fontWeight: FontWeight.bold,
-          color: Theme.of(context).textTheme.headline1?.color,
+          color: Theme.of(context).textTheme.displayLarge?.color,
         ),
       ),
     );

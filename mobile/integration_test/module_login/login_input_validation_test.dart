@@ -19,7 +19,9 @@ void main() async {
       await tester.pump(const Duration(milliseconds: 300));
 
       expect(
-          find.text("login_form_err_leading_whitespace".tr()), findsOneWidget);
+        find.text("login_form_err_leading_whitespace".tr()),
+        findsOneWidget,
+      );
 
       await helper.loginHelper.enterCredentials(
         email: "demo@immich.app ",
@@ -28,7 +30,9 @@ void main() async {
       await tester.pump(const Duration(milliseconds: 300));
 
       expect(
-          find.text("login_form_err_trailing_whitespace".tr()), findsOneWidget);
+        find.text("login_form_err_trailing_whitespace".tr()),
+        findsOneWidget,
+      );
     });
 
     immichWidgetTest("Test invalid email", (tester, helper) async {

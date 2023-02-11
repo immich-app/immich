@@ -101,7 +101,7 @@ class SharingPage extends HookConsumerWidget {
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
                       'sharing_page_empty_list',
-                      style: Theme.of(context).textTheme.headline3,
+                      style: Theme.of(context).textTheme.displaySmall,
                     ).tr(),
                   ),
                   Padding(

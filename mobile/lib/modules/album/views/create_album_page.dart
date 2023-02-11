@@ -19,7 +19,7 @@ class CreateAlbumPage extends HookConsumerWidget {
   final List<Asset>? initialAssets;
 
   const CreateAlbumPage({
-    Key? key, 
+    Key? key,
     required this.isSharedAlbum,
     this.initialAssets,
   }) : super(key: key);
@@ -84,7 +84,7 @@ class CreateAlbumPage extends HookConsumerWidget {
             padding: const EdgeInsets.only(top: 200, left: 18),
             child: Text(
               'create_shared_album_page_share_add_assets',
-              style: Theme.of(context).textTheme.headline2?.copyWith(
+              style: Theme.of(context).textTheme.displayMedium?.copyWith(
                     fontSize: 12,
                     fontWeight: FontWeight.normal,
                   ),
@@ -214,7 +214,7 @@ class CreateAlbumPage extends HookConsumerWidget {
         ),
         title: Text(
           'share_create_album',
-          style: Theme.of(context).textTheme.headline2?.copyWith(
+          style: Theme.of(context).textTheme.displayMedium?.copyWith(
                 color: Theme.of(context).primaryColor,
               ),
         ).tr(),
