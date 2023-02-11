@@ -83,6 +83,9 @@ ThemeData immichLightTheme = ThemeData(
   ),
   chipTheme: base.chipTheme,
   popupMenuTheme: const PopupMenuThemeData(
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.all(Radius.circular(10)),
+    ),
     surfaceTintColor: Colors.transparent,
     color: Colors.white,
   ),
@@ -148,4 +151,10 @@ ThemeData immichDarkTheme = ThemeData(
     ),
   ),
   chipTheme: base.chipTheme,
+  popupMenuTheme: const PopupMenuThemeData(
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.all(Radius.circular(10)),
+    ),
+    surfaceTintColor: Colors.transparent,
+  ),
 );
