@@ -51,7 +51,13 @@
 			console.error(err);
 			notificationController.show({
 				type: NotificationType.Error,
-				message: 'Copying image to clipboard failed.'
+				message: 'Copying image to clipboard failed. Click here to learn more.',
+				timeout: 5000,
+				action: {
+					type: 'link',
+					target:
+						'https://github.com/LuanEdCosta/copy-image-clipboard#enable-clipboard-api-features-in-firefox'
+				}
 			});
 		}
 	};
