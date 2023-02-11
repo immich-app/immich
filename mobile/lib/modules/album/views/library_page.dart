@@ -253,7 +253,7 @@ class LibraryPage extends HookConsumerWidget {
               delegate: SliverChildBuilderDelegate(
                 childCount: sorted.length + 1,
                 (context, index) {
-                  if (index  == 0) {
+                  if (index == 0) {
                     return buildCreateAlbumButton();
                   }
 

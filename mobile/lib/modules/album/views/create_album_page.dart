@@ -228,7 +228,9 @@ class CreateAlbumPage extends HookConsumerWidget {
                 'create_shared_album_page_share'.tr(),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor,
+                  color: albumTitleController.text.isEmpty
+                      ? Theme.of(context).disabledColor
+                      : Theme.of(context).primaryColor,
                 ),
               ),
             ),

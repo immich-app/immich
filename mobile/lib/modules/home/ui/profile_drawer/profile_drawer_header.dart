@@ -22,7 +22,7 @@ class ProfileDrawerHeader extends HookConsumerWidget {
     AuthenticationState authState = ref.watch(authenticationProvider);
     final uploadProfileImageStatus =
         ref.watch(uploadProfileImageProvider).status;
-    var dummmy = Random().nextInt(1024);
+    var dummy = Random().nextInt(1024);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     buildUserProfileImage() {
@@ -39,7 +39,7 @@ class ProfileDrawerHeader extends HookConsumerWidget {
           return CircleAvatar(
             radius: 35,
             backgroundImage: NetworkImage(
-              '$endpoint/user/profile-image/${authState.userId}?d=${dummmy++}',
+              '$endpoint/user/profile-image/${authState.userId}?d=${dummy++}',
             ),
             backgroundColor: Colors.transparent,
           );
@@ -56,7 +56,7 @@ class ProfileDrawerHeader extends HookConsumerWidget {
         return CircleAvatar(
           radius: 35,
           backgroundImage: NetworkImage(
-            '$endpoint/user/profile-image/${authState.userId}?d=${dummmy++}',
+            '$endpoint/user/profile-image/${authState.userId}?d=${dummy++}',
           ),
           backgroundColor: Colors.transparent,
         );
