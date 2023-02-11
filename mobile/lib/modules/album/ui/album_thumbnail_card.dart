@@ -60,53 +60,59 @@ class AlbumThumbnailCard extends StatelessWidget {
 
         return GestureDetector(
           onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 32.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: album.albumThumbnailAssetId == null
-                        ? buildEmptyThumbnail()
-                        : buildAlbumThumbnail(),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: SizedBox(
-                    width: cardSize,
-                    child: Text(
-                      album.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
+          child: Flex(
+            direction: Axis.vertical,
+            children: [
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: cardSize,
+                      height: cardSize,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: album.albumThumbnailAssetId == null
+                            ? buildEmptyThumbnail()
+                            : buildAlbumThumbnail(),
                       ),
                     ),
-                  ),
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      album.assetCount == 1
-                          ? 'album_thumbnail_card_item'
-                          : 'album_thumbnail_card_items',
-                      style: const TextStyle(
-                        fontSize: 12,
-                      ),
-                    ).tr(args: ['${album.assetCount}']),
-                    if (album.shared)
-                      const Text(
-                        'album_thumbnail_card_shared',
-                        style: TextStyle(
-                          fontSize: 12,
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: SizedBox(
+                        width: cardSize,
+                        child: Text(
+                          album.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ).tr()
+                      ),
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          album.assetCount == 1
+                              ? 'album_thumbnail_card_item'
+                              : 'album_thumbnail_card_items',
+                          style: const TextStyle(
+                            fontSize: 12,
+                          ),
+                        ).tr(args: ['${album.assetCount}']),
+                        if (album.shared)
+                          const Text(
+                            'album_thumbnail_card_shared',
+                            style: TextStyle(
+                              fontSize: 12,
+                            ),
+                          ).tr()
+                      ],
+                    )
                   ],
-                )
-              ],
-            ),
+                ),
+              ),
+            ],
           ),
         );
       },

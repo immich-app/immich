@@ -172,18 +172,15 @@ class LibraryPage extends HookConsumerWidget {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 12.0,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white
-                    : Colors.black,
+                color: isDarkMode ? Colors.white : Colors.black,
               ),
             ),
           ),
           style: OutlinedButton.styleFrom(
             padding: const EdgeInsets.all(12),
+            backgroundColor: isDarkMode ? Colors.grey[900] : Colors.grey[50],
             side: BorderSide(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.grey[600]!
-                  : Colors.grey[300]!,
+              color: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
             ),
             alignment: Alignment.centerLeft,
           ),
