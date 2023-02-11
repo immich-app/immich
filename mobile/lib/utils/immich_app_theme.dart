@@ -89,6 +89,11 @@ ThemeData immichLightTheme = ThemeData(
     surfaceTintColor: Colors.transparent,
     color: Colors.white,
   ),
+  navigationBarTheme: NavigationBarThemeData(
+    indicatorColor: Colors.indigo.withOpacity(0.15),
+    backgroundColor: immichBackgroundColor,
+    surfaceTintColor: Colors.transparent,
+  ),
 );
 
 ThemeData immichDarkTheme = ThemeData(
@@ -155,6 +160,14 @@ ThemeData immichDarkTheme = ThemeData(
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.all(Radius.circular(10)),
     ),
+    surfaceTintColor: Colors.transparent,
+  ),
+  navigationBarTheme: NavigationBarThemeData(
+    indicatorColor: immichDarkThemePrimaryColor.withOpacity(0.6),
+    iconTheme: const MaterialStatePropertyAll(
+      IconThemeData(color: Colors.white),
+    ),
+    backgroundColor: Colors.grey[900],
     surfaceTintColor: Colors.transparent,
   ),
 );

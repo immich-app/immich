@@ -100,6 +100,38 @@ class TabControllerPage extends ConsumerWidget {
       );
     }
 
+    experimentalNavigationBar(TabsRouter tabsRouter) {
+      return NavigationBar(
+        selectedIndex: tabsRouter.activeIndex,
+        onDestinationSelected: (index) {
+          HapticFeedback.selectionClick();
+          tabsRouter.setActiveIndex(index);
+        },
+        destinations: [
+          NavigationDestination(
+            label: 'tab_controller_nav_photos'.tr(),
+            icon: const Icon(Icons.photo_outlined),
+            selectedIcon: const Icon(Icons.photo),
+          ),
+          NavigationDestination(
+            label: 'tab_controller_nav_search'.tr(),
+            icon: const Icon(Icons.search_rounded),
+            selectedIcon: const Icon(Icons.search),
+          ),
+          NavigationDestination(
+            label: 'tab_controller_nav_sharing'.tr(),
+            icon: const Icon(Icons.group_outlined),
+            selectedIcon: const Icon(Icons.group),
+          ),
+          NavigationDestination(
+            label: 'tab_controller_nav_library'.tr(),
+            icon: const Icon(Icons.photo_album_outlined),
+            selectedIcon: const Icon(Icons.photo_album_rounded),
+          )
+        ],
+      );
+    }
+
     final multiselectEnabled = ref.watch(multiselectProvider);
     return AutoTabsRouter(
       routes: [
@@ -126,7 +158,7 @@ class TabControllerPage extends ConsumerWidget {
               final Widget body;
               if (constraints.maxWidth < medium) {
                 // Normal phone width
-                bottom = bottomNavigationBar(tabsRouter);
+                bottom = experimentalNavigationBar(tabsRouter);
                 body = FadeTransition(
                   opacity: animation,
                   child: child,
