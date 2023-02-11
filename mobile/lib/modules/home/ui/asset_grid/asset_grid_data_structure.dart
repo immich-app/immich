@@ -114,7 +114,10 @@ class RenderList {
 
     final groups = _groupAssets(allAssets, groupBy);
 
-    groups.forEach((date, assets) {
+    groups.entries.sortedBy((e) =>e.key).reversed.forEach((entry) {
+      final date = entry.key;
+      final assets = entry.value;
+
       try {
         // Month title
         if (groupBy == GroupAssetsBy.day &&
