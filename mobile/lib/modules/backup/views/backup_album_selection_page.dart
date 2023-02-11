@@ -81,9 +81,9 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           child: GestureDetector(
             onTap: removeSelection,
             child: Chip(
-              visualDensity: VisualDensity.compact,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
+                side: BorderSide.none,
               ),
               label: Text(
                 album.name,
@@ -119,7 +119,6 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: Chip(
-              visualDensity: VisualDensity.compact,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),

@@ -133,4 +133,5 @@ ThemeData immichLightTheme = ThemeData(
       foregroundColor: Colors.white,
     ),
   ),
+  chipTheme: const ChipThemeData(),
 );
