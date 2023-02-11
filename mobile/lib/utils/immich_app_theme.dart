@@ -44,7 +44,8 @@ ThemeData immichLightTheme = ThemeData(
     ),
     backgroundColor: immichBackgroundColor,
     foregroundColor: Colors.indigo,
-    elevation: 1,
+    elevation: 0,
+    scrolledUnderElevation: 0,
     centerTitle: true,
   ),
   bottomNavigationBarTheme: BottomNavigationBarThemeData(
@@ -119,7 +120,8 @@ ThemeData immichDarkTheme = ThemeData(
     ),
     backgroundColor: const Color.fromARGB(255, 32, 33, 35),
     foregroundColor: immichDarkThemePrimaryColor,
-    elevation: 1,
+    elevation: 0,
+    scrolledUnderElevation: 0,
     centerTitle: true,
   ),
   bottomNavigationBarTheme: BottomNavigationBarThemeData(

@@ -28,7 +28,6 @@ class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
     final ServerInfoState serverInfoState = ref.watch(serverInfoProvider);
 
     return AppBar(
-      centerTitle: true,
       backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(
