@@ -234,11 +234,7 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [String] assetId (required):
-  ///
-  /// * [bool] isThumb:
-  ///
-  /// * [bool] isWeb:
-  Future<Response> downloadFileWithHttpInfo(String assetId, { bool? isThumb, bool? isWeb, }) async {
+  Future<Response> downloadFileWithHttpInfo(String assetId,) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/download/{assetId}'
       .replaceAll('{assetId}', assetId);
@@ -249,13 +245,6 @@ class AssetApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
-
-    if (isThumb != null) {
-      queryParams.addAll(_queryParams('', 'isThumb', isThumb));
-    }
-    if (isWeb != null) {
-      queryParams.addAll(_queryParams('', 'isWeb', isWeb));
-    }
 
     const contentTypes = <String>[];
 
@@ -276,12 +265,8 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [String] assetId (required):
-  ///
-  /// * [bool] isThumb:
-  ///
-  /// * [bool] isWeb:
-  Future<Object?> downloadFile(String assetId, { bool? isThumb, bool? isWeb, }) async {
-    final response = await downloadFileWithHttpInfo(assetId,  isThumb: isThumb, isWeb: isWeb, );
+  Future<Object?> downloadFile(String assetId,) async {
+    final response = await downloadFileWithHttpInfo(assetId,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

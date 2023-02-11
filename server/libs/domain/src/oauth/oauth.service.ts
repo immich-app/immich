@@ -1,12 +1,14 @@
 import { SystemConfig } from '@app/infra/db/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
-import { AuthType, AuthUserDto, ICryptoRepository, LoginResponseDto } from '../auth';
+import { AuthType, AuthUserDto, LoginResponseDto } from '../auth';
+import { ICryptoRepository } from '../crypto';
 import { AuthCore } from '../auth/auth.core';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
 import { IUserRepository, UserCore, UserResponseDto } from '../user';
 import { OAuthCallbackDto, OAuthConfigDto } from './dto';
 import { OAuthCore } from './oauth.core';
 import { OAuthConfigResponseDto } from './response-dto';
+import { IUserTokenRepository } from '../user-token';
 
 @Injectable()
 export class OAuthService {
@@ -20,10 +22,11 @@ export class OAuthService {
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) userRepository: IUserRepository,
+    @Inject(IUserTokenRepository) userTokenRepository: IUserTokenRepository,
     @Inject(INITIAL_SYSTEM_CONFIG) initialConfig: SystemConfig,
   ) {
-    this.authCore = new AuthCore(cryptoRepository, configRepository, initialConfig);
-    this.userCore = new UserCore(userRepository);
+    this.authCore = new AuthCore(cryptoRepository, configRepository, userTokenRepository, initialConfig);
+    this.userCore = new UserCore(userRepository, cryptoRepository);
     this.oauthCore = new OAuthCore(configRepository, initialConfig);
   }
 

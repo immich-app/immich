@@ -7,7 +7,7 @@ import { AssetEntity } from './asset.entity';
 @Entity('exif')
 export class ExifEntity {
   @PrimaryGeneratedColumn()
-  id!: string;
+  id!: number;
 
   @Index({ unique: true })
   @Column({ type: 'uuid' })
@@ -72,8 +72,8 @@ export class ExifEntity {
   @Column({ type: 'integer', nullable: true })
   iso!: number | null;
 
-  @Column({ type: 'float', nullable: true })
-  exposureTime!: number | null;
+  @Column({ type: 'varchar', nullable: true })
+  exposureTime!: string | null;
 
   /* Video info */
   @Column({ type: 'float8', nullable: true })

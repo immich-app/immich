@@ -7,7 +7,6 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/services/share.service.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/share_dialog.dart';
-import 'package:openapi/api.dart';
 
 class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
   final ImageViewerService _imageViewerService;
@@ -20,7 +19,7 @@ class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
           ),
         );
 
-  void downloadAsset(AssetResponseDto asset, BuildContext context) async {
+  void downloadAsset(Asset asset, BuildContext context) async {
     state = state.copyWith(downloadAssetStatus: DownloadAssetStatus.loading);
 
     bool isSuccess = await _imageViewerService.downloadAssetToDevice(asset);

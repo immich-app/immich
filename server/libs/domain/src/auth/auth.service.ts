@@ -7,35 +7,48 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import * as cookieParser from 'cookie';
 import { IncomingHttpHeaders } from 'http';
-import { Socket } from 'socket.io';
 import { OAuthCore } from '../oauth/oauth.core';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
-import { IUserRepository, UserCore, UserResponseDto } from '../user';
-import { AuthType, jwtSecret } from './auth.constant';
+import { IUserRepository, UserCore } from '../user';
+import { AuthType, IMMICH_ACCESS_COOKIE } from './auth.constant';
 import { AuthCore } from './auth.core';
-import { ICryptoRepository } from './crypto.repository';
-import { AuthUserDto, ChangePasswordDto, JwtPayloadDto, LoginCredentialDto, SignUpDto } from './dto';
+import { ICryptoRepository } from '../crypto/crypto.repository';
+import { AuthUserDto, ChangePasswordDto, LoginCredentialDto, SignUpDto } from './dto';
 import { AdminSignupResponseDto, LoginResponseDto, LogoutResponseDto, mapAdminSignupResponse } from './response-dto';
+import { IUserTokenRepository, UserTokenCore } from '../user-token';
+import cookieParser from 'cookie';
+import { ISharedLinkRepository, ShareCore } from '../share';
+import { APIKeyCore } from '../api-key/api-key.core';
+import { IKeyRepository } from '../api-key';
 
 @Injectable()
 export class AuthService {
+  private userTokenCore: UserTokenCore;
   private authCore: AuthCore;
   private oauthCore: OAuthCore;
   private userCore: UserCore;
+  private shareCore: ShareCore;
+  private keyCore: APIKeyCore;
 
   private logger = new Logger(AuthService.name);
 
   constructor(
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) userRepository: IUserRepository,
-    @Inject(INITIAL_SYSTEM_CONFIG) initialConfig: SystemConfig,
+    @Inject(IUserTokenRepository) userTokenRepository: IUserTokenRepository,
+    @Inject(ISharedLinkRepository) shareRepository: ISharedLinkRepository,
+    @Inject(IKeyRepository) keyRepository: IKeyRepository,
+    @Inject(INITIAL_SYSTEM_CONFIG)
+    initialConfig: SystemConfig,
   ) {
-    this.authCore = new AuthCore(cryptoRepository, configRepository, initialConfig);
+    this.userTokenCore = new UserTokenCore(cryptoRepository, userTokenRepository);
+    this.authCore = new AuthCore(cryptoRepository, configRepository, userTokenRepository, initialConfig);
     this.oauthCore = new OAuthCore(configRepository, initialConfig);
-    this.userCore = new UserCore(userRepository);
+    this.userCore = new UserCore(userRepository, cryptoRepository);
+    this.shareCore = new ShareCore(shareRepository, cryptoRepository);
+    this.keyCore = new APIKeyCore(cryptoRepository, keyRepository);
   }
 
   public async login(
@@ -49,7 +62,7 @@ export class AuthService {
 
     let user = await this.userCore.getByEmail(loginCredential.email, true);
     if (user) {
-      const isAuthenticated = await this.authCore.validatePassword(loginCredential.password, user);
+      const isAuthenticated = this.authCore.validatePassword(loginCredential.password, user);
       if (!isAuthenticated) {
         user = null;
       }
@@ -63,7 +76,11 @@ export class AuthService {
     return this.authCore.createLoginResponse(user, AuthType.PASSWORD, isSecure);
   }
 
-  public async logout(authType: AuthType): Promise<LogoutResponseDto> {
+  public async logout(authUser: AuthUserDto, authType: AuthType): Promise<LogoutResponseDto> {
+    if (authUser.accessTokenId) {
+      await this.userTokenCore.deleteToken(authUser.accessTokenId);
+    }
+
     if (authType === AuthType.OAUTH) {
       const url = await this.oauthCore.getLogoutEndpoint();
       if (url) {
@@ -81,7 +98,7 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const valid = await this.authCore.validatePassword(password, user);
+    const valid = this.authCore.validatePassword(password, user);
     if (!valid) {
       throw new BadRequestException('Wrong password');
     }
@@ -112,49 +129,40 @@ export class AuthService {
     }
   }
 
-  async validateSocket(client: Socket): Promise<UserResponseDto | null> {
-    try {
-      const headers = client.handshake.headers;
-      const accessToken =
-        this.extractJwtFromCookie(cookieParser.parse(headers.cookie || '')) || this.extractJwtFromHeader(headers);
+  public async validate(headers: IncomingHttpHeaders, params: Record<string, string>): Promise<AuthUserDto | null> {
+    const shareKey = (headers['x-immich-share-key'] || params.key) as string;
+    const userToken = (headers['x-immich-user-token'] ||
+      params.userToken ||
+      this.getBearerToken(headers) ||
+      this.getCookieToken(headers)) as string;
+    const apiKey = (headers['x-api-key'] || params.apiKey) as string;
 
-      if (accessToken) {
-        const payload = await this.cryptoRepository.verifyJwtAsync<JwtPayloadDto>(accessToken, { secret: jwtSecret });
-        if (payload?.userId && payload?.email) {
-          const user = await this.userCore.get(payload.userId);
-          if (user) {
-            return user;
-          }
-        }
-      }
-    } catch (e) {
-      return null;
+    if (shareKey) {
+      return this.shareCore.validate(shareKey);
     }
+
+    if (userToken) {
+      return this.userTokenCore.validate(userToken);
+    }
+
+    if (apiKey) {
+      return this.keyCore.validate(apiKey);
+    }
+
+    throw new UnauthorizedException('Authentication required');
+  }
+
+  private getBearerToken(headers: IncomingHttpHeaders): string | null {
+    const [type, token] = (headers.authorization || '').split(' ');
+    if (type.toLowerCase() === 'bearer') {
+      return token;
+    }
+
     return null;
   }
 
-  async validatePayload(payload: JwtPayloadDto) {
-    const { userId } = payload;
-    const user = await this.userCore.get(userId);
-    if (!user) {
-      throw new UnauthorizedException('Failure to validate JWT payload');
-    }
-
-    const authUser = new AuthUserDto();
-    authUser.id = user.id;
-    authUser.email = user.email;
-    authUser.isAdmin = user.isAdmin;
-    authUser.isPublicUser = false;
-    authUser.isAllowUpload = true;
-
-    return authUser;
-  }
-
-  extractJwtFromCookie(cookies: Record<string, string>) {
-    return this.authCore.extractJwtFromCookie(cookies);
-  }
-
-  extractJwtFromHeader(headers: IncomingHttpHeaders) {
-    return this.authCore.extractJwtFromHeader(headers);
+  private getCookieToken(headers: IncomingHttpHeaders): string | null {
+    const cookies = cookieParser.parse(headers.cookie || '');
+    return cookies[IMMICH_ACCESS_COOKIE] || null;
   }
 }

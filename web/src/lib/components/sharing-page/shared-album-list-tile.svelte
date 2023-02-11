@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { AlbumResponseDto, api, ThumbnailFormat, UserResponseDto } from '@api';
 	import { fade } from 'svelte/transition';
+	import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
 
 	export let album: AlbumResponseDto;
 	export let user: UserResponseDto;
 
 	const loadImageData = async (thubmnailId: string | null) => {
 		if (thubmnailId == null) {
-			return '/no-thumbnail.png';
+			return noThumbnailUrl;
 		}
 
 		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId, ThumbnailFormat.Webp, {
@@ -26,7 +27,7 @@
 </script>
 
 <div
-	class="flex min-w-[550px] border-b border-gray-300 dark:border-immich-dark-gray place-items-center py-4  gap-6 transition-all hover:border-immich-primary dark:hover:border-immich-dark-primary"
+	class="grid grid-cols-[75px_1fr] w-[550px] border-b border-gray-300 dark:border-immich-dark-gray place-items-center py-4  gap-6 transition-all hover:border-immich-primary dark:hover:border-immich-dark-primary"
 >
 	<div>
 		{#await loadImageData(album.albumThumbnailAssetId)}
@@ -46,8 +47,10 @@
 		{/await}
 	</div>
 
-	<div>
-		<p class="font-medium text-gray-800 dark:text-immich-dark-primary">{album.albumName}</p>
+	<div class="justify-self-start">
+		<p class="font-medium text-gray-800 dark:text-immich-dark-primary">
+			{album.albumName}
+		</p>
 
 		{#await getAlbumOwnerInfo() then albumOwner}
 			{#if user.email == albumOwner.email}

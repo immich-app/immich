@@ -1,7 +1,16 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { AssetAlbumEntity } from './asset-album.entity';
 import { SharedLinkEntity } from './shared-link.entity';
 import { UserAlbumEntity } from './user-album.entity';
+import { UserEntity } from './user.entity';
 
 @Entity('albums')
 export class AlbumEntity {
@@ -11,11 +20,17 @@ export class AlbumEntity {
   @Column()
   ownerId!: string;
 
+  @ManyToOne(() => UserEntity, { eager: true })
+  owner!: UserEntity;
+
   @Column({ default: 'Untitled Album' })
   albumName!: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: string;
+
+  @UpdateDateColumn({ type: 'timestamptz' })
+  updatedAt!: string;
 
   @Column({ comment: 'Asset ID to be used as thumbnail', type: 'varchar', nullable: true })
   albumThumbnailAssetId!: string | null;

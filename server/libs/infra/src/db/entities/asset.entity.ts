@@ -1,4 +1,14 @@
-import { Column, Entity, Index, JoinTable, ManyToMany, OneToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinTable,
+  ManyToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  Unique,
+  UpdateDateColumn,
+} from 'typeorm';
 import { ExifEntity } from './exif.entity';
 import { SharedLinkEntity } from './shared-link.entity';
 import { SmartInfoEntity } from './smart-info.entity';
@@ -32,13 +42,16 @@ export class AssetEntity {
   webpPath!: string | null;
 
   @Column({ type: 'varchar', nullable: true, default: '' })
-  encodedVideoPath!: string;
+  encodedVideoPath!: string | null;
 
   @Column({ type: 'timestamptz' })
   createdAt!: string;
 
   @Column({ type: 'timestamptz' })
   modifiedAt!: string;
+
+  @UpdateDateColumn({ type: 'timestamptz' })
+  updatedAt!: string;
 
   @Column({ type: 'boolean', default: false })
   isFavorite!: boolean;

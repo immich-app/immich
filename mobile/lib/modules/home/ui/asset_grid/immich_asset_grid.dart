@@ -7,7 +7,7 @@ import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'asset_grid_data_structure.dart';
-import 'daily_title_text.dart';
+import 'group_divider_title.dart';
 import 'disable_multi_select_button.dart';
 import 'draggable_scrollbar_custom.dart';
 
@@ -23,7 +23,6 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
 
   bool _scrolling = false;
   final Set<String> _selectedAssets = HashSet();
-
 
   Set<Asset> _getSelectedAssets() {
     return _selectedAssets
@@ -67,11 +66,6 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
         assets.firstWhereOrNull((e) => !_selectedAssets.contains(e.id)) == null;
   }
 
-  double _getItemSize(BuildContext context) {
-    return MediaQuery.of(context).size.width / widget.assetsPerRow -
-        widget.margin * (widget.assetsPerRow - 1) / widget.assetsPerRow;
-  }
-
   Widget _buildThumbnailOrPlaceholder(
     Asset asset,
     bool placeholder,
@@ -98,24 +92,29 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     RenderAssetGridRow row,
     bool scrolling,
   ) {
-    double size = _getItemSize(context);
 
-    return Row(
-      key: Key("asset-row-${row.assets.first.id}"),
-      children: row.assets.map((Asset asset) {
-        bool last = asset == row.assets.last;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = constraints.maxWidth / widget.assetsPerRow -
+          widget.margin * (widget.assetsPerRow - 1) / widget.assetsPerRow;
+        return Row(
+          key: Key("asset-row-${row.assets.first.id}"),
+          children: row.assets.mapIndexed((int index, Asset asset) {
+            bool last = asset.id == row.assets.last.id;
 
-        return Container(
-          key: Key("asset-${asset.id}"),
-          width: size,
-          height: size,
-          margin: EdgeInsets.only(
-            top: widget.margin,
-            right: last ? 0.0 : widget.margin,
-          ),
-          child: _buildThumbnailOrPlaceholder(asset, scrolling),
+            return Container(
+              key: Key("asset-${asset.id}"),
+              width: size * row.widthDistribution[index],
+              height: size,
+              margin: EdgeInsets.only(
+                top: widget.margin,
+                right: last ? 0.0 : widget.margin,
+              ),
+              child: _buildThumbnailOrPlaceholder(asset, scrolling),
+            );
+          }).toList(),
         );
-      }).toList(),
+      },
     );
   }
 
@@ -124,7 +123,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     String title,
     List<Asset> assets,
   ) {
-    return DailyTitleText(
+    return GroupDividerTitle(
       text: title,
       multiselectEnabled: widget.selectionActive,
       onSelect: () => _selectAssets(assets),
@@ -151,7 +150,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   Widget _itemBuilder(BuildContext c, int position) {
     final item = widget.renderList.elements[position];
 
-    if (item.type == RenderAssetGridElementType.dayTitle) {
+    if (item.type == RenderAssetGridElementType.groupDividerTitle) {
       return _buildTitle(c, item.title!, item.relatedAssetList!);
     } else if (item.type == RenderAssetGridElementType.monthTitle) {
       return _buildMonthTitle(c, item.title!);
@@ -190,6 +189,9 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     }
 
     final listWidget = ScrollablePositionedList.builder(
+      padding: const EdgeInsets.only(
+        bottom: 220,
+      ),
       itemBuilder: _itemBuilder,
       itemPositionsListener: _itemPositionsListener,
       itemScrollController: _itemScrollController,
@@ -224,13 +226,25 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     }
   }
 
+  Future<bool> onWillPop() async {
+    if (widget.selectionActive && _selectedAssets.isNotEmpty) {
+      _deselectAll();
+      return false;
+    }
+
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        _buildAssetGrid(),
-        if (widget.selectionActive) _buildMultiSelectIndicator(),
-      ],
+    return WillPopScope(
+      onWillPop: onWillPop,
+      child: Stack(
+        children: [
+          _buildAssetGrid(),
+          if (widget.selectionActive) _buildMultiSelectIndicator(),
+        ],
+      ),
     );
   }
 }

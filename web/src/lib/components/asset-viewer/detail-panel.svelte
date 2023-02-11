@@ -152,7 +152,7 @@
 						<p>{`ƒ/${asset.exifInfo.fNumber.toLocaleString(locale)}` || ''}</p>
 
 						{#if asset.exifInfo.exposureTime}
-							<p>{`1/${asset.exifInfo.exposureTime}`}</p>
+							<p>{`${asset.exifInfo.exposureTime}`}</p>
 						{/if}
 
 						{#if asset.exifInfo.focalLength}

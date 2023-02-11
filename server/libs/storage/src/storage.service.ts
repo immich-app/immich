@@ -25,7 +25,7 @@ const moveFile = promisify<string, string, mv.Options>(mv);
 
 @Injectable()
 export class StorageService {
-  readonly logger = new Logger(StorageService.name);
+  private readonly logger = new Logger(StorageService.name);
 
   private storageTemplate: HandlebarsTemplateDelegate<any>;
 

@@ -59,13 +59,18 @@ export class AuthController {
     return this.authService.changePassword(authUser, dto);
   }
 
+  @Authenticated()
   @Post('logout')
-  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<LogoutResponseDto> {
+  async logout(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @GetAuthUser() authUser: AuthUserDto,
+  ): Promise<LogoutResponseDto> {
     const authType: AuthType = req.cookies[IMMICH_AUTH_TYPE_COOKIE];
 
     res.clearCookie(IMMICH_ACCESS_COOKIE);
     res.clearCookie(IMMICH_AUTH_TYPE_COOKIE);
 
-    return this.authService.logout(authType);
+    return this.authService.logout(authUser, authType);
   }
 }

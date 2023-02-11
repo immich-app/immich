@@ -23,7 +23,7 @@ class TilesPerRow extends HookConsumerWidget {
     }
 
     void sliderChangedEnd(double _) {
-      ref.invalidate(assetProvider);
+      ref.watch(assetProvider.notifier).rebuildAssetGridDataStructure();
     }
 
     useEffect(

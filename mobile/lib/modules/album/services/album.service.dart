@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:openapi/api.dart';
@@ -18,29 +20,31 @@ class AlbumService {
 
   AlbumService(this._apiService);
 
-  Future<List<AlbumResponseDto>?> getAlbums({required bool isShared}) async {
+  Future<List<Album>?> getAlbums({required bool isShared}) async {
     try {
-      return await _apiService.albumApi
+      final dto = await _apiService.albumApi
           .getAllAlbums(shared: isShared ? isShared : null);
+      return dto?.map(Album.remote).toList();
     } catch (e) {
       debugPrint("Error getAllSharedAlbum  ${e.toString()}");
       return null;
     }
   }
 
-  Future<AlbumResponseDto?> createAlbum(
+  Future<Album?> createAlbum(
     String albumName,
-    Iterable<Asset> assets,
-    List<String> sharedUserIds,
-  ) async {
+    Iterable<Asset> assets, [
+    Iterable<User> sharedUsers = const [],
+  ]) async {
     try {
-      return await _apiService.albumApi.createAlbum(
+      final dto = await _apiService.albumApi.createAlbum(
         CreateAlbumDto(
           albumName: albumName,
-          assetIds: assets.map((asset) => asset.id).toList(),
-          sharedWithUserIds: sharedUserIds,
+          assetIds: assets.map((asset) => asset.remoteId!).toList(),
+          sharedWithUserIds: sharedUsers.map((e) => e.id).toList(),
         ),
       );
+      return dto != null ? Album.remote(dto) : null;
     } catch (e) {
       debugPrint("Error createSharedAlbum  ${e.toString()}");
       return null;
@@ -50,14 +54,14 @@ class AlbumService {
   /*
    * Creates names like Untitled, Untitled (1), Untitled (2), ...
    */
-  String _getNextAlbumName(List<AlbumResponseDto>? albums) {
+  String _getNextAlbumName(List<Album>? albums) {
     const baseName = "Untitled";
 
     if (albums != null) {
       for (int round = 0; round < albums.length; round++) {
         final proposedName = "$baseName${round == 0 ? "" : " ($round)"}";
 
-        if (albums.where((a) => a.albumName == proposedName).isEmpty) {
+        if (albums.where((a) => a.name == proposedName).isEmpty) {
           return proposedName;
         }
       }
@@ -65,7 +69,7 @@ class AlbumService {
     return baseName;
   }
 
-  Future<AlbumResponseDto?> createAlbumWithGeneratedName(
+  Future<Album?> createAlbumWithGeneratedName(
     Iterable<Asset> assets,
   ) async {
     return createAlbum(
@@ -75,9 +79,10 @@ class AlbumService {
     );
   }
 
-  Future<AlbumResponseDto?> getAlbumDetail(String albumId) async {
+  Future<Album?> getAlbumDetail(String albumId) async {
     try {
-      return await _apiService.albumApi.getAlbumInfo(albumId);
+      final dto = await _apiService.albumApi.getAlbumInfo(albumId);
+      return dto != null ? Album.remote(dto) : null;
     } catch (e) {
       debugPrint('Error [getAlbumDetail] ${e.toString()}');
       return null;
@@ -86,12 +91,12 @@ class AlbumService {
 
   Future<AddAssetsResponseDto?> addAdditionalAssetToAlbum(
     Iterable<Asset> assets,
-    String albumId,
+    Album album,
   ) async {
     try {
       var result = await _apiService.albumApi.addAssetsToAlbum(
-        albumId,
-        AddAssetsDto(assetIds: assets.map((asset) => asset.id).toList()),
+        album.remoteId!,
+        AddAssetsDto(assetIds: assets.map((asset) => asset.remoteId!).toList()),
       );
       return result;
     } catch (e) {
@@ -102,11 +107,11 @@ class AlbumService {
 
   Future<bool> addAdditionalUserToAlbum(
     List<String> sharedUserIds,
-    String albumId,
+    Album album,
   ) async {
     try {
       var result = await _apiService.albumApi.addUsersToAlbum(
-        albumId,
+        album.remoteId!,
         AddUsersDto(sharedUserIds: sharedUserIds),
       );
 
@@ -117,9 +122,9 @@ class AlbumService {
     }
   }
 
-  Future<bool> deleteAlbum(String albumId) async {
+  Future<bool> deleteAlbum(Album album) async {
     try {
-      await _apiService.albumApi.deleteAlbum(albumId);
+      await _apiService.albumApi.deleteAlbum(album.remoteId!);
       return true;
     } catch (e) {
       debugPrint("Error deleteAlbum  ${e.toString()}");
@@ -127,10 +132,9 @@ class AlbumService {
     }
   }
 
-  Future<bool> leaveAlbum(String albumId) async {
+  Future<bool> leaveAlbum(Album album) async {
     try {
-      await _apiService.albumApi.removeUserFromAlbum(albumId, "me");
-
+      await _apiService.albumApi.removeUserFromAlbum(album.remoteId!, "me");
       return true;
     } catch (e) {
       debugPrint("Error deleteAlbum  ${e.toString()}");
@@ -139,13 +143,15 @@ class AlbumService {
   }
 
   Future<bool> removeAssetFromAlbum(
-    String albumId,
-    List<String> assetIds,
+    Album album,
+    Iterable<Asset> assets,
   ) async {
     try {
       await _apiService.albumApi.removeAssetFromAlbum(
-        albumId,
-        RemoveAssetsDto(assetIds: assetIds),
+        album.remoteId!,
+        RemoveAssetsDto(
+          assetIds: assets.map((e) => e.remoteId!).toList(growable: false),
+        ),
       );
 
       return true;
@@ -156,17 +162,17 @@ class AlbumService {
   }
 
   Future<bool> changeTitleAlbum(
-    String albumId,
-    String ownerId,
+    Album album,
     String newAlbumTitle,
   ) async {
     try {
       await _apiService.albumApi.updateAlbumInfo(
-        albumId,
+        album.remoteId!,
         UpdateAlbumDto(
           albumName: newAlbumTitle,
         ),
       );
+      album.name = newAlbumTitle;
 
       return true;
     } catch (e) {

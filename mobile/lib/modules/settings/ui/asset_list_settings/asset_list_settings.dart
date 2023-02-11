@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/modules/settings/ui/asset_list_settings/asset_list_layout_settings.dart';
 import 'package:immich_mobile/modules/settings/ui/asset_list_settings/asset_list_storage_indicator.dart';
 import 'asset_list_tiles_per_row.dart';
 
@@ -27,6 +28,7 @@ class AssetListSettings extends StatelessWidget {
       children: const [
         TilesPerRow(),
         StorageIndicator(),
+        LayoutSettings(),
       ],
     );
   }

@@ -29,7 +29,6 @@ class SplashScreenPage extends HookConsumerWidget {
               .read(authenticationProvider.notifier)
               .setSuccessLoginInfo(
                 accessToken: loginInfo.accessToken,
-                isSavedLoginInfo: true,
                 serverUrl: loginInfo.serverUrl,
               );
           if (isSuccess) {
@@ -47,7 +46,7 @@ class SplashScreenPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        if (loginInfo?.isSaveLogin == true) {
+        if (loginInfo != null) {
           performLoggingIn();
         } else {
           AutoRouter.of(context).replace(const LoginRoute());
@@ -57,30 +56,12 @@ class SplashScreenPage extends HookConsumerWidget {
       [],
     );
 
-    return Scaffold(
+    return const Scaffold(
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Image(
-              image: AssetImage('assets/immich-logo-no-outline.png'),
-              width: 200,
-              filterQuality: FilterQuality.high,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'IMMICH',
-                style: TextStyle(
-                  fontFamily: 'SnowburstOne',
-                  fontWeight: FontWeight.bold,
-                  fontSize: 48,
-                  color: Theme.of(context).primaryColor,
-                ),
-              ),
-            ),
-          ],
+        child: Image(
+          image: AssetImage('assets/immich-logo-no-outline.png'),
+          width: 80,
+          filterQuality: FilterQuality.high,
         ),
       ),
     );

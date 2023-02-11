@@ -3,9 +3,8 @@ import { ICryptoRepository } from '../src';
 export const newCryptoRepositoryMock = (): jest.Mocked<ICryptoRepository> => {
   return {
     randomBytes: jest.fn().mockReturnValue(Buffer.from('random-bytes', 'utf8')),
-    compareSync: jest.fn().mockReturnValue(true),
-    hash: jest.fn().mockImplementation((input) => Promise.resolve(`${input} (hashed)`)),
-    signJwt: jest.fn().mockReturnValue('signed-jwt'),
-    verifyJwtAsync: jest.fn().mockResolvedValue({ userId: 'test', email: 'test' }),
+    compareBcrypt: jest.fn().mockReturnValue(true),
+    hashBcrypt: jest.fn().mockImplementation((input) => Promise.resolve(`${input} (hashed)`)),
+    hashSha256: jest.fn().mockImplementation((input) => `${input} (hashed)`),
   };
 };

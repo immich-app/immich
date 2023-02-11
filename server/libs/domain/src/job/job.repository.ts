@@ -20,6 +20,10 @@ export interface JobCounts {
   waiting: number;
 }
 
+export interface Job<T> {
+  data: T;
+}
+
 export type JobItem =
   | { name: JobName.ASSET_UPLOADED; data: IAssetUploadedJob }
   | { name: JobName.VIDEO_CONVERSION; data: IVideoConversionProcessor }

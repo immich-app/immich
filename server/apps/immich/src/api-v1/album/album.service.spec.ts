@@ -1,23 +1,37 @@
 import { AlbumService } from './album.service';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { AlbumEntity } from '@app/infra';
-import { AlbumResponseDto } from './response-dto/album-response.dto';
+import { AlbumEntity, UserEntity } from '@app/infra';
+import { AlbumResponseDto, ICryptoRepository, mapUser } from '@app/domain';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { IAlbumRepository } from './album-repository';
 import { DownloadService } from '../../modules/download/download.service';
-import { ISharedLinkRepository } from '../share/shared-link.repository';
+import { ISharedLinkRepository } from '@app/domain';
+import { newCryptoRepositoryMock, newSharedLinkRepositoryMock } from '@app/domain/../test';
 
 describe('Album service', () => {
   let sut: AlbumService;
   let albumRepositoryMock: jest.Mocked<IAlbumRepository>;
   let sharedLinkRepositoryMock: jest.Mocked<ISharedLinkRepository>;
   let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
+  let cryptoMock: jest.Mocked<ICryptoRepository>;
 
   const authUser: AuthUserDto = Object.freeze({
     id: '1111',
     email: 'auth@test.com',
     isAdmin: false,
+  });
+
+  const albumOwner: UserEntity = Object.freeze({
+    ...authUser,
+    firstName: 'auth',
+    lastName: 'user',
+    createdAt: 'date',
+    updatedAt: 'date',
+    profileImagePath: '',
+    shouldChangePassword: false,
+    oauthId: '',
+    tags: [],
   });
   const albumId = 'f19ab956-4761-41ea-a5d6-bae948308d58';
   const sharedAlbumOwnerId = '2222';
@@ -26,10 +40,12 @@ describe('Album service', () => {
 
   const _getOwnedAlbum = () => {
     const albumEntity = new AlbumEntity();
-    albumEntity.ownerId = authUser.id;
+    albumEntity.ownerId = albumOwner.id;
+    albumEntity.owner = albumOwner;
     albumEntity.id = albumId;
     albumEntity.albumName = 'name';
     albumEntity.createdAt = 'date';
+    albumEntity.updatedAt = 'date';
     albumEntity.sharedUsers = [];
     albumEntity.assets = [];
     albumEntity.albumThumbnailAssetId = null;
@@ -39,7 +55,8 @@ describe('Album service', () => {
 
   const _getOwnedSharedAlbum = () => {
     const albumEntity = new AlbumEntity();
-    albumEntity.ownerId = authUser.id;
+    albumEntity.ownerId = albumOwner.id;
+    albumEntity.owner = albumOwner;
     albumEntity.id = albumId;
     albumEntity.albumName = 'name';
     albumEntity.createdAt = 'date';
@@ -65,6 +82,7 @@ describe('Album service', () => {
   const _getSharedWithAuthUserAlbum = () => {
     const albumEntity = new AlbumEntity();
     albumEntity.ownerId = sharedAlbumOwnerId;
+    albumEntity.owner = albumOwner;
     albumEntity.id = albumId;
     albumEntity.albumName = 'name';
     albumEntity.createdAt = 'date';
@@ -129,22 +147,20 @@ describe('Album service', () => {
       getSharedWithUserAlbumCount: jest.fn(),
     };
 
-    sharedLinkRepositoryMock = {
-      create: jest.fn(),
-      remove: jest.fn(),
-      get: jest.fn(),
-      getById: jest.fn(),
-      getByKey: jest.fn(),
-      save: jest.fn(),
-      hasAssetAccess: jest.fn(),
-      getByIdAndUserId: jest.fn(),
-    };
+    sharedLinkRepositoryMock = newSharedLinkRepositoryMock();
 
     downloadServiceMock = {
       downloadArchive: jest.fn(),
     };
 
-    sut = new AlbumService(albumRepositoryMock, sharedLinkRepositoryMock, downloadServiceMock as DownloadService);
+    cryptoMock = newCryptoRepositoryMock();
+
+    sut = new AlbumService(
+      albumRepositoryMock,
+      sharedLinkRepositoryMock,
+      downloadServiceMock as DownloadService,
+      cryptoMock,
+    );
   });
 
   it('creates album', async () => {
@@ -173,21 +189,22 @@ describe('Album service', () => {
   });
 
   it('gets an owned album', async () => {
-    const ownerId = authUser.id;
     const albumId = 'f19ab956-4761-41ea-a5d6-bae948308d58';
 
     const albumEntity = _getOwnedAlbum();
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
 
     const expectedResult: AlbumResponseDto = {
+      ownerId: albumOwner.id,
+      owner: mapUser(albumOwner),
+      id: albumId,
       albumName: 'name',
-      albumThumbnailAssetId: null,
       createdAt: 'date',
-      id: 'f19ab956-4761-41ea-a5d6-bae948308d58',
-      ownerId,
-      shared: false,
-      assets: [],
+      updatedAt: 'date',
       sharedUsers: [],
+      assets: [],
+      albumThumbnailAssetId: null,
+      shared: false,
       assetCount: 0,
     };
     await expect(sut.getAlbumInfo(authUser, albumId)).resolves.toEqual(expectedResult);
@@ -471,6 +488,7 @@ describe('Album service', () => {
     const albumEntity = new AlbumEntity();
 
     albumEntity.ownerId = authUser.id;
+    albumEntity.owner = albumOwner;
     albumEntity.id = albumId;
     albumEntity.albumName = 'name';
     albumEntity.createdAt = 'date';

@@ -30,8 +30,8 @@ class TabNavigationObserver extends AutoRouterObserver {
     // Perform tasks on re-visit to SearchRoute
     if (route.name == 'SearchRoute') {
       // Refresh Location State
-      ref.refresh(getCuratedLocationProvider);
-      ref.refresh(getCuratedObjectProvider);
+      ref.invalidate(getCuratedLocationProvider);
+      ref.invalidate(getCuratedObjectProvider);
     }
 
     if (route.name == 'SharingRoute') {

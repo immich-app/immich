@@ -21,14 +21,14 @@ export class APIKeyRepository implements IKeyRepository {
     await this.repository.delete({ userId, id });
   }
 
-  getKey(id: number): Promise<APIKeyEntity | null> {
+  getKey(hashedToken: string): Promise<APIKeyEntity | null> {
     return this.repository.findOne({
       select: {
         id: true,
         key: true,
         userId: true,
       },
-      where: { id },
+      where: { key: hashedToken },
       relations: {
         user: true,
       },

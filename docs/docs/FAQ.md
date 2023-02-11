@@ -1,5 +1,5 @@
 ---
-sidebar_position: 6
+sidebar_position: 7
 ---
 
 # FAQ
@@ -20,9 +20,9 @@ Immich doesn't have the mechanism to sync an existing directory with the server.
 
 The initial approach of Immich is to become a backup tool, primarily for mobile device usage. Thus, all the assets must be uploaded from the mobile client. The app was architectured to perform that job well.
 
-### What happens to existing files after I choose a new [Storage Template](/docs/features/storage-template.mdx)?
+### What happens to existing files after I choose a new [Storage Template](/docs/administration/storage-template.mdx)?
 
-Template changes will only apply to new assets. To retroactively apply the template to previously uploaded assets, run the Storage Migration Job, available on the [Jobs](/docs/features/jobs.md) page.
+Template changes will only apply to new assets. To retroactively apply the template to previously uploaded assets, run the Storage Migration Job, available on the [Jobs](/docs/administration/jobs.md) page.
 
 ### Why is object detection not very good?
 
@@ -42,7 +42,7 @@ The non-root user/group needs read/write access to the volume mounts, including 
 
 ### How can I reset the admin password?
 
-The admin password can be reset by running the [reset-admin-password](/docs/features/server-commands.md) command on the immich-server.
+The admin password can be reset by running the [reset-admin-password](/docs/administration/server-commands.md) command on the immich-server.
 
 ### How can I **purge** data from Immich?
 

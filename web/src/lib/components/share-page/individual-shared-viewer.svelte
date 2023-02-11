@@ -17,6 +17,7 @@
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
+	import ImmichLogo from '../shared-components/immich-logo.svelte';
 
 	export let sharedLink: SharedLinkResponseDto;
 	export let isOwned: boolean;
@@ -79,6 +80,8 @@
 			clearMultiSelectAssetAssetHandler();
 		}
 	};
+
+	const locale = navigator.language;
 </script>
 
 <section class="bg-immich-bg dark:bg-immich-dark-bg">
@@ -90,7 +93,7 @@
 		>
 			<svelte:fragment slot="leading">
 				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
-					Selected {selectedAssets.size}
+					Selected {selectedAssets.size.toLocaleString(locale)}
 				</p>
 			</svelte:fragment>
 			<svelte:fragment slot="trailing">
@@ -120,7 +123,7 @@
 					class="flex gap-2 place-items-center hover:cursor-pointer ml-6"
 					href="https://immich.app"
 				>
-					<img src="/immich-logo.svg" alt="immich logo" height="30" width="30" draggable="false" />
+					<ImmichLogo height="30" width="30" />
 					<h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">
 						IMMICH
 					</h1>

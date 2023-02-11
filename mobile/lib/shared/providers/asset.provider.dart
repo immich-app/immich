@@ -4,8 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/modules/home/services/asset.service.dart';
-import 'package:immich_mobile/modules/home/services/asset_cache.service.dart';
+import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/services/asset.service.dart';
+import 'package:immich_mobile/shared/services/asset_cache.service.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
@@ -24,11 +25,15 @@ class AssetsState {
 
   AssetsState(this.allAssets, {this.renderList});
 
-  Future<AssetsState> withRenderDataStructure(int groupSize) async {
+  Future<AssetsState> withRenderDataStructure(
+    AssetGridLayoutParameters layout,
+  ) async {
     return AssetsState(
       allAssets,
-      renderList:
-          await RenderList.fromAssetGroups(await _groupByDate(), groupSize),
+      renderList: await RenderList.fromAssets(
+        allAssets,
+        layout,
+      ),
     );
   }
 
@@ -36,25 +41,11 @@ class AssetsState {
     return AssetsState([...allAssets, ...toAdd]);
   }
 
-  _groupByDate() async {
-    sortCompare(List<Asset> assets) {
-      assets.sortByCompare<DateTime>(
-        (e) => e.createdAt,
-        (a, b) => b.compareTo(a),
-      );
-      return assets.groupListsBy(
-        (element) => DateFormat('y-MM-dd').format(element.createdAt.toLocal()),
-      );
-    }
-
-    return await compute(sortCompare, allAssets.toList());
-  }
-
-  static fromAssetList(List<Asset> assets) {
+  static AssetsState fromAssetList(List<Asset> assets) {
     return AssetsState(assets);
   }
 
-  static empty() {
+  static AssetsState empty() {
     return AssetsState([]);
   }
 }
@@ -82,15 +73,27 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     this._settingsService,
   ) : super(AssetsState.fromAssetList([]));
 
-  _updateAssetsState(List<Asset> newAssetList, {bool cache = true}) async {
+  Future<void> _updateAssetsState(
+    List<Asset> newAssetList, {
+    bool cache = true,
+  }) async {
     if (cache) {
       _assetCacheService.put(newAssetList);
     }
 
-    state =
-        await AssetsState.fromAssetList(newAssetList).withRenderDataStructure(
+    final layout = AssetGridLayoutParameters(
       _settingsService.getSetting(AppSettingsEnum.tilesPerRow),
+      _settingsService.getSetting(AppSettingsEnum.dynamicLayout),
+      GroupAssetsBy.values[_settingsService.getSetting(AppSettingsEnum.groupAssetsBy)],
     );
+
+    state = await AssetsState.fromAssetList(newAssetList)
+        .withRenderDataStructure(layout);
+  }
+
+  // Just a little helper to trigger a rebuild of the state object
+  Future<void> rebuildAssetGridDataStructure() async {
+    await _updateAssetsState(state.allAssets, cache: false);
   }
 
   getAllAsset() async {
@@ -101,20 +104,25 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     final stopwatch = Stopwatch();
     try {
       _getAllAssetInProgress = true;
-      final bool isCacheValid = await _assetCacheService.isValid();
+      bool isCacheValid = await _assetCacheService.isValid();
       stopwatch.start();
-      final Box box = Hive.box(userInfoBox);
-      final localTask = _assetService.getLocalAssets(urgent: !isCacheValid);
-      final remoteTask = _assetService.getRemoteAssets(
-        etag: isCacheValid ? box.get(assetEtagKey) : null,
-      );
       if (isCacheValid && state.allAssets.isEmpty) {
-        await _updateAssetsState(await _assetCacheService.get(), cache: false);
-        log.info(
-          "Reading assets ${state.allAssets.length} from cache: ${stopwatch.elapsedMilliseconds}ms",
-        );
+        final List<Asset>? cachedData = await _assetCacheService.get();
+        if (cachedData == null) {
+          isCacheValid = false;
+          log.warning("Cached asset data is invalid, fetching new data");
+        } else {
+          await _updateAssetsState(cachedData, cache: false);
+          log.info(
+            "Reading assets ${state.allAssets.length} from cache: ${stopwatch.elapsedMilliseconds}ms",
+          );
+        }
         stopwatch.reset();
       }
+      final localTask = _assetService.getLocalAssets(urgent: !isCacheValid);
+      final remoteTask = _assetService.getRemoteAssets(
+        etag: isCacheValid ? Store.get(StoreKey.assetETag) : null,
+      );
 
       int remoteBegin = state.allAssets.indexWhere((a) => a.isRemote);
       remoteBegin = remoteBegin == -1 ? state.allAssets.length : remoteBegin;
@@ -142,7 +150,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
 
       log.info("Combining assets: ${stopwatch.elapsedMilliseconds}ms");
 
-      box.put(assetEtagKey, remoteResult.second);
+      Store.put(StoreKey.assetETag, remoteResult.second);
     } finally {
       _getAllAssetInProgress = false;
     }
@@ -184,7 +192,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     _updateAssetsState([]);
   }
 
-  onNewAssetUploaded(AssetResponseDto newAsset) {
+  void onNewAssetUploaded(Asset newAsset) {
     final int i = state.allAssets.indexWhere(
       (a) =>
           a.isRemote ||
@@ -192,13 +200,13 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     );
 
     if (i == -1 || state.allAssets[i].deviceAssetId != newAsset.deviceAssetId) {
-      _updateAssetsState([...state.allAssets, Asset.remote(newAsset)]);
+      _updateAssetsState([...state.allAssets, newAsset]);
     } else {
       // order is important to keep all local-only assets at the beginning!
       _updateAssetsState([
         ...state.allAssets.slice(0, i),
         ...state.allAssets.slice(i + 1),
-        Asset.remote(newAsset),
+        newAsset,
       ]);
       // TODO here is a place to unify local/remote assets by replacing the
       // local-only asset in the state with a local&remote asset
@@ -230,7 +238,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     // Delete asset from device
     for (final Asset asset in assetsToDelete) {
       if (asset.isLocal) {
-        local.add(asset.id);
+        local.add(asset.localId!);
       } else if (asset.deviceId == deviceId) {
         // Delete asset on device if it is still present
         var localAsset = await AssetEntity.fromId(asset.deviceAssetId);
@@ -252,13 +260,29 @@ class AssetNotifier extends StateNotifier<AssetsState> {
   Future<Iterable<String>> _deleteRemoteAssets(
     Set<Asset> assetsToDelete,
   ) async {
-    final Iterable<AssetResponseDto> remote =
-        assetsToDelete.where((e) => e.isRemote).map((e) => e.remote!);
+    final Iterable<Asset> remote = assetsToDelete.where((e) => e.isRemote);
     final List<DeleteAssetResponseDto> deleteAssetResult =
         await _assetService.deleteAssets(remote) ?? [];
     return deleteAssetResult
         .where((a) => a.status == DeleteAssetStatus.SUCCESS)
         .map((a) => a.id);
+  }
+
+  Future<bool> toggleFavorite(Asset asset, bool status) async {
+    final newAsset = await _assetService.changeFavoriteStatus(asset, status);
+
+    if (newAsset == null) {
+      log.severe("Change favorite status failed for asset ${asset.id}");
+      return asset.isFavorite;
+    }
+
+    final index = state.allAssets.indexWhere((a) => asset.id == a.id);
+    if (index > 0) {
+      state.allAssets[index] = newAsset;
+      _updateAssetsState(state.allAssets);
+    }
+
+    return newAsset.isFavorite;
   }
 }
 

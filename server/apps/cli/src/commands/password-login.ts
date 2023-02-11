@@ -1,20 +1,20 @@
-import { SystemConfigEntity, SystemConfigKey } from '@app/infra';
-import { InjectRepository } from '@nestjs/typeorm';
+import { SystemConfigService } from '@app/domain';
 import axios from 'axios';
 import { Command, CommandRunner } from 'nest-commander';
-import { Repository } from 'typeorm';
 
 @Command({
   name: 'enable-password-login',
   description: 'Enable password login',
 })
 export class EnablePasswordLoginCommand extends CommandRunner {
-  constructor(@InjectRepository(SystemConfigEntity) private repository: Repository<SystemConfigEntity>) {
+  constructor(private configService: SystemConfigService) {
     super();
   }
 
   async run(): Promise<void> {
-    await this.repository.delete({ key: SystemConfigKey.PASSWORD_LOGIN_ENABLED });
+    const config = await this.configService.getConfig();
+    config.passwordLogin.enabled = true;
+    await this.configService.updateConfig(config);
     await axios.post('http://localhost:3001/refresh-config');
     console.log('Password login has been enabled.');
   }
@@ -25,12 +25,14 @@ export class EnablePasswordLoginCommand extends CommandRunner {
   description: 'Disable password login',
 })
 export class DisablePasswordLoginCommand extends CommandRunner {
-  constructor(@InjectRepository(SystemConfigEntity) private repository: Repository<SystemConfigEntity>) {
+  constructor(private configService: SystemConfigService) {
     super();
   }
 
   async run(): Promise<void> {
-    await this.repository.save({ key: SystemConfigKey.PASSWORD_LOGIN_ENABLED, value: false });
+    const config = await this.configService.getConfig();
+    config.passwordLogin.enabled = false;
+    await this.configService.updateConfig(config);
     await axios.post('http://localhost:3001/refresh-config');
     console.log('Password login has been disabled.');
   }

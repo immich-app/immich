@@ -1,10 +1,9 @@
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { AssetEntity, AssetType } from '@app/infra';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';
-import { CreateAssetDto } from './dto/create-asset.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
@@ -19,16 +18,13 @@ import { IsNull, Not } from 'typeorm';
 import { AssetSearchDto } from './dto/asset-search.dto';
 
 export interface IAssetRepository {
-  create(
-    createAssetDto: CreateAssetDto,
-    ownerId: string,
-    originalPath: string,
-    mimeType: string,
-    isVisible: boolean,
-    checksum?: Buffer,
-    livePhotoAssetEntity?: AssetEntity,
-  ): Promise<AssetEntity>;
+  get(id: string): Promise<AssetEntity | null>;
+  create(asset: Omit<AssetEntity, 'id'>): Promise<AssetEntity>;
+  remove(asset: AssetEntity): Promise<void>;
+
   update(userId: string, asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
+  getAll(): Promise<AssetEntity[]>;
+  getAllVideos(): Promise<AssetEntity[]>;
   getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
@@ -60,6 +56,22 @@ export class AssetRepository implements IAssetRepository {
 
     @Inject(ITagRepository) private _tagRepository: ITagRepository,
   ) {}
+
+  async getAllVideos(): Promise<AssetEntity[]> {
+    return await this.assetRepository.find({
+      where: { type: AssetType.VIDEO },
+    });
+  }
+
+  async getAll(): Promise<AssetEntity[]> {
+    return await this.assetRepository.find({
+      where: { isVisible: true },
+      relations: {
+        exifInfo: true,
+        smartInfo: true,
+      },
+    });
+  }
 
   async getAssetWithNoSmartInfo(): Promise<AssetEntity[]> {
     return await this.assetRepository
@@ -264,44 +276,16 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  /**
-   * Create new asset information in database
-   * @param createAssetDto
-   * @param ownerId
-   * @param originalPath
-   * @param mimeType
-   * @returns Promise<AssetEntity>
-   */
-  async create(
-    createAssetDto: CreateAssetDto,
-    ownerId: string,
-    originalPath: string,
-    mimeType: string,
-    isVisible: boolean,
-    checksum?: Buffer,
-    livePhotoAssetEntity?: AssetEntity,
-  ): Promise<AssetEntity> {
-    const asset = new AssetEntity();
-    asset.deviceAssetId = createAssetDto.deviceAssetId;
-    asset.userId = ownerId;
-    asset.deviceId = createAssetDto.deviceId;
-    asset.type = !isVisible ? AssetType.VIDEO : createAssetDto.assetType || AssetType.OTHER; // If an asset is not visible, it is a LivePhotos video portion, therefore we can confidently assign the type as VIDEO here
-    asset.originalPath = originalPath;
-    asset.createdAt = createAssetDto.createdAt;
-    asset.modifiedAt = createAssetDto.modifiedAt;
-    asset.isFavorite = createAssetDto.isFavorite;
-    asset.mimeType = mimeType;
-    asset.duration = createAssetDto.duration || null;
-    asset.checksum = checksum || null;
-    asset.isVisible = isVisible;
-    asset.livePhotoVideoId = livePhotoAssetEntity ? livePhotoAssetEntity.id : null;
+  get(id: string): Promise<AssetEntity | null> {
+    return this.assetRepository.findOne({ where: { id } });
+  }
 
-    const createdAsset = await this.assetRepository.save(asset);
+  async create(asset: Omit<AssetEntity, 'id'>): Promise<AssetEntity> {
+    return this.assetRepository.save(asset);
+  }
 
-    if (!createdAsset) {
-      throw new BadRequestException('Asset not created');
-    }
-    return createdAsset;
+  async remove(asset: AssetEntity): Promise<void> {
+    await this.assetRepository.remove(asset);
   }
 
   /**
