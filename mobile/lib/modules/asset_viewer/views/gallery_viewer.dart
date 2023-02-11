@@ -15,7 +15,7 @@ import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
 import 'package:immich_mobile/shared/services/asset.service.dart';
-import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
+import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/ui/photo_view/photo_view_gallery.dart';
@@ -213,7 +213,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     void handleSwipeUpDown(DragUpdateDetails details) {
       int sensitivity = 15;
-      int dxThreshhold = 50;
+      int dxThreshold = 50;
 
       if (isZoomed.value) {
         return;
@@ -222,7 +222,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       // Check for delta from initial down point
       final d = details.localPosition - localPosition;
       // If the magnitude of the dx swipe is large, we probably didn't mean to go down
-      if (d.dx.abs() > dxThreshhold) {
+      if (d.dx.abs() > dxThreshold) {
         return;
       }
 
@@ -247,8 +247,8 @@ class GalleryViewerPage extends HookConsumerWidget {
             isPlayingMotionVideo: isPlayingMotionVideo.value,
             asset: assetList[indexOfAsset.value],
             isFavorite: ref.watch(favoriteProvider).contains(
-              assetList[indexOfAsset.value].id,
-            ),
+                  assetList[indexOfAsset.value].id,
+                ),
             onMoreInfoPressed: () {
               showInfo();
             },
@@ -314,7 +314,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 ? (context, event) {
                     final asset = assetList[indexOfAsset.value];
                     if (!asset.isLocal) {
-                      // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to acheive
+                      // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to achieve
                       // Three-Stage Loading (WEBP -> JPEG -> Original)
                       final webPThumbnail = CachedNetworkImage(
                         imageUrl: getThumbnailUrl(

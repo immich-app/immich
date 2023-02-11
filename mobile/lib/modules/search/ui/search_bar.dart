@@ -53,6 +53,9 @@ class SearchBar extends HookConsumerWidget with PreferredSizeWidget {
         },
         decoration: InputDecoration(
           hintText: 'search_bar_hint'.tr(),
+          hintStyle: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+              ),
           enabledBorder: const UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.transparent),
           ),
