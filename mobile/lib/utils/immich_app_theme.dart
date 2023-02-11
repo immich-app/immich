@@ -165,7 +165,7 @@ ThemeData immichDarkTheme = ThemeData(
     surfaceTintColor: Colors.transparent,
   ),
   navigationBarTheme: NavigationBarThemeData(
-    indicatorColor: immichDarkThemePrimaryColor.withOpacity(0.6),
+    indicatorColor: immichDarkThemePrimaryColor.withOpacity(0.4),
     iconTheme: const MaterialStatePropertyAll(
       IconThemeData(color: Colors.white),
     ),

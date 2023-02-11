@@ -110,23 +110,43 @@ class TabControllerPage extends ConsumerWidget {
         destinations: [
           NavigationDestination(
             label: 'tab_controller_nav_photos'.tr(),
-            icon: const Icon(Icons.photo_outlined),
-            selectedIcon: const Icon(Icons.photo),
+            icon: const Icon(
+              Icons.photo_outlined,
+            ),
+            selectedIcon: Icon(
+              Icons.photo,
+              color: Theme.of(context).primaryColor,
+            ),
           ),
           NavigationDestination(
             label: 'tab_controller_nav_search'.tr(),
-            icon: const Icon(Icons.search_rounded),
-            selectedIcon: const Icon(Icons.search),
+            icon: const Icon(
+              Icons.search_rounded,
+            ),
+            selectedIcon: Icon(
+              Icons.search,
+              color: Theme.of(context).primaryColor,
+            ),
           ),
           NavigationDestination(
             label: 'tab_controller_nav_sharing'.tr(),
-            icon: const Icon(Icons.group_outlined),
-            selectedIcon: const Icon(Icons.group),
+            icon: const Icon(
+              Icons.group_outlined,
+            ),
+            selectedIcon: Icon(
+              Icons.group,
+              color: Theme.of(context).primaryColor,
+            ),
           ),
           NavigationDestination(
             label: 'tab_controller_nav_library'.tr(),
-            icon: const Icon(Icons.photo_album_outlined),
-            selectedIcon: const Icon(Icons.photo_album_rounded),
+            icon: const Icon(
+              Icons.photo_album_outlined,
+            ),
+            selectedIcon: Icon(
+              Icons.photo_album_rounded,
+              color: Theme.of(context).primaryColor,
+            ),
           )
         ],
       );
