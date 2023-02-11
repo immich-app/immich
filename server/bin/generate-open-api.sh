@@ -9,8 +9,8 @@ function mobile {
   npx openapi-generator-cli generate -g dart -i ./immich-openapi-specs.json -o ../mobile/openapi -t ./openapi-generator/templates
 
   # Post generate patches
-  patch -u ../mobile/openapi/lib/api_client.dart <./openapi-generator/patch/api_client.dart.patch
-  patch -u ../mobile/openapi/lib/api.dart <./openapi-generator/patch/api.dart.patch
+  patch --no-backup-if-mismatch -u ../mobile/openapi/lib/api_client.dart <./openapi-generator/patch/api_client.dart.patch
+  patch --no-backup-if-mismatch -u ../mobile/openapi/lib/api.dart <./openapi-generator/patch/api.dart.patch
 }
 
 function web {
