@@ -13,6 +13,7 @@
 	import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
 	import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
 	import { fileUploadHandler } from '$lib/utils/file-uploader';
+	import faviconUrl from '$lib/assets/favicon.png';
 
 	let shouldShowAnnouncement: boolean;
 	let localVersion: string;
@@ -80,6 +81,7 @@
 <svelte:head>
 	<title>{$page.data.meta?.title || 'Web'} - Immich</title>
 	{#if $page.data.meta}
+		<link rel="icon" href={faviconUrl} />
 		<meta name="description" content={$page.data.meta.description} />
 
 		<!-- Facebook Meta Tags -->

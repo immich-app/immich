@@ -43,6 +43,7 @@
 		"eslint-config-prettier": "^8.3.0",
 		"eslint-plugin-svelte3": "^4.0.0",
 		"factory.ts": "^1.2.0",
+		"identity-obj-proxy": "^3.0.0",
 		"jest": "^29.0.2",
 		"jest-environment-jsdom": "^29.0.2",
 		"postcss": "^8.4.13",

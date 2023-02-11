@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_sliverlist.dart';
-import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
+import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 
@@ -29,6 +29,8 @@ class ControlBottomAppBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     Widget renderActionButtons() {
       return Row(
         children: [
@@ -60,7 +62,6 @@ class ControlBottomAppBar extends ConsumerWidget {
               );
             },
           ),
-
         ],
       );
     }
@@ -75,7 +76,9 @@ class ControlBottomAppBar extends ConsumerWidget {
         ScrollController scrollController,
       ) {
         return Card(
-          elevation: 12.0,
+          color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
+          surfaceTintColor: Colors.transparent,
+          elevation: 18.0,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(12),
@@ -83,45 +86,37 @@ class ControlBottomAppBar extends ConsumerWidget {
             ),
           ),
           margin: const EdgeInsets.all(0),
-          child: Container(
-            decoration: const BoxDecoration(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(12),
-                topRight: Radius.circular(12),
+          child: CustomScrollView(
+            controller: scrollController,
+            slivers: [
+              SliverToBoxAdapter(
+                child: Column(
+                  children: <Widget>[
+                    const SizedBox(height: 12),
+                    const CustomDraggingHandle(),
+                    const SizedBox(height: 12),
+                    renderActionButtons(),
+                    const Divider(
+                      indent: 16,
+                      endIndent: 16,
+                      thickness: 1,
+                    ),
+                    AddToAlbumTitleRow(onCreateNewAlbum: onCreateNewAlbum),
+                  ],
+                ),
               ),
-            ),
-            child: CustomScrollView(
-              controller: scrollController,
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Column(
-                    children: <Widget>[
-                      const SizedBox(height: 12),
-                      const CustomDraggingHandle(),
-                      const SizedBox(height: 12),
-                      renderActionButtons(),
-                      const Divider(
-                        indent: 16,
-                        endIndent: 16,
-                        thickness: 1,
-                      ),
-                      AddToAlbumTitleRow(onCreateNewAlbum: onCreateNewAlbum),
-                    ],
-                  ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: AddToAlbumSliverList(
+                  albums: albums,
+                  sharedAlbums: sharedAlbums,
+                  onAddToAlbum: onAddToAlbum,
                 ),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: AddToAlbumSliverList(
-                    albums: albums,
-                    sharedAlbums: sharedAlbums,
-                    onAddToAlbum: onAddToAlbum,
-                  ),
-                ),
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: 200),
-                )
-              ],
-            ),
+              ),
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 200),
+              )
+            ],
           ),
         );
       },

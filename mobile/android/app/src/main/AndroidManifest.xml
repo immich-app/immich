@@ -2,6 +2,11 @@
   xmlns:tools="http://schemas.android.com/tools">
   <application android:label="Immich" android:name=".ImmichApp" android:usesCleartextTraffic="true"
     android:icon="@mipmap/ic_launcher" android:requestLegacyExternalStorage="true">
+
+    <meta-data
+      android:name="io.flutter.embedding.android.EnableImpeller"
+      android:value="false" />
+
     <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop"
       android:theme="@style/LaunchTheme"
       android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
