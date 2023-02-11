@@ -11,7 +11,6 @@ class TabControllerPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     navigationRail(TabsRouter tabsRouter) {
       return NavigationRail(
         labelType: NavigationRailLabelType.all,
@@ -35,26 +34,26 @@ class TabControllerPage extends ConsumerWidget {
               right: 4,
               bottom: 4,
             ),
-            icon: const Icon(Icons.photo_outlined), 
+            icon: const Icon(Icons.photo_outlined),
             selectedIcon: const Icon(Icons.photo),
             label: const Text('tab_controller_nav_photos').tr(),
           ),
           NavigationRailDestination(
             padding: const EdgeInsets.all(4),
-            icon: const Icon(Icons.search_rounded), 
-            selectedIcon: const Icon(Icons.search), 
+            icon: const Icon(Icons.search_rounded),
+            selectedIcon: const Icon(Icons.search),
             label: const Text('tab_controller_nav_search').tr(),
           ),
           NavigationRailDestination(
             padding: const EdgeInsets.all(4),
-            icon: const Icon(Icons.share_rounded), 
-            selectedIcon: const Icon(Icons.share), 
+            icon: const Icon(Icons.share_rounded),
+            selectedIcon: const Icon(Icons.share),
             label: const Text('tab_controller_nav_sharing').tr(),
           ),
           NavigationRailDestination(
             padding: const EdgeInsets.all(4),
-            icon: const Icon(Icons.photo_album_outlined), 
-            selectedIcon: const Icon(Icons.photo_album), 
+            icon: const Icon(Icons.photo_album_outlined),
+            selectedIcon: const Icon(Icons.photo_album),
             label: const Text('tab_controller_nav_library').tr(),
           ),
         ],
@@ -116,7 +115,7 @@ class TabControllerPage extends ConsumerWidget {
             bool atHomeTab = tabsRouter.activeIndex == 0;
             if (!atHomeTab) {
               tabsRouter.setActiveIndex(0);
-            } 
+            }
 
             return atHomeTab;
           },
@@ -146,13 +145,13 @@ class TabControllerPage extends ConsumerWidget {
                     ),
                   ],
                 );
-              }              return Scaffold(
-               body: body,
-               bottomNavigationBar: multiselectEnabled
-                  ? null
-                  : bottom,
-            );
-          },),
+              }
+              return Scaffold(
+                body: body,
+                bottomNavigationBar: multiselectEnabled ? null : bottom,
+              );
+            },
+          ),
         );
       },
     );

@@ -15,6 +15,7 @@ class LibraryPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final albums = ref.watch(albumProvider);
+    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     useEffect(
       () {
@@ -122,9 +123,12 @@ class LibraryPage extends HookConsumerWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: Colors.grey,
+                      color: isDarkMode
+                          ? const Color.fromARGB(255, 53, 53, 53)
+                          : const Color.fromARGB(255, 203, 203, 203),
                     ),
-                    borderRadius: BorderRadius.circular(8),
+                    color: isDarkMode ? Colors.grey[900] : Colors.grey[50],
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   child: Center(
                     child: Icon(
@@ -182,11 +186,11 @@ class LibraryPage extends HookConsumerWidget {
                   : Colors.grey[300]!,
             ),
             alignment: Alignment.centerLeft,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(6.0),
-            ),
           ),
-          icon: Icon(icon, color: Theme.of(context).primaryColor),
+          icon: Icon(
+            icon,
+            color: Theme.of(context).primaryColor,
+          ),
         ),
       );
     }
