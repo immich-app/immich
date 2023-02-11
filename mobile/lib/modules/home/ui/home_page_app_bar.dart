@@ -113,10 +113,17 @@ class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
                   ? const Icon(
                       Icons.backup_rounded,
                     )
-                  : const Badge(
-                      padding: EdgeInsets.all(4),
+                  : Badge(
+                      padding: const EdgeInsets.all(4),
+                      backgroundColor: Colors.white,
+                      label: const Icon(
+                        Icons.cloud_off_rounded,
+                        size: 8,
+                        color: Colors.indigo,
+                      ),
                       child: Icon(
                         Icons.backup_rounded,
+                        color: Theme.of(context).primaryColor,
                       ),
                     ),
               onPressed: () async {
