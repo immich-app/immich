@@ -1,6 +1,10 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 
 import 'package:immich_mobile/routing/router.dart';
@@ -26,6 +30,35 @@ class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
     bool isEnableAutoBackup = backupState.backgroundBackup ||
         ref.watch(authenticationProvider).deviceInfo.isAutoBackup;
     final ServerInfoState serverInfoState = ref.watch(serverInfoProvider);
+    AuthenticationState authState = ref.watch(authenticationProvider);
+
+    buildProfilePhoto() {
+      if (authState.profileImagePath.isEmpty) {
+        return IconButton(
+          splashRadius: 25,
+          icon: const Icon(
+            Icons.face_outlined,
+            size: 30,
+          ),
+          onPressed: () {
+            Scaffold.of(context).openDrawer();
+          },
+        );
+      } else {
+        String endpoint = Hive.box(userInfoBox).get(serverEndpointKey);
+        return InkWell(
+          onTap: () {
+            Scaffold.of(context).openDrawer();
+          },
+          child: CircleAvatar(
+            backgroundImage: CachedNetworkImageProvider(
+              '$endpoint/user/profile-image/${authState.userId}',
+            ),
+            radius: 18,
+          ),
+        );
+      }
+    }
 
     return AppBar(
       backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
@@ -38,18 +71,8 @@ class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
         builder: (BuildContext context) {
           return Stack(
             children: [
-              Positioned(
-                top: 5,
-                child: IconButton(
-                  splashRadius: 25,
-                  icon: const Icon(
-                    Icons.face_outlined,
-                    size: 30,
-                  ),
-                  onPressed: () {
-                    Scaffold.of(context).openDrawer();
-                  },
-                ),
+              Center(
+                child: buildProfilePhoto(),
               ),
               if (serverInfoState.isVersionMismatch)
                 Positioned(
