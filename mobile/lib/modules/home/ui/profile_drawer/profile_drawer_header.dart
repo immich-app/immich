@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -22,7 +23,6 @@ class ProfileDrawerHeader extends HookConsumerWidget {
     AuthenticationState authState = ref.watch(authenticationProvider);
     final uploadProfileImageStatus =
         ref.watch(uploadProfileImageProvider).status;
-    var dummy = Random().nextInt(1024);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     buildUserProfileImage() {
@@ -34,15 +34,16 @@ class ProfileDrawerHeader extends HookConsumerWidget {
         );
       }
 
-      if (uploadProfileImageStatus == UploadProfileStatus.idle) {
+      if (uploadProfileImageStatus == UploadProfileStatus.idle || 
+        uploadProfileImageStatus == UploadProfileStatus.success) {
         if (authState.profileImagePath.isNotEmpty) {
           return CircleAvatar(
             backgroundColor: Theme.of(context).primaryColor,
             radius: 35,
             child: CircleAvatar(
               radius: 34,
-              backgroundImage: NetworkImage(
-                '$endpoint/user/profile-image/${authState.userId}?d=${dummy++}',
+              backgroundImage: CachedNetworkImageProvider(
+                '$endpoint/user/profile-image/${authState.userId}',
               ),
               backgroundColor: Colors.transparent,
             ),
@@ -54,16 +55,6 @@ class ProfileDrawerHeader extends HookConsumerWidget {
             backgroundColor: Colors.transparent,
           );
         }
-      }
-
-      if (uploadProfileImageStatus == UploadProfileStatus.success) {
-        return CircleAvatar(
-          radius: 35,
-          backgroundImage: NetworkImage(
-            '$endpoint/user/profile-image/${authState.userId}?d=${dummy++}',
-          ),
-          backgroundColor: Colors.transparent,
-        );
       }
 
       if (uploadProfileImageStatus == UploadProfileStatus.failure) {
@@ -89,6 +80,9 @@ class ProfileDrawerHeader extends HookConsumerWidget {
       );
 
       if (image != null) {
+        final url = '$endpoint/user/profile-image/${authState.userId}';
+        await CachedNetworkImage.evictFromCache(url);
+        print('done evicting image');
         var success =
             await ref.watch(uploadProfileImageProvider.notifier).upload(image);
 
