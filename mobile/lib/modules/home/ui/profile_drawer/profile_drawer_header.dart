@@ -130,15 +130,15 @@ class ProfileDrawerHeader extends HookConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Stack(
+          GestureDetector(
+            onTap: pickUserProfileImage,
+            child: Stack(
             clipBehavior: Clip.none,
             children: [
               buildUserProfileImage(),
               Positioned(
                 bottom: 0,
                 right: -5,
-                child: GestureDetector(
-                  onTap: pickUserProfileImage,
                   child: Material(
                     color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
                     elevation: 3,
@@ -155,8 +155,8 @@ class ProfileDrawerHeader extends HookConsumerWidget {
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           Text(
             "${authState.firstName} ${authState.lastName}",
