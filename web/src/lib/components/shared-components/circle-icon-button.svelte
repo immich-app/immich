@@ -2,31 +2,21 @@
 	/**
 	 * This is the circle icon component.
 	 */
-	import { createEventDispatcher } from 'svelte';
+	import type Icon from 'svelte-material-icons/AbTesting.svelte';
 
-	// TODO: why any here?
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	export let logo: any;
+	export let logo: typeof Icon;
 	export let backgroundColor = 'transparent';
 	export let hoverColor = '#e2e7e9';
 	export let size = '24';
 	export let title = '';
-	let iconButton: HTMLButtonElement;
-	const dispatch = createEventDispatcher();
-
-	$: {
-		if (iconButton) {
-			iconButton.style.backgroundColor = backgroundColor;
-			iconButton.style.setProperty('--immich-icon-button-hover-color', hoverColor);
-		}
-	}
 </script>
 
 <button
 	{title}
-	bind:this={iconButton}
+	style:backgroundColor
+	style:--immich-icon-button-hover-color={hoverColor}
 	class={`immich-circle-icon-button dark:text-immich-dark-fg hover:dark:text-immich-dark-gray rounded-full p-3 flex place-items-center place-content-center transition-all`}
-	on:click={(mouseEvent) => dispatch('click', { mouseEvent })}
+	on:click
 >
 	<svelte:component this={logo} {size} />
 </button>

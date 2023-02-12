@@ -92,11 +92,10 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     RenderAssetGridRow row,
     bool scrolling,
   ) {
-
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = constraints.maxWidth / widget.assetsPerRow -
-          widget.margin * (widget.assetsPerRow - 1) / widget.assetsPerRow;
+            widget.margin * (widget.assetsPerRow - 1) / widget.assetsPerRow;
         return Row(
           key: Key("asset-row-${row.assets.first.id}"),
           children: row.assets.mapIndexed((int index, Asset asset) {
@@ -141,7 +140,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
         style: TextStyle(
           fontSize: 26,
           fontWeight: FontWeight.bold,
-          color: Theme.of(context).textTheme.headline1?.color,
+          color: Theme.of(context).textTheme.displayLarge?.color,
         ),
       ),
     );
@@ -164,7 +163,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   Text _labelBuilder(int pos) {
     final date = widget.renderList.elements[pos].date;
     return Text(
-      DateFormat.yMMMd().format(date),
+      DateFormat.yMMMM().format(date),
       style: const TextStyle(
         color: Colors.white,
         fontWeight: FontWeight.bold,

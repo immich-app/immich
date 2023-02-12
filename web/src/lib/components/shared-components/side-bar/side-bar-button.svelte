@@ -1,8 +1,8 @@
 <script lang="ts">
+	import type Icon from 'svelte-material-icons/AbTesting.svelte';
+
 	export let title: string;
-	// TODO: why `any` here? There should be a expected type for this
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	export let logo: any;
+	export let logo: typeof Icon;
 	export let isSelected: boolean;
 
 	import { createEventDispatcher } from 'svelte';
