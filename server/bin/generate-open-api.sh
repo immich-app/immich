@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function mobile {
   rm -rf ../mobile/openapi
@@ -7,6 +7,10 @@ function mobile {
   patch -u native_class.mustache <native_class.mustache.patch
   cd ../../../..
   npx openapi-generator-cli generate -g dart -i ./immich-openapi-specs.json -o ../mobile/openapi -t ./openapi-generator/templates
+
+  # Post generate patches
+  patch --no-backup-if-mismatch -u ../mobile/openapi/lib/api_client.dart <./openapi-generator/patch/api_client.dart.patch
+  patch --no-backup-if-mismatch -u ../mobile/openapi/lib/api.dart <./openapi-generator/patch/api.dart.patch
 }
 
 function web {

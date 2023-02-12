@@ -163,7 +163,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   Text _labelBuilder(int pos) {
     final date = widget.renderList.elements[pos].date;
     return Text(
-      DateFormat.yMMMd().format(date),
+      DateFormat.yMMMM().format(date),
       style: const TextStyle(
         color: Colors.white,
         fontWeight: FontWeight.bold,
