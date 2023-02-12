@@ -1,5 +1,6 @@
+import 'dart:math';
+
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -18,9 +19,9 @@ class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   const HomePageAppBar({
-    Key? key,
+    super.key,
     this.onPopBack,
-  }) : super(key: key);
+  });
 
   final Function? onPopBack;
 
@@ -46,6 +47,7 @@ class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
         );
       } else {
         String endpoint = Hive.box(userInfoBox).get(serverEndpointKey);
+        var dummy = Random().nextInt(1024);
         return InkWell(
           onTap: () {
             Scaffold.of(context).openDrawer();
@@ -55,8 +57,8 @@ class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
             radius: 18,
             child: CircleAvatar(
               backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-              backgroundImage: CachedNetworkImageProvider(
-                '$endpoint/user/profile-image/${authState.userId}',
+              backgroundImage: NetworkImage(
+                '$endpoint/user/profile-image/${authState.userId}?d=${dummy++}',
               ),
               radius: 17,
             ),
