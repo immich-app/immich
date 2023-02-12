@@ -77,13 +77,13 @@ class SharingPage extends HookConsumerWidget {
           child: Card(
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10), // if you need this
+              borderRadius: BorderRadius.circular(20),
               side: const BorderSide(
                 color: Colors.grey,
-                width: 1,
+                width: 0.5,
               ),
             ),
-            color: Colors.transparent,
+            // color: Colors.transparent,
             child: Padding(
               padding: const EdgeInsets.all(18.0),
               child: Column(
@@ -92,7 +92,7 @@ class SharingPage extends HookConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.only(left: 5.0, bottom: 5),
                     child: Icon(
-                      Icons.offline_share_outlined,
+                      Icons.insert_photo_rounded,
                       size: 50,
                       color: Theme.of(context).primaryColor,
                     ),
@@ -101,7 +101,7 @@ class SharingPage extends HookConsumerWidget {
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
                       'sharing_page_empty_list',
-                      style: Theme.of(context).textTheme.headline3,
+                      style: Theme.of(context).textTheme.displaySmall,
                     ).tr(),
                   ),
                   Padding(

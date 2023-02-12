@@ -22,7 +22,7 @@ class MonthlyTitleText extends StatelessWidget {
           style: TextStyle(
             fontSize: 26,
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).textTheme.headline1?.color,
+            color: Theme.of(context).textTheme.displayLarge?.color,
           ),
         ),
       ),

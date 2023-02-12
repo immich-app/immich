@@ -21,16 +21,18 @@ PODS:
     - Flutter
   - package_info_plus (0.4.5):
     - Flutter
-  - path_provider_ios (0.0.1):
+  - path_provider_foundation (0.0.1):
     - Flutter
+    - FlutterMacOS
   - photo_manager (2.0.0):
     - Flutter
     - FlutterMacOS
   - SAMKeychain (1.5.3)
   - share_plus (0.0.1):
     - Flutter
-  - shared_preferences_ios (0.0.1):
+  - shared_preferences_foundation (0.0.1):
     - Flutter
+    - FlutterMacOS
   - sqflite (0.0.2):
     - Flutter
     - FMDB (>= 2.7.5)
@@ -52,10 +54,10 @@ DEPENDENCIES:
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - isar_flutter_libs (from `.symlinks/plugins/isar_flutter_libs/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
-  - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/ios`)
   - photo_manager (from `.symlinks/plugins/photo_manager/ios`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
-  - shared_preferences_ios (from `.symlinks/plugins/shared_preferences_ios/ios`)
+  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/ios`)
   - sqflite (from `.symlinks/plugins/sqflite/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - video_player_avfoundation (from `.symlinks/plugins/video_player_avfoundation/ios`)
@@ -86,14 +88,14 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/isar_flutter_libs/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
-  path_provider_ios:
-    :path: ".symlinks/plugins/path_provider_ios/ios"
+  path_provider_foundation:
+    :path: ".symlinks/plugins/path_provider_foundation/ios"
   photo_manager:
     :path: ".symlinks/plugins/photo_manager/ios"
   share_plus:
     :path: ".symlinks/plugins/share_plus/ios"
-  shared_preferences_ios:
-    :path: ".symlinks/plugins/shared_preferences_ios/ios"
+  shared_preferences_foundation:
+    :path: ".symlinks/plugins/shared_preferences_foundation/ios"
   sqflite:
     :path: ".symlinks/plugins/sqflite/ios"
   url_launcher_ios:
@@ -108,23 +110,23 @@ SPEC CHECKSUMS:
   flutter_native_splash: 52501b97d1c0a5f898d687f1646226c1f93c56ef
   flutter_udid: 0848809dbed4c055175747ae6a45a8b4f6771e1c
   flutter_web_auth: c25208760459cec375a3c39f6a8759165ca0fa4d
-  fluttertoast: 16fbe6039d06a763f3533670197d01fc73459037
+  fluttertoast: eb263d302cc92e04176c053d2385237e9f43fad0
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   image_picker_ios: b786a5dcf033a8336a657191401bfdf12017dabb
   integration_test: a1e7d09bd98eca2fc37aefd79d4f41ad37bdbbe5
   isar_flutter_libs: b69f437aeab9c521821c3f376198c4371fa21073
   package_info_plus: 6c92f08e1f853dc01228d6f553146438dafcd14e
-  path_provider_ios: 14f3d2fd28c4fdb42f44e0f751d12861c43cee02
+  path_provider_foundation: 37748e03f12783f9de2cb2c4eadfaa25fe6d4852
   photo_manager: 4f6810b7dfc4feb03b461ac1a70dacf91fba7604
   SAMKeychain: 483e1c9f32984d50ca961e26818a534283b4cd5c
   share_plus: 056a1e8ac890df3e33cb503afffaf1e9b4fbae68
-  shared_preferences_ios: 548a61f8053b9b8a49ac19c1ffbc8b92c50d68ad
+  shared_preferences_foundation: 297b3ebca31b34ec92be11acd7fb0ba932c822ca
   sqflite: 6d358c025f5b867b29ed92fc697fd34924e11904
   Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
-  url_launcher_ios: 839c58cdb4279282219f5e248c3321761ff3c4de
+  url_launcher_ios: ae1517e5e344f5544fb090b079e11f399dfbe4d2
   video_player_avfoundation: e489aac24ef5cf7af82702979ed16f2a5ef84cff
   wakelock: d0fc7c864128eac40eba1617cb5264d9c940b46f
 
-PODFILE CHECKSUM: 05c3056158482c567a3e0cdab1351ceeee238a07
+PODFILE CHECKSUM: c798208781ca5116c4a3d5927d689946791f0189
 
 COCOAPODS: 1.11.3

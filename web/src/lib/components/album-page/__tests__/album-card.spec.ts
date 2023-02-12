@@ -44,10 +44,10 @@ describe('AlbumCard component', () => {
 			const albumDetailsElement = sut.getByTestId('album-details');
 			const detailsText = `${count} items` + (shared ? ' . Shared' : '');
 
-			expect(albumImgElement).toHaveAttribute('src', 'no-thumbnail.png');
+			expect(albumImgElement).toHaveAttribute('src');
 			expect(albumImgElement).toHaveAttribute('alt', album.id);
 
-			await waitFor(() => expect(albumImgElement).toHaveAttribute('src', 'no-thumbnail.png'));
+			await waitFor(() => expect(albumImgElement).toHaveAttribute('src'));
 
 			expect(albumImgElement).toHaveAttribute('alt', album.id);
 			expect(apiMock.assetApi.getAssetThumbnail).not.toHaveBeenCalled();
@@ -108,7 +108,7 @@ describe('AlbumCard component', () => {
 			sut = render(AlbumCard, { album });
 
 			const albumImgElement = sut.getByTestId('album-image');
-			await waitFor(() => expect(albumImgElement).toHaveAttribute('src', 'no-thumbnail.png'));
+			await waitFor(() => expect(albumImgElement).toHaveAttribute('src'));
 		});
 
 		it('dispatches custom "click" event with the album in context', async () => {

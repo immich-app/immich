@@ -9,6 +9,7 @@
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
 	import { handleError } from '$lib/utils/handle-error';
+	import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
 
 	const handleCopy = async () => {
 		//
@@ -33,7 +34,7 @@
 	<section class="bg-immich-bg dark:bg-immich-dark-bg">
 		<div class="flex border-b dark:border-b-immich-dark-gray place-items-center px-6 py-4">
 			<a class="flex gap-2 place-items-center hover:cursor-pointer" href="/photos">
-				<img src="/immich-logo.svg" alt="immich logo" height="35" width="35" draggable="false" />
+				<ImmichLogo height="35" width="35" />
 				<h1 class="font-immich-title text-2xl text-immich-primary dark:text-immich-dark-primary">
 					IMMICH
 				</h1>
