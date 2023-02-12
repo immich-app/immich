@@ -64,8 +64,12 @@
 	let isShowAlbumPicker = false;
 	let addToSharedAlbum = false;
 
-	const handleShowMenu = ({ x, y }: MouseEvent) => {
-		contextMenuPosition = { x, y };
+	const handleShowMenu = (event: CustomEvent) => {
+		contextMenuPosition = {
+			x: event.detail.mouseEvent.x,
+			y: event.detail.mouseEvent.y
+		};
+
 		isShowAddMenu = !isShowAddMenu;
 	};
 

@@ -75,23 +75,22 @@ class RenderList {
 
   RenderList(this.elements);
 
-  static Map<DateTime, List<Asset>> _groupAssets(
+  static Map<String, List<Asset>> _groupAssets(
     List<Asset> assets,
     GroupAssetsBy groupBy,
   ) {
+    assets.sortByCompare<DateTime>(
+      (e) => e.createdAt,
+      (a, b) => b.compareTo(a),
+    );
+
     if (groupBy == GroupAssetsBy.day) {
       return assets.groupListsBy(
-        (element) {
-          final date = element.createdAt.toLocal();
-          return DateTime(date.year, date.month, date.day);
-        },
+        (element) => DateFormat('y-MM-dd').format(element.createdAt.toLocal()),
       );
     } else if (groupBy == GroupAssetsBy.month) {
       return assets.groupListsBy(
-        (element) {
-          final date = element.createdAt.toLocal();
-          return DateTime(date.year, date.month);
-        },
+        (element) => DateFormat('y-MM').format(element.createdAt.toLocal()),
       );
     }
 
@@ -114,11 +113,10 @@ class RenderList {
 
     final groups = _groupAssets(allAssets, groupBy);
 
-    groups.entries.sortedBy((e) =>e.key).reversed.forEach((entry) {
-      final date = entry.key;
-      final assets = entry.value;
-
+    groups.forEach((groupName, assets) {
       try {
+        final date = assets.first.createdAt.toLocal();
+
         // Month title
         if (groupBy == GroupAssetsBy.day &&
             (lastDate == null || lastDate!.month != date.month)) {

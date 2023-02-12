@@ -16,13 +16,14 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
-	import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
 
 	export let album: AlbumResponseDto;
 
+	const NO_THUMBNAIL = 'no-thumbnail.png';
+
 	let imageData = `/api/asset/thumbnail/${album.albumThumbnailAssetId}?format=${ThumbnailFormat.Webp}`;
 	if (!album.albumThumbnailAssetId) {
-		imageData = noThumbnailUrl;
+		imageData = NO_THUMBNAIL;
 	}
 
 	const dispatchClick = createEventDispatcher<OnClick>();
@@ -50,7 +51,7 @@
 	};
 
 	onMount(async () => {
-		imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || noThumbnailUrl;
+		imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || NO_THUMBNAIL;
 	});
 
 	const locale = navigator.language;

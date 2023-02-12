@@ -8,7 +8,6 @@
 	import ThemeButton from '../theme-button.svelte';
 	import { AppRoute } from '../../../constants';
 	import AccountInfoPanel from './account-info-panel.svelte';
-	import ImmichLogo from '../immich-logo.svelte';
 	export let user: UserResponseDto;
 	export let shouldShowUploadButton = true;
 
@@ -51,7 +50,7 @@
 			class="flex gap-2 place-items-center hover:cursor-pointer"
 			href="/photos"
 		>
-			<ImmichLogo height="35" width="35" />
+			<img src="/immich-logo.svg" alt="immich logo" height="35" width="35" draggable="false" />
 			<h1 class="font-immich-title text-2xl text-immich-primary dark:text-immich-dark-primary">
 				IMMICH
 			</h1>

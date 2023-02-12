@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { AlbumResponseDto, api, ThumbnailFormat, UserResponseDto } from '@api';
 	import { fade } from 'svelte/transition';
-	import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
 
 	export let album: AlbumResponseDto;
 	export let user: UserResponseDto;
 
 	const loadImageData = async (thubmnailId: string | null) => {
 		if (thubmnailId == null) {
-			return noThumbnailUrl;
+			return '/no-thumbnail.png';
 		}
 
 		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId, ThumbnailFormat.Webp, {

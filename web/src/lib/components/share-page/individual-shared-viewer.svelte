@@ -17,7 +17,6 @@
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
-	import ImmichLogo from '../shared-components/immich-logo.svelte';
 
 	export let sharedLink: SharedLinkResponseDto;
 	export let isOwned: boolean;
@@ -123,7 +122,7 @@
 					class="flex gap-2 place-items-center hover:cursor-pointer ml-6"
 					href="https://immich.app"
 				>
-					<ImmichLogo height="30" width="30" />
+					<img src="/immich-logo.svg" alt="immich logo" height="30" width="30" draggable="false" />
 					<h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">
 						IMMICH
 					</h1>

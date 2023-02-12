@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
@@ -28,6 +29,7 @@ class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
     final ServerInfoState serverInfoState = ref.watch(serverInfoProvider);
 
     return AppBar(
+      centerTitle: true,
       backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(
@@ -42,9 +44,10 @@ class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
                 top: 5,
                 child: IconButton(
                   splashRadius: 25,
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.face_outlined,
                     size: 30,
+                    color: Theme.of(context).primaryColor,
                   ),
                   onPressed: () {
                     Scaffold.of(context).openDrawer();
@@ -109,13 +112,16 @@ class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
               splashRadius: 25,
               iconSize: 30,
               icon: isEnableAutoBackup
-                  ? const Icon(
+                  ? Icon(
                       Icons.backup_rounded,
+                      color: Theme.of(context).primaryColor,
                     )
                   : Badge(
                       padding: const EdgeInsets.all(4),
-                      backgroundColor: Colors.white,
-                      label: const Icon(
+                      elevation: 3,
+                      position: BadgePosition.bottomEnd(bottom: -4, end: -4),
+                      badgeColor: Colors.white,
+                      badgeContent: const Icon(
                         Icons.cloud_off_rounded,
                         size: 8,
                         color: Colors.indigo,

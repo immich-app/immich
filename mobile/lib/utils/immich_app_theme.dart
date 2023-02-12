@@ -20,83 +20,6 @@ final immichThemeProvider = StateProvider<ThemeMode>((ref) {
   }
 });
 
-ThemeData base = ThemeData(
-  chipTheme: const ChipThemeData(
-    side: BorderSide.none,
-  ),
-);
-
-ThemeData immichLightTheme = ThemeData(
-  useMaterial3: true,
-  brightness: Brightness.light,
-  primarySwatch: Colors.indigo,
-  primaryColor: Colors.indigo,
-  hintColor: Colors.indigo,
-  fontFamily: 'WorkSans',
-  scaffoldBackgroundColor: immichBackgroundColor,
-  snackBarTheme: const SnackBarThemeData(
-    contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
-  ),
-  appBarTheme: AppBarTheme(
-    titleTextStyle: const TextStyle(
-      fontFamily: 'WorkSans',
-      color: Colors.indigo,
-    ),
-    backgroundColor: immichBackgroundColor,
-    foregroundColor: Colors.indigo,
-    elevation: 0,
-    scrolledUnderElevation: 0,
-    centerTitle: true,
-  ),
-  bottomNavigationBarTheme: BottomNavigationBarThemeData(
-    type: BottomNavigationBarType.fixed,
-    backgroundColor: immichBackgroundColor,
-    selectedItemColor: Colors.indigo,
-  ),
-  cardTheme: const CardTheme(
-    surfaceTintColor: Colors.transparent,
-  ),
-  drawerTheme: DrawerThemeData(
-    backgroundColor: immichBackgroundColor,
-  ),
-  textTheme: const TextTheme(
-    displayLarge: TextStyle(
-      fontSize: 26,
-      fontWeight: FontWeight.bold,
-      color: Colors.indigo,
-    ),
-    displayMedium: TextStyle(
-      fontSize: 14,
-      fontWeight: FontWeight.bold,
-      color: Colors.black87,
-    ),
-    displaySmall: TextStyle(
-      fontSize: 12,
-      fontWeight: FontWeight.bold,
-      color: Colors.indigo,
-    ),
-  ),
-  elevatedButtonTheme: ElevatedButtonThemeData(
-    style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.indigo,
-      foregroundColor: Colors.white,
-    ),
-  ),
-  chipTheme: base.chipTheme,
-  popupMenuTheme: const PopupMenuThemeData(
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.all(Radius.circular(10)),
-    ),
-    surfaceTintColor: Colors.transparent,
-    color: Colors.white,
-  ),
-  navigationBarTheme: NavigationBarThemeData(
-    indicatorColor: Colors.indigo.withOpacity(0.15),
-    backgroundColor: immichBackgroundColor,
-    surfaceTintColor: Colors.transparent,
-  ),
-);
-
 ThemeData immichDarkTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark,
@@ -120,8 +43,7 @@ ThemeData immichDarkTheme = ThemeData(
     ),
     backgroundColor: const Color.fromARGB(255, 32, 33, 35),
     foregroundColor: immichDarkThemePrimaryColor,
-    elevation: 0,
-    scrolledUnderElevation: 0,
+    elevation: 1,
     centerTitle: true,
   ),
   bottomNavigationBarTheme: BottomNavigationBarThemeData(
@@ -134,17 +56,17 @@ ThemeData immichDarkTheme = ThemeData(
     scrimColor: Colors.white.withOpacity(0.1),
   ),
   textTheme: TextTheme(
-    displayLarge: const TextStyle(
+    headline1: const TextStyle(
       fontSize: 26,
       fontWeight: FontWeight.bold,
       color: Color.fromARGB(255, 255, 255, 255),
     ),
-    displayMedium: const TextStyle(
+    headline2: const TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.bold,
       color: Color.fromARGB(255, 255, 255, 255),
     ),
-    displaySmall: TextStyle(
+    headline3: TextStyle(
       fontSize: 12,
       fontWeight: FontWeight.bold,
       color: immichDarkThemePrimaryColor,
@@ -157,19 +79,57 @@ ThemeData immichDarkTheme = ThemeData(
       backgroundColor: immichDarkThemePrimaryColor,
     ),
   ),
-  chipTheme: base.chipTheme,
-  popupMenuTheme: const PopupMenuThemeData(
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.all(Radius.circular(10)),
-    ),
-    surfaceTintColor: Colors.transparent,
+);
+
+ThemeData immichLightTheme = ThemeData(
+  useMaterial3: true,
+  brightness: Brightness.light,
+  primarySwatch: Colors.indigo,
+  hintColor: Colors.indigo,
+  fontFamily: 'WorkSans',
+  scaffoldBackgroundColor: immichBackgroundColor,
+  snackBarTheme: const SnackBarThemeData(
+    contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
   ),
-  navigationBarTheme: NavigationBarThemeData(
-    indicatorColor: immichDarkThemePrimaryColor.withOpacity(0.4),
-    iconTheme: const MaterialStatePropertyAll(
-      IconThemeData(color: Colors.white),
+  appBarTheme: AppBarTheme(
+    titleTextStyle: const TextStyle(
+      fontFamily: 'WorkSans',
+      color: Colors.indigo,
     ),
-    backgroundColor: Colors.grey[900],
-    surfaceTintColor: Colors.transparent,
+    backgroundColor: immichBackgroundColor,
+    foregroundColor: Colors.indigo,
+    elevation: 1,
+    centerTitle: true,
+  ),
+  bottomNavigationBarTheme: BottomNavigationBarThemeData(
+    type: BottomNavigationBarType.fixed,
+    backgroundColor: immichBackgroundColor,
+    selectedItemColor: Colors.indigo,
+  ),
+  drawerTheme: DrawerThemeData(
+    backgroundColor: immichBackgroundColor,
+  ),
+  textTheme: const TextTheme(
+    headline1: TextStyle(
+      fontSize: 26,
+      fontWeight: FontWeight.bold,
+      color: Colors.indigo,
+    ),
+    headline2: TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.bold,
+      color: Colors.black87,
+    ),
+    headline3: TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.bold,
+      color: Colors.indigo,
+    ),
+  ),
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.indigo,
+      foregroundColor: Colors.white,
+    ),
   ),
 );

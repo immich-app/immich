@@ -40,7 +40,6 @@
 	import { openFileUploadDialog } from '$lib/utils/file-uploader';
 	import { bulkDownload } from '$lib/utils/asset-utils';
 	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
-	import ImmichLogo from '../shared-components/immich-logo.svelte';
 
 	export let album: AlbumResponseDto;
 	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
@@ -330,8 +329,12 @@
 		}
 	};
 
-	const showAlbumOptionsMenu = ({ x, y }: MouseEvent) => {
-		contextMenuPosition = { x, y };
+	const showAlbumOptionsMenu = (event: CustomEvent) => {
+		contextMenuPosition = {
+			x: event.detail.mouseEvent.x,
+			y: event.detail.mouseEvent.y
+		};
+
 		isShowAlbumOptions = !isShowAlbumOptions;
 	};
 
@@ -416,7 +419,13 @@
 						class="flex gap-2 place-items-center hover:cursor-pointer ml-6"
 						href="https://immich.app"
 					>
-						<ImmichLogo height={30} width={30} />
+						<img
+							src="/immich-logo.svg"
+							alt="immich logo"
+							height="30"
+							width="30"
+							draggable="false"
+						/>
 						<h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">
 							IMMICH
 						</h1>
@@ -463,7 +472,7 @@
 					{#if !isPublicShared}
 						<CircleIconButton
 							title="Album options"
-							on:click={showAlbumOptionsMenu}
+							on:click={(event) => showAlbumOptionsMenu(event)}
 							logo={DotsVertical}
 						/>
 					{/if}

@@ -15,7 +15,6 @@ class LibraryPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final albums = ref.watch(albumProvider);
-    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     useEffect(
       () {
@@ -123,12 +122,9 @@ class LibraryPage extends HookConsumerWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: isDarkMode
-                          ? const Color.fromARGB(255, 53, 53, 53)
-                          : const Color.fromARGB(255, 203, 203, 203),
+                      color: Colors.grey,
                     ),
-                    color: isDarkMode ? Colors.grey[900] : Colors.grey[50],
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Center(
                     child: Icon(
@@ -172,22 +168,25 @@ class LibraryPage extends HookConsumerWidget {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 12.0,
-                color: isDarkMode ? Colors.white : Colors.black,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
               ),
             ),
           ),
           style: OutlinedButton.styleFrom(
             padding: const EdgeInsets.all(12),
-            backgroundColor: isDarkMode ? Colors.grey[900] : Colors.grey[50],
             side: BorderSide(
-              color: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey[600]!
+                  : Colors.grey[300]!,
             ),
             alignment: Alignment.centerLeft,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(6.0),
+            ),
           ),
-          icon: Icon(
-            icon,
-            color: Theme.of(context).primaryColor,
-          ),
+          icon: Icon(icon, color: Theme.of(context).primaryColor),
         ),
       );
     }
@@ -254,7 +253,7 @@ class LibraryPage extends HookConsumerWidget {
               delegate: SliverChildBuilderDelegate(
                 childCount: sorted.length + 1,
                 (context, index) {
-                  if (index == 0) {
+                  if (index  == 0) {
                     return buildCreateAlbumButton();
                   }
 

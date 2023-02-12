@@ -91,7 +91,7 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
                     children: [
                       Text(
                         'Add to album',
-                        style: Theme.of(context).textTheme.displayMedium,
+                        style: Theme.of(context).textTheme.headline2,
                       ),
                       TextButton.icon(
                         icon: const Icon(Icons.add),

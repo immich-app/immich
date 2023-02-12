@@ -15,7 +15,7 @@ class ProfileDrawer extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    buildSignOutButton() {
+    buildSignoutButton() {
       return ListTile(
         horizontalTitleGap: 0,
         leading: SizedBox(
@@ -95,9 +95,6 @@ class ProfileDrawer extends HookConsumerWidget {
     }
 
     return Drawer(
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
-      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -108,7 +105,7 @@ class ProfileDrawer extends HookConsumerWidget {
               const ProfileDrawerHeader(),
               buildSettingButton(),
               buildAppLogButton(),
-              buildSignOutButton(),
+              buildSignoutButton(),
             ],
           ),
           const ServerInfoBox()

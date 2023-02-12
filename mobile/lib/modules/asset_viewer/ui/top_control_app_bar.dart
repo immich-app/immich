@@ -31,10 +31,12 @@ class TopControlAppBar extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const double iconSize = 18.0;
+    double iconSize = 18.0;
 
     Widget buildFavoriteButton() {
         return IconButton(
+          iconSize: iconSize,
+          splashRadius: iconSize,
           onPressed: () {
             onFavorite();
           },
@@ -58,13 +60,12 @@ class TopControlAppBar extends HookConsumerWidget {
           color: Colors.grey[200],
         ),
       ),
-      actionsIconTheme: const IconThemeData(
-        size: iconSize,
-      ),
       actions: [
         if (asset.isRemote) buildFavoriteButton(),
         if (asset.livePhotoVideoId != null)
           IconButton(
+            iconSize: iconSize,
+            splashRadius: iconSize,
             onPressed: () {
               onToggleMotionVideo();
             },
@@ -80,13 +81,17 @@ class TopControlAppBar extends HookConsumerWidget {
           ),
         if (!asset.isLocal)
           IconButton(
+            iconSize: iconSize,
+            splashRadius: iconSize,
             onPressed: onDownloadPressed,
             icon: Icon(
-              Icons.cloud_download_outlined,
+              Icons.cloud_download_rounded,
               color: Colors.grey[200],
             ),
           ),
         IconButton(
+          iconSize: iconSize,
+          splashRadius: iconSize,
           onPressed: () {
             onSharePressed();
           },
@@ -97,6 +102,8 @@ class TopControlAppBar extends HookConsumerWidget {
         ),
         if (asset.isRemote)
           IconButton(
+            iconSize: iconSize,
+            splashRadius: iconSize,
             onPressed: () {
               onAddToAlbumPressed();
             },
@@ -106,6 +113,8 @@ class TopControlAppBar extends HookConsumerWidget {
             ),
           ),
         IconButton(
+          iconSize: iconSize,
+          splashRadius: iconSize,
           onPressed: () {
             onDeletePressed();
           },
@@ -115,11 +124,13 @@ class TopControlAppBar extends HookConsumerWidget {
           ),
         ),
         IconButton(
+          iconSize: iconSize,
+          splashRadius: iconSize,
           onPressed: () {
             onMoreInfoPressed();
           },
           icon: Icon(
-            Icons.info_outline_rounded,
+            Icons.more_horiz_rounded,
             color: Colors.grey[200],
           ),
         ),

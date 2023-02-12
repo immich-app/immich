@@ -6,7 +6,6 @@
 	import Link from 'svelte-material-icons/Link.svelte';
 	import ShareCircle from 'svelte-material-icons/ShareCircle.svelte';
 	import { goto } from '$app/navigation';
-	import ImmichLogo from '../shared-components/immich-logo.svelte';
 
 	export let album: AlbumResponseDto;
 	export let sharedUsersInAlbum: Set<UserResponseDto>;
@@ -54,7 +53,7 @@
 <BaseModal on:close={() => dispatch('close')}>
 	<svelte:fragment slot="title">
 		<span class="flex gap-2 place-items-center">
-			<ImmichLogo width={24} />
+			<img src="/immich-logo.svg" width="24" alt="Immich" draggable="false" />
 			<p class="font-medium">Invite to album</p>
 		</span>
 	</svelte:fragment>

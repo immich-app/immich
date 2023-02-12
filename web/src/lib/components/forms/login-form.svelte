@@ -5,7 +5,6 @@
 	import { handleError } from '$lib/utils/handle-error';
 	import { api, oauth, OAuthConfigResponseDto } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
-	import ImmichLogo from '../shared-components/immich-logo.svelte';
 
 	let error: string;
 	let email = '';
@@ -78,7 +77,14 @@
 	class="border bg-white dark:bg-immich-dark-gray dark:border-immich-dark-gray p-4 shadow-sm w-[500px] max-w-[95vw] rounded-md py-8"
 >
 	<div class="flex flex-col place-items-center place-content-center gap-4 px-4">
-		<ImmichLogo class="text-center" height="100" width="100" />
+		<img
+			class="text-center"
+			src="/immich-logo.svg"
+			height="100"
+			width="100"
+			alt="immich-logo"
+			draggable="false"
+		/>
 		<h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium">Login</h1>
 	</div>
 

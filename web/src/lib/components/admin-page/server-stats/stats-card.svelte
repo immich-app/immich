@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type Icon from 'svelte-material-icons/AbTesting.svelte';
 	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
-	export let logo: typeof Icon;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	export let logo: any;
 	export let title: string;
 	export let value: string;
 	export let unit: string | undefined = undefined;
@@ -13,10 +13,13 @@
 		}
 
 		const maxLength = 13;
+		let result = '';
 		const valueLength = parseInt(value).toString().length;
 		const zeroLength = maxLength - valueLength;
-
-		return '0'.repeat(zeroLength);
+		for (let i = 0; i < zeroLength; i++) {
+			result += '0';
+		}
+		return result;
 	};
 </script>
 
