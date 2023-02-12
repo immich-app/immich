@@ -37,15 +37,19 @@ class ProfileDrawerHeader extends HookConsumerWidget {
       if (uploadProfileImageStatus == UploadProfileStatus.idle) {
         if (authState.profileImagePath.isNotEmpty) {
           return CircleAvatar(
+            backgroundColor: Theme.of(context).primaryColor,
             radius: 35,
-            backgroundImage: NetworkImage(
-              '$endpoint/user/profile-image/${authState.userId}?d=${dummy++}',
+            child: CircleAvatar(
+              radius: 34,
+              backgroundImage: NetworkImage(
+                '$endpoint/user/profile-image/${authState.userId}?d=${dummy++}',
+              ),
+              backgroundColor: Colors.transparent,
             ),
-            backgroundColor: Colors.transparent,
           );
         } else {
           return const CircleAvatar(
-            radius: 35,
+            radius: 33,
             backgroundImage: AssetImage('assets/immich-logo-no-outline.png'),
             backgroundColor: Colors.transparent,
           );
@@ -98,7 +102,7 @@ class ProfileDrawerHeader extends HookConsumerWidget {
 
     useEffect(
       () {
-        buildUserProfileImage();
+        // buildUserProfileImage();
         return null;
       },
       [],
@@ -136,7 +140,7 @@ class ProfileDrawerHeader extends HookConsumerWidget {
                 child: GestureDetector(
                   onTap: pickUserProfileImage,
                   child: Material(
-                    color: Colors.grey[100],
+                    color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
                     elevation: 3,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50.0),

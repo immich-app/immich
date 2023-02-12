@@ -51,10 +51,15 @@ class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
             Scaffold.of(context).openDrawer();
           },
           child: CircleAvatar(
-            backgroundImage: CachedNetworkImageProvider(
-              '$endpoint/user/profile-image/${authState.userId}',
-            ),
+            backgroundColor: Theme.of(context).primaryColor,
             radius: 18,
+            child: CircleAvatar(
+              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              backgroundImage: CachedNetworkImageProvider(
+                '$endpoint/user/profile-image/${authState.userId}',
+              ),
+              radius: 17,
+            ),
           ),
         );
       }
