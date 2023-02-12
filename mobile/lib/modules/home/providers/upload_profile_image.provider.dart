@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -73,7 +72,7 @@ class UploadProfileImageState {
 
 class UploadProfileImageNotifier
     extends StateNotifier<UploadProfileImageState> {
-  UploadProfileImageNotifier(this._userService)
+  UploadProfileImageNotifier(this._userSErvice)
       : super(
           UploadProfileImageState(
             profileImagePath: '',
@@ -81,17 +80,12 @@ class UploadProfileImageNotifier
           ),
         );
 
-  final UserService _userService;
+  final UserService _userSErvice;
 
-  Future<bool> upload(XFile file, {
-    String? invalidateUrl,
-  }) async {
+  Future<bool> upload(XFile file) async {
     state = state.copyWith(status: UploadProfileStatus.loading);
 
-    var res = await _userService.uploadProfileImage(file);
-    if (invalidateUrl != null) {
-      await CachedNetworkImage.evictFromCache(invalidateUrl);
-    }
+    var res = await _userSErvice.uploadProfileImage(file);
 
     if (res != null) {
       debugPrint("Succesfully upload profile image");
