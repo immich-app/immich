@@ -2,11 +2,11 @@
 
 function mobile {
   rm -rf ../mobile/openapi
-  cd ./openapi-generator/templates/serialization/native
+  cd ./openapi-generator/templates/mobile/serialization/native
   wget -O native_class.mustache https://raw.githubusercontent.com/OpenAPITools/openapi-generator/master/modules/openapi-generator/src/main/resources/dart2/serialization/native/native_class.mustache
   patch -u native_class.mustache <native_class.mustache.patch
-  cd ../../../..
-  npx openapi-generator-cli generate -g dart -i ./immich-openapi-specs.json -o ../mobile/openapi -t ./openapi-generator/templates
+  cd ../../../../..
+  npx openapi-generator-cli generate -g dart -i ./immich-openapi-specs.json -o ../mobile/openapi -t ./openapi-generator/templates/mobile
 
   # Post generate patches
   patch --no-backup-if-mismatch -u ../mobile/openapi/lib/api_client.dart <./openapi-generator/patch/api_client.dart.patch
@@ -15,7 +15,11 @@ function mobile {
 
 function web {
   rm -rf ../web/src/api/open-api
-  npx openapi-generator-cli generate -g typescript-axios -i ./immich-openapi-specs.json -o ../web/src/api/open-api
+  cd ./openapi-generator/templates/web
+  wget -O apiInner.mustache https://raw.githubusercontent.com/OpenAPITools/openapi-generator/v6.0.1/modules/openapi-generator/src/main/resources/typescript-axios/apiInner.mustache
+  patch -u apiInner.mustache < apiInner.mustache.patch
+  cd ../../..
+  npx openapi-generator-cli generate -g typescript-axios -i ./immich-openapi-specs.json -o ../web/src/api/open-api -t ./openapi-generator/templates/web
 }
 
 if [[ $1 == 'mobile' ]]; then

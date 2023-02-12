@@ -166,7 +166,7 @@ void main() {
 
     // 
     //
-    //Future<AssetFileUploadResponseDto> uploadFile(MultipartFile assetData) async
+    //Future<AssetFileUploadResponseDto> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String createdAt, String modifiedAt, bool isFavorite, String fileExtension, { MultipartFile livePhotoData, bool isVisible, String duration }) async
     test('test uploadFile', () async {
       // TODO
     });

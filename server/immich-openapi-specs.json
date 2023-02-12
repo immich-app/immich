@@ -1077,7 +1077,7 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/AssetFileUploadDto"
+                "$ref": "#/components/schemas/CreateAssetDto"
               }
             }
           }
@@ -3758,16 +3758,54 @@
           "profileImagePath"
         ]
       },
-      "AssetFileUploadDto": {
+      "CreateAssetDto": {
         "type": "object",
         "properties": {
+          "assetType": {
+            "$ref": "#/components/schemas/AssetTypeEnum"
+          },
           "assetData": {
             "type": "string",
             "format": "binary"
+          },
+          "livePhotoData": {
+            "type": "string",
+            "format": "binary"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "modifiedAt": {
+            "type": "string"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "fileExtension": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string"
           }
         },
         "required": [
-          "assetData"
+          "assetType",
+          "assetData",
+          "deviceAssetId",
+          "deviceId",
+          "createdAt",
+          "modifiedAt",
+          "isFavorite",
+          "fileExtension"
         ]
       },
       "AssetFileUploadResponseDto": {

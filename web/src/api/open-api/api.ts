@@ -4402,13 +4402,37 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
+         * @param {AssetTypeEnum} assetType 
          * @param {any} assetData 
+         * @param {string} deviceAssetId 
+         * @param {string} deviceId 
+         * @param {string} createdAt 
+         * @param {string} modifiedAt 
+         * @param {boolean} isFavorite 
+         * @param {string} fileExtension 
+         * @param {any} [livePhotoData] 
+         * @param {boolean} [isVisible] 
+         * @param {string} [duration] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadFile: async (assetData: any, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        uploadFile: async (assetType: AssetTypeEnum, assetData: any, deviceAssetId: string, deviceId: string, createdAt: string, modifiedAt: string, isFavorite: boolean, fileExtension: string, livePhotoData?: any, isVisible?: boolean, duration?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assetType' is not null or undefined
+            assertParamExists('uploadFile', 'assetType', assetType)
             // verify required parameter 'assetData' is not null or undefined
             assertParamExists('uploadFile', 'assetData', assetData)
+            // verify required parameter 'deviceAssetId' is not null or undefined
+            assertParamExists('uploadFile', 'deviceAssetId', deviceAssetId)
+            // verify required parameter 'deviceId' is not null or undefined
+            assertParamExists('uploadFile', 'deviceId', deviceId)
+            // verify required parameter 'createdAt' is not null or undefined
+            assertParamExists('uploadFile', 'createdAt', createdAt)
+            // verify required parameter 'modifiedAt' is not null or undefined
+            assertParamExists('uploadFile', 'modifiedAt', modifiedAt)
+            // verify required parameter 'isFavorite' is not null or undefined
+            assertParamExists('uploadFile', 'isFavorite', isFavorite)
+            // verify required parameter 'fileExtension' is not null or undefined
+            assertParamExists('uploadFile', 'fileExtension', fileExtension)
             const localVarPath = `/asset/upload`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -4427,8 +4451,48 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
 
+            if (assetType !== undefined) { 
+                localVarFormParams.append('assetType', new Blob([JSON.stringify(assetType)], { type: "application/json", }));
+            }
+    
             if (assetData !== undefined) { 
                 localVarFormParams.append('assetData', assetData as any);
+            }
+    
+            if (livePhotoData !== undefined) { 
+                localVarFormParams.append('livePhotoData', livePhotoData as any);
+            }
+    
+            if (deviceAssetId !== undefined) { 
+                localVarFormParams.append('deviceAssetId', deviceAssetId as any);
+            }
+    
+            if (deviceId !== undefined) { 
+                localVarFormParams.append('deviceId', deviceId as any);
+            }
+    
+            if (createdAt !== undefined) { 
+                localVarFormParams.append('createdAt', createdAt as any);
+            }
+    
+            if (modifiedAt !== undefined) { 
+                localVarFormParams.append('modifiedAt', modifiedAt as any);
+            }
+    
+            if (isFavorite !== undefined) { 
+                localVarFormParams.append('isFavorite', isFavorite as any);
+            }
+    
+            if (isVisible !== undefined) { 
+                localVarFormParams.append('isVisible', isVisible as any);
+            }
+    
+            if (fileExtension !== undefined) { 
+                localVarFormParams.append('fileExtension', fileExtension as any);
+            }
+    
+            if (duration !== undefined) { 
+                localVarFormParams.append('duration', duration as any);
             }
     
     
@@ -4668,12 +4732,22 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {AssetTypeEnum} assetType 
          * @param {any} assetData 
+         * @param {string} deviceAssetId 
+         * @param {string} deviceId 
+         * @param {string} createdAt 
+         * @param {string} modifiedAt 
+         * @param {boolean} isFavorite 
+         * @param {string} fileExtension 
+         * @param {any} [livePhotoData] 
+         * @param {boolean} [isVisible] 
+         * @param {string} [duration] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadFile(assetData: any, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetFileUploadResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(assetData, options);
+        async uploadFile(assetType: AssetTypeEnum, assetData: any, deviceAssetId: string, deviceId: string, createdAt: string, modifiedAt: string, isFavorite: boolean, fileExtension: string, livePhotoData?: any, isVisible?: boolean, duration?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetFileUploadResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(assetType, assetData, deviceAssetId, deviceId, createdAt, modifiedAt, isFavorite, fileExtension, livePhotoData, isVisible, duration, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -4879,12 +4953,22 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
+         * @param {AssetTypeEnum} assetType 
          * @param {any} assetData 
+         * @param {string} deviceAssetId 
+         * @param {string} deviceId 
+         * @param {string} createdAt 
+         * @param {string} modifiedAt 
+         * @param {boolean} isFavorite 
+         * @param {string} fileExtension 
+         * @param {any} [livePhotoData] 
+         * @param {boolean} [isVisible] 
+         * @param {string} [duration] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadFile(assetData: any, options?: any): AxiosPromise<AssetFileUploadResponseDto> {
-            return localVarFp.uploadFile(assetData, options).then((request) => request(axios, basePath));
+        uploadFile(assetType: AssetTypeEnum, assetData: any, deviceAssetId: string, deviceId: string, createdAt: string, modifiedAt: string, isFavorite: boolean, fileExtension: string, livePhotoData?: any, isVisible?: boolean, duration?: string, options?: any): AxiosPromise<AssetFileUploadResponseDto> {
+            return localVarFp.uploadFile(assetType, assetData, deviceAssetId, deviceId, createdAt, modifiedAt, isFavorite, fileExtension, livePhotoData, isVisible, duration, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -5131,13 +5215,23 @@ export class AssetApi extends BaseAPI {
 
     /**
      * 
+     * @param {AssetTypeEnum} assetType 
      * @param {any} assetData 
+     * @param {string} deviceAssetId 
+     * @param {string} deviceId 
+     * @param {string} createdAt 
+     * @param {string} modifiedAt 
+     * @param {boolean} isFavorite 
+     * @param {string} fileExtension 
+     * @param {any} [livePhotoData] 
+     * @param {boolean} [isVisible] 
+     * @param {string} [duration] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public uploadFile(assetData: any, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).uploadFile(assetData, options).then((request) => request(this.axios, this.basePath));
+    public uploadFile(assetType: AssetTypeEnum, assetData: any, deviceAssetId: string, deviceId: string, createdAt: string, modifiedAt: string, isFavorite: boolean, fileExtension: string, livePhotoData?: any, isVisible?: boolean, duration?: string, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).uploadFile(assetType, assetData, deviceAssetId, deviceId, createdAt, modifiedAt, isFavorite, fileExtension, livePhotoData, isVisible, duration, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

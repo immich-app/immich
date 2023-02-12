@@ -1059,7 +1059,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadFile**
-> AssetFileUploadResponseDto uploadFile(assetData)
+> AssetFileUploadResponseDto uploadFile(assetType, assetData, deviceAssetId, deviceId, createdAt, modifiedAt, isFavorite, fileExtension, livePhotoData, isVisible, duration)
 
 
 
@@ -1076,10 +1076,20 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
+final assetType = ; // AssetTypeEnum | 
 final assetData = BINARY_DATA_HERE; // MultipartFile | 
+final deviceAssetId = deviceAssetId_example; // String | 
+final deviceId = deviceId_example; // String | 
+final createdAt = createdAt_example; // String | 
+final modifiedAt = modifiedAt_example; // String | 
+final isFavorite = true; // bool | 
+final fileExtension = fileExtension_example; // String | 
+final livePhotoData = BINARY_DATA_HERE; // MultipartFile | 
+final isVisible = true; // bool | 
+final duration = duration_example; // String | 
 
 try {
-    final result = api_instance.uploadFile(assetData);
+    final result = api_instance.uploadFile(assetType, assetData, deviceAssetId, deviceId, createdAt, modifiedAt, isFavorite, fileExtension, livePhotoData, isVisible, duration);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->uploadFile: $e\n');
@@ -1090,7 +1100,17 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
+ **assetType** | [**AssetTypeEnum**](AssetTypeEnum.md)|  | 
  **assetData** | **MultipartFile**|  | 
+ **deviceAssetId** | **String**|  | 
+ **deviceId** | **String**|  | 
+ **createdAt** | **String**|  | 
+ **modifiedAt** | **String**|  | 
+ **isFavorite** | **bool**|  | 
+ **fileExtension** | **String**|  | 
+ **livePhotoData** | **MultipartFile**|  | [optional] 
+ **isVisible** | **bool**|  | [optional] 
+ **duration** | **String**|  | [optional] 
 
 ### Return type
 
