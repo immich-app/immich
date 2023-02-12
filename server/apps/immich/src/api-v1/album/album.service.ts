@@ -187,13 +187,19 @@ export class AlbumService {
 
   async _checkValidThumbnail(album: AlbumEntity) {
     const assets = album.assets || [];
-    const valid = assets.some((asset) => asset.assetId === album.albumThumbnailAssetId);
-    if (!valid && assets.length > 0) {
-      // Replace album thumbnail with thumbnail of first asset in the album.
-      const albumThumbnailAssetId = assets[0].assetId;
 
+    // Check if the album's thumbnail is invalid by referencing
+    // an asset outside the album.
+    const invalid = assets.length > 0 && !assets.some((asset) => asset.assetId === album.albumThumbnailAssetId);
+
+    // Check if an empty album still has a thumbnail.
+    const isEmptyWithThumbnail = assets.length === 0 && album.albumThumbnailAssetId !== null;
+
+    if (invalid || isEmptyWithThumbnail) {
+      const albumThumbnailAssetId = assets[0]?.assetId;
+
+      album.albumThumbnailAssetId = albumThumbnailAssetId || null;
       await this._albumRepository.updateAlbum(album, { albumThumbnailAssetId });
-      album.albumThumbnailAssetId = albumThumbnailAssetId;
     }
   }
 

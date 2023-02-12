@@ -548,6 +548,26 @@ describe('Album service', () => {
     });
   });
 
+  it('removes the thumbnail for an empty album', async () => {
+    const albumEntity = _getOwnedAlbum();
+    const newAlbumEntity = { ...albumEntity, albumThumbnailAssetId: null };
+
+    albumEntity.albumThumbnailAssetId = 'e5e65c02-b889-4f3c-afe1-a39a96d578ed';
+    albumRepositoryMock.getList.mockImplementation(async () => [albumEntity]);
+    albumRepositoryMock.updateAlbum.mockImplementation(async () => newAlbumEntity);
+
+    const result = await sut.getAllAlbums(authUser, {});
+
+    expect(result).toHaveLength(1);
+    expect(result[0].albumThumbnailAssetId).toBeNull();
+    expect(albumRepositoryMock.getList).toHaveBeenCalledTimes(1);
+    expect(albumRepositoryMock.updateAlbum).toHaveBeenCalledTimes(1);
+    expect(albumRepositoryMock.getList).toHaveBeenCalledWith(albumEntity.ownerId, {});
+    expect(albumRepositoryMock.updateAlbum).toHaveBeenCalledWith(newAlbumEntity, {
+      albumThumbnailAssetId: undefined,
+    });
+  });
+
   it('listing empty albums does not unnecessarily update the album', async () => {
     const albumEntity = _getOwnedAlbum();
     albumRepositoryMock.getList.mockImplementation(async () => [albumEntity]);
