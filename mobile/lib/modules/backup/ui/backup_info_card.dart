@@ -14,11 +14,15 @@ class BackupInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Card(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(5), // if you need this
-        side: const BorderSide(
-          color: Colors.black12,
+        borderRadius: BorderRadius.circular(20), // if you need this
+        side: BorderSide(
+          color: isDarkMode
+              ? const Color.fromARGB(255, 101, 101, 101)
+              : Colors.black12,
           width: 1,
         ),
       ),
