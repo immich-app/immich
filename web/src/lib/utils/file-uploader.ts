@@ -2,12 +2,11 @@ import {
 	notificationController,
 	NotificationType
 } from './../components/shared-components/notification/notification';
-/* @vite-ignore */
-import * as exifr from 'exifr';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import type { UploadAsset } from '../models/upload-asset';
 import { api, AssetFileUploadResponseDto } from '@api';
 import { addAssetsToAlbum, getFileMimeType, getFilenameExtension } from '$lib/utils/asset-utils';
+import { Subject, mergeMap } from 'rxjs';
 
 export const openFileUploadDialog = (
 	albumId: string | undefined = undefined,
@@ -46,25 +45,20 @@ export const fileUploadHandler = async (
 	sharedKey: string | undefined = undefined,
 	onDone?: (id: string) => void
 ) => {
-	if (files.length > 50) {
-		notificationController.show({
-			type: NotificationType.Error,
-			message: `Cannot upload more than 50 files at a time - you are uploading ${files.length} files. 
-			Please check out <u>the bulk upload documentation</u> if you need to upload more than 50 files.`,
-			timeout: 10000,
-			action: { type: 'link', target: 'https://immich.app/docs/features/bulk-upload' }
-		});
-
-		return;
-	}
-
+	const files$ = new Subject<File>();
+	files$
+		.pipe(
+			mergeMap(async (file) => {
+				await fileUploader(file, albumId, sharedKey, onDone);
+			}, 2)
+		)
+		.subscribe();
 	const acceptedFile = files.filter((file) => {
 		const assetType = getFileMimeType(file).split('/')[0];
 		return assetType === 'video' || assetType === 'image';
 	});
-
-	for (const asset of acceptedFile) {
-		await fileUploader(asset, albumId, sharedKey, onDone);
+	for (const file of acceptedFile) {
+		files$.next(file);
 	}
 };
 
@@ -75,25 +69,15 @@ async function fileUploader(
 	sharedKey: string | undefined = undefined,
 	onDone?: (id: string) => void
 ) {
+	console.log('uploading', asset.name);
 	const mimeType = getFileMimeType(asset);
 	const assetType = mimeType.split('/')[0].toUpperCase();
 	const fileExtension = getFilenameExtension(asset.name);
 	const formData = new FormData();
+	const createdAt = new Date(asset.lastModified).toISOString();
+	const deviceAssetId = 'web' + '-' + asset.name + '-' + asset.lastModified;
 
 	try {
-		let exifData = null;
-
-		if (assetType !== 'VIDEO') {
-			exifData = await exifr.parse(asset).catch((e) => console.log('error parsing exif', e));
-		}
-
-		const createdAt =
-			exifData && exifData.DateTimeOriginal != null
-				? new Date(exifData.DateTimeOriginal).toISOString()
-				: new Date(asset.lastModified).toISOString();
-
-		const deviceAssetId = 'web' + '-' + asset.name + '-' + asset.lastModified;
-
 		// Create and add Unique ID of asset on the device
 		formData.append('deviceAssetId', deviceAssetId);
 
@@ -160,20 +144,18 @@ async function fileUploader(
 		};
 
 		request.upload.onload = () => {
-			setTimeout(() => {
-				uploadAssetsStore.removeUploadAsset(deviceAssetId);
-				const res: AssetFileUploadResponseDto = JSON.parse(request.response || '{}');
-				if (albumId) {
-					try {
-						if (res.id) {
-							addAssetsToAlbum(albumId, [res.id], sharedKey);
-						}
-					} catch (e) {
-						console.error('ERROR parsing data JSON in upload onload');
+			uploadAssetsStore.removeUploadAsset(deviceAssetId);
+			const res: AssetFileUploadResponseDto = JSON.parse(request.response || '{}');
+			if (albumId) {
+				try {
+					if (res.id) {
+						addAssetsToAlbum(albumId, [res.id], sharedKey);
 					}
+				} catch (e) {
+					console.error('ERROR parsing data JSON in upload onload');
 				}
-				onDone && onDone(res.id);
-			}, 1000);
+			}
+			onDone && onDone(res.id);
 		};
 
 		// listen for `error` event

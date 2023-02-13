@@ -63,11 +63,11 @@
 		"axios": "^0.27.2",
 		"cookie": "^0.4.2",
 		"copy-image-clipboard": "^2.1.2",
-		"exifr": "^7.1.3",
 		"handlebars": "^4.7.7",
 		"leaflet": "^1.8.0",
 		"lodash-es": "^4.17.21",
 		"luxon": "^3.1.1",
+		"rxjs": "^7.8.0",
 		"socket.io-client": "^4.5.1",
 		"svelte-material-icons": "^2.0.2"
 	}
