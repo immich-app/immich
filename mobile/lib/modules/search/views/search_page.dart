@@ -85,9 +85,7 @@ class SearchPage extends HookConsumerWidget {
                     itemCount: 1,
                     itemBuilder: ((context, index) {
                       return ThumbnailWithInfo(
-                        imageUrl:
-                            'https://images.unsplash.com/photo-1612178537253-bccd437b730e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8Ymxhbmt8ZW58MHx8MHx8&auto=format&fit=crop&w=700&q=60',
-                        textInfo: 'search_page_no_places'.tr(),
+                        textInfo: '',
                         onTap: () {},
                       );
                     }),
@@ -140,9 +138,8 @@ class SearchPage extends HookConsumerWidget {
                     itemCount: 1,
                     itemBuilder: ((context, index) {
                       return ThumbnailWithInfo(
-                        imageUrl:
-                            'https://images.unsplash.com/photo-1612178537253-bccd437b730e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8Ymxhbmt8ZW58MHx8MHx8&auto=format&fit=crop&w=700&q=60',
-                        textInfo: 'search_page_no_objects'.tr(),
+                        textInfo: '',
+                        noImageIcon: Icons.signal_cellular_no_sim_sharp,
                         onTap: () {},
                       );
                     }),
