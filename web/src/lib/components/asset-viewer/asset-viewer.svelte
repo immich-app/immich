@@ -304,7 +304,7 @@
 						on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
 					/>
 				{:else}
-					<PhotoViewer {publicSharedKey} {asset} on:close={closeViewer} />
+					<PhotoViewer {publicSharedKey} assetId={asset.id} on:close={closeViewer} />
 				{/if}
 			{:else}
 				<VideoViewer {publicSharedKey} assetId={asset.id} on:close={closeViewer} />
