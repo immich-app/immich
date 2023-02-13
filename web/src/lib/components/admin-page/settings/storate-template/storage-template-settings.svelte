@@ -12,7 +12,7 @@
 	import SupportedDatetimePanel from './supported-datetime-panel.svelte';
 	import SupportedVariablesPanel from './supported-variables-panel.svelte';
 	import SettingButtonsRow from '../setting-buttons-row.svelte';
-	import _ from 'lodash';
+	import _ from 'lodash-es';
 	import {
 		notificationController,
 		NotificationType

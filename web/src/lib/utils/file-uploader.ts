@@ -46,7 +46,6 @@ export const fileUploadHandler = async (
 	onDone?: (id: string) => void
 ) => {
 	const files$ = new Subject<File>();
-
 	files$
 		.pipe(
 			mergeMap(async (file) => {
@@ -54,12 +53,10 @@ export const fileUploadHandler = async (
 			}, 2)
 		)
 		.subscribe();
-
 	const acceptedFile = files.filter((file) => {
 		const assetType = getFileMimeType(file).split('/')[0];
 		return assetType === 'video' || assetType === 'image';
 	});
-
 	for (const file of acceptedFile) {
 		files$.next(file);
 	}
@@ -72,6 +69,7 @@ async function fileUploader(
 	sharedKey: string | undefined = undefined,
 	onDone?: (id: string) => void
 ) {
+	console.log('uploading', asset.name);
 	const mimeType = getFileMimeType(asset);
 	const assetType = mimeType.split('/')[0].toUpperCase();
 	const fileExtension = getFilenameExtension(asset.name);

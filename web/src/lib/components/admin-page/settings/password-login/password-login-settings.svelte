@@ -5,7 +5,7 @@
 	} from '$lib/components/shared-components/notification/notification';
 	import { handleError } from '$lib/utils/handle-error';
 	import { api, SystemConfigPasswordLoginDto } from '@api';
-	import _ from 'lodash';
+	import _ from 'lodash-es';
 	import { fade } from 'svelte/transition';
 	import ConfirmDisableLogin from '../confirm-disable-login.svelte';
 	import SettingButtonsRow from '../setting-buttons-row.svelte';
