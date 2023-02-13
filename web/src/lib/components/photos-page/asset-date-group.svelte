@@ -4,7 +4,7 @@
 	import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
 	import { fly } from 'svelte/transition';
 	import { AssetResponseDto } from '@api';
-	import { chain } from 'lodash-es';
+	import lodash from 'lodash-es';
 	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
 	import {
 		assetInteractionStore,
@@ -29,7 +29,8 @@
 	let isMouseOverGroup = false;
 	let actualBucketHeight: number;
 	let hoveredDateGroup = '';
-	$: assetsGroupByDate = chain(assets)
+	$: assetsGroupByDate = lodash
+		.chain(assets)
 		.groupBy((a) => new Date(a.createdAt).toLocaleDateString(locale, groupDateFormat))
 		.sortBy((group) => assets.indexOf(group[0]))
 		.value();
