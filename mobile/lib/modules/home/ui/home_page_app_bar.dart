@@ -13,6 +13,7 @@ import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/shared/models/server_info_state.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
+import 'package:immich_mobile/shared/ui/transparent_image.dart';
 
 class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
   @override
@@ -55,12 +56,17 @@ class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
           child: CircleAvatar(
             backgroundColor: Theme.of(context).primaryColor,
             radius: 18,
-            child: CircleAvatar(
-              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-              backgroundImage: NetworkImage(
-                '$endpoint/user/profile-image/${authState.userId}?d=${dummy++}',
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(50),
+              child: FadeInImage.memoryNetwork(
+                fit: BoxFit.cover,
+                placeholder: kTransparentImage,
+                width: 33,
+                height: 33,
+                image:
+                    '$endpoint/user/profile-image/${authState.userId}?d=${dummy++}',
+                fadeInDuration: const Duration(milliseconds: 200),
               ),
-              radius: 17,
             ),
           ),
         );
