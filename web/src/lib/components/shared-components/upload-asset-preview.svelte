@@ -2,6 +2,7 @@
 	import { fade } from 'svelte/transition';
 	import { asByteUnitString } from '$lib/utils/byte-units';
 	import { UploadAsset } from '$lib/models/upload-asset';
+	import ImmichLogo from './immich-logo.svelte';
 
 	export let uploadAsset: UploadAsset;
 
@@ -16,13 +17,9 @@
 >
 	<div class="relative">
 		{#if showFallbackImage}
-			<img
-				in:fade={{ duration: 250 }}
-				src="immich-logo.svg"
-				alt="Immich Logo"
-				class="h-[70px] w-[70px] object-cover rounded-tl-lg rounded-bl-lg"
-				draggable="false"
-			/>
+			<div in:fade={{ duration: 250 }}>
+				<ImmichLogo class="h-[70px] w-[70px] object-cover rounded-tl-lg rounded-bl-lg" />
+			</div>
 		{:else}
 			<img
 				in:fade={{ duration: 250 }}

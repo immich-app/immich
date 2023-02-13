@@ -1164,8 +1164,28 @@ class AssetApi {
   ///
   /// Parameters:
   ///
+  /// * [AssetTypeEnum] assetType (required):
+  ///
   /// * [MultipartFile] assetData (required):
-  Future<Response> uploadFileWithHttpInfo(MultipartFile assetData,) async {
+  ///
+  /// * [String] deviceAssetId (required):
+  ///
+  /// * [String] deviceId (required):
+  ///
+  /// * [String] createdAt (required):
+  ///
+  /// * [String] modifiedAt (required):
+  ///
+  /// * [bool] isFavorite (required):
+  ///
+  /// * [String] fileExtension (required):
+  ///
+  /// * [MultipartFile] livePhotoData:
+  ///
+  /// * [bool] isVisible:
+  ///
+  /// * [String] duration:
+  Future<Response> uploadFileWithHttpInfo(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String createdAt, String modifiedAt, bool isFavorite, String fileExtension, { MultipartFile? livePhotoData, bool? isVisible, String? duration, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/upload';
 
@@ -1180,10 +1200,51 @@ class AssetApi {
 
     bool hasFields = false;
     final mp = MultipartRequest('POST', Uri.parse(path));
+    if (assetType != null) {
+      hasFields = true;
+      mp.fields[r'assetType'] = parameterToString(assetType);
+    }
     if (assetData != null) {
       hasFields = true;
       mp.fields[r'assetData'] = assetData.field;
       mp.files.add(assetData);
+    }
+    if (livePhotoData != null) {
+      hasFields = true;
+      mp.fields[r'livePhotoData'] = livePhotoData.field;
+      mp.files.add(livePhotoData);
+    }
+    if (deviceAssetId != null) {
+      hasFields = true;
+      mp.fields[r'deviceAssetId'] = parameterToString(deviceAssetId);
+    }
+    if (deviceId != null) {
+      hasFields = true;
+      mp.fields[r'deviceId'] = parameterToString(deviceId);
+    }
+    if (createdAt != null) {
+      hasFields = true;
+      mp.fields[r'createdAt'] = parameterToString(createdAt);
+    }
+    if (modifiedAt != null) {
+      hasFields = true;
+      mp.fields[r'modifiedAt'] = parameterToString(modifiedAt);
+    }
+    if (isFavorite != null) {
+      hasFields = true;
+      mp.fields[r'isFavorite'] = parameterToString(isFavorite);
+    }
+    if (isVisible != null) {
+      hasFields = true;
+      mp.fields[r'isVisible'] = parameterToString(isVisible);
+    }
+    if (fileExtension != null) {
+      hasFields = true;
+      mp.fields[r'fileExtension'] = parameterToString(fileExtension);
+    }
+    if (duration != null) {
+      hasFields = true;
+      mp.fields[r'duration'] = parameterToString(duration);
     }
     if (hasFields) {
       postBody = mp;
@@ -1204,9 +1265,29 @@ class AssetApi {
   ///
   /// Parameters:
   ///
+  /// * [AssetTypeEnum] assetType (required):
+  ///
   /// * [MultipartFile] assetData (required):
-  Future<AssetFileUploadResponseDto?> uploadFile(MultipartFile assetData,) async {
-    final response = await uploadFileWithHttpInfo(assetData,);
+  ///
+  /// * [String] deviceAssetId (required):
+  ///
+  /// * [String] deviceId (required):
+  ///
+  /// * [String] createdAt (required):
+  ///
+  /// * [String] modifiedAt (required):
+  ///
+  /// * [bool] isFavorite (required):
+  ///
+  /// * [String] fileExtension (required):
+  ///
+  /// * [MultipartFile] livePhotoData:
+  ///
+  /// * [bool] isVisible:
+  ///
+  /// * [String] duration:
+  Future<AssetFileUploadResponseDto?> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String createdAt, String modifiedAt, bool isFavorite, String fileExtension, { MultipartFile? livePhotoData, bool? isVisible, String? duration, }) async {
+    final response = await uploadFileWithHttpInfo(assetType, assetData, deviceAssetId, deviceId, createdAt, modifiedAt, isFavorite, fileExtension,  livePhotoData: livePhotoData, isVisible: isVisible, duration: duration, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -7,18 +7,21 @@ class ThumbnailWithInfo extends StatelessWidget {
   const ThumbnailWithInfo({
     Key? key,
     required this.textInfo,
-    required this.imageUrl,
+    this.imageUrl,
+    this.noImageIcon,
     required this.onTap,
   }) : super(key: key);
 
   final String textInfo;
-  final String imageUrl;
+  final String? imageUrl;
   final Function onTap;
+  final IconData? noImageIcon;
 
   @override
   Widget build(BuildContext context) {
     var box = Hive.box(userInfoBox);
-
+    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    var textAndIconColor = isDarkMode ? Colors.grey[100] : Colors.grey[700];
     return GestureDetector(
       onTap: () {
         onTap();
@@ -31,26 +34,37 @@ class ThumbnailWithInfo extends StatelessWidget {
             alignment: Alignment.bottomCenter,
             children: [
               Container(
-                foregroundDecoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Colors.black26,
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: CachedNetworkImage(
-                    width: 250,
-                    height: 250,
-                    fit: BoxFit.cover,
-                    imageUrl: imageUrl,
-                    httpHeaders: {
-                      "Authorization": "Bearer ${box.get(accessTokenKey)}"
-                    },
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(25),
+                  color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
+                  border: Border.all(
+                    color: isDarkMode ? Colors.grey[800]! : Colors.grey[400]!,
+                    width: 1,
                   ),
                 ),
+                child: imageUrl != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: CachedNetworkImage(
+                          width: 250,
+                          height: 250,
+                          fit: BoxFit.cover,
+                          imageUrl: imageUrl!,
+                          httpHeaders: {
+                            "Authorization": "Bearer ${box.get(accessTokenKey)}"
+                          },
+                        ),
+                      )
+                    : Center(
+                        child: Icon(
+                          noImageIcon ?? Icons.not_listed_location,
+                          color: textAndIconColor,
+                        ),
+                      ),
               ),
               Positioned(
-                bottom: 8,
-                left: 10,
+                bottom: 12,
+                left: 14,
                 child: SizedBox(
                   width: MediaQuery.of(context).size.width / 3,
                   child: Text(
@@ -58,7 +72,7 @@ class ThumbnailWithInfo extends StatelessWidget {
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontSize: 12,
                     ),
                   ),
                 ),

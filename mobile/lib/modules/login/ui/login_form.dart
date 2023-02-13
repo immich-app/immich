@@ -32,6 +32,9 @@ class LoginForm extends HookConsumerWidget {
     final isLoading = useState<bool>(false);
     final isOauthEnable = useState<bool>(false);
     final oAuthButtonLabel = useState<String>('OAuth');
+    final logoAnimationController = useAnimationController(
+      duration: const Duration(seconds: 60),
+    )..repeat();
 
     getServeLoginConfig() async {
       if (!serverEndpointFocusNode.hasFocus) {
@@ -100,10 +103,13 @@ class LoginForm extends HookConsumerWidget {
               children: [
                 GestureDetector(
                   onDoubleTap: () => populateTestLoginInfo(),
-                  child: const Image(
-                    image: AssetImage('assets/immich-logo-no-outline.png'),
-                    width: 100,
-                    filterQuality: FilterQuality.high,
+                  child: RotationTransition(
+                    turns: logoAnimationController,
+                    child: const Image(
+                      image: AssetImage('assets/immich-logo-no-outline.png'),
+                      width: 100,
+                      filterQuality: FilterQuality.high,
+                    ),
                   ),
                 ),
                 Text(

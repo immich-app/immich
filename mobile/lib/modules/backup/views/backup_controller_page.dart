@@ -31,6 +31,7 @@ class BackupControllerPage extends HookConsumerWidget {
             !hasExclusiveAccess
         ? false
         : true;
+    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     useEffect(
       () {
@@ -421,9 +422,11 @@ class BackupControllerPage extends HookConsumerWidget {
     buildFolderSelectionTile() {
       return Card(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(5), // if you need this
-          side: const BorderSide(
-            color: Colors.black12,
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: isDarkMode
+                ? const Color.fromARGB(255, 101, 101, 101)
+                : Colors.black12,
             width: 1,
           ),
         ),
@@ -476,6 +479,69 @@ class BackupControllerPage extends HookConsumerWidget {
       }
     }
 
+    Widget buildBackupButton() {
+      return Padding(
+        padding: const EdgeInsets.only(
+          top: 24,
+        ),
+        child: Container(
+          child: backupState.backupProgress == BackUpProgressEnum.inProgress
+              ? ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.grey[50],
+                    backgroundColor: Colors.red[300],
+                    // padding: const EdgeInsets.all(14),
+                  ),
+                  onPressed: () {
+                    ref.read(backupProvider.notifier).cancelBackup();
+                  },
+                  child: const Text(
+                    "backup_controller_page_cancel",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ).tr(),
+                )
+              : ElevatedButton(
+                  onPressed: shouldBackup ? startBackup : null,
+                  child: const Text(
+                    "backup_controller_page_start_backup",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ).tr(),
+                ),
+        ),
+      );
+    }
+
+    buildBackgroundBackupInfo() {
+      return hasExclusiveAccess
+          ? const SizedBox.shrink()
+          : Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20), // if you need this
+                side: BorderSide(
+                  color: isDarkMode
+                      ? const Color.fromARGB(255, 101, 101, 101)
+                      : Colors.black12,
+                  width: 1,
+                ),
+              ),
+              elevation: 0,
+              borderOnForeground: false,
+              child: const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  "Background backup is currently running, some actions are disabled",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            );
+    }
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -506,27 +572,7 @@ class BackupControllerPage extends HookConsumerWidget {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ).tr(),
             ),
-            hasExclusiveAccess
-                ? const SizedBox.shrink()
-                : Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(5), // if you need this
-                      side: const BorderSide(
-                        color: Colors.black12,
-                        width: 1,
-                      ),
-                    ),
-                    elevation: 0,
-                    borderOnForeground: false,
-                    child: const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Text(
-                        "Background backup is currently running, some actions are disabled",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
+            buildBackgroundBackupInfo(),
             buildFolderSelectionTile(),
             BackupInfoCard(
               title: "backup_controller_page_total".tr(),
@@ -552,42 +598,7 @@ class BackupControllerPage extends HookConsumerWidget {
             buildStorageInformation(),
             const Divider(),
             const CurrentUploadingAssetInfoBox(),
-            Padding(
-              padding: const EdgeInsets.only(
-                top: 24,
-              ),
-              child: Container(
-                child:
-                    backupState.backupProgress == BackUpProgressEnum.inProgress
-                        ? ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.grey[50],
-                              backgroundColor: Colors.red[300],
-                              // padding: const EdgeInsets.all(14),
-                            ),
-                            onPressed: () {
-                              ref.read(backupProvider.notifier).cancelBackup();
-                            },
-                            child: const Text(
-                              "backup_controller_page_cancel",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ).tr(),
-                          )
-                        : ElevatedButton(
-                            onPressed: shouldBackup ? startBackup : null,
-                            child: const Text(
-                              "backup_controller_page_start_backup",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ).tr(),
-                          ),
-              ),
-            )
+            buildBackupButton()
           ],
         ),
       ),
