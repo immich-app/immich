@@ -10,6 +10,7 @@ import 'package:immich_mobile/modules/home/providers/upload_profile_image.provid
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/shared/ui/transparent_image.dart';
 
 class ProfileDrawerHeader extends HookConsumerWidget {
   const ProfileDrawerHeader({
@@ -26,6 +27,23 @@ class ProfileDrawerHeader extends HookConsumerWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     buildUserProfileImage() {
+      var userImage = CircleAvatar(
+        backgroundColor: Theme.of(context).primaryColor,
+        radius: 35,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(50),
+          child: FadeInImage.memoryNetwork(
+            fit: BoxFit.cover,
+            placeholder: kTransparentImage,
+            width: 66,
+            height: 66,
+            image:
+                '$endpoint/user/profile-image/${authState.userId}?d=${dummy++}',
+            fadeInDuration: const Duration(milliseconds: 200),
+          ),
+        ),
+      );
+
       if (authState.profileImagePath.isEmpty) {
         return const CircleAvatar(
           radius: 35,
@@ -36,16 +54,10 @@ class ProfileDrawerHeader extends HookConsumerWidget {
 
       if (uploadProfileImageStatus == UploadProfileStatus.idle) {
         if (authState.profileImagePath.isNotEmpty) {
-          return CircleAvatar(
-            radius: 35,
-            backgroundImage: NetworkImage(
-              '$endpoint/user/profile-image/${authState.userId}?d=${dummy++}',
-            ),
-            backgroundColor: Colors.transparent,
-          );
+          return userImage;
         } else {
           return const CircleAvatar(
-            radius: 35,
+            radius: 33,
             backgroundImage: AssetImage('assets/immich-logo-no-outline.png'),
             backgroundColor: Colors.transparent,
           );
@@ -53,13 +65,7 @@ class ProfileDrawerHeader extends HookConsumerWidget {
       }
 
       if (uploadProfileImageStatus == UploadProfileStatus.success) {
-        return CircleAvatar(
-          radius: 35,
-          backgroundImage: NetworkImage(
-            '$endpoint/user/profile-image/${authState.userId}?d=${dummy++}',
-          ),
-          backgroundColor: Colors.transparent,
-        );
+        return userImage;
       }
 
       if (uploadProfileImageStatus == UploadProfileStatus.failure) {
@@ -98,7 +104,7 @@ class ProfileDrawerHeader extends HookConsumerWidget {
 
     useEffect(
       () {
-        buildUserProfileImage();
+        // buildUserProfileImage();
         return null;
       },
       [],
@@ -126,17 +132,17 @@ class ProfileDrawerHeader extends HookConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              buildUserProfileImage(),
-              Positioned(
-                bottom: 0,
-                right: -5,
-                child: GestureDetector(
-                  onTap: pickUserProfileImage,
+          GestureDetector(
+            onTap: pickUserProfileImage,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                buildUserProfileImage(),
+                Positioned(
+                  bottom: 0,
+                  right: -5,
                   child: Material(
-                    color: Colors.grey[100],
+                    color: isDarkMode ? Colors.grey[700] : Colors.grey[100],
                     elevation: 3,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50.0),
@@ -151,8 +157,8 @@ class ProfileDrawerHeader extends HookConsumerWidget {
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           Text(
             "${authState.firstName} ${authState.lastName}",

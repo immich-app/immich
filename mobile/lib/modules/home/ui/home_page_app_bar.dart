@@ -1,6 +1,11 @@
+import 'dart:math';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 
 import 'package:immich_mobile/routing/router.dart';
@@ -8,15 +13,16 @@ import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/shared/models/server_info_state.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
+import 'package:immich_mobile/shared/ui/transparent_image.dart';
 
 class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   const HomePageAppBar({
-    Key? key,
+    super.key,
     this.onPopBack,
-  }) : super(key: key);
+  });
 
   final Function? onPopBack;
 
@@ -26,6 +32,46 @@ class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
     bool isEnableAutoBackup = backupState.backgroundBackup ||
         ref.watch(authenticationProvider).deviceInfo.isAutoBackup;
     final ServerInfoState serverInfoState = ref.watch(serverInfoProvider);
+    AuthenticationState authState = ref.watch(authenticationProvider);
+
+    buildProfilePhoto() {
+      if (authState.profileImagePath.isEmpty) {
+        return IconButton(
+          splashRadius: 25,
+          icon: const Icon(
+            Icons.face_outlined,
+            size: 30,
+          ),
+          onPressed: () {
+            Scaffold.of(context).openDrawer();
+          },
+        );
+      } else {
+        String endpoint = Hive.box(userInfoBox).get(serverEndpointKey);
+        var dummy = Random().nextInt(1024);
+        return InkWell(
+          onTap: () {
+            Scaffold.of(context).openDrawer();
+          },
+          child: CircleAvatar(
+            backgroundColor: Theme.of(context).primaryColor,
+            radius: 18,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(50),
+              child: FadeInImage.memoryNetwork(
+                fit: BoxFit.cover,
+                placeholder: kTransparentImage,
+                width: 33,
+                height: 33,
+                image:
+                    '$endpoint/user/profile-image/${authState.userId}?d=${dummy++}',
+                fadeInDuration: const Duration(milliseconds: 200),
+              ),
+            ),
+          ),
+        );
+      }
+    }
 
     return AppBar(
       backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
@@ -38,18 +84,8 @@ class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
         builder: (BuildContext context) {
           return Stack(
             children: [
-              Positioned(
-                top: 5,
-                child: IconButton(
-                  splashRadius: 25,
-                  icon: const Icon(
-                    Icons.face_outlined,
-                    size: 30,
-                  ),
-                  onPressed: () {
-                    Scaffold.of(context).openDrawer();
-                  },
-                ),
+              Center(
+                child: buildProfilePhoto(),
               ),
               if (serverInfoState.isVersionMismatch)
                 Positioned(
