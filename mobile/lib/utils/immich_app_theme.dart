@@ -92,8 +92,18 @@ ThemeData immichLightTheme = ThemeData(
   ),
   navigationBarTheme: NavigationBarThemeData(
     indicatorColor: Colors.indigo.withOpacity(0.15),
+    iconTheme: MaterialStatePropertyAll(
+      IconThemeData(color: Colors.grey[700]),
+    ),
     backgroundColor: immichBackgroundColor,
     surfaceTintColor: Colors.transparent,
+    labelTextStyle: MaterialStatePropertyAll(
+      TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: Colors.grey[700],
+      ),
+    ),
   ),
 );
 
@@ -166,10 +176,17 @@ ThemeData immichDarkTheme = ThemeData(
   ),
   navigationBarTheme: NavigationBarThemeData(
     indicatorColor: immichDarkThemePrimaryColor.withOpacity(0.4),
-    iconTheme: const MaterialStatePropertyAll(
-      IconThemeData(color: Colors.white),
+    iconTheme: MaterialStatePropertyAll(
+      IconThemeData(color: Colors.grey[500]),
     ),
     backgroundColor: Colors.grey[900],
     surfaceTintColor: Colors.transparent,
+    labelTextStyle: MaterialStatePropertyAll(
+      TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: Colors.grey[500],
+      ),
+    ),
   ),
 );
