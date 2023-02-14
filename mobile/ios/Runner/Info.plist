@@ -4,8 +4,8 @@
 <dict>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>immich.quick-sync</string>
-		<string>immich.processing-sync</string>
+		<string>immichBackgroundFetch</string>
+		<string>immichBackgroundProcessing</string>
 	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>

@@ -5,8 +5,8 @@ import BackgroundTasks
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
     
-  let backgroundSyncTaskID = "immich.quick-sync"
-  let backgroundProcessingTaskID = "immich.processing-sync"
+  let backgroundSyncTaskID = "immichBackgroundFetch"
+  let backgroundProcessingTaskID = "immichBackgroundProcessing"
     
   override func application(
     _ application: UIApplication,
@@ -34,13 +34,28 @@ import BackgroundTasks
               print("handling background enable")
 
               self.handleBackgroundEnable(call: call, result: result)
+
               return
           }
           
           if call.method == "isEnabled" {
               print("handling background isEnabled")
 
-              self.handleBackgroundEnable(call: call, result: result)
+              self.handleIsEnabled(call: call, result: result)
+              return
+          }
+          
+          if call.method == "configure" {
+              print("handling configure")
+              
+              self.handleConfigure(call: call, result: result)
+              return
+          }
+          
+          if call.method == "disable" {
+              print("handling disable")
+              
+              self.handleDisable(call: call, result: result)
               return
           }
           
@@ -52,8 +67,7 @@ import BackgroundTasks
       // e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"immich.quick-sync"]
       // Then resume the application see the background code run
       // Tested on a physical device, not a simulator
-      scheduleBackgroundSync()
-      scheduleBackgroundTask()
+
       
       GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
@@ -66,20 +80,66 @@ import BackgroundTasks
             return
         }
         
-        guard args.count >= 2 else {
-            print("Not enough arguments: \(call.arguments)")
+        guard args.count == 3 else {
+            print("Requires 3 arguments and received \(args.count)")
             result(FlutterMethodNotImplemented)
             return
         }
         
         let callbackHandle = args[0] as? Int64
         let notificationTitle = args[1] as? String
+        let instant = args[2] as? Bool
         
         let defaults = UserDefaults.standard
         defaults.set(callbackHandle, forKey: "callback_handle")
         defaults.set(notificationTitle, forKey: "notification_title")
         
+        self.scheduleBackgroundSync()
+        self.scheduleBackgroundTask()
+        result(true)
+        
         print("registered callback handle \(callbackHandle) and notification \(notificationTitle)")
+    }
+    
+    func handleIsEnabled(call: FlutterMethodCall, result: FlutterResult) {
+        self.scheduleBackgroundSync()
+        self.scheduleBackgroundTask()
+        
+        print("handled isEnabled")
+        result(true)
+    }
+    
+    func handleConfigure(call: FlutterMethodCall, result: FlutterResult) {
+        guard let args = call.arguments as? Array<Any> else {
+            print("Cannot parse args as array: \(call.arguments)")
+            result(FlutterError())
+            return
+        }
+        
+        guard args.count == 4 else {
+            print("Not enough arguments, 4 required: \(args.count) given")
+            result(FlutterError())
+            return
+        }
+        
+        let requireUnmeteredNetwork = args[0] as? Bool
+        let requireCharging = args[1] as? Bool
+        let triggerUpdateDelay = args[2] as? Int
+        let triggerMaxDelay = args[3] as? Int
+        
+        let defaults = UserDefaults.standard
+        defaults.set(requireUnmeteredNetwork, forKey: "require_unmetered_network")
+        defaults.set(requireCharging, forKey: "require_charging")
+        defaults.set(triggerUpdateDelay, forKey: "trigger_update_delay")
+        defaults.set(triggerMaxDelay, forKey: "trigger_max_delay")
+
+        result(true)
+    }
+    
+    func handleDisable(call: FlutterMethodCall, result: FlutterResult) {
+        BGTaskScheduler.shared.cancelAllTaskRequests()
+        
+        result(true)
     }
     
     func scheduleBackgroundTask() {
@@ -108,6 +168,7 @@ import BackgroundTasks
     }
     
     func handleBackgroundSync(task: BGAppRefreshTask) {
+        print("handling background sync")
         // Schedule the next sync task
         scheduleBackgroundSync()
         
@@ -115,6 +176,7 @@ import BackgroundTasks
     }
     
     func handleBackgroundProcessing(task: BGProcessingTask) {
+        print("handling background processing")
         scheduleBackgroundTask()
         
         BackgroundSyncManager.sync()
