@@ -13,10 +13,6 @@
 	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
 	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
-	import {
-		notificationController,
-		NotificationType
-	} from '../shared-components/notification/notification';
 	import ImmichLogo from '../shared-components/immich-logo.svelte';
 
 	export let sharedLink: SharedLinkResponseDto;
@@ -43,7 +39,7 @@
 		);
 	};
 
-	const handleUploadAssets = () => {
+	const handleUploadAssets = async () => {
 		openFileUploadDialog(undefined, sharedLink?.key, async (assetId) => {
 			const { data: updatedLink } = await api.assetApi.updateAssetsInSharedLink(
 				{
