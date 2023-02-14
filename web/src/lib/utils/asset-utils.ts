@@ -141,7 +141,11 @@ export function getFileMimeType(file: File): string {
 		case '3gp':
 			return 'video/3gpp';
 		case 'nef':
-			return 'image/nef';
+			return 'image/x-nikon-nef';
+		case 'raf':
+			return 'image/x-fuji-raf';
+		case 'srw':
+			return 'image/x-samsung-srw';
 		default:
 			return '';
 	}

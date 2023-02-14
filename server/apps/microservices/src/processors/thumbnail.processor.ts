@@ -14,6 +14,7 @@ import { Repository } from 'typeorm/repository/Repository';
 import { join } from 'path';
 import { CommunicationGateway } from 'apps/immich/src/api-v1/communication/communication.gateway';
 import { IMachineLearningJob } from '@app/domain';
+import { exiftool } from 'exiftool-vendored';
 
 @Processor(QueueName.THUMBNAIL_GENERATION)
 export class ThumbnailGeneratorProcessor {
@@ -53,7 +54,15 @@ export class ThumbnailGeneratorProcessor {
           .resize(1440, 1440, { fit: 'outside', withoutEnlargement: true })
           .jpeg()
           .rotate()
-          .toFile(jpegThumbnailPath);
+          .toFile(jpegThumbnailPath)
+          .catch(() => {
+            this.logger.warn(
+              'Failed to generate jpeg thumbnail for asset: ' +
+                asset.id +
+                ' using sharp, failing over to exiftool-vendored',
+            );
+            return exiftool.extractThumbnail(asset.originalPath, jpegThumbnailPath);
+          });
         await this.assetRepository.update({ id: asset.id }, { resizePath: jpegThumbnailPath });
       } catch (error: any) {
         this.logger.error('Failed to generate jpeg thumbnail for asset: ' + asset.id, error.stack);
