@@ -590,6 +590,7 @@ class _Throttle {
 /// entry point called by Kotlin/Java code; needs to be a top-level function
 @pragma('vm:entry-point')
 void _nativeEntry() {
+  print('native entry!');
   WidgetsFlutterBinding.ensureInitialized();
   BackgroundService backgroundService = BackgroundService();
   backgroundService._setupBackgroundCallHandler();

@@ -30,16 +30,26 @@ import BackgroundTasks
       
       foregroundChannel.setMethodCallHandler({
         (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
-          guard call.method == "enable" else {
-              result(FlutterMethodNotImplemented)
+          if call.method == "enable" {
+              print("handling background enable")
+
+              self.handleBackgroundEnable(call: call, result: result)
               return
           }
           
-          self.handleBackgroundEnable(call: call, result: result)
+          if call.method == "isEnabled" {
+              print("handling background isEnabled")
+
+              self.handleBackgroundEnable(call: call, result: result)
+              return
+          }
+          
+          print("call method \(call.method) is not supported")
+          result(FlutterMethodNotImplemented)
       })
       
       //  Pause the application in XCode, then enter
-      // e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"app.alextran.immich-BackgroundSync"]
+      // e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"immich.quick-sync"]
       // Then resume the application see the background code run
       // Tested on a physical device, not a simulator
       scheduleBackgroundSync()
@@ -62,13 +72,15 @@ import BackgroundTasks
             return
         }
         
-        self.callbackHandle = args[0] as? Int64
-        self.notificationTitle = args[1] as? String
+        let callbackHandle = args[0] as? Int64
+        let notificationTitle = args[1] as? String
+        
+        let defaults = UserDefaults.standard
+        defaults.set(callbackHandle, forKey: "callback_handle")
+        defaults.set(notificationTitle, forKey: "notification_title")
+        
         print("registered callback handle \(callbackHandle) and notification \(notificationTitle)")
     }
-    
-    var callbackHandle: Int64?
-    var notificationTitle: String?
     
     func scheduleBackgroundTask() {
         let backgroundTask = BGProcessingTaskRequest(identifier: backgroundProcessingTaskID)
@@ -99,23 +111,12 @@ import BackgroundTasks
         // Schedule the next sync task
         scheduleBackgroundSync()
         
-        // The background sync function to run
-        guard let callbackHandle else {
-            print("callbackHandle is nil \(callbackHandle)")
-            return
-        }
-        
-        BackgroundSyncManager.sync(callbackHandle: callbackHandle)
+        BackgroundSyncManager.sync()
     }
     
     func handleBackgroundProcessing(task: BGProcessingTask) {
         scheduleBackgroundTask()
         
-        guard let callbackHandle else {
-            print("callbackHandle is nil \(callbackHandle)")
-            return
-        }
-        
-        BackgroundSyncManager.sync(callbackHandle: callbackHandle)
+        BackgroundSyncManager.sync()
     }
 }

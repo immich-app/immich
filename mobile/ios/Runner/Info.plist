@@ -19,6 +19,25 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>cs</string>
+		<string>da</string>
+		<string>de</string>
+		<string>en</string>
+		<string>es</string>
+		<string>fi</string>
+		<string>fr</string>
+		<string>it</string>
+		<string>ja</string>
+		<string>ko</string>
+		<string>nl</string>
+		<string>pl</string>
+		<string>pt</string>
+		<string>ru</string>
+		<string>sk</string>
+		<string>zh</string>
+	</array>
 	<key>CFBundleName</key>
 	<string>immich_mobile</string>
 	<key>CFBundlePackageType</key>
@@ -29,6 +48,14 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>86</string>
+	<key>FLTEnableImpeller</key>
+	<true/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>https</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>MGLMapboxMetricsEnabledSettingShownInApp</key>
@@ -79,39 +106,6 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	<key>io.flutter.embedded_views_preview</key>
-	<true/>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>https</string>
-	</array>
-	<key>CFBundleLocalizations</key>
-	<array>
-		<string>cs</string>
-		<string>da</string>
-		<string>de</string>
-		<string>en</string>
-		<string>es</string>
-		<string>fi</string>
-		<string>fr</string>
-		<string>it</string>
-		<string>ja</string>
-		<string>ko</string>
-		<string>nl</string>
-		<string>pl</string>
-		<string>pt</string>
-		<string>ru</string>
-		<string>sk</string>
-		<string>zh</string>
-	</array>
-	<key>UIStatusBarHidden</key>
-	<false/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-	<key>FLTEnableImpeller</key>
 	<true/>
 </dict>
 </plist>
