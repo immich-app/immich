@@ -7,6 +7,7 @@ import type { UploadAsset } from '../models/upload-asset';
 import { api, AssetFileUploadResponseDto } from '@api';
 import { addAssetsToAlbum, getFileMimeType, getFilenameExtension } from '$lib/utils/asset-utils';
 import { Subject, mergeMap } from 'rxjs';
+import axios from 'axios';
 
 export const openFileUploadDialog = (
 	albumId: string | undefined = undefined,
@@ -69,7 +70,6 @@ async function fileUploader(
 	sharedKey: string | undefined = undefined,
 	onDone?: (id: string) => void
 ) {
-	console.log('uploading', asset.name);
 	const mimeType = getFileMimeType(asset);
 	const assetType = mimeType.split('/')[0].toUpperCase();
 	const fileExtension = getFilenameExtension(asset.name);
@@ -131,54 +131,42 @@ async function fileUploader(
 			}
 		}
 
-		const request = new XMLHttpRequest();
-		request.upload.onloadstart = () => {
-			const newUploadAsset: UploadAsset = {
-				id: deviceAssetId,
-				file: asset,
-				progress: 0,
-				fileExtension: fileExtension
-			};
-
-			uploadAssetsStore.addNewUploadAsset(newUploadAsset);
+		const newUploadAsset: UploadAsset = {
+			id: deviceAssetId,
+			file: asset,
+			progress: 0,
+			fileExtension: fileExtension
 		};
 
-		request.upload.onload = () => {
-			uploadAssetsStore.removeUploadAsset(deviceAssetId);
-			const res: AssetFileUploadResponseDto = JSON.parse(request.response || '{}');
-			if (albumId) {
-				try {
-					if (res.id) {
-						addAssetsToAlbum(albumId, [res.id], sharedKey);
-					}
-				} catch (e) {
-					console.error('ERROR parsing data JSON in upload onload');
+		uploadAssetsStore.addNewUploadAsset(newUploadAsset);
+
+		axios
+			.post(`/api/asset/upload`, formData, {
+				params: {
+					key: sharedKey
+				},
+				onUploadProgress: (event) => {
+					const percentComplete = Math.floor((event.loaded / event.total) * 100);
+					uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
 				}
-			}
-			onDone && onDone(res.id);
-		};
+			})
+			.catch((error) => {
+				handleUploadError(asset, error);
+			})
+			.then(async (response: any) => {
+				const res: AssetFileUploadResponseDto = response.data;
 
-		// listen for `error` event
-		request.upload.onerror = () => {
-			uploadAssetsStore.removeUploadAsset(deviceAssetId);
-			handleUploadError(asset, request.response);
-		};
+				if (albumId && res.id) {
+					await addAssetsToAlbum(albumId, [res.id], sharedKey);
+				}
 
-		// listen for `abort` event
-		request.upload.onabort = () => {
-			uploadAssetsStore.removeUploadAsset(deviceAssetId);
-			handleUploadError(asset, request.response);
-		};
-
-		// listen for `progress` event
-		request.upload.onprogress = (event) => {
-			const percentComplete = Math.floor((event.loaded / event.total) * 100);
-			uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
-		};
-
-		request.open('POST', `/api/asset/upload?key=${sharedKey ?? ''}`);
-
-		request.send(formData);
+				onDone && res.id && onDone(res.id);
+			})
+			.finally(() => {
+				setTimeout(() => {
+					uploadAssetsStore.removeUploadAsset(deviceAssetId);
+				}, 500);
+			});
 	} catch (e) {
 		console.log('error uploading file ', e);
 	}

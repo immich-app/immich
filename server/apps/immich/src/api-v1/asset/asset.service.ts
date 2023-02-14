@@ -616,7 +616,6 @@ export class AssetService {
 
     const assets = [];
 
-    await this.checkAssetsAccess(authUser, dto.assetIds);
     for (const assetId of dto.assetIds) {
       const asset = await this._assetRepository.getById(assetId);
       assets.push(asset);

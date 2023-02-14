@@ -45,9 +45,9 @@
 
 	const handleUploadAssets = () => {
 		openFileUploadDialog(undefined, sharedLink?.key, async (assetId) => {
-			await api.assetApi.updateAssetsInSharedLink(
+			const { data: updatedLink } = await api.assetApi.updateAssetsInSharedLink(
 				{
-					assetIds: [...assets.map((a) => a.id), assetId]
+					assetIds: [...sharedLink.assets.map((a) => a.id), assetId]
 				},
 				{
 					params: {
@@ -55,11 +55,8 @@
 					}
 				}
 			);
-
-			notificationController.show({
-				message: 'Add asset to shared link successfully',
-				type: NotificationType.Info
-			});
+			console.log('sharedlink asset count', updatedLink.assets.length);
+			sharedLink = updatedLink;
 		});
 	};
 
