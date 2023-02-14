@@ -10,7 +10,7 @@ import Foundation
 import Flutter
 
 class BackgroundSyncManager {
-    static func sync() {
+    static func sync(_ completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         let defaults = UserDefaults.standard
         guard let callbackHandle = defaults.value(forKey: "callback_handle") as? Int64 else {
             print("Could not retrieve callback_handle from defaults")
@@ -42,15 +42,56 @@ class BackgroundSyncManager {
             flutterEngine = nil
         }
 
-        print("running the sync")
-        
-        channel?.setMethodCallHandler { (call, result) in
-            result(true)
-            print("done")
-            channel?.invokeMethod(
-                "iosBackgroundSync",
-                arguments: nil
-            )
+        print("running the sync on \(channel)")
+        let taskSessionStart = Date()
+        let taskSessionIdentifier = UUID()
+        do {
+            try channel?.setMethodCallHandler { (call, result) in
+                print("call method \(call.method)")
+                switch call.method {
+                case "initialized":
+                    channel?.invokeMethod(
+                        "backgroundFetch",
+                        arguments: nil,
+                        result: { flutterResult in
+                            cleanup()
+                            let taskSessionCompleter = Date()
+                            let result: UIBackgroundFetchResult = (flutterResult as? Bool ?? false) ? .newData : .failed
+                            let taskDuration = taskSessionCompleter.timeIntervalSince(taskSessionStart)
+                            print("[\(String(describing: self))] \(#function) -> performBackgroundRequest.\(result) (finished in \(taskDuration)")
+                            
+                            completionHandler(result)
+                        })
+                    break
+                case "updateNotification":
+                    print("update notification called")
+                    cleanup()
+                    result(true)
+                    break
+                case "showError":
+                    print("showError called")
+                    cleanup()
+                    break
+                case "clearErrorNotifications":
+                    print("clearErrorNotifications")
+                    result(true)
+                    cleanup()
+                    break
+                case "hasContentChanged":
+                    print("hasContentChanged")
+                    result(true)
+                    cleanup()
+                    break
+                default:
+                    result(FlutterError())
+                    cleanup()
+                    completionHandler(UIBackgroundFetchResult.failed)
+                }
+            }
+        } catch {
+            print(error.localizedDescription)
+            cleanup()
+            completionHandler(UIBackgroundFetchResult.failed)
         }
          
     }

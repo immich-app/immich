@@ -64,7 +64,7 @@ import BackgroundTasks
       })
       
       //  Pause the application in XCode, then enter
-      // e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"immich.quick-sync"]
+      // e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"immichBackgroundFetch"]
       // Then resume the application see the background code run
       // Tested on a physical device, not a simulator
 
@@ -172,13 +172,25 @@ import BackgroundTasks
         // Schedule the next sync task
         scheduleBackgroundSync()
         
-        BackgroundSyncManager.sync()
+        runBackgroundSync()
+        task.setTaskCompleted(success: true)
     }
     
     func handleBackgroundProcessing(task: BGProcessingTask) {
         print("handling background processing")
         scheduleBackgroundTask()
         
-        BackgroundSyncManager.sync()
+        runBackgroundSync()
+        task.setTaskCompleted(success: true)
+    }
+    
+    func runBackgroundSync() {
+        let semaphore = DispatchSemaphore(value: 0)
+        DispatchQueue.main.async {
+            BackgroundSyncManager.sync { _ in
+                semaphore.signal()
+            }
+        }
+        semaphore.wait()
     }
 }

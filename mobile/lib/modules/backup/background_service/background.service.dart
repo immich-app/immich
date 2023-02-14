@@ -51,8 +51,7 @@ class BackgroundService {
   late final _Throttle _throttledDetailNotify =
       _Throttle(_updateDetailProgress, notifyInterval);
   Completer<bool> _hasAccessCompleter = Completer();
-  late Future<bool> _hasAccess =
-      Platform.isAndroid ? _hasAccessCompleter.future : Future.value(true);
+  late Future<bool> _hasAccess = _hasAccessCompleter.future;
 
   Future<bool> get hasAccess => _hasAccess;
 
@@ -123,9 +122,6 @@ class BackgroundService {
 
   /// Returns `true` if battery optimizations are disabled
   Future<bool> isIgnoringBatteryOptimizations() async {
-    if (!Platform.isAndroid) {
-      return true;
-    }
     try {
       return await _foregroundChannel
           .invokeMethod('isIgnoringBatteryOptimizations');
@@ -144,9 +140,6 @@ class BackgroundService {
     bool isDetail = false,
     bool onlyIfFG = false,
   }) async {
-    if (!Platform.isAndroid) {
-      return true;
-    }
     try {
       if (_isBackgroundInitialized) {
         return _backgroundChannel.invokeMethod<bool>(
@@ -166,9 +159,6 @@ class BackgroundService {
     String? content,
     String? individualTag,
   }) async {
-    if (!Platform.isAndroid) {
-      return true;
-    }
     try {
       if (_isBackgroundInitialized && _errorGracePeriodExceeded) {
         return await _backgroundChannel
@@ -181,9 +171,6 @@ class BackgroundService {
   }
 
   Future<bool> _clearErrorNotifications() async {
-    if (!Platform.isAndroid) {
-      return true;
-    }
     try {
       if (_isBackgroundInitialized) {
         return await _backgroundChannel.invokeMethod('clearErrorNotifications');
@@ -198,9 +185,6 @@ class BackgroundService {
 
   /// await to ensure this thread (foreground or background) has exclusive access
   Future<bool> acquireLock() async {
-    if (!Platform.isAndroid) {
-      return true;
-    }
     if (_hasLock) {
       debugPrint("WARNING: [acquireLock] called more than once");
       return true;
@@ -276,9 +260,6 @@ class BackgroundService {
 
   /// releases the exclusive access lock
   void releaseLock() {
-    if (!Platform.isAndroid) {
-      return;
-    }
     _wantsLockTime = 0;
     if (_hasLock) {
       _hasAccessCompleter = Completer();
@@ -299,17 +280,23 @@ class BackgroundService {
   }
 
   Future<bool> _callHandler(MethodCall call) async {
+    debugPrint("callHandler: ${call.method}");
     switch (call.method) {
       case "onAssetsChanged":
+      case "backgroundFetch":
         final Future<bool> translationsLoaded = loadTranslations();
+        debugPrint("translations loaded");
         try {
           _clearErrorNotifications();
           final bool hasAccess = await acquireLock();
+          debugPrint("has Access $hasAccess");
           if (!hasAccess) {
             debugPrint("[_callHandler] could not acquire lock, exiting");
             return false;
           }
-          await translationsLoaded;
+          // TODO: Broken on iOS
+          // await translationsLoaded;
+          // debugPrint('translations loaded');
           final bool ok = await _onAssetsChanged();
           return ok;
         } catch (error) {
@@ -330,7 +317,9 @@ class BackgroundService {
   }
 
   Future<bool> _onAssetsChanged() async {
+    print("Running onAssetsChanged");
     await Hive.initFlutter();
+    print("initialized hive");
 
     Hive.registerAdapter(HiveSavedLoginInfoAdapter());
     Hive.registerAdapter(HiveBackupAlbumsAdapter());
@@ -356,7 +345,7 @@ class BackgroundService {
       return true;
     }
 
-    await PhotoManager.setIgnorePermissionCheck(true);
+    //await PhotoManager.setIgnorePermissionCheck(true);
 
     do {
       final bool backupOk = await _runBackup(
@@ -377,8 +366,8 @@ class BackgroundService {
         return false;
       }
       // check for new assets added while performing backup
-    } while (true ==
-        await _backgroundChannel.invokeMethod<bool>("hasContentChanged"));
+    } while (false); //TODO: broken on iOS (true ==
+        // await _backgroundChannel.invokeMethod<bool>("hasContentChanged"));
     return true;
   }
 
@@ -590,7 +579,6 @@ class _Throttle {
 /// entry point called by Kotlin/Java code; needs to be a top-level function
 @pragma('vm:entry-point')
 void _nativeEntry() {
-  print('native entry!');
   WidgetsFlutterBinding.ensureInitialized();
   BackgroundService backgroundService = BackgroundService();
   backgroundService._setupBackgroundCallHandler();
