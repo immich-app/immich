@@ -103,7 +103,6 @@ export class AssetController {
       res.status(200);
     }
 
-    console.log('responseDto: ', responseDto);
     return responseDto;
   }
 

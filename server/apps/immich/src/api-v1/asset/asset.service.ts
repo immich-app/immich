@@ -627,7 +627,6 @@ export class AssetService {
     authUser: AuthUserDto,
     dto: RemoveAssetsFromSharedLinkDto,
   ): Promise<SharedLinkResponseDto> {
-    console.log(authUser);
     if (!authUser.sharedLinkId) {
       throw new ForbiddenException();
     }

@@ -78,7 +78,7 @@ export class ShareCore {
       throw new BadRequestException('Shared link not found');
     }
 
-    const newAssets = assets.filter((asset) => !link.assets.find((a) => a.id === asset.id));
+    const newAssets = link.assets.filter((asset) => assets.find((a) => a.id === asset.id));
 
     return this.repository.save({ ...link, assets: newAssets });
   }
