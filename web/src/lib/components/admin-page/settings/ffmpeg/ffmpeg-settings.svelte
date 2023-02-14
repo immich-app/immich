@@ -8,7 +8,7 @@
 	import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
 	import SettingSelect from '../setting-select.svelte';
 	import SettingSwitch from '../setting-switch.svelte';
-	import _ from 'lodash';
+	import { isEqual } from 'lodash-es';
 	import { fade } from 'svelte/transition';
 
 	export let ffmpegConfig: SystemConfigFFmpegDto; // this is the config that is being edited
@@ -130,7 +130,7 @@
 						on:reset={reset}
 						on:save={saveSetting}
 						on:reset-to-default={resetToDefault}
-						showResetToDefault={!_.isEqual(savedConfig, defaultConfig)}
+						showResetToDefault={!isEqual(savedConfig, defaultConfig)}
 					/>
 				</div>
 			</form>

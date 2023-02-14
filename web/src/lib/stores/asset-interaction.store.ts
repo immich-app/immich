@@ -2,7 +2,7 @@ import { AssetGridState } from '$lib/models/asset-grid-state';
 import { api, AssetResponseDto } from '@api';
 import { derived, writable } from 'svelte/store';
 import { assetGridState, assetStore } from './assets.store';
-import _ from 'lodash-es';
+import { sortBy } from 'lodash-es';
 
 // Asset Viewer
 export const viewingAssetStoreState = writable<AssetResponseDto>();
@@ -65,7 +65,7 @@ function createAssetInteractionStore() {
 	const navigateAsset = async (direction: 'next' | 'previous') => {
 		// Flatten and sort the asset by date if there are new assets
 		if (assetSortedByDate.length === 0 || savedAssetLength !== _assetGridState.assets.length) {
-			assetSortedByDate = _.sortBy(_assetGridState.assets, (a) => a.createdAt);
+			assetSortedByDate = sortBy(_assetGridState.assets, (a) => a.createdAt);
 			savedAssetLength = _assetGridState.assets.length;
 		}
 
