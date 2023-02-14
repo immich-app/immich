@@ -13,55 +13,19 @@ import BackgroundTasks
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
 
+      GeneratedPluginRegistrant.register(with: self)
     
       BGTaskScheduler.shared.register(forTaskWithIdentifier: backgroundSyncTaskID, using: nil) { task in
-          self.handleBackgroundSync(task: task as! BGAppRefreshTask)
+          self.handleBackgroundSync(task: task as! BGAppRefreshTask) { registry in
+              GeneratedPluginRegistrant.register(with: registry)
+          }
       }
       
       BGTaskScheduler.shared.register(forTaskWithIdentifier: backgroundProcessingTaskID, using: nil) { task in
           self.handleBackgroundProcessing(task: task as! BGProcessingTask)
       }
       
-      let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
-      let foregroundChannel = FlutterMethodChannel(
-        name: "immich/foregroundChannel",
-        binaryMessenger: controller.binaryMessenger
-      )
-      
-      foregroundChannel.setMethodCallHandler({
-        (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
-          if call.method == "enable" {
-              print("handling background enable")
-
-              self.handleBackgroundEnable(call: call, result: result)
-
-              return
-          }
-          
-          if call.method == "isEnabled" {
-              print("handling background isEnabled")
-
-              self.handleIsEnabled(call: call, result: result)
-              return
-          }
-          
-          if call.method == "configure" {
-              print("handling configure")
-              
-              self.handleConfigure(call: call, result: result)
-              return
-          }
-          
-          if call.method == "disable" {
-              print("handling disable")
-              
-              self.handleDisable(call: call, result: result)
-              return
-          }
-          
-          print("call method \(call.method) is not supported")
-          result(FlutterMethodNotImplemented)
-      })
+   
       
       //  Pause the application in XCode, then enter
       // e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"immichBackgroundFetch"]
@@ -69,7 +33,6 @@ import BackgroundTasks
       // Tested on a physical device, not a simulator
 
       
-      GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
     
@@ -167,12 +130,12 @@ import BackgroundTasks
         }
     }
     
-    func handleBackgroundSync(task: BGAppRefreshTask) {
+    func handleBackgroundSync(task: BGAppRefreshTask, _ callback: @escaping FlutterPluginRegistrantCallback) {
         print("handling background sync")
         // Schedule the next sync task
         scheduleBackgroundSync()
         
-        runBackgroundSync()
+        runBackgroundSync(callback)
         task.setTaskCompleted(success: true)
     }
     
@@ -180,14 +143,14 @@ import BackgroundTasks
         print("handling background processing")
         scheduleBackgroundTask()
         
-        runBackgroundSync()
+        //runBackgroundSync()
         task.setTaskCompleted(success: true)
     }
     
-    func runBackgroundSync() {
+    func runBackgroundSync(_ callback: FlutterPluginRegistrantCallback) {
         let semaphore = DispatchSemaphore(value: 0)
         DispatchQueue.main.async {
-            BackgroundSyncManager.sync { _ in
+            BackgroundSyncManager.sync(flutterCallback: callback) { _ in
                 semaphore.signal()
             }
         }

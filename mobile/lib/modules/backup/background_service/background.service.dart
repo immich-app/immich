@@ -285,7 +285,6 @@ class BackgroundService {
       case "onAssetsChanged":
       case "backgroundFetch":
         final Future<bool> translationsLoaded = loadTranslations();
-        debugPrint("translations loaded");
         try {
           _clearErrorNotifications();
           final bool hasAccess = await acquireLock();
@@ -294,7 +293,7 @@ class BackgroundService {
             debugPrint("[_callHandler] could not acquire lock, exiting");
             return false;
           }
-          // TODO: Broken on iOS
+          // TODO: Fix on iOS
           // await translationsLoaded;
           // debugPrint('translations loaded');
           final bool ok = await _onAssetsChanged();
@@ -319,7 +318,7 @@ class BackgroundService {
   Future<bool> _onAssetsChanged() async {
     print("Running onAssetsChanged");
     await Hive.initFlutter();
-    print("initialized hive");
+    print("got hive init");
 
     Hive.registerAdapter(HiveSavedLoginInfoAdapter());
     Hive.registerAdapter(HiveBackupAlbumsAdapter());
@@ -333,6 +332,7 @@ class BackgroundService {
       Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
       Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
     ]);
+    print("Opened hive boxes");
     ApiService apiService = ApiService();
     apiService.setAccessToken(Hive.box(userInfoBox).get(accessTokenKey));
     BackupService backupService = BackupService(apiService);
@@ -345,7 +345,8 @@ class BackgroundService {
       return true;
     }
 
-    //await PhotoManager.setIgnorePermissionCheck(true);
+    await PhotoManager.setIgnorePermissionCheck(true);
+    print("Got photo manager");
 
     do {
       final bool backupOk = await _runBackup(
@@ -376,6 +377,7 @@ class BackgroundService {
     AppSettingsService settingsService,
     HiveBackupAlbums backupAlbumInfo,
   ) async {
+    print("running backup...");
     _errorGracePeriodExceeded = _isErrorGracePeriodExceeded(settingsService);
     final bool notifyTotalProgress = settingsService
         .getSetting<bool>(AppSettingsEnum.backgroundBackupTotalProgress);
@@ -388,6 +390,7 @@ class BackgroundService {
 
     List<AssetEntity> toUpload =
         await backupService.buildUploadCandidates(backupAlbumInfo);
+    print("got ${toUpload.length} assets to upload");
 
     try {
       toUpload = await backupService.removeAlreadyUploadedAssets(toUpload);
