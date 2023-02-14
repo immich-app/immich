@@ -1,6 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 
-export class AddAssetToSharedLinkDto {
+export class RemoveAssetsFromSharedLinkDto {
   @IsNotEmpty()
   ids!: string[];
 }
