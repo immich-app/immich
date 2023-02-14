@@ -67,9 +67,6 @@ class BackgroundService {
 
   /// Enqueues the background service
   Future<bool> enableService({bool immediate = false}) async {
-    if (!Platform.isAndroid) {
-      return true;
-    }
     try {
       final callback = PluginUtilities.getCallbackHandle(_nativeEntry)!;
       final String title =
@@ -89,9 +86,6 @@ class BackgroundService {
     int triggerUpdateDelay = 5000,
     int triggerMaxDelay = 50000,
   }) async {
-    if (!Platform.isAndroid) {
-      return true;
-    }
     try {
       final bool ok = await _foregroundChannel.invokeMethod(
         'configure',
@@ -110,9 +104,6 @@ class BackgroundService {
 
   /// Cancels the background service (if currently running) and removes it from work queue
   Future<bool> disableService() async {
-    if (!Platform.isAndroid) {
-      return true;
-    }
     try {
       final ok = await _foregroundChannel.invokeMethod('disable');
       return ok;
@@ -123,9 +114,6 @@ class BackgroundService {
 
   /// Returns `true` if the background service is enabled
   Future<bool> isBackgroundBackupEnabled() async {
-    if (!Platform.isAndroid) {
-      return false;
-    }
     try {
       return await _foregroundChannel.invokeMethod("isEnabled");
     } catch (error) {

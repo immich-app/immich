@@ -130,7 +130,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           requireCharging != null ||
           triggerDelay != null,
     );
-    if (Platform.isAndroid) {
       final bool wasEnabled = state.backgroundBackup;
       final bool wasWifi = state.backupRequireWifi;
       final bool wasCharging = state.backupRequireCharging;
@@ -180,7 +179,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           onError("backup_controller_page_background_configure_error");
         }
       }
-    }
   }
 
   ///

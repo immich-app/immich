@@ -37,22 +37,31 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>We need to access the camera to let you take beautiful video using this app</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Enable location setting to show position of assets on map</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Enable location setting to show position of assets on map</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need to manage backup your photos album</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>We need to manage backup your photos album</string>
-	<key>NSCameraUsageDescription</key>
-	<string>We need to access the camera to let you take beautiful video using this app</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>We need to access the microphone to let you take beautiful video using this app</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need to manage backup your photos album</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need to manage backup your photos album</string>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>processing</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>UIStatusBarHidden</key>
+	<false/>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
