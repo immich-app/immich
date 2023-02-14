@@ -5,7 +5,8 @@ import BackgroundTasks
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
     
-  let backgroundSyncTaskID = "app.alextran.immich-BackgroundSync"
+  let backgroundSyncTaskID = "immich.quick-sync"
+  let backgroundProcessingTaskID = "immich.processing-sync"
     
   override func application(
     _ application: UIApplication,
@@ -15,6 +16,10 @@ import BackgroundTasks
     
       BGTaskScheduler.shared.register(forTaskWithIdentifier: backgroundSyncTaskID, using: nil) { task in
           self.handleBackgroundSync(task: task as! BGAppRefreshTask)
+      }
+      
+      BGTaskScheduler.shared.register(forTaskWithIdentifier: backgroundProcessingTaskID, using: nil) { task in
+          self.handleBackgroundProcessing(task: task as! BGProcessingTask)
       }
       
       let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
@@ -38,6 +43,7 @@ import BackgroundTasks
       // Then resume the application see the background code run
       // Tested on a physical device, not a simulator
       scheduleBackgroundSync()
+      scheduleBackgroundTask()
       
       GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
@@ -64,6 +70,18 @@ import BackgroundTasks
     var callbackHandle: Int64?
     var notificationTitle: String?
     
+    func scheduleBackgroundTask() {
+        let backgroundTask = BGProcessingTaskRequest(identifier: backgroundProcessingTaskID)
+        backgroundTask.requiresExternalPower = true
+        backgroundTask.requiresNetworkConnectivity = true
+        
+        backgroundTask.earliestBeginDate = Date(timeIntervalSinceNow: 60)
+        do {
+            try BGTaskScheduler.shared.submit(backgroundTask)
+        } catch {
+            print("Could not schedule the background processing task \(error.localizedDescription)")
+        }
+    }
   func scheduleBackgroundSync() {
         let backgroundSync = BGAppRefreshTaskRequest(identifier: backgroundSyncTaskID)
         
@@ -75,7 +93,6 @@ import BackgroundTasks
         } catch {
             print("Could not schedule the background task \(error.localizedDescription)")
         }
-        
     }
     
     func handleBackgroundSync(task: BGAppRefreshTask) {
@@ -83,6 +100,17 @@ import BackgroundTasks
         scheduleBackgroundSync()
         
         // The background sync function to run
+        guard let callbackHandle else {
+            print("callbackHandle is nil \(callbackHandle)")
+            return
+        }
+        
+        BackgroundSyncManager.sync(callbackHandle: callbackHandle)
+    }
+    
+    func handleBackgroundProcessing(task: BGProcessingTask) {
+        scheduleBackgroundTask()
+        
         guard let callbackHandle else {
             print("callbackHandle is nil \(callbackHandle)")
             return
