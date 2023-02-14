@@ -1869,9 +1869,11 @@
             "bearer": []
           }
         ]
-      },
+      }
+    },
+    "/asset/shared-link/add": {
       "patch": {
-        "operationId": "updateAssetsInSharedLink",
+        "operationId": "addAssetsToSharedLink",
         "description": "",
         "parameters": [],
         "requestBody": {
@@ -1879,7 +1881,44 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateAssetsToSharedLinkDto"
+                "$ref": "#/components/schemas/AddAssetToSharedLinkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/asset/shared-link/remove": {
+      "patch": {
+        "operationId": "removeAssetsFromSharedLink",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemoveAssetsFromSharedLinkDto"
               }
             }
           }
@@ -4171,10 +4210,10 @@
           "assetIds"
         ]
       },
-      "UpdateAssetsToSharedLinkDto": {
+      "AddAssetToSharedLinkDto": {
         "type": "object",
         "properties": {
-          "assetIds": {
+          "ids": {
             "type": "array",
             "items": {
               "type": "string"
@@ -4182,7 +4221,21 @@
           }
         },
         "required": [
-          "assetIds"
+          "ids"
+        ]
+      },
+      "RemoveAssetsFromSharedLinkDto": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "ids"
         ]
       },
       "CreateTagDto": {

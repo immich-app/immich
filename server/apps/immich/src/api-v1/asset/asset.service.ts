@@ -619,7 +619,7 @@ export class AssetService {
       assets.push(asset);
     }
 
-    const updatedLink = await this.shareCore.updateAssets(authUser.id, authUser.sharedLinkId, assets);
+    const updatedLink = await this.shareCore.addAssets(authUser.id, authUser.sharedLinkId, assets);
     return mapSharedLink(updatedLink);
   }
 
@@ -627,6 +627,7 @@ export class AssetService {
     authUser: AuthUserDto,
     dto: RemoveAssetsFromSharedLinkDto,
   ): Promise<SharedLinkResponseDto> {
+    console.log(authUser);
     if (!authUser.sharedLinkId) {
       throw new ForbiddenException();
     }
@@ -638,7 +639,7 @@ export class AssetService {
       assets.push(asset);
     }
 
-    const updatedLink = await this.shareCore.updateAssets(authUser.id, authUser.sharedLinkId, assets);
+    const updatedLink = await this.shareCore.removeAssets(authUser.id, authUser.sharedLinkId, assets);
     return mapSharedLink(updatedLink);
   }
 

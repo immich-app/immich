@@ -340,7 +340,7 @@ export class AssetController {
     return await this.assetService.addAssetsToSharedLink(authUser, dto);
   }
 
-  @Authenticated()
+  @Authenticated({ isShared: true })
   @Patch('/shared-link/remove')
   async removeAssetsFromSharedLink(
     @GetAuthUser() authUser: AuthUserDto,

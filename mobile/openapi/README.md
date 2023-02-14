@@ -75,6 +75,7 @@ Class | Method | HTTP request | Description
 *AlbumApi* | [**removeAssetFromAlbum**](doc//AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{albumId}/assets | 
 *AlbumApi* | [**removeUserFromAlbum**](doc//AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{albumId}/user/{userId} | 
 *AlbumApi* | [**updateAlbumInfo**](doc//AlbumApi.md#updatealbuminfo) | **PATCH** /album/{albumId} | 
+*AssetApi* | [**addAssetsToSharedLink**](doc//AssetApi.md#addassetstosharedlink) | **PATCH** /asset/shared-link/add | 
 *AssetApi* | [**checkDuplicateAsset**](doc//AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 *AssetApi* | [**createAssetsSharedLink**](doc//AssetApi.md#createassetssharedlink) | **POST** /asset/shared-link | 
@@ -92,10 +93,10 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getCuratedLocations**](doc//AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 *AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
 *AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
+*AssetApi* | [**removeAssetsFromSharedLink**](doc//AssetApi.md#removeassetsfromsharedlink) | **PATCH** /asset/shared-link/remove | 
 *AssetApi* | [**searchAsset**](doc//AssetApi.md#searchasset) | **POST** /asset/search | 
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{assetId} | 
 *AssetApi* | [**updateAsset**](doc//AssetApi.md#updateasset) | **PUT** /asset/{assetId} | 
-*AssetApi* | [**updateAssetsInSharedLink**](doc//AssetApi.md#updateassetsinsharedlink) | **PATCH** /asset/shared-link | 
 *AssetApi* | [**uploadFile**](doc//AssetApi.md#uploadfile) | **POST** /asset/upload | 
 *AuthenticationApi* | [**adminSignUp**](doc//AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
@@ -146,6 +147,7 @@ Class | Method | HTTP request | Description
  - [APIKeyCreateResponseDto](doc//APIKeyCreateResponseDto.md)
  - [APIKeyResponseDto](doc//APIKeyResponseDto.md)
  - [APIKeyUpdateDto](doc//APIKeyUpdateDto.md)
+ - [AddAssetToSharedLinkDto](doc//AddAssetToSharedLinkDto.md)
  - [AddAssetsDto](doc//AddAssetsDto.md)
  - [AddAssetsResponseDto](doc//AddAssetsResponseDto.md)
  - [AddUsersDto](doc//AddUsersDto.md)
@@ -193,6 +195,7 @@ Class | Method | HTTP request | Description
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
  - [OAuthConfigResponseDto](doc//OAuthConfigResponseDto.md)
  - [RemoveAssetsDto](doc//RemoveAssetsDto.md)
+ - [RemoveAssetsFromSharedLinkDto](doc//RemoveAssetsFromSharedLinkDto.md)
  - [SearchAssetDto](doc//SearchAssetDto.md)
  - [ServerInfoResponseDto](doc//ServerInfoResponseDto.md)
  - [ServerPingResponse](doc//ServerPingResponse.md)
@@ -214,7 +217,6 @@ Class | Method | HTTP request | Description
  - [TimeGroupEnum](doc//TimeGroupEnum.md)
  - [UpdateAlbumDto](doc//UpdateAlbumDto.md)
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
- - [UpdateAssetsToSharedLinkDto](doc//UpdateAssetsToSharedLinkDto.md)
  - [UpdateTagDto](doc//UpdateTagDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)
  - [UpsertDeviceInfoDto](doc//UpsertDeviceInfoDto.md)

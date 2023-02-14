@@ -41,9 +41,9 @@
 
 	const handleUploadAssets = async () => {
 		openFileUploadDialog(undefined, sharedLink?.key, async (assetId) => {
-			const { data: updatedLink } = await api.assetApi.updateAssetsInSharedLink(
+			await api.assetApi.addAssetsToSharedLink(
 				{
-					assetIds: [...sharedLink.assets.map((a) => a.id), assetId]
+					ids: [assetId]
 				},
 				{
 					params: {
@@ -51,16 +51,14 @@
 					}
 				}
 			);
-			console.log('sharedlink asset count', updatedLink.assets.length);
-			sharedLink = updatedLink;
 		});
 	};
 
 	const handleRemoveAssetsFromSharedLink = async () => {
 		if (window.confirm('Do you want to remove selected assets from the shared link?')) {
-			await api.assetApi.updateAssetsInSharedLink(
+			await api.assetApi.removeAssetsFromSharedLink(
 				{
-					assetIds: assets.filter((a) => !selectedAssets.has(a)).map((a) => a.id)
+					ids: assets.filter((a) => !selectedAssets.has(a)).map((a) => a.id)
 				},
 				{
 					params: {

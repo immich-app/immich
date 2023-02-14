@@ -200,6 +200,8 @@ class ApiClient {
           return APIKeyResponseDto.fromJson(value);
         case 'APIKeyUpdateDto':
           return APIKeyUpdateDto.fromJson(value);
+        case 'AddAssetToSharedLinkDto':
+          return AddAssetToSharedLinkDto.fromJson(value);
         case 'AddAssetsDto':
           return AddAssetsDto.fromJson(value);
         case 'AddAssetsResponseDto':
@@ -294,6 +296,8 @@ class ApiClient {
           return OAuthConfigResponseDto.fromJson(value);
         case 'RemoveAssetsDto':
           return RemoveAssetsDto.fromJson(value);
+        case 'RemoveAssetsFromSharedLinkDto':
+          return RemoveAssetsFromSharedLinkDto.fromJson(value);
         case 'SearchAssetDto':
           return SearchAssetDto.fromJson(value);
         case 'ServerInfoResponseDto':
@@ -336,8 +340,6 @@ class ApiClient {
           return UpdateAlbumDto.fromJson(value);
         case 'UpdateAssetDto':
           return UpdateAssetDto.fromJson(value);
-        case 'UpdateAssetsToSharedLinkDto':
-          return UpdateAssetsToSharedLinkDto.fromJson(value);
         case 'UpdateTagDto':
           return UpdateTagDto.fromJson(value);
         case 'UpdateUserDto':
