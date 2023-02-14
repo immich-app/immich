@@ -53,7 +53,7 @@ export const fileUploadHandler = async (
 			}, 2)
 		)
 		.subscribe();
-    
+
 	const acceptedFile = files.filter((file) => {
 		const assetType = getFileMimeType(file).split('/')[0];
 		return assetType === 'video' || assetType === 'image';
