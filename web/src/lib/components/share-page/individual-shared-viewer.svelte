@@ -40,18 +40,18 @@
 	};
 
 	const handleUploadAssets = async () => {
-		openFileUploadDialog(undefined, sharedLink?.key, async (assetId) => {
-			await api.assetApi.addAssetsToSharedLink(
-				{
-					ids: [assetId]
-				},
-				{
-					params: {
-						key: sharedLink?.key
-					}
+		const results = await openFileUploadDialog(undefined, sharedLink?.key);
+
+		await api.assetApi.addAssetsToSharedLink(
+			{
+				ids: results.filter((id) => !!id) as string[]
+			},
+			{
+				params: {
+					key: sharedLink?.key
 				}
-			);
-		});
+			}
+		);
 	};
 
 	const handleRemoveAssetsFromSharedLink = async () => {

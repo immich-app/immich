@@ -6,70 +6,74 @@ import { uploadAssetsStore } from '$lib/stores/upload';
 import type { UploadAsset } from '../models/upload-asset';
 import { api, AssetFileUploadResponseDto } from '@api';
 import { addAssetsToAlbum, getFileMimeType, getFilenameExtension } from '$lib/utils/asset-utils';
-import { Subject, mergeMap } from 'rxjs';
+import {
+	Subject,
+	mergeMap,
+	combineAll,
+	filter,
+	firstValueFrom,
+	from,
+	of,
+	combineLatestAll
+} from 'rxjs';
 import axios from 'axios';
 
-export const openFileUploadDialog = (
+export const openFileUploadDialog = async (
 	albumId: string | undefined = undefined,
-	sharedKey: string | undefined = undefined,
-	onDone?: (id: string) => void
+	sharedKey: string | undefined = undefined
 ) => {
-	try {
-		const fileSelector = document.createElement('input');
+	return new Promise<(string | undefined)[]>((resolve, reject) => {
+		try {
+			const fileSelector = document.createElement('input');
 
-		fileSelector.type = 'file';
-		fileSelector.multiple = true;
+			fileSelector.type = 'file';
+			fileSelector.multiple = true;
 
-		// When adding a content type that is unsupported by browsers, make sure
-		// to also add it to getFileMimeType() otherwise the upload will fail.
-		fileSelector.accept = 'image/*,video/*,.heic,.heif,.dng,.3gp,.nef';
+			// When adding a content type that is unsupported by browsers, make sure
+			// to also add it to getFileMimeType() otherwise the upload will fail.
+			fileSelector.accept = 'image/*,video/*,.heic,.heif,.dng,.3gp,.nef';
 
-		fileSelector.onchange = async (e: Event) => {
-			const target = e.target as HTMLInputElement;
-			if (!target.files) {
-				return;
-			}
-			const files = Array.from<File>(target.files);
+			fileSelector.onchange = async (e: Event) => {
+				const target = e.target as HTMLInputElement;
+				if (!target.files) {
+					return;
+				}
+				const files = Array.from<File>(target.files);
 
-			await fileUploadHandler(files, albumId, sharedKey, onDone);
-		};
+				resolve(await fileUploadHandler(files, albumId, sharedKey));
+			};
 
-		fileSelector.click();
-	} catch (e) {
-		console.log('Error selecting file', e);
-	}
+			fileSelector.click();
+		} catch (e) {
+			console.log('Error selecting file', e);
+			reject(e);
+		}
+	});
 };
 
 export const fileUploadHandler = async (
 	files: File[],
 	albumId: string | undefined = undefined,
-	sharedKey: string | undefined = undefined,
-	onDone?: (id: string) => void
+	sharedKey: string | undefined = undefined
 ) => {
-	const files$ = new Subject<File>();
-	files$
-		.pipe(
-			mergeMap(async (file) => {
-				await fileUploader(file, albumId, sharedKey, onDone);
-			}, 2)
+	return firstValueFrom(
+		from(files).pipe(
+			filter((file) => {
+				const assetType = getFileMimeType(file).split('/')[0];
+				return assetType === 'video' || assetType === 'image';
+			}),
+			mergeMap(async (file) => of(await fileUploader(file, albumId, sharedKey)), 2),
+			combineLatestAll()
 		)
-		.subscribe();
-	const acceptedFile = files.filter((file) => {
-		const assetType = getFileMimeType(file).split('/')[0];
-		return assetType === 'video' || assetType === 'image';
-	});
-	for (const file of acceptedFile) {
-		files$.next(file);
-	}
+	);
 };
 
 //TODO: should probably use the @api SDK
 async function fileUploader(
 	asset: File,
 	albumId: string | undefined = undefined,
-	sharedKey: string | undefined = undefined,
-	onDone?: (id: string) => void
-) {
+	sharedKey: string | undefined = undefined
+): Promise<string | undefined> {
 	const mimeType = getFileMimeType(asset);
 	const assetType = mimeType.split('/')[0].toUpperCase();
 	const fileExtension = getFilenameExtension(asset.name);
@@ -120,15 +124,12 @@ async function fileUploader(
 			}
 		);
 
-		if (status === 200) {
-			if (data.isExist) {
-				const dataId = data.id;
-				if (albumId && dataId) {
-					addAssetsToAlbum(albumId, [dataId], sharedKey);
-				}
-				onDone && dataId && onDone(dataId);
-				return;
+		if (status === 200 && data.isExist && data.id) {
+			if (albumId) {
+				await addAssetsToAlbum(albumId, [data.id], sharedKey);
 			}
+
+			return data.id;
 		}
 
 		const newUploadAsset: UploadAsset = {
@@ -140,35 +141,33 @@ async function fileUploader(
 
 		uploadAssetsStore.addNewUploadAsset(newUploadAsset);
 
-		axios
-			.post(`/api/asset/upload`, formData, {
-				params: {
-					key: sharedKey
-				},
-				onUploadProgress: (event) => {
-					const percentComplete = Math.floor((event.loaded / event.total) * 100);
-					uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
-				}
-			})
-			.catch((error) => {
-				handleUploadError(asset, error);
-			})
-			.then(async (response: any) => {
-				const res: AssetFileUploadResponseDto = response.data;
+		const response = await axios.post(`/api/asset/upload`, formData, {
+			params: {
+				key: sharedKey
+			},
+			onUploadProgress: (event) => {
+				const percentComplete = Math.floor((event.loaded / event.total) * 100);
+				uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
+			}
+		});
 
-				if (albumId && res.id) {
-					await addAssetsToAlbum(albumId, [res.id], sharedKey);
-				}
+		if (response.status == 200 || response.status == 201) {
+			const res: AssetFileUploadResponseDto = response.data;
 
-				onDone && res.id && onDone(res.id);
-			})
-			.finally(() => {
-				setTimeout(() => {
-					uploadAssetsStore.removeUploadAsset(deviceAssetId);
-				}, 500);
-			});
+			if (albumId && res.id) {
+				await addAssetsToAlbum(albumId, [res.id], sharedKey);
+			}
+
+			setTimeout(() => {
+				uploadAssetsStore.removeUploadAsset(deviceAssetId);
+			}, 1000);
+
+			return res.id;
+		}
 	} catch (e) {
 		console.log('error uploading file ', e);
+		handleUploadError(asset, JSON.stringify(e));
+		uploadAssetsStore.removeUploadAsset(deviceAssetId);
 	}
 }
 
