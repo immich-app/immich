@@ -143,15 +143,14 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
         let backgroundProcessing = BGProcessingTaskRequest(identifier: BackgroundServicePlugin.backgroundProcessingTaskID)
         print("scheduled background sync")
         let defaults = UserDefaults.standard
-        let maxDelay = defaults.value(forKey: "trigger_max_delay") as? Double ?? 15
         let requireCharging = defaults.value(forKey: "require_charging") as? Bool? ?? true
         let requireUnmeteredNetwork = defaults.value(forKey: "require_unmetered_network") as? Bool? ?? true
         
         backgroundProcessing.requiresNetworkConnectivity = requireUnmeteredNetwork!
         backgroundProcessing.requiresExternalPower = requireCharging!
                 
-        // use max delay as earliest begin date
-        backgroundProcessing.earliestBeginDate = Date(timeIntervalSinceNow: maxDelay)
+        // Use 15 minutes from now as earliest begin date
+        backgroundProcessing.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60)
         
         do {
             try BGTaskScheduler.shared.submit(backgroundProcessing)
