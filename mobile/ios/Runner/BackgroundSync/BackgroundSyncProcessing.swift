@@ -67,22 +67,23 @@ class BackgroundSyncManager {
                 break
             case "updateNotification":
                 print("update notification called")
-                cleanup()
+                //cleanup()
                 result(true)
                 break
             case "showError":
                 print("showError called")
-                cleanup()
+                //cleanup()
+                result(true)
                 break
             case "clearErrorNotifications":
                 print("clearErrorNotifications")
                 result(true)
-                cleanup()
+                //cleanup()
                 break
             case "hasContentChanged":
                 print("hasContentChanged")
                 result(true)
-                cleanup()
+                //cleanup()
                 break
             default:
                 result(FlutterError())
