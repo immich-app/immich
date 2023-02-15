@@ -10,8 +10,6 @@ import sanitize from 'sanitize-filename';
 import { AuthUserDto } from '../decorators/auth-user.decorator';
 import { patchFormData } from '../utils/path-form-data.util';
 
-const logger = new Logger('AssetUploadConfig');
-
 export interface ImmichFile extends Express.Multer.File {
   /** sha1 hash of file */
   checksum: Buffer;
@@ -48,13 +46,15 @@ export function customStorage(): StorageEngine {
 
 export const multerUtils = { fileFilter, filename, destination };
 
+const logger = new Logger('AssetUploadConfig');
+
 function fileFilter(req: Request, file: any, cb: any) {
   if (!req.user || (req.user.isPublicUser && !req.user.isAllowUpload)) {
     return cb(new UnauthorizedException());
   }
   if (
     file.mimetype.match(
-      /\/(jpg|jpeg|png|gif|mp4|webm|x-msvideo|quicktime|heic|heif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef)$/,
+      /\/(jpg|jpeg|png|gif|mp4|webm|x-msvideo|quicktime|heic|heif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef|x-fuji-raf|x-samsung-srw)$/,
     )
   ) {
     cb(null, true);
