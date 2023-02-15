@@ -70,7 +70,7 @@ class BackgroundSyncWorker {
         }
     }
     
-    public func run() {
+    public func run(maxSeconds: Int?) {
         let defaults = UserDefaults.standard
         guard let callbackHandle = defaults.value(forKey: "callback_handle") as? Int64 else {
             complete(UIBackgroundFetchResult.failed)
@@ -95,11 +95,31 @@ class BackgroundSyncWorker {
             return
         }
         
+        if maxSeconds != nil {
+            print("starting timer with \(maxSeconds) before running system Stop")
+            let timer = Timer.scheduledTimer(withTimeInterval: TimeInterval(maxSeconds!),
+                                                      repeats: false) { timer in
+                timer.invalidate()
+                if self.channel != nil {
+                    print("running system stop")
+                    self.channel?.invokeMethod(
+                        "systemStop",
+                        arguments: nil,
+                        result: nil)
+                    self.complete(UIBackgroundFetchResult.newData)
+                }
+            }
+        }
+        
         // Set the handle function to the channel message handler
         self.channel?.setMethodCallHandler(handle)
         
         // Register this to get access to the plugins on the platform channel
         BackgroundServicePlugin.flutterPluginRegistrantCallback?(engine!)
+    }
+    
+    @objc private func cancel() {
+    
     }
 
     private func complete(_ fetchResult: UIBackgroundFetchResult) {

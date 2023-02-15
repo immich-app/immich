@@ -44,6 +44,10 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
         BGTaskScheduler.shared.register(forTaskWithIdentifier: BackgroundServicePlugin.backgroundProcessingTaskID, using: nil) { task in
           handleBackgroundProcessing(task: task as! BGProcessingTask)
         }
+        
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: BackgroundServicePlugin.backgroundSyncTaskID, using: nil) { task in
+          handleBackgroundFetch(task: task as! BGAppRefreshTask)
+        }
     }
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -139,6 +143,20 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
         result(true)
     }
   
+    // Schedules a short-running background sync to sync only a few photos
+    static func scheduleBackgroundFetch() {
+        let backgroundFetch = BGAppRefreshTaskRequest(identifier: BackgroundServicePlugin.backgroundSyncTaskID)
+        // Use 1 minute from now as earliest begin date
+        backgroundFetch.earliestBeginDate = Date(timeIntervalSinceNow: 60)
+        
+        do {
+            try BGTaskScheduler.shared.submit(backgroundFetch)
+        } catch {
+            print("Could not schedule the background task \(error.localizedDescription)")
+        }
+    }
+    
+    // Schedules a long-running background sync for syncing all of the photos
     static func scheduleBackgroundSync() {
         let backgroundProcessing = BGProcessingTaskRequest(identifier: BackgroundServicePlugin.backgroundProcessingTaskID)
         print("scheduled background sync")
@@ -159,22 +177,31 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
         }
     }
     
-    static func handleBackgroundProcessing(task: BGProcessingTask) {
-        print("handling background sync")
+    static func handleBackgroundFetch(task: BGAppRefreshTask) {
+        print("handling background fetch")
         // Schedule the next sync task
-        scheduleBackgroundSync()
+        scheduleBackgroundFetch()
         
-        BackgroundServicePlugin.runBackgroundSync()
+        BackgroundServicePlugin.runBackgroundSync(maxSeconds: 10)
         task.setTaskCompleted(success: true)
     }
     
-    static func runBackgroundSync() {
+    static func handleBackgroundProcessing(task: BGProcessingTask) {
+        print("handling background processing")
+        // Schedule the next sync task
+        scheduleBackgroundSync()
+        
+        BackgroundServicePlugin.runBackgroundSync(maxSeconds: nil)
+        task.setTaskCompleted(success: true)
+    }
+    
+    static func runBackgroundSync(maxSeconds: Int?) {
         let semaphore = DispatchSemaphore(value: 0)
         DispatchQueue.main.async {
             let backgroundWorker = BackgroundSyncWorker { _ in
                 semaphore.signal()
             }
-            backgroundWorker.run()
+            backgroundWorker.run(maxSeconds: maxSeconds)
         }
         semaphore.wait()
     }
