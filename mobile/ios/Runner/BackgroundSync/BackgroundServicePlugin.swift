@@ -22,22 +22,16 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
   // Then resume the application see the background code run
   // Tested on a physical device, not a simulator
 
-    var channel: FlutterMethodChannel? = nil
-
     public static let backgroundSyncTaskID = "immichBackgroundFetch"
     public static let backgroundProcessingTaskID = "immichBackgroundProcessing"
     
     public static func register(with registrar: FlutterPluginRegistrar) {
-        print("registering with \(registrar)")
         let channel = FlutterMethodChannel(
-            name: "immich/backgroundChannel",
+            name: "immich/foregroundChannel",
             binaryMessenger: registrar.messenger()
         )
-        PathProviderPlugin.register(with: registrar)
 
-        
         let instance = BackgroundServicePlugin()
-        instance.channel = channel
         registrar.addMethodCallDelegate(instance, channel: channel)
         registrar.addApplicationDelegate(instance)
     }
@@ -76,6 +70,8 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
     }
     
     public func handleBackgroundEnable(call: FlutterMethodCall, result: FlutterResult) {
+        print("background enable called")
+
         guard let args = call.arguments as? Array<Any> else {
             print("Cannot parse args as array: \(call.arguments)")
             result(FlutterMethodNotImplemented)
@@ -104,8 +100,8 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
     
     func handleIsEnabled(call: FlutterMethodCall, result: FlutterResult) {
         BackgroundServicePlugin.scheduleBackgroundSync()
+        print("isEnabled called")
         
-        print("handled isEnabled")
         result(true)
     }
     
@@ -141,13 +137,15 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
         
         result(true)
     }
-    
   
     static func scheduleBackgroundSync() {
         let backgroundSync = BGAppRefreshTaskRequest(identifier: BackgroundServicePlugin.backgroundSyncTaskID)
-        
-        // Run 5 seconds from now
-        backgroundSync.earliestBeginDate = Date(timeIntervalSinceNow: 5)
+        print("scheduled background sync")
+        let defaults = UserDefaults.standard
+        let maxDelay = defaults.value(forKey: "trigger_max_delay") as? Double ?? 15
+                
+        // use max delay as earliest begin date
+        backgroundSync.earliestBeginDate = Date(timeIntervalSinceNow: maxDelay)
         
         do {
             try BGTaskScheduler.shared.submit(backgroundSync)

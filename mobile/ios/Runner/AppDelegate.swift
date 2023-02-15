@@ -13,16 +13,11 @@ import photo_manager
   ) -> Bool {
 
       GeneratedPluginRegistrant.register(with: self)
+      BackgroundServicePlugin.register(with: self.registrar(forPlugin: "BackgroundServicePlugin")!)
             
       BackgroundServicePlugin.setPluginRegistrantCallback { registry in
-          print("Setting plugin registrants")
           if !registry.hasPlugin("org.cocoapods.path-provider-ios") {
-              print("Registering path provider")
               FLTPathProviderPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.path-provider-ios")!)
-              print("do we have plugin now?")
-              print(registry.hasPlugin("org.cocoapods.path-provider-ios"))
-          } else {
-              print("already has path provider registered")
           }
           
           if !registry.hasPlugin("org.cocoapods.photo-manager") {
@@ -35,4 +30,5 @@ import photo_manager
       
       return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
+    
 }
