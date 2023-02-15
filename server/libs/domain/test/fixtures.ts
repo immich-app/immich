@@ -378,6 +378,7 @@ export const sharedLinkStub = {
             isVisible: true,
             livePhotoVideoId: null,
             exifInfo: {
+              livePhotoCID: null,
               id: 1,
               assetId: 'id_1',
               description: 'description',
