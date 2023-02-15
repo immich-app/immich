@@ -66,11 +66,6 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
             case "isEnabled":
                 handleIsEnabled(call: call, result: result)
                 break
-            case "clearErrorNotifications":
-                print("Clearing error notifications...")
-                // TODO:
-                result(true)
-                break
             case "isIgnoringBatteryOptimizations":
                 result(FlutterMethodNotImplemented)
                 break
@@ -173,9 +168,10 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
     static func runBackgroundSync() {
         let semaphore = DispatchSemaphore(value: 0)
         DispatchQueue.main.async {
-            BackgroundSyncManager.sync { _ in
+            let backgroundWorker = BackgroundSyncWorker { _ in
                 semaphore.signal()
             }
+            backgroundWorker.run()
         }
         semaphore.wait()
     }
