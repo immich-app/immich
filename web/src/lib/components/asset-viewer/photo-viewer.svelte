@@ -10,22 +10,14 @@
 		NotificationType
 	} from '../shared-components/notification/notification';
 
-	export let assetId: string;
+	export let asset: AssetResponseDto;
 	export let publicSharedKey = '';
 
-	let assetInfo: AssetResponseDto;
 	let assetData: string;
 
 	let copyImageToClipboard: (src: string) => Promise<Blob>;
 
 	onMount(async () => {
-		const { data } = await api.assetApi.getAssetById(assetId, {
-			params: {
-				key: publicSharedKey
-			}
-		});
-		assetInfo = data;
-
 		//Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
 		const module = await import('copy-image-clipboard');
 		copyImageToClipboard = module.copyImageToClipboard;
@@ -33,7 +25,7 @@
 
 	const loadAssetData = async () => {
 		try {
-			const { data } = await api.assetApi.serveFile(assetInfo.id, false, true, {
+			const { data } = await api.assetApi.serveFile(asset.id, false, true, {
 				params: {
 					key: publicSharedKey
 				},
@@ -75,18 +67,15 @@
 	transition:fade={{ duration: 150 }}
 	class="flex place-items-center place-content-center h-full select-none"
 >
-	{#if assetInfo}
-		{#await loadAssetData()}
-			<LoadingSpinner />
-		{:then assetData}
-			<img
-				transition:fade={{ duration: 150 }}
-				src={assetData}
-				alt={assetId}
-				class="object-contain h-full transition-all"
-				loading="lazy"
-				draggable="false"
-			/>
-		{/await}
-	{/if}
+	{#await loadAssetData()}
+		<LoadingSpinner />
+	{:then assetData}
+		<img
+			transition:fade={{ duration: 150 }}
+			src={assetData}
+			alt={asset.id}
+			class="object-contain h-full transition-all"
+			draggable="false"
+		/>
+	{/await}
 </div>
