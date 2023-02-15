@@ -8,9 +8,7 @@ import 'package:immich_mobile/constants/locales.dart';
 
 /// Workaround to manually load translations in another Isolate
 Future<bool> loadTranslations() async {
-  print("init easy location....");
   await EasyLocalizationController.initEasyLocation();
-  print("done init easy location.");
 
   final controller = EasyLocalizationController(
     supportedLocales: locales,
@@ -23,9 +21,7 @@ Future<bool> loadTranslations() async {
     fallbackLocale: locales.first,
   );
 
-  print("loading translation from controller");
   await controller.loadTranslations();
-  print("done loading translation from controller");
 
   return Localization.load(
     controller.locale,

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:developer';
-import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui' show DartPluginRegistrant, IsolateNameServer, PluginUtilities;
 import 'package:cancellation_token_http/http.dart';
@@ -10,7 +9,6 @@ import 'package:flutter/widgets.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/modules/backup/background_service/localization.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
@@ -19,7 +17,6 @@ import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path_provider_ios/path_provider_ios.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -282,25 +279,20 @@ class BackgroundService {
   }
 
   Future<bool> _callHandler(MethodCall call) async {
-    debugPrint("callHandler: ${call.method}");
     DartPluginRegistrant.ensureInitialized();
+    PathProviderIOS.registerWith();
     switch (call.method) {
       case "backgroundFetch":
       case "onAssetsChanged":
         try {
-          //_clearErrorNotifications();
-          final bool hasAccess = true;//await acquireLock();
-          debugPrint("has Access $hasAccess");
+          _clearErrorNotifications();
+          final bool hasAccess = await acquireLock();
           if (!hasAccess) {
             debugPrint("[_callHandler] could not acquire lock, exiting");
             return false;
           }
-          print("Getting application directory...");
-          PathProviderIOS.registerWith();
-          final dir = await getApplicationDocumentsDirectory();
-          print("Got application directory");
-          final bool ok = await _onAssetsChanged(dir.path);
-          return true;
+          final bool ok = await _onAssetsChanged();
+          return ok;
         } catch (error) {
           debugPrint(error.toString());
           return false;
@@ -318,11 +310,8 @@ class BackgroundService {
     }
   }
 
-  Future<bool> _onAssetsChanged(String directory) async {
-    print("Running onAssetsChanged");
-    print("Initializing Hive...");
-    Hive.init(directory);
-    print("got hive init");
+  Future<bool> _onAssetsChanged() async {
+    await Hive.initFlutter();
 
     Hive.registerAdapter(HiveSavedLoginInfoAdapter());
     Hive.registerAdapter(HiveBackupAlbumsAdapter());
@@ -336,7 +325,6 @@ class BackgroundService {
       Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
       Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
     ]);
-    print("Opened hive boxes");
     ApiService apiService = ApiService();
     apiService.setAccessToken(Hive.box(userInfoBox).get(accessTokenKey));
     BackupService backupService = BackupService(apiService);
@@ -349,9 +337,7 @@ class BackgroundService {
       return true;
     }
 
-    print("getting photo manager...");
     await PhotoManager.setIgnorePermissionCheck(true);
-    print("Got photo manager");
 
     do {
       final bool backupOk = await _runBackup(
@@ -382,7 +368,6 @@ class BackgroundService {
     AppSettingsService settingsService,
     HiveBackupAlbums backupAlbumInfo,
   ) async {
-    print("running backup...");
     _errorGracePeriodExceeded = _isErrorGracePeriodExceeded(settingsService);
     final bool notifyTotalProgress = settingsService
         .getSetting<bool>(AppSettingsEnum.backgroundBackupTotalProgress);
@@ -395,7 +380,6 @@ class BackgroundService {
 
     List<AssetEntity> toUpload =
         await backupService.buildUploadCandidates(backupAlbumInfo);
-    print("got ${toUpload.length} assets to upload");
 
     try {
       toUpload = await backupService.removeAlreadyUploadedAssets(toUpload);
