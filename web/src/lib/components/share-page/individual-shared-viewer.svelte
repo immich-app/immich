@@ -14,6 +14,10 @@
 	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 	import ImmichLogo from '../shared-components/immich-logo.svelte';
+	import {
+		notificationController,
+		NotificationType
+	} from '../shared-components/notification/notification';
 
 	export let sharedLink: SharedLinkResponseDto;
 	export let isOwned: boolean;
@@ -40,18 +44,29 @@
 	};
 
 	const handleUploadAssets = async () => {
-		const results = await openFileUploadDialog(undefined, sharedLink?.key);
+		try {
+			const results = await openFileUploadDialog(undefined, sharedLink?.key);
 
-		await api.assetApi.addAssetsToSharedLink(
-			{
-				assetIds: results.filter((id) => !!id) as string[]
-			},
-			{
-				params: {
-					key: sharedLink?.key
+			const assetIds = results.filter((id) => !!id) as string[];
+
+			await api.assetApi.addAssetsToSharedLink(
+				{
+					assetIds
+				},
+				{
+					params: {
+						key: sharedLink?.key
+					}
 				}
-			}
-		);
+			);
+
+			notificationController.show({
+				message: `Successfully add ${assetIds.length} to the shared link`,
+				type: NotificationType.Info
+			});
+		} catch (e) {
+			console.error('handleUploadAssets', e);
+		}
 	};
 
 	const handleRemoveAssetsFromSharedLink = async () => {
