@@ -101,6 +101,7 @@ describe('User', () => {
               shouldChangePassword: true,
               profileImagePath: '',
               deletedAt: null,
+              updatedAt: expect.anything(),
               oauthId: '',
             },
             {
@@ -113,6 +114,7 @@ describe('User', () => {
               shouldChangePassword: true,
               profileImagePath: '',
               deletedAt: null,
+              updatedAt: expect.anything(),
               oauthId: '',
             },
           ]),

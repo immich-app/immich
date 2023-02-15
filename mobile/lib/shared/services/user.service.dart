@@ -73,21 +73,21 @@ class UserService {
     }
     users.sortBy((u) => u.id);
     final dbUsers = await _db.users.where().sortById().findAll();
-    List<int> toDelete = [];
-    List<User> toUpsert = [];
+    final List<int> toDelete = [];
+    final List<User> toUpsert = [];
     final changes = await diffSortedLists(
       users,
       dbUsers,
-      compare: (a, b) => a.id.compareTo(b.id),
-      both: (a, b) {
+      compare: (User a, User b) => a.id.compareTo(b.id),
+      both: (User a, User b) {
         if (a.updatedAt != b.updatedAt) {
           toUpsert.add(a);
           return true;
         }
         return false;
       },
-      onlyFirst: (a) => toUpsert.add(a),
-      onlySecond: (b) => toDelete.add(b.isarId),
+      onlyFirst: (User a) => toUpsert.add(a),
+      onlySecond: (User b) => toDelete.add(b.isarId),
     );
     if (changes) {
       await _db.writeTxn(() async {

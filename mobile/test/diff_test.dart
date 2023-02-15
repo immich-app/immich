@@ -13,13 +13,13 @@ void main() {
       final changes = await diffSortedLists(
         listA,
         listB,
-        compare: (a, b) => a.compareTo(b),
-        both: (a, b) {
+        compare: (int a, int b) => a.compareTo(b),
+        both: (int a, int b) {
           inBoth.add(b);
           return false;
         },
-        onlyFirst: (a) => onlyInA.add(a),
-        onlySecond: (b) => onlyInB.add(b),
+        onlyFirst: (int a) => onlyInA.add(a),
+        onlySecond: (int b) => onlyInB.add(b),
       );
       expect(changes, true);
       expect(onlyInA, [2, 4, 6]);
