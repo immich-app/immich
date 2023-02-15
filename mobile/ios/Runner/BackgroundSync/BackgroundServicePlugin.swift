@@ -7,9 +7,15 @@
 
 import Flutter
 import BackgroundTasks
+import path_provider_foundation
 
 class BackgroundServicePlugin: NSObject, FlutterPlugin {
     
+    public static var flutterPluginRegistrantCallback: FlutterPluginRegistrantCallback?
+    
+    public static func setPluginRegistrantCallback(_ callback: FlutterPluginRegistrantCallback) {
+        flutterPluginRegistrantCallback = callback
+    }
 
   //  Pause the application in XCode, then enter
   // e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"immichBackgroundFetch"]
@@ -27,6 +33,8 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
             name: "immich/backgroundChannel",
             binaryMessenger: registrar.messenger()
         )
+        PathProviderPlugin.register(with: registrar)
+
         
         let instance = BackgroundServicePlugin()
         instance.channel = channel
@@ -58,10 +66,17 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
             case "isEnabled":
                 handleIsEnabled(call: call, result: result)
                 break
+            case "clearErrorNotifications":
+                print("Clearing error notifications...")
+                // TODO:
+                result(true)
+                break
             case "isIgnoringBatteryOptimizations":
                 result(FlutterMethodNotImplemented)
+                break
             default:
                 result(FlutterMethodNotImplemented)
+                break
         }
     }
     

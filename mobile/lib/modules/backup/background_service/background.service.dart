@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:isolate';
-import 'dart:ui' show IsolateNameServer, PluginUtilities;
+import 'dart:ui' show DartPluginRegistrant, IsolateNameServer, PluginUtilities;
 import 'package:cancellation_token_http/http.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
@@ -19,6 +19,8 @@ import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path_provider_ios/path_provider_ios.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 final backgroundServiceProvider = Provider(
@@ -281,23 +283,24 @@ class BackgroundService {
 
   Future<bool> _callHandler(MethodCall call) async {
     debugPrint("callHandler: ${call.method}");
+    DartPluginRegistrant.ensureInitialized();
     switch (call.method) {
-      case "onAssetsChanged":
       case "backgroundFetch":
-        final Future<bool> translationsLoaded = loadTranslations();
+      case "onAssetsChanged":
         try {
-          _clearErrorNotifications();
-          final bool hasAccess = await acquireLock();
+          //_clearErrorNotifications();
+          final bool hasAccess = true;//await acquireLock();
           debugPrint("has Access $hasAccess");
           if (!hasAccess) {
             debugPrint("[_callHandler] could not acquire lock, exiting");
             return false;
           }
-          debugPrint('loading translations...');
-          await translationsLoaded;
-          debugPrint('translations loaded');
-          final bool ok = await _onAssetsChanged();
-          return ok;
+          print("Getting application directory...");
+          PathProviderIOS.registerWith();
+          final dir = await getApplicationDocumentsDirectory();
+          print("Got application directory");
+          final bool ok = await _onAssetsChanged(dir.path);
+          return true;
         } catch (error) {
           debugPrint(error.toString());
           return false;
@@ -315,9 +318,10 @@ class BackgroundService {
     }
   }
 
-  Future<bool> _onAssetsChanged() async {
+  Future<bool> _onAssetsChanged(String directory) async {
     print("Running onAssetsChanged");
-    await Hive.initFlutter();
+    print("Initializing Hive...");
+    Hive.init(directory);
     print("got hive init");
 
     Hive.registerAdapter(HiveSavedLoginInfoAdapter());
@@ -584,6 +588,7 @@ class _Throttle {
 @pragma('vm:entry-point')
 void _nativeEntry() {
   WidgetsFlutterBinding.ensureInitialized();
+  DartPluginRegistrant.ensureInitialized();
   BackgroundService backgroundService = BackgroundService();
   backgroundService._setupBackgroundCallHandler();
 }

@@ -26,14 +26,16 @@ class BackgroundSyncManager {
             name: "BackgroundImmich"
         )
         
+        
+        
         let isRunning = flutterEngine!.run(
             withEntrypoint: callback?.callbackName,
             libraryURI: callback?.callbackLibraryPath
         )
         
         // Register this to get access to the plugins on the platform channel
-        BackgroundServicePlugin.register(engine: flutterEngine!)
-        
+        BackgroundServicePlugin.flutterPluginRegistrantCallback?(flutterEngine!)
+                                         
         var channel: FlutterMethodChannel? = FlutterMethodChannel(
             name: "immich/backgroundChannel",
             binaryMessenger: flutterEngine!.binaryMessenger
