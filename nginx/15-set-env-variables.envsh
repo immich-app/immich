@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 set -e
 
 export IMMICH_WEB_URL="${IMMICH_WEB_URL:-http://immich-web:3000}"
@@ -11,7 +11,3 @@ IMMICH_SERVER_SCHEME=$(echo "$IMMICH_WEB_URL" | grep -Eo '^https?://' || echo "h
 export IMMICH_SERVER_SCHEME
 IMMICH_SERVER_HOST=$(echo "$IMMICH_SERVER_URL" | cut -d '/' -f 3)
 export IMMICH_SERVER_HOST
-
-envsubst '$IMMICH_WEB_SCHEME $IMMICH_WEB_HOST  $IMMICH_SERVER_SCHEME $IMMICH_SERVER_HOST' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
-
-exec nginx -g 'daemon off;'
