@@ -198,12 +198,29 @@ describe('AssetService', () => {
       sharedLinkRepositoryMock.get.mockResolvedValue(null);
       sharedLinkRepositoryMock.hasAssetAccess.mockResolvedValue(true);
 
-      await expect(sut.updateAssetsInSharedLink(authDto, dto)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.addAssetsToSharedLink(authDto, dto)).rejects.toBeInstanceOf(BadRequestException);
 
       expect(assetRepositoryMock.getById).toHaveBeenCalledWith(asset1.id);
       expect(sharedLinkRepositoryMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
-      expect(sharedLinkRepositoryMock.hasAssetAccess).toHaveBeenCalledWith(authDto.sharedLinkId, asset1.id);
       expect(sharedLinkRepositoryMock.save).not.toHaveBeenCalled();
+    });
+
+    it('should add assets to a shared link', async () => {
+      const asset1 = _getAsset_1();
+
+      const authDto = authStub.adminSharedLink;
+      const dto = { assetIds: [asset1.id] };
+
+      assetRepositoryMock.getById.mockResolvedValue(asset1);
+      sharedLinkRepositoryMock.get.mockResolvedValue(sharedLinkStub.valid);
+      sharedLinkRepositoryMock.hasAssetAccess.mockResolvedValue(true);
+      sharedLinkRepositoryMock.save.mockResolvedValue(sharedLinkStub.valid);
+
+      await expect(sut.addAssetsToSharedLink(authDto, dto)).resolves.toEqual(sharedLinkResponseStub.valid);
+
+      expect(assetRepositoryMock.getById).toHaveBeenCalledWith(asset1.id);
+      expect(sharedLinkRepositoryMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
+      expect(sharedLinkRepositoryMock.save).toHaveBeenCalled();
     });
 
     it('should remove assets from a shared link', async () => {
@@ -217,11 +234,11 @@ describe('AssetService', () => {
       sharedLinkRepositoryMock.hasAssetAccess.mockResolvedValue(true);
       sharedLinkRepositoryMock.save.mockResolvedValue(sharedLinkStub.valid);
 
-      await expect(sut.updateAssetsInSharedLink(authDto, dto)).resolves.toEqual(sharedLinkResponseStub.valid);
+      await expect(sut.removeAssetsFromSharedLink(authDto, dto)).resolves.toEqual(sharedLinkResponseStub.valid);
 
       expect(assetRepositoryMock.getById).toHaveBeenCalledWith(asset1.id);
       expect(sharedLinkRepositoryMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
-      expect(sharedLinkRepositoryMock.hasAssetAccess).toHaveBeenCalledWith(authDto.sharedLinkId, asset1.id);
+      expect(sharedLinkRepositoryMock.save).toHaveBeenCalled();
     });
   });
 

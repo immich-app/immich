@@ -1,3 +1,4 @@
+import { AddAssetsDto } from './../album/dto/add-assets.dto';
 import {
   Controller,
   Post,
@@ -52,10 +53,10 @@ import {
 import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { SharedLinkResponseDto } from '@app/domain';
-import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
+import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
 
 function asStreamableFile({ stream, type, length }: ImmichReadStream) {
   return new StreamableFile(stream, { type, length });
@@ -330,11 +331,20 @@ export class AssetController {
   }
 
   @Authenticated({ isShared: true })
-  @Patch('/shared-link')
-  async updateAssetsInSharedLink(
+  @Patch('/shared-link/add')
+  async addAssetsToSharedLink(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: UpdateAssetsToSharedLinkDto,
+    @Body(ValidationPipe) dto: AddAssetsDto,
   ): Promise<SharedLinkResponseDto> {
-    return await this.assetService.updateAssetsInSharedLink(authUser, dto);
+    return await this.assetService.addAssetsToSharedLink(authUser, dto);
+  }
+
+  @Authenticated({ isShared: true })
+  @Patch('/shared-link/remove')
+  async removeAssetsFromSharedLink(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) dto: RemoveAssetsDto,
+  ): Promise<SharedLinkResponseDto> {
+    return await this.assetService.removeAssetsFromSharedLink(authUser, dto);
   }
 }

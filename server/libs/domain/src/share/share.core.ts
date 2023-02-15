@@ -63,13 +63,24 @@ export class ShareCore {
     return this.repository.remove(link);
   }
 
-  async updateAssets(userId: string, id: string, assets: AssetEntity[]) {
+  async addAssets(userId: string, id: string, assets: AssetEntity[]) {
     const link = await this.get(userId, id);
     if (!link) {
       throw new BadRequestException('Shared link not found');
     }
 
-    return this.repository.save({ ...link, assets });
+    return this.repository.save({ ...link, assets: [...link.assets, ...assets] });
+  }
+
+  async removeAssets(userId: string, id: string, assets: AssetEntity[]) {
+    const link = await this.get(userId, id);
+    if (!link) {
+      throw new BadRequestException('Shared link not found');
+    }
+
+    const newAssets = link.assets.filter((asset) => assets.find((a) => a.id === asset.id));
+
+    return this.repository.save({ ...link, assets: newAssets });
   }
 
   async hasAssetAccess(id: string, assetId: string): Promise<boolean> {

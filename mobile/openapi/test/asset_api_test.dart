@@ -17,6 +17,13 @@ void main() {
   // final instance = AssetApi();
 
   group('tests for AssetApi', () {
+    // 
+    //
+    //Future<SharedLinkResponseDto> addAssetsToSharedLink(AddAssetsDto addAssetsDto) async
+    test('test addAssetsToSharedLink', () async {
+      // TODO
+    });
+
     // Check duplicated asset before uploading - for Web upload used
     //
     //Future<CheckDuplicateAssetResponseDto> checkDuplicateAsset(CheckDuplicateAssetDto checkDuplicateAssetDto) async
@@ -138,6 +145,13 @@ void main() {
 
     // 
     //
+    //Future<SharedLinkResponseDto> removeAssetsFromSharedLink(RemoveAssetsDto removeAssetsDto) async
+    test('test removeAssetsFromSharedLink', () async {
+      // TODO
+    });
+
+    // 
+    //
     //Future<List<AssetResponseDto>> searchAsset(SearchAssetDto searchAssetDto) async
     test('test searchAsset', () async {
       // TODO
@@ -154,13 +168,6 @@ void main() {
     //
     //Future<AssetResponseDto> updateAsset(String assetId, UpdateAssetDto updateAssetDto) async
     test('test updateAsset', () async {
-      // TODO
-    });
-
-    // 
-    //
-    //Future<SharedLinkResponseDto> updateAssetsInSharedLink(UpdateAssetsToSharedLinkDto updateAssetsToSharedLinkDto) async
-    test('test updateAssetsInSharedLink', () async {
       // TODO
     });
 

@@ -9,6 +9,7 @@ All URIs are relative to */api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**addAssetsToSharedLink**](AssetApi.md#addassetstosharedlink) | **PATCH** /asset/shared-link/add | 
 [**checkDuplicateAsset**](AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 [**checkExistingAssets**](AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 [**createAssetsSharedLink**](AssetApi.md#createassetssharedlink) | **POST** /asset/shared-link | 
@@ -26,12 +27,61 @@ Method | HTTP request | Description
 [**getCuratedLocations**](AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 [**getCuratedObjects**](AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
 [**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
+[**removeAssetsFromSharedLink**](AssetApi.md#removeassetsfromsharedlink) | **PATCH** /asset/shared-link/remove | 
 [**searchAsset**](AssetApi.md#searchasset) | **POST** /asset/search | 
 [**serveFile**](AssetApi.md#servefile) | **GET** /asset/file/{assetId} | 
 [**updateAsset**](AssetApi.md#updateasset) | **PUT** /asset/{assetId} | 
-[**updateAssetsInSharedLink**](AssetApi.md#updateassetsinsharedlink) | **PATCH** /asset/shared-link | 
 [**uploadFile**](AssetApi.md#uploadfile) | **POST** /asset/upload | 
 
+
+# **addAssetsToSharedLink**
+> SharedLinkResponseDto addAssetsToSharedLink(addAssetsDto)
+
+
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final addAssetsDto = AddAssetsDto(); // AddAssetsDto | 
+
+try {
+    final result = api_instance.addAssetsToSharedLink(addAssetsDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->addAssetsToSharedLink: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **addAssetsDto** | [**AddAssetsDto**](AddAssetsDto.md)|  | 
+
+### Return type
+
+[**SharedLinkResponseDto**](SharedLinkResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **checkDuplicateAsset**
 > CheckDuplicateAssetResponseDto checkDuplicateAsset(checkDuplicateAssetDto)
@@ -856,6 +906,55 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **removeAssetsFromSharedLink**
+> SharedLinkResponseDto removeAssetsFromSharedLink(removeAssetsDto)
+
+
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final removeAssetsDto = RemoveAssetsDto(); // RemoveAssetsDto | 
+
+try {
+    final result = api_instance.removeAssetsFromSharedLink(removeAssetsDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->removeAssetsFromSharedLink: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **removeAssetsDto** | [**RemoveAssetsDto**](RemoveAssetsDto.md)|  | 
+
+### Return type
+
+[**SharedLinkResponseDto**](SharedLinkResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **searchAsset**
 > List<AssetResponseDto> searchAsset(searchAssetDto)
 
@@ -997,55 +1096,6 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**AssetResponseDto**](AssetResponseDto.md)
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **updateAssetsInSharedLink**
-> SharedLinkResponseDto updateAssetsInSharedLink(updateAssetsToSharedLinkDto)
-
-
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = AssetApi();
-final updateAssetsToSharedLinkDto = UpdateAssetsToSharedLinkDto(); // UpdateAssetsToSharedLinkDto | 
-
-try {
-    final result = api_instance.updateAssetsInSharedLink(updateAssetsToSharedLinkDto);
-    print(result);
-} catch (e) {
-    print('Exception when calling AssetApi->updateAssetsInSharedLink: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **updateAssetsToSharedLinkDto** | [**UpdateAssetsToSharedLinkDto**](UpdateAssetsToSharedLinkDto.md)|  | 
-
-### Return type
-
-[**SharedLinkResponseDto**](SharedLinkResponseDto.md)
 
 ### Authorization
 
