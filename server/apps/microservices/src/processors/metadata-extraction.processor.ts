@@ -19,11 +19,10 @@ import geocoder, { InitOptions } from 'local-reverse-geocoder';
 import { getName } from 'i18n-iso-countries';
 import fs from 'node:fs';
 import { ExifDateTime, exiftool, Tags } from 'exiftool-vendored';
-import { Not } from 'typeorm';
+import { IsNull, Not } from 'typeorm';
 
 interface ImmichTags extends Tags {
   ContentIdentifier?: string;
-  Apple_0x0011?: string;
 }
 
 function geocoderInit(init: InitOptions) {
@@ -164,8 +163,6 @@ export class MetadataExtractionProcessor {
       const modifyDate = exifToDate(exifData?.ModifyDate ?? asset.modifiedAt);
       const fileStats = fs.statSync(asset.originalPath);
       const fileSizeInBytes = fileStats.size;
-      const livePhotoCID =
-        (asset.type === AssetType.VIDEO ? exifData?.ContentIdentifier : exifData?.Apple_0x0011) || null;
 
       const newExif = new ExifEntity();
       newExif.assetId = asset.id;
@@ -185,22 +182,20 @@ export class MetadataExtractionProcessor {
       newExif.iso = exifData?.ISO || null;
       newExif.latitude = exifData?.GPSLatitude || null;
       newExif.longitude = exifData?.GPSLongitude || null;
-      newExif.livePhotoCID = livePhotoCID;
+      newExif.livePhotoCID = exifData?.MediaGroupUUID || null;
 
       await this.assetRepository.save({
         id: asset.id,
         createdAt: createdAt?.toISOString(),
       });
 
-      if (livePhotoCID) {
-        const oppositeType = asset.type === AssetType.VIDEO ? AssetType.IMAGE : AssetType.VIDEO;
-
-        const match = await this.assetRepository.findOne({
+      if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
+        const motionAsset = await this.assetRepository.findOne({
           where: {
             id: Not(asset.id),
-            type: oppositeType,
+            type: AssetType.VIDEO,
             exifInfo: {
-              livePhotoCID,
+              livePhotoCID: newExif.livePhotoCID,
             },
           },
           relations: {
@@ -208,14 +203,9 @@ export class MetadataExtractionProcessor {
           },
         });
 
-        if (match) {
-          const [photoAsset, motionAsset] = asset.type === AssetType.IMAGE ? [asset, match] : [match, asset];
-          if (!photoAsset.livePhotoVideoId) {
-            await this.assetRepository.save({
-              id: photoAsset.id,
-              livePhotoVideoId: motionAsset.id,
-            });
-          }
+        if (motionAsset) {
+          await this.assetRepository.update(asset.id, { livePhotoVideoId: motionAsset.id });
+          await this.assetRepository.update(motionAsset.id, { isVisible: false });
         }
       }
 
@@ -302,6 +292,11 @@ export class MetadataExtractionProcessor {
         createdAt = asset.createdAt;
       }
 
+      const exifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((e) => {
+        this.logger.warn(`The exifData parsing failed due to: ${e} on file ${asset.originalPath}`);
+        return null;
+      });
+
       const newExif = new ExifEntity();
       newExif.assetId = asset.id;
       newExif.description = '';
@@ -315,6 +310,25 @@ export class MetadataExtractionProcessor {
       newExif.state = null;
       newExif.country = null;
       newExif.fps = null;
+      newExif.livePhotoCID = exifData?.ContentIdentifier || null;
+
+      if (newExif.livePhotoCID) {
+        const photoAsset = await this.assetRepository.findOne({
+          where: {
+            id: Not(asset.id),
+            type: AssetType.IMAGE,
+            livePhotoVideoId: IsNull(),
+            exifInfo: {
+              livePhotoCID: newExif.livePhotoCID,
+            },
+          },
+        });
+
+        if (photoAsset) {
+          await this.assetRepository.update(photoAsset.id, { livePhotoVideoId: asset.id });
+          await this.assetRepository.update(asset.id, { isVisible: false });
+        }
+      }
 
       if (videoTags && videoTags['location']) {
         const location = videoTags['location'] as string;
