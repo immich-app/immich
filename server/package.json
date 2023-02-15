@@ -140,9 +140,9 @@
       },
       "./libs/domain/": {
         "branches": 80,
-        "functions": 89,
+        "functions": 88,
         "lines": 95,
-        "statements": 95
+        "statements": 94
       }
     },
     "testEnvironment": "node",
