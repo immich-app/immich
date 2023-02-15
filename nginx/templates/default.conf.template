@@ -57,14 +57,10 @@ server {
   }
 
   location / {
-    proxy_buffering on;
-
-    # Server-side rendered responses contain a Link header that can get quite
-    # lengthy. When the initial response of a proxied server is larger than
-    # proxy_buffer_size, a 502 Bad Gateway error is returned.
-    proxy_buffer_size 128k;
-    proxy_busy_buffers_size 256k;
-    proxy_buffers 8 128k;
+    proxy_buffering off;
+    proxy_buffer_size 16k;
+    proxy_busy_buffers_size 24k;
+    proxy_buffers 64 4k;
     proxy_force_ranges on;
 
     proxy_http_version 1.1;
