@@ -22,13 +22,13 @@ class AssetApi {
   ///
   /// Parameters:
   ///
-  /// * [AddAssetToSharedLinkDto] addAssetToSharedLinkDto (required):
-  Future<Response> addAssetsToSharedLinkWithHttpInfo(AddAssetToSharedLinkDto addAssetToSharedLinkDto,) async {
+  /// * [AddAssetsDto] addAssetsDto (required):
+  Future<Response> addAssetsToSharedLinkWithHttpInfo(AddAssetsDto addAssetsDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/shared-link/add';
 
     // ignore: prefer_final_locals
-    Object? postBody = addAssetToSharedLinkDto;
+    Object? postBody = addAssetsDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -52,9 +52,9 @@ class AssetApi {
   ///
   /// Parameters:
   ///
-  /// * [AddAssetToSharedLinkDto] addAssetToSharedLinkDto (required):
-  Future<SharedLinkResponseDto?> addAssetsToSharedLink(AddAssetToSharedLinkDto addAssetToSharedLinkDto,) async {
-    final response = await addAssetsToSharedLinkWithHttpInfo(addAssetToSharedLinkDto,);
+  /// * [AddAssetsDto] addAssetsDto (required):
+  Future<SharedLinkResponseDto?> addAssetsToSharedLink(AddAssetsDto addAssetsDto,) async {
+    final response = await addAssetsToSharedLinkWithHttpInfo(addAssetsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -984,13 +984,13 @@ class AssetApi {
   ///
   /// Parameters:
   ///
-  /// * [RemoveAssetsFromSharedLinkDto] removeAssetsFromSharedLinkDto (required):
-  Future<Response> removeAssetsFromSharedLinkWithHttpInfo(RemoveAssetsFromSharedLinkDto removeAssetsFromSharedLinkDto,) async {
+  /// * [RemoveAssetsDto] removeAssetsDto (required):
+  Future<Response> removeAssetsFromSharedLinkWithHttpInfo(RemoveAssetsDto removeAssetsDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/shared-link/remove';
 
     // ignore: prefer_final_locals
-    Object? postBody = removeAssetsFromSharedLinkDto;
+    Object? postBody = removeAssetsDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -1014,9 +1014,9 @@ class AssetApi {
   ///
   /// Parameters:
   ///
-  /// * [RemoveAssetsFromSharedLinkDto] removeAssetsFromSharedLinkDto (required):
-  Future<SharedLinkResponseDto?> removeAssetsFromSharedLink(RemoveAssetsFromSharedLinkDto removeAssetsFromSharedLinkDto,) async {
-    final response = await removeAssetsFromSharedLinkWithHttpInfo(removeAssetsFromSharedLinkDto,);
+  /// * [RemoveAssetsDto] removeAssetsDto (required):
+  Future<SharedLinkResponseDto?> removeAssetsFromSharedLink(RemoveAssetsDto removeAssetsDto,) async {
+    final response = await removeAssetsFromSharedLinkWithHttpInfo(removeAssetsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

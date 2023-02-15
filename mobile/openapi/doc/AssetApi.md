@@ -35,7 +35,7 @@ Method | HTTP request | Description
 
 
 # **addAssetsToSharedLink**
-> SharedLinkResponseDto addAssetsToSharedLink(addAssetToSharedLinkDto)
+> SharedLinkResponseDto addAssetsToSharedLink(addAssetsDto)
 
 
 
@@ -52,10 +52,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
-final addAssetToSharedLinkDto = AddAssetToSharedLinkDto(); // AddAssetToSharedLinkDto | 
+final addAssetsDto = AddAssetsDto(); // AddAssetsDto | 
 
 try {
-    final result = api_instance.addAssetsToSharedLink(addAssetToSharedLinkDto);
+    final result = api_instance.addAssetsToSharedLink(addAssetsDto);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->addAssetsToSharedLink: $e\n');
@@ -66,7 +66,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **addAssetToSharedLinkDto** | [**AddAssetToSharedLinkDto**](AddAssetToSharedLinkDto.md)|  | 
+ **addAssetsDto** | [**AddAssetsDto**](AddAssetsDto.md)|  | 
 
 ### Return type
 
@@ -907,7 +907,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **removeAssetsFromSharedLink**
-> SharedLinkResponseDto removeAssetsFromSharedLink(removeAssetsFromSharedLinkDto)
+> SharedLinkResponseDto removeAssetsFromSharedLink(removeAssetsDto)
 
 
 
@@ -924,10 +924,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
-final removeAssetsFromSharedLinkDto = RemoveAssetsFromSharedLinkDto(); // RemoveAssetsFromSharedLinkDto | 
+final removeAssetsDto = RemoveAssetsDto(); // RemoveAssetsDto | 
 
 try {
-    final result = api_instance.removeAssetsFromSharedLink(removeAssetsFromSharedLinkDto);
+    final result = api_instance.removeAssetsFromSharedLink(removeAssetsDto);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->removeAssetsFromSharedLink: $e\n');
@@ -938,7 +938,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **removeAssetsFromSharedLinkDto** | [**RemoveAssetsFromSharedLinkDto**](RemoveAssetsFromSharedLinkDto.md)|  | 
+ **removeAssetsDto** | [**RemoveAssetsDto**](RemoveAssetsDto.md)|  | 
 
 ### Return type
 

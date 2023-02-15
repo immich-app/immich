@@ -59,8 +59,8 @@ import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { mapSharedLink, SharedLinkResponseDto } from '@app/domain';
 import { AssetSearchDto } from './dto/asset-search.dto';
-import { AddAssetToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
-import { RemoveAssetsFromSharedLinkDto } from './dto/remove-assets-from-shared-link.dto';
+import { AddAssetsDto } from '../album/dto/add-assets.dto';
+import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
 
 const fileInfo = promisify(stat);
 
@@ -607,14 +607,14 @@ export class AssetService {
     return mapSharedLink(sharedLink);
   }
 
-  async addAssetsToSharedLink(authUser: AuthUserDto, dto: AddAssetToSharedLinkDto): Promise<SharedLinkResponseDto> {
+  async addAssetsToSharedLink(authUser: AuthUserDto, dto: AddAssetsDto): Promise<SharedLinkResponseDto> {
     if (!authUser.sharedLinkId) {
       throw new ForbiddenException();
     }
 
     const assets = [];
 
-    for (const assetId of dto.ids) {
+    for (const assetId of dto.assetIds) {
       const asset = await this._assetRepository.getById(assetId);
       assets.push(asset);
     }
@@ -623,17 +623,14 @@ export class AssetService {
     return mapSharedLink(updatedLink);
   }
 
-  async removeAssetsFromSharedLink(
-    authUser: AuthUserDto,
-    dto: RemoveAssetsFromSharedLinkDto,
-  ): Promise<SharedLinkResponseDto> {
+  async removeAssetsFromSharedLink(authUser: AuthUserDto, dto: RemoveAssetsDto): Promise<SharedLinkResponseDto> {
     if (!authUser.sharedLinkId) {
       throw new ForbiddenException();
     }
 
     const assets = [];
 
-    for (const assetId of dto.ids) {
+    for (const assetId of dto.assetIds) {
       const asset = await this._assetRepository.getById(assetId);
       assets.push(asset);
     }

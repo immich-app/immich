@@ -100,19 +100,6 @@ export interface APIKeyUpdateDto {
 /**
  * 
  * @export
- * @interface AddAssetToSharedLinkDto
- */
-export interface AddAssetToSharedLinkDto {
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof AddAssetToSharedLinkDto
-     */
-    'ids': Array<string>;
-}
-/**
- * 
- * @export
  * @interface AddAssetsDto
  */
 export interface AddAssetsDto {
@@ -1469,19 +1456,6 @@ export interface RemoveAssetsDto {
      * @memberof RemoveAssetsDto
      */
     'assetIds': Array<string>;
-}
-/**
- * 
- * @export
- * @interface RemoveAssetsFromSharedLinkDto
- */
-export interface RemoveAssetsFromSharedLinkDto {
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof RemoveAssetsFromSharedLinkDto
-     */
-    'ids': Array<string>;
 }
 /**
  * 
@@ -3603,13 +3577,13 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
     return {
         /**
          * 
-         * @param {AddAssetToSharedLinkDto} addAssetToSharedLinkDto 
+         * @param {AddAssetsDto} addAssetsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addAssetsToSharedLink: async (addAssetToSharedLinkDto: AddAssetToSharedLinkDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'addAssetToSharedLinkDto' is not null or undefined
-            assertParamExists('addAssetsToSharedLink', 'addAssetToSharedLinkDto', addAssetToSharedLinkDto)
+        addAssetsToSharedLink: async (addAssetsDto: AddAssetsDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'addAssetsDto' is not null or undefined
+            assertParamExists('addAssetsToSharedLink', 'addAssetsDto', addAssetsDto)
             const localVarPath = `/asset/shared-link/add`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -3633,7 +3607,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(addAssetToSharedLinkDto, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(addAssetsDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -4286,13 +4260,13 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {RemoveAssetsFromSharedLinkDto} removeAssetsFromSharedLinkDto 
+         * @param {RemoveAssetsDto} removeAssetsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        removeAssetsFromSharedLink: async (removeAssetsFromSharedLinkDto: RemoveAssetsFromSharedLinkDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'removeAssetsFromSharedLinkDto' is not null or undefined
-            assertParamExists('removeAssetsFromSharedLink', 'removeAssetsFromSharedLinkDto', removeAssetsFromSharedLinkDto)
+        removeAssetsFromSharedLink: async (removeAssetsDto: RemoveAssetsDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'removeAssetsDto' is not null or undefined
+            assertParamExists('removeAssetsFromSharedLink', 'removeAssetsDto', removeAssetsDto)
             const localVarPath = `/asset/shared-link/remove`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -4316,7 +4290,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(removeAssetsFromSharedLinkDto, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(removeAssetsDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -4572,12 +4546,12 @@ export const AssetApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @param {AddAssetToSharedLinkDto} addAssetToSharedLinkDto 
+         * @param {AddAssetsDto} addAssetsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async addAssetsToSharedLink(addAssetToSharedLinkDto: AddAssetToSharedLinkDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SharedLinkResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.addAssetsToSharedLink(addAssetToSharedLinkDto, options);
+        async addAssetsToSharedLink(addAssetsDto: AddAssetsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SharedLinkResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.addAssetsToSharedLink(addAssetsDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -4751,12 +4725,12 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {RemoveAssetsFromSharedLinkDto} removeAssetsFromSharedLinkDto 
+         * @param {RemoveAssetsDto} removeAssetsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async removeAssetsFromSharedLink(removeAssetsFromSharedLinkDto: RemoveAssetsFromSharedLinkDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SharedLinkResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.removeAssetsFromSharedLink(removeAssetsFromSharedLinkDto, options);
+        async removeAssetsFromSharedLink(removeAssetsDto: RemoveAssetsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SharedLinkResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.removeAssetsFromSharedLink(removeAssetsDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -4824,12 +4798,12 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
     return {
         /**
          * 
-         * @param {AddAssetToSharedLinkDto} addAssetToSharedLinkDto 
+         * @param {AddAssetsDto} addAssetsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addAssetsToSharedLink(addAssetToSharedLinkDto: AddAssetToSharedLinkDto, options?: any): AxiosPromise<SharedLinkResponseDto> {
-            return localVarFp.addAssetsToSharedLink(addAssetToSharedLinkDto, options).then((request) => request(axios, basePath));
+        addAssetsToSharedLink(addAssetsDto: AddAssetsDto, options?: any): AxiosPromise<SharedLinkResponseDto> {
+            return localVarFp.addAssetsToSharedLink(addAssetsDto, options).then((request) => request(axios, basePath));
         },
         /**
          * Check duplicated asset before uploading - for Web upload used
@@ -4985,12 +4959,12 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
-         * @param {RemoveAssetsFromSharedLinkDto} removeAssetsFromSharedLinkDto 
+         * @param {RemoveAssetsDto} removeAssetsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        removeAssetsFromSharedLink(removeAssetsFromSharedLinkDto: RemoveAssetsFromSharedLinkDto, options?: any): AxiosPromise<SharedLinkResponseDto> {
-            return localVarFp.removeAssetsFromSharedLink(removeAssetsFromSharedLinkDto, options).then((request) => request(axios, basePath));
+        removeAssetsFromSharedLink(removeAssetsDto: RemoveAssetsDto, options?: any): AxiosPromise<SharedLinkResponseDto> {
+            return localVarFp.removeAssetsFromSharedLink(removeAssetsDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5053,13 +5027,13 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
 export class AssetApi extends BaseAPI {
     /**
      * 
-     * @param {AddAssetToSharedLinkDto} addAssetToSharedLinkDto 
+     * @param {AddAssetsDto} addAssetsDto 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public addAssetsToSharedLink(addAssetToSharedLinkDto: AddAssetToSharedLinkDto, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).addAssetsToSharedLink(addAssetToSharedLinkDto, options).then((request) => request(this.axios, this.basePath));
+    public addAssetsToSharedLink(addAssetsDto: AddAssetsDto, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).addAssetsToSharedLink(addAssetsDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5250,13 +5224,13 @@ export class AssetApi extends BaseAPI {
 
     /**
      * 
-     * @param {RemoveAssetsFromSharedLinkDto} removeAssetsFromSharedLinkDto 
+     * @param {RemoveAssetsDto} removeAssetsDto 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public removeAssetsFromSharedLink(removeAssetsFromSharedLinkDto: RemoveAssetsFromSharedLinkDto, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).removeAssetsFromSharedLink(removeAssetsFromSharedLinkDto, options).then((request) => request(this.axios, this.basePath));
+    public removeAssetsFromSharedLink(removeAssetsDto: RemoveAssetsDto, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).removeAssetsFromSharedLink(removeAssetsDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

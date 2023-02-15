@@ -19,7 +19,7 @@ void main() {
   group('tests for AssetApi', () {
     // 
     //
-    //Future<SharedLinkResponseDto> addAssetsToSharedLink(AddAssetToSharedLinkDto addAssetToSharedLinkDto) async
+    //Future<SharedLinkResponseDto> addAssetsToSharedLink(AddAssetsDto addAssetsDto) async
     test('test addAssetsToSharedLink', () async {
       // TODO
     });
@@ -145,7 +145,7 @@ void main() {
 
     // 
     //
-    //Future<SharedLinkResponseDto> removeAssetsFromSharedLink(RemoveAssetsFromSharedLinkDto removeAssetsFromSharedLinkDto) async
+    //Future<SharedLinkResponseDto> removeAssetsFromSharedLink(RemoveAssetsDto removeAssetsDto) async
     test('test removeAssetsFromSharedLink', () async {
       // TODO
     });

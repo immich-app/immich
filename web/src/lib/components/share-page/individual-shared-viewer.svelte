@@ -44,7 +44,7 @@
 
 		await api.assetApi.addAssetsToSharedLink(
 			{
-				ids: results.filter((id) => !!id) as string[]
+				assetIds: results.filter((id) => !!id) as string[]
 			},
 			{
 				params: {
@@ -58,7 +58,7 @@
 		if (window.confirm('Do you want to remove selected assets from the shared link?')) {
 			await api.assetApi.removeAssetsFromSharedLink(
 				{
-					ids: assets.filter((a) => !selectedAssets.has(a)).map((a) => a.id)
+					assetIds: assets.filter((a) => !selectedAssets.has(a)).map((a) => a.id)
 				},
 				{
 					params: {

@@ -1,3 +1,4 @@
+import { AddAssetsDto } from './../album/dto/add-assets.dto';
 import {
   Controller,
   Post,
@@ -52,11 +53,10 @@ import {
 import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { SharedLinkResponseDto } from '@app/domain';
-import { AddAssetToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
-import { RemoveAssetsFromSharedLinkDto } from './dto/remove-assets-from-shared-link.dto';
+import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
 
 function asStreamableFile({ stream, type, length }: ImmichReadStream) {
   return new StreamableFile(stream, { type, length });
@@ -334,7 +334,7 @@ export class AssetController {
   @Patch('/shared-link/add')
   async addAssetsToSharedLink(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: AddAssetToSharedLinkDto,
+    @Body(ValidationPipe) dto: AddAssetsDto,
   ): Promise<SharedLinkResponseDto> {
     return await this.assetService.addAssetsToSharedLink(authUser, dto);
   }
@@ -343,7 +343,7 @@ export class AssetController {
   @Patch('/shared-link/remove')
   async removeAssetsFromSharedLink(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: RemoveAssetsFromSharedLinkDto,
+    @Body(ValidationPipe) dto: RemoveAssetsDto,
   ): Promise<SharedLinkResponseDto> {
     return await this.assetService.removeAssetsFromSharedLink(authUser, dto);
   }
