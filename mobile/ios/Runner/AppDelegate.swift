@@ -26,7 +26,7 @@ import photo_manager
           
       }
 
-      BackgroundServicePlugin.registerAppRefresh()
+      BackgroundServicePlugin.registerBackgroundProcessing()
       
       return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }

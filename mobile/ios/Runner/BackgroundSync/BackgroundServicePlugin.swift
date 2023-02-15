@@ -40,9 +40,9 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
         GeneratedPluginRegistrant.register(with: engine)
     }
 
-    public static func registerAppRefresh() {
-        BGTaskScheduler.shared.register(forTaskWithIdentifier: BackgroundServicePlugin.backgroundSyncTaskID, using: nil) { task in
-          handleBackgroundSync(task: task as! BGAppRefreshTask)
+    public static func registerBackgroundProcessing() {
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: BackgroundServicePlugin.backgroundProcessingTaskID, using: nil) { task in
+          handleBackgroundProcessing(task: task as! BGProcessingTask)
         }
     }
 
@@ -129,32 +129,38 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
         defaults.set(triggerUpdateDelay, forKey: "trigger_update_delay")
         defaults.set(triggerMaxDelay, forKey: "trigger_max_delay")
 
+        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundServicePlugin.backgroundProcessingTaskID)
+        BackgroundServicePlugin.scheduleBackgroundSync()
         result(true)
     }
     
     func handleDisable(call: FlutterMethodCall, result: FlutterResult) {
-        BGTaskScheduler.shared.cancelAllTaskRequests()
-        
+        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundServicePlugin.backgroundProcessingTaskID)
         result(true)
     }
   
     static func scheduleBackgroundSync() {
-        let backgroundSync = BGAppRefreshTaskRequest(identifier: BackgroundServicePlugin.backgroundSyncTaskID)
+        let backgroundProcessing = BGProcessingTaskRequest(identifier: BackgroundServicePlugin.backgroundProcessingTaskID)
         print("scheduled background sync")
         let defaults = UserDefaults.standard
         let maxDelay = defaults.value(forKey: "trigger_max_delay") as? Double ?? 15
+        let requireCharging = defaults.value(forKey: "require_charging") as? Bool? ?? true
+        let requireUnmeteredNetwork = defaults.value(forKey: "require_unmetered_network") as? Bool? ?? true
+        
+        backgroundProcessing.requiresNetworkConnectivity = requireUnmeteredNetwork!
+        backgroundProcessing.requiresExternalPower = requireCharging!
                 
         // use max delay as earliest begin date
-        backgroundSync.earliestBeginDate = Date(timeIntervalSinceNow: maxDelay)
+        backgroundProcessing.earliestBeginDate = Date(timeIntervalSinceNow: maxDelay)
         
         do {
-            try BGTaskScheduler.shared.submit(backgroundSync)
+            try BGTaskScheduler.shared.submit(backgroundProcessing)
         } catch {
             print("Could not schedule the background task \(error.localizedDescription)")
         }
     }
     
-    static func handleBackgroundSync(task: BGAppRefreshTask) {
+    static func handleBackgroundProcessing(task: BGProcessingTask) {
         print("handling background sync")
         // Schedule the next sync task
         scheduleBackgroundSync()

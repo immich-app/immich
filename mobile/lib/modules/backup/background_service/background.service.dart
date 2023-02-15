@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui' show DartPluginRegistrant, IsolateNameServer, PluginUtilities;
 import 'package:cancellation_token_http/http.dart';
@@ -121,6 +122,10 @@ class BackgroundService {
 
   /// Returns `true` if battery optimizations are disabled
   Future<bool> isIgnoringBatteryOptimizations() async {
+    // iOS does not need battery optimizations enabled
+    if (Platform.isIOS) {
+      return true;
+    }
     try {
       return await _foregroundChannel
           .invokeMethod('isIgnoringBatteryOptimizations');

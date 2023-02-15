@@ -105,6 +105,7 @@
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>immichBackgroundFetch</string>
+		<string>immichBackgroundProcessing</string>
 	</array>
 </dict>
 </plist>
