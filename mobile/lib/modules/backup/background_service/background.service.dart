@@ -293,9 +293,9 @@ class BackgroundService {
             debugPrint("[_callHandler] could not acquire lock, exiting");
             return false;
           }
-          // TODO: Fix on iOS
-          // await translationsLoaded;
-          // debugPrint('translations loaded');
+          debugPrint('loading translations...');
+          await translationsLoaded;
+          debugPrint('translations loaded');
           final bool ok = await _onAssetsChanged();
           return ok;
         } catch (error) {
@@ -345,6 +345,7 @@ class BackgroundService {
       return true;
     }
 
+    print("getting photo manager...");
     await PhotoManager.setIgnorePermissionCheck(true);
     print("Got photo manager");
 

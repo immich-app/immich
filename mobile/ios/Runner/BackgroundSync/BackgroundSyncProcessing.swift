@@ -11,7 +11,8 @@ import Flutter
 import BackgroundTasks
 
 class BackgroundSyncManager {
-    static func sync(flutterCallback: @escaping FlutterPluginRegistrantCallback, _ completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+    
+    static func sync(_ completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         let defaults = UserDefaults.standard
         guard let callbackHandle = defaults.value(forKey: "callback_handle") as? Int64 else {
             print("Could not retrieve callback_handle from defaults")
@@ -25,13 +26,13 @@ class BackgroundSyncManager {
             name: "BackgroundImmich"
         )
         
-
         let isRunning = flutterEngine!.run(
             withEntrypoint: callback?.callbackName,
             libraryURI: callback?.callbackLibraryPath
         )
         
-        flutterCallback(flutterEngine!)
+        // Register this to get access to the plugins on the platform channel
+        BackgroundServicePlugin.register(engine: flutterEngine!)
         
         var channel: FlutterMethodChannel? = FlutterMethodChannel(
             name: "immich/backgroundChannel",
