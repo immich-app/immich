@@ -33,7 +33,7 @@ class BackgroundSyncWorker {
         switch call.method {
         case "initialized":
             self.channel?.invokeMethod(
-                "backgroundFetch",
+                "backgroundProcessing",
                 arguments: nil,
                 result: { flutterResult in
                     let taskSessionCompleter = Date()

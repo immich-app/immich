@@ -287,7 +287,7 @@ class BackgroundService {
     DartPluginRegistrant.ensureInitialized();
     PathProviderIOS.registerWith();
     switch (call.method) {
-      case "backgroundFetch":
+      case "backgroundProcessing":
       case "onAssetsChanged":
         try {
           _clearErrorNotifications();

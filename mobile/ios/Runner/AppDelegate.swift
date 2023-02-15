@@ -23,7 +23,6 @@ import photo_manager
           if !registry.hasPlugin("org.cocoapods.photo-manager") {
               PhotoManagerPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.photo-manager")!)
           }
-          
       }
 
       BackgroundServicePlugin.registerBackgroundProcessing()
