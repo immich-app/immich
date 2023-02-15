@@ -192,7 +192,7 @@ describe('AssetService', () => {
       const asset1 = _getAsset_1();
 
       const authDto = authStub.adminSharedLink;
-      const dto = { ids: [asset1.id] };
+      const dto = { assetIds: [asset1.id] };
 
       assetRepositoryMock.getById.mockResolvedValue(asset1);
       sharedLinkRepositoryMock.get.mockResolvedValue(null);
@@ -209,7 +209,7 @@ describe('AssetService', () => {
       const asset1 = _getAsset_1();
 
       const authDto = authStub.adminSharedLink;
-      const dto = { ids: [asset1.id] };
+      const dto = { assetIds: [asset1.id] };
 
       assetRepositoryMock.getById.mockResolvedValue(asset1);
       sharedLinkRepositoryMock.get.mockResolvedValue(sharedLinkStub.valid);
@@ -227,7 +227,7 @@ describe('AssetService', () => {
       const asset1 = _getAsset_1();
 
       const authDto = authStub.adminSharedLink;
-      const dto = { ids: [asset1.id] };
+      const dto = { assetIds: [asset1.id] };
 
       assetRepositoryMock.getById.mockResolvedValue(asset1);
       sharedLinkRepositoryMock.get.mockResolvedValue(sharedLinkStub.valid);
