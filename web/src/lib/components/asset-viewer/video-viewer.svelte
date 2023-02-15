@@ -28,10 +28,10 @@
 	<video
 		controls
 		class="h-full object-contain"
-		src={getFileUrl(assetId, false, true, publicSharedKey)}
 		on:canplay={handleCanPlay}
 		on:ended={() => dispatch('onVideoEnded')}
 	>
+		<source src={getFileUrl(assetId, false, true, publicSharedKey)} type="video/mp4" />
 		<track kind="captions" />
 	</video>
 
