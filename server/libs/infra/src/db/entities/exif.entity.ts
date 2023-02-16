@@ -44,6 +44,10 @@ export class ExifEntity {
   @Column({ type: 'varchar', nullable: true })
   city!: string | null;
 
+  @Index('IDX_live_photo_cid')
+  @Column({ type: 'varchar', nullable: true })
+  livePhotoCID!: string | null;
+
   @Column({ type: 'varchar', nullable: true })
   state!: string | null;
 
