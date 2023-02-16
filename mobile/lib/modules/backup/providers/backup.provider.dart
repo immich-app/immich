@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:cancellation_token_http/http.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hive_flutter/hive_flutter.dart';
