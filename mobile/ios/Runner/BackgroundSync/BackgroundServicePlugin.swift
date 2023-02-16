@@ -18,12 +18,11 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
     }
 
   //  Pause the application in XCode, then enter
-  // e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"immichBackgroundFetch"]
+  // e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"immichBackground"]
   // Then resume the application see the background code run
   // Tested on a physical device, not a simulator
 
-    public static let backgroundSyncTaskID = "immichBackgroundFetch"
-    public static let backgroundProcessingTaskID = "immichBackgroundProcessing"
+    public static let backgroundSyncTaskID = "immichBackground"
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(
@@ -41,12 +40,14 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
     }
 
     public static func registerBackgroundProcessing() {
-        BGTaskScheduler.shared.register(forTaskWithIdentifier: BackgroundServicePlugin.backgroundProcessingTaskID, using: nil) { task in
-          handleBackgroundProcessing(task: task as! BGProcessingTask)
-        }
-        
         BGTaskScheduler.shared.register(forTaskWithIdentifier: BackgroundServicePlugin.backgroundSyncTaskID, using: nil) { task in
-          handleBackgroundFetch(task: task as! BGAppRefreshTask)
+            if task is BGAppRefreshTask {
+                BackgroundServicePlugin.handleBackgroundFetch(task: task as! BGAppRefreshTask)
+            }
+            
+            if task is BGProcessingTask {
+                BackgroundServicePlugin.handleBackgroundProcessing(task: task as! BGProcessingTask)
+            }
         }
     }
 
@@ -133,13 +134,13 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
         defaults.set(triggerUpdateDelay, forKey: "trigger_update_delay")
         defaults.set(triggerMaxDelay, forKey: "trigger_max_delay")
 
-        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundServicePlugin.backgroundProcessingTaskID)
+        BGTaskScheduler.shared.cancelAllTaskRequests()
         BackgroundServicePlugin.scheduleBackgroundSync()
         result(true)
     }
     
     func handleDisable(call: FlutterMethodCall, result: FlutterResult) {
-        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundServicePlugin.backgroundProcessingTaskID)
+        BGTaskScheduler.shared.cancelAllTaskRequests()
         result(true)
     }
   
@@ -158,7 +159,7 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
     
     // Schedules a long-running background sync for syncing all of the photos
     static func scheduleBackgroundSync() {
-        let backgroundProcessing = BGProcessingTaskRequest(identifier: BackgroundServicePlugin.backgroundProcessingTaskID)
+        let backgroundProcessing = BGProcessingTaskRequest(identifier: BackgroundServicePlugin.backgroundSyncTaskID)
         print("scheduled background sync")
         let defaults = UserDefaults.standard
         let requireCharging = defaults.value(forKey: "require_charging") as? Bool

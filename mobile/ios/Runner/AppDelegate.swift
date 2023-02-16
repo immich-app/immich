@@ -13,6 +13,8 @@ import photo_manager
   ) -> Bool {
 
       GeneratedPluginRegistrant.register(with: self)
+      BackgroundServicePlugin.registerBackgroundProcessing()
+
       BackgroundServicePlugin.register(with: self.registrar(forPlugin: "BackgroundServicePlugin")!)
             
       BackgroundServicePlugin.setPluginRegistrantCallback { registry in
@@ -24,8 +26,6 @@ import photo_manager
               PhotoManagerPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.photo-manager")!)
           }
       }
-
-      BackgroundServicePlugin.registerBackgroundProcessing()
       
       return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
