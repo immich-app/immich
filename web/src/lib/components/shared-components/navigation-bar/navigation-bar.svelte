@@ -58,7 +58,7 @@
 		</a>
 		<div class="flex-1 ml-24">
 			<input
-				class="w-[50%] rounded-md bg-gray-200 dark:bg-immich-dark-gray  px-8 py-4"
+				class="w-[50%] rounded-3xl bg-gray-200 dark:bg-immich-dark-gray  px-8 py-4"
 				placeholder="Search - Coming soon"
 			/>
 		</div>
