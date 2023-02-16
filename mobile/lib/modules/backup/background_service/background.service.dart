@@ -285,7 +285,12 @@ class BackgroundService {
 
   Future<bool> _callHandler(MethodCall call) async {
     DartPluginRegistrant.ensureInitialized();
-    PathProviderIOS.registerWith();
+    if (Platform.isIOS) {
+      // NOTE: I'm not sure this is strictly necessary anymore, but
+      // out of an abundance of caution, we will keep it in until someone
+      // can say for sure
+      PathProviderIOS.registerWith();
+    }
     switch (call.method) {
       case "backgroundProcessing":
       case "onAssetsChanged":
