@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -304,7 +306,7 @@ class BackupControllerPage extends HookConsumerWidget {
                         )
                     : null,
               ),
-            if (isBackgroundEnabled)
+            if (isBackgroundEnabled && Platform.isAndroid)
               ListTile(
                 isThreeLine: false,
                 dense: true,
