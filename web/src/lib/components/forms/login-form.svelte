@@ -76,7 +76,7 @@
 </script>
 
 <div
-	class="border bg-white dark:bg-immich-dark-gray dark:border-immich-dark-gray p-8 shadow-sm w-full max-w-lg rounded-md"
+	class="border bg-white dark:bg-immich-dark-gray dark:border-immich-dark-gray p-8 shadow-sm w-full max-w-lg rounded-3xl"
 >
 	<div class="flex flex-col place-items-center place-content-center gap-4 py-4">
 		<ImmichLogo class="text-center h-24 w-24" />
@@ -85,7 +85,7 @@
 
 	{#if loginPageMessage}
 		<p
-			class="text-sm border rounded-md m-4 p-4 text-immich-primary dark:text-immich-dark-primary font-medium bg-immich-primary/5 dark:border-immich-dark-bg"
+			class="text-sm border rounded-xl p-4 text-immich-primary dark:text-immich-dark-primary font-medium bg-immich-primary/5 dark:border-immich-dark-bg w-full border-immich-primary border-2"
 		>
 			{@html loginPageMessage}
 		</p>
@@ -142,7 +142,7 @@
 	{#if authConfig.enabled}
 		{#if authConfig.passwordLoginEnabled}
 			<div class="inline-flex items-center justify-center w-full">
-				<hr class="w-3/4 h-px my-6 bg-gray-200 border-0 dark:bg-gray-600" />
+				<hr class="w-3/4 h-px my-4 bg-gray-200 border-0 dark:bg-gray-600" />
 				<span
 					class="absolute px-3 font-medium text-gray-900 -translate-x-1/2 left-1/2 dark:text-white bg-white dark:bg-immich-dark-gray"
 				>
