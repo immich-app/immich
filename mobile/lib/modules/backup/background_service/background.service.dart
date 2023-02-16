@@ -308,6 +308,7 @@ class BackgroundService {
       case "systemStop":
         _canceledBySystem = true;
         _cancellationToken?.cancel();
+        releaseLock();
         return true;
       default:
         debugPrint("Unknown method ${call.method}");

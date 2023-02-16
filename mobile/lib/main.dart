@@ -47,10 +47,6 @@ Future<void> openBoxes() async {
     Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox),
     Hive.openBox(hiveGithubReleaseInfoBox),
     Hive.openBox(userSettingInfoBox),
-    if (!Platform.isAndroid) Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
-    if (!Platform.isAndroid)
-      Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
-    if (!Platform.isAndroid) Hive.openBox(backgroundBackupInfoBox),
     EasyLocalization.ensureInitialized(),
   ]);
 }
