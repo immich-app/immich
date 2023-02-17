@@ -21,4 +21,4 @@ COPY . .
 ENV PATH=/root/.local:$PATH
 
 # command to run on container start
-CMD [ "python", "./main.py" ]
+CMD [ "python", "main.py" ]
