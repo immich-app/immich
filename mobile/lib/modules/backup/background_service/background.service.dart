@@ -204,15 +204,8 @@ class BackgroundService {
     _rp = rp;
     final SendPort sp = rp.sendPort;
 
-    // Only try maxTries times to acquire the lock
-    const maxTries = 5;
-    int thisTry = 0;
     while (!IsolateNameServer.registerPortWithName(sp, _portNameLock)) {
       try {
-        thisTry++;
-        if (thisTry > maxTries) {
-          return false;
-        }
         await _checkLockReleasedWithHeartbeat(lockTime);
       } catch (error) {
         return false;
