@@ -229,7 +229,7 @@ class BackgroundService {
       while (_wantsLockTime == lockTime) {
         other.send(tempSp);
         final dynamic answer = await bs.first
-            .timeout(const Duration(seconds: 5), onTimeout: () => null);
+            .timeout(const Duration(seconds: 3), onTimeout: () => null);
         if (_wantsLockTime != lockTime) {
           break;
         }
@@ -246,7 +246,7 @@ class BackgroundService {
           // other isolate is still active
         }
         final dynamic isFinished = await bs.first
-            .timeout(const Duration(seconds: 5), onTimeout: () => false);
+            .timeout(const Duration(seconds: 3), onTimeout: () => false);
         if (isFinished == true) {
           break;
         }
@@ -296,8 +296,19 @@ class BackgroundService {
       case "onAssetsChanged":
         try {
           _clearErrorNotifications();
-          final bool hasAccess = await acquireLock()
-            .timeout(const Duration(seconds: 5), onTimeout: () => false);
+
+          // iOS should time out after some threshhold so it doesn't wait
+          // indefinitely and can run later
+          // Android is fine to wait here until the lock releases
+          final waitForLock = Platform.isIOS
+            ? acquireLock()
+              .timeout(
+                const Duration(seconds: 5),
+                onTimeout: () => false,
+              )
+            : acquireLock();
+
+          final bool hasAccess = await waitForLock;
           if (!hasAccess) {
             debugPrint("[_callHandler] could not acquire lock, exiting");
             return false;
