@@ -43,6 +43,7 @@ services:
       - NODE_ENV=development
     depends_on:
       - database
+    restart: always
 
   immich-machine-learning:
     container_name: immich_machine_learning
