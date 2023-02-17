@@ -4,7 +4,8 @@
 <dict>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>immichBackground</string>
+		<string>app.alextran.immich.backgroundFetch</string>
+		<string>app.alextran.immich.backgroundProcessing</string>
 	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>

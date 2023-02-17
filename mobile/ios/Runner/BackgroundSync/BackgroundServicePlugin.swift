@@ -18,14 +18,17 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
     }
 
     //  Pause the application in XCode, then enter
-    // e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"immichBackground"]
+    // e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"app.alextran.immich.backgroundFetch"]
+    // or
+    // e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"app.alextran.immich.backgroundProcessing"]
     // Then resume the application see the background code run
     // Tested on a physical device, not a simulator
-    // This will simulate running the BGAppRefreshTask, which is the "quick sync" task.
-    // I'm not sure how to simulate running the BGProcessingTask
+    // This will submit either the Fetch or Processing command to the BGTaskScheduler for immediate processing.
+    // In my tests, I can only get app.alextran.immich.backgroundProcessing simulated by running the above command
     
     // This is the task ID in Info.plist to register as our background task ID
-    public static let backgroundSyncTaskID = "immichBackground"
+    public static let backgroundFetchTaskID = "app.alextran.immich.backgroundFetch"
+    public static let backgroundProcessingTaskID = "app.alextran.immich.backgroundProcessing"
     
     // Establish communication with the main isolate and set up the channel call
     // to this BackgroundServicePlugion()
@@ -47,13 +50,20 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
 
     // Registers the task IDs from the system so that we can process them here in this class
     public static func registerBackgroundProcessing() {
-        BGTaskScheduler.shared.register(forTaskWithIdentifier: BackgroundServicePlugin.backgroundSyncTaskID, using: nil) { task in
-            if task is BGAppRefreshTask {
-                BackgroundServicePlugin.handleBackgroundFetch(task: task as! BGAppRefreshTask)
-            }
-            
+ 
+        let processingRegisterd = BGTaskScheduler.shared.register(
+            forTaskWithIdentifier: backgroundProcessingTaskID,
+            using: nil) { task in
             if task is BGProcessingTask {
-                BackgroundServicePlugin.handleBackgroundProcessing(task: task as! BGProcessingTask)
+                handleBackgroundProcessing(task: task as! BGProcessingTask)
+            }
+        }
+        
+        let fetchRegisterd = BGTaskScheduler.shared.register(
+            forTaskWithIdentifier: backgroundFetchTaskID,
+            using: nil) { task in
+            if task is BGAppRefreshTask {
+                handleBackgroundFetch(task: task as! BGAppRefreshTask)
             }
         }
     }
@@ -123,7 +133,9 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
     
     // Called by the flutter code at launch to let us know to schedule the services
     func handleIsEnabled(call: FlutterMethodCall, result: FlutterResult) {
-        // Schedule the background services
+        
+        // Rechedule the background services
+        BGTaskScheduler.shared.cancelAllTaskRequests()
         BackgroundServicePlugin.scheduleBackgroundSync()
         BackgroundServicePlugin.scheduleBackgroundFetch()
         
@@ -184,7 +196,7 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
             return
         }
                 
-        let backgroundFetch = BGAppRefreshTaskRequest(identifier: BackgroundServicePlugin.backgroundSyncTaskID)
+        let backgroundFetch = BGAppRefreshTaskRequest(identifier: BackgroundServicePlugin.backgroundFetchTaskID)
         
         // Use 5 minutes from now as earliest begin date
         backgroundFetch.earliestBeginDate = Date(timeIntervalSinceNow: 5 * 60)
@@ -198,7 +210,8 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
     
     // Schedules a long-running background sync for syncing all of the photos
     static func scheduleBackgroundSync() {
-        let backgroundProcessing = BGProcessingTaskRequest(identifier: BackgroundServicePlugin.backgroundSyncTaskID)
+        let backgroundProcessing = BGProcessingTaskRequest(identifier: BackgroundServicePlugin.backgroundProcessingTaskID)
+        
         // We need the values for requiring charging or unmetered network usage
         let defaults = UserDefaults.standard
         let requireCharging = defaults.value(forKey: "require_charging") as? Bool
@@ -225,9 +238,8 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
         // Schedule the next sync task so we can run this again later
         scheduleBackgroundFetch()
         
-        // The background sync task should only run for 10 seconds at most
-        BackgroundServicePlugin.runBackgroundSync(maxSeconds: 10)
-        task.setTaskCompleted(success: true)
+        // The background sync task should only run for 20 seconds at most
+        BackgroundServicePlugin.runBackgroundSync(task, maxSeconds: 20)
     }
     
     // This function runs when the system kicks off the BGProcessingTask from the Background Task Scheduler
@@ -236,21 +248,27 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
         scheduleBackgroundSync()
         
         // We won't specify a max time for the background sync service, so this can run for longer
-        BackgroundServicePlugin.runBackgroundSync(maxSeconds: nil)
-        task.setTaskCompleted(success: true)
+        BackgroundServicePlugin.runBackgroundSync(task, maxSeconds: nil)
     }
     
     // This is a synchronous function which uses a semaphore to run the background sync worker's run
     // function, which will create a background Isolate and communicate with the Flutter code to back
     // up the assets. When it completes, we signal the semaphore and complete the execution allowing the
     // control to pass back to the caller synchronously
-    static func runBackgroundSync(maxSeconds: Int?) {
+    static func runBackgroundSync(_ task: BGTask, maxSeconds: Int?) {
+
         let semaphore = DispatchSemaphore(value: 0)
         DispatchQueue.main.async {
             let backgroundWorker = BackgroundSyncWorker { _ in
                 semaphore.signal()
             }
+            task.expirationHandler = {
+                backgroundWorker.cancel()
+                task.setTaskCompleted(success: true)
+            }
+            
             backgroundWorker.run(maxSeconds: maxSeconds)
+            task.setTaskCompleted(success: true)
         }
         semaphore.wait()
     }

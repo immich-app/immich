@@ -159,6 +159,24 @@ class BackgroundSyncWorker {
         // Register this to get access to the plugins on the platform channel
         BackgroundServicePlugin.flutterPluginRegistrantCallback?(engine!)
     }
+    
+    // Cancels execution of this task, used by the system's task expiration handler
+    // which is called shortly before execution is about to expire
+    public func cancel() {
+        // If the channel is already deallocated, we don't need to do anything
+        if self.channel == nil {
+            return
+        }
+        
+        // Tell the Flutter VM to stop backing up now
+        self.channel?.invokeMethod(
+            "systemStop",
+            arguments: nil,
+            result: nil)
+        
+        // Complete the execution
+        self.complete(UIBackgroundFetchResult.newData)
+    }
 
     // Completes the execution, destroys the engine, and sends a completion to our callback completionHandler
     private func complete(_ fetchResult: UIBackgroundFetchResult) {
