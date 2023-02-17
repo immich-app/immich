@@ -213,8 +213,7 @@ class BackgroundService {
         if (thisTry > maxTries) {
           return false;
         }
-        _checkLockReleasedWithHeartbeat(lockTime);
-        await Future.delayed(const Duration(seconds: 1));
+        await _checkLockReleasedWithHeartbeat(lockTime);
       } catch (error) {
         return false;
       }
@@ -228,7 +227,7 @@ class BackgroundService {
     return true;
   }
 
-  void _checkLockReleasedWithHeartbeat(final int lockTime) async {
+  Future<void> _checkLockReleasedWithHeartbeat(final int lockTime) async {
     SendPort? other = IsolateNameServer.lookupPortByName(_portNameLock);
     if (other != null) {
       final ReceivePort tempRp = ReceivePort();
