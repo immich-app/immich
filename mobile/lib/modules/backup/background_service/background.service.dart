@@ -379,9 +379,9 @@ class BackgroundService {
             .put(backupFailedSince, DateTime.now());
         return false;
       }
-      // check for new assets added while performing backup
-    } while (false); //TODO: broken on iOS (true ==
-        // await _backgroundChannel.invokeMethod<bool>("hasContentChanged"));
+      // Android should check for new assets added while performing backup
+    } while (Platform.isAndroid &&
+      true == await _backgroundChannel.invokeMethod<bool>("hasContentChanged"));
     return true;
   }
 
