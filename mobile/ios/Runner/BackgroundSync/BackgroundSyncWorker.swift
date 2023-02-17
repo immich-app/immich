@@ -138,7 +138,7 @@ class BackgroundSyncWorker {
                 timer.invalidate()
                 
                 // If the channel is already deallocated, we don't need to do anything
-                guard case self.channel != nil else {
+                if self.channel == nil {
                     return
                 }
                 
