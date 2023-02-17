@@ -11,7 +11,6 @@ RUN pip install --user -r requirements.txt
 
 # prod stage
 FROM python:3.10-slim as prod
-WORKDIR /usr/src/app
 
 # copy only the dependencies installation from the 1st stage image
 COPY --from=builder /root/.local /root/.local
@@ -21,4 +20,4 @@ COPY . .
 ENV PATH=/root/.local:$PATH
 
 # command to run on container start
-CMD [ "python", "main.py" ]
+CMD [ "ls", "-l"]
