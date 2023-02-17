@@ -35,12 +35,15 @@ class GalleryViewerPage extends HookConsumerWidget {
   final Asset asset;
 
   GalleryViewerPage({
-    Key? key,
+    super.key,
     required this.assetList,
     required this.asset,
-  }) : super(key: key);
+  }) : controller =
+      PageController(initialPage: assetList.indexOf(asset));
 
   Asset? assetDetail;
+
+  late PageController controller;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -55,9 +58,6 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isPlayingVideo = useState(false);
     late Offset localPosition;
     final authToken = 'Bearer ${box.get(accessTokenKey)}';
-
-    PageController controller =
-        PageController(initialPage: assetList.indexOf(asset));
 
     useEffect(
       () {
