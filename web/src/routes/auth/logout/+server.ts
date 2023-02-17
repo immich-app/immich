@@ -2,26 +2,12 @@ import { json } from '@sveltejs/kit';
 import { api, serverApi } from '@api';
 import type { RequestHandler } from '@sveltejs/kit';
 
-export const POST: RequestHandler = async () => {
+export const POST = (async ({ cookies }) => {
 	api.removeAccessToken();
 	serverApi.removeAccessToken();
 
-	const headers = new Headers();
+	cookies.delete('immich_auth_type', { path: '/' });
+	cookies.delete('immich_access_token', { path: '/' });
 
-	headers.append(
-		'set-cookie',
-		'immich_auth_type=deleted; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
-	);
-	headers.append(
-		'set-cookie',
-		'immich_access_token=delete; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-	);
-	return json(
-		{
-			ok: true
-		},
-		{
-			headers
-		}
-	);
-};
+	return json({ ok: true });
+}) satisfies RequestHandler;
