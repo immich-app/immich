@@ -24,6 +24,26 @@ services:
       - redis
       - database
 
+  immich-ml:
+    container_name: immich_ml
+    image: immich-ml-dev:latest
+    build:
+      context: ../ml
+      dockerfile: Dockerfile
+      target: builder
+    command: python main.py
+    ports:
+      - 5000:5000
+    volumes:
+      - ../ml/src:/usr/src/app
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - database
+
   immich-machine-learning:
     container_name: immich_machine_learning
     image: immich-machine-learning-dev:latest
