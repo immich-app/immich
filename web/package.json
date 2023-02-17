@@ -52,7 +52,6 @@
 		"svelte": "^3.44.0",
 		"svelte-check": "^2.7.1",
 		"svelte-jester": "^2.3.2",
-		"svelte-keydown": "^0.5.0",
 		"svelte-preprocess": "^4.10.7",
 		"tailwindcss": "^3.0.24",
 		"tslib": "^2.3.1",
@@ -69,7 +68,6 @@
 		"luxon": "^3.1.1",
 		"rxjs": "^7.8.0",
 		"socket.io-client": "^4.5.1",
-		"svelte-keydown": "^0.5.0",
 		"svelte-material-icons": "^2.0.2"
 	}
 }
