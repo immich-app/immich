@@ -62,7 +62,6 @@
 	"type": "module",
 	"dependencies": {
 		"axios": "^0.27.2",
-		"cookie": "^0.4.2",
 		"copy-image-clipboard": "^2.1.2",
 		"handlebars": "^4.7.7",
 		"leaflet": "^1.8.0",
