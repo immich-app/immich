@@ -204,9 +204,17 @@ class BackgroundService {
     _rp = rp;
     final SendPort sp = rp.sendPort;
 
+    // Only try maxTries times to acquire the lock
+    const maxTries = 5;
+    int thisTry = 0;
     while (!IsolateNameServer.registerPortWithName(sp, _portNameLock)) {
       try {
-        await _checkLockReleasedWithHeartbeat(lockTime);
+        thisTry++;
+        if (thisTry > maxTries) {
+          return false;
+        }
+        await Future.delayed(const Duration(seconds: 1));
+        _checkLockReleasedWithHeartbeat(lockTime);
       } catch (error) {
         return false;
       }
@@ -220,7 +228,7 @@ class BackgroundService {
     return true;
   }
 
-  Future<void> _checkLockReleasedWithHeartbeat(final int lockTime) async {
+  void _checkLockReleasedWithHeartbeat(final int lockTime) async {
     SendPort? other = IsolateNameServer.lookupPortByName(_portNameLock);
     if (other != null) {
       final ReceivePort tempRp = ReceivePort();
