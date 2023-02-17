@@ -39,12 +39,18 @@
 	let addToSharedAlbum = true;
 	let shouldPlayMotionPhoto = false;
 	let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : true;
+	let canCopyImagesToClipboard: boolean;
 	const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key);
 
 	onMount(async () => {
 		document.addEventListener('keydown', onKeyboardPress);
 
 		getAllAlbums();
+
+		// Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
+		// TODO: Move to regular import once the package correctly supports ESM.
+		const module = await import('copy-image-clipboard');
+		canCopyImagesToClipboard = module.canCopyImagesToClipboard();
 	});
 
 	onDestroy(() => {
@@ -253,7 +259,7 @@
 		<AssetViewerNavBar
 			{asset}
 			isMotionPhotoPlaying={shouldPlayMotionPhoto}
-			showCopyButton={asset.type === AssetTypeEnum.Image}
+			showCopyButton={canCopyImagesToClipboard && asset.type === AssetTypeEnum.Image}
 			showMotionPlayButton={!!asset.livePhotoVideoId}
 			showDownloadButton={shouldShowDownloadButton}
 			on:goBack={closeViewer}

@@ -1,10 +1,8 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
-
 	import { onMount } from 'svelte';
 	import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 	import { api, AssetResponseDto } from '@api';
-	import Keydown from 'svelte-keydown';
 	import {
 		notificationController,
 		NotificationType
@@ -16,11 +14,14 @@
 	let assetData: string;
 
 	let copyImageToClipboard: (src: string) => Promise<Blob>;
+	let canCopyImagesToClipboard: () => boolean;
 
 	onMount(async () => {
-		//Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
+		// Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
+		// TODO: Move to regular import once the package correctly supports ESM.
 		const module = await import('copy-image-clipboard');
 		copyImageToClipboard = module.copyImageToClipboard;
+		canCopyImagesToClipboard = module.canCopyImagesToClipboard;
 	});
 
 	const loadAssetData = async () => {
@@ -43,25 +44,35 @@
 		}
 	};
 
-	const handleKeypress = async (keyEvent: CustomEvent<string>) => {
-		if (keyEvent.detail == 'Control-c' || keyEvent.detail == 'Meta-c') {
+	const handleKeypress = async ({ metaKey, ctrlKey, key }: KeyboardEvent) => {
+		if ((metaKey || ctrlKey) && key === 'c') {
 			await doCopy();
 		}
 	};
 
-	export const doCopy = async () => {
-		await copyImageToClipboard(assetData);
-		notificationController.show({
-			type: NotificationType.Info,
-			message: 'Copied image to clipboard.',
-			timeout: 3000
-		});
+	const doCopy = async () => {
+		if (!canCopyImagesToClipboard()) {
+			return;
+		}
+
+		try {
+			await copyImageToClipboard(assetData);
+			notificationController.show({
+				type: NotificationType.Info,
+				message: 'Copied image to clipboard.',
+				timeout: 3000
+			});
+		} catch (err) {
+			console.error('Error [photo-viewer]:', err);
+			notificationController.show({
+				type: NotificationType.Error,
+				message: 'Copying image to clipboard failed.'
+			});
+		}
 	};
 </script>
 
-<Keydown on:combo={handleKeypress} />
-
-<svelte:window on:copyImage={async () => await doCopy()} />
+<svelte:window on:keydown={handleKeypress} on:copyImage={doCopy} />
 
 <div
 	transition:fade={{ duration: 150 }}
