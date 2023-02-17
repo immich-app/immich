@@ -48,6 +48,7 @@ services:
   immich-ml:
     container_name: immich_ml
     image: altran1502/immich-ml:release
+    volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
     env_file:
       - .env
