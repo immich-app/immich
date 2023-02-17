@@ -187,8 +187,17 @@ class GalleryViewerPage extends HookConsumerWidget {
         builder: (BuildContext _) {
           return DeleteDialog(
             onDelete: () {
+              if (assetList.length == 1) {
+                // Handle only one asset
+                AutoRouter.of(context).pop();
+              } else {
+                // Go to next page otherwise
+                controller.nextPage(
+                  duration: const Duration(milliseconds: 100),
+                  curve: Curves.fastLinearToSlowEaseIn,
+                );
+              }
               ref.watch(assetProvider.notifier).deleteAssets({deleteAsset});
-              AutoRouter.of(context).pop(null);
             },
           );
         },
