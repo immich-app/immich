@@ -188,7 +188,7 @@ class BackgroundService {
   }
 
   /// await to ensure this thread (foreground or background) has exclusive access
-  Future<bool> acquireLock() async {
+  Future<bool> acquireLock({int failAfterSeconds = 5}) async {
     if (_hasLock) {
       debugPrint("WARNING: [acquireLock] called more than once");
       return true;
@@ -205,16 +205,17 @@ class BackgroundService {
     final SendPort sp = rp.sendPort;
 
     // Only try maxTries times to acquire the lock
-    const maxTries = 5;
     int thisTry = 0;
+    const delay = Duration(milliseconds: 100);
+    final maxTries = failAfterSeconds * 1000 / delay.inMilliseconds;
     while (!IsolateNameServer.registerPortWithName(sp, _portNameLock)) {
       try {
         thisTry++;
         if (thisTry > maxTries) {
           return false;
         }
-        await Future.delayed(const Duration(seconds: 1));
         _checkLockReleasedWithHeartbeat(lockTime);
+        await Future.delayed(const Duration(milliseconds: 100));
       } catch (error) {
         return false;
       }
@@ -304,7 +305,7 @@ class BackgroundService {
       case "onAssetsChanged":
         try {
           _clearErrorNotifications();
-          final bool hasAccess = await acquireLock();
+          final bool hasAccess = await acquireLock(failAfterSeconds: 7);
           if (!hasAccess) {
             debugPrint("[_callHandler] could not acquire lock, exiting");
             return false;
