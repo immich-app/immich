@@ -37,7 +37,7 @@ services:
     command: ["python", "main.py"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - /cache
+      - model-cache:/cache
     env_file:
       - .env
     environment:
@@ -90,3 +90,4 @@ services:
 
 volumes:
   pgdata:
+  model-cache:

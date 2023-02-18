@@ -36,6 +36,7 @@ services:
     volumes:
       - ../machine-learning/src:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - model-cache:/cache
     env_file:
       - .env
     environment:
@@ -127,3 +128,4 @@ services:
 
 volumes:
   pgdata:
+  model-cache:
