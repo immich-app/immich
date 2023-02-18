@@ -16,6 +16,7 @@ jobs:
       # Prevent a failure in one image from stopping the other builds
       fail-fast: false
       matrix:
+        platforms: ["linux/arm/v7,linux/amd64,linux/arm64"]
         include:
           - context: "server"
             image: "immich-server"
@@ -23,9 +24,10 @@ jobs:
             image: "immich-web"
           - context: "machine-learning"
             image: "immich-machine-learning"
+            platforms: "linux/amd64"
           - context: "nginx"
             image: "immich-proxy"
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -49,7 +51,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-        
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         # Skip when PR from a fork
@@ -92,7 +94,7 @@ jobs:
         uses: docker/build-push-action@v4.0.0
         with:
           context: ${{ matrix.context }}
-          platforms: linux/arm/v7,linux/amd64,linux/arm64
+          platforms: ${{ matrix.platform }}
           # Skip pushing when PR from a fork
           push: ${{ !github.event.pull_request.head.repo.fork }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/immich-build-cache:${{matrix.image}}
