@@ -8,7 +8,6 @@ import { AssetRepository, IAssetRepository } from './asset-repository';
 import { DownloadModule } from '../../modules/download/download.module';
 import { TagModule } from '../tag/tag.module';
 import { AlbumModule } from '../album/album.module';
-import { StorageModule } from '@app/storage';
 
 const ASSET_REPOSITORY_PROVIDER = {
   provide: IAssetRepository,
@@ -17,11 +16,11 @@ const ASSET_REPOSITORY_PROVIDER = {
 
 @Module({
   imports: [
+    //
     TypeOrmModule.forFeature([AssetEntity]),
     CommunicationModule,
     DownloadModule,
     TagModule,
-    StorageModule,
     AlbumModule,
   ],
   controllers: [AssetController],

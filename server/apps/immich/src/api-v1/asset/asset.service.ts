@@ -12,7 +12,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { AssetEntity, AssetType, SharedLinkType } from '@app/infra';
+import { AssetEntity, AssetType, SharedLinkType, SystemConfig } from '@app/infra';
 import { constants, createReadStream, ReadStream, stat } from 'fs';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
@@ -25,7 +25,9 @@ import { CuratedObjectsResponseDto } from './response-dto/curated-objects-respon
 import {
   AssetResponseDto,
   ImmichReadStream,
+  INITIAL_SYSTEM_CONFIG,
   IStorageRepository,
+  ISystemConfigRepository,
   JobName,
   mapAsset,
   mapAssetWithoutExif,
@@ -52,7 +54,6 @@ import { ICryptoRepository, IJobRepository } from '@app/domain';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
 import { IAlbumRepository } from '../album/album-repository';
-import { StorageService } from '@app/storage';
 import { ShareCore } from '@app/domain';
 import { ISharedLinkRepository } from '@app/domain';
 import { DownloadFilesDto } from './dto/download-files.dto';
@@ -76,13 +77,14 @@ export class AssetService {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
     private downloadService: DownloadService,
-    storageService: StorageService,
     @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+    @Inject(INITIAL_SYSTEM_CONFIG) config: SystemConfig,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
-    @Inject(IStorageRepository) private storage: IStorageRepository,
+    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
-    this.assetCore = new AssetCore(_assetRepository, jobRepository, storageService);
+    this.assetCore = new AssetCore(_assetRepository, jobRepository, configRepository, config, storageRepository);
     this.shareCore = new ShareCore(sharedLinkRepository, cryptoRepository);
   }
 
@@ -197,7 +199,7 @@ export class AssetService {
     try {
       const asset = await this._assetRepository.get(assetId);
       if (asset && asset.originalPath && asset.mimeType) {
-        return this.storage.createReadStream(asset.originalPath, asset.mimeType);
+        return this.storageRepository.createReadStream(asset.originalPath, asset.mimeType);
       }
     } catch (e) {
       Logger.error(`Error download asset ${e}`, 'downloadFile');

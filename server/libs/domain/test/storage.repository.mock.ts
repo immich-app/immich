@@ -5,5 +5,8 @@ export const newStorageRepositoryMock = (): jest.Mocked<IStorageRepository> => {
     createReadStream: jest.fn(),
     unlink: jest.fn(),
     unlinkDir: jest.fn(),
+    removeEmptyDirs: jest.fn(),
+    moveFile: jest.fn(),
+    checkFileExists: jest.fn(),
   };
 };

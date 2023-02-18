@@ -1,15 +1,27 @@
-import { AuthUserDto, IJobRepository, JobName } from '@app/domain';
-import { AssetEntity, UserEntity } from '@app/infra/db/entities';
-import { StorageService } from '@app/storage';
+import {
+  AuthUserDto,
+  IJobRepository,
+  IStorageRepository,
+  ISystemConfigRepository,
+  JobName,
+  StorageCore,
+} from '@app/domain';
+import { AssetEntity, SystemConfig, UserEntity } from '@app/infra/db/entities';
 import { IAssetRepository } from './asset-repository';
 import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
 
 export class AssetCore {
+  private storageCore: StorageCore;
+
   constructor(
     private repository: IAssetRepository,
     private jobRepository: IJobRepository,
-    private storageService: StorageService,
-  ) {}
+    configRepository: ISystemConfigRepository,
+    config: SystemConfig,
+    private storageRepository: IStorageRepository,
+  ) {
+    this.storageCore = new StorageCore(configRepository, config, storageRepository);
+  }
 
   async create(
     authUser: AuthUserDto,
@@ -42,7 +54,12 @@ export class AssetCore {
       sharedLinks: [],
     });
 
-    asset = await this.storageService.moveAsset(asset, file.originalName);
+    const destination = await this.storageCore.getTemplatePath(asset, file.originalName);
+    if (asset.originalPath !== destination) {
+      await this.storageRepository.moveFile(asset.originalPath, destination);
+      asset.originalPath = destination;
+      asset = await this.repository.save(asset);
+    }
 
     await this.jobRepository.queue({ name: JobName.ASSET_UPLOADED, data: { asset, fileName: file.originalName } });
 

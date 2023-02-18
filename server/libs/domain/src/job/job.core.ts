@@ -1,11 +1,13 @@
 import { APP_UPLOAD_LOCATION } from '@app/common';
-import { AssetType, UserEntity } from '@app/infra/db/entities';
+import { AssetEntity, AssetType, SystemConfig, UserEntity } from '@app/infra/db/entities';
 import { Logger } from '@nestjs/common';
 import { join } from 'path';
 import { IAlbumRepository } from '../album';
 import { IKeyRepository } from '../api-key';
 import { IAssetRepository } from '../asset';
-import { IStorageRepository } from '../storage';
+import { IStorageRepository, StorageCore } from '../storage';
+import { ISystemConfigRepository } from '../system-config';
+import { SystemConfigCore } from '../system-config/system-config.core';
 import { IUserRepository } from '../user';
 import { IUserTokenRepository } from '../user-token';
 import { JobName } from './job.constants';
@@ -14,16 +16,23 @@ import { IJobRepository } from './job.repository';
 
 export class JobCore {
   private logger = new Logger(JobCore.name);
+  private configCore: SystemConfigCore;
+  private storageCore: StorageCore;
 
   constructor(
     private albumRepository: IAlbumRepository,
     private assetRepository: IAssetRepository,
+    configRepository: ISystemConfigRepository,
+    config: SystemConfig,
     private keyRepository: IKeyRepository,
     private jobRepository: IJobRepository,
     private storageRepository: IStorageRepository,
     private tokenRepository: IUserTokenRepository,
     private userRepository: IUserRepository,
-  ) {}
+  ) {
+    this.configCore = new SystemConfigCore(configRepository);
+    this.storageCore = new StorageCore(configRepository, config, storageRepository);
+  }
 
   async handleAssetUpload(job: IAssetUploadedJob) {
     const { asset, fileName } = job;
@@ -36,6 +45,10 @@ export class JobCore {
     } else {
       await this.jobRepository.queue({ name: JobName.EXIF_EXTRACTION, data: { asset, fileName } });
     }
+  }
+
+  async handleConfigChange() {
+    await this.configCore.refreshConfig();
   }
 
   async handleUserDeleteCheck() {
@@ -59,8 +72,7 @@ export class JobCore {
     this.logger.log(`Deleting user: ${user.id}`);
 
     try {
-      const basePath = APP_UPLOAD_LOCATION;
-      const userAssetDir = join(basePath, user.id);
+      const userAssetDir = join(APP_UPLOAD_LOCATION, user.id);
       this.logger.warn(`Removing user from filesystem: ${userAssetDir}`);
       await this.storageRepository.unlinkDir(userAssetDir, { recursive: true, force: true });
 
@@ -92,6 +104,34 @@ export class JobCore {
         this.logger.warn('Unable to remove file from disk', error?.stack);
       }
     }
+  }
+
+  async handleTemplateMigration() {
+    console.time('migrating-time');
+    const assets = await this.assetRepository.getAll();
+
+    const livePhotoMap: Record<string, AssetEntity> = {};
+
+    for (const asset of assets) {
+      if (asset.livePhotoVideoId) {
+        livePhotoMap[asset.livePhotoVideoId] = asset;
+      }
+    }
+
+    for (const asset of assets) {
+      const livePhotoParentAsset = livePhotoMap[asset.id];
+      const filename = asset.exifInfo?.imageName || livePhotoParentAsset?.exifInfo?.imageName || asset.id;
+      const destination = await this.storageCore.getTemplatePath(asset, filename);
+      if (asset.originalPath !== destination) {
+        await this.storageRepository.moveFile(asset.originalPath, destination);
+        asset.originalPath = destination;
+        await this.assetRepository.save(asset);
+      }
+    }
+
+    this.logger.debug('Cleaning up empty directories...');
+    await this.storageRepository.removeEmptyDirs(APP_UPLOAD_LOCATION);
+    console.timeEnd('migrating-time');
   }
 
   private isReadyForDeletion(user: UserEntity): boolean {

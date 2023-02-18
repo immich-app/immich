@@ -11,4 +11,13 @@ export class AssetRepository implements IAssetRepository {
   async deleteAll(ownerId: string): Promise<void> {
     await this.repository.delete({ ownerId });
   }
+
+  async getAll(): Promise<AssetEntity[]> {
+    return this.repository.find({ relations: { exifInfo: true } });
+  }
+
+  async save(asset: Partial<AssetEntity>): Promise<AssetEntity> {
+    const { id } = await this.repository.save(asset);
+    return this.repository.findOneOrFail({ where: { id } });
+  }
 }

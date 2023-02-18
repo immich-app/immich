@@ -18,7 +18,7 @@ export interface IUserDeletionJob {
 }
 
 export interface IReverseGeocodingJob {
-  assetId: number;
+  assetId: string;
   latitude: number;
   longitude: number;
 }

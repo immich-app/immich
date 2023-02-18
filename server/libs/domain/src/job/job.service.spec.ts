@@ -5,6 +5,7 @@ import {
   newJobRepositoryMock,
   newKeyRepositoryMock,
   newStorageRepositoryMock,
+  newSystemConfigRepositoryMock,
   newUserRepositoryMock,
   newUserTokenRepositoryMock,
 } from '../../test';
@@ -12,6 +13,7 @@ import { IAlbumRepository } from '../album';
 import { IKeyRepository } from '../api-key';
 import { IAssetRepository } from '../asset';
 import { IStorageRepository } from '../storage';
+import { ISystemConfigRepository } from '../system-config';
 import { IUserRepository } from '../user';
 import { IUserTokenRepository } from '../user-token';
 import { JobName } from './job.constants';
@@ -50,6 +52,7 @@ describe(JobService.name, () => {
   let sut: JobService;
   let albumMock: jest.Mocked<IAlbumRepository>;
   let assetMock: jest.Mocked<IAssetRepository>;
+  let configMock: jest.Mocked<ISystemConfigRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let keyMock: jest.Mocked<IKeyRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
@@ -63,12 +66,23 @@ describe(JobService.name, () => {
   beforeEach(async () => {
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
+    configMock = newSystemConfigRepositoryMock();
     jobMock = newJobRepositoryMock();
     keyMock = newKeyRepositoryMock();
     storageMock = newStorageRepositoryMock();
     tokenMock = newUserTokenRepositoryMock();
     userMock = newUserRepositoryMock();
-    sut = new JobService(albumMock, assetMock, keyMock, jobMock, storageMock, tokenMock, userMock);
+    sut = new JobService(
+      albumMock,
+      assetMock,
+      configMock,
+      keyMock,
+      jobMock,
+      storageMock,
+      tokenMock,
+      userMock,
+      null as any,
+    );
   });
 
   describe('handle', () => {

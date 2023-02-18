@@ -1,18 +1,7 @@
 import { APP_UPLOAD_LOCATION } from '@app/common';
-import { AssetEntity, AssetType, SystemConfig } from '@app/infra';
-import { SystemConfigService, INITIAL_SYSTEM_CONFIG } from '@app/domain';
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import fsPromise from 'fs/promises';
-import handlebar from 'handlebars';
-import * as luxon from 'luxon';
-import mv from 'mv';
-import { constants } from 'node:fs';
-import path from 'node:path';
-import { promisify } from 'node:util';
-import sanitize from 'sanitize-filename';
-import { Repository } from 'typeorm';
 import {
+  IStorageRepository,
+  ISystemConfigRepository,
   supportedDayTokens,
   supportedHourTokens,
   supportedMinuteTokens,
@@ -20,32 +9,31 @@ import {
   supportedSecondTokens,
   supportedYearTokens,
 } from '@app/domain';
+import { AssetEntity, AssetType, SystemConfig } from '@app/infra';
+import { Logger } from '@nestjs/common';
+import handlebar from 'handlebars';
+import * as luxon from 'luxon';
+import path from 'node:path';
+import sanitize from 'sanitize-filename';
+import { SystemConfigCore } from '../system-config/system-config.core';
 
-const moveFile = promisify<string, string, mv.Options>(mv);
-
-@Injectable()
-export class StorageService {
-  private readonly logger = new Logger(StorageService.name);
-
+export class StorageCore {
+  private logger = new Logger(StorageCore.name);
+  private configCore: SystemConfigCore;
   private storageTemplate: HandlebarsTemplateDelegate<any>;
 
   constructor(
-    @InjectRepository(AssetEntity)
-    private assetRepository: Repository<AssetEntity>,
-    private systemConfigService: SystemConfigService,
-    @Inject(INITIAL_SYSTEM_CONFIG) config: SystemConfig,
+    configRepository: ISystemConfigRepository,
+    config: SystemConfig,
+    private storageRepository: IStorageRepository,
   ) {
     this.storageTemplate = this.compile(config.storageTemplate.template);
-
-    this.systemConfigService.addValidator((config) => this.validateConfig(config));
-
-    this.systemConfigService.config$.subscribe((config) => {
-      this.logger.debug(`Received new config, recompiling storage template: ${config.storageTemplate.template}`);
-      this.storageTemplate = this.compile(config.storageTemplate.template);
-    });
+    this.configCore = new SystemConfigCore(configRepository);
+    this.configCore.addValidator((config) => this.validateConfig(config));
+    this.configCore.config$.subscribe((config) => this.onConfig(config));
   }
 
-  public async moveAsset(asset: AssetEntity, filename: string): Promise<AssetEntity> {
+  public async getTemplatePath(asset: AssetEntity, filename: string): Promise<string> {
     try {
       const source = asset.originalPath;
       const ext = path.extname(source).split('.').pop() as string;
@@ -57,11 +45,11 @@ export class StorageService {
 
       if (!fullPath.startsWith(rootPath)) {
         this.logger.warn(`Skipped attempt to access an invalid path: ${fullPath}. Path should start with ${rootPath}`);
-        return asset;
+        return source;
       }
 
       if (source === destination) {
-        return asset;
+        return source;
       }
 
       /**
@@ -82,14 +70,14 @@ export class StorageService {
         const diff = source.replace(fullPath, '').replace(`.${ext}`, '');
         const hasDuplicationAnnotation = /^\+\d+$/.test(diff);
         if (hasDuplicationAnnotation) {
-          return asset;
+          return source;
         }
       }
 
       let duplicateCount = 0;
 
       while (true) {
-        const exists = await this.checkFileExist(destination);
+        const exists = await this.storageRepository.checkFileExists(destination);
         if (!exists) {
           break;
         }
@@ -98,26 +86,10 @@ export class StorageService {
         destination = `${fullPath}+${duplicateCount}.${ext}`;
       }
 
-      await this.safeMove(source, destination);
-
-      asset.originalPath = destination;
-      return await this.assetRepository.save(asset);
+      return destination;
     } catch (error: any) {
       this.logger.error(error);
-      return asset;
-    }
-  }
-
-  private safeMove(source: string, destination: string): Promise<void> {
-    return moveFile(source, destination, { mkdirp: true, clobber: false });
-  }
-
-  private async checkFileExist(path: string): Promise<boolean> {
-    try {
-      await fsPromise.access(path, constants.F_OK);
-      return true;
-    } catch (_) {
-      return false;
+      return asset.originalPath;
     }
   }
 
@@ -143,6 +115,11 @@ export class StorageService {
       this.logger.warn(`Storage template validation failed: ${JSON.stringify(e)}`);
       throw new Error(`Invalid storage template: ${e}`);
     }
+  }
+
+  private onConfig(config: SystemConfig) {
+    this.logger.debug(`Received new config, recompiling storage template: ${config.storageTemplate.template}`);
+    this.storageTemplate = this.compile(config.storageTemplate.template);
   }
 
   private compile(template: string) {
@@ -181,28 +158,5 @@ export class StorageService {
     substitutions.filetypefull = fileTypeFull;
 
     return template(substitutions);
-  }
-
-  public async removeEmptyDirectories(directory: string) {
-    // lstat does not follow symlinks (in contrast to stat)
-    const fileStats = await fsPromise.lstat(directory);
-    if (!fileStats.isDirectory()) {
-      return;
-    }
-    let fileNames = await fsPromise.readdir(directory);
-    if (fileNames.length > 0) {
-      const recursiveRemovalPromises = fileNames.map((fileName) =>
-        this.removeEmptyDirectories(path.join(directory, fileName)),
-      );
-      await Promise.all(recursiveRemovalPromises);
-
-      // re-evaluate fileNames; after deleting subdirectory
-      // we may have parent directory empty now
-      fileNames = await fsPromise.readdir(directory);
-    }
-
-    if (fileNames.length === 0) {
-      await fsPromise.rmdir(directory);
-    }
   }
 }
