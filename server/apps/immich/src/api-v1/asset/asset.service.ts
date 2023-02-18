@@ -518,7 +518,7 @@ export class AssetService {
       where: {
         deviceAssetId: checkDuplicateAssetDto.deviceAssetId,
         deviceId: checkDuplicateAssetDto.deviceId,
-        userId: authUser.id,
+        ownerId: authUser.id,
       },
     });
 

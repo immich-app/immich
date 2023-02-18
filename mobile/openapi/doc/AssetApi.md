@@ -1109,7 +1109,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadFile**
-> AssetFileUploadResponseDto uploadFile(assetType, assetData, deviceAssetId, deviceId, createdAt, modifiedAt, isFavorite, fileExtension, livePhotoData, isVisible, duration)
+> AssetFileUploadResponseDto uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, livePhotoData, isVisible, duration)
 
 
 
@@ -1130,8 +1130,8 @@ final assetType = ; // AssetTypeEnum |
 final assetData = BINARY_DATA_HERE; // MultipartFile | 
 final deviceAssetId = deviceAssetId_example; // String | 
 final deviceId = deviceId_example; // String | 
-final createdAt = createdAt_example; // String | 
-final modifiedAt = modifiedAt_example; // String | 
+final fileCreatedAt = fileCreatedAt_example; // String | 
+final fileModifiedAt = fileModifiedAt_example; // String | 
 final isFavorite = true; // bool | 
 final fileExtension = fileExtension_example; // String | 
 final livePhotoData = BINARY_DATA_HERE; // MultipartFile | 
@@ -1139,7 +1139,7 @@ final isVisible = true; // bool |
 final duration = duration_example; // String | 
 
 try {
-    final result = api_instance.uploadFile(assetType, assetData, deviceAssetId, deviceId, createdAt, modifiedAt, isFavorite, fileExtension, livePhotoData, isVisible, duration);
+    final result = api_instance.uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, livePhotoData, isVisible, duration);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->uploadFile: $e\n');
@@ -1154,8 +1154,8 @@ Name | Type | Description  | Notes
  **assetData** | **MultipartFile**|  | 
  **deviceAssetId** | **String**|  | 
  **deviceId** | **String**|  | 
- **createdAt** | **String**|  | 
- **modifiedAt** | **String**|  | 
+ **fileCreatedAt** | **String**|  | 
+ **fileModifiedAt** | **String**|  | 
  **isFavorite** | **bool**|  | 
  **fileExtension** | **String**|  | 
  **livePhotoData** | **MultipartFile**|  | [optional] 

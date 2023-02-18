@@ -31,11 +31,11 @@ export class SharedLinkRepository implements ISharedLinkRepository {
       order: {
         createdAt: 'DESC',
         assets: {
-          createdAt: 'ASC',
+          fileCreatedAt: 'ASC',
         },
         album: {
           assets: {
-            createdAt: 'ASC',
+            fileCreatedAt: 'ASC',
           },
         },
       },

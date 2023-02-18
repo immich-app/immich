@@ -19,7 +19,9 @@ import { AssetSearchDto } from './dto/asset-search.dto';
 
 export interface IAssetRepository {
   get(id: string): Promise<AssetEntity | null>;
-  create(asset: Omit<AssetEntity, 'id'>): Promise<AssetEntity>;
+  create(
+    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'livePhotoVideoId'>,
+  ): Promise<AssetEntity>;
   remove(asset: AssetEntity): Promise<void>;
 
   update(userId: string, asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
@@ -112,13 +114,13 @@ export class AssetRepository implements IAssetRepository {
       .getMany();
   }
 
-  async getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto> {
+  async getAssetCountByUserId(ownerId: string): Promise<AssetCountByUserIdResponseDto> {
     // Get asset count by AssetType
     const items = await this.assetRepository
       .createQueryBuilder('asset')
       .select(`COUNT(asset.id)`, 'count')
       .addSelect(`asset.type`, 'type')
-      .where('"userId" = :userId', { userId: userId })
+      .where('"ownerId" = :ownerId', { ownerId: ownerId })
       .andWhere('asset.isVisible = true')
       .groupBy('asset.type')
       .getRawMany();
@@ -149,7 +151,7 @@ export class AssetRepository implements IAssetRepository {
     // Get asset entity from a list of time buckets
     return await this.assetRepository
       .createQueryBuilder('asset')
-      .where('asset.userId = :userId', { userId: userId })
+      .where('asset.ownerId = :userId', { userId: userId })
       .andWhere(`date_trunc('month', "createdAt") IN (:...buckets)`, {
         buckets: [...getAssetByTimeBucketDto.timeBucket],
       })
@@ -167,7 +169,7 @@ export class AssetRepository implements IAssetRepository {
         .createQueryBuilder('asset')
         .select(`COUNT(asset.id)::int`, 'count')
         .addSelect(`date_trunc('month', "createdAt")`, 'timeBucket')
-        .where('"userId" = :userId', { userId: userId })
+        .where('"ownerId" = :userId', { userId: userId })
         .andWhere('asset.resizePath is not NULL')
         .andWhere('asset.isVisible = true')
         .groupBy(`date_trunc('month', "createdAt")`)
@@ -178,7 +180,7 @@ export class AssetRepository implements IAssetRepository {
         .createQueryBuilder('asset')
         .select(`COUNT(asset.id)::int`, 'count')
         .addSelect(`date_trunc('day', "createdAt")`, 'timeBucket')
-        .where('"userId" = :userId', { userId: userId })
+        .where('"ownerId" = :userId', { userId: userId })
         .andWhere('asset.resizePath is not NULL')
         .andWhere('asset.isVisible = true')
         .groupBy(`date_trunc('day', "createdAt")`)
@@ -192,7 +194,7 @@ export class AssetRepository implements IAssetRepository {
   async getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]> {
     return await this.assetRepository
       .createQueryBuilder('asset')
-      .where('asset.userId = :userId', { userId: userId })
+      .where('asset.ownerId = :userId', { userId: userId })
       .andWhere('asset.isVisible = true')
       .leftJoin('asset.exifInfo', 'ei')
       .leftJoin('asset.smartInfo', 'si')
@@ -216,7 +218,7 @@ export class AssetRepository implements IAssetRepository {
         SELECT DISTINCT ON (unnest(si.objects)) a.id, unnest(si.objects) as "object", a."resizePath", a."deviceAssetId", a."deviceId"
         FROM assets a
         LEFT JOIN smart_info si ON a.id = si."assetId"
-        WHERE a."userId" = $1
+        WHERE a."ownerId" = $1
         AND a."isVisible" = true
         AND si.objects IS NOT NULL
       `,
@@ -230,7 +232,7 @@ export class AssetRepository implements IAssetRepository {
         SELECT DISTINCT ON (e.city) a.id, e.city, a."resizePath", a."deviceAssetId", a."deviceId"
         FROM assets a
         LEFT JOIN exif e ON a.id = e."assetId"
-        WHERE a."userId" = $1
+        WHERE a."ownerId" = $1
         AND a."isVisible" = true
         AND e.city IS NOT NULL
         AND a.type = 'IMAGE';
@@ -255,12 +257,12 @@ export class AssetRepository implements IAssetRepository {
 
   /**
    * Get all assets belong to the user on the database
-   * @param userId
+   * @param ownerId
    */
-  async getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]> {
+  async getAllByUserId(ownerId: string, dto: AssetSearchDto): Promise<AssetEntity[]> {
     return this.assetRepository.find({
       where: {
-        userId,
+        ownerId,
         resizePath: Not(IsNull()),
         isVisible: true,
         isFavorite: dto.isFavorite,
@@ -271,7 +273,7 @@ export class AssetRepository implements IAssetRepository {
       },
       skip: dto.skip || 0,
       order: {
-        createdAt: 'DESC',
+        fileCreatedAt: 'DESC',
       },
     });
   }
@@ -280,7 +282,9 @@ export class AssetRepository implements IAssetRepository {
     return this.assetRepository.findOne({ where: { id } });
   }
 
-  async create(asset: Omit<AssetEntity, 'id'>): Promise<AssetEntity> {
+  async create(
+    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'livePhotoVideoId'>,
+  ): Promise<AssetEntity> {
     return this.assetRepository.save(asset);
   }
 
@@ -304,16 +308,16 @@ export class AssetRepository implements IAssetRepository {
 
   /**
    * Get assets by device's Id on the database
-   * @param userId
+   * @param ownerId
    * @param deviceId
    *
    * @returns Promise<string[]> - Array of assetIds belong to the device
    */
-  async getAllByDeviceId(userId: string, deviceId: string): Promise<string[]> {
+  async getAllByDeviceId(ownerId: string, deviceId: string): Promise<string[]> {
     const rows = await this.assetRepository.find({
       where: {
-        userId: userId,
-        deviceId: deviceId,
+        ownerId,
+        deviceId,
         isVisible: true,
       },
       select: ['deviceAssetId'],
@@ -326,14 +330,14 @@ export class AssetRepository implements IAssetRepository {
 
   /**
    * Get asset by checksum on the database
-   * @param userId
+   * @param ownerId
    * @param checksum
    *
    */
-  getAssetByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity> {
+  getAssetByChecksum(ownerId: string, checksum: Buffer): Promise<AssetEntity> {
     return this.assetRepository.findOneOrFail({
       where: {
-        userId,
+        ownerId,
         checksum,
       },
       relations: ['exifInfo'],
@@ -341,7 +345,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   async getExistingAssets(
-    userId: string,
+    ownerId: string,
     checkDuplicateAssetDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
     const existingAssets = await this.assetRepository.find({
@@ -349,17 +353,17 @@ export class AssetRepository implements IAssetRepository {
       where: {
         deviceAssetId: In(checkDuplicateAssetDto.deviceAssetIds),
         deviceId: checkDuplicateAssetDto.deviceId,
-        userId,
+        ownerId,
       },
     });
     return new CheckExistingAssetsResponseDto(existingAssets.map((a) => a.deviceAssetId));
   }
 
-  async countByIdAndUser(assetId: string, userId: string): Promise<number> {
+  async countByIdAndUser(assetId: string, ownerId: string): Promise<number> {
     return await this.assetRepository.count({
       where: {
         id: assetId,
-        userId,
+        ownerId,
       },
     });
   }

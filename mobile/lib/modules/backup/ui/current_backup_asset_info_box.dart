@@ -20,7 +20,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
     String getAssetCreationDate() {
       return DateFormat.yMMMMd('en_US').format(
         DateTime.parse(
-          asset.createdAt.toString(),
+          asset.fileCreatedAt.toString(),
         ).toLocal(),
       );
     }

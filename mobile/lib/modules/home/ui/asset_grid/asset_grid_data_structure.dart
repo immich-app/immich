@@ -82,14 +82,14 @@ class RenderList {
     if (groupBy == GroupAssetsBy.day) {
       return assets.groupListsBy(
         (element) {
-          final date = element.createdAt.toLocal();
+          final date = element.fileCreatedAt.toLocal();
           return DateTime(date.year, date.month, date.day);
         },
       );
     } else if (groupBy == GroupAssetsBy.month) {
       return assets.groupListsBy(
         (element) {
-          final date = element.createdAt.toLocal();
+          final date = element.fileCreatedAt.toLocal();
           return DateTime(date.year, date.month);
         },
       );

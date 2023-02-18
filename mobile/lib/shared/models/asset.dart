@@ -10,8 +10,8 @@ import 'package:path/path.dart' as p;
 class Asset {
   Asset.remote(AssetResponseDto remote)
       : remoteId = remote.id,
-        createdAt = DateTime.parse(remote.createdAt),
-        modifiedAt = DateTime.parse(remote.modifiedAt),
+        fileCreatedAt = DateTime.parse(remote.fileCreatedAt),
+        fileModifiedAt = DateTime.parse(remote.fileModifiedAt),
         durationInSeconds = remote.duration.toDuration().inSeconds,
         fileName = p.basename(remote.originalPath),
         height = remote.exifInfo?.exifImageHeight?.toInt(),
@@ -37,11 +37,11 @@ class Asset {
         deviceAssetId = local.id,
         deviceId = Hive.box(userInfoBox).get(deviceIdKey),
         ownerId = owner,
-        modifiedAt = local.modifiedDateTime.toUtc(),
+        fileModifiedAt = local.modifiedDateTime.toUtc(),
         isFavorite = local.isFavorite,
-        createdAt = local.createDateTime.toUtc() {
-    if (createdAt.year == 1970) {
-      createdAt = modifiedAt;
+        fileCreatedAt = local.createDateTime.toUtc() {
+    if (fileCreatedAt.year == 1970) {
+      fileCreatedAt = fileModifiedAt;
     }
   }
 
@@ -51,8 +51,8 @@ class Asset {
     required this.deviceAssetId,
     required this.deviceId,
     required this.ownerId,
-    required this.createdAt,
-    required this.modifiedAt,
+    required this.fileCreatedAt,
+    required this.fileModifiedAt,
     this.latitude,
     this.longitude,
     required this.durationInSeconds,
@@ -74,10 +74,10 @@ class Asset {
         width: width!,
         height: height!,
         duration: durationInSeconds,
-        createDateSecond: createdAt.millisecondsSinceEpoch ~/ 1000,
+        createDateSecond: fileCreatedAt.millisecondsSinceEpoch ~/ 1000,
         latitude: latitude,
         longitude: longitude,
-        modifiedDateSecond: modifiedAt.millisecondsSinceEpoch ~/ 1000,
+        modifiedDateSecond: fileModifiedAt.millisecondsSinceEpoch ~/ 1000,
         title: fileName,
       );
     }
@@ -94,9 +94,9 @@ class Asset {
 
   String ownerId;
 
-  DateTime createdAt;
+  DateTime fileCreatedAt;
 
-  DateTime modifiedAt;
+  DateTime fileModifiedAt;
 
   double? latitude;
 
@@ -146,8 +146,8 @@ class Asset {
     json["deviceAssetId"] = deviceAssetId;
     json["deviceId"] = deviceId;
     json["ownerId"] = ownerId;
-    json["createdAt"] = createdAt.millisecondsSinceEpoch;
-    json["modifiedAt"] = modifiedAt.millisecondsSinceEpoch;
+    json["fileCreatedAt"] = fileCreatedAt.millisecondsSinceEpoch;
+    json["fileModifiedAt"] = fileModifiedAt.millisecondsSinceEpoch;
     json["latitude"] = latitude;
     json["longitude"] = longitude;
     json["durationInSeconds"] = durationInSeconds;
@@ -171,10 +171,10 @@ class Asset {
         deviceAssetId: json["deviceAssetId"],
         deviceId: json["deviceId"],
         ownerId: json["ownerId"],
-        createdAt:
-            DateTime.fromMillisecondsSinceEpoch(json["createdAt"], isUtc: true),
-        modifiedAt: DateTime.fromMillisecondsSinceEpoch(
-          json["modifiedAt"],
+        fileCreatedAt:
+            DateTime.fromMillisecondsSinceEpoch(json["fileCreatedAt"], isUtc: true),
+        fileModifiedAt: DateTime.fromMillisecondsSinceEpoch(
+          json["fileModifiedAt"],
           isUtc: true,
         ),
         latitude: json["latitude"],

@@ -50,7 +50,7 @@ export class StorageService {
       const source = asset.originalPath;
       const ext = path.extname(source).split('.').pop() as string;
       const sanitized = sanitize(path.basename(filename, `.${ext}`));
-      const rootPath = path.join(APP_UPLOAD_LOCATION, asset.userId);
+      const rootPath = path.join(APP_UPLOAD_LOCATION, asset.ownerId);
       const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
       const fullPath = path.normalize(path.join(rootPath, storagePath));
       let destination = `${fullPath}.${ext}`;
@@ -132,7 +132,7 @@ export class StorageService {
       this.render(
         template,
         {
-          createdAt: new Date().toISOString(),
+          fileCreatedAt: new Date().toISOString(),
           originalPath: '/upload/test/IMG_123.jpg',
           type: AssetType.IMAGE,
         } as AssetEntity,
@@ -161,7 +161,7 @@ export class StorageService {
     const fileType = asset.type == AssetType.IMAGE ? 'IMG' : 'VID';
     const fileTypeFull = asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO';
 
-    const dt = luxon.DateTime.fromISO(new Date(asset.createdAt).toISOString());
+    const dt = luxon.DateTime.fromISO(new Date(asset.fileCreatedAt).toISOString());
 
     const dateTokens = [
       ...supportedYearTokens,

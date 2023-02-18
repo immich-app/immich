@@ -51,13 +51,13 @@ void main() {
       // TODO
     });
 
-    // String createdAt
-    test('to test the property `createdAt`', () async {
+    // String fileCreatedAt
+    test('to test the property `fileCreatedAt`', () async {
       // TODO
     });
 
-    // String modifiedAt
-    test('to test the property `modifiedAt`', () async {
+    // String fileModifiedAt
+    test('to test the property `fileModifiedAt`', () async {
       // TODO
     });
 
