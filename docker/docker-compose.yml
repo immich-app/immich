@@ -44,19 +44,6 @@ services:
       - database
     restart: always
 
-  immich-ml:
-    container_name: immich_ml
-    image: altran1502/immich-ml:release
-    volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
-    env_file:
-      - .env
-    environment:
-      - NODE_ENV=production
-    depends_on:
-      - database
-    restart: always
-
   immich-web:
     container_name: immich_web
     image: altran1502/immich-web:release
