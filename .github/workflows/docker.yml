@@ -16,17 +16,19 @@ jobs:
       # Prevent a failure in one image from stopping the other builds
       fail-fast: false
       matrix:
-        platforms: ["linux/arm/v7,linux/amd64,linux/arm64"]
         include:
           - context: "server"
             image: "immich-server"
+            platforms: "linux/arm/v7,linux/amd64,linux/arm64"
           - context: "web"
             image: "immich-web"
+            platforms: "linux/arm/v7,linux/amd64,linux/arm64"
           - context: "machine-learning"
             image: "immich-machine-learning"
             platforms: "linux/amd64"
           - context: "nginx"
             image: "immich-proxy"
+            platforms: "linux/arm/v7,linux/amd64,linux/arm64"
 
     steps:
       - name: Checkout
@@ -94,7 +96,7 @@ jobs:
         uses: docker/build-push-action@v4.0.0
         with:
           context: ${{ matrix.context }}
-          platforms: ${{ matrix.platform }}
+          platforms: ${{ matrix.platforms }}
           # Skip pushing when PR from a fork
           push: ${{ !github.event.pull_request.head.repo.fork }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/immich-build-cache:${{matrix.image}}
