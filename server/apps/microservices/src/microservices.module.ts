@@ -14,9 +14,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommunicationModule } from '../../immich/src/api-v1/communication/communication.module';
-import { MicroservicesService } from './microservices.service';
 import { AssetUploadedProcessor } from './processors/asset-uploaded.processor';
-import { GenerateChecksumProcessor } from './processors/generate-checksum.processor';
 import { MachineLearningProcessor } from './processors/machine-learning.processor';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 import { StorageMigrationProcessor } from './processors/storage-migration.processor';
@@ -46,12 +44,10 @@ import { DomainModule } from '@app/domain';
   ],
   controllers: [],
   providers: [
-    MicroservicesService,
     AssetUploadedProcessor,
     ThumbnailGeneratorProcessor,
     MetadataExtractionProcessor,
     VideoTranscodeProcessor,
-    GenerateChecksumProcessor,
     MachineLearningProcessor,
     UserDeletionProcessor,
     StorageMigrationProcessor,
