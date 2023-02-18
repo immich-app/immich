@@ -35,12 +35,15 @@ class GalleryViewerPage extends HookConsumerWidget {
   final Asset asset;
 
   GalleryViewerPage({
-    Key? key,
+    super.key,
     required this.assetList,
     required this.asset,
-  }) : super(key: key);
+  }) : controller =
+      PageController(initialPage: assetList.indexOf(asset));
 
   Asset? assetDetail;
+
+  late PageController controller;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -55,9 +58,6 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isPlayingVideo = useState(false);
     late Offset localPosition;
     final authToken = 'Bearer ${box.get(accessTokenKey)}';
-
-    PageController controller =
-        PageController(initialPage: assetList.indexOf(asset));
 
     useEffect(
       () {
@@ -187,8 +187,17 @@ class GalleryViewerPage extends HookConsumerWidget {
         builder: (BuildContext _) {
           return DeleteDialog(
             onDelete: () {
+              if (assetList.length == 1) {
+                // Handle only one asset
+                AutoRouter.of(context).pop();
+              } else {
+                // Go to next page otherwise
+                controller.nextPage(
+                  duration: const Duration(milliseconds: 100),
+                  curve: Curves.fastLinearToSlowEaseIn,
+                );
+              }
               ref.watch(assetProvider.notifier).deleteAssets({deleteAsset});
-              AutoRouter.of(context).pop(null);
             },
           );
         },
