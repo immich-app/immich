@@ -14,6 +14,7 @@ import 'package:immich_mobile/modules/backup/models/hive_duplicated_assets.model
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/modules/settings/providers/permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
 import 'package:immich_mobile/shared/models/immich_logger_message.model.dart';
@@ -125,6 +126,9 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         ref.watch(websocketProvider.notifier).connect();
 
         ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
+
+        ref.watch(notificationPermissionProvider.notifier)
+          .getNotificationPermission();
 
         break;
 
