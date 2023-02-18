@@ -1,34 +1,27 @@
-FROM node:16-bullseye-slim as builder
-
-ARG DEBIAN_FRONTEND=noninteractive
+# first stage
+FROM python:3.10 AS builder
 
 WORKDIR /usr/src/app
 
-RUN apt-get update
-RUN apt-get install gcc g++ make cmake python3 python3-pip -y
-
-COPY package.json package-lock.json ./
-
-RUN npm ci
-RUN npm rebuild @tensorflow/tfjs-node --build-from-source
-
+# COPY requirements.txt .
 COPY . .
 
-FROM builder as prod
+# install dependencies to the local user directory (eg. /root/.local)
+# RUN pip install --user -r requirements.txt
+RUN pip install --user --no-cache-dir torch==1.13.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+RUN pip install --user transformers tqdm numpy scikit-learn scipy nltk sentencepiece flask Pillow
+RUN pip install --user --no-deps sentence-transformers
 
-RUN npm run build
-RUN npm prune --omit=dev
-
-FROM node:16-bullseye-slim
-
-ARG DEBIAN_FRONTEND=noninteractive
-
+# prod stage
+FROM python:3.10-slim as prod
 WORKDIR /usr/src/app
 
-COPY --from=prod /usr/src/app/node_modules ./node_modules
-COPY --from=prod /usr/src/app/dist ./dist
+# copy only the dependencies installation from the 1st stage image
+COPY --from=builder /root/.local /root/.local
+COPY . .
 
-COPY package.json package-lock.json ./
-COPY entrypoint.sh ./
+# update PATH environment variable
+ENV PATH=/root/.local:$PATH
 
-# CMD [ "node", "dist/main" ]
+# command to run on container start
+CMD [ "python", "src/main.py"]

@@ -24,18 +24,18 @@ services:
       - redis
       - database
 
-  immich-ml:
-    container_name: immich_ml
-    image: immich-ml-dev:latest
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    image: immich-machine-learning-dev:latest
     build:
-      context: ../ml
+      context: ../machine-learning
       dockerfile: Dockerfile
       target: builder
     command: python main.py
     ports:
-      - 5000:5000
+      - 3003:3003
     volumes:
-      - ../ml/src:/usr/src/app
+      - ../machine-learning/src:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
     env_file:
       - .env
@@ -44,25 +44,6 @@ services:
     depends_on:
       - database
     restart: always
-
-  immich-machine-learning:
-    container_name: immich_machine_learning
-    image: immich-machine-learning-dev:latest
-    build:
-      context: ../machine-learning
-      dockerfile: Dockerfile
-      target: builder
-    command: npm run start:dev
-    volumes:
-      - ../machine-learning:/usr/src/app
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - /usr/src/app/node_modules
-    env_file:
-      - .env
-    environment:
-      - NODE_ENV=development
-    depends_on:
-      - database
 
   immich-microservices:
     container_name: immich_microservices
