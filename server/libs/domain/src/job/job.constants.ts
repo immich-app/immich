@@ -18,9 +18,11 @@ export enum JobName {
   EXTRACT_VIDEO_METADATA = 'extract-video-metadata',
   REVERSE_GEOCODING = 'reverse-geocoding',
   USER_DELETION = 'user-deletion',
+  USER_DELETE_CHECK = 'user-delete-check',
   TEMPLATE_MIGRATION = 'template-migration',
   CONFIG_CHANGE = 'config-change',
   OBJECT_DETECTION = 'detect-object',
   IMAGE_TAGGING = 'tag-image',
   DELETE_FILE_ON_DISK = 'delete-file-on-disk',
+  DELETE_FILES = 'delete-files',
 }

@@ -1,4 +1,6 @@
+export * from './album.repository.mock';
 export * from './api-key.repository.mock';
+export * from './asset.repository.mock';
 export * from './crypto.repository.mock';
 export * from './device-info.repository.mock';
 export * from './fixtures';

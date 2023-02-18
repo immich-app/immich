@@ -5,6 +5,7 @@ export const newKeyRepositoryMock = (): jest.Mocked<IKeyRepository> => {
     create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
+    deleteAll: jest.fn(),
     getKey: jest.fn(),
     getById: jest.fn(),
     getByUserId: jest.fn(),

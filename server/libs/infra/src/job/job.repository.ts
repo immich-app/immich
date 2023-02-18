@@ -1,10 +1,9 @@
 import {
+  IAssetJob,
   IAssetUploadedJob,
   IJobRepository,
-  IMachineLearningJob,
   IMetadataExtractionJob,
   IUserDeletionJob,
-  IVideoTranscodeJob,
   JobCounts,
   JobItem,
   JobName,
@@ -20,12 +19,12 @@ export class JobRepository implements IJobRepository {
   constructor(
     @InjectQueue(QueueName.ASSET_UPLOADED) private assetUploaded: Queue<IAssetUploadedJob>,
     @InjectQueue(QueueName.BACKGROUND_TASK) private backgroundTask: Queue,
-    @InjectQueue(QueueName.MACHINE_LEARNING) private machineLearning: Queue<IMachineLearningJob>,
+    @InjectQueue(QueueName.MACHINE_LEARNING) private machineLearning: Queue<IAssetJob>,
     @InjectQueue(QueueName.METADATA_EXTRACTION) private metadataExtraction: Queue<IMetadataExtractionJob>,
     @InjectQueue(QueueName.CONFIG) private storageMigration: Queue,
     @InjectQueue(QueueName.THUMBNAIL_GENERATION) private thumbnail: Queue,
     @InjectQueue(QueueName.USER_DELETION) private userDeletion: Queue<IUserDeletionJob>,
-    @InjectQueue(QueueName.VIDEO_CONVERSION) private videoTranscode: Queue<IVideoTranscodeJob>,
+    @InjectQueue(QueueName.VIDEO_CONVERSION) private videoTranscode: Queue<IAssetJob>,
   ) {}
 
   async isActive(name: QueueName): Promise<boolean> {
@@ -41,13 +40,13 @@ export class JobRepository implements IJobRepository {
     return this.getQueue(name).getJobCounts();
   }
 
-  async add(item: JobItem): Promise<void> {
+  async queue(item: JobItem): Promise<void> {
     switch (item.name) {
       case JobName.ASSET_UPLOADED:
         await this.assetUploaded.add(item.name, item.data, { jobId: item.data.asset.id });
         break;
 
-      case JobName.DELETE_FILE_ON_DISK:
+      case JobName.DELETE_FILES:
         await this.backgroundTask.add(item.name, item.data);
         break;
 

@@ -1,6 +1,6 @@
 import { APP_UPLOAD_LOCATION } from '@app/common';
 import { AssetEntity, AssetType } from '@app/infra';
-import { WebpGeneratorProcessor, JpegGeneratorProcessor, QueueName, JobName } from '@app/domain';
+import { IAssetJob, QueueName, JobName } from '@app/domain';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,7 +13,6 @@ import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
 import { join } from 'path';
 import { CommunicationGateway } from 'apps/immich/src/api-v1/communication/communication.gateway';
-import { IMachineLearningJob } from '@app/domain';
 import { exiftool } from 'exiftool-vendored';
 
 @Processor(QueueName.THUMBNAIL_GENERATION)
@@ -30,11 +29,11 @@ export class ThumbnailGeneratorProcessor {
     private wsCommunicationGateway: CommunicationGateway,
 
     @InjectQueue(QueueName.MACHINE_LEARNING)
-    private machineLearningQueue: Queue<IMachineLearningJob>,
+    private machineLearningQueue: Queue<IAssetJob>,
   ) {}
 
   @Process({ name: JobName.GENERATE_JPEG_THUMBNAIL, concurrency: 3 })
-  async generateJPEGThumbnail(job: Job<JpegGeneratorProcessor>) {
+  async generateJPEGThumbnail(job: Job<IAssetJob>) {
     const basePath = APP_UPLOAD_LOCATION;
 
     const { asset } = job.data;
@@ -111,7 +110,7 @@ export class ThumbnailGeneratorProcessor {
   }
 
   @Process({ name: JobName.GENERATE_WEBP_THUMBNAIL, concurrency: 3 })
-  async generateWepbThumbnail(job: Job<WebpGeneratorProcessor>) {
+  async generateWepbThumbnail(job: Job<IAssetJob>) {
     const { asset } = job.data;
 
     if (!asset.resizePath) {

@@ -2,7 +2,7 @@ import { UserEntity } from '../entities';
 import { IUserRepository, UserListFilter } from '@app/domain';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 
 @Injectable()
 export class UserRepository implements IUserRepository {
@@ -33,6 +33,10 @@ export class UserRepository implements IUserRepository {
     return this.userRepository.findOne({ where: { oauthId } });
   }
 
+  async getDeletedUsers(): Promise<UserEntity[]> {
+    return this.userRepository.find({ withDeleted: true, where: { deletedAt: Not(IsNull()) } });
+  }
+
   async getList({ excludeId }: UserListFilter = {}): Promise<UserEntity[]> {
     if (!excludeId) {
       return this.userRepository.find(); // TODO: this should also be ordered the same as below
@@ -61,8 +65,12 @@ export class UserRepository implements IUserRepository {
     return updatedUser;
   }
 
-  async delete(user: UserEntity): Promise<UserEntity> {
-    return this.userRepository.softRemove(user);
+  async delete(user: UserEntity, hard?: boolean): Promise<UserEntity> {
+    if (hard) {
+      return this.userRepository.remove(user);
+    } else {
+      return this.userRepository.softRemove(user);
+    }
   }
 
   async restore(user: UserEntity): Promise<UserEntity> {

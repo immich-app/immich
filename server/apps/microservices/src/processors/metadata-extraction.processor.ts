@@ -1,11 +1,5 @@
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra';
-import {
-  IExifExtractionProcessor,
-  IReverseGeocodingProcessor,
-  IVideoLengthExtractionProcessor,
-  QueueName,
-  JobName,
-} from '@app/domain';
+import { IReverseGeocodingJob, IAssetUploadedJob, QueueName, JobName } from '@app/domain';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -141,7 +135,7 @@ export class MetadataExtractionProcessor {
   }
 
   @Process(JobName.EXIF_EXTRACTION)
-  async extractExifInfo(job: Job<IExifExtractionProcessor>) {
+  async extractExifInfo(job: Job<IAssetUploadedJob>) {
     try {
       const { asset, fileName }: { asset: AssetEntity; fileName: string } = job.data;
       const exifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((e) => {
@@ -249,7 +243,7 @@ export class MetadataExtractionProcessor {
   }
 
   @Process({ name: JobName.REVERSE_GEOCODING })
-  async reverseGeocoding(job: Job<IReverseGeocodingProcessor>) {
+  async reverseGeocoding(job: Job<IReverseGeocodingJob>) {
     if (this.isGeocodeInitialized) {
       const { latitude, longitude } = job.data;
       const { country, state, city } = await this.reverseGeocodeExif(latitude, longitude);
@@ -258,7 +252,7 @@ export class MetadataExtractionProcessor {
   }
 
   @Process({ name: JobName.EXTRACT_VIDEO_METADATA, concurrency: 2 })
-  async extractVideoMetadata(job: Job<IVideoLengthExtractionProcessor>) {
+  async extractVideoMetadata(job: Job<IAssetUploadedJob>) {
     const { asset, fileName } = job.data;
 
     if (!asset.isVisible) {

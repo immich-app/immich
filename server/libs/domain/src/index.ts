@@ -1,6 +1,7 @@
 export * from './album';
 export * from './api-key';
 export * from './asset';
+export * from './album';
 export * from './auth';
 export * from './crypto';
 export * from './device-info';

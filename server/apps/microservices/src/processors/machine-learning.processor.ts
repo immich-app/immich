@@ -1,7 +1,7 @@
 import { AssetEntity } from '@app/infra';
 import { SmartInfoEntity } from '@app/infra';
 import { QueueName, JobName } from '@app/domain';
-import { IMachineLearningJob } from '@app/domain';
+import { IAssetJob } from '@app/domain';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,7 +18,7 @@ export class MachineLearningProcessor {
   ) {}
 
   @Process({ name: JobName.IMAGE_TAGGING, concurrency: 2 })
-  async tagImage(job: Job<IMachineLearningJob>) {
+  async tagImage(job: Job<IAssetJob>) {
     if (!MACHINE_LEARNING_ENABLED) {
       return;
     }
@@ -40,7 +40,7 @@ export class MachineLearningProcessor {
   }
 
   @Process({ name: JobName.OBJECT_DETECTION, concurrency: 2 })
-  async detectObject(job: Job<IMachineLearningJob>) {
+  async detectObject(job: Job<IAssetJob>) {
     if (!MACHINE_LEARNING_ENABLED) {
       return;
     }

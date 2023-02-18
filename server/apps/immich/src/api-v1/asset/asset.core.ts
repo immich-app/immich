@@ -44,7 +44,7 @@ export class AssetCore {
 
     asset = await this.storageService.moveAsset(asset, file.originalName);
 
-    await this.jobRepository.add({ name: JobName.ASSET_UPLOADED, data: { asset, fileName: file.originalName } });
+    await this.jobRepository.queue({ name: JobName.ASSET_UPLOADED, data: { asset, fileName: file.originalName } });
 
     return asset;
   }

@@ -1,4 +1,6 @@
 import {
+  IAlbumRepository,
+  IAssetRepository,
   ICryptoRepository,
   IDeviceInfoRepository,
   IJobRepository,
@@ -16,8 +18,12 @@ import { Global, Module, Provider } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CryptoRepository } from './auth/crypto.repository';
 import {
+  AlbumEntity,
+  AlbumRepository,
   APIKeyEntity,
   APIKeyRepository,
+  AssetEntity,
+  AssetRepository,
   databaseConfig,
   DeviceInfoEntity,
   DeviceInfoRepository,
@@ -33,6 +39,9 @@ import { JobRepository } from './job';
 import { FilesystemProvider } from './storage';
 
 const providers: Provider[] = [
+  { provide: IAlbumRepository, useClass: AlbumRepository },
+  { provide: IAssetRepository, useClass: AssetRepository },
+  { provide: ICryptoRepository, useClass: CryptoRepository },
   { provide: ICryptoRepository, useClass: CryptoRepository },
   { provide: IDeviceInfoRepository, useClass: DeviceInfoRepository },
   { provide: IKeyRepository, useClass: APIKeyRepository },
@@ -49,6 +58,8 @@ const providers: Provider[] = [
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
     TypeOrmModule.forFeature([
+      AssetEntity,
+      AlbumEntity,
       APIKeyEntity,
       DeviceInfoEntity,
       UserEntity,

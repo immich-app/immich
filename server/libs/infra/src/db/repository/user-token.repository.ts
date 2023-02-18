@@ -22,4 +22,8 @@ export class UserTokenRepository implements IUserTokenRepository {
   async delete(id: string): Promise<void> {
     await this.userTokenRepository.delete(id);
   }
+
+  async deleteAll(userId: string): Promise<void> {
+    await this.userTokenRepository.delete({ user: { id: userId } });
+  }
 }

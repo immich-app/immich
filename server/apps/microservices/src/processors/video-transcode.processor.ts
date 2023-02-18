@@ -1,6 +1,6 @@
 import { APP_UPLOAD_LOCATION } from '@app/common/constants';
 import { AssetEntity } from '@app/infra';
-import { IVideoConversionProcessor, JobName, QueueName, SystemConfigService } from '@app/domain';
+import { IAssetJob, JobName, QueueName, SystemConfigService } from '@app/domain';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,7 +19,7 @@ export class VideoTranscodeProcessor {
   ) {}
 
   @Process({ name: JobName.VIDEO_CONVERSION, concurrency: 2 })
-  async videoConversion(job: Job<IVideoConversionProcessor>) {
+  async videoConversion(job: Job<IAssetJob>) {
     const { asset } = job.data;
     const basePath = APP_UPLOAD_LOCATION;
     const encodedVideoPath = `${basePath}/${asset.ownerId}/encoded-video`;

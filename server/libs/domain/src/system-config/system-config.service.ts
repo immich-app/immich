@@ -40,7 +40,7 @@ export class SystemConfigService {
 
   async updateConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
     const config = await this.core.updateConfig(dto);
-    await this.queue.add({ name: JobName.CONFIG_CHANGE });
+    await this.queue.queue({ name: JobName.CONFIG_CHANGE });
     return mapConfig(config);
   }
 

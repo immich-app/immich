@@ -1,17 +1,48 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IAssetUploadedJob } from './interfaces';
-import { JobUploadCore } from './job.upload.core';
-import { IJobRepository, Job } from './job.repository';
+import { IAlbumRepository } from '../album';
+import { IKeyRepository } from '../api-key';
+import { IAssetRepository } from '../asset';
+import { IStorageRepository } from '../storage';
+import { IUserRepository } from '../user';
+import { IUserTokenRepository } from '../user-token';
+import { JobName } from './job.constants';
+import { JobCore } from './job.core';
+import { IJobRepository, JobItem } from './job.repository';
 
 @Injectable()
 export class JobService {
-  private uploadCore: JobUploadCore;
+  private core: JobCore;
 
-  constructor(@Inject(IJobRepository) repository: IJobRepository) {
-    this.uploadCore = new JobUploadCore(repository);
+  constructor(
+    @Inject(IAlbumRepository) albumRepository: IAlbumRepository,
+    @Inject(IAssetRepository) assetRepository: IAssetRepository,
+    @Inject(IKeyRepository) keyRepository: IKeyRepository,
+    @Inject(IJobRepository) jobRepository: IJobRepository,
+    @Inject(IStorageRepository) storageRepository: IStorageRepository,
+    @Inject(IUserTokenRepository) tokenRepository: IUserTokenRepository,
+    @Inject(IUserRepository) userRepository: IUserRepository,
+  ) {
+    this.core = new JobCore(
+      albumRepository,
+      assetRepository,
+      keyRepository,
+      jobRepository,
+      storageRepository,
+      tokenRepository,
+      userRepository,
+    );
   }
 
-  async handleUploadedAsset(job: Job<IAssetUploadedJob>) {
-    await this.uploadCore.handleAsset(job);
+  handle(job: JobItem) {
+    switch (job.name) {
+      case JobName.ASSET_UPLOADED:
+        return this.core.handleAssetUpload(job.data);
+      case JobName.DELETE_FILES:
+        return this.core.handleDeleteFiles(job.data);
+      case JobName.USER_DELETE_CHECK:
+        return this.core.handleUserDeleteCheck();
+      case JobName.USER_DELETION:
+        return this.core.handleUserDelete(job.data);
+    }
   }
 }

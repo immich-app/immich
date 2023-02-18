@@ -109,16 +109,9 @@ export class AssetService {
       return { id: asset.id, duplicate: false };
     } catch (error: any) {
       // clean up files
-      await this.jobRepository.add({
-        name: JobName.DELETE_FILE_ON_DISK,
-        data: {
-          assets: [
-            {
-              originalPath: file.originalPath,
-              resizePath: livePhotoFile?.originalPath || null,
-            } as AssetEntity,
-          ],
-        },
+      await this.jobRepository.queue({
+        name: JobName.DELETE_FILES,
+        data: { files: [file.originalPath, livePhotoFile?.originalPath || null] },
       });
 
       // handle duplicates with a success response
@@ -412,7 +405,7 @@ export class AssetService {
   }
 
   public async deleteAll(authUser: AuthUserDto, dto: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
-    const deleteQueue: AssetEntity[] = [];
+    const deleteQueue: Array<string | null> = [];
     const result: DeleteAssetResponseDto[] = [];
 
     const ids = dto.ids.slice();
@@ -427,7 +420,7 @@ export class AssetService {
         await this._assetRepository.remove(asset);
 
         result.push({ id, status: DeleteAssetStatusEnum.SUCCESS });
-        deleteQueue.push(asset as any);
+        deleteQueue.push(asset.originalPath, asset.webpPath, asset.resizePath);
 
         // TODO refactor this to use cascades
         if (asset.livePhotoVideoId && !ids.includes(asset.livePhotoVideoId)) {
@@ -439,7 +432,7 @@ export class AssetService {
     }
 
     if (deleteQueue.length > 0) {
-      await this.jobRepository.add({ name: JobName.DELETE_FILE_ON_DISK, data: { assets: deleteQueue } });
+      await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: deleteQueue } });
     }
 
     return result;
