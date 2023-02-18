@@ -20,7 +20,6 @@ export class JobRepository implements IJobRepository {
   constructor(
     @InjectQueue(QueueName.ASSET_UPLOADED) private assetUploaded: Queue<IAssetUploadedJob>,
     @InjectQueue(QueueName.BACKGROUND_TASK) private backgroundTask: Queue,
-    @InjectQueue(QueueName.CHECKSUM_GENERATION) private generateChecksum: Queue,
     @InjectQueue(QueueName.MACHINE_LEARNING) private machineLearning: Queue<IMachineLearningJob>,
     @InjectQueue(QueueName.METADATA_EXTRACTION) private metadataExtraction: Queue<IMetadataExtractionJob>,
     @InjectQueue(QueueName.CONFIG) private storageMigration: Queue,
@@ -50,10 +49,6 @@ export class JobRepository implements IJobRepository {
 
       case JobName.DELETE_FILE_ON_DISK:
         await this.backgroundTask.add(item.name, item.data);
-        break;
-
-      case JobName.CHECKSUM_GENERATION:
-        await this.generateChecksum.add(item.name, {});
         break;
 
       case JobName.OBJECT_DETECTION:

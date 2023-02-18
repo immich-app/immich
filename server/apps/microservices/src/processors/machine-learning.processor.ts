@@ -33,7 +33,6 @@ export class MachineLearningProcessor {
       const smartInfo = new SmartInfoEntity();
       smartInfo.assetId = asset.id;
       smartInfo.tags = [...res.data];
-
       await this.smartInfoRepository.upsert(smartInfo, {
         conflictPaths: ['assetId'],
       });

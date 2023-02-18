@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.provider.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -16,6 +17,11 @@ class TabControllerPage extends ConsumerWidget {
         labelType: NavigationRailLabelType.all,
         selectedIndex: tabsRouter.activeIndex,
         onDestinationSelected: (index) {
+          // Selected Photos while it is active
+          if (tabsRouter.activeIndex == 0 && index == 0) {
+            // Scroll to top
+            scrollToTopNotifierProvider.scrollToTop();
+          }
           HapticFeedback.selectionClick();
           tabsRouter.setActiveIndex(index);
         },
@@ -60,51 +66,14 @@ class TabControllerPage extends ConsumerWidget {
       );
     }
 
-    // ignore: unused_element
     bottomNavigationBar(TabsRouter tabsRouter) {
-      return BottomNavigationBar(
-        selectedLabelStyle: const TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-        ),
-        unselectedLabelStyle: const TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-        ),
-        currentIndex: tabsRouter.activeIndex,
-        onTap: (index) {
-          HapticFeedback.selectionClick();
-          tabsRouter.setActiveIndex(index);
-        },
-        items: [
-          BottomNavigationBarItem(
-            label: 'tab_controller_nav_photos'.tr(),
-            icon: const Icon(Icons.photo_outlined),
-            activeIcon: const Icon(Icons.photo),
-          ),
-          BottomNavigationBarItem(
-            label: 'tab_controller_nav_search'.tr(),
-            icon: const Icon(Icons.search_rounded),
-            activeIcon: const Icon(Icons.search),
-          ),
-          BottomNavigationBarItem(
-            label: 'tab_controller_nav_sharing'.tr(),
-            icon: const Icon(Icons.group_outlined),
-            activeIcon: const Icon(Icons.group),
-          ),
-          BottomNavigationBarItem(
-            label: 'tab_controller_nav_library'.tr(),
-            icon: const Icon(Icons.photo_album_outlined),
-            activeIcon: const Icon(Icons.photo_album_rounded),
-          )
-        ],
-      );
-    }
-
-    experimentalNavigationBar(TabsRouter tabsRouter) {
       return NavigationBar(
         selectedIndex: tabsRouter.activeIndex,
         onDestinationSelected: (index) {
+          if (tabsRouter.activeIndex == 0 && index == 0) {
+            // Scroll to top
+            scrollToTopNotifierProvider.scrollToTop();
+          }
           HapticFeedback.selectionClick();
           tabsRouter.setActiveIndex(index);
         },
@@ -179,7 +148,7 @@ class TabControllerPage extends ConsumerWidget {
               final Widget body;
               if (constraints.maxWidth < medium) {
                 // Normal phone width
-                bottom = experimentalNavigationBar(tabsRouter);
+                bottom = bottomNavigationBar(tabsRouter);
                 body = FadeTransition(
                   opacity: animation,
                   child: child,

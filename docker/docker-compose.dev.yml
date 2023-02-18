@@ -30,18 +30,20 @@ services:
     build:
       context: ../machine-learning
       dockerfile: Dockerfile
-      target: builder
-    command: npm run start:dev
+    command: python main.py
+    ports:
+      - 3003:3003
     volumes:
-      - ../machine-learning:/usr/src/app
+      - ../machine-learning/src:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - /usr/src/app/node_modules
+      - model-cache:/cache
     env_file:
       - .env
     environment:
       - NODE_ENV=development
     depends_on:
       - database
+    restart: always
 
   immich-microservices:
     container_name: immich_microservices
@@ -126,3 +128,4 @@ services:
 
 volumes:
   pgdata:
+  model-cache:
