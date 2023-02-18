@@ -51,6 +51,9 @@ export class AssetEntity {
   @Column({ type: 'varchar', nullable: true, default: '' })
   encodedVideoPath!: string | null;
 
+  @CreateDateColumn({ type: 'timestamptz' })
+  createdAt!: string;
+
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: string;
 
