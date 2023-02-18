@@ -32,6 +32,7 @@
 .pub-cache/
 .pub/
 /build/
+.fvm/flutter_sdk
 
 # Web related
 lib/generated_plugin_registrant.dart
