@@ -44,7 +44,7 @@ def run_engine(engine, path):
     predictions = engine(path)
 
     for index, pred in enumerate(predictions):
-        tags = pred['label'].replace(" ", "").split(',')
+        tags = pred['label'].split(', ')
         if (index == 0):
             result = tags
         else:

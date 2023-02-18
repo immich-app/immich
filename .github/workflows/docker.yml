@@ -16,7 +16,7 @@ jobs:
       # Prevent a failure in one image from stopping the other builds
       fail-fast: false
       matrix:
-        platforms: ["linux/arm/v7", "linux/amd64", "linux/arm64"]
+        platforms: ["linux/arm/v7,linux/amd64,linux/arm64"]
         include:
           - context: "server"
             image: "immich-server"
