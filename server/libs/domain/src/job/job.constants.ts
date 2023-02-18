@@ -2,7 +2,6 @@ export enum QueueName {
   THUMBNAIL_GENERATION = 'thumbnail-generation-queue',
   METADATA_EXTRACTION = 'metadata-extraction-queue',
   VIDEO_CONVERSION = 'video-conversion-queue',
-  CHECKSUM_GENERATION = 'generate-checksum-queue',
   ASSET_UPLOADED = 'asset-uploaded-queue',
   MACHINE_LEARNING = 'machine-learning-queue',
   USER_DELETION = 'user-deletion-queue',
@@ -24,5 +23,4 @@ export enum JobName {
   OBJECT_DETECTION = 'detect-object',
   IMAGE_TAGGING = 'tag-image',
   DELETE_FILE_ON_DISK = 'delete-file-on-disk',
-  CHECKSUM_GENERATION = 'checksum-generation',
 }
