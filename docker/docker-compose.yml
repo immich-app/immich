@@ -34,8 +34,10 @@ services:
   immich-machine-learning:
     container_name: immich_machine_learning
     image: altran1502/immich-machine-learning:release
+    command: ["python", "main.py"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /cache
     env_file:
       - .env
     environment:
