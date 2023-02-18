@@ -7,7 +7,12 @@ import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { IAlbumRepository } from './album-repository';
 import { DownloadService } from '../../modules/download/download.service';
 import { ISharedLinkRepository } from '@app/domain';
-import { newCryptoRepositoryMock, newSharedLinkRepositoryMock } from '@app/domain/../test';
+import {
+  assetEntityStub,
+  newCryptoRepositoryMock,
+  newSharedLinkRepositoryMock,
+  userEntityStub,
+} from '@app/domain/../test';
 
 describe('Album service', () => {
   let sut: AlbumService;
@@ -64,15 +69,8 @@ describe('Album service', () => {
     albumEntity.albumThumbnailAssetId = null;
     albumEntity.sharedUsers = [
       {
-        id: '99',
-        albumId,
-        sharedUserId: ownedAlbumSharedWithId,
-        //@ts-expect-error Partial stub
-        albumInfo: {},
-        //@ts-expect-error Partial stub
-        userInfo: {
-          id: ownedAlbumSharedWithId,
-        },
+        ...userEntityStub.user1,
+        id: ownedAlbumSharedWithId,
       },
     ];
 
@@ -90,26 +88,12 @@ describe('Album service', () => {
     albumEntity.albumThumbnailAssetId = null;
     albumEntity.sharedUsers = [
       {
-        id: '99',
-        albumId,
-        sharedUserId: authUser.id,
-        //@ts-expect-error Partial stub
-        albumInfo: {},
-        //@ts-expect-error Partial stub
-        userInfo: {
-          id: authUser.id,
-        },
+        ...userEntityStub.user1,
+        id: authUser.id,
       },
       {
-        id: '98',
-        albumId,
-        sharedUserId: sharedAlbumSharedAlsoWithId,
-        //@ts-expect-error Partial stub
-        albumInfo: {},
-        //@ts-expect-error Partial stub
-        userInfo: {
-          id: sharedAlbumSharedAlsoWithId,
-        },
+        ...userEntityStub.user1,
+        id: sharedAlbumSharedAlsoWithId,
       },
     ];
     albumEntity.sharedLinks = [];
@@ -232,7 +216,7 @@ describe('Album service', () => {
   });
 
   it('throws a not found exception if the album is not found', async () => {
-    albumRepositoryMock.get.mockImplementation(() => Promise.resolve(undefined));
+    albumRepositoryMock.get.mockImplementation(() => Promise.resolve(null));
     await expect(sut.getAlbumInfo(authUser, '0002')).rejects.toBeInstanceOf(NotFoundException);
   });
 
@@ -495,13 +479,8 @@ describe('Album service', () => {
     albumEntity.sharedUsers = [];
     albumEntity.assets = [
       {
-        id: '1',
-        albumId: '2',
-        assetId: '3',
-        //@ts-expect-error Partial stub
-        albumInfo: {},
-        //@ts-expect-error Partial stub
-        assetInfo: {},
+        ...assetEntityStub.image,
+        id: '3',
       },
     ];
     albumEntity.albumThumbnailAssetId = null;
@@ -521,15 +500,7 @@ describe('Album service', () => {
 
     albumEntity.albumThumbnailAssetId = 'nonexistent';
     assetEntity.id = newThumbnailAssetId;
-    albumEntity.assets = [
-      {
-        id: '760841c1-f7c4-42b1-96af-c7d007a26126',
-        assetId: assetEntity.id,
-        albumId: albumEntity.id,
-        albumInfo: albumEntity,
-        assetInfo: assetEntity,
-      },
-    ];
+    albumEntity.assets = [assetEntity];
     albumRepositoryMock.getList.mockImplementation(async () => [albumEntity]);
     albumRepositoryMock.updateAlbum.mockImplementation(async () => ({
       ...albumEntity,

@@ -23,7 +23,7 @@ export class SharedLinkResponseDto {
 
 export function mapSharedLink(sharedLink: SharedLinkEntity): SharedLinkResponseDto {
   const linkAssets = sharedLink.assets || [];
-  const albumAssets = (sharedLink?.album?.assets || []).map((albumAsset) => albumAsset.assetInfo);
+  const albumAssets = (sharedLink?.album?.assets || []).map((asset) => asset);
 
   const assets = _.uniqBy([...linkAssets, ...albumAssets], (asset) => asset.id);
 
@@ -45,7 +45,7 @@ export function mapSharedLink(sharedLink: SharedLinkEntity): SharedLinkResponseD
 
 export function mapSharedLinkWithNoExif(sharedLink: SharedLinkEntity): SharedLinkResponseDto {
   const linkAssets = sharedLink.assets || [];
-  const albumAssets = (sharedLink?.album?.assets || []).map((albumAsset) => albumAsset.assetInfo);
+  const albumAssets = (sharedLink?.album?.assets || []).map((asset) => asset);
 
   const assets = _.uniqBy([...linkAssets, ...albumAssets], (asset) => asset.id);
 
