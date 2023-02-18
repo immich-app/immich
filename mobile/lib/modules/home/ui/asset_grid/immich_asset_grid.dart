@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -232,6 +233,30 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     }
 
     return true;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    scrollToTopNotifierProvider.addListener(_scrollToTop);
+  }
+
+  @override
+  void dispose() {
+    scrollToTopNotifierProvider.removeListener(_scrollToTop);
+    super.dispose();
+  }
+
+  void _scrollToTop() {
+    // for some reason, this is necessary as well in order 
+    // to correctly reposition the drag thumb scroll bar
+    _itemScrollController.jumpTo(
+      index: 0,
+    );
+    _itemScrollController.scrollTo(
+      index: 0,
+      duration: const Duration(milliseconds: 200),
+    );
   }
 
   @override
