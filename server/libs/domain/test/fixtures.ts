@@ -119,7 +119,6 @@ export const assetEntityStub = {
 };
 
 const assetInfo: ExifResponseDto = {
-  id: 1,
   make: 'camera-make',
   model: 'camera-model',
   imageName: 'fancy-image',
@@ -405,7 +404,6 @@ export const sharedLinkStub = {
           livePhotoVideoId: null,
           exifInfo: {
             livePhotoCID: null,
-            id: 1,
             assetId: 'id_1',
             description: 'description',
             exifImageWidth: 500,

@@ -2,8 +2,6 @@ import { ExifEntity } from '@app/infra/db/entities';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ExifResponseDto {
-  @ApiProperty({ type: 'integer', format: 'int64' })
-  id?: number | null = null;
   make?: string | null = null;
   model?: string | null = null;
   imageName?: string | null = null;
@@ -29,7 +27,6 @@ export class ExifResponseDto {
 
 export function mapExif(entity: ExifEntity): ExifResponseDto {
   return {
-    id: entity.id,
     make: entity.make,
     model: entity.model,
     imageName: entity.imageName,

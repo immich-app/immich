@@ -1,20 +1,19 @@
-import { Index, JoinColumn, OneToOne } from 'typeorm';
+import { Index, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { Column } from 'typeorm/decorator/columns/Column';
-import { PrimaryGeneratedColumn } from 'typeorm/decorator/columns/PrimaryGeneratedColumn';
 import { Entity } from 'typeorm/decorator/entity/Entity';
 import { AssetEntity } from './asset.entity';
 
 @Entity('exif')
 export class ExifEntity {
-  @PrimaryGeneratedColumn()
-  id!: number;
+  @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
+  @JoinColumn()
+  asset?: AssetEntity;
 
-  @Index({ unique: true })
-  @Column({ type: 'uuid' })
+  @PrimaryColumn()
   assetId!: string;
 
   /* General info */
-  @Column({ type: 'text', nullable: true, default: '' })
+  @Column({ type: 'text', default: '' })
   description!: string; // or caption
 
   @Column({ type: 'integer', nullable: true })
@@ -82,10 +81,6 @@ export class ExifEntity {
   /* Video info */
   @Column({ type: 'float8', nullable: true })
   fps?: number | null;
-
-  @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
-  @JoinColumn({ name: 'assetId', referencedColumnName: 'id' })
-  asset?: AssetEntity;
 
   @Index('exif_text_searchable', { synchronize: false })
   @Column({

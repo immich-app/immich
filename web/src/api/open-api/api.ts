@@ -1059,12 +1059,6 @@ export interface ExifResponseDto {
      * @type {number}
      * @memberof ExifResponseDto
      */
-    'id'?: number | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifResponseDto
-     */
     'fileSizeInByte'?: number | null;
     /**
      * 
