@@ -1,4 +1,13 @@
-import { Column, Entity, Index, ManyToMany, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  ManyToMany,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
 import { AlbumEntity } from './album.entity';
 import { AssetEntity } from './asset.entity';
 import { UserEntity } from './user.entity';
@@ -25,7 +34,7 @@ export class SharedLinkEntity {
   @Column()
   type!: SharedLinkType;
 
-  @Column({ type: 'timestamptz' })
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: string;
 
   @Column({ type: 'timestamptz', nullable: true })
@@ -56,5 +65,3 @@ export enum SharedLinkType {
    */
   INDIVIDUAL = 'INDIVIDUAL',
 }
-
-// npm run typeorm -- migration:generate ./libs/infra/src/db/AddMorePermissionToSharedLink -d ./libs/infra/src/db/config/database.config.ts
