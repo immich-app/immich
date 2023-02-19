@@ -89,7 +89,7 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                               Text(
                                 DateFormat.yMMMMd('en_US').format(
                                   DateTime.parse(
-                                    errorAsset.createdAt.toString(),
+                                    errorAsset.fileCreatedAt.toString(),
                                   ).toLocal(),
                                 ),
                                 style: TextStyle(

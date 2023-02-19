@@ -26,14 +26,14 @@ void main() {
 
     // 
     //
-    //Future deleteKey(num id) async
+    //Future deleteKey(String id) async
     test('test deleteKey', () async {
       // TODO
     });
 
     // 
     //
-    //Future<APIKeyResponseDto> getKey(num id) async
+    //Future<APIKeyResponseDto> getKey(String id) async
     test('test getKey', () async {
       // TODO
     });
@@ -47,7 +47,7 @@ void main() {
 
     // 
     //
-    //Future<APIKeyResponseDto> updateKey(num id, APIKeyUpdateDto aPIKeyUpdateDto) async
+    //Future<APIKeyResponseDto> updateKey(String id, APIKeyUpdateDto aPIKeyUpdateDto) async
     test('test updateKey', () async {
       // TODO
     });

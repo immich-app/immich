@@ -27,8 +27,8 @@ const _getCreateAssetDto = (): CreateAssetDto => {
   createAssetDto.deviceAssetId = 'deviceAssetId';
   createAssetDto.deviceId = 'deviceId';
   createAssetDto.assetType = AssetType.OTHER;
-  createAssetDto.createdAt = '2022-06-19T23:41:36.910Z';
-  createAssetDto.modifiedAt = '2022-06-19T23:41:36.910Z';
+  createAssetDto.fileCreatedAt = '2022-06-19T23:41:36.910Z';
+  createAssetDto.fileModifiedAt = '2022-06-19T23:41:36.910Z';
   createAssetDto.isFavorite = false;
   createAssetDto.duration = '0:00:00.000000';
 
@@ -39,14 +39,15 @@ const _getAsset_1 = () => {
   const asset_1 = new AssetEntity();
 
   asset_1.id = 'id_1';
-  asset_1.userId = 'user_id_1';
+  asset_1.ownerId = 'user_id_1';
   asset_1.deviceAssetId = 'device_asset_id_1';
   asset_1.deviceId = 'device_id_1';
   asset_1.type = AssetType.VIDEO;
   asset_1.originalPath = 'fake_path/asset_1.jpeg';
   asset_1.resizePath = '';
-  asset_1.createdAt = '2022-06-19T23:41:36.910Z';
-  asset_1.modifiedAt = '2022-06-19T23:41:36.910Z';
+  asset_1.fileModifiedAt = '2022-06-19T23:41:36.910Z';
+  asset_1.fileCreatedAt = '2022-06-19T23:41:36.910Z';
+  asset_1.updatedAt = '2022-06-19T23:41:36.910Z';
   asset_1.isFavorite = false;
   asset_1.mimeType = 'image/jpeg';
   asset_1.webpPath = '';
@@ -59,14 +60,15 @@ const _getAsset_2 = () => {
   const asset_2 = new AssetEntity();
 
   asset_2.id = 'id_2';
-  asset_2.userId = 'user_id_1';
+  asset_2.ownerId = 'user_id_1';
   asset_2.deviceAssetId = 'device_asset_id_2';
   asset_2.deviceId = 'device_id_1';
   asset_2.type = AssetType.VIDEO;
   asset_2.originalPath = 'fake_path/asset_2.jpeg';
   asset_2.resizePath = '';
-  asset_2.createdAt = '2022-06-19T23:41:36.910Z';
-  asset_2.modifiedAt = '2022-06-19T23:41:36.910Z';
+  asset_2.fileModifiedAt = '2022-06-19T23:41:36.910Z';
+  asset_2.fileCreatedAt = '2022-06-19T23:41:36.910Z';
+  asset_2.updatedAt = '2022-06-19T23:41:36.910Z';
   asset_2.isFavorite = false;
   asset_2.mimeType = 'image/jpeg';
   asset_2.webpPath = '';
@@ -292,7 +294,7 @@ describe('AssetService', () => {
       const asset = {
         id: 'live-photo-asset',
         originalPath: file.originalPath,
-        userId: authStub.user1.id,
+        ownerId: authStub.user1.id,
         type: AssetType.IMAGE,
         isVisible: true,
       } as AssetEntity;
@@ -307,7 +309,7 @@ describe('AssetService', () => {
       const livePhotoAsset = {
         id: 'live-photo-motion',
         originalPath: livePhotoFile.originalPath,
-        userId: authStub.user1.id,
+        ownerId: authStub.user1.id,
         type: AssetType.VIDEO,
         isVisible: false,
       } as AssetEntity;

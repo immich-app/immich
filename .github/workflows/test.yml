@@ -5,6 +5,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   e2e-tests:
     name: Run end-to-end test suites
@@ -53,6 +57,27 @@ jobs:
       - name: Run tests
         working-directory: ./mobile
         run: flutter test
+
+  generated-api-up-to-date:
+    name: Check generated files are up-to-date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run API generation
+        run: cd server && npm ci && npm run api:generate
+      - name: Find file changes
+        uses: tj-actions/verify-changed-files@v13.1
+        id: verify-changed-files
+        with:
+          files: |
+            mobile/openapi
+            web/src/api/open-api
+      - name: Verify files have not changed
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: |
+          echo "ERROR: Generated files not up to date!"
+          echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          exit 1
 
   mobile-integration-tests:
     name: Run mobile end-to-end integration tests

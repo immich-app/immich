@@ -22,7 +22,7 @@ export class VideoTranscodeProcessor {
   async videoConversion(job: Job<IVideoConversionProcessor>) {
     const { asset } = job.data;
     const basePath = APP_UPLOAD_LOCATION;
-    const encodedVideoPath = `${basePath}/${asset.userId}/encoded-video`;
+    const encodedVideoPath = `${basePath}/${asset.ownerId}/encoded-video`;
 
     if (!existsSync(encodedVideoPath)) {
       mkdirSync(encodedVideoPath, { recursive: true });

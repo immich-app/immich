@@ -3324,10 +3324,10 @@
             "type": "string",
             "nullable": true
           },
-          "createdAt": {
+          "fileCreatedAt": {
             "type": "string"
           },
-          "modifiedAt": {
+          "fileModifiedAt": {
             "type": "string"
           },
           "updatedAt": {
@@ -3376,8 +3376,8 @@
           "deviceId",
           "originalPath",
           "resizePath",
-          "createdAt",
-          "modifiedAt",
+          "fileCreatedAt",
+          "fileModifiedAt",
           "updatedAt",
           "isFavorite",
           "mimeType",
@@ -3817,10 +3817,10 @@
           "deviceId": {
             "type": "string"
           },
-          "createdAt": {
+          "fileCreatedAt": {
             "type": "string"
           },
-          "modifiedAt": {
+          "fileModifiedAt": {
             "type": "string"
           },
           "isFavorite": {
@@ -3841,8 +3841,8 @@
           "assetData",
           "deviceAssetId",
           "deviceId",
-          "createdAt",
-          "modifiedAt",
+          "fileCreatedAt",
+          "fileModifiedAt",
           "isFavorite",
           "fileExtension"
         ]

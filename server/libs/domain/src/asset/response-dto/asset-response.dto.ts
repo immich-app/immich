@@ -14,8 +14,8 @@ export class AssetResponseDto {
   type!: AssetType;
   originalPath!: string;
   resizePath!: string | null;
-  createdAt!: string;
-  modifiedAt!: string;
+  fileCreatedAt!: string;
+  fileModifiedAt!: string;
   updatedAt!: string;
   isFavorite!: boolean;
   mimeType!: string | null;
@@ -32,13 +32,13 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
   return {
     id: entity.id,
     deviceAssetId: entity.deviceAssetId,
-    ownerId: entity.userId,
+    ownerId: entity.ownerId,
     deviceId: entity.deviceId,
     type: entity.type,
     originalPath: entity.originalPath,
     resizePath: entity.resizePath,
-    createdAt: entity.createdAt,
-    modifiedAt: entity.modifiedAt,
+    fileCreatedAt: entity.fileCreatedAt,
+    fileModifiedAt: entity.fileModifiedAt,
     updatedAt: entity.updatedAt,
     isFavorite: entity.isFavorite,
     mimeType: entity.mimeType,
@@ -56,13 +56,13 @@ export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
   return {
     id: entity.id,
     deviceAssetId: entity.deviceAssetId,
-    ownerId: entity.userId,
+    ownerId: entity.ownerId,
     deviceId: entity.deviceId,
     type: entity.type,
     originalPath: entity.originalPath,
     resizePath: entity.resizePath,
-    createdAt: entity.createdAt,
-    modifiedAt: entity.modifiedAt,
+    fileCreatedAt: entity.fileCreatedAt,
+    fileModifiedAt: entity.fileModifiedAt,
     updatedAt: entity.updatedAt,
     isFavorite: entity.isFavorite,
     mimeType: entity.mimeType,

@@ -159,8 +159,8 @@ export class MetadataExtractionProcessor {
         return exifDate.toDate();
       };
 
-      const createdAt = exifToDate(exifData?.DateTimeOriginal ?? exifData?.CreateDate ?? asset.createdAt);
-      const modifyDate = exifToDate(exifData?.ModifyDate ?? asset.modifiedAt);
+      const fileCreatedAt = exifToDate(exifData?.DateTimeOriginal ?? exifData?.CreateDate ?? asset.fileCreatedAt);
+      const fileModifiedAt = exifToDate(exifData?.ModifyDate ?? asset.fileModifiedAt);
       const fileStats = fs.statSync(asset.originalPath);
       const fileSizeInBytes = fileStats.size;
 
@@ -174,8 +174,8 @@ export class MetadataExtractionProcessor {
       newExif.exifImageWidth = exifData?.ExifImageWidth || exifData?.ImageWidth || null;
       newExif.exposureTime = exifData?.ExposureTime || null;
       newExif.orientation = exifData?.Orientation?.toString() || null;
-      newExif.dateTimeOriginal = createdAt;
-      newExif.modifyDate = modifyDate;
+      newExif.dateTimeOriginal = fileCreatedAt;
+      newExif.modifyDate = fileModifiedAt;
       newExif.lensModel = exifData?.LensModel || null;
       newExif.fNumber = exifData?.FNumber || null;
       newExif.focalLength = exifData?.FocalLength ? parseFloat(exifData.FocalLength) : null;
@@ -186,7 +186,7 @@ export class MetadataExtractionProcessor {
 
       await this.assetRepository.save({
         id: asset.id,
-        createdAt: createdAt?.toISOString(),
+        fileCreatedAt: fileCreatedAt?.toISOString(),
       });
 
       if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
@@ -273,7 +273,7 @@ export class MetadataExtractionProcessor {
         }),
       );
       let durationString = asset.duration;
-      let createdAt = asset.createdAt;
+      let fileCreatedAt = asset.fileCreatedAt;
 
       if (data.format.duration) {
         durationString = this.extractDuration(data.format.duration);
@@ -282,14 +282,10 @@ export class MetadataExtractionProcessor {
       const videoTags = data.format.tags;
       if (videoTags) {
         if (videoTags['com.apple.quicktime.creationdate']) {
-          createdAt = String(videoTags['com.apple.quicktime.creationdate']);
+          fileCreatedAt = String(videoTags['com.apple.quicktime.creationdate']);
         } else if (videoTags['creation_time']) {
-          createdAt = String(videoTags['creation_time']);
-        } else {
-          createdAt = asset.createdAt;
+          fileCreatedAt = String(videoTags['creation_time']);
         }
-      } else {
-        createdAt = asset.createdAt;
       }
 
       const exifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((e) => {
@@ -302,7 +298,7 @@ export class MetadataExtractionProcessor {
       newExif.description = '';
       newExif.imageName = path.parse(fileName).name || null;
       newExif.fileSizeInByte = data.format.size || null;
-      newExif.dateTimeOriginal = createdAt ? new Date(createdAt) : null;
+      newExif.dateTimeOriginal = fileCreatedAt ? new Date(fileCreatedAt) : null;
       newExif.modifyDate = null;
       newExif.latitude = null;
       newExif.longitude = null;
@@ -382,8 +378,9 @@ export class MetadataExtractionProcessor {
       }
 
       await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
-      await this.assetRepository.update({ id: asset.id }, { duration: durationString, createdAt: createdAt });
+      await this.assetRepository.update({ id: asset.id }, { duration: durationString, fileCreatedAt });
     } catch (err) {
+      ``;
       // do nothing
       console.log('Error in video metadata extraction', err);
     }

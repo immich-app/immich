@@ -79,7 +79,7 @@ export class AlbumRepository implements IAlbumRepository {
 
     const queryProperties: FindManyOptions<AlbumEntity> = {
       relations: { sharedUsers: true, assets: true, sharedLinks: true, owner: true },
-      order: { assets: { createdAt: 'ASC' }, createdAt: 'ASC' },
+      order: { assets: { fileCreatedAt: 'ASC' }, createdAt: 'ASC' },
     };
 
     let albumsQuery: Promise<AlbumEntity[]>;
@@ -123,7 +123,7 @@ export class AlbumRepository implements IAlbumRepository {
     const albums = await this.albumRepository.find({
       where: { ownerId: userId, assets: { id: assetId } },
       relations: { owner: true, assets: true, sharedUsers: true },
-      order: { assets: { createdAt: 'ASC' } },
+      order: { assets: { fileCreatedAt: 'ASC' } },
     });
 
     return albums;
@@ -142,7 +142,7 @@ export class AlbumRepository implements IAlbumRepository {
       },
       order: {
         assets: {
-          createdAt: 'ASC',
+          fileCreatedAt: 'ASC',
         },
       },
     });
