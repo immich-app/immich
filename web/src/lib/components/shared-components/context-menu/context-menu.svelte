@@ -32,7 +32,7 @@
 <div
 	transition:slide={{ duration: 200, easing: quintOut }}
 	bind:this={menuEl}
-	class="absolute w-[200px] z-[99999] rounded-lg overflow-hidden"
+	class="absolute w-[200px] z-[99999] rounded-lg overflow-hidden shadow-lg"
 	style={`top: ${y}px; left: ${x}px;`}
 	use:clickOutside
 	on:outclick={() => dispatch('clickoutside')}
