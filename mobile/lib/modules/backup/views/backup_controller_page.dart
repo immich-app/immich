@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/current_backup_asset_info_box.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
@@ -264,7 +265,7 @@ class BackupControllerPage extends HookConsumerWidget {
                     const Text("backup_controller_page_background_description")
                         .tr(),
               ),
-            if (isBackgroundEnabled)
+            if (isBackgroundEnabled && Platform.isAndroid)
               SwitchListTile(
                 title:
                     const Text("backup_controller_page_background_wifi").tr(),
@@ -350,6 +351,38 @@ class BackupControllerPage extends HookConsumerWidget {
                     const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
               ).tr(),
             ),
+            if (Platform.isIOS)
+              FutureBuilder<String?>(
+                future: ref.read(backgroundServiceProvider)
+                  .getIOSBackupLastRun(IosBackgroundTask.fetch),
+                builder: (context, snapshot) {
+                  if (snapshot.data == null) {
+                    return const Text('No background fetch job has run yet.');
+                  }
+                  return Text(snapshot.data!);
+                },
+              ),
+            if (Platform.isIOS)
+              FutureBuilder<String?>(
+                future: ref.read(backgroundServiceProvider)
+                  .getIOSBackupLastRun(IosBackgroundTask.processing),
+                builder: (context, snapshot) {
+                  if (snapshot.data == null) {
+                    return const Text('No background processing job has run yet.');
+                  }
+                  return Text(snapshot.data!);
+                },
+              ),
+            if (Platform.isIOS)
+              FutureBuilder<String>(
+                future: ref.read(backgroundServiceProvider).getIOSBackupNumberOfProcesses(),
+                builder: (context, snapshot) {
+                  if (snapshot.data == null) {
+                    return const Text('No background processes in queue.');
+                  }
+                  return Text(snapshot.data!);
+                },
+              ),
           ],
         ),
       );

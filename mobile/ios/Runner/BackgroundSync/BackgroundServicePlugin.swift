@@ -86,6 +86,16 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
             case "isIgnoringBatteryOptimizations":
                 result(FlutterMethodNotImplemented)
                 break
+            case "lastBackgroundFetchTime":
+                let defaults = UserDefaults.standard
+                let lastRunTime = defaults.value(forKey: "last_background_fetch_run_time")
+                result(lastRunTime)
+            case "lastBackgroundProcessingTime":
+                let defaults = UserDefaults.standard
+                let lastRunTime = defaults.value(forKey: "last_background_processing_run_time")
+                result(lastRunTime)
+            case "numberOfBackgroundProcesses":
+                handleNumberOfProcesses(call: call, result: result)
             default:
                 result(FlutterMethodNotImplemented)
                 break
@@ -179,6 +189,14 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
         result(true)
     }
     
+    // Returns the number of currently scheduled background processes to Flutter, striclty
+    // for debugging
+    func handleNumberOfProcesses(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        BGTaskScheduler.shared.getPendingTaskRequests { requests in
+            result(requests.count)
+        }
+    }
+    
     // Disables the service, cancels all the task requests
     func handleDisable(call: FlutterMethodCall, result: FlutterResult) {
         BGTaskScheduler.shared.cancelAllTaskRequests()
@@ -212,14 +230,12 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
     static func scheduleBackgroundSync() {
         let backgroundProcessing = BGProcessingTaskRequest(identifier: BackgroundServicePlugin.backgroundProcessingTaskID)
         
-        // We need the values for requiring charging or unmetered network usage
+        // We need the values for requiring charging
         let defaults = UserDefaults.standard
         let requireCharging = defaults.value(forKey: "require_charging") as? Bool
-        let requireUnmeteredNetwork = defaults.value(forKey: "require_unmetered_network") as? Bool
         
-        // Add these to the processing task request so the system knows to only run them when
-        // they are both appropriately set
-        backgroundProcessing.requiresNetworkConnectivity = requireUnmeteredNetwork ?? true
+        // Always require network connectivity, and set the require charging from the above
+        backgroundProcessing.requiresNetworkConnectivity = true
         backgroundProcessing.requiresExternalPower = requireCharging ?? true
                 
         // Use 15 minutes from now as earliest begin date
@@ -235,6 +251,10 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
     
     // This function runs when the system kicks off the BGAppRefreshTask from the Background Task Scheduler
     static func handleBackgroundFetch(task: BGAppRefreshTask) {
+        // Log the time of last background processing to now
+        let defaults = UserDefaults.standard
+        defaults.set(Date().timeIntervalSince1970, forKey: "last_background_fetch_run_time")
+        
         // Schedule the next sync task so we can run this again later
         scheduleBackgroundFetch()
         
@@ -244,6 +264,10 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
     
     // This function runs when the system kicks off the BGProcessingTask from the Background Task Scheduler
     static func handleBackgroundProcessing(task: BGProcessingTask) {
+        // Log the time of last background processing to now
+        let defaults = UserDefaults.standard
+        defaults.set(Date().timeIntervalSince1970, forKey: "last_background_processing_run_time")
+        
         // Schedule the next sync task so we run this again later
         scheduleBackgroundSync()
         

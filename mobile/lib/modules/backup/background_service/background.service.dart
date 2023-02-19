@@ -18,6 +18,7 @@ import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:logging/logging.dart';
 import 'package:path_provider_ios/path_provider_ios.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -291,9 +292,11 @@ class BackgroundService {
       // can say for sure
       PathProviderIOS.registerWith();
     }
+    final log = Logger('AssetNotifier');
     switch (call.method) {
       case "backgroundProcessing":
       case "onAssetsChanged":
+        log.info('Began backup sync.');
         try {
           _clearErrorNotifications();
 
@@ -317,12 +320,14 @@ class BackgroundService {
           return ok;
         } catch (error) {
           debugPrint(error.toString());
+          log.severe(error.toString());
           return false;
         } finally {
           await Hive.close();
           releaseLock();
         }
       case "systemStop":
+        log.info('System called stop.');
         _canceledBySystem = true;
         _cancellationToken?.cancel();
         return true;
@@ -551,6 +556,32 @@ class BackgroundService {
     final String total = numberFormat.format(bytesTotal / 1024.0);
     return "$percent% ($done/$total$unit)";
   }
+
+  Future<String?> getIOSBackupLastRun(IosBackgroundTask task) async {
+    // Seconds since last run
+    final double? lastRun = task == IosBackgroundTask.fetch
+      ? await _foregroundChannel.invokeMethod('lastBackgroundFetchTime')
+      : await _foregroundChannel.invokeMethod('lastBackgroundProcessingTime');
+    if (lastRun == null) {
+      return null;
+    }
+    final df = DateFormat.yMd().add_jm();
+    final time = DateTime.fromMillisecondsSinceEpoch(lastRun.toInt() * 1000);
+    return 'Last run ${task.name} ${df.format(time)}.';
+  }
+
+  Future<String> getIOSBackupNumberOfProcesses() async {
+    final int numberOfProcesses = await _foregroundChannel
+      .invokeMethod('numberOfBackgroundProcesses');
+    final processOrProcesses = numberOfProcesses == 1 ? 'process' : 'processes';
+    final numberOrZero = numberOfProcesses == 0 ? 'No' : numberOfProcesses.toString();
+    return '$numberOrZero background $processOrProcesses queued.';
+  }
+}
+
+enum IosBackgroundTask {
+  fetch,
+  processing
 }
 
 class _Throttle {

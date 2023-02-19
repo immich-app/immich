@@ -677,6 +677,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       _backgroundService.releaseLock();
     }
   }
+
 }
 
 final backupProvider =
