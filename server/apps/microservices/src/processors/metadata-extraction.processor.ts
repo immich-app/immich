@@ -1,4 +1,4 @@
-import { AssetEntity, ExifEntity } from '@app/infra';
+import { AssetEntity, AssetType, ExifEntity } from '@app/infra';
 import {
   IExifExtractionProcessor,
   IReverseGeocodingProcessor,
@@ -18,7 +18,12 @@ import { Repository } from 'typeorm/repository/Repository';
 import geocoder, { InitOptions } from 'local-reverse-geocoder';
 import { getName } from 'i18n-iso-countries';
 import fs from 'node:fs';
-import { ExifDateTime, exiftool } from 'exiftool-vendored';
+import { ExifDateTime, exiftool, Tags } from 'exiftool-vendored';
+import { IsNull, Not } from 'typeorm';
+
+interface ImmichTags extends Tags {
+  ContentIdentifier?: string;
+}
 
 function geocoderInit(init: InitOptions) {
   return new Promise<void>(function (resolve) {
@@ -139,7 +144,7 @@ export class MetadataExtractionProcessor {
   async extractExifInfo(job: Job<IExifExtractionProcessor>) {
     try {
       const { asset, fileName }: { asset: AssetEntity; fileName: string } = job.data;
-      const exifData = await exiftool.read(asset.originalPath).catch((e) => {
+      const exifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((e) => {
         this.logger.warn(`The exifData parsing failed due to: ${e} on file ${asset.originalPath}`);
         return null;
       });
@@ -154,8 +159,8 @@ export class MetadataExtractionProcessor {
         return exifDate.toDate();
       };
 
-      const createdAt = exifToDate(exifData?.DateTimeOriginal ?? exifData?.CreateDate ?? asset.createdAt);
-      const modifyDate = exifToDate(exifData?.ModifyDate ?? asset.modifiedAt);
+      const fileCreatedAt = exifToDate(exifData?.DateTimeOriginal ?? exifData?.CreateDate ?? asset.fileCreatedAt);
+      const fileModifiedAt = exifToDate(exifData?.ModifyDate ?? asset.fileModifiedAt);
       const fileStats = fs.statSync(asset.originalPath);
       const fileSizeInBytes = fileStats.size;
 
@@ -169,19 +174,40 @@ export class MetadataExtractionProcessor {
       newExif.exifImageWidth = exifData?.ExifImageWidth || exifData?.ImageWidth || null;
       newExif.exposureTime = exifData?.ExposureTime || null;
       newExif.orientation = exifData?.Orientation?.toString() || null;
-      newExif.dateTimeOriginal = createdAt;
-      newExif.modifyDate = modifyDate;
+      newExif.dateTimeOriginal = fileCreatedAt;
+      newExif.modifyDate = fileModifiedAt;
       newExif.lensModel = exifData?.LensModel || null;
       newExif.fNumber = exifData?.FNumber || null;
       newExif.focalLength = exifData?.FocalLength ? parseFloat(exifData.FocalLength) : null;
       newExif.iso = exifData?.ISO || null;
       newExif.latitude = exifData?.GPSLatitude || null;
       newExif.longitude = exifData?.GPSLongitude || null;
+      newExif.livePhotoCID = exifData?.MediaGroupUUID || null;
 
       await this.assetRepository.save({
         id: asset.id,
-        createdAt: createdAt?.toISOString(),
+        fileCreatedAt: fileCreatedAt?.toISOString(),
       });
+
+      if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
+        const motionAsset = await this.assetRepository.findOne({
+          where: {
+            id: Not(asset.id),
+            type: AssetType.VIDEO,
+            exifInfo: {
+              livePhotoCID: newExif.livePhotoCID,
+            },
+          },
+          relations: {
+            exifInfo: true,
+          },
+        });
+
+        if (motionAsset) {
+          await this.assetRepository.update(asset.id, { livePhotoVideoId: motionAsset.id });
+          await this.assetRepository.update(motionAsset.id, { isVisible: false });
+        }
+      }
 
       /**
        * Reverse Geocoding
@@ -247,7 +273,7 @@ export class MetadataExtractionProcessor {
         }),
       );
       let durationString = asset.duration;
-      let createdAt = asset.createdAt;
+      let fileCreatedAt = asset.fileCreatedAt;
 
       if (data.format.duration) {
         durationString = this.extractDuration(data.format.duration);
@@ -256,22 +282,23 @@ export class MetadataExtractionProcessor {
       const videoTags = data.format.tags;
       if (videoTags) {
         if (videoTags['com.apple.quicktime.creationdate']) {
-          createdAt = String(videoTags['com.apple.quicktime.creationdate']);
+          fileCreatedAt = String(videoTags['com.apple.quicktime.creationdate']);
         } else if (videoTags['creation_time']) {
-          createdAt = String(videoTags['creation_time']);
-        } else {
-          createdAt = asset.createdAt;
+          fileCreatedAt = String(videoTags['creation_time']);
         }
-      } else {
-        createdAt = asset.createdAt;
       }
+
+      const exifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((e) => {
+        this.logger.warn(`The exifData parsing failed due to: ${e} on file ${asset.originalPath}`);
+        return null;
+      });
 
       const newExif = new ExifEntity();
       newExif.assetId = asset.id;
       newExif.description = '';
       newExif.imageName = path.parse(fileName).name || null;
       newExif.fileSizeInByte = data.format.size || null;
-      newExif.dateTimeOriginal = createdAt ? new Date(createdAt) : null;
+      newExif.dateTimeOriginal = fileCreatedAt ? new Date(fileCreatedAt) : null;
       newExif.modifyDate = null;
       newExif.latitude = null;
       newExif.longitude = null;
@@ -279,6 +306,25 @@ export class MetadataExtractionProcessor {
       newExif.state = null;
       newExif.country = null;
       newExif.fps = null;
+      newExif.livePhotoCID = exifData?.ContentIdentifier || null;
+
+      if (newExif.livePhotoCID) {
+        const photoAsset = await this.assetRepository.findOne({
+          where: {
+            id: Not(asset.id),
+            type: AssetType.IMAGE,
+            livePhotoVideoId: IsNull(),
+            exifInfo: {
+              livePhotoCID: newExif.livePhotoCID,
+            },
+          },
+        });
+
+        if (photoAsset) {
+          await this.assetRepository.update(photoAsset.id, { livePhotoVideoId: asset.id });
+          await this.assetRepository.update(asset.id, { isVisible: false });
+        }
+      }
 
       if (videoTags && videoTags['location']) {
         const location = videoTags['location'] as string;
@@ -332,8 +378,9 @@ export class MetadataExtractionProcessor {
       }
 
       await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
-      await this.assetRepository.update({ id: asset.id }, { duration: durationString, createdAt: createdAt });
+      await this.assetRepository.update({ id: asset.id }, { duration: durationString, fileCreatedAt });
     } catch (err) {
+      ``;
       // do nothing
       console.log('Error in video metadata extraction', err);
     }

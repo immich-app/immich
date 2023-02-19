@@ -16,6 +16,7 @@
 
 	export let albumId: string;
 	export let assetsInAlbum: AssetResponseDto[];
+	const locale = navigator.language;
 
 	onMount(() => {
 		$assetsInAlbumStoreState = assetsInAlbum;
@@ -28,8 +29,11 @@
 
 		assetInteractionStore.clearMultiselect();
 	};
-
-	const locale = navigator.language;
+	const handleSelectFromComputerClicked = async () => {
+		await openFileUploadDialog(albumId, '');
+		assetInteractionStore.clearMultiselect();
+		dispatch('go-back');
+	};
 </script>
 
 <section
@@ -54,11 +58,7 @@
 
 		<svelte:fragment slot="trailing">
 			<button
-				on:click={() =>
-					openFileUploadDialog(albumId, '', () => {
-						assetInteractionStore.clearMultiselect();
-						dispatch('go-back');
-					})}
+				on:click={handleSelectFromComputerClicked}
 				class="text-immich-primary dark:text-immich-dark-primary text-sm hover:bg-immich-primary/10 dark:hover:bg-immich-dark-primary/25 transition-all px-6 py-2 rounded-lg font-medium"
 			>
 				Select from computer

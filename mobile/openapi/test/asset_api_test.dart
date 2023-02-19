@@ -17,6 +17,13 @@ void main() {
   // final instance = AssetApi();
 
   group('tests for AssetApi', () {
+    // 
+    //
+    //Future<SharedLinkResponseDto> addAssetsToSharedLink(AddAssetsDto addAssetsDto) async
+    test('test addAssetsToSharedLink', () async {
+      // TODO
+    });
+
     // Check duplicated asset before uploading - for Web upload used
     //
     //Future<CheckDuplicateAssetResponseDto> checkDuplicateAsset(CheckDuplicateAssetDto checkDuplicateAssetDto) async
@@ -138,6 +145,13 @@ void main() {
 
     // 
     //
+    //Future<SharedLinkResponseDto> removeAssetsFromSharedLink(RemoveAssetsDto removeAssetsDto) async
+    test('test removeAssetsFromSharedLink', () async {
+      // TODO
+    });
+
+    // 
+    //
     //Future<List<AssetResponseDto>> searchAsset(SearchAssetDto searchAssetDto) async
     test('test searchAsset', () async {
       // TODO
@@ -159,14 +173,7 @@ void main() {
 
     // 
     //
-    //Future<SharedLinkResponseDto> updateAssetsInSharedLink(UpdateAssetsToSharedLinkDto updateAssetsToSharedLinkDto) async
-    test('test updateAssetsInSharedLink', () async {
-      // TODO
-    });
-
-    // 
-    //
-    //Future<AssetFileUploadResponseDto> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String createdAt, String modifiedAt, bool isFavorite, String fileExtension, { MultipartFile livePhotoData, bool isVisible, String duration }) async
+    //Future<AssetFileUploadResponseDto> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { MultipartFile livePhotoData, bool isVisible, String duration }) async
     test('test uploadFile', () async {
       // TODO
     });

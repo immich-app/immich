@@ -11,6 +11,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-sign-android:
     name: Build and sign Android
@@ -24,7 +28,7 @@ jobs:
           github_ref="${{ github.sha }}"
           ref="${input_ref:-$github_ref}"
           echo "ref=$ref" >> $GITHUB_OUTPUT
-          
+
       - uses: actions/checkout@v3
         with:
           ref: ${{ steps.get-ref.outputs.ref }}

@@ -302,11 +302,11 @@ final assetGroupByMonthYearProvider = StateProvider((ref) {
       ref.watch(assetProvider).allAssets.where((e) => e.isRemote).toList();
 
   assets.sortByCompare<DateTime>(
-    (e) => e.createdAt,
+    (e) => e.fileCreatedAt,
     (a, b) => b.compareTo(a),
   );
 
   return assets.groupListsBy(
-    (element) => DateFormat('MMMM, y').format(element.createdAt.toLocal()),
+    (element) => DateFormat('MMMM, y').format(element.fileCreatedAt.toLocal()),
   );
 });

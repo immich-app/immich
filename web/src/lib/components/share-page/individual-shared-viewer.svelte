@@ -13,11 +13,11 @@
 	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
 	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+	import ImmichLogo from '../shared-components/immich-logo.svelte';
 	import {
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
-	import ImmichLogo from '../shared-components/immich-logo.svelte';
 
 	export let sharedLink: SharedLinkResponseDto;
 	export let isOwned: boolean;
@@ -43,11 +43,15 @@
 		);
 	};
 
-	const handleUploadAssets = () => {
-		openFileUploadDialog(undefined, sharedLink?.key, async (assetId) => {
-			await api.assetApi.updateAssetsInSharedLink(
+	const handleUploadAssets = async () => {
+		try {
+			const results = await openFileUploadDialog(undefined, sharedLink?.key);
+
+			const assetIds = results.filter((id) => !!id) as string[];
+
+			await api.assetApi.addAssetsToSharedLink(
 				{
-					assetIds: [...assets.map((a) => a.id), assetId]
+					assetIds
 				},
 				{
 					params: {
@@ -57,15 +61,17 @@
 			);
 
 			notificationController.show({
-				message: 'Add asset to shared link successfully',
+				message: `Successfully add ${assetIds.length} to the shared link`,
 				type: NotificationType.Info
 			});
-		});
+		} catch (e) {
+			console.error('handleUploadAssets', e);
+		}
 	};
 
 	const handleRemoveAssetsFromSharedLink = async () => {
 		if (window.confirm('Do you want to remove selected assets from the shared link?')) {
-			await api.assetApi.updateAssetsInSharedLink(
+			await api.assetApi.removeAssetsFromSharedLink(
 				{
 					assetIds: assets.filter((a) => !selectedAssets.has(a)).map((a) => a.id)
 				},

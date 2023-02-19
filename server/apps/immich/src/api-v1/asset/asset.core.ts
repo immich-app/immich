@@ -1,6 +1,5 @@
-import { timeUtils } from '@app/common';
 import { AuthUserDto, IJobRepository, JobName } from '@app/domain';
-import { AssetEntity } from '@app/infra/db/entities';
+import { AssetEntity, UserEntity } from '@app/infra/db/entities';
 import { StorageService } from '@app/storage';
 import { IAssetRepository } from './asset-repository';
 import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
@@ -19,24 +18,23 @@ export class AssetCore {
     livePhotoAssetId?: string,
   ): Promise<AssetEntity> {
     let asset = await this.repository.create({
-      userId: authUser.id,
+      owner: { id: authUser.id } as UserEntity,
 
       mimeType: file.mimeType,
       checksum: file.checksum || null,
       originalPath: file.originalPath,
 
-      createdAt: timeUtils.checkValidTimestamp(dto.createdAt) ? dto.createdAt : new Date().toISOString(),
-      modifiedAt: timeUtils.checkValidTimestamp(dto.modifiedAt) ? dto.modifiedAt : new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-
       deviceAssetId: dto.deviceAssetId,
       deviceId: dto.deviceId,
+
+      fileCreatedAt: dto.fileCreatedAt,
+      fileModifiedAt: dto.fileModifiedAt,
 
       type: dto.assetType,
       isFavorite: dto.isFavorite,
       duration: dto.duration || null,
       isVisible: dto.isVisible ?? true,
-      livePhotoVideoId: livePhotoAssetId || null,
+      livePhotoVideo: livePhotoAssetId != null ? ({ id: livePhotoAssetId } as AssetEntity) : null,
       resizePath: null,
       webpPath: null,
       encodedVideoPath: null,

@@ -18,7 +18,7 @@ Immich can easily be installed and updated on Unraid via:
 
 In order to install Immich from the Unraid CA, you will need an existing Redis and PostgreSQL 14 container, If you do not already have Redis or PostgreSQL you can install them from the Unraid CA, just make sure you choose PostgreSQL **14**.
 
-Once you have Redis and PostgreSQL running, search for Immich on the Unraid CA, Choose either of the templates listed and fill out the example variables.
+Once you have Redis and PostgreSQL running, search for Immich on the Unraid CA, choose either of the templates listed and fill out the example variables.
 
 For more information about setting up the community image see [here](https://github.com/imagegenius/docker-immich#application-setup) 
 
@@ -71,7 +71,7 @@ alt="Select Plugins > Compose.Manager > Add New Stack > Label it Immich"
     </details>
 5.  Click "**Save Changes**", you will be promoted to edit stack UI labels, just leave this blank and click "**Ok**"
 6.  Select the cog ⚙️ next to Immich, click "**Edit Stack**", then click "**Env File**"
-7.  Past the entire contents of the [Immich example.env](https://github.com/immich-app/immich/releases/latest/download/example.env) file into the Unraid editor, then **before saving** edit the following:
+7.  Paste the entire contents of the [Immich example.env](https://github.com/immich-app/immich/releases/latest/download/example.env) file into the Unraid editor, then **before saving** edit the following:
 
     - `UPLOAD_LOCATION`: Create a folder in your Images Unraid share and place the **absolute** location here > For example my _"images"_ share has a folder within it called _"immich"_. If I browse to this directory in the terminal and type `pwd` the output is `/mnt/user/images/immich`. This is the exact value I need to enter as my `UPLOAD_LOCATION`
 
@@ -143,8 +143,8 @@ alt="Immich update notification"
 />
 
 1. Go to the "**Docker**" tab and scroll to the Compose section
-2. Next to Immich click the "**Update Stack**" button and Unraid will begin to update all Immmich related containers
-   > Note: **Do not** select Compose Down first, it is unecessary.
+2. Next to Immich click the "**Update Stack**" button and Unraid will begin to update all Immich related containers
+   > Note: **Do not** select Compose Down first, it is unnecessary.
 3. Once complete you will see a "_Connection Closed_" message, select "**Done**".
    <img
    src={require('./img/unraid11.png').default}

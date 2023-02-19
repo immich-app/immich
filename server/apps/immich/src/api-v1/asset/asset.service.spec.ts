@@ -27,8 +27,8 @@ const _getCreateAssetDto = (): CreateAssetDto => {
   createAssetDto.deviceAssetId = 'deviceAssetId';
   createAssetDto.deviceId = 'deviceId';
   createAssetDto.assetType = AssetType.OTHER;
-  createAssetDto.createdAt = '2022-06-19T23:41:36.910Z';
-  createAssetDto.modifiedAt = '2022-06-19T23:41:36.910Z';
+  createAssetDto.fileCreatedAt = '2022-06-19T23:41:36.910Z';
+  createAssetDto.fileModifiedAt = '2022-06-19T23:41:36.910Z';
   createAssetDto.isFavorite = false;
   createAssetDto.duration = '0:00:00.000000';
 
@@ -39,14 +39,15 @@ const _getAsset_1 = () => {
   const asset_1 = new AssetEntity();
 
   asset_1.id = 'id_1';
-  asset_1.userId = 'user_id_1';
+  asset_1.ownerId = 'user_id_1';
   asset_1.deviceAssetId = 'device_asset_id_1';
   asset_1.deviceId = 'device_id_1';
   asset_1.type = AssetType.VIDEO;
   asset_1.originalPath = 'fake_path/asset_1.jpeg';
   asset_1.resizePath = '';
-  asset_1.createdAt = '2022-06-19T23:41:36.910Z';
-  asset_1.modifiedAt = '2022-06-19T23:41:36.910Z';
+  asset_1.fileModifiedAt = '2022-06-19T23:41:36.910Z';
+  asset_1.fileCreatedAt = '2022-06-19T23:41:36.910Z';
+  asset_1.updatedAt = '2022-06-19T23:41:36.910Z';
   asset_1.isFavorite = false;
   asset_1.mimeType = 'image/jpeg';
   asset_1.webpPath = '';
@@ -59,14 +60,15 @@ const _getAsset_2 = () => {
   const asset_2 = new AssetEntity();
 
   asset_2.id = 'id_2';
-  asset_2.userId = 'user_id_1';
+  asset_2.ownerId = 'user_id_1';
   asset_2.deviceAssetId = 'device_asset_id_2';
   asset_2.deviceId = 'device_id_1';
   asset_2.type = AssetType.VIDEO;
   asset_2.originalPath = 'fake_path/asset_2.jpeg';
   asset_2.resizePath = '';
-  asset_2.createdAt = '2022-06-19T23:41:36.910Z';
-  asset_2.modifiedAt = '2022-06-19T23:41:36.910Z';
+  asset_2.fileModifiedAt = '2022-06-19T23:41:36.910Z';
+  asset_2.fileCreatedAt = '2022-06-19T23:41:36.910Z';
+  asset_2.updatedAt = '2022-06-19T23:41:36.910Z';
   asset_2.isFavorite = false;
   asset_2.mimeType = 'image/jpeg';
   asset_2.webpPath = '';
@@ -198,12 +200,29 @@ describe('AssetService', () => {
       sharedLinkRepositoryMock.get.mockResolvedValue(null);
       sharedLinkRepositoryMock.hasAssetAccess.mockResolvedValue(true);
 
-      await expect(sut.updateAssetsInSharedLink(authDto, dto)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.addAssetsToSharedLink(authDto, dto)).rejects.toBeInstanceOf(BadRequestException);
 
       expect(assetRepositoryMock.getById).toHaveBeenCalledWith(asset1.id);
       expect(sharedLinkRepositoryMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
-      expect(sharedLinkRepositoryMock.hasAssetAccess).toHaveBeenCalledWith(authDto.sharedLinkId, asset1.id);
       expect(sharedLinkRepositoryMock.save).not.toHaveBeenCalled();
+    });
+
+    it('should add assets to a shared link', async () => {
+      const asset1 = _getAsset_1();
+
+      const authDto = authStub.adminSharedLink;
+      const dto = { assetIds: [asset1.id] };
+
+      assetRepositoryMock.getById.mockResolvedValue(asset1);
+      sharedLinkRepositoryMock.get.mockResolvedValue(sharedLinkStub.valid);
+      sharedLinkRepositoryMock.hasAssetAccess.mockResolvedValue(true);
+      sharedLinkRepositoryMock.save.mockResolvedValue(sharedLinkStub.valid);
+
+      await expect(sut.addAssetsToSharedLink(authDto, dto)).resolves.toEqual(sharedLinkResponseStub.valid);
+
+      expect(assetRepositoryMock.getById).toHaveBeenCalledWith(asset1.id);
+      expect(sharedLinkRepositoryMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
+      expect(sharedLinkRepositoryMock.save).toHaveBeenCalled();
     });
 
     it('should remove assets from a shared link', async () => {
@@ -217,11 +236,11 @@ describe('AssetService', () => {
       sharedLinkRepositoryMock.hasAssetAccess.mockResolvedValue(true);
       sharedLinkRepositoryMock.save.mockResolvedValue(sharedLinkStub.valid);
 
-      await expect(sut.updateAssetsInSharedLink(authDto, dto)).resolves.toEqual(sharedLinkResponseStub.valid);
+      await expect(sut.removeAssetsFromSharedLink(authDto, dto)).resolves.toEqual(sharedLinkResponseStub.valid);
 
       expect(assetRepositoryMock.getById).toHaveBeenCalledWith(asset1.id);
       expect(sharedLinkRepositoryMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
-      expect(sharedLinkRepositoryMock.hasAssetAccess).toHaveBeenCalledWith(authDto.sharedLinkId, asset1.id);
+      expect(sharedLinkRepositoryMock.save).toHaveBeenCalled();
     });
   });
 
@@ -275,7 +294,7 @@ describe('AssetService', () => {
       const asset = {
         id: 'live-photo-asset',
         originalPath: file.originalPath,
-        userId: authStub.user1.id,
+        ownerId: authStub.user1.id,
         type: AssetType.IMAGE,
         isVisible: true,
       } as AssetEntity;
@@ -290,7 +309,7 @@ describe('AssetService', () => {
       const livePhotoAsset = {
         id: 'live-photo-motion',
         originalPath: livePhotoFile.originalPath,
-        userId: authStub.user1.id,
+        ownerId: authStub.user1.id,
         type: AssetType.VIDEO,
         isVisible: false,
       } as AssetEntity;

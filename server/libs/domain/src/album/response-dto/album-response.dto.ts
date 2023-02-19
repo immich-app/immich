@@ -21,11 +21,9 @@ export class AlbumResponseDto {
 export function mapAlbum(entity: AlbumEntity): AlbumResponseDto {
   const sharedUsers: UserResponseDto[] = [];
 
-  entity.sharedUsers?.forEach((userAlbum) => {
-    if (userAlbum.userInfo) {
-      const user = mapUser(userAlbum.userInfo);
-      sharedUsers.push(user);
-    }
+  entity.sharedUsers?.forEach((user) => {
+    const userDto = mapUser(user);
+    sharedUsers.push(userDto);
   });
 
   return {
@@ -38,7 +36,7 @@ export function mapAlbum(entity: AlbumEntity): AlbumResponseDto {
     owner: mapUser(entity.owner),
     sharedUsers,
     shared: sharedUsers.length > 0 || entity.sharedLinks?.length > 0,
-    assets: entity.assets?.map((assetAlbum) => mapAsset(assetAlbum.assetInfo)) || [],
+    assets: entity.assets?.map((asset) => mapAsset(asset)) || [],
     assetCount: entity.assets?.length || 0,
   };
 }
@@ -46,11 +44,9 @@ export function mapAlbum(entity: AlbumEntity): AlbumResponseDto {
 export function mapAlbumExcludeAssetInfo(entity: AlbumEntity): AlbumResponseDto {
   const sharedUsers: UserResponseDto[] = [];
 
-  entity.sharedUsers?.forEach((userAlbum) => {
-    if (userAlbum.userInfo) {
-      const user = mapUser(userAlbum.userInfo);
-      sharedUsers.push(user);
-    }
+  entity.sharedUsers?.forEach((user) => {
+    const userDto = mapUser(user);
+    sharedUsers.push(userDto);
   });
 
   return {

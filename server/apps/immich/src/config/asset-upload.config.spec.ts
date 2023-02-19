@@ -55,13 +55,25 @@ describe('assetUploadOption', () => {
     });
 
     it('should allow videos', async () => {
-      const file = { mimetype: 'image/mp4', originalname: 'test.mp4' } as any;
+      const file = { mimetype: 'video/mp4', originalname: 'test.mp4' } as any;
       fileFilter(mock.userRequest, file, callback);
       expect(callback).toHaveBeenCalledWith(null, true);
     });
 
     it('should allow webm videos', async () => {
       const file = { mimetype: 'video/webm', originalname: 'test.webm' } as any;
+      fileFilter(mock.userRequest, file, callback);
+      expect(callback).toHaveBeenCalledWith(null, true);
+    });
+
+    it('should allow .raf recognized', () => {
+      const file = { mimetype: 'image/x-fuji-raf', originalname: 'test.raf' } as any;
+      fileFilter(mock.userRequest, file, callback);
+      expect(callback).toHaveBeenCalledWith(null, true);
+    });
+
+    it('should allow .srw recognized', () => {
+      const file = { mimetype: 'image/x-samsung-srw', originalname: 'test.srw' } as any;
       fileFilter(mock.userRequest, file, callback);
       expect(callback).toHaveBeenCalledWith(null, true);
     });

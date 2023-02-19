@@ -6,7 +6,7 @@ import {
   APIKeyUpdateDto,
   AuthUserDto,
 } from '@app/domain';
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, ValidationPipe } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
@@ -31,21 +31,21 @@ export class APIKeyController {
   }
 
   @Get(':id')
-  getKey(@GetAuthUser() authUser: AuthUserDto, @Param('id', ParseIntPipe) id: number): Promise<APIKeyResponseDto> {
+  getKey(@GetAuthUser() authUser: AuthUserDto, @Param('id') id: string): Promise<APIKeyResponseDto> {
     return this.service.getById(authUser, id);
   }
 
   @Put(':id')
   updateKey(
     @GetAuthUser() authUser: AuthUserDto,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body(ValidationPipe) dto: APIKeyUpdateDto,
   ): Promise<APIKeyResponseDto> {
     return this.service.update(authUser, id, dto);
   }
 
   @Delete(':id')
-  deleteKey(@GetAuthUser() authUser: AuthUserDto, @Param('id', ParseIntPipe) id: number): Promise<void> {
+  deleteKey(@GetAuthUser() authUser: AuthUserDto, @Param('id') id: string): Promise<void> {
     return this.service.delete(authUser, id);
   }
 }

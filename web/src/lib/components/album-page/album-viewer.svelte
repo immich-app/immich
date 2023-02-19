@@ -96,8 +96,8 @@
 	};
 
 	const getDateRange = () => {
-		const startDate = new Date(album.assets[0].createdAt);
-		const endDate = new Date(album.assets[album.assetCount - 1].createdAt);
+		const startDate = new Date(album.assets[0].fileCreatedAt);
+		const endDate = new Date(album.assets[album.assetCount - 1].fileCreatedAt);
 
 		const startDateString = startDate.toLocaleDateString(locale, albumDateFormat);
 		const endDateString = endDate.toLocaleDateString(locale, albumDateFormat);

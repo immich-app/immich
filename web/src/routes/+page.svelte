@@ -15,7 +15,7 @@
 		</h1>
 		<button
 			class="border px-4 py-4 rounded-md bg-immich-primary dark:bg-immich-dark-primary dark:text-immich-dark-gray dark:border-immich-dark-gray hover:bg-immich-primary/75 text-white font-bold w-[200px]"
-			on:click={() => goto('/auth/login')}
+			on:click={() => goto('/auth/register')}
 			>Getting Started
 		</button>
 	</div>

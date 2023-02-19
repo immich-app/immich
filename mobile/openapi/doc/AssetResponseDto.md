@@ -15,8 +15,8 @@ Name | Type | Description | Notes
 **deviceId** | **String** |  | 
 **originalPath** | **String** |  | 
 **resizePath** | **String** |  | 
-**createdAt** | **String** |  | 
-**modifiedAt** | **String** |  | 
+**fileCreatedAt** | **String** |  | 
+**fileModifiedAt** | **String** |  | 
 **updatedAt** | **String** |  | 
 **isFavorite** | **bool** |  | 
 **mimeType** | **String** |  | 

@@ -34,6 +34,8 @@ download:
       locale_code: pt-BR
     - file: mobile/assets/i18n/pl-PL.json
       locale_code: pl-PL
+    - file: mobile/assets/i18n/sv-SE.json
+      locale_code: sv-SE
     - file: mobile/assets/i18n/sk-SK.json
       locale_code: sk-SK
     - file: mobile/assets/i18n/zh-CN.json

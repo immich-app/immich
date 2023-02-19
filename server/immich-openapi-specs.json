@@ -66,7 +66,7 @@
             "required": true,
             "in": "path",
             "schema": {
-              "type": "number"
+              "type": "string"
             }
           }
         ],
@@ -95,7 +95,7 @@
             "required": true,
             "in": "path",
             "schema": {
-              "type": "number"
+              "type": "string"
             }
           }
         ],
@@ -134,7 +134,7 @@
             "required": true,
             "in": "path",
             "schema": {
-              "type": "number"
+              "type": "string"
             }
           }
         ],
@@ -1869,9 +1869,11 @@
             "bearer": []
           }
         ]
-      },
+      }
+    },
+    "/asset/shared-link/add": {
       "patch": {
-        "operationId": "updateAssetsInSharedLink",
+        "operationId": "addAssetsToSharedLink",
         "description": "",
         "parameters": [],
         "requestBody": {
@@ -1879,7 +1881,44 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateAssetsToSharedLinkDto"
+                "$ref": "#/components/schemas/AddAssetsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/asset/shared-link/remove": {
+      "patch": {
+        "operationId": "removeAssetsFromSharedLink",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemoveAssetsDto"
               }
             }
           }
@@ -2689,7 +2728,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.47.2",
+    "version": "1.47.3",
     "contact": {}
   },
   "tags": [],
@@ -2720,7 +2759,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer"
+            "type": "string"
           },
           "name": {
             "type": "string"
@@ -3285,10 +3324,10 @@
             "type": "string",
             "nullable": true
           },
-          "createdAt": {
+          "fileCreatedAt": {
             "type": "string"
           },
-          "modifiedAt": {
+          "fileModifiedAt": {
             "type": "string"
           },
           "updatedAt": {
@@ -3337,8 +3376,8 @@
           "deviceId",
           "originalPath",
           "resizePath",
-          "createdAt",
-          "modifiedAt",
+          "fileCreatedAt",
+          "fileModifiedAt",
           "updatedAt",
           "isFavorite",
           "mimeType",
@@ -3778,10 +3817,10 @@
           "deviceId": {
             "type": "string"
           },
-          "createdAt": {
+          "fileCreatedAt": {
             "type": "string"
           },
-          "modifiedAt": {
+          "fileModifiedAt": {
             "type": "string"
           },
           "isFavorite": {
@@ -3802,8 +3841,8 @@
           "assetData",
           "deviceAssetId",
           "deviceId",
-          "createdAt",
-          "modifiedAt",
+          "fileCreatedAt",
+          "fileModifiedAt",
           "isFavorite",
           "fileExtension"
         ]
@@ -4171,7 +4210,21 @@
           "assetIds"
         ]
       },
-      "UpdateAssetsToSharedLinkDto": {
+      "AddAssetsDto": {
+        "type": "object",
+        "properties": {
+          "assetIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "assetIds"
+        ]
+      },
+      "RemoveAssetsDto": {
         "type": "object",
         "properties": {
           "assetIds": {
@@ -4267,20 +4320,6 @@
           "sharedUserIds"
         ]
       },
-      "AddAssetsDto": {
-        "type": "object",
-        "properties": {
-          "assetIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "assetIds"
-        ]
-      },
       "AddAssetsResponseDto": {
         "type": "object",
         "properties": {
@@ -4300,20 +4339,6 @@
         "required": [
           "successfullyAdded",
           "alreadyInAlbum"
-        ]
-      },
-      "RemoveAssetsDto": {
-        "type": "object",
-        "properties": {
-          "assetIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "assetIds"
         ]
       },
       "UpdateAlbumDto": {
