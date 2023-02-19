@@ -55,7 +55,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             selectedAlbumsBackupAssetsIds: const {},
             currentUploadAsset: CurrentUploadAsset(
               id: '...',
-              createdAt: DateTime.parse('2020-10-04'),
+              fileCreatedAt: DateTime.parse('2020-10-04'),
               fileName: '...',
               fileType: '...',
             ),

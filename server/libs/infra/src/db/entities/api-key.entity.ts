@@ -3,8 +3,8 @@ import { UserEntity } from './user.entity';
 
 @Entity('api_keys')
 export class APIKeyEntity {
-  @PrimaryGeneratedColumn()
-  id!: number;
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
   @Column()
   name!: string;
@@ -12,11 +12,11 @@ export class APIKeyEntity {
   @Column({ select: false })
   key?: string;
 
-  @Column()
-  userId!: string;
-
   @ManyToOne(() => UserEntity)
   user?: UserEntity;
+
+  @Column()
+  userId!: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: string;

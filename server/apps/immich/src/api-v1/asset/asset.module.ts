@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AssetService } from './asset.service';
 import { AssetController } from './asset.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -22,7 +22,7 @@ const ASSET_REPOSITORY_PROVIDER = {
     DownloadModule,
     TagModule,
     StorageModule,
-    forwardRef(() => AlbumModule),
+    AlbumModule,
   ],
   controllers: [AssetController],
   providers: [AssetService, ASSET_REPOSITORY_PROVIDER],

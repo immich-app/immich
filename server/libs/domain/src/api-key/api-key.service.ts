@@ -24,7 +24,7 @@ export class APIKeyService {
     return { secret, apiKey: mapKey(entity) };
   }
 
-  async update(authUser: AuthUserDto, id: number, dto: APIKeyCreateDto): Promise<APIKeyResponseDto> {
+  async update(authUser: AuthUserDto, id: string, dto: APIKeyCreateDto): Promise<APIKeyResponseDto> {
     const exists = await this.repository.getById(authUser.id, id);
     if (!exists) {
       throw new BadRequestException('API Key not found');
@@ -35,7 +35,7 @@ export class APIKeyService {
     });
   }
 
-  async delete(authUser: AuthUserDto, id: number): Promise<void> {
+  async delete(authUser: AuthUserDto, id: string): Promise<void> {
     const exists = await this.repository.getById(authUser.id, id);
     if (!exists) {
       throw new BadRequestException('API Key not found');
@@ -44,7 +44,7 @@ export class APIKeyService {
     await this.repository.delete(authUser.id, id);
   }
 
-  async getById(authUser: AuthUserDto, id: number): Promise<APIKeyResponseDto> {
+  async getById(authUser: AuthUserDto, id: string): Promise<APIKeyResponseDto> {
     const key = await this.repository.getById(authUser.id, id);
     if (!key) {
       throw new BadRequestException('API Key not found');

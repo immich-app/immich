@@ -79,7 +79,6 @@ const providers: Provider[] = [
       { name: QueueName.ASSET_UPLOADED },
       { name: QueueName.METADATA_EXTRACTION },
       { name: QueueName.VIDEO_CONVERSION },
-      { name: QueueName.CHECKSUM_GENERATION },
       { name: QueueName.MACHINE_LEARNING },
       { name: QueueName.CONFIG },
       { name: QueueName.BACKGROUND_TASK },

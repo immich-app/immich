@@ -17,13 +17,17 @@ on:
         required: false
         type: boolean
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   bump_version:
     runs-on: ubuntu-latest
-    
+
     outputs:
       ref: ${{ steps.push-tag.outputs.commit_long_sha }}
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -42,7 +46,7 @@ jobs:
           message: "Version ${{ env.IMMICH_VERSION }}"
           tag: ${{ env.IMMICH_VERSION }}
           push: true
-          
+
   build_mobile:
     uses: ./.github/workflows/build-mobile.yml
     needs: bump_version
@@ -59,7 +63,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.ORG_RELEASE_TOKEN }}
-          
+
       - name: Download APK
         uses: actions/download-artifact@v3
         with:

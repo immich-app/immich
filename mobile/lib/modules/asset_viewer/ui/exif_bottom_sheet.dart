@@ -146,7 +146,7 @@ class ExifBottomSheet extends HookConsumerWidget {
     buildDate() {
       return Text(
         DateFormat('date_format'.tr()).format(
-          assetDetail.createdAt.toLocal(),
+          assetDetail.fileCreatedAt.toLocal(),
         ),
         style: const TextStyle(
           fontWeight: FontWeight.bold,

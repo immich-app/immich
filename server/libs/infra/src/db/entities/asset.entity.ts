@@ -1,9 +1,12 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   Index,
+  JoinColumn,
   JoinTable,
   ManyToMany,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
   Unique,
@@ -13,9 +16,10 @@ import { ExifEntity } from './exif.entity';
 import { SharedLinkEntity } from './shared-link.entity';
 import { SmartInfoEntity } from './smart-info.entity';
 import { TagEntity } from './tag.entity';
+import { UserEntity } from './user.entity';
 
 @Entity('assets')
-@Unique('UQ_userid_checksum', ['userId', 'checksum'])
+@Unique('UQ_userid_checksum', ['owner', 'checksum'])
 export class AssetEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -23,8 +27,11 @@ export class AssetEntity {
   @Column()
   deviceAssetId!: string;
 
+  @ManyToOne(() => UserEntity, { eager: true, onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
+  owner!: UserEntity;
+
   @Column()
-  userId!: string;
+  ownerId!: string;
 
   @Column()
   deviceId!: string;
@@ -44,14 +51,17 @@ export class AssetEntity {
   @Column({ type: 'varchar', nullable: true, default: '' })
   encodedVideoPath!: string | null;
 
-  @Column({ type: 'timestamptz' })
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: string;
-
-  @Column({ type: 'timestamptz' })
-  modifiedAt!: string;
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: string;
+
+  @Column({ type: 'timestamptz' })
+  fileCreatedAt!: string;
+
+  @Column({ type: 'timestamptz' })
+  fileModifiedAt!: string;
 
   @Column({ type: 'boolean', default: false })
   isFavorite!: boolean;
@@ -69,7 +79,11 @@ export class AssetEntity {
   @Column({ type: 'boolean', default: true })
   isVisible!: boolean;
 
-  @Column({ type: 'uuid', nullable: true })
+  @OneToOne(() => AssetEntity, { nullable: true, onUpdate: 'CASCADE', onDelete: 'SET NULL' })
+  @JoinColumn()
+  livePhotoVideo!: AssetEntity | null;
+
+  @Column({ nullable: true })
   livePhotoVideoId!: string | null;
 
   @OneToOne(() => ExifEntity, (exifEntity) => exifEntity.asset)
@@ -78,12 +92,11 @@ export class AssetEntity {
   @OneToOne(() => SmartInfoEntity, (smartInfoEntity) => smartInfoEntity.asset)
   smartInfo?: SmartInfoEntity;
 
-  // https://github.com/typeorm/typeorm/blob/master/docs/many-to-many-relations.md
-  @ManyToMany(() => TagEntity, (tag) => tag.assets, { cascade: true })
+  @ManyToMany(() => TagEntity, (tag) => tag.assets, { cascade: true, eager: true })
   @JoinTable({ name: 'tag_asset' })
   tags!: TagEntity[];
 
-  @ManyToMany(() => SharedLinkEntity, (link) => link.assets, { cascade: true })
+  @ManyToMany(() => SharedLinkEntity, (link) => link.assets, { cascade: true, eager: true })
   @JoinTable({ name: 'shared_link__asset' })
   sharedLinks!: SharedLinkEntity[];
 }

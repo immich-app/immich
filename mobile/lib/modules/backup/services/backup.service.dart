@@ -260,8 +260,8 @@ class BackupService {
           req.fields['deviceAssetId'] = entity.id;
           req.fields['deviceId'] = deviceId;
           req.fields['assetType'] = _getAssetType(entity.type);
-          req.fields['createdAt'] = entity.createDateTime.toIso8601String();
-          req.fields['modifiedAt'] = entity.modifiedDateTime.toIso8601String();
+          req.fields['fileCreatedAt'] = entity.createDateTime.toIso8601String();
+          req.fields['fileModifiedAt'] = entity.modifiedDateTime.toIso8601String();
           req.fields['isFavorite'] = entity.isFavorite.toString();
           req.fields['fileExtension'] = fileExtension;
           req.fields['duration'] = entity.videoDuration.toString();
@@ -278,7 +278,7 @@ class BackupService {
           setCurrentUploadAssetCb(
             CurrentUploadAsset(
               id: entity.id,
-              createdAt: entity.createDateTime.year == 1970
+              fileCreatedAt: entity.createDateTime.year == 1970
                   ? entity.modifiedDateTime
                   : entity.createDateTime,
               fileName: originalFileName,
@@ -308,7 +308,7 @@ class BackupService {
               ErrorUploadAsset(
                 asset: entity,
                 id: entity.id,
-                createdAt: entity.createDateTime,
+                fileCreatedAt: entity.createDateTime,
                 fileName: originalFileName,
                 fileType: _getAssetType(entity.type),
                 errorMessage: error['error'],

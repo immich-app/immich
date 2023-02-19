@@ -2,33 +2,20 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'general_helper.dart';
+
 class ImmichTestLoginHelper {
   final WidgetTester tester;
 
   ImmichTestLoginHelper(this.tester);
 
-  Future<void> waitForLoginScreen({int timeoutSeconds = 20}) async {
-    for (var i = 0; i < timeoutSeconds; i++) {
-      // Search for "IMMICH" test in the app bar
-      final result = find.text("IMMICH");
-      if (tester.any(result)) {
-        // Wait 5s until everything settled
-        await tester.pump(const Duration(seconds: 5));
-        return;
-      }
-
-      // Wait 1s before trying again
-      await Future.delayed(const Duration(seconds: 1));
-    }
-
-    fail("Timeout while waiting for login screen");
+  Future<void> waitForLoginScreen() async {
+    await pumpUntilFound(tester, find.text("Login"));
   }
 
   Future<bool> acknowledgeNewServerVersion() async {
+    await pumpUntilFound(tester, find.text("Acknowledge"));
     final result = find.text("Acknowledge");
-    if (!tester.any(result)) {
-      return false;
-    }
 
     await tester.tap(result);
     await tester.pump();
@@ -43,17 +30,17 @@ class ImmichTestLoginHelper {
   }) async {
     final loginForms = find.byType(TextFormField);
 
-    await tester.pump(const Duration(milliseconds: 500));
     await tester.enterText(loginForms.at(0), email);
+    await tester.pump();
 
-    await tester.pump(const Duration(milliseconds: 500));
     await tester.enterText(loginForms.at(1), password);
+    await tester.pump();
 
-    await tester.pump(const Duration(milliseconds: 500));
     await tester.enterText(loginForms.at(2), server);
+    await tester.pump();
 
     await tester.testTextInput.receiveAction(TextInputAction.done);
-    await tester.pumpAndSettle();
+    await tester.pump();
   }
 
   Future<void> enterCredentialsOf(LoginCredentials credentials) async {
@@ -65,32 +52,17 @@ class ImmichTestLoginHelper {
   }
 
   Future<void> pressLoginButton() async {
+    await pumpUntilFound(tester, find.textContaining("login_form_button_text".tr()));
     final button = find.textContaining("login_form_button_text".tr());
     await tester.tap(button);
   }
 
   Future<void> assertLoginSuccess({int timeoutSeconds = 15}) async {
-    for (var i = 0; i < timeoutSeconds * 2; i++) {
-      if (tester.any(find.text("home_page_building_timeline".tr()))) {
-        return;
-      }
-
-      await tester.pump(const Duration(milliseconds: 500));
-    }
-
-    fail("Login failed.");
+    await pumpUntilFound(tester, find.text("home_page_building_timeline".tr()));
   }
 
   Future<void> assertLoginFailed({int timeoutSeconds = 15}) async {
-    for (var i = 0; i < timeoutSeconds * 2; i++) {
-      if (tester.any(find.text("login_form_failed_login".tr()))) {
-        return;
-      }
-
-      await tester.pump(const Duration(milliseconds: 500));
-    }
-
-    fail("Timeout.");
+      await pumpUntilFound(tester, find.text("login_form_failed_login".tr()));
   }
 }
 

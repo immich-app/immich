@@ -16,8 +16,8 @@ void main() {
         deviceAssetId: '$i',
         deviceId: '',
         ownerId: '',
-        createdAt: date,
-        modifiedAt: date,
+        fileCreatedAt: date,
+        fileModifiedAt: date,
         durationInSeconds: 0,
         fileName: '',
         isFavorite: false,
@@ -29,25 +29,25 @@ void main() {
 
   assets.addAll(
     testAssets.sublist(0, 5).map((e) {
-      e.createdAt = DateTime(2022, 1, 5);
+      e.fileCreatedAt = DateTime(2022, 1, 5);
       return e;
     }).toList(),
   );
   assets.addAll(
     testAssets.sublist(5, 10).map((e) {
-      e.createdAt = DateTime(2022, 1, 10);
+      e.fileCreatedAt = DateTime(2022, 1, 10);
       return e;
     }).toList(),
   );
   assets.addAll(
     testAssets.sublist(10, 15).map((e) {
-      e.createdAt = DateTime(2022, 2, 17);
+      e.fileCreatedAt = DateTime(2022, 2, 17);
       return e;
     }).toList(),
   );
   assets.addAll(
     testAssets.sublist(15, 30).map((e) {
-      e.createdAt = DateTime(2022, 10, 15);
+      e.fileCreatedAt = DateTime(2022, 10, 15);
       return e;
     }).toList(),
   );

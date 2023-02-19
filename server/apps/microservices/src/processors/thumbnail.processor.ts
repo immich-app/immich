@@ -40,7 +40,7 @@ export class ThumbnailGeneratorProcessor {
     const { asset } = job.data;
     const sanitizedDeviceId = sanitize(String(asset.deviceId));
 
-    const resizePath = join(basePath, asset.userId, 'thumb', sanitizedDeviceId);
+    const resizePath = join(basePath, asset.ownerId, 'thumb', sanitizedDeviceId);
 
     if (!existsSync(resizePath)) {
       mkdirSync(resizePath, { recursive: true });
@@ -75,7 +75,7 @@ export class ThumbnailGeneratorProcessor {
       await this.machineLearningQueue.add(JobName.IMAGE_TAGGING, { asset });
       await this.machineLearningQueue.add(JobName.OBJECT_DETECTION, { asset });
 
-      this.wsCommunicationGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
+      this.wsCommunicationGateway.server.to(asset.ownerId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
     }
 
     if (asset.type == AssetType.VIDEO) {
@@ -106,7 +106,7 @@ export class ThumbnailGeneratorProcessor {
       await this.machineLearningQueue.add(JobName.IMAGE_TAGGING, { asset });
       await this.machineLearningQueue.add(JobName.OBJECT_DETECTION, { asset });
 
-      this.wsCommunicationGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
+      this.wsCommunicationGateway.server.to(asset.ownerId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
     }
   }
 

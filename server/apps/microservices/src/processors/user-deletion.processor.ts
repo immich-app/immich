@@ -61,7 +61,7 @@ export class UserDeletionProcessor {
       await this.albumRepository.remove(albums);
 
       await this.apiKeyRepository.delete({ userId: user.id });
-      await this.assetRepository.delete({ userId: user.id });
+      await this.assetRepository.delete({ ownerId: user.id });
       await this.userRepository.remove(user);
     } catch (error: any) {
       this.logger.error(`Failed to remove user`);

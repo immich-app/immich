@@ -1,4 +1,5 @@
 
-# Microservices for Immich
+# Immich Machine Learning
 
-## Image Classifier
+- Object Detection
+- Image Classification

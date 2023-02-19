@@ -69,7 +69,7 @@ async function fileUploader(
 	const assetType = mimeType.split('/')[0].toUpperCase();
 	const fileExtension = getFilenameExtension(asset.name);
 	const formData = new FormData();
-	const createdAt = new Date(asset.lastModified).toISOString();
+	const fileCreatedAt = new Date(asset.lastModified).toISOString();
 	const deviceAssetId = 'web' + '-' + asset.name + '-' + asset.lastModified;
 
 	try {
@@ -83,10 +83,10 @@ async function fileUploader(
 		formData.append('assetType', assetType);
 
 		// Get Asset Created Date
-		formData.append('createdAt', createdAt);
+		formData.append('fileCreatedAt', fileCreatedAt);
 
 		// Get Asset Modified At
-		formData.append('modifiedAt', new Date(asset.lastModified).toISOString());
+		formData.append('fileModifiedAt', new Date(asset.lastModified).toISOString());
 
 		// Set Asset is Favorite to false
 		formData.append('isFavorite', 'false');

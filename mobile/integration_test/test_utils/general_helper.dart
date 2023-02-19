@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
@@ -43,7 +45,6 @@ class ImmichTestHelper {
     // Load main Widget
     await tester.pumpWidget(app.getMainWidget(db));
     // Post run tasks
-    await tester.pumpAndSettle();
     await EasyLocalization.ensureInitialized();
   }
 }
@@ -61,4 +62,18 @@ void immichWidgetTest(
     },
     semanticsEnabled: false,
   );
+}
+
+Future<void> pumpUntilFound(
+    WidgetTester tester,
+    Finder finder, {
+      Duration timeout = const Duration(seconds: 120),
+    }) async {
+  bool found = false;
+  final timer = Timer(timeout, () => throw TimeoutException("Pump until has timed out"));
+  while (found != true) {
+    await tester.pump();
+    found = tester.any(finder);
+  }
+  timer.cancel();
 }
