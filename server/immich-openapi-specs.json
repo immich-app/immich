@@ -3239,9 +3239,6 @@
       "SmartInfoResponseDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string"
-          },
           "tags": {
             "nullable": true,
             "type": "array",

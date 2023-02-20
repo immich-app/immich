@@ -154,7 +154,6 @@ const assetResponse: AssetResponseDto = {
   isFavorite: false,
   mimeType: 'image/jpeg',
   smartInfo: {
-    id: 'should-be-a-number',
     tags: [],
     objects: ['a', 'b', 'c'],
   },
@@ -390,7 +389,6 @@ export const sharedLinkStub = {
           isFavorite: false,
           mimeType: 'image/jpeg',
           smartInfo: {
-            id: 'should-be-a-number',
             assetId: 'id_1',
             tags: [],
             objects: ['a', 'b', 'c'],

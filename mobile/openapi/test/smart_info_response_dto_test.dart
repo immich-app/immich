@@ -16,11 +16,6 @@ void main() {
   // final instance = SmartInfoResponseDto();
 
   group('test SmartInfoResponseDto', () {
-    // String id
-    test('to test the property `id`', () async {
-      // TODO
-    });
-
     // List<String> tags (default value: const [])
     test('to test the property `tags`', () async {
       // TODO

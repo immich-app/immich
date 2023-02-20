@@ -1,13 +1,13 @@
-import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { AssetEntity } from './asset.entity';
 
 @Entity('smart_info')
 export class SmartInfoEntity {
-  @PrimaryGeneratedColumn()
-  id!: string;
+  @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
+  @JoinColumn({ name: 'assetId', referencedColumnName: 'id' })
+  asset?: AssetEntity;
 
-  @Index({ unique: true })
-  @Column({ type: 'uuid' })
+  @PrimaryColumn()
   assetId!: string;
 
   @Column({ type: 'text', array: true, nullable: true })
@@ -15,8 +15,4 @@ export class SmartInfoEntity {
 
   @Column({ type: 'text', array: true, nullable: true })
   objects!: string[] | null;
-
-  @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
-  @JoinColumn({ name: 'assetId', referencedColumnName: 'id' })
-  asset?: AssetEntity;
 }

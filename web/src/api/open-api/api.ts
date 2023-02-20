@@ -1726,12 +1726,6 @@ export interface SignUpDto {
 export interface SmartInfoResponseDto {
     /**
      * 
-     * @type {string}
-     * @memberof SmartInfoResponseDto
-     */
-    'id'?: string;
-    /**
-     * 
      * @type {Array<string>}
      * @memberof SmartInfoResponseDto
      */
