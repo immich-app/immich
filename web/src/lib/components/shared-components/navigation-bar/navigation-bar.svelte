@@ -14,15 +14,12 @@
 
 	let shouldShowAccountInfo = false;
 
+	// Show fallback while loading profile picture and hide when image loads.
+	let showProfilePictureFallback = true;
+
 	const dispatch = createEventDispatcher();
 	let shouldShowAccountInfoPanel = false;
 
-	const getUserProfileImage = async () => {
-		if (!user.profileImagePath) {
-			return null;
-		}
-		return api.userApi.getProfileImage(user.id).catch(() => null);
-	};
 	const getFirstLetter = (text?: string) => {
 		return text?.charAt(0).toUpperCase();
 	};
@@ -96,19 +93,20 @@
 				<button
 					class="flex place-items-center place-content-center rounded-full bg-immich-primary hover:bg-immich-primary/80 h-12 w-12 text-gray-100 dark:text-immich-dark-bg dark:bg-immich-dark-primary"
 				>
-					{#await getUserProfileImage() then hasProfileImage}
-						{#if hasProfileImage}
-							<img
-								transition:fade={{ duration: 100 }}
-								src={`${$page.url.origin}/api/user/profile-image/${user.id}`}
-								alt="profile-img"
-								class="inline rounded-full h-12 w-12 object-cover shadow-md border-2 border-immich-primary hover:border-immich-dark-primary dark:hover:border-immich-primary dark:border-immich-dark-primary transition-all"
-								draggable="false"
-							/>
-						{:else}
-							{getFirstLetter(user.firstName)}{getFirstLetter(user.lastName)}
-						{/if}
-					{/await}
+					{#if user.profileImagePath}
+						<img
+							transition:fade={{ duration: 100 }}
+							class:hidden={showProfilePictureFallback}
+							src={`${$page.url.origin}/api/user/profile-image/${user.id}`}
+							alt="profile-img"
+							class="inline rounded-full h-12 w-12 object-cover shadow-md border-2 border-immich-primary hover:border-immich-dark-primary dark:hover:border-immich-primary dark:border-immich-dark-primary transition-all"
+							draggable="false"
+							on:load={() => (showProfilePictureFallback = false)}
+						/>
+					{/if}
+					{#if showProfilePictureFallback}
+						{getFirstLetter(user.firstName)}{getFirstLetter(user.lastName)}
+					{/if}
 				</button>
 
 				{#if shouldShowAccountInfo}
