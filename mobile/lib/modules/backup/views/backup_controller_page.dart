@@ -268,7 +268,7 @@ class BackupControllerPage extends HookConsumerWidget {
                     ).tr(),
                   ),
                 if (isBackgroundEnabled && Platform.isAndroid)
-                  SwitchListTile(
+                  SwitchListTile.adaptive(
                     title: const Text("backup_controller_page_background_wifi")
                         .tr(),
                     secondary: Icon(
@@ -289,7 +289,7 @@ class BackupControllerPage extends HookConsumerWidget {
                         : null,
                   ),
                 if (isBackgroundEnabled)
-                  SwitchListTile(
+                  SwitchListTile.adaptive(
                     title:
                         const Text("backup_controller_page_background_charging")
                             .tr(),
