@@ -55,16 +55,10 @@ class AssetGridLayoutParameters {
 }
 
 class _AssetGroupsToRenderListComputeParameters {
-  final String monthFormat;
-  final String dayFormat;
-  final String dayFormatYear;
   final List<Asset> assets;
   final AssetGridLayoutParameters layout;
 
   _AssetGroupsToRenderListComputeParameters(
-    this.monthFormat,
-    this.dayFormat,
-    this.dayFormatYear,
     this.assets,
     this.layout,
   );
@@ -101,9 +95,10 @@ class RenderList {
   static Future<RenderList> _processAssetGroupData(
     _AssetGroupsToRenderListComputeParameters data,
   ) async {
-    final monthFormat = DateFormat(data.monthFormat);
-    final dayFormatSameYear = DateFormat(data.dayFormat);
-    final dayFormatOtherYear = DateFormat(data.dayFormatYear);
+    // TODO: Make DateFormat use the configured locale.
+    final monthFormat = DateFormat.yMMM();
+    final dayFormatSameYear = DateFormat.MMMEd();
+    final dayFormatOtherYear = DateFormat.yMMMEd();
     final allAssets = data.assets;
     final perRow = data.layout.perRow;
     final dynamicLayout = data.layout.dynamicLayout;
@@ -210,9 +205,6 @@ class RenderList {
     return compute(
       _processAssetGroupData,
       _AssetGroupsToRenderListComputeParameters(
-        "monthly_title_text_date_format".tr(),
-        "daily_title_text_date".tr(),
-        "daily_title_text_date_year".tr(),
         assets,
         layout,
       ),
