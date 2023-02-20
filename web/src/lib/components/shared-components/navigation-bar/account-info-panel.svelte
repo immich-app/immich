@@ -70,7 +70,7 @@
 		</div>
 	</div>
 
-	<div class="mb-6 flex flex-col">
+	<div class="mb-4 flex flex-col">
 		<button
 			class="py-3 w-full font-medium flex place-items-center gap-2 hover:bg-immich-primary/10 text-gray-500 dark:text-gray-300 place-content-center"
 			on:click={() => dispatch('logout')}
