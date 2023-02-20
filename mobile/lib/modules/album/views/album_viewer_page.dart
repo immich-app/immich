@@ -123,9 +123,9 @@ class AlbumViewerPage extends HookConsumerWidget {
       final DateTime startDate = album.assets.first.fileCreatedAt;
       final DateTime endDate = album.assets.last.fileCreatedAt; //Need default.
       final String startDateText =
-          DateFormat(startDate.year == endDate.year ? 'LLL d' : 'LLL d, y')
+          (startDate.year == endDate.year ? DateFormat.MMMd() : DateFormat.yMMMd())
               .format(startDate);
-      final String endDateText = DateFormat('LLL d, y').format(endDate);
+      final String endDateText = DateFormat.yMMMd().format(endDate);
 
       return Padding(
         padding: EdgeInsets.only(
@@ -134,7 +134,7 @@ class AlbumViewerPage extends HookConsumerWidget {
           bottom: album.shared ? 0.0 : 8.0,
         ),
         child: Text(
-          "$startDateText-$endDateText",
+          "$startDateText - $endDateText",
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
