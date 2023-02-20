@@ -102,7 +102,7 @@ class HomePage extends HookConsumerWidget {
 
       void onFavoriteAssets() {
         final remoteAssets = remoteOnlySelection(
-          localErrorMessage: 'Can not favorite local assets yet, skipping',
+          localErrorMessage: 'home_page_favorite_err_local'.tr(),
         );
         if (remoteAssets.isNotEmpty) {
           ref.watch(favoriteProvider.notifier).addToFavorites(remoteAssets);
@@ -125,7 +125,7 @@ class HomePage extends HookConsumerWidget {
 
       void onAddToAlbum(Album album) async {
         final Iterable<Asset> assets = remoteOnlySelection(
-          localErrorMessage: "Can not add local assets to albums yet, skipping",
+          localErrorMessage: "home_page_add_to_album_err_local".tr(),
         );
         if (assets.isEmpty) {
           return;
@@ -166,7 +166,7 @@ class HomePage extends HookConsumerWidget {
 
       void onCreateNewAlbum() async {
         final Iterable<Asset> assets = remoteOnlySelection(
-          localErrorMessage: "Can not add local assets to albums yet, skipping",
+          localErrorMessage: "home_page_add_to_album_err_local".tr(),
         );
         if (assets.isEmpty) {
           return;
