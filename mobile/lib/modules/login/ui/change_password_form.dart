@@ -68,7 +68,28 @@ class ChangePasswordForm extends HookConsumerWidget {
                     ),
                     ChangePasswordButton(
                       passwordController: passwordController,
-                      formKey: formKey,
+                      onPressed: () async {
+                        if (formKey.currentState!.validate()) {
+                          var isSuccess = await ref
+                              .read(authenticationProvider.notifier)
+                              .changePassword(passwordController.value.text);
+
+                          if (isSuccess) {
+                            bool res = await ref
+                                .read(authenticationProvider.notifier)
+                                .logout();
+
+                            if (res) {
+                              ref.read(backupProvider.notifier).cancelBackup();
+                              ref.read(assetProvider.notifier).clearAllAsset();
+                              ref.read(websocketProvider.notifier).disconnect();
+
+                              AutoRouter.of(context)
+                                  .replace(const LoginRoute());
+                            }
+                          }
+                        }
+                      },
                     ),
                   ],
                 ),
@@ -122,7 +143,7 @@ class ConfirmPasswordInput extends StatelessWidget {
     return TextFormField(
       obscureText: true,
       controller: confirmController,
-      decoration:  InputDecoration(
+      decoration: InputDecoration(
         labelText: 'change_password_form_confirm_password'.tr(),
         hintText: 'change_password_form_reenter_new_password'.tr(),
         border: const OutlineInputBorder(),
@@ -135,12 +156,11 @@ class ConfirmPasswordInput extends StatelessWidget {
 
 class ChangePasswordButton extends ConsumerWidget {
   final TextEditingController passwordController;
-  final GlobalKey<FormState> formKey;
-
+  final VoidCallback onPressed;
   const ChangePasswordButton({
     Key? key,
     required this.passwordController,
-    required this.formKey,
+    required this.onPressed,
   }) : super(key: key);
 
   @override
@@ -153,25 +173,7 @@ class ChangePasswordButton extends ConsumerWidget {
         elevation: 2,
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
       ),
-      onPressed: () async {
-        if (formKey.currentState!.validate()) {
-          var isSuccess = await ref
-              .watch(authenticationProvider.notifier)
-              .changePassword(passwordController.value.text);
-
-          if (isSuccess) {
-            bool res =
-                await ref.watch(authenticationProvider.notifier).logout();
-
-            if (res) {
-              ref.watch(backupProvider.notifier).cancelBackup();
-              ref.watch(assetProvider.notifier).clearAllAsset();
-              ref.watch(websocketProvider.notifier).disconnect();
-              AutoRouter.of(context).replace(const LoginRoute());
-            }
-          }
-        }
-      },
+      onPressed: onPressed,
       child: Text(
         'common_change_password'.tr(),
         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),

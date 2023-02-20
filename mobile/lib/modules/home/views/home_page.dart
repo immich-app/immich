@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
@@ -183,9 +181,9 @@ class HomePage extends HookConsumerWidget {
       }
 
       buildLoadingIndicator() {
-        Timer(const Duration(seconds: 2), () {
-          tipOneOpacity.value = 1;
-        });
+        // Timer(const Duration(seconds: 2), () {
+        //   tipOneOpacity.value = 1;
+        // });
 
         return Center(
           child: Column(
@@ -229,8 +227,8 @@ class HomePage extends HookConsumerWidget {
         top: true,
         child: Stack(
           children: [
-            ref.watch(assetProvider).renderList == null
-                || ref.watch(assetProvider).allAssets.isEmpty
+            ref.watch(assetProvider).renderList == null ||
+                    ref.watch(assetProvider).allAssets.isEmpty
                 ? buildLoadingIndicator()
                 : ImmichAssetGrid(
                     renderList: ref.watch(assetProvider).renderList!,
