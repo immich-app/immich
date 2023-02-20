@@ -39,7 +39,7 @@
 						transition:fade={{ duration: 100 }}
 						src={`${$page.url.origin}/api/user/profile-image/${user.id}`}
 						alt="profile-img"
-						class="inline rounded-full h-20 w-20 object-cover shadow-md"
+						class="inline rounded-full h-20 w-20 object-cover shadow-md border-2 border-immich-primary dark:border-immich-dark-primary"
 						draggable="false"
 					/>
 				{:catch}

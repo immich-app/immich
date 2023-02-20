@@ -43,7 +43,7 @@
 
 <section
 	id="dashboard-navbar"
-	class="fixed w-screen  z-[100] bg-immich-bg dark:bg-immich-dark-bg text-sm"
+	class="fixed w-screen z-[900] bg-immich-bg dark:bg-immich-dark-bg text-sm"
 >
 	<div class="flex border-b dark:border-b-immich-dark-gray place-items-center px-6 py-2 ">
 		<a
@@ -102,7 +102,7 @@
 							transition:fade={{ duration: 100 }}
 							src={`${$page.url.origin}/api/user/profile-image/${user.id}`}
 							alt="profile-img"
-							class="inline rounded-full h-12 w-12 object-cover shadow-md"
+							class="inline rounded-full h-12 w-12 object-cover shadow-md border-2 border-immich-primary dark:border-immich-dark-primary"
 							draggable="false"
 						/>
 					{:catch}
