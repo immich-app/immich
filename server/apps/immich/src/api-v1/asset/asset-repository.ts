@@ -152,12 +152,12 @@ export class AssetRepository implements IAssetRepository {
     return await this.assetRepository
       .createQueryBuilder('asset')
       .where('asset.ownerId = :userId', { userId: userId })
-      .andWhere(`date_trunc('month', "createdAt") IN (:...buckets)`, {
+      .andWhere(`date_trunc('month', "fileCreatedAt") IN (:...buckets)`, {
         buckets: [...getAssetByTimeBucketDto.timeBucket],
       })
       .andWhere('asset.resizePath is not NULL')
       .andWhere('asset.isVisible = true')
-      .orderBy('asset.createdAt', 'DESC')
+      .orderBy('asset.fileCreatedAt', 'DESC')
       .getMany();
   }
 
@@ -168,23 +168,23 @@ export class AssetRepository implements IAssetRepository {
       result = await this.assetRepository
         .createQueryBuilder('asset')
         .select(`COUNT(asset.id)::int`, 'count')
-        .addSelect(`date_trunc('month', "createdAt")`, 'timeBucket')
+        .addSelect(`date_trunc('month', "fileCreatedAt")`, 'timeBucket')
         .where('"ownerId" = :userId', { userId: userId })
         .andWhere('asset.resizePath is not NULL')
         .andWhere('asset.isVisible = true')
-        .groupBy(`date_trunc('month', "createdAt")`)
-        .orderBy(`date_trunc('month', "createdAt")`, 'DESC')
+        .groupBy(`date_trunc('month', "fileCreatedAt")`)
+        .orderBy(`date_trunc('month', "fileCreatedAt")`, 'DESC')
         .getRawMany();
     } else if (timeBucket === TimeGroupEnum.Day) {
       result = await this.assetRepository
         .createQueryBuilder('asset')
         .select(`COUNT(asset.id)::int`, 'count')
-        .addSelect(`date_trunc('day', "createdAt")`, 'timeBucket')
+        .addSelect(`date_trunc('day', "fileCreatedAt")`, 'timeBucket')
         .where('"ownerId" = :userId', { userId: userId })
         .andWhere('asset.resizePath is not NULL')
         .andWhere('asset.isVisible = true')
-        .groupBy(`date_trunc('day', "createdAt")`)
-        .orderBy(`date_trunc('day', "createdAt")`, 'DESC')
+        .groupBy(`date_trunc('day', "fileCreatedAt")`)
+        .orderBy(`date_trunc('day', "fileCreatedAt")`, 'DESC')
         .getRawMany();
     }
 
