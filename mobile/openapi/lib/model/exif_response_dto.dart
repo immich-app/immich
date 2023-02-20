@@ -13,7 +13,6 @@ part of openapi.api;
 class ExifResponseDto {
   /// Returns a new [ExifResponseDto] instance.
   ExifResponseDto({
-    this.id,
     this.fileSizeInByte,
     this.make,
     this.model,
@@ -34,8 +33,6 @@ class ExifResponseDto {
     this.state,
     this.country,
   });
-
-  int? id;
 
   int? fileSizeInByte;
 
@@ -77,7 +74,6 @@ class ExifResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ExifResponseDto &&
-     other.id == id &&
      other.fileSizeInByte == fileSizeInByte &&
      other.make == make &&
      other.model == model &&
@@ -101,7 +97,6 @@ class ExifResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id == null ? 0 : id!.hashCode) +
     (fileSizeInByte == null ? 0 : fileSizeInByte!.hashCode) +
     (make == null ? 0 : make!.hashCode) +
     (model == null ? 0 : model!.hashCode) +
@@ -123,15 +118,10 @@ class ExifResponseDto {
     (country == null ? 0 : country!.hashCode);
 
   @override
-  String toString() => 'ExifResponseDto[id=$id, fileSizeInByte=$fileSizeInByte, make=$make, model=$model, imageName=$imageName, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country]';
+  String toString() => 'ExifResponseDto[fileSizeInByte=$fileSizeInByte, make=$make, model=$model, imageName=$imageName, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.id != null) {
-      json[r'id'] = this.id;
-    } else {
-      // json[r'id'] = null;
-    }
     if (this.fileSizeInByte != null) {
       json[r'fileSizeInByte'] = this.fileSizeInByte;
     } else {
@@ -249,7 +239,6 @@ class ExifResponseDto {
       }());
 
       return ExifResponseDto(
-        id: mapValueOfType<int>(json, r'id'),
         fileSizeInByte: mapValueOfType<int>(json, r'fileSizeInByte'),
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),

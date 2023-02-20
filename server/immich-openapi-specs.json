@@ -3136,12 +3136,6 @@
       "ExifResponseDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "nullable": true,
-            "default": null,
-            "format": "int64"
-          },
           "fileSizeInByte": {
             "type": "integer",
             "nullable": true,
@@ -3245,9 +3239,6 @@
       "SmartInfoResponseDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string"
-          },
           "tags": {
             "nullable": true,
             "type": "array",

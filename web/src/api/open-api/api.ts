@@ -1059,12 +1059,6 @@ export interface ExifResponseDto {
      * @type {number}
      * @memberof ExifResponseDto
      */
-    'id'?: number | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ExifResponseDto
-     */
     'fileSizeInByte'?: number | null;
     /**
      * 
@@ -1730,12 +1724,6 @@ export interface SignUpDto {
  * @interface SmartInfoResponseDto
  */
 export interface SmartInfoResponseDto {
-    /**
-     * 
-     * @type {string}
-     * @memberof SmartInfoResponseDto
-     */
-    'id'?: string;
     /**
      * 
      * @type {Array<string>}

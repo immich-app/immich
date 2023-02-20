@@ -119,7 +119,6 @@ export const assetEntityStub = {
 };
 
 const assetInfo: ExifResponseDto = {
-  id: 1,
   make: 'camera-make',
   model: 'camera-model',
   imageName: 'fancy-image',
@@ -155,7 +154,6 @@ const assetResponse: AssetResponseDto = {
   isFavorite: false,
   mimeType: 'image/jpeg',
   smartInfo: {
-    id: 'should-be-a-number',
     tags: [],
     objects: ['a', 'b', 'c'],
   },
@@ -391,7 +389,6 @@ export const sharedLinkStub = {
           isFavorite: false,
           mimeType: 'image/jpeg',
           smartInfo: {
-            id: 'should-be-a-number',
             assetId: 'id_1',
             tags: [],
             objects: ['a', 'b', 'c'],
@@ -405,7 +402,6 @@ export const sharedLinkStub = {
           livePhotoVideoId: null,
           exifInfo: {
             livePhotoCID: null,
-            id: 1,
             assetId: 'id_1',
             description: 'description',
             exifImageWidth: 500,
