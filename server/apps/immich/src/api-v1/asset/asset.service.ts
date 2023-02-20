@@ -485,7 +485,7 @@ export class AssetService {
              LEFT JOIN smart_info si ON a.id = si."assetId"
              LEFT JOIN exif e ON a.id = e."assetId"
 
-    WHERE a."userId" = $1
+    WHERE a."ownerId" = $1
        AND
        (
          TO_TSVECTOR('english', ARRAY_TO_STRING(si.tags, ',')) @@ PLAINTO_TSQUERY('english', $2) OR
