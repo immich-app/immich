@@ -13,18 +13,9 @@ part of openapi.api;
 class SmartInfoResponseDto {
   /// Returns a new [SmartInfoResponseDto] instance.
   SmartInfoResponseDto({
-    this.id,
     this.tags = const [],
     this.objects = const [],
   });
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? id;
 
   List<String>? tags;
 
@@ -32,27 +23,20 @@ class SmartInfoResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SmartInfoResponseDto &&
-     other.id == id &&
      other.tags == tags &&
      other.objects == objects;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id == null ? 0 : id!.hashCode) +
     (tags == null ? 0 : tags!.hashCode) +
     (objects == null ? 0 : objects!.hashCode);
 
   @override
-  String toString() => 'SmartInfoResponseDto[id=$id, tags=$tags, objects=$objects]';
+  String toString() => 'SmartInfoResponseDto[tags=$tags, objects=$objects]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.id != null) {
-      json[r'id'] = this.id;
-    } else {
-      // json[r'id'] = null;
-    }
     if (this.tags != null) {
       json[r'tags'] = this.tags;
     } else {
@@ -85,7 +69,6 @@ class SmartInfoResponseDto {
       }());
 
       return SmartInfoResponseDto(
-        id: mapValueOfType<String>(json, r'id'),
         tags: json[r'tags'] is List
             ? (json[r'tags'] as List).cast<String>()
             : const [],

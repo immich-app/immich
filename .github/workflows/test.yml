@@ -79,6 +79,51 @@ jobs:
           echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
           exit 1
 
+  generated-typeorm-migrations-up-to-date:
+    name: Check generated TypeORM migrations are up-to-date
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: immich
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install server dependencies
+        run: |
+          cd server
+          npm ci
+      - name: Run existing migrations
+        run: |
+          cd server
+          npm run typeorm:migrations:run
+      - name: Generate new migrations
+        continue-on-error: true
+        run: |
+          cd server
+          npm run typeorm:migrations:generate ./libs/infra/src/db/migrations/TestMigration
+      - name: Find file changes
+        uses: tj-actions/verify-changed-files@v13.1
+        id: verify-changed-files
+        with:
+          files: |
+            server/libs/infra/src/db/migrations/
+      - name: Verify files have not changed
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: |
+          echo "ERROR: Generated files not up to date!"
+          echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          exit 1
+
   mobile-integration-tests:
     name: Run mobile end-to-end integration tests
     runs-on: macos-latest

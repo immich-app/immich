@@ -253,7 +253,7 @@ export class MetadataExtractionProcessor {
     if (this.isGeocodeInitialized) {
       const { latitude, longitude } = job.data;
       const { country, state, city } = await this.reverseGeocodeExif(latitude, longitude);
-      await this.exifRepository.update({ id: job.data.exifId }, { city, state, country });
+      await this.exifRepository.update({ assetId: job.data.assetId }, { city, state, country });
     }
   }
 

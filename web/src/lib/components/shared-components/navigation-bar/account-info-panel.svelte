@@ -17,7 +17,10 @@
 	};
 
 	const getUserProfileImage = async () => {
-		return await api.userApi.getProfileImage(user.id);
+		if (!user.profileImagePath) {
+			return null;
+		}
+		return api.userApi.getProfileImage(user.id).catch(() => null);
 	};
 </script>
 
