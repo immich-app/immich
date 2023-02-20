@@ -59,7 +59,7 @@
 
 		<div class=" mt-4 flex place-items-center place-content-center">
 			<button
-				class="flex border rounded-3xl px-6 py-2 hover:bg-immich-primary/10 dark:border-immich-dark-gray dark:bg-gray-300 dark:hover:bg-immich-dark-primary font-medium place-items-center place-content-center gap-2 text-xs"
+				class="flex border rounded-3xl px-6 py-2 hover:bg-immich-primary/10 dark:border-immich-dark-gray dark:bg-gray-500 dark:hover:bg-immich-dark-primary/50 dark:text-white font-medium place-items-center place-content-center gap-2 text-xs"
 				on:click={() => {
 					goto('/user-settings');
 					dispatch('close');
