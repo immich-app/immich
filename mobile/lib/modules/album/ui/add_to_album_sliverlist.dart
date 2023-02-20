@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/ui/album_thumbnail_listtile.dart';
@@ -27,7 +28,7 @@ class AddToAlbumSliverList extends HookConsumerWidget {
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: ExpansionTile(
-              title: const Text('Shared'),
+              title:  Text('common_shared'.tr()),
               tilePadding: const EdgeInsets.symmetric(horizontal: 10.0),
               leading: const Icon(Icons.group),
               children: sharedAlbums
