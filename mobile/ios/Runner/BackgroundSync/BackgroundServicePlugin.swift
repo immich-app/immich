@@ -119,14 +119,17 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
             result(FlutterMethodNotImplemented)
             return
         }
-        
+                
         // Parses the arguments
         let callbackHandle = args[0] as? Int64
         let notificationTitle = args[1] as? String
         let instant = args[2] as? Bool
         
-        // Store these to user defaults
+        // Write enabled to settings
         let defaults = UserDefaults.standard
+        
+        // We are now enabled, so store this
+        defaults.set(true, forKey: "background_service_enabled")
         
         // The callback handle is an int64 address to communicate with the main isolate's
         // entry function
@@ -135,21 +138,21 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
         // This is not used yet and will need to be implemented
         defaults.set(notificationTitle, forKey: "notification_title")
         
-        // Schedule the background services
-        BackgroundServicePlugin.scheduleBackgroundSync()
-        BackgroundServicePlugin.scheduleBackgroundFetch()
+        // Schedule the background services if instant
+        if (instant ?? true) {
+            BackgroundServicePlugin.scheduleBackgroundSync()
+            BackgroundServicePlugin.scheduleBackgroundFetch()
+        }
         result(true)
     }
     
-    // Called by the flutter code at launch to let us know to schedule the services
+    // Called by the flutter code at launch to see if the background service is enabled or not
     func handleIsEnabled(call: FlutterMethodCall, result: FlutterResult) {
+        let defaults = UserDefaults.standard
+        let enabled = defaults.value(forKey: "background_service_enabled") as? Bool
         
-        // Rechedule the background services
-        BGTaskScheduler.shared.cancelAllTaskRequests()
-        BackgroundServicePlugin.scheduleBackgroundSync()
-        BackgroundServicePlugin.scheduleBackgroundFetch()
-        
-        result(true)
+        // False by default
+        result(enabled ?? false)
     }
     
     // Called by the Flutter code whenever a change in configuration is set
@@ -199,6 +202,9 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
     
     // Disables the service, cancels all the task requests
     func handleDisable(call: FlutterMethodCall, result: FlutterResult) {
+        let defaults = UserDefaults.standard
+        defaults.set(false, forKey: "background_service_enabled")
+        
         BGTaskScheduler.shared.cancelAllTaskRequests()
         result(true)
     }
@@ -206,11 +212,9 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
     // Schedules a short-running background sync to sync only a few photos
     static func scheduleBackgroundFetch() {
         // We will only schedule this task to run if the user has explicitely allowed us to backup while
-        // not using a metered connection and not connected to power
+        // not connected to power
         let defaults = UserDefaults.standard
-        if defaults.value(forKey: "require_unmetered_network") as? Bool == true ||
-           defaults.value(forKey: "require_charging") as? Bool == true {
-            // We won't run while either of these are required
+        if defaults.value(forKey: "require_charging") as? Bool == true {
             return
         }
                 
