@@ -292,39 +292,44 @@ class LoginButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final assetProviderNotifier = ref.watch(assetProvider.notifier);
+    final authenticationProviderNotifier =
+        ref.watch(authenticationProvider.notifier);
+    final authenticationProviderState = ref.watch(authenticationProvider);
+    final backupProviderNotifier = ref.watch(backupProvider.notifier);
+
+    loginPressedHandler() async {
+      assetProviderNotifier.clearAllAsset();
+
+      var isAuthenticated = await authenticationProviderNotifier.login(
+        emailController.text,
+        passwordController.text,
+        serverEndpointController.text,
+      );
+
+      if (isAuthenticated) {
+        // Resume backup (if enable) then navigate
+        if (authenticationProviderState.shouldChangePassword &&
+            !authenticationProviderState.isAdmin) {
+          AutoRouter.of(context).push(const ChangePasswordRoute());
+        } else {
+          backupProviderNotifier.resumeBackup();
+          AutoRouter.of(context).replace(const TabControllerRoute());
+        }
+      } else {
+        ImmichToast.show(
+          context: context,
+          msg: "login_form_failed_login".tr(),
+          toastType: ToastType.error,
+        );
+      }
+    }
+
     return ElevatedButton.icon(
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 12),
       ),
-      onPressed: () async {
-        // This will remove current cache asset state of previous user login.
-        ref.watch(assetProvider.notifier).clearAllAsset();
-
-        var isAuthenticated =
-            await ref.watch(authenticationProvider.notifier).login(
-                  emailController.text,
-                  passwordController.text,
-                  serverEndpointController.text,
-                );
-
-        if (isAuthenticated) {
-          // Resume backup (if enable) then navigate
-
-          if (ref.watch(authenticationProvider).shouldChangePassword &&
-              !ref.watch(authenticationProvider).isAdmin) {
-            AutoRouter.of(context).push(const ChangePasswordRoute());
-          } else {
-            ref.watch(backupProvider.notifier).resumeBackup();
-            AutoRouter.of(context).replace(const TabControllerRoute());
-          }
-        } else {
-          ImmichToast.show(
-            context: context,
-            msg: "login_form_failed_login".tr(),
-            toastType: ToastType.error,
-          );
-        }
-      },
+      onPressed: loginPressedHandler,
       icon: const Icon(Icons.login_rounded),
       label: const Text(
         "login_form_button_text",
