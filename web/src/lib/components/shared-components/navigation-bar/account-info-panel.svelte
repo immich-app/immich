@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { clickOutside } from '$lib/utils/click-outside';
-	import { api, UserResponseDto } from '@api';
+	import { UserResponseDto } from '@api';
 	import { createEventDispatcher } from 'svelte';
 	import { page } from '$app/stores';
 	import { fade } from 'svelte/transition';
@@ -10,17 +10,13 @@
 
 	export let user: UserResponseDto;
 
+	// Show fallback while loading profile picture and hide when image loads.
+	let showProfilePictureFallback = true;
+
 	const dispatch = createEventDispatcher();
 
 	const getFirstLetter = (text?: string) => {
 		return text?.charAt(0).toUpperCase();
-	};
-
-	const getUserProfileImage = async () => {
-		if (!user.profileImagePath) {
-			return null;
-		}
-		return api.userApi.getProfileImage(user.id).catch(() => null);
 	};
 </script>
 
@@ -34,23 +30,26 @@
 >
 	<div class="bg-white dark:bg-immich-dark-primary/10 rounded-3xl mx-4 mt-4 pb-4">
 		<div class="flex place-items-center place-content-center">
-			<button
-				class="flex place-items-center place-content-center rounded-full bg-immich-primary dark:bg-immich-dark-primary dark:immich-dark-primary/80 h-20 w-20 text-gray-100 hover:bg-immich-primary dark:text-immich-dark-bg mt-4"
+			<div
+				class="flex place-items-center place-content-center rounded-full bg-immich-primary dark:bg-immich-dark-primary dark:immich-dark-primary/80 h-20 w-20 text-gray-100 hover:bg-immich-primary dark:text-immich-dark-bg mt-4 select-none"
 			>
-				{#await getUserProfileImage() then}
+				{#if user.profileImagePath}
 					<img
 						transition:fade={{ duration: 100 }}
+						class:hidden={showProfilePictureFallback}
 						src={`${$page.url.origin}/api/user/profile-image/${user.id}`}
 						alt="profile-img"
 						class="inline rounded-full h-20 w-20 object-cover shadow-md border-2 border-immich-primary dark:border-immich-dark-primary"
 						draggable="false"
+						on:load={() => (showProfilePictureFallback = false)}
 					/>
-				{:catch}
+				{/if}
+				{#if showProfilePictureFallback}
 					<div transition:fade={{ duration: 200 }} class="text-lg">
 						{getFirstLetter(user.firstName)}{getFirstLetter(user.lastName)}
 					</div>
-				{/await}
-			</button>
+				{/if}
+			</div>
 		</div>
 
 		<p class="text-lg text-immich-primary dark:text-immich-dark-primary font-medium mt-4">
