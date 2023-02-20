@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
 	import { api, UserResponseDto } from '@api';
@@ -17,12 +17,11 @@
 	const dispatch = createEventDispatcher();
 	let shouldShowAccountInfoPanel = false;
 
-	onMount(() => {
-		getUserProfileImage();
-	});
-
 	const getUserProfileImage = async () => {
-		return await api.userApi.getProfileImage(user.id);
+		if (!user.profileImagePath) {
+			return null;
+		}
+		return api.userApi.getProfileImage(user.id).catch(() => null);
 	};
 	const getFirstLetter = (text?: string) => {
 		return text?.charAt(0).toUpperCase();
@@ -97,16 +96,18 @@
 				<button
 					class="flex place-items-center place-content-center rounded-full bg-immich-primary hover:bg-immich-primary/80 h-12 w-12 text-gray-100 dark:text-immich-dark-bg dark:bg-immich-dark-primary"
 				>
-					{#await getUserProfileImage() then}
-						<img
-							transition:fade={{ duration: 100 }}
-							src={`${$page.url.origin}/api/user/profile-image/${user.id}`}
-							alt="profile-img"
-							class="inline rounded-full h-12 w-12 object-cover shadow-md"
-							draggable="false"
-						/>
-					{:catch}
-						{getFirstLetter(user.firstName)}{getFirstLetter(user.lastName)}
+					{#await getUserProfileImage() then hasProfileImage}
+						{#if hasProfileImage}
+							<img
+								transition:fade={{ duration: 100 }}
+								src={`${$page.url.origin}/api/user/profile-image/${user.id}`}
+								alt="profile-img"
+								class="inline rounded-full h-12 w-12 object-cover shadow-md"
+								draggable="false"
+							/>
+						{:else}
+							{getFirstLetter(user.firstName)}{getFirstLetter(user.lastName)}
+						{/if}
 					{/await}
 				</button>
 

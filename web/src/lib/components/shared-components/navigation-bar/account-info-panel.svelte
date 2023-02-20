@@ -16,7 +16,10 @@
 	};
 
 	const getUserProfileImage = async () => {
-		return await api.userApi.getProfileImage(user.id);
+		if (!user.profileImagePath) {
+			return null;
+		}
+		return api.userApi.getProfileImage(user.id).catch(() => null);
 	};
 </script>
 
@@ -32,18 +35,20 @@
 		<button
 			class="flex place-items-center place-content-center rounded-full bg-immich-primary dark:bg-immich-dark-primary dark:immich-dark-primary/80 h-20 w-20 text-gray-100 hover:bg-immich-primary dark:text-immich-dark-bg"
 		>
-			{#await getUserProfileImage() then}
-				<img
-					transition:fade={{ duration: 100 }}
-					src={`${$page.url.origin}/api/user/profile-image/${user.id}`}
-					alt="profile-img"
-					class="inline rounded-full h-20 w-20 object-cover shadow-md"
-					draggable="false"
-				/>
-			{:catch}
-				<div transition:fade={{ duration: 200 }} class="text-lg">
-					{getFirstLetter(user.firstName)}{getFirstLetter(user.lastName)}
-				</div>
+			{#await getUserProfileImage() then hasProfileImage}
+				{#if hasProfileImage}
+					<img
+						transition:fade={{ duration: 100 }}
+						src={`${$page.url.origin}/api/user/profile-image/${user.id}`}
+						alt="profile-img"
+						class="inline rounded-full h-20 w-20 object-cover shadow-md"
+						draggable="false"
+					/>
+				{:else}
+					<div transition:fade={{ duration: 200 }} class="text-lg">
+						{getFirstLetter(user.firstName)}{getFirstLetter(user.lastName)}
+					</div>
+				{/if}
 			{/await}
 		</button>
 	</div>
