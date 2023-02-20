@@ -57,7 +57,7 @@ input:focus-visible {
 
 @layer utilities {
 	.immich-form-input {
-		@apply bg-slate-200 p-2 rounded-lg focus:border-immich-primary text-sm dark:bg-gray-600 dark:text-immich-dark-fg disabled:bg-gray-400 dark:disabled:bg-gray-800 disabled:cursor-not-allowed disabled:text-gray-200;
+		@apply bg-slate-200 p-4 rounded-xl focus:border-immich-primary text-sm dark:bg-gray-600 dark:text-immich-dark-fg disabled:bg-gray-400 dark:disabled:bg-gray-800 disabled:cursor-not-allowed disabled:text-gray-200;
 	}
 
 	.immich-form-label {
@@ -69,11 +69,11 @@ input:focus-visible {
 	}
 
 	.immich-btn-primary-big {
-		@apply inline-flex justify-center items-center bg-immich-primary dark:bg-immich-dark-primary dark:text-immich-dark-gray text-white enabled:dark:hover:bg-immich-dark-primary/80 enabled:hover:bg-immich-primary/75 disabled:cursor-not-allowed px-6 py-4 rounded-md shadow-md w-full font-semibold;
+		@apply inline-flex justify-center items-center bg-immich-primary dark:bg-immich-dark-primary dark:text-immich-dark-gray text-white enabled:dark:hover:bg-immich-dark-primary/80 enabled:hover:bg-immich-primary/75 disabled:cursor-not-allowed px-6 py-4 rounded-3xl shadow-md w-full font-semibold;
 	}
 
 	.immich-btn-secondary-big {
-		@apply inline-flex justify-center items-center bg-gray-500 dark:bg-gray-200 text-white enabled:hover:bg-gray-500/75 enabled:dark:hover:bg-gray-200/80 dark:text-immich-dark-gray disabled:cursor-not-allowed px-6 py-4 rounded-md shadow-md w-full font-semibold;
+		@apply inline-flex justify-center items-center bg-gray-500 dark:bg-gray-200 text-white enabled:hover:bg-gray-500/75 enabled:dark:hover:bg-gray-200/80 dark:text-immich-dark-gray disabled:cursor-not-allowed px-6 py-4 rounded-3xl shadow-md w-full font-semibold;
 	}
 
 	.immich-text-button {

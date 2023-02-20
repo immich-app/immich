@@ -42,7 +42,7 @@
 
 <section
 	id="dashboard-navbar"
-	class="fixed w-screen  z-[100] bg-immich-bg dark:bg-immich-dark-bg text-sm"
+	class="fixed w-screen z-[900] bg-immich-bg dark:bg-immich-dark-bg text-sm"
 >
 	<div class="flex border-b dark:border-b-immich-dark-gray place-items-center px-6 py-2 ">
 		<a
@@ -57,7 +57,7 @@
 		</a>
 		<div class="flex-1 ml-24">
 			<input
-				class="w-[50%] rounded-md bg-gray-200 dark:bg-immich-dark-gray  px-8 py-4"
+				class="w-[50%] rounded-3xl bg-gray-200 dark:bg-immich-dark-gray  px-8 py-4"
 				placeholder="Search - Coming soon"
 			/>
 		</div>
@@ -102,7 +102,7 @@
 								transition:fade={{ duration: 100 }}
 								src={`${$page.url.origin}/api/user/profile-image/${user.id}`}
 								alt="profile-img"
-								class="inline rounded-full h-12 w-12 object-cover shadow-md"
+								class="inline rounded-full h-12 w-12 object-cover shadow-md border-2 border-immich-primary hover:border-immich-dark-primary dark:hover:border-immich-primary dark:border-immich-dark-primary transition-all"
 								draggable="false"
 							/>
 						{:else}

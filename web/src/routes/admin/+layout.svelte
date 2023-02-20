@@ -60,15 +60,15 @@
 			</div>
 		</section>
 
-		<section class="overflow-y-auto ">
-			<div id="setting-title" class="pt-10 fixed w-full z-50 bg-immich-bg dark:bg-immich-dark-bg">
+		<section class="overflow-y-auto immich-scrollbar ">
+			<div id="setting-title" class="pt-10 w-full z-50 bg-immich-bg dark:bg-immich-dark-bg">
 				<h1 class="text-lg ml-8 mb-4 text-immich-primary dark:text-immich-dark-primary font-medium">
 					{getPageTitle($page.route.id)}
 				</h1>
 				<hr class="dark:border-immich-dark-gray" />
 			</div>
 
-			<section id="setting-content" class="pt-[85px] flex place-content-center">
+			<section id="setting-content" class="flex place-content-center">
 				<section class="w-[800px] pt-5 pb-28">
 					<slot />
 				</section>

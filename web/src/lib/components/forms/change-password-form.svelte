@@ -45,7 +45,7 @@
 </script>
 
 <div
-	class="border bg-immich-bg dark:bg-immich-dark-gray dark:border-immich-dark-gray p-4 shadow-sm w-[500px] max-w-[95vw] rounded-3xl py-8 dark:text-immich-dark-fg"
+	class="border bg-gray-50 dark:bg-immich-dark-gray dark:border-immich-dark-gray p-4 shadow-sm w-[500px] max-w-[95vw] rounded-3xl py-8 dark:text-immich-dark-fg"
 >
 	<div class="flex flex-col place-items-center place-content-center gap-4 px-4">
 		<ImmichLogo class="text-center" height="100" width="100" />
@@ -54,7 +54,7 @@
 		</h1>
 
 		<p
-			class="text-sm border rounded-md p-4 font-mono text-gray-600 dark:border-immich-dark-bg dark:text-gray-300"
+			class="text-sm border rounded-3xl p-6 text-gray-600 dark:border-immich-dark-bg dark:text-gray-300 bg-immich-bg dark:bg-gray-900"
 		>
 			Hi {user.firstName}
 			{user.lastName} ({user.email}),
@@ -98,11 +98,7 @@
 			<p class="text-immich-primary ml-4 text-sm">{success}</p>
 		{/if}
 		<div class="flex w-full">
-			<button
-				type="submit"
-				class="m-4 p-2 bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 dark:hover:bg-immich-dark-primary/80 dark:text-immich-dark-gray px-6 py-4 text-white rounded-md shadow-md w-full"
-				>Change Password</button
-			>
+			<button type="submit" class="immich-btn-primary-big m-4">Change Password</button>
 		</div>
 	</form>
 </div>

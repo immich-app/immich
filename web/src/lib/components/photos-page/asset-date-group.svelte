@@ -110,7 +110,7 @@
 
 <section
 	id="asset-group-by-date"
-	class="flex flex-wrap gap-5 mt-5"
+	class="flex flex-wrap gap-12 mt-5"
 	bind:clientHeight={actualBucketHeight}
 >
 	{#each assetsGroupByDate as assetsInDateGroup, groupIndex (assetsInDateGroup[0].id)}
