@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:isolate';
-import 'dart:ui' show IsolateNameServer, PluginUtilities;
+import 'dart:ui' show DartPluginRegistrant, IsolateNameServer, PluginUtilities;
 import 'package:cancellation_token_http/http.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
@@ -10,7 +10,6 @@ import 'package:flutter/widgets.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/modules/backup/background_service/localization.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
@@ -19,6 +18,7 @@ import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:path_provider_ios/path_provider_ios.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 final backgroundServiceProvider = Provider(
@@ -51,8 +51,7 @@ class BackgroundService {
   late final _Throttle _throttledDetailNotify =
       _Throttle(_updateDetailProgress, notifyInterval);
   Completer<bool> _hasAccessCompleter = Completer();
-  late Future<bool> _hasAccess =
-      Platform.isAndroid ? _hasAccessCompleter.future : Future.value(true);
+  late Future<bool> _hasAccess = _hasAccessCompleter.future;
 
   Future<bool> get hasAccess => _hasAccess;
 
@@ -67,9 +66,6 @@ class BackgroundService {
 
   /// Enqueues the background service
   Future<bool> enableService({bool immediate = false}) async {
-    if (!Platform.isAndroid) {
-      return true;
-    }
     try {
       final callback = PluginUtilities.getCallbackHandle(_nativeEntry)!;
       final String title =
@@ -89,9 +85,6 @@ class BackgroundService {
     int triggerUpdateDelay = 5000,
     int triggerMaxDelay = 50000,
   }) async {
-    if (!Platform.isAndroid) {
-      return true;
-    }
     try {
       final bool ok = await _foregroundChannel.invokeMethod(
         'configure',
@@ -110,9 +103,6 @@ class BackgroundService {
 
   /// Cancels the background service (if currently running) and removes it from work queue
   Future<bool> disableService() async {
-    if (!Platform.isAndroid) {
-      return true;
-    }
     try {
       final ok = await _foregroundChannel.invokeMethod('disable');
       return ok;
@@ -123,9 +113,6 @@ class BackgroundService {
 
   /// Returns `true` if the background service is enabled
   Future<bool> isBackgroundBackupEnabled() async {
-    if (!Platform.isAndroid) {
-      return false;
-    }
     try {
       return await _foregroundChannel.invokeMethod("isEnabled");
     } catch (error) {
@@ -135,7 +122,8 @@ class BackgroundService {
 
   /// Returns `true` if battery optimizations are disabled
   Future<bool> isIgnoringBatteryOptimizations() async {
-    if (!Platform.isAndroid) {
+    // iOS does not need battery optimizations enabled
+    if (Platform.isIOS) {
       return true;
     }
     try {
@@ -156,9 +144,6 @@ class BackgroundService {
     bool isDetail = false,
     bool onlyIfFG = false,
   }) async {
-    if (!Platform.isAndroid) {
-      return true;
-    }
     try {
       if (_isBackgroundInitialized) {
         return _backgroundChannel.invokeMethod<bool>(
@@ -178,9 +163,6 @@ class BackgroundService {
     String? content,
     String? individualTag,
   }) async {
-    if (!Platform.isAndroid) {
-      return true;
-    }
     try {
       if (_isBackgroundInitialized && _errorGracePeriodExceeded) {
         return await _backgroundChannel
@@ -193,9 +175,6 @@ class BackgroundService {
   }
 
   Future<bool> _clearErrorNotifications() async {
-    if (!Platform.isAndroid) {
-      return true;
-    }
     try {
       if (_isBackgroundInitialized) {
         return await _backgroundChannel.invokeMethod('clearErrorNotifications');
@@ -210,9 +189,6 @@ class BackgroundService {
 
   /// await to ensure this thread (foreground or background) has exclusive access
   Future<bool> acquireLock() async {
-    if (!Platform.isAndroid) {
-      return true;
-    }
     if (_hasLock) {
       debugPrint("WARNING: [acquireLock] called more than once");
       return true;
@@ -253,7 +229,7 @@ class BackgroundService {
       while (_wantsLockTime == lockTime) {
         other.send(tempSp);
         final dynamic answer = await bs.first
-            .timeout(const Duration(seconds: 5), onTimeout: () => null);
+            .timeout(const Duration(seconds: 3), onTimeout: () => null);
         if (_wantsLockTime != lockTime) {
           break;
         }
@@ -270,7 +246,7 @@ class BackgroundService {
           // other isolate is still active
         }
         final dynamic isFinished = await bs.first
-            .timeout(const Duration(seconds: 5), onTimeout: () => false);
+            .timeout(const Duration(seconds: 3), onTimeout: () => false);
         if (isFinished == true) {
           break;
         }
@@ -288,9 +264,6 @@ class BackgroundService {
 
   /// releases the exclusive access lock
   void releaseLock() {
-    if (!Platform.isAndroid) {
-      return;
-    }
     _wantsLockTime = 0;
     if (_hasLock) {
       _hasAccessCompleter = Completer();
@@ -311,17 +284,35 @@ class BackgroundService {
   }
 
   Future<bool> _callHandler(MethodCall call) async {
+    DartPluginRegistrant.ensureInitialized();
+    if (Platform.isIOS) {
+      // NOTE: I'm not sure this is strictly necessary anymore, but
+      // out of an abundance of caution, we will keep it in until someone
+      // can say for sure
+      PathProviderIOS.registerWith();
+    }
     switch (call.method) {
+      case "backgroundProcessing":
       case "onAssetsChanged":
-        final Future<bool> translationsLoaded = loadTranslations();
         try {
           _clearErrorNotifications();
-          final bool hasAccess = await acquireLock();
+
+          // iOS should time out after some threshhold so it doesn't wait
+          // indefinitely and can run later
+          // Android is fine to wait here until the lock releases
+          final waitForLock = Platform.isIOS
+            ? acquireLock()
+              .timeout(
+                const Duration(seconds: 5),
+                onTimeout: () => false,
+              )
+            : acquireLock();
+
+          final bool hasAccess = await waitForLock;
           if (!hasAccess) {
             debugPrint("[_callHandler] could not acquire lock, exiting");
             return false;
           }
-          await translationsLoaded;
           final bool ok = await _onAssetsChanged();
           return ok;
         } catch (error) {
@@ -388,9 +379,9 @@ class BackgroundService {
             .put(backupFailedSince, DateTime.now());
         return false;
       }
-      // check for new assets added while performing backup
-    } while (true ==
-        await _backgroundChannel.invokeMethod<bool>("hasContentChanged"));
+      // Android should check for new assets added while performing backup
+    } while (Platform.isAndroid &&
+      true == await _backgroundChannel.invokeMethod<bool>("hasContentChanged"));
     return true;
   }
 
@@ -560,6 +551,28 @@ class BackgroundService {
     final String total = numberFormat.format(bytesTotal / 1024.0);
     return "$percent% ($done/$total$unit)";
   }
+
+  Future<DateTime?> getIOSBackupLastRun(IosBackgroundTask task) async {
+    // Seconds since last run
+    final double? lastRun = task == IosBackgroundTask.fetch
+      ? await _foregroundChannel.invokeMethod('lastBackgroundFetchTime')
+      : await _foregroundChannel.invokeMethod('lastBackgroundProcessingTime');
+    if (lastRun == null) {
+      return null;
+    }
+    final time = DateTime.fromMillisecondsSinceEpoch(lastRun.toInt() * 1000);
+    return time;
+  }
+
+  Future<int> getIOSBackupNumberOfProcesses() async {
+    return await _foregroundChannel
+      .invokeMethod('numberOfBackgroundProcesses');
+  }
+}
+
+enum IosBackgroundTask {
+  fetch,
+  processing
 }
 
 class _Throttle {
@@ -603,6 +616,7 @@ class _Throttle {
 @pragma('vm:entry-point')
 void _nativeEntry() {
   WidgetsFlutterBinding.ensureInitialized();
+  DartPluginRegistrant.ensureInitialized();
   BackgroundService backgroundService = BackgroundService();
   backgroundService._setupBackgroundCallHandler();
 }

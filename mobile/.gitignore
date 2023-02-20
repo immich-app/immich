@@ -24,7 +24,6 @@
 
 # Flutter/Dart/Pub related
 **/doc/api/
-**/ios/
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies

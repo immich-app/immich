@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:cancellation_token_http/http.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -130,7 +128,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           requireCharging != null ||
           triggerDelay != null,
     );
-    if (Platform.isAndroid) {
       final bool wasEnabled = state.backgroundBackup;
       final bool wasWifi = state.backupRequireWifi;
       final bool wasCharging = state.backupRequireCharging;
@@ -180,7 +177,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           onError("backup_controller_page_background_configure_error");
         }
       }
-    }
   }
 
   ///
@@ -577,48 +573,47 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   Future<void> resumeBackup() async {
-    if (Platform.isAndroid) {
-      // assumes the background service is currently running
-      // if true, waits until it has stopped to update the app state from HiveDB
-      // before actually resuming backup by calling the internal `_resumeBackup`
-      final BackUpProgressEnum previous = state.backupProgress;
-      state = state.copyWith(backupProgress: BackUpProgressEnum.inBackground);
-      final bool hasLock = await _backgroundService.acquireLock();
-      if (!hasLock) {
-        log.warning("WARNING [resumeBackup] failed to acquireLock");
-        return;
-      }
-      await Future.wait([
-        Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
-        Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
-        Hive.openBox(backgroundBackupInfoBox),
-      ]);
-      final HiveBackupAlbums? albums =
-          Hive.box<HiveBackupAlbums>(hiveBackupInfoBox).get(backupInfoKey);
-      Set<AvailableAlbum> selectedAlbums = state.selectedBackupAlbums;
-      Set<AvailableAlbum> excludedAlbums = state.excludedBackupAlbums;
-      if (albums != null) {
-        selectedAlbums = _updateAlbumsBackupTime(
-          selectedAlbums,
-          albums.selectedAlbumIds,
-          albums.lastSelectedBackupTime,
-        );
-        excludedAlbums = _updateAlbumsBackupTime(
-          excludedAlbums,
-          albums.excludedAlbumsIds,
-          albums.lastExcludedBackupTime,
-        );
-      }
-      final Box backgroundBox = Hive.box(backgroundBackupInfoBox);
-      state = state.copyWith(
-        backupProgress: previous,
-        selectedBackupAlbums: selectedAlbums,
-        excludedBackupAlbums: excludedAlbums,
-        backupRequireWifi: backgroundBox.get(backupRequireWifi),
-        backupRequireCharging: backgroundBox.get(backupRequireCharging),
-        backupTriggerDelay: backgroundBox.get(backupTriggerDelay),
+
+    // assumes the background service is currently running
+    // if true, waits until it has stopped to update the app state from HiveDB
+    // before actually resuming backup by calling the internal `_resumeBackup`
+    final BackUpProgressEnum previous = state.backupProgress;
+    state = state.copyWith(backupProgress: BackUpProgressEnum.inBackground);
+    final bool hasLock = await _backgroundService.acquireLock();
+    if (!hasLock) {
+      log.warning("WARNING [resumeBackup] failed to acquireLock");
+      return;
+    }
+    await Future.wait([
+      Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
+      Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
+      Hive.openBox(backgroundBackupInfoBox),
+    ]);
+    final HiveBackupAlbums? albums =
+        Hive.box<HiveBackupAlbums>(hiveBackupInfoBox).get(backupInfoKey);
+    Set<AvailableAlbum> selectedAlbums = state.selectedBackupAlbums;
+    Set<AvailableAlbum> excludedAlbums = state.excludedBackupAlbums;
+    if (albums != null) {
+      selectedAlbums = _updateAlbumsBackupTime(
+        selectedAlbums,
+        albums.selectedAlbumIds,
+        albums.lastSelectedBackupTime,
+      );
+      excludedAlbums = _updateAlbumsBackupTime(
+        excludedAlbums,
+        albums.excludedAlbumsIds,
+        albums.lastExcludedBackupTime,
       );
     }
+    final Box backgroundBox = Hive.box(backgroundBackupInfoBox);
+    state = state.copyWith(
+      backupProgress: previous,
+      selectedBackupAlbums: selectedAlbums,
+      excludedBackupAlbums: excludedAlbums,
+      backupRequireWifi: backgroundBox.get(backupRequireWifi),
+      backupRequireCharging: backgroundBox.get(backupRequireCharging),
+      backupTriggerDelay: backgroundBox.get(backupTriggerDelay),
+    );
     return _resumeBackup();
   }
 
@@ -649,8 +644,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       AppStateEnum.paused,
       AppStateEnum.detached,
     ];
-    if (Platform.isAndroid &&
-        allowedStates.contains(ref.read(appStateProvider.notifier).state)) {
+    if (allowedStates.contains(ref.read(appStateProvider.notifier).state)) {
       try {
         if (Hive.isBoxOpen(hiveBackupInfoBox)) {
           await Hive.box<HiveBackupAlbums>(hiveBackupInfoBox).close();
@@ -683,6 +677,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       _backgroundService.releaseLock();
     }
   }
+
 }
 
 final backupProvider =
