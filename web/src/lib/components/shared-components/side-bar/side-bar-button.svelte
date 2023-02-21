@@ -43,7 +43,7 @@
 			{#if showMoreInformation}
 				<div class="absolute left-6 top-0 z-20">
 					<div
-						class="flex place-items-center place-content-center whitespace-nowrap rounded-lg shadow-lg p-4 bg-immich-bg text-immich-fg dark:bg-immich-dark-bg dark:text-immich-dark-fg text-xs border dark:border-immich-dark-gray"
+						class="flex place-items-center place-content-center whitespace-nowrap rounded-3xl shadow-lg py-3 px-6 bg-immich-bg text-immich-fg dark:bg-gray-600 dark:text-immich-dark-fg text-xs border dark:border-immich-dark-gray"
 						class:hidden={!showMoreInformation}
 						transition:fade={{ duration: 200 }}
 					>
