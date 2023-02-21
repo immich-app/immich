@@ -11,12 +11,13 @@ class IosDebugInfoTile extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final futures = [
-      ref.read(backgroundServiceProvider)
-        .getIOSBackupLastRun(IosBackgroundTask.fetch),
-      ref.read(backgroundServiceProvider)
-        .getIOSBackupLastRun(IosBackgroundTask.processing),
-      ref.read(backgroundServiceProvider)
-        .getIOSBackupNumberOfProcesses(),
+      ref
+          .read(backgroundServiceProvider)
+          .getIOSBackupLastRun(IosBackgroundTask.fetch),
+      ref
+          .read(backgroundServiceProvider)
+          .getIOSBackupLastRun(IosBackgroundTask.processing),
+      ref.read(backgroundServiceProvider).getIOSBackupNumberOfProcesses(),
     ];
     return FutureBuilder<List<dynamic>>(
       future: Future.wait(futures),
@@ -41,9 +42,8 @@ class IosDebugInfoTile extends HookConsumerWidget {
           } else if (processing != null && fetch == null) {
             subtitle = 'Processing ran ${df.format(processing)}';
           } else {
-            final fetchOrProcessing = fetch!.isAfter(processing!)
-              ? fetch
-              : processing;
+            final fetchOrProcessing =
+                fetch!.isAfter(processing!) ? fetch : processing;
             subtitle = 'Last sync ${df.format(fetchOrProcessing)}';
           }
         }
@@ -52,8 +52,20 @@ class IosDebugInfoTile extends HookConsumerWidget {
           duration: const Duration(milliseconds: 200),
           child: ListTile(
             key: ValueKey(title),
-            title: Text(title ?? ''),
-            subtitle: Text(subtitle ?? ''),
+            title: Text(
+              title ?? '',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Theme.of(context).primaryColor,
+              ),
+            ),
+            subtitle: Text(
+              subtitle ?? '',
+              style: const TextStyle(
+                fontSize: 14,
+              ),
+            ),
             leading: Icon(
               Icons.bug_report,
               color: Theme.of(context).primaryColor,
@@ -64,4 +76,3 @@ class IosDebugInfoTile extends HookConsumerWidget {
     );
   }
 }
-

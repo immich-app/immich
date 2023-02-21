@@ -21,7 +21,7 @@ class BackupInfoCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20), // if you need this
         side: BorderSide(
           color: isDarkMode
-              ? const Color.fromARGB(255, 101, 101, 101)
+              ? const Color.fromARGB(255, 56, 56, 56)
               : Colors.black12,
           width: 1,
         ),

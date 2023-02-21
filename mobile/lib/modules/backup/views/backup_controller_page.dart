@@ -263,14 +263,14 @@ class BackupControllerPage extends HookConsumerWidget {
                 if (!isBackgroundEnabled)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child:
-                        const Text("backup_controller_page_background_description")
-                            .tr(),
+                    child: const Text(
+                      "backup_controller_page_background_description",
+                    ).tr(),
                   ),
                 if (isBackgroundEnabled && Platform.isAndroid)
-                  SwitchListTile(
-                    title:
-                        const Text("backup_controller_page_background_wifi").tr(),
+                  SwitchListTile.adaptive(
+                    title: const Text("backup_controller_page_background_wifi")
+                        .tr(),
                     secondary: Icon(
                       Icons.wifi,
                       color: isWifiRequired ? activeColor : null,
@@ -289,9 +289,10 @@ class BackupControllerPage extends HookConsumerWidget {
                         : null,
                   ),
                 if (isBackgroundEnabled)
-                  SwitchListTile(
-                    title: const Text("backup_controller_page_background_charging")
-                        .tr(),
+                  SwitchListTile.adaptive(
+                    title:
+                        const Text("backup_controller_page_background_charging")
+                            .tr(),
                     secondary: Icon(
                       Icons.charging_station,
                       color: isChargingRequired ? activeColor : null,
@@ -319,7 +320,9 @@ class BackupControllerPage extends HookConsumerWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
-                    ).tr(args: [formatBackupDelaySliderValue(triggerDelay.value)]),
+                    ).tr(
+                      args: [formatBackupDelaySliderValue(triggerDelay.value)],
+                    ),
                     subtitle: Slider(
                       value: triggerDelay.value,
                       onChanged: hasExclusiveAccess
@@ -339,18 +342,21 @@ class BackupControllerPage extends HookConsumerWidget {
                     ),
                   ),
                 ElevatedButton(
-                  onPressed: () =>
-                      ref.read(backupProvider.notifier).configureBackgroundBackup(
-                            enabled: !isBackgroundEnabled,
-                            onError: showErrorToUser,
-                            onBatteryInfo: showBatteryOptimizationInfoToUser,
-                          ),
+                  onPressed: () => ref
+                      .read(backupProvider.notifier)
+                      .configureBackgroundBackup(
+                        enabled: !isBackgroundEnabled,
+                        onError: showErrorToUser,
+                        onBatteryInfo: showBatteryOptimizationInfoToUser,
+                      ),
                   child: Text(
                     isBackgroundEnabled
                         ? "backup_controller_page_background_turn_off"
                         : "backup_controller_page_background_turn_on",
-                    style:
-                        const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
                   ).tr(),
                 ),
               ],
@@ -434,7 +440,7 @@ class BackupControllerPage extends HookConsumerWidget {
           borderRadius: BorderRadius.circular(20),
           side: BorderSide(
             color: isDarkMode
-                ? const Color.fromARGB(255, 101, 101, 101)
+                ? const Color.fromARGB(255, 56, 56, 56)
                 : Colors.black12,
             width: 1,
           ),
@@ -534,7 +540,7 @@ class BackupControllerPage extends HookConsumerWidget {
                 borderRadius: BorderRadius.circular(20), // if you need this
                 side: BorderSide(
                   color: isDarkMode
-                      ? const Color.fromARGB(255, 101, 101, 101)
+                      ? const Color.fromARGB(255, 56, 56, 56)
                       : Colors.black12,
                   width: 1,
                 ),
