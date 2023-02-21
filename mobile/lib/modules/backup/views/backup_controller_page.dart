@@ -592,18 +592,23 @@ class BackupControllerPage extends HookConsumerWidget {
             BackupInfoCard(
               title: "backup_controller_page_total".tr(),
               subtitle: "backup_controller_page_total_sub".tr(),
-              info: "${backupState.allUniqueAssets.length}",
+              info: ref.watch(backupProvider).availableAlbums.isEmpty
+                  ? "..."
+                  : "${backupState.allUniqueAssets.length}",
             ),
             BackupInfoCard(
               title: "backup_controller_page_backup".tr(),
               subtitle: "backup_controller_page_backup_sub".tr(),
-              info: "${backupState.selectedAlbumsBackupAssetsIds.length}",
+              info: ref.watch(backupProvider).availableAlbums.isEmpty
+                  ? "..."
+                  : "${backupState.selectedAlbumsBackupAssetsIds.length}",
             ),
             BackupInfoCard(
               title: "backup_controller_page_remainder".tr(),
               subtitle: "backup_controller_page_remainder_sub".tr(),
-              info:
-                  "${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length}",
+              info: ref.watch(backupProvider).availableAlbums.isEmpty
+                  ? "..."
+                  : "${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length}",
             ),
             const Divider(),
             buildAutoBackupController(),

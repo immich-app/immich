@@ -298,10 +298,10 @@ class LoginButton extends ConsumerWidget {
       ),
       onPressed: () async {
         // This will remove current cache asset state of previous user login.
-        ref.watch(assetProvider.notifier).clearAllAsset();
+        ref.read(assetProvider.notifier).clearAllAsset();
 
         var isAuthenticated =
-            await ref.watch(authenticationProvider.notifier).login(
+            await ref.read(authenticationProvider.notifier).login(
                   emailController.text,
                   passwordController.text,
                   serverEndpointController.text,
@@ -309,12 +309,11 @@ class LoginButton extends ConsumerWidget {
 
         if (isAuthenticated) {
           // Resume backup (if enable) then navigate
-
-          if (ref.watch(authenticationProvider).shouldChangePassword &&
-              !ref.watch(authenticationProvider).isAdmin) {
+          if (ref.read(authenticationProvider).shouldChangePassword &&
+              !ref.read(authenticationProvider).isAdmin) {
             AutoRouter.of(context).push(const ChangePasswordRoute());
           } else {
-            ref.watch(backupProvider.notifier).resumeBackup();
+            ref.read(backupProvider.notifier).resumeBackup();
             AutoRouter.of(context).replace(const TabControllerRoute());
           }
         } else {

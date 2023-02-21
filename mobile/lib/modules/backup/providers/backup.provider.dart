@@ -58,9 +58,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
               fileType: '...',
             ),
           ),
-        ) {
-    getBackupInfo();
-  }
+        );
 
   final log = Logger('BackupNotifier');
   final BackupService _backupService;
@@ -128,55 +126,55 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           requireCharging != null ||
           triggerDelay != null,
     );
-      final bool wasEnabled = state.backgroundBackup;
-      final bool wasWifi = state.backupRequireWifi;
-      final bool wasCharging = state.backupRequireCharging;
-      final int oldTriggerDelay = state.backupTriggerDelay;
-      state = state.copyWith(
-        backgroundBackup: enabled,
-        backupRequireWifi: requireWifi,
-        backupRequireCharging: requireCharging,
-        backupTriggerDelay: triggerDelay,
-      );
+    final bool wasEnabled = state.backgroundBackup;
+    final bool wasWifi = state.backupRequireWifi;
+    final bool wasCharging = state.backupRequireCharging;
+    final int oldTriggerDelay = state.backupTriggerDelay;
+    state = state.copyWith(
+      backgroundBackup: enabled,
+      backupRequireWifi: requireWifi,
+      backupRequireCharging: requireCharging,
+      backupTriggerDelay: triggerDelay,
+    );
 
-      if (state.backgroundBackup) {
-        bool success = true;
-        if (!wasEnabled) {
-          if (!await _backgroundService.isIgnoringBatteryOptimizations()) {
-            onBatteryInfo();
-          }
-          success &= await _backgroundService.enableService(immediate: true);
+    if (state.backgroundBackup) {
+      bool success = true;
+      if (!wasEnabled) {
+        if (!await _backgroundService.isIgnoringBatteryOptimizations()) {
+          onBatteryInfo();
         }
-        success &= success &&
-            await _backgroundService.configureService(
-              requireUnmetered: state.backupRequireWifi,
-              requireCharging: state.backupRequireCharging,
-              triggerUpdateDelay: state.backupTriggerDelay,
-              triggerMaxDelay: state.backupTriggerDelay * 10,
-            );
-        if (success) {
-          final box = Hive.box(backgroundBackupInfoBox);
-          await Future.wait([
-            box.put(backupRequireWifi, state.backupRequireWifi),
-            box.put(backupRequireCharging, state.backupRequireCharging),
-            box.put(backupTriggerDelay, state.backupTriggerDelay),
-          ]);
-        } else {
-          state = state.copyWith(
-            backgroundBackup: wasEnabled,
-            backupRequireWifi: wasWifi,
-            backupRequireCharging: wasCharging,
-            backupTriggerDelay: oldTriggerDelay,
-          );
-          onError("backup_controller_page_background_configure_error");
-        }
-      } else {
-        final bool success = await _backgroundService.disableService();
-        if (!success) {
-          state = state.copyWith(backgroundBackup: wasEnabled);
-          onError("backup_controller_page_background_configure_error");
-        }
+        success &= await _backgroundService.enableService(immediate: true);
       }
+      success &= success &&
+          await _backgroundService.configureService(
+            requireUnmetered: state.backupRequireWifi,
+            requireCharging: state.backupRequireCharging,
+            triggerUpdateDelay: state.backupTriggerDelay,
+            triggerMaxDelay: state.backupTriggerDelay * 10,
+          );
+      if (success) {
+        final box = Hive.box(backgroundBackupInfoBox);
+        await Future.wait([
+          box.put(backupRequireWifi, state.backupRequireWifi),
+          box.put(backupRequireCharging, state.backupRequireCharging),
+          box.put(backupTriggerDelay, state.backupTriggerDelay),
+        ]);
+      } else {
+        state = state.copyWith(
+          backgroundBackup: wasEnabled,
+          backupRequireWifi: wasWifi,
+          backupRequireCharging: wasCharging,
+          backupTriggerDelay: oldTriggerDelay,
+        );
+        onError("backup_controller_page_background_configure_error");
+      }
+    } else {
+      final bool success = await _backgroundService.disableService();
+      if (!success) {
+        state = state.copyWith(backgroundBackup: wasEnabled);
+        onError("backup_controller_page_background_configure_error");
+      }
+    }
   }
 
   ///
@@ -460,6 +458,12 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
   }
 
+  void setAvailableAlbums(availableAlbums) {
+    state = state.copyWith(
+      availableAlbums: availableAlbums,
+    );
+  }
+
   void _onBackupError(ErrorUploadAsset errorAssetInfo) {
     ref.watch(errorBackupListProvider.notifier).add(errorAssetInfo);
   }
@@ -573,7 +577,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   Future<void> resumeBackup() async {
-
     // assumes the background service is currently running
     // if true, waits until it has stopped to update the app state from HiveDB
     // before actually resuming backup by calling the internal `_resumeBackup`
@@ -677,7 +680,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       _backgroundService.releaseLock();
     }
   }
-
 }
 
 final backupProvider =

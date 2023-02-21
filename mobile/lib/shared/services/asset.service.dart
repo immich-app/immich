@@ -46,6 +46,7 @@ class AssetService {
       );
     } catch (e, stack) {
       log.severe('Error while getting remote assets', e, stack);
+      debugPrint("[ERROR] [getRemoteAssets] $e");
       return Pair(null, etag);
     }
   }
