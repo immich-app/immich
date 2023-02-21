@@ -18,7 +18,7 @@ on:
         type: boolean
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-root
   cancel-in-progress: true
 
 jobs:
