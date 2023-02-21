@@ -2,7 +2,8 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: "none"
-version: 1.43.0+66
+version: 1.48.0+71
+isar_version: &isar_version 3.0.5
 
 environment:
   sdk: ">=2.17.0 <3.0.0"
@@ -11,9 +12,10 @@ dependencies:
   flutter:
     sdk: flutter
 
+  path_provider_ios:
   photo_manager: ^2.5.0
-  flutter_hooks: ^0.18.0
-  hooks_riverpod: ^2.0.0-dev.0
+  flutter_hooks: ^0.18.6
+  hooks_riverpod: ^2.2.0
   hive: ^2.2.1
   hive_flutter: ^1.1.0
   cached_network_image: ^3.2.2
@@ -23,7 +25,6 @@ dependencies:
   video_player: ^2.2.18
   chewie: ^1.3.5
   badges: ^2.0.2
-  photo_view: ^0.14.0
   socket_io_client: ^2.0.0-beta.4-nullsafety.0
   flutter_map: ^0.14.0
   flutter_udid: ^2.0.0
@@ -32,7 +33,7 @@ dependencies:
   http: 0.13.4
   cancellation_token_http: ^1.1.0
   easy_localization: ^3.0.1
-  share_plus: ^4.0.10
+  share_plus: ^6.3.0
   flutter_displaymode: ^0.4.0
   scrollable_positioned_list: ^0.3.4
   path: ^1.8.1
@@ -41,6 +42,10 @@ dependencies:
   collection: ^1.16.0
   http_parser: ^4.0.1
   flutter_web_auth: ^0.5.0
+  easy_image_viewer: ^1.2.0
+  isar: *isar_version
+  isar_flutter_libs: *isar_version # contains Isar Core
+  permission_handler: ^10.2.0
 
   openapi:
     path: openapi
@@ -57,6 +62,8 @@ dev_dependencies:
   build_runner: ^2.2.1
   auto_route_generator: ^5.0.2
   flutter_launcher_icons: "^0.9.2"
+  flutter_native_splash: ^2.2.16
+  isar_generator: *isar_version
   integration_test:
     sdk: flutter
 

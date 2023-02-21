@@ -74,11 +74,11 @@ class APIKeyApi {
   ///
   /// Parameters:
   ///
-  /// * [num] id (required):
-  Future<Response> deleteKeyWithHttpInfo(num id,) async {
+  /// * [String] id (required):
+  Future<Response> deleteKeyWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final path = r'/api-key/{id}'
-      .replaceAll('{id}', id.toString());
+      .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -105,8 +105,8 @@ class APIKeyApi {
   ///
   /// Parameters:
   ///
-  /// * [num] id (required):
-  Future<void> deleteKey(num id,) async {
+  /// * [String] id (required):
+  Future<void> deleteKey(String id,) async {
     final response = await deleteKeyWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -119,11 +119,11 @@ class APIKeyApi {
   ///
   /// Parameters:
   ///
-  /// * [num] id (required):
-  Future<Response> getKeyWithHttpInfo(num id,) async {
+  /// * [String] id (required):
+  Future<Response> getKeyWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final path = r'/api-key/{id}'
-      .replaceAll('{id}', id.toString());
+      .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -150,8 +150,8 @@ class APIKeyApi {
   ///
   /// Parameters:
   ///
-  /// * [num] id (required):
-  Future<APIKeyResponseDto?> getKey(num id,) async {
+  /// * [String] id (required):
+  Future<APIKeyResponseDto?> getKey(String id,) async {
     final response = await getKeyWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -219,13 +219,13 @@ class APIKeyApi {
   ///
   /// Parameters:
   ///
-  /// * [num] id (required):
+  /// * [String] id (required):
   ///
   /// * [APIKeyUpdateDto] aPIKeyUpdateDto (required):
-  Future<Response> updateKeyWithHttpInfo(num id, APIKeyUpdateDto aPIKeyUpdateDto,) async {
+  Future<Response> updateKeyWithHttpInfo(String id, APIKeyUpdateDto aPIKeyUpdateDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/api-key/{id}'
-      .replaceAll('{id}', id.toString());
+      .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody = aPIKeyUpdateDto;
@@ -252,10 +252,10 @@ class APIKeyApi {
   ///
   /// Parameters:
   ///
-  /// * [num] id (required):
+  /// * [String] id (required):
   ///
   /// * [APIKeyUpdateDto] aPIKeyUpdateDto (required):
-  Future<APIKeyResponseDto?> updateKey(num id, APIKeyUpdateDto aPIKeyUpdateDto,) async {
+  Future<APIKeyResponseDto?> updateKey(String id, APIKeyUpdateDto aPIKeyUpdateDto,) async {
     final response = await updateKeyWithHttpInfo(id, aPIKeyUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));

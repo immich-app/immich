@@ -9,8 +9,8 @@ import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/sharing_sliver_appbar.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
-import 'package:openapi/api.dart';
 
 class SharingPage extends HookConsumerWidget {
   const SharingPage({Key? key}) : super(key: key);
@@ -18,7 +18,7 @@ class SharingPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var box = Hive.box(userInfoBox);
-    final List<AlbumResponseDto> sharedAlbums = ref.watch(sharedAlbumProvider);
+    final List<Album> sharedAlbums = ref.watch(sharedAlbumProvider);
 
     useEffect(
       () {
@@ -52,7 +52,7 @@ class SharingPage extends HookConsumerWidget {
                 ),
               ),
               title: Text(
-                sharedAlbums[index].albumName,
+                sharedAlbums[index].name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -77,13 +77,13 @@ class SharingPage extends HookConsumerWidget {
           child: Card(
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10), // if you need this
+              borderRadius: BorderRadius.circular(20),
               side: const BorderSide(
                 color: Colors.grey,
-                width: 1,
+                width: 0.5,
               ),
             ),
-            color: Colors.transparent,
+            // color: Colors.transparent,
             child: Padding(
               padding: const EdgeInsets.all(18.0),
               child: Column(
@@ -92,7 +92,7 @@ class SharingPage extends HookConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.only(left: 5.0, bottom: 5),
                     child: Icon(
-                      Icons.offline_share_outlined,
+                      Icons.insert_photo_rounded,
                       size: 50,
                       color: Theme.of(context).primaryColor,
                     ),
@@ -101,7 +101,7 @@ class SharingPage extends HookConsumerWidget {
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
                       'sharing_page_empty_list',
-                      style: Theme.of(context).textTheme.headline3,
+                      style: Theme.of(context).textTheme.displaySmall,
                     ).tr(),
                   ),
                   Padding(

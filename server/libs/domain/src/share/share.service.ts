@@ -1,13 +1,6 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Inject,
-  Injectable,
-  Logger,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { AuthUserDto, ICryptoRepository } from '../auth';
-import { IUserRepository, UserCore } from '../user';
+import { BadRequestException, ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
+import { AuthUserDto } from '../auth';
+import { ICryptoRepository } from '../crypto';
 import { EditSharedLinkDto } from './dto';
 import { mapSharedLink, mapSharedLinkWithNoExif, SharedLinkResponseDto } from './response-dto';
 import { ShareCore } from './share.core';
@@ -17,37 +10,12 @@ import { ISharedLinkRepository } from './shared-link.repository';
 export class ShareService {
   readonly logger = new Logger(ShareService.name);
   private shareCore: ShareCore;
-  private userCore: UserCore;
 
   constructor(
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
-    @Inject(IUserRepository) userRepository: IUserRepository,
   ) {
     this.shareCore = new ShareCore(sharedLinkRepository, cryptoRepository);
-    this.userCore = new UserCore(userRepository, cryptoRepository);
-  }
-
-  async validate(key: string): Promise<AuthUserDto> {
-    const link = await this.shareCore.getByKey(key);
-    if (link) {
-      if (!link.expiresAt || new Date(link.expiresAt) > new Date()) {
-        const user = await this.userCore.get(link.userId);
-        if (user) {
-          return {
-            id: user.id,
-            email: user.email,
-            isAdmin: user.isAdmin,
-            isPublicUser: true,
-            sharedLinkId: link.id,
-            isAllowUpload: link.allowUpload,
-            isAllowDownload: link.allowDownload,
-            isShowExif: link.showExif,
-          };
-        }
-      }
-    }
-    throw new UnauthorizedException();
   }
 
   async getAll(authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {
@@ -79,14 +47,6 @@ export class ShareService {
     } else {
       return mapSharedLinkWithNoExif(link);
     }
-  }
-
-  async getByKey(key: string): Promise<SharedLinkResponseDto> {
-    const link = await this.shareCore.getByKey(key);
-    if (!link) {
-      throw new BadRequestException('Shared link not found');
-    }
-    return mapSharedLink(link);
   }
 
   async remove(authUser: AuthUserDto, id: string): Promise<void> {

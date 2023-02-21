@@ -1,29 +1,44 @@
 import {
   ICryptoRepository,
+  IDeviceInfoRepository,
   IJobRepository,
   IKeyRepository,
   ISharedLinkRepository,
+  IStorageRepository,
   ISystemConfigRepository,
   IUserRepository,
   QueueName,
 } from '@app/domain';
-import { databaseConfig, UserEntity, UserTokenEntity } from './db';
+import { IUserTokenRepository } from '@app/domain/user-token';
+import { UserTokenRepository } from '@app/infra/db/repository/user-token.repository';
 import { BullModule } from '@nestjs/bull';
 import { Global, Module, Provider } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { APIKeyEntity, SharedLinkEntity, SystemConfigEntity, UserRepository } from './db';
-import { APIKeyRepository, SharedLinkRepository } from './db/repository';
 import { CryptoRepository } from './auth/crypto.repository';
-import { SystemConfigRepository } from './db/repository/system-config.repository';
+import {
+  APIKeyEntity,
+  APIKeyRepository,
+  databaseConfig,
+  DeviceInfoEntity,
+  DeviceInfoRepository,
+  SharedLinkEntity,
+  SharedLinkRepository,
+  SystemConfigEntity,
+  SystemConfigRepository,
+  UserEntity,
+  UserRepository,
+  UserTokenEntity,
+} from './db';
 import { JobRepository } from './job';
-import { IUserTokenRepository } from '@app/domain/user-token';
-import { UserTokenRepository } from '@app/infra/db/repository/user-token.repository';
+import { FilesystemProvider } from './storage';
 
 const providers: Provider[] = [
   { provide: ICryptoRepository, useClass: CryptoRepository },
+  { provide: IDeviceInfoRepository, useClass: DeviceInfoRepository },
   { provide: IKeyRepository, useClass: APIKeyRepository },
   { provide: IJobRepository, useClass: JobRepository },
   { provide: ISharedLinkRepository, useClass: SharedLinkRepository },
+  { provide: IStorageRepository, useClass: FilesystemProvider },
   { provide: ISystemConfigRepository, useClass: SystemConfigRepository },
   { provide: IUserRepository, useClass: UserRepository },
   { provide: IUserTokenRepository, useClass: UserTokenRepository },
@@ -33,7 +48,14 @@ const providers: Provider[] = [
 @Module({
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
-    TypeOrmModule.forFeature([APIKeyEntity, UserEntity, SharedLinkEntity, SystemConfigEntity, UserTokenEntity]),
+    TypeOrmModule.forFeature([
+      APIKeyEntity,
+      DeviceInfoEntity,
+      UserEntity,
+      SharedLinkEntity,
+      SystemConfigEntity,
+      UserTokenEntity,
+    ]),
     BullModule.forRootAsync({
       useFactory: async () => ({
         prefix: 'immich_bull',
@@ -57,7 +79,6 @@ const providers: Provider[] = [
       { name: QueueName.ASSET_UPLOADED },
       { name: QueueName.METADATA_EXTRACTION },
       { name: QueueName.VIDEO_CONVERSION },
-      { name: QueueName.CHECKSUM_GENERATION },
       { name: QueueName.MACHINE_LEARNING },
       { name: QueueName.CONFIG },
       { name: QueueName.BACKGROUND_TASK },

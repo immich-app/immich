@@ -18,9 +18,9 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
     final isShowThumbnail = useState(false);
 
     String getAssetCreationDate() {
-      return DateFormat.yMMMMd('en_US').format(
+      return DateFormat.yMMMMd().format(
         DateTime.parse(
-          asset.createdAt.toString(),
+          asset.fileCreatedAt.toString(),
         ).toLocal(),
       );
     }

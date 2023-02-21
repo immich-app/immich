@@ -13,6 +13,7 @@
 	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
 	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+	import ImmichLogo from '../shared-components/immich-logo.svelte';
 	import {
 		notificationController,
 		NotificationType
@@ -42,11 +43,15 @@
 		);
 	};
 
-	const handleUploadAssets = () => {
-		openFileUploadDialog(undefined, sharedLink?.key, async (assetId) => {
-			await api.assetApi.updateAssetsInSharedLink(
+	const handleUploadAssets = async () => {
+		try {
+			const results = await openFileUploadDialog(undefined, sharedLink?.key);
+
+			const assetIds = results.filter((id) => !!id) as string[];
+
+			await api.assetApi.addAssetsToSharedLink(
 				{
-					assetIds: [...assets.map((a) => a.id), assetId]
+					assetIds
 				},
 				{
 					params: {
@@ -56,15 +61,17 @@
 			);
 
 			notificationController.show({
-				message: 'Add asset to shared link successfully',
+				message: `Successfully add ${assetIds.length} to the shared link`,
 				type: NotificationType.Info
 			});
-		});
+		} catch (e) {
+			console.error('handleUploadAssets', e);
+		}
 	};
 
 	const handleRemoveAssetsFromSharedLink = async () => {
 		if (window.confirm('Do you want to remove selected assets from the shared link?')) {
-			await api.assetApi.updateAssetsInSharedLink(
+			await api.assetApi.removeAssetsFromSharedLink(
 				{
 					assetIds: assets.filter((a) => !selectedAssets.has(a)).map((a) => a.id)
 				},
@@ -79,6 +86,8 @@
 			clearMultiSelectAssetAssetHandler();
 		}
 	};
+
+	const locale = navigator.language;
 </script>
 
 <section class="bg-immich-bg dark:bg-immich-dark-bg">
@@ -90,7 +99,7 @@
 		>
 			<svelte:fragment slot="leading">
 				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
-					Selected {selectedAssets.size}
+					Selected {selectedAssets.size.toLocaleString(locale)}
 				</p>
 			</svelte:fragment>
 			<svelte:fragment slot="trailing">
@@ -120,7 +129,7 @@
 					class="flex gap-2 place-items-center hover:cursor-pointer ml-6"
 					href="https://immich.app"
 				>
-					<img src="/immich-logo.svg" alt="immich logo" height="30" width="30" draggable="false" />
+					<ImmichLogo height="30" width="30" />
 					<h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">
 						IMMICH
 					</h1>

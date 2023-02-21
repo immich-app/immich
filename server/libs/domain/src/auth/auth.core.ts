@@ -1,17 +1,10 @@
 import { SystemConfig, UserEntity } from '@app/infra/db/entities';
-import { IncomingHttpHeaders } from 'http';
 import { ISystemConfigRepository } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE } from './auth.constant';
-import { ICryptoRepository } from './crypto.repository';
+import { ICryptoRepository } from '../crypto/crypto.repository';
 import { LoginResponseDto, mapLoginResponse } from './response-dto';
-import { IUserTokenRepository, UserTokenCore } from '@app/domain';
-import cookieParser from 'cookie';
-
-export type JwtValidationResult = {
-  status: boolean;
-  userId: string | null;
-};
+import { IUserTokenRepository, UserTokenCore } from '../user-token';
 
 export class AuthCore {
   private userTokenCore: UserTokenCore;
@@ -37,11 +30,11 @@ export class AuthCore {
     let accessTokenCookie = '';
 
     if (isSecure) {
-      accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Secure; Path=/; Max-Age=${maxAge}; SameSite=Strict;`;
-      authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; HttpOnly; Secure; Path=/; Max-Age=${maxAge}; SameSite=Strict;`;
+      accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Secure; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
+      authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; HttpOnly; Secure; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
     } else {
-      accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Strict;`;
-      authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Strict;`;
+      accessTokenCookie = `${IMMICH_ACCESS_COOKIE}=${loginResponse.accessToken}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
+      authTypeCookie = `${IMMICH_AUTH_TYPE_COOKIE}=${authType}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Lax;`;
     }
     return [accessTokenCookie, authTypeCookie];
   }
@@ -58,22 +51,5 @@ export class AuthCore {
       return false;
     }
     return this.cryptoRepository.compareBcrypt(inputPassword, user.password);
-  }
-
-  extractTokenFromHeader(headers: IncomingHttpHeaders) {
-    if (!headers.authorization) {
-      return this.extractTokenFromCookie(cookieParser.parse(headers.cookie || ''));
-    }
-
-    const [type, accessToken] = headers.authorization.split(' ');
-    if (type.toLowerCase() !== 'bearer') {
-      return null;
-    }
-
-    return accessToken;
-  }
-
-  extractTokenFromCookie(cookies: Record<string, string>) {
-    return cookies?.[IMMICH_ACCESS_COOKIE] || null;
   }
 }

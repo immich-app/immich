@@ -1,5 +1,6 @@
-import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { AuthUserDto, ICryptoRepository } from '../auth';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { AuthUserDto } from '../auth';
+import { ICryptoRepository } from '../crypto';
 import { IKeyRepository } from './api-key.repository';
 import { APIKeyCreateDto } from './dto/api-key-create.dto';
 import { APIKeyCreateResponseDto } from './response-dto/api-key-create-response.dto';
@@ -23,7 +24,7 @@ export class APIKeyService {
     return { secret, apiKey: mapKey(entity) };
   }
 
-  async update(authUser: AuthUserDto, id: number, dto: APIKeyCreateDto): Promise<APIKeyResponseDto> {
+  async update(authUser: AuthUserDto, id: string, dto: APIKeyCreateDto): Promise<APIKeyResponseDto> {
     const exists = await this.repository.getById(authUser.id, id);
     if (!exists) {
       throw new BadRequestException('API Key not found');
@@ -34,7 +35,7 @@ export class APIKeyService {
     });
   }
 
-  async delete(authUser: AuthUserDto, id: number): Promise<void> {
+  async delete(authUser: AuthUserDto, id: string): Promise<void> {
     const exists = await this.repository.getById(authUser.id, id);
     if (!exists) {
       throw new BadRequestException('API Key not found');
@@ -43,7 +44,7 @@ export class APIKeyService {
     await this.repository.delete(authUser.id, id);
   }
 
-  async getById(authUser: AuthUserDto, id: number): Promise<APIKeyResponseDto> {
+  async getById(authUser: AuthUserDto, id: string): Promise<APIKeyResponseDto> {
     const key = await this.repository.getById(authUser.id, id);
     if (!key) {
       throw new BadRequestException('API Key not found');
@@ -54,23 +55,5 @@ export class APIKeyService {
   async getAll(authUser: AuthUserDto): Promise<APIKeyResponseDto[]> {
     const keys = await this.repository.getByUserId(authUser.id);
     return keys.map(mapKey);
-  }
-
-  async validate(token: string): Promise<AuthUserDto> {
-    const hashedToken = this.crypto.hashSha256(token);
-    const keyEntity = await this.repository.getKey(hashedToken);
-    if (keyEntity?.user) {
-      const user = keyEntity.user;
-
-      return {
-        id: user.id,
-        email: user.email,
-        isAdmin: user.isAdmin,
-        isPublicUser: false,
-        isAllowUpload: true,
-      };
-    }
-
-    throw new UnauthorizedException('Invalid API Key');
   }
 }

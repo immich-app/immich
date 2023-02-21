@@ -3,9 +3,7 @@ FROM docker.io/nginxinc/nginx-unprivileged:latest
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
 
-COPY nginx.conf "/etc/nginx/nginx.conf.template"
-COPY start.sh /start.sh
+COPY 10-listen-on-ipv6-by-default.sh /docker-entrypoint.d
+COPY 15-set-env-variables.envsh /docker-entrypoint.d
 
-STOPSIGNAL SIGQUIT
-
-ENTRYPOINT ["/start.sh"]
+COPY templates/ /etc/nginx/templates

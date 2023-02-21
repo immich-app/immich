@@ -40,6 +40,7 @@
 	import { openFileUploadDialog } from '$lib/utils/file-uploader';
 	import { bulkDownload } from '$lib/utils/asset-utils';
 	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
+	import ImmichLogo from '../shared-components/immich-logo.svelte';
 
 	export let album: AlbumResponseDto;
 	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
@@ -95,8 +96,8 @@
 	};
 
 	const getDateRange = () => {
-		const startDate = new Date(album.assets[0].createdAt);
-		const endDate = new Date(album.assets[album.assetCount - 1].createdAt);
+		const startDate = new Date(album.assets[0].fileCreatedAt);
+		const endDate = new Date(album.assets[album.assetCount - 1].fileCreatedAt);
 
 		const startDateString = startDate.toLocaleDateString(locale, albumDateFormat);
 		const endDateString = endDate.toLocaleDateString(locale, albumDateFormat);
@@ -329,12 +330,8 @@
 		}
 	};
 
-	const showAlbumOptionsMenu = (event: CustomEvent) => {
-		contextMenuPosition = {
-			x: event.detail.mouseEvent.x,
-			y: event.detail.mouseEvent.y
-		};
-
+	const showAlbumOptionsMenu = ({ x, y }: MouseEvent) => {
+		contextMenuPosition = { x, y };
 		isShowAlbumOptions = !isShowAlbumOptions;
 	};
 
@@ -383,7 +380,7 @@
 		>
 			<svelte:fragment slot="leading">
 				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
-					Selected {multiSelectAsset.size}
+					Selected {multiSelectAsset.size.toLocaleString(locale)}
 				</p>
 			</svelte:fragment>
 			<svelte:fragment slot="trailing">
@@ -419,13 +416,7 @@
 						class="flex gap-2 place-items-center hover:cursor-pointer ml-6"
 						href="https://immich.app"
 					>
-						<img
-							src="/immich-logo.svg"
-							alt="immich logo"
-							height="30"
-							width="30"
-							draggable="false"
-						/>
+						<ImmichLogo height={30} width={30} />
 						<h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">
 							IMMICH
 						</h1>
@@ -472,7 +463,7 @@
 					{#if !isPublicShared}
 						<CircleIconButton
 							title="Album options"
-							on:click={(event) => showAlbumOptionsMenu(event)}
+							on:click={showAlbumOptionsMenu}
 							logo={DotsVertical}
 						/>
 					{/if}

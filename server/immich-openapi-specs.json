@@ -66,7 +66,7 @@
             "required": true,
             "in": "path",
             "schema": {
-              "type": "number"
+              "type": "string"
             }
           }
         ],
@@ -95,7 +95,7 @@
             "required": true,
             "in": "path",
             "schema": {
-              "type": "number"
+              "type": "string"
             }
           }
         ],
@@ -134,7 +134,7 @@
             "required": true,
             "in": "path",
             "schema": {
-              "type": "number"
+              "type": "string"
             }
           }
         ],
@@ -298,6 +298,43 @@
         },
         "tags": [
           "Authentication"
+        ]
+      }
+    },
+    "/device-info": {
+      "put": {
+        "operationId": "upsertDeviceInfo",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertDeviceInfoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceInfoResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Device Info"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
         ]
       }
     },
@@ -1040,7 +1077,7 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/AssetFileUploadDto"
+                "$ref": "#/components/schemas/CreateAssetDto"
               }
             }
           }
@@ -1072,24 +1109,6 @@
         "operationId": "downloadFile",
         "description": "",
         "parameters": [
-          {
-            "name": "isThumb",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "title": "Is serve thumbnail (resize) file",
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isWeb",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "title": "Is request made from web",
-              "type": "boolean"
-            }
-          },
           {
             "name": "assetId",
             "required": true,
@@ -1850,9 +1869,11 @@
             "bearer": []
           }
         ]
-      },
+      }
+    },
+    "/asset/shared-link/add": {
       "patch": {
-        "operationId": "updateAssetsInSharedLink",
+        "operationId": "addAssetsToSharedLink",
         "description": "",
         "parameters": [],
         "requestBody": {
@@ -1860,7 +1881,44 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateAssetsToSharedLinkDto"
+                "$ref": "#/components/schemas/AddAssetsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/asset/shared-link/remove": {
+      "patch": {
+        "operationId": "removeAssetsFromSharedLink",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemoveAssetsDto"
               }
             }
           }
@@ -2505,43 +2563,6 @@
         ]
       }
     },
-    "/device-info": {
-      "put": {
-        "operationId": "upsertDeviceInfo",
-        "description": "",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpsertDeviceInfoDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeviceInfoResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Device Info"
-        ],
-        "security": [
-          {
-            "bearer": []
-          }
-        ]
-      }
-    },
     "/server-info": {
       "get": {
         "operationId": "getServerInfo",
@@ -2707,7 +2728,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.42.0",
+    "version": "1.48.0",
     "contact": {}
   },
   "tags": [],
@@ -2738,7 +2759,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer"
+            "type": "string"
           },
           "name": {
             "type": "string"
@@ -2993,6 +3014,63 @@
           "redirectUri"
         ]
       },
+      "DeviceTypeEnum": {
+        "type": "string",
+        "enum": [
+          "IOS",
+          "ANDROID",
+          "WEB"
+        ]
+      },
+      "UpsertDeviceInfoDto": {
+        "type": "object",
+        "properties": {
+          "deviceType": {
+            "$ref": "#/components/schemas/DeviceTypeEnum"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "isAutoBackup": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "deviceType",
+          "deviceId"
+        ]
+      },
+      "DeviceInfoResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "deviceType": {
+            "$ref": "#/components/schemas/DeviceTypeEnum"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "isAutoBackup": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "deviceType",
+          "userId",
+          "deviceId",
+          "createdAt",
+          "isAutoBackup"
+        ]
+      },
       "OAuthConfigDto": {
         "type": "object",
         "properties": {
@@ -3058,12 +3136,6 @@
       "ExifResponseDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "nullable": true,
-            "default": null,
-            "format": "int64"
-          },
           "fileSizeInByte": {
             "type": "integer",
             "nullable": true,
@@ -3167,9 +3239,6 @@
       "SmartInfoResponseDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string"
-          },
           "tags": {
             "nullable": true,
             "type": "array",
@@ -3246,10 +3315,13 @@
             "type": "string",
             "nullable": true
           },
-          "createdAt": {
+          "fileCreatedAt": {
             "type": "string"
           },
-          "modifiedAt": {
+          "fileModifiedAt": {
+            "type": "string"
+          },
+          "updatedAt": {
             "type": "string"
           },
           "isFavorite": {
@@ -3295,13 +3367,13 @@
           "deviceId",
           "originalPath",
           "resizePath",
-          "createdAt",
-          "modifiedAt",
+          "fileCreatedAt",
+          "fileModifiedAt",
+          "updatedAt",
           "isFavorite",
           "mimeType",
           "duration",
-          "webpPath",
-          "tags"
+          "webpPath"
         ]
       },
       "AlbumResponseDto": {
@@ -3322,6 +3394,9 @@
           "createdAt": {
             "type": "string"
           },
+          "updatedAt": {
+            "type": "string"
+          },
           "albumThumbnailAssetId": {
             "type": "string",
             "nullable": true
@@ -3340,6 +3415,9 @@
             "items": {
               "$ref": "#/components/schemas/AssetResponseDto"
             }
+          },
+          "owner": {
+            "$ref": "#/components/schemas/UserResponseDto"
           }
         },
         "required": [
@@ -3348,10 +3426,12 @@
           "ownerId",
           "albumName",
           "createdAt",
+          "updatedAt",
           "albumThumbnailAssetId",
           "shared",
           "sharedUsers",
-          "assets"
+          "assets",
+          "owner"
         ]
       },
       "SharedLinkResponseDto": {
@@ -3708,16 +3788,54 @@
           "profileImagePath"
         ]
       },
-      "AssetFileUploadDto": {
+      "CreateAssetDto": {
         "type": "object",
         "properties": {
+          "assetType": {
+            "$ref": "#/components/schemas/AssetTypeEnum"
+          },
           "assetData": {
             "type": "string",
             "format": "binary"
+          },
+          "livePhotoData": {
+            "type": "string",
+            "format": "binary"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "fileCreatedAt": {
+            "type": "string"
+          },
+          "fileModifiedAt": {
+            "type": "string"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "fileExtension": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string"
           }
         },
         "required": [
-          "assetData"
+          "assetType",
+          "assetData",
+          "deviceAssetId",
+          "deviceId",
+          "fileCreatedAt",
+          "fileModifiedAt",
+          "isFavorite",
+          "fileExtension"
         ]
       },
       "AssetFileUploadResponseDto": {
@@ -3725,10 +3843,14 @@
         "properties": {
           "id": {
             "type": "string"
+          },
+          "duplicate": {
+            "type": "boolean"
           }
         },
         "required": [
-          "id"
+          "id",
+          "duplicate"
         ]
       },
       "DownloadFilesDto": {
@@ -4079,7 +4201,21 @@
           "assetIds"
         ]
       },
-      "UpdateAssetsToSharedLinkDto": {
+      "AddAssetsDto": {
+        "type": "object",
+        "properties": {
+          "assetIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "assetIds"
+        ]
+      },
+      "RemoveAssetsDto": {
         "type": "object",
         "properties": {
           "assetIds": {
@@ -4175,20 +4311,6 @@
           "sharedUserIds"
         ]
       },
-      "AddAssetsDto": {
-        "type": "object",
-        "properties": {
-          "assetIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "assetIds"
-        ]
-      },
       "AddAssetsResponseDto": {
         "type": "object",
         "properties": {
@@ -4208,20 +4330,6 @@
         "required": [
           "successfullyAdded",
           "alreadyInAlbum"
-        ]
-      },
-      "RemoveAssetsDto": {
-        "type": "object",
-        "properties": {
-          "assetIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "assetIds"
         ]
       },
       "UpdateAlbumDto": {
@@ -4259,63 +4367,6 @@
         },
         "required": [
           "albumId"
-        ]
-      },
-      "DeviceTypeEnum": {
-        "type": "string",
-        "enum": [
-          "IOS",
-          "ANDROID",
-          "WEB"
-        ]
-      },
-      "UpsertDeviceInfoDto": {
-        "type": "object",
-        "properties": {
-          "deviceType": {
-            "$ref": "#/components/schemas/DeviceTypeEnum"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "isAutoBackup": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "deviceType",
-          "deviceId"
-        ]
-      },
-      "DeviceInfoResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "deviceType": {
-            "$ref": "#/components/schemas/DeviceTypeEnum"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "isAutoBackup": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "deviceType",
-          "userId",
-          "deviceId",
-          "createdAt",
-          "isAutoBackup"
         ]
       },
       "ServerInfoResponseDto": {

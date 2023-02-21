@@ -4,6 +4,7 @@ import { error } from '@sveltejs/kit';
 import { getThumbnailUrl } from '$lib/utils/asset-utils';
 import { serverApi, ThumbnailFormat } from '@api';
 import type { PageServerLoad } from './$types';
+import featurePanelUrl from '$lib/assets/feature-panel.png';
 
 export const load: PageServerLoad = async ({ params, parent }) => {
 	const { user } = await parent();
@@ -23,7 +24,7 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 				description: sharedLink.description || `${assetCount} shared photos & videos.`,
 				imageUrl: assetId
 					? getThumbnailUrl(assetId, ThumbnailFormat.Webp, sharedLink.key)
-					: 'feature-panel.png'
+					: featurePanelUrl
 			},
 			user
 		};

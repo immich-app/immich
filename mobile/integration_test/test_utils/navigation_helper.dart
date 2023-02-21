@@ -50,7 +50,7 @@ class ImmichTestNavigationHelper {
     expect(btn, findsOneWidget);
 
     await tester.tap(btn);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
   }
 
   Future<void> _tapFirstOf(Type type) async {

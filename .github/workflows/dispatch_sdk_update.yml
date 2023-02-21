@@ -5,6 +5,10 @@ on:
   push:
     branches: ["main"]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   update-sdk-repos:
     runs-on: ubuntu-latest

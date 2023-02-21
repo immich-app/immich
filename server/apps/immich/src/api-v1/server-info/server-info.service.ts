@@ -46,11 +46,11 @@ export class ServerInfoService {
       .createQueryBuilder('a')
       .select('COUNT(a.id)', 'assetCount')
       .addSelect('SUM(ei.fileSizeInByte)', 'totalSizeInBytes')
-      .addSelect('a."userId"')
+      .addSelect('a."ownerId"')
       .addSelect('a.type', 'assetType')
       .where('a.isVisible = true')
       .leftJoin('a.exifInfo', 'ei')
-      .groupBy('a."userId"')
+      .groupBy('a."ownerId"')
       .addGroupBy('a.type')
       .getRawMany();
 

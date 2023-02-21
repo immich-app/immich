@@ -24,22 +24,18 @@ export class SharedLinkRepository implements ISharedLinkRepository {
         },
         album: {
           assets: {
-            assetInfo: {
-              exifInfo: true,
-            },
+            exifInfo: true,
           },
         },
       },
       order: {
         createdAt: 'DESC',
         assets: {
-          createdAt: 'ASC',
+          fileCreatedAt: 'ASC',
         },
         album: {
           assets: {
-            assetInfo: {
-              createdAt: 'ASC',
-            },
+            fileCreatedAt: 'ASC',
           },
         },
       },
@@ -69,10 +65,9 @@ export class SharedLinkRepository implements ISharedLinkRepository {
       relations: {
         assets: true,
         album: {
-          assets: {
-            assetInfo: true,
-          },
+          assets: true,
         },
+        user: true,
       },
       order: {
         createdAt: 'DESC',
@@ -108,7 +103,7 @@ export class SharedLinkRepository implements ISharedLinkRepository {
         id,
         album: {
           assets: {
-            assetId,
+            id: assetId,
           },
         },
       },

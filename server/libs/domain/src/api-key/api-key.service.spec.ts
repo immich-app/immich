@@ -1,19 +1,8 @@
-import { APIKeyEntity } from '@app/infra/db/entities';
-import { BadRequestException, UnauthorizedException } from '@nestjs/common';
-import { authStub, userEntityStub, newCryptoRepositoryMock, newKeyRepositoryMock } from '../../test';
-import { ICryptoRepository } from '../auth';
+import { BadRequestException } from '@nestjs/common';
+import { authStub, keyStub, newCryptoRepositoryMock, newKeyRepositoryMock } from '../../test';
+import { ICryptoRepository } from '../crypto';
 import { IKeyRepository } from './api-key.repository';
 import { APIKeyService } from './api-key.service';
-
-const adminKey = Object.freeze({
-  id: 1,
-  name: 'My Key',
-  key: 'my-api-key (hashed)',
-  userId: authStub.admin.id,
-  user: userEntityStub.admin,
-} as APIKeyEntity);
-
-const token = Buffer.from('my-api-key', 'utf8').toString('base64');
 
 describe(APIKeyService.name, () => {
   let sut: APIKeyService;
@@ -28,10 +17,8 @@ describe(APIKeyService.name, () => {
 
   describe('create', () => {
     it('should create a new key', async () => {
-      keyMock.create.mockResolvedValue(adminKey);
-
+      keyMock.create.mockResolvedValue(keyStub.admin);
       await sut.create(authStub.admin, { name: 'Test Key' });
-
       expect(keyMock.create).toHaveBeenCalledWith({
         key: 'cmFuZG9tLWJ5dGVz (hashed)',
         name: 'Test Key',
@@ -42,7 +29,7 @@ describe(APIKeyService.name, () => {
     });
 
     it('should not require a name', async () => {
-      keyMock.create.mockResolvedValue(adminKey);
+      keyMock.create.mockResolvedValue(keyStub.admin);
 
       await sut.create(authStub.admin, {});
 
@@ -60,17 +47,19 @@ describe(APIKeyService.name, () => {
     it('should throw an error if the key is not found', async () => {
       keyMock.getById.mockResolvedValue(null);
 
-      await expect(sut.update(authStub.admin, 1, { name: 'New Name' })).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.update(authStub.admin, 'random-guid', { name: 'New Name' })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
 
-      expect(keyMock.update).not.toHaveBeenCalledWith(1);
+      expect(keyMock.update).not.toHaveBeenCalledWith('random-guid');
     });
 
     it('should update a key', async () => {
-      keyMock.getById.mockResolvedValue(adminKey);
+      keyMock.getById.mockResolvedValue(keyStub.admin);
 
-      await sut.update(authStub.admin, 1, { name: 'New Name' });
+      await sut.update(authStub.admin, 'random-guid', { name: 'New Name' });
 
-      expect(keyMock.update).toHaveBeenCalledWith(authStub.admin.id, 1, { name: 'New Name' });
+      expect(keyMock.update).toHaveBeenCalledWith(authStub.admin.id, 'random-guid', { name: 'New Name' });
     });
   });
 
@@ -78,17 +67,17 @@ describe(APIKeyService.name, () => {
     it('should throw an error if the key is not found', async () => {
       keyMock.getById.mockResolvedValue(null);
 
-      await expect(sut.delete(authStub.admin, 1)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.delete(authStub.admin, 'random-guid')).rejects.toBeInstanceOf(BadRequestException);
 
-      expect(keyMock.delete).not.toHaveBeenCalledWith(1);
+      expect(keyMock.delete).not.toHaveBeenCalledWith('random-guid');
     });
 
     it('should delete a key', async () => {
-      keyMock.getById.mockResolvedValue(adminKey);
+      keyMock.getById.mockResolvedValue(keyStub.admin);
 
-      await sut.delete(authStub.admin, 1);
+      await sut.delete(authStub.admin, 'random-guid');
 
-      expect(keyMock.delete).toHaveBeenCalledWith(authStub.admin.id, 1);
+      expect(keyMock.delete).toHaveBeenCalledWith(authStub.admin.id, 'random-guid');
     });
   });
 
@@ -96,45 +85,27 @@ describe(APIKeyService.name, () => {
     it('should throw an error if the key is not found', async () => {
       keyMock.getById.mockResolvedValue(null);
 
-      await expect(sut.getById(authStub.admin, 1)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.getById(authStub.admin, 'random-guid')).rejects.toBeInstanceOf(BadRequestException);
 
-      expect(keyMock.getById).toHaveBeenCalledWith(authStub.admin.id, 1);
+      expect(keyMock.getById).toHaveBeenCalledWith(authStub.admin.id, 'random-guid');
     });
 
     it('should get a key by id', async () => {
-      keyMock.getById.mockResolvedValue(adminKey);
+      keyMock.getById.mockResolvedValue(keyStub.admin);
 
-      await sut.getById(authStub.admin, 1);
+      await sut.getById(authStub.admin, 'random-guid');
 
-      expect(keyMock.getById).toHaveBeenCalledWith(authStub.admin.id, 1);
+      expect(keyMock.getById).toHaveBeenCalledWith(authStub.admin.id, 'random-guid');
     });
   });
 
   describe('getAll', () => {
     it('should return all the keys for a user', async () => {
-      keyMock.getByUserId.mockResolvedValue([adminKey]);
+      keyMock.getByUserId.mockResolvedValue([keyStub.admin]);
 
       await expect(sut.getAll(authStub.admin)).resolves.toHaveLength(1);
 
       expect(keyMock.getByUserId).toHaveBeenCalledWith(authStub.admin.id);
-    });
-  });
-
-  describe('validate', () => {
-    it('should throw an error for an invalid id', async () => {
-      keyMock.getKey.mockResolvedValue(null);
-
-      await expect(sut.validate(token)).rejects.toBeInstanceOf(UnauthorizedException);
-
-      expect(keyMock.getKey).toHaveBeenCalledWith('bXktYXBpLWtleQ== (hashed)');
-    });
-
-    it('should validate the token', async () => {
-      keyMock.getKey.mockResolvedValue(adminKey);
-
-      await expect(sut.validate(token)).resolves.toEqual(authStub.admin);
-
-      expect(keyMock.getKey).toHaveBeenCalledWith('bXktYXBpLWtleQ== (hashed)');
     });
   });
 });

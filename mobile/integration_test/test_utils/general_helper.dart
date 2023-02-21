@@ -1,11 +1,15 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:immich_mobile/utils/environment.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:isar/isar.dart';
 // ignore: depend_on_referenced_packages
 import 'package:meta/meta.dart';
 import 'package:immich_mobile/main.dart' as app;
@@ -69,10 +73,13 @@ class ImmichTestHelper {
     // Clear all data from Hive
     await Hive.deleteFromDisk();
     await app.openBoxes();
+    // Clear all data from Isar (reuse existing instance if available)
+    final db = Isar.getInstance() ?? await app.loadDb();
+    await Store.clear();
+    await db.writeTxn(() => db.clear());
     // Load main Widget
-    await tester.pumpWidget(app.getMainWidget());
+    await tester.pumpWidget(app.getMainWidget(db));
     // Post run tasks
-    await tester.pumpAndSettle();
     await EasyLocalization.ensureInitialized();
   }
 
@@ -107,4 +114,18 @@ void immichWidgetTest(
     },
     semanticsEnabled: false,
   );
+}
+
+Future<void> pumpUntilFound(
+    WidgetTester tester,
+    Finder finder, {
+      Duration timeout = const Duration(seconds: 120),
+    }) async {
+  bool found = false;
+  final timer = Timer(timeout, () => throw TimeoutException("Pump until has timed out"));
+  while (found != true) {
+    await tester.pump();
+    found = tester.any(finder);
+  }
+  timer.cancel();
 }

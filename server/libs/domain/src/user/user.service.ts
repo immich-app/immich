@@ -1,7 +1,8 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { ReadStream } from 'fs';
-import { AuthUserDto, ICryptoRepository } from '../auth';
+import { AuthUserDto } from '../auth';
+import { ICryptoRepository } from '../crypto';
 import { IUserRepository } from '../user';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';

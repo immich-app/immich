@@ -64,12 +64,8 @@
 	let isShowAlbumPicker = false;
 	let addToSharedAlbum = false;
 
-	const handleShowMenu = (event: CustomEvent) => {
-		contextMenuPosition = {
-			x: event.detail.mouseEvent.x,
-			y: event.detail.mouseEvent.y
-		};
-
+	const handleShowMenu = ({ x, y }: MouseEvent) => {
+		contextMenuPosition = { x, y };
 		isShowAddMenu = !isShowAddMenu;
 	};
 
@@ -145,6 +141,8 @@
 		assetInteractionStore.clearMultiselect();
 		isShowCreateSharedLinkModal = false;
 	};
+
+	const locale = navigator.language;
 </script>
 
 <section>
@@ -156,7 +154,7 @@
 		>
 			<svelte:fragment slot="leading">
 				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
-					Selected {$selectedAssets.size}
+					Selected {$selectedAssets.size.toLocaleString(locale)}
 				</p>
 			</svelte:fragment>
 			<svelte:fragment slot="trailing">

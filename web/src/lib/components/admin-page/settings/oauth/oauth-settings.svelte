@@ -5,7 +5,7 @@
 	} from '$lib/components/shared-components/notification/notification';
 	import { handleError } from '$lib/utils/handle-error';
 	import { api, SystemConfigOAuthDto } from '@api';
-	import _ from 'lodash';
+	import { isEqual } from 'lodash-es';
 	import { fade } from 'svelte/transition';
 	import ConfirmDisableLogin from '../confirm-disable-login.svelte';
 	import SettingButtonsRow from '../setting-buttons-row.svelte';
@@ -202,7 +202,7 @@
 					on:reset={reset}
 					on:save={saveSetting}
 					on:reset-to-default={resetToDefault}
-					showResetToDefault={!_.isEqual(savedConfig, defaultConfig)}
+					showResetToDefault={!isEqual(savedConfig, defaultConfig)}
 				/>
 			</form>
 		</div>

@@ -29,10 +29,12 @@ class LoginForm extends HookConsumerWidget {
         useTextEditingController.fromValue(TextEditingValue.empty);
     final apiService = ref.watch(apiServiceProvider);
     final serverEndpointFocusNode = useFocusNode();
-    final isSaveLoginInfo = useState<bool>(false);
     final isLoading = useState<bool>(false);
     final isOauthEnable = useState<bool>(false);
     final oAuthButtonLabel = useState<String>('OAuth');
+    final logoAnimationController = useAnimationController(
+      duration: const Duration(seconds: 60),
+    )..repeat();
 
     getServeLoginConfig() async {
       if (!serverEndpointFocusNode.hasFocus) {
@@ -75,7 +77,6 @@ class LoginForm extends HookConsumerWidget {
           usernameController.text = loginInfo.email;
           passwordController.text = loginInfo.password;
           serverEndpointController.text = loginInfo.serverUrl;
-          isSaveLoginInfo.value = loginInfo.isSaveLogin;
         }
 
         getServeLoginConfig();
@@ -88,7 +89,6 @@ class LoginForm extends HookConsumerWidget {
       usernameController.text = 'testuser@email.com';
       passwordController.text = 'password';
       serverEndpointController.text = 'http://10.1.15.216:2283/api';
-      isSaveLoginInfo.value = true;
     }
 
     return Center(
@@ -103,10 +103,13 @@ class LoginForm extends HookConsumerWidget {
               children: [
                 GestureDetector(
                   onDoubleTap: () => populateTestLoginInfo(),
-                  child: const Image(
-                    image: AssetImage('assets/immich-logo-no-outline.png'),
-                    width: 100,
-                    filterQuality: FilterQuality.high,
+                  child: RotationTransition(
+                    turns: logoAnimationController,
+                    child: const Image(
+                      image: AssetImage('assets/immich-logo-no-outline.png'),
+                      width: 100,
+                      filterQuality: FilterQuality.high,
+                    ),
                   ),
                 ),
                 Text(
@@ -124,30 +127,6 @@ class LoginForm extends HookConsumerWidget {
                   controller: serverEndpointController,
                   focusNode: serverEndpointFocusNode,
                 ),
-                CheckboxListTile(
-                  activeColor: Theme.of(context).primaryColor,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                  dense: true,
-                  side: const BorderSide(color: Colors.grey, width: 1.5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  enableFeedback: true,
-                  title: const Text(
-                    "login_form_save_login",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
-                    ),
-                  ).tr(),
-                  value: isSaveLoginInfo.value,
-                  onChanged: (switchValue) {
-                    if (switchValue != null) {
-                      isSaveLoginInfo.value = switchValue;
-                    }
-                  },
-                ),
                 if (isLoading.value)
                   const SizedBox(
                     width: 24,
@@ -161,11 +140,11 @@ class LoginForm extends HookConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      const SizedBox(height: 18),
                       LoginButton(
                         emailController: usernameController,
                         passwordController: passwordController,
                         serverEndpointController: serverEndpointController,
-                        isSavedLoginInfo: isSaveLoginInfo.value,
                       ),
                       if (isOauthEnable.value) ...[
                         Padding(
@@ -181,7 +160,6 @@ class LoginForm extends HookConsumerWidget {
                         ),
                         OAuthLoginButton(
                           serverEndpointController: serverEndpointController,
-                          isSavedLoginInfo: isSaveLoginInfo.value,
                           buttonLabel: oAuthButtonLabel.value,
                           isLoading: isLoading,
                           onLoginSuccess: () {
@@ -304,14 +282,12 @@ class LoginButton extends ConsumerWidget {
   final TextEditingController emailController;
   final TextEditingController passwordController;
   final TextEditingController serverEndpointController;
-  final bool isSavedLoginInfo;
 
   const LoginButton({
     Key? key,
     required this.emailController,
     required this.passwordController,
     required this.serverEndpointController,
-    required this.isSavedLoginInfo,
   }) : super(key: key);
 
   @override
@@ -322,24 +298,22 @@ class LoginButton extends ConsumerWidget {
       ),
       onPressed: () async {
         // This will remove current cache asset state of previous user login.
-        ref.watch(assetProvider.notifier).clearAllAsset();
+        ref.read(assetProvider.notifier).clearAllAsset();
 
         var isAuthenticated =
-            await ref.watch(authenticationProvider.notifier).login(
+            await ref.read(authenticationProvider.notifier).login(
                   emailController.text,
                   passwordController.text,
                   serverEndpointController.text,
-                  isSavedLoginInfo,
                 );
 
         if (isAuthenticated) {
           // Resume backup (if enable) then navigate
-
-          if (ref.watch(authenticationProvider).shouldChangePassword &&
-              !ref.watch(authenticationProvider).isAdmin) {
+          if (ref.read(authenticationProvider).shouldChangePassword &&
+              !ref.read(authenticationProvider).isAdmin) {
             AutoRouter.of(context).push(const ChangePasswordRoute());
           } else {
-            ref.watch(backupProvider.notifier).resumeBackup();
+            ref.read(backupProvider.notifier).resumeBackup();
             AutoRouter.of(context).replace(const TabControllerRoute());
           }
         } else {
@@ -361,7 +335,6 @@ class LoginButton extends ConsumerWidget {
 
 class OAuthLoginButton extends ConsumerWidget {
   final TextEditingController serverEndpointController;
-  final bool isSavedLoginInfo;
   final ValueNotifier<bool> isLoading;
   final VoidCallback onLoginSuccess;
   final String buttonLabel;
@@ -369,7 +342,6 @@ class OAuthLoginButton extends ConsumerWidget {
   const OAuthLoginButton({
     Key? key,
     required this.serverEndpointController,
-    required this.isSavedLoginInfo,
     required this.isLoading,
     required this.onLoginSuccess,
     required this.buttonLabel,
@@ -407,7 +379,6 @@ class OAuthLoginButton extends ConsumerWidget {
               .watch(authenticationProvider.notifier)
               .setSuccessLoginInfo(
                 accessToken: loginResponseDto.accessToken,
-                isSavedLoginInfo: isSavedLoginInfo,
                 serverUrl: serverEndpointController.text,
               );
 

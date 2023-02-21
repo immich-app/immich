@@ -2,7 +2,7 @@ import 'package:photo_manager/photo_manager.dart';
 
 class ErrorUploadAsset {
   final String id;
-  final DateTime createdAt;
+  final DateTime fileCreatedAt;
   final String fileName;
   final String fileType;
   final AssetEntity asset;
@@ -10,7 +10,7 @@ class ErrorUploadAsset {
 
   const ErrorUploadAsset({
     required this.id,
-    required this.createdAt,
+    required this.fileCreatedAt,
     required this.fileName,
     required this.fileType,
     required this.asset,
@@ -19,7 +19,7 @@ class ErrorUploadAsset {
 
   ErrorUploadAsset copyWith({
     String? id,
-    DateTime? createdAt,
+    DateTime? fileCreatedAt,
     String? fileName,
     String? fileType,
     AssetEntity? asset,
@@ -27,7 +27,7 @@ class ErrorUploadAsset {
   }) {
     return ErrorUploadAsset(
       id: id ?? this.id,
-      createdAt: createdAt ?? this.createdAt,
+      fileCreatedAt: fileCreatedAt ?? this.fileCreatedAt,
       fileName: fileName ?? this.fileName,
       fileType: fileType ?? this.fileType,
       asset: asset ?? this.asset,
@@ -37,7 +37,7 @@ class ErrorUploadAsset {
 
   @override
   String toString() {
-    return 'ErrorUploadAsset(id: $id, createdAt: $createdAt, fileName: $fileName, fileType: $fileType, asset: $asset, errorMessage: $errorMessage)';
+    return 'ErrorUploadAsset(id: $id, fileCreatedAt: $fileCreatedAt, fileName: $fileName, fileType: $fileType, asset: $asset, errorMessage: $errorMessage)';
   }
 
   @override
@@ -46,7 +46,7 @@ class ErrorUploadAsset {
 
     return other is ErrorUploadAsset &&
         other.id == id &&
-        other.createdAt == createdAt &&
+        other.fileCreatedAt == fileCreatedAt &&
         other.fileName == fileName &&
         other.fileType == fileType &&
         other.asset == asset &&
@@ -56,7 +56,7 @@ class ErrorUploadAsset {
   @override
   int get hashCode {
     return id.hashCode ^
-        createdAt.hashCode ^
+        fileCreatedAt.hashCode ^
         fileName.hashCode ^
         fileType.hashCode ^
         asset.hashCode ^

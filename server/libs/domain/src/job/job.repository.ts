@@ -20,6 +20,10 @@ export interface JobCounts {
   waiting: number;
 }
 
+export interface Job<T> {
+  data: T;
+}
+
 export type JobItem =
   | { name: JobName.ASSET_UPLOADED; data: IAssetUploadedJob }
   | { name: JobName.VIDEO_CONVERSION; data: IVideoConversionProcessor }
@@ -30,7 +34,6 @@ export type JobItem =
   | { name: JobName.USER_DELETION; data: IUserDeletionJob }
   | { name: JobName.TEMPLATE_MIGRATION }
   | { name: JobName.CONFIG_CHANGE }
-  | { name: JobName.CHECKSUM_GENERATION }
   | { name: JobName.EXTRACT_VIDEO_METADATA; data: IVideoLengthExtractionProcessor }
   | { name: JobName.OBJECT_DETECTION; data: IMachineLearningJob }
   | { name: JobName.IMAGE_TAGGING; data: IMachineLearningJob }

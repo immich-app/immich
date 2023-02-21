@@ -5,6 +5,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   mobile-dart-analyze:
     name: Run Dart Code Analysis
@@ -19,7 +23,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          flutter-version: '3.3.10'
+          flutter-version: '3.7.3'
 
       - name: Install dependencies
         run: dart pub get

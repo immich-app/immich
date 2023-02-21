@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import '../test_utils/general_helper.dart';
 import '../test_utils/login_helper.dart';
 
@@ -92,24 +91,18 @@ void main() async {
 
       await tester.pump(const Duration(seconds: 1));
       await tester.tap(find.text(albumName).first);
-      await tester.pump(const Duration(seconds: 2));
 
-      // Wait for toast message
-      for (var i = 0; i < 60; i++) {
-        if (tester.any(find.byType(FToast))) {
-          final result = find.text(
-            "home_page_add_to_album_success".tr(
-              namedArgs: {
-                "added": "1",
-                "album": albumName,
-              },
-            ),
-          );
-          expect(result, findsOneWidget);
-        }
-        await tester.pump(const Duration(milliseconds: 300));
-      }
+      await pumpUntilFound(
+        tester,
+        find.text(
+          "home_page_add_to_album_success".tr(
+            namedArgs: {
+              "added": "1",
+              "album": albumName,
+            },
+          ),
+        ),
+      );
     });
-
   });
 }

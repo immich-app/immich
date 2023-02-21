@@ -1,4 +1,3 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../test_utils/general_helper.dart';
@@ -45,12 +44,9 @@ void main() async {
       await helper.navigationHelper.openSideDrawer();
       await helper.navigationHelper.clickSignOutButton();
 
-      await tester.pump(const Duration(seconds: 5));
+      await tester.pump(const Duration(seconds: 3));
 
-      expect(
-        find.textContaining("login_form_button_text".tr()),
-        findsOneWidget,
-      );
+      await helper.loginHelper.waitForLoginScreen();
     });
   });
 }

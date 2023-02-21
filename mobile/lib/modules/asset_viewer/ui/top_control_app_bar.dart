@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 
-class TopControlAppBar extends HookConsumerWidget with PreferredSizeWidget {
+class TopControlAppBar extends HookConsumerWidget {
   const TopControlAppBar({
     Key? key,
     required this.asset,
@@ -14,6 +14,8 @@ class TopControlAppBar extends HookConsumerWidget with PreferredSizeWidget {
     required this.onAddToAlbumPressed,
     required this.onToggleMotionVideo,
     required this.isPlayingMotionVideo,
+    required this.onFavorite,
+    required this.isFavorite,
   }) : super(key: key);
 
   final Asset asset;
@@ -22,16 +24,29 @@ class TopControlAppBar extends HookConsumerWidget with PreferredSizeWidget {
   final VoidCallback onToggleMotionVideo;
   final VoidCallback onDeletePressed;
   final VoidCallback onAddToAlbumPressed;
+  final VoidCallback onFavorite;
   final Function onSharePressed;
   final bool isPlayingMotionVideo;
+  final bool isFavorite;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    double iconSize = 18.0;
+    const double iconSize = 18.0;
+
+    Widget buildFavoriteButton() {
+        return IconButton(
+          onPressed: () {
+            onFavorite();
+          },
+          icon: Icon(
+            isFavorite ? Icons.star : Icons.star_border,
+            color: Colors.grey[200],
+          ),
+        );
+    }
 
     return AppBar(
       foregroundColor: Colors.grey[100],
-      toolbarHeight: 60,
       backgroundColor: Colors.transparent,
       leading: IconButton(
         onPressed: () {
@@ -43,11 +58,13 @@ class TopControlAppBar extends HookConsumerWidget with PreferredSizeWidget {
           color: Colors.grey[200],
         ),
       ),
+      actionsIconTheme: const IconThemeData(
+        size: iconSize,
+      ),
       actions: [
-        if (asset.remote?.livePhotoVideoId != null)
+        if (asset.isRemote) buildFavoriteButton(),
+        if (asset.livePhotoVideoId != null)
           IconButton(
-            iconSize: iconSize,
-            splashRadius: iconSize,
             onPressed: () {
               onToggleMotionVideo();
             },
@@ -63,17 +80,13 @@ class TopControlAppBar extends HookConsumerWidget with PreferredSizeWidget {
           ),
         if (!asset.isLocal)
           IconButton(
-            iconSize: iconSize,
-            splashRadius: iconSize,
             onPressed: onDownloadPressed,
             icon: Icon(
-              Icons.cloud_download_rounded,
+              Icons.cloud_download_outlined,
               color: Colors.grey[200],
             ),
           ),
         IconButton(
-          iconSize: iconSize,
-          splashRadius: iconSize,
           onPressed: () {
             onSharePressed();
           },
@@ -84,8 +97,6 @@ class TopControlAppBar extends HookConsumerWidget with PreferredSizeWidget {
         ),
         if (asset.isRemote)
           IconButton(
-            iconSize: iconSize,
-            splashRadius: iconSize,
             onPressed: () {
               onAddToAlbumPressed();
             },
@@ -95,8 +106,6 @@ class TopControlAppBar extends HookConsumerWidget with PreferredSizeWidget {
             ),
           ),
         IconButton(
-          iconSize: iconSize,
-          splashRadius: iconSize,
           onPressed: () {
             onDeletePressed();
           },
@@ -105,22 +114,16 @@ class TopControlAppBar extends HookConsumerWidget with PreferredSizeWidget {
             color: Colors.grey[200],
           ),
         ),
-        if (asset.isRemote)
-          IconButton(
-            iconSize: iconSize,
-            splashRadius: iconSize,
-            onPressed: () {
-              onMoreInfoPressed();
-            },
-            icon: Icon(
-              Icons.more_horiz_rounded,
-              color: Colors.grey[200],
-            ),
+        IconButton(
+          onPressed: () {
+            onMoreInfoPressed();
+          },
+          icon: Icon(
+            Icons.info_outline_rounded,
+            color: Colors.grey[200],
           ),
+        ),
       ],
     );
   }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

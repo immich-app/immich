@@ -1,6 +1,13 @@
 import { AssetEntity, SharedLinkEntity } from '@app/infra/db/entities';
-import { BadRequestException, ForbiddenException, InternalServerErrorException, Logger } from '@nestjs/common';
-import { AuthUserDto, ICryptoRepository } from '../auth';
+import {
+  BadRequestException,
+  ForbiddenException,
+  InternalServerErrorException,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { AuthUserDto } from '../auth';
+import { ICryptoRepository } from '../crypto';
 import { CreateSharedLinkDto } from './dto';
 import { ISharedLinkRepository } from './shared-link.repository';
 
@@ -15,10 +22,6 @@ export class ShareCore {
 
   get(userId: string, id: string): Promise<SharedLinkEntity | null> {
     return this.repository.get(userId, id);
-  }
-
-  getByKey(key: string): Promise<SharedLinkEntity | null> {
-    return this.repository.getByKey(key);
   }
 
   create(userId: string, dto: CreateSharedLinkDto): Promise<SharedLinkEntity> {
@@ -60,13 +63,24 @@ export class ShareCore {
     return this.repository.remove(link);
   }
 
-  async updateAssets(userId: string, id: string, assets: AssetEntity[]) {
+  async addAssets(userId: string, id: string, assets: AssetEntity[]) {
     const link = await this.get(userId, id);
     if (!link) {
       throw new BadRequestException('Shared link not found');
     }
 
-    return this.repository.save({ ...link, assets });
+    return this.repository.save({ ...link, assets: [...link.assets, ...assets] });
+  }
+
+  async removeAssets(userId: string, id: string, assets: AssetEntity[]) {
+    const link = await this.get(userId, id);
+    if (!link) {
+      throw new BadRequestException('Shared link not found');
+    }
+
+    const newAssets = link.assets.filter((asset) => assets.find((a) => a.id === asset.id));
+
+    return this.repository.save({ ...link, assets: newAssets });
   }
 
   async hasAssetAccess(id: string, assetId: string): Promise<boolean> {
@@ -77,5 +91,27 @@ export class ShareCore {
     if (user.isPublicUser && !user.isAllowDownload) {
       throw new ForbiddenException();
     }
+  }
+
+  async validate(key: string): Promise<AuthUserDto | null> {
+    const link = await this.repository.getByKey(key);
+    if (link) {
+      if (!link.expiresAt || new Date(link.expiresAt) > new Date()) {
+        const user = link.user;
+        if (user) {
+          return {
+            id: user.id,
+            email: user.email,
+            isAdmin: user.isAdmin,
+            isPublicUser: true,
+            sharedLinkId: link.id,
+            isAllowUpload: link.allowUpload,
+            isAllowDownload: link.allowDownload,
+            isShowExif: link.showExif,
+          };
+        }
+      }
+    }
+    throw new UnauthorizedException('Invalid share key');
   }
 }

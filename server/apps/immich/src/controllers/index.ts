@@ -1,5 +1,6 @@
 export * from './api-key.controller';
 export * from './auth.controller';
+export * from './device-info.controller';
 export * from './oauth.controller';
 export * from './share.controller';
 export * from './system-config.controller';

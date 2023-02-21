@@ -73,7 +73,7 @@ class ServerInfoBox extends HookConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "App Version",
+                    "server_info_box_app_version".tr(),
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.grey[500],
@@ -98,7 +98,7 @@ class ServerInfoBox extends HookConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Server Version",
+                    "server_info_box_server_version".tr(),
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.grey[500],

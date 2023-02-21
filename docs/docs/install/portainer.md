@@ -9,7 +9,7 @@ Install Immich using Portainer's Stack feature.
 1. Go to "**Stacks**" in the left sidebar.
 2. Click on "**Add stack**".
 3. Give the stack a name (i.e. Immich), and select "**Web Editor**" as the build method.
-4. Copy the content of the `docker-compose.yml` file from the [GitHub repository](https://raw.githubusercontent.com/immich-app/immich/main/docker/docker-compose.yml).
+4. Copy the content of the `docker-compose.yml` file from the [GitHub repository](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml).
 5. Replace `.env` with `stack.env` for all containers that need to use environment variables in the web editor.
 
 <img
@@ -28,7 +28,7 @@ Install Immich using Portainer's Stack feature.
   alt="Dot Env Example"
 />
 
-9. Copy the content of the `example.env` file from the [GitHub repository](https://raw.githubusercontent.com/immich-app/immich/main/docker/example.env) and paste into the editor.
+9. Copy the content of the `example.env` file from the [GitHub repository](https://github.com/immich-app/immich/releases/latest/download/example.env) and paste into the editor.
 10. Switch back to "**Simple Mode**".
 
 <img

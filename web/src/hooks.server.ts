@@ -2,7 +2,13 @@ import type { Handle, HandleServerError } from '@sveltejs/kit';
 import { AxiosError } from 'axios';
 
 export const handle: Handle = async ({ event, resolve }) => {
-	return await resolve(event);
+	const res = await resolve(event);
+
+	// The link header can grow quite big and has caused issues with our nginx
+	// proxy returning a 502 Bad Gateway error. Therefore the header gets deleted.
+	res.headers.delete('Link');
+
+	return res;
 };
 
 export const handleError: HandleServerError = async ({ error }) => {

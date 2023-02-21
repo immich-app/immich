@@ -31,7 +31,7 @@
 	let hoveredDateGroup = '';
 	$: assetsGroupByDate = lodash
 		.chain(assets)
-		.groupBy((a) => new Date(a.createdAt).toLocaleDateString(locale, groupDateFormat))
+		.groupBy((a) => new Date(a.fileCreatedAt).toLocaleDateString(locale, groupDateFormat))
 		.sortBy((group) => assets.indexOf(group[0]))
 		.value();
 
@@ -110,11 +110,11 @@
 
 <section
 	id="asset-group-by-date"
-	class="flex flex-wrap gap-5 mt-5"
+	class="flex flex-wrap gap-12 mt-5"
 	bind:clientHeight={actualBucketHeight}
 >
 	{#each assetsGroupByDate as assetsInDateGroup, groupIndex (assetsInDateGroup[0].id)}
-		{@const dateGroupTitle = new Date(assetsInDateGroup[0].createdAt).toLocaleDateString(
+		{@const dateGroupTitle = new Date(assetsInDateGroup[0].fileCreatedAt).toLocaleDateString(
 			locale,
 			groupDateFormat
 		)}
