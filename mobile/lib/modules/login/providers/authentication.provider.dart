@@ -92,20 +92,25 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   }
 
   Future<bool> logout() async {
-    await Future.wait([
-      _apiService.authenticationApi.logout(),
-      Hive.box(userInfoBox).delete(accessTokenKey),
-      Store.delete(StoreKey.assetETag),
-      Store.delete(StoreKey.userRemoteId),
-      _assetCacheService.invalidate(),
-      _albumCacheService.invalidate(),
-      _sharedAlbumCacheService.invalidate(),
-      Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).delete(savedLoginInfoKey)
-    ]);
+    try {
+      await Future.wait([
+        _apiService.authenticationApi.logout(),
+        Hive.box(userInfoBox).delete(accessTokenKey),
+        Store.delete(StoreKey.assetETag),
+        Store.delete(StoreKey.userRemoteId),
+        _assetCacheService.invalidate(),
+        _albumCacheService.invalidate(),
+        _sharedAlbumCacheService.invalidate(),
+        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).delete(savedLoginInfoKey)
+      ]);
 
-    state = state.copyWith(isAuthenticated: false);
+      state = state.copyWith(isAuthenticated: false);
 
-    return true;
+      return true;
+    } catch (e) {
+      debugPrint("Error logging out $e");
+      return false;
+    }
   }
 
   setAutoBackup(bool backupState) async {

@@ -14,8 +14,8 @@ dependencies:
 
   path_provider_ios:
   photo_manager: ^2.5.0
-  flutter_hooks: ^0.18.0
-  hooks_riverpod: ^2.0.0-dev.0
+  flutter_hooks: ^0.18.6
+  hooks_riverpod: ^2.2.0
   hive: ^2.2.1
   hive_flutter: ^1.1.0
   cached_network_image: ^3.2.2

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -30,7 +31,7 @@ class ChangePasswordForm extends HookConsumerWidget {
             alignment: WrapAlignment.start,
             children: [
               Text(
-                'Change Password',
+                'common_change_password'.tr(),
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -40,7 +41,12 @@ class ChangePasswordForm extends HookConsumerWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24.0),
                 child: Text(
-                  'Hi ${authState.firstName} ${authState.lastName},\n\nThis is either the first time you are signing into the system or a request has been made to change your password. Please enter the new password below.',
+                  'change_password_form_description'.tr(
+                    namedArgs: {
+                      'firstName': authState.firstName,
+                      'lastName': authState.lastName,
+                    },
+                  ),
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[700],
@@ -62,7 +68,28 @@ class ChangePasswordForm extends HookConsumerWidget {
                     ),
                     ChangePasswordButton(
                       passwordController: passwordController,
-                      formKey: formKey,
+                      onPressed: () async {
+                        if (formKey.currentState!.validate()) {
+                          var isSuccess = await ref
+                              .read(authenticationProvider.notifier)
+                              .changePassword(passwordController.value.text);
+
+                          if (isSuccess) {
+                            bool res = await ref
+                                .read(authenticationProvider.notifier)
+                                .logout();
+
+                            if (res) {
+                              ref.read(backupProvider.notifier).cancelBackup();
+                              ref.read(assetProvider.notifier).clearAllAsset();
+                              ref.read(websocketProvider.notifier).disconnect();
+
+                              AutoRouter.of(context)
+                                  .replace(const LoginRoute());
+                            }
+                          }
+                        }
+                      },
                     ),
                   ],
                 ),
@@ -85,10 +112,10 @@ class PasswordInput extends StatelessWidget {
     return TextFormField(
       obscureText: true,
       controller: controller,
-      decoration: const InputDecoration(
-        labelText: 'New Password',
-        border: OutlineInputBorder(),
-        hintText: 'New Password',
+      decoration: InputDecoration(
+        labelText: 'change_password_form_new_password'.tr(),
+        border: const OutlineInputBorder(),
+        hintText: 'change_password_form_new_password'.tr(),
       ),
     );
   }
@@ -106,7 +133,7 @@ class ConfirmPasswordInput extends StatelessWidget {
 
   String? _validateInput(String? email) {
     if (confirmController.value != originalController.value) {
-      return 'Passwords do not match';
+      return 'change_password_form_password_mismatch'.tr();
     }
     return null;
   }
@@ -116,10 +143,10 @@ class ConfirmPasswordInput extends StatelessWidget {
     return TextFormField(
       obscureText: true,
       controller: confirmController,
-      decoration: const InputDecoration(
-        labelText: 'Confirm Password',
-        hintText: 'Re-enter New Password',
-        border: OutlineInputBorder(),
+      decoration: InputDecoration(
+        labelText: 'change_password_form_confirm_password'.tr(),
+        hintText: 'change_password_form_reenter_new_password'.tr(),
+        border: const OutlineInputBorder(),
       ),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
@@ -129,12 +156,11 @@ class ConfirmPasswordInput extends StatelessWidget {
 
 class ChangePasswordButton extends ConsumerWidget {
   final TextEditingController passwordController;
-  final GlobalKey<FormState> formKey;
-
+  final VoidCallback onPressed;
   const ChangePasswordButton({
     Key? key,
     required this.passwordController,
-    required this.formKey,
+    required this.onPressed,
   }) : super(key: key);
 
   @override
@@ -147,28 +173,10 @@ class ChangePasswordButton extends ConsumerWidget {
         elevation: 2,
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
       ),
-      onPressed: () async {
-        if (formKey.currentState!.validate()) {
-          var isSuccess = await ref
-              .watch(authenticationProvider.notifier)
-              .changePassword(passwordController.value.text);
-
-          if (isSuccess) {
-            bool res =
-                await ref.watch(authenticationProvider.notifier).logout();
-
-            if (res) {
-              ref.watch(backupProvider.notifier).cancelBackup();
-              ref.watch(assetProvider.notifier).clearAllAsset();
-              ref.watch(websocketProvider.notifier).disconnect();
-              AutoRouter.of(context).replace(const LoginRoute());
-            }
-          }
-        }
-      },
-      child: const Text(
-        "Change Password",
-        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+      onPressed: onPressed,
+      child: Text(
+        'common_change_password'.tr(),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
       ),
     );
   }

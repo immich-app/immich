@@ -144,10 +144,12 @@ class ExifBottomSheet extends HookConsumerWidget {
     }
 
     buildDate() {
+      final fileCreatedAt = assetDetail.fileCreatedAt.toLocal();
+      final date = DateFormat.yMMMEd().format(fileCreatedAt);
+      final time = DateFormat.jm().format(fileCreatedAt);
+
       return Text(
-        DateFormat('date_format'.tr()).format(
-          assetDetail.fileCreatedAt.toLocal(),
-        ),
+        '$date • $time',
         style: const TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 14,

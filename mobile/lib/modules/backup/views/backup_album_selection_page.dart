@@ -5,7 +5,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
-import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/album_info_card.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
@@ -19,20 +18,18 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     final selectedBackupAlbums = ref.watch(backupProvider).selectedBackupAlbums;
     final excludedBackupAlbums = ref.watch(backupProvider).excludedBackupAlbums;
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final albums = useState<List<AvailableAlbum>>(
-      ref.watch(backupProvider).availableAlbums,
-    );
+    final albums = ref.watch(backupProvider).availableAlbums;
 
     useEffect(
       () {
-        ref.read(backupProvider.notifier).getBackupInfo();
+        ref.watch(backupProvider.notifier).getBackupInfo();
         return null;
       },
       [],
     );
 
     buildAlbumSelectionList() {
-      if (albums.value.isEmpty) {
+      if (albums.isEmpty) {
         return const Center(
           child: ImmichLoadingIndicator(),
         );
@@ -42,17 +39,17 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
         height: 265,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
-          itemCount: albums.value.length,
+          itemCount: albums.length,
           physics: const BouncingScrollPhysics(),
           itemBuilder: ((context, index) {
-            var thumbnailData = albums.value[index].thumbnailData;
+            var thumbnailData = albums[index].thumbnailData;
             return Padding(
               padding: index == 0
                   ? const EdgeInsets.only(left: 16.00)
                   : const EdgeInsets.all(0),
               child: AlbumInfoCard(
                 imageData: thumbnailData,
-                albumInfo: albums.value[index],
+                albumInfo: albums[index],
               ),
             );
           }),
@@ -142,7 +139,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
         padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 8.0),
         child: TextFormField(
           onChanged: (searchValue) {
-            albums.value = ref
+            var avaialbleAlbums = ref
                 .watch(backupProvider)
                 .availableAlbums
                 .where(
@@ -151,6 +148,10 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                       .contains(searchValue.toLowerCase()),
                 )
                 .toList();
+
+            ref
+                .read(backupProvider.notifier)
+                .setAvailableAlbums(avaialbleAlbums);
           },
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.symmetric(

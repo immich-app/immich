@@ -46,10 +46,10 @@ class HomePage extends HookConsumerWidget {
 
     useEffect(
       () {
-        ref.read(websocketProvider.notifier).connect();
-        ref.read(assetProvider.notifier).getAllAsset();
-        ref.read(albumProvider.notifier).getAllAlbums();
-        ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
+        ref.watch(websocketProvider.notifier).connect();
+        ref.watch(assetProvider.notifier).getAllAsset();
+        ref.watch(albumProvider.notifier).getAllAlbums();
+        ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
         ref.watch(serverInfoProvider.notifier).getServerVersion();
 
         selectionEnabledHook.addListener(() {
@@ -102,7 +102,7 @@ class HomePage extends HookConsumerWidget {
 
       void onFavoriteAssets() {
         final remoteAssets = remoteOnlySelection(
-          localErrorMessage: 'Can not favorite local assets yet, skipping',
+          localErrorMessage: 'home_page_favorite_err_local'.tr(),
         );
         if (remoteAssets.isNotEmpty) {
           ref.watch(favoriteProvider.notifier).addToFavorites(remoteAssets);
@@ -125,7 +125,7 @@ class HomePage extends HookConsumerWidget {
 
       void onAddToAlbum(Album album) async {
         final Iterable<Asset> assets = remoteOnlySelection(
-          localErrorMessage: "Can not add local assets to albums yet, skipping",
+          localErrorMessage: "home_page_add_to_album_err_local".tr(),
         );
         if (assets.isEmpty) {
           return;
@@ -166,7 +166,7 @@ class HomePage extends HookConsumerWidget {
 
       void onCreateNewAlbum() async {
         final Iterable<Asset> assets = remoteOnlySelection(
-          localErrorMessage: "Can not add local assets to albums yet, skipping",
+          localErrorMessage: "home_page_add_to_album_err_local".tr(),
         );
         if (assets.isEmpty) {
           return;
@@ -229,8 +229,8 @@ class HomePage extends HookConsumerWidget {
         top: true,
         child: Stack(
           children: [
-            ref.watch(assetProvider).renderList == null
-                || ref.watch(assetProvider).allAssets.isEmpty
+            ref.watch(assetProvider).renderList == null ||
+                    ref.watch(assetProvider).allAssets.isEmpty
                 ? buildLoadingIndicator()
                 : ImmichAssetGrid(
                     renderList: ref.watch(assetProvider).renderList!,

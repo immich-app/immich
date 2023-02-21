@@ -43,7 +43,7 @@ class ControlBottomAppBar extends ConsumerWidget {
           ),
           ControlBoxButton(
             iconData: Icons.star_rounded,
-            label: "Favorite",
+            label: "control_bottom_app_bar_favorite".tr(),
             onPressed: () {
               onFavorite();
             },
@@ -140,7 +140,7 @@ class AddToAlbumTitleRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text(
-            "control_bottom_app_bar_add_to_album",
+            "common_add_to_album",
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -150,7 +150,7 @@ class AddToAlbumTitleRow extends StatelessWidget {
             onPressed: onCreateNewAlbum,
             icon: const Icon(Icons.add),
             label: Text(
-              "control_bottom_app_bar_create_new_album",
+              "common_create_new_album",
               style: TextStyle(
                 color: Theme.of(context).primaryColor,
                 fontWeight: FontWeight.bold,
