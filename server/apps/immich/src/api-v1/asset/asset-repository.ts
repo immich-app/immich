@@ -80,7 +80,7 @@ export class AssetRepository implements IAssetRepository {
       .createQueryBuilder('asset')
       .leftJoinAndSelect('asset.smartInfo', 'si')
       .where('asset.resizePath IS NOT NULL')
-      .andWhere('si.id IS NULL')
+      .andWhere('si.assetId IS NULL')
       .andWhere('asset.isVisible = true')
       .getMany();
   }
