@@ -1,4 +1,5 @@
 import UIKit
+import shared_preferences_foundation
 import Flutter
 import BackgroundTasks
 import path_provider_ios
@@ -24,6 +25,10 @@ import photo_manager
           
           if !registry.hasPlugin("org.cocoapods.photo-manager") {
               PhotoManagerPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.photo-manager")!)
+          }
+          
+          if !registry.hasPlugin("org.cocoapods.shared-preferences-foundation") {
+              SharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.shared-preferences-foundation")!)
           }
       }
       

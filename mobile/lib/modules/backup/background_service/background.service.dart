@@ -314,10 +314,9 @@ class BackgroundService {
             return false;
           }
 
-          // Notifications aren't enabled in iOS yet, and this line
-          // below crashes the iOS background service
-          if (Platform.isAndroid) {
-            await loadTranslations();
+          final translationsOk = await loadTranslations();
+          if (!translationsOk) {
+            debugPrint("[_callHandler] could not load translations");
           }
 
           final bool ok = await _onAssetsChanged();

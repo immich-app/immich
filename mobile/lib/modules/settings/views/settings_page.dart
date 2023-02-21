@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -41,7 +39,7 @@ class SettingsPage extends HookConsumerWidget {
               const ImageViewerQualitySetting(),
               const ThemeSetting(),
               const AssetListSettings(),
-              if (Platform.isAndroid) const NotificationSetting(),
+              const NotificationSetting(),
               //const ExperimentalSettings(),
             ],
           ).toList(),

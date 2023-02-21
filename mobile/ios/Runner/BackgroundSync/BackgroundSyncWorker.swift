@@ -25,6 +25,7 @@ class BackgroundSyncWorker {
         name: "BackgroundImmich"
     )
     
+    let notificationId = "com.alextran.immich/backgroundNotifications"
     // The background message passing channel
     var channel: FlutterMethodChannel?
     
@@ -67,15 +68,15 @@ class BackgroundSyncWorker {
                 })
             break
         case "updateNotification":
-            // TODO: implement update notification
-            result(true)
+            let handled = self.handleNotification(call)
+            result(handled)
             break
         case "showError":
-            // TODO: implement show error
-            result(true)
+            let handled = self.handleError(call)
+            result(handled)
             break
         case "clearErrorNotifications":
-            // TODO: implement clear error notifications
+            self.handleClearErrorNotifications()
             result(true)
             break
         case "hasContentChanged":
@@ -183,6 +184,88 @@ class BackgroundSyncWorker {
         engine?.destroyContext()
         channel = nil
         completionHandler(fetchResult)
+    }
+    
+    private func handleNotification(_ call: FlutterMethodCall) -> Bool {
+        
+        // Parse the arguments as an array list
+        guard let args = call.arguments as? Array<Any> else {
+            print("Failed to parse \(call.arguments) as array")
+            return false;
+        }
+        
+        // Requires 7 arguments passed or else fail
+        guard args.count == 7 else {
+            print("Needs 7 arguments, but was only passed \(args.count)")
+            return false
+        }
+        
+        // Parse the arguments to send the notification update
+        let title = args[0] as? String
+        let content = args[1] as? String
+        let progress = args[2] as? Int
+        let maximum = args[3] as? Int
+        let indeterminate = args[4] as? Bool
+        let isDetail = args[5] as? Bool
+        let onlyIfForeground = args[6] as? Bool
+        
+        // Build the notification
+        let notificationContent = UNMutableNotificationContent()
+        notificationContent.body = content ?? "Uploading..."
+        notificationContent.title = title ?? "Immich"
+        
+        // Add it to the Notification center
+        let notification = UNNotificationRequest(
+            identifier: notificationId,
+            content: notificationContent,
+            trigger: nil
+        )
+        let center = UNUserNotificationCenter.current()
+        center.add(notification) { (error: Error?) in
+            if let theError = error {
+                print("Error showing notifications: \(theError)")
+            }
+        }
+        
+        return true
+    }
+    
+    private func handleError(_ call: FlutterMethodCall) -> Bool {
+        // Parse the arguments as an array list
+        guard let args = call.arguments as? Array<Any> else {
+            return false;
+        }
+        
+        // Requires 7 arguments passed or else fail
+        guard args.count == 3 else {
+            return false
+        }
+        
+        let title = args[0] as? String
+        let content = args[1] as? String
+        let individualTag = args[2] as? String
+        
+        // Build the notification
+        let notificationContent = UNMutableNotificationContent()
+        notificationContent.body = content ?? "Error running the backup job."
+        notificationContent.title = title ?? "Immich"
+        
+        // Add it to the Notification center
+        let notification = UNNotificationRequest(
+            identifier: notificationId,
+            content: notificationContent,
+            trigger: nil
+        )
+        let center = UNUserNotificationCenter.current()
+        center.add(notification)
+        
+        return true
+    }
+    
+    private func handleClearErrorNotifications() {
+        let center = UNUserNotificationCenter.current()
+        center.removeDeliveredNotifications(withIdentifiers: [notificationId])
+        center.removePendingNotificationRequests(withIdentifiers: [notificationId])
     }
 }
 
