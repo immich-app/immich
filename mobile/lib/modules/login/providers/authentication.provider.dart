@@ -151,6 +151,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       var deviceInfo = await _deviceInfoService.getDeviceInfo();
       userInfoHiveBox.put(deviceIdKey, deviceInfo["deviceId"]);
       userInfoHiveBox.put(accessTokenKey, accessToken);
+      Store.put(StoreKey.deviceId, deviceInfo["deviceId"]);
       Store.put(StoreKey.deviceIdHash, fastHash(deviceInfo["deviceId"]));
       Store.put(StoreKey.userRemoteId, userResponseDto.id);
       Store.put(StoreKey.currentUser, User.fromDto(userResponseDto));

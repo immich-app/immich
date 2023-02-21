@@ -96,6 +96,7 @@ enum StoreKey {
   assetETag(1),
   currentUser(2, isInt: true, fromDb: _getUser, toDb: _toUser),
   deviceIdHash(3, isInt: true),
+  deviceId(4),
   ;
 
   const StoreKey(

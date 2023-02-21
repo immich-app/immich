@@ -55,7 +55,11 @@ class Album {
         name == other.name &&
         createdAt == other.createdAt &&
         modifiedAt == other.modifiedAt &&
-        shared == other.shared;
+        shared == other.shared &&
+        owner.value == other.owner.value &&
+        thumbnail.value == other.thumbnail.value &&
+        sharedUsers.length == other.sharedUsers.length &&
+        assets.length == other.assets.length;
   }
 
   @override
@@ -67,7 +71,11 @@ class Album {
       name.hashCode ^
       createdAt.hashCode ^
       modifiedAt.hashCode ^
-      shared.hashCode;
+      shared.hashCode ^
+      owner.value.hashCode ^
+      thumbnail.value.hashCode ^
+      sharedUsers.length.hashCode ^
+      assets.length.hashCode;
 
   static Album local(AssetPathEntity ape) {
     final Album a = Album(
@@ -119,4 +127,18 @@ extension AssetsHelper on IsarCollection<Album> {
     await a.sharedUsers.save();
     await a.assets.save();
   }
+}
+
+extension AssetPathEntityHelper on AssetPathEntity {
+  Future<List<Asset>> getAssets({
+    int start = 0,
+    int end = 0x7fffffffffffffff,
+  }) async {
+    final assetEntities = await getAssetListRange(start: start, end: end);
+    return assetEntities.map(Asset.local).toList();
+  }
+}
+
+extension AlbumResponseDtoHelper on AlbumResponseDto {
+  List<Asset> getAssets() => assets.map(Asset.remote).toList();
 }

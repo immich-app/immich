@@ -14,15 +14,19 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
   final Isar _db;
 
   Future<void> getAllAlbums() async {
-    if (state.isEmpty && 0 < await _db.albums.count()) {
-      state = await _db.albums.where().findAll();
+    final User me = Store.get(StoreKey.currentUser);
+    List<Album> albums = await _db.albums
+        .filter()
+        .owner((q) => q.isarIdEqualTo(me.isarId))
+        .findAll();
+    if (!const ListEquality().equals(albums, state)) {
+      state = albums;
     }
     await Future.wait([
       _albumService.refreshDeviceAlbums(),
       _albumService.refreshRemoteAlbums(isShared: false),
     ]);
-    final User me = Store.get(StoreKey.currentUser);
-    final albums = await _db.albums
+    albums = await _db.albums
         .filter()
         .owner((q) => q.isarIdEqualTo(me.isarId))
         .findAll();
@@ -41,12 +45,10 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
     Set<Asset> assets,
   ) async {
     Album? album = await _albumService.createAlbum(albumTitle, assets, []);
-
     if (album != null) {
       state = [...state, album];
-      return album;
     }
-    return null;
+    return album;
   }
 }
 

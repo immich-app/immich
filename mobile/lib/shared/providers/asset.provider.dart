@@ -92,8 +92,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       final int cachedCount =
           await _db.assets.filter().ownerIdEqualTo(me.isarId).count();
       stopwatch.start();
-      if (cachedCount > 0 && state.allAssets.isEmpty ||
-          cachedCount != state.allAssets.length) {
+      if (cachedCount > 0 && cachedCount != state.allAssets.length) {
         await _updateAssetsState(
           await _db.assets.filter().ownerIdEqualTo(me.isarId).findAll(),
         );
@@ -113,8 +112,10 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       stopwatch.reset();
       final assets =
           await _db.assets.filter().ownerIdEqualTo(me.isarId).findAll();
-      log.info("setting new asset state");
-      await _updateAssetsState(assets);
+      if (!const ListEquality().equals(assets, state.allAssets)) {
+        log.info("setting new asset state");
+        await _updateAssetsState(assets);
+      }
     } finally {
       _getAllAssetInProgress = false;
     }

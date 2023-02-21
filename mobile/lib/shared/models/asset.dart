@@ -168,16 +168,20 @@ class Asset {
     return hasChanges;
   }
 
-  Asset withUpdatesFromDto(AssetResponseDto dto) {
-    Asset a = Asset.remote(dto);
-    a.id = id;
-    a.localId = localId;
-    a.isLocal = isLocal;
-    a.width ??= width;
-    a.height ??= height;
-    a.exifInfo ??= exifInfo;
-    a.exifInfo?.id = id;
-    return a;
+  Asset withUpdatesFromDto(AssetResponseDto dto) =>
+      Asset.remote(dto).updateFromDb(this);
+
+  Asset updateFromDb(Asset a) {
+    assert(localId == a.localId);
+    assert(deviceId == a.deviceId);
+    id = a.id;
+    isLocal |= a.isLocal;
+    remoteId ??= a.remoteId;
+    width ??= a.width;
+    height ??= a.height;
+    exifInfo ??= a.exifInfo;
+    exifInfo?.id = id;
+    return this;
   }
 
   Future<void> put(Isar db) async {
@@ -187,6 +191,16 @@ class Asset {
       await db.exifInfos.put(exifInfo!);
     }
   }
+
+  static int compareByDeviceIdLocalId(Asset a, Asset b) {
+    final int order = a.deviceId.compareTo(b.deviceId);
+    return order == 0 ? a.localId.compareTo(b.localId) : order;
+  }
+
+  static int compareById(Asset a, Asset b) => a.id.compareTo(b.id);
+
+  static int compareByLocalId(Asset a, Asset b) =>
+      a.localId.compareTo(b.localId);
 }
 
 extension AssetsHelper on IsarCollection<Asset> {
