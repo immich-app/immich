@@ -1,11 +1,14 @@
 <script lang="ts">
 	import type Icon from 'svelte-material-icons/AbTesting.svelte';
+	import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
+	import { fade } from 'svelte/transition';
+	import { createEventDispatcher } from 'svelte';
 
 	export let title: string;
 	export let logo: typeof Icon;
 	export let isSelected: boolean;
 
-	import { createEventDispatcher } from 'svelte';
+	let showMoreInformation = false;
 
 	const dispatch = createEventDispatcher();
 	const onButtonClicked = () => dispatch('selected');
@@ -14,13 +17,40 @@
 <div
 	on:click={onButtonClicked}
 	on:keydown={onButtonClicked}
-	class={`flex gap-4 place-items-center pl-5 py-3 rounded-tr-full rounded-br-full hover:bg-immich-gray dark:hover:bg-immich-dark-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary hover:cursor-pointer
+	class={`flex gap-4 justify-between place-items-center w-full px-5 py-3 rounded-r-full hover:bg-immich-gray dark:hover:bg-immich-dark-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary hover:cursor-pointer
     ${
-			isSelected &&
-			'bg-immich-primary/10 dark:bg-immich-dark-primary/10 text-immich-primary dark:text-[#adcbfa] hover:bg-immich-primary/25'
+			isSelected
+				? 'bg-immich-primary/10 dark:bg-immich-dark-primary/10 text-immich-primary dark:text-[#adcbfa] hover:bg-immich-primary/25'
+				: ''
 		}
   `}
 >
-	<svelte:component this={logo} size="24" />
-	<p class="font-medium text-sm ">{title}</p>
+	<div class="flex gap-4 place-items-center w-full">
+		<svelte:component this={logo} size="1.5em" />
+		<p class="font-medium text-sm">{title}</p>
+	</div>
+
+	{#if $$slots.moreInformation}
+		<div
+			class="relative flex justify-center select-none cursor-default"
+			on:mouseenter={() => (showMoreInformation = true)}
+			on:mouseleave={() => (showMoreInformation = false)}
+		>
+			<div class="hover:cursor-help p-1 text-gray-600 dark:text-gray-400">
+				<InformationOutline />
+			</div>
+
+			{#if showMoreInformation}
+				<div class="absolute left-6 top-0 z-20">
+					<div
+						class="flex place-items-center place-content-center whitespace-nowrap rounded-3xl shadow-lg py-3 px-6 bg-immich-bg text-immich-fg dark:bg-gray-600 dark:text-immich-dark-fg text-xs border dark:border-immich-dark-gray"
+						class:hidden={!showMoreInformation}
+						transition:fade={{ duration: 200 }}
+					>
+						<slot name="moreInformation" />
+					</div>
+				</div>
+			{/if}
+		</div>
+	{/if}
 </div>

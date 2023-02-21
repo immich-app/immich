@@ -61,7 +61,7 @@
 		</section>
 
 		<section class="overflow-y-auto immich-scrollbar ">
-			<div id="setting-title" class="pt-10 w-full z-50 bg-immich-bg dark:bg-immich-dark-bg">
+			<div id="setting-title" class="pt-10 w-full bg-immich-bg dark:bg-immich-dark-bg">
 				<h1 class="text-lg ml-8 mb-4 text-immich-primary dark:text-immich-dark-primary font-medium">
 					{getPageTitle($page.route.id)}
 				</h1>
