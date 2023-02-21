@@ -458,6 +458,12 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
   }
 
+  void setAvailableAlbums(availableAlbums) {
+    state = state.copyWith(
+      availableAlbums: availableAlbums,
+    );
+  }
+
   void _onBackupError(ErrorUploadAsset errorAssetInfo) {
     ref.watch(errorBackupListProvider.notifier).add(errorAssetInfo);
   }
