@@ -577,7 +577,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   Future<void> resumeBackup() async {
-    print("Resuming backup get called");
     // assumes the background service is currently running
     // if true, waits until it has stopped to update the app state from HiveDB
     // before actually resuming backup by calling the internal `_resumeBackup`
