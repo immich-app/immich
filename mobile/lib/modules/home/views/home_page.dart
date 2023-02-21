@@ -44,10 +44,10 @@ class HomePage extends HookConsumerWidget {
 
     useEffect(
       () {
-        ref.read(websocketProvider.notifier).connect();
-        ref.read(assetProvider.notifier).getAllAsset();
-        ref.read(albumProvider.notifier).getAllAlbums();
-        ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
+        ref.watch(websocketProvider.notifier).connect();
+        ref.watch(assetProvider.notifier).getAllAsset();
+        ref.watch(albumProvider.notifier).getAllAlbums();
+        ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
         ref.watch(serverInfoProvider.notifier).getServerVersion();
 
         selectionEnabledHook.addListener(() {

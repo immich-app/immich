@@ -25,7 +25,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        ref.read(backupProvider.notifier).getBackupInfo();
+        ref.watch(backupProvider.notifier).getBackupInfo();
         return null;
       },
       [],
