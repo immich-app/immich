@@ -10,6 +10,7 @@ import 'package:flutter/widgets.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/modules/backup/background_service/localization.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
@@ -312,6 +313,13 @@ class BackgroundService {
             debugPrint("[_callHandler] could not acquire lock, exiting");
             return false;
           }
+
+          // Notifications aren't enabled in iOS yet, and this line
+          // below crashes the iOS background service
+          if (Platform.isAndroid) {
+            await loadTranslations();
+          }
+
           final bool ok = await _onAssetsChanged();
           return ok;
         } catch (error) {
