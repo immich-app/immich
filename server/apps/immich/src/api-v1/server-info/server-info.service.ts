@@ -39,7 +39,7 @@ export class ServerInfoService {
       assetType: string;
       assetCount: string;
       totalSizeInBytes: string;
-      userId: string;
+      ownerId: string;
     };
 
     const userStatsQueryResponse: UserStatsQueryResponse[] = await this.assetRepository
@@ -56,9 +56,8 @@ export class ServerInfoService {
 
     const tmpMap = new Map<string, UsageByUserDto>();
     const getUsageByUser = (id: string) => tmpMap.get(id) || new UsageByUserDto(id);
-
     userStatsQueryResponse.forEach((r) => {
-      const usageByUser = getUsageByUser(r.userId);
+      const usageByUser = getUsageByUser(r.ownerId);
       usageByUser.photos += r.assetType === 'IMAGE' ? parseInt(r.assetCount) : 0;
       usageByUser.videos += r.assetType === 'VIDEO' ? parseInt(r.assetCount) : 0;
       usageByUser.usageRaw += parseInt(r.totalSizeInBytes);
@@ -68,7 +67,7 @@ export class ServerInfoService {
       serverStats.videos += r.assetType === 'VIDEO' ? parseInt(r.assetCount) : 0;
       serverStats.usageRaw += parseInt(r.totalSizeInBytes);
       serverStats.usage = asHumanReadable(serverStats.usageRaw);
-      tmpMap.set(r.userId, usageByUser);
+      tmpMap.set(r.ownerId, usageByUser);
     });
 
     serverStats.usageByUser = Array.from(tmpMap.values());
