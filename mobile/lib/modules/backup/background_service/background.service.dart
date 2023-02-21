@@ -315,7 +315,10 @@ class BackgroundService {
             return false;
           }
 
-          await loadTranslations();
+          final translationsOk = await loadTranslations();
+          if (!translationsOk) {
+            debugPrint("[_callHandler] could not load translations");
+          }
 
           final bool ok = await _onAssetsChanged();
           return ok;

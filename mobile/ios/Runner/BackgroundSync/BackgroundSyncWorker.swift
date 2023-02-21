@@ -209,7 +209,6 @@ class BackgroundSyncWorker {
         let isDetail = args[5] as? Bool
         let onlyIfForeground = args[6] as? Bool
         
-        print("Showing notification with \(title) and \(content)")
         // Build the notification
         let notificationContent = UNMutableNotificationContent()
         notificationContent.body = content ?? "Uploading..."
@@ -246,11 +245,9 @@ class BackgroundSyncWorker {
         let content = args[1] as? String
         let individualTag = args[2] as? String
         
-        print("handling error: \(title): \(content)")
-
         // Build the notification
         let notificationContent = UNMutableNotificationContent()
-        notificationContent.body = content ?? "Error uploading."
+        notificationContent.body = content ?? "Error running the backup job."
         notificationContent.title = title ?? "Immich"
         
         // Add it to the Notification center
