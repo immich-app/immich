@@ -588,6 +588,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       return;
     }
 
+    await Future.wait([
+      Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
+      Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
+      Hive.openBox(backgroundBackupInfoBox),
+    ]);
     final HiveBackupAlbums? albums =
         Hive.box<HiveBackupAlbums>(hiveBackupInfoBox).get(backupInfoKey);
     Set<AvailableAlbum> selectedAlbums = state.selectedBackupAlbums;

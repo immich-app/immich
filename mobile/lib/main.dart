@@ -47,9 +47,6 @@ Future<void> openBoxes() async {
     Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox),
     Hive.openBox(hiveGithubReleaseInfoBox),
     Hive.openBox(userSettingInfoBox),
-    Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
-    Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
-    Hive.openBox(backgroundBackupInfoBox),
     EasyLocalization.ensureInitialized(),
   ]);
 }
