@@ -577,6 +577,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   Future<void> resumeBackup() async {
+    print("Resuming backup get called");
     // assumes the background service is currently running
     // if true, waits until it has stopped to update the app state from HiveDB
     // before actually resuming backup by calling the internal `_resumeBackup`
@@ -587,26 +588,27 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       log.warning("WARNING [resumeBackup] failed to acquireLock");
       return;
     }
-    await Future.wait([
-      Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
-      Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
-      Hive.openBox(backgroundBackupInfoBox),
-    ]);
+
     final HiveBackupAlbums? albums =
         Hive.box<HiveBackupAlbums>(hiveBackupInfoBox).get(backupInfoKey);
     Set<AvailableAlbum> selectedAlbums = state.selectedBackupAlbums;
     Set<AvailableAlbum> excludedAlbums = state.excludedBackupAlbums;
     if (albums != null) {
-      selectedAlbums = _updateAlbumsBackupTime(
-        selectedAlbums,
-        albums.selectedAlbumIds,
-        albums.lastSelectedBackupTime,
-      );
-      excludedAlbums = _updateAlbumsBackupTime(
-        excludedAlbums,
-        albums.excludedAlbumsIds,
-        albums.lastExcludedBackupTime,
-      );
+      if (selectedAlbums.isNotEmpty) {
+        selectedAlbums = _updateAlbumsBackupTime(
+          selectedAlbums,
+          albums.selectedAlbumIds,
+          albums.lastSelectedBackupTime,
+        );
+      }
+
+      if (excludedAlbums.isNotEmpty) {
+        excludedAlbums = _updateAlbumsBackupTime(
+          excludedAlbums,
+          albums.excludedAlbumsIds,
+          albums.lastExcludedBackupTime,
+        );
+      }
     }
     final Box backgroundBox = Hive.box(backgroundBackupInfoBox);
     state = state.copyWith(
