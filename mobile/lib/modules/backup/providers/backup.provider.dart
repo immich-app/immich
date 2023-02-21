@@ -587,6 +587,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       log.warning("WARNING [resumeBackup] failed to acquireLock");
       return;
     }
+
     await Future.wait([
       Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
       Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
@@ -597,16 +598,21 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     Set<AvailableAlbum> selectedAlbums = state.selectedBackupAlbums;
     Set<AvailableAlbum> excludedAlbums = state.excludedBackupAlbums;
     if (albums != null) {
-      selectedAlbums = _updateAlbumsBackupTime(
-        selectedAlbums,
-        albums.selectedAlbumIds,
-        albums.lastSelectedBackupTime,
-      );
-      excludedAlbums = _updateAlbumsBackupTime(
-        excludedAlbums,
-        albums.excludedAlbumsIds,
-        albums.lastExcludedBackupTime,
-      );
+      if (selectedAlbums.isNotEmpty) {
+        selectedAlbums = _updateAlbumsBackupTime(
+          selectedAlbums,
+          albums.selectedAlbumIds,
+          albums.lastSelectedBackupTime,
+        );
+      }
+
+      if (excludedAlbums.isNotEmpty) {
+        excludedAlbums = _updateAlbumsBackupTime(
+          excludedAlbums,
+          albums.excludedAlbumsIds,
+          albums.lastExcludedBackupTime,
+        );
+      }
     }
     final Box backgroundBox = Hive.box(backgroundBackupInfoBox);
     state = state.copyWith(

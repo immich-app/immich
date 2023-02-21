@@ -35,6 +35,12 @@ class AssetService {
   /// Returns `null` if the server state did not change, else list of assets
   Future<Pair<List<Asset>?, String?>> getRemoteAssets({String? etag}) async {
     try {
+      // temporary fix for race condition that the _apiService
+      // get called before accessToken is set
+      var userInfoHiveBox = await Hive.openBox(userInfoBox);
+      var accessToken = userInfoHiveBox.get(accessTokenKey);
+      _apiService.setAccessToken(accessToken);
+
       final Pair<List<AssetResponseDto>, String?>? remote =
           await _apiService.assetApi.getAllAssetsWithETag(eTag: etag);
       if (remote == null) {

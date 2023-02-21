@@ -67,7 +67,7 @@ class HomePage extends HookConsumerWidget {
     );
 
     void reloadAllAsset() {
-      ref.read(assetProvider.notifier).getAllAsset();
+      ref.watch(assetProvider.notifier).getAllAsset();
     }
 
     Widget buildBody() {

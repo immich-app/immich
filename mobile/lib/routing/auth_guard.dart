@@ -11,6 +11,8 @@ class AuthGuard extends AutoRouteGuard {
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
     try {
+      // temporary fix for race condition that the _apiService
+      // get called before accessToken is set
       var userInfoHiveBox = await Hive.openBox(userInfoBox);
       var accessToken = userInfoHiveBox.get(accessTokenKey);
       _apiService.setAccessToken(accessToken);
