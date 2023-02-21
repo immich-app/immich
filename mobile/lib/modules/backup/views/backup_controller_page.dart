@@ -268,7 +268,7 @@ class BackupControllerPage extends HookConsumerWidget {
                     ).tr(),
                   ),
                 if (isBackgroundEnabled && Platform.isAndroid)
-                  SwitchListTile(
+                  SwitchListTile.adaptive(
                     title: const Text("backup_controller_page_background_wifi")
                         .tr(),
                     secondary: Icon(
@@ -289,7 +289,7 @@ class BackupControllerPage extends HookConsumerWidget {
                         : null,
                   ),
                 if (isBackgroundEnabled)
-                  SwitchListTile(
+                  SwitchListTile.adaptive(
                     title:
                         const Text("backup_controller_page_background_charging")
                             .tr(),
@@ -440,7 +440,7 @@ class BackupControllerPage extends HookConsumerWidget {
           borderRadius: BorderRadius.circular(20),
           side: BorderSide(
             color: isDarkMode
-                ? const Color.fromARGB(255, 101, 101, 101)
+                ? const Color.fromARGB(255, 56, 56, 56)
                 : Colors.black12,
             width: 1,
           ),
@@ -540,7 +540,7 @@ class BackupControllerPage extends HookConsumerWidget {
                 borderRadius: BorderRadius.circular(20), // if you need this
                 side: BorderSide(
                   color: isDarkMode
-                      ? const Color.fromARGB(255, 101, 101, 101)
+                      ? const Color.fromARGB(255, 56, 56, 56)
                       : Colors.black12,
                   width: 1,
                 ),

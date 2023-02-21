@@ -301,12 +301,11 @@ class BackgroundService {
           // indefinitely and can run later
           // Android is fine to wait here until the lock releases
           final waitForLock = Platform.isIOS
-            ? acquireLock()
-              .timeout(
-                const Duration(seconds: 5),
-                onTimeout: () => false,
-              )
-            : acquireLock();
+              ? acquireLock().timeout(
+                  const Duration(seconds: 5),
+                  onTimeout: () => false,
+                )
+              : acquireLock();
 
           final bool hasAccess = await waitForLock;
           if (!hasAccess) {
@@ -381,7 +380,8 @@ class BackgroundService {
       }
       // Android should check for new assets added while performing backup
     } while (Platform.isAndroid &&
-      true == await _backgroundChannel.invokeMethod<bool>("hasContentChanged"));
+        true ==
+            await _backgroundChannel.invokeMethod<bool>("hasContentChanged"));
     return true;
   }
 
@@ -555,8 +555,8 @@ class BackgroundService {
   Future<DateTime?> getIOSBackupLastRun(IosBackgroundTask task) async {
     // Seconds since last run
     final double? lastRun = task == IosBackgroundTask.fetch
-      ? await _foregroundChannel.invokeMethod('lastBackgroundFetchTime')
-      : await _foregroundChannel.invokeMethod('lastBackgroundProcessingTime');
+        ? await _foregroundChannel.invokeMethod('lastBackgroundFetchTime')
+        : await _foregroundChannel.invokeMethod('lastBackgroundProcessingTime');
     if (lastRun == null) {
       return null;
     }
@@ -565,15 +565,11 @@ class BackgroundService {
   }
 
   Future<int> getIOSBackupNumberOfProcesses() async {
-    return await _foregroundChannel
-      .invokeMethod('numberOfBackgroundProcesses');
+    return await _foregroundChannel.invokeMethod('numberOfBackgroundProcesses');
   }
 }
 
-enum IosBackgroundTask {
-  fetch,
-  processing
-}
+enum IosBackgroundTask { fetch, processing }
 
 class _Throttle {
   _Throttle(this._fun, Duration interval) : _interval = interval.inMicroseconds;
