@@ -42,8 +42,6 @@ services:
       - .env
     environment:
       - NODE_ENV=production
-    depends_on:
-      - database
     restart: always
 
   immich-web:
