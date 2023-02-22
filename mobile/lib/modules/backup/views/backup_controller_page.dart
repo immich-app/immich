@@ -28,9 +28,9 @@ class BackupControllerPage extends HookConsumerWidget {
     BackUpState backupState = ref.watch(backupProvider);
     AuthenticationState authenticationState = ref.watch(authenticationProvider);
     final IOSBackgroundSettingsState settings = ref.watch(iOSBackgroundSettingsProvider);
+
     final appRefreshDisabled = Platform.isIOS &&
-      (!(settings.settings?.appRefreshEnabled ?? false));
-    ref.read(backgroundServiceProvider).getIOSBackgroundAppRefreshEnabled();
+      settings.settings?.appRefreshEnabled != true;
     bool hasExclusiveAccess =
         backupState.backupProgress != BackUpProgressEnum.inBackground;
     bool shouldBackup = backupState.allUniqueAssets.length -
@@ -45,6 +45,10 @@ class BackupControllerPage extends HookConsumerWidget {
       () {
         if (backupState.backupProgress != BackUpProgressEnum.inProgress) {
           ref.watch(backupProvider.notifier).getBackupInfo();
+        }
+
+        if (Platform.isIOS) {
+          ref.read(iOSBackgroundSettingsProvider).refresh();
         }
 
         ref
@@ -396,14 +400,24 @@ class BackupControllerPage extends HookConsumerWidget {
     Widget buildBackgroundAppRefreshWarning() {
       return ListTile(
         leading: const Icon(Icons.task_outlined,),
-        title: const Text('backup_controller_page_background_app_refresh_disabled_title').tr(),
+        title: const Text(
+          'backup_controller_page_background_app_refresh_disabled_title',
+        ).tr(),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('backup_controller_page_background_app_refresh_disabled_content').tr(),
+            const Text(
+              'backup_controller_page_background_app_refresh_disabled_content',
+            ).tr(),
             ElevatedButton(
               onPressed: () => openAppSettings(),
-              child: const Text('backup_controller_page_background_app_refresh_enable_button_text').tr(),
+              child: const Text(
+                'backup_controller_page_background_app_refresh_enable_button_text',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ).tr(),
             ),
           ],
         ),
