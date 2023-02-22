@@ -8,6 +8,7 @@
 	import { browser } from '$app/environment';
 	import { AssetResponseDto, AlbumResponseDto } from '@api';
 	import { asByteUnitString } from '../../utils/byte-units';
+	import { locale } from '$lib/stores/preferences.store';
 
 	type Leaflet = typeof import('leaflet');
 	type LeafletMap = import('leaflet').Map;
@@ -69,8 +70,6 @@
 
 		return undefined;
 	};
-
-	const locale = navigator.language;
 </script>
 
 <section class="p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
@@ -101,7 +100,7 @@
 
 				<div>
 					<p>
-						{assetDateTimeOriginal.toLocaleDateString(locale, {
+						{assetDateTimeOriginal.toLocaleDateString($locale, {
 							month: 'short',
 							day: 'numeric',
 							year: 'numeric'
@@ -109,7 +108,7 @@
 					</p>
 					<div class="flex gap-2 text-sm">
 						<p>
-							{assetDateTimeOriginal.toLocaleString(locale, {
+							{assetDateTimeOriginal.toLocaleString($locale, {
 								weekday: 'short',
 								hour: 'numeric',
 								minute: '2-digit',
@@ -149,14 +148,14 @@
 				<div>
 					<p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
 					<div class="flex text-sm gap-2">
-						<p>{`ƒ/${asset.exifInfo.fNumber.toLocaleString(locale)}` || ''}</p>
+						<p>{`ƒ/${asset.exifInfo.fNumber.toLocaleString($locale)}` || ''}</p>
 
 						{#if asset.exifInfo.exposureTime}
 							<p>{`${asset.exifInfo.exposureTime}`}</p>
 						{/if}
 
 						{#if asset.exifInfo.focalLength}
-							<p>{`${asset.exifInfo.focalLength.toLocaleString(locale)} mm`}</p>
+							<p>{`${asset.exifInfo.focalLength.toLocaleString($locale)} mm`}</p>
 						{/if}
 
 						{#if asset.exifInfo.iso}

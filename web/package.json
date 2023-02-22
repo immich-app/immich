@@ -68,6 +68,7 @@
 		"luxon": "^3.1.1",
 		"rxjs": "^7.8.0",
 		"socket.io-client": "^4.5.1",
+		"svelte-local-storage-store": "^0.4.0",
 		"svelte-material-icons": "^2.0.2"
 	}
 }

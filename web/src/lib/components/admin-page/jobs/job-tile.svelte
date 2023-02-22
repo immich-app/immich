@@ -3,7 +3,7 @@
 	import SelectionSearch from 'svelte-material-icons/SelectionSearch.svelte';
 	import Play from 'svelte-material-icons/Play.svelte';
 	import AllInclusive from 'svelte-material-icons/AllInclusive.svelte';
-
+	import { locale } from '$lib/stores/preferences.store';
 	import { createEventDispatcher } from 'svelte';
 	import { JobCounts } from '@api';
 
@@ -22,8 +22,6 @@
 	const run = (includeAllAssets: boolean) => {
 		dispatch('click', { includeAllAssets });
 	};
-
-	const locale = navigator.language;
 </script>
 
 <div class="flex justify-between rounded-3xl bg-gray-100 dark:bg-immich-dark-gray">
@@ -45,7 +43,7 @@
 					<p>Active</p>
 					<p class="text-2xl">
 						{#if jobCounts.active !== undefined}
-							{jobCounts.active.toLocaleString(locale)}
+							{jobCounts.active.toLocaleString($locale)}
 						{:else}
 							<LoadingSpinner />
 						{/if}
@@ -57,7 +55,7 @@
 				>
 					<p class="text-2xl">
 						{#if jobCounts.waiting !== undefined}
-							{jobCounts.waiting.toLocaleString(locale)}
+							{jobCounts.waiting.toLocaleString($locale)}
 						{:else}
 							<LoadingSpinner />
 						{/if}

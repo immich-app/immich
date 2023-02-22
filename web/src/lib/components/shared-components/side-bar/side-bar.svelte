@@ -9,6 +9,7 @@
 	import LoadingSpinner from '../loading-spinner.svelte';
 	import StatusBox from '../status-box.svelte';
 	import SideBarButton from './side-bar-button.svelte';
+	import { locale } from '$lib/stores/preferences.store';
 
 	const getAssetCount = async () => {
 		const { data: assetCount } = await api.assetApi.getAssetCountByUserId();
@@ -35,8 +36,6 @@
 			owned: albumCount.owned
 		};
 	};
-
-	const locale = navigator.language;
 </script>
 
 <section id="sidebar" class="flex flex-col gap-1 pt-8 pr-6 bg-immich-bg dark:bg-immich-dark-bg">
@@ -56,8 +55,8 @@
 					<LoadingSpinner />
 				{:then data}
 					<div>
-						<p>{data.videos.toLocaleString(locale)} Videos</p>
-						<p>{data.photos.toLocaleString(locale)} Photos</p>
+						<p>{data.videos.toLocaleString($locale)} Videos</p>
+						<p>{data.photos.toLocaleString($locale)} Photos</p>
 					</div>
 				{/await}
 			</svelte:fragment>
@@ -74,7 +73,7 @@
 					<LoadingSpinner />
 				{:then data}
 					<div>
-						<p>{(data.shared + data.sharing).toLocaleString(locale)} Albums</p>
+						<p>{(data.shared + data.sharing).toLocaleString($locale)} Albums</p>
 					</div>
 				{/await}
 			</svelte:fragment>
@@ -108,7 +107,7 @@
 					<LoadingSpinner />
 				{:then data}
 					<div>
-						<p>{data.owned.toLocaleString(locale)} Albums</p>
+						<p>{data.owned.toLocaleString($locale)} Albums</p>
 					</div>
 				{/await}
 			</svelte:fragment>

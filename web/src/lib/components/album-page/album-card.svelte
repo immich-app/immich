@@ -17,6 +17,7 @@
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 	import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
+	import { locale } from '$lib/stores/preferences.store';
 
 	export let album: AlbumResponseDto;
 
@@ -52,8 +53,6 @@
 	onMount(async () => {
 		imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || noThumbnailUrl;
 	});
-
-	const locale = navigator.language;
 </script>
 
 <div
@@ -91,7 +90,10 @@
 		</p>
 
 		<span class="text-xs flex gap-2 dark:text-immich-dark-fg" data-testid="album-details">
-			<p>{album.assetCount.toLocaleString(locale)} {album.assetCount == 1 ? `item` : `items`}</p>
+			<p>
+				{album.assetCount.toLocaleString($locale)}
+				{album.assetCount == 1 ? `item` : `items`}
+			</p>
 
 			{#if album.shared}
 				<p>·</p>
