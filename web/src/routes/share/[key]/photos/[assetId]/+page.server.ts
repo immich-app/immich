@@ -1,13 +1,13 @@
 export const prerender = false;
 import { error } from '@sveltejs/kit';
 
-import { serverApi } from '@api';
+import { api } from '@api';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
 	try {
 		const { key, assetId } = params;
-		const { data: asset } = await serverApi.assetApi.getAssetById(assetId, {
+		const { data: asset } = await api.assetApi.getAssetById(assetId, {
 			params: { key }
 		});
 
