@@ -9,3 +9,5 @@ RUN pip install --user transformers tqdm numpy scikit-learn scipy nltk sentencep
 RUN pip install --user --no-deps sentence-transformers
 
 COPY . .
+COPY /root/.local /root/.local
+ENV PATH=/root/.local:$PATH
