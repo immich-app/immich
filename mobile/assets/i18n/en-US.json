@@ -229,5 +229,5 @@
   "version_announcement_overlay_title": "New Server Version Available \uD83C\uDF89",
   "backup_controller_page_background_app_refresh_disabled_title": "Background app refresh disabled",
   "backup_controller_page_background_app_refresh_disabled_content": "Enable background app refresh in settings in order to use background sync.",
-  "backup_controller_page_background_app_refresh_enable_button_text": "Go To Settings"
+  "backup_controller_page_background_app_refresh_enable_button_text": "Go to settings"
 }
