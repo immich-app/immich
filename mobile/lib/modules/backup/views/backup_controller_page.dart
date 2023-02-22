@@ -399,17 +399,25 @@ class BackupControllerPage extends HookConsumerWidget {
 
     Widget buildBackgroundAppRefreshWarning() {
       return ListTile(
+        isThreeLine: true,
         leading: const Icon(Icons.task_outlined,),
         title: const Text(
           'backup_controller_page_background_app_refresh_disabled_title',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
         ).tr(),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'backup_controller_page_background_app_refresh_disabled_content',
-            ).tr(),
-            ElevatedButton(
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: const Text(
+                'backup_controller_page_background_app_refresh_disabled_content',
+              ).tr(),
+            ),
+          ElevatedButton(
               onPressed: () => openAppSettings(),
               child: const Text(
                 'backup_controller_page_background_app_refresh_enable_button_text',
