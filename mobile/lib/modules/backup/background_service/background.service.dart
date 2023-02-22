@@ -574,6 +574,10 @@ class BackgroundService {
   Future<int> getIOSBackupNumberOfProcesses() async {
     return await _foregroundChannel.invokeMethod('numberOfBackgroundProcesses');
   }
+
+  Future<bool> getIOSBackgroundAppRefreshEnabled() async {
+    return await _foregroundChannel.invokeMethod('backgroundAppRefreshEnabled');
+  }
 }
 
 enum IosBackgroundTask { fetch, processing }

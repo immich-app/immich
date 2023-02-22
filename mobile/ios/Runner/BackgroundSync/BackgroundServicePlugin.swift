@@ -90,12 +90,18 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
                 let defaults = UserDefaults.standard
                 let lastRunTime = defaults.value(forKey: "last_background_fetch_run_time")
                 result(lastRunTime)
+                break
             case "lastBackgroundProcessingTime":
                 let defaults = UserDefaults.standard
                 let lastRunTime = defaults.value(forKey: "last_background_processing_run_time")
                 result(lastRunTime)
+                break
             case "numberOfBackgroundProcesses":
                 handleNumberOfProcesses(call: call, result: result)
+                break
+            case "backgroundAppRefreshEnabled":
+                handleBackgroundRefreshStatus(call: call, result: result)
+                break
             default:
                 result(FlutterMethodNotImplemented)
                 break
@@ -138,11 +144,10 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
         // This is not used yet and will need to be implemented
         defaults.set(notificationTitle, forKey: "notification_title")
         
-        // Schedule the background services if instant
-        if (instant ?? true) {
-            BackgroundServicePlugin.scheduleBackgroundSync()
-            BackgroundServicePlugin.scheduleBackgroundFetch()
-        }
+        // Schedule the background services
+        BackgroundServicePlugin.scheduleBackgroundSync()
+        BackgroundServicePlugin.scheduleBackgroundFetch()
+
         result(true)
     }
     
@@ -209,15 +214,31 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
         result(true)
     }
   
+    // Checks the status of the Background App Refresh from the system
+    // Returns true if the service is enabled for Immich, and false otherwise
+    func handleBackgroundRefreshStatus(call: FlutterMethodCall, result: FlutterResult) {
+        switch UIApplication.shared.backgroundRefreshStatus {
+        case .available:
+            result(true)
+            break
+        case .denied:
+            result(false)
+            break
+        case .restricted:
+            result(false)
+            break
+        default:
+            result(false)
+            break
+        }
+    }
+
+    
     // Schedules a short-running background sync to sync only a few photos
     static func scheduleBackgroundFetch() {
-        // We will only schedule this task to run if the user has explicitely allowed us to backup while
-        // not connected to power
-        let defaults = UserDefaults.standard
-        if defaults.value(forKey: "require_charging") as? Bool == true {
-            return
-        }
-                
+        // We will schedule this task to run no matter the charging or wifi requirents from the end user
+        // 1. They can set Background App Refresh to Off / Wi-Fi / Wi-Fi & Cellular Data from Settings
+        // 2. We will check the battery connectivity when we begin running the background activity
         let backgroundFetch = BGAppRefreshTaskRequest(identifier: BackgroundServicePlugin.backgroundFetchTaskID)
         
         // Use 5 minutes from now as earliest begin date
@@ -255,9 +276,25 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
     
     // This function runs when the system kicks off the BGAppRefreshTask from the Background Task Scheduler
     static func handleBackgroundFetch(task: BGAppRefreshTask) {
+        // Schedule the next sync task so we can run this again later
+        scheduleBackgroundFetch()
+        
         // Log the time of last background processing to now
         let defaults = UserDefaults.standard
         defaults.set(Date().timeIntervalSince1970, forKey: "last_background_fetch_run_time")
+        
+        // If we have required charging, we should check the charging status
+        let requireCharging = defaults.value(forKey: "require_charging") as? Bool
+        if (requireCharging ?? false) {
+            UIDevice.current.isBatteryMonitoringEnabled = true
+            if (UIDevice.current.batteryState == .unplugged) {
+                // The device is unplugged and we have required charging
+                // Therefore, we will simply complete the task without
+                // running it.
+                task.setTaskCompleted(success: true)
+                return
+            }
+        }
         
         // Schedule the next sync task so we can run this again later
         scheduleBackgroundFetch()
@@ -268,12 +305,12 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
     
     // This function runs when the system kicks off the BGProcessingTask from the Background Task Scheduler
     static func handleBackgroundProcessing(task: BGProcessingTask) {
+        // Schedule the next sync task so we run this again later
+        scheduleBackgroundSync()
+
         // Log the time of last background processing to now
         let defaults = UserDefaults.standard
         defaults.set(Date().timeIntervalSince1970, forKey: "last_background_processing_run_time")
-        
-        // Schedule the next sync task so we run this again later
-        scheduleBackgroundSync()
         
         // We won't specify a max time for the background sync service, so this can run for longer
         BackgroundServicePlugin.runBackgroundSync(task, maxSeconds: nil)

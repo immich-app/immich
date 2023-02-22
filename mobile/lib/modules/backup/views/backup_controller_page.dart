@@ -5,7 +5,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/ios_background_settings.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/current_backup_asset_info_box.dart';
 import 'package:immich_mobile/modules/backup/ui/ios_debug_info_tile.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
@@ -15,6 +17,7 @@ import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/backup_info_card.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class BackupControllerPage extends HookConsumerWidget {
@@ -24,6 +27,10 @@ class BackupControllerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     BackUpState backupState = ref.watch(backupProvider);
     AuthenticationState authenticationState = ref.watch(authenticationProvider);
+    final IOSBackgroundSettingsState settings = ref.watch(iOSBackgroundSettingsProvider);
+    final appRefreshDisabled = Platform.isIOS &&
+      (!(settings.settings?.appRefreshEnabled ?? false));
+    ref.read(backgroundServiceProvider).getIOSBackgroundAppRefreshEnabled();
     bool hasExclusiveAccess =
         backupState.backupProgress != BackUpProgressEnum.inBackground;
     bool shouldBackup = backupState.allUniqueAssets.length -
@@ -362,11 +369,44 @@ class BackupControllerPage extends HookConsumerWidget {
               ],
             ),
           ),
-          if (isBackgroundEnabled)
-            IosDebugInfoTile(
-              key: ValueKey(isChargingRequired),
+          if (isBackgroundEnabled && Platform.isIOS)
+            FutureBuilder(
+              future: ref
+                .read(backgroundServiceProvider)
+                .getIOSBackgroundAppRefreshEnabled(),
+              builder: (context, snapshot) {
+                final enabled = snapshot.data as bool?;
+                // If it's not enabled, show them some kind of alert that says
+                // background refresh is not enabled
+                if (enabled != null && !enabled) {
+
+                }
+                // If it's enabled, no need to bother them
+                return Container();
+              },
             ),
+          if (isBackgroundEnabled && settings.settings != null)
+            IosDebugInfoTile(
+              settings: settings.settings!,
+          ),
         ],
+      );
+    }
+
+    Widget buildBackgroundAppRefreshWarning() {
+      return ListTile(
+        leading: const Icon(Icons.task_outlined,),
+        title: const Text('backup_controller_page_background_app_refresh_disabled_title').tr(),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('backup_controller_page_background_app_refresh_disabled_content').tr(),
+            ElevatedButton(
+              onPressed: () => openAppSettings(),
+              child: const Text('backup_controller_page_background_app_refresh_enable_button_text').tr(),
+            ),
+          ],
+        ),
       );
     }
 
@@ -613,7 +653,15 @@ class BackupControllerPage extends HookConsumerWidget {
             const Divider(),
             buildAutoBackupController(),
             const Divider(),
-            buildBackgroundBackupController(),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 500),
+              child: Platform.isIOS
+              ? (
+                appRefreshDisabled
+                  ? buildBackgroundAppRefreshWarning()
+                  : buildBackgroundBackupController()
+              ) : buildBackgroundBackupController(),
+            ),
             const Divider(),
             buildStorageInformation(),
             const Divider(),
@@ -624,4 +672,6 @@ class BackupControllerPage extends HookConsumerWidget {
       ),
     );
   }
+
+
 }
