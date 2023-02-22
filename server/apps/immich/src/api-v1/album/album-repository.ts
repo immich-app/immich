@@ -1,7 +1,7 @@
 import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not, IsNull, FindManyOptions } from 'typeorm';
+import { Repository, Not, IsNull, FindManyOptions, In } from 'typeorm';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';
 import { CreateAlbumDto } from './dto/create-album.dto';
@@ -121,12 +121,12 @@ export class AlbumRepository implements IAlbumRepository {
 
   async getListByAssetId(userId: string, assetId: string): Promise<AlbumEntity[]> {
     const albums = await this.albumRepository.find({
-      where: { ownerId: userId, assets: { id: assetId } },
+      where: { ownerId: userId },
       relations: { owner: true, assets: true, sharedUsers: true },
       order: { assets: { fileCreatedAt: 'ASC' } },
     });
 
-    return albums;
+    return albums.filter((album) => album.assets.some((asset) => asset.id === assetId));
   }
 
   async get(albumId: string): Promise<AlbumEntity | null> {
