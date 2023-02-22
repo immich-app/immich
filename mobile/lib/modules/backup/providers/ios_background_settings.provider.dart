@@ -52,6 +52,6 @@ class IOSBackgroundSettingsState extends StateNotifier<IOSBackgroundSettings?> {
 }
 
 final iOSBackgroundSettingsProvider = StateProvider<IOSBackgroundSettingsState>(
-  (ref) => IOSBackgroundSettingsState(ref.read(backgroundServiceProvider)),
+  (ref) => IOSBackgroundSettingsState(ref.watch(backgroundServiceProvider)),
 );
 
