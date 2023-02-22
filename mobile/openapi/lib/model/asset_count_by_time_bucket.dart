@@ -36,10 +36,10 @@ class AssetCountByTimeBucket {
   String toString() => 'AssetCountByTimeBucket[timeBucket=$timeBucket, count=$count]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'timeBucket'] = timeBucket;
-      _json[r'count'] = count;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'timeBucket'] = this.timeBucket;
+      json[r'count'] = this.count;
+    return json;
   }
 
   /// Returns a new [AssetCountByTimeBucket] instance and imports its values from

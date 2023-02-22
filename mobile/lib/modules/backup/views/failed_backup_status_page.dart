@@ -87,9 +87,9 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                DateFormat.yMMMMd('en_US').format(
+                                DateFormat.yMMMMd().format(
                                   DateTime.parse(
-                                    errorAsset.createdAt.toString(),
+                                    errorAsset.fileCreatedAt.toString(),
                                   ).toLocal(),
                                 ),
                                 style: TextStyle(

@@ -16,7 +16,9 @@ class JobApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'GET /jobs' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getAllJobsStatusWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/jobs';
@@ -42,6 +44,7 @@ class JobApi {
     );
   }
 
+  /// 
   Future<AllJobStatusResponseDto?> getAllJobsStatus() async {
     final response = await getAllJobsStatusWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -57,55 +60,10 @@ class JobApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /jobs/{jobId}' operation and returns the [Response].
-  /// Parameters:
+  /// 
   ///
-  /// * [JobId] jobId (required):
-  Future<Response> getJobStatusWithHttpInfo(JobId jobId,) async {
-    // ignore: prefer_const_declarations
-    final path = r'/jobs/{jobId}'
-      .replaceAll('{jobId}', jobId.toString());
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
+  /// Note: This method returns the HTTP [Response].
   ///
-  /// * [JobId] jobId (required):
-  Future<JobStatusResponseDto?> getJobStatus(JobId jobId,) async {
-    final response = await getJobStatusWithHttpInfo(jobId,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'JobStatusResponseDto',) as JobStatusResponseDto;
-    
-    }
-    return null;
-  }
-
-  /// Performs an HTTP 'PUT /jobs/{jobId}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [JobId] jobId (required):
@@ -137,6 +95,8 @@ class JobApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [JobId] jobId (required):

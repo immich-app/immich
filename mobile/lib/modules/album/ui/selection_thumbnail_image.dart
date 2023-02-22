@@ -1,29 +1,24 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
-import 'package:immich_mobile/utils/image_url_builder.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/ui/immich_image.dart';
 
 class SelectionThumbnailImage extends HookConsumerWidget {
-  final AssetResponseDto asset;
+  final Asset asset;
 
   const SelectionThumbnailImage({Key? key, required this.asset})
       : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var box = Hive.box(userInfoBox);
-    var thumbnailRequestUrl = getThumbnailUrl(asset);
     var selectedAsset =
         ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
     var newAssetsForAlbum =
         ref.watch(assetSelectionProvider).selectedAdditionalAssetsForAlbum;
     var isAlbumExist = ref.watch(assetSelectionProvider).isAlbumExist;
 
-    Widget _buildSelectionIcon(AssetResponseDto asset) {
+    Widget buildSelectionIcon(Asset asset) {
       var isSelected = selectedAsset.map((item) => item.id).contains(asset.id);
       var isNewlySelected =
           newAssetsForAlbum.map((item) => item.id).contains(asset.id);
@@ -110,46 +105,23 @@ class SelectionThumbnailImage extends HookConsumerWidget {
         children: [
           Container(
             decoration: BoxDecoration(border: drawBorderColor()),
-            child: CachedNetworkImage(
-              cacheKey: asset.id,
-              width: 150,
-              height: 150,
-              memCacheHeight: asset.type == AssetTypeEnum.IMAGE ? 150 : 150,
-              fit: BoxFit.cover,
-              imageUrl: thumbnailRequestUrl,
-              httpHeaders: {
-                "Authorization": "Bearer ${box.get(accessTokenKey)}"
-              },
-              fadeInDuration: const Duration(milliseconds: 250),
-              progressIndicatorBuilder: (context, url, downloadProgress) =>
-                  Transform.scale(
-                scale: 0.2,
-                child:
-                    CircularProgressIndicator(value: downloadProgress.progress),
-              ),
-              errorWidget: (context, url, error) {
-                return Icon(
-                  Icons.image_not_supported_outlined,
-                  color: Theme.of(context).primaryColor,
-                );
-              },
-            ),
+            child: ImmichImage(asset, width: 150, height: 150),
           ),
           Padding(
             padding: const EdgeInsets.all(3.0),
             child: Align(
               alignment: Alignment.topLeft,
-              child: _buildSelectionIcon(asset),
+              child: buildSelectionIcon(asset),
             ),
           ),
-          if (asset.type != AssetTypeEnum.IMAGE)
+          if (!asset.isImage)
             Positioned(
               bottom: 5,
               right: 5,
               child: Row(
                 children: [
                   Text(
-                    asset.duration.substring(0, 7),
+                    asset.duration.toString().substring(0, 7),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 10,

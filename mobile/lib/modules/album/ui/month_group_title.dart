@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 
 class MonthGroupTitle extends HookConsumerWidget {
   final String month;
-  final List<AssetResponseDto> assetGroup;
+  final List<Asset> assetGroup;
 
   const MonthGroupTitle({
     Key? key,
@@ -21,7 +21,7 @@ class MonthGroupTitle extends HookConsumerWidget {
         ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
     final isAlbumExist = ref.watch(assetSelectionProvider).isAlbumExist;
 
-    _handleTitleIconClick() {
+    handleTitleIconClick() {
       HapticFeedback.heavyImpact();
 
       if (isAlbumExist) {
@@ -61,7 +61,7 @@ class MonthGroupTitle extends HookConsumerWidget {
       }
     }
 
-    _getSimplifiedMonth() {
+    getSimplifiedMonth() {
       var monthAndYear = month.split(',');
       var yearText = monthAndYear[1].trim();
       var monthText = monthAndYear[0].trim();
@@ -85,7 +85,7 @@ class MonthGroupTitle extends HookConsumerWidget {
         child: Row(
           children: [
             GestureDetector(
-              onTap: _handleTitleIconClick,
+              onTap: handleTitleIconClick,
               child: selectedDateGroup.contains(month)
                   ? Icon(
                       Icons.check_circle_rounded,
@@ -97,11 +97,11 @@ class MonthGroupTitle extends HookConsumerWidget {
                     ),
             ),
             GestureDetector(
-              onTap: _handleTitleIconClick,
+              onTap: handleTitleIconClick,
               child: Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Text(
-                  _getSimplifiedMonth(),
+                  getSimplifiedMonth(),
                   style: TextStyle(
                     fontSize: 24,
                     color: Theme.of(context).primaryColor,

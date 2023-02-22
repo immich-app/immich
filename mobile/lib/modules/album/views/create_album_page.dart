@@ -11,12 +11,18 @@ import 'package:immich_mobile/modules/album/ui/album_action_outlined_button.dart
 import 'package:immich_mobile/modules/album/ui/album_title_text_field.dart';
 import 'package:immich_mobile/modules/album/ui/shared_album_thumbnail_image.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 
 // ignore: must_be_immutable
 class CreateAlbumPage extends HookConsumerWidget {
-  bool isSharedAlbum;
+  final bool isSharedAlbum;
+  final List<Asset>? initialAssets;
 
-  CreateAlbumPage({Key? key, required this.isSharedAlbum}) : super(key: key);
+  const CreateAlbumPage({
+    Key? key,
+    required this.isSharedAlbum,
+    this.initialAssets,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,11 +35,11 @@ class CreateAlbumPage extends HookConsumerWidget {
         ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
-    _showSelectUserPage() {
+    showSelectUserPage() {
       AutoRouter.of(context).push(const SelectUserForSharingRoute());
     }
 
-    void _onBackgroundTapped() {
+    void onBackgroundTapped() {
       albumTitleTextFieldFocusNode.unfocus();
       isAlbumTitleTextFieldFocus.value = false;
 
@@ -45,7 +51,7 @@ class CreateAlbumPage extends HookConsumerWidget {
       }
     }
 
-    _onSelectPhotosButtonPressed() async {
+    onSelectPhotosButtonPressed() async {
       ref.watch(assetSelectionProvider.notifier).setIsAlbumExist(false);
 
       AssetSelectionPageResult? selectedAsset = await AutoRouter.of(context)
@@ -56,7 +62,7 @@ class CreateAlbumPage extends HookConsumerWidget {
       }
     }
 
-    _buildTitleInputField() {
+    buildTitleInputField() {
       return Padding(
         padding: const EdgeInsets.only(
           right: 10,
@@ -71,14 +77,14 @@ class CreateAlbumPage extends HookConsumerWidget {
       );
     }
 
-    _buildTitle() {
+    buildTitle() {
       if (selectedAssets.isEmpty) {
         return SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.only(top: 200, left: 18),
             child: Text(
               'create_shared_album_page_share_add_assets',
-              style: Theme.of(context).textTheme.headline2?.copyWith(
+              style: Theme.of(context).textTheme.displayMedium?.copyWith(
                     fontSize: 12,
                     fontWeight: FontWeight.normal,
                   ),
@@ -90,7 +96,7 @@ class CreateAlbumPage extends HookConsumerWidget {
       return const SliverToBoxAdapter();
     }
 
-    _buildSelectPhotosButton() {
+    buildSelectPhotosButton() {
       if (selectedAssets.isEmpty) {
         return SliverToBoxAdapter(
           child: Padding(
@@ -109,7 +115,7 @@ class CreateAlbumPage extends HookConsumerWidget {
                   borderRadius: BorderRadius.circular(5),
                 ),
               ),
-              onPressed: _onSelectPhotosButtonPressed,
+              onPressed: onSelectPhotosButtonPressed,
               icon: Icon(
                 Icons.add_rounded,
                 color: Theme.of(context).primaryColor,
@@ -132,7 +138,7 @@ class CreateAlbumPage extends HookConsumerWidget {
       return const SliverToBoxAdapter();
     }
 
-    _buildControlButton() {
+    buildControlButton() {
       return Padding(
         padding: const EdgeInsets.only(left: 12.0, top: 16, bottom: 16),
         child: SizedBox(
@@ -142,7 +148,7 @@ class CreateAlbumPage extends HookConsumerWidget {
             children: [
               AlbumActionOutlinedButton(
                 iconData: Icons.add_photo_alternate_outlined,
-                onPressed: _onSelectPhotosButtonPressed,
+                onPressed: onSelectPhotosButtonPressed,
                 labelText: "share_add_photos".tr(),
               ),
             ],
@@ -151,7 +157,7 @@ class CreateAlbumPage extends HookConsumerWidget {
       );
     }
 
-    _buildSelectedImageGrid() {
+    buildSelectedImageGrid() {
       if (selectedAssets.isNotEmpty) {
         return SliverPadding(
           padding: const EdgeInsets.only(top: 16),
@@ -164,9 +170,9 @@ class CreateAlbumPage extends HookConsumerWidget {
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
                 return GestureDetector(
-                  onTap: _onBackgroundTapped,
+                  onTap: onBackgroundTapped,
                   child: SharedAlbumThumbnailImage(
-                    asset: selectedAssets.toList()[index],
+                    asset: selectedAssets.elementAt(index),
                   ),
                 );
               },
@@ -179,7 +185,7 @@ class CreateAlbumPage extends HookConsumerWidget {
       return const SliverToBoxAdapter();
     }
 
-    _createNonSharedAlbum() async {
+    createNonSharedAlbum() async {
       var newAlbum = await ref.watch(albumProvider.notifier).createAlbum(
             ref.watch(albumTitleProvider),
             ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum,
@@ -208,7 +214,7 @@ class CreateAlbumPage extends HookConsumerWidget {
         ),
         title: Text(
           'share_create_album',
-          style: Theme.of(context).textTheme.headline2?.copyWith(
+          style: Theme.of(context).textTheme.displayMedium?.copyWith(
                 color: Theme.of(context).primaryColor,
               ),
         ).tr(),
@@ -216,13 +222,15 @@ class CreateAlbumPage extends HookConsumerWidget {
           if (isSharedAlbum)
             TextButton(
               onPressed: albumTitleController.text.isNotEmpty
-                  ? _showSelectUserPage
+                  ? showSelectUserPage
                   : null,
               child: Text(
                 'create_shared_album_page_share'.tr(),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor,
+                  color: albumTitleController.text.isEmpty
+                      ? Theme.of(context).disabledColor
+                      : Theme.of(context).primaryColor,
                 ),
               ),
             ),
@@ -230,7 +238,7 @@ class CreateAlbumPage extends HookConsumerWidget {
             TextButton(
               onPressed: albumTitleController.text.isNotEmpty &&
                       selectedAssets.isNotEmpty
-                  ? _createNonSharedAlbum
+                  ? createNonSharedAlbum
                   : null,
               child: Text(
                 'create_shared_album_page_create'.tr(),
@@ -242,7 +250,7 @@ class CreateAlbumPage extends HookConsumerWidget {
         ],
       ),
       body: GestureDetector(
-        onTap: _onBackgroundTapped,
+        onTap: onBackgroundTapped,
         child: CustomScrollView(
           slivers: [
             SliverAppBar(
@@ -255,15 +263,15 @@ class CreateAlbumPage extends HookConsumerWidget {
                 preferredSize: const Size.fromHeight(66.0),
                 child: Column(
                   children: [
-                    _buildTitleInputField(),
-                    if (selectedAssets.isNotEmpty) _buildControlButton(),
+                    buildTitleInputField(),
+                    if (selectedAssets.isNotEmpty) buildControlButton(),
                   ],
                 ),
               ),
             ),
-            _buildTitle(),
-            _buildSelectPhotosButton(),
-            _buildSelectedImageGrid(),
+            buildTitle(),
+            buildSelectPhotosButton(),
+            buildSelectedImageGrid(),
           ],
         ),
       ),

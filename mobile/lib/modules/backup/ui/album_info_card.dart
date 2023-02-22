@@ -33,7 +33,7 @@ class AlbumInfoCard extends HookConsumerWidget {
     ColorFilter unselectedFilter =
         const ColorFilter.mode(Colors.black, BlendMode.color);
 
-    _buildSelectedTextBox() {
+    buildSelectedTextBox() {
       if (isSelected) {
         return Chip(
           visualDensity: VisualDensity.compact,
@@ -67,7 +67,7 @@ class AlbumInfoCard extends HookConsumerWidget {
       return const SizedBox();
     }
 
-    _buildImageFilter() {
+    buildImageFilter() {
       if (isSelected) {
         return selectedFilter;
       } else if (isExcluded) {
@@ -163,7 +163,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                       topRight: Radius.circular(12),
                     ),
                     image: DecorationImage(
-                      colorFilter: _buildImageFilter(),
+                      colorFilter: buildImageFilter(),
                       image: imageData != null
                           ? MemoryImage(imageData!)
                           : const AssetImage(
@@ -177,7 +177,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                 Positioned(
                   bottom: 10,
                   left: 25,
-                  child: _buildSelectedTextBox(),
+                  child: buildSelectedTextBox(),
                 )
               ],
             ),

@@ -17,13 +17,10 @@ void main() {
   // final instance = DeviceInfoApi();
 
   group('tests for DeviceInfoApi', () {
-    //Future<DeviceInfoResponseDto> createDeviceInfo(CreateDeviceInfoDto createDeviceInfoDto) async
-    test('test createDeviceInfo', () async {
-      // TODO
-    });
-
-    //Future<DeviceInfoResponseDto> updateDeviceInfo(Object body) async
-    test('test updateDeviceInfo', () async {
+    // 
+    //
+    //Future<DeviceInfoResponseDto> upsertDeviceInfo(UpsertDeviceInfoDto upsertDeviceInfoDto) async
+    test('test upsertDeviceInfo', () async {
       // TODO
     });
 

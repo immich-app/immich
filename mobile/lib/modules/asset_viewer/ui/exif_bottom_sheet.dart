@@ -2,185 +2,281 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:openapi/api.dart';
-import 'package:path/path.dart' as p;
+import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/exif_info.dart';
+import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:immich_mobile/utils/bytes_units.dart';
 
-class ExifBottomSheet extends ConsumerWidget {
-  final AssetResponseDto assetDetail;
+class ExifBottomSheet extends HookConsumerWidget {
+  final Asset assetDetail;
 
   const ExifBottomSheet({Key? key, required this.assetDetail})
       : super(key: key);
 
+  bool get showMap => assetDetail.latitude != null && assetDetail.longitude != null;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    _buildMap() {
+    buildMap() {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 16.0),
-        child: Container(
-          height: 150,
-          width: MediaQuery.of(context).size.width,
-          decoration: const BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(15)),
-          ),
-          child: FlutterMap(
-            options: MapOptions(
-              center: LatLng(
-                assetDetail.exifInfo?.latitude?.toDouble() ?? 0,
-                assetDetail.exifInfo?.longitude?.toDouble() ?? 0,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Container(
+              height: 150,
+              width: constraints.maxWidth,
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(15)),
               ),
-              zoom: 16.0,
-            ),
-            layers: [
-              TileLayerOptions(
-                urlTemplate:
-                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                subdomains: ['a', 'b', 'c'],
-                attributionBuilder: (_) {
-                  return const Text(
-                    "© OpenStreetMap",
-                    style: TextStyle(fontSize: 10),
-                  );
-                },
-              ),
-              MarkerLayerOptions(
-                markers: [
-                  Marker(
-                    anchorPos: AnchorPos.align(AnchorAlign.top),
-                    point: LatLng(
-                      assetDetail.exifInfo?.latitude?.toDouble() ?? 0,
-                      assetDetail.exifInfo?.longitude?.toDouble() ?? 0,
-                    ),
-                    builder: (ctx) => const Image(
-                      image: AssetImage('assets/location-pin.png'),
-                    ),
+              child: FlutterMap(
+                options: MapOptions(
+                  interactiveFlags: InteractiveFlag.none,
+                  center: LatLng(
+                    assetDetail.latitude ?? 0,
+                    assetDetail.longitude ?? 0,
+                  ),
+                  zoom: 16.0,
+                ),
+                layers: [
+                  TileLayerOptions(
+                    urlTemplate:
+                        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                    subdomains: ['a', 'b', 'c'],
+                    attributionBuilder: (_) {
+                      return const Text(
+                        "© OpenStreetMap",
+                        style: TextStyle(fontSize: 10),
+                      );
+                    },
+                  ),
+                  MarkerLayerOptions(
+                    markers: [
+                      Marker(
+                        anchorPos: AnchorPos.align(AnchorAlign.top),
+                        point: LatLng(
+                          assetDetail.latitude ?? 0,
+                          assetDetail.longitude ?? 0,
+                        ),
+                        builder: (ctx) => const Image(
+                          image: AssetImage('assets/location-pin.png'),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       );
     }
 
-    _buildLocationText() {
+    final textColor = Theme.of(context).primaryColor;
+
+    ExifInfo? exifInfo = assetDetail.exifInfo;
+
+    buildLocationText() {
       return Text(
-        "${assetDetail.exifInfo!.city}, ${assetDetail.exifInfo!.state}",
+        "${exifInfo?.city}, ${exifInfo?.state}",
         style: TextStyle(
           fontSize: 12,
-          color: Colors.grey[200],
           fontWeight: FontWeight.bold,
+          color: textColor,
         ),
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8),
-      child: ListView(
+    buildSizeText(Asset a) {
+      String resolution = a.width != null && a.height != null
+          ? "${a.height} x ${a.width}  "
+          : "";
+      String fileSize = a.exifInfo?.fileSize != null
+          ? formatBytes(a.exifInfo!.fileSize!)
+          : "";
+      String text = resolution + fileSize;
+      return text.isEmpty ? null : Text(text);
+    }
+
+    buildDragHeader() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          SizedBox(height: 12),
+          Align(
+            alignment: Alignment.center,
+            child: CustomDraggingHandle(),
+          ),
+          SizedBox(height: 12),
+        ],
+      );
+    }
+
+    buildLocation() {
+      // Guard no lat/lng
+      if (!showMap) {
+        return Container();
+      }
+
+      return Column(
         children: [
-          if (assetDetail.exifInfo?.dateTimeOriginal != null)
-            Text(
-              DateFormat('date_format'.tr()).format(
-                assetDetail.exifInfo!.dateTimeOriginal!.toLocal(),
-              ),
-              style: TextStyle(
-                color: Colors.grey[400],
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
+          // Location
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "exif_bottom_sheet_location",
+                style: TextStyle(fontSize: 11, color: textColor),
+              ).tr(),
+              buildMap(),
+              if (exifInfo != null &&
+                  exifInfo.city != null &&
+                  exifInfo.state != null)
+                buildLocationText(),
+              Text(
+                "${assetDetail.latitude!.toStringAsFixed(4)}, ${assetDetail.longitude!.toStringAsFixed(4)}",
+                style: const TextStyle(fontSize: 12),
+              )
+            ],
+          ),
+        ],
+      );
+    }
+
+    buildDate() {
+      final fileCreatedAt = assetDetail.fileCreatedAt.toLocal();
+      final date = DateFormat.yMMMEd().format(fileCreatedAt);
+      final time = DateFormat.jm().format(fileCreatedAt);
+
+      return Text(
+        '$date • $time',
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
+        ),
+      );
+    }
+
+    buildDetail() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Padding(
-            padding: const EdgeInsets.only(top: 16.0),
+            padding: const EdgeInsets.only(bottom: 8.0),
             child: Text(
-              "exif_bottom_sheet_description",
-              style: TextStyle(
-                color: Colors.grey[500],
-                fontSize: 11,
-              ),
+              "exif_bottom_sheet_details",
+              style: TextStyle(fontSize: 11, color: textColor),
             ).tr(),
           ),
-
-          // Location
-          if (assetDetail.exifInfo?.latitude != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 32.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Divider(
-                    thickness: 1,
-                    color: Colors.grey[600],
-                  ),
-                  Text(
-                    "exif_bottom_sheet_location",
-                    style: TextStyle(fontSize: 11, color: Colors.grey[400]),
-                  ).tr(),
-                  if (assetDetail.exifInfo?.latitude != null &&
-                      assetDetail.exifInfo?.longitude != null)
-                    _buildMap(),
-                  if (assetDetail.exifInfo?.city != null &&
-                      assetDetail.exifInfo?.state != null)
-                    _buildLocationText(),
-                  Text(
-                    "${assetDetail.exifInfo?.latitude?.toStringAsFixed(4)}, ${assetDetail.exifInfo?.longitude?.toStringAsFixed(4)}",
-                    style: TextStyle(fontSize: 12, color: Colors.grey[400]),
-                  )
-                ],
+          ListTile(
+            contentPadding: const EdgeInsets.all(0),
+            dense: true,
+            leading: const Icon(Icons.image),
+            title: Text(
+              assetDetail.fileName,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: textColor,
               ),
             ),
-          // Detail
-          if (assetDetail.exifInfo != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 32.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Divider(
-                    thickness: 1,
-                    color: Colors.grey[600],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Text(
-                      "exif_bottom_sheet_details",
-                      style: TextStyle(fontSize: 11, color: Colors.grey[400]),
-                    ).tr(),
-                  ),
-                  ListTile(
-                    contentPadding: const EdgeInsets.all(0),
-                    dense: true,
-                    textColor: Colors.grey[300],
-                    iconColor: Colors.grey[300],
-                    leading: const Icon(Icons.image),
-                    title: Text(
-                      "${assetDetail.exifInfo?.imageName!}${p.extension(assetDetail.originalPath)}",
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: assetDetail.exifInfo?.exifImageHeight != null
-                        ? Text(
-                            "${assetDetail.exifInfo?.exifImageHeight} x ${assetDetail.exifInfo?.exifImageWidth}  ${assetDetail.exifInfo?.fileSizeInByte!}B ",
-                          )
-                        : null,
-                  ),
-                  if (assetDetail.exifInfo?.make != null)
-                    ListTile(
-                      contentPadding: const EdgeInsets.all(0),
-                      dense: true,
-                      textColor: Colors.grey[300],
-                      iconColor: Colors.grey[300],
-                      leading: const Icon(Icons.camera),
-                      title: Text(
-                        "${assetDetail.exifInfo?.make} ${assetDetail.exifInfo?.model}",
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(
-                        "ƒ/${assetDetail.exifInfo?.fNumber}   1/${(1 / (assetDetail.exifInfo?.exposureTime ?? 1)).toStringAsFixed(0)}   ${assetDetail.exifInfo?.focalLength}mm   ISO${assetDetail.exifInfo?.iso} ",
-                      ),
-                    ),
-                ],
+            subtitle: buildSizeText(assetDetail),
+          ),
+          if (exifInfo?.make != null)
+            ListTile(
+              contentPadding: const EdgeInsets.all(0),
+              dense: true,
+              leading: const Icon(Icons.camera),
+              title: Text(
+                "${exifInfo!.make} ${exifInfo.model}",
+                style: TextStyle(
+                  color: textColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              subtitle: Text(
+                "ƒ/${exifInfo.fNumber}   ${exifInfo.exposureTime}   ${exifInfo.focalLength} mm   ISO${exifInfo.iso} ",
               ),
             ),
         ],
+      );
+    }
+
+    return SingleChildScrollView(
+      child: Card(
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(15),
+            topRight: Radius.circular(15),
+          ),
+        ),
+        margin: const EdgeInsets.all(0),
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth > 600) {
+                // Two column
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      buildDragHeader(),
+                      buildDate(),
+                      const SizedBox(height: 32.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Flexible(
+                            flex: showMap ? 5 : 0,
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: buildLocation(),
+                            ),
+                          ),
+                          Flexible(
+                            flex: 5,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: buildDetail(),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 50),
+                    ],
+                  ),
+                );
+              }
+
+              // One column
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  buildDragHeader(),
+                  buildDate(),
+                  const SizedBox(height: 16.0),
+                  if (showMap)
+                    Divider(
+                      thickness: 1,
+                      color: Colors.grey[600],
+                    ),
+                  const SizedBox(height: 16.0),
+                  buildLocation(),
+                  const SizedBox(height: 16.0),
+                  Divider(
+                    thickness: 1,
+                    color: Colors.grey[600],
+                  ),
+                  const SizedBox(height: 16.0),
+                  buildDetail(),
+                  const SizedBox(height: 50),
+                ],
+              );
+            },
+          ),
+        ),
       ),
     );
   }

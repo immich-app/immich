@@ -7,6 +7,10 @@ on:
     - cron: "0 23 * * *"
   workflow_dispatch: # Allow for running this manually.
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   j1:
     name: github-repo-stats

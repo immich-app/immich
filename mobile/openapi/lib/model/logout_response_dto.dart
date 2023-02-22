@@ -14,26 +14,32 @@ class LogoutResponseDto {
   /// Returns a new [LogoutResponseDto] instance.
   LogoutResponseDto({
     required this.successful,
+    required this.redirectUri,
   });
 
   bool successful;
 
+  String redirectUri;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is LogoutResponseDto &&
-     other.successful == successful;
+     other.successful == successful &&
+     other.redirectUri == redirectUri;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (successful.hashCode);
+    (successful.hashCode) +
+    (redirectUri.hashCode);
 
   @override
-  String toString() => 'LogoutResponseDto[successful=$successful]';
+  String toString() => 'LogoutResponseDto[successful=$successful, redirectUri=$redirectUri]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'successful'] = successful;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'successful'] = this.successful;
+      json[r'redirectUri'] = this.redirectUri;
+    return json;
   }
 
   /// Returns a new [LogoutResponseDto] instance and imports its values from
@@ -56,6 +62,7 @@ class LogoutResponseDto {
 
       return LogoutResponseDto(
         successful: mapValueOfType<bool>(json, r'successful')!,
+        redirectUri: mapValueOfType<String>(json, r'redirectUri')!,
       );
     }
     return null;
@@ -106,6 +113,7 @@ class LogoutResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'successful',
+    'redirectUri',
   };
 }
 

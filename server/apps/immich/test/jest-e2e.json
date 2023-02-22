@@ -1,5 +1,6 @@
 {
   "moduleFileExtensions": ["js", "json", "ts"],
+  "modulePaths": ["<rootDir>", "<rootDir>../../../"],
   "rootDir": ".",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
@@ -7,8 +8,9 @@
     "^.+\\.(t|j)s$": "ts-jest"
   },
   "moduleNameMapper": {
-    "@app/common/(.*)": "<rootDir>../../../libs/common/src/$1",
-    "@app/database/config/(.*)": "<rootDir>../../../libs/database/src/config/$1",
-    "@app/database/entities/(.*)": "<rootDir>../../../libs/database/src/entities/$1"
+    "^@app/common": "<rootDir>../../../libs/common/src",
+    "^@app/storage(|/.*)$": "<rootDir>../../../libs/storage/src/$1",
+    "^@app/infra(|/.*)$": "<rootDir>../../../libs/infra/src/$1",
+    "^@app/domain(|/.*)$": "<rootDir>../../../libs/domain/src/$1"
   }
 }

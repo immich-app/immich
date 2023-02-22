@@ -1,7 +1,5 @@
-import 'dart:io';
-
 import 'package:cancellation_token_http/http.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
@@ -10,6 +8,7 @@ import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
+import 'package:immich_mobile/modules/backup/models/hive_duplicated_assets.model.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
@@ -17,6 +16,7 @@ import 'package:immich_mobile/modules/login/models/authentication_state.model.da
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/services/server_info.service.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -36,6 +36,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             backgroundBackup: false,
             backupRequireWifi: true,
             backupRequireCharging: false,
+            backupTriggerDelay: 5000,
             serverInfo: ServerInfoResponseDto(
               diskAvailable: "0",
               diskAvailableRaw: 0,
@@ -52,15 +53,14 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             selectedAlbumsBackupAssetsIds: const {},
             currentUploadAsset: CurrentUploadAsset(
               id: '...',
-              createdAt: DateTime.parse('2020-10-04'),
+              fileCreatedAt: DateTime.parse('2020-10-04'),
               fileName: '...',
               fileType: '...',
             ),
           ),
-        ) {
-    getBackupInfo();
-  }
+        );
 
+  final log = Logger('BackupNotifier');
   final BackupService _backupService;
   final ServerInfoService _serverInfoService;
   final AuthenticationState _authState;
@@ -116,52 +116,63 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     bool? enabled,
     bool? requireWifi,
     bool? requireCharging,
+    int? triggerDelay,
     required void Function(String msg) onError,
     required void Function() onBatteryInfo,
   }) async {
-    assert(enabled != null || requireWifi != null || requireCharging != null);
-    if (Platform.isAndroid) {
-      final bool wasEnabled = state.backgroundBackup;
-      final bool wasWifi = state.backupRequireWifi;
-      final bool wasCharing = state.backupRequireCharging;
-      state = state.copyWith(
-        backgroundBackup: enabled,
-        backupRequireWifi: requireWifi,
-        backupRequireCharging: requireCharging,
-      );
+    assert(
+      enabled != null ||
+          requireWifi != null ||
+          requireCharging != null ||
+          triggerDelay != null,
+    );
+    final bool wasEnabled = state.backgroundBackup;
+    final bool wasWifi = state.backupRequireWifi;
+    final bool wasCharging = state.backupRequireCharging;
+    final int oldTriggerDelay = state.backupTriggerDelay;
+    state = state.copyWith(
+      backgroundBackup: enabled,
+      backupRequireWifi: requireWifi,
+      backupRequireCharging: requireCharging,
+      backupTriggerDelay: triggerDelay,
+    );
 
-      if (state.backgroundBackup) {
-        bool success = true;
-        if (!wasEnabled) {
-          if (!await _backgroundService.isIgnoringBatteryOptimizations()) {
-            onBatteryInfo();
-          }
-          success &= await _backgroundService.enableService(immediate: true);
+    if (state.backgroundBackup) {
+      bool success = true;
+      if (!wasEnabled) {
+        if (!await _backgroundService.isIgnoringBatteryOptimizations()) {
+          onBatteryInfo();
         }
-        success &= success &&
-            await _backgroundService.configureService(
-              requireUnmetered: state.backupRequireWifi,
-              requireCharging: state.backupRequireCharging,
-            );
-        if (success) {
-          await Hive.box(backgroundBackupInfoBox)
-              .put(backupRequireWifi, state.backupRequireWifi);
-          await Hive.box(backgroundBackupInfoBox)
-              .put(backupRequireCharging, state.backupRequireCharging);
-        } else {
-          state = state.copyWith(
-            backgroundBackup: wasEnabled,
-            backupRequireWifi: wasWifi,
-            backupRequireCharging: wasCharing,
+        success &= await _backgroundService.enableService(immediate: true);
+      }
+      success &= success &&
+          await _backgroundService.configureService(
+            requireUnmetered: state.backupRequireWifi,
+            requireCharging: state.backupRequireCharging,
+            triggerUpdateDelay: state.backupTriggerDelay,
+            triggerMaxDelay: state.backupTriggerDelay * 10,
           );
-          onError("backup_controller_page_background_configure_error");
-        }
+      if (success) {
+        final box = Hive.box(backgroundBackupInfoBox);
+        await Future.wait([
+          box.put(backupRequireWifi, state.backupRequireWifi),
+          box.put(backupRequireCharging, state.backupRequireCharging),
+          box.put(backupTriggerDelay, state.backupTriggerDelay),
+        ]);
       } else {
-        final bool success = await _backgroundService.disableService();
-        if (!success) {
-          state = state.copyWith(backgroundBackup: wasEnabled);
-          onError("backup_controller_page_background_configure_error");
-        }
+        state = state.copyWith(
+          backgroundBackup: wasEnabled,
+          backupRequireWifi: wasWifi,
+          backupRequireCharging: wasCharging,
+          backupTriggerDelay: oldTriggerDelay,
+        );
+        onError("backup_controller_page_background_configure_error");
+      }
+    } else {
+      final bool success = await _backgroundService.disableService();
+      if (!success) {
+        state = state.copyWith(backgroundBackup: wasEnabled);
+        onError("backup_controller_page_background_configure_error");
       }
     }
   }
@@ -170,15 +181,18 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Get all album on the device
   /// Get all selected and excluded album from the user's persistent storage
   /// If this is the first time performing backup - set the default selected album to be
-  /// the one that has all assets (Recent on Android, Recents on iOS)
+  /// the one that has all assets (`Recent` on Android, `Recents` on iOS)
   ///
   Future<void> _getBackupAlbumsInfo() async {
+    Stopwatch stopwatch = Stopwatch()..start();
     // Get all albums on the device
     List<AvailableAlbum> availableAlbums = [];
     List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
       hasAll: true,
       type: RequestType.common,
     );
+
+    log.info('Found ${albums.length} local albums');
 
     for (AssetPathEntity album in albums) {
       AvailableAlbum availableAlbum = AvailableAlbum(albumEntity: album);
@@ -217,13 +231,16 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
 
     if (backupAlbumInfo == null) {
-      debugPrint("[ERROR] getting Hive backup album infomation");
+      log.severe(
+        "backupAlbumInfo == null",
+        "Failed to get Hive backup album information",
+      );
       return;
     }
 
     // First time backup - set isAll album is the default one for backup.
     if (backupAlbumInfo.selectedAlbumIds.isEmpty) {
-      debugPrint("First time backup setup recent album as default");
+      log.info("First time backup; setup 'Recent(s)' album as default");
 
       // Get album that contains all assets
       var list = await PhotoManager.getAssetPathList(
@@ -285,9 +302,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         selectedBackupAlbums: selectedAlbums,
         excludedBackupAlbums: excludedAlbums,
       );
-    } catch (e) {
-      debugPrint("[ERROR] Failed to generate album from id $e");
+    } catch (e, stackTrace) {
+      log.severe("Failed to generate album from id", e, stackTrace);
     }
+
+    debugPrint("_getBackupAlbumsInfo takes ${stopwatch.elapsedMilliseconds}ms");
   }
 
   ///
@@ -296,6 +315,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Those assets are unique and are used as the total assets
   ///
   Future<void> _updateBackupAssetCount() async {
+    Set<String> duplicatedAssetIds = _backupService.getDuplicatedAssetIds();
     Set<AssetEntity> assetsFromSelectedAlbums = {};
     Set<AssetEntity> assetsFromExcludedAlbums = {};
 
@@ -335,11 +355,17 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     Set<String> selectedAlbumsBackupAssets =
         Set.from(allUniqueAssets.map((e) => e.id));
+
     selectedAlbumsBackupAssets
         .removeWhere((assetId) => !allAssetsInDatabase.contains(assetId));
 
+    // Remove duplicated asset from all unique assets
+    allUniqueAssets.removeWhere(
+      (asset) => duplicatedAssetIds.contains(asset.id),
+    );
+
     if (allUniqueAssets.isEmpty) {
-      debugPrint("No Asset On Device");
+      log.info("Not found albums or assets on the device to backup");
       state = state.copyWith(
         backupProgress: BackUpProgressEnum.idle,
         allAssetsInDatabase: allAssetsInDatabase,
@@ -361,14 +387,14 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     return;
   }
 
-  ///
   /// Get all necessary information for calculating the available albums,
   /// which albums are selected or excluded
   /// and then update the UI according to those information
-  ///
   Future<void> getBackupInfo() async {
-    final bool isEnabled = await _backgroundService.isBackgroundBackupEnabled();
+    var isEnabled = await _backgroundService.isBackgroundBackupEnabled();
+
     state = state.copyWith(backgroundBackup: isEnabled);
+
     if (state.backupProgress != BackUpProgressEnum.inBackground) {
       await _getBackupAlbumsInfo();
       await _updateServerInfo();
@@ -376,10 +402,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
   }
 
-  ///
   /// Save user selection of selected albums and excluded albums to
   /// Hive database
-  ///
   void _updatePersistentAlbumsSelection() {
     final epoch = DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
     Box<HiveBackupAlbums> backupAlbumInfoBox =
@@ -399,10 +423,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
   }
 
-  ///
   /// Invoke backup process
-  ///
   Future<void> startBackupProcess() async {
+    debugPrint("Start backup process");
     assert(state.backupProgress == BackUpProgressEnum.idle);
     state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
 
@@ -413,13 +436,12 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       await PhotoManager.clearFileCache();
 
       if (state.allUniqueAssets.isEmpty) {
-        debugPrint("No Asset On Device - Abort Backup Process");
+        log.info("No Asset On Device - Abort Backup Process");
         state = state.copyWith(backupProgress: BackUpProgressEnum.idle);
         return;
       }
 
       Set<AssetEntity> assetsWillBeBackup = Set.from(state.allUniqueAssets);
-
       // Remove item that has already been backed up
       for (var assetId in state.allAssetsInDatabase) {
         assetsWillBeBackup.removeWhere((e) => e.id == assetId);
@@ -445,6 +467,12 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
   }
 
+  void setAvailableAlbums(availableAlbums) {
+    state = state.copyWith(
+      availableAlbums: availableAlbums,
+    );
+  }
+
   void _onBackupError(ErrorUploadAsset errorAssetInfo) {
     ref.watch(errorBackupListProvider.notifier).add(errorAssetInfo);
   }
@@ -464,14 +492,26 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     );
   }
 
-  void _onAssetUploaded(String deviceAssetId, String deviceId) {
-    state = state.copyWith(
-      selectedAlbumsBackupAssetsIds: {
-        ...state.selectedAlbumsBackupAssetsIds,
-        deviceAssetId
-      },
-      allAssetsInDatabase: [...state.allAssetsInDatabase, deviceAssetId],
-    );
+  void _onAssetUploaded(
+    String deviceAssetId,
+    String deviceId,
+    bool isDuplicated,
+  ) {
+    if (isDuplicated) {
+      state = state.copyWith(
+        allUniqueAssets: state.allUniqueAssets
+            .where((asset) => asset.id != deviceAssetId)
+            .toSet(),
+      );
+    } else {
+      state = state.copyWith(
+        selectedAlbumsBackupAssetsIds: {
+          ...state.selectedAlbumsBackupAssetsIds,
+          deviceAssetId
+        },
+        allAssetsInDatabase: [...state.allAssetsInDatabase, deviceAssetId],
+      );
+    }
 
     if (state.allUniqueAssets.length -
             state.selectedAlbumsBackupAssetsIds.length ==
@@ -519,7 +559,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     // User has been logged out return
     if (accessKey == null || !_authState.isAuthenticated) {
-      debugPrint("[resumeBackup] not authenticated - abort");
+      log.info("[_resumeBackup] not authenticated - abort");
       return;
     }
 
@@ -528,17 +568,17 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         _authState.deviceInfo.isAutoBackup) {
       // check if backup is alreayd in process - then return
       if (state.backupProgress == BackUpProgressEnum.inProgress) {
-        debugPrint("[resumeBackup] Backup is already in progress - abort");
+        log.info("[_resumeBackup] Backup is already in progress - abort");
         return;
       }
 
       if (state.backupProgress == BackUpProgressEnum.inBackground) {
-        debugPrint("[resumeBackup] Background backup is running - abort");
+        log.info("[_resumeBackup] Background backup is running - abort");
         return;
       }
 
       // Run backup
-      debugPrint("[resumeBackup] Start back up");
+      log.info("[_resumeBackup] Start back up");
       await startBackupProcess();
     }
 
@@ -546,42 +586,52 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   Future<void> resumeBackup() async {
-    if (Platform.isAndroid) {
-      // assumes the background service is currently running
-      // if true, waits until it has stopped to update the app state from HiveDB
-      // before actually resuming backup by calling the internal `_resumeBackup`
-      final BackUpProgressEnum previous = state.backupProgress;
-      state = state.copyWith(backupProgress: BackUpProgressEnum.inBackground);
-      final bool hasLock = await _backgroundService.acquireLock();
-      if (!hasLock) {
-        return;
-      }
-      Box<HiveBackupAlbums> box =
-          await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
-      HiveBackupAlbums? albums = box.get(backupInfoKey);
-      Set<AvailableAlbum> selectedAlbums = state.selectedBackupAlbums;
-      Set<AvailableAlbum> excludedAlbums = state.excludedBackupAlbums;
-      if (albums != null) {
+    // assumes the background service is currently running
+    // if true, waits until it has stopped to update the app state from HiveDB
+    // before actually resuming backup by calling the internal `_resumeBackup`
+    final BackUpProgressEnum previous = state.backupProgress;
+    state = state.copyWith(backupProgress: BackUpProgressEnum.inBackground);
+    final bool hasLock = await _backgroundService.acquireLock();
+    if (!hasLock) {
+      log.warning("WARNING [resumeBackup] failed to acquireLock");
+      return;
+    }
+
+    await Future.wait([
+      Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
+      Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
+      Hive.openBox(backgroundBackupInfoBox),
+    ]);
+    final HiveBackupAlbums? albums =
+        Hive.box<HiveBackupAlbums>(hiveBackupInfoBox).get(backupInfoKey);
+    Set<AvailableAlbum> selectedAlbums = state.selectedBackupAlbums;
+    Set<AvailableAlbum> excludedAlbums = state.excludedBackupAlbums;
+    if (albums != null) {
+      if (selectedAlbums.isNotEmpty) {
         selectedAlbums = _updateAlbumsBackupTime(
           selectedAlbums,
           albums.selectedAlbumIds,
           albums.lastSelectedBackupTime,
         );
+      }
+
+      if (excludedAlbums.isNotEmpty) {
         excludedAlbums = _updateAlbumsBackupTime(
           excludedAlbums,
           albums.excludedAlbumsIds,
           albums.lastExcludedBackupTime,
         );
       }
-      final Box backgroundBox = await Hive.openBox(backgroundBackupInfoBox);
-      state = state.copyWith(
-        backupProgress: previous,
-        selectedBackupAlbums: selectedAlbums,
-        excludedBackupAlbums: excludedAlbums,
-        backupRequireWifi: backgroundBox.get(backupRequireWifi),
-        backupRequireCharging: backgroundBox.get(backupRequireCharging),
-      );
     }
+    final Box backgroundBox = Hive.box(backgroundBackupInfoBox);
+    state = state.copyWith(
+      backupProgress: previous,
+      selectedBackupAlbums: selectedAlbums,
+      excludedBackupAlbums: excludedAlbums,
+      backupRequireWifi: backgroundBox.get(backupRequireWifi),
+      backupRequireCharging: backgroundBox.get(backupRequireCharging),
+      backupTriggerDelay: backgroundBox.get(backupTriggerDelay),
+    );
     return _resumeBackup();
   }
 
@@ -596,7 +646,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         AvailableAlbum a = albums.firstWhere((e) => e.id == ids[i]);
         result.add(a.copyWith(lastBackup: times[i]));
       } on StateError {
-        debugPrint("[_updateAlbumBackupTime] failed to find album in state");
+        log.severe(
+          "[_updateAlbumBackupTime] failed to find album in state",
+          "State Error",
+          StackTrace.current,
+        );
       }
     }
     return result;
@@ -608,21 +662,35 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       AppStateEnum.paused,
       AppStateEnum.detached,
     ];
-    if (Platform.isAndroid &&
-        allowedStates.contains(ref.read(appStateProvider.notifier).state)) {
+    if (allowedStates.contains(ref.read(appStateProvider.notifier).state)) {
       try {
         if (Hive.isBoxOpen(hiveBackupInfoBox)) {
           await Hive.box<HiveBackupAlbums>(hiveBackupInfoBox).close();
         }
       } catch (error) {
-        debugPrint("[_notifyBackgroundServiceCanRun] failed to close box");
+        log.info("[_notifyBackgroundServiceCanRun] failed to close box");
+      }
+      try {
+        if (Hive.isBoxOpen(duplicatedAssetsBox)) {
+          await Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox).close();
+        }
+      } catch (error, stackTrace) {
+        log.severe(
+          "[_notifyBackgroundServiceCanRun] failed to close box",
+          error,
+          stackTrace,
+        );
       }
       try {
         if (Hive.isBoxOpen(backgroundBackupInfoBox)) {
           await Hive.box(backgroundBackupInfoBox).close();
         }
-      } catch (error) {
-        debugPrint("[_notifyBackgroundServiceCanRun] failed to close box");
+      } catch (error, stackTrace) {
+        log.severe(
+          "[_notifyBackgroundServiceCanRun] failed to close box",
+          error,
+          stackTrace,
+        );
       }
       _backgroundService.releaseLock();
     }

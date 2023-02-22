@@ -15,7 +15,7 @@ Once set up, this app can be used as photo and video backup solution directly fr
 * Object detection based on COCO SSD.
 * Search assets based on tags and exif data (lens, make, model, orientation)
 * Upload assets from your local computer/server using <a href='https://www.npmjs.com/package/immich' target='_blank' rel='nofollow'>immich cli tools</a>
-* [Optional] Reserve geocoding using Mapbox (Generous free-tier of 100,000 search/month)
+* Reverse geocoding from image exif data
 * Show asset's location information on map (OpenStreetMap).
 * Show curated places on the search page
 * Show curated objects on the search page

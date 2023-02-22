@@ -31,9 +31,9 @@ class SearchAssetDto {
   String toString() => 'SearchAssetDto[searchTerm=$searchTerm]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'searchTerm'] = searchTerm;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'searchTerm'] = this.searchTerm;
+    return json;
   }
 
   /// Returns a new [SearchAssetDto] instance and imports its values from

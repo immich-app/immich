@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/ui/selection_thumbnail_image.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 
 class AssetGridByMonth extends HookConsumerWidget {
-  final List<AssetResponseDto> assetGroup;
+  final List<Asset> assetGroup;
   const AssetGridByMonth({Key? key, required this.assetGroup})
       : super(key: key);
   @override

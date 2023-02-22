@@ -14,21 +14,22 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
   const BackupAlbumSelectionPage({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final availableAlbums = ref.watch(backupProvider).availableAlbums;
+    // final availableAlbums = ref.watch(backupProvider).availableAlbums;
     final selectedBackupAlbums = ref.watch(backupProvider).selectedBackupAlbums;
     final excludedBackupAlbums = ref.watch(backupProvider).excludedBackupAlbums;
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final albums = ref.watch(backupProvider).availableAlbums;
 
     useEffect(
       () {
-        ref.read(backupProvider.notifier).getBackupInfo();
+        ref.watch(backupProvider.notifier).getBackupInfo();
         return null;
       },
       [],
     );
 
-    _buildAlbumSelectionList() {
-      if (availableAlbums.isEmpty) {
+    buildAlbumSelectionList() {
+      if (albums.isEmpty) {
         return const Center(
           child: ImmichLoadingIndicator(),
         );
@@ -38,17 +39,17 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
         height: 265,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
-          itemCount: availableAlbums.length,
+          itemCount: albums.length,
           physics: const BouncingScrollPhysics(),
           itemBuilder: ((context, index) {
-            var thumbnailData = availableAlbums[index].thumbnailData;
+            var thumbnailData = albums[index].thumbnailData;
             return Padding(
               padding: index == 0
                   ? const EdgeInsets.only(left: 16.00)
                   : const EdgeInsets.all(0),
               child: AlbumInfoCard(
                 imageData: thumbnailData,
-                albumInfo: availableAlbums[index],
+                albumInfo: albums[index],
               ),
             );
           }),
@@ -56,7 +57,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
       );
     }
 
-    _buildSelectedAlbumNameChip() {
+    buildSelectedAlbumNameChip() {
       return selectedBackupAlbums.map((album) {
         void removeSelection() {
           if (ref.watch(backupProvider).selectedBackupAlbums.length == 1) {
@@ -77,17 +78,11 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           child: GestureDetector(
             onTap: removeSelection,
             child: Chip(
-              visualDensity: VisualDensity.compact,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5),
-              ),
               label: Text(
                 album.name,
                 style: TextStyle(
                   fontSize: 10,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.black
-                      : Colors.white,
+                  color: isDarkTheme ? Colors.black : Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -104,7 +99,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
       }).toSet();
     }
 
-    _buildExcludedAlbumNameChip() {
+    buildExcludedAlbumNameChip() {
       return excludedBackupAlbums.map((album) {
         void removeSelection() {
           ref
@@ -117,10 +112,6 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: Chip(
-              visualDensity: VisualDensity.compact,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5),
-              ),
               label: Text(
                 album.name,
                 style: TextStyle(
@@ -141,6 +132,50 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           ),
         );
       }).toSet();
+    }
+
+    buildSearchBar() {
+      return Padding(
+        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 8.0),
+        child: TextFormField(
+          onChanged: (searchValue) {
+            var avaialbleAlbums = ref
+                .watch(backupProvider)
+                .availableAlbums
+                .where(
+                  (album) => album.name
+                      .toLowerCase()
+                      .contains(searchValue.toLowerCase()),
+                )
+                .toList();
+
+            ref
+                .read(backupProvider.notifier)
+                .setAvailableAlbums(avaialbleAlbums);
+          },
+          decoration: InputDecoration(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 8.0,
+              vertical: 8.0,
+            ),
+            hintText: "Search",
+            hintStyle: TextStyle(
+              color: isDarkTheme ? Colors.white : Colors.grey,
+              fontSize: 14.0,
+            ),
+            prefixIcon: const Icon(
+              Icons.search,
+              color: Colors.grey,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide.none,
+            ),
+            filled: true,
+            fillColor: isDarkTheme ? Colors.white30 : Colors.grey[200],
+          ),
+        ),
+      );
     }
 
     return Scaffold(
@@ -177,8 +212,8 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Wrap(
               children: [
-                ..._buildSelectedAlbumNameChip(),
-                ..._buildExcludedAlbumNameChip()
+                ...buildSelectedAlbumNameChip(),
+                ...buildExcludedAlbumNameChip()
               ],
             ),
           ),
@@ -188,7 +223,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
             child: Card(
               margin: const EdgeInsets.all(0),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5),
+                borderRadius: BorderRadius.circular(10),
                 side: BorderSide(
                   color: isDarkTheme
                       ? const Color.fromARGB(255, 0, 0, 0)
@@ -225,8 +260,11 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
 
           ListTile(
             title: Text(
-              "backup_album_selection_page_albums_device"
-                  .tr(args: [availableAlbums.length.toString()]),
+              "backup_album_selection_page_albums_device".tr(
+                args: [
+                  ref.watch(backupProvider).availableAlbums.length.toString()
+                ],
+              ),
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
             subtitle: Padding(
@@ -254,7 +292,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   builder: (BuildContext context) {
                     return AlertDialog(
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       elevation: 5,
                       title: Text(
@@ -284,9 +322,11 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
             ),
           ),
 
+          buildSearchBar(),
+
           Padding(
             padding: const EdgeInsets.only(bottom: 16.0),
-            child: _buildAlbumSelectionList(),
+            child: buildAlbumSelectionList(),
           ),
         ],
       ),

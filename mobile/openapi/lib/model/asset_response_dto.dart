@@ -20,15 +20,18 @@ class AssetResponseDto {
     required this.deviceId,
     required this.originalPath,
     required this.resizePath,
-    required this.createdAt,
-    required this.modifiedAt,
+    required this.fileCreatedAt,
+    required this.fileModifiedAt,
+    required this.updatedAt,
     required this.isFavorite,
     required this.mimeType,
     required this.duration,
     required this.webpPath,
-    required this.encodedVideoPath,
+    this.encodedVideoPath,
     this.exifInfo,
     this.smartInfo,
+    this.livePhotoVideoId,
+    this.tags = const [],
   });
 
   AssetTypeEnum type;
@@ -45,9 +48,11 @@ class AssetResponseDto {
 
   String? resizePath;
 
-  String createdAt;
+  String fileCreatedAt;
 
-  String modifiedAt;
+  String fileModifiedAt;
+
+  String updatedAt;
 
   bool isFavorite;
 
@@ -75,6 +80,10 @@ class AssetResponseDto {
   ///
   SmartInfoResponseDto? smartInfo;
 
+  String? livePhotoVideoId;
+
+  List<TagResponseDto> tags;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
      other.type == type &&
@@ -84,15 +93,18 @@ class AssetResponseDto {
      other.deviceId == deviceId &&
      other.originalPath == originalPath &&
      other.resizePath == resizePath &&
-     other.createdAt == createdAt &&
-     other.modifiedAt == modifiedAt &&
+     other.fileCreatedAt == fileCreatedAt &&
+     other.fileModifiedAt == fileModifiedAt &&
+     other.updatedAt == updatedAt &&
      other.isFavorite == isFavorite &&
      other.mimeType == mimeType &&
      other.duration == duration &&
      other.webpPath == webpPath &&
      other.encodedVideoPath == encodedVideoPath &&
      other.exifInfo == exifInfo &&
-     other.smartInfo == smartInfo;
+     other.smartInfo == smartInfo &&
+     other.livePhotoVideoId == livePhotoVideoId &&
+     other.tags == tags;
 
   @override
   int get hashCode =>
@@ -104,62 +116,72 @@ class AssetResponseDto {
     (deviceId.hashCode) +
     (originalPath.hashCode) +
     (resizePath == null ? 0 : resizePath!.hashCode) +
-    (createdAt.hashCode) +
-    (modifiedAt.hashCode) +
+    (fileCreatedAt.hashCode) +
+    (fileModifiedAt.hashCode) +
+    (updatedAt.hashCode) +
     (isFavorite.hashCode) +
     (mimeType == null ? 0 : mimeType!.hashCode) +
     (duration.hashCode) +
     (webpPath == null ? 0 : webpPath!.hashCode) +
     (encodedVideoPath == null ? 0 : encodedVideoPath!.hashCode) +
     (exifInfo == null ? 0 : exifInfo!.hashCode) +
-    (smartInfo == null ? 0 : smartInfo!.hashCode);
+    (smartInfo == null ? 0 : smartInfo!.hashCode) +
+    (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
+    (tags.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, resizePath=$resizePath, createdAt=$createdAt, modifiedAt=$modifiedAt, isFavorite=$isFavorite, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo]';
+  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, resizePath=$resizePath, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, updatedAt=$updatedAt, isFavorite=$isFavorite, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'type'] = type;
-      _json[r'id'] = id;
-      _json[r'deviceAssetId'] = deviceAssetId;
-      _json[r'ownerId'] = ownerId;
-      _json[r'deviceId'] = deviceId;
-      _json[r'originalPath'] = originalPath;
-    if (resizePath != null) {
-      _json[r'resizePath'] = resizePath;
+    final json = <String, dynamic>{};
+      json[r'type'] = this.type;
+      json[r'id'] = this.id;
+      json[r'deviceAssetId'] = this.deviceAssetId;
+      json[r'ownerId'] = this.ownerId;
+      json[r'deviceId'] = this.deviceId;
+      json[r'originalPath'] = this.originalPath;
+    if (this.resizePath != null) {
+      json[r'resizePath'] = this.resizePath;
     } else {
-      _json[r'resizePath'] = null;
+      // json[r'resizePath'] = null;
     }
-      _json[r'createdAt'] = createdAt;
-      _json[r'modifiedAt'] = modifiedAt;
-      _json[r'isFavorite'] = isFavorite;
-    if (mimeType != null) {
-      _json[r'mimeType'] = mimeType;
+      json[r'fileCreatedAt'] = this.fileCreatedAt;
+      json[r'fileModifiedAt'] = this.fileModifiedAt;
+      json[r'updatedAt'] = this.updatedAt;
+      json[r'isFavorite'] = this.isFavorite;
+    if (this.mimeType != null) {
+      json[r'mimeType'] = this.mimeType;
     } else {
-      _json[r'mimeType'] = null;
+      // json[r'mimeType'] = null;
     }
-      _json[r'duration'] = duration;
-    if (webpPath != null) {
-      _json[r'webpPath'] = webpPath;
+      json[r'duration'] = this.duration;
+    if (this.webpPath != null) {
+      json[r'webpPath'] = this.webpPath;
     } else {
-      _json[r'webpPath'] = null;
+      // json[r'webpPath'] = null;
     }
-    if (encodedVideoPath != null) {
-      _json[r'encodedVideoPath'] = encodedVideoPath;
+    if (this.encodedVideoPath != null) {
+      json[r'encodedVideoPath'] = this.encodedVideoPath;
     } else {
-      _json[r'encodedVideoPath'] = null;
+      // json[r'encodedVideoPath'] = null;
     }
-    if (exifInfo != null) {
-      _json[r'exifInfo'] = exifInfo;
+    if (this.exifInfo != null) {
+      json[r'exifInfo'] = this.exifInfo;
     } else {
-      _json[r'exifInfo'] = null;
+      // json[r'exifInfo'] = null;
     }
-    if (smartInfo != null) {
-      _json[r'smartInfo'] = smartInfo;
+    if (this.smartInfo != null) {
+      json[r'smartInfo'] = this.smartInfo;
     } else {
-      _json[r'smartInfo'] = null;
+      // json[r'smartInfo'] = null;
     }
-    return _json;
+    if (this.livePhotoVideoId != null) {
+      json[r'livePhotoVideoId'] = this.livePhotoVideoId;
+    } else {
+      // json[r'livePhotoVideoId'] = null;
+    }
+      json[r'tags'] = this.tags;
+    return json;
   }
 
   /// Returns a new [AssetResponseDto] instance and imports its values from
@@ -188,8 +210,9 @@ class AssetResponseDto {
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
         resizePath: mapValueOfType<String>(json, r'resizePath'),
-        createdAt: mapValueOfType<String>(json, r'createdAt')!,
-        modifiedAt: mapValueOfType<String>(json, r'modifiedAt')!,
+        fileCreatedAt: mapValueOfType<String>(json, r'fileCreatedAt')!,
+        fileModifiedAt: mapValueOfType<String>(json, r'fileModifiedAt')!,
+        updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
         mimeType: mapValueOfType<String>(json, r'mimeType'),
         duration: mapValueOfType<String>(json, r'duration')!,
@@ -197,6 +220,8 @@ class AssetResponseDto {
         encodedVideoPath: mapValueOfType<String>(json, r'encodedVideoPath'),
         exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
         smartInfo: SmartInfoResponseDto.fromJson(json[r'smartInfo']),
+        livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
+        tags: TagResponseDto.listFromJson(json[r'tags']) ?? const [],
       );
     }
     return null;
@@ -253,13 +278,13 @@ class AssetResponseDto {
     'deviceId',
     'originalPath',
     'resizePath',
-    'createdAt',
-    'modifiedAt',
+    'fileCreatedAt',
+    'fileModifiedAt',
+    'updatedAt',
     'isFavorite',
     'mimeType',
     'duration',
     'webpPath',
-    'encodedVideoPath',
   };
 }
 

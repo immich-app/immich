@@ -16,7 +16,7 @@
 <button
 	class:disabled={isDisabled}
 	on:click={handleClick}
-	class="bg-white hover:bg-immich-bg transition-all p-4 w-full text-left rounded-lg text-sm"
+	class="bg-slate-100 hover:bg-gray-200 dark:text-immich-dark-bg transition-all p-4 w-full text-left text-sm font-medium"
 >
 	{#if text}
 		{text}

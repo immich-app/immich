@@ -1,0 +1,19 @@
+--- native_class.mustache	2023-01-04 09:58:25.683944036 -0500
++++ native_class1.mustache	2023-01-04 09:59:43.856353945 -0500
+@@ -91,14 +91,14 @@
+     {{/isDateTime}}
+     {{#isNullable}}
+     } else {
+-      json[r'{{{baseName}}}'] = null;
++      // json[r'{{{baseName}}}'] = null;
+     }
+     {{/isNullable}}
+     {{^isNullable}}
+       {{^required}}
+         {{^defaultValue}}
+     } else {
+-      json[r'{{{baseName}}}'] = null;
++      // json[r'{{{baseName}}}'] = null;
+     }
+         {{/defaultValue}}
+       {{/required}}

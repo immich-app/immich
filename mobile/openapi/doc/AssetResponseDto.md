@@ -15,15 +15,18 @@ Name | Type | Description | Notes
 **deviceId** | **String** |  | 
 **originalPath** | **String** |  | 
 **resizePath** | **String** |  | 
-**createdAt** | **String** |  | 
-**modifiedAt** | **String** |  | 
+**fileCreatedAt** | **String** |  | 
+**fileModifiedAt** | **String** |  | 
+**updatedAt** | **String** |  | 
 **isFavorite** | **bool** |  | 
 **mimeType** | **String** |  | 
 **duration** | **String** |  | 
 **webpPath** | **String** |  | 
-**encodedVideoPath** | **String** |  | 
+**encodedVideoPath** | **String** |  | [optional] 
 **exifInfo** | [**ExifResponseDto**](ExifResponseDto.md) |  | [optional] 
 **smartInfo** | [**SmartInfoResponseDto**](SmartInfoResponseDto.md) |  | [optional] 
+**livePhotoVideoId** | **String** |  | [optional] 
+**tags** | [**List<TagResponseDto>**](TagResponseDto.md) |  | [optional] [default to const []]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

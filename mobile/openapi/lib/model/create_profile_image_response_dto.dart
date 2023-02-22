@@ -36,10 +36,10 @@ class CreateProfileImageResponseDto {
   String toString() => 'CreateProfileImageResponseDto[userId=$userId, profileImagePath=$profileImagePath]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'userId'] = userId;
-      _json[r'profileImagePath'] = profileImagePath;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'userId'] = this.userId;
+      json[r'profileImagePath'] = this.profileImagePath;
+    return json;
   }
 
   /// Returns a new [CreateProfileImageResponseDto] instance and imports its values from

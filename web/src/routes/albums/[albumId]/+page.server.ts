@@ -15,7 +15,10 @@ export const load: PageServerLoad = async ({ parent, params }) => {
 	try {
 		const { data: album } = await serverApi.albumApi.getAlbumInfo(albumId);
 		return {
-			album
+			album,
+			meta: {
+				title: album.albumName
+			}
 		};
 	} catch (e) {
 		throw redirect(302, '/albums');

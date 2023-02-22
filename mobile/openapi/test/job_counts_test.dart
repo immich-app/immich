@@ -16,27 +16,27 @@ void main() {
   // final instance = JobCounts();
 
   group('test JobCounts', () {
-    // num active
+    // int active
     test('to test the property `active`', () async {
       // TODO
     });
 
-    // num completed
+    // int completed
     test('to test the property `completed`', () async {
       // TODO
     });
 
-    // num failed
+    // int failed
     test('to test the property `failed`', () async {
       // TODO
     });
 
-    // num delayed
+    // int delayed
     test('to test the property `delayed`', () async {
       // TODO
     });
 
-    // num waiting
+    // int waiting
     test('to test the property `waiting`', () async {
       // TODO
     });

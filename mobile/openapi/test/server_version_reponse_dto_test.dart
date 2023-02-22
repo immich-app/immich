@@ -16,23 +16,18 @@ void main() {
   // final instance = ServerVersionReponseDto();
 
   group('test ServerVersionReponseDto', () {
-    // num major
+    // int major
     test('to test the property `major`', () async {
       // TODO
     });
 
-    // num minor
+    // int minor
     test('to test the property `minor`', () async {
       // TODO
     });
 
-    // num patch_
+    // int patch_
     test('to test the property `patch_`', () async {
-      // TODO
-    });
-
-    // num build
-    test('to test the property `build`', () async {
       // TODO
     });
 

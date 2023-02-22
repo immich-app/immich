@@ -1,15 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import request from 'supertest';
 import { clearDb, authCustom } from './test-utils';
-import { databaseConfig } from '@app/database/config/database.config';
-import { UserModule } from '../src/api-v1/user/user.module';
-import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
-import { UserService } from '../src/api-v1/user/user.service';
-import { CreateUserDto } from '../src/api-v1/user/dto/create-user.dto';
-import { UserResponseDto } from '../src/api-v1/user/response-dto/user-response.dto';
+import { CreateUserDto, UserService, AuthUserDto } from '@app/domain';
 import { DataSource } from 'typeorm';
+import { AuthService } from '@app/domain';
+import { AppModule } from '../src/app.module';
 
 function _createUser(userService: UserService, data: CreateUserDto) {
   return userService.createUser(data);
@@ -26,9 +22,7 @@ describe('User', () => {
 
   describe('without auth', () => {
     beforeAll(async () => {
-      const moduleFixture: TestingModule = await Test.createTestingModule({
-        imports: [UserModule, ImmichJwtModule, TypeOrmModule.forRoot(databaseConfig)],
-      }).compile();
+      const moduleFixture: TestingModule = await Test.createTestingModule({ imports: [AppModule] }).compile();
 
       app = moduleFixture.createNestApplication();
       database = app.get(DataSource);
@@ -47,16 +41,16 @@ describe('User', () => {
 
   describe('with auth', () => {
     let userService: UserService;
-    let authUser: UserResponseDto;
+    let authService: AuthService;
+    let authUser: AuthUserDto;
 
     beforeAll(async () => {
-      const builder = Test.createTestingModule({
-        imports: [UserModule, TypeOrmModule.forRoot(databaseConfig)],
-      });
+      const builder = Test.createTestingModule({ imports: [AppModule] });
       const moduleFixture: TestingModule = await authCustom(builder, () => authUser).compile();
 
       app = moduleFixture.createNestApplication();
       userService = app.get(UserService);
+      authService = app.get(AuthService);
       database = app.get(DataSource);
       await app.init();
     });
@@ -67,13 +61,15 @@ describe('User', () => {
       const userTwoEmail = 'two@test.com';
 
       beforeAll(async () => {
+        // first user must be admin
+        const adminSignupResponseDto = await authService.adminSignUp({
+          firstName: 'auth-user',
+          lastName: 'test',
+          email: authUserEmail,
+          password: '1234',
+        });
+        authUser = { ...adminSignupResponseDto, isAdmin: true }; // TODO: find out why adminSignUp doesn't have isAdmin (maybe can just return UserResponseDto)
         await Promise.allSettled([
-          _createUser(userService, {
-            firstName: 'auth-user',
-            lastName: 'test',
-            email: authUserEmail,
-            password: '1234',
-          }).then((user) => (authUser = user)),
           _createUser(userService, {
             firstName: 'one',
             lastName: 'test',
@@ -104,6 +100,8 @@ describe('User', () => {
               isAdmin: false,
               shouldChangePassword: true,
               profileImagePath: '',
+              deletedAt: null,
+              oauthId: '',
             },
             {
               email: userTwoEmail,
@@ -114,6 +112,8 @@ describe('User', () => {
               isAdmin: false,
               shouldChangePassword: true,
               profileImagePath: '',
+              deletedAt: null,
+              oauthId: '',
             },
           ]),
         );

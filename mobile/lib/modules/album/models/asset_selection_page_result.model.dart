@@ -1,10 +1,9 @@
 import 'package:collection/collection.dart';
-
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 
 class AssetSelectionPageResult {
-  final Set<AssetResponseDto> selectedNewAsset;
-  final Set<AssetResponseDto> selectedAdditionalAsset;
+  final Set<Asset> selectedNewAsset;
+  final Set<Asset> selectedAdditionalAsset;
   final bool isAlbumExist;
 
   AssetSelectionPageResult({
@@ -14,8 +13,8 @@ class AssetSelectionPageResult {
   });
 
   AssetSelectionPageResult copyWith({
-    Set<AssetResponseDto>? selectedNewAsset,
-    Set<AssetResponseDto>? selectedAdditionalAsset,
+    Set<Asset>? selectedNewAsset,
+    Set<Asset>? selectedAdditionalAsset,
     bool? isAlbumExist,
   }) {
     return AssetSelectionPageResult(

@@ -51,13 +51,13 @@ class JobCounts {
   String toString() => 'JobCounts[active=$active, completed=$completed, failed=$failed, delayed=$delayed, waiting=$waiting]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'active'] = active;
-      _json[r'completed'] = completed;
-      _json[r'failed'] = failed;
-      _json[r'delayed'] = delayed;
-      _json[r'waiting'] = waiting;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'active'] = this.active;
+      json[r'completed'] = this.completed;
+      json[r'failed'] = this.failed;
+      json[r'delayed'] = this.delayed;
+      json[r'waiting'] = this.waiting;
+    return json;
   }
 
   /// Returns a new [JobCounts] instance and imports its values from

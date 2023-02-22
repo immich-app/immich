@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -19,6 +20,8 @@ import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:cancellation_token_http/http.dart' as http;
 
+import '../models/hive_duplicated_assets.model.dart';
+
 final backupServiceProvider = Provider(
   (ref) => BackupService(
     ref.watch(apiServiceProvider),
@@ -26,6 +29,7 @@ final backupServiceProvider = Provider(
 );
 
 class BackupService {
+  final httpClient = http.Client();
   final ApiService _apiService;
 
   BackupService(this._apiService);
@@ -41,6 +45,29 @@ class BackupService {
     }
   }
 
+  void _saveDuplicatedAssetIdToLocalStorage(List<String> deviceAssetIds) {
+    HiveDuplicatedAssets duplicatedAssets =
+        Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
+                .get(duplicatedAssetsKey) ??
+            HiveDuplicatedAssets(duplicatedAssetIds: []);
+
+    duplicatedAssets.duplicatedAssetIds =
+        {...duplicatedAssets.duplicatedAssetIds, ...deviceAssetIds}.toList();
+
+    Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
+        .put(duplicatedAssetsKey, duplicatedAssets);
+  }
+
+  /// Get duplicated asset id from Hive storage
+  Set<String> getDuplicatedAssetIds() {
+    HiveDuplicatedAssets duplicatedAssets =
+        Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
+                .get(duplicatedAssetsKey) ??
+            HiveDuplicatedAssets(duplicatedAssetIds: []);
+
+    return duplicatedAssets.duplicatedAssetIds.toSet();
+  }
+
   /// Returns all assets newer than the last successful backup per album
   Future<List<AssetEntity>> buildUploadCandidates(
     HiveBackupAlbums backupAlbums,
@@ -48,6 +75,9 @@ class BackupService {
     final filter = FilterOptionGroup(
       containsPathModified: true,
       orders: [const OrderOption(type: OrderOptionType.updateDate)],
+      // title is needed to create Assets
+      imageOption: const FilterOption(needTitle: true),
+      videoOption: const FilterOption(needTitle: true),
     );
     final now = DateTime.now();
     final List<AssetPathEntity?> selectedAlbums =
@@ -140,34 +170,47 @@ class BackupService {
   Future<List<AssetEntity>> removeAlreadyUploadedAssets(
     List<AssetEntity> candidates,
   ) async {
-    final String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
-    if (candidates.length < 10) {
-      final List<CheckDuplicateAssetResponseDto?> duplicateResponse =
-          await Future.wait(
-        candidates.map(
-          (e) => _apiService.assetApi.checkDuplicateAsset(
-            CheckDuplicateAssetDto(deviceAssetId: e.id, deviceId: deviceId),
-          ),
+    if (candidates.isEmpty) {
+      return candidates;
+    }
+    final Set<String> duplicatedAssetIds = getDuplicatedAssetIds();
+    candidates = duplicatedAssetIds.isEmpty
+        ? candidates
+        : candidates
+            .whereNot((asset) => duplicatedAssetIds.contains(asset.id))
+            .toList();
+    if (candidates.isEmpty) {
+      return candidates;
+    }
+    final Set<String> existing = {};
+    try {
+      final String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
+      final CheckExistingAssetsResponseDto? duplicates =
+          await _apiService.assetApi.checkExistingAssets(
+        CheckExistingAssetsDto(
+          deviceAssetIds: candidates.map((e) => e.id).toList(),
+          deviceId: deviceId,
         ),
       );
-      return candidates
-          .whereIndexed((i, e) => duplicateResponse[i]?.isExist == false)
-          .toList();
-    } else {
-      final List<String>? allAssetsInDatabase = await getDeviceBackupAsset();
-
-      if (allAssetsInDatabase == null) {
-        return candidates;
+      if (duplicates != null) {
+        existing.addAll(duplicates.existingIds);
       }
-      final Set<String> inDb = allAssetsInDatabase.toSet();
-      return candidates.whereNot((e) => inDb.contains(e.id)).toList();
+    } on ApiException {
+      // workaround for older server versions or when checking for too many assets at once
+      final List<String>? allAssetsInDatabase = await getDeviceBackupAsset();
+      if (allAssetsInDatabase != null) {
+        existing.addAll(allAssetsInDatabase);
+      }
     }
+    return existing.isEmpty
+        ? candidates
+        : candidates.whereNot((e) => existing.contains(e.id)).toList();
   }
 
   Future<bool> backupAsset(
     Iterable<AssetEntity> assetList,
     http.CancellationToken cancelToken,
-    Function(String, String) singleAssetDoneCb,
+    Function(String, String, bool) uploadSuccessCb,
     Function(int, int) uploadProgressCb,
     Function(CurrentUploadAsset) setCurrentUploadAssetCb,
     Function(ErrorUploadAsset) errorCb,
@@ -176,6 +219,7 @@ class BackupService {
     String savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
     File? file;
     bool anyErrors = false;
+    final List<String> duplicatedAssetIds = [];
 
     for (var entity in assetList) {
       try {
@@ -216,27 +260,42 @@ class BackupService {
           req.fields['deviceAssetId'] = entity.id;
           req.fields['deviceId'] = deviceId;
           req.fields['assetType'] = _getAssetType(entity.type);
-          req.fields['createdAt'] = entity.createDateTime.toIso8601String();
-          req.fields['modifiedAt'] = entity.modifiedDateTime.toIso8601String();
+          req.fields['fileCreatedAt'] = entity.createDateTime.toIso8601String();
+          req.fields['fileModifiedAt'] = entity.modifiedDateTime.toIso8601String();
           req.fields['isFavorite'] = entity.isFavorite.toString();
           req.fields['fileExtension'] = fileExtension;
           req.fields['duration'] = entity.videoDuration.toString();
 
           req.files.add(assetRawUploadData);
 
+          if (entity.isLivePhoto) {
+            var livePhotoRawUploadData = await _getLivePhotoFile(entity);
+            if (livePhotoRawUploadData != null) {
+              req.files.add(livePhotoRawUploadData);
+            }
+          }
+
           setCurrentUploadAssetCb(
             CurrentUploadAsset(
               id: entity.id,
-              createdAt: entity.createDateTime,
+              fileCreatedAt: entity.createDateTime.year == 1970
+                  ? entity.modifiedDateTime
+                  : entity.createDateTime,
               fileName: originalFileName,
               fileType: _getAssetType(entity.type),
             ),
           );
 
-          var response = await req.send(cancellationToken: cancelToken);
+          var response =
+              await httpClient.send(req, cancellationToken: cancelToken);
 
-          if (response.statusCode == 201) {
-            singleAssetDoneCb(entity.id, deviceId);
+          if (response.statusCode == 200) {
+            // asset is a duplicate (already exists on the server)
+            duplicatedAssetIds.add(entity.id);
+            uploadSuccessCb(entity.id, deviceId, true);
+          } else if (response.statusCode == 201) {
+            // stored a new asset on the server
+            uploadSuccessCb(entity.id, deviceId, false);
           } else {
             var data = await response.stream.bytesToString();
             var error = jsonDecode(data);
@@ -249,7 +308,7 @@ class BackupService {
               ErrorUploadAsset(
                 asset: entity,
                 id: entity.id,
-                createdAt: entity.createDateTime,
+                fileCreatedAt: entity.createDateTime,
                 fileName: originalFileName,
                 fileType: _getAssetType(entity.type),
                 errorMessage: error['error'],
@@ -260,7 +319,8 @@ class BackupService {
         }
       } on http.CancelledException {
         debugPrint("Backup was cancelled by the user");
-        return false;
+        anyErrors = true;
+        break;
       } catch (e) {
         debugPrint("ERROR backupAsset: ${e.toString()}");
         anyErrors = true;
@@ -271,7 +331,36 @@ class BackupService {
         }
       }
     }
+    if (duplicatedAssetIds.isNotEmpty) {
+      _saveDuplicatedAssetIdToLocalStorage(duplicatedAssetIds);
+    }
     return !anyErrors;
+  }
+
+  Future<MultipartFile?> _getLivePhotoFile(AssetEntity entity) async {
+    var motionFilePath = await entity.getMediaUrl();
+
+    if (motionFilePath != null) {
+      var validPath = motionFilePath.replaceAll('file://', '');
+      var motionFile = File(validPath);
+      var fileStream = motionFile.openRead();
+      String originalFileName = await entity.titleAsync;
+      String fileNameWithoutPath = originalFileName.toString().split(".")[0];
+      var mimeType = FileHelper.getMimeType(validPath);
+
+      return http.MultipartFile(
+        "livePhotoData",
+        fileStream,
+        motionFile.lengthSync(),
+        filename: fileNameWithoutPath,
+        contentType: MediaType(
+          mimeType["type"],
+          mimeType["subType"],
+        ),
+      );
+    }
+
+    return null;
   }
 
   String _getAssetType(AssetType assetType) {
@@ -293,8 +382,8 @@ class BackupService {
     DeviceTypeEnum deviceType,
   ) async {
     try {
-      var updatedDeviceInfo = await _apiService.deviceInfoApi.updateDeviceInfo(
-        UpdateDeviceInfoDto(
+      var updatedDeviceInfo = await _apiService.deviceInfoApi.upsertDeviceInfo(
+        UpsertDeviceInfoDto(
           deviceId: deviceId,
           deviceType: deviceType,
           isAutoBackup: status,

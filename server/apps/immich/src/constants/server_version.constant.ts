@@ -1,16 +1,17 @@
-// major.minor.patch+build
-// check mobile/pubspec.yml for current release version
+import pkg from 'package.json';
+
+const [major, minor, patch] = pkg.version.split('.');
 
 export interface IServerVersion {
   major: number;
   minor: number;
   patch: number;
-  build: number;
 }
 
 export const serverVersion: IServerVersion = {
-  major: 1,
-  minor: 32,
-  patch: 1,
-  build: 51,
+  major: Number(major),
+  minor: Number(minor),
+  patch: Number(patch),
 };
+
+export const SERVER_VERSION = `${serverVersion.major}.${serverVersion.minor}.${serverVersion.patch}`;

@@ -10,7 +10,10 @@ export const load: PageLoad = async () => {
 
 		if (userInfo.shouldChangePassword) {
 			return {
-				user: userInfo
+				user: userInfo,
+				meta: {
+					title: 'Change Password'
+				}
 			};
 		} else {
 			throw redirect(302, '/photos');

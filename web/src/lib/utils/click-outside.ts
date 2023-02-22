@@ -2,7 +2,7 @@ export function clickOutside(node: Node) {
 	const handleClick = (event: Event) => {
 		const targetNode = event.target as Node | null;
 		if (!node.contains(targetNode)) {
-			node.dispatchEvent(new CustomEvent('out-click'));
+			node.dispatchEvent(new CustomEvent('outclick'));
 		}
 	};
 

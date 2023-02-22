@@ -5,10 +5,6 @@
 	export let data: PageData;
 </script>
 
-<svelte:head>
-	<title>{data.album.albumName} - Immich</title>
-</svelte:head>
-
 <div class="immich-scrollbar">
 	<AlbumViewer album={data.album} />
 </div>

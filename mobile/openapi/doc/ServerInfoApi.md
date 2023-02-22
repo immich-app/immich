@@ -20,6 +20,8 @@ Method | HTTP request | Description
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -54,6 +56,8 @@ No authorization required
 
 # **getServerVersion**
 > ServerVersionReponseDto getServerVersion()
+
+
 
 
 
@@ -94,6 +98,8 @@ No authorization required
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -128,6 +134,8 @@ No authorization required
 
 # **pingServer**
 > ServerPingResponse pingServer()
+
+
 
 
 

@@ -33,7 +33,7 @@ if (keystorePropertiesFile.exists()) {
 
 
 android {
-    compileSdkVersion flutter.compileSdkVersion
+    compileSdkVersion 33
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -52,24 +52,26 @@ android {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "app.alextran.immich"
         minSdkVersion 23
-        targetSdkVersion flutter.targetSdkVersion
+        targetSdkVersion 33
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
 
    signingConfigs {
        release {
-           keyAlias keystoreProperties['keyAlias']
-           keyPassword keystoreProperties['keyPassword']
-           storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
-           storePassword keystoreProperties['storePassword']
+            def keyAliasVal = System.getenv("ALIAS")
+            def keyPasswordVal = System.getenv("ANDROID_KEY_PASSWORD")
+            def storePasswordVal = System.getenv("ANDROID_STORE_PASSWORD")
+
+            keyAlias keyAliasVal ? keyAliasVal : keystoreProperties['keyAlias']
+            keyPassword keyPasswordVal ? keyPasswordVal : keystoreProperties['keyPassword']
+            storeFile file("../key.jks") ? file("../key.jks") : file(keystoreProperties['storeFile'])
+            storePassword storePasswordVal ? storePasswordVal : keystoreProperties['storePassword']
        }
    }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.release
         }
     }

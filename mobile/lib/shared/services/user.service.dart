@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/utils/files_helper.dart';
@@ -19,9 +20,10 @@ class UserService {
 
   UserService(this._apiService);
 
-  Future<List<UserResponseDto>?> getAllUsersInfo({required bool isAll}) async {
+  Future<List<User>?> getAllUsers({required bool isAll}) async {
     try {
-      return await _apiService.userApi.getAllUsers(isAll);
+      final dto = await _apiService.userApi.getAllUsers(isAll);
+      return dto?.map(User.fromDto).toList();
     } catch (e) {
       debugPrint("Error [getAllUsersInfo]  ${e.toString()}");
       return null;

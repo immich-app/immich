@@ -1,0 +1,2 @@
+* Fixed freezed splash screen
+* Fixed OIDC redirect but not logging in

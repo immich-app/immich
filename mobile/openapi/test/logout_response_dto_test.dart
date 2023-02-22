@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // String redirectUri
+    test('to test the property `redirectUri`', () async {
+      // TODO
+    });
+
 
   });
 

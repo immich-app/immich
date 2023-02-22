@@ -48,18 +48,18 @@ class UpdateAlbumDto {
   String toString() => 'UpdateAlbumDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-    if (albumName != null) {
-      _json[r'albumName'] = albumName;
+    final json = <String, dynamic>{};
+    if (this.albumName != null) {
+      json[r'albumName'] = this.albumName;
     } else {
-      _json[r'albumName'] = null;
+      // json[r'albumName'] = null;
     }
-    if (albumThumbnailAssetId != null) {
-      _json[r'albumThumbnailAssetId'] = albumThumbnailAssetId;
+    if (this.albumThumbnailAssetId != null) {
+      json[r'albumThumbnailAssetId'] = this.albumThumbnailAssetId;
     } else {
-      _json[r'albumThumbnailAssetId'] = null;
+      // json[r'albumThumbnailAssetId'] = null;
     }
-    return _json;
+    return json;
   }
 
   /// Returns a new [UpdateAlbumDto] instance and imports its values from

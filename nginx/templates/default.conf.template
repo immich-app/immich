@@ -1,0 +1,77 @@
+map $http_upgrade $connection_upgrade {
+  default upgrade;
+  '' close;
+}
+
+upstream server {
+  server ${IMMICH_SERVER_HOST};
+  keepalive 2;
+}
+
+upstream web {
+  server ${IMMICH_WEB_HOST};
+  keepalive 2;
+}
+
+server {
+  listen 8080;
+
+  access_log off;
+  client_max_body_size 50000M;
+
+  # Compression
+  gzip off;
+  gzip_comp_level 2;
+  gzip_min_length 1000;
+  gzip_proxied any;
+  gzip_vary on;
+  gunzip on;
+
+  # text/html is included by default
+  gzip_types
+    application/javascript
+    application/json
+    font/ttf
+    image/svg+xml
+    text/css;
+
+  location /api {
+    proxy_buffering off;
+    proxy_buffer_size 16k;
+    proxy_busy_buffers_size 24k;
+    proxy_buffers 64 4k;
+    proxy_force_ranges on;
+
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+    proxy_set_header Host $host;
+
+    rewrite /api/(.*) /$1 break;
+
+    proxy_pass ${IMMICH_SERVER_SCHEME}server;
+  }
+
+  location / {
+    proxy_buffering off;
+    proxy_buffer_size 16k;
+    proxy_busy_buffers_size 24k;
+    proxy_buffers 64 4k;
+    proxy_force_ranges on;
+
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+    proxy_set_header Host $host;
+
+    proxy_pass ${IMMICH_WEB_SCHEME}web;
+  }
+}

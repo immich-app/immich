@@ -1,17 +1,24 @@
 import 'dart:math';
 
-import 'package:openapi/api.dart';
+import 'package:collection/collection.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:logging/logging.dart';
+
+final log = Logger('AssetGridDataStructure');
 
 enum RenderAssetGridElementType {
   assetRow,
-  dayTitle,
+  groupDividerTitle,
   monthTitle;
 }
 
 class RenderAssetGridRow {
-  final List<AssetResponseDto> assets;
+  final List<Asset> assets;
+  final List<double> widthDistribution;
 
-  RenderAssetGridRow(this.assets);
+  RenderAssetGridRow(this.assets, this.widthDistribution);
 }
 
 class RenderAssetGridElement {
@@ -19,7 +26,7 @@ class RenderAssetGridElement {
   final RenderAssetGridRow? assetRow;
   final String? title;
   final DateTime date;
-  final List<AssetResponseDto>? relatedAssetList;
+  final List<Asset>? relatedAssetList;
 
   RenderAssetGridElement(
     this.type, {
@@ -30,74 +37,177 @@ class RenderAssetGridElement {
   });
 }
 
-List<RenderAssetGridElement> assetsToRenderList(
-    List<AssetResponseDto> assets, int assetsPerRow) {
-  List<RenderAssetGridElement> elements = [];
-
-  int cursor = 0;
-  while (cursor < assets.length) {
-    int rowElements = min(assets.length - cursor, assetsPerRow);
-    final date = DateTime.parse(assets[cursor].createdAt);
-
-    final rowElement = RenderAssetGridElement(
-      RenderAssetGridElementType.assetRow,
-      date: date,
-      assetRow: RenderAssetGridRow(
-        assets.sublist(cursor, cursor + rowElements),
-      ),
-    );
-
-    elements.add(rowElement);
-    cursor += rowElements;
-  }
-
-  return elements;
+enum GroupAssetsBy {
+  day,
+  month;
 }
 
-List<RenderAssetGridElement> assetGroupsToRenderList(
-    Map<String, List<AssetResponseDto>> assetGroups, int assetsPerRow) {
-  List<RenderAssetGridElement> elements = [];
-  DateTime? lastDate;
+class AssetGridLayoutParameters {
+  final int perRow;
+  final bool dynamicLayout;
+  final GroupAssetsBy groupBy;
 
-  assetGroups.forEach((groupName, assets) {
-    final date = DateTime.parse(groupName);
+  AssetGridLayoutParameters(
+    this.perRow,
+    this.dynamicLayout,
+    this.groupBy,
+  );
+}
 
-    if (lastDate == null || lastDate!.month != date.month) {
-      elements.add(
-        RenderAssetGridElement(RenderAssetGridElementType.monthTitle,
-            title: groupName, date: date),
+class _AssetGroupsToRenderListComputeParameters {
+  final List<Asset> assets;
+  final AssetGridLayoutParameters layout;
+
+  _AssetGroupsToRenderListComputeParameters(
+    this.assets,
+    this.layout,
+  );
+}
+
+class RenderList {
+  final List<RenderAssetGridElement> elements;
+
+  RenderList(this.elements);
+
+  static Map<DateTime, List<Asset>> _groupAssets(
+    List<Asset> assets,
+    GroupAssetsBy groupBy,
+  ) {
+    if (groupBy == GroupAssetsBy.day) {
+      return assets.groupListsBy(
+        (element) {
+          final date = element.fileCreatedAt.toLocal();
+          return DateTime(date.year, date.month, date.day);
+        },
+      );
+    } else if (groupBy == GroupAssetsBy.month) {
+      return assets.groupListsBy(
+        (element) {
+          final date = element.fileCreatedAt.toLocal();
+          return DateTime(date.year, date.month);
+        },
       );
     }
 
-    // Add group title
-    elements.add(
-      RenderAssetGridElement(
-        RenderAssetGridElementType.dayTitle,
-        title: groupName,
-        date: date,
-        relatedAssetList: assets,
+    return {};
+  }
+
+  static Future<RenderList> _processAssetGroupData(
+    _AssetGroupsToRenderListComputeParameters data,
+  ) async {
+    // TODO: Make DateFormat use the configured locale.
+    final monthFormat = DateFormat.yMMM();
+    final dayFormatSameYear = DateFormat.MMMEd();
+    final dayFormatOtherYear = DateFormat.yMMMEd();
+    final allAssets = data.assets;
+    final perRow = data.layout.perRow;
+    final dynamicLayout = data.layout.dynamicLayout;
+    final groupBy = data.layout.groupBy;
+
+    List<RenderAssetGridElement> elements = [];
+    DateTime? lastDate;
+
+    final groups = _groupAssets(allAssets, groupBy);
+
+    groups.entries.sortedBy((e) =>e.key).reversed.forEach((entry) {
+      final date = entry.key;
+      final assets = entry.value;
+
+      try {
+        // Month title
+        if (groupBy == GroupAssetsBy.day &&
+            (lastDate == null || lastDate!.month != date.month)) {
+          elements.add(
+            RenderAssetGridElement(
+              RenderAssetGridElementType.monthTitle,
+              title: monthFormat.format(date),
+              date: date,
+            ),
+          );
+        }
+
+        // Group divider title (day or month)
+        var formatDate = dayFormatOtherYear;
+
+        if (DateTime.now().year == date.year) {
+          formatDate = dayFormatSameYear;
+        }
+
+        if (groupBy == GroupAssetsBy.month) {
+          formatDate = monthFormat;
+        }
+
+        elements.add(
+          RenderAssetGridElement(
+            RenderAssetGridElementType.groupDividerTitle,
+            title: formatDate.format(date),
+            date: date,
+            relatedAssetList: assets,
+          ),
+        );
+
+        // Add rows
+        int cursor = 0;
+        while (cursor < assets.length) {
+          int rowElements = min(assets.length - cursor, perRow);
+          final rowAssets = assets.sublist(cursor, cursor + rowElements);
+
+          // Default: All assets have the same width
+          var widthDistribution = List.filled(rowElements, 1.0);
+
+          if (dynamicLayout) {
+            final aspectRatios =
+                rowAssets.map((e) => (e.width ?? 1) / (e.height ?? 1)).toList();
+            final meanAspectRatio = aspectRatios.sum / rowElements;
+
+            // 1: mean width
+            // 0.5: width < mean - threshold
+            // 1.5: width > mean + threshold
+            final arConfiguration = aspectRatios.map((e) {
+              if (e - meanAspectRatio > 0.3) return 1.5;
+              if (e - meanAspectRatio < -0.3) return 0.5;
+              return 1.0;
+            });
+
+            // Normalize:
+            final sum = arConfiguration.sum;
+            widthDistribution =
+                arConfiguration.map((e) => (e * rowElements) / sum).toList();
+          }
+
+          final rowElement = RenderAssetGridElement(
+            RenderAssetGridElementType.assetRow,
+            date: date,
+            assetRow: RenderAssetGridRow(
+              rowAssets,
+              widthDistribution,
+            ),
+          );
+
+          elements.add(rowElement);
+          cursor += rowElements;
+        }
+
+        lastDate = date;
+      } catch (e, stackTrace) {
+        log.severe(e, stackTrace);
+      }
+    });
+
+    return RenderList(elements);
+  }
+
+  static Future<RenderList> fromAssets(
+    List<Asset> assets,
+    AssetGridLayoutParameters layout,
+  ) async {
+    // Compute only allows for one parameter. Therefore we pass all parameters in a map
+    return compute(
+      _processAssetGroupData,
+      _AssetGroupsToRenderListComputeParameters(
+        assets,
+        layout,
       ),
     );
-
-    // Add rows
-    int cursor = 0;
-    while (cursor < assets.length) {
-      int rowElements = min(assets.length - cursor, assetsPerRow);
-
-      final rowElement = RenderAssetGridElement(
-        RenderAssetGridElementType.assetRow,
-        date: date,
-        assetRow: RenderAssetGridRow(
-          assets.sublist(cursor, cursor + rowElements),
-        ),
-      );
-
-      elements.add(rowElement);
-      cursor += rowElements;
-    }
-
-    lastDate = date;
-  });
-
-  return elements;
+  }
 }

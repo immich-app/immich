@@ -16,6 +16,11 @@ void main() {
   // final instance = AssetResponseDto();
 
   group('test AssetResponseDto', () {
+    // AssetTypeEnum type
+    test('to test the property `type`', () async {
+      // TODO
+    });
+
     // String id
     test('to test the property `id`', () async {
       // TODO
@@ -36,11 +41,6 @@ void main() {
       // TODO
     });
 
-    // String type
-    test('to test the property `type`', () async {
-      // TODO
-    });
-
     // String originalPath
     test('to test the property `originalPath`', () async {
       // TODO
@@ -51,13 +51,18 @@ void main() {
       // TODO
     });
 
-    // String createdAt
-    test('to test the property `createdAt`', () async {
+    // String fileCreatedAt
+    test('to test the property `fileCreatedAt`', () async {
       // TODO
     });
 
-    // String modifiedAt
-    test('to test the property `modifiedAt`', () async {
+    // String fileModifiedAt
+    test('to test the property `fileModifiedAt`', () async {
+      // TODO
+    });
+
+    // String updatedAt
+    test('to test the property `updatedAt`', () async {
       // TODO
     });
 
@@ -93,6 +98,16 @@ void main() {
 
     // SmartInfoResponseDto smartInfo
     test('to test the property `smartInfo`', () async {
+      // TODO
+    });
+
+    // String livePhotoVideoId
+    test('to test the property `livePhotoVideoId`', () async {
+      // TODO
+    });
+
+    // List<TagResponseDto> tags (default value: const [])
+    test('to test the property `tags`', () async {
       // TODO
     });
 

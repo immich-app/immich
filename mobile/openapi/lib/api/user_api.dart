@@ -16,7 +16,10 @@ class UserApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /user/profile-image' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [MultipartFile] file (required):
@@ -55,6 +58,8 @@ class UserApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [MultipartFile] file (required):
@@ -73,7 +78,10 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /user' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [CreateUserDto] createUserDto (required):
@@ -102,6 +110,8 @@ class UserApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [CreateUserDto] createUserDto (required):
@@ -120,7 +130,63 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /user' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] userId (required):
+  Future<Response> deleteUserWithHttpInfo(String userId,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/user/{userId}'
+      .replaceAll('{userId}', userId);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// 
+  ///
+  /// Parameters:
+  ///
+  /// * [String] userId (required):
+  Future<UserResponseDto?> deleteUser(String userId,) async {
+    final response = await deleteUserWithHttpInfo(userId,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserResponseDto',) as UserResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [bool] isAll (required):
@@ -151,6 +217,8 @@ class UserApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [bool] isAll (required):
@@ -172,7 +240,9 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /user/me' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getMyUserInfoWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/user/me';
@@ -198,6 +268,7 @@ class UserApi {
     );
   }
 
+  /// 
   Future<UserResponseDto?> getMyUserInfo() async {
     final response = await getMyUserInfoWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -213,7 +284,10 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /user/profile-image/{userId}' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] userId (required):
@@ -243,6 +317,8 @@ class UserApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] userId (required):
@@ -261,7 +337,10 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /user/info/{userId}' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] userId (required):
@@ -291,6 +370,8 @@ class UserApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] userId (required):
@@ -309,8 +390,14 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /user/count' operation and returns the [Response].
-  Future<Response> getUserCountWithHttpInfo() async {
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [bool] admin:
+  Future<Response> getUserCountWithHttpInfo({ bool? admin, }) async {
     // ignore: prefer_const_declarations
     final path = r'/user/count';
 
@@ -320,6 +407,10 @@ class UserApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (admin != null) {
+      queryParams.addAll(_queryParams('', 'admin', admin));
+    }
 
     const contentTypes = <String>[];
 
@@ -335,8 +426,13 @@ class UserApi {
     );
   }
 
-  Future<UserCountResponseDto?> getUserCount() async {
-    final response = await getUserCountWithHttpInfo();
+  /// 
+  ///
+  /// Parameters:
+  ///
+  /// * [bool] admin:
+  Future<UserCountResponseDto?> getUserCount({ bool? admin, }) async {
+    final response = await getUserCountWithHttpInfo( admin: admin, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -350,7 +446,63 @@ class UserApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /user' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] userId (required):
+  Future<Response> restoreUserWithHttpInfo(String userId,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/user/{userId}/restore'
+      .replaceAll('{userId}', userId);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// 
+  ///
+  /// Parameters:
+  ///
+  /// * [String] userId (required):
+  Future<UserResponseDto?> restoreUser(String userId,) async {
+    final response = await restoreUserWithHttpInfo(userId,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserResponseDto',) as UserResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [UpdateUserDto] updateUserDto (required):
@@ -379,6 +531,8 @@ class UserApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [UpdateUserDto] updateUserDto (required):

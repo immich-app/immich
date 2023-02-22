@@ -3,15 +3,14 @@ import { ApiProperty } from '@nestjs/swagger';
 export class UsageByUserDto {
   constructor(userId: string) {
     this.userId = userId;
-    this.objects = 0;
     this.videos = 0;
     this.photos = 0;
+    this.usageRaw = 0;
+    this.usage = '0B';
   }
 
   @ApiProperty({ type: 'string' })
   userId: string;
-  @ApiProperty({ type: 'integer' })
-  objects: number;
   @ApiProperty({ type: 'integer' })
   videos: number;
   @ApiProperty({ type: 'integer' })

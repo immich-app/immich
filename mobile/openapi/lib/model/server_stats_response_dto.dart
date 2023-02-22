@@ -56,14 +56,14 @@ class ServerStatsResponseDto {
   String toString() => 'ServerStatsResponseDto[photos=$photos, videos=$videos, objects=$objects, usageRaw=$usageRaw, usage=$usage, usageByUser=$usageByUser]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'photos'] = photos;
-      _json[r'videos'] = videos;
-      _json[r'objects'] = objects;
-      _json[r'usageRaw'] = usageRaw;
-      _json[r'usage'] = usage;
-      _json[r'usageByUser'] = usageByUser;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'photos'] = this.photos;
+      json[r'videos'] = this.videos;
+      json[r'objects'] = this.objects;
+      json[r'usageRaw'] = this.usageRaw;
+      json[r'usage'] = this.usage;
+      json[r'usageByUser'] = this.usageByUser;
+    return json;
   }
 
   /// Returns a new [ServerStatsResponseDto] instance and imports its values from

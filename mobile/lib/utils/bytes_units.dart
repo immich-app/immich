@@ -1,15 +1,17 @@
-
 String formatBytes(int bytes) {
-  if (bytes < 1000) {
-    return "$bytes B";
-  } else if (bytes < 1000000) {
-    final kb = (bytes / 1000).toStringAsFixed(1);
-    return "$kb kB";
-  } else if (bytes < 1000000000) {
-    final mb = (bytes / 1000000).toStringAsFixed(1);
-    return "$mb MB";
-  } else {
-    final gb = (bytes / 1000000000).toStringAsFixed(1);
-    return "$gb GB";
+  const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB'];
+
+  int magnitude = 0;
+  double remainder = bytes.toDouble();
+  while (remainder >= 1024) {
+    if (magnitude + 1 < units.length) {
+      magnitude++;
+      remainder /= 1024;
+    }
+    else {
+      break;
+    }
   }
+
+  return "${remainder.toStringAsFixed(magnitude == 0 ? 0 : 1)} ${units[magnitude]}";
 }

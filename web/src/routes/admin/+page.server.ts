@@ -1,5 +1,4 @@
 import { redirect } from '@sveltejs/kit';
-import { serverApi } from '@api';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ parent }) => {
@@ -11,9 +10,5 @@ export const load: PageServerLoad = async ({ parent }) => {
 		throw redirect(302, '/photos');
 	}
 
-	const { data: allUsers } = await serverApi.userApi.getAllUsers(false);
-	return {
-		user: user,
-		allUsers: allUsers
-	};
+	throw redirect(302, '/admin/user-management');
 };

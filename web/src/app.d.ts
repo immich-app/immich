@@ -8,4 +8,20 @@ declare namespace App {
 	}
 
 	// interface Platform {}
+
+	interface Error {
+		message: string;
+		stack?: string;
+		code?: string;
+	}
+}
+
+// Source: https://stackoverflow.com/questions/63814432/typescript-typing-of-non-standard-window-event-in-svelte
+// To fix the <svelte:window... in components/asset-viewer/photo-viewer.svelte
+declare namespace svelte.JSX {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	interface HTMLAttributes<T> {
+		oncopyImage?: () => void;
+		onoutclick?: () => void;
+	}
 }

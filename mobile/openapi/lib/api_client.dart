@@ -144,19 +144,19 @@ class ApiClient {
     );
   }
 
-  Future<dynamic> deserializeAsync(String json, String targetType, {bool growable = false,}) async =>
+  Future<dynamic> deserializeAsync(String json, String targetType, {bool growable = false,}) =>
     // ignore: deprecated_member_use_from_same_package
     deserialize(json, targetType, growable: growable);
 
   @Deprecated('Scheduled for removal in OpenAPI Generator 6.x. Use deserializeAsync() instead.')
-  dynamic deserialize(String json, String targetType, {bool growable = false,}) {
+  Future<dynamic> deserialize(String json, String targetType, {bool growable = false,}) async {
     // Remove all spaces. Necessary for regular expressions as well.
     targetType = targetType.replaceAll(' ', ''); // ignore: parameter_assignments
 
     // If the expected target type is String, nothing to do...
     return targetType == 'String'
       ? json
-      : _deserialize(jsonDecode(json), targetType, growable: growable);
+      : _deserialize(await compute((String j) => jsonDecode(j), json), targetType, growable: growable);
   }
 
   // ignore: deprecated_member_use_from_same_package
@@ -192,8 +192,18 @@ class ApiClient {
           return valueString == 'true' || valueString == '1';
         case 'DateTime':
           return value is DateTime ? value : DateTime.tryParse(value);
+        case 'APIKeyCreateDto':
+          return APIKeyCreateDto.fromJson(value);
+        case 'APIKeyCreateResponseDto':
+          return APIKeyCreateResponseDto.fromJson(value);
+        case 'APIKeyResponseDto':
+          return APIKeyResponseDto.fromJson(value);
+        case 'APIKeyUpdateDto':
+          return APIKeyUpdateDto.fromJson(value);
         case 'AddAssetsDto':
           return AddAssetsDto.fromJson(value);
+        case 'AddAssetsResponseDto':
+          return AddAssetsResponseDto.fromJson(value);
         case 'AddUsersDto':
           return AddUsersDto.fromJson(value);
         case 'AdminSignupResponseDto':
@@ -216,16 +226,26 @@ class ApiClient {
           return AssetResponseDto.fromJson(value);
         case 'AssetTypeEnum':
           return AssetTypeEnumTypeTransformer().decode(value);
+        case 'ChangePasswordDto':
+          return ChangePasswordDto.fromJson(value);
         case 'CheckDuplicateAssetDto':
           return CheckDuplicateAssetDto.fromJson(value);
         case 'CheckDuplicateAssetResponseDto':
           return CheckDuplicateAssetResponseDto.fromJson(value);
+        case 'CheckExistingAssetsDto':
+          return CheckExistingAssetsDto.fromJson(value);
+        case 'CheckExistingAssetsResponseDto':
+          return CheckExistingAssetsResponseDto.fromJson(value);
         case 'CreateAlbumDto':
           return CreateAlbumDto.fromJson(value);
-        case 'CreateDeviceInfoDto':
-          return CreateDeviceInfoDto.fromJson(value);
+        case 'CreateAlbumShareLinkDto':
+          return CreateAlbumShareLinkDto.fromJson(value);
+        case 'CreateAssetsShareLinkDto':
+          return CreateAssetsShareLinkDto.fromJson(value);
         case 'CreateProfileImageResponseDto':
           return CreateProfileImageResponseDto.fromJson(value);
+        case 'CreateTagDto':
+          return CreateTagDto.fromJson(value);
         case 'CreateUserDto':
           return CreateUserDto.fromJson(value);
         case 'CuratedLocationsResponseDto':
@@ -242,6 +262,10 @@ class ApiClient {
           return DeviceInfoResponseDto.fromJson(value);
         case 'DeviceTypeEnum':
           return DeviceTypeEnumTypeTransformer().decode(value);
+        case 'DownloadFilesDto':
+          return DownloadFilesDto.fromJson(value);
+        case 'EditSharedLinkDto':
+          return EditSharedLinkDto.fromJson(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
         case 'GetAssetByTimeBucketDto':
@@ -256,14 +280,18 @@ class ApiClient {
           return JobCounts.fromJson(value);
         case 'JobId':
           return JobIdTypeTransformer().decode(value);
-        case 'JobStatusResponseDto':
-          return JobStatusResponseDto.fromJson(value);
         case 'LoginCredentialDto':
           return LoginCredentialDto.fromJson(value);
         case 'LoginResponseDto':
           return LoginResponseDto.fromJson(value);
         case 'LogoutResponseDto':
           return LogoutResponseDto.fromJson(value);
+        case 'OAuthCallbackDto':
+          return OAuthCallbackDto.fromJson(value);
+        case 'OAuthConfigDto':
+          return OAuthConfigDto.fromJson(value);
+        case 'OAuthConfigResponseDto':
+          return OAuthConfigResponseDto.fromJson(value);
         case 'RemoveAssetsDto':
           return RemoveAssetsDto.fromJson(value);
         case 'SearchAssetDto':
@@ -276,20 +304,44 @@ class ApiClient {
           return ServerStatsResponseDto.fromJson(value);
         case 'ServerVersionReponseDto':
           return ServerVersionReponseDto.fromJson(value);
+        case 'SharedLinkResponseDto':
+          return SharedLinkResponseDto.fromJson(value);
+        case 'SharedLinkType':
+          return SharedLinkTypeTypeTransformer().decode(value);
         case 'SignUpDto':
           return SignUpDto.fromJson(value);
         case 'SmartInfoResponseDto':
           return SmartInfoResponseDto.fromJson(value);
+        case 'SystemConfigDto':
+          return SystemConfigDto.fromJson(value);
+        case 'SystemConfigFFmpegDto':
+          return SystemConfigFFmpegDto.fromJson(value);
+        case 'SystemConfigOAuthDto':
+          return SystemConfigOAuthDto.fromJson(value);
+        case 'SystemConfigPasswordLoginDto':
+          return SystemConfigPasswordLoginDto.fromJson(value);
+        case 'SystemConfigStorageTemplateDto':
+          return SystemConfigStorageTemplateDto.fromJson(value);
+        case 'SystemConfigTemplateStorageOptionDto':
+          return SystemConfigTemplateStorageOptionDto.fromJson(value);
+        case 'TagResponseDto':
+          return TagResponseDto.fromJson(value);
+        case 'TagTypeEnum':
+          return TagTypeEnumTypeTransformer().decode(value);
         case 'ThumbnailFormat':
           return ThumbnailFormatTypeTransformer().decode(value);
         case 'TimeGroupEnum':
           return TimeGroupEnumTypeTransformer().decode(value);
         case 'UpdateAlbumDto':
           return UpdateAlbumDto.fromJson(value);
-        case 'UpdateDeviceInfoDto':
-          return UpdateDeviceInfoDto.fromJson(value);
+        case 'UpdateAssetDto':
+          return UpdateAssetDto.fromJson(value);
+        case 'UpdateTagDto':
+          return UpdateTagDto.fromJson(value);
         case 'UpdateUserDto':
           return UpdateUserDto.fromJson(value);
+        case 'UpsertDeviceInfoDto':
+          return UpsertDeviceInfoDto.fromJson(value);
         case 'UsageByUserDto':
           return UsageByUserDto.fromJson(value);
         case 'UserCountResponseDto':

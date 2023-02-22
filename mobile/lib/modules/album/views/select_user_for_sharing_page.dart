@@ -8,24 +8,24 @@ import 'package:immich_mobile/modules/album/providers/asset_selection.provider.d
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/suggested_shared_users.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
-import 'package:openapi/api.dart';
 
 class SelectUserForSharingPage extends HookConsumerWidget {
   const SelectUserForSharingPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sharedUsersList = useState<Set<UserResponseDto>>({});
-    AsyncValue<List<UserResponseDto>> suggestedShareUsers =
+    final sharedUsersList = useState<Set<User>>({});
+    AsyncValue<List<User>> suggestedShareUsers =
         ref.watch(suggestedSharedUsersProvider);
 
-    _createSharedAlbum() async {
+    createSharedAlbum() async {
       var newAlbum =
           await ref.watch(sharedAlbumProvider.notifier).createSharedAlbum(
                 ref.watch(albumTitleProvider),
                 ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum,
-                sharedUsersList.value.map((userInfo) => userInfo.id).toList(),
+                sharedUsersList.value,
               );
 
       if (newAlbum != null) {
@@ -44,7 +44,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
       );
     }
 
-    _buildTileIcon(UserResponseDto user) {
+    buildTileIcon(User user) {
       if (sharedUsersList.value.contains(user)) {
         return CircleAvatar(
           backgroundColor: Theme.of(context).primaryColor,
@@ -62,7 +62,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
       }
     }
 
-    _buildUserList(List<UserResponseDto> users) {
+    buildUserList(List<User> users) {
       List<Widget> usersChip = [];
 
       for (var user in sharedUsersList.value) {
@@ -104,7 +104,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
             shrinkWrap: true,
             itemBuilder: ((context, index) {
               return ListTile(
-                leading: _buildTileIcon(users[index]),
+                leading: buildTileIcon(users[index]),
                 title: Text(
                   users[index].email,
                   style: const TextStyle(
@@ -153,8 +153,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).primaryColor,
             ),
-            onPressed:
-                sharedUsersList.value.isEmpty ? null : _createSharedAlbum,
+            onPressed: sharedUsersList.value.isEmpty ? null : createSharedAlbum,
             child: const Text(
               "share_create_album",
               style: TextStyle(
@@ -168,7 +167,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
       ),
       body: suggestedShareUsers.when(
         data: (users) {
-          return _buildUserList(users);
+          return buildUserList(users);
         },
         error: (e, _) => Text("Error loading suggested users $e"),
         loading: () => const Center(

@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // bool duplicate
+    test('to test the property `duplicate`', () async {
+      // TODO
+    });
+
 
   });
 

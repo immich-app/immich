@@ -18,6 +18,7 @@ class BackUpState {
   final bool backgroundBackup;
   final bool backupRequireWifi;
   final bool backupRequireCharging;
+  final int backupTriggerDelay;
 
   /// All available albums on the device
   final List<AvailableAlbum> availableAlbums;
@@ -42,6 +43,7 @@ class BackUpState {
     required this.backgroundBackup,
     required this.backupRequireWifi,
     required this.backupRequireCharging,
+    required this.backupTriggerDelay,
     required this.availableAlbums,
     required this.selectedBackupAlbums,
     required this.excludedBackupAlbums,
@@ -59,6 +61,7 @@ class BackUpState {
     bool? backgroundBackup,
     bool? backupRequireWifi,
     bool? backupRequireCharging,
+    int? backupTriggerDelay,
     List<AvailableAlbum>? availableAlbums,
     Set<AvailableAlbum>? selectedBackupAlbums,
     Set<AvailableAlbum>? excludedBackupAlbums,
@@ -76,6 +79,7 @@ class BackUpState {
       backupRequireWifi: backupRequireWifi ?? this.backupRequireWifi,
       backupRequireCharging:
           backupRequireCharging ?? this.backupRequireCharging,
+      backupTriggerDelay: backupTriggerDelay ?? this.backupTriggerDelay,
       availableAlbums: availableAlbums ?? this.availableAlbums,
       selectedBackupAlbums: selectedBackupAlbums ?? this.selectedBackupAlbums,
       excludedBackupAlbums: excludedBackupAlbums ?? this.excludedBackupAlbums,
@@ -88,7 +92,7 @@ class BackUpState {
 
   @override
   String toString() {
-    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, serverInfo: $serverInfo, backgroundBackup: $backgroundBackup, backupRequireWifi: $backupRequireWifi, backupRequireCharging: $backupRequireCharging, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds, currentUploadAsset: $currentUploadAsset)';
+    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, cancelToken: $cancelToken, serverInfo: $serverInfo, backgroundBackup: $backgroundBackup, backupRequireWifi: $backupRequireWifi, backupRequireCharging: $backupRequireCharging, backupTriggerDelay: $backupTriggerDelay, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds, currentUploadAsset: $currentUploadAsset)';
   }
 
   @override
@@ -105,6 +109,7 @@ class BackUpState {
         other.backgroundBackup == backgroundBackup &&
         other.backupRequireWifi == backupRequireWifi &&
         other.backupRequireCharging == backupRequireCharging &&
+        other.backupTriggerDelay == backupTriggerDelay &&
         collectionEquals(other.availableAlbums, availableAlbums) &&
         collectionEquals(other.selectedBackupAlbums, selectedBackupAlbums) &&
         collectionEquals(other.excludedBackupAlbums, excludedBackupAlbums) &&
@@ -126,6 +131,7 @@ class BackUpState {
         backgroundBackup.hashCode ^
         backupRequireWifi.hashCode ^
         backupRequireCharging.hashCode ^
+        backupTriggerDelay.hashCode ^
         availableAlbums.hashCode ^
         selectedBackupAlbums.hashCode ^
         excludedBackupAlbums.hashCode ^

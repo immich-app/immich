@@ -31,9 +31,9 @@ class AddUsersDto {
   String toString() => 'AddUsersDto[sharedUserIds=$sharedUserIds]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'sharedUserIds'] = sharedUserIds;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'sharedUserIds'] = this.sharedUserIds;
+    return json;
   }
 
   /// Returns a new [AddUsersDto] instance and imports its values from

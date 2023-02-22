@@ -31,9 +31,9 @@ class DeleteAssetDto {
   String toString() => 'DeleteAssetDto[ids=$ids]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'ids'] = ids;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'ids'] = this.ids;
+    return json;
   }
 
   /// Returns a new [DeleteAssetDto] instance and imports its values from

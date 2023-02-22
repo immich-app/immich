@@ -35,10 +35,10 @@
 >
 	<div
 		use:clickOutside
-		on:out-click={() => dispatch('close')}
-		class="bg-white w-[450px] min-h-[200px] max-h-[500px] rounded-lg shadow-md"
+		on:outclick={() => dispatch('close')}
+		class="bg-immich-bg dark:bg-immich-dark-gray dark:text-immich-dark-fg w-[450px] min-h-[200px] max-h-[600px] rounded-lg shadow-md"
 	>
-		<div class="flex justify-between place-items-center p-5">
+		<div class="flex justify-between place-items-center px-5 py-3">
 			<div>
 				<slot name="title">
 					<p>Modal Title</p>

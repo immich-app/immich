@@ -2,16 +2,20 @@ version: "3.8"
 
 services:
   immich-server:
+    container_name: immich_server
     image: immich-server-dev:latest
     build:
       context: ../server
       dockerfile: Dockerfile
       target: builder
-    command: npm run start:dev immich
+    command: npm run start:debug immich
     volumes:
       - ../server:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /usr/src/app/node_modules
+    ports:
+      - 3001:3001
+      - 9230:9230
     env_file:
       - .env
     environment:
@@ -21,24 +25,28 @@ services:
       - database
 
   immich-machine-learning:
+    container_name: immich_machine_learning
     image: immich-machine-learning-dev:latest
     build:
       context: ../machine-learning
       dockerfile: Dockerfile
-      target: builder
-    command: npm run start:dev
+    command: python main.py
+    ports:
+      - 3003:3003
     volumes:
-      - ../machine-learning:/usr/src/app
+      - ../machine-learning/src:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - /usr/src/app/node_modules
+      - model-cache:/cache
     env_file:
       - .env
     environment:
       - NODE_ENV=development
     depends_on:
       - database
+    restart: always
 
   immich-microservices:
+    container_name: immich_microservices
     image: immich-microservices:latest
     build:
       context: ../server
@@ -58,6 +66,7 @@ services:
       - immich-server
 
   immich-web:
+    container_name: immich_web
     image: immich-web-dev:1.9.0
     build:
       context: ../web
@@ -66,6 +75,10 @@ services:
     command: npm run dev --host
     env_file:
       - .env
+    environment:
+      # Rename these values for svelte public interface
+      - PUBLIC_IMMICH_SERVER_URL=${IMMICH_SERVER_URL}
+      - PUBLIC_IMMICH_API_URL_EXTERNAL=${IMMICH_API_URL_EXTERNAL}
     ports:
       - 3000:3000
       - 24678:24678
@@ -98,6 +111,10 @@ services:
   immich-proxy:
     container_name: immich_proxy
     image: immich-proxy-dev:latest
+    environment:
+      # Make sure these values get passed through from the env file
+      - IMMICH_SERVER_URL
+      - IMMICH_WEB_URL
     build:
       context: ../nginx
       dockerfile: Dockerfile
@@ -111,3 +128,4 @@ services:
 
 volumes:
   pgdata:
+  model-cache:

@@ -16,13 +16,28 @@ void main() {
   // final instance = AssetCountByUserIdResponseDto();
 
   group('test AssetCountByUserIdResponseDto', () {
-    // int photos
+    // int audio (default value: 0)
+    test('to test the property `audio`', () async {
+      // TODO
+    });
+
+    // int photos (default value: 0)
     test('to test the property `photos`', () async {
       // TODO
     });
 
-    // int videos
+    // int videos (default value: 0)
     test('to test the property `videos`', () async {
+      // TODO
+    });
+
+    // int other (default value: 0)
+    test('to test the property `other`', () async {
+      // TODO
+    });
+
+    // int total (default value: 0)
+    test('to test the property `total`', () async {
       // TODO
     });
 

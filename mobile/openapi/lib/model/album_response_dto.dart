@@ -18,10 +18,12 @@ class AlbumResponseDto {
     required this.ownerId,
     required this.albumName,
     required this.createdAt,
+    required this.updatedAt,
     required this.albumThumbnailAssetId,
     required this.shared,
     this.sharedUsers = const [],
     this.assets = const [],
+    required this.owner,
   });
 
   int assetCount;
@@ -34,6 +36,8 @@ class AlbumResponseDto {
 
   String createdAt;
 
+  String updatedAt;
+
   String? albumThumbnailAssetId;
 
   bool shared;
@@ -42,6 +46,8 @@ class AlbumResponseDto {
 
   List<AssetResponseDto> assets;
 
+  UserResponseDto owner;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AlbumResponseDto &&
      other.assetCount == assetCount &&
@@ -49,10 +55,12 @@ class AlbumResponseDto {
      other.ownerId == ownerId &&
      other.albumName == albumName &&
      other.createdAt == createdAt &&
+     other.updatedAt == updatedAt &&
      other.albumThumbnailAssetId == albumThumbnailAssetId &&
      other.shared == shared &&
      other.sharedUsers == sharedUsers &&
-     other.assets == assets;
+     other.assets == assets &&
+     other.owner == owner;
 
   @override
   int get hashCode =>
@@ -62,30 +70,34 @@ class AlbumResponseDto {
     (ownerId.hashCode) +
     (albumName.hashCode) +
     (createdAt.hashCode) +
+    (updatedAt.hashCode) +
     (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
     (shared.hashCode) +
     (sharedUsers.hashCode) +
-    (assets.hashCode);
+    (assets.hashCode) +
+    (owner.hashCode);
 
   @override
-  String toString() => 'AlbumResponseDto[assetCount=$assetCount, id=$id, ownerId=$ownerId, albumName=$albumName, createdAt=$createdAt, albumThumbnailAssetId=$albumThumbnailAssetId, shared=$shared, sharedUsers=$sharedUsers, assets=$assets]';
+  String toString() => 'AlbumResponseDto[assetCount=$assetCount, id=$id, ownerId=$ownerId, albumName=$albumName, createdAt=$createdAt, updatedAt=$updatedAt, albumThumbnailAssetId=$albumThumbnailAssetId, shared=$shared, sharedUsers=$sharedUsers, assets=$assets, owner=$owner]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'assetCount'] = assetCount;
-      _json[r'id'] = id;
-      _json[r'ownerId'] = ownerId;
-      _json[r'albumName'] = albumName;
-      _json[r'createdAt'] = createdAt;
-    if (albumThumbnailAssetId != null) {
-      _json[r'albumThumbnailAssetId'] = albumThumbnailAssetId;
+    final json = <String, dynamic>{};
+      json[r'assetCount'] = this.assetCount;
+      json[r'id'] = this.id;
+      json[r'ownerId'] = this.ownerId;
+      json[r'albumName'] = this.albumName;
+      json[r'createdAt'] = this.createdAt;
+      json[r'updatedAt'] = this.updatedAt;
+    if (this.albumThumbnailAssetId != null) {
+      json[r'albumThumbnailAssetId'] = this.albumThumbnailAssetId;
     } else {
-      _json[r'albumThumbnailAssetId'] = null;
+      // json[r'albumThumbnailAssetId'] = null;
     }
-      _json[r'shared'] = shared;
-      _json[r'sharedUsers'] = sharedUsers;
-      _json[r'assets'] = assets;
-    return _json;
+      json[r'shared'] = this.shared;
+      json[r'sharedUsers'] = this.sharedUsers;
+      json[r'assets'] = this.assets;
+      json[r'owner'] = this.owner;
+    return json;
   }
 
   /// Returns a new [AlbumResponseDto] instance and imports its values from
@@ -112,10 +124,12 @@ class AlbumResponseDto {
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         albumName: mapValueOfType<String>(json, r'albumName')!,
         createdAt: mapValueOfType<String>(json, r'createdAt')!,
+        updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
         albumThumbnailAssetId: mapValueOfType<String>(json, r'albumThumbnailAssetId'),
         shared: mapValueOfType<bool>(json, r'shared')!,
         sharedUsers: UserResponseDto.listFromJson(json[r'sharedUsers'])!,
         assets: AssetResponseDto.listFromJson(json[r'assets'])!,
+        owner: UserResponseDto.fromJson(json[r'owner'])!,
       );
     }
     return null;
@@ -170,10 +184,12 @@ class AlbumResponseDto {
     'ownerId',
     'albumName',
     'createdAt',
+    'updatedAt',
     'albumThumbnailAssetId',
     'shared',
     'sharedUsers',
     'assets',
+    'owner',
   };
 }
 

@@ -68,14 +68,14 @@
 <BaseModal on:close={() => dispatch('close')}>
 	<svelte:fragment slot="title">
 		<span class="flex gap-2 place-items-center">
-			<p class="font-medium text-immich-fg">Options</p>
+			<p class="font-medium text-immich-fg dark:text-immich-dark-fg">Options</p>
 		</span>
 	</svelte:fragment>
 
 	<section class="max-h-[400px] overflow-y-auto immich-scrollbar pb-4">
 		{#each album.sharedUsers as user}
 			<div
-				class="flex gap-4 p-5 place-items-center justify-between w-full transition-colors hover:bg-gray-50"
+				class="flex gap-4 p-5 place-items-center justify-between w-full transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
 			>
 				<div class="flex gap-4 place-items-center">
 					<CircleAvatar {user} />
@@ -88,14 +88,13 @@
 							on:click={() => showContextMenu(user.id)}
 							logo={DotsVertical}
 							backgroundColor={'transparent'}
-							logoColor={'#5f6368'}
 							hoverColor={'#e2e7e9'}
 							size={'20'}
 						/>
 					{:else if user.id == currentUser?.id}
 						<button
 							on:click={() => removeUser('me')}
-							class="text-sm text-immich-primary font-medium transition-colors hover:text-immich-primary/75"
+							class="text-sm text-immich-primary dark:text-immich-dark-primary font-medium transition-colors hover:text-immich-primary/75"
 							>Leave</button
 						>
 					{/if}

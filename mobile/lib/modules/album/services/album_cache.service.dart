@@ -1,32 +1,30 @@
-
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/services/json_cache.dart';
-import 'package:openapi/api.dart';
 
-class BaseAlbumCacheService extends JsonCache<List<AlbumResponseDto>> {
+class BaseAlbumCacheService extends JsonCache<List<Album>> {
   BaseAlbumCacheService(super.cacheFileName);
 
   @override
-  void put(List<AlbumResponseDto> data) {
+  void put(List<Album> data) {
     putRawData(data.map((e) => e.toJson()).toList());
   }
 
   @override
-  Future<List<AlbumResponseDto>> get() async {
+  Future<List<Album>?> get() async {
     try {
       final mapList = await readRawData() as List<dynamic>;
 
-      final responseData = mapList
-          .map((e) => AlbumResponseDto.fromJson(e))
-          .whereNotNull()
-          .toList();
+      final responseData =
+          mapList.map((e) => Album.fromJson(e)).whereNotNull().toList();
 
       return responseData;
     } catch (e) {
+      await invalidate();
       debugPrint(e.toString());
-      return [];
+      return null;
     }
   }
 }
@@ -40,10 +38,9 @@ class SharedAlbumCacheService extends BaseAlbumCacheService {
 }
 
 final albumCacheServiceProvider = Provider(
-      (ref) => AlbumCacheService(),
+  (ref) => AlbumCacheService(),
 );
 
 final sharedAlbumCacheServiceProvider = Provider(
-      (ref) => SharedAlbumCacheService(),
+  (ref) => SharedAlbumCacheService(),
 );
-

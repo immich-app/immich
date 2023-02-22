@@ -1,16 +1,12 @@
-import { Controller, Get, Body, UseGuards, ValidationPipe, Put, Param } from '@nestjs/common';
-import { JobService } from './job.service';
+import { Body, Controller, Get, Param, Put, ValidationPipe } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
-import { AdminRolesGuard } from '../../middlewares/admin-role-guard.middleware';
+import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AllJobStatusResponseDto } from './response-dto/all-job-status-response.dto';
 import { GetJobDto } from './dto/get-job.dto';
-import { JobStatusResponseDto } from './response-dto/job-status-response.dto';
-
+import { JobService } from './job.service';
 import { JobCommandDto } from './dto/job-command.dto';
 
-@UseGuards(JwtAuthGuard)
-@UseGuards(AdminRolesGuard)
+@Authenticated({ admin: true })
 @ApiTags('Job')
 @ApiBearerAuth()
 @Controller('jobs')
@@ -22,21 +18,16 @@ export class JobController {
     return this.jobService.getAllJobsStatus();
   }
 
-  @Get('/:jobId')
-  getJobStatus(@Param(ValidationPipe) params: GetJobDto): Promise<JobStatusResponseDto> {
-    return this.jobService.getJobStatus(params);
-  }
-
   @Put('/:jobId')
   async sendJobCommand(
     @Param(ValidationPipe) params: GetJobDto,
-    @Body(ValidationPipe) body: JobCommandDto,
+    @Body(ValidationPipe) dto: JobCommandDto,
   ): Promise<number> {
-    if (body.command === 'start') {
-      return await this.jobService.startJob(params);
+    if (dto.command === 'start') {
+      return await this.jobService.start(params.jobId, dto.includeAllAssets);
     }
-    if (body.command === 'stop') {
-      return await this.jobService.stopJob(params);
+    if (dto.command === 'stop') {
+      return await this.jobService.stop(params.jobId);
     }
     return 0;
   }

@@ -39,14 +39,14 @@ class SearchPage extends HookConsumerWidget {
       [],
     );
 
-    _onSearchSubmitted(String searchTerm) async {
+    onSearchSubmitted(String searchTerm) async {
       searchFocusNode.unfocus();
       ref.watch(searchPageStateProvider.notifier).disableSearch();
 
       AutoRouter.of(context).push(SearchResultRoute(searchTerm: searchTerm));
     }
 
-    _buildPlaces() {
+    buildPlaces() {
       return curatedLocation.when(
         loading: () => SizedBox(
           height: imageSize,
@@ -85,9 +85,7 @@ class SearchPage extends HookConsumerWidget {
                     itemCount: 1,
                     itemBuilder: ((context, index) {
                       return ThumbnailWithInfo(
-                        imageUrl:
-                            'https://images.unsplash.com/photo-1612178537253-bccd437b730e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8Ymxhbmt8ZW58MHx8MHx8&auto=format&fit=crop&w=700&q=60',
-                        textInfo: 'search_page_no_places'.tr(),
+                        textInfo: '',
                         onTap: () {},
                       );
                     }),
@@ -97,7 +95,7 @@ class SearchPage extends HookConsumerWidget {
       );
     }
 
-    _buildThings() {
+    buildThings() {
       return curatedObjects.when(
         loading: () => SizedBox(
           height: imageSize,
@@ -140,9 +138,8 @@ class SearchPage extends HookConsumerWidget {
                     itemCount: 1,
                     itemBuilder: ((context, index) {
                       return ThumbnailWithInfo(
-                        imageUrl:
-                            'https://images.unsplash.com/photo-1612178537253-bccd437b730e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8Ymxhbmt8ZW58MHx8MHx8&auto=format&fit=crop&w=700&q=60',
-                        textInfo: 'search_page_no_objects'.tr(),
+                        textInfo: '',
+                        noImageIcon: Icons.signal_cellular_no_sim_sharp,
                         onTap: () {},
                       );
                     }),
@@ -155,7 +152,7 @@ class SearchPage extends HookConsumerWidget {
     return Scaffold(
       appBar: SearchBar(
         searchFocusNode: searchFocusNode,
-        onSubmitted: _onSearchSubmitted,
+        onSubmitted: onSearchSubmitted,
       ),
       body: GestureDetector(
         onTap: () {
@@ -174,7 +171,7 @@ class SearchPage extends HookConsumerWidget {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ).tr(),
                 ),
-                _buildPlaces(),
+                buildPlaces(),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: const Text(
@@ -182,11 +179,11 @@ class SearchPage extends HookConsumerWidget {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ).tr(),
                 ),
-                _buildThings()
+                buildThings()
               ],
             ),
             if (isSearchEnabled)
-              SearchSuggestionList(onSubmitted: _onSearchSubmitted),
+              SearchSuggestionList(onSubmitted: onSearchSubmitted),
           ],
         ),
       ),

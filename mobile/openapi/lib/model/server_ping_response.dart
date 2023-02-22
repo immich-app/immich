@@ -31,9 +31,9 @@ class ServerPingResponse {
   String toString() => 'ServerPingResponse[res=$res]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'res'] = res;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'res'] = this.res;
+    return json;
   }
 
   /// Returns a new [ServerPingResponse] instance and imports its values from

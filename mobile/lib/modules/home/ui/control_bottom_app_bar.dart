@@ -1,98 +1,165 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
+import 'package:immich_mobile/modules/album/ui/add_to_album_sliverlist.dart';
+import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
+import 'package:immich_mobile/shared/ui/drag_sheet.dart';
+import 'package:immich_mobile/shared/models/album.dart';
 
 class ControlBottomAppBar extends ConsumerWidget {
   final Function onShare;
+  final Function onFavorite;
   final Function onDelete;
+  final Function(Album album) onAddToAlbum;
+  final void Function() onCreateNewAlbum;
 
-  const ControlBottomAppBar(
-      {Key? key, required this.onShare, required this.onDelete})
-      : super(key: key);
+  final List<Album> albums;
+  final List<Album> sharedAlbums;
+
+  const ControlBottomAppBar({
+    Key? key,
+    required this.onShare,
+    required this.onFavorite,
+    required this.onDelete,
+    required this.sharedAlbums,
+    required this.albums,
+    required this.onAddToAlbum,
+    required this.onCreateNewAlbum,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      child: Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height * 0.15,
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(8),
-            topRight: Radius.circular(8),
+    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    Widget renderActionButtons() {
+      return Row(
+        children: [
+          ControlBoxButton(
+            iconData: Icons.ios_share_rounded,
+            label: "control_bottom_app_bar_share".tr(),
+            onPressed: () {
+              onShare();
+            },
           ),
-          color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.95),
-        ),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ControlBoxButton(
-                    iconData: Icons.delete_forever_rounded,
-                    label: "control_bottom_app_bar_delete".tr(),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return DeleteDialog(
-                            onDelete: onDelete,
-                            title: "delete_dialog_title",
-                            subtitle: "delete_dialog_alert",
-                          );
-                        },
-                      );
-                    },
-                  ),
-                  ControlBoxButton(
-                    iconData: Icons.share,
-                    label: "control_bottom_app_bar_share".tr(),
-                    onPressed: () {
-                      onShare();
-                    },
-                  ),
-                ],
+          ControlBoxButton(
+            iconData: Icons.star_rounded,
+            label: "control_bottom_app_bar_favorite".tr(),
+            onPressed: () {
+              onFavorite();
+            },
+          ),
+          ControlBoxButton(
+            iconData: Icons.delete_outline_rounded,
+            label: "control_bottom_app_bar_delete".tr(),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return DeleteDialog(
+                    onDelete: onDelete,
+                    subtitle: 'delete_dialog_alert'.tr(),
+                    title: 'delete_dialog_title'.tr(),
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      );
+    }
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.30,
+      minChildSize: 0.15,
+      maxChildSize: 0.57,
+      snap: true,
+      builder: (
+        BuildContext context,
+        ScrollController scrollController,
+      ) {
+        return Card(
+          color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
+          surfaceTintColor: Colors.transparent,
+          elevation: 18.0,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(12),
+              topRight: Radius.circular(12),
+            ),
+          ),
+          margin: const EdgeInsets.all(0),
+          child: CustomScrollView(
+            controller: scrollController,
+            slivers: [
+              SliverToBoxAdapter(
+                child: Column(
+                  children: <Widget>[
+                    const SizedBox(height: 12),
+                    const CustomDraggingHandle(),
+                    const SizedBox(height: 12),
+                    renderActionButtons(),
+                    const Divider(
+                      indent: 16,
+                      endIndent: 16,
+                      thickness: 1,
+                    ),
+                    AddToAlbumTitleRow(onCreateNewAlbum: onCreateNewAlbum),
+                  ],
+                ),
               ),
-            )
-          ],
-        ),
-      ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: AddToAlbumSliverList(
+                  albums: albums,
+                  sharedAlbums: sharedAlbums,
+                  onAddToAlbum: onAddToAlbum,
+                ),
+              ),
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 200),
+              )
+            ],
+          ),
+        );
+      },
     );
   }
 }
 
-class ControlBoxButton extends StatelessWidget {
-  const ControlBoxButton({
-    Key? key,
-    required this.label,
-    required this.iconData,
-    required this.onPressed,
-  }) : super(key: key);
+class AddToAlbumTitleRow extends StatelessWidget {
+  const AddToAlbumTitleRow({
+    super.key,
+    required this.onCreateNewAlbum,
+  });
 
-  final String label;
-  final IconData iconData;
-  final Function onPressed;
+  final VoidCallback onCreateNewAlbum;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 60,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            onPressed: () {
-              onPressed();
-            },
-            icon: Icon(iconData, size: 30),
+          const Text(
+            "common_add_to_album",
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ).tr(),
+          TextButton.icon(
+            onPressed: onCreateNewAlbum,
+            icon: const Icon(Icons.add),
+            label: Text(
+              "common_create_new_album",
+              style: TextStyle(
+                color: Theme.of(context).primaryColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ).tr(),
           ),
-          Text(label)
         ],
       ),
     );

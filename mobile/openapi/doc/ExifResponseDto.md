@@ -8,7 +8,6 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **int** |  | [optional] 
 **fileSizeInByte** | **int** |  | [optional] 
 **make** | **String** |  | [optional] 
 **model** | **String** |  | [optional] 
@@ -22,7 +21,7 @@ Name | Type | Description | Notes
 **fNumber** | **num** |  | [optional] 
 **focalLength** | **num** |  | [optional] 
 **iso** | **num** |  | [optional] 
-**exposureTime** | **num** |  | [optional] 
+**exposureTime** | **String** |  | [optional] 
 **latitude** | **num** |  | [optional] 
 **longitude** | **num** |  | [optional] 
 **city** | **String** |  | [optional] 

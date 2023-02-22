@@ -5,7 +5,6 @@ export class ServerStatsResponseDto {
   constructor() {
     this.photos = 0;
     this.videos = 0;
-    this.objects = 0;
     this.usageByUser = [];
     this.usageRaw = 0;
     this.usage = '';
@@ -34,7 +33,6 @@ export class ServerStatsResponseDto {
       {
         photos: 1,
         videos: 1,
-        objects: 1,
         diskUsageRaw: 1,
       },
     ],

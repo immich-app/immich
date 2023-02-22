@@ -13,7 +13,6 @@ part of openapi.api;
 class ExifResponseDto {
   /// Returns a new [ExifResponseDto] instance.
   ExifResponseDto({
-    this.id,
     this.fileSizeInByte,
     this.make,
     this.model,
@@ -34,8 +33,6 @@ class ExifResponseDto {
     this.state,
     this.country,
   });
-
-  int? id;
 
   int? fileSizeInByte;
 
@@ -63,7 +60,7 @@ class ExifResponseDto {
 
   num? iso;
 
-  num? exposureTime;
+  String? exposureTime;
 
   num? latitude;
 
@@ -77,7 +74,6 @@ class ExifResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ExifResponseDto &&
-     other.id == id &&
      other.fileSizeInByte == fileSizeInByte &&
      other.make == make &&
      other.model == model &&
@@ -101,7 +97,6 @@ class ExifResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id == null ? 0 : id!.hashCode) +
     (fileSizeInByte == null ? 0 : fileSizeInByte!.hashCode) +
     (make == null ? 0 : make!.hashCode) +
     (model == null ? 0 : model!.hashCode) +
@@ -123,111 +118,106 @@ class ExifResponseDto {
     (country == null ? 0 : country!.hashCode);
 
   @override
-  String toString() => 'ExifResponseDto[id=$id, fileSizeInByte=$fileSizeInByte, make=$make, model=$model, imageName=$imageName, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country]';
+  String toString() => 'ExifResponseDto[fileSizeInByte=$fileSizeInByte, make=$make, model=$model, imageName=$imageName, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-    if (id != null) {
-      _json[r'id'] = id;
+    final json = <String, dynamic>{};
+    if (this.fileSizeInByte != null) {
+      json[r'fileSizeInByte'] = this.fileSizeInByte;
     } else {
-      _json[r'id'] = null;
+      // json[r'fileSizeInByte'] = null;
     }
-    if (fileSizeInByte != null) {
-      _json[r'fileSizeInByte'] = fileSizeInByte;
+    if (this.make != null) {
+      json[r'make'] = this.make;
     } else {
-      _json[r'fileSizeInByte'] = null;
+      // json[r'make'] = null;
     }
-    if (make != null) {
-      _json[r'make'] = make;
+    if (this.model != null) {
+      json[r'model'] = this.model;
     } else {
-      _json[r'make'] = null;
+      // json[r'model'] = null;
     }
-    if (model != null) {
-      _json[r'model'] = model;
+    if (this.imageName != null) {
+      json[r'imageName'] = this.imageName;
     } else {
-      _json[r'model'] = null;
+      // json[r'imageName'] = null;
     }
-    if (imageName != null) {
-      _json[r'imageName'] = imageName;
+    if (this.exifImageWidth != null) {
+      json[r'exifImageWidth'] = this.exifImageWidth;
     } else {
-      _json[r'imageName'] = null;
+      // json[r'exifImageWidth'] = null;
     }
-    if (exifImageWidth != null) {
-      _json[r'exifImageWidth'] = exifImageWidth;
+    if (this.exifImageHeight != null) {
+      json[r'exifImageHeight'] = this.exifImageHeight;
     } else {
-      _json[r'exifImageWidth'] = null;
+      // json[r'exifImageHeight'] = null;
     }
-    if (exifImageHeight != null) {
-      _json[r'exifImageHeight'] = exifImageHeight;
+    if (this.orientation != null) {
+      json[r'orientation'] = this.orientation;
     } else {
-      _json[r'exifImageHeight'] = null;
+      // json[r'orientation'] = null;
     }
-    if (orientation != null) {
-      _json[r'orientation'] = orientation;
+    if (this.dateTimeOriginal != null) {
+      json[r'dateTimeOriginal'] = this.dateTimeOriginal!.toUtc().toIso8601String();
     } else {
-      _json[r'orientation'] = null;
+      // json[r'dateTimeOriginal'] = null;
     }
-    if (dateTimeOriginal != null) {
-      _json[r'dateTimeOriginal'] = dateTimeOriginal!.toUtc().toIso8601String();
+    if (this.modifyDate != null) {
+      json[r'modifyDate'] = this.modifyDate!.toUtc().toIso8601String();
     } else {
-      _json[r'dateTimeOriginal'] = null;
+      // json[r'modifyDate'] = null;
     }
-    if (modifyDate != null) {
-      _json[r'modifyDate'] = modifyDate!.toUtc().toIso8601String();
+    if (this.lensModel != null) {
+      json[r'lensModel'] = this.lensModel;
     } else {
-      _json[r'modifyDate'] = null;
+      // json[r'lensModel'] = null;
     }
-    if (lensModel != null) {
-      _json[r'lensModel'] = lensModel;
+    if (this.fNumber != null) {
+      json[r'fNumber'] = this.fNumber;
     } else {
-      _json[r'lensModel'] = null;
+      // json[r'fNumber'] = null;
     }
-    if (fNumber != null) {
-      _json[r'fNumber'] = fNumber;
+    if (this.focalLength != null) {
+      json[r'focalLength'] = this.focalLength;
     } else {
-      _json[r'fNumber'] = null;
+      // json[r'focalLength'] = null;
     }
-    if (focalLength != null) {
-      _json[r'focalLength'] = focalLength;
+    if (this.iso != null) {
+      json[r'iso'] = this.iso;
     } else {
-      _json[r'focalLength'] = null;
+      // json[r'iso'] = null;
     }
-    if (iso != null) {
-      _json[r'iso'] = iso;
+    if (this.exposureTime != null) {
+      json[r'exposureTime'] = this.exposureTime;
     } else {
-      _json[r'iso'] = null;
+      // json[r'exposureTime'] = null;
     }
-    if (exposureTime != null) {
-      _json[r'exposureTime'] = exposureTime;
+    if (this.latitude != null) {
+      json[r'latitude'] = this.latitude;
     } else {
-      _json[r'exposureTime'] = null;
+      // json[r'latitude'] = null;
     }
-    if (latitude != null) {
-      _json[r'latitude'] = latitude;
+    if (this.longitude != null) {
+      json[r'longitude'] = this.longitude;
     } else {
-      _json[r'latitude'] = null;
+      // json[r'longitude'] = null;
     }
-    if (longitude != null) {
-      _json[r'longitude'] = longitude;
+    if (this.city != null) {
+      json[r'city'] = this.city;
     } else {
-      _json[r'longitude'] = null;
+      // json[r'city'] = null;
     }
-    if (city != null) {
-      _json[r'city'] = city;
+    if (this.state != null) {
+      json[r'state'] = this.state;
     } else {
-      _json[r'city'] = null;
+      // json[r'state'] = null;
     }
-    if (state != null) {
-      _json[r'state'] = state;
+    if (this.country != null) {
+      json[r'country'] = this.country;
     } else {
-      _json[r'state'] = null;
+      // json[r'country'] = null;
     }
-    if (country != null) {
-      _json[r'country'] = country;
-    } else {
-      _json[r'country'] = null;
-    }
-    return _json;
+    return json;
   }
 
   /// Returns a new [ExifResponseDto] instance and imports its values from
@@ -249,7 +239,6 @@ class ExifResponseDto {
       }());
 
       return ExifResponseDto(
-        id: mapValueOfType<int>(json, r'id'),
         fileSizeInByte: mapValueOfType<int>(json, r'fileSizeInByte'),
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
@@ -273,9 +262,7 @@ class ExifResponseDto {
         iso: json[r'iso'] == null
             ? null
             : num.parse(json[r'iso'].toString()),
-        exposureTime: json[r'exposureTime'] == null
-            ? null
-            : num.parse(json[r'exposureTime'].toString()),
+        exposureTime: mapValueOfType<String>(json, r'exposureTime'),
         latitude: json[r'latitude'] == null
             ? null
             : num.parse(json[r'latitude'].toString()),

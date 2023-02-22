@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
+import 'package:immich_mobile/modules/backup/ui/current_backup_asset_info_box.dart';
+import 'package:immich_mobile/modules/backup/ui/ios_debug_info_tile.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
@@ -13,7 +15,6 @@ import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/backup_info_card.dart';
-import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class BackupControllerPage extends HookConsumerWidget {
@@ -31,6 +32,7 @@ class BackupControllerPage extends HookConsumerWidget {
             !hasExclusiveAccess
         ? false
         : true;
+    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     useEffect(
       () {
@@ -46,7 +48,7 @@ class BackupControllerPage extends HookConsumerWidget {
       [],
     );
 
-    Widget _buildStorageInformation() {
+    Widget buildStorageInformation() {
       return ListTile(
         leading: Icon(
           Icons.storage_rounded,
@@ -63,14 +65,11 @@ class BackupControllerPage extends HookConsumerWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
-                child: LinearPercentIndicator(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-                  barRadius: const Radius.circular(2),
-                  lineHeight: 10.0,
-                  percent: backupState.serverInfo.diskUsagePercentage / 100.0,
+                child: LinearProgressIndicator(
+                  minHeight: 10.0,
+                  value: backupState.serverInfo.diskUsagePercentage / 100.0,
                   backgroundColor: Colors.grey,
-                  progressColor: Theme.of(context).primaryColor,
+                  color: Theme.of(context).primaryColor,
                 ),
               ),
               Padding(
@@ -88,7 +87,7 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
-    ListTile _buildAutoBackupController() {
+    ListTile buildAutoBackupController() {
       var backUpOption = authenticationState.deviceInfo.isAutoBackup
           ? "backup_controller_page_status_on".tr()
           : "backup_controller_page_status_off".tr();
@@ -147,7 +146,7 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
-    void _showErrorToUser(String msg) {
+    void showErrorToUser(String msg) {
       final snackBar = SnackBar(
         content: Text(
           msg.tr(),
@@ -157,7 +156,7 @@ class BackupControllerPage extends HookConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
 
-    void _showBatteryOptimizationInfoToUser() {
+    void showBatteryOptimizationInfoToUser() {
       showDialog<void>(
         context: context,
         barrierDismissible: false,
@@ -197,98 +196,181 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
-    ListTile _buildBackgroundBackupController() {
+    Widget buildBackgroundBackupController() {
       final bool isBackgroundEnabled = backupState.backgroundBackup;
       final bool isWifiRequired = backupState.backupRequireWifi;
       final bool isChargingRequired = backupState.backupRequireCharging;
       final Color activeColor = Theme.of(context).primaryColor;
-      return ListTile(
-        isThreeLine: true,
-        leading: isBackgroundEnabled
-            ? Icon(
-                Icons.cloud_sync_rounded,
-                color: activeColor,
-              )
-            : const Icon(Icons.cloud_sync_rounded),
-        title: Text(
-          isBackgroundEnabled
-              ? "backup_controller_page_background_is_on"
-              : "backup_controller_page_background_is_off",
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-        ).tr(),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (!isBackgroundEnabled)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child:
-                    const Text("backup_controller_page_background_description")
+
+      String formatBackupDelaySliderValue(double v) {
+        if (v == 0.0) {
+          return 'setting_notifications_notify_seconds'.tr(args: const ['5']);
+        } else if (v == 1.0) {
+          return 'setting_notifications_notify_seconds'.tr(args: const ['30']);
+        } else if (v == 2.0) {
+          return 'setting_notifications_notify_minutes'.tr(args: const ['2']);
+        } else {
+          return 'setting_notifications_notify_minutes'.tr(args: const ['10']);
+        }
+      }
+
+      int backupDelayToMilliseconds(double v) {
+        if (v == 0.0) {
+          return 5000;
+        } else if (v == 1.0) {
+          return 30000;
+        } else if (v == 2.0) {
+          return 120000;
+        } else {
+          return 600000;
+        }
+      }
+
+      double backupDelayToSliderValue(int ms) {
+        if (ms == 5000) {
+          return 0.0;
+        } else if (ms == 30000) {
+          return 1.0;
+        } else if (ms == 120000) {
+          return 2.0;
+        } else {
+          return 3.0;
+        }
+      }
+
+      final triggerDelay =
+          useState(backupDelayToSliderValue(backupState.backupTriggerDelay));
+
+      return Column(
+        children: [
+          ListTile(
+            isThreeLine: true,
+            leading: isBackgroundEnabled
+                ? Icon(
+                    Icons.cloud_sync_rounded,
+                    color: activeColor,
+                  )
+                : const Icon(Icons.cloud_sync_rounded),
+            title: Text(
+              isBackgroundEnabled
+                  ? "backup_controller_page_background_is_on"
+                  : "backup_controller_page_background_is_off",
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ).tr(),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (!isBackgroundEnabled)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: const Text(
+                      "backup_controller_page_background_description",
+                    ).tr(),
+                  ),
+                if (isBackgroundEnabled && Platform.isAndroid)
+                  SwitchListTile.adaptive(
+                    title: const Text("backup_controller_page_background_wifi")
                         .tr(),
-              ),
-            if (isBackgroundEnabled)
-              SwitchListTile(
-                title:
-                    const Text("backup_controller_page_background_wifi").tr(),
-                secondary: Icon(
-                  Icons.wifi,
-                  color: isWifiRequired ? activeColor : null,
-                ),
-                dense: true,
-                activeColor: activeColor,
-                value: isWifiRequired,
-                onChanged: hasExclusiveAccess
-                    ? (isChecked) => ref
-                        .read(backupProvider.notifier)
-                        .configureBackgroundBackup(
-                          requireWifi: isChecked,
-                          onError: _showErrorToUser,
-                          onBatteryInfo: _showBatteryOptimizationInfoToUser,
-                        )
-                    : null,
-              ),
-            if (isBackgroundEnabled)
-              SwitchListTile(
-                title: const Text("backup_controller_page_background_charging")
-                    .tr(),
-                secondary: Icon(
-                  Icons.charging_station,
-                  color: isChargingRequired ? activeColor : null,
-                ),
-                dense: true,
-                activeColor: activeColor,
-                value: isChargingRequired,
-                onChanged: hasExclusiveAccess
-                    ? (isChecked) => ref
-                        .read(backupProvider.notifier)
-                        .configureBackgroundBackup(
-                          requireCharging: isChecked,
-                          onError: _showErrorToUser,
-                          onBatteryInfo: _showBatteryOptimizationInfoToUser,
-                        )
-                    : null,
-              ),
-            ElevatedButton(
-              onPressed: () =>
-                  ref.read(backupProvider.notifier).configureBackgroundBackup(
-                        enabled: !isBackgroundEnabled,
-                        onError: _showErrorToUser,
-                        onBatteryInfo: _showBatteryOptimizationInfoToUser,
+                    secondary: Icon(
+                      Icons.wifi,
+                      color: isWifiRequired ? activeColor : null,
+                    ),
+                    dense: true,
+                    activeColor: activeColor,
+                    value: isWifiRequired,
+                    onChanged: hasExclusiveAccess
+                        ? (isChecked) => ref
+                            .read(backupProvider.notifier)
+                            .configureBackgroundBackup(
+                              requireWifi: isChecked,
+                              onError: showErrorToUser,
+                              onBatteryInfo: showBatteryOptimizationInfoToUser,
+                            )
+                        : null,
+                  ),
+                if (isBackgroundEnabled)
+                  SwitchListTile.adaptive(
+                    title:
+                        const Text("backup_controller_page_background_charging")
+                            .tr(),
+                    secondary: Icon(
+                      Icons.charging_station,
+                      color: isChargingRequired ? activeColor : null,
+                    ),
+                    dense: true,
+                    activeColor: activeColor,
+                    value: isChargingRequired,
+                    onChanged: hasExclusiveAccess
+                        ? (isChecked) => ref
+                            .read(backupProvider.notifier)
+                            .configureBackgroundBackup(
+                              requireCharging: isChecked,
+                              onError: showErrorToUser,
+                              onBatteryInfo: showBatteryOptimizationInfoToUser,
+                            )
+                        : null,
+                  ),
+                if (isBackgroundEnabled && Platform.isAndroid)
+                  ListTile(
+                    isThreeLine: false,
+                    dense: true,
+                    enabled: hasExclusiveAccess,
+                    title: const Text(
+                      'backup_controller_page_background_delay',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
                       ),
-              child: Text(
-                isBackgroundEnabled
-                    ? "backup_controller_page_background_turn_off"
-                    : "backup_controller_page_background_turn_on",
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-              ).tr(),
+                    ).tr(
+                      args: [formatBackupDelaySliderValue(triggerDelay.value)],
+                    ),
+                    subtitle: Slider(
+                      value: triggerDelay.value,
+                      onChanged: hasExclusiveAccess
+                          ? (double v) => triggerDelay.value = v
+                          : null,
+                      onChangeEnd: (double v) => ref
+                          .read(backupProvider.notifier)
+                          .configureBackgroundBackup(
+                            triggerDelay: backupDelayToMilliseconds(v),
+                            onError: showErrorToUser,
+                            onBatteryInfo: showBatteryOptimizationInfoToUser,
+                          ),
+                      max: 3.0,
+                      divisions: 3,
+                      label: formatBackupDelaySliderValue(triggerDelay.value),
+                      activeColor: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                ElevatedButton(
+                  onPressed: () => ref
+                      .read(backupProvider.notifier)
+                      .configureBackgroundBackup(
+                        enabled: !isBackgroundEnabled,
+                        onError: showErrorToUser,
+                        onBatteryInfo: showBatteryOptimizationInfoToUser,
+                      ),
+                  child: Text(
+                    isBackgroundEnabled
+                        ? "backup_controller_page_background_turn_off"
+                        : "backup_controller_page_background_turn_on",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ).tr(),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          if (isBackgroundEnabled)
+            IosDebugInfoTile(
+              key: ValueKey(isChargingRequired),
+            ),
+        ],
       );
     }
 
-    Widget _buildSelectedAlbumName() {
+    Widget buildSelectedAlbumName() {
       var text = "backup_controller_page_backup_selected".tr();
       var albums = ref.watch(backupProvider).selectedBackupAlbums;
 
@@ -327,7 +409,7 @@ class BackupControllerPage extends HookConsumerWidget {
       }
     }
 
-    Widget _buildExcludedAlbumName() {
+    Widget buildExcludedAlbumName() {
       var text = "backup_controller_page_excluded".tr();
       var albums = ref.watch(backupProvider).excludedBackupAlbums;
 
@@ -352,12 +434,14 @@ class BackupControllerPage extends HookConsumerWidget {
       }
     }
 
-    _buildFolderSelectionTile() {
+    buildFolderSelectionTile() {
       return Card(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(5), // if you need this
-          side: const BorderSide(
-            color: Colors.black12,
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: isDarkMode
+                ? const Color.fromARGB(255, 56, 56, 56)
+                : Colors.black12,
             width: 1,
           ),
         ),
@@ -378,8 +462,8 @@ class BackupControllerPage extends HookConsumerWidget {
                   "backup_controller_page_to_backup",
                   style: TextStyle(fontSize: 12),
                 ).tr(),
-                _buildSelectedAlbumName(),
-                _buildExcludedAlbumName()
+                buildSelectedAlbumName(),
+                buildExcludedAlbumName()
               ],
             ),
           ),
@@ -402,158 +486,75 @@ class BackupControllerPage extends HookConsumerWidget {
       );
     }
 
-    _buildCurrentBackupAssetInfoCard() {
-      return ListTile(
-        leading: Icon(
-          Icons.info_outline_rounded,
-          color: Theme.of(context).primaryColor,
-        ),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              "backup_controller_page_uploading_file_info",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-            ).tr(),
-            if (ref.watch(errorBackupListProvider).isNotEmpty)
-              ActionChip(
-                avatar: Icon(
-                  Icons.info,
-                  size: 24,
-                  color: Colors.red[400],
-                ),
-                elevation: 1,
-                visualDensity: VisualDensity.compact,
-                label: Text(
-                  "backup_controller_page_failed",
-                  style: TextStyle(
-                    color: Colors.red[400],
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
-                  ),
-                ).tr(
-                  args: [ref.watch(errorBackupListProvider).length.toString()],
-                ),
-                backgroundColor: Colors.white,
-                onPressed: () {
-                  AutoRouter.of(context).push(const FailedBackupStatusRoute());
-                },
-              ),
-          ],
-        ),
-        subtitle: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: LinearPercentIndicator(
-                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-                barRadius: const Radius.circular(2),
-                lineHeight: 10.0,
-                trailing: Text(
-                  " ${backupState.progressInPercentage.toStringAsFixed(0)}%",
-                  style: const TextStyle(fontSize: 12),
-                ),
-                percent: backupState.progressInPercentage / 100.0,
-                backgroundColor: Colors.grey,
-                progressColor: Theme.of(context).primaryColor,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Table(
-                border: TableBorder.all(
-                  color: Theme.of(context).primaryColorLight,
-                  width: 1,
-                ),
-                children: [
-                  TableRow(
-                    decoration: const BoxDecoration(
-                        // color: Colors.grey[100],
-                        ),
-                    children: [
-                      TableCell(
-                        verticalAlignment: TableCellVerticalAlignment.middle,
-                        child: Padding(
-                          padding: const EdgeInsets.all(6.0),
-                          child: const Text(
-                            'backup_controller_page_filename',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 10.0,
-                            ),
-                          ).tr(
-                            args: [
-                              backupState.currentUploadAsset.fileName,
-                              backupState.currentUploadAsset.fileType
-                                  .toLowerCase()
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  TableRow(
-                    decoration: const BoxDecoration(
-                        // color: Colors.grey[200],
-                        ),
-                    children: [
-                      TableCell(
-                        verticalAlignment: TableCellVerticalAlignment.middle,
-                        child: Padding(
-                          padding: const EdgeInsets.all(6.0),
-                          child: const Text(
-                            "backup_controller_page_created",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 10.0,
-                            ),
-                          ).tr(
-                            args: [
-                              DateFormat.yMMMMd('en_US').format(
-                                DateTime.parse(
-                                  backupState.currentUploadAsset.createdAt
-                                      .toString(),
-                                ).toLocal(),
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  TableRow(
-                    decoration: const BoxDecoration(
-                        // color: Colors.grey[100],
-                        ),
-                    children: [
-                      TableCell(
-                        child: Padding(
-                          padding: const EdgeInsets.all(6.0),
-                          child: const Text(
-                            "backup_controller_page_id",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 10.0,
-                            ),
-                          ).tr(args: [backupState.currentUploadAsset.id]),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
     void startBackup() {
       ref.watch(errorBackupListProvider.notifier).empty();
       if (ref.watch(backupProvider).backupProgress !=
           BackUpProgressEnum.inBackground) {
         ref.watch(backupProvider.notifier).startBackupProcess();
       }
+    }
+
+    Widget buildBackupButton() {
+      return Padding(
+        padding: const EdgeInsets.only(
+          top: 24,
+        ),
+        child: Container(
+          child: backupState.backupProgress == BackUpProgressEnum.inProgress
+              ? ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.grey[50],
+                    backgroundColor: Colors.red[300],
+                    // padding: const EdgeInsets.all(14),
+                  ),
+                  onPressed: () {
+                    ref.read(backupProvider.notifier).cancelBackup();
+                  },
+                  child: const Text(
+                    "backup_controller_page_cancel",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ).tr(),
+                )
+              : ElevatedButton(
+                  onPressed: shouldBackup ? startBackup : null,
+                  child: const Text(
+                    "backup_controller_page_start_backup",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ).tr(),
+                ),
+        ),
+      );
+    }
+
+    buildBackgroundBackupInfo() {
+      return hasExclusiveAccess
+          ? const SizedBox.shrink()
+          : Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20), // if you need this
+                side: BorderSide(
+                  color: isDarkMode
+                      ? const Color.fromARGB(255, 56, 56, 56)
+                      : Colors.black12,
+                  width: 1,
+                ),
+              ),
+              elevation: 0,
+              borderOnForeground: false,
+              child: const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  "Background backup is currently running, some actions are disabled",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            );
     }
 
     return Scaffold(
@@ -586,88 +587,38 @@ class BackupControllerPage extends HookConsumerWidget {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ).tr(),
             ),
-            hasExclusiveAccess
-                ? const SizedBox.shrink()
-                : Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(5), // if you need this
-                      side: const BorderSide(
-                        color: Colors.black12,
-                        width: 1,
-                      ),
-                    ),
-                    elevation: 0,
-                    borderOnForeground: false,
-                    child: const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Text(
-                        "Background backup is currently running, some actions are disabled",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-            _buildFolderSelectionTile(),
+            buildBackgroundBackupInfo(),
+            buildFolderSelectionTile(),
             BackupInfoCard(
               title: "backup_controller_page_total".tr(),
               subtitle: "backup_controller_page_total_sub".tr(),
-              info: "${backupState.allUniqueAssets.length}",
+              info: ref.watch(backupProvider).availableAlbums.isEmpty
+                  ? "..."
+                  : "${backupState.allUniqueAssets.length}",
             ),
             BackupInfoCard(
               title: "backup_controller_page_backup".tr(),
               subtitle: "backup_controller_page_backup_sub".tr(),
-              info: "${backupState.selectedAlbumsBackupAssetsIds.length}",
+              info: ref.watch(backupProvider).availableAlbums.isEmpty
+                  ? "..."
+                  : "${backupState.selectedAlbumsBackupAssetsIds.length}",
             ),
             BackupInfoCard(
               title: "backup_controller_page_remainder".tr(),
               subtitle: "backup_controller_page_remainder_sub".tr(),
-              info:
-                  "${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length}",
+              info: ref.watch(backupProvider).availableAlbums.isEmpty
+                  ? "..."
+                  : "${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length}",
             ),
             const Divider(),
-            _buildAutoBackupController(),
-            if (Platform.isAndroid) const Divider(),
-            if (Platform.isAndroid) _buildBackgroundBackupController(),
+            buildAutoBackupController(),
             const Divider(),
-            _buildStorageInformation(),
+            buildBackgroundBackupController(),
             const Divider(),
-            _buildCurrentBackupAssetInfoCard(),
-            Padding(
-              padding: const EdgeInsets.only(
-                top: 24,
-              ),
-              child: Container(
-                child:
-                    backupState.backupProgress == BackUpProgressEnum.inProgress
-                        ? ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.grey[50],
-                              backgroundColor: Colors.red[300],
-                              // padding: const EdgeInsets.all(14),
-                            ),
-                            onPressed: () {
-                              ref.read(backupProvider.notifier).cancelBackup();
-                            },
-                            child: const Text(
-                              "backup_controller_page_cancel",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ).tr(),
-                          )
-                        : ElevatedButton(
-                            onPressed: shouldBackup ? startBackup : null,
-                            child: const Text(
-                              "backup_controller_page_start_backup",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ).tr(),
-                          ),
-              ),
-            )
+            buildStorageInformation(),
+            const Divider(),
+            const CurrentUploadingAssetInfoBox(),
+            buildBackupButton()
           ],
         ),
       ),

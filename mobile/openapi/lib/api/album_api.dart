@@ -16,7 +16,10 @@ class AlbumApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'PUT /album/{albumId}/assets' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -48,12 +51,14 @@ class AlbumApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
   ///
   /// * [AddAssetsDto] addAssetsDto (required):
-  Future<AlbumResponseDto?> addAssetsToAlbum(String albumId, AddAssetsDto addAssetsDto,) async {
+  Future<AddAssetsResponseDto?> addAssetsToAlbum(String albumId, AddAssetsDto addAssetsDto,) async {
     final response = await addAssetsToAlbumWithHttpInfo(albumId, addAssetsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -62,13 +67,16 @@ class AlbumApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumResponseDto',) as AlbumResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AddAssetsResponseDto',) as AddAssetsResponseDto;
     
     }
     return null;
   }
 
-  /// Performs an HTTP 'PUT /album/{albumId}/users' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -100,6 +108,8 @@ class AlbumApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -120,7 +130,10 @@ class AlbumApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /album' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [CreateAlbumDto] createAlbumDto (required):
@@ -149,6 +162,8 @@ class AlbumApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [CreateAlbumDto] createAlbumDto (required):
@@ -167,7 +182,62 @@ class AlbumApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /album/{albumId}' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [CreateAlbumShareLinkDto] createAlbumShareLinkDto (required):
+  Future<Response> createAlbumSharedLinkWithHttpInfo(CreateAlbumShareLinkDto createAlbumShareLinkDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/album/create-shared-link';
+
+    // ignore: prefer_final_locals
+    Object? postBody = createAlbumShareLinkDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// 
+  ///
+  /// Parameters:
+  ///
+  /// * [CreateAlbumShareLinkDto] createAlbumShareLinkDto (required):
+  Future<SharedLinkResponseDto?> createAlbumSharedLink(CreateAlbumShareLinkDto createAlbumShareLinkDto,) async {
+    final response = await createAlbumSharedLinkWithHttpInfo(createAlbumShareLinkDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharedLinkResponseDto',) as SharedLinkResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -197,6 +267,8 @@ class AlbumApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -207,7 +279,70 @@ class AlbumApi {
     }
   }
 
-  /// Performs an HTTP 'GET /album/count-by-user-id' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] albumId (required):
+  ///
+  /// * [num] skip:
+  Future<Response> downloadArchiveWithHttpInfo(String albumId, { num? skip, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/album/{albumId}/download'
+      .replaceAll('{albumId}', albumId);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (skip != null) {
+      queryParams.addAll(_queryParams('', 'skip', skip));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// 
+  ///
+  /// Parameters:
+  ///
+  /// * [String] albumId (required):
+  ///
+  /// * [num] skip:
+  Future<Object?> downloadArchive(String albumId, { num? skip, }) async {
+    final response = await downloadArchiveWithHttpInfo(albumId,  skip: skip, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
+    
+    }
+    return null;
+  }
+
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getAlbumCountByUserIdWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/album/count-by-user-id';
@@ -233,6 +368,7 @@ class AlbumApi {
     );
   }
 
+  /// 
   Future<AlbumCountResponseDto?> getAlbumCountByUserId() async {
     final response = await getAlbumCountByUserIdWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -248,7 +384,10 @@ class AlbumApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /album/{albumId}' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -278,6 +417,8 @@ class AlbumApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -296,7 +437,10 @@ class AlbumApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /album' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [bool] shared:
@@ -335,6 +479,8 @@ class AlbumApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [bool] shared:
@@ -359,7 +505,10 @@ class AlbumApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /album/{albumId}/assets' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -391,6 +540,8 @@ class AlbumApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -411,7 +562,10 @@ class AlbumApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /album/{albumId}/user/{userId}' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -444,6 +598,8 @@ class AlbumApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -456,7 +612,10 @@ class AlbumApi {
     }
   }
 
-  /// Performs an HTTP 'PATCH /album/{albumId}' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -488,6 +647,8 @@ class AlbumApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):

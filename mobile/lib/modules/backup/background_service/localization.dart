@@ -1,3 +1,5 @@
+// ignore_for_file: implementation_imports
+
 import 'package:flutter/foundation.dart';
 import 'package:easy_localization/src/asset_loader.dart';
 import 'package:easy_localization/src/easy_localization_controller.dart';

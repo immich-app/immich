@@ -25,7 +25,7 @@ class AssetSelectionPage extends HookConsumerWidget {
 
     List<Widget> imageGridGroup = [];
 
-    String _buildAssetCountText() {
+    String buildAssetCountText() {
       if (isAlbumExist) {
         return (selectedAssets.length + newAssetsForAlbum.length).toString();
       } else {
@@ -33,7 +33,7 @@ class AssetSelectionPage extends HookConsumerWidget {
       }
     }
 
-    Widget _buildBody() {
+    Widget buildBody() {
       assetGroupMonthYear.forEach((monthYear, assetGroup) {
         imageGridGroup
             .add(MonthGroupTitle(month: monthYear, assetGroup: assetGroup));
@@ -71,7 +71,7 @@ class AssetSelectionPage extends HookConsumerWidget {
                 style: TextStyle(fontSize: 18),
               ).tr()
             : Text(
-                _buildAssetCountText(),
+                buildAssetCountText(),
                 style: const TextStyle(fontSize: 18),
               ),
         centerTitle: false,
@@ -94,7 +94,7 @@ class AssetSelectionPage extends HookConsumerWidget {
             ),
         ],
       ),
-      body: _buildBody(),
+      body: buildBody(),
     );
   }
 }

@@ -36,10 +36,10 @@ class LoginCredentialDto {
   String toString() => 'LoginCredentialDto[email=$email, password=$password]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'email'] = email;
-      _json[r'password'] = password;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'email'] = this.email;
+      json[r'password'] = this.password;
+    return json;
   }
 
   /// Returns a new [LoginCredentialDto] instance and imports its values from

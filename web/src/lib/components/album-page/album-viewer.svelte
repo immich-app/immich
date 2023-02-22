@@ -1,39 +1,56 @@
 <script lang="ts">
 	import { afterNavigate, goto } from '$app/navigation';
-	import { page } from '$app/stores';
-	import { AlbumResponseDto, api, AssetResponseDto, ThumbnailFormat, UserResponseDto } from '@api';
+	import {
+		AlbumResponseDto,
+		api,
+		AssetResponseDto,
+		SharedLinkResponseDto,
+		SharedLinkType,
+		UserResponseDto
+	} from '@api';
 	import { onMount } from 'svelte';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import Plus from 'svelte-material-icons/Plus.svelte';
 	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
 	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
-	import AssetViewer from '../asset-viewer/asset-viewer.svelte';
 	import CircleAvatar from '../shared-components/circle-avatar.svelte';
-	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
 	import AssetSelection from './asset-selection.svelte';
 	import UserSelectionModal from './user-selection-modal.svelte';
 	import ShareInfoModal from './share-info-modal.svelte';
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+	import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
+	import { downloadAssets } from '$lib/stores/download';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
 	import ThumbnailSelection from './thumbnail-selection.svelte';
 	import ControlAppBar from '../shared-components/control-app-bar.svelte';
+	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
+
 	import {
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
 	import { browser } from '$app/environment';
 	import { albumAssetSelectionStore } from '$lib/stores/album-asset-selection.store';
+	import CreateSharedLinkModal from '../shared-components/create-share-link-modal/create-shared-link-modal.svelte';
+	import ThemeButton from '../shared-components/theme-button.svelte';
+	import { openFileUploadDialog } from '$lib/utils/file-uploader';
+	import { bulkDownload } from '$lib/utils/asset-utils';
+	import { locale } from '$lib/stores/preferences.store';
+	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
+	import ImmichLogo from '../shared-components/immich-logo.svelte';
 
 	export let album: AlbumResponseDto;
+	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
+
 	const { isAlbumAssetSelectionOpen } = albumAssetSelectionStore;
 
-	let isShowAssetViewer = false;
-
 	let isShowAssetSelection = false;
+
+	let isShowShareLinkModal = false;
 
 	$: $isAlbumAssetSelectionOpen = isShowAssetSelection;
 	$: {
@@ -52,17 +69,13 @@
 	let isShowAlbumOptions = false;
 	let isShowThumbnailSelection = false;
 
-	let selectedAsset: AssetResponseDto;
-	let currentViewAssetIndex = 0;
-
-	let viewWidth: number;
-	let thumbnailSize = 300;
 	let backUrl = '/albums';
 	let currentAlbumName = '';
 	let currentUser: UserResponseDto;
 	let titleInput: HTMLInputElement;
 	let contextMenuPosition = { x: 0, y: 0 };
 
+	$: isPublicShared = sharedLink;
 	$: isOwned = currentUser?.id == album.ownerId;
 
 	let multiSelectAsset: Set<AssetResponseDto> = new Set();
@@ -76,27 +89,23 @@
 		}
 	});
 
-	$: {
-		if (album.assets?.length < 6) {
-			thumbnailSize = Math.floor(viewWidth / album.assetCount - album.assetCount);
-		} else {
-			thumbnailSize = Math.floor(viewWidth / 6 - 6);
-		}
-	}
+	const albumDateFormat: Intl.DateTimeFormatOptions = {
+		month: 'short',
+		day: 'numeric',
+		year: 'numeric'
+	};
 
 	const getDateRange = () => {
-		const startDate = new Date(album.assets[0].createdAt);
-		const endDate = new Date(album.assets[album.assetCount - 1].createdAt);
+		const startDate = new Date(album.assets[0].fileCreatedAt);
+		const endDate = new Date(album.assets[album.assetCount - 1].fileCreatedAt);
 
-		const timeFormatOption: Intl.DateTimeFormatOptions = {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric'
-		};
+		const startDateString = startDate.toLocaleDateString($locale, albumDateFormat);
+		const endDateString = endDate.toLocaleDateString($locale, albumDateFormat);
 
-		const startDateString = startDate.toLocaleDateString('us-EN', timeFormatOption);
-		const endDateString = endDate.toLocaleDateString('us-EN', timeFormatOption);
-		return `${startDateString} - ${endDateString}`;
+		// If the start and end date are the same, only show one date
+		return startDateString === endDateString
+			? startDateString
+			: `${startDateString} - ${endDateString}`;
 	};
 
 	onMount(async () => {
@@ -109,28 +118,6 @@
 			console.log('Error [getMyUserInfo - album-viewer] ', e);
 		}
 	});
-
-	const viewAssetHandler = (event: CustomEvent) => {
-		const { asset }: { asset: AssetResponseDto } = event.detail;
-
-		currentViewAssetIndex = album.assets.findIndex((a) => a.id == asset.id);
-		selectedAsset = album.assets[currentViewAssetIndex];
-		isShowAssetViewer = true;
-		pushState(selectedAsset.id);
-	};
-
-	const selectAssetHandler = (event: CustomEvent) => {
-		const { asset }: { asset: AssetResponseDto } = event.detail;
-		let temp = new Set(multiSelectAsset);
-
-		if (multiSelectAsset.has(asset)) {
-			temp.delete(asset);
-		} else {
-			temp.add(asset);
-		}
-
-		multiSelectAsset = temp;
-	};
 
 	const clearMultiSelectAssetAssetHandler = () => {
 		multiSelectAsset = new Set();
@@ -153,40 +140,6 @@
 				});
 			}
 		}
-	};
-	const navigateAssetForward = () => {
-		try {
-			if (currentViewAssetIndex < album.assetCount - 1) {
-				currentViewAssetIndex++;
-				selectedAsset = album.assets[currentViewAssetIndex];
-				pushState(selectedAsset.id);
-			}
-		} catch (e) {
-			console.error(e);
-		}
-	};
-
-	const navigateAssetBackward = () => {
-		try {
-			if (currentViewAssetIndex > 0) {
-				currentViewAssetIndex--;
-				selectedAsset = album.assets[currentViewAssetIndex];
-				pushState(selectedAsset.id);
-			}
-		} catch (e) {
-			console.error(e);
-		}
-	};
-
-	const pushState = (assetId: string) => {
-		// add a URL to the browser's history
-		// changes the current URL in the address bar but doesn't perform any SvelteKit navigation
-		history.pushState(null, '', `${$page.url.pathname}/photos/${assetId}`);
-	};
-
-	const closeViewer = () => {
-		isShowAssetViewer = false;
-		history.pushState(null, '', `${$page.url.pathname}`);
 	};
 
 	// Update Album Name
@@ -212,33 +165,27 @@
 	const createAlbumHandler = async (event: CustomEvent) => {
 		const { assets }: { assets: AssetResponseDto[] } = event.detail;
 		try {
-			const { data } = await api.albumApi.addAssetsToAlbum(album.id, {
-				assetIds: assets.map((a) => a.id)
-			});
-			album = data;
+			const { data } = await api.albumApi.addAssetsToAlbum(
+				album.id,
+				{
+					assetIds: assets.map((a) => a.id)
+				},
+				{
+					params: {
+						key: sharedLink?.key
+					}
+				}
+			);
 
+			if (data.album) {
+				album = data.album;
+			}
 			isShowAssetSelection = false;
 		} catch (e) {
 			console.error('Error [createAlbumHandler] ', e);
 			notificationController.show({
 				type: NotificationType.Error,
 				message: 'Error creating album, check console for more details'
-			});
-		}
-	};
-
-	const assetUploadedToAlbumHandler = async (event: CustomEvent) => {
-		const { assetIds }: { assetIds: string[] } = event.detail;
-		try {
-			const { data } = await api.albumApi.addAssetsToAlbum(album.id, {
-				assetIds: assetIds
-			});
-			album = data;
-		} catch (e) {
-			console.error('Error [assetUploadedToAlbumHandler] ', e);
-			notificationController.show({
-				type: NotificationType.Error,
-				message: 'Error adding asset to album, check console for more details'
 			});
 		}
 	};
@@ -304,12 +251,87 @@
 		}
 	};
 
-	const showAlbumOptionsMenu = (event: CustomEvent) => {
-		contextMenuPosition = {
-			x: event.detail.mouseEvent.x,
-			y: event.detail.mouseEvent.y
-		};
+	const downloadAlbum = async () => {
+		try {
+			let skip = 0;
+			let count = 0;
+			let done = false;
 
+			while (!done) {
+				count++;
+
+				const fileName = album.albumName + `${count === 1 ? '' : count}.zip`;
+
+				$downloadAssets[fileName] = 0;
+
+				let total = 0;
+
+				const { data, status, headers } = await api.albumApi.downloadArchive(
+					album.id,
+					skip || undefined,
+					{
+						params: {
+							key: sharedLink?.key
+						},
+						responseType: 'blob',
+						onDownloadProgress: function (progressEvent) {
+							const request = this as XMLHttpRequest;
+							if (!total) {
+								total = Number(request.getResponseHeader('X-Immich-Content-Length-Hint')) || 0;
+							}
+
+							if (total) {
+								const current = progressEvent.loaded;
+								$downloadAssets[fileName] = Math.floor((current / total) * 100);
+							}
+						}
+					}
+				);
+
+				const isNotComplete = headers['x-immich-archive-complete'] === 'false';
+				const fileCount = Number(headers['x-immich-archive-file-count']) || 0;
+				if (isNotComplete && fileCount > 0) {
+					skip += fileCount;
+				} else {
+					done = true;
+				}
+
+				if (!(data instanceof Blob)) {
+					return;
+				}
+
+				if (status === 200) {
+					const fileUrl = URL.createObjectURL(data);
+					const anchor = document.createElement('a');
+					anchor.href = fileUrl;
+					anchor.download = fileName;
+
+					document.body.appendChild(anchor);
+					anchor.click();
+					document.body.removeChild(anchor);
+
+					URL.revokeObjectURL(fileUrl);
+
+					// Remove item from download list
+					setTimeout(() => {
+						const copy = $downloadAssets;
+						delete copy[fileName];
+						$downloadAssets = copy;
+					}, 2000);
+				}
+			}
+		} catch (e) {
+			$downloadAssets = {};
+			console.error('Error downloading file ', e);
+			notificationController.show({
+				type: NotificationType.Error,
+				message: 'Error downloading file, check console for more details.'
+			});
+		}
+	};
+
+	const showAlbumOptionsMenu = ({ x, y }: MouseEvent) => {
+		contextMenuPosition = { x, y };
 		isShowAlbumOptions = !isShowAlbumOptions;
 	};
 
@@ -329,9 +351,26 @@
 
 		isShowThumbnailSelection = false;
 	};
+
+	const onSharedLinkClickHandler = () => {
+		isShowShareUserSelection = false;
+		isShowShareLinkModal = true;
+	};
+
+	const handleDownloadSelectedAssets = async () => {
+		await bulkDownload(
+			album.albumName,
+			Array.from(multiSelectAsset),
+			() => {
+				isMultiSelectionMode = false;
+				clearMultiSelectAssetAssetHandler();
+			},
+			sharedLink?.key
+		);
+	};
 </script>
 
-<section class="bg-immich-bg">
+<section class="bg-immich-bg dark:bg-immich-dark-bg">
 	<!-- Multiselection mode app bar -->
 	{#if isMultiSelectionMode}
 		<ControlAppBar
@@ -340,9 +379,16 @@
 			tailwindClasses={'bg-white shadow-md'}
 		>
 			<svelte:fragment slot="leading">
-				<p class="font-medium text-immich-primary">Selected {multiSelectAsset.size}</p>
+				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
+					Selected {multiSelectAsset.size.toLocaleString($locale)}
+				</p>
 			</svelte:fragment>
 			<svelte:fragment slot="trailing">
+				<CircleIconButton
+					title="Download"
+					on:click={handleDownloadSelectedAssets}
+					logo={CloudDownloadOutline}
+				/>
 				{#if isOwned}
 					<CircleIconButton
 						title="Remove from album"
@@ -356,14 +402,45 @@
 
 	<!-- Default app bar -->
 	{#if !isMultiSelectionMode}
-		<ControlAppBar on:close-button-click={() => goto(backUrl)} backIcon={ArrowLeft}>
+		<ControlAppBar
+			on:close-button-click={() => goto(backUrl)}
+			backIcon={ArrowLeft}
+			showBackButton={(!isPublicShared && isOwned) ||
+				(!isPublicShared && !isOwned) ||
+				(isPublicShared && isOwned)}
+		>
+			<svelte:fragment slot="leading">
+				{#if isPublicShared && !isOwned}
+					<a
+						data-sveltekit-preload-data="hover"
+						class="flex gap-2 place-items-center hover:cursor-pointer ml-6"
+						href="https://immich.app"
+					>
+						<ImmichLogo height={30} width={30} />
+						<h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">
+							IMMICH
+						</h1>
+					</a>
+				{/if}
+			</svelte:fragment>
+
 			<svelte:fragment slot="trailing">
 				{#if album.assetCount > 0}
-					<CircleIconButton
-						title="Add Photos"
-						on:click={() => (isShowAssetSelection = true)}
-						logo={FileImagePlusOutline}
-					/>
+					{#if !sharedLink}
+						<CircleIconButton
+							title="Add Photos"
+							on:click={() => (isShowAssetSelection = true)}
+							logo={FileImagePlusOutline}
+						/>
+					{/if}
+
+					{#if sharedLink?.allowUpload}
+						<CircleIconButton
+							title="Add Photos"
+							on:click={() => openFileUploadDialog(album.id, sharedLink?.key)}
+							logo={FileImagePlusOutline}
+						/>
+					{/if}
 
 					<!-- Share and remove album -->
 					{#if isOwned}
@@ -375,18 +452,32 @@
 						<CircleIconButton title="Remove album" on:click={removeAlbum} logo={DeleteOutline} />
 					{/if}
 
-					<CircleIconButton
-						title="Album options"
-						on:click={(event) => showAlbumOptionsMenu(event)}
-						logo={DotsVertical}
-					/>
+					{#if !isPublicShared || (isPublicShared && sharedLink?.allowDownload)}
+						<CircleIconButton
+							title="Download"
+							on:click={() => downloadAlbum()}
+							logo={FolderDownloadOutline}
+						/>
+					{/if}
+
+					{#if !isPublicShared}
+						<CircleIconButton
+							title="Album options"
+							on:click={showAlbumOptionsMenu}
+							logo={DotsVertical}
+						/>
+					{/if}
+
+					{#if isPublicShared}
+						<ThemeButton />
+					{/if}
 				{/if}
 
 				{#if isCreatingSharedAlbum && album.sharedUsers.length == 0}
 					<button
 						disabled={album.assetCount == 0}
 						on:click={() => (isShowShareUserSelection = true)}
-						class="immich-text-button border bg-immich-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed"
+						class="immich-text-button border bg-immich-primary dark:bg-immich-dark-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed dark:text-immich-dark-bg dark:border-immich-dark-gray"
 						><span class="px-2">Share</span></button
 					>
 				{/if}
@@ -394,7 +485,7 @@
 		</ControlAppBar>
 	{/if}
 
-	<section class="m-auto my-[160px] w-[60%]">
+	<section class="flex flex-col my-[160px] px-6 sm:px-12 md:px-24 lg:px-40">
 		<input
 			on:keydown={(e) => {
 				if (e.key == 'Enter') {
@@ -404,9 +495,9 @@
 			}}
 			on:focus={() => (isEditingTitle = true)}
 			on:blur={() => (isEditingTitle = false)}
-			class={`transition-all text-6xl text-immich-primary w-[99%] border-b-2 border-transparent outline-none ${
+			class={`transition-all text-6xl text-immich-primary dark:text-immich-dark-primary w-[99%] border-b-2 border-transparent outline-none ${
 				isOwned ? 'hover:border-gray-400' : 'hover:border-transparent'
-			} focus:outline-none focus:border-b-2 focus:border-immich-primary bg-immich-bg`}
+			} focus:outline-none focus:border-b-2 focus:border-immich-primary dark:focus:border-immich-dark-primary bg-immich-bg dark:bg-immich-dark-bg dark:focus:bg-immich-dark-gray`}
 			type="text"
 			bind:value={album.albumName}
 			disabled={!isOwned}
@@ -416,7 +507,6 @@
 		{#if album.assetCount > 0}
 			<p class="my-4 text-sm text-gray-500 font-medium">{getDateRange()}</p>
 		{/if}
-
 		{#if album.shared}
 			<div class="my-6 flex">
 				{#each album.sharedUsers as user}
@@ -438,43 +528,20 @@
 		{/if}
 
 		{#if album.assetCount > 0}
-			<div class="flex flex-wrap gap-1 w-full pb-20" bind:clientWidth={viewWidth}>
-				{#each album.assets as asset}
-					{#key asset.id}
-						{#if album.assetCount < 7}
-							<ImmichThumbnail
-								{asset}
-								{thumbnailSize}
-								format={ThumbnailFormat.Jpeg}
-								on:click={(e) =>
-									isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e)}
-								on:select={selectAssetHandler}
-								selected={multiSelectAsset.has(asset)}
-							/>
-						{:else}
-							<ImmichThumbnail
-								{asset}
-								{thumbnailSize}
-								on:click={(e) =>
-									isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e)}
-								on:select={selectAssetHandler}
-								selected={multiSelectAsset.has(asset)}
-							/>
-						{/if}
-					{/key}
-				{/each}
-			</div>
+			<GalleryViewer assets={album.assets} {sharedLink} bind:selectedAssets={multiSelectAsset} />
 		{:else}
 			<!-- Album is empty - Show asset selectection buttons -->
 			<section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
 				<div class="w-[300px]">
-					<p class="text-xs">ADD PHOTOS</p>
+					<p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
 					<button
 						on:click={() => (isShowAssetSelection = true)}
-						class="w-full py-8 border bg-white rounded-md mt-5 flex place-items-center gap-6 px-8 transition-all hover:bg-gray-100 hover:text-immich-primary"
+						class="w-full py-8 border bg-immich-bg dark:bg-immich-dark-gray text-immich-fg dark:text-immich-dark-fg dark:hover:text-immich-dark-primary rounded-md mt-5 flex place-items-center gap-6 px-8 transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none"
 					>
-						<span><Plus color="#4250af" size="24" /> </span>
-						<span class="text-lg text-immich-fg">Select photos</span>
+						<span class="text-text-immich-primary dark:text-immich-dark-primary"
+							><Plus size="24" />
+						</span>
+						<span class="text-lg">Select photos</span>
 					</button>
 				</div>
 			</section>
@@ -482,33 +549,32 @@
 	</section>
 </section>
 
-<!-- Overlay Asset Viewer -->
-{#if isShowAssetViewer}
-	<AssetViewer
-		asset={selectedAsset}
-		on:navigate-previous={navigateAssetBackward}
-		on:navigate-next={navigateAssetForward}
-		on:close={closeViewer}
-	/>
-{/if}
-
 {#if isShowAssetSelection}
 	<AssetSelection
+		albumId={album.id}
 		assetsInAlbum={album.assets}
 		on:go-back={() => (isShowAssetSelection = false)}
 		on:create-album={createAlbumHandler}
-		on:asset-uploaded={assetUploadedToAlbumHandler}
 	/>
 {/if}
 
 {#if isShowShareUserSelection}
 	<UserSelectionModal
+		{album}
 		on:close={() => (isShowShareUserSelection = false)}
 		on:add-user={addUserHandler}
+		on:sharedlinkclick={onSharedLinkClickHandler}
 		sharedUsersInAlbum={new Set(album.sharedUsers)}
 	/>
 {/if}
 
+{#if isShowShareLinkModal}
+	<CreateSharedLinkModal
+		on:close={() => (isShowShareLinkModal = false)}
+		shareType={SharedLinkType.Album}
+		{album}
+	/>
+{/if}
 {#if isShowShareInfoModal}
 	<ShareInfoModal
 		on:close={() => (isShowShareInfoModal = false)}

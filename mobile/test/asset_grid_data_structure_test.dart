@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 
 void main() {
-  final List<AssetResponseDto> testAssets = [];
+  final List<Asset> testAssets = [];
 
   for (int i = 0; i < 150; i++) {
     int month = i ~/ 31;
@@ -11,148 +11,128 @@ void main() {
 
     DateTime date = DateTime(2022, month, day);
 
-    testAssets.add(AssetResponseDto(
-      type: AssetTypeEnum.IMAGE,
-      id: '$i',
-      deviceAssetId: '',
-      ownerId: '',
-      deviceId: '',
-      originalPath: '',
-      resizePath: '',
-      createdAt: date.toIso8601String(),
-      modifiedAt: date.toIso8601String(),
-      isFavorite: false,
-      mimeType: 'image/jpeg',
-      duration: '',
-      webpPath: '',
-      encodedVideoPath: '',
-    ));
+    testAssets.add(
+      Asset(
+        deviceAssetId: '$i',
+        deviceId: '',
+        ownerId: '',
+        fileCreatedAt: date,
+        fileModifiedAt: date,
+        durationInSeconds: 0,
+        fileName: '',
+        isFavorite: false,
+      ),
+    );
   }
 
-  final Map<String, List<AssetResponseDto>> groups = {
-    '2022-01-05': testAssets.sublist(0, 5).map((e) {
-      e.createdAt = DateTime(2022, 1, 5).toIso8601String();
+  final List<Asset> assets = [];
+
+  assets.addAll(
+    testAssets.sublist(0, 5).map((e) {
+      e.fileCreatedAt = DateTime(2022, 1, 5);
       return e;
     }).toList(),
-    '2022-01-10': testAssets.sublist(5, 10).map((e) {
-      e.createdAt = DateTime(2022, 1, 10).toIso8601String();
+  );
+  assets.addAll(
+    testAssets.sublist(5, 10).map((e) {
+      e.fileCreatedAt = DateTime(2022, 1, 10);
       return e;
     }).toList(),
-    '2022-02-17': testAssets.sublist(10, 15).map((e) {
-      e.createdAt = DateTime(2022, 2, 17).toIso8601String();
+  );
+  assets.addAll(
+    testAssets.sublist(10, 15).map((e) {
+      e.fileCreatedAt = DateTime(2022, 2, 17);
       return e;
     }).toList(),
-    '2022-10-15': testAssets.sublist(15, 30).map((e) {
-      e.createdAt = DateTime(2022, 10, 15).toIso8601String();
+  );
+  assets.addAll(
+    testAssets.sublist(15, 30).map((e) {
+      e.fileCreatedAt = DateTime(2022, 10, 15);
       return e;
-    }).toList()
-  };
-
-  group('Asset only list', () {
-    test('items < itemsPerRow', () {
-      final assets = testAssets.sublist(0, 2);
-      final renderList = assetsToRenderList(assets, 3);
-
-      expect(renderList.length, 1);
-      expect(renderList[0].assetRow!.assets.length, 2);
-    });
-
-    test('items = itemsPerRow', () {
-      final assets = testAssets.sublist(0, 3);
-      final renderList = assetsToRenderList(assets, 3);
-
-      expect(renderList.length, 1);
-      expect(renderList[0].assetRow!.assets.length, 3);
-    });
-
-    test('items > itemsPerRow', () {
-      final assets = testAssets.sublist(0, 20);
-      final renderList = assetsToRenderList(assets, 3);
-
-      expect(renderList.length, 7);
-      expect(renderList[6].assetRow!.assets.length, 2);
-    });
-
-    test('items > itemsPerRow partition 4', () {
-      final assets = testAssets.sublist(0, 21);
-      final renderList = assetsToRenderList(assets, 4);
-
-      expect(renderList.length, 6);
-      expect(renderList[5].assetRow!.assets.length, 1);
-    });
-
-    test('items > itemsPerRow check ids', () {
-      final assets = testAssets.sublist(0, 21);
-      final renderList = assetsToRenderList(assets, 3);
-
-      expect(renderList.length, 7);
-      expect(renderList[6].assetRow!.assets.length, 3);
-      expect(renderList[0].assetRow!.assets[0].id, '0');
-      expect(renderList[1].assetRow!.assets[1].id, '4');
-      expect(renderList[3].assetRow!.assets[2].id, '11');
-      expect(renderList[6].assetRow!.assets[2].id, '20');
-    });
-  });
+    }).toList(),
+  );
 
   group('Test grouped', () {
-    test('test grouped check months', () {
-      final renderList = assetGroupsToRenderList(groups, 3);
+    test('test grouped check months', () async {
+      final renderList = await RenderList.fromAssets(
+        assets,
+        AssetGridLayoutParameters(
+          3,
+          false,
+          GroupAssetsBy.day,
+        ),
+      );
 
-      // Jan
-      // Day 1
-      // 5 Assets => 2 Rows
-      // Day 2
-      // 5 Assets => 2 Rows
-      // Feb
-      // Day 1
-      // 5 Assets => 2 Rows
       // Oct
       // Day 1
       // 15 Assets => 5 Rows
-      expect(renderList.length, 18);
-      expect(renderList[0].type, RenderAssetGridElementType.monthTitle);
-      expect(renderList[0].date.month, 1);
-      expect(renderList[7].type, RenderAssetGridElementType.monthTitle);
-      expect(renderList[7].date.month, 2);
-      expect(renderList[11].type, RenderAssetGridElementType.monthTitle);
-      expect(renderList[11].date.month, 10);
-    });
-
-    test('test grouped check types', () {
-      final renderList = assetGroupsToRenderList(groups, 5);
-
-      // Jan
-      // Day 1
-      // 5 Assets
-      // Day 2
-      // 5 Assets
       // Feb
       // Day 1
-      // 5 Assets
+      // 5 Assets => 2 Rows
+      // Jan
+      // Day 2
+      // 5 Assets => 2 Rows
+      // Day 1
+      // 5 Assets => 2 Rows
+      expect(renderList.elements.length, 18);
+      expect(
+        renderList.elements[0].type,
+        RenderAssetGridElementType.monthTitle,
+      );
+      expect(renderList.elements[0].date.month, 10);
+      expect(
+        renderList.elements[7].type,
+        RenderAssetGridElementType.monthTitle,
+      );
+      expect(renderList.elements[7].date.month, 2);
+      expect(
+        renderList.elements[11].type,
+        RenderAssetGridElementType.monthTitle,
+      );
+      expect(renderList.elements[11].date.month, 1);
+    });
+
+    test('test grouped check types', () async {
+      final renderList = await RenderList.fromAssets(
+        assets,
+        AssetGridLayoutParameters(
+          5,
+          false,
+          GroupAssetsBy.day,
+        ),
+      );
+
       // Oct
       // Day 1
       // 15 Assets => 3 Rows
-
+      // Feb
+      // Day 1
+      // 5 Assets => 1 Row
+      // Jan
+      // Day 2
+      // 5 Assets => 1 Row
+      // Day 1
+      // 5 Assets => 1 Row
       final types = [
         RenderAssetGridElementType.monthTitle,
-        RenderAssetGridElementType.dayTitle,
+        RenderAssetGridElementType.groupDividerTitle,
         RenderAssetGridElementType.assetRow,
-        RenderAssetGridElementType.dayTitle,
         RenderAssetGridElementType.assetRow,
-        RenderAssetGridElementType.monthTitle,
-        RenderAssetGridElementType.dayTitle,
         RenderAssetGridElementType.assetRow,
         RenderAssetGridElementType.monthTitle,
-        RenderAssetGridElementType.dayTitle,
+        RenderAssetGridElementType.groupDividerTitle,
         RenderAssetGridElementType.assetRow,
+        RenderAssetGridElementType.monthTitle,
+        RenderAssetGridElementType.groupDividerTitle,
         RenderAssetGridElementType.assetRow,
-        RenderAssetGridElementType.assetRow
+        RenderAssetGridElementType.groupDividerTitle,
+        RenderAssetGridElementType.assetRow,
       ];
 
-      expect(renderList.length, types.length);
+      expect(renderList.elements.length, types.length);
 
-      for (int i = 0; i < renderList.length; i++) {
-        expect(renderList[i].type, types[i]);
+      for (int i = 0; i < renderList.elements.length; i++) {
+        expect(renderList.elements[i].type, types[i]);
       }
     });
   });

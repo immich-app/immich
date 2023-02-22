@@ -66,16 +66,16 @@ class LoginResponseDto {
   String toString() => 'LoginResponseDto[accessToken=$accessToken, userId=$userId, userEmail=$userEmail, firstName=$firstName, lastName=$lastName, profileImagePath=$profileImagePath, isAdmin=$isAdmin, shouldChangePassword=$shouldChangePassword]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'accessToken'] = accessToken;
-      _json[r'userId'] = userId;
-      _json[r'userEmail'] = userEmail;
-      _json[r'firstName'] = firstName;
-      _json[r'lastName'] = lastName;
-      _json[r'profileImagePath'] = profileImagePath;
-      _json[r'isAdmin'] = isAdmin;
-      _json[r'shouldChangePassword'] = shouldChangePassword;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'accessToken'] = this.accessToken;
+      json[r'userId'] = this.userId;
+      json[r'userEmail'] = this.userEmail;
+      json[r'firstName'] = this.firstName;
+      json[r'lastName'] = this.lastName;
+      json[r'profileImagePath'] = this.profileImagePath;
+      json[r'isAdmin'] = this.isAdmin;
+      json[r'shouldChangePassword'] = this.shouldChangePassword;
+    return json;
   }
 
   /// Returns a new [LoginResponseDto] instance and imports its values from

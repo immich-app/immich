@@ -36,10 +36,10 @@ class DeleteAssetResponseDto {
   String toString() => 'DeleteAssetResponseDto[status=$status, id=$id]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'status'] = status;
-      _json[r'id'] = id;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'status'] = this.status;
+      json[r'id'] = this.id;
+    return json;
   }
 
   /// Returns a new [DeleteAssetResponseDto] instance and imports its values from

@@ -13,69 +13,51 @@ part of openapi.api;
 class AllJobStatusResponseDto {
   /// Returns a new [AllJobStatusResponseDto] instance.
   AllJobStatusResponseDto({
-    required this.thumbnailGenerationQueueCount,
-    required this.metadataExtractionQueueCount,
-    required this.videoConversionQueueCount,
-    required this.machineLearningQueueCount,
-    required this.isThumbnailGenerationActive,
-    required this.isMetadataExtractionActive,
-    required this.isVideoConversionActive,
-    required this.isMachineLearningActive,
+    required this.thumbnailGeneration,
+    required this.metadataExtraction,
+    required this.videoConversion,
+    required this.machineLearning,
+    required this.storageTemplateMigration,
   });
 
-  JobCounts thumbnailGenerationQueueCount;
+  JobCounts thumbnailGeneration;
 
-  JobCounts metadataExtractionQueueCount;
+  JobCounts metadataExtraction;
 
-  JobCounts videoConversionQueueCount;
+  JobCounts videoConversion;
 
-  JobCounts machineLearningQueueCount;
+  JobCounts machineLearning;
 
-  bool isThumbnailGenerationActive;
-
-  bool isMetadataExtractionActive;
-
-  bool isVideoConversionActive;
-
-  bool isMachineLearningActive;
+  JobCounts storageTemplateMigration;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AllJobStatusResponseDto &&
-     other.thumbnailGenerationQueueCount == thumbnailGenerationQueueCount &&
-     other.metadataExtractionQueueCount == metadataExtractionQueueCount &&
-     other.videoConversionQueueCount == videoConversionQueueCount &&
-     other.machineLearningQueueCount == machineLearningQueueCount &&
-     other.isThumbnailGenerationActive == isThumbnailGenerationActive &&
-     other.isMetadataExtractionActive == isMetadataExtractionActive &&
-     other.isVideoConversionActive == isVideoConversionActive &&
-     other.isMachineLearningActive == isMachineLearningActive;
+     other.thumbnailGeneration == thumbnailGeneration &&
+     other.metadataExtraction == metadataExtraction &&
+     other.videoConversion == videoConversion &&
+     other.machineLearning == machineLearning &&
+     other.storageTemplateMigration == storageTemplateMigration;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (thumbnailGenerationQueueCount.hashCode) +
-    (metadataExtractionQueueCount.hashCode) +
-    (videoConversionQueueCount.hashCode) +
-    (machineLearningQueueCount.hashCode) +
-    (isThumbnailGenerationActive.hashCode) +
-    (isMetadataExtractionActive.hashCode) +
-    (isVideoConversionActive.hashCode) +
-    (isMachineLearningActive.hashCode);
+    (thumbnailGeneration.hashCode) +
+    (metadataExtraction.hashCode) +
+    (videoConversion.hashCode) +
+    (machineLearning.hashCode) +
+    (storageTemplateMigration.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[thumbnailGenerationQueueCount=$thumbnailGenerationQueueCount, metadataExtractionQueueCount=$metadataExtractionQueueCount, videoConversionQueueCount=$videoConversionQueueCount, machineLearningQueueCount=$machineLearningQueueCount, isThumbnailGenerationActive=$isThumbnailGenerationActive, isMetadataExtractionActive=$isMetadataExtractionActive, isVideoConversionActive=$isVideoConversionActive, isMachineLearningActive=$isMachineLearningActive]';
+  String toString() => 'AllJobStatusResponseDto[thumbnailGeneration=$thumbnailGeneration, metadataExtraction=$metadataExtraction, videoConversion=$videoConversion, machineLearning=$machineLearning, storageTemplateMigration=$storageTemplateMigration]';
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-      _json[r'thumbnailGenerationQueueCount'] = thumbnailGenerationQueueCount;
-      _json[r'metadataExtractionQueueCount'] = metadataExtractionQueueCount;
-      _json[r'videoConversionQueueCount'] = videoConversionQueueCount;
-      _json[r'machineLearningQueueCount'] = machineLearningQueueCount;
-      _json[r'isThumbnailGenerationActive'] = isThumbnailGenerationActive;
-      _json[r'isMetadataExtractionActive'] = isMetadataExtractionActive;
-      _json[r'isVideoConversionActive'] = isVideoConversionActive;
-      _json[r'isMachineLearningActive'] = isMachineLearningActive;
-    return _json;
+    final json = <String, dynamic>{};
+      json[r'thumbnail-generation'] = this.thumbnailGeneration;
+      json[r'metadata-extraction'] = this.metadataExtraction;
+      json[r'video-conversion'] = this.videoConversion;
+      json[r'machine-learning'] = this.machineLearning;
+      json[r'storage-template-migration'] = this.storageTemplateMigration;
+    return json;
   }
 
   /// Returns a new [AllJobStatusResponseDto] instance and imports its values from
@@ -97,14 +79,11 @@ class AllJobStatusResponseDto {
       }());
 
       return AllJobStatusResponseDto(
-        thumbnailGenerationQueueCount: JobCounts.fromJson(json[r'thumbnailGenerationQueueCount'])!,
-        metadataExtractionQueueCount: JobCounts.fromJson(json[r'metadataExtractionQueueCount'])!,
-        videoConversionQueueCount: JobCounts.fromJson(json[r'videoConversionQueueCount'])!,
-        machineLearningQueueCount: JobCounts.fromJson(json[r'machineLearningQueueCount'])!,
-        isThumbnailGenerationActive: mapValueOfType<bool>(json, r'isThumbnailGenerationActive')!,
-        isMetadataExtractionActive: mapValueOfType<bool>(json, r'isMetadataExtractionActive')!,
-        isVideoConversionActive: mapValueOfType<bool>(json, r'isVideoConversionActive')!,
-        isMachineLearningActive: mapValueOfType<bool>(json, r'isMachineLearningActive')!,
+        thumbnailGeneration: JobCounts.fromJson(json[r'thumbnail-generation'])!,
+        metadataExtraction: JobCounts.fromJson(json[r'metadata-extraction'])!,
+        videoConversion: JobCounts.fromJson(json[r'video-conversion'])!,
+        machineLearning: JobCounts.fromJson(json[r'machine-learning'])!,
+        storageTemplateMigration: JobCounts.fromJson(json[r'storage-template-migration'])!,
       );
     }
     return null;
@@ -154,14 +133,11 @@ class AllJobStatusResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'thumbnailGenerationQueueCount',
-    'metadataExtractionQueueCount',
-    'videoConversionQueueCount',
-    'machineLearningQueueCount',
-    'isThumbnailGenerationActive',
-    'isMetadataExtractionActive',
-    'isVideoConversionActive',
-    'isMachineLearningActive',
+    'thumbnail-generation',
+    'metadata-extraction',
+    'video-conversion',
+    'machine-learning',
+    'storage-template-migration',
   };
 }
 

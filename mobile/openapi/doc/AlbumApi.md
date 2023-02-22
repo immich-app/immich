@@ -12,7 +12,9 @@ Method | HTTP request | Description
 [**addAssetsToAlbum**](AlbumApi.md#addassetstoalbum) | **PUT** /album/{albumId}/assets | 
 [**addUsersToAlbum**](AlbumApi.md#adduserstoalbum) | **PUT** /album/{albumId}/users | 
 [**createAlbum**](AlbumApi.md#createalbum) | **POST** /album | 
+[**createAlbumSharedLink**](AlbumApi.md#createalbumsharedlink) | **POST** /album/create-shared-link | 
 [**deleteAlbum**](AlbumApi.md#deletealbum) | **DELETE** /album/{albumId} | 
+[**downloadArchive**](AlbumApi.md#downloadarchive) | **GET** /album/{albumId}/download | 
 [**getAlbumCountByUserId**](AlbumApi.md#getalbumcountbyuserid) | **GET** /album/count-by-user-id | 
 [**getAlbumInfo**](AlbumApi.md#getalbuminfo) | **GET** /album/{albumId} | 
 [**getAllAlbums**](AlbumApi.md#getallalbums) | **GET** /album | 
@@ -22,7 +24,9 @@ Method | HTTP request | Description
 
 
 # **addAssetsToAlbum**
-> AlbumResponseDto addAssetsToAlbum(albumId, addAssetsDto)
+> AddAssetsResponseDto addAssetsToAlbum(albumId, addAssetsDto)
+
+
 
 
 
@@ -57,7 +61,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**AlbumResponseDto**](AlbumResponseDto.md)
+[**AddAssetsResponseDto**](AddAssetsResponseDto.md)
 
 ### Authorization
 
@@ -72,6 +76,8 @@ Name | Type | Description  | Notes
 
 # **addUsersToAlbum**
 > AlbumResponseDto addUsersToAlbum(albumId, addUsersDto)
+
+
 
 
 
@@ -124,6 +130,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -166,8 +174,59 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **createAlbumSharedLink**
+> SharedLinkResponseDto createAlbumSharedLink(createAlbumShareLinkDto)
+
+
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AlbumApi();
+final createAlbumShareLinkDto = CreateAlbumShareLinkDto(); // CreateAlbumShareLinkDto | 
+
+try {
+    final result = api_instance.createAlbumSharedLink(createAlbumShareLinkDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling AlbumApi->createAlbumSharedLink: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **createAlbumShareLinkDto** | [**CreateAlbumShareLinkDto**](CreateAlbumShareLinkDto.md)|  | 
+
+### Return type
+
+[**SharedLinkResponseDto**](SharedLinkResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **deleteAlbum**
 > deleteAlbum(albumId)
+
+
 
 
 
@@ -212,8 +271,61 @@ void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **downloadArchive**
+> Object downloadArchive(albumId, skip)
+
+
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AlbumApi();
+final albumId = albumId_example; // String | 
+final skip = 8.14; // num | 
+
+try {
+    final result = api_instance.downloadArchive(albumId, skip);
+    print(result);
+} catch (e) {
+    print('Exception when calling AlbumApi->downloadArchive: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **albumId** | **String**|  | 
+ **skip** | **num**|  | [optional] 
+
+### Return type
+
+[**Object**](Object.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **getAlbumCountByUserId**
 > AlbumCountResponseDto getAlbumCountByUserId()
+
+
 
 
 
@@ -257,6 +369,8 @@ This endpoint does not need any parameter.
 
 # **getAlbumInfo**
 > AlbumResponseDto getAlbumInfo(albumId)
+
+
 
 
 
@@ -304,6 +418,8 @@ Name | Type | Description  | Notes
 
 # **getAllAlbums**
 > List<AlbumResponseDto> getAllAlbums(shared, assetId)
+
+
 
 
 
@@ -356,6 +472,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -405,6 +523,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -450,6 +570,8 @@ void (empty response body)
 
 # **updateAlbumInfo**
 > AlbumResponseDto updateAlbumInfo(albumId, updateAlbumDto)
+
+
 
 
 

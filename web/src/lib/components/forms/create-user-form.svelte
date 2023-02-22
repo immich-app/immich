@@ -1,6 +1,11 @@
 <script lang="ts">
 	import { api } from '@api';
 	import { createEventDispatcher } from 'svelte';
+	import ImmichLogo from '../shared-components/immich-logo.svelte';
+	import {
+		notificationController,
+		NotificationType
+	} from '../shared-components/notification/notification';
 
 	let error: string;
 	let success: string;
@@ -9,6 +14,8 @@
 	let confirmPassowrd = '';
 
 	let canCreateUser = false;
+
+	let isCreatingUser = false;
 
 	$: {
 		if (password !== confirmPassowrd && confirmPassowrd.length > 0) {
@@ -22,7 +29,9 @@
 	const dispatch = createEventDispatcher();
 
 	async function registerUser(event: SubmitEvent) {
-		if (canCreateUser) {
+		if (canCreateUser && !isCreatingUser) {
+			isCreatingUser = true;
+
 			error = '';
 
 			const formElement = event.target as HTMLFormElement;
@@ -34,30 +43,51 @@
 			const firstName = form.get('firstName');
 			const lastName = form.get('lastName');
 
-			const { status } = await api.userApi.createUser({
-				email: String(email),
-				password: String(password),
-				firstName: String(firstName),
-				lastName: String(lastName)
-			});
+			try {
+				const { status } = await api.userApi.createUser({
+					email: String(email),
+					password: String(password),
+					firstName: String(firstName),
+					lastName: String(lastName)
+				});
 
-			if (status === 201) {
-				success = 'New user created';
+				if (status === 201) {
+					success = 'New user created';
 
-				dispatch('user-created');
-				return;
-			} else {
+					dispatch('user-created');
+
+					isCreatingUser = false;
+					return;
+				} else {
+					error = 'Error create user account';
+					isCreatingUser = false;
+				}
+			} catch (e) {
 				error = 'Error create user account';
+				isCreatingUser = false;
+
+				console.log('[ERROR] registerUser', e);
+
+				notificationController.show({
+					message: `Error create new user, check console for more detail`,
+					type: NotificationType.Error
+				});
 			}
 		}
 	}
 </script>
 
-<div class="border bg-white p-4 shadow-sm w-[500px] rounded-3xl py-8">
+<div
+	class="border bg-immich-bg dark:bg-immich-dark-gray dark:border-immich-dark-gray p-4 shadow-sm w-[500px] max-w-[95vw] rounded-3xl py-8 dark:text-immich-dark-fg"
+>
 	<div class="flex flex-col place-items-center place-content-center gap-4 px-4">
-		<img class="text-center" src="/immich-logo.svg" height="100" width="100" alt="immich-logo" />
-		<h1 class="text-2xl text-immich-primary font-medium">Create new user</h1>
-		<p class="text-sm border rounded-md p-4 font-mono text-gray-600">
+		<ImmichLogo class="text-center" height="100" width="100" />
+		<h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium">
+			Create new user
+		</h1>
+		<p
+			class="text-sm border rounded-md p-4 font-mono text-gray-600 dark:border-immich-dark-bg dark:text-gray-300"
+		>
 			Please provide your user with the password, they will have to change it on their first sign
 			in.
 		</p>
@@ -113,7 +143,8 @@
 		<div class="flex w-full">
 			<button
 				type="submit"
-				class="m-4 bg-immich-primary hover:bg-immich-primary/75 px-6 py-3 text-white rounded-full shadow-md w-full font-medium"
+				class="m-4 bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 dark:hover:bg-immich-dark-primary/80 px-6 py-3 text-white dark:text-immich-dark-gray rounded-full shadow-md w-full font-medium"
+				disabled={isCreatingUser}
 				>Create
 			</button>
 		</div>

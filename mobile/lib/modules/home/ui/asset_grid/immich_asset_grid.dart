@@ -3,17 +3,18 @@ import 'dart:collection';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/thumbnail_image.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'asset_grid_data_structure.dart';
-import 'daily_title_text.dart';
+import 'group_divider_title.dart';
 import 'disable_multi_select_button.dart';
 import 'draggable_scrollbar_custom.dart';
 
 typedef ImmichAssetGridSelectionListener = void Function(
   bool,
-  Set<AssetResponseDto>,
+  Set<Asset>,
 );
 
 class ImmichAssetGridState extends State<ImmichAssetGrid> {
@@ -24,22 +25,9 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   bool _scrolling = false;
   final Set<String> _selectedAssets = HashSet();
 
-  List<AssetResponseDto> get _assets {
-    return widget.renderList
-        .map((e) {
-          if (e.type == RenderAssetGridElementType.assetRow) {
-            return e.assetRow!.assets;
-          } else {
-            return List<AssetResponseDto>.empty();
-          }
-        })
-        .flattened
-        .toList();
-  }
-
-  Set<AssetResponseDto> _getSelectedAssets() {
+  Set<Asset> _getSelectedAssets() {
     return _selectedAssets
-        .map((e) => _assets.firstWhereOrNull((a) => a.id == e))
+        .map((e) => widget.allAssets.firstWhereOrNull((a) => a.id == e))
         .whereNotNull()
         .toSet();
   }
@@ -48,7 +36,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     widget.listener?.call(selectionActive, _getSelectedAssets());
   }
 
-  void _selectAssets(List<AssetResponseDto> assets) {
+  void _selectAssets(List<Asset> assets) {
     setState(() {
       for (var e in assets) {
         _selectedAssets.add(e.id);
@@ -57,7 +45,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     });
   }
 
-  void _deselectAssets(List<AssetResponseDto> assets) {
+  void _deselectAssets(List<Asset> assets) {
     setState(() {
       for (var e in assets) {
         _selectedAssets.remove(e.id);
@@ -74,18 +62,13 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     _callSelectionListener(false);
   }
 
-  bool _allAssetsSelected(List<AssetResponseDto> assets) {
+  bool _allAssetsSelected(List<Asset> assets) {
     return widget.selectionActive &&
         assets.firstWhereOrNull((e) => !_selectedAssets.contains(e.id)) == null;
   }
 
-  double _getItemSize(BuildContext context) {
-    return MediaQuery.of(context).size.width / widget.assetsPerRow -
-        widget.margin * (widget.assetsPerRow - 1) / widget.assetsPerRow;
-  }
-
   Widget _buildThumbnailOrPlaceholder(
-    AssetResponseDto asset,
+    Asset asset,
     bool placeholder,
   ) {
     if (placeholder) {
@@ -95,9 +78,9 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     }
     return ThumbnailImage(
       asset: asset,
-      assetList: _assets,
+      assetList: widget.allAssets,
       multiselectEnabled: widget.selectionActive,
-      isSelected: _selectedAssets.contains(asset.id),
+      isSelected: widget.selectionActive && _selectedAssets.contains(asset.id),
       onSelect: () => _selectAssets([asset]),
       onDeselect: () => _deselectAssets([asset]),
       useGrayBoxPlaceholder: true,
@@ -110,34 +93,38 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     RenderAssetGridRow row,
     bool scrolling,
   ) {
-    double size = _getItemSize(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = constraints.maxWidth / widget.assetsPerRow -
+            widget.margin * (widget.assetsPerRow - 1) / widget.assetsPerRow;
+        return Row(
+          key: Key("asset-row-${row.assets.first.id}"),
+          children: row.assets.mapIndexed((int index, Asset asset) {
+            bool last = asset.id == row.assets.last.id;
 
-    return Row(
-      key: Key("asset-row-${row.assets.first.id}"),
-      children: row.assets.map((AssetResponseDto asset) {
-        bool last = asset == row.assets.last;
-
-        return Container(
-          key: Key("asset-${asset.id}"),
-          width: size,
-          height: size,
-          margin: EdgeInsets.only(
-            top: widget.margin,
-            right: last ? 0.0 : widget.margin,
-          ),
-          child: _buildThumbnailOrPlaceholder(asset, scrolling),
+            return Container(
+              key: Key("asset-${asset.id}"),
+              width: size * row.widthDistribution[index],
+              height: size,
+              margin: EdgeInsets.only(
+                top: widget.margin,
+                right: last ? 0.0 : widget.margin,
+              ),
+              child: _buildThumbnailOrPlaceholder(asset, scrolling),
+            );
+          }).toList(),
         );
-      }).toList(),
+      },
     );
   }
 
   Widget _buildTitle(
     BuildContext context,
     String title,
-    List<AssetResponseDto> assets,
+    List<Asset> assets,
   ) {
-    return DailyTitleText(
-      isoDate: title,
+    return GroupDividerTitle(
+      text: title,
       multiselectEnabled: widget.selectionActive,
       onSelect: () => _selectAssets(assets),
       onDeselect: () => _deselectAssets(assets),
@@ -146,27 +133,24 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   }
 
   Widget _buildMonthTitle(BuildContext context, String title) {
-    var monthTitleText = DateFormat("monthly_title_text_date_format".tr())
-        .format(DateTime.parse(title));
-
     return Padding(
       key: Key("month-$title"),
       padding: const EdgeInsets.only(left: 12.0, top: 32),
       child: Text(
-        monthTitleText,
+        title,
         style: TextStyle(
           fontSize: 26,
           fontWeight: FontWeight.bold,
-          color: Theme.of(context).textTheme.headline1?.color,
+          color: Theme.of(context).textTheme.displayLarge?.color,
         ),
       ),
     );
   }
 
   Widget _itemBuilder(BuildContext c, int position) {
-    final item = widget.renderList[position];
+    final item = widget.renderList.elements[position];
 
-    if (item.type == RenderAssetGridElementType.dayTitle) {
+    if (item.type == RenderAssetGridElementType.groupDividerTitle) {
       return _buildTitle(c, item.title!, item.relatedAssetList!);
     } else if (item.type == RenderAssetGridElementType.monthTitle) {
       return _buildMonthTitle(c, item.title!);
@@ -178,9 +162,9 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   }
 
   Text _labelBuilder(int pos) {
-    final date = widget.renderList[pos].date;
+    final date = widget.renderList.elements[pos].date;
     return Text(
-      DateFormat.yMMMd().format(date),
+      DateFormat.yMMMM().format(date),
       style: const TextStyle(
         color: Colors.white,
         fontWeight: FontWeight.bold,
@@ -196,7 +180,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
   }
 
   Widget _buildAssetGrid() {
-    final useDragScrolling = _assets.length >= 20;
+    final useDragScrolling = widget.allAssets.length >= 20;
 
     void dragScrolling(bool active) {
       setState(() {
@@ -205,10 +189,14 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     }
 
     final listWidget = ScrollablePositionedList.builder(
+      padding: const EdgeInsets.only(
+        bottom: 220,
+      ),
       itemBuilder: _itemBuilder,
       itemPositionsListener: _itemPositionsListener,
       itemScrollController: _itemScrollController,
-      itemCount: widget.renderList.length,
+      itemCount: widget.renderList.elements.length,
+      addRepaintBoundaries: true,
     );
 
     if (!useDragScrolling) {
@@ -238,28 +226,66 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
     }
   }
 
+  Future<bool> onWillPop() async {
+    if (widget.selectionActive && _selectedAssets.isNotEmpty) {
+      _deselectAll();
+      return false;
+    }
+
+    return true;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    scrollToTopNotifierProvider.addListener(_scrollToTop);
+  }
+
+  @override
+  void dispose() {
+    scrollToTopNotifierProvider.removeListener(_scrollToTop);
+    super.dispose();
+  }
+
+  void _scrollToTop() {
+    // for some reason, this is necessary as well in order 
+    // to correctly reposition the drag thumb scroll bar
+    _itemScrollController.jumpTo(
+      index: 0,
+    );
+    _itemScrollController.scrollTo(
+      index: 0,
+      duration: const Duration(milliseconds: 200),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        _buildAssetGrid(),
-        if (widget.selectionActive) _buildMultiSelectIndicator(),
-      ],
+    return WillPopScope(
+      onWillPop: onWillPop,
+      child: Stack(
+        children: [
+          _buildAssetGrid(),
+          if (widget.selectionActive) _buildMultiSelectIndicator(),
+        ],
+      ),
     );
   }
 }
 
 class ImmichAssetGrid extends StatefulWidget {
-  final List<RenderAssetGridElement> renderList;
+  final RenderList renderList;
   final int assetsPerRow;
   final double margin;
   final bool showStorageIndicator;
   final ImmichAssetGridSelectionListener? listener;
   final bool selectionActive;
+  final List<Asset> allAssets;
 
   const ImmichAssetGrid({
     super.key,
     required this.renderList,
+    required this.allAssets,
     required this.assetsPerRow,
     required this.showStorageIndicator,
     this.listener,

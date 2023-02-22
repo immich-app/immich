@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "attach",
+      "restart": true,
+      "port": 9230,
+      "name": "Immich Server",
+      "remoteRoot": "/usr/src/app",
+      "localRoot": "${workspaceFolder}/server"
+    }
+  ]
+}

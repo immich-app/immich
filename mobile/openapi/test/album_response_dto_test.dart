@@ -16,6 +16,11 @@ void main() {
   // final instance = AlbumResponseDto();
 
   group('test AlbumResponseDto', () {
+    // int assetCount
+    test('to test the property `assetCount`', () async {
+      // TODO
+    });
+
     // String id
     test('to test the property `id`', () async {
       // TODO
@@ -36,6 +41,11 @@ void main() {
       // TODO
     });
 
+    // String updatedAt
+    test('to test the property `updatedAt`', () async {
+      // TODO
+    });
+
     // String albumThumbnailAssetId
     test('to test the property `albumThumbnailAssetId`', () async {
       // TODO
@@ -53,6 +63,11 @@ void main() {
 
     // List<AssetResponseDto> assets (default value: const [])
     test('to test the property `assets`', () async {
+      // TODO
+    });
+
+    // UserResponseDto owner
+    test('to test the property `owner`', () async {
       // TODO
     });
 

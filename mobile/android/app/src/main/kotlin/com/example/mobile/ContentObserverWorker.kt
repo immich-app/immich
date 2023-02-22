@@ -37,6 +37,8 @@ class ContentObserverWorker(ctx: Context, params: WorkerParameters) : Worker(ctx
         const val SHARED_PREF_SERVICE_ENABLED = "serviceEnabled"
         const val SHARED_PREF_REQUIRE_WIFI = "requireWifi"
         const val SHARED_PREF_REQUIRE_CHARGING = "requireCharging"
+        const val SHARED_PREF_TRIGGER_UPDATE_DELAY = "triggerUpdateDelay"
+        const val SHARED_PREF_TRIGGER_MAX_DELAY = "triggerMaxDelay"
 
         private const val TASK_NAME_OBSERVER = "immich/ContentObserver"
 
@@ -62,12 +64,16 @@ class ContentObserverWorker(ctx: Context, params: WorkerParameters) : Worker(ctx
          */
         fun configureWork(context: Context,
                           requireWifi: Boolean = false,
-                          requireCharging: Boolean = false) {
+                          requireCharging: Boolean = false,
+                          triggerUpdateDelay: Long = 5000,
+                          triggerMaxDelay: Long = 50000) {
             context.getSharedPreferences(BackupWorker.SHARED_PREF_NAME, Context.MODE_PRIVATE)
                 .edit()
                 .putBoolean(SHARED_PREF_SERVICE_ENABLED, true)
                 .putBoolean(SHARED_PREF_REQUIRE_WIFI, requireWifi)
                 .putBoolean(SHARED_PREF_REQUIRE_CHARGING, requireCharging)
+                .putLong(SHARED_PREF_TRIGGER_UPDATE_DELAY, triggerUpdateDelay)
+                .putLong(SHARED_PREF_TRIGGER_MAX_DELAY, triggerMaxDelay)
                 .apply()
             BackupWorker.updateBackupWorker(context, requireWifi, requireCharging)
         }
@@ -106,12 +112,14 @@ class ContentObserverWorker(ctx: Context, params: WorkerParameters) : Worker(ctx
         }
 
         private fun enqueueObserverWorker(context: Context, policy: ExistingWorkPolicy) {
+            val sp = context.getSharedPreferences(BackupWorker.SHARED_PREF_NAME, Context.MODE_PRIVATE)
             val constraints = Constraints.Builder()
                 .addContentUriTrigger(MediaStore.Images.Media.INTERNAL_CONTENT_URI, true)
                 .addContentUriTrigger(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true)
                 .addContentUriTrigger(MediaStore.Video.Media.INTERNAL_CONTENT_URI, true)
                 .addContentUriTrigger(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true)
-                .setTriggerContentUpdateDelay(5000, TimeUnit.MILLISECONDS)
+                .setTriggerContentUpdateDelay(sp.getLong(SHARED_PREF_TRIGGER_UPDATE_DELAY, 5000), TimeUnit.MILLISECONDS)
+                .setTriggerContentMaxDelay(sp.getLong(SHARED_PREF_TRIGGER_MAX_DELAY, 50000), TimeUnit.MILLISECONDS)
                 .build()
                 
             val work = OneTimeWorkRequest.Builder(ContentObserverWorker::class.java)

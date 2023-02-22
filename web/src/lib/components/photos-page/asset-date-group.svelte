@@ -5,7 +5,6 @@
 	import { fly } from 'svelte/transition';
 	import { AssetResponseDto } from '@api';
 	import lodash from 'lodash-es';
-	import moment from 'moment';
 	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
 	import {
 		assetInteractionStore,
@@ -14,17 +13,26 @@
 		selectedAssets,
 		selectedGroup
 	} from '$lib/stores/asset-interaction.store';
+	import { locale } from '$lib/stores/preferences.store';
+
 	export let assets: AssetResponseDto[];
 	export let bucketDate: string;
 	export let bucketHeight: number;
 	export let isAlbumSelectionMode = false;
+
+	const groupDateFormat: Intl.DateTimeFormatOptions = {
+		weekday: 'short',
+		month: 'short',
+		day: 'numeric',
+		year: 'numeric'
+	};
 
 	let isMouseOverGroup = false;
 	let actualBucketHeight: number;
 	let hoveredDateGroup = '';
 	$: assetsGroupByDate = lodash
 		.chain(assets)
-		.groupBy((a) => moment(a.createdAt).format('ddd, MMM DD YYYY'))
+		.groupBy((a) => new Date(a.fileCreatedAt).toLocaleDateString($locale, groupDateFormat))
 		.sortBy((group) => assets.indexOf(group[0]))
 		.value();
 
@@ -103,24 +111,34 @@
 
 <section
 	id="asset-group-by-date"
-	class="flex flex-wrap gap-5 mt-5"
+	class="flex flex-wrap gap-12 mt-5"
 	bind:clientHeight={actualBucketHeight}
 >
 	{#each assetsGroupByDate as assetsInDateGroup, groupIndex (assetsInDateGroup[0].id)}
-		{@const dateGroupTitle = moment(assetsInDateGroup[0].createdAt).format('ddd, MMM DD YYYY')}
+		{@const dateGroupTitle = new Date(assetsInDateGroup[0].fileCreatedAt).toLocaleDateString(
+			$locale,
+			groupDateFormat
+		)}
 		<!-- Asset Group By Date -->
+
 		<div
 			class="flex flex-col"
-			on:mouseenter={() => (isMouseOverGroup = true)}
+			on:mouseenter={() => {
+				isMouseOverGroup = true;
+				assetMouseEventHandler(dateGroupTitle);
+			}}
 			on:mouseleave={() => (isMouseOverGroup = false)}
 		>
 			<!-- Date group title -->
-			<p class="font-medium text-sm text-immich-fg mb-2 flex place-items-center h-6">
+			<p
+				class="font-medium text-sm text-immich-fg dark:text-immich-dark-fg mb-2 flex place-items-center h-6"
+			>
 				{#if (hoveredDateGroup == dateGroupTitle && isMouseOverGroup) || $selectedGroup.has(dateGroupTitle)}
 					<div
 						transition:fly={{ x: -24, duration: 200, opacity: 0.5 }}
 						class="inline-block px-2 hover:cursor-pointer"
 						on:click={() => selectAssetGroupHandler(assetsInDateGroup, dateGroupTitle)}
+						on:keydown={() => selectAssetGroupHandler(assetsInDateGroup, dateGroupTitle)}
 					>
 						{#if $selectedGroup.has(dateGroupTitle)}
 							<CheckCircle size="24" color="#4250af" />

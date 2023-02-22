@@ -1,46 +1,38 @@
-# Build stage
-FROM node:16-slim as builder
+FROM node:16-alpine3.14 as builder
 
 WORKDIR /usr/src/app
 
-COPY package.json package-lock.json ./
+RUN apk add --update-cache build-base python3 libheif vips-dev ffmpeg perl
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-      build-essential \
-      python3 \
-      libheif-dev \
-      libvips-dev \
-      ffmpeg && \
-    apt-get -y clean && apt-get autoremove -y && apt-get purge -y --auto-remove && rm -rf /var/lib/apt/lists/*
+COPY package.json package-lock.json ./
 
 RUN npm ci
 
 COPY . .
 
-RUN npm run build
 
-# Prod stage
-FROM node:16-slim
+FROM builder as prod
+
+RUN npm run build
+RUN npm prune --omit=dev --omit=optional
+
+
+FROM node:16-alpine3.14
 
 WORKDIR /usr/src/app
 
+RUN apk add --no-cache libheif vips ffmpeg perl
+
+COPY --from=prod /usr/src/app/node_modules ./node_modules
+COPY --from=prod /usr/src/app/dist ./dist
+COPY --from=prod /usr/src/app/bin ./bin
+
+COPY LICENSE /licenses/LICENSE.txt
+COPY LICENSE /LICENSE
 COPY package.json package-lock.json ./
 COPY start-server.sh start-microservices.sh ./
 
-RUN mkdir -p /usr/src/app/dist
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-      libheif-dev \
-      libvips-dev \
-      ffmpeg && \
-    apt-get -y clean && apt-get autoremove -y && apt-get purge -y --auto-remove && rm -rf /var/lib/apt/lists/*
-
-COPY --from=builder /usr/src/app/node_modules ./node_modules
-COPY --from=builder /usr/src/app/dist ./dist
-
-RUN npm prune --production
+RUN npm link && npm cache clean --force
 
 VOLUME /usr/src/app/upload
 
