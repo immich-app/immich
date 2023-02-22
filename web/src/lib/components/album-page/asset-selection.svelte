@@ -11,12 +11,12 @@
 		assetsInAlbumStoreState,
 		selectedAssets
 	} from '$lib/stores/asset-interaction.store';
+	import { locale } from '$lib/stores/preferences.store';
 
 	const dispatch = createEventDispatcher();
 
 	export let albumId: string;
 	export let assetsInAlbum: AssetResponseDto[];
-	const locale = navigator.language;
 
 	onMount(() => {
 		$assetsInAlbumStoreState = assetsInAlbum;
@@ -51,7 +51,7 @@
 				<p class="text-lg dark:text-immich-dark-fg">Add to album</p>
 			{:else}
 				<p class="text-lg dark:text-immich-dark-fg">
-					{$selectedAssets.size.toLocaleString(locale)} selected
+					{$selectedAssets.size.toLocaleString($locale)} selected
 				</p>
 			{/if}
 		</svelte:fragment>

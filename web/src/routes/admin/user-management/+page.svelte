@@ -11,6 +11,7 @@
 	import DeleteConfirmDialog from '$lib/components/admin-page/delete-confirm-dialoge.svelte';
 	import RestoreDialogue from '$lib/components/admin-page/restore-dialoge.svelte';
 	import { page } from '$app/stores';
+	import { locale } from '$lib/stores/preferences.store';
 
 	let allUsers: UserResponseDto[] = [];
 	let shouldShowEditUserForm = false;
@@ -28,7 +29,6 @@
 		return user.deletedAt != null;
 	};
 
-	const locale = navigator.language;
 	const deleteDateFormat: Intl.DateTimeFormatOptions = {
 		month: 'long',
 		day: 'numeric',
@@ -38,7 +38,7 @@
 	const getDeleteDate = (user: UserResponseDto): string => {
 		let deletedAt = new Date(user.deletedAt ? user.deletedAt : Date.now());
 		deletedAt.setDate(deletedAt.getDate() + 7);
-		return deletedAt.toLocaleString(locale, deleteDateFormat);
+		return deletedAt.toLocaleString($locale, deleteDateFormat);
 	};
 
 	const onUserCreated = async () => {

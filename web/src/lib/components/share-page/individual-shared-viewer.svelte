@@ -18,6 +18,7 @@
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
+	import { locale } from '$lib/stores/preferences.store';
 
 	export let sharedLink: SharedLinkResponseDto;
 	export let isOwned: boolean;
@@ -86,8 +87,6 @@
 			clearMultiSelectAssetAssetHandler();
 		}
 	};
-
-	const locale = navigator.language;
 </script>
 
 <section class="bg-immich-bg dark:bg-immich-dark-bg">
@@ -99,7 +98,7 @@
 		>
 			<svelte:fragment slot="leading">
 				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
-					Selected {selectedAssets.size.toLocaleString(locale)}
+					Selected {selectedAssets.size.toLocaleString($locale)}
 				</p>
 			</svelte:fragment>
 			<svelte:fragment slot="trailing">

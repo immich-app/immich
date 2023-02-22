@@ -28,6 +28,7 @@
 	import Plus from 'svelte-material-icons/Plus.svelte';
 	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
 	import type { PageData } from './$types';
+	import { locale } from '$lib/stores/preferences.store';
 
 	export let data: PageData;
 	let isShowCreateSharedLinkModal = false;
@@ -141,8 +142,6 @@
 		assetInteractionStore.clearMultiselect();
 		isShowCreateSharedLinkModal = false;
 	};
-
-	const locale = navigator.language;
 </script>
 
 <section>
@@ -154,7 +153,7 @@
 		>
 			<svelte:fragment slot="leading">
 				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
-					Selected {$selectedAssets.size.toLocaleString(locale)}
+					Selected {$selectedAssets.size.toLocaleString($locale)}
 				</p>
 			</svelte:fragment>
 			<svelte:fragment slot="trailing">

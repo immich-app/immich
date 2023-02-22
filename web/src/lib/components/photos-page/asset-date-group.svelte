@@ -13,12 +13,13 @@
 		selectedAssets,
 		selectedGroup
 	} from '$lib/stores/asset-interaction.store';
+	import { locale } from '$lib/stores/preferences.store';
+
 	export let assets: AssetResponseDto[];
 	export let bucketDate: string;
 	export let bucketHeight: number;
 	export let isAlbumSelectionMode = false;
 
-	const locale = navigator.language;
 	const groupDateFormat: Intl.DateTimeFormatOptions = {
 		weekday: 'short',
 		month: 'short',
@@ -31,7 +32,7 @@
 	let hoveredDateGroup = '';
 	$: assetsGroupByDate = lodash
 		.chain(assets)
-		.groupBy((a) => new Date(a.fileCreatedAt).toLocaleDateString(locale, groupDateFormat))
+		.groupBy((a) => new Date(a.fileCreatedAt).toLocaleDateString($locale, groupDateFormat))
 		.sortBy((group) => assets.indexOf(group[0]))
 		.value();
 
@@ -115,7 +116,7 @@
 >
 	{#each assetsGroupByDate as assetsInDateGroup, groupIndex (assetsInDateGroup[0].id)}
 		{@const dateGroupTitle = new Date(assetsInDateGroup[0].fileCreatedAt).toLocaleDateString(
-			locale,
+			$locale,
 			groupDateFormat
 		)}
 		<!-- Asset Group By Date -->

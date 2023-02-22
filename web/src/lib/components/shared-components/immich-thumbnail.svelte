@@ -1,7 +1,7 @@
 <script lang="ts">
 	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
 	import { AssetResponseDto, AssetTypeEnum, getFileUrl, ThumbnailFormat } from '@api';
-	import { createEventDispatcher, onDestroy } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
 	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
@@ -21,8 +21,6 @@
 	export let disabled = false;
 	export let publicSharedKey = '';
 	export let isRoundedCorner = false;
-
-	let imageData: string;
 
 	let mouseOver = false;
 	let playMotionVideo = false;
@@ -68,10 +66,6 @@
 			return `${minutes}:${seconds.split('.')[0]}`;
 		}
 	};
-
-	onDestroy(() => {
-		URL.revokeObjectURL(imageData);
-	});
 
 	const getSize = () => {
 		if (thumbnailSize) {

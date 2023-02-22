@@ -39,6 +39,7 @@
 	import ThemeButton from '../shared-components/theme-button.svelte';
 	import { openFileUploadDialog } from '$lib/utils/file-uploader';
 	import { bulkDownload } from '$lib/utils/asset-utils';
+	import { locale } from '$lib/stores/preferences.store';
 	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
 	import ImmichLogo from '../shared-components/immich-logo.svelte';
 
@@ -88,7 +89,6 @@
 		}
 	});
 
-	const locale = navigator.language;
 	const albumDateFormat: Intl.DateTimeFormatOptions = {
 		month: 'short',
 		day: 'numeric',
@@ -99,8 +99,8 @@
 		const startDate = new Date(album.assets[0].fileCreatedAt);
 		const endDate = new Date(album.assets[album.assetCount - 1].fileCreatedAt);
 
-		const startDateString = startDate.toLocaleDateString(locale, albumDateFormat);
-		const endDateString = endDate.toLocaleDateString(locale, albumDateFormat);
+		const startDateString = startDate.toLocaleDateString($locale, albumDateFormat);
+		const endDateString = endDate.toLocaleDateString($locale, albumDateFormat);
 
 		// If the start and end date are the same, only show one date
 		return startDateString === endDateString
@@ -380,7 +380,7 @@
 		>
 			<svelte:fragment slot="leading">
 				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
-					Selected {multiSelectAsset.size.toLocaleString(locale)}
+					Selected {multiSelectAsset.size.toLocaleString($locale)}
 				</p>
 			</svelte:fragment>
 			<svelte:fragment slot="trailing">
