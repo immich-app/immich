@@ -70,11 +70,10 @@ export class AssetCore {
 
       try {
         await this.storageRepository.moveFile(asset.originalPath, destination);
-        const success = await this.repository.save({ id: asset.id, originalPath: destination }).catch(() => null);
-        if (!success) {
-          this.logger.warn('Unable to save new originalPath to database, undoing move');
-          await this.storageRepository.moveFile(destination, source);
-        }
+        await this.repository.save({ id: asset.id, originalPath: destination }).catch((error: any) => {
+          this.logger.warn('Unable to save new originalPath to database, undoing move', error?.stack);
+          return this.storageRepository.moveFile(destination, source);
+        });
       } catch (error: any) {
         this.logger.error(`Problem applying storage template`, error?.stack, { id: asset.id, source, destination });
       }
