@@ -77,7 +77,8 @@ class AssetService {
             .map((e) => Asset.local(e, userId))
             .toList(growable: false);
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      log.severe('Error while getting local assets', e, stackTrace);
       debugPrint("Error [_getLocalAssets] ${e.toString()}");
     }
     return null;
