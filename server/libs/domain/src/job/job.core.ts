@@ -121,6 +121,8 @@ export class JobCore {
         const livePhotoParentAsset = livePhotoMap[asset.id];
         // TODO: remove livePhoto specific stuff once upload is fixed
         const filename = asset.exifInfo?.imageName || livePhotoParentAsset?.exifInfo?.imageName || asset.id;
+
+        // TODO: use asset core (once in domain)
         const destination = await this.storageCore.getTemplatePath(asset, filename);
         if (asset.originalPath !== destination) {
           const source = asset.originalPath;

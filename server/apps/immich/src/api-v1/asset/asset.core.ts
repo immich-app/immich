@@ -7,11 +7,13 @@ import {
   StorageCore,
 } from '@app/domain';
 import { AssetEntity, SystemConfig, UserEntity } from '@app/infra/db/entities';
+import { Logger } from '@nestjs/common';
 import { IAssetRepository } from './asset-repository';
 import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
 
 export class AssetCore {
   private storageCore: StorageCore;
+  private logger = new Logger(AssetCore.name);
 
   constructor(
     private repository: IAssetRepository,
@@ -54,14 +56,29 @@ export class AssetCore {
       sharedLinks: [],
     });
 
-    const destination = await this.storageCore.getTemplatePath(asset, file.originalName);
-    if (asset.originalPath !== destination) {
-      await this.storageRepository.moveFile(asset.originalPath, destination);
-      asset = await this.repository.save({ ...asset, originalPath: destination });
-    }
+    asset = await this.moveAsset(asset, file.originalName);
 
     await this.jobRepository.queue({ name: JobName.ASSET_UPLOADED, data: { asset, fileName: file.originalName } });
 
+    return asset;
+  }
+
+  async moveAsset(asset: AssetEntity, originalName: string) {
+    const destination = await this.storageCore.getTemplatePath(asset, originalName);
+    if (asset.originalPath !== destination) {
+      const source = asset.originalPath;
+
+      try {
+        await this.storageRepository.moveFile(asset.originalPath, destination);
+        const success = await this.repository.save({ id: asset.id, originalPath: destination }).catch(() => null);
+        if (!success) {
+          this.logger.warn('Unable to save new originalPath to database, undoing move');
+          await this.storageRepository.moveFile(destination, source);
+        }
+      } catch (error: any) {
+        this.logger.error(`Problem applying storage template`, error?.stack, { id: asset.id, source, destination });
+      }
+    }
     return asset;
   }
 }

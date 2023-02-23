@@ -216,6 +216,10 @@ describe(JobService.name, () => {
 
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(storageMock.checkFileExists).toHaveBeenCalledTimes(2);
+      expect(assetMock.save).toHaveBeenCalledWith({
+        id: assetEntityStub.image.id,
+        originalPath: 'upload/user-id/2023/2023-02-23/asset-id+1.ext',
+      });
     });
 
     it('should skip when an asset already matches the template', async () => {

@@ -278,7 +278,7 @@ describe('AssetService', () => {
 
       expect(assetRepositoryMock.create).toHaveBeenCalled();
       expect(assetRepositoryMock.save).toHaveBeenCalledWith({
-        ...assetEntity,
+        id: 'id_1',
         originalPath: 'upload/user_id_1/2022/2022-06-19/asset_1.jpeg',
       });
     });
