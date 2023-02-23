@@ -63,6 +63,7 @@ import { AssetSearchDto } from './dto/asset-search.dto';
 import { AddAssetsDto } from '../album/dto/add-assets.dto';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
 import path from 'path';
+import { getFileNameWithoutExtension } from '../../utils/file-name.util';
 
 const fileInfo = promisify(stat);
 
@@ -96,11 +97,9 @@ export class AssetService {
     livePhotoFile?: UploadFile,
   ): Promise<AssetFileUploadResponseDto> {
     if (livePhotoFile) {
-      const fileExt = path.extname(file.originalName);
-      const livePhotoExt = path.extname(livePhotoFile.originalName);
       livePhotoFile = {
         ...livePhotoFile,
-        originalName: file.originalName.replace(new RegExp(`${fileExt}$`), livePhotoExt),
+        originalName: getFileNameWithoutExtension(file.originalName) + path.extname(livePhotoFile.originalName),
       };
     }
 
