@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { serverApi } from '@api';
+import { api } from '@api';
 
 export const load: PageServerLoad = async ({ parent }) => {
 	try {
@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ parent }) => {
 			throw Error('User is not logged in');
 		}
 
-		const { data: albums } = await serverApi.albumApi.getAllAlbums();
+		const { data: albums } = await api.albumApi.getAllAlbums();
 
 		return {
 			user: user,

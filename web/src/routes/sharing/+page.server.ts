@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 export const prerender = false;
 
-import { serverApi } from '@api';
+import { api } from '@api';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ parent }) => {
@@ -11,7 +11,7 @@ export const load: PageServerLoad = async ({ parent }) => {
 			throw redirect(302, '/auth/login');
 		}
 
-		const { data: sharedAlbums } = await serverApi.albumApi.getAllAlbums(true);
+		const { data: sharedAlbums } = await api.albumApi.getAllAlbums(true);
 
 		return {
 			user: user,

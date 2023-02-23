@@ -1,4 +1,4 @@
-import { serverApi } from '@api';
+import { api } from '@api';
 import type { LayoutServerLoad } from './$types';
 
 export const load = (async ({ cookies }) => {
@@ -8,8 +8,8 @@ export const load = (async ({ cookies }) => {
 			return { user: undefined };
 		}
 
-		serverApi.setAccessToken(accessToken);
-		const { data: user } = await serverApi.userApi.getMyUserInfo();
+		api.setAccessToken(accessToken);
+		const { data: user } = await api.userApi.getMyUserInfo();
 
 		return { user };
 	} catch (e) {
