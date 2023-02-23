@@ -18,6 +18,8 @@ concurrency:
 jobs:
   build-sign-android:
     name: Build and sign Android
+    # Skip when PR from a fork
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     runs-on: macos-12
 
     steps:
