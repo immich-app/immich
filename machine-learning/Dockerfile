@@ -14,3 +14,5 @@ RUN pip install transformers tqdm numpy scikit-learn scipy nltk sentencepiece fl
 RUN pip install --no-deps sentence-transformers
 
 COPY . .
+
+CMD ["python", "src/main.py"]
