@@ -210,10 +210,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
                 .thumbnailDataWithSize(const ThumbnailSize(512, 512));
             availableAlbum =
                 availableAlbum.copyWith(thumbnailData: thumbnailData);
-          } catch (e) {
-            log.warning(
+          } catch (e, stack) {
+            log.severe(
               "Failed to get thumbnail for album ${album.name}",
               e.toString(),
+              stack,
             );
           }
         }
