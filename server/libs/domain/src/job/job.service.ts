@@ -1,8 +1,8 @@
 import { SystemConfig } from '@app/infra/db/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { IAlbumRepository } from '../album';
+import { IAlbumRepository } from '../album/album.repository';
 import { IKeyRepository } from '../api-key';
-import { IAssetRepository } from '../asset';
+import { IAssetRepository } from '../asset/asset.repository';
 import { IStorageRepository } from '../storage';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
 import { IUserRepository } from '../user';
@@ -47,7 +47,7 @@ export class JobService {
       case JobName.ASSET_UPLOADED:
         return this.core.handleAssetUpload(job.data);
       case JobName.CONFIG_CHANGE:
-        return this.core.handleAssetUpload;
+        return this.core.handleConfigChange();
       case JobName.DELETE_FILES:
         return this.core.handleDeleteFiles(job.data);
       case JobName.TEMPLATE_MIGRATION:

@@ -84,9 +84,7 @@ export class JobCore {
       await this.assetRepository.deleteAll(user.id);
       await this.userRepository.delete(user, true);
     } catch (error: any) {
-      this.logger.error(`Failed to remove user`);
-      this.logger.error(error, error?.stack);
-      throw error;
+      this.logger.error(`Failed to remove user`, error, { id: user.id });
     }
   }
 
@@ -101,49 +99,65 @@ export class JobCore {
       try {
         await this.storageRepository.unlink(file);
       } catch (error: any) {
-        this.logger.warn('Unable to remove file from disk', error?.stack);
+        this.logger.warn('Unable to remove file from disk', error);
       }
     }
   }
 
   async handleTemplateMigration() {
-    console.time('migrating-time');
-    const assets = await this.assetRepository.getAll();
+    try {
+      console.time('migrating-time');
+      const assets = await this.assetRepository.getAll();
 
-    const livePhotoMap: Record<string, AssetEntity> = {};
+      const livePhotoMap: Record<string, AssetEntity> = {};
 
-    for (const asset of assets) {
-      if (asset.livePhotoVideoId) {
-        livePhotoMap[asset.livePhotoVideoId] = asset;
+      for (const asset of assets) {
+        if (asset.livePhotoVideoId) {
+          livePhotoMap[asset.livePhotoVideoId] = asset;
+        }
       }
-    }
 
-    for (const asset of assets) {
-      const livePhotoParentAsset = livePhotoMap[asset.id];
-      const filename = asset.exifInfo?.imageName || livePhotoParentAsset?.exifInfo?.imageName || asset.id;
-      const destination = await this.storageCore.getTemplatePath(asset, filename);
-      if (asset.originalPath !== destination) {
-        await this.storageRepository.moveFile(asset.originalPath, destination);
-        asset.originalPath = destination;
-        await this.assetRepository.save(asset);
+      for (const asset of assets) {
+        const livePhotoParentAsset = livePhotoMap[asset.id];
+        // TODO: remove livePhoto specific stuff once upload is fixed
+        const filename = asset.exifInfo?.imageName || livePhotoParentAsset?.exifInfo?.imageName || asset.id;
+        const destination = await this.storageCore.getTemplatePath(asset, filename);
+        if (asset.originalPath !== destination) {
+          const source = asset.originalPath;
+
+          try {
+            await this.storageRepository.moveFile(asset.originalPath, destination);
+            const success = await this.assetRepository
+              .save({ id: asset.id, originalPath: destination })
+              .catch(() => null);
+            if (!success) {
+              this.logger.warn('Unable to save new originalPath to database, undoing move');
+              await this.storageRepository.moveFile(destination, source);
+            }
+          } catch (error: any) {
+            this.logger.error(`Problem applying storage template`, error?.stack, { id: asset.id, source, destination });
+          }
+        }
       }
-    }
 
-    this.logger.debug('Cleaning up empty directories...');
-    await this.storageRepository.removeEmptyDirs(APP_UPLOAD_LOCATION);
-    console.timeEnd('migrating-time');
+      this.logger.debug('Cleaning up empty directories...');
+      await this.storageRepository.removeEmptyDirs(APP_UPLOAD_LOCATION);
+    } catch (error: any) {
+      this.logger.error('Error running template migration', error);
+    } finally {
+      console.timeEnd('migrating-time');
+    }
   }
 
   private isReadyForDeletion(user: UserEntity): boolean {
-    if (user.deletedAt == null) {
+    if (!user.deletedAt) {
       return false;
     }
 
     const msInDay = 86400000;
-    // get this number (7 days) from some configuration perhaps ?
     const msDeleteWait = msInDay * 7;
+    const msSinceDelete = new Date().getTime() - (Date.parse(user.deletedAt.toString()) || 0);
 
-    const msSinceDelete = new Date().getTime() - (Date.parse(user.deletedAt.toString()) ?? 0);
     return msSinceDelete >= msDeleteWait;
   }
 }

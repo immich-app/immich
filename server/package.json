@@ -146,6 +146,9 @@
         "statements": 94
       }
     },
+    "setupFilesAfterEnv": [
+      "<rootDir>/libs/domain/test/setup.ts"
+    ],
     "testEnvironment": "node",
     "roots": [
       "<rootDir>/apps/",

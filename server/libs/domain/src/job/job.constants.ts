@@ -23,6 +23,5 @@ export enum JobName {
   CONFIG_CHANGE = 'config-change',
   OBJECT_DETECTION = 'detect-object',
   IMAGE_TAGGING = 'tag-image',
-  DELETE_FILE_ON_DISK = 'delete-file-on-disk',
   DELETE_FILES = 'delete-files',
 }

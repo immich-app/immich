@@ -40,25 +40,24 @@ export class FilesystemProvider implements IStorageRepository {
   }
 
   async removeEmptyDirs(directory: string) {
+    this._removeEmptyDirs(directory, false);
+  }
+
+  private async _removeEmptyDirs(directory: string, self: boolean) {
     // lstat does not follow symlinks (in contrast to stat)
-    const fileStats = await fs.lstat(directory);
-    if (!fileStats.isDirectory()) {
+    const stats = await fs.lstat(directory);
+    if (!stats.isDirectory()) {
       return;
     }
-    let fileNames = await fs.readdir(directory);
-    if (fileNames.length > 0) {
-      const recursiveRemovalPromises = fileNames.map((fileName) =>
-        this.removeEmptyDirs(path.join(directory, fileName)),
-      );
-      await Promise.all(recursiveRemovalPromises);
 
-      // re-evaluate fileNames; after deleting subdirectory
-      // we may have parent directory empty now
-      fileNames = await fs.readdir(directory);
-    }
+    const files = await fs.readdir(directory);
+    await Promise.all(files.map((file) => this._removeEmptyDirs(path.join(directory, file), true)));
 
-    if (fileNames.length === 0) {
-      await fs.rmdir(directory);
+    if (self) {
+      const updated = await fs.readdir(directory);
+      if (updated.length === 0) {
+        await fs.rmdir(directory);
+      }
     }
   }
 }

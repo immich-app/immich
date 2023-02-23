@@ -10,7 +10,7 @@ export interface IAssetUploadedJob {
 }
 
 export interface IDeleteFilesJob {
-  files: Array<string | null>;
+  files: Array<string | null | undefined>;
 }
 
 export interface IUserDeletionJob {

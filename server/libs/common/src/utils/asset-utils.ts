@@ -1,4 +1,4 @@
-import { AssetEntity } from '@app/infra';
+import { AssetEntity } from '@app/infra/db/entities';
 import { AssetResponseDto } from '@app/domain';
 import fs from 'fs';
 

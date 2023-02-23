@@ -57,8 +57,7 @@ export class AssetCore {
     const destination = await this.storageCore.getTemplatePath(asset, file.originalName);
     if (asset.originalPath !== destination) {
       await this.storageRepository.moveFile(asset.originalPath, destination);
-      asset.originalPath = destination;
-      asset = await this.repository.save(asset);
+      asset = await this.repository.save({ ...asset, originalPath: destination });
     }
 
     await this.jobRepository.queue({ name: JobName.ASSET_UPLOADED, data: { asset, fileName: file.originalName } });

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserTokenEntity } from '@app/infra/db/entities/user-token.entity';
+import { UserTokenEntity } from '../entities/user-token.entity';
 import { IUserTokenRepository } from '@app/domain/user-token';
 
 @Injectable()

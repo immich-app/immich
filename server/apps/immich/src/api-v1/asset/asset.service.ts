@@ -62,6 +62,7 @@ import { mapSharedLink, SharedLinkResponseDto } from '@app/domain';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { AddAssetsDto } from '../album/dto/add-assets.dto';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
+import path from 'path';
 
 const fileInfo = promisify(stat);
 
@@ -95,7 +96,12 @@ export class AssetService {
     livePhotoFile?: UploadFile,
   ): Promise<AssetFileUploadResponseDto> {
     if (livePhotoFile) {
-      livePhotoFile.originalName = file.originalName;
+      const fileExt = path.extname(file.originalName);
+      const livePhotoExt = path.extname(livePhotoFile.originalName);
+      livePhotoFile = {
+        ...livePhotoFile,
+        originalName: file.originalName.replace(new RegExp(`${fileExt}$`), livePhotoExt),
+      };
     }
 
     let livePhotoAsset: AssetEntity | null = null;

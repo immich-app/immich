@@ -9,7 +9,7 @@ import {
   supportedSecondTokens,
   supportedYearTokens,
 } from '@app/domain';
-import { AssetEntity, AssetType, SystemConfig } from '@app/infra';
+import { AssetEntity, AssetType, SystemConfig } from '@app/infra/db/entities';
 import { Logger } from '@nestjs/common';
 import handlebar from 'handlebars';
 import * as luxon from 'luxon';
@@ -88,7 +88,7 @@ export class StorageCore {
 
       return destination;
     } catch (error: any) {
-      this.logger.error(error);
+      this.logger.error(`Unable to get template path for ${filename}`, error);
       return asset.originalPath;
     }
   }

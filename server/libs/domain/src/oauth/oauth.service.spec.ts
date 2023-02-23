@@ -21,18 +21,6 @@ import { newUserTokenRepositoryMock } from '../../test/user-token.repository.moc
 const email = 'user@immich.com';
 const sub = 'my-auth-user-sub';
 
-jest.mock('@nestjs/common', () => ({
-  ...jest.requireActual('@nestjs/common'),
-  Logger: jest.fn().mockReturnValue({
-    verbose: jest.fn(),
-    debug: jest.fn(),
-    log: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-  }),
-}));
-
 describe('OAuthService', () => {
   let sut: OAuthService;
   let userMock: jest.Mocked<IUserRepository>;
