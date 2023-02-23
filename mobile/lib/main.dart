@@ -36,18 +36,6 @@ import 'package:path_provider/path_provider.dart';
 import 'constants/hive_box.dart';
 
 void main() async {
-  var log = Logger("ImmichErrorLogger");
-
-  FlutterError.onError = (details) {
-    FlutterError.presentError(details);
-    log.severe(details.toString(), details, details.stack);
-  };
-
-  PlatformDispatcher.instance.onError = (error, stack) {
-    log.severe(error.toString(), error, stack);
-    return true;
-  };
-
   await initApp();
   final db = await loadDb();
   await migrateHiveToStoreIfNecessary();
@@ -85,6 +73,18 @@ Future<void> initApp() async {
 
   // Initialize Immich Logger Service
   ImmichLogger().init();
+
+  var log = Logger("ImmichErrorLogger");
+
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    log.severe(details.toString(), details, details.stack);
+  };
+
+  PlatformDispatcher.instance.onError = (error, stack) {
+    log.severe(error.toString(), error, stack);
+    return true;
+  };
 }
 
 Future<Isar> loadDb() async {
