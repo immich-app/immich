@@ -31,7 +31,7 @@ import 'package:openapi/api.dart' as api;
 
 // ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
-  late List<Asset> assetList;
+  final List<Asset> assetList;
   final Asset asset;
 
   GalleryViewerPage({
@@ -43,7 +43,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
   Asset? assetDetail;
 
-  late PageController controller;
+  final PageController controller;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -197,6 +197,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                   curve: Curves.fastLinearToSlowEaseIn,
                 );
               }
+              assetList.remove(deleteAsset);
               ref.watch(assetProvider.notifier).deleteAssets({deleteAsset});
             },
           );
