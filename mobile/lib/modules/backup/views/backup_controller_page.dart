@@ -27,10 +27,10 @@ class BackupControllerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     BackUpState backupState = ref.watch(backupProvider);
     AuthenticationState authenticationState = ref.watch(authenticationProvider);
-    final IOSBackgroundSettingsNotifier settings = ref.watch(iOSBackgroundSettingsProvider);
+    final settings = ref.watch(iOSBackgroundSettingsProvider.notifier).settings;
 
     final appRefreshDisabled = Platform.isIOS &&
-      settings.settings?.appRefreshEnabled != true;
+      settings?.appRefreshEnabled != true;
     bool hasExclusiveAccess =
         backupState.backupProgress != BackUpProgressEnum.inBackground;
     bool shouldBackup = backupState.allUniqueAssets.length -
@@ -48,7 +48,7 @@ class BackupControllerPage extends HookConsumerWidget {
         }
 
         if (Platform.isIOS) {
-          ref.read(iOSBackgroundSettingsProvider).refresh();
+          ref.read(iOSBackgroundSettingsProvider.notifier).refresh();
         }
 
         ref
@@ -389,9 +389,9 @@ class BackupControllerPage extends HookConsumerWidget {
                 return Container();
               },
             ),
-          if (isBackgroundEnabled && settings.settings != null)
+          if (isBackgroundEnabled && settings != null)
             IosDebugInfoTile(
-              settings: settings.settings!,
+              settings: settings,
           ),
         ],
       );
