@@ -7,7 +7,6 @@ on:
       ref:
         required: false
         type: string
-  pull_request:
   push:
     branches: [main]
 
