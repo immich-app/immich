@@ -47,8 +47,11 @@ class BackupControllerPage extends HookConsumerWidget {
           ref.watch(backupProvider.notifier).getBackupInfo();
         }
 
+        // Update the background settings information just to make sure we
+        // have the latest, since the platform channel will not update
+        // automatically
         if (Platform.isIOS) {
-          ref.read(iOSBackgroundSettingsProvider.notifier).refresh();
+          ref.watch(iOSBackgroundSettingsProvider.notifier).refresh();
         }
 
         ref
