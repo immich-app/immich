@@ -15,6 +15,4 @@ RUN pip install --no-deps sentence-transformers
 
 COPY . .
 
-ENTRYPOINT ["python"]
-
-CMD ["src/main.py"] 
+CMD ["python", "src/main.py"]
