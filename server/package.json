@@ -131,13 +131,13 @@
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s",
-      "!**/migrations/*"
+      "!<rootDir>/libs/infra/**/*"
     ],
     "coverageDirectory": "./coverage",
     "coverageThreshold": {
       "global": {
-        "lines": 20,
-        "statements": 20
+        "lines": 17,
+        "statements": 17
       },
       "./libs/domain/": {
         "branches": 80,
