@@ -15,9 +15,9 @@ class IOSBackgroundSettings {
   });
 }
 
-class IOSBackgroundSettingsState extends StateNotifier<IOSBackgroundSettings?> {
+class IOSBackgroundSettingsNotifier extends StateNotifier<IOSBackgroundSettings?> {
   final BackgroundService _service;
-  IOSBackgroundSettingsState(this._service) : super(null);
+  IOSBackgroundSettingsNotifier(this._service) : super(null);
 
   IOSBackgroundSettings? get settings => state;
 
@@ -51,7 +51,7 @@ class IOSBackgroundSettingsState extends StateNotifier<IOSBackgroundSettings?> {
 
 }
 
-final iOSBackgroundSettingsProvider = StateProvider<IOSBackgroundSettingsState>(
-  (ref) => IOSBackgroundSettingsState(ref.watch(backgroundServiceProvider)),
+final iOSBackgroundSettingsProvider = StateNotifierProvider<IOSBackgroundSettingsNotifier, IOSBackgroundSettings?>(
+  (ref) => IOSBackgroundSettingsNotifier(ref.watch(backgroundServiceProvider)),
 );
 

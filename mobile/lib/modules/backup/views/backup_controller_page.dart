@@ -27,7 +27,7 @@ class BackupControllerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     BackUpState backupState = ref.watch(backupProvider);
     AuthenticationState authenticationState = ref.watch(authenticationProvider);
-    final IOSBackgroundSettingsState settings = ref.watch(iOSBackgroundSettingsProvider);
+    final IOSBackgroundSettingsNotifier settings = ref.watch(iOSBackgroundSettingsProvider);
 
     final appRefreshDisabled = Platform.isIOS &&
       settings.settings?.appRefreshEnabled != true;

@@ -131,7 +131,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         ref.watch(notificationPermissionProvider.notifier)
           .getNotificationPermission();
 
-        ref.read(iOSBackgroundSettingsProvider).refresh();
+        ref.read(iOSBackgroundSettingsProvider.notifier).refresh();
 
         break;
 
