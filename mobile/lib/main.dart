@@ -12,6 +12,7 @@ import 'package:immich_mobile/modules/backup/background_service/background.servi
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_duplicated_assets.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/ios_background_settings.provider.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/settings/providers/permission.provider.dart';
@@ -143,6 +144,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         ref
             .watch(notificationPermissionProvider.notifier)
             .getNotificationPermission();
+
+        ref.read(iOSBackgroundSettingsProvider.notifier).refresh();
 
         break;
 
