@@ -31,10 +31,23 @@ import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:isar/isar.dart';
+import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 import 'constants/hive_box.dart';
 
 void main() async {
+  var log = Logger("ImmichErrorLogger");
+
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    log.severe(details.toString(), details, details.stack);
+  };
+
+  PlatformDispatcher.instance.onError = (error, stack) {
+    log.severe(error.toString(), error, stack);
+    return true;
+  };
+
   await initApp();
   final db = await loadDb();
   await migrateHiveToStoreIfNecessary();
@@ -127,8 +140,9 @@ class ImmichAppState extends ConsumerState<ImmichApp>
 
         ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
 
-        ref.watch(notificationPermissionProvider.notifier)
-          .getNotificationPermission();
+        ref
+            .watch(notificationPermissionProvider.notifier)
+            .getNotificationPermission();
 
         break;
 
