@@ -204,10 +204,19 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
         if (assetList.isNotEmpty) {
           var thumbnailAsset = assetList.first;
-          var thumbnailData = await thumbnailAsset
-              .thumbnailDataWithSize(const ThumbnailSize(512, 512));
-          availableAlbum =
-              availableAlbum.copyWith(thumbnailData: thumbnailData);
+
+          try {
+            var thumbnailData = await thumbnailAsset
+                .thumbnailDataWithSize(const ThumbnailSize(512, 512));
+            availableAlbum =
+                availableAlbum.copyWith(thumbnailData: thumbnailData);
+          } catch (e, stack) {
+            log.severe(
+              "Failed to get thumbnail for album ${album.name}",
+              e.toString(),
+              stack,
+            );
+          }
         }
 
         availableAlbums.add(availableAlbum);
