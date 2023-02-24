@@ -1,7 +1,6 @@
 export * from './album';
 export * from './api-key';
 export * from './asset';
-export * from './album';
 export * from './auth';
 export * from './crypto';
 export * from './device-info';
@@ -9,6 +8,7 @@ export * from './domain.module';
 export * from './job';
 export * from './oauth';
 export * from './share';
+export * from './smart-info';
 export * from './storage';
 export * from './storage-template';
 export * from './system-config';

@@ -5,7 +5,9 @@ import {
   IDeviceInfoRepository,
   IJobRepository,
   IKeyRepository,
+  IMachineLearningRepository,
   ISharedLinkRepository,
+  ISmartInfoRepository,
   IStorageRepository,
   ISystemConfigRepository,
   IUserRepository,
@@ -29,6 +31,8 @@ import {
   DeviceInfoRepository,
   SharedLinkEntity,
   SharedLinkRepository,
+  SmartInfoEntity,
+  SmartInfoRepository,
   SystemConfigEntity,
   SystemConfigRepository,
   UserEntity,
@@ -36,6 +40,7 @@ import {
   UserTokenEntity,
 } from './db';
 import { JobRepository } from './job';
+import { MachineLearningRepository } from './machine-learning';
 import { FilesystemProvider } from './storage';
 
 const providers: Provider[] = [
@@ -46,7 +51,9 @@ const providers: Provider[] = [
   { provide: IDeviceInfoRepository, useClass: DeviceInfoRepository },
   { provide: IKeyRepository, useClass: APIKeyRepository },
   { provide: IJobRepository, useClass: JobRepository },
+  { provide: IMachineLearningRepository, useClass: MachineLearningRepository },
   { provide: ISharedLinkRepository, useClass: SharedLinkRepository },
+  { provide: ISmartInfoRepository, useClass: SmartInfoRepository },
   { provide: IStorageRepository, useClass: FilesystemProvider },
   { provide: ISystemConfigRepository, useClass: SystemConfigRepository },
   { provide: IUserRepository, useClass: UserRepository },
@@ -64,6 +71,7 @@ const providers: Provider[] = [
       DeviceInfoEntity,
       UserEntity,
       SharedLinkEntity,
+      SmartInfoEntity,
       SystemConfigEntity,
       UserTokenEntity,
     ]),

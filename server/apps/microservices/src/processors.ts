@@ -1,10 +1,12 @@
 import {
   AssetService,
+  IAssetJob,
   IAssetUploadedJob,
   IDeleteFilesJob,
   IUserDeletionJob,
   JobName,
   QueueName,
+  SmartInfoService,
   StorageService,
   StorageTemplateService,
   SystemConfigService,
@@ -40,6 +42,21 @@ export class BackgroundTaskProcessor {
   @Process(JobName.USER_DELETION)
   async onUserDelete(job: Job<IUserDeletionJob>) {
     await this.userService.handleUserDelete(job.data);
+  }
+}
+
+@Processor(QueueName.MACHINE_LEARNING)
+export class MachineLearningProcessor {
+  constructor(private smartInfoService: SmartInfoService) {}
+
+  @Process({ name: JobName.IMAGE_TAGGING, concurrency: 2 })
+  async onTagImage(job: Job<IAssetJob>) {
+    await this.smartInfoService.handleTagImage(job.data);
+  }
+
+  @Process({ name: JobName.OBJECT_DETECTION, concurrency: 2 })
+  async onDetectObject(job: Job<IAssetJob>) {
+    await this.smartInfoService.handleDetectObjects(job.data);
   }
 }
 

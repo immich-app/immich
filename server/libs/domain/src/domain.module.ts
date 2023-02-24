@@ -5,6 +5,7 @@ import { AuthService } from './auth';
 import { DeviceInfoService } from './device-info';
 import { OAuthService } from './oauth';
 import { ShareService } from './share';
+import { SmartInfoService } from './smart-info';
 import { StorageService } from './storage';
 import { StorageTemplateService } from './storage-template';
 import { INITIAL_SYSTEM_CONFIG, SystemConfigService } from './system-config';
@@ -16,6 +17,7 @@ const providers: Provider[] = [
   AuthService,
   DeviceInfoService,
   OAuthService,
+  SmartInfoService,
   StorageService,
   StorageTemplateService,
   SystemConfigService,
