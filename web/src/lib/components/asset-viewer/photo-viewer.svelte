@@ -26,10 +26,7 @@
 
 	const loadAssetData = async () => {
 		try {
-			const { data } = await api.assetApi.serveFile(asset.id, false, true, {
-				params: {
-					key: publicSharedKey
-				},
+			const { data } = await api.assetApi.serveFile(asset.id, false, true, publicSharedKey, {
 				responseType: 'blob'
 			});
 

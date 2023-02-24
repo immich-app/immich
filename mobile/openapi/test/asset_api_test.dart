@@ -19,14 +19,14 @@ void main() {
   group('tests for AssetApi', () {
     // 
     //
-    //Future<SharedLinkResponseDto> addAssetsToSharedLink(AddAssetsDto addAssetsDto) async
+    //Future<SharedLinkResponseDto> addAssetsToSharedLink(AddAssetsDto addAssetsDto, { String key }) async
     test('test addAssetsToSharedLink', () async {
       // TODO
     });
 
     // Check duplicated asset before uploading - for Web upload used
     //
-    //Future<CheckDuplicateAssetResponseDto> checkDuplicateAsset(CheckDuplicateAssetDto checkDuplicateAssetDto) async
+    //Future<CheckDuplicateAssetResponseDto> checkDuplicateAsset(CheckDuplicateAssetDto checkDuplicateAssetDto, { String key }) async
     test('test checkDuplicateAsset', () async {
       // TODO
     });
@@ -54,21 +54,21 @@ void main() {
 
     // 
     //
-    //Future<Object> downloadFile(String assetId) async
+    //Future<MultipartFile> downloadFile(String assetId, { String key }) async
     test('test downloadFile', () async {
       // TODO
     });
 
     // 
     //
-    //Future<Object> downloadFiles(DownloadFilesDto downloadFilesDto) async
+    //Future<MultipartFile> downloadFiles(DownloadFilesDto downloadFilesDto, { String key }) async
     test('test downloadFiles', () async {
       // TODO
     });
 
     // Current this is not used in any UI element
     //
-    //Future<Object> downloadLibrary({ num skip }) async
+    //Future<MultipartFile> downloadLibrary({ num skip, String key }) async
     test('test downloadLibrary', () async {
       // TODO
     });
@@ -82,7 +82,7 @@ void main() {
 
     // Get a single asset's information
     //
-    //Future<AssetResponseDto> getAssetById(String assetId) async
+    //Future<AssetResponseDto> getAssetById(String assetId, { String key }) async
     test('test getAssetById', () async {
       // TODO
     });
@@ -117,7 +117,7 @@ void main() {
 
     // 
     //
-    //Future<Object> getAssetThumbnail(String assetId, { ThumbnailFormat format }) async
+    //Future<MultipartFile> getAssetThumbnail(String assetId, { ThumbnailFormat format, String key }) async
     test('test getAssetThumbnail', () async {
       // TODO
     });
@@ -145,7 +145,7 @@ void main() {
 
     // 
     //
-    //Future<SharedLinkResponseDto> removeAssetsFromSharedLink(RemoveAssetsDto removeAssetsDto) async
+    //Future<SharedLinkResponseDto> removeAssetsFromSharedLink(RemoveAssetsDto removeAssetsDto, { String key }) async
     test('test removeAssetsFromSharedLink', () async {
       // TODO
     });
@@ -159,7 +159,7 @@ void main() {
 
     // 
     //
-    //Future<Object> serveFile(String assetId, { bool isThumb, bool isWeb }) async
+    //Future<MultipartFile> serveFile(String assetId, { bool isThumb, bool isWeb, String key }) async
     test('test serveFile', () async {
       // TODO
     });
@@ -173,7 +173,7 @@ void main() {
 
     // 
     //
-    //Future<AssetFileUploadResponseDto> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { MultipartFile livePhotoData, bool isVisible, String duration }) async
+    //Future<AssetFileUploadResponseDto> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { String key, MultipartFile livePhotoData, bool isVisible, String duration }) async
     test('test uploadFile', () async {
       // TODO
     });

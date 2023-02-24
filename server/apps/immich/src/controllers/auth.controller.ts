@@ -14,7 +14,7 @@ import {
   ValidateAccessTokenResponseDto,
 } from '@app/domain';
 import { Body, Controller, Ip, Post, Req, Res, ValidationPipe } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
@@ -45,7 +45,6 @@ export class AuthController {
   }
 
   @Authenticated()
-  @ApiBearerAuth()
   @Post('validateToken')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   validateAccessToken(@GetAuthUser() authUser: AuthUserDto): ValidateAccessTokenResponseDto {
@@ -53,7 +52,6 @@ export class AuthController {
   }
 
   @Authenticated()
-  @ApiBearerAuth()
   @Post('change-password')
   async changePassword(@GetAuthUser() authUser: AuthUserDto, @Body() dto: ChangePasswordDto): Promise<UserResponseDto> {
     return this.authService.changePassword(authUser, dto);

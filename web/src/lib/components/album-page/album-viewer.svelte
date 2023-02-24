@@ -170,11 +170,7 @@
 				{
 					assetIds: assets.map((a) => a.id)
 				},
-				{
-					params: {
-						key: sharedLink?.key
-					}
-				}
+				sharedLink?.key
 			);
 
 			if (data.album) {
@@ -269,10 +265,8 @@
 				const { data, status, headers } = await api.albumApi.downloadArchive(
 					album.id,
 					skip || undefined,
+					sharedLink?.key,
 					{
-						params: {
-							key: sharedLink?.key
-						},
 						responseType: 'blob',
 						onDownloadProgress: function (progressEvent) {
 							const request = this as XMLHttpRequest;

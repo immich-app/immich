@@ -35,7 +35,7 @@ Method | HTTP request | Description
 
 
 # **addAssetsToSharedLink**
-> SharedLinkResponseDto addAssetsToSharedLink(addAssetsDto)
+> SharedLinkResponseDto addAssetsToSharedLink(addAssetsDto, key)
 
 
 
@@ -50,12 +50,17 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 final addAssetsDto = AddAssetsDto(); // AddAssetsDto | 
+final key = key_example; // String | 
 
 try {
-    final result = api_instance.addAssetsToSharedLink(addAssetsDto);
+    final result = api_instance.addAssetsToSharedLink(addAssetsDto, key);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->addAssetsToSharedLink: $e\n');
@@ -67,6 +72,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **addAssetsDto** | [**AddAssetsDto**](AddAssetsDto.md)|  | 
+ **key** | **String**|  | [optional] 
 
 ### Return type
 
@@ -74,7 +80,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -84,7 +90,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **checkDuplicateAsset**
-> CheckDuplicateAssetResponseDto checkDuplicateAsset(checkDuplicateAssetDto)
+> CheckDuplicateAssetResponseDto checkDuplicateAsset(checkDuplicateAssetDto, key)
 
 
 
@@ -99,12 +105,17 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 final checkDuplicateAssetDto = CheckDuplicateAssetDto(); // CheckDuplicateAssetDto | 
+final key = key_example; // String | 
 
 try {
-    final result = api_instance.checkDuplicateAsset(checkDuplicateAssetDto);
+    final result = api_instance.checkDuplicateAsset(checkDuplicateAssetDto, key);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->checkDuplicateAsset: $e\n');
@@ -116,6 +127,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **checkDuplicateAssetDto** | [**CheckDuplicateAssetDto**](CheckDuplicateAssetDto.md)|  | 
+ **key** | **String**|  | [optional] 
 
 ### Return type
 
@@ -123,7 +135,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -148,6 +160,10 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 final checkExistingAssetsDto = CheckExistingAssetsDto(); // CheckExistingAssetsDto | 
@@ -172,7 +188,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -197,6 +213,10 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 final createAssetsShareLinkDto = CreateAssetsShareLinkDto(); // CreateAssetsShareLinkDto | 
@@ -221,7 +241,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -246,6 +266,10 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 final deleteAssetDto = DeleteAssetDto(); // DeleteAssetDto | 
@@ -270,7 +294,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -280,7 +304,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **downloadFile**
-> Object downloadFile(assetId)
+> MultipartFile downloadFile(assetId, key)
 
 
 
@@ -295,12 +319,17 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 final assetId = assetId_example; // String | 
+final key = key_example; // String | 
 
 try {
-    final result = api_instance.downloadFile(assetId);
+    final result = api_instance.downloadFile(assetId, key);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->downloadFile: $e\n');
@@ -312,24 +341,25 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **assetId** | **String**|  | 
+ **key** | **String**|  | [optional] 
 
 ### Return type
 
-[**Object**](Object.md)
+[**MultipartFile**](MultipartFile.md)
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/json
+ - **Accept**: application/octet-stream
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **downloadFiles**
-> Object downloadFiles(downloadFilesDto)
+> MultipartFile downloadFiles(downloadFilesDto, key)
 
 
 
@@ -344,12 +374,17 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 final downloadFilesDto = DownloadFilesDto(); // DownloadFilesDto | 
+final key = key_example; // String | 
 
 try {
-    final result = api_instance.downloadFiles(downloadFilesDto);
+    final result = api_instance.downloadFiles(downloadFilesDto, key);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->downloadFiles: $e\n');
@@ -361,24 +396,25 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **downloadFilesDto** | [**DownloadFilesDto**](DownloadFilesDto.md)|  | 
+ **key** | **String**|  | [optional] 
 
 ### Return type
 
-[**Object**](Object.md)
+[**MultipartFile**](MultipartFile.md)
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: application/json
+ - **Accept**: application/octet-stream
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **downloadLibrary**
-> Object downloadLibrary(skip)
+> MultipartFile downloadLibrary(skip, key)
 
 
 
@@ -393,12 +429,17 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 final skip = 8.14; // num | 
+final key = key_example; // String | 
 
 try {
-    final result = api_instance.downloadLibrary(skip);
+    final result = api_instance.downloadLibrary(skip, key);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->downloadLibrary: $e\n');
@@ -410,19 +451,20 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **skip** | **num**|  | [optional] 
+ **key** | **String**|  | [optional] 
 
 ### Return type
 
-[**Object**](Object.md)
+[**MultipartFile**](MultipartFile.md)
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/json
+ - **Accept**: application/octet-stream
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -442,6 +484,10 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 final isFavorite = true; // bool | 
@@ -470,7 +516,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -480,7 +526,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAssetById**
-> AssetResponseDto getAssetById(assetId)
+> AssetResponseDto getAssetById(assetId, key)
 
 
 
@@ -495,12 +541,17 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 final assetId = assetId_example; // String | 
+final key = key_example; // String | 
 
 try {
-    final result = api_instance.getAssetById(assetId);
+    final result = api_instance.getAssetById(assetId, key);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getAssetById: $e\n');
@@ -512,6 +563,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **assetId** | **String**|  | 
+ **key** | **String**|  | [optional] 
 
 ### Return type
 
@@ -519,7 +571,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -544,6 +596,10 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 final getAssetByTimeBucketDto = GetAssetByTimeBucketDto(); // GetAssetByTimeBucketDto | 
@@ -568,7 +624,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -593,6 +649,10 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 final getAssetCountByTimeBucketDto = GetAssetCountByTimeBucketDto(); // GetAssetCountByTimeBucketDto | 
@@ -617,7 +677,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -642,6 +702,10 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 
@@ -662,7 +726,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -687,6 +751,10 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 
@@ -707,7 +775,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -717,7 +785,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAssetThumbnail**
-> Object getAssetThumbnail(assetId, format)
+> MultipartFile getAssetThumbnail(assetId, format, key)
 
 
 
@@ -732,13 +800,18 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 final assetId = assetId_example; // String | 
 final format = ; // ThumbnailFormat | 
+final key = key_example; // String | 
 
 try {
-    final result = api_instance.getAssetThumbnail(assetId, format);
+    final result = api_instance.getAssetThumbnail(assetId, format, key);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getAssetThumbnail: $e\n');
@@ -751,19 +824,20 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **assetId** | **String**|  | 
  **format** | [**ThumbnailFormat**](.md)|  | [optional] 
+ **key** | **String**|  | [optional] 
 
 ### Return type
 
-[**Object**](Object.md)
+[**MultipartFile**](MultipartFile.md)
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/json
+ - **Accept**: application/octet-stream
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -783,6 +857,10 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 
@@ -803,7 +881,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -828,6 +906,10 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 
@@ -848,7 +930,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -873,6 +955,10 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 final deviceId = deviceId_example; // String | 
@@ -897,7 +983,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -907,7 +993,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **removeAssetsFromSharedLink**
-> SharedLinkResponseDto removeAssetsFromSharedLink(removeAssetsDto)
+> SharedLinkResponseDto removeAssetsFromSharedLink(removeAssetsDto, key)
 
 
 
@@ -922,12 +1008,17 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 final removeAssetsDto = RemoveAssetsDto(); // RemoveAssetsDto | 
+final key = key_example; // String | 
 
 try {
-    final result = api_instance.removeAssetsFromSharedLink(removeAssetsDto);
+    final result = api_instance.removeAssetsFromSharedLink(removeAssetsDto, key);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->removeAssetsFromSharedLink: $e\n');
@@ -939,6 +1030,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **removeAssetsDto** | [**RemoveAssetsDto**](RemoveAssetsDto.md)|  | 
+ **key** | **String**|  | [optional] 
 
 ### Return type
 
@@ -946,7 +1038,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -971,6 +1063,10 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 final searchAssetDto = SearchAssetDto(); // SearchAssetDto | 
@@ -995,7 +1091,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -1005,7 +1101,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **serveFile**
-> Object serveFile(assetId, isThumb, isWeb)
+> MultipartFile serveFile(assetId, isThumb, isWeb, key)
 
 
 
@@ -1020,14 +1116,19 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 final assetId = assetId_example; // String | 
 final isThumb = true; // bool | 
 final isWeb = true; // bool | 
+final key = key_example; // String | 
 
 try {
-    final result = api_instance.serveFile(assetId, isThumb, isWeb);
+    final result = api_instance.serveFile(assetId, isThumb, isWeb, key);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->serveFile: $e\n');
@@ -1041,19 +1142,20 @@ Name | Type | Description  | Notes
  **assetId** | **String**|  | 
  **isThumb** | **bool**|  | [optional] 
  **isWeb** | **bool**|  | [optional] 
+ **key** | **String**|  | [optional] 
 
 ### Return type
 
-[**Object**](Object.md)
+[**MultipartFile**](MultipartFile.md)
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/json
+ - **Accept**: application/octet-stream
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1073,6 +1175,10 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 final assetId = assetId_example; // String | 
@@ -1099,7 +1205,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -1109,7 +1215,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadFile**
-> AssetFileUploadResponseDto uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, livePhotoData, isVisible, duration)
+> AssetFileUploadResponseDto uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, isVisible, duration)
 
 
 
@@ -1124,6 +1230,10 @@ import 'package:openapi/api.dart';
 // Case 2. Use Function which generate token.
 // String yourTokenGeneratorFunction() { ... }
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
 final assetType = ; // AssetTypeEnum | 
@@ -1134,12 +1244,13 @@ final fileCreatedAt = fileCreatedAt_example; // String |
 final fileModifiedAt = fileModifiedAt_example; // String | 
 final isFavorite = true; // bool | 
 final fileExtension = fileExtension_example; // String | 
+final key = key_example; // String | 
 final livePhotoData = BINARY_DATA_HERE; // MultipartFile | 
 final isVisible = true; // bool | 
 final duration = duration_example; // String | 
 
 try {
-    final result = api_instance.uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, livePhotoData, isVisible, duration);
+    final result = api_instance.uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, isVisible, duration);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->uploadFile: $e\n');
@@ -1158,6 +1269,7 @@ Name | Type | Description  | Notes
  **fileModifiedAt** | **String**|  | 
  **isFavorite** | **bool**|  | 
  **fileExtension** | **String**|  | 
+ **key** | **String**|  | [optional] 
  **livePhotoData** | **MultipartFile**|  | [optional] 
  **isVisible** | **bool**|  | [optional] 
  **duration** | **String**|  | [optional] 
@@ -1168,7 +1280,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-[bearer](../README.md#bearer)
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 

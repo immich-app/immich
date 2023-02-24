@@ -28,7 +28,7 @@ import { Response as Res } from 'express';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { AssetResponseDto, ImmichReadStream } from '@app/domain';
@@ -62,7 +62,6 @@ function asStreamableFile({ stream, type, length }: ImmichReadStream) {
   return new StreamableFile(stream, { type, length });
 }
 
-@ApiBearerAuth()
 @ApiTags('Asset')
 @Controller('asset')
 export class AssetController {
@@ -108,21 +107,23 @@ export class AssetController {
 
   @Authenticated({ isShared: true })
   @Get('/download/:assetId')
+  @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   async downloadFile(
     @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
     @Param('assetId') assetId: string,
-  ): Promise<any> {
+  ) {
     return this.assetService.downloadFile(authUser, assetId).then(asStreamableFile);
   }
 
   @Authenticated({ isShared: true })
   @Post('/download-files')
+  @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   async downloadFiles(
     @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
     @Body(new ValidationPipe()) dto: DownloadFilesDto,
-  ): Promise<any> {
+  ) {
     this.assetService.checkDownloadAccess(authUser);
     await this.assetService.checkAssetsAccess(authUser, [...dto.assetIds]);
     const { stream, fileName, fileSize, fileCount, complete } = await this.assetService.downloadFiles(dto);
@@ -138,11 +139,12 @@ export class AssetController {
    */
   @Authenticated({ isShared: true })
   @Get('/download-library')
+  @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   async downloadLibrary(
     @GetAuthUser() authUser: AuthUserDto,
     @Query(new ValidationPipe({ transform: true })) dto: DownloadDto,
     @Response({ passthrough: true }) res: Res,
-  ): Promise<any> {
+  ) {
     this.assetService.checkDownloadAccess(authUser);
     const { stream, fileName, fileSize, fileCount, complete } = await this.assetService.downloadLibrary(authUser, dto);
     res.attachment(fileName);
@@ -155,13 +157,14 @@ export class AssetController {
   @Authenticated({ isShared: true })
   @Get('/file/:assetId')
   @Header('Cache-Control', 'max-age=31536000')
+  @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   async serveFile(
     @GetAuthUser() authUser: AuthUserDto,
     @Headers() headers: Record<string, string>,
     @Response({ passthrough: true }) res: Res,
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
     @Param('assetId') assetId: string,
-  ): Promise<any> {
+  ) {
     await this.assetService.checkAssetsAccess(authUser, [assetId]);
     return this.assetService.serveFile(authUser, assetId, query, res, headers);
   }
@@ -169,13 +172,14 @@ export class AssetController {
   @Authenticated({ isShared: true })
   @Get('/thumbnail/:assetId')
   @Header('Cache-Control', 'max-age=31536000')
+  @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   async getAssetThumbnail(
     @GetAuthUser() authUser: AuthUserDto,
     @Headers() headers: Record<string, string>,
     @Response({ passthrough: true }) res: Res,
     @Param('assetId') assetId: string,
     @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,
-  ): Promise<any> {
+  ) {
     await this.assetService.checkAssetsAccess(authUser, [assetId]);
     return this.assetService.getAssetThumbnail(assetId, query, res, headers);
   }

@@ -93,6 +93,7 @@ describe('AlbumCard component', () => {
 		expect(apiMock.assetApi.getAssetThumbnail).toHaveBeenCalledWith(
 			'thumbnailIdOne',
 			ThumbnailFormat.Jpeg,
+			undefined,
 			{ responseType: 'blob' }
 		);
 		expect(createObjectURLMock).toHaveBeenCalledWith(thumbnailBlob);

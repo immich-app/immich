@@ -11,6 +11,7 @@ import { RedisIoAdapter } from './middlewares/redis-io.adapter.middleware';
 import { json } from 'body-parser';
 import { patchOpenAPI } from './utils/patch-open-api.util';
 import { getLogLevels, MACHINE_LEARNING_ENABLED } from '@app/common';
+import { IMMICH_ACCESS_COOKIE } from '@app/domain';
 
 const logger = new Logger('ImmichServer');
 
@@ -42,6 +43,7 @@ async function bootstrap() {
       scheme: 'Bearer',
       in: 'header',
     })
+    .addCookieAuth(IMMICH_ACCESS_COOKIE)
     .addServer('/api')
     .build();
 

@@ -54,11 +54,7 @@
 				{
 					assetIds
 				},
-				{
-					params: {
-						key: sharedLink?.key
-					}
-				}
+				sharedLink?.key
 			);
 
 			notificationController.show({
@@ -76,11 +72,7 @@
 				{
 					assetIds: assets.filter((a) => !selectedAssets.has(a)).map((a) => a.id)
 				},
-				{
-					params: {
-						key: sharedLink?.key
-					}
-				}
+				sharedLink?.key
 			);
 
 			assets = assets.filter((a) => !selectedAssets.has(a));

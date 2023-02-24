@@ -7,9 +7,7 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ params }) => {
 	try {
 		const { key, assetId } = params;
-		const { data: asset } = await api.assetApi.getAssetById(assetId, {
-			params: { key }
-		});
+		const { data: asset } = await api.assetApi.getAssetById(assetId, key);
 
 		if (!asset) {
 			return error(404, 'Asset not found');

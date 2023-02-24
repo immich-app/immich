@@ -108,11 +108,7 @@ async function fileUploader(
 				deviceAssetId: String(deviceAssetId),
 				deviceId: 'WEB'
 			},
-			{
-				params: {
-					key: sharedKey
-				}
-			}
+			sharedKey
 		);
 
 		if (status === 200 && data.isExist && data.id) {
