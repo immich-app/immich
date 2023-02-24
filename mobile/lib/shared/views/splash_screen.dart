@@ -7,8 +7,10 @@ import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class SplashScreenPage extends HookConsumerWidget {
   const SplashScreenPage({Key? key}) : super(key: key);
@@ -32,8 +34,12 @@ class SplashScreenPage extends HookConsumerWidget {
                 serverUrl: loginInfo.serverUrl,
               );
           if (isSuccess) {
-            // Resume backup (if enable) then navigate
-            ref.watch(backupProvider.notifier).resumeBackup();
+            final galleryPermission = await ref
+                .read(galleryPermissionNotifier.notifier).getGalleryPermission();
+            if (galleryPermission.isGranted) {
+              // Resume backup (if enable) then navigate
+              ref.watch(backupProvider.notifier).resumeBackup();
+            }
             AutoRouter.of(context).replace(const TabControllerRoute());
           } else {
             AutoRouter.of(context).replace(const LoginRoute());
