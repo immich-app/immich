@@ -1,9 +1,9 @@
 export const prerender = false;
-import { api } from '@api';
+
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ parent }) => {
+export const load = (async ({ parent, locals: { api } }) => {
 	const { user } = await parent();
 	if (user) {
 		throw redirect(302, '/photos');
@@ -22,4 +22,4 @@ export const load: PageServerLoad = async ({ parent }) => {
 			description: 'Immich Web Interface'
 		}
 	};
-};
+}) satisfies PageServerLoad;

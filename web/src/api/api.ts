@@ -1,11 +1,10 @@
-import { browser } from '$app/environment';
-import { env } from '$env/dynamic/public';
 import {
 	AlbumApi,
 	APIKeyApi,
 	AssetApi,
 	AuthenticationApi,
 	Configuration,
+	ConfigurationParameters,
 	DeviceInfoApi,
 	JobApi,
 	OAuthApi,
@@ -15,7 +14,7 @@ import {
 	UserApi
 } from './open-api';
 
-class ImmichApi {
+export class ImmichApi {
 	public userApi: UserApi;
 	public albumApi: AlbumApi;
 	public assetApi: AssetApi;
@@ -28,9 +27,11 @@ class ImmichApi {
 	public systemConfigApi: SystemConfigApi;
 	public shareApi: ShareApi;
 
-	private config = new Configuration({ basePath: '/api' });
+	private config: Configuration;
 
-	constructor() {
+	constructor(params: ConfigurationParameters) {
+		this.config = new Configuration(params);
+
 		this.userApi = new UserApi(this.config);
 		this.albumApi = new AlbumApi(this.config);
 		this.assetApi = new AssetApi(this.config);
@@ -57,11 +58,4 @@ class ImmichApi {
 	}
 }
 
-const api = new ImmichApi();
-
-if (!browser) {
-	const serverUrl = env.PUBLIC_IMMICH_SERVER_URL || 'http://immich-server:3001';
-	api.setBaseUrl(serverUrl);
-}
-
-export { api };
+export const api = new ImmichApi({ basePath: '/api' });

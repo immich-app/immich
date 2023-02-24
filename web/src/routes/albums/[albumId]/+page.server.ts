@@ -1,9 +1,7 @@
 import { redirect } from '@sveltejs/kit';
-
 import type { PageServerLoad } from './$types';
-import { api } from '@api';
 
-export const load: PageServerLoad = async ({ parent, params }) => {
+export const load = (async ({ parent, params, locals: { api } }) => {
 	const { user } = await parent();
 
 	if (!user) {
@@ -23,4 +21,4 @@ export const load: PageServerLoad = async ({ parent, params }) => {
 	} catch (e) {
 		throw redirect(302, '/albums');
 	}
-};
+}) satisfies PageServerLoad;
