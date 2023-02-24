@@ -23,6 +23,7 @@ import 'package:immich_mobile/modules/search/views/search_page.dart';
 import 'package:immich_mobile/modules/search/views/search_result_page.dart';
 import 'package:immich_mobile/modules/settings/views/settings_page.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
+import 'package:immich_mobile/routing/duplicate_guard.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
@@ -38,49 +39,58 @@ part 'router.gr.dart';
   replaceInRouteName: 'Page,Route',
   routes: <AutoRoute>[
     AutoRoute(page: SplashScreenPage, initial: true),
-    AutoRoute(page: LoginPage),
+    AutoRoute(page: LoginPage,
+      guards: [
+        DuplicateGuard,
+      ],
+    ),
     AutoRoute(page: ChangePasswordPage),
     CustomRoute(
       page: TabControllerPage,
-      guards: [AuthGuard],
+      guards: [AuthGuard, DuplicateGuard],
       children: [
-        AutoRoute(page: HomePage, guards: [AuthGuard]),
-        AutoRoute(page: SearchPage, guards: [AuthGuard]),
-        AutoRoute(page: SharingPage, guards: [AuthGuard]),
-        AutoRoute(page: LibraryPage, guards: [AuthGuard])
+        AutoRoute(page: HomePage, guards: [AuthGuard, DuplicateGuard]),
+        AutoRoute(page: SearchPage, guards: [AuthGuard, DuplicateGuard]),
+        AutoRoute(page: SharingPage, guards: [AuthGuard, DuplicateGuard]),
+        AutoRoute(page: LibraryPage, guards: [AuthGuard, DuplicateGuard])
       ],
       transitionsBuilder: TransitionsBuilders.fadeIn,
     ),
-    AutoRoute(page: GalleryViewerPage, guards: [AuthGuard]),
-    AutoRoute(page: VideoViewerPage, guards: [AuthGuard]),
-    AutoRoute(page: BackupControllerPage, guards: [AuthGuard]),
-    AutoRoute(page: SearchResultPage, guards: [AuthGuard]),
-    AutoRoute(page: CreateAlbumPage, guards: [AuthGuard]),
-    AutoRoute(page: FavoritesPage, guards: [AuthGuard]),
+    AutoRoute(page: GalleryViewerPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(page: VideoViewerPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(page: BackupControllerPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(page: SearchResultPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(page: CreateAlbumPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(page: FavoritesPage, guards: [AuthGuard, DuplicateGuard]),
     CustomRoute<AssetSelectionPageResult?>(
       page: AssetSelectionPage,
-      guards: [AuthGuard],
+      guards: [AuthGuard, DuplicateGuard],
       transitionsBuilder: TransitionsBuilders.slideBottom,
     ),
     CustomRoute<List<String>>(
       page: SelectUserForSharingPage,
-      guards: [AuthGuard],
+      guards: [AuthGuard, DuplicateGuard],
       transitionsBuilder: TransitionsBuilders.slideBottom,
     ),
-    AutoRoute(page: AlbumViewerPage, guards: [AuthGuard]),
+    AutoRoute(page: AlbumViewerPage, guards: [AuthGuard, DuplicateGuard]),
     CustomRoute<List<String>?>(
       page: SelectAdditionalUserForSharingPage,
-      guards: [AuthGuard],
+      guards: [AuthGuard, DuplicateGuard],
       transitionsBuilder: TransitionsBuilders.slideBottom,
     ),
-    AutoRoute(page: BackupAlbumSelectionPage, guards: [AuthGuard]),
-    AutoRoute(page: AlbumPreviewPage, guards: [AuthGuard]),
+    AutoRoute(page: BackupAlbumSelectionPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(page: AlbumPreviewPage, guards: [AuthGuard, DuplicateGuard]),
     CustomRoute(
       page: FailedBackupStatusPage,
-      guards: [AuthGuard],
+      guards: [AuthGuard, DuplicateGuard],
       transitionsBuilder: TransitionsBuilders.slideBottom,
     ),
-    AutoRoute(page: SettingsPage, guards: [AuthGuard]),
+    AutoRoute(page: SettingsPage, 
+      guards: [
+        AuthGuard,
+        DuplicateGuard,
+      ],
+    ),
     CustomRoute(
       page: AppLogPage,
       transitionsBuilder: TransitionsBuilders.slideBottom,
@@ -91,7 +101,11 @@ class AppRouter extends _$AppRouter {
   // ignore: unused_field
   final ApiService _apiService;
 
-  AppRouter(this._apiService) : super(authGuard: AuthGuard(_apiService));
+  AppRouter(this._apiService) 
+      : super(
+          authGuard: AuthGuard(_apiService), 
+          duplicateGuard: DuplicateGuard(),
+        );
 }
 
 final appRouterProvider =

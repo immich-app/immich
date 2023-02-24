@@ -6,6 +6,7 @@ import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer_header.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer/server_info_box.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/routing/duplicate_guard.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
@@ -65,10 +66,6 @@ class ProfileDrawer extends HookConsumerWidget {
               ?.copyWith(fontWeight: FontWeight.bold),
         ).tr(),
         onTap: () {
-          // Guard duplicate taps when app is running slow
-          if (AutoRouter.of(context).currentChild?.name == SettingsRoute.name) {
-            return;
-          }
           AutoRouter.of(context).push(const SettingsRoute());
         },
       );

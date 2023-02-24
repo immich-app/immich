@@ -141,9 +141,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
 
         ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
 
-        ref
-            .watch(notificationPermissionProvider.notifier)
-            .getNotificationPermission();
+        ref.watch(notificationPermissionProvider.notifier)
+          .getNotificationPermission();
 
         ref.read(iOSBackgroundSettingsProvider.notifier).refresh();
 

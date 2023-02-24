@@ -162,11 +162,6 @@ class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
                       ),
                     ),
               onPressed: () async {
-                // Guard duplicate taps when app is running slow
-                if (AutoRouter.of(context).currentChild?.name == BackupControllerRoute.name) {
-                  return;
-                }
-
                 var onPop = await AutoRouter.of(context)
                     .push(const BackupControllerRoute());
 
