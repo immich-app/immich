@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { JobId } from '../dto/get-job.dto';
 
 export class JobCounts {
   @ApiProperty({ type: 'integer' })
@@ -12,35 +13,20 @@ export class JobCounts {
   @ApiProperty({ type: 'integer' })
   waiting!: number;
 }
+
 export class AllJobStatusResponseDto {
-  isThumbnailGenerationActive!: boolean;
-  isMetadataExtractionActive!: boolean;
-  isVideoConversionActive!: boolean;
-  isMachineLearningActive!: boolean;
-  isStorageMigrationActive!: boolean;
+  @ApiProperty({ type: JobCounts })
+  [JobId.THUMBNAIL_GENERATION]!: JobCounts;
 
-  @ApiProperty({
-    type: JobCounts,
-  })
-  thumbnailGenerationQueueCount!: JobCounts;
+  @ApiProperty({ type: JobCounts })
+  [JobId.METADATA_EXTRACTION]!: JobCounts;
 
-  @ApiProperty({
-    type: JobCounts,
-  })
-  metadataExtractionQueueCount!: JobCounts;
+  @ApiProperty({ type: JobCounts })
+  [JobId.VIDEO_CONVERSION]!: JobCounts;
 
-  @ApiProperty({
-    type: JobCounts,
-  })
-  videoConversionQueueCount!: JobCounts;
+  @ApiProperty({ type: JobCounts })
+  [JobId.MACHINE_LEARNING]!: JobCounts;
 
-  @ApiProperty({
-    type: JobCounts,
-  })
-  machineLearningQueueCount!: JobCounts;
-
-  @ApiProperty({
-    type: JobCounts,
-  })
-  storageMigrationQueueCount!: JobCounts;
+  @ApiProperty({ type: JobCounts })
+  [JobId.STORAGE_TEMPLATE_MIGRATION]!: JobCounts;
 }

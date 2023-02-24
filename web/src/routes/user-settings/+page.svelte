@@ -19,7 +19,7 @@
 	<section class="overflow-y-auto ">
 		<div
 			id="user-setting-title"
-			class="pt-10 fixed w-full z-50 bg-immich-bg dark:bg-immich-dark-bg"
+			class="pt-10 fixed w-full z-10 bg-immich-bg dark:bg-immich-dark-bg"
 		>
 			<h1 class="text-lg ml-8 mb-4 text-immich-primary dark:text-immich-dark-primary font-medium">
 				User Settings

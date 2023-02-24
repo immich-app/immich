@@ -21,13 +21,23 @@ void main() {
       // TODO
     });
 
-    // String expiredAt
-    test('to test the property `expiredAt`', () async {
+    // String expiresAt
+    test('to test the property `expiresAt`', () async {
       // TODO
     });
 
     // bool allowUpload
     test('to test the property `allowUpload`', () async {
+      // TODO
+    });
+
+    // bool allowDownload
+    test('to test the property `allowDownload`', () async {
+      // TODO
+    });
+
+    // bool showExif
+    test('to test the property `showExif`', () async {
       // TODO
     });
 

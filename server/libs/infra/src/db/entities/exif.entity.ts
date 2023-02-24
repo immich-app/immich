@@ -1,20 +1,19 @@
-import { Index, JoinColumn, OneToOne } from 'typeorm';
+import { Index, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { Column } from 'typeorm/decorator/columns/Column';
-import { PrimaryGeneratedColumn } from 'typeorm/decorator/columns/PrimaryGeneratedColumn';
 import { Entity } from 'typeorm/decorator/entity/Entity';
 import { AssetEntity } from './asset.entity';
 
 @Entity('exif')
 export class ExifEntity {
-  @PrimaryGeneratedColumn()
-  id!: string;
+  @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
+  @JoinColumn()
+  asset?: AssetEntity;
 
-  @Index({ unique: true })
-  @Column({ type: 'uuid' })
+  @PrimaryColumn()
   assetId!: string;
 
   /* General info */
-  @Column({ type: 'text', nullable: true, default: '' })
+  @Column({ type: 'text', default: '' })
   description!: string; // or caption
 
   @Column({ type: 'integer', nullable: true })
@@ -44,6 +43,10 @@ export class ExifEntity {
   @Column({ type: 'varchar', nullable: true })
   city!: string | null;
 
+  @Index('IDX_live_photo_cid')
+  @Column({ type: 'varchar', nullable: true })
+  livePhotoCID!: string | null;
+
   @Column({ type: 'varchar', nullable: true })
   state!: string | null;
 
@@ -72,16 +75,12 @@ export class ExifEntity {
   @Column({ type: 'integer', nullable: true })
   iso!: number | null;
 
-  @Column({ type: 'float', nullable: true })
-  exposureTime!: number | null;
+  @Column({ type: 'varchar', nullable: true })
+  exposureTime!: string | null;
 
   /* Video info */
   @Column({ type: 'float8', nullable: true })
   fps?: number | null;
-
-  @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
-  @JoinColumn({ name: 'assetId', referencedColumnName: 'id' })
-  asset?: AssetEntity;
 
   @Index('exif_text_searchable', { synchronize: false })
   @Column({

@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.5.1",
+  "version": "1.49.0",
   "description": "",
   "author": "",
   "private": true,
@@ -27,8 +27,13 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./apps/immich/test/jest-e2e.json",
+    "test:e2e": "jest --config ./apps/immich/test/jest-e2e.json --runInBand",
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
+    "typeorm:migrations:generate": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:generate -d ./libs/infra/src/db/config/database.config.ts",
+    "typeorm:migrations:run": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:run -d ./libs/infra/src/db/config/database.config.ts",
+    "typeorm:migrations:revert": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:revert -d ./libs/infra/src/db/config/database.config.ts",
+    "typeorm:schema:drop": "node --require ts-node/register ./node_modules/typeorm/cli.js schema:drop -d ./libs/infra/src/db/config/database.config.ts",
+    "typeorm:schema:reset": "npm run typeorm:schema:drop && npm run typeorm:migrations:run",
     "api:typescript": "bash ./bin/generate-open-api.sh web",
     "api:dart": "bash ./bin/generate-open-api.sh mobile",
     "api:generate": "bash ./bin/generate-open-api.sh"
@@ -38,9 +43,6 @@
     "@nestjs/common": "^9.2.1",
     "@nestjs/config": "^2.2.0",
     "@nestjs/core": "^9.2.1",
-    "@nestjs/jwt": "^10.0.1",
-    "@nestjs/mapped-types": "1.2.0",
-    "@nestjs/passport": "^9.0.0",
     "@nestjs/platform-express": "^9.2.1",
     "@nestjs/platform-socket.io": "^9.2.1",
     "@nestjs/schedule": "^2.1.0",
@@ -56,15 +58,11 @@
     "class-validator": "^0.13.2",
     "cookie-parser": "^1.4.6",
     "diskusage": "^1.1.3",
-    "dotenv": "^14.2.0",
     "exiftool-vendored": "^19.0.0",
-    "fdir": "^5.3.0",
+    "exiftool-vendored.pl": "^12.54.0",
     "fluent-ffmpeg": "^2.1.2",
-    "geo-tz": "^7.0.2",
     "handlebars": "^4.7.7",
     "i18n-iso-countries": "^7.5.0",
-    "ioredis": "^5.2.4",
-    "jest-when": "^3.5.2",
     "joi": "^17.5.0",
     "local-reverse-geocoder": "0.12.5",
     "lodash": "^4.17.21",
@@ -72,18 +70,12 @@
     "mv": "^2.1.1",
     "nest-commander": "^3.3.0",
     "openid-client": "^5.2.1",
-    "passport": "^0.6.0",
-    "passport-custom": "^1.1.1",
-    "passport-http-header-strategy": "^1.1.0",
-    "passport-jwt": "^4.0.0",
     "pg": "^8.8.0",
     "redis": "^4.5.1",
     "reflect-metadata": "^0.1.13",
-    "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
     "sanitize-filename": "^1.6.3",
     "sharp": "^0.28.0",
-    "systeminformation": "^5.11.0",
     "typeorm": "^0.3.11"
   },
   "devDependencies": {
@@ -105,16 +97,18 @@
     "@types/multer": "^1.4.7",
     "@types/mv": "^2.1.2",
     "@types/node": "^16.0.0",
-    "@types/passport-jwt": "^3.0.6",
     "@types/sharp": "^0.30.2",
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^5.48.1",
     "@typescript-eslint/parser": "^5.48.1",
+    "dotenv": "^14.2.0",
     "eslint": "^8.31.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^27.2.5",
+    "jest-when": "^3.5.2",
     "prettier": "^2.3.2",
+    "rimraf": "^3.0.2",
     "source-map-support": "^0.5.20",
     "supertest": "^6.1.3",
     "ts-jest": "^27.0.3",
@@ -136,7 +130,8 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.(t|j)s",
+      "!**/migrations/*"
     ],
     "coverageDirectory": "./coverage",
     "coverageThreshold": {
@@ -145,10 +140,10 @@
         "statements": 20
       },
       "./libs/domain/": {
-        "branches": 70,
-        "functions": 85,
-        "lines": 85,
-        "statements": 85
+        "branches": 80,
+        "functions": 88,
+        "lines": 95,
+        "statements": 94
       }
     },
     "testEnvironment": "node",
@@ -158,9 +153,6 @@
     ],
     "moduleNameMapper": {
       "@app/common": "<rootDir>/libs/common/src",
-      "^@app/job(|/.*)$": "<rootDir>/libs/job/src/$1",
-      "@app/job": "<rootDir>/libs/job/src",
-      "^@app/immich-config(|/.*)$": "<rootDir>/libs/immich-config/src/$1",
       "^@app/storage(|/.*)$": "<rootDir>/libs/storage/src/$1",
       "^@app/infra(|/.*)$": "<rootDir>/libs/infra/src/$1",
       "^@app/domain(|/.*)$": "<rootDir>/libs/domain/src/$1"

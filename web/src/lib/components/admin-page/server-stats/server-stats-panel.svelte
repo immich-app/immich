@@ -7,6 +7,7 @@
 	import { getBytesWithUnit, asByteUnitString } from '../../../utils/byte-units';
 	import { onMount, onDestroy } from 'svelte';
 	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+	import { locale } from '$lib/stores/preferences.store';
 
 	export let allUsers: Array<UserResponseDto>;
 
@@ -37,8 +38,6 @@
 
 	// Stats are unavailable if data is not loaded yet
 	$: [spaceUsage, spaceUnit] = getBytesWithUnit(stats ? stats.usageRaw : 0);
-
-	const locale = navigator.language;
 </script>
 
 <div class="flex flex-col gap-5">
@@ -83,8 +82,10 @@
 							}`}
 						>
 							<td class="text-sm px-2 w-1/4 text-ellipsis">{getFullName(user.userId)}</td>
-							<td class="text-sm px-2 w-1/4 text-ellipsis">{user.photos.toLocaleString(locale)}</td>
-							<td class="text-sm px-2 w-1/4 text-ellipsis">{user.videos.toLocaleString(locale)}</td>
+							<td class="text-sm px-2 w-1/4 text-ellipsis">{user.photos.toLocaleString($locale)}</td
+							>
+							<td class="text-sm px-2 w-1/4 text-ellipsis">{user.videos.toLocaleString($locale)}</td
+							>
 							<td class="text-sm px-2 w-1/4 text-ellipsis">{asByteUnitString(user.usageRaw)}</td>
 						</tr>
 					{/each}

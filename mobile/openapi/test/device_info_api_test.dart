@@ -17,20 +17,6 @@ void main() {
   // final instance = DeviceInfoApi();
 
   group('tests for DeviceInfoApi', () {
-    // @deprecated
-    //
-    //Future<DeviceInfoResponseDto> createDeviceInfo(UpsertDeviceInfoDto upsertDeviceInfoDto) async
-    test('test createDeviceInfo', () async {
-      // TODO
-    });
-
-    // @deprecated
-    //
-    //Future<DeviceInfoResponseDto> updateDeviceInfo(UpsertDeviceInfoDto upsertDeviceInfoDto) async
-    test('test updateDeviceInfo', () async {
-      // TODO
-    });
-
     // 
     //
     //Future<DeviceInfoResponseDto> upsertDeviceInfo(UpsertDeviceInfoDto upsertDeviceInfoDto) async

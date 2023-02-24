@@ -1,42 +1,18 @@
+FROM python:3.10
 
-FROM node:16-bullseye-slim as builder
-
-ARG DEBIAN_FRONTEND=noninteractive
+ENV TRANSFORMERS_CACHE=/cache
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
 WORKDIR /usr/src/app
 
-RUN apt-get update
-RUN apt-get install gcc g++ make cmake python3 python3-pip ffmpeg -y
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-COPY package.json package-lock.json ./
-
-RUN npm ci
-RUN npm rebuild @tensorflow/tfjs-node --build-from-source
+RUN pip install --no-cache-dir torch==1.13.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
+RUN pip install transformers tqdm numpy scikit-learn scipy nltk sentencepiece flask Pillow
+RUN pip install --no-deps sentence-transformers
 
 COPY . .
 
-
-FROM builder as prod
-
-RUN npm run build
-
-RUN npm prune --omit=dev
-
-
-FROM node:16-bullseye-slim
-
-ARG DEBIAN_FRONTEND=noninteractive
-
-WORKDIR /usr/src/app
-
-RUN apt-get update \
-  && apt-get install -y ffmpeg \
-  && rm -rf /var/cache/apt/lists
-
-COPY --from=prod /usr/src/app/node_modules ./node_modules
-COPY --from=prod /usr/src/app/dist ./dist
-
-COPY package.json package-lock.json ./
-COPY entrypoint.sh ./
-
-# CMD [ "node", "dist/main" ]
+CMD ["python", "src/main.py"]

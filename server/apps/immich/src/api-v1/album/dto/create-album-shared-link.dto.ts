@@ -7,11 +7,19 @@ export class CreateAlbumShareLinkDto {
 
   @IsString()
   @IsOptional()
-  expiredAt?: string;
+  expiresAt?: string;
 
   @IsBoolean()
   @IsOptional()
   allowUpload?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  allowDownload?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  showExif?: boolean;
 
   @IsString()
   @IsOptional()

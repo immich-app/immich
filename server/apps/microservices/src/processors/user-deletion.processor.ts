@@ -1,7 +1,7 @@
 import { APP_UPLOAD_LOCATION, userUtils } from '@app/common';
-import { APIKeyEntity, AssetEntity, UserEntity } from '@app/infra';
-import { QueueName, JobName } from '@app/job';
-import { IUserDeletionJob } from '@app/job/interfaces/user-deletion.interface';
+import { AlbumEntity, APIKeyEntity, AssetEntity, UserEntity, UserTokenEntity } from '@app/infra';
+import { QueueName, JobName } from '@app/domain';
+import { IUserDeletionJob } from '@app/domain';
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -23,6 +23,12 @@ export class UserDeletionProcessor {
 
     @InjectRepository(APIKeyEntity)
     private apiKeyRepository: Repository<APIKeyEntity>,
+
+    @InjectRepository(UserTokenEntity)
+    private userTokenRepository: Repository<UserTokenEntity>,
+
+    @InjectRepository(AlbumEntity)
+    private albumRepository: Repository<AlbumEntity>,
   ) {}
 
   @Process(JobName.USER_DELETION)
@@ -44,8 +50,18 @@ export class UserDeletionProcessor {
       fs.rmSync(userAssetDir, { recursive: true, force: true });
 
       this.logger.warn(`Removing user from database: ${user.id}`);
+      const userTokens = await this.userTokenRepository.find({
+        where: { user: { id: user.id } },
+        relations: { user: true },
+        withDeleted: true,
+      });
+      await this.userTokenRepository.remove(userTokens);
+
+      const albums = await this.albumRepository.find({ where: { ownerId: user.id } });
+      await this.albumRepository.remove(albums);
+
       await this.apiKeyRepository.delete({ userId: user.id });
-      await this.assetRepository.delete({ userId: user.id });
+      await this.assetRepository.delete({ ownerId: user.id });
       await this.userRepository.remove(user);
     } catch (error: any) {
       this.logger.error(`Failed to remove user`);

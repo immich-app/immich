@@ -11,6 +11,7 @@
 		assetsInAlbumStoreState,
 		selectedAssets
 	} from '$lib/stores/asset-interaction.store';
+	import { locale } from '$lib/stores/preferences.store';
 
 	const dispatch = createEventDispatcher();
 
@@ -28,6 +29,11 @@
 
 		assetInteractionStore.clearMultiselect();
 	};
+	const handleSelectFromComputerClicked = async () => {
+		await openFileUploadDialog(albumId, '');
+		assetInteractionStore.clearMultiselect();
+		dispatch('go-back');
+	};
 </script>
 
 <section
@@ -44,17 +50,15 @@
 			{#if $selectedAssets.size == 0}
 				<p class="text-lg dark:text-immich-dark-fg">Add to album</p>
 			{:else}
-				<p class="text-lg dark:text-immich-dark-fg">{$selectedAssets.size} selected</p>
+				<p class="text-lg dark:text-immich-dark-fg">
+					{$selectedAssets.size.toLocaleString($locale)} selected
+				</p>
 			{/if}
 		</svelte:fragment>
 
 		<svelte:fragment slot="trailing">
 			<button
-				on:click={() =>
-					openFileUploadDialog(albumId, '', () => {
-						assetInteractionStore.clearMultiselect();
-						dispatch('go-back');
-					})}
+				on:click={handleSelectFromComputerClicked}
 				class="text-immich-primary dark:text-immich-dark-primary text-sm hover:bg-immich-primary/10 dark:hover:bg-immich-dark-primary/25 transition-all px-6 py-2 rounded-lg font-medium"
 			>
 				Select from computer

@@ -4,7 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
-import 'package:immich_mobile/modules/settings/ui/common.dart';
+import 'package:immich_mobile/modules/settings/ui/settings_switch_list_tile.dart';
 
 class ImageViewerQualitySetting extends HookConsumerWidget {
   const ImageViewerQualitySetting({
@@ -44,19 +44,17 @@ class ImageViewerQualitySetting extends HookConsumerWidget {
           title: const Text('setting_image_viewer_help').tr(),
           dense: true,
         ),
-        buildSwitchListTile(
-          context,
-          settings,
-          isPreview,
-          AppSettingsEnum.loadPreview,
+        SettingsSwitchListTile(
+          appSettingService: settings,
+          valueNotifier: isPreview,
+          settingsEnum: AppSettingsEnum.loadPreview,
           title: "setting_image_viewer_preview_title".tr(),
           subtitle: "setting_image_viewer_preview_subtitle".tr(),
         ),
-        buildSwitchListTile(
-          context,
-          settings,
-          isOriginal,
-          AppSettingsEnum.loadOriginal,
+        SettingsSwitchListTile(
+          appSettingService: settings,
+          valueNotifier: isOriginal,
+          settingsEnum: AppSettingsEnum.loadOriginal,
           title: "setting_image_viewer_original_title".tr(),
           subtitle: "setting_image_viewer_original_subtitle".tr(),
         ),

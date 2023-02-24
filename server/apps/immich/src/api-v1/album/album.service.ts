@@ -6,16 +6,14 @@ import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { GetAlbumsDto } from './dto/get-albums.dto';
-import { AlbumResponseDto, mapAlbum, mapAlbumExcludeAssetInfo } from './response-dto/album-response.dto';
+import { AlbumResponseDto, mapAlbum, mapAlbumExcludeAssetInfo } from '@app/domain';
 import { IAlbumRepository } from './album-repository';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from '../asset/dto/download-library.dto';
-import { ShareCore } from '../share/share.core';
-import { ISharedLinkRepository } from '../share/shared-link.repository';
-import { mapSharedLinkToResponseDto, SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
+import { ShareCore, ISharedLinkRepository, mapSharedLink, SharedLinkResponseDto, ICryptoRepository } from '@app/domain';
 import { CreateAlbumShareLinkDto } from './dto/create-album-shared-link.dto';
 import _ from 'lodash';
 
@@ -25,11 +23,12 @@ export class AlbumService {
   private shareCore: ShareCore;
 
   constructor(
-    @Inject(IAlbumRepository) private _albumRepository: IAlbumRepository,
-    @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
+    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
+    @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
     private downloadService: DownloadService,
+    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
   ) {
-    this.shareCore = new ShareCore(sharedLinkRepository);
+    this.shareCore = new ShareCore(sharedLinkRepository, cryptoRepository);
   }
 
   private async _getAlbum({
@@ -41,7 +40,7 @@ export class AlbumService {
     albumId: string;
     validateIsOwner?: boolean;
   }): Promise<AlbumEntity> {
-    const album = await this._albumRepository.get(albumId);
+    const album = await this.albumRepository.get(albumId);
     if (!album) {
       throw new NotFoundException('Album Not Found');
     }
@@ -49,14 +48,14 @@ export class AlbumService {
 
     if (validateIsOwner && !isOwner) {
       throw new ForbiddenException('Unauthorized Album Access');
-    } else if (!isOwner && !album.sharedUsers?.some((user) => user.sharedUserId == authUser.id)) {
+    } else if (!isOwner && !album.sharedUsers?.some((user) => user.id == authUser.id)) {
       throw new ForbiddenException('Unauthorized Album Access');
     }
     return album;
   }
 
   async create(authUser: AuthUserDto, createAlbumDto: CreateAlbumDto): Promise<AlbumResponseDto> {
-    const albumEntity = await this._albumRepository.create(authUser.id, createAlbumDto);
+    const albumEntity = await this.albumRepository.create(authUser.id, createAlbumDto);
     return mapAlbum(albumEntity);
   }
 
@@ -69,11 +68,11 @@ export class AlbumService {
     let albums: AlbumEntity[];
 
     if (typeof getAlbumsDto.assetId === 'string') {
-      albums = await this._albumRepository.getListByAssetId(authUser.id, getAlbumsDto.assetId);
+      albums = await this.albumRepository.getListByAssetId(authUser.id, getAlbumsDto.assetId);
     } else {
-      albums = await this._albumRepository.getList(authUser.id, getAlbumsDto);
+      albums = await this.albumRepository.getList(authUser.id, getAlbumsDto);
       if (getAlbumsDto.shared) {
-        const publicSharingAlbums = await this._albumRepository.getPublicSharingList(authUser.id);
+        const publicSharingAlbums = await this.albumRepository.getPublicSharingList(authUser.id);
         albums = [...albums, ...publicSharingAlbums];
       }
     }
@@ -94,7 +93,7 @@ export class AlbumService {
 
   async addUsersToAlbum(authUser: AuthUserDto, addUsersDto: AddUsersDto, albumId: string): Promise<AlbumResponseDto> {
     const album = await this._getAlbum({ authUser, albumId });
-    const updatedAlbum = await this._albumRepository.addSharedUsers(album, addUsersDto);
+    const updatedAlbum = await this.albumRepository.addSharedUsers(album, addUsersDto);
     return mapAlbum(updatedAlbum);
   }
 
@@ -102,10 +101,10 @@ export class AlbumService {
     const album = await this._getAlbum({ authUser, albumId });
 
     for (const sharedLink of album.sharedLinks) {
-      await this.shareCore.removeSharedLink(sharedLink.id, authUser.id);
+      await this.shareCore.remove(authUser.id, sharedLink.id);
     }
 
-    await this._albumRepository.delete(album);
+    await this.albumRepository.delete(album);
   }
 
   async removeUserFromAlbum(authUser: AuthUserDto, albumId: string, userId: string | 'me'): Promise<void> {
@@ -117,7 +116,7 @@ export class AlbumService {
     if (album.ownerId == sharedUserId) {
       throw new BadRequestException('The owner of the album cannot be removed');
     }
-    await this._albumRepository.removeUser(album, sharedUserId);
+    await this.albumRepository.removeUser(album, sharedUserId);
   }
 
   async removeAssetsFromAlbum(
@@ -126,7 +125,7 @@ export class AlbumService {
     albumId: string,
   ): Promise<AlbumResponseDto> {
     const album = await this._getAlbum({ authUser, albumId });
-    const deletedCount = await this._albumRepository.removeAssets(album, removeAssetsDto);
+    const deletedCount = await this.albumRepository.removeAssets(album, removeAssetsDto);
     const newAlbum = await this._getAlbum({ authUser, albumId });
 
     if (newAlbum) {
@@ -151,7 +150,7 @@ export class AlbumService {
     }
 
     const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
-    const result = await this._albumRepository.addAssets(album, addAssetsDto);
+    const result = await this.albumRepository.addAssets(album, addAssetsDto);
     const newAlbum = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
 
     return {
@@ -171,47 +170,57 @@ export class AlbumService {
       throw new BadRequestException('Unauthorized to change album info');
     }
 
-    const updatedAlbum = await this._albumRepository.updateAlbum(album, updateAlbumDto);
+    const updatedAlbum = await this.albumRepository.updateAlbum(album, updateAlbumDto);
     return mapAlbum(updatedAlbum);
   }
 
   async getAlbumCountByUserId(authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
-    return this._albumRepository.getCountByUserId(authUser.id);
+    return this.albumRepository.getCountByUserId(authUser.id);
   }
 
   async downloadArchive(authUser: AuthUserDto, albumId: string, dto: DownloadDto) {
     const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
-    const assets = (album.assets || []).map((asset) => asset.assetInfo).slice(dto.skip || 0);
+    const assets = (album.assets || []).map((asset) => asset).slice(dto.skip || 0);
 
     return this.downloadService.downloadArchive(album.albumName, assets);
   }
 
   async _checkValidThumbnail(album: AlbumEntity) {
     const assets = album.assets || [];
-    const valid = assets.some((asset) => asset.assetId === album.albumThumbnailAssetId);
-    if (!valid) {
-      let dto: UpdateAlbumDto = {};
-      if (assets.length > 0) {
-        const albumThumbnailAssetId = assets[0].assetId;
-        dto = { albumThumbnailAssetId };
-      }
-      await this._albumRepository.updateAlbum(album, dto);
-      album.albumThumbnailAssetId = dto.albumThumbnailAssetId || null;
+
+    // Check if the album's thumbnail is invalid by referencing
+    // an asset outside the album.
+    const invalid = assets.length > 0 && !assets.some((asset) => asset.id === album.albumThumbnailAssetId);
+
+    // Check if an empty album still has a thumbnail.
+    const isEmptyWithThumbnail = assets.length === 0 && album.albumThumbnailAssetId !== null;
+
+    if (invalid || isEmptyWithThumbnail) {
+      const albumThumbnailAssetId = assets[0]?.id;
+
+      album.albumThumbnailAssetId = albumThumbnailAssetId || null;
+      await this.albumRepository.updateAlbum(album, { albumThumbnailAssetId });
     }
   }
 
   async createAlbumSharedLink(authUser: AuthUserDto, dto: CreateAlbumShareLinkDto): Promise<SharedLinkResponseDto> {
     const album = await this._getAlbum({ authUser, albumId: dto.albumId });
 
-    const sharedLink = await this.shareCore.createSharedLink(authUser.id, {
-      sharedType: SharedLinkType.ALBUM,
-      expiredAt: dto.expiredAt,
+    const sharedLink = await this.shareCore.create(authUser.id, {
+      type: SharedLinkType.ALBUM,
+      expiresAt: dto.expiresAt,
       allowUpload: dto.allowUpload,
-      album: album,
+      album,
       assets: [],
       description: dto.description,
+      allowDownload: dto.allowDownload,
+      showExif: dto.showExif,
     });
 
-    return mapSharedLinkToResponseDto(sharedLink);
+    return mapSharedLink(sharedLink);
+  }
+
+  checkDownloadAccess(authUser: AuthUserDto) {
+    this.shareCore.checkDownloadAccess(authUser);
   }
 }

@@ -22,6 +22,7 @@
 	export let showCopyButton: boolean;
 	export let showMotionPlayButton: boolean;
 	export let isMotionPhotoPlaying = false;
+	export let showDownloadButton: boolean;
 
 	const isOwner = asset.ownerId === $page.data.user?.id;
 
@@ -30,12 +31,8 @@
 	let contextMenuPosition = { x: 0, y: 0 };
 	let isShowAssetOptions = false;
 
-	const showOptionsMenu = (event: CustomEvent) => {
-		contextMenuPosition = {
-			x: event.detail.mouseEvent.x,
-			y: event.detail.mouseEvent.y
-		};
-
+	const showOptionsMenu = ({ x, y }: MouseEvent) => {
+		contextMenuPosition = { x, y };
 		isShowAssetOptions = !isShowAssetOptions;
 	};
 
@@ -77,11 +74,14 @@
 				}}
 			/>
 		{/if}
-		<CircleIconButton
-			logo={CloudDownloadOutline}
-			on:click={() => dispatch('download')}
-			title="Download"
-		/>
+
+		{#if showDownloadButton}
+			<CircleIconButton
+				logo={CloudDownloadOutline}
+				on:click={() => dispatch('download')}
+				title="Download"
+			/>
+		{/if}
 		<CircleIconButton
 			logo={InformationOutline}
 			on:click={() => dispatch('showDetail')}
@@ -97,11 +97,7 @@
 
 		{#if isOwner}
 			<CircleIconButton logo={DeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
-			<CircleIconButton
-				logo={DotsVertical}
-				on:click={(event) => showOptionsMenu(event)}
-				title="More"
-			/>
+			<CircleIconButton logo={DotsVertical} on:click={showOptionsMenu} title="More" />
 		{/if}
 	</div>
 </div>

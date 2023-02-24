@@ -1,6 +1,6 @@
 import { APP_UPLOAD_LOCATION } from '@app/common';
 import { AssetEntity, AssetType, SystemConfig } from '@app/infra';
-import { ImmichConfigService, INITIAL_SYSTEM_CONFIG } from '@app/immich-config';
+import { SystemConfigService, INITIAL_SYSTEM_CONFIG } from '@app/domain';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import fsPromise from 'fs/promises';
@@ -19,27 +19,27 @@ import {
   supportedMonthTokens,
   supportedSecondTokens,
   supportedYearTokens,
-} from './constants/supported-datetime-template';
+} from '@app/domain';
 
 const moveFile = promisify<string, string, mv.Options>(mv);
 
 @Injectable()
 export class StorageService {
-  readonly logger = new Logger(StorageService.name);
+  private readonly logger = new Logger(StorageService.name);
 
   private storageTemplate: HandlebarsTemplateDelegate<any>;
 
   constructor(
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
-    private immichConfigService: ImmichConfigService,
+    private systemConfigService: SystemConfigService,
     @Inject(INITIAL_SYSTEM_CONFIG) config: SystemConfig,
   ) {
     this.storageTemplate = this.compile(config.storageTemplate.template);
 
-    this.immichConfigService.addValidator((config) => this.validateConfig(config));
+    this.systemConfigService.addValidator((config) => this.validateConfig(config));
 
-    this.immichConfigService.config$.subscribe((config) => {
+    this.systemConfigService.config$.subscribe((config) => {
       this.logger.debug(`Received new config, recompiling storage template: ${config.storageTemplate.template}`);
       this.storageTemplate = this.compile(config.storageTemplate.template);
     });
@@ -50,7 +50,7 @@ export class StorageService {
       const source = asset.originalPath;
       const ext = path.extname(source).split('.').pop() as string;
       const sanitized = sanitize(path.basename(filename, `.${ext}`));
-      const rootPath = path.join(APP_UPLOAD_LOCATION, asset.userId);
+      const rootPath = path.join(APP_UPLOAD_LOCATION, asset.ownerId);
       const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
       const fullPath = path.normalize(path.join(rootPath, storagePath));
       let destination = `${fullPath}.${ext}`;
@@ -132,7 +132,7 @@ export class StorageService {
       this.render(
         template,
         {
-          createdAt: new Date().toISOString(),
+          fileCreatedAt: new Date().toISOString(),
           originalPath: '/upload/test/IMG_123.jpg',
           type: AssetType.IMAGE,
         } as AssetEntity,
@@ -161,7 +161,7 @@ export class StorageService {
     const fileType = asset.type == AssetType.IMAGE ? 'IMG' : 'VID';
     const fileTypeFull = asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO';
 
-    const dt = luxon.DateTime.fromISO(new Date(asset.createdAt).toISOString());
+    const dt = luxon.DateTime.fromISO(new Date(asset.fileCreatedAt).toISOString());
 
     const dateTokens = [
       ...supportedYearTokens,

@@ -61,25 +61,25 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 
 # Features
 
-| Features                                    | Mobile  | Web |
-| ------------------------------------------- | ------- | --- |
-| Upload and view videos and photos           | Yes     | Yes |
-| Auto backup when the app is opened          | Yes     | N/A |
-| Selective album(s) for backup               | Yes     | N/A |
-| Download photos and videos to local device  | Yes     | Yes |
-| Multi-user support                          | Yes     | Yes |
-| Album and Shared albums                     | Yes     | Yes |
-| Scrubbable/draggable scrollbar              | Yes     | Yes |
-| Support RAW (HEIC, HEIF, DNG, Apple ProRaw) | Yes     | Yes |
-| Metadata view (EXIF, map)                   | Yes     | Yes |
-| Search by metadata, objects and image tags  | Yes     | No  |
-| Administrative functions (user management)  | N/A     | Yes |
-| Background backup                           | Android | N/A |
-| Virtual scroll                              | Yes     | Yes |
-| OAuth support                               | Yes     | Yes |
-| LivePhoto backup and playback               | iOS     | Yes |
-| User-defined storage structure              | Yes     | Yes |
-| Public Sharing                              | N/A     | Yes |
+| Features                                    | Mobile | Web |
+| ------------------------------------------- | ------ | --- |
+| Upload and view videos and photos           | Yes    | Yes |
+| Auto backup when the app is opened          | Yes    | N/A |
+| Selective album(s) for backup               | Yes    | N/A |
+| Download photos and videos to local device  | Yes    | Yes |
+| Multi-user support                          | Yes    | Yes |
+| Album and Shared albums                     | Yes    | Yes |
+| Scrubbable/draggable scrollbar              | Yes    | Yes |
+| Support RAW (HEIC, HEIF, DNG, Apple ProRaw) | Yes    | Yes |
+| Metadata view (EXIF, map)                   | Yes    | Yes |
+| Search by metadata, objects and image tags  | Yes    | No  |
+| Administrative functions (user management)  | N/A    | Yes |
+| Background backup                           | Yes    | N/A |
+| Virtual scroll                              | Yes    | Yes |
+| OAuth support                               | Yes    | Yes |
+| LivePhoto backup and playback               | iOS    | Yes |
+| User-defined storage structure              | Yes    | Yes |
+| Public Sharing                              | N/A    | Yes |
 
 # Support the project
 
@@ -93,6 +93,9 @@ If you feel like this is the right cause and the app is something you are seeing
 
 - [Monthly donation](https://github.com/sponsors/alextran1502) via GitHub Sponsors
 - [One-time donation](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502) via Github Sponsors
+- [Librepay](https://liberapay.com/alex.tran1502/)
+- [buymeacoffee](https://www.buymeacoffee.com/altran1502)
+- Bitcoin: 1FvEp6P6NM8EZEkpGUFAN2LqJ1gxusNxZX
 
 # Known Issues
 

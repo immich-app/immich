@@ -1,5 +1,5 @@
 import { AssetEntity } from '@app/infra';
-import { AssetResponseDto } from 'apps/immich/src/api-v1/asset/response-dto/asset-response.dto';
+import { AssetResponseDto } from '@app/domain';
 import fs from 'fs';
 
 const deleteFiles = (asset: AssetEntity | AssetResponseDto) => {
@@ -36,4 +36,13 @@ const deleteFiles = (asset: AssetEntity | AssetResponseDto) => {
   }
 };
 
-export const assetUtils = { deleteFiles };
+const isWebPlayable = (mimeType: string | null): boolean => {
+  const WEB_PLAYABLE = ['video/webm', 'video/mp4'];
+
+  if (mimeType !== null) {
+    return WEB_PLAYABLE.includes(mimeType);
+  }
+  return false;
+};
+
+export const assetUtils = { deleteFiles, isWebPlayable };

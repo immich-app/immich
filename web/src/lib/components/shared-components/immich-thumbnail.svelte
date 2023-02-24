@@ -1,14 +1,15 @@
 <script lang="ts">
-	import { createEventDispatcher, onDestroy } from 'svelte';
-	import { fade, fly } from 'svelte/transition';
 	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
-	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
-	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
-	import PauseCircleOutline from 'svelte-material-icons/PauseCircleOutline.svelte';
-	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
-	import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
-	import LoadingSpinner from './loading-spinner.svelte';
 	import { AssetResponseDto, AssetTypeEnum, getFileUrl, ThumbnailFormat } from '@api';
+	import { createEventDispatcher } from 'svelte';
+	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
+	import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
+	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
+	import PauseCircleOutline from 'svelte-material-icons/PauseCircleOutline.svelte';
+	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
+	import Star from 'svelte-material-icons/Star.svelte';
+	import { fade, fly } from 'svelte/transition';
+	import LoadingSpinner from './loading-spinner.svelte';
 
 	const dispatch = createEventDispatcher();
 
@@ -21,18 +22,18 @@
 	export let publicSharedKey = '';
 	export let isRoundedCorner = false;
 
-	let imageData: string;
-
 	let mouseOver = false;
 	let playMotionVideo = false;
 	$: dispatch('mouse-event', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
 
 	let mouseOverIcon = false;
 	let videoPlayerNode: HTMLVideoElement;
+	let isImageLoading = true;
 	let isThumbnailVideoPlaying = false;
 	let calculateVideoDurationIntervalHandler: NodeJS.Timer;
 	let videoProgress = '00:00';
 	let videoUrl: string;
+	$: isPublicShared = publicSharedKey !== '';
 
 	const loadVideoData = async (isLivePhoto: boolean) => {
 		isThumbnailVideoPlaying = false;
@@ -66,10 +67,6 @@
 			return `${minutes}:${seconds.split('.')[0]}`;
 		}
 	};
-
-	onDestroy(() => {
-		URL.revokeObjectURL(imageData);
-	});
 
 	const getSize = () => {
 		if (thumbnailSize) {
@@ -163,7 +160,7 @@
 		{#if mouseOver || selected || disabled}
 			<div
 				in:fade={{ duration: 200 }}
-				class={`w-full ${getOverlaySelectorIconStyle()} via-white/0 to-white/0 absolute p-2  z-10`}
+				class={`w-full ${getOverlaySelectorIconStyle()} via-white/0 to-white/0 absolute p-2 z-10`}
 			>
 				<button
 					on:click={onIconClickedHandler}
@@ -179,6 +176,12 @@
 						<CheckCircle size="24" color={mouseOverIcon ? 'white' : '#d8dadb'} />
 					{/if}
 				</button>
+			</div>
+		{/if}
+
+		{#if asset.isFavorite && !isPublicShared}
+			<div class="w-full absolute bottom-2 left-2 z-10">
+				<Star size="24" color={'white'} />
 			</div>
 		{/if}
 
@@ -247,12 +250,13 @@
 				id={asset.id}
 				style:width={`${thumbnailSize}px`}
 				style:height={`${thumbnailSize}px`}
-				in:fade={{ duration: 150 }}
 				src={`/api/asset/thumbnail/${asset.id}?format=${format}&key=${publicSharedKey}`}
 				alt={asset.id}
 				class={`object-cover ${getSize()} transition-all z-0 ${getThumbnailBorderStyle()}`}
+				class:opacity-0={isImageLoading}
 				loading="lazy"
 				draggable="false"
+				on:load|once={() => (isImageLoading = false)}
 			/>
 		{/if}
 
@@ -297,3 +301,9 @@
 		{/if}
 	</div>
 </IntersectionObserver>
+
+<style>
+	img {
+		transition: 0.2s ease all;
+	}
+</style>

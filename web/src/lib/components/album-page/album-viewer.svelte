@@ -39,7 +39,9 @@
 	import ThemeButton from '../shared-components/theme-button.svelte';
 	import { openFileUploadDialog } from '$lib/utils/file-uploader';
 	import { bulkDownload } from '$lib/utils/asset-utils';
+	import { locale } from '$lib/stores/preferences.store';
 	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
+	import ImmichLogo from '../shared-components/immich-logo.svelte';
 
 	export let album: AlbumResponseDto;
 	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
@@ -87,7 +89,6 @@
 		}
 	});
 
-	const locale = navigator.language;
 	const albumDateFormat: Intl.DateTimeFormatOptions = {
 		month: 'short',
 		day: 'numeric',
@@ -95,11 +96,11 @@
 	};
 
 	const getDateRange = () => {
-		const startDate = new Date(album.assets[0].createdAt);
-		const endDate = new Date(album.assets[album.assetCount - 1].createdAt);
+		const startDate = new Date(album.assets[0].fileCreatedAt);
+		const endDate = new Date(album.assets[album.assetCount - 1].fileCreatedAt);
 
-		const startDateString = startDate.toLocaleDateString(locale, albumDateFormat);
-		const endDateString = endDate.toLocaleDateString(locale, albumDateFormat);
+		const startDateString = startDate.toLocaleDateString($locale, albumDateFormat);
+		const endDateString = endDate.toLocaleDateString($locale, albumDateFormat);
 
 		// If the start and end date are the same, only show one date
 		return startDateString === endDateString
@@ -320,6 +321,7 @@
 				}
 			}
 		} catch (e) {
+			$downloadAssets = {};
 			console.error('Error downloading file ', e);
 			notificationController.show({
 				type: NotificationType.Error,
@@ -328,12 +330,8 @@
 		}
 	};
 
-	const showAlbumOptionsMenu = (event: CustomEvent) => {
-		contextMenuPosition = {
-			x: event.detail.mouseEvent.x,
-			y: event.detail.mouseEvent.y
-		};
-
+	const showAlbumOptionsMenu = ({ x, y }: MouseEvent) => {
+		contextMenuPosition = { x, y };
 		isShowAlbumOptions = !isShowAlbumOptions;
 	};
 
@@ -382,7 +380,7 @@
 		>
 			<svelte:fragment slot="leading">
 				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
-					Selected {multiSelectAsset.size}
+					Selected {multiSelectAsset.size.toLocaleString($locale)}
 				</p>
 			</svelte:fragment>
 			<svelte:fragment slot="trailing">
@@ -418,13 +416,7 @@
 						class="flex gap-2 place-items-center hover:cursor-pointer ml-6"
 						href="https://immich.app"
 					>
-						<img
-							src="/immich-logo.svg"
-							alt="immich logo"
-							height="30"
-							width="30"
-							draggable="false"
-						/>
+						<ImmichLogo height={30} width={30} />
 						<h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">
 							IMMICH
 						</h1>
@@ -460,16 +452,18 @@
 						<CircleIconButton title="Remove album" on:click={removeAlbum} logo={DeleteOutline} />
 					{/if}
 
-					<CircleIconButton
-						title="Download"
-						on:click={() => downloadAlbum()}
-						logo={FolderDownloadOutline}
-					/>
+					{#if !isPublicShared || (isPublicShared && sharedLink?.allowDownload)}
+						<CircleIconButton
+							title="Download"
+							on:click={() => downloadAlbum()}
+							logo={FolderDownloadOutline}
+						/>
+					{/if}
 
 					{#if !isPublicShared}
 						<CircleIconButton
 							title="Album options"
-							on:click={(event) => showAlbumOptionsMenu(event)}
+							on:click={showAlbumOptionsMenu}
 							logo={DotsVertical}
 						/>
 					{/if}
@@ -534,11 +528,7 @@
 		{/if}
 
 		{#if album.assetCount > 0}
-			<GalleryViewer
-				assets={album.assets}
-				key={sharedLink?.key ?? ''}
-				bind:selectedAssets={multiSelectAsset}
-			/>
+			<GalleryViewer assets={album.assets} {sharedLink} bind:selectedAssets={multiSelectAsset} />
 		{:else}
 			<!-- Album is empty - Show asset selectection buttons -->
 			<section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">

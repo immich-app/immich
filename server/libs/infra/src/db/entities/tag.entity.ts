@@ -14,6 +14,9 @@ export class TagEntity {
   @Column()
   name!: string;
 
+  @ManyToOne(() => UserEntity, (user) => user.tags)
+  user!: UserEntity;
+
   @Column()
   userId!: string;
 
@@ -22,9 +25,6 @@ export class TagEntity {
 
   @ManyToMany(() => AssetEntity, (asset) => asset.tags)
   assets!: AssetEntity[];
-
-  @ManyToOne(() => UserEntity, (user) => user.tags)
-  user!: UserEntity;
 }
 
 export enum TagType {

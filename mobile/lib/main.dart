@@ -12,13 +12,17 @@ import 'package:immich_mobile/modules/backup/background_service/background.servi
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_duplicated_assets.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
+import 'package:immich_mobile/modules/backup/providers/ios_background_settings.provider.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/modules/settings/providers/permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
 import 'package:immich_mobile/shared/models/immich_logger_message.model.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/providers/release_info.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
@@ -26,33 +30,38 @@ import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
+import 'package:immich_mobile/utils/migration.dart';
+import 'package:isar/isar.dart';
+import 'package:logging/logging.dart';
+import 'package:path_provider/path_provider.dart';
 import 'constants/hive_box.dart';
 
 void main() async {
-  await Hive.initFlutter();
-  Hive.registerAdapter(HiveSavedLoginInfoAdapter());
-  Hive.registerAdapter(HiveBackupAlbumsAdapter());
-  Hive.registerAdapter(HiveDuplicatedAssetsAdapter());
-  Hive.registerAdapter(ImmichLoggerMessageAdapter());
+  await initApp();
+  final db = await loadDb();
+  await migrateHiveToStoreIfNecessary();
+  runApp(getMainWidget(db));
+}
 
+Future<void> openBoxes() async {
   await Future.wait([
     Hive.openBox<ImmichLoggerMessage>(immichLoggerBox),
     Hive.openBox(userInfoBox),
     Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox),
     Hive.openBox(hiveGithubReleaseInfoBox),
     Hive.openBox(userSettingInfoBox),
-    if (!Platform.isAndroid) Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
-    if (!Platform.isAndroid)
-      Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
-    if (!Platform.isAndroid) Hive.openBox(backgroundBackupInfoBox),
     EasyLocalization.ensureInitialized(),
   ]);
+}
 
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarIconBrightness: Brightness.light,
-    ),
-  );
+Future<void> initApp() async {
+  await Hive.initFlutter();
+  Hive.registerAdapter(HiveSavedLoginInfoAdapter());
+  Hive.registerAdapter(HiveBackupAlbumsAdapter());
+  Hive.registerAdapter(HiveDuplicatedAssetsAdapter());
+  Hive.registerAdapter(ImmichLoggerMessageAdapter());
+
+  await openBoxes();
 
   if (kReleaseMode && Platform.isAndroid) {
     try {
@@ -66,13 +75,39 @@ void main() async {
   // Initialize Immich Logger Service
   ImmichLogger().init();
 
-  runApp(
-    EasyLocalization(
-      supportedLocales: locales,
-      path: translationsPath,
-      useFallbackTranslations: true,
-      fallbackLocale: locales.first,
-      child: const ProviderScope(child: ImmichApp()),
+  var log = Logger("ImmichErrorLogger");
+
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    log.severe(details.toString(), details, details.stack);
+  };
+
+  PlatformDispatcher.instance.onError = (error, stack) {
+    log.severe(error.toString(), error, stack);
+    return true;
+  };
+}
+
+Future<Isar> loadDb() async {
+  final dir = await getApplicationDocumentsDirectory();
+  Isar db = await Isar.open(
+    [StoreValueSchema],
+    directory: dir.path,
+    maxSizeMiB: 256,
+  );
+  Store.init(db);
+  return db;
+}
+
+Widget getMainWidget(Isar db) {
+  return EasyLocalization(
+    supportedLocales: locales,
+    path: translationsPath,
+    useFallbackTranslations: true,
+    fallbackLocale: locales.first,
+    child: ProviderScope(
+      overrides: [dbProvider.overrideWithValue(db)],
+      child: const ImmichApp(),
     ),
   );
 }
@@ -105,6 +140,12 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         ref.watch(websocketProvider.notifier).connect();
 
         ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
+
+        ref
+            .watch(notificationPermissionProvider.notifier)
+            .getNotificationPermission();
+
+        ref.read(iOSBackgroundSettingsProvider.notifier).refresh();
 
         break;
 
@@ -152,6 +193,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   Widget build(BuildContext context) {
     var router = ref.watch(appRouterProvider);
     ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
+
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
     return MaterialApp(
       localizationsDelegates: context.localizationDelegates,

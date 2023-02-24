@@ -2,26 +2,26 @@ import 'dart:convert';
 
 class CurrentUploadAsset {
   final String id;
-  final DateTime createdAt;
+  final DateTime fileCreatedAt;
   final String fileName;
   final String fileType;
 
   CurrentUploadAsset({
     required this.id,
-    required this.createdAt,
+    required this.fileCreatedAt,
     required this.fileName,
     required this.fileType,
   });
 
   CurrentUploadAsset copyWith({
     String? id,
-    DateTime? createdAt,
+    DateTime? fileCreatedAt,
     String? fileName,
     String? fileType,
   }) {
     return CurrentUploadAsset(
       id: id ?? this.id,
-      createdAt: createdAt ?? this.createdAt,
+      fileCreatedAt: fileCreatedAt ?? this.fileCreatedAt,
       fileName: fileName ?? this.fileName,
       fileType: fileType ?? this.fileType,
     );
@@ -31,7 +31,7 @@ class CurrentUploadAsset {
     final result = <String, dynamic>{};
 
     result.addAll({'id': id});
-    result.addAll({'createdAt': createdAt.millisecondsSinceEpoch});
+    result.addAll({'fileCreatedAt': fileCreatedAt.millisecondsSinceEpoch});
     result.addAll({'fileName': fileName});
     result.addAll({'fileType': fileType});
 
@@ -41,7 +41,7 @@ class CurrentUploadAsset {
   factory CurrentUploadAsset.fromMap(Map<String, dynamic> map) {
     return CurrentUploadAsset(
       id: map['id'] ?? '',
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt']),
+      fileCreatedAt: DateTime.fromMillisecondsSinceEpoch(map['fileCreatedAt']),
       fileName: map['fileName'] ?? '',
       fileType: map['fileType'] ?? '',
     );
@@ -54,7 +54,7 @@ class CurrentUploadAsset {
 
   @override
   String toString() {
-    return 'CurrentUploadAsset(id: $id, createdAt: $createdAt, fileName: $fileName, fileType: $fileType)';
+    return 'CurrentUploadAsset(id: $id, fileCreatedAt: $fileCreatedAt, fileName: $fileName, fileType: $fileType)';
   }
 
   @override
@@ -63,7 +63,7 @@ class CurrentUploadAsset {
 
     return other is CurrentUploadAsset &&
         other.id == id &&
-        other.createdAt == createdAt &&
+        other.fileCreatedAt == fileCreatedAt &&
         other.fileName == fileName &&
         other.fileType == fileType;
   }
@@ -71,7 +71,7 @@ class CurrentUploadAsset {
   @override
   int get hashCode {
     return id.hashCode ^
-        createdAt.hashCode ^
+        fileCreatedAt.hashCode ^
         fileName.hashCode ^
         fileType.hashCode;
   }

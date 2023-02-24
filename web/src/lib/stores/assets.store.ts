@@ -1,8 +1,8 @@
-import { writable } from 'svelte/store';
-import lodash from 'lodash-es';
-import { api, AssetCountByTimeBucketResponseDto } from '@api';
 import { AssetGridState } from '$lib/models/asset-grid-state';
 import { calculateViewportHeightByNumberOfAsset } from '$lib/utils/viewport-utils';
+import { api, AssetCountByTimeBucketResponseDto } from '@api';
+import { sumBy, flatMap } from 'lodash-es';
+import { writable } from 'svelte/store';
 
 /**
  * The state that holds information about the asset grid
@@ -46,7 +46,7 @@ function createAssetStore() {
 
 		// Update timeline height based on calculated bucket height
 		assetGridState.update((state) => {
-			state.timelineHeight = lodash.sumBy(state.buckets, (d) => d.bucketHeight);
+			state.timelineHeight = sumBy(state.buckets, (d) => d.bucketHeight);
 			return state;
 		});
 	};
@@ -77,7 +77,7 @@ function createAssetStore() {
 			assetGridState.update((state) => {
 				const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucket);
 				state.buckets[bucketIndex].assets = assets;
-				state.assets = lodash.flatMap(state.buckets, (b) => b.assets);
+				state.assets = flatMap(state.buckets, (b) => b.assets);
 
 				return state;
 			});
@@ -100,7 +100,7 @@ function createAssetStore() {
 			if (state.buckets[bucketIndex].assets.length === 0) {
 				_removeBucket(state.buckets[bucketIndex].bucketDate);
 			}
-			state.assets = lodash.flatMap(state.buckets, (b) => b.assets);
+			state.assets = flatMap(state.buckets, (b) => b.assets);
 			return state;
 		});
 	};
@@ -109,7 +109,7 @@ function createAssetStore() {
 		assetGridState.update((state) => {
 			const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucketDate);
 			state.buckets.splice(bucketIndex, 1);
-			state.assets = lodash.flatMap(state.buckets, (b) => b.assets);
+			state.assets = flatMap(state.buckets, (b) => b.assets);
 			return state;
 		});
 	};
@@ -141,12 +141,24 @@ function createAssetStore() {
 		});
 	};
 
+	const updateAsset = (assetId: string, isFavorite: boolean) => {
+		assetGridState.update((state) => {
+			const bucketIndex = state.buckets.findIndex((b) => b.assets.some((a) => a.id === assetId));
+			const assetIndex = state.buckets[bucketIndex].assets.findIndex((a) => a.id === assetId);
+			state.buckets[bucketIndex].assets[assetIndex].isFavorite = isFavorite;
+
+			state.assets = flatMap(state.buckets, (b) => b.assets);
+			return state;
+		});
+	};
+
 	return {
 		setInitialState,
 		getAssetsByBucket,
 		removeAsset,
 		updateBucketHeight,
-		cancelBucketRequest
+		cancelBucketRequest,
+		updateAsset
 	};
 }
 

@@ -8,6 +8,4 @@ export class ServerVersionReponseDto implements IServerVersion {
   minor!: number;
   @ApiProperty({ type: 'integer' })
   patch!: number;
-  @ApiProperty({ type: 'integer' })
-  build!: number;
 }

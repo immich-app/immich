@@ -183,7 +183,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **removeSharedLink**
-> String removeSharedLink(id)
+> removeSharedLink(id)
 
 
 
@@ -197,8 +197,7 @@ final api_instance = ShareApi();
 final id = id_example; // String | 
 
 try {
-    final result = api_instance.removeSharedLink(id);
-    print(result);
+    api_instance.removeSharedLink(id);
 } catch (e) {
     print('Exception when calling ShareApi->removeSharedLink: $e\n');
 }
@@ -212,7 +211,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-**String**
+void (empty response body)
 
 ### Authorization
 
@@ -221,7 +220,7 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/json
+ - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

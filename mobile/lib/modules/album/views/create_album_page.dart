@@ -11,12 +11,18 @@ import 'package:immich_mobile/modules/album/ui/album_action_outlined_button.dart
 import 'package:immich_mobile/modules/album/ui/album_title_text_field.dart';
 import 'package:immich_mobile/modules/album/ui/shared_album_thumbnail_image.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 
 // ignore: must_be_immutable
 class CreateAlbumPage extends HookConsumerWidget {
-  bool isSharedAlbum;
+  final bool isSharedAlbum;
+  final List<Asset>? initialAssets;
 
-  CreateAlbumPage({Key? key, required this.isSharedAlbum}) : super(key: key);
+  const CreateAlbumPage({
+    Key? key,
+    required this.isSharedAlbum,
+    this.initialAssets,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -78,7 +84,7 @@ class CreateAlbumPage extends HookConsumerWidget {
             padding: const EdgeInsets.only(top: 200, left: 18),
             child: Text(
               'create_shared_album_page_share_add_assets',
-              style: Theme.of(context).textTheme.headline2?.copyWith(
+              style: Theme.of(context).textTheme.displayMedium?.copyWith(
                     fontSize: 12,
                     fontWeight: FontWeight.normal,
                   ),
@@ -208,7 +214,7 @@ class CreateAlbumPage extends HookConsumerWidget {
         ),
         title: Text(
           'share_create_album',
-          style: Theme.of(context).textTheme.headline2?.copyWith(
+          style: Theme.of(context).textTheme.displayMedium?.copyWith(
                 color: Theme.of(context).primaryColor,
               ),
         ).tr(),
@@ -222,7 +228,9 @@ class CreateAlbumPage extends HookConsumerWidget {
                 'create_shared_album_page_share'.tr(),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor,
+                  color: albumTitleController.text.isEmpty
+                      ? Theme.of(context).disabledColor
+                      : Theme.of(context).primaryColor,
                 ),
               ),
             ),

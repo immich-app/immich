@@ -1,28 +1,25 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
 	import { api, UserResponseDto } from '@api';
 	import ThemeButton from '../theme-button.svelte';
 	import { AppRoute } from '../../../constants';
 	import AccountInfoPanel from './account-info-panel.svelte';
+	import ImmichLogo from '../immich-logo.svelte';
 	export let user: UserResponseDto;
 	export let shouldShowUploadButton = true;
 
 	let shouldShowAccountInfo = false;
 
+	// Show fallback while loading profile picture and hide when image loads.
+	let showProfilePictureFallback = true;
+
 	const dispatch = createEventDispatcher();
 	let shouldShowAccountInfoPanel = false;
 
-	onMount(() => {
-		getUserProfileImage();
-	});
-
-	const getUserProfileImage = async () => {
-		return await api.userApi.getProfileImage(user.id);
-	};
 	const getFirstLetter = (text?: string) => {
 		return text?.charAt(0).toUpperCase();
 	};
@@ -42,7 +39,7 @@
 
 <section
 	id="dashboard-navbar"
-	class="fixed w-screen  z-[100] bg-immich-bg dark:bg-immich-dark-bg text-sm"
+	class="fixed w-screen z-[900] bg-immich-bg dark:bg-immich-dark-bg text-sm"
 >
 	<div class="flex border-b dark:border-b-immich-dark-gray place-items-center px-6 py-2 ">
 		<a
@@ -50,14 +47,14 @@
 			class="flex gap-2 place-items-center hover:cursor-pointer"
 			href="/photos"
 		>
-			<img src="/immich-logo.svg" alt="immich logo" height="35" width="35" draggable="false" />
+			<ImmichLogo height="35" width="35" />
 			<h1 class="font-immich-title text-2xl text-immich-primary dark:text-immich-dark-primary">
 				IMMICH
 			</h1>
 		</a>
 		<div class="flex-1 ml-24">
 			<input
-				class="w-[50%] rounded-md bg-gray-200 dark:bg-immich-dark-gray  px-8 py-4"
+				class="w-[50%] rounded-3xl bg-gray-200 dark:bg-immich-dark-gray  px-8 py-4"
 				placeholder="Search - Coming soon"
 			/>
 		</div>
@@ -96,17 +93,20 @@
 				<button
 					class="flex place-items-center place-content-center rounded-full bg-immich-primary hover:bg-immich-primary/80 h-12 w-12 text-gray-100 dark:text-immich-dark-bg dark:bg-immich-dark-primary"
 				>
-					{#await getUserProfileImage() then}
+					{#if user.profileImagePath}
 						<img
 							transition:fade={{ duration: 100 }}
+							class:hidden={showProfilePictureFallback}
 							src={`${$page.url.origin}/api/user/profile-image/${user.id}`}
 							alt="profile-img"
-							class="inline rounded-full h-12 w-12 object-cover shadow-md"
+							class="inline rounded-full h-12 w-12 object-cover shadow-md border-2 border-immich-primary hover:border-immich-dark-primary dark:hover:border-immich-primary dark:border-immich-dark-primary transition-all"
 							draggable="false"
+							on:load={() => (showProfilePictureFallback = false)}
 						/>
-					{:catch}
+					{/if}
+					{#if showProfilePictureFallback}
 						{getFirstLetter(user.firstName)}{getFirstLetter(user.lastName)}
-					{/await}
+					{/if}
 				</button>
 
 				{#if shouldShowAccountInfo}

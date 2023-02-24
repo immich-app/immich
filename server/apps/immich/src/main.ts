@@ -27,6 +27,8 @@ async function bootstrap() {
     app.enableCors();
   }
 
+  const serverPort = Number(process.env.SERVER_PORT) || 3001;
+
   const redisIoAdapter = new RedisIoAdapter(app);
   await redisIoAdapter.connectToRedis();
   app.useWebSocketAdapter(redisIoAdapter);
@@ -38,9 +40,6 @@ async function bootstrap() {
     .addBearerAuth({
       type: 'http',
       scheme: 'Bearer',
-      bearerFormat: 'JWT',
-      name: 'JWT',
-      description: 'Enter JWT token',
       in: 'header',
     })
     .addServer('/api')
@@ -59,7 +58,7 @@ async function bootstrap() {
     customSiteTitle: 'Immich API Documentation',
   });
 
-  await app.listen(3001, () => {
+  await app.listen(serverPort, () => {
     if (process.env.NODE_ENV == 'development') {
       // Generate API Documentation only in development mode
       const outputPath = path.resolve(process.cwd(), 'immich-openapi-specs.json');
@@ -67,7 +66,9 @@ async function bootstrap() {
     }
 
     const envName = (process.env.NODE_ENV || 'development').toUpperCase();
-    logger.log(`Running Immich Server in ${envName} environment - version ${SERVER_VERSION}`);
+    logger.log(
+      `Running Immich Server in ${envName} environment - version ${SERVER_VERSION} - Listening on port: ${serverPort}`,
+    );
   });
 
   logger.warn(`Machine learning is ${MACHINE_LEARNING_ENABLED ? 'enabled' : 'disabled'}`);

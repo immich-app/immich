@@ -1,10 +1,10 @@
 import { APP_UPLOAD_LOCATION } from '@app/common';
 import { AssetEntity, AssetType } from '@app/infra';
-import { WebpGeneratorProcessor, JpegGeneratorProcessor, QueueName, JobName } from '@app/job';
+import { WebpGeneratorProcessor, JpegGeneratorProcessor, QueueName, JobName } from '@app/domain';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { mapAsset } from 'apps/immich/src/api-v1/asset/response-dto/asset-response.dto';
+import { mapAsset } from '@app/domain';
 import { Job, Queue } from 'bull';
 import ffmpeg from 'fluent-ffmpeg';
 import { existsSync, mkdirSync } from 'node:fs';
@@ -13,7 +13,8 @@ import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
 import { join } from 'path';
 import { CommunicationGateway } from 'apps/immich/src/api-v1/communication/communication.gateway';
-import { IMachineLearningJob } from '@app/job/interfaces/machine-learning.interface';
+import { IMachineLearningJob } from '@app/domain';
+import { exiftool } from 'exiftool-vendored';
 
 @Processor(QueueName.THUMBNAIL_GENERATION)
 export class ThumbnailGeneratorProcessor {
@@ -39,7 +40,7 @@ export class ThumbnailGeneratorProcessor {
     const { asset } = job.data;
     const sanitizedDeviceId = sanitize(String(asset.deviceId));
 
-    const resizePath = join(basePath, asset.userId, 'thumb', sanitizedDeviceId);
+    const resizePath = join(basePath, asset.ownerId, 'thumb', sanitizedDeviceId);
 
     if (!existsSync(resizePath)) {
       mkdirSync(resizePath, { recursive: true });
@@ -50,10 +51,18 @@ export class ThumbnailGeneratorProcessor {
     if (asset.type == AssetType.IMAGE) {
       try {
         await sharp(asset.originalPath, { failOnError: false })
-          .resize(1440, 2560, { fit: 'inside' })
+          .resize(1440, 1440, { fit: 'outside', withoutEnlargement: true })
           .jpeg()
           .rotate()
-          .toFile(jpegThumbnailPath);
+          .toFile(jpegThumbnailPath)
+          .catch(() => {
+            this.logger.warn(
+              'Failed to generate jpeg thumbnail for asset: ' +
+                asset.id +
+                ' using sharp, failing over to exiftool-vendored',
+            );
+            return exiftool.extractThumbnail(asset.originalPath, jpegThumbnailPath);
+          });
         await this.assetRepository.update({ id: asset.id }, { resizePath: jpegThumbnailPath });
       } catch (error: any) {
         this.logger.error('Failed to generate jpeg thumbnail for asset: ' + asset.id, error.stack);
@@ -66,7 +75,7 @@ export class ThumbnailGeneratorProcessor {
       await this.machineLearningQueue.add(JobName.IMAGE_TAGGING, { asset });
       await this.machineLearningQueue.add(JobName.OBJECT_DETECTION, { asset });
 
-      this.wsCommunicationGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
+      this.wsCommunicationGateway.server.to(asset.ownerId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
     }
 
     if (asset.type == AssetType.VIDEO) {
@@ -97,7 +106,7 @@ export class ThumbnailGeneratorProcessor {
       await this.machineLearningQueue.add(JobName.IMAGE_TAGGING, { asset });
       await this.machineLearningQueue.add(JobName.OBJECT_DETECTION, { asset });
 
-      this.wsCommunicationGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
+      this.wsCommunicationGateway.server.to(asset.ownerId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
     }
   }
 

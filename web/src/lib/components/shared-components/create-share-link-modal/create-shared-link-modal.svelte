@@ -29,6 +29,8 @@
 	let sharedLink = '';
 	let description = '';
 	let shouldChangeExpirationTime = false;
+	let isAllowDownload = true;
+	let shouldShowExif = true;
 	const dispatch = createEventDispatcher();
 
 	const expiredDateOption: ImmichDropDownOption = {
@@ -42,6 +44,8 @@
 				description = editingLink.description;
 			}
 			isAllowUpload = editingLink.allowUpload;
+			isAllowDownload = editingLink.allowDownload;
+			shouldShowExif = editingLink.showExif;
 		}
 	});
 
@@ -56,17 +60,21 @@
 			if (shareType === SharedLinkType.Album && album) {
 				const { data } = await api.albumApi.createAlbumSharedLink({
 					albumId: album.id,
-					expiredAt: expirationDate,
+					expiresAt: expirationDate,
 					allowUpload: isAllowUpload,
-					description: description
+					description: description,
+					allowDownload: isAllowDownload,
+					showExif: shouldShowExif
 				});
 				buildSharedLink(data);
 			} else {
 				const { data } = await api.assetApi.createAssetsSharedLink({
 					assetIds: sharedAssets.map((a) => a.id),
-					expiredAt: expirationDate,
+					expiresAt: expirationDate,
 					allowUpload: isAllowUpload,
-					description: description
+					description: description,
+					allowDownload: isAllowDownload,
+					showExif: shouldShowExif
 				});
 				buildSharedLink(data);
 			}
@@ -120,19 +128,16 @@
 			try {
 				const expirationTime = getExpirationTimeInMillisecond();
 				const currentTime = new Date().getTime();
-				let expirationDate = expirationTime
+				const expirationDate: string | null = expirationTime
 					? new Date(currentTime + expirationTime).toISOString()
-					: undefined;
-
-				if (expirationTime === 0) {
-					expirationDate = undefined;
-				}
+					: null;
 
 				await api.shareApi.editSharedLink(editingLink.id, {
-					description: description,
-					expiredAt: expirationDate,
+					description,
+					expiresAt: shouldChangeExpirationTime ? expirationDate : undefined,
 					allowUpload: isAllowUpload,
-					isEditExpireTime: shouldChangeExpirationTime
+					allowDownload: isAllowDownload,
+					showExif: shouldShowExif
 				});
 
 				notificationController.show({
@@ -185,12 +190,12 @@
 			{/if}
 		{/if}
 
-		<div class="mt-6 mb-2">
+		<div class="mt-4 mb-2">
 			<p class="text-xs">LINK OPTIONS</p>
 		</div>
 		<div class="p-4 bg-gray-100 dark:bg-black/40 rounded-lg">
 			<div class="flex flex-col">
-				<div class="mb-4">
+				<div class="mb-2">
 					<SettingInputField
 						inputType={SettingInputFieldType.TEXT}
 						label="Description"
@@ -198,9 +203,19 @@
 					/>
 				</div>
 
-				<SettingSwitch bind:checked={isAllowUpload} title={'Allow public user to upload'} />
+				<div class="my-3">
+					<SettingSwitch bind:checked={shouldShowExif} title={'Show metadata'} />
+				</div>
 
-				<div class="text-sm mt-4">
+				<div class="my-3">
+					<SettingSwitch bind:checked={isAllowDownload} title={'Allow public user to download'} />
+				</div>
+
+				<div class="my-3">
+					<SettingSwitch bind:checked={isAllowUpload} title={'Allow public user to upload'} />
+				</div>
+
+				<div class="text-sm">
 					{#if editingLink}
 						<p class="my-2 immich-form-label">
 							<SettingSwitch

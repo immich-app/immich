@@ -26,13 +26,6 @@ void main() {
 
     // 
     //
-    //Future<JobStatusResponseDto> getJobStatus(JobId jobId) async
-    test('test getJobStatus', () async {
-      // TODO
-    });
-
-    // 
-    //
     //Future<num> sendJobCommand(JobId jobId, JobCommandDto jobCommandDto) async
     test('test sendJobCommand', () async {
       // TODO

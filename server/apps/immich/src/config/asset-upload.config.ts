@@ -1,34 +1,60 @@
 import { APP_UPLOAD_LOCATION } from '@app/common/constants';
 import { BadRequestException, Logger, UnauthorizedException } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
-import { randomUUID } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
 import { Request } from 'express';
 import { existsSync, mkdirSync } from 'fs';
-import { diskStorage } from 'multer';
+import { diskStorage, StorageEngine } from 'multer';
 import { extname, join } from 'path';
 import sanitize from 'sanitize-filename';
 import { AuthUserDto } from '../decorators/auth-user.decorator';
 import { patchFormData } from '../utils/path-form-data.util';
 
-const logger = new Logger('AssetUploadConfig');
+export interface ImmichFile extends Express.Multer.File {
+  /** sha1 hash of file */
+  checksum: Buffer;
+}
 
 export const assetUploadOption: MulterOptions = {
   fileFilter,
-  storage: diskStorage({
-    destination,
-    filename,
-  }),
+  storage: customStorage(),
 };
+
+export function customStorage(): StorageEngine {
+  const storage = diskStorage({ destination, filename });
+
+  return {
+    _handleFile(req, file, callback) {
+      const hash = createHash('sha1');
+      file.stream.on('data', (chunk) => hash.update(chunk));
+
+      storage._handleFile(req, file, (error, response) => {
+        if (error) {
+          hash.destroy();
+          callback(error);
+        } else {
+          callback(null, { ...response, checksum: hash.digest() } as ImmichFile);
+        }
+      });
+    },
+
+    _removeFile(req, file, callback) {
+      storage._removeFile(req, file, callback);
+    },
+  };
+}
 
 export const multerUtils = { fileFilter, filename, destination };
 
+const logger = new Logger('AssetUploadConfig');
+
 function fileFilter(req: Request, file: any, cb: any) {
-  if (!req.user) {
+  if (!req.user || (req.user.isPublicUser && !req.user.isAllowUpload)) {
     return cb(new UnauthorizedException());
   }
   if (
     file.mimetype.match(
-      /\/(jpg|jpeg|png|gif|mp4|x-msvideo|quicktime|heic|heif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef)$/,
+      /\/(jpg|jpeg|png|gif|mp4|webm|x-msvideo|quicktime|heic|heif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef|x-fuji-raf|x-samsung-srw)$/,
     )
   ) {
     cb(null, true);
@@ -39,15 +65,11 @@ function fileFilter(req: Request, file: any, cb: any) {
 }
 
 function destination(req: Request, file: Express.Multer.File, cb: any) {
-  if (!req.user) {
+  if (!req.user || (req.user.isPublicUser && !req.user.isAllowUpload)) {
     return cb(new UnauthorizedException());
   }
 
   const user = req.user as AuthUserDto;
-
-  if (user.isPublicUser && !user.isAllowUpload) {
-    return cb(new UnauthorizedException());
-  }
 
   const basePath = APP_UPLOAD_LOCATION;
   const sanitizedDeviceId = sanitize(String(req.body['deviceId']));
@@ -62,7 +84,7 @@ function destination(req: Request, file: Express.Multer.File, cb: any) {
 }
 
 function filename(req: Request, file: Express.Multer.File, cb: any) {
-  if (!req.user) {
+  if (!req.user || (req.user.isPublicUser && !req.user.isAllowUpload)) {
     return cb(new UnauthorizedException());
   }
 

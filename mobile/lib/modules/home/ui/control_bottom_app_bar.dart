@@ -1,26 +1,27 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/modules/home/ui/delete_diaglog.dart';
+import 'package:immich_mobile/modules/album/ui/add_to_album_sliverlist.dart';
+import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
-import 'package:immich_mobile/utils/image_url_builder.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/models/album.dart';
 
 class ControlBottomAppBar extends ConsumerWidget {
   final Function onShare;
+  final Function onFavorite;
   final Function onDelete;
-  final Function(AlbumResponseDto album) onAddToAlbum;
+  final Function(Album album) onAddToAlbum;
   final void Function() onCreateNewAlbum;
 
-  final List<AlbumResponseDto> albums;
+  final List<Album> albums;
+  final List<Album> sharedAlbums;
 
   const ControlBottomAppBar({
     Key? key,
     required this.onShare,
+    required this.onFavorite,
     required this.onDelete,
+    required this.sharedAlbums,
     required this.albums,
     required this.onAddToAlbum,
     required this.onCreateNewAlbum,
@@ -28,6 +29,8 @@ class ControlBottomAppBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     Widget renderActionButtons() {
       return Row(
         children: [
@@ -36,6 +39,13 @@ class ControlBottomAppBar extends ConsumerWidget {
             label: "control_bottom_app_bar_share".tr(),
             onPressed: () {
               onShare();
+            },
+          ),
+          ControlBoxButton(
+            iconData: Icons.star_rounded,
+            label: "control_bottom_app_bar_favorite".tr(),
+            onPressed: () {
+              onFavorite();
             },
           ),
           ControlBoxButton(
@@ -56,60 +66,6 @@ class ControlBottomAppBar extends ConsumerWidget {
       );
     }
 
-    Widget renderAlbums() {
-      Widget renderAlbum(AlbumResponseDto album) {
-        final box = Hive.box(userInfoBox);
-
-        return Padding(
-          padding: const EdgeInsets.only(left: 8.0),
-          child: GestureDetector(
-            onTap: () => onAddToAlbum(album),
-            child: Container(
-              width: 112,
-              padding: const EdgeInsets.all(6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: CachedNetworkImage(
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.cover,
-                      imageUrl: getAlbumThumbnailUrl(album),
-                      httpHeaders: {
-                        "Authorization": "Bearer ${box.get(accessTokenKey)}"
-                      },
-                      cacheKey: getAlbumThumbNailCacheKey(album),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: Text(
-                      album.albumName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12.0,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      }
-
-      return SizedBox(
-        height: 200,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemBuilder: (buildContext, i) => renderAlbum(albums[i]),
-          itemCount: albums.length,
-        ),
-      );
-    }
-
     return DraggableScrollableSheet(
       initialChildSize: 0.30,
       minChildSize: 0.15,
@@ -119,43 +75,48 @@ class ControlBottomAppBar extends ConsumerWidget {
         BuildContext context,
         ScrollController scrollController,
       ) {
-        return SingleChildScrollView(
-          controller: scrollController,
-          child: Card(
-            elevation: 12.0,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(12),
-                topRight: Radius.circular(12),
-              ),
+        return Card(
+          color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
+          surfaceTintColor: Colors.transparent,
+          elevation: 18.0,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(12),
+              topRight: Radius.circular(12),
             ),
-            margin: const EdgeInsets.all(0),
-            child: Container(
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
+          ),
+          margin: const EdgeInsets.all(0),
+          child: CustomScrollView(
+            controller: scrollController,
+            slivers: [
+              SliverToBoxAdapter(
+                child: Column(
+                  children: <Widget>[
+                    const SizedBox(height: 12),
+                    const CustomDraggingHandle(),
+                    const SizedBox(height: 12),
+                    renderActionButtons(),
+                    const Divider(
+                      indent: 16,
+                      endIndent: 16,
+                      thickness: 1,
+                    ),
+                    AddToAlbumTitleRow(onCreateNewAlbum: onCreateNewAlbum),
+                  ],
                 ),
               ),
-              child: Column(
-                children: <Widget>[
-                  const SizedBox(height: 12),
-                  const CustomDraggingHandle(),
-                  const SizedBox(height: 12),
-                  renderActionButtons(),
-                  const Divider(
-                    indent: 16,
-                    endIndent: 16,
-                    thickness: 1,
-                  ),
-                  AddToAlbumTitleRow(
-                    onCreateNewAlbum: () => onCreateNewAlbum(),
-                  ),
-                  renderAlbums(),
-                  const SizedBox(height: 200),
-                ],
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: AddToAlbumSliverList(
+                  albums: albums,
+                  sharedAlbums: sharedAlbums,
+                  onAddToAlbum: onAddToAlbum,
+                ),
               ),
-            ),
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 200),
+              )
+            ],
           ),
         );
       },
@@ -179,16 +140,17 @@ class AddToAlbumTitleRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text(
-            "control_bottom_app_bar_add_to_album",
+            "common_add_to_album",
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
           ).tr(),
-          TextButton(
+          TextButton.icon(
             onPressed: onCreateNewAlbum,
-            child: Text(
-              "control_bottom_app_bar_create_new_album",
+            icon: const Icon(Icons.add),
+            label: Text(
+              "common_create_new_album",
               style: TextStyle(
                 color: Theme.of(context).primaryColor,
                 fontWeight: FontWeight.bold,

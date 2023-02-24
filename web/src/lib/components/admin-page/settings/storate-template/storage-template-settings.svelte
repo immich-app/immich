@@ -12,7 +12,7 @@
 	import SupportedDatetimePanel from './supported-datetime-panel.svelte';
 	import SupportedVariablesPanel from './supported-variables-panel.svelte';
 	import SettingButtonsRow from '../setting-buttons-row.svelte';
-	import _ from 'lodash';
+	import { isEqual } from 'lodash-es';
 	import {
 		notificationController,
 		NotificationType
@@ -230,7 +230,7 @@
 						on:reset={reset}
 						on:save={saveSetting}
 						on:reset-to-default={resetToDefault}
-						showResetToDefault={!_.isEqual(savedConfig, defaultConfig)}
+						showResetToDefault={!isEqual(savedConfig, defaultConfig)}
 					/>
 				</form>
 			</div>

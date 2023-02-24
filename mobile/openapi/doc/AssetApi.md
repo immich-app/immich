@@ -9,6 +9,7 @@ All URIs are relative to */api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**addAssetsToSharedLink**](AssetApi.md#addassetstosharedlink) | **PATCH** /asset/shared-link/add | 
 [**checkDuplicateAsset**](AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 [**checkExistingAssets**](AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 [**createAssetsSharedLink**](AssetApi.md#createassetssharedlink) | **POST** /asset/shared-link | 
@@ -26,12 +27,61 @@ Method | HTTP request | Description
 [**getCuratedLocations**](AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 [**getCuratedObjects**](AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
 [**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
+[**removeAssetsFromSharedLink**](AssetApi.md#removeassetsfromsharedlink) | **PATCH** /asset/shared-link/remove | 
 [**searchAsset**](AssetApi.md#searchasset) | **POST** /asset/search | 
 [**serveFile**](AssetApi.md#servefile) | **GET** /asset/file/{assetId} | 
 [**updateAsset**](AssetApi.md#updateasset) | **PUT** /asset/{assetId} | 
-[**updateAssetsInSharedLink**](AssetApi.md#updateassetsinsharedlink) | **PATCH** /asset/shared-link | 
 [**uploadFile**](AssetApi.md#uploadfile) | **POST** /asset/upload | 
 
+
+# **addAssetsToSharedLink**
+> SharedLinkResponseDto addAssetsToSharedLink(addAssetsDto)
+
+
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final addAssetsDto = AddAssetsDto(); // AddAssetsDto | 
+
+try {
+    final result = api_instance.addAssetsToSharedLink(addAssetsDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->addAssetsToSharedLink: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **addAssetsDto** | [**AddAssetsDto**](AddAssetsDto.md)|  | 
+
+### Return type
+
+[**SharedLinkResponseDto**](SharedLinkResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **checkDuplicateAsset**
 > CheckDuplicateAssetResponseDto checkDuplicateAsset(checkDuplicateAssetDto)
@@ -230,7 +280,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **downloadFile**
-> Object downloadFile(assetId, isThumb, isWeb)
+> Object downloadFile(assetId)
 
 
 
@@ -248,11 +298,9 @@ import 'package:openapi/api.dart';
 
 final api_instance = AssetApi();
 final assetId = assetId_example; // String | 
-final isThumb = true; // bool | 
-final isWeb = true; // bool | 
 
 try {
-    final result = api_instance.downloadFile(assetId, isThumb, isWeb);
+    final result = api_instance.downloadFile(assetId);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->downloadFile: $e\n');
@@ -264,8 +312,6 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **assetId** | **String**|  | 
- **isThumb** | **bool**|  | [optional] 
- **isWeb** | **bool**|  | [optional] 
 
 ### Return type
 
@@ -336,7 +382,7 @@ Name | Type | Description  | Notes
 
 
 
-
+Current this is not used in any UI element
 
 ### Example
 ```dart
@@ -381,7 +427,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAllAssets**
-> List<AssetResponseDto> getAllAssets(ifNoneMatch)
+> List<AssetResponseDto> getAllAssets(isFavorite, skip, ifNoneMatch)
 
 
 
@@ -398,10 +444,12 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
+final isFavorite = true; // bool | 
+final skip = 8.14; // num | 
 final ifNoneMatch = ifNoneMatch_example; // String | ETag of data already cached on the client
 
 try {
-    final result = api_instance.getAllAssets(ifNoneMatch);
+    final result = api_instance.getAllAssets(isFavorite, skip, ifNoneMatch);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getAllAssets: $e\n');
@@ -412,6 +460,8 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
+ **isFavorite** | **bool**|  | [optional] 
+ **skip** | **num**|  | [optional] 
  **ifNoneMatch** | **String**| ETag of data already cached on the client | [optional] 
 
 ### Return type
@@ -856,6 +906,55 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **removeAssetsFromSharedLink**
+> SharedLinkResponseDto removeAssetsFromSharedLink(removeAssetsDto)
+
+
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final removeAssetsDto = RemoveAssetsDto(); // RemoveAssetsDto | 
+
+try {
+    final result = api_instance.removeAssetsFromSharedLink(removeAssetsDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->removeAssetsFromSharedLink: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **removeAssetsDto** | [**RemoveAssetsDto**](RemoveAssetsDto.md)|  | 
+
+### Return type
+
+[**SharedLinkResponseDto**](SharedLinkResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **searchAsset**
 > List<AssetResponseDto> searchAsset(searchAssetDto)
 
@@ -1009,57 +1108,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **updateAssetsInSharedLink**
-> SharedLinkResponseDto updateAssetsInSharedLink(updateAssetsToSharedLinkDto)
-
-
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = AssetApi();
-final updateAssetsToSharedLinkDto = UpdateAssetsToSharedLinkDto(); // UpdateAssetsToSharedLinkDto | 
-
-try {
-    final result = api_instance.updateAssetsInSharedLink(updateAssetsToSharedLinkDto);
-    print(result);
-} catch (e) {
-    print('Exception when calling AssetApi->updateAssetsInSharedLink: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **updateAssetsToSharedLinkDto** | [**UpdateAssetsToSharedLinkDto**](UpdateAssetsToSharedLinkDto.md)|  | 
-
-### Return type
-
-[**SharedLinkResponseDto**](SharedLinkResponseDto.md)
-
-### Authorization
-
-[bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
 # **uploadFile**
-> AssetFileUploadResponseDto uploadFile(assetData)
+> AssetFileUploadResponseDto uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, livePhotoData, isVisible, duration)
 
 
 
@@ -1076,10 +1126,20 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
+final assetType = ; // AssetTypeEnum | 
 final assetData = BINARY_DATA_HERE; // MultipartFile | 
+final deviceAssetId = deviceAssetId_example; // String | 
+final deviceId = deviceId_example; // String | 
+final fileCreatedAt = fileCreatedAt_example; // String | 
+final fileModifiedAt = fileModifiedAt_example; // String | 
+final isFavorite = true; // bool | 
+final fileExtension = fileExtension_example; // String | 
+final livePhotoData = BINARY_DATA_HERE; // MultipartFile | 
+final isVisible = true; // bool | 
+final duration = duration_example; // String | 
 
 try {
-    final result = api_instance.uploadFile(assetData);
+    final result = api_instance.uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, livePhotoData, isVisible, duration);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->uploadFile: $e\n');
@@ -1090,7 +1150,17 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
+ **assetType** | [**AssetTypeEnum**](AssetTypeEnum.md)|  | 
  **assetData** | **MultipartFile**|  | 
+ **deviceAssetId** | **String**|  | 
+ **deviceId** | **String**|  | 
+ **fileCreatedAt** | **String**|  | 
+ **fileModifiedAt** | **String**|  | 
+ **isFavorite** | **bool**|  | 
+ **fileExtension** | **String**|  | 
+ **livePhotoData** | **MultipartFile**|  | [optional] 
+ **isVisible** | **bool**|  | [optional] 
+ **duration** | **String**|  | [optional] 
 
 ### Return type
 

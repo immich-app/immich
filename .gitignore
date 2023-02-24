@@ -4,4 +4,9 @@
 .idea
 
 docker/upload
+uploads
 coverage
+
+mobile/gradle.properties
+mobile/openapi/pubspec.lock
+mobile/*.jks

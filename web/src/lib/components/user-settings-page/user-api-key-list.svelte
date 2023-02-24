@@ -12,6 +12,7 @@
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
+	import { locale } from '$lib/stores/preferences.store';
 
 	let keys: APIKeyResponseDto[] = [];
 
@@ -20,7 +21,6 @@
 	let deleteKey: APIKeyResponseDto | null = null;
 	let secret = '';
 
-	const locale = navigator.language;
 	const format: Intl.DateTimeFormatOptions = {
 		month: 'short',
 		day: 'numeric',
@@ -154,7 +154,7 @@
 							>
 								<td class="text-sm px-4 w-1/3 text-ellipsis">{key.name}</td>
 								<td class="text-sm px-4 w-1/3 text-ellipsis"
-									>{new Date(key.createdAt).toLocaleDateString(locale, format)}
+									>{new Date(key.createdAt).toLocaleDateString($locale, format)}
 								</td>
 								<td class="text-sm px-4 w-1/3 text-ellipsis">
 									<button

@@ -28,6 +28,7 @@ Immich is a full-stack [TypeScript](https://www.typescriptlang.org/) application
 - [Nest.js](https://nestjs.com/)
 - [TypeORM](https://typeorm.io/) for database management.
 - [Jest](https://jestjs.io/) for testing.
+- [Python](https://www.python.org/) for Machine Learning.
 
 ### Database
 

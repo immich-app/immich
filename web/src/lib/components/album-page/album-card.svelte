@@ -16,14 +16,14 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
+	import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
+	import { locale } from '$lib/stores/preferences.store';
 
 	export let album: AlbumResponseDto;
 
-	const NO_THUMBNAIL = 'no-thumbnail.png';
-
 	let imageData = `/api/asset/thumbnail/${album.albumThumbnailAssetId}?format=${ThumbnailFormat.Webp}`;
 	if (!album.albumThumbnailAssetId) {
-		imageData = NO_THUMBNAIL;
+		imageData = noThumbnailUrl;
 	}
 
 	const dispatchClick = createEventDispatcher<OnClick>();
@@ -51,10 +51,8 @@
 	};
 
 	onMount(async () => {
-		imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || NO_THUMBNAIL;
+		imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || noThumbnailUrl;
 	});
-
-	const locale = navigator.language;
 </script>
 
 <div
@@ -92,7 +90,10 @@
 		</p>
 
 		<span class="text-xs flex gap-2 dark:text-immich-dark-fg" data-testid="album-details">
-			<p>{album.assetCount.toLocaleString(locale)} {album.assetCount == 1 ? `item` : `items`}</p>
+			<p>
+				{album.assetCount.toLocaleString($locale)}
+				{album.assetCount == 1 ? `item` : `items`}
+			</p>
 
 			{#if album.shared}
 				<p>·</p>

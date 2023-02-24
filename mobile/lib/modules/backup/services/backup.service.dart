@@ -29,6 +29,7 @@ final backupServiceProvider = Provider(
 );
 
 class BackupService {
+  final httpClient = http.Client();
   final ApiService _apiService;
 
   BackupService(this._apiService);
@@ -74,6 +75,9 @@ class BackupService {
     final filter = FilterOptionGroup(
       containsPathModified: true,
       orders: [const OrderOption(type: OrderOptionType.updateDate)],
+      // title is needed to create Assets
+      imageOption: const FilterOption(needTitle: true),
+      videoOption: const FilterOption(needTitle: true),
     );
     final now = DateTime.now();
     final List<AssetPathEntity?> selectedAlbums =
@@ -256,8 +260,8 @@ class BackupService {
           req.fields['deviceAssetId'] = entity.id;
           req.fields['deviceId'] = deviceId;
           req.fields['assetType'] = _getAssetType(entity.type);
-          req.fields['createdAt'] = entity.createDateTime.toIso8601String();
-          req.fields['modifiedAt'] = entity.modifiedDateTime.toIso8601String();
+          req.fields['fileCreatedAt'] = entity.createDateTime.toIso8601String();
+          req.fields['fileModifiedAt'] = entity.modifiedDateTime.toIso8601String();
           req.fields['isFavorite'] = entity.isFavorite.toString();
           req.fields['fileExtension'] = fileExtension;
           req.fields['duration'] = entity.videoDuration.toString();
@@ -274,13 +278,16 @@ class BackupService {
           setCurrentUploadAssetCb(
             CurrentUploadAsset(
               id: entity.id,
-              createdAt: entity.createDateTime,
+              fileCreatedAt: entity.createDateTime.year == 1970
+                  ? entity.modifiedDateTime
+                  : entity.createDateTime,
               fileName: originalFileName,
               fileType: _getAssetType(entity.type),
             ),
           );
 
-          var response = await req.send(cancellationToken: cancelToken);
+          var response =
+              await httpClient.send(req, cancellationToken: cancelToken);
 
           if (response.statusCode == 200) {
             // asset is a duplicate (already exists on the server)
@@ -301,7 +308,7 @@ class BackupService {
               ErrorUploadAsset(
                 asset: entity,
                 id: entity.id,
-                createdAt: entity.createDateTime,
+                fileCreatedAt: entity.createDateTime,
                 fileName: originalFileName,
                 fileType: _getAssetType(entity.type),
                 errorMessage: error['error'],
@@ -332,7 +339,6 @@ class BackupService {
 
   Future<MultipartFile?> _getLivePhotoFile(AssetEntity entity) async {
     var motionFilePath = await entity.getMediaUrl();
-    // var motionFilePath = '/var/mobile/Media/DCIM/103APPLE/IMG_3371.MOV'
 
     if (motionFilePath != null) {
       var validPath = motionFilePath.replaceAll('file://', '');

@@ -1,27 +1,35 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount, onDestroy } from 'svelte';
-	import { fly } from 'svelte/transition';
-	import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
-	import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
-	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
-	import PhotoViewer from './photo-viewer.svelte';
-	import DetailPanel from './detail-panel.svelte';
 	import { goto } from '$app/navigation';
 	import { downloadAssets } from '$lib/stores/download';
-	import VideoViewer from './video-viewer.svelte';
+	import {
+		AlbumResponseDto,
+		api,
+		AssetResponseDto,
+		AssetTypeEnum,
+		SharedLinkResponseDto
+	} from '@api';
+	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
+	import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
+	import { fly } from 'svelte/transition';
 	import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
-	import { api, AssetResponseDto, AssetTypeEnum, AlbumResponseDto } from '@api';
 	import {
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
+	import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
+	import DetailPanel from './detail-panel.svelte';
+	import PhotoViewer from './photo-viewer.svelte';
+	import VideoViewer from './video-viewer.svelte';
 
 	import { assetStore } from '$lib/stores/assets.store';
 	import { addAssetsToAlbum } from '$lib/utils/asset-utils';
+	import { browser } from '$app/environment';
 
 	export let asset: AssetResponseDto;
 	export let publicSharedKey = '';
 	export let showNavigation = true;
+	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
 
 	const dispatch = createEventDispatcher();
 	let halfLeftHover = false;
@@ -31,22 +39,37 @@
 	let isShowAlbumPicker = false;
 	let addToSharedAlbum = true;
 	let shouldPlayMotionPhoto = false;
+	let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : true;
+	let canCopyImagesToClipboard: boolean;
 	const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key);
 
 	onMount(async () => {
 		document.addEventListener('keydown', onKeyboardPress);
 
+		getAllAlbums();
+
+		// Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
+		// TODO: Move to regular import once the package correctly supports ESM.
+		const module = await import('copy-image-clipboard');
+		canCopyImagesToClipboard = module.canCopyImagesToClipboard();
+	});
+
+	onDestroy(() => {
+		if (browser) {
+			document.removeEventListener('keydown', onKeyboardPress);
+		}
+	});
+
+	$: asset.id && getAllAlbums(); // Update the album information when the asset ID changes
+
+	const getAllAlbums = async () => {
 		try {
 			const { data } = await api.albumApi.getAllAlbums(undefined, asset.id);
 			appearsInAlbums = data;
 		} catch (e) {
 			console.error('Error getting album that asset belong to', e);
 		}
-	});
-
-	onDestroy(() => {
-		document.removeEventListener('keydown', onKeyboardPress);
-	});
+	};
 
 	const handleKeyboardPress = (key: string) => {
 		switch (key) {
@@ -122,10 +145,8 @@
 
 			$downloadAssets[imageFileName] = 0;
 
-			const { data, status } = await api.assetApi.downloadFile(assetId, false, false, {
-				params: {
-					key
-				},
+			const { data, status } = await api.assetApi.downloadFile(assetId, {
+				params: { key },
 				responseType: 'blob',
 				onDownloadProgress: (progressEvent) => {
 					if (progressEvent.lengthComputable) {
@@ -160,6 +181,7 @@
 				}, 2000);
 			}
 		} catch (e) {
+			$downloadAssets = {};
 			console.error('Error downloading file ', e);
 			notificationController.show({
 				type: NotificationType.Error,
@@ -202,6 +224,7 @@
 		});
 
 		asset.isFavorite = data.isFavorite;
+		assetStore.updateAsset(asset.id, data.isFavorite);
 	};
 
 	const openAlbumPicker = (shared: boolean) => {
@@ -239,8 +262,9 @@
 		<AssetViewerNavBar
 			{asset}
 			isMotionPhotoPlaying={shouldPlayMotionPhoto}
-			showCopyButton={asset.type === AssetTypeEnum.Image}
+			showCopyButton={canCopyImagesToClipboard && asset.type === AssetTypeEnum.Image}
 			showMotionPlayButton={!!asset.livePhotoVideoId}
+			showDownloadButton={shouldShowDownloadButton}
 			on:goBack={closeViewer}
 			on:showDetail={showDetailInfoHandler}
 			on:download={handleDownload}
@@ -289,7 +313,7 @@
 						on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
 					/>
 				{:else}
-					<PhotoViewer {publicSharedKey} assetId={asset.id} on:close={closeViewer} />
+					<PhotoViewer {publicSharedKey} {asset} on:close={closeViewer} />
 				{/if}
 			{:else}
 				<VideoViewer {publicSharedKey} assetId={asset.id} on:close={closeViewer} />

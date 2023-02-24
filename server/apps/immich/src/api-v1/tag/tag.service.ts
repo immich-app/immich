@@ -4,7 +4,7 @@ import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { ITagRepository } from './tag.repository';
-import { mapTag, TagResponseDto } from './response-dto/tag-response.dto';
+import { mapTag, TagResponseDto } from '@app/domain';
 
 @Injectable()
 export class TagService {

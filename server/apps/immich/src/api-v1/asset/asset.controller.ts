@@ -1,3 +1,4 @@
+import { AddAssetsDto } from './../album/dto/add-assets.dto';
 import {
   Controller,
   Post,
@@ -15,27 +16,26 @@ import {
   Put,
   UploadedFiles,
   Patch,
+  StreamableFile,
+  ParseFilePipe,
 } from '@nestjs/common';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AssetService } from './asset.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { assetUploadOption } from '../../config/asset-upload.config';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
-import { BackgroundTaskService } from '../../modules/background-task/background-task.service';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
-import { AssetResponseDto } from './response-dto/asset-response.dto';
+import { AssetResponseDto, ImmichReadStream } from '@app/domain';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
-import { AssetFileUploadDto } from './dto/asset-file-upload.dto';
-import { CreateAssetDto } from './dto/create-asset.dto';
+import { CreateAssetDto, mapToUploadFile } from './dto/create-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
-import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
+import { DeleteAssetResponseDto } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
 import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by-time-group-response.dto';
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
@@ -52,14 +52,21 @@ import {
 } from '../../constants/download.constant';
 import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
-import { SharedLinkResponseDto } from '../share/response-dto/shared-link-response.dto';
-import { UpdateAssetsToSharedLinkDto } from './dto/add-assets-to-shared-link.dto';
+import { SharedLinkResponseDto } from '@app/domain';
+import { AssetSearchDto } from './dto/asset-search.dto';
+import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config';
+import FileNotEmptyValidator from '../validation/file-not-empty-validator';
+import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
+
+function asStreamableFile({ stream, type, length }: ImmichReadStream) {
+  return new StreamableFile(stream, { type, length });
+}
 
 @ApiBearerAuth()
 @ApiTags('Asset')
 @Controller('asset')
 export class AssetController {
-  constructor(private assetService: AssetService, private backgroundTaskService: BackgroundTaskService) {}
+  constructor(private assetService: AssetService) {}
 
   @Authenticated({ isShared: true })
   @Post('upload')
@@ -75,18 +82,28 @@ export class AssetController {
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     description: 'Asset Upload Information',
-    type: AssetFileUploadDto,
+    type: CreateAssetDto,
   })
   async uploadFile(
     @GetAuthUser() authUser: AuthUserDto,
-    @UploadedFiles() files: { assetData: Express.Multer.File[]; livePhotoData?: Express.Multer.File[] },
-    @Body(ValidationPipe) createAssetDto: CreateAssetDto,
+    @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] }))
+    files: { assetData: ImmichFile[]; livePhotoData?: ImmichFile[] },
+    @Body(new ValidationPipe()) dto: CreateAssetDto,
     @Response({ passthrough: true }) res: Res,
   ): Promise<AssetFileUploadResponseDto> {
-    const originalAssetData = files.assetData[0];
-    const livePhotoAssetData = files.livePhotoData?.[0];
+    const file = mapToUploadFile(files.assetData[0]);
+    const _livePhotoFile = files.livePhotoData?.[0];
+    let livePhotoFile;
+    if (_livePhotoFile) {
+      livePhotoFile = mapToUploadFile(_livePhotoFile);
+    }
 
-    return this.assetService.handleUploadedAsset(authUser, createAssetDto, res, originalAssetData, livePhotoAssetData);
+    const responseDto = await this.assetService.uploadFile(authUser, dto, file, livePhotoFile);
+    if (responseDto.duplicate) {
+      res.status(200);
+    }
+
+    return responseDto;
   }
 
   @Authenticated({ isShared: true })
@@ -94,11 +111,9 @@ export class AssetController {
   async downloadFile(
     @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
-    @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
     @Param('assetId') assetId: string,
   ): Promise<any> {
-    await this.assetService.checkAssetsAccess(authUser, [assetId]);
-    return this.assetService.downloadFile(query, assetId, res);
+    return this.assetService.downloadFile(authUser, assetId).then(asStreamableFile);
   }
 
   @Authenticated({ isShared: true })
@@ -108,6 +123,7 @@ export class AssetController {
     @Response({ passthrough: true }) res: Res,
     @Body(new ValidationPipe()) dto: DownloadFilesDto,
   ): Promise<any> {
+    this.assetService.checkDownloadAccess(authUser);
     await this.assetService.checkAssetsAccess(authUser, [...dto.assetIds]);
     const { stream, fileName, fileSize, fileCount, complete } = await this.assetService.downloadFiles(dto);
     res.attachment(fileName);
@@ -117,6 +133,9 @@ export class AssetController {
     return stream;
   }
 
+  /**
+   * Current this is not used in any UI element
+   */
   @Authenticated({ isShared: true })
   @Get('/download-library')
   async downloadLibrary(
@@ -124,6 +143,7 @@ export class AssetController {
     @Query(new ValidationPipe({ transform: true })) dto: DownloadDto,
     @Response({ passthrough: true }) res: Res,
   ): Promise<any> {
+    this.assetService.checkDownloadAccess(authUser);
     const { stream, fileName, fileSize, fileCount, complete } = await this.assetService.downloadLibrary(authUser, dto);
     res.attachment(fileName);
     res.setHeader(IMMICH_CONTENT_LENGTH_HINT, fileSize);
@@ -143,7 +163,7 @@ export class AssetController {
     @Param('assetId') assetId: string,
   ): Promise<any> {
     await this.assetService.checkAssetsAccess(authUser, [assetId]);
-    return this.assetService.serveFile(assetId, query, res, headers);
+    return this.assetService.serveFile(authUser, assetId, query, res, headers);
   }
 
   @Authenticated({ isShared: true })
@@ -213,9 +233,11 @@ export class AssetController {
     required: false,
     schema: { type: 'string' },
   })
-  async getAllAssets(@GetAuthUser() authUser: AuthUserDto): Promise<AssetResponseDto[]> {
-    const assets = await this.assetService.getAllAssets(authUser);
-    return assets;
+  getAllAssets(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Query(new ValidationPipe({ transform: true })) dto: AssetSearchDto,
+  ): Promise<AssetResponseDto[]> {
+    return this.assetService.getAllAssets(authUser, dto);
   }
 
   @Authenticated()
@@ -246,7 +268,7 @@ export class AssetController {
     @Param('assetId') assetId: string,
   ): Promise<AssetResponseDto> {
     await this.assetService.checkAssetsAccess(authUser, [assetId]);
-    return await this.assetService.getAssetById(assetId);
+    return await this.assetService.getAssetById(authUser, assetId);
   }
 
   /**
@@ -267,37 +289,10 @@ export class AssetController {
   @Delete('/')
   async deleteAsset(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) assetIds: DeleteAssetDto,
+    @Body(ValidationPipe) dto: DeleteAssetDto,
   ): Promise<DeleteAssetResponseDto[]> {
-    await this.assetService.checkAssetsAccess(authUser, assetIds.ids, true);
-
-    const deleteAssetList: AssetResponseDto[] = [];
-
-    for (const id of assetIds.ids) {
-      const assets = await this.assetService.getAssetById(id);
-      if (!assets) {
-        continue;
-      }
-      deleteAssetList.push(assets);
-
-      if (assets.livePhotoVideoId) {
-        const livePhotoVideo = await this.assetService.getAssetById(assets.livePhotoVideoId);
-        if (livePhotoVideo) {
-          deleteAssetList.push(livePhotoVideo);
-          assetIds.ids = [...assetIds.ids, livePhotoVideo.id];
-        }
-      }
-    }
-
-    const result = await this.assetService.deleteAssetById(assetIds);
-
-    result.forEach((res) => {
-      deleteAssetList.filter((a) => a.id == res.id && res.status == DeleteAssetStatusEnum.SUCCESS);
-    });
-
-    await this.backgroundTaskService.deleteFileOnDisk(deleteAssetList);
-
-    return result;
+    await this.assetService.checkAssetsAccess(authUser, dto.ids, true);
+    return this.assetService.deleteAll(authUser, dto);
   }
 
   /**
@@ -336,11 +331,20 @@ export class AssetController {
   }
 
   @Authenticated({ isShared: true })
-  @Patch('/shared-link')
-  async updateAssetsInSharedLink(
+  @Patch('/shared-link/add')
+  async addAssetsToSharedLink(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: UpdateAssetsToSharedLinkDto,
+    @Body(ValidationPipe) dto: AddAssetsDto,
   ): Promise<SharedLinkResponseDto> {
-    return await this.assetService.updateAssetsInSharedLink(authUser, dto);
+    return await this.assetService.addAssetsToSharedLink(authUser, dto);
+  }
+
+  @Authenticated({ isShared: true })
+  @Patch('/shared-link/remove')
+  async removeAssetsFromSharedLink(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) dto: RemoveAssetsDto,
+  ): Promise<SharedLinkResponseDto> {
+    return await this.assetService.removeAssetsFromSharedLink(authUser, dto);
   }
 }

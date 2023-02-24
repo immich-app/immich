@@ -122,12 +122,28 @@
 			</div>
 		</div>
 
-		<div class="info-bottom">
+		<div class="info-bottom flex gap-4">
 			{#if link.allowUpload}
+				<div
+					class="text-xs px-2 py-1 bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray flex place-items-center place-content-center rounded-full w-[80px]"
+				>
+					Upload
+				</div>
+			{/if}
+
+			{#if link.allowDownload}
 				<div
 					class="text-xs px-2 py-1 bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray flex place-items-center place-content-center rounded-full w-[100px]"
 				>
-					Allow upload
+					Download
+				</div>
+			{/if}
+
+			{#if link.showExif}
+				<div
+					class="text-xs px-2 py-1 bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray flex place-items-center place-content-center rounded-full w-[60px]"
+				>
+					EXIF
 				</div>
 			{/if}
 		</div>

@@ -53,7 +53,6 @@ doc/JobCommand.md
 doc/JobCommandDto.md
 doc/JobCounts.md
 doc/JobId.md
-doc/JobStatusResponseDto.md
 doc/LoginCredentialDto.md
 doc/LoginResponseDto.md
 doc/LogoutResponseDto.md
@@ -87,7 +86,6 @@ doc/ThumbnailFormat.md
 doc/TimeGroupEnum.md
 doc/UpdateAlbumDto.md
 doc/UpdateAssetDto.md
-doc/UpdateAssetsToSharedLinkDto.md
 doc/UpdateTagDto.md
 doc/UpdateUserDto.md
 doc/UpsertDeviceInfoDto.md
@@ -162,7 +160,6 @@ lib/model/job_command.dart
 lib/model/job_command_dto.dart
 lib/model/job_counts.dart
 lib/model/job_id.dart
-lib/model/job_status_response_dto.dart
 lib/model/login_credential_dto.dart
 lib/model/login_response_dto.dart
 lib/model/logout_response_dto.dart
@@ -191,7 +188,6 @@ lib/model/thumbnail_format.dart
 lib/model/time_group_enum.dart
 lib/model/update_album_dto.dart
 lib/model/update_asset_dto.dart
-lib/model/update_assets_to_shared_link_dto.dart
 lib/model/update_tag_dto.dart
 lib/model/update_user_dto.dart
 lib/model/upsert_device_info_dto.dart
@@ -250,7 +246,6 @@ test/job_command_dto_test.dart
 test/job_command_test.dart
 test/job_counts_test.dart
 test/job_id_test.dart
-test/job_status_response_dto_test.dart
 test/login_credential_dto_test.dart
 test/login_response_dto_test.dart
 test/logout_response_dto_test.dart
@@ -284,7 +279,6 @@ test/thumbnail_format_test.dart
 test/time_group_enum_test.dart
 test/update_album_dto_test.dart
 test/update_asset_dto_test.dart
-test/update_assets_to_shared_link_dto_test.dart
 test/update_tag_dto_test.dart
 test/update_user_dto_test.dart
 test/upsert_device_info_dto_test.dart

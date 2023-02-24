@@ -71,7 +71,7 @@ No authorization required
 import 'package:openapi/api.dart';
 
 final api_instance = APIKeyApi();
-final id = 8.14; // num | 
+final id = id_example; // String | 
 
 try {
     api_instance.deleteKey(id);
@@ -84,7 +84,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **num**|  | 
+ **id** | **String**|  | 
 
 ### Return type
 
@@ -113,7 +113,7 @@ No authorization required
 import 'package:openapi/api.dart';
 
 final api_instance = APIKeyApi();
-final id = 8.14; // num | 
+final id = id_example; // String | 
 
 try {
     final result = api_instance.getKey(id);
@@ -127,7 +127,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **num**|  | 
+ **id** | **String**|  | 
 
 ### Return type
 
@@ -195,7 +195,7 @@ No authorization required
 import 'package:openapi/api.dart';
 
 final api_instance = APIKeyApi();
-final id = 8.14; // num | 
+final id = id_example; // String | 
 final aPIKeyUpdateDto = APIKeyUpdateDto(); // APIKeyUpdateDto | 
 
 try {
@@ -210,7 +210,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **id** | **num**|  | 
+ **id** | **String**|  | 
  **aPIKeyUpdateDto** | [**APIKeyUpdateDto**](APIKeyUpdateDto.md)|  | 
 
 ### Return type

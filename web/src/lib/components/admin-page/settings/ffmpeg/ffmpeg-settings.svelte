@@ -6,9 +6,12 @@
 	import { api, SystemConfigFFmpegDto } from '@api';
 	import SettingButtonsRow from '../setting-buttons-row.svelte';
 	import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
-	import _ from 'lodash';
-	export let ffmpegConfig: SystemConfigFFmpegDto; // this is the config that is being edited
+	import SettingSelect from '../setting-select.svelte';
+	import SettingSwitch from '../setting-switch.svelte';
+	import { isEqual } from 'lodash-es';
 	import { fade } from 'svelte/transition';
+
+	export let ffmpegConfig: SystemConfigFFmpegDto; // this is the config that is being edited
 
 	let savedConfig: SystemConfigFFmpegDto;
 	let defaultConfig: SystemConfigFFmpegDto;
@@ -99,11 +102,10 @@
 						isEdited={!(ffmpegConfig.targetAudioCodec == savedConfig.targetAudioCodec)}
 					/>
 
-					<SettingInputField
-						inputType={SettingInputFieldType.TEXT}
+					<SettingSelect
 						label="VIDEO CODEC (-vcodec)"
 						bind:value={ffmpegConfig.targetVideoCodec}
-						required={true}
+						options={['h264', 'hevc', 'vp9']}
 						isEdited={!(ffmpegConfig.targetVideoCodec == savedConfig.targetVideoCodec)}
 					/>
 
@@ -114,6 +116,13 @@
 						required={true}
 						isEdited={!(ffmpegConfig.targetScaling == savedConfig.targetScaling)}
 					/>
+
+					<SettingSwitch
+						title="TRANSCODE ALL"
+						subtitle="Transcode all files, even if they already match the specified format?"
+						bind:checked={ffmpegConfig.transcodeAll}
+						isEdited={!(ffmpegConfig.transcodeAll == savedConfig.transcodeAll)}
+					/>
 				</div>
 
 				<div class="ml-4">
@@ -121,7 +130,7 @@
 						on:reset={reset}
 						on:save={saveSetting}
 						on:reset-to-default={resetToDefault}
-						showResetToDefault={!_.isEqual(savedConfig, defaultConfig)}
+						showResetToDefault={!isEqual(savedConfig, defaultConfig)}
 					/>
 				</div>
 			</form>

@@ -1,9 +1,7 @@
-import { APIKeyEntity } from '@app/infra';
-import { ApiProperty } from '@nestjs/swagger';
+import { APIKeyEntity } from '@app/infra/db/entities';
 
 export class APIKeyResponseDto {
-  @ApiProperty({ type: 'integer' })
-  id!: number;
+  id!: string;
   name!: string;
   createdAt!: string;
   updatedAt!: string;

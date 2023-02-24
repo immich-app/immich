@@ -16,11 +16,6 @@ void main() {
   // final instance = ExifResponseDto();
 
   group('test ExifResponseDto', () {
-    // int id
-    test('to test the property `id`', () async {
-      // TODO
-    });
-
     // int fileSizeInByte
     test('to test the property `fileSizeInByte`', () async {
       // TODO
@@ -86,7 +81,7 @@ void main() {
       // TODO
     });
 
-    // num exposureTime
+    // String exposureTime
     test('to test the property `exposureTime`', () async {
       // TODO
     });

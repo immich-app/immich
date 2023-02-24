@@ -5,9 +5,14 @@ on:
   push:
     branches: ["main"]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   update-sdk-repos:
     runs-on: ubuntu-latest
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     steps:
       - uses: actions/github-script@v6
         with:

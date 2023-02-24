@@ -1,39 +1,32 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
-
 	import { onMount } from 'svelte';
 	import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 	import { api, AssetResponseDto } from '@api';
-	import Keydown from 'svelte-keydown';
 	import {
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
 
-	export let assetId: string;
+	export let asset: AssetResponseDto;
 	export let publicSharedKey = '';
 
-	let assetInfo: AssetResponseDto;
 	let assetData: string;
 
 	let copyImageToClipboard: (src: string) => Promise<Blob>;
+	let canCopyImagesToClipboard: () => boolean;
 
 	onMount(async () => {
-		const { data } = await api.assetApi.getAssetById(assetId, {
-			params: {
-				key: publicSharedKey
-			}
-		});
-		assetInfo = data;
-
-		//Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
+		// Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
+		// TODO: Move to regular import once the package correctly supports ESM.
 		const module = await import('copy-image-clipboard');
 		copyImageToClipboard = module.copyImageToClipboard;
+		canCopyImagesToClipboard = module.canCopyImagesToClipboard;
 	});
 
 	const loadAssetData = async () => {
 		try {
-			const { data } = await api.assetApi.serveFile(assetInfo.id, false, true, {
+			const { data } = await api.assetApi.serveFile(asset.id, false, true, {
 				params: {
 					key: publicSharedKey
 				},
@@ -51,42 +44,49 @@
 		}
 	};
 
-	const handleKeypress = async (keyEvent: CustomEvent<string>) => {
-		if (keyEvent.detail == 'Control-c' || keyEvent.detail == 'Meta-c') {
+	const handleKeypress = async ({ metaKey, ctrlKey, key }: KeyboardEvent) => {
+		if ((metaKey || ctrlKey) && key === 'c') {
 			await doCopy();
 		}
 	};
 
-	export const doCopy = async () => {
-		await copyImageToClipboard(assetData);
-		notificationController.show({
-			type: NotificationType.Info,
-			message: 'Copied image to clipboard.',
-			timeout: 3000
-		});
+	const doCopy = async () => {
+		if (!canCopyImagesToClipboard()) {
+			return;
+		}
+
+		try {
+			await copyImageToClipboard(assetData);
+			notificationController.show({
+				type: NotificationType.Info,
+				message: 'Copied image to clipboard.',
+				timeout: 3000
+			});
+		} catch (err) {
+			console.error('Error [photo-viewer]:', err);
+			notificationController.show({
+				type: NotificationType.Error,
+				message: 'Copying image to clipboard failed.'
+			});
+		}
 	};
 </script>
 
-<Keydown on:combo={handleKeypress} />
-
-<svelte:window on:copyImage={async () => await doCopy()} />
+<svelte:window on:keydown={handleKeypress} on:copyImage={doCopy} />
 
 <div
 	transition:fade={{ duration: 150 }}
 	class="flex place-items-center place-content-center h-full select-none"
 >
-	{#if assetInfo}
-		{#await loadAssetData()}
-			<LoadingSpinner />
-		{:then assetData}
-			<img
-				transition:fade={{ duration: 150 }}
-				src={assetData}
-				alt={assetId}
-				class="object-contain h-full transition-all"
-				loading="lazy"
-				draggable="false"
-			/>
-		{/await}
-	{/if}
+	{#await loadAssetData()}
+		<LoadingSpinner />
+	{:then assetData}
+		<img
+			transition:fade={{ duration: 150 }}
+			src={assetData}
+			alt={asset.id}
+			class="object-contain h-full transition-all"
+			draggable="false"
+		/>
+	{/await}
 </div>
