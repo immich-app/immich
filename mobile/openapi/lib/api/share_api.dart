@@ -123,7 +123,11 @@ class ShareApi {
   /// 
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getMySharedLinkWithHttpInfo() async {
+  ///
+  /// Parameters:
+  ///
+  /// * [String] key:
+  Future<Response> getMySharedLinkWithHttpInfo({ String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/share/me';
 
@@ -133,6 +137,10 @@ class ShareApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
 
     const contentTypes = <String>[];
 
@@ -149,8 +157,12 @@ class ShareApi {
   }
 
   /// 
-  Future<SharedLinkResponseDto?> getMySharedLink() async {
-    final response = await getMySharedLinkWithHttpInfo();
+  ///
+  /// Parameters:
+  ///
+  /// * [String] key:
+  Future<SharedLinkResponseDto?> getMySharedLink({ String? key, }) async {
+    final response = await getMySharedLinkWithHttpInfo( key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

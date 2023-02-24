@@ -25,7 +25,9 @@ class AlbumApi {
   /// * [String] albumId (required):
   ///
   /// * [AddAssetsDto] addAssetsDto (required):
-  Future<Response> addAssetsToAlbumWithHttpInfo(String albumId, AddAssetsDto addAssetsDto,) async {
+  ///
+  /// * [String] key:
+  Future<Response> addAssetsToAlbumWithHttpInfo(String albumId, AddAssetsDto addAssetsDto, { String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/album/{albumId}/assets'
       .replaceAll('{albumId}', albumId);
@@ -36,6 +38,10 @@ class AlbumApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
 
     const contentTypes = <String>['application/json'];
 
@@ -58,8 +64,10 @@ class AlbumApi {
   /// * [String] albumId (required):
   ///
   /// * [AddAssetsDto] addAssetsDto (required):
-  Future<AddAssetsResponseDto?> addAssetsToAlbum(String albumId, AddAssetsDto addAssetsDto,) async {
-    final response = await addAssetsToAlbumWithHttpInfo(albumId, addAssetsDto,);
+  ///
+  /// * [String] key:
+  Future<AddAssetsResponseDto?> addAssetsToAlbum(String albumId, AddAssetsDto addAssetsDto, { String? key, }) async {
+    final response = await addAssetsToAlbumWithHttpInfo(albumId, addAssetsDto,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -288,7 +296,9 @@ class AlbumApi {
   /// * [String] albumId (required):
   ///
   /// * [num] skip:
-  Future<Response> downloadArchiveWithHttpInfo(String albumId, { num? skip, }) async {
+  ///
+  /// * [String] key:
+  Future<Response> downloadArchiveWithHttpInfo(String albumId, { num? skip, String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/album/{albumId}/download'
       .replaceAll('{albumId}', albumId);
@@ -302,6 +312,9 @@ class AlbumApi {
 
     if (skip != null) {
       queryParams.addAll(_queryParams('', 'skip', skip));
+    }
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
     }
 
     const contentTypes = <String>[];
@@ -325,8 +338,10 @@ class AlbumApi {
   /// * [String] albumId (required):
   ///
   /// * [num] skip:
-  Future<Object?> downloadArchive(String albumId, { num? skip, }) async {
-    final response = await downloadArchiveWithHttpInfo(albumId,  skip: skip, );
+  ///
+  /// * [String] key:
+  Future<MultipartFile?> downloadArchive(String albumId, { num? skip, String? key, }) async {
+    final response = await downloadArchiveWithHttpInfo(albumId,  skip: skip, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -334,7 +349,7 @@ class AlbumApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
     
     }
     return null;
@@ -391,7 +406,9 @@ class AlbumApi {
   /// Parameters:
   ///
   /// * [String] albumId (required):
-  Future<Response> getAlbumInfoWithHttpInfo(String albumId,) async {
+  ///
+  /// * [String] key:
+  Future<Response> getAlbumInfoWithHttpInfo(String albumId, { String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/album/{albumId}'
       .replaceAll('{albumId}', albumId);
@@ -402,6 +419,10 @@ class AlbumApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
 
     const contentTypes = <String>[];
 
@@ -422,8 +443,10 @@ class AlbumApi {
   /// Parameters:
   ///
   /// * [String] albumId (required):
-  Future<AlbumResponseDto?> getAlbumInfo(String albumId,) async {
-    final response = await getAlbumInfoWithHttpInfo(albumId,);
+  ///
+  /// * [String] key:
+  Future<AlbumResponseDto?> getAlbumInfo(String albumId, { String? key, }) async {
+    final response = await getAlbumInfoWithHttpInfo(albumId,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

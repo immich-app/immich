@@ -30,6 +30,14 @@
         },
         "tags": [
           "API Key"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       },
       "get": {
@@ -53,6 +61,14 @@
         },
         "tags": [
           "API Key"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -84,6 +100,14 @@
         },
         "tags": [
           "API Key"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       },
       "put": {
@@ -123,6 +147,14 @@
         },
         "tags": [
           "API Key"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       },
       "delete": {
@@ -145,6 +177,14 @@
         },
         "tags": [
           "API Key"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -238,6 +278,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -275,6 +318,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -298,6 +344,14 @@
         },
         "tags": [
           "Authentication"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -334,6 +388,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -446,6 +503,14 @@
         },
         "tags": [
           "OAuth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -468,6 +533,14 @@
         },
         "tags": [
           "OAuth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -493,6 +566,14 @@
         },
         "tags": [
           "share"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -500,7 +581,16 @@
       "get": {
         "operationId": "getMySharedLink",
         "description": "",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -515,6 +605,14 @@
         },
         "tags": [
           "share"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -546,6 +644,14 @@
         },
         "tags": [
           "share"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       },
       "delete": {
@@ -568,6 +674,14 @@
         },
         "tags": [
           "share"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       },
       "patch": {
@@ -607,6 +721,14 @@
         },
         "tags": [
           "share"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -633,6 +755,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       },
@@ -668,6 +793,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -695,6 +823,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -722,6 +853,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -761,6 +895,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       },
@@ -796,6 +933,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       },
@@ -831,6 +971,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -889,6 +1032,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -957,6 +1103,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -993,6 +1142,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1031,6 +1183,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1070,7 +1225,16 @@
       "post": {
         "operationId": "uploadFile",
         "description": "",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "description": "Asset Upload Information",
@@ -1100,6 +1264,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1116,18 +1283,27 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "",
             "content": {
-              "application/json": {
+              "application/octet-stream": {
                 "schema": {
-                  "type": "object"
+                  "type": "string",
+                  "format": "binary"
                 }
               }
-            }
+            },
+            "description": ""
           }
         },
         "tags": [
@@ -1136,6 +1312,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1144,7 +1323,16 @@
       "post": {
         "operationId": "downloadFiles",
         "description": "",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1156,15 +1344,19 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "",
+          "200": {
             "content": {
-              "application/json": {
+              "application/octet-stream": {
                 "schema": {
-                  "type": "object"
+                  "type": "string",
+                  "format": "binary"
                 }
               }
-            }
+            },
+            "description": ""
+          },
+          "201": {
+            "description": ""
           }
         },
         "tags": [
@@ -1173,6 +1365,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1189,18 +1384,27 @@
             "schema": {
               "type": "number"
             }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "",
             "content": {
-              "application/json": {
+              "application/octet-stream": {
                 "schema": {
-                  "type": "object"
+                  "type": "string",
+                  "format": "binary"
                 }
               }
-            }
+            },
+            "description": ""
           }
         },
         "tags": [
@@ -1209,6 +1413,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1243,18 +1450,27 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "",
             "content": {
-              "application/json": {
+              "application/octet-stream": {
                 "schema": {
-                  "type": "object"
+                  "type": "string",
+                  "format": "binary"
                 }
               }
-            }
+            },
+            "description": ""
           }
         },
         "tags": [
@@ -1263,6 +1479,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1287,18 +1506,27 @@
             "schema": {
               "$ref": "#/components/schemas/ThumbnailFormat"
             }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "",
             "content": {
-              "application/json": {
+              "application/octet-stream": {
                 "schema": {
-                  "type": "object"
+                  "type": "string",
+                  "format": "binary"
                 }
               }
-            }
+            },
+            "description": ""
           }
         },
         "tags": [
@@ -1307,6 +1535,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1337,6 +1568,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1367,6 +1601,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1397,6 +1634,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1437,6 +1677,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1474,6 +1717,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1501,6 +1747,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1557,6 +1806,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       },
@@ -1595,6 +1847,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1635,6 +1890,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1674,6 +1932,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1687,6 +1948,14 @@
             "name": "assetId",
             "required": true,
             "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
             "schema": {
               "type": "string"
             }
@@ -1710,6 +1979,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1756,6 +2028,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1764,7 +2039,16 @@
       "post": {
         "operationId": "checkDuplicateAsset",
         "description": "Check duplicated asset before uploading - for Web upload used",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1793,6 +2077,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1830,6 +2117,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1867,6 +2157,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1875,7 +2168,16 @@
       "patch": {
         "operationId": "addAssetsToSharedLink",
         "description": "",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1904,6 +2206,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1912,7 +2217,16 @@
       "patch": {
         "operationId": "removeAssetsFromSharedLink",
         "description": "",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1941,6 +2255,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1974,6 +2291,14 @@
         },
         "tags": [
           "Tag"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       },
       "get": {
@@ -1997,6 +2322,14 @@
         },
         "tags": [
           "Tag"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -2028,6 +2361,14 @@
         },
         "tags": [
           "Tag"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       },
       "patch": {
@@ -2067,6 +2408,14 @@
         },
         "tags": [
           "Tag"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       },
       "delete": {
@@ -2089,6 +2438,14 @@
         },
         "tags": [
           "Tag"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -2115,6 +2472,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -2152,6 +2512,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       },
@@ -2198,6 +2561,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -2244,6 +2610,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -2257,6 +2626,14 @@
             "name": "albumId",
             "required": true,
             "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
             "schema": {
               "type": "string"
             }
@@ -2290,6 +2667,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       },
@@ -2334,6 +2714,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -2347,6 +2730,14 @@
             "name": "albumId",
             "required": true,
             "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
             "schema": {
               "type": "string"
             }
@@ -2370,6 +2761,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       },
@@ -2397,6 +2791,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       },
@@ -2441,6 +2838,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -2478,6 +2878,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -2502,18 +2905,27 @@
             "schema": {
               "type": "number"
             }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "",
             "content": {
-              "application/json": {
+              "application/zip": {
                 "schema": {
-                  "type": "object"
+                  "type": "string",
+                  "format": "binary"
                 }
               }
-            }
+            },
+            "description": ""
           }
         },
         "tags": [
@@ -2522,6 +2934,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -2559,6 +2974,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -2648,6 +3066,14 @@
         },
         "tags": [
           "Server Info"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -2674,6 +3100,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -2720,6 +3149,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -2744,6 +3176,11 @@
         "bearerFormat": "JWT",
         "type": "http",
         "in": "header"
+      },
+      "cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "immich_access_token"
       }
     },
     "schemas": {

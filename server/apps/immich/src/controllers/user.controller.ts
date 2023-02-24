@@ -23,7 +23,7 @@ import { UpdateUserDto } from '@app/domain';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { profileImageUploadOption } from '../config/profile-image-upload.config';
 import { Response as Res } from 'express';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { UserResponseDto } from '@app/domain';
 import { UserCountResponseDto } from '@app/domain';
 import { CreateProfileImageDto } from '@app/domain';
@@ -36,7 +36,6 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Authenticated()
-  @ApiBearerAuth()
   @Get()
   async getAllUsers(
     @GetAuthUser() authUser: AuthUserDto,
@@ -51,14 +50,12 @@ export class UserController {
   }
 
   @Authenticated()
-  @ApiBearerAuth()
   @Get('me')
   async getMyUserInfo(@GetAuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
     return await this.userService.getUserInfo(authUser);
   }
 
   @Authenticated({ admin: true })
-  @ApiBearerAuth()
   @Post()
   async createUser(
     @Body(new ValidationPipe({ transform: true })) createUserDto: CreateUserDto,
@@ -72,21 +69,18 @@ export class UserController {
   }
 
   @Authenticated({ admin: true })
-  @ApiBearerAuth()
   @Delete('/:userId')
   async deleteUser(@GetAuthUser() authUser: AuthUserDto, @Param('userId') userId: string): Promise<UserResponseDto> {
     return await this.userService.deleteUser(authUser, userId);
   }
 
   @Authenticated({ admin: true })
-  @ApiBearerAuth()
   @Post('/:userId/restore')
   async restoreUser(@GetAuthUser() authUser: AuthUserDto, @Param('userId') userId: string): Promise<UserResponseDto> {
     return await this.userService.restoreUser(authUser, userId);
   }
 
   @Authenticated()
-  @ApiBearerAuth()
   @Put()
   async updateUser(
     @GetAuthUser() authUser: AuthUserDto,
@@ -97,7 +91,6 @@ export class UserController {
 
   @UseInterceptors(FileInterceptor('file', profileImageUploadOption))
   @Authenticated()
-  @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     description: 'A new avatar for the user',

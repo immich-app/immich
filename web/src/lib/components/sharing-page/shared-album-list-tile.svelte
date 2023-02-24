@@ -11,9 +11,14 @@
 			return noThumbnailUrl;
 		}
 
-		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId, ThumbnailFormat.Webp, {
-			responseType: 'blob'
-		});
+		const { data } = await api.assetApi.getAssetThumbnail(
+			thubmnailId,
+			ThumbnailFormat.Webp,
+			undefined,
+			{
+				responseType: 'blob'
+			}
+		);
 		if (data instanceof Blob) {
 			return URL.createObjectURL(data);
 		}

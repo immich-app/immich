@@ -34,9 +34,14 @@
 			return;
 		}
 
-		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId, ThumbnailFormat.Jpeg, {
-			responseType: 'blob'
-		});
+		const { data } = await api.assetApi.getAssetThumbnail(
+			thubmnailId,
+			ThumbnailFormat.Jpeg,
+			undefined,
+			{
+				responseType: 'blob'
+			}
+		);
 
 		if (data instanceof Blob) {
 			return URL.createObjectURL(data);
