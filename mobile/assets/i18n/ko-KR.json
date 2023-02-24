@@ -35,6 +35,9 @@
   "backup_background_service_in_progress_notification": "미디어파일 백업 중...",
   "backup_background_service_upload_failure_notification": "{} 업로드 실패",
   "backup_controller_page_albums": "백업대상",
+  "backup_controller_page_background_app_refresh_disabled_content": "Enable background app refresh in Settings > General > Background App Refresh in order to use background backup.",
+  "backup_controller_page_background_app_refresh_disabled_title": "Background app refresh disabled",
+  "backup_controller_page_background_app_refresh_enable_button_text": "Go to settings",
   "backup_controller_page_background_battery_info_link": "사용 가이드",
   "backup_controller_page_background_battery_info_message": "최상의 백업 환경을 위해 Immich 앱의 백그라운드 활동을 제한하는 배터리 최적화기능을 꺼주세요.\n\n휴대폰마다 설정방법이 다르므로 제조업체별로 설정방법을 확인하세요.",
   "backup_controller_page_background_battery_info_ok": "확인",
@@ -226,5 +229,5 @@
   "version_announcement_overlay_text_1": "안녕하세요!",
   "version_announcement_overlay_text_2": "앱에 새로운 업데이트가 있습니다!",
   "version_announcement_overlay_text_3": "특히 WatchTower 또는 서버 응용 프로그램 자동 업데이트를 처리하는 메커니즘을 사용하는 경우 잘못된 구성을 방지하기 위해 docker-compose 및 .env 설정이 최신 상태인지 확인하세요.",
-  "version_announcement_overlay_title": "새 서버 버전 사용 가능 🎉"
+  "version_announcement_overlay_title": "새 서버 버전 사용 가능 \uD83C\uDF89"
 }
