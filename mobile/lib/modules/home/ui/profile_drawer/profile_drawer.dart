@@ -65,6 +65,10 @@ class ProfileDrawer extends HookConsumerWidget {
               ?.copyWith(fontWeight: FontWeight.bold),
         ).tr(),
         onTap: () {
+          // Guard duplicate taps when app is running slow
+          if (AutoRouter.of(context).currentChild?.name == SettingsRoute.name) {
+            return;
+          }
           AutoRouter.of(context).push(const SettingsRoute());
         },
       );
