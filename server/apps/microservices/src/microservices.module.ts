@@ -18,12 +18,7 @@ import { MetadataExtractionProcessor } from './processors/metadata-extraction.pr
 import { ThumbnailGeneratorProcessor } from './processors/thumbnail.processor';
 import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
 import { DomainModule } from '@app/domain';
-import {
-  AssetUploadedProcessor,
-  BackgroundTaskProcessor,
-  StorageMigrationProcessor,
-  UserDeletionProcessor,
-} from './processors';
+import { BackgroundTaskProcessor, StorageTemplateMigrationProcessor, TemplateMigrationProcessor } from './processors';
 
 @Module({
   imports: [
@@ -44,13 +39,11 @@ import {
   ],
   controllers: [],
   providers: [
-    AssetUploadedProcessor,
     ThumbnailGeneratorProcessor,
     MetadataExtractionProcessor,
     VideoTranscodeProcessor,
     MachineLearningProcessor,
-    UserDeletionProcessor,
-    StorageMigrationProcessor,
+    StorageTemplateMigrationProcessor,
     BackgroundTaskProcessor,
   ],
 })

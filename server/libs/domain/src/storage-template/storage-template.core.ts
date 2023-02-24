@@ -17,8 +17,8 @@ import path from 'node:path';
 import sanitize from 'sanitize-filename';
 import { SystemConfigCore } from '../system-config/system-config.core';
 
-export class StorageCore {
-  private logger = new Logger(StorageCore.name);
+export class StorageTemplateCore {
+  private logger = new Logger(StorageTemplateCore.name);
   private configCore: SystemConfigCore;
   private storageTemplate: HandlebarsTemplateDelegate<any>;
 

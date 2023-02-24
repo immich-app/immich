@@ -18,8 +18,8 @@ export type JobItem =
   | { name: JobName.REVERSE_GEOCODING; data: IReverseGeocodingJob }
   | { name: JobName.USER_DELETE_CHECK }
   | { name: JobName.USER_DELETION; data: IUserDeletionJob }
-  | { name: JobName.TEMPLATE_MIGRATION }
-  | { name: JobName.CONFIG_CHANGE }
+  | { name: JobName.STORAGE_TEMPLATE_MIGRATION }
+  | { name: JobName.SYSTEM_CONFIG_CHANGE }
   | { name: JobName.EXTRACT_VIDEO_METADATA; data: IAssetUploadedJob }
   | { name: JobName.OBJECT_DETECTION; data: IAssetJob }
   | { name: JobName.IMAGE_TAGGING; data: IAssetJob }

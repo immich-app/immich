@@ -1,12 +1,33 @@
-import { IUserRepository } from './user.repository';
 import { UserEntity } from '@app/infra/db/entities';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { when } from 'jest-when';
-import { newCryptoRepositoryMock, newUserRepositoryMock } from '../../test';
+import {
+  newAlbumRepositoryMock,
+  newAssetRepositoryMock,
+  newCryptoRepositoryMock,
+  newJobRepositoryMock,
+  newKeyRepositoryMock,
+  newStorageRepositoryMock,
+  newUserRepositoryMock,
+  newUserTokenRepositoryMock,
+} from '../../test';
+import { IAlbumRepository } from '../album';
+import { IKeyRepository } from '../api-key';
+import { IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
+import { IJobRepository, JobName } from '../job';
+import { IStorageRepository } from '../storage';
+import { IUserTokenRepository } from '../user-token';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { IUserRepository } from './user.repository';
 import { UserService } from './user.service';
+
+const makeDeletedAt = (daysAgo: number) => {
+  const deletedAt = new Date();
+  deletedAt.setDate(deletedAt.getDate() - daysAgo);
+  return deletedAt;
+};
 
 const adminUserAuth: AuthUserDto = Object.freeze({
   id: 'admin_id',
@@ -83,10 +104,35 @@ describe(UserService.name, () => {
   let userRepositoryMock: jest.Mocked<IUserRepository>;
   let cryptoRepositoryMock: jest.Mocked<ICryptoRepository>;
 
+  let albumMock: jest.Mocked<IAlbumRepository>;
+  let assetMock: jest.Mocked<IAssetRepository>;
+  let jobMock: jest.Mocked<IJobRepository>;
+  let keyMock: jest.Mocked<IKeyRepository>;
+  let storageMock: jest.Mocked<IStorageRepository>;
+  let tokenMock: jest.Mocked<IUserTokenRepository>;
+
   beforeEach(async () => {
     userRepositoryMock = newUserRepositoryMock();
     cryptoRepositoryMock = newCryptoRepositoryMock();
-    sut = new UserService(userRepositoryMock, cryptoRepositoryMock);
+
+    albumMock = newAlbumRepositoryMock();
+    assetMock = newAssetRepositoryMock();
+    jobMock = newJobRepositoryMock();
+    keyMock = newKeyRepositoryMock();
+    storageMock = newStorageRepositoryMock();
+    tokenMock = newUserTokenRepositoryMock();
+    userRepositoryMock = newUserRepositoryMock();
+
+    sut = new UserService(
+      userRepositoryMock,
+      cryptoRepositoryMock,
+      albumMock,
+      assetMock,
+      jobMock,
+      keyMock,
+      storageMock,
+      tokenMock,
+    );
 
     when(userRepositoryMock.get).calledWith(adminUser.id).mockResolvedValue(adminUser);
     when(userRepositoryMock.get).calledWith(adminUser.id, undefined).mockResolvedValue(adminUser);
@@ -372,6 +418,66 @@ describe(UserService.name, () => {
       expect(ask).toHaveBeenCalled();
       expect(id).toEqual(adminUser.id);
       expect(update.password).toBeDefined();
+    });
+  });
+
+  describe('handleUserDeleteCheck', () => {
+    it('should skip users not ready for deletion', async () => {
+      userRepositoryMock.getDeletedUsers.mockResolvedValue([
+        {},
+        { deletedAt: undefined },
+        { deletedAt: null },
+        { deletedAt: makeDeletedAt(5) },
+      ] as UserEntity[]);
+
+      await sut.handleUserDeleteCheck();
+
+      expect(userRepositoryMock.getDeletedUsers).toHaveBeenCalled();
+      expect(jobMock.queue).not.toHaveBeenCalled();
+    });
+
+    it('should queue user ready for deletion', async () => {
+      const user = { deletedAt: makeDeletedAt(10) };
+      userRepositoryMock.getDeletedUsers.mockResolvedValue([user] as UserEntity[]);
+
+      await sut.handleUserDeleteCheck();
+
+      expect(userRepositoryMock.getDeletedUsers).toHaveBeenCalled();
+      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.USER_DELETION, data: { user } });
+    });
+  });
+
+  describe('handleUserDelete', () => {
+    it('should skip users not ready for deletion', async () => {
+      const user = { deletedAt: makeDeletedAt(5) } as UserEntity;
+
+      await sut.handleUserDelete({ user });
+
+      expect(storageMock.unlinkDir).not.toHaveBeenCalled();
+      expect(userRepositoryMock.delete).not.toHaveBeenCalled();
+    });
+
+    it('should delete the user and associated assets', async () => {
+      const user = { id: 'deleted-user', deletedAt: makeDeletedAt(10) } as UserEntity;
+
+      await sut.handleUserDelete({ user });
+
+      expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/deleted-user', { force: true, recursive: true });
+      expect(tokenMock.deleteAll).toHaveBeenCalledWith(user.id);
+      expect(keyMock.deleteAll).toHaveBeenCalledWith(user.id);
+      expect(albumMock.deleteAll).toHaveBeenCalledWith(user.id);
+      expect(assetMock.deleteAll).toHaveBeenCalledWith(user.id);
+      expect(userRepositoryMock.delete).toHaveBeenCalledWith(user, true);
+    });
+
+    it('should handle an error', async () => {
+      const user = { id: 'deleted-user', deletedAt: makeDeletedAt(10) } as UserEntity;
+
+      storageMock.unlinkDir.mockRejectedValue(new Error('Read only filesystem'));
+
+      await sut.handleUserDelete({ user });
+
+      expect(userRepositoryMock.delete).not.toHaveBeenCalled();
     });
   });
 });

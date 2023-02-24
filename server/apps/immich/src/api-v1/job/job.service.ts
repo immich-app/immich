@@ -54,8 +54,8 @@ export class JobService {
         return assets.length;
       }
 
-      case QueueName.CONFIG:
-        await this.jobRepository.queue({ name: JobName.TEMPLATE_MIGRATION });
+      case QueueName.STORAGE_TEMPLATE_MIGRATION:
+        await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION });
         return 1;
 
       case QueueName.MACHINE_LEARNING: {
@@ -129,7 +129,7 @@ export class JobService {
         return QueueName.VIDEO_CONVERSION;
 
       case JobId.STORAGE_TEMPLATE_MIGRATION:
-        return QueueName.CONFIG;
+        return QueueName.STORAGE_TEMPLATE_MIGRATION;
 
       case JobId.MACHINE_LEARNING:
         return QueueName.MACHINE_LEARNING;

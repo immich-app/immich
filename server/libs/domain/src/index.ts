@@ -10,6 +10,7 @@ export * from './job';
 export * from './oauth';
 export * from './share';
 export * from './storage';
+export * from './storage-template';
 export * from './system-config';
 export * from './tag';
 export * from './user';

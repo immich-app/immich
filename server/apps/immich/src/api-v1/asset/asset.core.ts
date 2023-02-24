@@ -4,7 +4,7 @@ import {
   IStorageRepository,
   ISystemConfigRepository,
   JobName,
-  StorageCore,
+  StorageTemplateCore,
 } from '@app/domain';
 import { AssetEntity, SystemConfig, UserEntity } from '@app/infra/db/entities';
 import { Logger } from '@nestjs/common';
@@ -12,7 +12,7 @@ import { IAssetRepository } from './asset-repository';
 import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
 
 export class AssetCore {
-  private storageCore: StorageCore;
+  private templateCore: StorageTemplateCore;
   private logger = new Logger(AssetCore.name);
 
   constructor(
@@ -22,7 +22,7 @@ export class AssetCore {
     config: SystemConfig,
     private storageRepository: IStorageRepository,
   ) {
-    this.storageCore = new StorageCore(configRepository, config, storageRepository);
+    this.templateCore = new StorageTemplateCore(configRepository, config, storageRepository);
   }
 
   async create(
@@ -64,16 +64,19 @@ export class AssetCore {
   }
 
   async moveAsset(asset: AssetEntity, originalName: string) {
-    const destination = await this.storageCore.getTemplatePath(asset, originalName);
+    const destination = await this.templateCore.getTemplatePath(asset, originalName);
     if (asset.originalPath !== destination) {
       const source = asset.originalPath;
 
       try {
         await this.storageRepository.moveFile(asset.originalPath, destination);
-        await this.repository.save({ id: asset.id, originalPath: destination }).catch((error: any) => {
+        try {
+          await this.repository.save({ id: asset.id, originalPath: destination });
+          asset.originalPath = destination;
+        } catch (error: any) {
           this.logger.warn('Unable to save new originalPath to database, undoing move', error?.stack);
-          return this.storageRepository.moveFile(destination, source);
-        });
+          await this.storageRepository.moveFile(destination, source);
+        }
       } catch (error: any) {
         this.logger.error(`Problem applying storage template`, error?.stack, { id: asset.id, source, destination });
       }

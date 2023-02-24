@@ -118,7 +118,7 @@ export class AssetService {
       // clean up files
       await this.jobRepository.queue({
         name: JobName.DELETE_FILES,
-        data: { files: [file.originalPath, livePhotoFile?.originalPath || null] },
+        data: { files: [file.originalPath, livePhotoFile?.originalPath] },
       });
 
       // handle duplicates with a success response
