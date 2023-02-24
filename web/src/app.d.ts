@@ -5,6 +5,7 @@
 declare namespace App {
 	interface Locals {
 		user?: import('@api').UserResponseDto;
+		api: import('@api').ImmichApi;
 	}
 
 	// interface Platform {}

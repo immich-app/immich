@@ -1,10 +1,9 @@
-import { redirect } from '@sveltejs/kit';
 export const prerender = false;
 
-import { api } from '@api';
+import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ parent }) => {
+export const load = (async ({ parent, locals: { api } }) => {
 	try {
 		const { user } = await parent();
 		if (!user) {
@@ -23,4 +22,4 @@ export const load: PageServerLoad = async ({ parent }) => {
 	} catch (e) {
 		throw redirect(302, '/auth/login');
 	}
-};
+}) satisfies PageServerLoad;

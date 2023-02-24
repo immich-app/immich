@@ -1,8 +1,7 @@
 import { redirect } from '@sveltejs/kit';
-import { api } from '@api';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ parent }) => {
+export const load = (async ({ parent, locals: { api } }) => {
 	const { user } = await parent();
 
 	if (!user) {
@@ -19,4 +18,4 @@ export const load: PageServerLoad = async ({ parent }) => {
 			title: 'Server Status'
 		}
 	};
-};
+}) satisfies PageServerLoad;

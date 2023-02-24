@@ -1,10 +1,9 @@
 export const prerender = false;
-import { error } from '@sveltejs/kit';
 
-import { api } from '@api';
+import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load = (async ({ params, locals: { api } }) => {
 	try {
 		const { key, assetId } = params;
 		const { data: asset } = await api.assetApi.getAssetById(assetId, key);
@@ -16,4 +15,4 @@ export const load: PageServerLoad = async ({ params }) => {
 	} catch (e) {
 		console.log('Error', e);
 	}
-};
+}) satisfies PageServerLoad;
