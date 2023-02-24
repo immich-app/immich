@@ -10,18 +10,18 @@ class ImmichTestAlbumHelper {
 
   Future<void> createAlbum(String name, {int timeoutSeconds = 20, addNthAsset = 0 }) async {
     await tester.tap(find.text("library_page_new_album".tr()));
-    await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 3));
     // Enter name
     await tester.enterText(find.byType(TextField), name);
     // Select photos
     await tester.tap(find.text("create_shared_album_page_share_select_photos".tr()));
-    await tester.pump(const Duration(seconds: 2));
+    await tester.pump(const Duration(seconds: 3));
     // Select nth asset
     await tester.tap(find.byType(SelectionThumbnailImage).at(addNthAsset));
     await tester.pump();
     // Close selection page
     await tester.tap(find.text("share_add".tr()).first);
-    await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 3));
     // Create
     await tester.tap(find.text("create_shared_album_page_create".tr()));
     await tester.pump(const Duration(seconds: 3));
