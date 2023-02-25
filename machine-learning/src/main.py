@@ -45,11 +45,8 @@ def run_engine(engine, path):
 
     for index, pred in enumerate(predictions):
         tags = pred['label'].split(', ')
-        if (index == 0):
-            result = tags
-        else:
-            if (pred['score'] > 0.5):
-                result = [*result, *tags]
+        if (pred['score'] > 0.9):
+            result = [*result, *tags]
 
     if (len(result) > 1):
         result = list(set(result))
