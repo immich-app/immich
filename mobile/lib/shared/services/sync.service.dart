@@ -379,7 +379,10 @@ class SyncService {
     existing.addAll(result.first);
     album.name = ape.name;
     album.modifiedAt = ape.lastModified!;
-    album.thumbnail.value ??= album.assets.firstOrNull;
+    if (album.thumbnail.value != null &&
+        toDelete.contains(album.thumbnail.value)) {
+      album.thumbnail.value = null;
+    }
     try {
       await _db.writeTxn(() async {
         await _db.assets.putAll(result.second);
@@ -387,6 +390,7 @@ class SyncService {
         await album.assets
             .update(link: result.first + result.second, unlink: toDelete);
         await _db.albums.put(album);
+        album.thumbnail.value ??= await album.assets.filter().findFirst();
         await album.thumbnail.save();
       });
     } on IsarError catch (e) {
@@ -444,7 +448,8 @@ class SyncService {
     existing.addAll(result.first);
     a.assets.addAll(result.first);
     a.assets.addAll(result.second);
-    a.thumbnail.value = a.assets.firstOrNull;
+    final thumb = result.first.firstOrNull ?? result.second.firstOrNull;
+    a.thumbnail.value = thumb;
     try {
       await _db.writeTxn(() => _db.albums.store(a));
     } on IsarError catch (e) {
