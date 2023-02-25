@@ -35,9 +35,9 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
     }
   }
 
-  Future<void> deleteAlbum(Album album) async {
-    _albumService.deleteAlbum(album);
-    state = state.where((album) => album.id != album.id).toList();
+  Future<bool> deleteAlbum(Album album) async {
+    state = state.where((a) => a.id != album.id).toList();
+    return _albumService.deleteAlbum(album);
   }
 
   Future<Album?> createAlbum(
