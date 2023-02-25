@@ -42,6 +42,8 @@ class AlbumService {
     this._db,
   );
 
+  /// Checks all selected device albums for changes of albums and their assets
+  /// Updates the local database and returns `true` if there were any changes
   Future<bool> refreshDeviceAlbums() async {
     if (!_localCompleter.isCompleted) {
       // guard against concurrent calls
@@ -75,6 +77,8 @@ class AlbumService {
     return changes;
   }
 
+  /// Checks remote albums (owned if `isShared` is false) for changes,
+  /// updates the local database and returns `true` if there were any changes
   Future<bool> refreshRemoteAlbums({required bool isShared}) async {
     if (!_remoteCompleter.isCompleted) {
       // guard against concurrent calls

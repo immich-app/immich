@@ -36,6 +36,8 @@ class AssetService {
     this._db,
   );
 
+  /// Checks the server for updated assets and updates the local database if
+  /// required. Returns `true` if there were any changes.
   Future<bool> refreshRemoteAssets() async {
     final Stopwatch sw = Stopwatch()..start();
     final int numOwnedRemoteAssets = await _db.assets
@@ -95,6 +97,8 @@ class AssetService {
     }
   }
 
+  /// Loads the exif information from the database. If there is none, loads
+  /// the exif info from the server (remote assets only)
   Future<Asset> loadExif(Asset a) async {
     a.exifInfo ??= await _db.exifInfos.get(a.id);
     if (a.exifInfo?.iso == null) {
