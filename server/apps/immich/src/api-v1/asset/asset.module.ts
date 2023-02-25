@@ -3,7 +3,6 @@ import { AssetService } from './asset.service';
 import { AssetController } from './asset.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AssetEntity } from '@app/infra';
-import { CommunicationModule } from '../communication/communication.module';
 import { AssetRepository, IAssetRepository } from './asset-repository';
 import { DownloadModule } from '../../modules/download/download.module';
 import { TagModule } from '../tag/tag.module';
@@ -18,7 +17,6 @@ const ASSET_REPOSITORY_PROVIDER = {
   imports: [
     //
     TypeOrmModule.forFeature([AssetEntity]),
-    CommunicationModule,
     DownloadModule,
     TagModule,
     AlbumModule,

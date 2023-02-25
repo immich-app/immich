@@ -1,5 +1,5 @@
 import { ImmichReadStream, IStorageRepository } from '@app/domain';
-import { constants, createReadStream } from 'fs';
+import { constants, createReadStream, existsSync, mkdirSync } from 'fs';
 import fs from 'fs/promises';
 import mv from 'mv';
 import { promisify } from 'node:util';
@@ -58,6 +58,12 @@ export class FilesystemProvider implements IStorageRepository {
       if (updated.length === 0) {
         await fs.rmdir(directory);
       }
+    }
+  }
+
+  mkdirSync(filepath: string): void {
+    if (!existsSync(filepath)) {
+      mkdirSync(filepath, { recursive: true });
     }
   }
 }

@@ -5,6 +5,7 @@ import {
   IDeleteFilesJob,
   IUserDeletionJob,
   JobName,
+  MediaService,
   QueueName,
   SmartInfoService,
   StorageService,
@@ -67,5 +68,20 @@ export class StorageTemplateMigrationProcessor {
   @Process({ name: JobName.STORAGE_TEMPLATE_MIGRATION })
   async onTemplateMigration() {
     await this.storageTemplateService.handleTemplateMigration();
+  }
+}
+
+@Processor(QueueName.THUMBNAIL_GENERATION)
+export class ThumbnailGeneratorProcessor {
+  constructor(private mediaService: MediaService) {}
+
+  @Process({ name: JobName.GENERATE_JPEG_THUMBNAIL, concurrency: 3 })
+  async handleGenerateJpegThumbnail(job: Job<IAssetJob>) {
+    await this.mediaService.handleGenerateJpegThumbnail(job.data);
+  }
+
+  @Process({ name: JobName.GENERATE_WEBP_THUMBNAIL, concurrency: 3 })
+  async handleGenerateWepbThumbnail(job: Job<IAssetJob>) {
+    await this.mediaService.handleGenerateWepbThumbnail(job.data);
   }
 }

@@ -3,6 +3,7 @@ import { APIKeyService } from './api-key';
 import { AssetService } from './asset';
 import { AuthService } from './auth';
 import { DeviceInfoService } from './device-info';
+import { MediaService } from './media';
 import { OAuthService } from './oauth';
 import { ShareService } from './share';
 import { SmartInfoService } from './smart-info';
@@ -16,6 +17,7 @@ const providers: Provider[] = [
   APIKeyService,
   AuthService,
   DeviceInfoService,
+  MediaService,
   OAuthService,
   SmartInfoService,
   StorageService,
