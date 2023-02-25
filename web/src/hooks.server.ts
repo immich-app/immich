@@ -4,24 +4,10 @@ import { env } from '$env/dynamic/public';
 import { ImmichApi } from './api/api';
 
 export const handle = (async ({ event, resolve }) => {
-	const basePath = env.PUBLIC_IMMICH_SERVER_URL || 'http://immich-server:3001';
-	const accessToken = event.cookies.get('immich_access_token');
-	const api = new ImmichApi({ basePath, accessToken });
-
-	// API instance that should be used for all server-side requests.
-	event.locals.api = api;
-
-	if (accessToken) {
-		try {
-			const { data: user } = await api.userApi.getMyUserInfo();
-			event.locals.user = user;
-		} catch (err) {
-			// Ignore 401 unauthorized errors and log all others.
-			if (err instanceof AxiosError && err.response?.status !== 401) {
-				console.error('[ERROR] hooks.server.ts [handle]:', err);
-			}
-		}
-	}
+	event.locals.api = new ImmichApi({
+		basePath: env.PUBLIC_IMMICH_SERVER_URL || 'http://immich-server:3001',
+		accessToken: event.cookies.get('immich_access_token')
+	});
 
 	const res = await resolve(event);
 
