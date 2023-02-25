@@ -22,12 +22,11 @@ export class SmartInfoService {
 
     try {
       const tags = await this.machineLearning.tagImage({ thumbnailPath: asset.resizePath });
-
       if (tags.length > 0) {
         await this.repository.upsert({ assetId: asset.id, tags });
       }
     } catch (error: any) {
-      this.logger.error(`Unable to tag image: ${asset.id}`, error?.stack);
+      this.logger.error(`Unable to run image tagging pipeline: ${asset.id}`, error?.stack);
     }
   }
 
@@ -39,13 +38,12 @@ export class SmartInfoService {
     }
 
     try {
-      const tags = await this.machineLearning.tagImage({ thumbnailPath: asset.resizePath });
-
-      if (tags.length > 0) {
-        await this.repository.upsert({ assetId: asset.id, tags });
+      const objects = await this.machineLearning.detectObjects({ thumbnailPath: asset.resizePath });
+      if (objects.length > 0) {
+        await this.repository.upsert({ assetId: asset.id, objects });
       }
     } catch (error: any) {
-      this.logger.error(`Unable to detect objects: ${asset.id}`, error?.stack);
+      this.logger.error(`Unable run object detection pipeline: ${asset.id}`, error?.stack);
     }
   }
 }

@@ -12,6 +12,6 @@ export class MachineLearningRepository implements IMachineLearningRepository {
   }
 
   detectObjects(input: MachineLearningInput): Promise<string[]> {
-    return client.post('/object-detection/detect-object', input).then((res) => res.data);
+    return client.post<string[]>('/object-detection/detect-object', input).then((res) => res.data);
   }
 }
