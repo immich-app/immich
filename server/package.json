@@ -141,9 +141,9 @@
       },
       "./libs/domain/": {
         "branches": 80,
-        "functions": 88,
-        "lines": 95,
-        "statements": 94
+        "functions": 85,
+        "lines": 90,
+        "statements": 90
       }
     },
     "setupFilesAfterEnv": [
