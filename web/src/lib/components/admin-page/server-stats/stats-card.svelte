@@ -1,19 +1,14 @@
 <script lang="ts">
 	import type Icon from 'svelte-material-icons/AbTesting.svelte';
-	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
 	export let logo: typeof Icon;
 	export let title: string;
-	export let value: string;
+	export let value: number;
 	export let unit: string | undefined = undefined;
 
 	$: zeros = () => {
-		if (!value) {
-			return '';
-		}
-
 		const maxLength = 13;
-		const valueLength = parseInt(value).toString().length;
+		const valueLength = value.toString().length;
 		const zeroLength = maxLength - valueLength;
 
 		return '0'.repeat(zeroLength);
@@ -29,15 +24,9 @@
 	</div>
 
 	<div class="relative text-center font-mono font-semibold text-2xl">
-		{#if value !== undefined}
-			<span class="text-[#DCDADA] dark:text-[#525252]">{zeros()}</span><span
-				class="text-immich-primary dark:text-immich-dark-primary">{parseInt(value)}</span
-			>
-		{:else}
-			<div class="flex justify-end pr-2">
-				<LoadingSpinner />
-			</div>
-		{/if}
+		<span class="text-[#DCDADA] dark:text-[#525252]">{zeros()}</span><span
+			class="text-immich-primary dark:text-immich-dark-primary">{value}</span
+		>
 		{#if unit}
 			<span class="absolute -top-5 right-2 text-base font-light text-gray-400">{unit}</span>
 		{/if}

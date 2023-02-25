@@ -135,7 +135,7 @@
 
 							<p>{asset.exifInfo.exifImageHeight} x {asset.exifInfo.exifImageWidth}</p>
 						{/if}
-						<p>{asByteUnitString(asset.exifInfo.fileSizeInByte)}</p>
+						<p>{asByteUnitString(asset.exifInfo.fileSizeInByte, $locale)}</p>
 					</div>
 				</div>
 			</div>

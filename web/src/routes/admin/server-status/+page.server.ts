@@ -10,12 +10,12 @@ export const load = (async ({ parent, locals: { api } }) => {
 		throw redirect(302, '/photos');
 	}
 
-	const { data: allUsers } = await api.userApi.getAllUsers(false);
+	const { data: stats } = await api.serverInfoApi.getStats();
 
 	return {
-		allUsers,
+		stats,
 		meta: {
-			title: 'Server Status'
+			title: 'Server Stats'
 		}
 	};
 }) satisfies PageServerLoad;
