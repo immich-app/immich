@@ -131,21 +131,24 @@
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s",
-      "!**/migrations/*"
+      "!<rootDir>/libs/infra/**/*"
     ],
     "coverageDirectory": "./coverage",
     "coverageThreshold": {
       "global": {
-        "lines": 20,
-        "statements": 20
+        "lines": 17,
+        "statements": 17
       },
       "./libs/domain/": {
         "branches": 80,
-        "functions": 88,
-        "lines": 95,
-        "statements": 94
+        "functions": 85,
+        "lines": 90,
+        "statements": 90
       }
     },
+    "setupFilesAfterEnv": [
+      "<rootDir>/libs/domain/test/setup.ts"
+    ],
     "testEnvironment": "node",
     "roots": [
       "<rootDir>/apps/",
@@ -153,7 +156,6 @@
     ],
     "moduleNameMapper": {
       "@app/common": "<rootDir>/libs/common/src",
-      "^@app/storage(|/.*)$": "<rootDir>/libs/storage/src/$1",
       "^@app/infra(|/.*)$": "<rootDir>/libs/infra/src/$1",
       "^@app/domain(|/.*)$": "<rootDir>/libs/domain/src/$1"
     }

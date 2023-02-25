@@ -10,4 +10,10 @@ export const IStorageRepository = 'IStorageRepository';
 
 export interface IStorageRepository {
   createReadStream(filepath: string, mimeType: string): Promise<ImmichReadStream>;
+  unlink(filepath: string): Promise<void>;
+  unlinkDir(folder: string, options?: { recursive?: boolean; force?: boolean }): Promise<void>;
+  removeEmptyDirs(folder: string): Promise<void>;
+  moveFile(source: string, target: string): Promise<void>;
+  checkFileExists(filepath: string): Promise<boolean>;
+  mkdirSync(filepath: string): void;
 }

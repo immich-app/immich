@@ -2,7 +2,6 @@ import { LogLevel } from '@nestjs/common';
 
 export * from './time-utils';
 export * from './asset-utils';
-export * from './user-utils';
 
 export function getLogLevels() {
   const LOG_LEVELS: LogLevel[] = ['verbose', 'debug', 'log', 'warn', 'error'];

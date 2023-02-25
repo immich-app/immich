@@ -1,43 +1,65 @@
 import {
+  IAlbumRepository,
+  IAssetRepository,
+  ICommunicationRepository,
   ICryptoRepository,
   IDeviceInfoRepository,
   IJobRepository,
   IKeyRepository,
+  IMachineLearningRepository,
+  IMediaRepository,
   ISharedLinkRepository,
+  ISmartInfoRepository,
   IStorageRepository,
   ISystemConfigRepository,
   IUserRepository,
+  IUserTokenRepository,
   QueueName,
 } from '@app/domain';
-import { IUserTokenRepository } from '@app/domain/user-token';
-import { UserTokenRepository } from '@app/infra/db/repository/user-token.repository';
 import { BullModule } from '@nestjs/bull';
 import { Global, Module, Provider } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CryptoRepository } from './auth/crypto.repository';
+import { CommunicationGateway, CommunicationRepository } from './communication';
 import {
+  AlbumEntity,
+  AlbumRepository,
   APIKeyEntity,
   APIKeyRepository,
+  AssetEntity,
+  AssetRepository,
   databaseConfig,
   DeviceInfoEntity,
   DeviceInfoRepository,
   SharedLinkEntity,
   SharedLinkRepository,
+  SmartInfoEntity,
+  SmartInfoRepository,
   SystemConfigEntity,
   SystemConfigRepository,
   UserEntity,
   UserRepository,
   UserTokenEntity,
+  UserTokenRepository,
 } from './db';
 import { JobRepository } from './job';
+import { MachineLearningRepository } from './machine-learning';
+import { MediaRepository } from './media';
 import { FilesystemProvider } from './storage';
 
 const providers: Provider[] = [
+  { provide: IAlbumRepository, useClass: AlbumRepository },
+  { provide: IAssetRepository, useClass: AssetRepository },
+  { provide: ICommunicationRepository, useClass: CommunicationRepository },
+  { provide: ICryptoRepository, useClass: CryptoRepository },
   { provide: ICryptoRepository, useClass: CryptoRepository },
   { provide: IDeviceInfoRepository, useClass: DeviceInfoRepository },
   { provide: IKeyRepository, useClass: APIKeyRepository },
   { provide: IJobRepository, useClass: JobRepository },
+  { provide: IMachineLearningRepository, useClass: MachineLearningRepository },
+  { provide: IMediaRepository, useClass: MediaRepository },
   { provide: ISharedLinkRepository, useClass: SharedLinkRepository },
+  { provide: ISmartInfoRepository, useClass: SmartInfoRepository },
   { provide: IStorageRepository, useClass: FilesystemProvider },
   { provide: ISystemConfigRepository, useClass: SystemConfigRepository },
   { provide: IUserRepository, useClass: UserRepository },
@@ -49,10 +71,13 @@ const providers: Provider[] = [
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
     TypeOrmModule.forFeature([
+      AssetEntity,
+      AlbumEntity,
       APIKeyEntity,
       DeviceInfoEntity,
       UserEntity,
       SharedLinkEntity,
+      SmartInfoEntity,
       SystemConfigEntity,
       UserTokenEntity,
     ]),
@@ -73,18 +98,9 @@ const providers: Provider[] = [
         },
       }),
     }),
-    BullModule.registerQueue(
-      { name: QueueName.USER_DELETION },
-      { name: QueueName.THUMBNAIL_GENERATION },
-      { name: QueueName.ASSET_UPLOADED },
-      { name: QueueName.METADATA_EXTRACTION },
-      { name: QueueName.VIDEO_CONVERSION },
-      { name: QueueName.MACHINE_LEARNING },
-      { name: QueueName.CONFIG },
-      { name: QueueName.BACKGROUND_TASK },
-    ),
+    BullModule.registerQueue(...Object.values(QueueName).map((name) => ({ name }))),
   ],
-  providers: [...providers],
+  providers: [...providers, CommunicationGateway],
   exports: [...providers, BullModule],
 })
 export class InfraModule {}

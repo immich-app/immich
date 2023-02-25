@@ -91,22 +91,37 @@ export const userEntityStub = {
   }),
 };
 
+export const fileStub = {
+  livePhotoStill: Object.freeze({
+    originalPath: 'fake_path/asset_1.jpeg',
+    mimeType: 'image/jpg',
+    checksum: Buffer.from('file hash', 'utf8'),
+    originalName: 'asset_1.jpeg',
+  }),
+  livePhotoMotion: Object.freeze({
+    originalPath: 'fake_path/asset_1.mp4',
+    mimeType: 'image/jpeg',
+    checksum: Buffer.from('live photo file hash', 'utf8'),
+    originalName: 'asset_1.mp4',
+  }),
+};
+
 export const assetEntityStub = {
   image: Object.freeze<AssetEntity>({
     id: 'asset-id',
     deviceAssetId: 'device-asset-id',
-    fileModifiedAt: today.toISOString(),
-    fileCreatedAt: today.toISOString(),
+    fileModifiedAt: '2023-02-23T05:06:29.716Z',
+    fileCreatedAt: '2023-02-23T05:06:29.716Z',
     owner: userEntityStub.user1,
     ownerId: 'user-id',
     deviceId: 'device-id',
-    originalPath: '/original/path',
+    originalPath: '/original/path.ext',
     resizePath: null,
     type: AssetType.IMAGE,
     webpPath: null,
     encodedVideoPath: null,
-    createdAt: today.toISOString(),
-    updatedAt: today.toISOString(),
+    createdAt: '2023-02-23T05:06:29.716Z',
+    updatedAt: '2023-02-23T05:06:29.716Z',
     mimeType: null,
     isFavorite: true,
     duration: null,
@@ -116,6 +131,26 @@ export const assetEntityStub = {
     tags: [],
     sharedLinks: [],
   }),
+  livePhotoMotionAsset: Object.freeze({
+    id: 'live-photo-motion-asset',
+    originalPath: fileStub.livePhotoMotion.originalPath,
+    ownerId: authStub.user1.id,
+    type: AssetType.VIDEO,
+    isVisible: false,
+    fileModifiedAt: '2022-06-19T23:41:36.910Z',
+    fileCreatedAt: '2022-06-19T23:41:36.910Z',
+  } as AssetEntity),
+
+  livePhotoStillAsset: Object.freeze({
+    id: 'live-photo-still-asset',
+    originalPath: fileStub.livePhotoStill.originalPath,
+    ownerId: authStub.user1.id,
+    type: AssetType.IMAGE,
+    livePhotoVideoId: 'live-photo-motion-asset',
+    isVisible: true,
+    fileModifiedAt: '2022-06-19T23:41:36.910Z',
+    fileCreatedAt: '2022-06-19T23:41:36.910Z',
+  } as AssetEntity),
 };
 
 const assetInfo: ExifResponseDto = {

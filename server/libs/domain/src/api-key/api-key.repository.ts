@@ -6,6 +6,7 @@ export interface IKeyRepository {
   create(dto: Partial<APIKeyEntity>): Promise<APIKeyEntity>;
   update(userId: string, id: string, dto: Partial<APIKeyEntity>): Promise<APIKeyEntity>;
   delete(userId: string, id: string): Promise<void>;
+  deleteAll(userId: string): Promise<void>;
   /**
    * Includes the hashed `key` for verification
    * @param id

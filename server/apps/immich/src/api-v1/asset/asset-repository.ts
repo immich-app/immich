@@ -23,6 +23,7 @@ export interface IAssetRepository {
     asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'livePhotoVideoId'>,
   ): Promise<AssetEntity>;
   remove(asset: AssetEntity): Promise<void>;
+  save(asset: Partial<AssetEntity>): Promise<AssetEntity>;
 
   update(userId: string, asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;
   getAll(): Promise<AssetEntity[]>;
@@ -290,6 +291,11 @@ export class AssetRepository implements IAssetRepository {
 
   async remove(asset: AssetEntity): Promise<void> {
     await this.assetRepository.remove(asset);
+  }
+
+  async save(asset: Partial<AssetEntity>): Promise<AssetEntity> {
+    const { id } = await this.assetRepository.save(asset);
+    return this.assetRepository.findOneOrFail({ where: { id } });
   }
 
   /**

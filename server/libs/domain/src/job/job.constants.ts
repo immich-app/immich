@@ -2,11 +2,9 @@ export enum QueueName {
   THUMBNAIL_GENERATION = 'thumbnail-generation-queue',
   METADATA_EXTRACTION = 'metadata-extraction-queue',
   VIDEO_CONVERSION = 'video-conversion-queue',
-  ASSET_UPLOADED = 'asset-uploaded-queue',
   MACHINE_LEARNING = 'machine-learning-queue',
-  USER_DELETION = 'user-deletion-queue',
-  CONFIG = 'config-queue',
   BACKGROUND_TASK = 'background-task',
+  STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration-queue',
 }
 
 export enum JobName {
@@ -18,9 +16,10 @@ export enum JobName {
   EXTRACT_VIDEO_METADATA = 'extract-video-metadata',
   REVERSE_GEOCODING = 'reverse-geocoding',
   USER_DELETION = 'user-deletion',
-  TEMPLATE_MIGRATION = 'template-migration',
-  CONFIG_CHANGE = 'config-change',
+  USER_DELETE_CHECK = 'user-delete-check',
+  STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration',
+  SYSTEM_CONFIG_CHANGE = 'system-config-change',
   OBJECT_DETECTION = 'detect-object',
   IMAGE_TAGGING = 'tag-image',
-  DELETE_FILE_ON_DISK = 'delete-file-on-disk',
+  DELETE_FILES = 'delete-files',
 }
