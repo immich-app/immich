@@ -17,55 +17,55 @@ const AssetSchema = CollectionSchema(
   name: r'Asset',
   id: -2933289051367723566,
   properties: {
-    r'createdAt': PropertySchema(
-      id: 0,
-      name: r'createdAt',
-      type: IsarType.dateTime,
-    ),
     r'deviceId': PropertySchema(
-      id: 1,
+      id: 0,
       name: r'deviceId',
       type: IsarType.long,
     ),
     r'durationInSeconds': PropertySchema(
-      id: 2,
+      id: 1,
       name: r'durationInSeconds',
       type: IsarType.long,
     ),
-    r'fileName': PropertySchema(
+    r'fileCreatedAt': PropertySchema(
+      id: 2,
+      name: r'fileCreatedAt',
+      type: IsarType.dateTime,
+    ),
+    r'fileModifiedAt': PropertySchema(
       id: 3,
+      name: r'fileModifiedAt',
+      type: IsarType.dateTime,
+    ),
+    r'fileName': PropertySchema(
+      id: 4,
       name: r'fileName',
       type: IsarType.string,
     ),
     r'height': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'height',
       type: IsarType.int,
     ),
     r'isFavorite': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'isFavorite',
       type: IsarType.bool,
     ),
     r'isLocal': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'isLocal',
       type: IsarType.bool,
     ),
     r'livePhotoVideoId': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'livePhotoVideoId',
       type: IsarType.string,
     ),
     r'localId': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'localId',
       type: IsarType.string,
-    ),
-    r'modifiedAt': PropertySchema(
-      id: 9,
-      name: r'modifiedAt',
-      type: IsarType.dateTime,
     ),
     r'ownerId': PropertySchema(
       id: 10,
@@ -163,16 +163,16 @@ void _assetSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeDateTime(offsets[0], object.createdAt);
-  writer.writeLong(offsets[1], object.deviceId);
-  writer.writeLong(offsets[2], object.durationInSeconds);
-  writer.writeString(offsets[3], object.fileName);
-  writer.writeInt(offsets[4], object.height);
-  writer.writeBool(offsets[5], object.isFavorite);
-  writer.writeBool(offsets[6], object.isLocal);
-  writer.writeString(offsets[7], object.livePhotoVideoId);
-  writer.writeString(offsets[8], object.localId);
-  writer.writeDateTime(offsets[9], object.modifiedAt);
+  writer.writeLong(offsets[0], object.deviceId);
+  writer.writeLong(offsets[1], object.durationInSeconds);
+  writer.writeDateTime(offsets[2], object.fileCreatedAt);
+  writer.writeDateTime(offsets[3], object.fileModifiedAt);
+  writer.writeString(offsets[4], object.fileName);
+  writer.writeInt(offsets[5], object.height);
+  writer.writeBool(offsets[6], object.isFavorite);
+  writer.writeBool(offsets[7], object.isLocal);
+  writer.writeString(offsets[8], object.livePhotoVideoId);
+  writer.writeString(offsets[9], object.localId);
   writer.writeLong(offsets[10], object.ownerId);
   writer.writeString(offsets[11], object.remoteId);
   writer.writeDateTime(offsets[12], object.updatedAt);
@@ -186,16 +186,16 @@ Asset _assetDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Asset(
-    createdAt: reader.readDateTime(offsets[0]),
-    deviceId: reader.readLong(offsets[1]),
-    durationInSeconds: reader.readLong(offsets[2]),
-    fileName: reader.readString(offsets[3]),
-    height: reader.readIntOrNull(offsets[4]),
-    isFavorite: reader.readBool(offsets[5]),
-    isLocal: reader.readBool(offsets[6]),
-    livePhotoVideoId: reader.readStringOrNull(offsets[7]),
-    localId: reader.readString(offsets[8]),
-    modifiedAt: reader.readDateTime(offsets[9]),
+    deviceId: reader.readLong(offsets[0]),
+    durationInSeconds: reader.readLong(offsets[1]),
+    fileCreatedAt: reader.readDateTime(offsets[2]),
+    fileModifiedAt: reader.readDateTime(offsets[3]),
+    fileName: reader.readString(offsets[4]),
+    height: reader.readIntOrNull(offsets[5]),
+    isFavorite: reader.readBool(offsets[6]),
+    isLocal: reader.readBool(offsets[7]),
+    livePhotoVideoId: reader.readStringOrNull(offsets[8]),
+    localId: reader.readString(offsets[9]),
     ownerId: reader.readLong(offsets[10]),
     remoteId: reader.readStringOrNull(offsets[11]),
     updatedAt: reader.readDateTime(offsets[12]),
@@ -213,25 +213,25 @@ P _assetDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 1:
       return (reader.readLong(offset)) as P;
     case 2:
-      return (reader.readLong(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 3:
-      return (reader.readString(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 4:
-      return (reader.readIntOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 5:
-      return (reader.readBool(offset)) as P;
+      return (reader.readIntOrNull(offset)) as P;
     case 6:
       return (reader.readBool(offset)) as P;
     case 7:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 8:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 9:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 10:
       return (reader.readLong(offset)) as P;
     case 11:
@@ -625,59 +625,6 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
 }
 
 extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> createdAtEqualTo(
-      DateTime value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'createdAt',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> createdAtGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'createdAt',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> createdAtLessThan(
-    DateTime value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'createdAt',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> createdAtBetween(
-    DateTime lower,
-    DateTime upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'createdAt',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
   QueryBuilder<Asset, Asset, QAfterFilterCondition> deviceIdEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -776,6 +723,112 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'durationInSeconds',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileCreatedAtEqualTo(
+      DateTime value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fileCreatedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileCreatedAtGreaterThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'fileCreatedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileCreatedAtLessThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'fileCreatedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileCreatedAtBetween(
+    DateTime lower,
+    DateTime upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'fileCreatedAt',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileModifiedAtEqualTo(
+      DateTime value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fileModifiedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileModifiedAtGreaterThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'fileModifiedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileModifiedAtLessThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'fileModifiedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileModifiedAtBetween(
+    DateTime lower,
+    DateTime upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'fileModifiedAt',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1331,59 +1384,6 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> modifiedAtEqualTo(
-      DateTime value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'modifiedAt',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> modifiedAtGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'modifiedAt',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> modifiedAtLessThan(
-    DateTime value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'modifiedAt',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> modifiedAtBetween(
-    DateTime lower,
-    DateTime upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'modifiedAt',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
   QueryBuilder<Asset, Asset, QAfterFilterCondition> ownerIdEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -1709,18 +1709,6 @@ extension AssetQueryObject on QueryBuilder<Asset, Asset, QFilterCondition> {}
 extension AssetQueryLinks on QueryBuilder<Asset, Asset, QFilterCondition> {}
 
 extension AssetQuerySortBy on QueryBuilder<Asset, Asset, QSortBy> {
-  QueryBuilder<Asset, Asset, QAfterSortBy> sortByCreatedAt() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'createdAt', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterSortBy> sortByCreatedAtDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'createdAt', Sort.desc);
-    });
-  }
-
   QueryBuilder<Asset, Asset, QAfterSortBy> sortByDeviceId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'deviceId', Sort.asc);
@@ -1742,6 +1730,30 @@ extension AssetQuerySortBy on QueryBuilder<Asset, Asset, QSortBy> {
   QueryBuilder<Asset, Asset, QAfterSortBy> sortByDurationInSecondsDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'durationInSeconds', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterSortBy> sortByFileCreatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fileCreatedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterSortBy> sortByFileCreatedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fileCreatedAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterSortBy> sortByFileModifiedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fileModifiedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterSortBy> sortByFileModifiedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fileModifiedAt', Sort.desc);
     });
   }
 
@@ -1817,18 +1829,6 @@ extension AssetQuerySortBy on QueryBuilder<Asset, Asset, QSortBy> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterSortBy> sortByModifiedAt() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'modifiedAt', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterSortBy> sortByModifiedAtDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'modifiedAt', Sort.desc);
-    });
-  }
-
   QueryBuilder<Asset, Asset, QAfterSortBy> sortByOwnerId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ownerId', Sort.asc);
@@ -1879,18 +1879,6 @@ extension AssetQuerySortBy on QueryBuilder<Asset, Asset, QSortBy> {
 }
 
 extension AssetQuerySortThenBy on QueryBuilder<Asset, Asset, QSortThenBy> {
-  QueryBuilder<Asset, Asset, QAfterSortBy> thenByCreatedAt() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'createdAt', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterSortBy> thenByCreatedAtDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'createdAt', Sort.desc);
-    });
-  }
-
   QueryBuilder<Asset, Asset, QAfterSortBy> thenByDeviceId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'deviceId', Sort.asc);
@@ -1912,6 +1900,30 @@ extension AssetQuerySortThenBy on QueryBuilder<Asset, Asset, QSortThenBy> {
   QueryBuilder<Asset, Asset, QAfterSortBy> thenByDurationInSecondsDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'durationInSeconds', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterSortBy> thenByFileCreatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fileCreatedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterSortBy> thenByFileCreatedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fileCreatedAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterSortBy> thenByFileModifiedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fileModifiedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterSortBy> thenByFileModifiedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fileModifiedAt', Sort.desc);
     });
   }
 
@@ -1999,18 +2011,6 @@ extension AssetQuerySortThenBy on QueryBuilder<Asset, Asset, QSortThenBy> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterSortBy> thenByModifiedAt() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'modifiedAt', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Asset, Asset, QAfterSortBy> thenByModifiedAtDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'modifiedAt', Sort.desc);
-    });
-  }
-
   QueryBuilder<Asset, Asset, QAfterSortBy> thenByOwnerId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ownerId', Sort.asc);
@@ -2061,12 +2061,6 @@ extension AssetQuerySortThenBy on QueryBuilder<Asset, Asset, QSortThenBy> {
 }
 
 extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
-  QueryBuilder<Asset, Asset, QDistinct> distinctByCreatedAt() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'createdAt');
-    });
-  }
-
   QueryBuilder<Asset, Asset, QDistinct> distinctByDeviceId() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'deviceId');
@@ -2076,6 +2070,18 @@ extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
   QueryBuilder<Asset, Asset, QDistinct> distinctByDurationInSeconds() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'durationInSeconds');
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QDistinct> distinctByFileCreatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'fileCreatedAt');
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QDistinct> distinctByFileModifiedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'fileModifiedAt');
     });
   }
 
@@ -2119,12 +2125,6 @@ extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QDistinct> distinctByModifiedAt() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'modifiedAt');
-    });
-  }
-
   QueryBuilder<Asset, Asset, QDistinct> distinctByOwnerId() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'ownerId');
@@ -2158,12 +2158,6 @@ extension AssetQueryProperty on QueryBuilder<Asset, Asset, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Asset, DateTime, QQueryOperations> createdAtProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'createdAt');
-    });
-  }
-
   QueryBuilder<Asset, int, QQueryOperations> deviceIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'deviceId');
@@ -2173,6 +2167,18 @@ extension AssetQueryProperty on QueryBuilder<Asset, Asset, QQueryProperty> {
   QueryBuilder<Asset, int, QQueryOperations> durationInSecondsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'durationInSeconds');
+    });
+  }
+
+  QueryBuilder<Asset, DateTime, QQueryOperations> fileCreatedAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'fileCreatedAt');
+    });
+  }
+
+  QueryBuilder<Asset, DateTime, QQueryOperations> fileModifiedAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'fileModifiedAt');
     });
   }
 
@@ -2209,12 +2215,6 @@ extension AssetQueryProperty on QueryBuilder<Asset, Asset, QQueryProperty> {
   QueryBuilder<Asset, String, QQueryOperations> localIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'localId');
-    });
-  }
-
-  QueryBuilder<Asset, DateTime, QQueryOperations> modifiedAtProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'modifiedAt');
     });
   }
 

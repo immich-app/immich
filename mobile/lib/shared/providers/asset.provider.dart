@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
+import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
@@ -123,7 +124,11 @@ class AssetNotifier extends StateNotifier<AssetsState> {
 
   Future<void> clearAllAsset() {
     state = AssetsState.empty();
-    return _db.writeTxn(() async => _db.assets.clear());
+    return _db.writeTxn(() async {
+      await _db.assets.clear();
+      await _db.exifInfos.clear();
+      await _db.albums.clear();
+    });
   }
 
   Future<void> onNewAssetUploaded(Asset newAsset) async {

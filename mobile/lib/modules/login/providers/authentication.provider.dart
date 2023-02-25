@@ -92,6 +92,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         Hive.box(userInfoBox).delete(accessTokenKey),
         Store.delete(StoreKey.assetETag),
         Store.delete(StoreKey.userRemoteId),
+        Store.delete(StoreKey.currentUser),
         Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).delete(savedLoginInfoKey)
       ]);
 
