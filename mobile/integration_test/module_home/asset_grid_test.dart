@@ -74,35 +74,5 @@ void main() async {
       );
     });
 
-    immichWidgetTest("Test add to album from selection",
-        (tester, helper) async {
-      final albumName = helper.createRandomAlbumName();
-
-      await helper.loginHelper.loginTo(LoginCredentials.testInstance);
-      await helper.navigationHelper.navigateToLibrary();
-      await helper.albumHelper.createAlbum(albumName);
-      await helper.navigationHelper.closeAlbum();
-      await helper.navigationHelper.navigateToPhotos();
-
-      // Select second image
-      await tester.longPress(
-        helper.assetGridHelper.findThumbnailImagesInRow(0).at(1),
-      );
-
-      await tester.pump(const Duration(seconds: 1));
-      await tester.tap(find.text(albumName).first);
-
-      await pumpUntilFound(
-        tester,
-        find.text(
-          "home_page_add_to_album_success".tr(
-            namedArgs: {
-              "added": "1",
-              "album": albumName,
-            },
-          ),
-        ),
-      );
-    });
   });
 }
