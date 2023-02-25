@@ -1,16 +1,14 @@
 import { APP_UPLOAD_LOCATION } from '@app/common';
-import { AssetEntity, AssetType } from '@app/infra';
-import { IAssetJob, QueueName, JobName } from '@app/domain';
-import { InjectQueue, Process, Processor } from '@nestjs/bull';
-import { Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { AssetType } from '@app/infra';
+import { IAssetJob, QueueName, JobName, IAssetRepository, IJobRepository } from '@app/domain';
+import { Process, Processor } from '@nestjs/bull';
+import { Inject, Logger } from '@nestjs/common';
 import { mapAsset } from '@app/domain';
-import { Job, Queue } from 'bull';
+import { Job } from 'bull';
 import ffmpeg from 'fluent-ffmpeg';
 import { existsSync, mkdirSync } from 'node:fs';
 import sanitize from 'sanitize-filename';
 import sharp from 'sharp';
-import { Repository } from 'typeorm/repository/Repository';
 import { join } from 'path';
 import { CommunicationGateway } from 'apps/immich/src/api-v1/communication/communication.gateway';
 import { exiftool } from 'exiftool-vendored';
@@ -20,20 +18,13 @@ export class ThumbnailGeneratorProcessor {
   readonly logger: Logger = new Logger(ThumbnailGeneratorProcessor.name);
 
   constructor(
-    @InjectRepository(AssetEntity)
-    private assetRepository: Repository<AssetEntity>,
-
-    @InjectQueue(QueueName.THUMBNAIL_GENERATION)
-    private thumbnailGeneratorQueue: Queue,
-
+    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
     private wsCommunicationGateway: CommunicationGateway,
-
-    @InjectQueue(QueueName.MACHINE_LEARNING)
-    private machineLearningQueue: Queue<IAssetJob>,
   ) {}
 
   @Process({ name: JobName.GENERATE_JPEG_THUMBNAIL, concurrency: 3 })
-  async generateJPEGThumbnail(job: Job<IAssetJob>) {
+  async handleGenerateJpegThumbnail(job: Job<IAssetJob>) {
     const basePath = APP_UPLOAD_LOCATION;
 
     const { asset } = job.data;
@@ -62,7 +53,7 @@ export class ThumbnailGeneratorProcessor {
             );
             return exiftool.extractThumbnail(asset.originalPath, jpegThumbnailPath);
           });
-        await this.assetRepository.update({ id: asset.id }, { resizePath: jpegThumbnailPath });
+        await this.assetRepository.save({ id: asset.id, resizePath: jpegThumbnailPath });
       } catch (error: any) {
         this.logger.error('Failed to generate jpeg thumbnail for asset: ' + asset.id, error.stack);
       }
@@ -70,9 +61,9 @@ export class ThumbnailGeneratorProcessor {
       // Update resize path to send to generate webp queue
       asset.resizePath = jpegThumbnailPath;
 
-      await this.thumbnailGeneratorQueue.add(JobName.GENERATE_WEBP_THUMBNAIL, { asset });
-      await this.machineLearningQueue.add(JobName.IMAGE_TAGGING, { asset });
-      await this.machineLearningQueue.add(JobName.OBJECT_DETECTION, { asset });
+      await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: { asset } });
+      await this.jobRepository.queue({ name: JobName.IMAGE_TAGGING, data: { asset } });
+      await this.jobRepository.queue({ name: JobName.OBJECT_DETECTION, data: { asset } });
 
       this.wsCommunicationGateway.server.to(asset.ownerId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
     }
@@ -96,14 +87,14 @@ export class ThumbnailGeneratorProcessor {
           .run();
       });
 
-      await this.assetRepository.update({ id: asset.id }, { resizePath: jpegThumbnailPath });
+      await this.assetRepository.save({ id: asset.id, resizePath: jpegThumbnailPath });
 
       // Update resize path to send to generate webp queue
       asset.resizePath = jpegThumbnailPath;
 
-      await this.thumbnailGeneratorQueue.add(JobName.GENERATE_WEBP_THUMBNAIL, { asset });
-      await this.machineLearningQueue.add(JobName.IMAGE_TAGGING, { asset });
-      await this.machineLearningQueue.add(JobName.OBJECT_DETECTION, { asset });
+      await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: { asset } });
+      await this.jobRepository.queue({ name: JobName.IMAGE_TAGGING, data: { asset } });
+      await this.jobRepository.queue({ name: JobName.OBJECT_DETECTION, data: { asset } });
 
       this.wsCommunicationGateway.server.to(asset.ownerId).emit('on_upload_success', JSON.stringify(mapAsset(asset)));
     }
@@ -121,7 +112,7 @@ export class ThumbnailGeneratorProcessor {
 
     try {
       await sharp(asset.resizePath, { failOnError: false }).resize(250).webp().rotate().toFile(webpPath);
-      await this.assetRepository.update({ id: asset.id }, { webpPath: webpPath });
+      await this.assetRepository.save({ id: asset.id, webpPath: webpPath });
     } catch (error: any) {
       this.logger.error('Failed to generate webp thumbnail for asset: ' + asset.id, error.stack);
     }

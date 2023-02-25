@@ -1,7 +1,7 @@
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra';
-import { IReverseGeocodingJob, IAssetUploadedJob, QueueName, JobName } from '@app/domain';
+import { IReverseGeocodingJob, IAssetUploadedJob, QueueName, JobName, IAssetRepository } from '@app/domain';
 import { Process, Processor } from '@nestjs/bull';
-import { Logger } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Job } from 'bull';
@@ -13,7 +13,6 @@ import geocoder, { InitOptions } from 'local-reverse-geocoder';
 import { getName } from 'i18n-iso-countries';
 import fs from 'node:fs';
 import { ExifDateTime, exiftool, Tags } from 'exiftool-vendored';
-import { IsNull, Not } from 'typeorm';
 
 interface ImmichTags extends Tags {
   ContentIdentifier?: string;
@@ -73,9 +72,7 @@ export class MetadataExtractionProcessor {
   private logger = new Logger(MetadataExtractionProcessor.name);
   private isGeocodeInitialized = false;
   constructor(
-    @InjectRepository(AssetEntity)
-    private assetRepository: Repository<AssetEntity>,
-
+    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @InjectRepository(ExifEntity)
     private exifRepository: Repository<ExifEntity>,
 
@@ -184,22 +181,14 @@ export class MetadataExtractionProcessor {
       });
 
       if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
-        const motionAsset = await this.assetRepository.findOne({
-          where: {
-            id: Not(asset.id),
-            type: AssetType.VIDEO,
-            exifInfo: {
-              livePhotoCID: newExif.livePhotoCID,
-            },
-          },
-          relations: {
-            exifInfo: true,
-          },
-        });
-
+        const motionAsset = await this.assetRepository.findLivePhotoMatch(
+          newExif.livePhotoCID,
+          AssetType.VIDEO,
+          asset.id,
+        );
         if (motionAsset) {
-          await this.assetRepository.update(asset.id, { livePhotoVideoId: motionAsset.id });
-          await this.assetRepository.update(motionAsset.id, { isVisible: false });
+          await this.assetRepository.save({ id: asset.id, livePhotoVideoId: motionAsset.id });
+          await this.assetRepository.save({ id: motionAsset.id, isVisible: false });
         }
       }
 
@@ -303,20 +292,14 @@ export class MetadataExtractionProcessor {
       newExif.livePhotoCID = exifData?.ContentIdentifier || null;
 
       if (newExif.livePhotoCID) {
-        const photoAsset = await this.assetRepository.findOne({
-          where: {
-            id: Not(asset.id),
-            type: AssetType.IMAGE,
-            livePhotoVideoId: IsNull(),
-            exifInfo: {
-              livePhotoCID: newExif.livePhotoCID,
-            },
-          },
-        });
-
+        const photoAsset = await this.assetRepository.findLivePhotoMatch(
+          newExif.livePhotoCID,
+          AssetType.IMAGE,
+          asset.id,
+        );
         if (photoAsset) {
-          await this.assetRepository.update(photoAsset.id, { livePhotoVideoId: asset.id });
-          await this.assetRepository.update(asset.id, { isVisible: false });
+          await this.assetRepository.save({ id: photoAsset.id, livePhotoVideoId: asset.id });
+          await this.assetRepository.save({ id: asset.id, isVisible: false });
         }
       }
 
@@ -372,7 +355,7 @@ export class MetadataExtractionProcessor {
       }
 
       await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
-      await this.assetRepository.update({ id: asset.id }, { duration: durationString, fileCreatedAt });
+      await this.assetRepository.save({ id: asset.id, duration: durationString, fileCreatedAt });
     } catch (err) {
       ``;
       // do nothing

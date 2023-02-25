@@ -1,8 +1,8 @@
 import { IAssetRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { AssetEntity } from '../entities';
+import { Not, Repository } from 'typeorm';
+import { AssetEntity, AssetType } from '../entities';
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
@@ -19,5 +19,20 @@ export class AssetRepository implements IAssetRepository {
   async save(asset: Partial<AssetEntity>): Promise<AssetEntity> {
     const { id } = await this.repository.save(asset);
     return this.repository.findOneOrFail({ where: { id } });
+  }
+
+  findLivePhotoMatch(livePhotoCID: string, otherAssetId: string, type: AssetType): Promise<AssetEntity | null> {
+    return this.repository.findOne({
+      where: {
+        id: Not(otherAssetId),
+        type,
+        exifInfo: {
+          livePhotoCID,
+        },
+      },
+      relations: {
+        exifInfo: true,
+      },
+    });
   }
 }
