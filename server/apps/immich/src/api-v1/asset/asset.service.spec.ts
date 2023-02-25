@@ -301,7 +301,7 @@ describe('AssetService', () => {
 
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.DELETE_FILES,
-        data: { files: ['fake_path/asset_1.jpeg', null] },
+        data: { files: ['fake_path/asset_1.jpeg', undefined] },
       });
       expect(storageMock.moveFile).not.toHaveBeenCalled();
     });
