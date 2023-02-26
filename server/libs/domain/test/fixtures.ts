@@ -76,6 +76,7 @@ export const userEntityStub = {
     createdAt: '2021-01-01',
     updatedAt: '2021-01-01',
     tags: [],
+    assets: [],
   }),
   user1: Object.freeze<UserEntity>({
     ...authStub.user1,
@@ -88,6 +89,7 @@ export const userEntityStub = {
     createdAt: '2021-01-01',
     updatedAt: '2021-01-01',
     tags: [],
+    assets: [],
   }),
 };
 
