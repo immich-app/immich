@@ -13,11 +13,9 @@ part of openapi.api;
 class ServerStatsResponseDto {
   /// Returns a new [ServerStatsResponseDto] instance.
   ServerStatsResponseDto({
-    required this.photos,
-    required this.videos,
-    required this.objects,
-    required this.usageRaw,
-    required this.usage,
+    this.photos = 0,
+    this.videos = 0,
+    this.usage = 0,
     this.usageByUser = const [],
   });
 
@@ -25,11 +23,7 @@ class ServerStatsResponseDto {
 
   int videos;
 
-  int objects;
-
-  int usageRaw;
-
-  String usage;
+  int usage;
 
   List<UsageByUserDto> usageByUser;
 
@@ -37,8 +31,6 @@ class ServerStatsResponseDto {
   bool operator ==(Object other) => identical(this, other) || other is ServerStatsResponseDto &&
      other.photos == photos &&
      other.videos == videos &&
-     other.objects == objects &&
-     other.usageRaw == usageRaw &&
      other.usage == usage &&
      other.usageByUser == usageByUser;
 
@@ -47,20 +39,16 @@ class ServerStatsResponseDto {
     // ignore: unnecessary_parenthesis
     (photos.hashCode) +
     (videos.hashCode) +
-    (objects.hashCode) +
-    (usageRaw.hashCode) +
     (usage.hashCode) +
     (usageByUser.hashCode);
 
   @override
-  String toString() => 'ServerStatsResponseDto[photos=$photos, videos=$videos, objects=$objects, usageRaw=$usageRaw, usage=$usage, usageByUser=$usageByUser]';
+  String toString() => 'ServerStatsResponseDto[photos=$photos, videos=$videos, usage=$usage, usageByUser=$usageByUser]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'photos'] = this.photos;
       json[r'videos'] = this.videos;
-      json[r'objects'] = this.objects;
-      json[r'usageRaw'] = this.usageRaw;
       json[r'usage'] = this.usage;
       json[r'usageByUser'] = this.usageByUser;
     return json;
@@ -87,9 +75,7 @@ class ServerStatsResponseDto {
       return ServerStatsResponseDto(
         photos: mapValueOfType<int>(json, r'photos')!,
         videos: mapValueOfType<int>(json, r'videos')!,
-        objects: mapValueOfType<int>(json, r'objects')!,
-        usageRaw: mapValueOfType<int>(json, r'usageRaw')!,
-        usage: mapValueOfType<String>(json, r'usage')!,
+        usage: mapValueOfType<int>(json, r'usage')!,
         usageByUser: UsageByUserDto.listFromJson(json[r'usageByUser'])!,
       );
     }
@@ -142,8 +128,6 @@ class ServerStatsResponseDto {
   static const requiredKeys = <String>{
     'photos',
     'videos',
-    'objects',
-    'usageRaw',
     'usage',
     'usageByUser',
   };

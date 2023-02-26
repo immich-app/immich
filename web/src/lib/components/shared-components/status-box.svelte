@@ -5,6 +5,7 @@
 	import LoadingSpinner from './loading-spinner.svelte';
 	import { api, ServerInfoResponseDto } from '@api';
 	import { asByteUnitString } from '../../utils/byte-units';
+	import { locale } from '$lib/stores/preferences.store';
 
 	let isServerOk = true;
 	let serverVersion = '';
@@ -63,7 +64,8 @@
 					/>
 				</div>
 				<p class="text-xs">
-					{asByteUnitString(serverInfo?.diskUseRaw)} of {asByteUnitString(serverInfo?.diskSizeRaw)} used
+					{asByteUnitString(serverInfo?.diskUseRaw, $locale)} of
+					{asByteUnitString(serverInfo?.diskSizeRaw, $locale)} used
 				</p>
 			{:else}
 				<div class="mt-2">

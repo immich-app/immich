@@ -4883,25 +4883,29 @@
           "userId": {
             "type": "string"
           },
-          "videos": {
-            "type": "integer"
+          "userFirstName": {
+            "type": "string"
+          },
+          "userLastName": {
+            "type": "string"
           },
           "photos": {
             "type": "integer"
           },
-          "usageRaw": {
-            "type": "integer",
-            "format": "int64"
+          "videos": {
+            "type": "integer"
           },
           "usage": {
-            "type": "string"
+            "type": "integer",
+            "format": "int64"
           }
         },
         "required": [
           "userId",
-          "videos",
+          "userFirstName",
+          "userLastName",
           "photos",
-          "usageRaw",
+          "videos",
           "usage"
         ]
       },
@@ -4909,22 +4913,20 @@
         "type": "object",
         "properties": {
           "photos": {
-            "type": "integer"
+            "type": "integer",
+            "default": 0
           },
           "videos": {
-            "type": "integer"
-          },
-          "objects": {
-            "type": "integer"
-          },
-          "usageRaw": {
             "type": "integer",
-            "format": "int64"
+            "default": 0
           },
           "usage": {
-            "type": "string"
+            "type": "integer",
+            "default": 0,
+            "format": "int64"
           },
           "usageByUser": {
+            "default": [],
             "title": "Array of usage for each user",
             "example": [
               {
@@ -4942,8 +4944,6 @@
         "required": [
           "photos",
           "videos",
-          "objects",
-          "usageRaw",
           "usage",
           "usageByUser"
         ]
