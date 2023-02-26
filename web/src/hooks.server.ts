@@ -16,8 +16,10 @@ export const handle = (async ({ event, resolve }) => {
 			const { data: user } = await api.userApi.getMyUserInfo();
 			event.locals.user = user;
 		} catch (err) {
+			const apiError = err as AxiosError;
+
 			// Ignore 401 unauthorized errors and log all others.
-			if (err instanceof AxiosError && err.response?.status !== 401) {
+			if (apiError.response?.status !== 401) {
 				console.error('[ERROR] hooks.server.ts [handle]:', err);
 			}
 		}
