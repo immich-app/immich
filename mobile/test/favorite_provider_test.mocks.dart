@@ -6,8 +6,6 @@
 import 'dart:async' as _i5;
 
 import 'package:hooks_riverpod/hooks_riverpod.dart' as _i7;
-import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart'
-    as _i9;
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart'
     as _i6;
 import 'package:immich_mobile/shared/models/asset.dart' as _i4;
@@ -39,16 +37,6 @@ class _FakeAssetsState_0 extends _i1.SmartFake implements _i2.AssetsState {
 
 class _FakeLogger_1 extends _i1.SmartFake implements _i3.Logger {
   _FakeLogger_1(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _FakeAssetNotifier_2 extends _i1.SmartFake implements _i2.AssetNotifier {
-  _FakeAssetNotifier_2(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -249,140 +237,6 @@ class MockAssetNotifier extends _i1.Mock implements _i2.AssetNotifier {
   @override
   _i7.RemoveListener addListener(
     _i8.Listener<_i2.AssetsState>? listener, {
-    bool? fireImmediately = true,
-  }) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #addListener,
-          [listener],
-          {#fireImmediately: fireImmediately},
-        ),
-        returnValue: () {},
-        returnValueForMissingStub: () {},
-      ) as _i7.RemoveListener);
-  @override
-  void dispose() => super.noSuchMethod(
-        Invocation.method(
-          #dispose,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
-}
-
-/// A class which mocks [FavoriteSelectionNotifier].
-///
-/// See the documentation for Mockito's code generation for more information.
-class MockFavoriteSelectionNotifier extends _i1.Mock
-    implements _i9.FavoriteSelectionNotifier {
-  @override
-  _i2.AssetsState get assetsState => (super.noSuchMethod(
-        Invocation.getter(#assetsState),
-        returnValue: _FakeAssetsState_0(
-          this,
-          Invocation.getter(#assetsState),
-        ),
-        returnValueForMissingStub: _FakeAssetsState_0(
-          this,
-          Invocation.getter(#assetsState),
-        ),
-      ) as _i2.AssetsState);
-  @override
-  _i2.AssetNotifier get assetNotifier => (super.noSuchMethod(
-        Invocation.getter(#assetNotifier),
-        returnValue: _FakeAssetNotifier_2(
-          this,
-          Invocation.getter(#assetNotifier),
-        ),
-        returnValueForMissingStub: _FakeAssetNotifier_2(
-          this,
-          Invocation.getter(#assetNotifier),
-        ),
-      ) as _i2.AssetNotifier);
-  @override
-  set onError(_i7.ErrorListener? _onError) => super.noSuchMethod(
-        Invocation.setter(
-          #onError,
-          _onError,
-        ),
-        returnValueForMissingStub: null,
-      );
-  @override
-  bool get mounted => (super.noSuchMethod(
-        Invocation.getter(#mounted),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      ) as bool);
-  @override
-  _i5.Stream<Set<String>> get stream => (super.noSuchMethod(
-        Invocation.getter(#stream),
-        returnValue: _i5.Stream<Set<String>>.empty(),
-        returnValueForMissingStub: _i5.Stream<Set<String>>.empty(),
-      ) as _i5.Stream<Set<String>>);
-  @override
-  Set<String> get state => (super.noSuchMethod(
-        Invocation.getter(#state),
-        returnValue: <String>{},
-        returnValueForMissingStub: <String>{},
-      ) as Set<String>);
-  @override
-  set state(Set<String>? value) => super.noSuchMethod(
-        Invocation.setter(
-          #state,
-          value,
-        ),
-        returnValueForMissingStub: null,
-      );
-  @override
-  Set<String> get debugState => (super.noSuchMethod(
-        Invocation.getter(#debugState),
-        returnValue: <String>{},
-        returnValueForMissingStub: <String>{},
-      ) as Set<String>);
-  @override
-  bool get hasListeners => (super.noSuchMethod(
-        Invocation.getter(#hasListeners),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      ) as bool);
-  @override
-  _i5.Future<void> toggleFavorite(_i4.Asset? asset) => (super.noSuchMethod(
-        Invocation.method(
-          #toggleFavorite,
-          [asset],
-        ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
-  @override
-  _i5.Future<void> addToFavorites(Iterable<_i4.Asset>? assets) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #addToFavorites,
-          [assets],
-        ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
-  @override
-  bool updateShouldNotify(
-    Set<String>? old,
-    Set<String>? current,
-  ) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #updateShouldNotify,
-          [
-            old,
-            current,
-          ],
-        ),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      ) as bool);
-  @override
-  _i7.RemoveListener addListener(
-    _i8.Listener<Set<String>>? listener, {
     bool? fireImmediately = true,
   }) =>
       (super.noSuchMethod(

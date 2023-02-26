@@ -9,7 +9,6 @@ import 'package:mockito/mockito.dart';
 @GenerateNiceMocks([
   MockSpec<AssetsState>(),
   MockSpec<AssetNotifier>(),
-  MockSpec<FavoriteSelectionNotifier>()
 ])
 import 'favorite_provider_test.mocks.dart';
 
