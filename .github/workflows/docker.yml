@@ -29,7 +29,7 @@ jobs:
             platforms: "linux/arm/v7,linux/amd64,linux/arm64"
           - context: "machine-learning"
             image: "immich-machine-learning"
-            platforms: "linux/amd64"
+            platforms: "linux/amd64,linux/arm64"
           - context: "nginx"
             image: "immich-proxy"
             platforms: "linux/arm/v7,linux/amd64,linux/arm64"
