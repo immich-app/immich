@@ -10,6 +10,7 @@
 	let isServerOk = true;
 	let serverVersion = '';
 	let serverInfo: ServerInfoResponseDto;
+	let pingServerInterval: NodeJS.Timer;
 
 	onMount(async () => {
 		try {
@@ -24,22 +25,22 @@
 			console.log('Error [StatusBox] [onMount]');
 			isServerOk = false;
 		}
+
+		pingServerInterval = setInterval(async () => {
+			try {
+				const { data: pingReponse } = await api.serverInfoApi.pingServer();
+
+				if (pingReponse.res === 'pong') isServerOk = true;
+				else isServerOk = false;
+
+				const { data: serverInfoRes } = await api.serverInfoApi.getServerInfo();
+				serverInfo = serverInfoRes;
+			} catch (e) {
+				console.log('Error [StatusBox] [pingServerInterval]', e);
+				isServerOk = false;
+			}
+		}, 10000);
 	});
-
-	const pingServerInterval = setInterval(async () => {
-		try {
-			const { data: pingReponse } = await api.serverInfoApi.pingServer();
-
-			if (pingReponse.res === 'pong') isServerOk = true;
-			else isServerOk = false;
-
-			const { data: serverInfoRes } = await api.serverInfoApi.getServerInfo();
-			serverInfo = serverInfoRes;
-		} catch (e) {
-			console.log('Error [StatusBox] [pingServerInterval]', e);
-			isServerOk = false;
-		}
-	}, 10000);
 
 	onDestroy(() => clearInterval(pingServerInterval));
 
