@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -22,6 +23,7 @@ final albumServiceProvider = Provider(
   (ref) => AlbumService(
     ref.watch(apiServiceProvider),
     ref.watch(userServiceProvider),
+    ref.watch(backgroundServiceProvider),
     ref.watch(syncServiceProvider),
     ref.watch(dbProvider),
   ),
@@ -30,6 +32,7 @@ final albumServiceProvider = Provider(
 class AlbumService {
   final ApiService _apiService;
   final UserService _userService;
+  final BackgroundService _backgroundService;
   final SyncService _syncService;
   final Isar _db;
   Completer<bool> _localCompleter = Completer()..complete(false);
@@ -38,6 +41,7 @@ class AlbumService {
   AlbumService(
     this._apiService,
     this._userService,
+    this._backgroundService,
     this._syncService,
     this._db,
   );
@@ -53,16 +57,20 @@ class AlbumService {
     final Stopwatch sw = Stopwatch()..start();
     bool changes = false;
     try {
+      if (!await _backgroundService.hasAccess) {
+        return false;
+      }
+      final HiveBackupAlbums? infos =
+          (await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox))
+              .get(backupInfoKey);
+      if (infos == null) {
+        return false;
+      }
       final List<AssetPathEntity> onDevice =
           await PhotoManager.getAssetPathList(
         hasAll: false,
         filterOption: FilterOptionGroup(containsPathModified: true),
       );
-      HiveBackupAlbums? infos =
-          Hive.box<HiveBackupAlbums>(hiveBackupInfoBox).get(backupInfoKey);
-      if (infos == null) {
-        return false;
-      }
       if (infos.excludedAlbumsIds.isNotEmpty) {
         onDevice.removeWhere((e) => infos.excludedAlbumsIds.contains(e.id));
       }
