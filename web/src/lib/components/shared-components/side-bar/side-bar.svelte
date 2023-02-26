@@ -48,7 +48,7 @@
 		<SideBarButton
 			title="Photos"
 			logo={ImageOutline}
-			isSelected={$page.route.id === AppRoute.PHOTOS}
+			isSelected={$page.route.id === '/(user)/photos'}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getAssetCount()}
@@ -66,7 +66,7 @@
 		<SideBarButton
 			title="Sharing"
 			logo={AccountMultipleOutline}
-			isSelected={$page.route.id === AppRoute.SHARING}
+			isSelected={$page.route.id === '/(user)/sharing'}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getAlbumCount()}
@@ -87,7 +87,7 @@
 		<SideBarButton
 			title="Favorites"
 			logo={StarOutline}
-			isSelected={$page.route.id == AppRoute.FAVORITES}
+			isSelected={$page.route.id == '/(user)/favorites'}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getFavoriteCount()}
@@ -101,7 +101,11 @@
 		</SideBarButton>
 	</a>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.ALBUMS} draggable="false">
-		<SideBarButton title="Albums" logo={ImageAlbum} isSelected={$page.route.id === AppRoute.ALBUMS}>
+		<SideBarButton
+			title="Albums"
+			logo={ImageAlbum}
+			isSelected={$page.route.id === '/(user)/albums'}
+		>
 			<svelte:fragment slot="moreInformation">
 				{#await getAlbumCount()}
 					<LoadingSpinner />
