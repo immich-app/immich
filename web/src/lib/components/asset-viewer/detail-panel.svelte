@@ -8,6 +8,7 @@
 	import { AssetResponseDto, AlbumResponseDto } from '@api';
 	import { asByteUnitString } from '../../utils/byte-units';
 	import { locale } from '$lib/stores/preferences.store';
+	import { DateTime } from 'luxon';
 	import type { LatLngTuple } from 'leaflet';
 
 	export let asset: AssetResponseDto;
@@ -55,7 +56,9 @@
 		{/if}
 
 		{#if asset.exifInfo?.dateTimeOriginal}
-			{@const assetDateTimeOriginal = new Date(asset.exifInfo.dateTimeOriginal)}
+			{@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
+				zone: asset.exifInfo.timeZone ?? undefined
+			})}
 			<div class="flex gap-4 py-4">
 				<div>
 					<Calendar size="24" />
@@ -63,20 +66,26 @@
 
 				<div>
 					<p>
-						{assetDateTimeOriginal.toLocaleDateString($locale, {
-							month: 'short',
-							day: 'numeric',
-							year: 'numeric'
-						})}
+						{assetDateTimeOriginal.toLocaleString(
+							{
+								month: 'short',
+								day: 'numeric',
+								year: 'numeric'
+							},
+							{ locale: $locale }
+						)}
 					</p>
 					<div class="flex gap-2 text-sm">
 						<p>
-							{assetDateTimeOriginal.toLocaleString($locale, {
-								weekday: 'short',
-								hour: 'numeric',
-								minute: '2-digit',
-								timeZoneName: 'longOffset'
-							})}
+							{assetDateTimeOriginal.toLocaleString(
+								{
+									weekday: 'short',
+									hour: 'numeric',
+									minute: '2-digit',
+									timeZoneName: 'longOffset'
+								},
+								{ locale: $locale }
+							)}
 						</p>
 					</div>
 				</div>

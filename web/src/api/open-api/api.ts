@@ -1131,6 +1131,12 @@ export interface ExifResponseDto {
      * @type {string}
      * @memberof ExifResponseDto
      */
+    'timeZone'?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExifResponseDto
+     */
     'lensModel'?: string | null;
     /**
      * 

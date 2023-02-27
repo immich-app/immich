@@ -34,6 +34,9 @@ export class ExifEntity {
   @Column({ type: 'timestamptz', nullable: true })
   modifyDate!: Date | null;
 
+  @Column({ type: 'varchar', nullable: true })
+  timeZone!: string | null;
+
   @Column({ type: 'float', nullable: true })
   latitude!: number | null;
 
