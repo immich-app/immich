@@ -28,31 +28,32 @@ Asset _getTestAsset(String id, bool favorite) {
 
 void main() {
   group("Test favoriteProvider", () {
-    test("Empty favorites provider", () {
-      final container = ProviderContainer();
 
-      final assetsState = MockAssetsState();
-      final assetNotifier = MockAssetNotifier();
+    late MockAssetsState assetsState;
+    late MockAssetNotifier assetNotifier;
+    late ProviderContainer container;
+    late StateNotifierProvider<FavoriteSelectionNotifier, Set<String>> testFavoritesProvider;
 
-      when(assetsState.allAssets).thenReturn([]);
+    setUp(() {
+      assetsState = MockAssetsState();
+      assetNotifier = MockAssetNotifier();
+      container = ProviderContainer();
 
-      final testFavoritesProvider =
+      testFavoritesProvider =
           StateNotifierProvider<FavoriteSelectionNotifier, Set<String>>((ref) {
-        return FavoriteSelectionNotifier(
-          assetsState,
-          assetNotifier,
-        );
-      });
+            return FavoriteSelectionNotifier(
+              assetsState,
+              assetNotifier,
+            );
+          });
+    },);
 
+    test("Empty favorites provider", () {
+      when(assetsState.allAssets).thenReturn([]);
       expect(<String>{}, container.read(testFavoritesProvider));
     });
 
     test("Non-empty favorites provider", () {
-      final container = ProviderContainer();
-
-      final assetsState = MockAssetsState();
-      final assetNotifier = MockAssetNotifier();
-
       when(assetsState.allAssets).thenReturn([
         _getTestAsset("001", false),
         _getTestAsset("002", true),
@@ -61,24 +62,10 @@ void main() {
         _getTestAsset("005", true),
       ]);
 
-      final testFavoritesProvider =
-          StateNotifierProvider<FavoriteSelectionNotifier, Set<String>>((ref) {
-        return FavoriteSelectionNotifier(
-          assetsState,
-          assetNotifier,
-        );
-      });
-
-      // ignore: invalid_use_of_protected_member
       expect(<String>{"002", "005"}, container.read(testFavoritesProvider));
     });
 
     test("Toggle favorite", () {
-      final container = ProviderContainer();
-
-      final assetsState = MockAssetsState();
-      final assetNotifier = MockAssetNotifier();
-
       when(assetNotifier.toggleFavorite(null, false))
           .thenAnswer((_) async => false);
 
@@ -86,14 +73,6 @@ void main() {
       final testAsset2 = _getTestAsset("002", true);
 
       when(assetsState.allAssets).thenReturn([testAsset1, testAsset2]);
-
-      final testFavoritesProvider =
-          StateNotifierProvider<FavoriteSelectionNotifier, Set<String>>((ref) {
-        return FavoriteSelectionNotifier(
-          assetsState,
-          assetNotifier,
-        );
-      });
 
       expect(<String>{"002"}, container.read(testFavoritesProvider));
 
@@ -105,23 +84,10 @@ void main() {
     });
 
     test("Add favorites", () {
-      final container = ProviderContainer();
-
-      final assetsState = MockAssetsState();
-      final assetNotifier = MockAssetNotifier();
-
       when(assetNotifier.toggleFavorite(null, false))
           .thenAnswer((_) async => false);
 
       when(assetsState.allAssets).thenReturn([]);
-
-      final testFavoritesProvider =
-          StateNotifierProvider<FavoriteSelectionNotifier, Set<String>>((ref) {
-        return FavoriteSelectionNotifier(
-          assetsState,
-          assetNotifier,
-        );
-      });
 
       expect(<String>{}, container.read(testFavoritesProvider));
 
