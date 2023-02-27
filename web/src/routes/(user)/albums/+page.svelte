@@ -20,12 +20,9 @@
 		contextMenuPosition,
 		createAlbum,
 		deleteSelectedContextAlbum,
-		loadAlbums,
 		showAlbumContextMenu,
 		closeAlbumContextMenu
 	} = useAlbums({ albums: data.albums });
-
-	onMount(loadAlbums);
 
 	const handleCreateAlbum = async () => {
 		const newAlbum = await createAlbum();

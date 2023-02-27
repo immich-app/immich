@@ -40,7 +40,7 @@ export class AlbumEntity {
   @JoinTable()
   sharedUsers!: UserEntity[];
 
-  @ManyToMany(() => AssetEntity, { eager: true })
+  @ManyToMany(() => AssetEntity)
   @JoinTable()
   assets!: AssetEntity[];
 
