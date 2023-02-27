@@ -2,11 +2,11 @@ export const prerender = false;
 import { error } from '@sveltejs/kit';
 
 import { getThumbnailUrl } from '$lib/utils/asset-utils';
-import { api, ThumbnailFormat } from '@api';
+import { ThumbnailFormat } from '@api';
 import type { PageServerLoad } from './$types';
 import featurePanelUrl from '$lib/assets/feature-panel.png';
 
-export const load: PageServerLoad = async ({ params, parent }) => {
+export const load: PageServerLoad = async ({ params, parent, locals: { api } }) => {
 	const { user } = await parent();
 
 	const { key } = params;

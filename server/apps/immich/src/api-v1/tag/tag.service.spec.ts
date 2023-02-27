@@ -25,6 +25,7 @@ describe('TagService', () => {
     deletedAt: undefined,
     updatedAt: '2022-12-02T19:29:23.603Z',
     tags: [],
+    assets: [],
     oauthId: 'oauth-id-1',
   });
 

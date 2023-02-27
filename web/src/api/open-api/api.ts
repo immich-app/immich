@@ -1549,19 +1549,7 @@ export interface ServerStatsResponseDto {
      * @type {number}
      * @memberof ServerStatsResponseDto
      */
-    'objects': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof ServerStatsResponseDto
-     */
-    'usageRaw': number;
-    /**
-     * 
-     * @type {string}
-     * @memberof ServerStatsResponseDto
-     */
-    'usage': string;
+    'usage': number;
     /**
      * 
      * @type {Array<UsageByUserDto>}
@@ -2184,10 +2172,16 @@ export interface UsageByUserDto {
     'userId': string;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof UsageByUserDto
      */
-    'videos': number;
+    'userFirstName': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UsageByUserDto
+     */
+    'userLastName': string;
     /**
      * 
      * @type {number}
@@ -2199,13 +2193,13 @@ export interface UsageByUserDto {
      * @type {number}
      * @memberof UsageByUserDto
      */
-    'usageRaw': number;
+    'videos': number;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof UsageByUserDto
      */
-    'usage': string;
+    'usage': number;
 }
 /**
  * 

@@ -54,7 +54,6 @@
 		style:width={`${size}px`}
 		style:height={`${size}px`}
 		style:background-color={getRandomeBackgroundColor()}
-		alt="profile-img"
 		class="inline rounded-full object-cover shadow-sm text-white font-semibold"
 	>
 		<div title={user.email}>

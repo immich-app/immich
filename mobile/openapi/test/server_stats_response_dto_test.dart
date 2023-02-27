@@ -16,27 +16,17 @@ void main() {
   // final instance = ServerStatsResponseDto();
 
   group('test ServerStatsResponseDto', () {
-    // int photos
+    // int photos (default value: 0)
     test('to test the property `photos`', () async {
       // TODO
     });
 
-    // int videos
+    // int videos (default value: 0)
     test('to test the property `videos`', () async {
       // TODO
     });
 
-    // int objects
-    test('to test the property `objects`', () async {
-      // TODO
-    });
-
-    // int usageRaw
-    test('to test the property `usageRaw`', () async {
-      // TODO
-    });
-
-    // String usage
+    // int usage (default value: 0)
     test('to test the property `usage`', () async {
       // TODO
     });

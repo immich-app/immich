@@ -9,10 +9,11 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **userId** | **String** |  | 
-**videos** | **int** |  | 
+**userFirstName** | **String** |  | 
+**userLastName** | **String** |  | 
 **photos** | **int** |  | 
-**usageRaw** | **int** |  | 
-**usage** | **String** |  | 
+**videos** | **int** |  | 
+**usage** | **int** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

@@ -21,8 +21,13 @@ void main() {
       // TODO
     });
 
-    // int videos
-    test('to test the property `videos`', () async {
+    // String userFirstName
+    test('to test the property `userFirstName`', () async {
+      // TODO
+    });
+
+    // String userLastName
+    test('to test the property `userLastName`', () async {
       // TODO
     });
 
@@ -31,12 +36,12 @@ void main() {
       // TODO
     });
 
-    // int usageRaw
-    test('to test the property `usageRaw`', () async {
+    // int videos
+    test('to test the property `videos`', () async {
       // TODO
     });
 
-    // String usage
+    // int usage
     test('to test the property `usage`', () async {
       // TODO
     });
