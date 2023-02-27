@@ -8,22 +8,7 @@
 	import Server from 'svelte-material-icons/Server.svelte';
 	import StatusBox from '$lib/components/shared-components/status-box.svelte';
 	import { goto } from '$app/navigation';
-	import { AppRoute } from '../../lib/constants';
-
-	const getPageTitle = (routeId: string | null) => {
-		switch (routeId) {
-			case AppRoute.ADMIN_USER_MANAGEMENT:
-				return 'User Management';
-			case AppRoute.ADMIN_SETTINGS:
-				return 'System Settings';
-			case AppRoute.ADMIN_JOBS:
-				return 'Jobs';
-			case AppRoute.ADMIN_STATS:
-				return 'Server Stats';
-			default:
-				return '';
-		}
-	};
+	import { AppRoute } from '$lib/constants';
 </script>
 
 <NavigationBar user={$page.data.user} />
@@ -63,7 +48,7 @@
 		<section class="overflow-y-auto immich-scrollbar ">
 			<div id="setting-title" class="pt-10 w-full bg-immich-bg dark:bg-immich-dark-bg">
 				<h1 class="text-lg ml-8 mb-4 text-immich-primary dark:text-immich-dark-primary font-medium">
-					{getPageTitle($page.route.id)}
+					{$page.data.meta.title}
 				</h1>
 				<hr class="dark:border-immich-dark-gray" />
 			</div>

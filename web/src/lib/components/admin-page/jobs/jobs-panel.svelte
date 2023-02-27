@@ -8,17 +8,15 @@
 	import { onDestroy, onMount } from 'svelte';
 	import JobTile from './job-tile.svelte';
 
-	let jobs: AllJobStatusResponseDto;
+	export let jobs: AllJobStatusResponseDto;
+
 	let timer: NodeJS.Timer;
 
-	const load = async () => {
-		const { data } = await api.jobApi.getAllJobsStatus();
-		jobs = data;
-	};
-
 	onMount(async () => {
-		await load();
-		timer = setInterval(async () => await load(), 1_000);
+		timer = setInterval(async () => {
+			const { data } = await api.jobApi.getAllJobsStatus();
+			jobs = data;
+		}, 1_000);
 	});
 
 	onDestroy(() => {

@@ -7,12 +7,7 @@
 	import { asByteUnitString, getBytesWithUnit } from '../../../utils/byte-units';
 	import { locale } from '$lib/stores/preferences.store';
 
-	export let stats: ServerStatsResponseDto = {
-		photos: 0,
-		videos: 0,
-		usage: 0,
-		usageByUser: []
-	};
+	export let stats: ServerStatsResponseDto;
 
 	$: [statsUsage, statsUsageUnit] = getBytesWithUnit(stats.usage, 0);
 </script>
