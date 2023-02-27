@@ -66,28 +66,22 @@ export class AlbumService {
    */
   async getAllAlbums(authUser: AuthUserDto, getAlbumsDto: GetAlbumsDto): Promise<AlbumResponseDto[]> {
     let albums: AlbumEntity[];
-    console.time('getAllAlbumsService');
-
     if (typeof getAlbumsDto.assetId === 'string') {
       albums = await this.albumRepository.getListByAssetId(authUser.id, getAlbumsDto.assetId);
     } else {
-      console.time('getAllAlbumsService - query');
-
       albums = await this.albumRepository.getList(authUser.id, getAlbumsDto);
 
       if (getAlbumsDto.shared) {
         const publicSharingAlbums = await this.albumRepository.getPublicSharingList(authUser.id);
         albums = [...albums, ...publicSharingAlbums];
       }
-      console.timeEnd('getAllAlbumsService - query');
     }
 
     albums = _.uniqBy(albums, (album) => album.id);
 
-    // for (const album of albums) {
-    //   await this._checkValidThumbnail(album);
-    // }
-    console.timeEnd('getAllAlbumsService');
+    for (const album of albums) {
+      await this._checkValidThumbnail(album);
+    }
 
     return albums.map((album) => mapAlbumExcludeAssetInfo(album));
   }
