@@ -49,7 +49,9 @@ export class SharedLinkRepository implements ISharedLinkRepository {
       },
       relations: {
         assets: true,
-        album: true,
+        album: {
+          owner: true,
+        },
       },
       order: {
         createdAt: 'DESC',

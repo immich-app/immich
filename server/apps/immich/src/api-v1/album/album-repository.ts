@@ -10,6 +10,7 @@ import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
+import { query } from 'express';
 
 export interface IAlbumRepository {
   create(ownerId: string, createAlbumDto: CreateAlbumDto): Promise<AlbumEntity>;
@@ -112,10 +113,6 @@ export class AlbumRepository implements IAlbumRepository {
         ...queryProperties,
       });
     }
-
-    const albums = await albumsQuery;
-    // console.log('albums', albums[0]);
-    albums.sort((a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf());
 
     return albumsQuery;
   }
