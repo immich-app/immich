@@ -17,18 +17,18 @@
 	function onAcknowledge() {
 		// Store server version to prevent the notification
 		// from showing again.
-		localStorage.setItem('appVersion', serverVersionName);
+		localStorage.setItem('appVersion', githubVersion);
 		showModal = false;
 	}
 
 	onMount(async () => {
 		try {
-			if (localStorage.getItem('appVersion') === serverVersionName) {
+			githubVersion = await getGithubVersion();
+			if (localStorage.getItem('appVersion') === githubVersion) {
 				// Updated version has already been acknowledged.
 				return;
 			}
 
-			githubVersion = await getGithubVersion();
 			if (githubVersion !== serverVersionName) {
 				showModal = true;
 			}
