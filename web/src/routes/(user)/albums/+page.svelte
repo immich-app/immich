@@ -1,7 +1,6 @@
 <script lang="ts">
 	import AlbumCard from '$lib/components/album-page/album-card.svelte';
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
 	import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
