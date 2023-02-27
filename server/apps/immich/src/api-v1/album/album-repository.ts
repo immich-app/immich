@@ -114,6 +114,7 @@ export class AlbumRepository implements IAlbumRepository {
     }
 
     const albums = await albumsQuery;
+    // console.log('albums', albums[0]);
     albums.sort((a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf());
 
     return albumsQuery;

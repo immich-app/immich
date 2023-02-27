@@ -18,7 +18,7 @@ export class AlbumEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => UserEntity, { eager: true, onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
+  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   owner!: UserEntity;
 
   @Column()
@@ -36,7 +36,7 @@ export class AlbumEntity {
   @Column({ comment: 'Asset ID to be used as thumbnail', type: 'varchar', nullable: true })
   albumThumbnailAssetId!: string | null;
 
-  @ManyToMany(() => UserEntity, { eager: true })
+  @ManyToMany(() => UserEntity)
   @JoinTable()
   sharedUsers!: UserEntity[];
 

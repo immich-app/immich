@@ -92,11 +92,11 @@ export class AssetEntity {
   @OneToOne(() => SmartInfoEntity, (smartInfoEntity) => smartInfoEntity.asset)
   smartInfo?: SmartInfoEntity;
 
-  @ManyToMany(() => TagEntity, (tag) => tag.assets, { cascade: true, eager: true })
+  @ManyToMany(() => TagEntity, (tag) => tag.assets, { cascade: true })
   @JoinTable({ name: 'tag_asset' })
   tags!: TagEntity[];
 
-  @ManyToMany(() => SharedLinkEntity, (link) => link.assets, { cascade: true, eager: true })
+  @ManyToMany(() => SharedLinkEntity, (link) => link.assets, { cascade: true })
   @JoinTable({ name: 'shared_link__asset' })
   sharedLinks!: SharedLinkEntity[];
 }
