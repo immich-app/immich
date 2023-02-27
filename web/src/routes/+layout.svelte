@@ -7,7 +7,9 @@
 	import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
 	import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
 	import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
+	import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
 	import faviconUrl from '$lib/assets/favicon.png';
+	import type { LayoutData } from './$types';
 
 	let showNavigationLoadingBar = false;
 
@@ -18,6 +20,8 @@
 	afterNavigate(() => {
 		showNavigationLoadingBar = false;
 	});
+
+	export let data: LayoutData;
 </script>
 
 <svelte:head>
@@ -50,3 +54,7 @@
 <DownloadPanel />
 <UploadPanel />
 <NotificationList />
+
+{#if data.user?.isAdmin}
+	<VersionAnnouncementBox serverVersion={data.serverVersion} />
+{/if}
