@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/album_info_card.dart';
+import 'package:immich_mobile/modules/backup/ui/album_info_list_tile.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
@@ -39,9 +40,35 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
 
       return SliverPadding(
         padding: const EdgeInsets.all(12.0),
+        sliver: SliverList(
+          delegate: SliverChildBuilderDelegate(
+            ((context, index) {
+              var thumbnailData = albums[index].thumbnailData;
+              return AlbumInfoListTile(
+                imageData: thumbnailData,
+                albumInfo: albums[index],
+              );
+            }),
+            childCount: albums.length,
+          ),
+        ),
+      );
+    } 
+
+    buildAlbumSelectionGrid() {
+      if (albums.isEmpty) {
+        return const SliverToBoxAdapter(
+          child: Center(
+            child: ImmichLoadingIndicator(),
+          ),
+        );
+      }
+
+      return SliverPadding(
+        padding: const EdgeInsets.all(12.0),
         sliver: SliverGrid.builder(
           gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 400,
+            maxCrossAxisExtent: 300,
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
           ),
@@ -56,6 +83,8 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
         ),
       );
     }
+
+
 
     buildSelectedAlbumNameChip() {
       return selectedBackupAlbums.map((album) {
@@ -329,7 +358,15 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
               ],
             ),
           ),
-          buildAlbumSelectionList(),
+          SliverLayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.crossAxisExtent > 600) {
+                return buildAlbumSelectionGrid();
+              } else {
+                return buildAlbumSelectionList();
+              }
+            },
+          ),
         ],
       ),
     );
