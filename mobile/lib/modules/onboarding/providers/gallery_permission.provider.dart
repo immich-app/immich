@@ -1,37 +1,101 @@
+import 'dart:io';
+
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class GalleryPermissionNotifier extends StateNotifier<PermissionStatus> {
-  GalleryPermissionNotifier() :
-    super(PermissionStatus.denied,
-  ) {
+  GalleryPermissionNotifier()
+    : super(PermissionStatus.denied)  // Denied is the intitial state
+  {
     // Sets the initial state
-    getGalleryPermission().then((p) => state = p);
+    getGalleryPermissionStatus();
   }
 
-  bool get hasPermission => state.isGranted || state.isLimited;
+  get hasPermission => state.isGranted || state.isLimited;
 
   /// Requests the gallery permission
   Future<PermissionStatus> requestGalleryPermission() async {
-     final permission = await Permission.photos.request();
-     state = permission;
-     return permission;
+    // Android 32 and below uses Permission.storage
+    if (Platform.isAndroid) {
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      if (androidInfo.version.sdkInt <= 32) {
+        // Android 32 and below need storage
+        final permission = await Permission.storage.request();
+        state = permission;
+        return permission;
+      } else {
+        // Android 33 need photo & video
+        final photos = await Permission.photos.request();
+        if (!photos.isGranted) {
+          // Don't ask twice for the same permission
+          return photos;
+        }
+        final videos = await Permission.videos.request();
+
+        // Return the joint result of those two permissions
+        final PermissionStatus status;
+        if (photos.isGranted && videos.isGranted) {
+          status = PermissionStatus.granted;
+        } else if (photos.isDenied || videos.isDenied) {
+          status = PermissionStatus.denied;
+        } else if (photos.isPermanentlyDenied || videos.isPermanentlyDenied) {
+          status = PermissionStatus.permanentlyDenied;
+        } else {
+          status = PermissionStatus.denied;
+        }
+
+        state = status;
+        return status;
+      }
+    } else {
+      // iOS can use photos
+      final photos = await Permission.photos.request();
+      state = photos;
+      return photos;
+    }
   }
 
-  Future<PermissionStatus> getGalleryPermission() async {
-    final status = await Permission.photos.status;
+  /// Checks the current state of the gallery permissions without
+  /// requesting them again
+  Future<PermissionStatus> getGalleryPermissionStatus() async {
+    // Android 32 and below uses Permission.storage
+    if (Platform.isAndroid) {
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      if (androidInfo.version.sdkInt <= 32) {
+        // Android 32 and below need storage
+        final permission = await Permission.storage.status;
+        state = permission;
+        return permission;
+      } else {
+        // Android 33 needs photo & video
+        final photos = await Permission.photos.status;
+        final videos = await Permission.videos.status;
 
-    state = status;
-    return status;
+        // Return the joint result of those two permissions
+        final PermissionStatus status;
+        if (photos.isGranted && videos.isGranted) {
+          status = PermissionStatus.granted;
+        } else if (photos.isDenied || videos.isDenied) {
+          status = PermissionStatus.denied;
+        } else if (photos.isPermanentlyDenied || videos.isPermanentlyDenied) {
+          status = PermissionStatus.permanentlyDenied;
+        } else {
+          status = PermissionStatus.denied;
+        }
+
+        state = status;
+        return status;
+      }
+    } else {
+      // iOS can use photos
+      final photos = await Permission.photos.status;
+      state = photos;
+      return photos;
+    }
   }
-
-  /// Either the permission was granted already or else ask for the permission
-  Future<bool> hasOrAskForNotificationPermission() {
-    return requestGalleryPermission()
-        .then((p) => p.isGranted);
-  }
-
 }
+
 final galleryPermissionNotifier
   = StateNotifierProvider<GalleryPermissionNotifier, PermissionStatus>
     ((ref) => GalleryPermissionNotifier());

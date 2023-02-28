@@ -30,6 +30,10 @@ import photo_manager
           if !registry.hasPlugin("org.cocoapods.shared-preferences-foundation") {
               SharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.shared-preferences-foundation")!)
           }
+
+          if !registry.hasPlugin("org.cocoapods.permission-handler-apple") {
+              PermissionHandlerPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.permission-handler-apple")!)
+          }
       }
       
       return super.application(application, didFinishLaunchingWithOptions: launchOptions)

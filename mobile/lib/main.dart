@@ -35,6 +35,7 @@ import 'package:immich_mobile/utils/migration.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'constants/hive_box.dart';
 
 void main() async {
@@ -130,8 +131,10 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         ref.watch(appStateProvider.notifier).state = AppStateEnum.resumed;
 
         var isAuthenticated = ref.watch(authenticationProvider).isAuthenticated;
+        final permission = ref.watch(galleryPermissionNotifier);
 
-        if (isAuthenticated) {
+        // Needs to be logged in and have gallery permissions
+        if (isAuthenticated && (permission.isGranted || permission.isLimited)) {
           ref.read(backupProvider.notifier).resumeBackup();
           ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
           ref.watch(assetProvider.notifier).getAllAsset();
@@ -145,7 +148,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         ref.watch(notificationPermissionProvider.notifier)
           .getNotificationPermission();
         ref.watch(galleryPermissionNotifier.notifier)
-          .getGalleryPermission();
+          .getGalleryPermissionStatus();
 
         ref.read(iOSBackgroundSettingsProvider.notifier).refresh();
 
