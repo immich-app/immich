@@ -66,11 +66,11 @@ export class AlbumService {
    */
   async getAllAlbums(authUser: AuthUserDto, getAlbumsDto: GetAlbumsDto): Promise<AlbumResponseDto[]> {
     let albums: AlbumEntity[];
-
     if (typeof getAlbumsDto.assetId === 'string') {
       albums = await this.albumRepository.getListByAssetId(authUser.id, getAlbumsDto.assetId);
     } else {
       albums = await this.albumRepository.getList(authUser.id, getAlbumsDto);
+
       if (getAlbumsDto.shared) {
         const publicSharingAlbums = await this.albumRepository.getPublicSharingList(authUser.id);
         albums = [...albums, ...publicSharingAlbums];
