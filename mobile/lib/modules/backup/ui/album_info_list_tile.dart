@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
@@ -31,6 +32,17 @@ class AlbumInfoListTile extends HookConsumerWidget {
         ColorFilter.mode(Colors.red.withAlpha(75), BlendMode.darken);
     ColorFilter unselectedFilter =
         const ColorFilter.mode(Colors.black, BlendMode.color);
+    var isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
+    var assetCount = useState(0);
+
+    useEffect(
+      () {
+        albumInfo.assetCount.then((value) => assetCount.value = value);
+        return null;
+      },
+      [],
+    );
 
     buildImageFilter() {
       if (isSelected) {
@@ -39,6 +51,20 @@ class AlbumInfoListTile extends HookConsumerWidget {
         return excludedFilter;
       } else {
         return unselectedFilter;
+      }
+    }
+
+    buildTileColor() {
+      if (isSelected) {
+        return isDarkTheme
+            ? Theme.of(context).primaryColor.withAlpha(100)
+            : Theme.of(context).primaryColor.withAlpha(25);
+      } else if (isExcluded) {
+        return isDarkTheme
+            ? Colors.red[300]?.withAlpha(150)
+            : Colors.red[100]?.withAlpha(150);
+      } else {
+        return Colors.transparent;
       }
     }
 
@@ -83,6 +109,8 @@ class AlbumInfoListTile extends HookConsumerWidget {
         }
       },
       child: ListTile(
+        tileColor: buildTileColor(),
+        contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         onTap: () {
           HapticFeedback.selectionClick();
           if (isSelected) {
@@ -102,66 +130,33 @@ class AlbumInfoListTile extends HookConsumerWidget {
           }
         },
         leading: ClipRRect(
-         borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12),
           child: SizedBox(
             height: 80,
             width: 80,
-            child: Stack(
-              clipBehavior: Clip.hardEdge,
-              children: [
-                ColorFiltered(
-                  colorFilter: buildImageFilter(),
-                  child: Image(
-                    width: double.infinity,
-                    height: double.infinity,
-                    image: imageData != null
-                        ? MemoryImage(imageData!)
-                        : const AssetImage(
-                            'assets/immich-logo-no-outline.png',
-                          ) as ImageProvider,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Visibility(
-                  visible: isSelected,
-                  child: Center(
-                    child: Icon(
-                      Icons.check_circle_outline,
-                      color: Theme.of(context).primaryColor,
-                      size: 40,
-                    ),
-                  ),
-                )
-              ],
+            child: ColorFiltered(
+              colorFilter: buildImageFilter(),
+              child: Image(
+                width: double.infinity,
+                height: double.infinity,
+                image: imageData != null
+                    ? MemoryImage(imageData!)
+                    : const AssetImage(
+                        'assets/immich-logo-no-outline.png',
+                      ) as ImageProvider,
+                fit: BoxFit.cover,
+              ),
             ),
           ),
         ),
         title: Text(
           albumInfo.name,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 14,
-            color: isSelected ? Theme.of(context).primaryColor : null,
             fontWeight: FontWeight.bold,
           ),
         ),
-        subtitle: FutureBuilder(
-          builder: ((context, snapshot) {
-            if (snapshot.hasData) {
-              return Text(
-                snapshot.data.toString() +
-                    (albumInfo.isAll
-                        ? " (${'backup_all'.tr()})"
-                        : ""),
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              );
-            }
-            return const Text("0");
-          }),
-          future: albumInfo.assetCount,
-        ),
+        subtitle: Text(assetCount.value.toString()),
         trailing: IconButton(
           onPressed: () {
             AutoRouter.of(context).push(

@@ -20,8 +20,8 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     final excludedBackupAlbums = ref.watch(backupProvider).excludedBackupAlbums;
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final allAlbums = ref.watch(backupProvider).availableAlbums;
-    
-    // Albums which are displayed to the user 
+
+    // Albums which are displayed to the user
     // by filtering out based on search
     final filteredAlbums = useState(allAlbums);
     final albums = filteredAlbums.value;
@@ -44,7 +44,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
       }
 
       return SliverPadding(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.symmetric(vertical: 12.0),
         sliver: SliverList(
           delegate: SliverChildBuilderDelegate(
             ((context, index) {
@@ -58,7 +58,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           ),
         ),
       );
-    } 
+    }
 
     buildAlbumSelectionGrid() {
       if (albums.isEmpty) {
@@ -172,7 +172,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
         child: TextFormField(
           onChanged: (searchValue) {
             if (searchValue.isEmpty) {
-              filteredAlbums.value = allAlbums; 
+              filteredAlbums.value = allAlbums;
             } else {
               filteredAlbums.value = allAlbums
                   .where(
@@ -253,7 +253,8 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                 ),
 
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
                   child: Card(
                     margin: const EdgeInsets.all(0),
                     shape: RoundedRectangleBorder(
@@ -296,10 +297,17 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   title: Text(
                     "backup_album_selection_page_albums_device".tr(
                       args: [
-                        ref.watch(backupProvider).availableAlbums.length.toString()
+                        ref
+                            .watch(backupProvider)
+                            .availableAlbums
+                            .length
+                            .toString()
                       ],
                     ),
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                   subtitle: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
