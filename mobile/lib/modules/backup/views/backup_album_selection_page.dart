@@ -84,8 +84,6 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
       );
     }
 
-
-
     buildSelectedAlbumNameChip() {
       return selectedBackupAlbums.map((album) {
         void removeSelection() {
@@ -224,6 +222,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
         slivers: [
           SliverToBoxAdapter(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(
