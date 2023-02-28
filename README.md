@@ -92,7 +92,7 @@ If you feel like this is the right cause and the app is something you are seeing
 ## Donation
 
 - [Monthly donation](https://github.com/sponsors/alextran1502) via GitHub Sponsors
-- [One-time donation](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502) via Github Sponsors
+- [One-time donation](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502) via GitHub Sponsors
 - [Librepay](https://liberapay.com/alex.tran1502/)
 - [buymeacoffee](https://www.buymeacoffee.com/altran1502)
 - Bitcoin: 1FvEp6P6NM8EZEkpGUFAN2LqJ1gxusNxZX
