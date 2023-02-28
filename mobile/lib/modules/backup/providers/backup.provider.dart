@@ -14,10 +14,12 @@ import 'package:immich_mobile/modules/backup/background_service/background.servi
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/services/server_info.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class BackupNotifier extends StateNotifier<BackUpState> {
@@ -26,6 +28,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     this._serverInfoService,
     this._authState,
     this._backgroundService,
+    this._galleryPermissionNotifier,
     this.ref,
   ) : super(
           BackUpState(
@@ -65,6 +68,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final ServerInfoService _serverInfoService;
   final AuthenticationState _authState;
   final BackgroundService _backgroundService;
+  final GalleryPermissionNotifier _galleryPermissionNotifier;
   final Ref ref;
 
   ///
@@ -431,8 +435,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     await getBackupInfo();
 
-    var authResult = await PhotoManager.requestPermissionExtend();
-    if (authResult.isAuth) {
+    final hasPermission = _galleryPermissionNotifier.hasPermission;
+    if (hasPermission) {
       await PhotoManager.clearFileCache();
 
       if (state.allUniqueAssets.isEmpty) {
@@ -463,7 +467,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       );
       await _notifyBackgroundServiceCanRun();
     } else {
-      PhotoManager.openSetting();
+      openAppSettings();
     }
   }
 
@@ -704,6 +708,7 @@ final backupProvider =
     ref.watch(serverInfoServiceProvider),
     ref.watch(authenticationProvider),
     ref.watch(backgroundServiceProvider),
+    ref.watch(galleryPermissionNotifier.notifier),
     ref,
   );
 });
