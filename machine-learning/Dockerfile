@@ -6,7 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 RUN python -m venv /opt/venv && \
     /opt/venv/bin/pip install --pre torch  -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html && \
-    /opt/venv/bin/pip install transformers tqdm numpy scikit-learn scipy nltk sentencepiece flask Pillow && \
+    /opt/venv/bin/pip install transformers tqdm numpy scikit-learn scipy nltk sentencepiece flask Pillow gunicorn && \
     /opt/venv/bin/pip install --no-deps sentence-transformers
 
 FROM python:3.10-slim
@@ -22,4 +22,4 @@ WORKDIR /usr/src/app
 
 COPY . .
 
-CMD ["python", "src/main.py"]
+CMD ["gunicorn", "src.main:server"]
