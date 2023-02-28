@@ -26,6 +26,7 @@ export class SharedLinkRepository implements ISharedLinkRepository {
           assets: {
             exifInfo: true,
           },
+          owner: true,
         },
       },
       order: {
