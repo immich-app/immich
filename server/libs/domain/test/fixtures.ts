@@ -422,6 +422,7 @@ export const sharedLinkStub = {
       albumName: 'Test Album',
       createdAt: today.toISOString(),
       updatedAt: today.toISOString(),
+      albumThumbnailAsset: null,
       albumThumbnailAssetId: null,
       sharedUsers: [],
       sharedLinks: [],

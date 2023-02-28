@@ -22,6 +22,7 @@ export interface IAlbumRepository {
   removeAssets(album: AlbumEntity, removeAssets: RemoveAssetsDto): Promise<number>;
   addAssets(album: AlbumEntity, addAssetsDto: AddAssetsDto): Promise<AddAssetsResponseDto>;
   updateAlbum(album: AlbumEntity, updateAlbumDto: UpdateAlbumDto): Promise<AlbumEntity>;
+  updateThumbnails(): Promise<number | undefined>;
   getListByAssetId(userId: string, assetId: string): Promise<AlbumEntity[]>;
   getCountByUserId(userId: string): Promise<AlbumCountResponseDto>;
   getSharedWithUserAlbumCount(userId: string, assetId: string): Promise<number>;
@@ -34,6 +35,9 @@ export class AlbumRepository implements IAlbumRepository {
   constructor(
     @InjectRepository(AlbumEntity)
     private albumRepository: Repository<AlbumEntity>,
+
+    @InjectRepository(AssetEntity)
+    private assetRepository: Repository<AssetEntity>,
   ) {}
 
   async getPublicSharingList(ownerId: string): Promise<AlbumEntity[]> {
@@ -206,6 +210,59 @@ export class AlbumRepository implements IAlbumRepository {
     album.albumThumbnailAssetId = updateAlbumDto.albumThumbnailAssetId || album.albumThumbnailAssetId;
 
     return this.albumRepository.save(album);
+  }
+
+  /**
+   * Makes sure all thumbnails for albums are updated by:
+   * - Removing thumbnails from albums without assets
+   * - Removing references of thumbnails to assets outside the album
+   * - Adding a new thumbnail when none is set
+   *
+   *
+   * @returns Amount of updated album thumbnails or undefined when unknown
+   */
+  async updateThumbnails(): Promise<number | undefined> {
+    // Subquery for getting a new thumbnail.
+    const newThumbnail = this.assetRepository
+      .createQueryBuilder('assets')
+      .select('albums_assets2.assetsId')
+      .addFrom('albums_assets_assets', 'albums_assets2')
+      .where('albums_assets2.assetsId = assets.id')
+      .andWhere('albums_assets2.albumsId = "albums"."id"') // Reference to albums.id outside this query
+      .orderBy('assets.fileCreatedAt', 'ASC')
+      .limit(1);
+
+    const albumsWithoutAsset = this.albumRepository
+      .createQueryBuilder('albums')
+      .select('albums.id')
+      .groupBy('albums.id')
+      .having('COUNT(albums_assets.assetsId) = 0');
+
+    // Subquery for getting all empty albums that still have a thumbnail.
+    const emptyAlbumsWithThumbnail = albumsWithoutAsset
+      .clone()
+      .andWhere('albums.albumThumbnailAssetId IS NOT NULL')
+      .leftJoin('albums_assets_assets', 'albums_assets', 'albums.id = albums_assets.albumsId');
+
+    // Subquery to get all albums that have an asset outside the album as thumbnail.
+    const albumsWithInvalidThumbnail = albumsWithoutAsset
+      .clone()
+      .leftJoin(
+        'albums_assets_assets',
+        'albums_assets',
+        'albums.id = albums_assets.albumsId AND albums.albumThumbnailAssetId = albums_assets.assetsId',
+      );
+
+    const updateAlbums = this.albumRepository
+      .createQueryBuilder('albums')
+      .update(AlbumEntity)
+      .set({ albumThumbnailAssetId: () => `(${newThumbnail.getQuery()})` })
+      .where(`albums.id IN (${albumsWithInvalidThumbnail.getQuery()})`)
+      .orWhere(`albums.id IN (${emptyAlbumsWithThumbnail.getQuery()})`);
+
+    const result = await updateAlbums.execute();
+
+    return result.affected;
   }
 
   async getSharedWithUserAlbumCount(userId: string, assetId: string): Promise<number> {
