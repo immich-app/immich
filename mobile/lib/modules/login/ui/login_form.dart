@@ -305,7 +305,8 @@ class LoginButton extends ConsumerWidget {
               !ref.read(authenticationProvider).isAdmin) {
             AutoRouter.of(context).push(const ChangePasswordRoute());
           } else {
-            AutoRouter.of(context).replace(const PermissionOnboardingRoute());
+            ref.read(backupProvider.notifier).resumeBackup();
+            AutoRouter.of(context).replace(const TabControllerRoute());
           }
         } else {
           ImmichToast.show(

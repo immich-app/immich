@@ -20,7 +20,6 @@ import 'package:immich_mobile/modules/home/views/home_page.dart';
 import 'package:immich_mobile/modules/login/views/change_password_page.dart';
 import 'package:immich_mobile/modules/login/views/login_page.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
-import 'package:immich_mobile/modules/onboarding/views/backup_album_onboarding_page.dart';
 import 'package:immich_mobile/modules/onboarding/views/permission_onboarding_page.dart';
 import 'package:immich_mobile/modules/search/views/search_page.dart';
 import 'package:immich_mobile/modules/search/views/search_result_page.dart';
@@ -44,7 +43,6 @@ part 'router.gr.dart';
   routes: <AutoRoute>[
     AutoRoute(page: SplashScreenPage, initial: true),
     AutoRoute(page: PermissionOnboardingPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: BackupAlbumOnboardingPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: LoginPage,
       guards: [
         DuplicateGuard,

@@ -40,12 +40,6 @@ class _$AppRouter extends RootStackRouter {
         child: const PermissionOnboardingPage(),
       );
     },
-    BackupAlbumOnboardingRoute.name: (routeData) {
-      return MaterialPageX<dynamic>(
-        routeData: routeData,
-        child: const BackupAlbumOnboardingPage(),
-      );
-    },
     LoginRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
         routeData: routeData,
@@ -249,14 +243,6 @@ class _$AppRouter extends RootStackRouter {
           ],
         ),
         RouteConfig(
-          BackupAlbumOnboardingRoute.name,
-          path: '/backup-album-onboarding-page',
-          guards: [
-            authGuard,
-            duplicateGuard,
-          ],
-        ),
-        RouteConfig(
           LoginRoute.name,
           path: '/login-page',
           guards: [duplicateGuard],
@@ -454,18 +440,6 @@ class PermissionOnboardingRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'PermissionOnboardingRoute';
-}
-
-/// generated route for
-/// [BackupAlbumOnboardingPage]
-class BackupAlbumOnboardingRoute extends PageRouteInfo<void> {
-  const BackupAlbumOnboardingRoute()
-      : super(
-          BackupAlbumOnboardingRoute.name,
-          path: '/backup-album-onboarding-page',
-        );
-
-  static const String name = 'BackupAlbumOnboardingRoute';
 }
 
 /// generated route for
