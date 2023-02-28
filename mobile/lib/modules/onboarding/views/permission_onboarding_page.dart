@@ -21,7 +21,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
     // Navigate to the main Tab Controller when permission is granted
     void goToHome() {
       // Resume backup (if enable) then navigate
-      ref.read(backupProvider.notifier).resumeBackup()
+      ref.watch(backupProvider.notifier).resumeBackup()
         .catchError((error) {
         debugPrint('PermissionOnboardingPage error: $error');
       });
