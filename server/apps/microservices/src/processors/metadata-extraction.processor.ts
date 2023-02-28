@@ -362,8 +362,8 @@ export class MetadataExtractionProcessor {
       if (newExif.longitude && newExif.latitude) {
         try {
           newExif.timeZone = tz_lookup(newExif.latitude, newExif.longitude);
-        } catch (err) {
-          console.log('Error while calculating timezone from gps coordinates', err);
+        } catch (error: any) {
+          this.logger.warn(`Error while calculating timezone from gps coordinates: ${error}`, error?.stack);
         }
       }
 
