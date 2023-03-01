@@ -1,13 +1,28 @@
 """
 Gunicorn configuration options.
-https://docs.gunicorn.org/en/stable/settings.html#config-file
+https://docs.gunicorn.org/en/stable/settings.html
 """
 import os
 
 
 # Set the bind address based on the env
-server_port = os.getenv('MACHINE_LEARNING_PORT') or "3003"
-bind = f"127.0.0.1:{server_port}"
+port = os.getenv('MACHINE_LEARNING_PORT') or "3003"
+bind = f"0.0.0.0:{port}"
 
 # Preload the Flask app / models etc. before starting the server
 preload_app = True
+
+# Logging settings - log to stdout and set log level
+accesslog = "-"
+loglevel = os.getenv("MACHINE_LEARNING_LOG_LEVEL") or "info"
+
+# Worker settings
+# ----------------------
+# It is important these are chosen carefully as per
+# https://pythonspeed.com/articles/gunicorn-in-docker/
+# Otherwise we get workers failing to respond to heartbeat checks,
+# especially as requests take a long time to complete.
+workers = 2
+threads = 4
+worker_tmp_dir = "/dev/shm"
+timeout = 60
