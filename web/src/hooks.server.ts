@@ -1,5 +1,5 @@
 import type { Handle, HandleServerError } from '@sveltejs/kit';
-import { AxiosError } from 'axios';
+import { AxiosError, AxiosResponse } from 'axios';
 import { env } from '$env/dynamic/public';
 import { ImmichApi } from './api/api';
 
@@ -34,11 +34,24 @@ export const handle = (async ({ event, resolve }) => {
 	return res;
 }) satisfies Handle;
 
+const DEFAULT_MESSAGE = 'Hmm, not sure about that. Check the logs or open a ticket?';
+
 export const handleError: HandleServerError = async ({ error }) => {
 	const httpError = error as AxiosError;
+	const response = httpError?.response as AxiosResponse<{
+		message: string;
+		statusCode: number;
+		error: string;
+	}>;
+
+	let code = response?.data?.statusCode || response?.status || httpError.code || '500';
+	if (response) {
+		code += ` - ${response.data?.error || response.statusText}`;
+	}
+
 	return {
-		message: httpError?.message || 'Hmm, not sure about that. Check the logs or open a ticket?',
-		stack: httpError?.stack,
-		code: httpError.code || '500'
+		message: response?.data?.message || httpError?.message || DEFAULT_MESSAGE,
+		code,
+		stack: httpError?.stack
 	};
 };

@@ -68,7 +68,7 @@
 
 					<div class="p-4 max-h-[75vh] min-h-[300px] overflow-y-auto immich-scrollbar pb-4 gap-4">
 						<div class="flex flex-col w-full gap-2">
-							<p class="text-red-500">{$page.error?.message} - {$page.error?.code}</p>
+							<p class="text-red-500">{$page.error?.message} ({$page.error?.code})</p>
 							{#if $page.error?.stack}
 								<label for="stacktrace">Stacktrace</label>
 								<pre id="stacktrace" class="text-xs">{$page.error?.stack || 'No stack'}</pre>
