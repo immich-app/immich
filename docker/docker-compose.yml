@@ -4,7 +4,7 @@ services:
   immich-server:
     container_name: immich_server
     image: altran1502/immich-server:release
-    entrypoint: [ "/bin/sh", "./start-server.sh" ]
+    entrypoint: ["/bin/sh", "./start-server.sh"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
     env_file:
@@ -14,12 +14,13 @@ services:
     depends_on:
       - redis
       - database
+      - typesense
     restart: always
 
   immich-microservices:
     container_name: immich_microservices
     image: altran1502/immich-server:release
-    entrypoint: [ "/bin/sh", "./start-microservices.sh" ]
+    entrypoint: ["/bin/sh", "./start-microservices.sh"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
     env_file:
@@ -29,6 +30,7 @@ services:
     depends_on:
       - redis
       - database
+      - typesense
     restart: always
 
   immich-machine-learning:
@@ -46,10 +48,19 @@ services:
   immich-web:
     container_name: immich_web
     image: altran1502/immich-web:release
-    entrypoint: [ "/bin/sh", "./entrypoint.sh" ]
+    entrypoint: ["/bin/sh", "./entrypoint.sh"]
     env_file:
       - .env
     restart: always
+
+  typesense:
+    container_name: immich_typesense
+    image: typesense/typesense:0.24.0
+    environment:
+      - TYPESENSE_API_KEY=${TYPESENSE_API_KEY}
+      - TYPESENSE_DATA_DIR=/data
+    volumes:
+      - tsdata:/data
 
   redis:
     container_name: immich_redis
@@ -88,3 +99,4 @@ services:
 volumes:
   pgdata:
   model-cache:
+  tsdata:
