@@ -1,19 +1,25 @@
 import { AssetEntity, AssetType } from '@app/infra/db/entities';
-import { newJobRepositoryMock } from '../../test';
-import { AssetService } from '../asset';
+import { assetEntityStub, newAssetRepositoryMock, newJobRepositoryMock } from '../../test';
+import { newSearchRepositoryMock } from '../../test/search.repository.mock';
+import { AssetService, IAssetRepository } from '../asset';
 import { IJobRepository, JobName } from '../job';
+import { ISearchRepository } from '../search';
 
 describe(AssetService.name, () => {
   let sut: AssetService;
+  let assetMock: jest.Mocked<IAssetRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
+  let searchMock: jest.Mocked<ISearchRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
   });
 
   beforeEach(async () => {
+    assetMock = newAssetRepositoryMock();
     jobMock = newJobRepositoryMock();
-    sut = new AssetService(jobMock);
+    searchMock = newSearchRepositoryMock();
+    sut = new AssetService(assetMock, jobMock, searchMock);
   });
 
   describe(`handle asset upload`, () => {
@@ -40,6 +46,17 @@ describe(AssetService.name, () => {
         [{ name: JobName.GENERATE_JPEG_THUMBNAIL, data }],
         [{ name: JobName.EXIF_EXTRACTION, data }],
       ]);
+    });
+  });
+
+  describe('save', () => {
+    it('should save an asset', async () => {
+      assetMock.save.mockResolvedValue(assetEntityStub.image);
+
+      await sut.save(assetEntityStub.image);
+
+      expect(assetMock.save).toHaveBeenCalledWith(assetEntityStub.image);
+      expect(searchMock.index).toHaveBeenCalledWith('assets', assetEntityStub.image);
     });
   });
 });

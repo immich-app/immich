@@ -6,6 +6,7 @@ export * from './device-info.repository.mock';
 export * from './fixtures';
 export * from './job.repository.mock';
 export * from './machine-learning.repository.mock';
+export * from './search.repository.mock';
 export * from './shared-link.repository.mock';
 export * from './smart-info.repository.mock';
 export * from './storage.repository.mock';

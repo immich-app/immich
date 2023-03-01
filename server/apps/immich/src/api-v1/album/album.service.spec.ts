@@ -2,7 +2,7 @@ import { AlbumService } from './album.service';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra';
-import { AlbumResponseDto, ICryptoRepository, mapUser } from '@app/domain';
+import { AlbumResponseDto, ICryptoRepository, IJobRepository, JobName, mapUser } from '@app/domain';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { IAlbumRepository } from './album-repository';
 import { DownloadService } from '../../modules/download/download.service';
@@ -10,6 +10,7 @@ import { ISharedLinkRepository } from '@app/domain';
 import {
   assetEntityStub,
   newCryptoRepositoryMock,
+  newJobRepositoryMock,
   newSharedLinkRepositoryMock,
   userEntityStub,
 } from '@app/domain/../test';
@@ -20,6 +21,7 @@ describe('Album service', () => {
   let sharedLinkRepositoryMock: jest.Mocked<ISharedLinkRepository>;
   let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
+  let jobMock: jest.Mocked<IJobRepository>;
 
   const authUser: AuthUserDto = Object.freeze({
     id: '1111',
@@ -139,12 +141,14 @@ describe('Album service', () => {
     };
 
     cryptoMock = newCryptoRepositoryMock();
+    jobMock = newJobRepositoryMock();
 
     sut = new AlbumService(
       albumRepositoryMock,
       sharedLinkRepositoryMock,
       downloadServiceMock as DownloadService,
       cryptoMock,
+      jobMock,
     );
   });
 
@@ -158,6 +162,7 @@ describe('Album service', () => {
 
     expect(result.id).toEqual(albumEntity.id);
     expect(result.albumName).toEqual(albumEntity.albumName);
+    expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.SEARCH_INDEX_ALBUM, data: { album: albumEntity } });
   });
 
   it('gets list of albums for auth user', async () => {
@@ -291,9 +296,8 @@ describe('Album service', () => {
     const updatedAlbumName = 'new album name';
     const updatedAlbumThumbnailAssetId = '69d2f917-0b31-48d8-9d7d-673b523f1aac';
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    albumRepositoryMock.updateAlbum.mockImplementation(() =>
-      Promise.resolve<AlbumEntity>({ ...albumEntity, albumName: updatedAlbumName }),
-    );
+    const updatedAlbum = { ...albumEntity, albumName: updatedAlbumName };
+    albumRepositoryMock.updateAlbum.mockResolvedValue(updatedAlbum);
 
     const result = await sut.updateAlbumInfo(
       authUser,
@@ -311,6 +315,7 @@ describe('Album service', () => {
       albumName: updatedAlbumName,
       albumThumbnailAssetId: updatedAlbumThumbnailAssetId,
     });
+    expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.SEARCH_INDEX_ALBUM, data: { album: updatedAlbum } });
   });
 
   it('prevents updating a not owned album (shared with auth user)', async () => {
