@@ -137,6 +137,7 @@ class AlbumInfoCard extends HookConsumerWidget {
         }
       },
       child: Card(
+        clipBehavior: Clip.hardEdge,
         margin: const EdgeInsets.all(1),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12), // if you need this
@@ -150,20 +151,17 @@ class AlbumInfoCard extends HookConsumerWidget {
         elevation: 0,
         borderOnForeground: false,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Stack(
-              children: [
-                Container(
-                  width: 200,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      topRight: Radius.circular(12),
-                    ),
-                    image: DecorationImage(
-                      colorFilter: buildImageFilter(),
+            Expanded(
+              child: Stack(
+                clipBehavior: Clip.hardEdge,
+                children: [
+                  ColorFiltered(
+                    colorFilter: buildImageFilter(),
+                    child: Image(
+                      width: double.infinity,
+                      height: double.infinity,
                       image: imageData != null
                           ? MemoryImage(imageData!)
                           : const AssetImage(
@@ -172,58 +170,56 @@ class AlbumInfoCard extends HookConsumerWidget {
                       fit: BoxFit.cover,
                     ),
                   ),
-                  child: null,
-                ),
-                Positioned(
-                  bottom: 10,
-                  left: 25,
-                  child: buildSelectedTextBox(),
-                )
-              ],
+                  Positioned(
+                    bottom: 10,
+                    right: 25,
+                    child: buildSelectedTextBox(),
+                  )
+                ],
+              ),
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 8.0),
+              padding: const EdgeInsets.only(
+                left: 25,
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(
-                    width: 140,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 25.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            albumInfo.name,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Theme.of(context).primaryColor,
-                              fontWeight: FontWeight.bold,
-                            ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          albumInfo.name,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Theme.of(context).primaryColor,
+                            fontWeight: FontWeight.bold,
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2.0),
-                            child: FutureBuilder(
-                              builder: ((context, snapshot) {
-                                if (snapshot.hasData) {
-                                  return Text(
-                                    snapshot.data.toString() +
-                                        (albumInfo.isAll
-                                            ? " (${'backup_all'.tr()})"
-                                            : ""),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
-                                    ),
-                                  );
-                                }
-                                return const Text("0");
-                              }),
-                              future: albumInfo.assetCount,
-                            ),
-                          )
-                        ],
-                      ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2.0),
+                          child: FutureBuilder(
+                            builder: ((context, snapshot) {
+                              if (snapshot.hasData) {
+                                return Text(
+                                  snapshot.data.toString() +
+                                      (albumInfo.isAll
+                                          ? " (${'backup_all'.tr()})"
+                                          : ""),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                  ),
+                                );
+                              }
+                              return const Text("0");
+                            }),
+                            future: albumInfo.assetCount,
+                          ),
+                        )
+                      ],
                     ),
                   ),
                   IconButton(
