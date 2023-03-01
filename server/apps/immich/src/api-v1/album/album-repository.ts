@@ -1,4 +1,4 @@
-import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra';
+import { AlbumEntity, AssetEntity, dataSource, UserEntity } from '@app/infra';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, IsNull, FindManyOptions } from 'typeorm';
@@ -216,8 +216,7 @@ export class AlbumRepository implements IAlbumRepository {
    * Makes sure all thumbnails for albums are updated by:
    * - Removing thumbnails from albums without assets
    * - Removing references of thumbnails to assets outside the album
-   * - Adding a new thumbnail when none is set
-   *
+   * - Setting a thumbnail when none is set and the album contains assets
    *
    * @returns Amount of updated album thumbnails or undefined when unknown
    */
@@ -229,36 +228,26 @@ export class AlbumRepository implements IAlbumRepository {
       .addFrom('albums_assets_assets', 'albums_assets2')
       .where('albums_assets2.assetsId = assets.id')
       .andWhere('albums_assets2.albumsId = "albums"."id"') // Reference to albums.id outside this query
-      .orderBy('assets.fileCreatedAt', 'ASC')
+      .orderBy('assets.fileCreatedAt', 'DESC')
       .limit(1);
 
-    const albumsWithoutAsset = this.albumRepository
-      .createQueryBuilder('albums')
-      .select('albums.id')
-      .groupBy('albums.id')
-      .having('COUNT(albums_assets.assetsId) = 0');
+    // Using dataSource, because there is no direct access to albums_assets_assets.
+    const albumHasAssets = dataSource
+      .createQueryBuilder()
+      .select('1')
+      .from('albums_assets_assets', 'albums_assets')
+      .where('"albums"."id" = "albums_assets"."albumsId"');
 
-    // Subquery for getting all empty albums that still have a thumbnail.
-    const emptyAlbumsWithThumbnail = albumsWithoutAsset
+    const albumContainsThumbnail = albumHasAssets
       .clone()
-      .andWhere('albums.albumThumbnailAssetId IS NOT NULL')
-      .leftJoin('albums_assets_assets', 'albums_assets', 'albums.id = albums_assets.albumsId');
-
-    // Subquery to get all albums that have an asset outside the album as thumbnail.
-    const albumsWithInvalidThumbnail = albumsWithoutAsset
-      .clone()
-      .leftJoin(
-        'albums_assets_assets',
-        'albums_assets',
-        'albums.id = albums_assets.albumsId AND albums.albumThumbnailAssetId = albums_assets.assetsId',
-      );
+      .andWhere('"albums"."albumThumbnailAssetId" = "albums_assets"."assetsId"');
 
     const updateAlbums = this.albumRepository
       .createQueryBuilder('albums')
       .update(AlbumEntity)
       .set({ albumThumbnailAssetId: () => `(${newThumbnail.getQuery()})` })
-      .where(`albums.id IN (${albumsWithInvalidThumbnail.getQuery()})`)
-      .orWhere(`albums.id IN (${emptyAlbumsWithThumbnail.getQuery()})`);
+      .where(`"albums"."albumThumbnailAssetId" IS NULL AND EXISTS (${albumHasAssets.getQuery()})`)
+      .orWhere(`"albums"."albumThumbnailAssetId" IS NOT NULL AND NOT EXISTS (${albumContainsThumbnail.getQuery()})`);
 
     const result = await updateAlbums.execute();
 

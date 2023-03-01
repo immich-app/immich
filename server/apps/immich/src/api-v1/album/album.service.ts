@@ -41,6 +41,8 @@ export class AlbumService {
     albumId: string;
     validateIsOwner?: boolean;
   }): Promise<AlbumEntity> {
+    await this.albumRepository.updateThumbnails();
+
     const album = await this.albumRepository.get(albumId);
     if (!album) {
       throw new NotFoundException('Album Not Found');
@@ -128,10 +130,6 @@ export class AlbumService {
     const album = await this._getAlbum({ authUser, albumId });
     const deletedCount = await this.albumRepository.removeAssets(album, removeAssetsDto);
     const newAlbum = await this._getAlbum({ authUser, albumId });
-
-    if (newAlbum) {
-      await this.albumRepository.updateThumbnails();
-    }
 
     if (deletedCount !== removeAssetsDto.assetIds.length) {
       throw new BadRequestException('Some assets were not found in the album');

@@ -11,7 +11,7 @@ export class AlbumThumbnailRelation1677613712565 implements MigrationInterface {
     `);
 
     await queryRunner.query(`
-      ALTER TABLE "albums" ADD CONSTRAINT "FK_05895aa505a670300d4816debce" FOREIGN KEY ("albumThumbnailAssetId") REFERENCES "assets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+      ALTER TABLE "albums" ADD CONSTRAINT "FK_05895aa505a670300d4816debce" FOREIGN KEY ("albumThumbnailAssetId") REFERENCES "assets"("id") ON DELETE SET NULL ON UPDATE CASCADE
     `);
   }
 
