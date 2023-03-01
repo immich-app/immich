@@ -1,33 +1,17 @@
 <script lang="ts">
 	import '../app.css';
 
-	import { fade } from 'svelte/transition';
 	import { page } from '$app/stores';
-	import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
-	import AnnouncementBox from '$lib/components/shared-components/announcement-box.svelte';
-	import UploadCover from '$lib/components/shared-components/drag-and-drop-upload-overlay.svelte';
-	import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
-	import { onMount } from 'svelte';
-	import { checkAppVersion } from '$lib/utils/check-app-version';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
+	import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
+	import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
 	import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
-	import { fileUploadHandler } from '$lib/utils/file-uploader';
+	import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
 	import faviconUrl from '$lib/assets/favicon.png';
+	import type { LayoutData } from './$types';
 
-	let shouldShowAnnouncement: boolean;
-	let localVersion: string;
-	let remoteVersion: string;
 	let showNavigationLoadingBar = false;
-	let showUploadCover = false;
-
-	onMount(async () => {
-		const res = await checkAppVersion();
-
-		shouldShowAnnouncement = res.shouldShowAnnouncement;
-		localVersion = res.localVersion ?? 'unknown';
-		remoteVersion = res.remoteVersion ?? 'unknown';
-	});
 
 	beforeNavigate(() => {
 		showNavigationLoadingBar = true;
@@ -37,34 +21,14 @@
 		showNavigationLoadingBar = false;
 	});
 
-	const dropHandler = async (event: DragEvent) => {
-		event.preventDefault();
-		event.stopPropagation();
-
-		showUploadCover = false;
-
-		const files = event.dataTransfer?.files;
-		if (!files) {
-			return;
-		}
-
-		const filesArray: File[] = Array.from<File>(files);
-		const albumId = ($page.route.id === '/albums/[albumId]' || undefined) && $page.params.albumId;
-
-		await fileUploadHandler(filesArray, albumId);
-	};
-
-	// Required to prevent default browser behavior
-	const dragOverHandler = (event: DragEvent) => {
-		event.preventDefault();
-		event.stopPropagation();
-	};
+	export let data: LayoutData;
 </script>
 
 <svelte:head>
 	<title>{$page.data.meta?.title || 'Web'} - Immich</title>
+	<link rel="icon" href={faviconUrl} />
+
 	{#if $page.data.meta}
-		<link rel="icon" href={faviconUrl} />
 		<meta name="description" content={$page.data.meta.description} />
 
 		<!-- Facebook Meta Tags -->
@@ -81,31 +45,16 @@
 	{/if}
 </svelte:head>
 
-<main on:dragenter={() => (showUploadCover = true)}>
-	<div in:fade={{ duration: 100 }}>
-		{#if showNavigationLoadingBar}
-			<NavigationLoadingBar />
-		{/if}
+{#if showNavigationLoadingBar}
+	<NavigationLoadingBar />
+{/if}
 
-		<slot />
+<slot />
 
-		{#if showUploadCover}
-			<UploadCover
-				{dropHandler}
-				{dragOverHandler}
-				dragLeaveHandler={() => (showUploadCover = false)}
-			/>
-		{/if}
+<DownloadPanel />
+<UploadPanel />
+<NotificationList />
 
-		<DownloadPanel />
-		<UploadPanel />
-		<NotificationList />
-		{#if shouldShowAnnouncement}
-			<AnnouncementBox
-				{localVersion}
-				{remoteVersion}
-				on:close={() => (shouldShowAnnouncement = false)}
-			/>
-		{/if}
-	</div>
-</main>
+{#if data.user?.isAdmin}
+	<VersionAnnouncementBox serverVersion={data.serverVersion} />
+{/if}

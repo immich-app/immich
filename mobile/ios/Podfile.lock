@@ -1,4 +1,6 @@
 PODS:
+  - device_info_plus (0.0.1):
+    - Flutter
   - Flutter (1.0.0)
   - flutter_native_splash (0.0.1):
     - Flutter
@@ -49,6 +51,7 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
+  - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - Flutter (from `Flutter`)
   - flutter_native_splash (from `.symlinks/plugins/flutter_native_splash/ios`)
   - flutter_udid (from `.symlinks/plugins/flutter_udid/ios`)
@@ -76,6 +79,8 @@ SPEC REPOS:
     - Toast
 
 EXTERNAL SOURCES:
+  device_info_plus:
+    :path: ".symlinks/plugins/device_info_plus/ios"
   Flutter:
     :path: Flutter
   flutter_native_splash:
@@ -116,6 +121,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/wakelock/ios"
 
 SPEC CHECKSUMS:
+  device_info_plus: e5c5da33f982a436e103237c0c85f9031142abed
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
   flutter_native_splash: 52501b97d1c0a5f898d687f1646226c1f93c56ef
   flutter_udid: 0848809dbed4c055175747ae6a45a8b4f6771e1c
@@ -139,6 +145,6 @@ SPEC CHECKSUMS:
   video_player_avfoundation: 6d971a232d72e6ee25368378d48a079dea01f1cf
   wakelock: d0fc7c864128eac40eba1617cb5264d9c940b46f
 
-PODFILE CHECKSUM: 4a7e0475ea85ab7bf89955bc4c7ea9d18b54dfd8
+PODFILE CHECKSUM: 0606648e8a9ecd5a59eafa5ab3187b45a9004a28
 
 COCOAPODS: 1.11.3

@@ -79,7 +79,8 @@ export class AlbumRepository implements IAlbumRepository {
 
     const queryProperties: FindManyOptions<AlbumEntity> = {
       relations: { sharedUsers: true, assets: true, sharedLinks: true, owner: true },
-      order: { assets: { fileCreatedAt: 'ASC' }, createdAt: 'ASC' },
+      select: { assets: { id: true } },
+      order: { createdAt: 'DESC' },
     };
 
     let albumsQuery: Promise<AlbumEntity[]>;
@@ -111,10 +112,6 @@ export class AlbumRepository implements IAlbumRepository {
         ...queryProperties,
       });
     }
-
-    const albums = await albumsQuery;
-
-    albums.sort((a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf());
 
     return albumsQuery;
   }

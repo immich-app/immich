@@ -52,6 +52,7 @@ export class SharedLinkEntity {
   @ManyToMany(() => AssetEntity, (asset) => asset.sharedLinks)
   assets!: AssetEntity[];
 
+  @Index('IDX_sharedlink_albumId')
   @ManyToOne(() => AlbumEntity, (album) => album.sharedLinks)
   album?: AlbumEntity;
 }

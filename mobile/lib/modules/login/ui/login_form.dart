@@ -7,14 +7,18 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/providers/oauth.provider.dart';
+import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
+import 'package:immich_mobile/shared/ui/immich_logo.dart';
+import 'package:immich_mobile/shared/ui/immich_title_text.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:openapi/api.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class LoginForm extends HookConsumerWidget {
   const LoginForm({Key? key}) : super(key: key);
@@ -105,22 +109,12 @@ class LoginForm extends HookConsumerWidget {
                   onDoubleTap: () => populateTestLoginInfo(),
                   child: RotationTransition(
                     turns: logoAnimationController,
-                    child: const Image(
-                      image: AssetImage('assets/immich-logo-no-outline.png'),
-                      width: 100,
-                      filterQuality: FilterQuality.high,
+                    child: const ImmichLogo(
+                      heroTag: 'logo',
                     ),
                   ),
                 ),
-                Text(
-                  'IMMICH',
-                  style: TextStyle(
-                    fontFamily: 'SnowburstOne',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 48,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ),
+                const ImmichTitleText(),
                 EmailInput(controller: usernameController),
                 PasswordInput(controller: passwordController),
                 ServerEndpointInput(
@@ -164,7 +158,10 @@ class LoginForm extends HookConsumerWidget {
                           isLoading: isLoading,
                           onLoginSuccess: () {
                             isLoading.value = false;
-                            ref.watch(backupProvider.notifier).resumeBackup();
+                            final permission = ref.watch(galleryPermissionNotifier);
+                            if (permission.isGranted || permission.isLimited) {
+                              ref.watch(backupProvider.notifier).resumeBackup();
+                            }
                             AutoRouter.of(context).replace(
                               const TabControllerRoute(),
                             );
@@ -313,7 +310,13 @@ class LoginButton extends ConsumerWidget {
               !ref.read(authenticationProvider).isAdmin) {
             AutoRouter.of(context).push(const ChangePasswordRoute());
           } else {
-            ref.read(backupProvider.notifier).resumeBackup();
+            final hasPermission = await ref
+                .read(galleryPermissionNotifier.notifier)
+                .hasPermission;
+            if (hasPermission) {
+              // Don't resume the backup until we have gallery permission
+              ref.read(backupProvider.notifier).resumeBackup();
+            }
             AutoRouter.of(context).replace(const TabControllerRoute());
           }
         } else {

@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/album_info_card.dart';
+import 'package:immich_mobile/modules/backup/ui/album_info_list_tile.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
@@ -18,7 +19,12 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     final selectedBackupAlbums = ref.watch(backupProvider).selectedBackupAlbums;
     final excludedBackupAlbums = ref.watch(backupProvider).excludedBackupAlbums;
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final albums = ref.watch(backupProvider).availableAlbums;
+    final allAlbums = ref.watch(backupProvider).availableAlbums;
+
+    // Albums which are displayed to the user
+    // by filtering out based on search
+    final filteredAlbums = useState(allAlbums);
+    final albums = filteredAlbums.value;
 
     useEffect(
       () {
@@ -30,27 +36,53 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
 
     buildAlbumSelectionList() {
       if (albums.isEmpty) {
-        return const Center(
-          child: ImmichLoadingIndicator(),
+        return const SliverToBoxAdapter(
+          child: Center(
+            child: ImmichLoadingIndicator(),
+          ),
         );
       }
 
-      return SizedBox(
-        height: 265,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: albums.length,
-          physics: const BouncingScrollPhysics(),
-          itemBuilder: ((context, index) {
-            var thumbnailData = albums[index].thumbnailData;
-            return Padding(
-              padding: index == 0
-                  ? const EdgeInsets.only(left: 16.00)
-                  : const EdgeInsets.all(0),
-              child: AlbumInfoCard(
+      return SliverPadding(
+        padding: const EdgeInsets.symmetric(vertical: 12.0),
+        sliver: SliverList(
+          delegate: SliverChildBuilderDelegate(
+            ((context, index) {
+              var thumbnailData = albums[index].thumbnailData;
+              return AlbumInfoListTile(
                 imageData: thumbnailData,
                 albumInfo: albums[index],
-              ),
+              );
+            }),
+            childCount: albums.length,
+          ),
+        ),
+      );
+    }
+
+    buildAlbumSelectionGrid() {
+      if (albums.isEmpty) {
+        return const SliverToBoxAdapter(
+          child: Center(
+            child: ImmichLoadingIndicator(),
+          ),
+        );
+      }
+
+      return SliverPadding(
+        padding: const EdgeInsets.all(12.0),
+        sliver: SliverGrid.builder(
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: 300,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+          ),
+          itemCount: albums.length,
+          itemBuilder: ((context, index) {
+            var thumbnailData = albums[index].thumbnailData;
+            return AlbumInfoCard(
+              imageData: thumbnailData,
+              albumInfo: albums[index],
             );
           }),
         ),
@@ -139,19 +171,17 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
         padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 8.0),
         child: TextFormField(
           onChanged: (searchValue) {
-            var avaialbleAlbums = ref
-                .watch(backupProvider)
-                .availableAlbums
-                .where(
-                  (album) => album.name
-                      .toLowerCase()
-                      .contains(searchValue.toLowerCase()),
-                )
-                .toList();
-
-            ref
-                .read(backupProvider.notifier)
-                .setAvailableAlbums(avaialbleAlbums);
+            if (searchValue.isEmpty) {
+              filteredAlbums.value = allAlbums;
+            } else {
+              filteredAlbums.value = allAlbums
+                  .where(
+                    (album) => album.name
+                        .toLowerCase()
+                        .contains(searchValue.toLowerCase()),
+                  )
+                  .toList();
+            }
           },
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.symmetric(
@@ -190,143 +220,162 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
         ).tr(),
         elevation: 0,
       ),
-      body: ListView(
+      body: CustomScrollView(
         physics: const ClampingScrollPhysics(),
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: 8.0,
-              horizontal: 16.0,
-            ),
-            child: const Text(
-              "backup_album_selection_page_selection_info",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ).tr(),
-          ),
-          // Selected Album Chips
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Wrap(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ...buildSelectedAlbumNameChip(),
-                ...buildExcludedAlbumNameChip()
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8.0,
+                    horizontal: 16.0,
+                  ),
+                  child: const Text(
+                    "backup_album_selection_page_selection_info",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ).tr(),
+                ),
+                // Selected Album Chips
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Wrap(
+                    children: [
+                      ...buildSelectedAlbumNameChip(),
+                      ...buildExcludedAlbumNameChip()
+                    ],
+                  ),
+                ),
+
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                  child: Card(
+                    margin: const EdgeInsets.all(0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: BorderSide(
+                        color: isDarkTheme
+                            ? const Color.fromARGB(255, 0, 0, 0)
+                            : const Color.fromARGB(255, 235, 235, 235),
+                        width: 1,
+                      ),
+                    ),
+                    elevation: 0,
+                    borderOnForeground: false,
+                    child: Column(
+                      children: [
+                        ListTile(
+                          visualDensity: VisualDensity.compact,
+                          title: const Text(
+                            "backup_album_selection_page_total_assets",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ).tr(),
+                          trailing: Text(
+                            ref
+                                .watch(backupProvider)
+                                .allUniqueAssets
+                                .length
+                                .toString(),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                ListTile(
+                  title: Text(
+                    "backup_album_selection_page_albums_device".tr(
+                      args: [
+                        ref
+                            .watch(backupProvider)
+                            .availableAlbums
+                            .length
+                            .toString()
+                      ],
+                    ),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text(
+                      "backup_album_selection_page_albums_tap",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ).tr(),
+                  ),
+                  trailing: IconButton(
+                    splashRadius: 16,
+                    icon: Icon(
+                      Icons.info,
+                      size: 20,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                    onPressed: () {
+                      // show the dialog
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            elevation: 5,
+                            title: Text(
+                              'backup_album_selection_page_selection_info',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).primaryColor,
+                              ),
+                            ).tr(),
+                            content: SingleChildScrollView(
+                              child: ListBody(
+                                children: [
+                                  const Text(
+                                    'backup_album_selection_page_assets_scatter',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                    ),
+                                  ).tr(),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+
+                buildSearchBar(),
               ],
             ),
           ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-            child: Card(
-              margin: const EdgeInsets.all(0),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-                side: BorderSide(
-                  color: isDarkTheme
-                      ? const Color.fromARGB(255, 0, 0, 0)
-                      : const Color.fromARGB(255, 235, 235, 235),
-                  width: 1,
-                ),
-              ),
-              elevation: 0,
-              borderOnForeground: false,
-              child: Column(
-                children: [
-                  ListTile(
-                    visualDensity: VisualDensity.compact,
-                    title: const Text(
-                      "backup_album_selection_page_total_assets",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ).tr(),
-                    trailing: Text(
-                      ref
-                          .watch(backupProvider)
-                          .allUniqueAssets
-                          .length
-                          .toString(),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          ListTile(
-            title: Text(
-              "backup_album_selection_page_albums_device".tr(
-                args: [
-                  ref.watch(backupProvider).availableAlbums.length.toString()
-                ],
-              ),
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-            ),
-            subtitle: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Text(
-                "backup_album_selection_page_albums_tap",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.bold,
-                ),
-              ).tr(),
-            ),
-            trailing: IconButton(
-              splashRadius: 16,
-              icon: Icon(
-                Icons.info,
-                size: 20,
-                color: Theme.of(context).primaryColor,
-              ),
-              onPressed: () {
-                // show the dialog
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      elevation: 5,
-                      title: Text(
-                        'backup_album_selection_page_selection_info',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
-                        ),
-                      ).tr(),
-                      content: SingleChildScrollView(
-                        child: ListBody(
-                          children: [
-                            const Text(
-                              'backup_album_selection_page_assets_scatter',
-                              style: TextStyle(
-                                fontSize: 14,
-                              ),
-                            ).tr(),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-
-          buildSearchBar(),
-
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16.0),
-            child: buildAlbumSelectionList(),
+          SliverLayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.crossAxisExtent > 600) {
+                return buildAlbumSelectionGrid();
+              } else {
+                return buildAlbumSelectionList();
+              }
+            },
           ),
         ],
       ),

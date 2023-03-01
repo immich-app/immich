@@ -27,7 +27,7 @@ export class AssetEntity {
   @Column()
   deviceAssetId!: string;
 
-  @ManyToOne(() => UserEntity, { eager: true, onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
+  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   owner!: UserEntity;
 
   @Column()
@@ -92,11 +92,11 @@ export class AssetEntity {
   @OneToOne(() => SmartInfoEntity, (smartInfoEntity) => smartInfoEntity.asset)
   smartInfo?: SmartInfoEntity;
 
-  @ManyToMany(() => TagEntity, (tag) => tag.assets, { cascade: true, eager: true })
+  @ManyToMany(() => TagEntity, (tag) => tag.assets, { cascade: true })
   @JoinTable({ name: 'tag_asset' })
   tags!: TagEntity[];
 
-  @ManyToMany(() => SharedLinkEntity, (link) => link.assets, { cascade: true, eager: true })
+  @ManyToMany(() => SharedLinkEntity, (link) => link.assets, { cascade: true })
   @JoinTable({ name: 'shared_link__asset' })
   sharedLinks!: SharedLinkEntity[];
 }

@@ -4,7 +4,7 @@ import { ServerInfoResponseDto } from './response-dto/server-info-response.dto';
 import diskusage from 'diskusage';
 import { ServerStatsResponseDto } from './response-dto/server-stats-response.dto';
 import { UsageByUserDto } from './response-dto/usage-by-user-response.dto';
-import { AssetEntity } from '@app/infra';
+import { UserEntity } from '@app/infra';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { asHumanReadable } from '../../utils/human-readable.util';
@@ -12,8 +12,8 @@ import { asHumanReadable } from '../../utils/human-readable.util';
 @Injectable()
 export class ServerInfoService {
   constructor(
-    @InjectRepository(AssetEntity)
-    private assetRepository: Repository<AssetEntity>,
+    @InjectRepository(UserEntity)
+    private userRepository: Repository<UserEntity>,
   ) {}
 
   async getServerInfo(): Promise<ServerInfoResponseDto> {
@@ -33,44 +33,48 @@ export class ServerInfoService {
   }
 
   async getStats(): Promise<ServerStatsResponseDto> {
-    const serverStats = new ServerStatsResponseDto();
-
     type UserStatsQueryResponse = {
-      assetType: string;
-      assetCount: string;
-      totalSizeInBytes: string;
-      ownerId: string;
+      userId: string;
+      userFirstName: string;
+      userLastName: string;
+      photos: string;
+      videos: string;
+      usage: string;
     };
 
-    const userStatsQueryResponse: UserStatsQueryResponse[] = await this.assetRepository
-      .createQueryBuilder('a')
-      .select('COUNT(a.id)', 'assetCount')
-      .addSelect('SUM(ei.fileSizeInByte)', 'totalSizeInBytes')
-      .addSelect('a."ownerId"')
-      .addSelect('a.type', 'assetType')
-      .where('a.isVisible = true')
-      .leftJoin('a.exifInfo', 'ei')
-      .groupBy('a."ownerId"')
-      .addGroupBy('a.type')
+    const userStatsQueryResponse: UserStatsQueryResponse[] = await this.userRepository
+      .createQueryBuilder('users')
+      .select('users.id', 'userId')
+      .addSelect('users.firstName', 'userFirstName')
+      .addSelect('users.lastName', 'userLastName')
+      .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'IMAGE' AND assets.isVisible)`, 'photos')
+      .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'VIDEO' AND assets.isVisible)`, 'videos')
+      .addSelect('COALESCE(SUM(exif.fileSizeInByte), 0)', 'usage')
+      .leftJoin('users.assets', 'assets')
+      .leftJoin('assets.exifInfo', 'exif')
+      .groupBy('users.id')
+      .orderBy('users.createdAt', 'ASC')
       .getRawMany();
 
-    const tmpMap = new Map<string, UsageByUserDto>();
-    const getUsageByUser = (id: string) => tmpMap.get(id) || new UsageByUserDto(id);
-    userStatsQueryResponse.forEach((r) => {
-      const usageByUser = getUsageByUser(r.ownerId);
-      usageByUser.photos += r.assetType === 'IMAGE' ? parseInt(r.assetCount) : 0;
-      usageByUser.videos += r.assetType === 'VIDEO' ? parseInt(r.assetCount) : 0;
-      usageByUser.usageRaw += parseInt(r.totalSizeInBytes);
-      usageByUser.usage = asHumanReadable(usageByUser.usageRaw);
+    const usageByUser = userStatsQueryResponse.map((userStats) => {
+      const usage = new UsageByUserDto();
+      usage.userId = userStats.userId;
+      usage.userFirstName = userStats.userFirstName;
+      usage.userLastName = userStats.userLastName;
+      usage.photos = Number(userStats.photos);
+      usage.videos = Number(userStats.videos);
+      usage.usage = Number(userStats.usage);
 
-      serverStats.photos += r.assetType === 'IMAGE' ? parseInt(r.assetCount) : 0;
-      serverStats.videos += r.assetType === 'VIDEO' ? parseInt(r.assetCount) : 0;
-      serverStats.usageRaw += parseInt(r.totalSizeInBytes);
-      serverStats.usage = asHumanReadable(serverStats.usageRaw);
-      tmpMap.set(r.ownerId, usageByUser);
+      return usage;
     });
 
-    serverStats.usageByUser = Array.from(tmpMap.values());
+    const serverStats = new ServerStatsResponseDto();
+    usageByUser.forEach((user) => {
+      serverStats.photos += user.photos;
+      serverStats.videos += user.videos;
+      serverStats.usage += user.usage;
+    });
+    serverStats.usageByUser = usageByUser;
 
     return serverStats;
   }

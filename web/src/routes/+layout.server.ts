@@ -1,12 +1,7 @@
 import type { LayoutServerLoad } from './$types';
 
-export const load = (async ({ locals: { api } }) => {
-	try {
-		const { data: user } = await api.userApi.getMyUserInfo();
+export const load = (async ({ locals: { api, user } }) => {
+	const { data: serverVersion } = await api.serverInfoApi.getServerVersion();
 
-		return { user };
-	} catch (e) {
-		console.error('[ERROR] layout.server.ts [LayoutServerLoad]: ');
-		return { user: undefined };
-	}
+	return { serverVersion, user };
 }) satisfies LayoutServerLoad;

@@ -278,7 +278,9 @@ class AlbumViewerPage extends HookConsumerWidget {
                     ),
                   ),
                 ),
-                buildImageGrid(album)
+                SliverSafeArea(
+                  sliver: buildImageGrid(album),
+                ),
               ],
             ),
           ),

@@ -15,13 +15,16 @@ part of 'router.dart';
 class _$AppRouter extends RootStackRouter {
   _$AppRouter({
     GlobalKey<NavigatorState>? navigatorKey,
-    required this.duplicateGuard,
     required this.authGuard,
+    required this.duplicateGuard,
+    required this.galleryPermissionGuard,
   }) : super(navigatorKey);
+
+  final AuthGuard authGuard;
 
   final DuplicateGuard duplicateGuard;
 
-  final AuthGuard authGuard;
+  final GalleryPermissionGuard galleryPermissionGuard;
 
   @override
   final Map<String, PageFactory> pagesMap = {
@@ -29,6 +32,12 @@ class _$AppRouter extends RootStackRouter {
       return MaterialPageX<dynamic>(
         routeData: routeData,
         child: const SplashScreenPage(),
+      );
+    },
+    PermissionOnboardingRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const PermissionOnboardingPage(),
       );
     },
     LoginRoute.name: (routeData) {
@@ -226,6 +235,14 @@ class _$AppRouter extends RootStackRouter {
           path: '/',
         ),
         RouteConfig(
+          PermissionOnboardingRoute.name,
+          path: '/permission-onboarding-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
           LoginRoute.name,
           path: '/login-page',
           guards: [duplicateGuard],
@@ -240,6 +257,7 @@ class _$AppRouter extends RootStackRouter {
           guards: [
             authGuard,
             duplicateGuard,
+            galleryPermissionGuard,
           ],
           children: [
             RouteConfig(
@@ -286,6 +304,7 @@ class _$AppRouter extends RootStackRouter {
           guards: [
             authGuard,
             duplicateGuard,
+            galleryPermissionGuard,
           ],
         ),
         RouteConfig(
@@ -409,6 +428,18 @@ class SplashScreenRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'SplashScreenRoute';
+}
+
+/// generated route for
+/// [PermissionOnboardingPage]
+class PermissionOnboardingRoute extends PageRouteInfo<void> {
+  const PermissionOnboardingRoute()
+      : super(
+          PermissionOnboardingRoute.name,
+          path: '/permission-onboarding-page',
+        );
+
+  static const String name = 'PermissionOnboardingRoute';
 }
 
 /// generated route for

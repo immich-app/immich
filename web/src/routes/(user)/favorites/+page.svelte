@@ -11,7 +11,7 @@
 	import Close from 'svelte-material-icons/Close.svelte';
 	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
 	import StarMinusOutline from 'svelte-material-icons/StarMinusOutline.svelte';
-	import Error from '../+error.svelte';
+	import Error from '../../+error.svelte';
 	import type { PageData } from './$types';
 	import empty1Url from '$lib/assets/empty-1.svg';
 
