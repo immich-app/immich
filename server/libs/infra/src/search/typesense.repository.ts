@@ -38,19 +38,6 @@ interface SearchUpdateQueue<T = any> {
 
 @Injectable()
 export class TypesenseRepository implements ISearchRepository {
-  private client = new Client({
-    nodes: [
-      {
-        host: process.env.TYPESENSE_HOST || 'typesense',
-        port: Number(process.env.TYPESENSE_PORT) || 8108,
-        protocol: process.env.TYPESENSE_PROTOCOL || 'http',
-      },
-    ],
-    apiKey: process.env.TYPESENSE_API_KEY as string,
-    numRetries: 3,
-    connectionTimeoutSeconds: 10,
-  });
-
   private logger = new Logger(TypesenseRepository.name);
   private queue: Record<SearchCollection, SearchUpdateQueue> = {
     [SearchCollection.ASSETS]: {
@@ -63,7 +50,33 @@ export class TypesenseRepository implements ISearchRepository {
     },
   };
 
+  private _client: Client | null = null;
+  private get client(): Client {
+    if (!this._client) {
+      throw new Error('Typesense client not available (no apiKey was provided)');
+    }
+    return this._client;
+  }
+
   constructor() {
+    const apiKey = process.env.TYPESENSE_API_KEY;
+    if (!apiKey) {
+      return;
+    }
+
+    this._client = new Client({
+      nodes: [
+        {
+          host: process.env.TYPESENSE_HOST || 'typesense',
+          port: Number(process.env.TYPESENSE_PORT) || 8108,
+          protocol: process.env.TYPESENSE_PROTOCOL || 'http',
+        },
+      ],
+      apiKey,
+      numRetries: 3,
+      connectionTimeoutSeconds: 10,
+    });
+
     setInterval(() => this.flush(), 5_000);
   }
 
