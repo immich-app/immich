@@ -2279,6 +2279,12 @@ export interface UserResponseDto {
      * @type {string}
      * @memberof UserResponseDto
      */
+    'updatedAt'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserResponseDto
+     */
     'oauthId': string;
 }
 /**
