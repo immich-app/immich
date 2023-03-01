@@ -183,8 +183,8 @@ export class MetadataExtractionProcessor {
       if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
         const motionAsset = await this.assetRepository.findLivePhotoMatch(
           newExif.livePhotoCID,
-          AssetType.VIDEO,
           asset.id,
+          AssetType.VIDEO,
         );
         if (motionAsset) {
           await this.assetRepository.save({ id: asset.id, livePhotoVideoId: motionAsset.id });
@@ -294,8 +294,8 @@ export class MetadataExtractionProcessor {
       if (newExif.livePhotoCID) {
         const photoAsset = await this.assetRepository.findLivePhotoMatch(
           newExif.livePhotoCID,
-          AssetType.IMAGE,
           asset.id,
+          AssetType.IMAGE,
         );
         if (photoAsset) {
           await this.assetRepository.save({ id: photoAsset.id, livePhotoVideoId: asset.id });
