@@ -560,6 +560,9 @@ class BackgroundService {
   }
 
   Future<DateTime?> getIOSBackupLastRun(IosBackgroundTask task) async {
+    if (!Platform.isIOS) {
+      return null;
+    }
     // Seconds since last run
     final double? lastRun = task == IosBackgroundTask.fetch
         ? await _foregroundChannel.invokeMethod('lastBackgroundFetchTime')
@@ -572,10 +575,16 @@ class BackgroundService {
   }
 
   Future<int> getIOSBackupNumberOfProcesses() async {
+    if (!Platform.isIOS) {
+      return 0;
+    }
     return await _foregroundChannel.invokeMethod('numberOfBackgroundProcesses');
   }
 
   Future<bool> getIOSBackgroundAppRefreshEnabled() async {
+    if (!Platform.isIOS) {
+      return false;
+    }
     return await _foregroundChannel.invokeMethod('backgroundAppRefreshEnabled');
   }
 }
