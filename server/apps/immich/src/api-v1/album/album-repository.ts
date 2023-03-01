@@ -80,7 +80,7 @@ export class AlbumRepository implements IAlbumRepository {
     const queryProperties: FindManyOptions<AlbumEntity> = {
       relations: { sharedUsers: true, assets: true, sharedLinks: true, owner: true },
       select: { assets: { id: true } },
-      order: { assets: { fileCreatedAt: 'ASC' }, createdAt: 'ASC' },
+      order: { createdAt: 'DESC' },
     };
 
     let albumsQuery: Promise<AlbumEntity[]>;
