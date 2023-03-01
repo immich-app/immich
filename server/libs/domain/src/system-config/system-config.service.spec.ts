@@ -113,6 +113,7 @@ describe(SystemConfigService.name, () => {
           '{{y}}-{{MM}}-{{dd}}/{{filename}}',
           '{{y}}-{{MMM}}-{{dd}}/{{filename}}',
           '{{y}}-{{MMMM}}-{{dd}}/{{filename}}',
+          '{{y}}/{{y}}-{{MM}}/{{filename}}',
         ],
         secondOptions: ['s', 'ss'],
         yearOptions: ['y', 'yy'],
