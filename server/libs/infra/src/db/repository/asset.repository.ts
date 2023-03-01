@@ -1,4 +1,4 @@
-import { IAssetRepository } from '@app/domain';
+import { AssetSearchOptions, IAssetRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
@@ -12,13 +12,32 @@ export class AssetRepository implements IAssetRepository {
     await this.repository.delete({ ownerId });
   }
 
-  async getAll(): Promise<AssetEntity[]> {
-    return this.repository.find({ relations: { exifInfo: true } });
+  getAll(options?: AssetSearchOptions | undefined): Promise<AssetEntity[]> {
+    options = options || {};
+
+    return this.repository.find({
+      where: {
+        isVisible: options.isVisible,
+      },
+      relations: {
+        exifInfo: true,
+        smartInfo: true,
+        tags: true,
+      },
+    });
   }
 
   async save(asset: Partial<AssetEntity>): Promise<AssetEntity> {
     const { id } = await this.repository.save(asset);
-    return this.repository.findOneOrFail({ where: { id } });
+    return this.repository.findOneOrFail({
+      where: { id },
+      relations: {
+        exifInfo: true,
+        owner: true,
+        smartInfo: true,
+        tags: true,
+      },
+    });
   }
 
   findLivePhotoMatch(livePhotoCID: string, otherAssetId: string, type: AssetType): Promise<AssetEntity | null> {

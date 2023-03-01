@@ -9,6 +9,7 @@ export * from './domain.module';
 export * from './job';
 export * from './media';
 export * from './oauth';
+export * from './search';
 export * from './share';
 export * from './smart-info';
 export * from './storage';

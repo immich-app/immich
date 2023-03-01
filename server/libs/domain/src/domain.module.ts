@@ -5,6 +5,7 @@ import { AuthService } from './auth';
 import { DeviceInfoService } from './device-info';
 import { MediaService } from './media';
 import { OAuthService } from './oauth';
+import { SearchService } from './search';
 import { ShareService } from './share';
 import { SmartInfoService } from './smart-info';
 import { StorageService } from './storage';
@@ -25,6 +26,7 @@ const providers: Provider[] = [
   SystemConfigService,
   UserService,
   ShareService,
+  SearchService,
   {
     provide: INITIAL_SYSTEM_CONFIG,
     inject: [SystemConfigService],

@@ -1,4 +1,8 @@
-import { AssetEntity, UserEntity } from '@app/infra/db/entities';
+import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra/db/entities';
+
+export interface IAlbumJob {
+  album: AlbumEntity;
+}
 
 export interface IAssetJob {
   asset: AssetEntity;
@@ -7,6 +11,10 @@ export interface IAssetJob {
 export interface IAssetUploadedJob {
   asset: AssetEntity;
   fileName: string;
+}
+
+export interface IDeleteJob {
+  id: string;
 }
 
 export interface IDeleteFilesJob {

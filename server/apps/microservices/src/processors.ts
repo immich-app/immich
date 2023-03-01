@@ -1,12 +1,15 @@
 import {
   AssetService,
+  IAlbumJob,
   IAssetJob,
   IAssetUploadedJob,
   IDeleteFilesJob,
+  IDeleteJob,
   IUserDeletionJob,
   JobName,
   MediaService,
   QueueName,
+  SearchService,
   SmartInfoService,
   StorageService,
   StorageTemplateService,
@@ -58,6 +61,41 @@ export class MachineLearningProcessor {
   @Process({ name: JobName.OBJECT_DETECTION, concurrency: 2 })
   async onDetectObject(job: Job<IAssetJob>) {
     await this.smartInfoService.handleDetectObjects(job.data);
+  }
+}
+
+@Processor(QueueName.SEARCH)
+export class SearchIndexProcessor {
+  constructor(private searchService: SearchService) {}
+
+  @Process(JobName.SEARCH_INDEX_ALBUMS)
+  async onIndexAlbums() {
+    await this.searchService.handleIndexAlbums();
+  }
+
+  @Process(JobName.SEARCH_INDEX_ASSETS)
+  async onIndexAssets() {
+    await this.searchService.handleIndexAssets();
+  }
+
+  @Process(JobName.SEARCH_INDEX_ALBUM)
+  async onIndexAlbum(job: Job<IAlbumJob>) {
+    await this.searchService.handleIndexAlbum(job.data);
+  }
+
+  @Process(JobName.SEARCH_INDEX_ASSET)
+  async onIndexAsset(job: Job<IAssetJob>) {
+    await this.searchService.handleIndexAsset(job.data);
+  }
+
+  @Process(JobName.SEARCH_REMOVE_ALBUM)
+  async onRemoveAlbum(job: Job<IDeleteJob>) {
+    await this.searchService.handleRemoveAlbum(job.data);
+  }
+
+  @Process(JobName.SEARCH_REMOVE_ASSET)
+  async onRemoveAsset(job: Job<IDeleteJob>) {
+    await this.searchService.handleRemoveAsset(job.data);
   }
 }
 

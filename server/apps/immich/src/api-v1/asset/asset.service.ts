@@ -170,6 +170,8 @@ export class AssetService {
 
     const updatedAsset = await this._assetRepository.update(authUser.id, asset, dto);
 
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { asset: updatedAsset } });
+
     return mapAsset(updatedAsset);
   }
 
@@ -425,6 +427,7 @@ export class AssetService {
 
       try {
         await this._assetRepository.remove(asset);
+        await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { id } });
 
         result.push({ id, status: DeleteAssetStatusEnum.SUCCESS });
         deleteQueue.push(asset.originalPath, asset.webpPath, asset.resizePath);
