@@ -6,8 +6,9 @@ import os
 
 
 # Set the bind address based on the env
-port = os.getenv('MACHINE_LEARNING_PORT') or "3003"
-bind = f"0.0.0.0:{port}"
+port = os.getenv("MACHINE_LEARNING_PORT") or "3003"
+listen_ip = os.getenv("MACHINE_LEARNING_IP") or "0.0.0.0"
+bind = [f"{listen_ip}:{port}"]
 
 # Preload the Flask app / models etc. before starting the server
 preload_app = True
