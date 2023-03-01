@@ -1454,6 +1454,37 @@ export interface RemoveAssetsDto {
 /**
  * 
  * @export
+ * @interface SearchAlbumResponseDto
+ */
+export interface SearchAlbumResponseDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof SearchAlbumResponseDto
+     */
+    'total': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SearchAlbumResponseDto
+     */
+    'count': number;
+    /**
+     * 
+     * @type {Array<AlbumResponseDto>}
+     * @memberof SearchAlbumResponseDto
+     */
+    'items': Array<AlbumResponseDto>;
+    /**
+     * 
+     * @type {Array<SearchFacetResponseDto>}
+     * @memberof SearchAlbumResponseDto
+     */
+    'facets': Array<SearchFacetResponseDto>;
+}
+/**
+ * 
+ * @export
  * @interface SearchAssetDto
  */
 export interface SearchAssetDto {
@@ -1463,6 +1494,107 @@ export interface SearchAssetDto {
      * @memberof SearchAssetDto
      */
     'searchTerm': string;
+}
+/**
+ * 
+ * @export
+ * @interface SearchAssetResponseDto
+ */
+export interface SearchAssetResponseDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof SearchAssetResponseDto
+     */
+    'total': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SearchAssetResponseDto
+     */
+    'count': number;
+    /**
+     * 
+     * @type {Array<AssetResponseDto>}
+     * @memberof SearchAssetResponseDto
+     */
+    'items': Array<AssetResponseDto>;
+    /**
+     * 
+     * @type {Array<SearchFacetResponseDto>}
+     * @memberof SearchAssetResponseDto
+     */
+    'facets': Array<SearchFacetResponseDto>;
+}
+/**
+ * 
+ * @export
+ * @interface SearchConfigResponseDto
+ */
+export interface SearchConfigResponseDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SearchConfigResponseDto
+     */
+    'enabled': boolean;
+}
+/**
+ * 
+ * @export
+ * @interface SearchFacetCountResponseDto
+ */
+export interface SearchFacetCountResponseDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof SearchFacetCountResponseDto
+     */
+    'count': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchFacetCountResponseDto
+     */
+    'value': string;
+}
+/**
+ * 
+ * @export
+ * @interface SearchFacetResponseDto
+ */
+export interface SearchFacetResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchFacetResponseDto
+     */
+    'fieldName': string;
+    /**
+     * 
+     * @type {Array<SearchFacetCountResponseDto>}
+     * @memberof SearchFacetResponseDto
+     */
+    'counts': Array<SearchFacetCountResponseDto>;
+}
+/**
+ * 
+ * @export
+ * @interface SearchResponseDto
+ */
+export interface SearchResponseDto {
+    /**
+     * 
+     * @type {SearchAlbumResponseDto}
+     * @memberof SearchResponseDto
+     */
+    'albums': SearchAlbumResponseDto;
+    /**
+     * 
+     * @type {SearchAssetResponseDto}
+     * @memberof SearchResponseDto
+     */
+    'assets': SearchAssetResponseDto;
 }
 /**
  * 
@@ -6481,6 +6613,248 @@ export class OAuthApi extends BaseAPI {
      */
     public unlink(options?: AxiosRequestConfig) {
         return OAuthApiFp(this.configuration).unlink(options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+/**
+ * SearchApi - axios parameter creator
+ * @export
+ */
+export const SearchApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getSearchConfig: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/search/config`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            // authentication cookie required
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} [query] 
+         * @param {'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER'} [type] 
+         * @param {boolean} [isFavorite] 
+         * @param {string} [exifInfoCity] 
+         * @param {string} [exifInfoState] 
+         * @param {string} [exifInfoCountry] 
+         * @param {string} [exifInfoMake] 
+         * @param {string} [exifInfoModel] 
+         * @param {Array<string>} [smartInfoObjects] 
+         * @param {Array<string>} [smartInfoTags] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        search: async (query?: string, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/search`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            // authentication cookie required
+
+            if (query !== undefined) {
+                localVarQueryParameter['query'] = query;
+            }
+
+            if (type !== undefined) {
+                localVarQueryParameter['type'] = type;
+            }
+
+            if (isFavorite !== undefined) {
+                localVarQueryParameter['isFavorite'] = isFavorite;
+            }
+
+            if (exifInfoCity !== undefined) {
+                localVarQueryParameter['exifInfo.city'] = exifInfoCity;
+            }
+
+            if (exifInfoState !== undefined) {
+                localVarQueryParameter['exifInfo.state'] = exifInfoState;
+            }
+
+            if (exifInfoCountry !== undefined) {
+                localVarQueryParameter['exifInfo.country'] = exifInfoCountry;
+            }
+
+            if (exifInfoMake !== undefined) {
+                localVarQueryParameter['exifInfo.make'] = exifInfoMake;
+            }
+
+            if (exifInfoModel !== undefined) {
+                localVarQueryParameter['exifInfo.model'] = exifInfoModel;
+            }
+
+            if (smartInfoObjects) {
+                localVarQueryParameter['smartInfo.objects'] = smartInfoObjects;
+            }
+
+            if (smartInfoTags) {
+                localVarQueryParameter['smartInfo.tags'] = smartInfoTags;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * SearchApi - functional programming interface
+ * @export
+ */
+export const SearchApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = SearchApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getSearchConfig(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchConfigResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getSearchConfig(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} [query] 
+         * @param {'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER'} [type] 
+         * @param {boolean} [isFavorite] 
+         * @param {string} [exifInfoCity] 
+         * @param {string} [exifInfoState] 
+         * @param {string} [exifInfoCountry] 
+         * @param {string} [exifInfoMake] 
+         * @param {string} [exifInfoModel] 
+         * @param {Array<string>} [smartInfoObjects] 
+         * @param {Array<string>} [smartInfoTags] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async search(query?: string, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.search(query, type, isFavorite, exifInfoCity, exifInfoState, exifInfoCountry, exifInfoMake, exifInfoModel, smartInfoObjects, smartInfoTags, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * SearchApi - factory interface
+ * @export
+ */
+export const SearchApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = SearchApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getSearchConfig(options?: any): AxiosPromise<SearchConfigResponseDto> {
+            return localVarFp.getSearchConfig(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} [query] 
+         * @param {'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER'} [type] 
+         * @param {boolean} [isFavorite] 
+         * @param {string} [exifInfoCity] 
+         * @param {string} [exifInfoState] 
+         * @param {string} [exifInfoCountry] 
+         * @param {string} [exifInfoMake] 
+         * @param {string} [exifInfoModel] 
+         * @param {Array<string>} [smartInfoObjects] 
+         * @param {Array<string>} [smartInfoTags] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        search(query?: string, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, options?: any): AxiosPromise<SearchResponseDto> {
+            return localVarFp.search(query, type, isFavorite, exifInfoCity, exifInfoState, exifInfoCountry, exifInfoMake, exifInfoModel, smartInfoObjects, smartInfoTags, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * SearchApi - object-oriented interface
+ * @export
+ * @class SearchApi
+ * @extends {BaseAPI}
+ */
+export class SearchApi extends BaseAPI {
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApi
+     */
+    public getSearchConfig(options?: AxiosRequestConfig) {
+        return SearchApiFp(this.configuration).getSearchConfig(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} [query] 
+     * @param {'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER'} [type] 
+     * @param {boolean} [isFavorite] 
+     * @param {string} [exifInfoCity] 
+     * @param {string} [exifInfoState] 
+     * @param {string} [exifInfoCountry] 
+     * @param {string} [exifInfoMake] 
+     * @param {string} [exifInfoModel] 
+     * @param {Array<string>} [smartInfoObjects] 
+     * @param {Array<string>} [smartInfoTags] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApi
+     */
+    public search(query?: string, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, options?: AxiosRequestConfig) {
+        return SearchApiFp(this.configuration).search(query, type, isFavorite, exifInfoCity, exifInfoState, exifInfoCountry, exifInfoMake, exifInfoModel, smartInfoObjects, smartInfoTags, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

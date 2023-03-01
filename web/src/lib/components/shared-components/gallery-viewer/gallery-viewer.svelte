@@ -22,7 +22,7 @@
 
 	$: {
 		if (assets.length < 6) {
-			thumbnailSize = Math.floor(viewWidth / assets.length - assets.length);
+			thumbnailSize = Math.min(320, Math.floor(viewWidth / assets.length - assets.length));
 		} else {
 			if (viewWidth > 600) thumbnailSize = Math.floor(viewWidth / 6 - 6);
 			else if (viewWidth > 400) thumbnailSize = Math.floor(viewWidth / 4 - 6);
