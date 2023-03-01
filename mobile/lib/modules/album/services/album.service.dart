@@ -74,7 +74,8 @@ class AlbumService {
       if (infos.excludedAlbumsIds.isNotEmpty) {
         onDevice.removeWhere((e) => infos.excludedAlbumsIds.contains(e.id));
       }
-      if (infos.selectedAlbumIds.isNotEmpty) {
+      if (infos.selectedAlbumIds.isNotEmpty &&
+          !infos.selectedAlbumIds.contains("isAll")) {
         onDevice.removeWhere((e) => !infos.selectedAlbumIds.contains(e.id));
       }
       changes = await _syncService.syncLocalAlbumAssetsToDb(onDevice);
