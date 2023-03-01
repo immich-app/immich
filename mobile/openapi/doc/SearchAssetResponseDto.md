@@ -8,8 +8,8 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**total** | **num** |  | 
-**count** | **num** |  | 
+**total** | **int** |  | 
+**count** | **int** |  | 
 **items** | [**List<AssetResponseDto>**](AssetResponseDto.md) |  | [default to const []]
 **facets** | [**List<SearchFacetResponseDto>**](SearchFacetResponseDto.md) |  | [default to const []]
 

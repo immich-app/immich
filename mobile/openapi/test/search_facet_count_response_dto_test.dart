@@ -16,7 +16,7 @@ void main() {
   // final instance = SearchFacetCountResponseDto();
 
   group('test SearchFacetCountResponseDto', () {
-    // num count
+    // int count
     test('to test the property `count`', () async {
       // TODO
     });

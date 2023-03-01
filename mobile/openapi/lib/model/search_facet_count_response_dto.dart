@@ -17,7 +17,7 @@ class SearchFacetCountResponseDto {
     required this.value,
   });
 
-  num count;
+  int count;
 
   String value;
 
@@ -61,9 +61,7 @@ class SearchFacetCountResponseDto {
       }());
 
       return SearchFacetCountResponseDto(
-        count: json[r'count'] == null
-            ? null
-            : num.parse(json[r'count'].toString()),
+        count: mapValueOfType<int>(json, r'count')!,
         value: mapValueOfType<String>(json, r'value')!,
       );
     }

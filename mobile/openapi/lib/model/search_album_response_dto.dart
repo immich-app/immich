@@ -19,9 +19,9 @@ class SearchAlbumResponseDto {
     this.facets = const [],
   });
 
-  num total;
+  int total;
 
-  num count;
+  int count;
 
   List<AlbumResponseDto> items;
 
@@ -73,12 +73,8 @@ class SearchAlbumResponseDto {
       }());
 
       return SearchAlbumResponseDto(
-        total: json[r'total'] == null
-            ? null
-            : num.parse(json[r'total'].toString()),
-        count: json[r'count'] == null
-            ? null
-            : num.parse(json[r'count'].toString()),
+        total: mapValueOfType<int>(json, r'total')!,
+        count: mapValueOfType<int>(json, r'count')!,
         items: AlbumResponseDto.listFromJson(json[r'items'])!,
         facets: SearchFacetResponseDto.listFromJson(json[r'facets'])!,
       );

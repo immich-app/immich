@@ -16,12 +16,12 @@ void main() {
   // final instance = SearchAssetResponseDto();
 
   group('test SearchAssetResponseDto', () {
-    // num total
+    // int total
     test('to test the property `total`', () async {
       // TODO
     });
 
-    // num count
+    // int count
     test('to test the property `count`', () async {
       // TODO
     });

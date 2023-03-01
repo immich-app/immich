@@ -4033,7 +4033,7 @@
         "type": "object",
         "properties": {
           "count": {
-            "type": "number"
+            "type": "integer"
           },
           "value": {
             "type": "string"
@@ -4066,10 +4066,10 @@
         "type": "object",
         "properties": {
           "total": {
-            "type": "number"
+            "type": "integer"
           },
           "count": {
-            "type": "number"
+            "type": "integer"
           },
           "items": {
             "type": "array",
@@ -4095,10 +4095,10 @@
         "type": "object",
         "properties": {
           "total": {
-            "type": "number"
+            "type": "integer"
           },
           "count": {
-            "type": "number"
+            "type": "integer"
           },
           "items": {
             "type": "array",
