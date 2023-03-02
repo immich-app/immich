@@ -19,6 +19,7 @@
 	export let format: ThumbnailFormat = ThumbnailFormat.Webp;
 	export let selected = false;
 	export let disabled = false;
+	export let readonly = false;
 	export let publicSharedKey = '';
 	export let isRoundedCorner = false;
 
@@ -118,7 +119,7 @@
 		} else if (disabled) {
 			return 'border-[20px] border-gray-300';
 		} else if (isRoundedCorner) {
-			return 'rounded-[20px]';
+			return 'rounded-lg';
 		} else {
 			return '';
 		}
@@ -157,7 +158,7 @@
 		on:click={thumbnailClickedHandler}
 		on:keydown={thumbnailClickedHandler}
 	>
-		{#if mouseOver || selected || disabled}
+		{#if (mouseOver || selected || disabled) && !readonly}
 			<div
 				in:fade={{ duration: 200 }}
 				class={`w-full ${getOverlaySelectorIconStyle()} via-white/0 to-white/0 absolute p-2 z-10`}

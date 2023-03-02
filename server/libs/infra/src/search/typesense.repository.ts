@@ -2,11 +2,13 @@ import {
   ISearchRepository,
   SearchCollection,
   SearchCollectionIndexStatus,
+  SearchExploreItem,
   SearchFilter,
   SearchResult,
 } from '@app/domain';
 import { Injectable, Logger } from '@nestjs/common';
 import _, { Dictionary } from 'lodash';
+import { filter, firstValueFrom, from, map, mergeMap, toArray } from 'rxjs';
 import { Client } from 'typesense';
 import { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
 import { DocumentSchema, SearchResponse } from 'typesense/lib/Typesense/Documents';
@@ -85,6 +87,12 @@ export class TypesenseRepository implements ISearchRepository {
   }
 
   async setup(): Promise<void> {
+    const collections = await this.client.collections().retrieve();
+    for (const collection of collections) {
+      this.logger.debug(`${collection.name} => ${collection.num_documents}`);
+      // await this.client.collections(collection.name).delete();
+    }
+
     // upsert collections
     for (const [collectionName, schema] of schemas) {
       const collection = await this.client
@@ -172,6 +180,58 @@ export class TypesenseRepository implements ISearchRepository {
     }
   }
 
+  async explore(userId: string): Promise<SearchExploreItem<AssetEntity>[]> {
+    const alias = await this.client.aliases(SearchCollection.ASSETS).retrieve();
+
+    const common = {
+      q: '*',
+      filter_by: `ownerId:${userId}`,
+      per_page: 1,
+    };
+
+    const asset$ = this.client.collections<AssetEntity>(alias.collection_name).documents();
+
+    const { facet_counts: facets } = await asset$.search({
+      ...common,
+      query_by: 'exifInfo.imageName',
+      facet_by: this.getFacetFieldNames(SearchCollection.ASSETS),
+    });
+
+    return firstValueFrom(
+      from(facets || []).pipe(
+        mergeMap(
+          (facet) =>
+            from(facet.counts).pipe(
+              mergeMap(
+                (count) =>
+                  from(
+                    asset$.search({
+                      ...common,
+                      query_by: 'exifInfo.imageName',
+                      filter_by: `${facet.field_name}:${count.value}`,
+                    }),
+                  ).pipe(
+                    map((result) => ({
+                      value: count.value,
+                      data: result.hits?.[0]?.document as AssetEntity,
+                    })),
+                    filter((item) => !!item.data),
+                  ),
+                5,
+              ),
+              toArray(),
+              map((items) => ({
+                fieldName: facet.field_name as string,
+                items,
+              })),
+            ),
+          3,
+        ),
+        toArray(),
+      ),
+    );
+  }
+
   search(collection: SearchCollection.ASSETS, query: string, filter: SearchFilter): Promise<SearchResult<AssetEntity>>;
   search(collection: SearchCollection.ALBUMS, query: string, filter: SearchFilter): Promise<SearchResult<AlbumEntity>>;
   async search(collection: SearchCollection, query: string, filters: SearchFilter) {
@@ -213,10 +273,7 @@ export class TypesenseRepository implements ISearchRepository {
           ].join(','),
           filter_by: _filters.join(' && '),
           per_page: 250,
-          facet_by: (assetSchema.fields || [])
-            .filter((field) => field.facet)
-            .map((field) => field.name)
-            .join(','),
+          facet_by: this.getFacetFieldNames(SearchCollection.ASSETS),
         });
 
       return this.asResponse(results);
@@ -321,5 +378,12 @@ export class TypesenseRepository implements ISearchRepository {
     }
 
     return asset;
+  }
+
+  private getFacetFieldNames(collection: SearchCollection) {
+    return (schemaMap[collection].fields || [])
+      .filter((field) => field.facet)
+      .map((field) => field.name)
+      .join(',');
   }
 }

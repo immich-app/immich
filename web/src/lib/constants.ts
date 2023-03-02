@@ -10,5 +10,6 @@ export enum AppRoute {
 	ALBUMS = '/albums',
 	FAVORITES = '/favorites',
 	PHOTOS = '/photos',
+	EXPLORE = '/explore',
 	SHARING = '/sharing'
 }
