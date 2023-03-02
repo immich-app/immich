@@ -6,6 +6,7 @@ export enum SearchCollection {
 }
 
 export interface SearchFilter {
+  id?: string;
   userId: string;
   type?: AssetType;
   isFavorite?: boolean;

@@ -181,6 +181,9 @@ export class TypesenseRepository implements ISearchRepository {
 
     const _filters = [`ownerId:${userId}`];
 
+    if (filters.id) {
+      _filters.push(`id:=${filters.id}`);
+    }
     if (collection === SearchCollection.ASSETS) {
       for (const item of schemaMap[collection].fields || []) {
         let value = filters[item.name as keyof SearchFilter];
