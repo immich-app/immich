@@ -14,6 +14,10 @@ import { AlbumEntity, AssetEntity } from '../db';
 import { albumSchema } from './schemas/album.schema';
 import { assetSchema } from './schemas/asset.schema';
 
+interface GeoAssetEntity extends AssetEntity {
+  geo?: [number, number];
+}
+
 function removeNil<T extends Dictionary<any>>(item: T): Partial<T> {
   _.forOwn(item, (value, key) => {
     if (_.isNil(value) || (_.isObject(value) && !_.isDate(value) && _.isEmpty(removeNil(value)))) {
@@ -121,6 +125,10 @@ export class TypesenseRepository implements ISearchRepository {
   async index(collection: SearchCollection, item: AssetEntity | AlbumEntity, immediate?: boolean): Promise<void> {
     const schema = schemaMap[collection];
 
+    if (collection === SearchCollection.ASSETS) {
+      item = this.patchAsset(item as AssetEntity);
+    }
+
     if (immediate) {
       await this.client.collections(schema.name).documents().upsert(item);
       return;
@@ -143,8 +151,13 @@ export class TypesenseRepository implements ISearchRepository {
   async import(collection: SearchCollection, items: AssetEntity[] | AlbumEntity[], done: boolean): Promise<void> {
     try {
       const schema = schemaMap[collection];
-      // null values are invalid for typesense documents
-      const _items = items.map((item) => removeNil(item));
+      const _items = items.map((item) => {
+        if (collection === SearchCollection.ASSETS) {
+          item = this.patchAsset(item as AssetEntity);
+        }
+        // null values are invalid for typesense documents
+        return removeNil(item);
+      });
       if (_items.length > 0) {
         await this.client
           .collections(schema.name)
@@ -295,5 +308,15 @@ export class TypesenseRepository implements ISearchRepository {
       this.logger.log(`Deleting old schema: ${alias.collection_name}`);
       await this.client.collections(alias.collection_name).delete();
     }
+  }
+
+  private patchAsset(asset: AssetEntity): GeoAssetEntity {
+    const lat = asset.exifInfo?.latitude;
+    const lng = asset.exifInfo?.longitude;
+    if (lat && lng && lat !== 0 && lng !== 0) {
+      return { ...asset, geo: [lat, lng] };
+    }
+
+    return asset;
   }
 }

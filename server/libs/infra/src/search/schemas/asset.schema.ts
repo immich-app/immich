@@ -14,7 +14,7 @@ export const assetSchema: CollectionCreateSchema = {
     { name: 'fileModifiedAt', type: 'string', facet: false, sort: true },
     { name: 'isFavorite', type: 'bool', facet: true },
     // { name: 'checksum', type: 'string', facet: true },
-    { name: 'tags', type: 'string[]', facet: true, optional: true },
+    // { name: 'tags', type: 'string[]', facet: true, optional: true },
 
     // exif
     { name: 'exifInfo.city', type: 'string', facet: true, optional: true },
@@ -22,8 +22,7 @@ export const assetSchema: CollectionCreateSchema = {
     { name: 'exifInfo.state', type: 'string', facet: true, optional: true },
     { name: 'exifInfo.description', type: 'string', facet: false, optional: true },
     { name: 'exifInfo.imageName', type: 'string', facet: false, optional: true },
-    { name: 'exifInfo.latitude', type: 'float', facet: false, optional: true },
-    { name: 'exifInfo.longitude', type: 'float', facet: false, optional: true },
+    { name: 'geo', type: 'geopoint', facet: false, optional: true },
     { name: 'exifInfo.make', type: 'string', facet: true, optional: true },
     { name: 'exifInfo.model', type: 'string', facet: true, optional: true },
     { name: 'exifInfo.orientation', type: 'string', optional: true },
