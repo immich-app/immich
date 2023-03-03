@@ -12,75 +12,81 @@ import 'package:mockito/mockito.dart';
 ])
 import 'favorite_provider_test.mocks.dart';
 
-Asset _getTestAsset(String id, bool favorite) {
-  return Asset(
-    remoteId: id,
-    deviceAssetId: '',
-    deviceId: '',
-    ownerId: '',
+Asset _getTestAsset(int id, bool favorite) {
+  final Asset a = Asset(
+    remoteId: id.toString(),
+    localId: id.toString(),
+    deviceId: 1,
+    ownerId: 1,
     fileCreatedAt: DateTime.now(),
     fileModifiedAt: DateTime.now(),
+    updatedAt: DateTime.now(),
+    isLocal: false,
     durationInSeconds: 0,
     fileName: '',
     isFavorite: favorite,
   );
+  a.id = id;
+  return a;
 }
 
 void main() {
   group("Test favoriteProvider", () {
-
     late MockAssetsState assetsState;
     late MockAssetNotifier assetNotifier;
     late ProviderContainer container;
-    late StateNotifierProvider<FavoriteSelectionNotifier, Set<String>> testFavoritesProvider;
+    late StateNotifierProvider<FavoriteSelectionNotifier, Set<int>>
+        testFavoritesProvider;
 
-    setUp(() {
-      assetsState = MockAssetsState();
-      assetNotifier = MockAssetNotifier();
-      container = ProviderContainer();
+    setUp(
+      () {
+        assetsState = MockAssetsState();
+        assetNotifier = MockAssetNotifier();
+        container = ProviderContainer();
 
-      testFavoritesProvider =
-          StateNotifierProvider<FavoriteSelectionNotifier, Set<String>>((ref) {
-            return FavoriteSelectionNotifier(
-              assetsState,
-              assetNotifier,
-            );
-          });
-    },);
+        testFavoritesProvider =
+            StateNotifierProvider<FavoriteSelectionNotifier, Set<int>>((ref) {
+          return FavoriteSelectionNotifier(
+            assetsState,
+            assetNotifier,
+          );
+        });
+      },
+    );
 
     test("Empty favorites provider", () {
       when(assetsState.allAssets).thenReturn([]);
-      expect(<String>{}, container.read(testFavoritesProvider));
+      expect(<int>{}, container.read(testFavoritesProvider));
     });
 
     test("Non-empty favorites provider", () {
       when(assetsState.allAssets).thenReturn([
-        _getTestAsset("001", false),
-        _getTestAsset("002", true),
-        _getTestAsset("003", false),
-        _getTestAsset("004", false),
-        _getTestAsset("005", true),
+        _getTestAsset(1, false),
+        _getTestAsset(2, true),
+        _getTestAsset(3, false),
+        _getTestAsset(4, false),
+        _getTestAsset(5, true),
       ]);
 
-      expect(<String>{"002", "005"}, container.read(testFavoritesProvider));
+      expect(<int>{2, 5}, container.read(testFavoritesProvider));
     });
 
     test("Toggle favorite", () {
       when(assetNotifier.toggleFavorite(null, false))
           .thenAnswer((_) async => false);
 
-      final testAsset1 = _getTestAsset("001", false);
-      final testAsset2 = _getTestAsset("002", true);
+      final testAsset1 = _getTestAsset(1, false);
+      final testAsset2 = _getTestAsset(2, true);
 
       when(assetsState.allAssets).thenReturn([testAsset1, testAsset2]);
 
-      expect(<String>{"002"}, container.read(testFavoritesProvider));
+      expect(<int>{2}, container.read(testFavoritesProvider));
 
       container.read(testFavoritesProvider.notifier).toggleFavorite(testAsset2);
-      expect(<String>{}, container.read(testFavoritesProvider));
+      expect(<int>{}, container.read(testFavoritesProvider));
 
       container.read(testFavoritesProvider.notifier).toggleFavorite(testAsset1);
-      expect(<String>{"001"}, container.read(testFavoritesProvider));
+      expect(<int>{1}, container.read(testFavoritesProvider));
     });
 
     test("Add favorites", () {
@@ -89,16 +95,16 @@ void main() {
 
       when(assetsState.allAssets).thenReturn([]);
 
-      expect(<String>{}, container.read(testFavoritesProvider));
+      expect(<int>{}, container.read(testFavoritesProvider));
 
       container.read(testFavoritesProvider.notifier).addToFavorites(
         [
-          _getTestAsset("001", false),
-          _getTestAsset("002", false),
+          _getTestAsset(1, false),
+          _getTestAsset(2, false),
         ],
       );
 
-      expect(<String>{"001", "002"}, container.read(testFavoritesProvider));
+      expect(<int>{1, 2}, container.read(testFavoritesProvider));
     });
   });
 }

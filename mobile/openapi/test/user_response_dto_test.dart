@@ -61,6 +61,11 @@ void main() {
       // TODO
     });
 
+    // String updatedAt
+    test('to test the property `updatedAt`', () async {
+      // TODO
+    });
+
     // String oauthId
     test('to test the property `oauthId`', () async {
       // TODO

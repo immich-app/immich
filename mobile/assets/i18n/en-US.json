@@ -142,6 +142,7 @@
   "library_page_sharing": "Sharing",
   "library_page_sort_created": "Most recently created",
   "library_page_sort_title": "Album title",
+  "library_page_device_albums": "Albums on Device",
   "login_form_button_text": "Login",
   "login_form_email_hint": "youremail@email.com",
   "login_form_endpoint_hint": "http://your-server-ip:port/api",

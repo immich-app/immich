@@ -31,20 +31,20 @@ String getAlbumThumbnailUrl(
   final Album album, {
   ThumbnailFormat type = ThumbnailFormat.WEBP,
 }) {
-  if (album.albumThumbnailAssetId == null) {
+  if (album.thumbnail.value?.remoteId == null) {
     return '';
   }
-  return _getThumbnailUrl(album.albumThumbnailAssetId!, type: type);
+  return _getThumbnailUrl(album.thumbnail.value!.remoteId!, type: type);
 }
 
 String getAlbumThumbNailCacheKey(
   final Album album, {
   ThumbnailFormat type = ThumbnailFormat.WEBP,
 }) {
-  if (album.albumThumbnailAssetId == null) {
+  if (album.thumbnail.value?.remoteId == null) {
     return '';
   }
-  return _getThumbnailCacheKey(album.albumThumbnailAssetId!, type);
+  return _getThumbnailCacheKey(album.thumbnail.value!.remoteId!, type);
 }
 
 String getImageUrl(final Asset asset) {

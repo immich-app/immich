@@ -23,7 +23,7 @@ class ImmichAssetGridState extends State<ImmichAssetGrid> {
       ItemPositionsListener.create();
 
   bool _scrolling = false;
-  final Set<String> _selectedAssets = HashSet();
+  final Set<int> _selectedAssets = HashSet();
 
   Set<Asset> _getSelectedAssets() {
     return _selectedAssets

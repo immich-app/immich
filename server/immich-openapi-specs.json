@@ -3583,6 +3583,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "updatedAt": {
+            "type": "string"
+          },
           "oauthId": {
             "type": "string"
           }

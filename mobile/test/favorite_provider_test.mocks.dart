@@ -187,7 +187,7 @@ class MockAssetNotifier extends _i1.Mock implements _i2.AssetNotifier {
         returnValueForMissingStub: _i5.Future<void>.value(),
       ) as _i5.Future<void>);
   @override
-  void onNewAssetUploaded(_i4.Asset? newAsset) => super.noSuchMethod(
+  Future<void> onNewAssetUploaded(_i4.Asset? newAsset) => super.noSuchMethod(
         Invocation.method(
           #onNewAssetUploaded,
           [newAsset],
@@ -195,7 +195,7 @@ class MockAssetNotifier extends _i1.Mock implements _i2.AssetNotifier {
         returnValueForMissingStub: null,
       );
   @override
-  dynamic deleteAssets(Set<_i4.Asset>? deleteAssets) => super.noSuchMethod(
+  Future<void> deleteAssets(Set<_i4.Asset> deleteAssets) => super.noSuchMethod(
         Invocation.method(
           #deleteAssets,
           [deleteAssets],

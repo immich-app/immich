@@ -5,7 +5,11 @@ extension DurationExtension on String {
     return Duration(hours: parts[0], minutes: parts[1], seconds: parts[2]);
   }
 
-  double? toDouble() {
-    return double.tryParse(this);
+  double toDouble() {
+    return double.parse(this);
+  }
+
+  int toInt() {
+    return int.parse(this);
   }
 }

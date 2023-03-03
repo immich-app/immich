@@ -75,15 +75,11 @@ class GalleryViewerPage extends HookConsumerWidget {
       ref.watch(favoriteProvider.notifier).toggleFavorite(asset);
     }
 
-    getAssetExif() async {
-      if (assetList[indexOfAsset.value].isRemote) {
-        assetDetail = await ref
-            .watch(assetServiceProvider)
-            .getAssetById(assetList[indexOfAsset.value].id);
-      } else {
-        // TODO local exif parsing?
-        assetDetail = assetList[indexOfAsset.value];
-      }
+    void getAssetExif() async {
+      assetDetail = assetList[indexOfAsset.value];
+      assetDetail = await ref
+          .watch(assetServiceProvider)
+          .loadExif(assetList[indexOfAsset.value]);
     }
 
     /// Thumbnail image of a remote asset. Required asset.isRemote

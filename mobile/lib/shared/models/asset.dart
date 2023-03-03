@@ -1,60 +1,65 @@
-import 'package:hive/hive.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
+import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/utils/hash.dart';
+import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:immich_mobile/utils/builtin_extensions.dart';
 import 'package:path/path.dart' as p;
 
+part 'asset.g.dart';
+
 /// Asset (online or local)
+@Collection(inheritance: false)
 class Asset {
   Asset.remote(AssetResponseDto remote)
       : remoteId = remote.id,
-        fileCreatedAt = DateTime.parse(remote.fileCreatedAt),
-        fileModifiedAt = DateTime.parse(remote.fileModifiedAt),
+        isLocal = false,
+        fileCreatedAt = DateTime.parse(remote.fileCreatedAt).toUtc(),
+        fileModifiedAt = DateTime.parse(remote.fileModifiedAt).toUtc(),
+        updatedAt = DateTime.parse(remote.updatedAt).toUtc(),
         durationInSeconds = remote.duration.toDuration().inSeconds,
         fileName = p.basename(remote.originalPath),
         height = remote.exifInfo?.exifImageHeight?.toInt(),
         width = remote.exifInfo?.exifImageWidth?.toInt(),
         livePhotoVideoId = remote.livePhotoVideoId,
-        deviceAssetId = remote.deviceAssetId,
-        deviceId = remote.deviceId,
-        ownerId = remote.ownerId,
-        latitude = remote.exifInfo?.latitude?.toDouble(),
-        longitude = remote.exifInfo?.longitude?.toDouble(),
+        localId = remote.deviceAssetId,
+        deviceId = fastHash(remote.deviceId),
+        ownerId = fastHash(remote.ownerId),
         exifInfo =
             remote.exifInfo != null ? ExifInfo.fromDto(remote.exifInfo!) : null,
         isFavorite = remote.isFavorite;
 
-  Asset.local(AssetEntity local, String owner)
+  Asset.local(AssetEntity local)
       : localId = local.id,
-        latitude = local.latitude,
-        longitude = local.longitude,
+        isLocal = true,
         durationInSeconds = local.duration,
         height = local.height,
         width = local.width,
         fileName = local.title!,
-        deviceAssetId = local.id,
-        deviceId = Hive.box(userInfoBox).get(deviceIdKey),
-        ownerId = owner,
+        deviceId = Store.get(StoreKey.deviceIdHash),
+        ownerId = Store.get<User>(StoreKey.currentUser)!.isarId,
         fileModifiedAt = local.modifiedDateTime.toUtc(),
+        updatedAt = local.modifiedDateTime.toUtc(),
         isFavorite = local.isFavorite,
         fileCreatedAt = local.createDateTime.toUtc() {
     if (fileCreatedAt.year == 1970) {
       fileCreatedAt = fileModifiedAt;
     }
+    if (local.latitude != null) {
+      exifInfo = ExifInfo(lat: local.latitude, long: local.longitude);
+    }
   }
 
   Asset({
-    this.localId,
     this.remoteId,
-    required this.deviceAssetId,
+    required this.localId,
     required this.deviceId,
     required this.ownerId,
     required this.fileCreatedAt,
     required this.fileModifiedAt,
-    this.latitude,
-    this.longitude,
+    required this.updatedAt,
     required this.durationInSeconds,
     this.width,
     this.height,
@@ -62,21 +67,22 @@ class Asset {
     this.livePhotoVideoId,
     this.exifInfo,
     required this.isFavorite,
+    required this.isLocal,
   });
 
+  @ignore
   AssetEntity? _local;
 
+  @ignore
   AssetEntity? get local {
     if (isLocal && _local == null) {
       _local = AssetEntity(
-        id: localId!.toString(),
+        id: localId.toString(),
         typeInt: isImage ? 1 : 2,
         width: width!,
         height: height!,
         duration: durationInSeconds,
         createDateSecond: fileCreatedAt.millisecondsSinceEpoch ~/ 1000,
-        latitude: latitude,
-        longitude: longitude,
         modifiedDateSecond: fileModifiedAt.millisecondsSinceEpoch ~/ 1000,
         title: fileName,
       );
@@ -84,110 +90,136 @@ class Asset {
     return _local;
   }
 
-  String? localId;
+  Id id = Isar.autoIncrement;
 
+  @Index(unique: false, replace: false, type: IndexType.hash)
   String? remoteId;
 
-  String deviceAssetId;
+  @Index(
+    unique: true,
+    replace: false,
+    type: IndexType.hash,
+    composite: [CompositeIndex('deviceId')],
+  )
+  String localId;
 
-  String deviceId;
+  int deviceId;
 
-  String ownerId;
+  int ownerId;
 
   DateTime fileCreatedAt;
 
   DateTime fileModifiedAt;
 
-  double? latitude;
-
-  double? longitude;
+  DateTime updatedAt;
 
   int durationInSeconds;
 
-  int? width;
+  short? width;
 
-  int? height;
+  short? height;
 
   String fileName;
 
   String? livePhotoVideoId;
 
-  ExifInfo? exifInfo;
-
   bool isFavorite;
 
-  String get id => isLocal ? localId.toString() : remoteId!;
+  bool isLocal;
 
+  @ignore
+  ExifInfo? exifInfo;
+
+  @ignore
+  bool get isInDb => id != Isar.autoIncrement;
+
+  @ignore
   String get name => p.withoutExtension(fileName);
 
+  @ignore
   bool get isRemote => remoteId != null;
 
-  bool get isLocal => localId != null;
-
+  @ignore
   bool get isImage => durationInSeconds == 0;
 
+  @ignore
   Duration get duration => Duration(seconds: durationInSeconds);
 
   @override
   bool operator ==(other) {
     if (other is! Asset) return false;
-    return id == other.id && isLocal == other.isLocal;
+    return id == other.id;
   }
 
   @override
+  @ignore
   int get hashCode => id.hashCode;
 
-  // methods below are only required for caching as JSON
-
-  Map<String, dynamic> toJson() {
-    final json = <String, dynamic>{};
-    json["localId"] = localId;
-    json["remoteId"] = remoteId;
-    json["deviceAssetId"] = deviceAssetId;
-    json["deviceId"] = deviceId;
-    json["ownerId"] = ownerId;
-    json["fileCreatedAt"] = fileCreatedAt.millisecondsSinceEpoch;
-    json["fileModifiedAt"] = fileModifiedAt.millisecondsSinceEpoch;
-    json["latitude"] = latitude;
-    json["longitude"] = longitude;
-    json["durationInSeconds"] = durationInSeconds;
-    json["width"] = width;
-    json["height"] = height;
-    json["fileName"] = fileName;
-    json["livePhotoVideoId"] = livePhotoVideoId;
-    json["isFavorite"] = isFavorite;
-    if (exifInfo != null) {
-      json["exifInfo"] = exifInfo!.toJson();
+  bool updateFromAssetEntity(AssetEntity ae) {
+    // TODO check more fields;
+    // width and height are most important because local assets require these
+    final bool hasChanges =
+        isLocal == false || width != ae.width || height != ae.height;
+    if (hasChanges) {
+      isLocal = true;
+      width = ae.width;
+      height = ae.height;
     }
-    return json;
+    return hasChanges;
   }
 
-  static Asset? fromJson(dynamic value) {
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-      return Asset(
-        localId: json["localId"],
-        remoteId: json["remoteId"],
-        deviceAssetId: json["deviceAssetId"],
-        deviceId: json["deviceId"],
-        ownerId: json["ownerId"],
-        fileCreatedAt:
-            DateTime.fromMillisecondsSinceEpoch(json["fileCreatedAt"], isUtc: true),
-        fileModifiedAt: DateTime.fromMillisecondsSinceEpoch(
-          json["fileModifiedAt"],
-          isUtc: true,
-        ),
-        latitude: json["latitude"],
-        longitude: json["longitude"],
-        durationInSeconds: json["durationInSeconds"],
-        width: json["width"],
-        height: json["height"],
-        fileName: json["fileName"],
-        livePhotoVideoId: json["livePhotoVideoId"],
-        exifInfo: ExifInfo.fromJson(json["exifInfo"]),
-        isFavorite: json["isFavorite"],
-      );
+  Asset withUpdatesFromDto(AssetResponseDto dto) =>
+      Asset.remote(dto).updateFromDb(this);
+
+  Asset updateFromDb(Asset a) {
+    assert(localId == a.localId);
+    assert(deviceId == a.deviceId);
+    id = a.id;
+    isLocal |= a.isLocal;
+    remoteId ??= a.remoteId;
+    width ??= a.width;
+    height ??= a.height;
+    exifInfo ??= a.exifInfo;
+    exifInfo?.id = id;
+    return this;
+  }
+
+  Future<void> put(Isar db) async {
+    await db.assets.put(this);
+    if (exifInfo != null) {
+      exifInfo!.id = id;
+      await db.exifInfos.put(exifInfo!);
     }
-    return null;
+  }
+
+  static int compareByDeviceIdLocalId(Asset a, Asset b) {
+    final int order = a.deviceId.compareTo(b.deviceId);
+    return order == 0 ? a.localId.compareTo(b.localId) : order;
+  }
+
+  static int compareById(Asset a, Asset b) => a.id.compareTo(b.id);
+
+  static int compareByLocalId(Asset a, Asset b) =>
+      a.localId.compareTo(b.localId);
+}
+
+extension AssetsHelper on IsarCollection<Asset> {
+  Future<int> deleteAllByRemoteId(Iterable<String> ids) =>
+      ids.isEmpty ? Future.value(0) : _remote(ids).deleteAll();
+  Future<int> deleteAllByLocalId(Iterable<String> ids) =>
+      ids.isEmpty ? Future.value(0) : _local(ids).deleteAll();
+  Future<List<Asset>> getAllByRemoteId(Iterable<String> ids) =>
+      ids.isEmpty ? Future.value([]) : _remote(ids).findAll();
+  Future<List<Asset>> getAllByLocalId(Iterable<String> ids) =>
+      ids.isEmpty ? Future.value([]) : _local(ids).findAll();
+
+  QueryBuilder<Asset, Asset, QAfterWhereClause> _remote(Iterable<String> ids) =>
+      where().anyOf(ids, (q, String e) => q.remoteIdEqualTo(e));
+  QueryBuilder<Asset, Asset, QAfterWhereClause> _local(Iterable<String> ids) {
+    return where().anyOf(
+      ids,
+      (q, String e) =>
+          q.localIdDeviceIdEqualTo(e, Store.get(StoreKey.deviceIdHash)),
+    );
   }
 }

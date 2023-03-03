@@ -698,7 +698,7 @@ class SelectUserForSharingRoute extends PageRouteInfo<void> {
 class AlbumViewerRoute extends PageRouteInfo<AlbumViewerRouteArgs> {
   AlbumViewerRoute({
     Key? key,
-    required String albumId,
+    required int albumId,
   }) : super(
           AlbumViewerRoute.name,
           path: '/album-viewer-page',
@@ -719,7 +719,7 @@ class AlbumViewerRouteArgs {
 
   final Key? key;
 
-  final String albumId;
+  final int albumId;
 
   @override
   String toString() {
