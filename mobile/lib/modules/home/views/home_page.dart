@@ -38,7 +38,7 @@ class HomePage extends HookConsumerWidget {
     final selectionEnabledHook = useState(false);
 
     final selection = useState(<Asset>{});
-    final albums = ref.watch(albumProvider);
+    final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
     final sharedAlbums = ref.watch(sharedAlbumProvider);
     final albumService = ref.watch(albumServiceProvider);
 

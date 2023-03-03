@@ -13,14 +13,16 @@ void main() {
 
     testAssets.add(
       Asset(
-        deviceAssetId: '$i',
-        deviceId: '',
-        ownerId: '',
+        localId: '$i',
+        deviceId: 1,
+        ownerId: 1,
         fileCreatedAt: date,
         fileModifiedAt: date,
+        updatedAt: date,
         durationInSeconds: 0,
         fileName: '',
         isFavorite: false,
+        isLocal: false,
       ),
     );
   }

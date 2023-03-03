@@ -14,13 +14,16 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Job } from 'bull';
 import { ExifDateTime, exiftool, Tags } from 'exiftool-vendored';
-import ffmpeg from 'fluent-ffmpeg';
+import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { getName } from 'i18n-iso-countries';
 import geocoder, { InitOptions } from 'local-reverse-geocoder';
 import fs from 'node:fs';
 import path from 'path';
 import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
+import { promisify } from 'util';
+
+const ffprobe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 
 interface ImmichTags extends Tags {
   ContentIdentifier?: string;
@@ -255,18 +258,9 @@ export class MetadataExtractionProcessor {
     }
 
     try {
-      const data = await new Promise<ffmpeg.FfprobeData>((resolve, reject) =>
-        ffmpeg.ffprobe(asset.originalPath, (err, data) => {
-          if (err) return reject(err);
-          return resolve(data);
-        }),
-      );
-      let durationString = asset.duration;
+      const data = await ffprobe(asset.originalPath);
+      const durationString = this.extractDuration(data.format.duration || asset.duration);
       let fileCreatedAt = asset.fileCreatedAt;
-
-      if (data.format.duration) {
-        durationString = this.extractDuration(data.format.duration);
-      }
 
       const videoTags = data.format.tags;
       if (videoTags) {
@@ -365,8 +359,11 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  private extractDuration(duration: number) {
-    const videoDurationInSecond = parseInt(duration.toString(), 0);
+  private extractDuration(duration: number | string | null) {
+    const videoDurationInSecond = Number(duration);
+    if (!videoDurationInSecond) {
+      return null;
+    }
 
     const hours = Math.floor(videoDurationInSecond / 3600);
     const minutes = Math.floor((videoDurationInSecond - hours * 3600) / 60);

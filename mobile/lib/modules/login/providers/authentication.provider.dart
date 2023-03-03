@@ -3,15 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/modules/album/services/album_cache.service.dart';
 import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/shared/services/asset_cache.service.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/services/device_info.service.dart';
+import 'package:immich_mobile/utils/hash.dart';
 import 'package:openapi/api.dart';
 
 class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
@@ -19,9 +19,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     this._deviceInfoService,
     this._backupService,
     this._apiService,
-    this._assetCacheService,
-    this._albumCacheService,
-    this._sharedAlbumCacheService,
   ) : super(
           AuthenticationState(
             deviceId: "",
@@ -48,9 +45,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   final DeviceInfoService _deviceInfoService;
   final BackupService _backupService;
   final ApiService _apiService;
-  final AssetCacheService _assetCacheService;
-  final AlbumCacheService _albumCacheService;
-  final SharedAlbumCacheService _sharedAlbumCacheService;
 
   Future<bool> login(
     String email,
@@ -98,9 +92,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         Hive.box(userInfoBox).delete(accessTokenKey),
         Store.delete(StoreKey.assetETag),
         Store.delete(StoreKey.userRemoteId),
-        _assetCacheService.invalidate(),
-        _albumCacheService.invalidate(),
-        _sharedAlbumCacheService.invalidate(),
+        Store.delete(StoreKey.currentUser),
         Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).delete(savedLoginInfoKey)
       ]);
 
@@ -160,7 +152,10 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       var deviceInfo = await _deviceInfoService.getDeviceInfo();
       userInfoHiveBox.put(deviceIdKey, deviceInfo["deviceId"]);
       userInfoHiveBox.put(accessTokenKey, accessToken);
+      Store.put(StoreKey.deviceId, deviceInfo["deviceId"]);
+      Store.put(StoreKey.deviceIdHash, fastHash(deviceInfo["deviceId"]));
       Store.put(StoreKey.userRemoteId, userResponseDto.id);
+      Store.put(StoreKey.currentUser, User.fromDto(userResponseDto));
 
       state = state.copyWith(
         isAuthenticated: true,
@@ -218,8 +213,5 @@ final authenticationProvider =
     ref.watch(deviceInfoServiceProvider),
     ref.watch(backupServiceProvider),
     ref.watch(apiServiceProvider),
-    ref.watch(assetCacheServiceProvider),
-    ref.watch(albumCacheServiceProvider),
-    ref.watch(sharedAlbumCacheServiceProvider),
   );
 });

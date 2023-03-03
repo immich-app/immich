@@ -75,15 +75,11 @@ class GalleryViewerPage extends HookConsumerWidget {
       ref.watch(favoriteProvider.notifier).toggleFavorite(asset);
     }
 
-    getAssetExif() async {
-      if (assetList[indexOfAsset.value].isRemote) {
-        assetDetail = await ref
-            .watch(assetServiceProvider)
-            .getAssetById(assetList[indexOfAsset.value].id);
-      } else {
-        // TODO local exif parsing?
-        assetDetail = assetList[indexOfAsset.value];
-      }
+    void getAssetExif() async {
+      assetDetail = assetList[indexOfAsset.value];
+      assetDetail = await ref
+          .watch(assetServiceProvider)
+          .loadExif(assetList[indexOfAsset.value]);
     }
 
     /// Thumbnail image of a remote asset. Required asset.isRemote
@@ -127,7 +123,10 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     /// Original (large) image of a local asset. Required asset.isLocal
     ImageProvider localImageProvider(Asset asset) {
-      return AssetEntityImageProvider(asset.local!);
+      return AssetEntityImageProvider(
+        isOriginal: true,
+        asset.local!,
+      );
     }
 
     void precacheNextImage(int index) {
@@ -389,8 +388,11 @@ class GalleryViewerPage extends HookConsumerWidget {
                   onTapDown: (_, __, ___) =>
                       showAppBar.value = !showAppBar.value,
                   imageProvider: provider,
-                  heroAttributes:
-                      PhotoViewHeroAttributes(tag: assetList[index].id),
+                  heroAttributes: PhotoViewHeroAttributes(
+                    tag: assetList[index].id,
+                  ),
+                  filterQuality: FilterQuality.high,
+                  tightMode: true,
                   minScale: PhotoViewComputedScale.contained,
                 );
               } else {
@@ -398,8 +400,10 @@ class GalleryViewerPage extends HookConsumerWidget {
                   onDragStart: (_, details, __) =>
                       localPosition = details.localPosition,
                   onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
-                  heroAttributes:
-                      PhotoViewHeroAttributes(tag: assetList[index].id),
+                  heroAttributes: PhotoViewHeroAttributes(
+                    tag: assetList[index].id,
+                  ),
+                  filterQuality: FilterQuality.high,
                   maxScale: 1.0,
                   minScale: 1.0,
                   child: SafeArea(

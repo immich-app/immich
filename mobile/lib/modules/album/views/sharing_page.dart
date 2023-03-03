@@ -1,23 +1,19 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/sharing_sliver_appbar.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
-import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/shared/ui/immich_image.dart';
 
 class SharingPage extends HookConsumerWidget {
   const SharingPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var box = Hive.box(userInfoBox);
     final List<Album> sharedAlbums = ref.watch(sharedAlbumProvider);
 
     useEffect(
@@ -39,16 +35,10 @@ class SharingPage extends HookConsumerWidget {
                   const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
               leading: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: CachedNetworkImage(
+                child: ImmichImage(
+                  album.thumbnail.value,
                   width: 60,
                   height: 60,
-                  fit: BoxFit.cover,
-                  imageUrl: getAlbumThumbnailUrl(album),
-                  cacheKey: getAlbumThumbNailCacheKey(album),
-                  httpHeaders: {
-                    "Authorization": "Bearer ${box.get(accessTokenKey)}"
-                  },
-                  fadeInDuration: const Duration(milliseconds: 200),
                 ),
               ),
               title: Text(

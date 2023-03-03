@@ -14,10 +14,14 @@ class ExifBottomSheet extends HookConsumerWidget {
   const ExifBottomSheet({Key? key, required this.assetDetail})
       : super(key: key);
 
-  bool get showMap => assetDetail.latitude != null && assetDetail.longitude != null;
+  bool get showMap =>
+      assetDetail.exifInfo?.latitude != null &&
+      assetDetail.exifInfo?.longitude != null;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final ExifInfo? exifInfo = assetDetail.exifInfo;
+
     buildMap() {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -33,8 +37,8 @@ class ExifBottomSheet extends HookConsumerWidget {
                 options: MapOptions(
                   interactiveFlags: InteractiveFlag.none,
                   center: LatLng(
-                    assetDetail.latitude ?? 0,
-                    assetDetail.longitude ?? 0,
+                    exifInfo?.latitude ?? 0,
+                    exifInfo?.longitude ?? 0,
                   ),
                   zoom: 16.0,
                 ),
@@ -55,8 +59,8 @@ class ExifBottomSheet extends HookConsumerWidget {
                       Marker(
                         anchorPos: AnchorPos.align(AnchorAlign.top),
                         point: LatLng(
-                          assetDetail.latitude ?? 0,
-                          assetDetail.longitude ?? 0,
+                          exifInfo?.latitude ?? 0,
+                          exifInfo?.longitude ?? 0,
                         ),
                         builder: (ctx) => const Image(
                           image: AssetImage('assets/location-pin.png'),
@@ -73,8 +77,6 @@ class ExifBottomSheet extends HookConsumerWidget {
     }
 
     final textColor = Theme.of(context).primaryColor;
-
-    ExifInfo? exifInfo = assetDetail.exifInfo;
 
     buildLocationText() {
       return Text(
@@ -134,7 +136,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                   exifInfo.state != null)
                 buildLocationText(),
               Text(
-                "${assetDetail.latitude!.toStringAsFixed(4)}, ${assetDetail.longitude!.toStringAsFixed(4)}",
+                "${exifInfo!.latitude!.toStringAsFixed(4)}, ${exifInfo.longitude!.toStringAsFixed(4)}",
                 style: const TextStyle(fontSize: 12),
               )
             ],

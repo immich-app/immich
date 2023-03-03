@@ -227,7 +227,7 @@
   "version_announcement_overlay_ack": "Подтверждение",
   "version_announcement_overlay_release_notes": "примечания к выпуску",
   "version_announcement_overlay_text_1": "Привет друг, вышел новый релиз",
-  "version_announcement_overlay_text_2": "пожалуйста, найдите время, чтобы посетить",
+  "version_announcement_overlay_text_2": "пожалуйста, найдите время, чтобы посетить ",
   "version_announcement_overlay_text_3": " и убедитесь, что ваши настройки docker-compose и .env обновлены, чтобы предотвратить любые неправильные настройки, особенно если вы используете WatchTower или любой другой механизм, который обрабатывает обновление вашего серверного приложения автоматически.",
   "version_announcement_overlay_title": "Доступна новая версия сервера \uD83C\uDF89"
 }

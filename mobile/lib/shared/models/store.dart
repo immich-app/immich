@@ -1,3 +1,4 @@
+import 'package:immich_mobile/shared/models/user.dart';
 import 'package:isar/isar.dart';
 import 'dart:convert';
 
@@ -25,26 +26,28 @@ class Store {
 
   /// Returns the stored value for the given key, or the default value if null
   static T? get<T>(StoreKey key, [T? defaultValue]) =>
-      _cache[key._id] ?? defaultValue;
+      _cache[key.id] ?? defaultValue;
 
   /// Stores the value synchronously in the cache and asynchronously in the DB
   static Future<void> put<T>(StoreKey key, T value) {
-    _cache[key._id] = value;
-    return _db.writeTxn(() => _db.storeValues.put(StoreValue._of(value, key)));
+    _cache[key.id] = value;
+    return _db.writeTxn(
+      () async => _db.storeValues.put(await StoreValue._of(value, key)),
+    );
   }
 
   /// Removes the value synchronously from the cache and asynchronously from the DB
   static Future<void> delete(StoreKey key) {
-    _cache[key._id] = null;
-    return _db.writeTxn(() => _db.storeValues.delete(key._id));
+    _cache[key.id] = null;
+    return _db.writeTxn(() => _db.storeValues.delete(key.id));
   }
 
   /// Fills the cache with the values from the DB
   static _populateCache() {
     for (StoreKey key in StoreKey.values) {
-      final StoreValue? value = _db.storeValues.getSync(key._id);
+      final StoreValue? value = _db.storeValues.getSync(key.id);
       if (value != null) {
-        _cache[key._id] = value._extract(key);
+        _cache[key.id] = value._extract(key);
       }
     }
   }
@@ -67,17 +70,22 @@ class StoreValue {
   int? intValue;
   String? strValue;
 
-  T? _extract<T>(StoreKey key) => key._isInt
-      ? intValue
-      : (key._fromJson != null
-          ? key._fromJson!(json.decode(strValue!))
+  T? _extract<T>(StoreKey key) => key.isInt
+      ? (key.fromDb == null ? intValue : key.fromDb!.call(Store._db, intValue!))
+      : (key.fromJson != null
+          ? key.fromJson!(json.decode(strValue!))
           : strValue);
-  static StoreValue _of(dynamic value, StoreKey key) => StoreValue(
-        key._id,
-        intValue: key._isInt ? value : null,
-        strValue: key._isInt
+  static Future<StoreValue> _of(dynamic value, StoreKey key) async =>
+      StoreValue(
+        key.id,
+        intValue: key.isInt
+            ? (key.toDb == null
+                ? value
+                : await key.toDb!.call(Store._db, value))
+            : null,
+        strValue: key.isInt
             ? null
-            : (key._fromJson == null ? value : json.encode(value.toJson())),
+            : (key.fromJson == null ? value : json.encode(value.toJson())),
       );
 }
 
@@ -86,11 +94,28 @@ class StoreValue {
 enum StoreKey {
   userRemoteId(0),
   assetETag(1),
+  currentUser(2, isInt: true, fromDb: _getUser, toDb: _toUser),
+  deviceIdHash(3, isInt: true),
+  deviceId(4),
   ;
 
-  // ignore: unused_element
-  const StoreKey(this._id, [this._isInt = false, this._fromJson]);
-  final int _id;
-  final bool _isInt;
-  final Function(dynamic)? _fromJson;
+  const StoreKey(
+    this.id, {
+    this.isInt = false,
+    this.fromDb,
+    this.toDb,
+    // ignore: unused_element
+    this.fromJson,
+  });
+  final int id;
+  final bool isInt;
+  final dynamic Function(Isar, int)? fromDb;
+  final Future<int> Function(Isar, dynamic)? toDb;
+  final Function(dynamic)? fromJson;
+}
+
+User? _getUser(Isar db, int i) => db.users.getSync(i);
+Future<int> _toUser(Isar db, dynamic u) {
+  User user = (u as User);
+  return db.users.put(user);
 }

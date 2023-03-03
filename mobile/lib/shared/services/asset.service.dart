@@ -1,99 +1,82 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
-import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
-import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
+import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:immich_mobile/shared/services/sync.service.dart';
 import 'package:immich_mobile/utils/openapi_extensions.dart';
 import 'package:immich_mobile/utils/tuple.dart';
+import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 final assetServiceProvider = Provider(
   (ref) => AssetService(
     ref.watch(apiServiceProvider),
-    ref.watch(backupServiceProvider),
-    ref.watch(backgroundServiceProvider),
+    ref.watch(syncServiceProvider),
+    ref.watch(dbProvider),
   ),
 );
 
 class AssetService {
   final ApiService _apiService;
-  final BackupService _backupService;
-  final BackgroundService _backgroundService;
+  final SyncService _syncService;
   final log = Logger('AssetService');
+  final Isar _db;
 
-  AssetService(this._apiService, this._backupService, this._backgroundService);
+  AssetService(
+    this._apiService,
+    this._syncService,
+    this._db,
+  );
+
+  /// Checks the server for updated assets and updates the local database if
+  /// required. Returns `true` if there were any changes.
+  Future<bool> refreshRemoteAssets() async {
+    final Stopwatch sw = Stopwatch()..start();
+    final int numOwnedRemoteAssets = await _db.assets
+        .where()
+        .remoteIdIsNotNull()
+        .filter()
+        .ownerIdEqualTo(Store.get<User>(StoreKey.currentUser)!.isarId)
+        .count();
+    final List<AssetResponseDto>? dtos =
+        await _getRemoteAssets(hasCache: numOwnedRemoteAssets > 0);
+    if (dtos == null) {
+      debugPrint("refreshRemoteAssets fast took ${sw.elapsedMilliseconds}ms");
+      return false;
+    }
+    final bool changes = await _syncService
+        .syncRemoteAssetsToDb(dtos.map(Asset.remote).toList());
+    debugPrint("refreshRemoteAssets full took ${sw.elapsedMilliseconds}ms");
+    return changes;
+  }
 
   /// Returns `null` if the server state did not change, else list of assets
-  Future<Pair<List<Asset>?, String?>> getRemoteAssets({String? etag}) async {
+  Future<List<AssetResponseDto>?> _getRemoteAssets({
+    required bool hasCache,
+  }) async {
     try {
-      // temporary fix for race condition that the _apiService
-      // get called before accessToken is set
-      var userInfoHiveBox = await Hive.openBox(userInfoBox);
-      var accessToken = userInfoHiveBox.get(accessTokenKey);
-      _apiService.setAccessToken(accessToken);
-
+      final etag = hasCache ? Store.get(StoreKey.assetETag) : null;
       final Pair<List<AssetResponseDto>, String?>? remote =
           await _apiService.assetApi.getAllAssetsWithETag(eTag: etag);
       if (remote == null) {
-        return Pair(null, etag);
+        return null;
       }
-      return Pair(
-        remote.first.map(Asset.remote).toList(growable: false),
-        remote.second,
-      );
+      if (remote.second != null && remote.second != etag) {
+        Store.put(StoreKey.assetETag, remote.second);
+      }
+      return remote.first;
     } catch (e, stack) {
       log.severe('Error while getting remote assets', e, stack);
-      debugPrint("[ERROR] [getRemoteAssets] $e");
-      return Pair(null, etag);
+      return null;
     }
-  }
-
-  /// if [urgent] is `true`, do not block by waiting on the background service
-  /// to finish running. Returns `null` instead after a timeout.
-  Future<List<Asset>?> getLocalAssets({bool urgent = false}) async {
-    try {
-      final Future<bool> hasAccess = urgent
-          ? _backgroundService.hasAccess
-              .timeout(const Duration(milliseconds: 250))
-          : _backgroundService.hasAccess;
-      if (!await hasAccess) {
-        throw Exception("Error [getAllAsset] failed to gain access");
-      }
-      final box = await Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox);
-      final HiveBackupAlbums? backupAlbumInfo = box.get(backupInfoKey);
-      final String userId = Store.get(StoreKey.userRemoteId);
-      if (backupAlbumInfo != null) {
-        return (await _backupService
-                .buildUploadCandidates(backupAlbumInfo.deepCopy()))
-            .map((e) => Asset.local(e, userId))
-            .toList(growable: false);
-      }
-    } catch (e, stackTrace) {
-      log.severe('Error while getting local assets', e, stackTrace);
-      debugPrint("Error [_getLocalAssets] ${e.toString()}");
-    }
-    return null;
-  }
-
-  Future<Asset?> getAssetById(String assetId) async {
-    try {
-      final dto = await _apiService.assetApi.getAssetById(assetId);
-      if (dto != null) {
-        return Asset.remote(dto);
-      }
-    } catch (e) {
-      debugPrint("Error [getAssetById]  ${e.toString()}");
-    }
-    return null;
   }
 
   Future<List<DeleteAssetResponseDto>?> deleteAssets(
@@ -112,6 +95,28 @@ class AssetService {
       debugPrint("Error getAllAsset  ${e.toString()}");
       return null;
     }
+  }
+
+  /// Loads the exif information from the database. If there is none, loads
+  /// the exif info from the server (remote assets only)
+  Future<Asset> loadExif(Asset a) async {
+    a.exifInfo ??= await _db.exifInfos.get(a.id);
+    if (a.exifInfo?.iso == null) {
+      if (a.isRemote) {
+        final dto = await _apiService.assetApi.getAssetById(a.remoteId!);
+        if (dto != null && dto.exifInfo != null) {
+          a = a.withUpdatesFromDto(dto);
+          if (a.isInDb) {
+            _db.writeTxn(() => a.put(_db));
+          } else {
+            debugPrint("[loadExif] parameter Asset is not from DB!");
+          }
+        }
+      } else {
+        // TODO implement local exif info parsing
+      }
+    }
+    return a;
   }
 
   Future<Asset?> updateAsset(

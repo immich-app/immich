@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
-import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
@@ -32,8 +31,6 @@ class ThumbnailImage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var deviceId = ref.watch(authenticationProvider).deviceId;
-
     Widget buildSelectionIcon(Asset asset) {
       if (isSelected) {
         return Icon(
@@ -70,6 +67,31 @@ class ThumbnailImage extends HookConsumerWidget {
         HapticFeedback.heavyImpact();
       },
       child: Hero(
+        createRectTween: (begin, end) {
+          double? top;
+          // Uses the [BoxFit.contain] algorithm
+          if (asset.width != null && asset.height != null) {
+            final assetAR = asset.width! / asset.height!;
+            final w = MediaQuery.of(context).size.width;
+            final deviceAR = MediaQuery.of(context).size.aspectRatio;
+            if (deviceAR < assetAR) {
+              top = asset.height! * w / asset.width!;
+            } else {
+              top = 0;
+            }
+            // get the height offset
+          }
+
+          return MaterialRectCenterArcTween(
+            begin: Rect.fromLTRB(
+              0,
+              top ?? 0.0,
+              MediaQuery.of(context).size.width,
+              MediaQuery.of(context).size.height,
+            ),
+            end: end,
+          );
+        },
         tag: asset.id,
         child: Stack(
           children: [
@@ -103,7 +125,7 @@ class ThumbnailImage extends HookConsumerWidget {
                 bottom: 5,
                 child: Icon(
                   asset.isRemote
-                      ? (deviceId == asset.deviceId
+                      ? (asset.isLocal
                           ? Icons.cloud_done_outlined
                           : Icons.cloud_outlined)
                       : Icons.cloud_off_outlined,

@@ -7,7 +7,6 @@ import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_viewer.provider.dart';
 import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
-import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
@@ -35,19 +34,18 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
     void onDeleteAlbumPressed() async {
       ImmichLoadingOverlayController.appLoader.show();
 
-      bool isSuccess = await ref.watch(albumServiceProvider).deleteAlbum(album);
-
-      if (isSuccess) {
-        if (album.shared) {
-          ref.watch(sharedAlbumProvider.notifier).deleteAlbum(album);
-          AutoRouter.of(context)
-              .navigate(const TabControllerRoute(children: [SharingRoute()]));
-        } else {
-          ref.watch(albumProvider.notifier).deleteAlbum(album);
-          AutoRouter.of(context)
-              .navigate(const TabControllerRoute(children: [LibraryRoute()]));
-        }
+      final bool success;
+      if (album.shared) {
+        success =
+            await ref.watch(sharedAlbumProvider.notifier).deleteAlbum(album);
+        AutoRouter.of(context)
+            .navigate(const TabControllerRoute(children: [SharingRoute()]));
       } else {
+        success = await ref.watch(albumProvider.notifier).deleteAlbum(album);
+        AutoRouter.of(context)
+            .navigate(const TabControllerRoute(children: [LibraryRoute()]));
+      }
+      if (!success) {
         ImmichToast.show(
           context: context,
           msg: "album_viewer_appbar_share_err_delete".tr(),
@@ -208,11 +206,12 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
           : null,
       centerTitle: false,
       actions: [
-        IconButton(
-          splashRadius: 25,
-          onPressed: buildBottomSheet,
-          icon: const Icon(Icons.more_horiz_rounded),
-        ),
+        if (album.isRemote)
+          IconButton(
+            splashRadius: 25,
+            onPressed: buildBottomSheet,
+            icon: const Icon(Icons.more_horiz_rounded),
+          ),
       ],
     );
   }

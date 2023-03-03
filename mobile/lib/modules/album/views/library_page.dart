@@ -44,9 +44,13 @@ class LibraryPage extends HookConsumerWidget {
 
     List<Album> sortedAlbums() {
       if (selectedAlbumSortOrder.value == 0) {
-        return albums.sortedBy((album) => album.createdAt).reversed.toList();
+        return albums
+            .where((a) => a.isRemote)
+            .sortedBy((album) => album.createdAt)
+            .reversed
+            .toList();
       }
-      return albums.sortedBy((album) => album.name);
+      return albums.where((a) => a.isRemote).sortedBy((album) => album.name);
     }
 
     Widget buildSortButton() {
@@ -194,6 +198,8 @@ class LibraryPage extends HookConsumerWidget {
 
     final sorted = sortedAlbums();
 
+    final local = albums.where((a) => a.isLocal).toList();
+
     return Scaffold(
       appBar: buildAppBar(),
       body: CustomScrollView(
@@ -267,6 +273,47 @@ class LibraryPage extends HookConsumerWidget {
                     ),
                   );
                 },
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(
+                top: 12.0,
+                left: 12.0,
+                right: 12.0,
+                bottom: 20.0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'library_page_device_albums',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ).tr(),
+                ],
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.all(12.0),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 250,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: .7,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                childCount: local.length,
+                (context, index) => AlbumThumbnailCard(
+                  album: local[index],
+                  onTap: () => AutoRouter.of(context).push(
+                    AlbumViewerRoute(
+                      albumId: local[index].id,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),

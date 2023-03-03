@@ -1,11 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/shared/models/album.dart';
-import 'package:immich_mobile/utils/image_url_builder.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/ui/immich_image.dart';
 
 class AlbumThumbnailCard extends StatelessWidget {
   final Function()? onTap;
@@ -20,7 +16,6 @@ class AlbumThumbnailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var box = Hive.box(userInfoBox);
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -42,21 +37,11 @@ class AlbumThumbnailCard extends StatelessWidget {
           );
         }
 
-        buildAlbumThumbnail() {
-          return CachedNetworkImage(
-            width: cardSize,
-            height: cardSize,
-            fit: BoxFit.cover,
-            fadeInDuration: const Duration(milliseconds: 200),
-            imageUrl: getAlbumThumbnailUrl(
-              album,
-              type: ThumbnailFormat.JPEG,
-            ),
-            httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
-            cacheKey:
-                getAlbumThumbNailCacheKey(album, type: ThumbnailFormat.JPEG),
-          );
-        }
+        buildAlbumThumbnail() => ImmichImage(
+              album.thumbnail.value,
+              width: cardSize,
+              height: cardSize,
+            );
 
         return GestureDetector(
           onTap: onTap,
@@ -72,7 +57,7 @@ class AlbumThumbnailCard extends StatelessWidget {
                       height: cardSize,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(20),
-                        child: album.albumThumbnailAssetId == null
+                        child: album.thumbnail.value == null
                             ? buildEmptyThumbnail()
                             : buildAlbumThumbnail(),
                       ),

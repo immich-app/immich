@@ -10,6 +10,7 @@ export class UserResponseDto {
   shouldChangePassword!: boolean;
   isAdmin!: boolean;
   deletedAt?: Date;
+  updatedAt?: string;
   oauthId!: string;
 }
 
@@ -24,6 +25,7 @@ export function mapUser(entity: UserEntity): UserResponseDto {
     shouldChangePassword: entity.shouldChangePassword,
     isAdmin: entity.isAdmin,
     deletedAt: entity.deletedAt,
+    updatedAt: entity.updatedAt,
     oauthId: entity.oauthId,
   };
 }
