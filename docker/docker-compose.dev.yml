@@ -23,6 +23,7 @@ services:
     depends_on:
       - redis
       - database
+      - typesense
 
   immich-machine-learning:
     container_name: immich_machine_learning
@@ -64,6 +65,7 @@ services:
     depends_on:
       - database
       - immich-server
+      - typesense
 
   immich-web:
     container_name: immich_web
@@ -88,6 +90,15 @@ services:
     restart: always
     depends_on:
       - immich-server
+
+  typesense:
+    container_name: immich_typesense
+    image: typesense/typesense:0.24.0
+    environment:
+      - TYPESENSE_API_KEY=${TYPESENSE_API_KEY}
+      - TYPESENSE_DATA_DIR=/data
+    volumes:
+      - tsdata:/data
 
   redis:
     container_name: immich_redis
@@ -129,3 +140,4 @@ services:
 volumes:
   pgdata:
   model-cache:
+  tsdata:

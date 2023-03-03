@@ -252,7 +252,7 @@ export class AssetRepository implements IAssetRepository {
       where: {
         id: assetId,
       },
-      relations: ['exifInfo', 'tags', 'sharedLinks'],
+      relations: ['exifInfo', 'tags', 'sharedLinks', 'smartInfo'],
     });
   }
 

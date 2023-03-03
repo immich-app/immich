@@ -13,6 +13,7 @@ export class JobRepository implements IJobRepository {
     @InjectQueue(QueueName.STORAGE_TEMPLATE_MIGRATION) private storageTemplateMigration: Queue,
     @InjectQueue(QueueName.THUMBNAIL_GENERATION) private thumbnail: Queue,
     @InjectQueue(QueueName.VIDEO_CONVERSION) private videoTranscode: Queue<IAssetJob>,
+    @InjectQueue(QueueName.SEARCH) private searchIndex: Queue,
   ) {}
 
   async isActive(name: QueueName): Promise<boolean> {
@@ -68,6 +69,18 @@ export class JobRepository implements IJobRepository {
 
       case JobName.VIDEO_CONVERSION:
         await this.videoTranscode.add(item.name, item.data);
+        break;
+
+      case JobName.SEARCH_INDEX_ASSETS:
+      case JobName.SEARCH_INDEX_ALBUMS:
+        await this.searchIndex.add(item.name);
+        break;
+
+      case JobName.SEARCH_INDEX_ASSET:
+      case JobName.SEARCH_INDEX_ALBUM:
+      case JobName.SEARCH_REMOVE_ALBUM:
+      case JobName.SEARCH_REMOVE_ASSET:
+        await this.searchIndex.add(item.name, item.data);
         break;
 
       default:

@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   BackgroundTaskProcessor,
   MachineLearningProcessor,
+  SearchIndexProcessor,
   StorageTemplateMigrationProcessor,
   ThumbnailGeneratorProcessor,
 } from './processors';
@@ -26,6 +27,7 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
     MachineLearningProcessor,
     StorageTemplateMigrationProcessor,
     BackgroundTaskProcessor,
+    SearchIndexProcessor,
   ],
 })
 export class MicroservicesModule {}

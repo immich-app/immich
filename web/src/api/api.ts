@@ -8,6 +8,7 @@ import {
 	DeviceInfoApi,
 	JobApi,
 	OAuthApi,
+	SearchApi,
 	ServerInfoApi,
 	ShareApi,
 	SystemConfigApi,
@@ -21,6 +22,7 @@ export class ImmichApi {
 	public authenticationApi: AuthenticationApi;
 	public oauthApi: OAuthApi;
 	public deviceInfoApi: DeviceInfoApi;
+	public searchApi: SearchApi;
 	public serverInfoApi: ServerInfoApi;
 	public jobApi: JobApi;
 	public keyApi: APIKeyApi;
@@ -41,6 +43,7 @@ export class ImmichApi {
 		this.serverInfoApi = new ServerInfoApi(this.config);
 		this.jobApi = new JobApi(this.config);
 		this.keyApi = new APIKeyApi(this.config);
+		this.searchApi = new SearchApi(this.config);
 		this.systemConfigApi = new SystemConfigApi(this.config);
 		this.shareApi = new ShareApi(this.config);
 	}

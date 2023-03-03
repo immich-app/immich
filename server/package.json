@@ -39,6 +39,7 @@
     "api:generate": "bash ./bin/generate-open-api.sh"
   },
   "dependencies": {
+    "@babel/runtime": "^7.20.13",
     "@nestjs/bull": "^0.6.2",
     "@nestjs/common": "^9.2.1",
     "@nestjs/config": "^2.2.0",
@@ -76,7 +77,8 @@
     "rxjs": "^7.2.0",
     "sanitize-filename": "^1.6.3",
     "sharp": "^0.28.0",
-    "typeorm": "^0.3.11"
+    "typeorm": "^0.3.11",
+    "typesense": "^1.5.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.1.8",

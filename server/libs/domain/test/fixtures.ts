@@ -1,4 +1,5 @@
 import {
+  AlbumEntity,
   APIKeyEntity,
   AssetEntity,
   AssetType,
@@ -153,6 +154,21 @@ export const assetEntityStub = {
     fileModifiedAt: '2022-06-19T23:41:36.910Z',
     fileCreatedAt: '2022-06-19T23:41:36.910Z',
   } as AssetEntity),
+};
+
+export const albumStub = {
+  empty: Object.freeze<AlbumEntity>({
+    id: 'album-1',
+    albumName: 'Empty album',
+    ownerId: authStub.admin.id,
+    owner: userEntityStub.admin,
+    assets: [],
+    albumThumbnailAssetId: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    sharedLinks: [],
+    sharedUsers: [],
+  }),
 };
 
 const assetInfo: ExifResponseDto = {

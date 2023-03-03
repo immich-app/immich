@@ -1,9 +1,20 @@
-import { AssetType } from '@app/infra/db/entities';
+import { AssetEntity, AssetType } from '@app/infra/db/entities';
 import { Inject } from '@nestjs/common';
 import { IAssetUploadedJob, IJobRepository, JobName } from '../job';
+import { ISearchRepository } from '../search';
+import { AssetCore } from './asset.core';
+import { IAssetRepository } from './asset.repository';
 
 export class AssetService {
-  constructor(@Inject(IJobRepository) private jobRepository: IJobRepository) {}
+  private assetCore: AssetCore;
+
+  constructor(
+    @Inject(IAssetRepository) assetRepository: IAssetRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(ISearchRepository) searchRepository: ISearchRepository,
+  ) {
+    this.assetCore = new AssetCore(assetRepository, searchRepository);
+  }
 
   async handleAssetUpload(data: IAssetUploadedJob) {
     await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data });
@@ -14,5 +25,9 @@ export class AssetService {
     } else {
       await this.jobRepository.queue({ name: JobName.EXIF_EXTRACTION, data });
     }
+  }
+
+  save(asset: Partial<AssetEntity>) {
+    return this.assetCore.save(asset);
   }
 }

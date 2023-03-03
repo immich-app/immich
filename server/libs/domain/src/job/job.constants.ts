@@ -5,6 +5,7 @@ export enum QueueName {
   MACHINE_LEARNING = 'machine-learning-queue',
   BACKGROUND_TASK = 'background-task',
   STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration-queue',
+  SEARCH = 'search-queue',
 }
 
 export enum JobName {
@@ -22,4 +23,10 @@ export enum JobName {
   OBJECT_DETECTION = 'detect-object',
   IMAGE_TAGGING = 'tag-image',
   DELETE_FILES = 'delete-files',
+  SEARCH_INDEX_ASSETS = 'search-index-assets',
+  SEARCH_INDEX_ASSET = 'search-index-asset',
+  SEARCH_INDEX_ALBUMS = 'search-index-albums',
+  SEARCH_INDEX_ALBUM = 'search-index-album',
+  SEARCH_REMOVE_ALBUM = 'search-remove-album',
+  SEARCH_REMOVE_ASSET = 'search-remove-asset',
 }

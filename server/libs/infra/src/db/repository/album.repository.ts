@@ -11,4 +11,13 @@ export class AlbumRepository implements IAlbumRepository {
   async deleteAll(userId: string): Promise<void> {
     await this.repository.delete({ ownerId: userId });
   }
+
+  getAll(): Promise<AlbumEntity[]> {
+    return this.repository.find();
+  }
+
+  async save(album: Partial<AlbumEntity>) {
+    const { id } = await this.repository.save(album);
+    return this.repository.findOneOrFail({ where: { id } });
+  }
 }

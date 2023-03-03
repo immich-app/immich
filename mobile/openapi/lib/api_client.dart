@@ -294,8 +294,20 @@ class ApiClient {
           return OAuthConfigResponseDto.fromJson(value);
         case 'RemoveAssetsDto':
           return RemoveAssetsDto.fromJson(value);
+        case 'SearchAlbumResponseDto':
+          return SearchAlbumResponseDto.fromJson(value);
         case 'SearchAssetDto':
           return SearchAssetDto.fromJson(value);
+        case 'SearchAssetResponseDto':
+          return SearchAssetResponseDto.fromJson(value);
+        case 'SearchConfigResponseDto':
+          return SearchConfigResponseDto.fromJson(value);
+        case 'SearchFacetCountResponseDto':
+          return SearchFacetCountResponseDto.fromJson(value);
+        case 'SearchFacetResponseDto':
+          return SearchFacetResponseDto.fromJson(value);
+        case 'SearchResponseDto':
+          return SearchResponseDto.fromJson(value);
         case 'ServerInfoResponseDto':
           return ServerInfoResponseDto.fromJson(value);
         case 'ServerPingResponse':

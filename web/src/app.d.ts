@@ -13,7 +13,7 @@ declare namespace App {
 	interface Error {
 		message: string;
 		stack?: string;
-		code?: string;
+		code?: string | number;
 	}
 }
 

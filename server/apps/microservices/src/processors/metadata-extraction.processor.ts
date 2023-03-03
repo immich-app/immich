@@ -1,18 +1,26 @@
+import {
+  AssetCore,
+  IAssetRepository,
+  IAssetUploadedJob,
+  IReverseGeocodingJob,
+  ISearchRepository,
+  JobName,
+  QueueName,
+} from '@app/domain';
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra';
-import { IReverseGeocodingJob, IAssetUploadedJob, QueueName, JobName, IAssetRepository } from '@app/domain';
 import { Process, Processor } from '@nestjs/bull';
 import { Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Job } from 'bull';
+import { ExifDateTime, exiftool, Tags } from 'exiftool-vendored';
 import ffmpeg from 'fluent-ffmpeg';
+import { getName } from 'i18n-iso-countries';
+import geocoder, { InitOptions } from 'local-reverse-geocoder';
+import fs from 'node:fs';
 import path from 'path';
 import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
-import geocoder, { InitOptions } from 'local-reverse-geocoder';
-import { getName } from 'i18n-iso-countries';
-import fs from 'node:fs';
-import { ExifDateTime, exiftool, Tags } from 'exiftool-vendored';
 
 interface ImmichTags extends Tags {
   ContentIdentifier?: string;
@@ -71,13 +79,19 @@ export type GeoData = {
 export class MetadataExtractionProcessor {
   private logger = new Logger(MetadataExtractionProcessor.name);
   private isGeocodeInitialized = false;
+  private assetCore: AssetCore;
+
   constructor(
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IAssetRepository) assetRepository: IAssetRepository,
+    @Inject(ISearchRepository) searchRepository: ISearchRepository,
+
     @InjectRepository(ExifEntity)
     private exifRepository: Repository<ExifEntity>,
 
     configService: ConfigService,
   ) {
+    this.assetCore = new AssetCore(assetRepository, searchRepository);
+
     if (!configService.get('DISABLE_REVERSE_GEOCODING')) {
       this.logger.log('Initializing Reverse Geocoding');
       geocoderInit({
@@ -175,20 +189,11 @@ export class MetadataExtractionProcessor {
       newExif.longitude = exifData?.GPSLongitude || null;
       newExif.livePhotoCID = exifData?.MediaGroupUUID || null;
 
-      await this.assetRepository.save({
-        id: asset.id,
-        fileCreatedAt: fileCreatedAt?.toISOString(),
-      });
-
       if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
-        const motionAsset = await this.assetRepository.findLivePhotoMatch(
-          newExif.livePhotoCID,
-          asset.id,
-          AssetType.VIDEO,
-        );
+        const motionAsset = await this.assetCore.findLivePhotoMatch(newExif.livePhotoCID, asset.id, AssetType.VIDEO);
         if (motionAsset) {
-          await this.assetRepository.save({ id: asset.id, livePhotoVideoId: motionAsset.id });
-          await this.assetRepository.save({ id: motionAsset.id, isVisible: false });
+          await this.assetCore.save({ id: asset.id, livePhotoVideoId: motionAsset.id });
+          await this.assetCore.save({ id: motionAsset.id, isVisible: false });
         }
       }
 
@@ -226,6 +231,7 @@ export class MetadataExtractionProcessor {
       }
 
       await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
+      await this.assetCore.save({ id: asset.id, fileCreatedAt: fileCreatedAt?.toISOString() });
     } catch (error: any) {
       this.logger.error(`Error extracting EXIF ${error}`, error?.stack);
     }
@@ -292,14 +298,10 @@ export class MetadataExtractionProcessor {
       newExif.livePhotoCID = exifData?.ContentIdentifier || null;
 
       if (newExif.livePhotoCID) {
-        const photoAsset = await this.assetRepository.findLivePhotoMatch(
-          newExif.livePhotoCID,
-          asset.id,
-          AssetType.IMAGE,
-        );
+        const photoAsset = await this.assetCore.findLivePhotoMatch(newExif.livePhotoCID, asset.id, AssetType.IMAGE);
         if (photoAsset) {
-          await this.assetRepository.save({ id: photoAsset.id, livePhotoVideoId: asset.id });
-          await this.assetRepository.save({ id: asset.id, isVisible: false });
+          await this.assetCore.save({ id: photoAsset.id, livePhotoVideoId: asset.id });
+          await this.assetCore.save({ id: asset.id, isVisible: false });
         }
       }
 
@@ -355,7 +357,7 @@ export class MetadataExtractionProcessor {
       }
 
       await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
-      await this.assetRepository.save({ id: asset.id, duration: durationString, fileCreatedAt });
+      await this.assetCore.save({ id: asset.id, duration: durationString, fileCreatedAt });
     } catch (err) {
       ``;
       // do nothing

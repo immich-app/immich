@@ -11,6 +11,7 @@
 	import ImmichLogo from '../immich-logo.svelte';
 	export let user: UserResponseDto;
 	export let shouldShowUploadButton = true;
+	export let term = '';
 
 	let shouldShowAccountInfo = false;
 
@@ -35,6 +36,10 @@
 
 		goto(data.redirectUri || '/auth/login?autoLaunch=0');
 	};
+
+	const onSearch = () => {
+		goto(`/search?q=${term}`);
+	};
 </script>
 
 <section
@@ -52,12 +57,16 @@
 				IMMICH
 			</h1>
 		</a>
-		<div class="flex-1 ml-24">
+		<form class="flex-1 ml-24" autocomplete="off" on:submit|preventDefault={onSearch}>
 			<input
+				type="text"
+				name="search"
 				class="w-[50%] rounded-3xl bg-gray-200 dark:bg-immich-dark-gray  px-8 py-4"
-				placeholder="Search - Coming soon"
+				placeholder="Search"
+				required
+				bind:value={term}
 			/>
-		</div>
+		</form>
 		<section class="flex gap-4 place-items-center">
 			<ThemeButton />
 

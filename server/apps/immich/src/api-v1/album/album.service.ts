@@ -6,7 +6,7 @@ import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { GetAlbumsDto } from './dto/get-albums.dto';
-import { AlbumResponseDto, mapAlbum, mapAlbumExcludeAssetInfo } from '@app/domain';
+import { AlbumResponseDto, IJobRepository, JobName, mapAlbum, mapAlbumExcludeAssetInfo } from '@app/domain';
 import { IAlbumRepository } from './album-repository';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
@@ -27,6 +27,7 @@ export class AlbumService {
     @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
     private downloadService: DownloadService,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     this.shareCore = new ShareCore(sharedLinkRepository, cryptoRepository);
   }
@@ -56,6 +57,7 @@ export class AlbumService {
 
   async create(authUser: AuthUserDto, createAlbumDto: CreateAlbumDto): Promise<AlbumResponseDto> {
     const albumEntity = await this.albumRepository.create(authUser.id, createAlbumDto);
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { album: albumEntity } });
     return mapAlbum(albumEntity);
   }
 
@@ -105,6 +107,7 @@ export class AlbumService {
     }
 
     await this.albumRepository.delete(album);
+    await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ALBUM, data: { id: albumId } });
   }
 
   async removeUserFromAlbum(authUser: AuthUserDto, albumId: string, userId: string | 'me'): Promise<void> {
@@ -171,6 +174,9 @@ export class AlbumService {
     }
 
     const updatedAlbum = await this.albumRepository.updateAlbum(album, updateAlbumDto);
+
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { album: updatedAlbum } });
+
     return mapAlbum(updatedAlbum);
   }
 
