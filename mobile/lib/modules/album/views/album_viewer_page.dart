@@ -20,7 +20,6 @@ import 'package:immich_mobile/modules/settings/providers/app_settings.provider.d
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
-import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_sliver_persistent_app_bar_delegate.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
@@ -190,8 +189,7 @@ class AlbumViewerPage extends HookConsumerWidget {
       final bool showStorageIndicator =
           appSettingService.getSetting(AppSettingsEnum.storageIndicator);
 
-      if (album.assets.isNotEmpty) {
-        final List<Asset> assets = album.assets.toList(growable: false);
+      if (album.sortedAssets.isNotEmpty) {
         return SliverPadding(
           padding: const EdgeInsets.only(top: 10.0),
           sliver: SliverGrid(
@@ -204,8 +202,8 @@ class AlbumViewerPage extends HookConsumerWidget {
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
                 return AlbumViewerThumbnail(
-                  asset: assets[index],
-                  assetList: assets,
+                  asset: album.sortedAssets[index],
+                  assetList: album.sortedAssets,
                   showStorageIndicator: showStorageIndicator,
                 );
               },

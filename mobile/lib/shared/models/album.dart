@@ -34,6 +34,11 @@ class Album {
   final IsarLinks<User> sharedUsers = IsarLinks<User>();
   final IsarLinks<Asset> assets = IsarLinks<Asset>();
 
+  List<Asset> _sortedAssets = [];
+
+  @ignore
+  List<Asset> get sortedAssets => _sortedAssets;
+
   @ignore
   bool get isRemote => remoteId != null;
 
@@ -45,6 +50,10 @@ class Album {
 
   @ignore
   String? get ownerId => owner.value?.id;
+
+  Future<void> loadSortedAssets() async {
+    _sortedAssets = await assets.filter().sortByFileCreatedAt().findAll();
+  }
 
   @override
   bool operator ==(other) {

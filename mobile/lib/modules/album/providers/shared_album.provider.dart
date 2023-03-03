@@ -81,5 +81,7 @@ final sharedAlbumDetailProvider =
     FutureProvider.autoDispose.family<Album?, int>((ref, albumId) async {
   final AlbumService sharedAlbumService = ref.watch(albumServiceProvider);
 
-  return await sharedAlbumService.getAlbumDetail(albumId);
+  final Album? a = await sharedAlbumService.getAlbumDetail(albumId);
+  await a?.loadSortedAssets();
+  return a;
 });
