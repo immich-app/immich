@@ -1542,6 +1542,44 @@ export interface SearchConfigResponseDto {
 /**
  * 
  * @export
+ * @interface SearchExploreItem
+ */
+export interface SearchExploreItem {
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchExploreItem
+     */
+    'value': string;
+    /**
+     * 
+     * @type {AssetResponseDto}
+     * @memberof SearchExploreItem
+     */
+    'data': AssetResponseDto;
+}
+/**
+ * 
+ * @export
+ * @interface SearchExploreResponseDto
+ */
+export interface SearchExploreResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchExploreResponseDto
+     */
+    'fieldName': string;
+    /**
+     * 
+     * @type {Array<SearchExploreItem>}
+     * @memberof SearchExploreResponseDto
+     */
+    'items': Array<SearchExploreItem>;
+}
+/**
+ * 
+ * @export
  * @interface SearchFacetCountResponseDto
  */
 export interface SearchFacetCountResponseDto {
@@ -6628,6 +6666,41 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        getExploreData: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/search/explore`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            // authentication cookie required
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         getSearchConfig: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/search/config`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -6758,6 +6831,15 @@ export const SearchApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        async getExploreData(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<SearchExploreResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getExploreData(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         async getSearchConfig(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchConfigResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getSearchConfig(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
@@ -6796,6 +6878,14 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        getExploreData(options?: any): AxiosPromise<Array<SearchExploreResponseDto>> {
+            return localVarFp.getExploreData(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         getSearchConfig(options?: any): AxiosPromise<SearchConfigResponseDto> {
             return localVarFp.getSearchConfig(options).then((request) => request(axios, basePath));
         },
@@ -6827,6 +6917,16 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
  * @extends {BaseAPI}
  */
 export class SearchApi extends BaseAPI {
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApi
+     */
+    public getExploreData(options?: AxiosRequestConfig) {
+        return SearchApiFp(this.configuration).getExploreData(options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * 
      * @param {*} [options] Override http request option.

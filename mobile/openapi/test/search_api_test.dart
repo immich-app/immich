@@ -19,6 +19,13 @@ void main() {
   group('tests for SearchApi', () {
     // 
     //
+    //Future<List<SearchExploreResponseDto>> getExploreData() async
+    test('test getExploreData', () async {
+      // TODO
+    });
+
+    // 
+    //
     //Future<SearchConfigResponseDto> getSearchConfig() async
     test('test getSearchConfig', () async {
       // TODO

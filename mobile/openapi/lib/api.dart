@@ -97,6 +97,8 @@ part 'model/search_album_response_dto.dart';
 part 'model/search_asset_dto.dart';
 part 'model/search_asset_response_dto.dart';
 part 'model/search_config_response_dto.dart';
+part 'model/search_explore_item.dart';
+part 'model/search_explore_response_dto.dart';
 part 'model/search_facet_count_response_dto.dart';
 part 'model/search_facet_response_dto.dart';
 part 'model/search_response_dto.dart';

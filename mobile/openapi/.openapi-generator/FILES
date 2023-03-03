@@ -66,6 +66,8 @@ doc/SearchApi.md
 doc/SearchAssetDto.md
 doc/SearchAssetResponseDto.md
 doc/SearchConfigResponseDto.md
+doc/SearchExploreItem.md
+doc/SearchExploreResponseDto.md
 doc/SearchFacetCountResponseDto.md
 doc/SearchFacetResponseDto.md
 doc/SearchResponseDto.md
@@ -179,6 +181,8 @@ lib/model/search_album_response_dto.dart
 lib/model/search_asset_dto.dart
 lib/model/search_asset_response_dto.dart
 lib/model/search_config_response_dto.dart
+lib/model/search_explore_item.dart
+lib/model/search_explore_response_dto.dart
 lib/model/search_facet_count_response_dto.dart
 lib/model/search_facet_response_dto.dart
 lib/model/search_response_dto.dart
@@ -273,6 +277,8 @@ test/search_api_test.dart
 test/search_asset_dto_test.dart
 test/search_asset_response_dto_test.dart
 test/search_config_response_dto_test.dart
+test/search_explore_item_test.dart
+test/search_explore_response_dto_test.dart
 test/search_facet_count_response_dto_test.dart
 test/search_facet_response_dto_test.dart
 test/search_response_dto_test.dart
