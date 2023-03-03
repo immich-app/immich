@@ -259,7 +259,6 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             controller: pageOption.controller,
             scaleStateController: pageOption.scaleStateController,
             customSize: widget.customSize,
-            heroAttributes: pageOption.heroAttributes,
             scaleStateChangedCallback: scaleStateChangedCallback,
             enableRotation: widget.enableRotation,
             initialScale: pageOption.initialScale,
@@ -289,7 +288,6 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             scaleStateController: pageOption.scaleStateController,
             customSize: widget.customSize,
             gaplessPlayback: widget.gaplessPlayback,
-            heroAttributes: pageOption.heroAttributes,
             scaleStateChangedCallback: scaleStateChangedCallback,
             enableRotation: widget.enableRotation,
             initialScale: pageOption.initialScale,
@@ -309,6 +307,19 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             disableGestures: pageOption.disableGestures,
             errorBuilder: pageOption.errorBuilder,
           );
+
+    if (pageOption.heroAttributes != null) {
+      return Hero(
+        tag: pageOption.heroAttributes!.tag,
+        createRectTween: pageOption.heroAttributes!.createRectTween,
+        flightShuttleBuilder: pageOption.heroAttributes!.flightShuttleBuilder,
+        placeholderBuilder: pageOption.heroAttributes!.placeholderBuilder,
+        transitionOnUserGestures: pageOption.heroAttributes!.transitionOnUserGestures,
+        child: ClipRect(
+          child: photoView,
+        ),
+      );
+    }
 
     return ClipRect(
       child: photoView,

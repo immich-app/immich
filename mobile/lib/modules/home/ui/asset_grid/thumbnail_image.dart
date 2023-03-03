@@ -67,6 +67,31 @@ class ThumbnailImage extends HookConsumerWidget {
         HapticFeedback.heavyImpact();
       },
       child: Hero(
+        createRectTween: (begin, end) {
+          double? top;
+          // Uses the [BoxFit.contain] algorithm
+          if (asset.width != null && asset.height != null) {
+            final assetAR = asset.width! / asset.height!;
+            final w = MediaQuery.of(context).size.width;
+            final deviceAR = MediaQuery.of(context).size.aspectRatio;
+            if (deviceAR < assetAR) {
+              top = asset.height! * w / asset.width!;
+            } else {
+              top = 0;
+            }
+            // get the height offset
+          }
+
+          return MaterialRectCenterArcTween(
+            begin: Rect.fromLTRB(
+              0,
+              top ?? 0.0,
+              MediaQuery.of(context).size.width,
+              MediaQuery.of(context).size.height,
+            ),
+            end: end,
+          );
+        },
         tag: asset.id,
         child: Stack(
           children: [
