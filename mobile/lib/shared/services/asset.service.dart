@@ -49,12 +49,12 @@ class AssetService {
     final List<AssetResponseDto>? dtos =
         await _getRemoteAssets(hasCache: numOwnedRemoteAssets > 0);
     if (dtos == null) {
-      debugPrint("fetchRemoteAssets fast took ${sw.elapsedMilliseconds}ms");
+      debugPrint("refreshRemoteAssets fast took ${sw.elapsedMilliseconds}ms");
       return false;
     }
     final bool changes = await _syncService
         .syncRemoteAssetsToDb(dtos.map(Asset.remote).toList());
-    debugPrint("fetchRemoteAssets full took ${sw.elapsedMilliseconds}ms");
+    debugPrint("refreshRemoteAssets full took ${sw.elapsedMilliseconds}ms");
     return changes;
   }
 

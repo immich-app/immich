@@ -9,6 +9,7 @@ import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
+import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/tuple.dart';
 import 'package:isar/isar.dart';
@@ -20,9 +21,7 @@ final syncServiceProvider =
 
 class SyncService {
   final Isar _db;
-  Completer<bool> _remoteAlbumCompleter = Completer()..complete(false);
-  Completer<bool> _remoteAssetCompleter = Completer()..complete(false);
-  Completer<bool> _deviceCompleter = Completer()..complete(false);
+  final AsyncMutex _lock = AsyncMutex();
 
   SyncService(this._db);
 
@@ -60,19 +59,8 @@ class SyncService {
 
   /// Syncs remote assets owned by the logged-in user to the DB
   /// Returns `true` if there were any changes
-  Future<bool> syncRemoteAssetsToDb(List<Asset> remote) async {
-    if (!_remoteAssetCompleter.isCompleted) {
-      return _remoteAssetCompleter.future;
-    }
-    _remoteAssetCompleter = Completer();
-    bool changes = false;
-    try {
-      changes = await _syncRemoteAssetsToDb(remote);
-    } finally {
-      _remoteAssetCompleter.complete(changes);
-    }
-    return changes;
-  }
+  Future<bool> syncRemoteAssetsToDb(List<Asset> remote) =>
+      _lock.run(() => _syncRemoteAssetsToDb(remote));
 
   /// Syncs remote albums to the database
   /// returns `true` if there were any changes
@@ -80,39 +68,13 @@ class SyncService {
     List<AlbumResponseDto> remote, {
     required bool isShared,
     required FutureOr<AlbumResponseDto> Function(AlbumResponseDto) loadDetails,
-  }) async {
-    if (!_remoteAlbumCompleter.isCompleted) {
-      return _remoteAlbumCompleter.future;
-    }
-    _remoteAlbumCompleter = Completer();
-    bool changes = false;
-    try {
-      changes = await _syncRemoteAlbumsToDb(
-        remote,
-        isShared: isShared,
-        loadDetails: loadDetails,
-      );
-    } finally {
-      _remoteAlbumCompleter.complete(changes);
-    }
-    return changes;
-  }
+  }) =>
+      _lock.run(() => _syncRemoteAlbumsToDb(remote, isShared, loadDetails));
 
   /// Syncs all device albums and their assets to the database
   /// Returns `true` if there were any changes
-  Future<bool> syncLocalAlbumAssetsToDb(List<AssetPathEntity> onDevice) async {
-    if (!_deviceCompleter.isCompleted) {
-      return _deviceCompleter.future;
-    }
-    _deviceCompleter = Completer();
-    bool changes = false;
-    try {
-      changes = await _syncLocalAlbumAssetsToDb(onDevice);
-    } finally {
-      _deviceCompleter.complete(changes);
-    }
-    return changes;
-  }
+  Future<bool> syncLocalAlbumAssetsToDb(List<AssetPathEntity> onDevice) =>
+      _lock.run(() => _syncLocalAlbumAssetsToDb(onDevice));
 
   /// returns all Asset IDs that are not contained in the existing list
   List<int> sharedAssetsToRemove(
@@ -160,10 +122,10 @@ class SyncService {
   /// Syncs remote albums to the database
   /// returns `true` if there were any changes
   Future<bool> _syncRemoteAlbumsToDb(
-    List<AlbumResponseDto> remote, {
-    required bool isShared,
-    required FutureOr<AlbumResponseDto> Function(AlbumResponseDto) loadDetails,
-  }) async {
+    List<AlbumResponseDto> remote,
+    bool isShared,
+    FutureOr<AlbumResponseDto> Function(AlbumResponseDto) loadDetails,
+  ) async {
     remote.sortBy((e) => e.id);
 
     final baseQuery = _db.albums.where().remoteIdIsNotNull().filter();
@@ -185,8 +147,8 @@ class SyncService {
       compare: (AlbumResponseDto a, Album b) => a.id.compareTo(b.remoteId!),
       both: (AlbumResponseDto a, Album b) =>
           _syncRemoteAlbum(a, b, toDelete, existing, loadDetails),
-      onlyFirst: (AlbumResponseDto a) async =>
-          _addAlbumFromServer(await loadDetails(a), existing),
+      onlyFirst: (AlbumResponseDto a) =>
+          _addAlbumFromServer(a, existing, loadDetails),
       onlySecond: (Album a) => _removeAlbumFromDb(a, toDelete),
     );
 
@@ -289,14 +251,18 @@ class SyncService {
   Future<void> _addAlbumFromServer(
     AlbumResponseDto dto,
     List<Asset> existing,
+    FutureOr<AlbumResponseDto> Function(AlbumResponseDto) loadDetails,
   ) async {
+    if (dto.assetCount != dto.assets.length) {
+      dto = await loadDetails(dto);
+    }
     if (dto.assetCount == dto.assets.length) {
-      if (dto.shared) {
-        // shared album: put missing album assets into local DB
-        final result = await _linkWithExistingFromDb(dto.getAssets());
-        existing.addAll(result.first);
-        await _upsertAssetsWithExif(result.second);
-      }
+      // in case an album contains assets not yet present in local DB:
+      // put missing album assets into local DB
+      final result = await _linkWithExistingFromDb(dto.getAssets());
+      existing.addAll(result.first);
+      await _upsertAssetsWithExif(result.second);
+
       final Album a = await Album.remote(dto);
       await _db.writeTxn(() => _db.albums.store(a));
     }
