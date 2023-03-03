@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -68,14 +69,22 @@ class AlbumService {
       }
       final List<AssetPathEntity> onDevice =
           await PhotoManager.getAssetPathList(
-        hasAll: false,
+        hasAll: true,
         filterOption: FilterOptionGroup(containsPathModified: true),
       );
       if (infos.excludedAlbumsIds.isNotEmpty) {
+        // remove all excluded albums
         onDevice.removeWhere((e) => infos.excludedAlbumsIds.contains(e.id));
       }
-      if (infos.selectedAlbumIds.isNotEmpty &&
-          !infos.selectedAlbumIds.contains("isAll")) {
+      final hasAll = infos.selectedAlbumIds
+          .map((id) => onDevice.firstWhereOrNull((a) => a.id == id))
+          .whereNotNull()
+          .any((a) => a.isAll);
+      if (hasAll) {
+        // remove the virtual "Recents" album and keep and individual albums
+        onDevice.removeWhere((e) => e.isAll);
+      } else {
+        // keep only the explicitly selected albums
         onDevice.removeWhere((e) => !infos.selectedAlbumIds.contains(e.id));
       }
       changes = await _syncService.syncLocalAlbumAssetsToDb(onDevice);
