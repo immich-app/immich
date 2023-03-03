@@ -94,9 +94,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
           await _db.assets.filter().ownerIdEqualTo(me.isarId).count();
       stopwatch.start();
       if (cachedCount > 0 && cachedCount != state.allAssets.length) {
-        await _updateAssetsState(
-          await _db.assets.filter().ownerIdEqualTo(me.isarId).findAll(),
-        );
+        await _updateAssetsState(await _getUserAssets(me.isarId));
         log.info(
           "Reading assets ${state.allAssets.length} from DB: ${stopwatch.elapsedMilliseconds}ms",
         );
@@ -111,8 +109,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
         return;
       }
       stopwatch.reset();
-      final assets =
-          await _db.assets.filter().ownerIdEqualTo(me.isarId).findAll();
+      final assets = await _getUserAssets(me.isarId);
       if (!const ListEquality().equals(assets, state.allAssets)) {
         log.info("setting new asset state");
         await _updateAssetsState(assets);
@@ -121,6 +118,12 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       _getAllAssetInProgress = false;
     }
   }
+
+  Future<List<Asset>> _getUserAssets(int userId) => _db.assets
+      .filter()
+      .ownerIdEqualTo(userId)
+      .sortByFileCreatedAtDesc()
+      .findAll();
 
   Future<void> clearAllAsset() {
     state = AssetsState.empty();
