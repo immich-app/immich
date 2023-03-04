@@ -73,4 +73,6 @@
 	<VersionAnnouncementBox serverVersion={data.serverVersion} />
 {/if}
 
-<UploadCover {dropHandler} />
+{#if $page.route.id?.includes('(user)')}
+	<UploadCover {dropHandler} />
+{/if}

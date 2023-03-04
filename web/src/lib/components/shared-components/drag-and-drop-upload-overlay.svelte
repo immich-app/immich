@@ -7,9 +7,7 @@
 	let dragStartTarget: EventTarget | null = null;
 
 	const handleDragEnter = (e: DragEvent) => {
-		if ($page.route.id?.includes('(user)')) {
-			dragStartTarget = e.target;
-		}
+		dragStartTarget = e.target;
 	};
 </script>
 
