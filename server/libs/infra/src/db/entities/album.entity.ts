@@ -33,7 +33,10 @@ export class AlbumEntity {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: string;
 
-  @Column({ comment: 'Asset ID to be used as thumbnail', type: 'varchar', nullable: true })
+  @ManyToOne(() => AssetEntity, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
+  albumThumbnailAsset!: AssetEntity | null;
+
+  @Column({ comment: 'Asset ID to be used as thumbnail', nullable: true })
   albumThumbnailAssetId!: string | null;
 
   @ManyToMany(() => UserEntity)

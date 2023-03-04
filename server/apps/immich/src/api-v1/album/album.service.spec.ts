@@ -129,6 +129,7 @@ describe('Album service', () => {
       removeAssets: jest.fn(),
       removeUser: jest.fn(),
       updateAlbum: jest.fn(),
+      updateThumbnails: jest.fn(),
       getListByAssetId: jest.fn(),
       getCountByUserId: jest.fn(),
       getSharedWithUserAlbumCount: jest.fn(),
@@ -502,59 +503,47 @@ describe('Album service', () => {
   it('updates the album thumbnail by listing all albums', async () => {
     const albumEntity = _getOwnedAlbum();
     const assetEntity = new AssetEntity();
-    const newThumbnailAssetId = 'e5e65c02-b889-4f3c-afe1-a39a96d578ed';
+    const newThumbnailAsset = new AssetEntity();
+    newThumbnailAsset.id = 'e5e65c02-b889-4f3c-afe1-a39a96d578ed';
 
     albumEntity.albumThumbnailAssetId = 'nonexistent';
-    assetEntity.id = newThumbnailAssetId;
+    assetEntity.id = newThumbnailAsset.id;
     albumEntity.assets = [assetEntity];
     albumRepositoryMock.getList.mockImplementation(async () => [albumEntity]);
-    albumRepositoryMock.updateAlbum.mockImplementation(async () => ({
-      ...albumEntity,
-      albumThumbnailAssetId: newThumbnailAssetId,
-    }));
+    albumRepositoryMock.updateThumbnails.mockImplementation(async () => {
+      albumEntity.albumThumbnailAsset = newThumbnailAsset;
+      albumEntity.albumThumbnailAssetId = newThumbnailAsset.id;
+
+      return 1;
+    });
 
     const result = await sut.getAllAlbums(authUser, {});
 
     expect(result).toHaveLength(1);
-    expect(result[0].albumThumbnailAssetId).toEqual(newThumbnailAssetId);
+    expect(result[0].albumThumbnailAssetId).toEqual(newThumbnailAsset.id);
     expect(albumRepositoryMock.getList).toHaveBeenCalledTimes(1);
-    expect(albumRepositoryMock.updateAlbum).toHaveBeenCalledTimes(1);
+    expect(albumRepositoryMock.updateThumbnails).toHaveBeenCalledTimes(1);
     expect(albumRepositoryMock.getList).toHaveBeenCalledWith(albumEntity.ownerId, {});
-    expect(albumRepositoryMock.updateAlbum).toHaveBeenCalledWith(albumEntity, {
-      albumThumbnailAssetId: newThumbnailAssetId,
-    });
   });
 
   it('removes the thumbnail for an empty album', async () => {
     const albumEntity = _getOwnedAlbum();
-    const newAlbumEntity = { ...albumEntity, albumThumbnailAssetId: null };
 
     albumEntity.albumThumbnailAssetId = 'e5e65c02-b889-4f3c-afe1-a39a96d578ed';
     albumRepositoryMock.getList.mockImplementation(async () => [albumEntity]);
-    albumRepositoryMock.updateAlbum.mockImplementation(async () => newAlbumEntity);
+    albumRepositoryMock.updateThumbnails.mockImplementation(async () => {
+      albumEntity.albumThumbnailAsset = null;
+      albumEntity.albumThumbnailAssetId = null;
+
+      return 1;
+    });
 
     const result = await sut.getAllAlbums(authUser, {});
 
     expect(result).toHaveLength(1);
     expect(result[0].albumThumbnailAssetId).toBeNull();
     expect(albumRepositoryMock.getList).toHaveBeenCalledTimes(1);
-    expect(albumRepositoryMock.updateAlbum).toHaveBeenCalledTimes(1);
-    expect(albumRepositoryMock.getList).toHaveBeenCalledWith(albumEntity.ownerId, {});
-    expect(albumRepositoryMock.updateAlbum).toHaveBeenCalledWith(newAlbumEntity, {
-      albumThumbnailAssetId: undefined,
-    });
-  });
-
-  it('listing empty albums does not unnecessarily update the album', async () => {
-    const albumEntity = _getOwnedAlbum();
-    albumRepositoryMock.getList.mockImplementation(async () => [albumEntity]);
-    albumRepositoryMock.updateAlbum.mockImplementation(async () => albumEntity);
-
-    const result = await sut.getAllAlbums(authUser, {});
-
-    expect(result).toHaveLength(1);
-    expect(albumRepositoryMock.getList).toHaveBeenCalledTimes(1);
-    expect(albumRepositoryMock.updateAlbum).toHaveBeenCalledTimes(0);
+    expect(albumRepositoryMock.updateThumbnails).toHaveBeenCalledTimes(1);
     expect(albumRepositoryMock.getList).toHaveBeenCalledWith(albumEntity.ownerId, {});
   });
 });
