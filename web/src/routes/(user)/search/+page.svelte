@@ -2,9 +2,9 @@
 	import { page } from '$app/stores';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
-	import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
 	import type { PageData } from './$types';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
+	import ImageOffOutline from 'svelte-material-icons/ImageOffOutline.svelte';
 
 	export let data: PageData;
 	const term = $page.url.searchParams.get('q') || data.term || '';
@@ -29,8 +29,16 @@
 			id="search-content"
 			class="relative pt-8 pl-4 mb-12 bg-immich-bg dark:bg-immich-dark-bg"
 		>
-			{#if data.results?.assets?.items}
+			{#if data.results?.assets?.items.length != 0}
 				<GalleryViewer assets={data.results.assets.items} />
+			{:else}
+				<div class="w-full text-center dark:text-white ">
+					<div class="mt-60 flex flex-col place-content-center place-items-center">
+						<ImageOffOutline size="56" />
+						<p class="font-medium text-3xl mt-5">No results</p>
+						<p class="text-base font-normal">Try a synonym or more general keyword</p>
+					</div>
+				</div>
 			{/if}
 		</section>
 	</section>
