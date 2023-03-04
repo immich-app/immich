@@ -10,7 +10,8 @@
 		}
 
 		const filesArray: File[] = Array.from<File>(files);
-		const albumId = ($page.route.id === '/albums/[albumId]' || undefined) && $page.params.albumId;
+		const albumId =
+			($page.route.id === '/(user)/albums/[albumId]' || undefined) && $page.params.albumId;
 
 		await fileUploadHandler(filesArray, albumId);
 	};
