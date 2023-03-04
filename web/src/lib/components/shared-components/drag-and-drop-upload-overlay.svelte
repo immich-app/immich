@@ -1,16 +1,20 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 	import ImmichLogo from './immich-logo.svelte';
-
+	import { page } from '$app/stores';
 	export let dropHandler: (event: DragEvent) => void;
 
 	let dragStartTarget: EventTarget | null = null;
+
+	const handleDragEnter = (e: DragEvent) => {
+		if ($page.route.id?.includes('(user)')) {
+			dragStartTarget = e.target;
+		}
+	};
 </script>
 
 <svelte:body
-	on:dragenter|stopPropagation|preventDefault={(e) => {
-		dragStartTarget = e.target;
-	}}
+	on:dragenter|stopPropagation|preventDefault={handleDragEnter}
 	on:dragleave|stopPropagation|preventDefault={(e) => {
 		if (dragStartTarget === e.target) {
 			dragStartTarget = null;
