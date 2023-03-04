@@ -55,6 +55,9 @@ export class SharedLinkEntity {
   @Index('IDX_sharedlink_albumId')
   @ManyToOne(() => AlbumEntity, (album) => album.sharedLinks)
   album?: AlbumEntity;
+
+  @Column({ nullable: true })
+  albumId!: string | null;
 }
 
 export enum SharedLinkType {

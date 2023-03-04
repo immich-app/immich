@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsOptional } from 'class-validator';
+import { IsBoolean, IsOptional, IsUUID } from 'class-validator';
 import { toBoolean } from '../../../utils/transform.util';
 
 export class GetAlbumsDto {
@@ -18,5 +18,7 @@ export class GetAlbumsDto {
    * Ignores the shared parameter
    * undefined: get all albums
    */
+  @IsOptional()
+  @IsUUID(4)
   assetId?: string;
 }

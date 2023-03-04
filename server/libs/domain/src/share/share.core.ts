@@ -34,7 +34,7 @@ export class ShareCore {
         expiresAt: dto.expiresAt ?? null,
         type: dto.type,
         assets: dto.assets,
-        album: dto.album,
+        albumId: dto.album?.id ?? null,
         allowUpload: dto.allowUpload ?? false,
         allowDownload: dto.allowDownload ?? true,
         showExif: dto.showExif ?? true,

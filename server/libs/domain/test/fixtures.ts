@@ -389,6 +389,7 @@ export const sharedLinkStub = {
     allowDownload: true,
     showExif: true,
     album: undefined,
+    albumId: null,
     assets: [],
   } as SharedLinkEntity),
   expired: Object.freeze({
@@ -403,6 +404,7 @@ export const sharedLinkStub = {
     allowDownload: true,
     showExif: true,
     assets: [],
+    albumId: null,
   } as SharedLinkEntity),
   readonly: Object.freeze<SharedLinkEntity>({
     id: '123',
@@ -487,6 +489,7 @@ export const sharedLinkStub = {
         },
       ],
     },
+    albumId: 'album-123',
   }),
 };
 

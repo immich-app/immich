@@ -2,7 +2,14 @@ import { AlbumService } from './album.service';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra';
-import { AlbumResponseDto, ICryptoRepository, IJobRepository, JobName, mapUser } from '@app/domain';
+import {
+  AlbumResponseDto,
+  ICryptoRepository,
+  IJobRepository,
+  JobName,
+  mapAlbumExcludeAssetInfo,
+  mapUser,
+} from '@app/domain';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { IAlbumRepository } from './album-repository';
 import { DownloadService } from '../../modules/download/download.service';
@@ -130,7 +137,6 @@ describe('Album service', () => {
       removeUser: jest.fn(),
       updateAlbum: jest.fn(),
       updateThumbnails: jest.fn(),
-      getListByAssetId: jest.fn(),
       getCountByUserId: jest.fn(),
       getSharedWithUserAlbumCount: jest.fn(),
     };
@@ -168,11 +174,8 @@ describe('Album service', () => {
 
   it('gets list of albums for auth user', async () => {
     const ownedAlbum = _getOwnedAlbum();
-    const ownedSharedAlbum = _getOwnedSharedAlbum();
-    const sharedWithMeAlbum = _getSharedWithAuthUserAlbum();
-    const albums: AlbumEntity[] = [ownedAlbum, ownedSharedAlbum, sharedWithMeAlbum];
 
-    albumRepositoryMock.getList.mockImplementation(() => Promise.resolve(albums));
+    albumRepositoryMock.getList.mockImplementation(async () => [mapAlbumExcludeAssetInfo(ownedAlbum)]);
 
     const result = await sut.getAllAlbums(authUser, {});
     expect(result).toHaveLength(1);
@@ -492,7 +495,7 @@ describe('Album service', () => {
     ];
     albumEntity.albumThumbnailAssetId = null;
 
-    albumRepositoryMock.getList.mockImplementation(() => Promise.resolve([albumEntity]));
+    albumRepositoryMock.getList.mockImplementation(async () => [mapAlbumExcludeAssetInfo(albumEntity)]);
 
     const result = await sut.getAllAlbums(authUser, {});
 
@@ -509,7 +512,7 @@ describe('Album service', () => {
     albumEntity.albumThumbnailAssetId = 'nonexistent';
     assetEntity.id = newThumbnailAsset.id;
     albumEntity.assets = [assetEntity];
-    albumRepositoryMock.getList.mockImplementation(async () => [albumEntity]);
+    albumRepositoryMock.getList.mockImplementation(async () => [mapAlbumExcludeAssetInfo(albumEntity)]);
     albumRepositoryMock.updateThumbnails.mockImplementation(async () => {
       albumEntity.albumThumbnailAsset = newThumbnailAsset;
       albumEntity.albumThumbnailAssetId = newThumbnailAsset.id;
@@ -530,7 +533,7 @@ describe('Album service', () => {
     const albumEntity = _getOwnedAlbum();
 
     albumEntity.albumThumbnailAssetId = 'e5e65c02-b889-4f3c-afe1-a39a96d578ed';
-    albumRepositoryMock.getList.mockImplementation(async () => [albumEntity]);
+    albumRepositoryMock.getList.mockImplementation(async () => [mapAlbumExcludeAssetInfo(albumEntity)]);
     albumRepositoryMock.updateThumbnails.mockImplementation(async () => {
       albumEntity.albumThumbnailAsset = null;
       albumEntity.albumThumbnailAssetId = null;
