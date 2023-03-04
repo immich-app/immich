@@ -67,7 +67,7 @@
 						<div class="flex flex-row gap-4">
 							{#each places as item}
 								<div class="relative">
-									<div class="filter brightness-75 rounded-xl overflow-hidden">
+									<div class="filter brightness-50 rounded-xl overflow-hidden">
 										<ImmichThumbnail
 											isRoundedCorner={true}
 											thumbnailSize={156}
@@ -77,7 +77,9 @@
 										/>
 									</div>
 									<span
-										class="text-center capitalize absolute bottom-2 w-full text-center text-lg text-white text-ellipsis w-100"
+										class="capitalize absolute bottom-2 w-full text-center text-sm font-medium text-white text-ellipsis w-100 hover:cursor-pointer"
+										on:click={() => goto(`/search?${Field.CITY}=${item.value}`)}
+										on:keydown={() => goto(`/search?${Field.CITY}=${item.value}`)}
 									>
 										{item.value}
 									</span>
@@ -95,7 +97,7 @@
 						<div class="flex flex-row gap-4">
 							{#each things as item}
 								<div class="relative">
-									<div class="filter brightness-75 rounded-xl overflow-hidden">
+									<div class="filter brightness-50 rounded-xl overflow-hidden">
 										<ImmichThumbnail
 											isRoundedCorner={true}
 											thumbnailSize={156}
@@ -105,7 +107,9 @@
 										/>
 									</div>
 									<span
-										class="text-center capitalize absolute bottom-2 w-full text-center text-lg text-white text-ellipsis w-100"
+										class="capitalize absolute bottom-2 w-full text-center text-sm font-medium text-white text-ellipsis w-100 hover:cursor-pointer"
+										on:click={() => goto(`/search?${Field.CITY}=${item.value}`)}
+										on:keydown={() => goto(`/search?${Field.CITY}=${item.value}`)}
 									>
 										{item.value}
 									</span>
