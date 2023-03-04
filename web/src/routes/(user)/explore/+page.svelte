@@ -67,7 +67,7 @@
 						<div class="flex flex-row gap-4">
 							{#each places as item}
 								<div class="relative">
-									<div class="filter brightness-50 rounded-xl overflow-hidden">
+									<div class="filter  brightness-75  rounded-xl overflow-hidden">
 										<ImmichThumbnail
 											isRoundedCorner={true}
 											thumbnailSize={156}
@@ -97,7 +97,7 @@
 						<div class="flex flex-row gap-4">
 							{#each things as item}
 								<div class="relative">
-									<div class="filter brightness-50 rounded-xl overflow-hidden">
+									<div class="filter brightness-75 rounded-xl overflow-hidden">
 										<ImmichThumbnail
 											isRoundedCorner={true}
 											thumbnailSize={156}
