@@ -29,6 +29,7 @@ export const assetSchema: CollectionCreateSchema = {
     // smart info
     { name: 'smartInfo.objects', type: 'string[]', facet: true, optional: true },
     { name: 'smartInfo.tags', type: 'string[]', facet: true, optional: true },
+    { name: 'smartInfo.clip', type: 'float[]', facet: false, optional: true, num_dim: 512 },
 
     // computed
     { name: 'geo', type: 'geopoint', facet: false, optional: true },
