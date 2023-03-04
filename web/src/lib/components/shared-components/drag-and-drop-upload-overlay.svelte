@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 	import ImmichLogo from './immich-logo.svelte';
-	import { page } from '$app/stores';
 	export let dropHandler: (event: DragEvent) => void;
 
 	let dragStartTarget: EventTarget | null = null;
