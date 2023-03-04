@@ -77,7 +77,7 @@
 										/>
 									</div>
 									<span
-										class="capitalize absolute bottom-2 w-full text-center text-sm font-medium text-white text-ellipsis w-100 hover:cursor-pointer"
+										class="capitalize absolute bottom-2 w-full text-center text-sm font-medium text-white text-ellipsis w-100 hover:cursor-pointer backdrop-blur-[1px]"
 										on:click={() => goto(`/search?${Field.CITY}=${item.value}`)}
 										on:keydown={() => goto(`/search?${Field.CITY}=${item.value}`)}
 									>
@@ -107,7 +107,7 @@
 										/>
 									</div>
 									<span
-										class="capitalize absolute bottom-2 w-full text-center text-sm font-medium text-white text-ellipsis w-100 hover:cursor-pointer"
+										class="capitalize absolute bottom-2 w-full text-center text-sm font-medium text-white text-ellipsis w-100 hover:cursor-pointer backdrop-blur-[1px]"
 										on:click={() => goto(`/search?${Field.CITY}=${item.value}`)}
 										on:keydown={() => goto(`/search?${Field.CITY}=${item.value}`)}
 									>
