@@ -163,6 +163,7 @@ export const albumStub = {
     ownerId: authStub.admin.id,
     owner: userEntityStub.admin,
     assets: [],
+    albumThumbnailAsset: null,
     albumThumbnailAssetId: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
