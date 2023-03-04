@@ -46,4 +46,21 @@ export class SmartInfoService {
       this.logger.error(`Unable run object detection pipeline: ${asset.id}`, error?.stack);
     }
   }
+
+  async handleEncodeClip(data: IAssetJob) {
+    const { asset } = data;
+
+    if (!MACHINE_LEARNING_ENABLED || !asset.resizePath) {
+      return;
+    }
+
+    try {
+      const clipModel = await this.machineLearning.encodeCLIPModel({ thumbnailPath: asset.resizePath });
+      if (clipModel) {
+        console.log('clip models', clipModel);
+      }
+    } catch (error: any) {
+      this.logger.error(`Unable run clip encoding pipeline: ${asset.id}`, error?.stack);
+    }
+  }
 }

@@ -4,5 +4,6 @@ export const newMachineLearningRepositoryMock = (): jest.Mocked<IMachineLearning
   return {
     tagImage: jest.fn(),
     detectObjects: jest.fn(),
+    encodeCLIPModel: jest.fn(),
   };
 };

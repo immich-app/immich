@@ -62,6 +62,11 @@ export class MachineLearningProcessor {
   async onDetectObject(job: Job<IAssetJob>) {
     await this.smartInfoService.handleDetectObjects(job.data);
   }
+
+  @Process({ name: JobName.ENCODE_CLIP, concurrency: 2 })
+  async onEncodeClip(job: Job<IAssetJob>) {
+    await this.smartInfoService.handleEncodeClip(job.data);
+  }
 }
 
 @Processor(QueueName.SEARCH)

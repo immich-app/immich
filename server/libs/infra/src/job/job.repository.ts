@@ -41,6 +41,7 @@ export class JobRepository implements IJobRepository {
 
       case JobName.OBJECT_DETECTION:
       case JobName.IMAGE_TAGGING:
+      case JobName.ENCODE_CLIP:
         await this.machineLearning.add(item.name, item.data);
         break;
 

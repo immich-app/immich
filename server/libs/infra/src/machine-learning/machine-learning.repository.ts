@@ -14,4 +14,8 @@ export class MachineLearningRepository implements IMachineLearningRepository {
   detectObjects(input: MachineLearningInput): Promise<string[]> {
     return client.post<string[]>('/object-detection/detect-object', input).then((res) => res.data);
   }
+
+  encodeCLIPModel(input: MachineLearningInput): Promise<string> {
+    return client.post<string>('/sentence-transformer/encode-image', input).then((res) => res.data);
+  }
 }

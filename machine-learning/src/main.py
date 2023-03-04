@@ -1,6 +1,8 @@
 import os
 from flask import Flask, request
 from transformers import pipeline
+from sentence_transformers import SentenceTransformer, util
+from PIL import Image
 
 
 server = Flask(__name__)
@@ -15,6 +17,8 @@ detector = pipeline(
     task="object-detection",
     model="hustvl/yolos-tiny"
 )
+
+sentence_transformer_model = SentenceTransformer('clip-ViT-B-32')
 
 
 # Environment resolver
@@ -38,6 +42,11 @@ def image_classification():
     assetPath = request.json['thumbnailPath']
     return run_engine(classifier, assetPath), 201
 
+@server.route("/sentence-transformer/encode-image", methods=['POST'])
+def encodeSentence():
+    assetPath = request.json['thumbnailPath']
+    img_emb = sentence_transformer_model.encode(Image.open(assetPath))
+    return img_emb.tolist(), 201
 
 def run_engine(engine, path):
     result = []

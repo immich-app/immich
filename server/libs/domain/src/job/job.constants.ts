@@ -29,4 +29,5 @@ export enum JobName {
   SEARCH_INDEX_ALBUM = 'search-index-album',
   SEARCH_REMOVE_ALBUM = 'search-remove-album',
   SEARCH_REMOVE_ASSET = 'search-remove-asset',
+  ENCODE_CLIP = 'clip-encode',
 }

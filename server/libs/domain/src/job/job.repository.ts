@@ -37,7 +37,8 @@ export type JobItem =
   | { name: JobName.SEARCH_INDEX_ALBUMS }
   | { name: JobName.SEARCH_INDEX_ALBUM; data: IAlbumJob }
   | { name: JobName.SEARCH_REMOVE_ASSET; data: IDeleteJob }
-  | { name: JobName.SEARCH_REMOVE_ALBUM; data: IDeleteJob };
+  | { name: JobName.SEARCH_REMOVE_ALBUM; data: IDeleteJob }
+  | { name: JobName.ENCODE_CLIP; data: IAssetJob };
 
 export const IJobRepository = 'IJobRepository';
 
