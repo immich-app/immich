@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -10,6 +12,7 @@ import 'package:immich_mobile/modules/login/providers/authentication.provider.da
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
+import 'package:openapi/api.dart';
 
 class SplashScreenPage extends HookConsumerWidget {
   const SplashScreenPage({Key? key}) : super(key: key);
@@ -21,31 +24,31 @@ class SplashScreenPage extends HookConsumerWidget {
         Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).get(savedLoginInfoKey);
 
     void performLoggingIn() async {
-      try {
-        if (loginInfo != null) {
+      bool isSuccess = false;
+      if (loginInfo != null) {
+        try {
           // Resolve API server endpoint from user provided serverUrl
           await apiService.resolveAndSetEndpoint(loginInfo.serverUrl);
 
-          var isSuccess = await ref
+          isSuccess = await ref
               .read(authenticationProvider.notifier)
               .setSuccessLoginInfo(
                 accessToken: loginInfo.accessToken,
                 serverUrl: loginInfo.serverUrl,
               );
-          if (isSuccess) {
-            final hasPermission = await ref
-                .read(galleryPermissionNotifier.notifier)
-                .hasPermission;
-            if (hasPermission) {
-              // Resume backup (if enable) then navigate
-              ref.watch(backupProvider.notifier).resumeBackup();
-            }
-            AutoRouter.of(context).replace(const TabControllerRoute());
-          } else {
-            AutoRouter.of(context).replace(const LoginRoute());
-          }
+        } on ApiException catch (e) {
+          isSuccess = e.innerException is SocketException;
         }
-      } catch (_) {
+      }
+      if (isSuccess) {
+        final hasPermission =
+            await ref.read(galleryPermissionNotifier.notifier).hasPermission;
+        if (hasPermission) {
+          // Resume backup (if enable) then navigate
+          ref.watch(backupProvider.notifier).resumeBackup();
+        }
+        AutoRouter.of(context).replace(const TabControllerRoute());
+      } else {
         AutoRouter.of(context).replace(const LoginRoute());
       }
     }

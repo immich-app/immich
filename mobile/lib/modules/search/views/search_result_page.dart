@@ -119,7 +119,12 @@ class SearchResultPage extends HookConsumerWidget {
           settings.getSetting(AppSettingsEnum.storageIndicator);
 
       if (searchResultPageState.isError) {
-        return const Text("Error");
+        return const Padding(
+          padding: EdgeInsets.all(12),
+          child: Text(
+            "Error.\nPlease check your network connection, make sure the server is reachable and app/server versions are compatible.",
+          ),
+        );
       }
 
       if (searchResultPageState.isLoading) {
