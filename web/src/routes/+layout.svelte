@@ -10,8 +10,11 @@
 	import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
 	import faviconUrl from '$lib/assets/favicon.png';
 	import type { LayoutData } from './$types';
+	import { fileUploadHandler } from '$lib/utils/file-uploader';
+	import UploadCover from '$lib/components/shared-components/drag-and-drop-upload-overlay.svelte';
 
 	let showNavigationLoadingBar = false;
+	export let data: LayoutData;
 
 	beforeNavigate(() => {
 		showNavigationLoadingBar = true;
@@ -21,7 +24,18 @@
 		showNavigationLoadingBar = false;
 	});
 
-	export let data: LayoutData;
+	const dropHandler = async ({ dataTransfer }: DragEvent) => {
+		const files = dataTransfer?.files;
+		if (!files) {
+			return;
+		}
+
+		const filesArray: File[] = Array.from<File>(files);
+		const albumId =
+			($page.route.id === '/(user)/albums/[albumId]' || undefined) && $page.params.albumId;
+
+		await fileUploadHandler(filesArray, albumId);
+	};
 </script>
 
 <svelte:head>
@@ -57,4 +71,8 @@
 
 {#if data.user?.isAdmin}
 	<VersionAnnouncementBox serverVersion={data.serverVersion} />
+{/if}
+
+{#if $page.route.id?.includes('(user)')}
+	<UploadCover {dropHandler} />
 {/if}
