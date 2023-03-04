@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import ImmichThumbnail from '$lib/components/shared-components/immich-thumbnail.svelte';
 	import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
+	import { AppRoute } from '$lib/constants';
 	import { SearchExploreItem } from '@api';
 	import ClockOutline from 'svelte-material-icons/ClockOutline.svelte';
 	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
@@ -58,62 +58,56 @@
 				<hr class="dark:border-immich-dark-gray" />
 			</div>
 
-			<div class="ml-4 mr-8 flex flex-col">
+			<div class="mx-4 flex flex-col">
 				{#if places.length > 0}
 					<div class="mb-6 mt-2">
 						<div>
 							<p class="mb-4 dark:text-immich-dark-fg">Places</p>
 						</div>
-						<div class="flex flex-row gap-4">
+						<div class="flex flex-row flex-wrap gap-4">
 							{#each places as item}
-								<div class="relative">
-									<div class="filter  brightness-75  rounded-xl overflow-hidden">
-										<ImmichThumbnail
-											isRoundedCorner={true}
-											thumbnailSize={156}
-											asset={item.data}
-											readonly={true}
-											on:click={() => goto(`/search?${Field.CITY}=${item.value}`)}
-										/>
-									</div>
-									<span
-										class="capitalize absolute bottom-2 w-full text-center text-sm font-medium text-white text-ellipsis w-100 hover:cursor-pointer backdrop-blur-[1px]"
-										on:click={() => goto(`/search?${Field.CITY}=${item.value}`)}
-										on:keydown={() => goto(`/search?${Field.CITY}=${item.value}`)}
-									>
-										{item.value}
-									</span>
-								</div>
-							{/each}
-						</div>
-					</div>
-				{/if}
-
-				{#if places.length > 0}
-					<div class="mb-6 mt-2">
-						<div>
-							<p class="mb-4 dark:text-immich-dark-fg">Things</p>
-						</div>
-						<div class="flex flex-row gap-4">
-							{#each things as item}
-								<div class="relative">
+								<a class="relative" href="/search?${Field.CITY}=${item.value}" draggable="false">
 									<div class="filter brightness-75 rounded-xl overflow-hidden">
 										<ImmichThumbnail
 											isRoundedCorner={true}
 											thumbnailSize={156}
 											asset={item.data}
 											readonly={true}
-											on:click={() => goto(`/search?${Field.TAGS}=${item.value}`)}
 										/>
 									</div>
 									<span
-										class="capitalize absolute bottom-2 w-full text-center text-sm font-medium text-white text-ellipsis w-100 hover:cursor-pointer backdrop-blur-[1px]"
-										on:click={() => goto(`/search?${Field.CITY}=${item.value}`)}
-										on:keydown={() => goto(`/search?${Field.CITY}=${item.value}`)}
+										class="capitalize absolute bottom-2 w-full text-center text-sm font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
 									>
 										{item.value}
 									</span>
-								</div>
+								</a>
+							{/each}
+						</div>
+					</div>
+				{/if}
+
+				{#if things.length > 0}
+					<div class="mb-6 mt-2">
+						<div>
+							<p class="mb-4 dark:text-immich-dark-fg">Things</p>
+						</div>
+						<div class="flex flex-row flex-wrap gap-4">
+							{#each things as item}
+								<a class="relative" href="/search?${Field.TAGS}=${item.value}" draggable="false">
+									<div class="filter brightness-75 rounded-xl overflow-hidden">
+										<ImmichThumbnail
+											isRoundedCorner={true}
+											thumbnailSize={156}
+											asset={item.data}
+											readonly={true}
+										/>
+									</div>
+									<span
+										class="capitalize absolute bottom-2 w-full text-center text-sm font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
+									>
+										{item.value}
+									</span>
+								</a>
 							{/each}
 						</div>
 					</div>
@@ -121,44 +115,43 @@
 
 				<hr class="dark:border-immich-dark-gray mb-4" />
 
-				<div class="flex flex-row gap-2">
-					<div class="w-1/4">
-						<p class="text-sm mb-4">YOUR ACTIVITY</p>
-						<button
-							class="mr-2 py-2 w-full flex text-base align-content-center gap-2"
-							on:click={() => goto('/favorites')}
-						>
-							<StarOutline size={24} />
-							<p class="text-base">Favorites</p>
-						</button>
-						<button
-							class="mr-2 py-2 w-full flex text-base align-content-center gap-2"
-							on:click={() => goto('/favorites')}
-						>
-							<ClockOutline size={24} />
-							<p class="text-base">Recently added</p>
-						</button>
-					</div>
-					<div class="w-1/2">
-						<p class="text-sm mb-4">CATEGORIES</p>
-						<button
-							class="mr-2 py-2 w-full flex text-base align-content-center gap-2"
-							on:click={() => goto('/search?type=VIDEO')}
-						>
-							<PlayCircleOutline size={24} />
-							<p class="text-base">Videos</p>
-						</button>
-						<div class="w-1/2">
-							<button
-								class="mr-2 py-2 w-full flex text-base align-content-center gap-2"
-								on:click={() => goto('/search?type=VIDEO')}
+				<div
+					class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8"
+				>
+					<div class="flex flex-col gap-6 dark:text-immich-dark-fg">
+						<p class="text-sm">YOUR ACTIVITY</p>
+						<div class="flex flex-col gap-4 dark:text-immich-dark-fg/80">
+							<a
+								href={AppRoute.FAVORITES}
+								class="w-full flex text-base content-center gap-2"
+								draggable="false"
 							>
-								<MotionPlayOutline size={24} />
-								<p class="text-base">Motion photos</p>
-							</button>
+								<StarOutline size={24} />
+								<span>Favorites</span>
+							</a>
+							<a
+								href={AppRoute.FAVORITES}
+								class="w-full flex text-base content-center gap-2"
+								draggable="false"
+							>
+								<ClockOutline size={24} />
+								<span>Recently added</span>
+							</a>
 						</div>
-						<div class="w-1/2">
-							<!--  -->
+					</div>
+					<div class="flex flex-col gap-6 dark:text-immich-dark-fg">
+						<p class="text-sm">CATEGORIES</p>
+						<div class="flex flex-col gap-4 dark:text-immich-dark-fg/80">
+							<a href="/search?type=VIDEO" class="w-full flex text-base items-center gap-2">
+								<PlayCircleOutline size={24} />
+								<span>Videos</span>
+							</a>
+							<div>
+								<a href="/search?type=VIDEO" class="w-full flex text-base items-center gap-2">
+									<MotionPlayOutline size={24} />
+									<span>Motion photos</span>
+								</a>
+							</div>
 						</div>
 					</div>
 				</div>
