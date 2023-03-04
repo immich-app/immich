@@ -7,5 +7,5 @@ export interface MachineLearningInput {
 export interface IMachineLearningRepository {
   tagImage(input: MachineLearningInput): Promise<string[]>;
   detectObjects(input: MachineLearningInput): Promise<string[]>;
-  encodeCLIPModel(input: MachineLearningInput): Promise<string>;
+  encodeCLIPModel(input: MachineLearningInput): Promise<number[]>;
 }
