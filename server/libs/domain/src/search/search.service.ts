@@ -1,3 +1,4 @@
+import { MACHINE_LEARNING_ENABLED } from '@app/common';
 import { AssetEntity } from '@app/infra/db/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -5,6 +6,7 @@ import { IAlbumRepository } from '../album/album.repository';
 import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { IAlbumJob, IAssetJob, IDeleteJob, IJobRepository, JobName } from '../job';
+import { IMachineLearningRepository } from '../smart-info';
 import { SearchDto } from './dto';
 import { SearchConfigResponseDto, SearchResponseDto } from './response-dto';
 import { ISearchRepository, SearchCollection, SearchExploreItem } from './search.repository';
@@ -18,6 +20,7 @@ export class SearchService {
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
     configService: ConfigService,
   ) {
@@ -63,16 +66,24 @@ export class SearchService {
 
     const query = dto.query || '*';
 
-    return {
-      assets: (await this.searchRepository.search(SearchCollection.ASSETS, query, {
+    let assets: any;
+    if (MACHINE_LEARNING_ENABLED) {
+      const clip = await this.machineLearning.encodeText(query);
+      assets = await this.searchRepository.vectorSearch(clip);
+    } else {
+      assets = await this.searchRepository.search(SearchCollection.ASSETS, query, {
         userId: authUser.id,
         ...dto,
-      })) as any,
+      });
+    }
+
+    return {
       albums: (await this.searchRepository.search(SearchCollection.ALBUMS, query, {
         userId: authUser.id,
         ...dto,
       })) as any,
-    };
+      assets,
+    } as any;
   }
 
   async handleIndexAssets() {

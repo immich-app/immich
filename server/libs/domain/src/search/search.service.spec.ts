@@ -8,12 +8,14 @@ import {
   newAlbumRepositoryMock,
   newAssetRepositoryMock,
   newJobRepositoryMock,
+  newMachineLearningRepositoryMock,
   newSearchRepositoryMock,
 } from '../../test';
 import { IAlbumRepository } from '../album/album.repository';
 import { IAssetRepository } from '../asset/asset.repository';
 import { JobName } from '../job';
 import { IJobRepository } from '../job/job.repository';
+import { IMachineLearningRepository } from '../smart-info';
 import { SearchDto } from './dto';
 import { ISearchRepository } from './search.repository';
 import { SearchService } from './search.service';
@@ -23,6 +25,7 @@ describe(SearchService.name, () => {
   let albumMock: jest.Mocked<IAlbumRepository>;
   let assetMock: jest.Mocked<IAssetRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
+  let machineMock: jest.Mocked<IMachineLearningRepository>;
   let searchMock: jest.Mocked<ISearchRepository>;
   let configMock: jest.Mocked<ConfigService>;
 
@@ -30,10 +33,11 @@ describe(SearchService.name, () => {
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
     jobMock = newJobRepositoryMock();
+    machineMock = newMachineLearningRepositoryMock();
     searchMock = newSearchRepositoryMock();
     configMock = { get: jest.fn() } as unknown as jest.Mocked<ConfigService>;
 
-    sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
+    sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
   });
 
   it('should work', () => {
@@ -69,7 +73,7 @@ describe(SearchService.name, () => {
 
     it('should be disabled via an env variable', () => {
       configMock.get.mockReturnValue('false');
-      sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
+      sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
 
       expect(sut.isEnabled()).toBe(false);
     });
@@ -82,7 +86,7 @@ describe(SearchService.name, () => {
 
     it('should return the config when search is disabled', () => {
       configMock.get.mockReturnValue('false');
-      sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
+      sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
 
       expect(sut.getConfig()).toEqual({ enabled: false });
     });
@@ -91,7 +95,7 @@ describe(SearchService.name, () => {
   describe(`bootstrap`, () => {
     it('should skip when search is disabled', async () => {
       configMock.get.mockReturnValue('false');
-      sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
+      sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
 
       await sut.bootstrap();
 
@@ -123,7 +127,7 @@ describe(SearchService.name, () => {
   describe('search', () => {
     it('should throw an error is search is disabled', async () => {
       configMock.get.mockReturnValue('false');
-      sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
+      sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
 
       await expect(sut.search(authStub.admin, {})).rejects.toBeInstanceOf(BadRequestException);
 
@@ -166,7 +170,7 @@ describe(SearchService.name, () => {
   describe('handleIndexAssets', () => {
     it('should skip if search is disabled', async () => {
       configMock.get.mockReturnValue('false');
-      sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
+      sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
 
       await sut.handleIndexAssets();
 
@@ -192,7 +196,7 @@ describe(SearchService.name, () => {
   describe('handleIndexAsset', () => {
     it('should skip if search is disabled', async () => {
       configMock.get.mockReturnValue('false');
-      sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
+      sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
 
       await sut.handleIndexAsset({ asset: assetEntityStub.image });
 
@@ -217,7 +221,7 @@ describe(SearchService.name, () => {
   describe('handleIndexAlbums', () => {
     it('should skip if search is disabled', async () => {
       configMock.get.mockReturnValue('false');
-      sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
+      sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
 
       await sut.handleIndexAlbums();
 
@@ -243,7 +247,7 @@ describe(SearchService.name, () => {
   describe('handleIndexAlbum', () => {
     it('should skip if search is disabled', async () => {
       configMock.get.mockReturnValue('false');
-      sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
+      sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
 
       await sut.handleIndexAlbum({ album: albumStub.empty });
 
@@ -268,7 +272,7 @@ describe(SearchService.name, () => {
   describe('handleRemoveAlbum', () => {
     it('should skip if search is disabled', async () => {
       configMock.get.mockReturnValue('false');
-      sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
+      sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
 
       await sut.handleRemoveAlbum({ id: 'album1' });
 
@@ -293,7 +297,7 @@ describe(SearchService.name, () => {
   describe('handleRemoveAsset', () => {
     it('should skip if search is disabled', async () => {
       configMock.get.mockReturnValue('false');
-      sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
+      sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
 
       await sut.handleRemoveAsset({ id: 'asset1`' });
 

@@ -298,6 +298,22 @@ export class TypesenseRepository implements ISearchRepository {
     throw new Error(`Invalid collection: ${collection}`);
   }
 
+  async vectorSearch(input: number[]): Promise<SearchResult<AssetEntity>> {
+    const alias = await this.client.aliases(SearchCollection.ASSETS).retrieve();
+
+    const { results } = await this.client.multiSearch.perform({
+      searches: [
+        {
+          collection: alias.collection_name,
+          q: '*',
+          vector_query: `smartInfo.clip:([${input.join(',')}], k:100)`,
+        } as any,
+      ],
+    });
+
+    return this.asResponse(results[0] as SearchResponse<AssetEntity>);
+  }
+
   private asResponse<T extends DocumentSchema>(results: SearchResponse<T>): SearchResult<T> {
     return {
       page: results.page,
