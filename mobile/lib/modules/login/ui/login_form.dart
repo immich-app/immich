@@ -48,7 +48,6 @@ class LoginForm extends HookConsumerWidget {
 
         try {
           if (serverUrl.isNotEmpty) {
-            isLoading.value = true;
             final serverEndpoint =
                 await apiService.resolveAndSetEndpoint(serverUrl.toString());
 
@@ -63,10 +62,8 @@ class LoginForm extends HookConsumerWidget {
               isOauthEnable.value = false;
             }
 
-            isLoading.value = false;
           }
         } catch (_) {
-          isLoading.value = false;
           isOauthEnable.value = false;
         }
       }
