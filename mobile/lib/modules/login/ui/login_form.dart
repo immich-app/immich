@@ -32,6 +32,8 @@ class LoginForm extends HookConsumerWidget {
     final serverEndpointController =
         useTextEditingController.fromValue(TextEditingValue.empty);
     final apiService = ref.watch(apiServiceProvider);
+    final emailFocusNode = useFocusNode();
+    final passwordFocusNode = useFocusNode();
     final serverEndpointFocusNode = useFocusNode();
     final isLoading = useState<bool>(false);
     final isOauthEnable = useState<bool>(false);
@@ -95,6 +97,41 @@ class LoginForm extends HookConsumerWidget {
       serverEndpointController.text = 'http://10.1.15.216:2283/api';
     }
 
+    login() async {
+      // This will remove current cache asset state of previous user login.
+      ref.read(assetProvider.notifier).clearAllAsset();
+
+      var isAuthenticated =
+          await ref.read(authenticationProvider.notifier).login(
+                usernameController.text,
+                passwordController.text,
+                serverEndpointController.text,
+              );
+
+      if (isAuthenticated) {
+        // Resume backup (if enable) then navigate
+        if (ref.read(authenticationProvider).shouldChangePassword &&
+            !ref.read(authenticationProvider).isAdmin) {
+          AutoRouter.of(context).push(const ChangePasswordRoute());
+        } else {
+          final hasPermission = await ref
+              .read(galleryPermissionNotifier.notifier)
+              .hasPermission;
+          if (hasPermission) {
+            // Don't resume the backup until we have gallery permission
+            ref.read(backupProvider.notifier).resumeBackup();
+          }
+          AutoRouter.of(context).replace(const TabControllerRoute());
+        }
+      } else {
+        ImmichToast.show(
+          context: context,
+          msg: "login_form_failed_login".tr(),
+          toastType: ToastType.error,
+        );
+      }
+    }
+
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 300),
@@ -115,11 +152,20 @@ class LoginForm extends HookConsumerWidget {
                   ),
                 ),
                 const ImmichTitleText(),
-                EmailInput(controller: usernameController),
-                PasswordInput(controller: passwordController),
+                EmailInput(
+                  controller: usernameController,
+                  focusNode: emailFocusNode,
+                  onSubmit: passwordFocusNode.requestFocus,
+                ),
+                PasswordInput(
+                  controller: passwordController,
+                  focusNode: passwordFocusNode,
+                  onSubmit: serverEndpointFocusNode.requestFocus,
+                ),
                 ServerEndpointInput(
                   controller: serverEndpointController,
                   focusNode: serverEndpointFocusNode,
+                  onSubmit: login,
                 ),
                 if (isLoading.value)
                   const SizedBox(
@@ -135,11 +181,7 @@ class LoginForm extends HookConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const SizedBox(height: 18),
-                      LoginButton(
-                        emailController: usernameController,
-                        passwordController: passwordController,
-                        serverEndpointController: serverEndpointController,
-                      ),
+                      LoginButton(onPressed: login),
                       if (isOauthEnable.value) ...[
                         Padding(
                           padding: const EdgeInsets.symmetric(
@@ -182,10 +224,13 @@ class LoginForm extends HookConsumerWidget {
 class ServerEndpointInput extends StatelessWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
+  final Function()? onSubmit;
+  
   const ServerEndpointInput({
     Key? key,
     required this.controller,
     required this.focusNode,
+    this.onSubmit,
   }) : super(key: key);
 
   String? _validateInput(String? url) {
@@ -218,14 +263,23 @@ class ServerEndpointInput extends StatelessWidget {
       autofillHints: const [AutofillHints.url],
       keyboardType: TextInputType.url,
       autocorrect: false,
+      onFieldSubmitted: (_) => onSubmit?.call(),
+      textInputAction: TextInputAction.go,
     );
   }
 }
 
 class EmailInput extends StatelessWidget {
   final TextEditingController controller;
+  final FocusNode? focusNode;
+  final Function()? onSubmit;
 
-  const EmailInput({Key? key, required this.controller}) : super(key: key);
+  const EmailInput({
+    Key? key, 
+    required this.controller,
+    this.focusNode,
+    this.onSubmit,
+  }) : super(key: key);
 
   String? _validateInput(String? email) {
     if (email == null || email == '') return null;
@@ -250,14 +304,24 @@ class EmailInput extends StatelessWidget {
       autovalidateMode: AutovalidateMode.always,
       autofillHints: const [AutofillHints.email],
       keyboardType: TextInputType.emailAddress,
+      onFieldSubmitted: (_) => onSubmit?.call(),
+      focusNode: focusNode,
+      textInputAction: TextInputAction.next,
     );
   }
 }
 
 class PasswordInput extends StatelessWidget {
   final TextEditingController controller;
+  final FocusNode? focusNode;
+  final Function()? onSubmit;
 
-  const PasswordInput({Key? key, required this.controller}) : super(key: key);
+  const PasswordInput({
+    Key? key,
+    required this.controller, 
+    this.focusNode, 
+    this.onSubmit,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -271,20 +335,19 @@ class PasswordInput extends StatelessWidget {
       ),
       autofillHints: const [AutofillHints.password],
       keyboardType: TextInputType.text,
+      onFieldSubmitted: (_) => onSubmit?.call(),
+      focusNode: focusNode,
+      textInputAction: TextInputAction.next,
     );
   }
 }
 
 class LoginButton extends ConsumerWidget {
-  final TextEditingController emailController;
-  final TextEditingController passwordController;
-  final TextEditingController serverEndpointController;
+  final Function() onPressed;
 
   const LoginButton({
     Key? key,
-    required this.emailController,
-    required this.passwordController,
-    required this.serverEndpointController,
+    required this.onPressed,
   }) : super(key: key);
 
   @override
@@ -293,40 +356,7 @@ class LoginButton extends ConsumerWidget {
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 12),
       ),
-      onPressed: () async {
-        // This will remove current cache asset state of previous user login.
-        ref.read(assetProvider.notifier).clearAllAsset();
-
-        var isAuthenticated =
-            await ref.read(authenticationProvider.notifier).login(
-                  emailController.text,
-                  passwordController.text,
-                  serverEndpointController.text,
-                );
-
-        if (isAuthenticated) {
-          // Resume backup (if enable) then navigate
-          if (ref.read(authenticationProvider).shouldChangePassword &&
-              !ref.read(authenticationProvider).isAdmin) {
-            AutoRouter.of(context).push(const ChangePasswordRoute());
-          } else {
-            final hasPermission = await ref
-                .read(galleryPermissionNotifier.notifier)
-                .hasPermission;
-            if (hasPermission) {
-              // Don't resume the backup until we have gallery permission
-              ref.read(backupProvider.notifier).resumeBackup();
-            }
-            AutoRouter.of(context).replace(const TabControllerRoute());
-          }
-        } else {
-          ImmichToast.show(
-            context: context,
-            msg: "login_form_failed_login".tr(),
-            toastType: ToastType.error,
-          );
-        }
-      },
+      onPressed: onPressed,
       icon: const Icon(Icons.login_rounded),
       label: const Text(
         "login_form_button_text",
