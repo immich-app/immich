@@ -68,7 +68,7 @@
 				{#if places.length > 0}
 					<div class="mb-6 mt-2">
 						<div>
-							<p class="mb-4 dark:text-immich-dark-fg">Places</p>
+							<p class="mb-4 dark:text-immich-dark-fg font-medium">Places</p>
 						</div>
 						<div class="flex flex-row flex-wrap gap-4">
 							{#each places as item}
@@ -95,7 +95,7 @@
 				{#if things.length > 0}
 					<div class="mb-6 mt-2">
 						<div>
-							<p class="mb-4 dark:text-immich-dark-fg">Things</p>
+							<p class="mb-4 dark:text-immich-dark-fg font-medium">Things</p>
 						</div>
 						<div class="flex flex-row flex-wrap gap-4">
 							{#each things as item}
@@ -129,7 +129,7 @@
 						<div class="flex flex-col gap-4 dark:text-immich-dark-fg/80">
 							<a
 								href={AppRoute.FAVORITES}
-								class="w-full flex text-base content-center gap-2"
+								class="w-full flex text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary content-center gap-2"
 								draggable="false"
 							>
 								<StarOutline size={24} />
@@ -137,7 +137,7 @@
 							</a>
 							<a
 								href="/search?recent=true"
-								class="w-full flex text-base content-center gap-2"
+								class="w-full flex text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary content-center gap-2"
 								draggable="false"
 							>
 								<ClockOutline size={24} />
@@ -150,13 +150,16 @@
 						<div class="flex flex-col gap-4 dark:text-immich-dark-fg/80">
 							<a
 								href="/search?type={AssetTypeEnum.Video}"
-								class="w-full flex text-base items-center gap-2"
+								class="w-full flex text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary items-center gap-2"
 							>
 								<PlayCircleOutline size={24} />
 								<span>Videos</span>
 							</a>
 							<div>
-								<a href="/search?motion=true" class="w-full flex text-base items-center gap-2">
+								<a
+									href="/search?motion=true"
+									class="w-full flex text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary items-center gap-2"
+								>
 									<MotionPlayOutline size={24} />
 									<span>Motion photos</span>
 								</a>
