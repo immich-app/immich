@@ -1,5 +1,11 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	// DO NOT include `import { page } from '$app/stores'` here, because this can
+	// lead to pages not being unmounted, which then causes weird page nesting
+	// and routing issues.
+	//
+	// This is an issue in SvelteKit caused by using the page store in layouts and
+	// using transitions on pages: https://github.com/sveltejs/kit/issues/7405
+
 	import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
 	import SideBarButton from '$lib/components/shared-components/side-bar/side-bar-button.svelte';
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
@@ -9,7 +15,12 @@
 	import StatusBox from '$lib/components/shared-components/status-box.svelte';
 	import { goto } from '$app/navigation';
 	import { AppRoute } from '../../lib/constants';
+	import type { LayoutData } from './$types';
 
+	export let data: LayoutData;
+
+	// Circumvents the need to import the page store. Should be replaced by
+	// `$page.data.meta.title` once issue #7405 of SvelteKit is resolved.
 	const getPageTitle = (routeId: string | null) => {
 		switch (routeId) {
 			case AppRoute.ADMIN_USER_MANAGEMENT:
@@ -26,7 +37,7 @@
 	};
 </script>
 
-<NavigationBar user={$page.data.user} />
+<NavigationBar user={data.user} />
 
 <main>
 	<section class="grid grid-cols-[250px_auto] pt-[72px] h-screen">
@@ -34,25 +45,25 @@
 			<SideBarButton
 				title="Users"
 				logo={AccountMultipleOutline}
-				isSelected={$page.route.id === AppRoute.ADMIN_USER_MANAGEMENT}
+				isSelected={data.routeId === AppRoute.ADMIN_USER_MANAGEMENT}
 				on:selected={() => goto(AppRoute.ADMIN_USER_MANAGEMENT)}
 			/>
 			<SideBarButton
 				title="Jobs"
 				logo={Sync}
-				isSelected={$page.route.id === AppRoute.ADMIN_JOBS}
+				isSelected={data.routeId === AppRoute.ADMIN_JOBS}
 				on:selected={() => goto(AppRoute.ADMIN_JOBS)}
 			/>
 			<SideBarButton
 				title="Settings"
 				logo={Cog}
-				isSelected={$page.route.id === AppRoute.ADMIN_SETTINGS}
+				isSelected={data.routeId === AppRoute.ADMIN_SETTINGS}
 				on:selected={() => goto(AppRoute.ADMIN_SETTINGS)}
 			/>
 			<SideBarButton
 				title="Server Stats"
 				logo={Server}
-				isSelected={$page.route.id === AppRoute.ADMIN_STATS}
+				isSelected={data.routeId === AppRoute.ADMIN_STATS}
 				on:selected={() => goto(AppRoute.ADMIN_STATS)}
 			/>
 			<div class="mb-6 mt-auto">
@@ -63,7 +74,7 @@
 		<section class="overflow-y-auto immich-scrollbar ">
 			<div id="setting-title" class="pt-10 w-full bg-immich-bg dark:bg-immich-dark-bg">
 				<h1 class="text-lg ml-8 mb-4 text-immich-primary dark:text-immich-dark-primary font-medium">
-					{getPageTitle($page.route.id)}
+					{getPageTitle(data.routeId)}
 				</h1>
 				<hr class="dark:border-immich-dark-gray" />
 			</div>
