@@ -42,9 +42,27 @@ class LoginForm extends HookConsumerWidget {
       duration: const Duration(seconds: 60),
     )..repeat();
 
+    // The string of the server URL currently being fetched (or null)
+    final ValueNotifier<String?> fetchingServerCredentialUrl = useState(null);
+
     getServerLoginCredential() async {
       if (!serverEndpointFocusNode.hasFocus) {
-        var serverUrl = serverEndpointController.text.trim();
+        final serverUrl = serverEndpointController.text.trim();
+
+        // Guard empty URL
+        if (serverUrl.isEmpty) {
+          return;
+        }
+
+        // Guard already fetching the server credential
+        // in the case where we hit "Go" and don't want to make
+        // duplicate requests
+        if (fetchingServerCredentialUrl.value == serverUrl) {
+          return;
+        }
+
+        // Set the trimmed server URL to the currently-being-fetched state
+        fetchingServerCredentialUrl.value = serverUrl;
 
         try {
           if (serverUrl.isNotEmpty) {
@@ -61,12 +79,14 @@ class LoginForm extends HookConsumerWidget {
             } else {
               isOauthEnable.value = false;
             }
-
           }
         } catch (_) {
           isOauthEnable.value = false;
         }
       }
+
+      // Done fetching the login credential, so clear it to null
+      fetchingServerCredentialUrl.value = null;
     }
 
     useEffect(
@@ -136,6 +156,70 @@ class LoginForm extends HookConsumerWidget {
       }
     }
 
+
+    oAuthLogin() async {
+      var oAuthService = ref.watch(oAuthServiceProvider);
+      ref.watch(assetProvider.notifier).clearAllAsset();
+      OAuthConfigResponseDto? oAuthServerConfig;
+
+      try {
+        oAuthServerConfig = await oAuthService
+            .getOAuthServerConfig(serverEndpointController.text);
+
+        isLoading.value = true;
+      } catch (e) {
+        ImmichToast.show(
+          context: context,
+          msg: "login_form_failed_get_oauth_server_config".tr(),
+          toastType: ToastType.error,
+        );
+        isLoading.value = false;
+        return;
+      }
+
+      if (oAuthServerConfig != null && oAuthServerConfig.enabled) {
+        var loginResponseDto =
+            await oAuthService.oAuthLogin(oAuthServerConfig.url!);
+
+        if (loginResponseDto != null) {
+          var isSuccess = await ref
+              .watch(authenticationProvider.notifier)
+              .setSuccessLoginInfo(
+                accessToken: loginResponseDto.accessToken,
+                serverUrl: serverEndpointController.text,
+              );
+
+          if (isSuccess) {
+            isLoading.value = false;
+            final permission = ref.watch(galleryPermissionNotifier);
+            if (permission.isGranted || permission.isLimited) {
+              ref.watch(backupProvider.notifier).resumeBackup();
+            }
+            AutoRouter.of(context).replace(
+              const TabControllerRoute(),
+            );
+          } else {
+            ImmichToast.show(
+              context: context,
+              msg: "login_form_failed_login".tr(),
+              toastType: ToastType.error,
+            );
+          }
+        }
+
+        isLoading.value = false;
+      } else {
+        ImmichToast.show(
+          context: context,
+          msg: "login_form_failed_get_oauth_server_disable".tr(),
+          toastType: ToastType.info,
+        );
+        isLoading.value = false;
+        return;
+      }
+    }
+
+
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 300),
@@ -169,7 +253,21 @@ class LoginForm extends HookConsumerWidget {
                 ServerEndpointInput(
                   controller: serverEndpointController,
                   focusNode: serverEndpointFocusNode,
-                  onSubmit: login,
+                  onSubmit: () async {
+                    isLoading.value = true;
+                    
+                    // We need the server login credential first to see if 
+                    // we enable OAuth
+                    await getServerLoginCredential();
+
+                    // See if we have OAuth
+                    if (isOauthEnable.value) {
+                      // 
+                    } else {
+                      // Login
+                      await login();
+                    }
+                  },
                 ),
                 if (isLoading.value)
                   const SizedBox(
@@ -202,16 +300,7 @@ class LoginForm extends HookConsumerWidget {
                           serverEndpointController: serverEndpointController,
                           buttonLabel: oAuthButtonLabel.value,
                           isLoading: isLoading,
-                          onLoginSuccess: () {
-                            isLoading.value = false;
-                            final permission = ref.watch(galleryPermissionNotifier);
-                            if (permission.isGranted || permission.isLimited) {
-                              ref.watch(backupProvider.notifier).resumeBackup();
-                            }
-                            AutoRouter.of(context).replace(
-                              const TabControllerRoute(),
-                            );
-                          },
+                          onPressed: oAuthLogin,
                         ),
                       ],
                     ],
@@ -373,82 +462,26 @@ class LoginButton extends ConsumerWidget {
 class OAuthLoginButton extends ConsumerWidget {
   final TextEditingController serverEndpointController;
   final ValueNotifier<bool> isLoading;
-  final VoidCallback onLoginSuccess;
   final String buttonLabel;
+  final Function() onPressed;
 
   const OAuthLoginButton({
     Key? key,
     required this.serverEndpointController,
     required this.isLoading,
-    required this.onLoginSuccess,
     required this.buttonLabel,
+    required this.onPressed,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var oAuthService = ref.watch(oAuthServiceProvider);
-
-    void performOAuthLogin() async {
-      ref.watch(assetProvider.notifier).clearAllAsset();
-      OAuthConfigResponseDto? oAuthServerConfig;
-
-      try {
-        oAuthServerConfig = await oAuthService
-            .getOAuthServerConfig(serverEndpointController.text);
-
-        isLoading.value = true;
-      } catch (e) {
-        ImmichToast.show(
-          context: context,
-          msg: "login_form_failed_get_oauth_server_config".tr(),
-          toastType: ToastType.error,
-        );
-        isLoading.value = false;
-        return;
-      }
-
-      if (oAuthServerConfig != null && oAuthServerConfig.enabled) {
-        var loginResponseDto =
-            await oAuthService.oAuthLogin(oAuthServerConfig.url!);
-
-        if (loginResponseDto != null) {
-          var isSuccess = await ref
-              .watch(authenticationProvider.notifier)
-              .setSuccessLoginInfo(
-                accessToken: loginResponseDto.accessToken,
-                serverUrl: serverEndpointController.text,
-              );
-
-          if (isSuccess) {
-            isLoading.value = false;
-            onLoginSuccess();
-          } else {
-            ImmichToast.show(
-              context: context,
-              msg: "login_form_failed_login".tr(),
-              toastType: ToastType.error,
-            );
-          }
-        }
-
-        isLoading.value = false;
-      } else {
-        ImmichToast.show(
-          context: context,
-          msg: "login_form_failed_get_oauth_server_disable".tr(),
-          toastType: ToastType.info,
-        );
-        isLoading.value = false;
-        return;
-      }
-    }
 
     return ElevatedButton.icon(
       style: ElevatedButton.styleFrom(
         backgroundColor: Theme.of(context).primaryColor.withAlpha(230),
         padding: const EdgeInsets.symmetric(vertical: 12),
       ),
-      onPressed: performOAuthLogin,
+      onPressed: onPressed,
       icon: const Icon(Icons.pin_rounded),
       label: Text(
         buttonLabel,
