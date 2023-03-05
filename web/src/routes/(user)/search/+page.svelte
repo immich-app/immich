@@ -5,13 +5,21 @@
 	import type { PageData } from './$types';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import ImageOffOutline from 'svelte-material-icons/ImageOffOutline.svelte';
+	import { afterNavigate, goto } from '$app/navigation';
 
 	export let data: PageData;
 	const term = $page.url.searchParams.get('q') || data.term || '';
+
+	let goBackRoute = '/explore';
+	afterNavigate((r) => {
+		if (r.from) {
+			goBackRoute = r.from.url.href;
+		}
+	});
 </script>
 
 <section>
-	<ControlAppBar on:close-button-click={() => history.back()} backIcon={ArrowLeft}>
+	<ControlAppBar on:close-button-click={() => goto(goBackRoute)} backIcon={ArrowLeft}>
 		<svelte:fragment slot="leading">
 			<p class="text-xl capitalize">
 				Search
