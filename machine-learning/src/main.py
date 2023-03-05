@@ -43,10 +43,16 @@ def image_classification():
     return run_engine(classifier, assetPath), 201
 
 @server.route("/sentence-transformer/encode-image", methods=['POST'])
-def encodeSentence():
+def clip_encode_image():
     assetPath = request.json['thumbnailPath']
-    img_emb = sentence_transformer_model.encode(Image.open(assetPath))
-    return img_emb.tolist(), 201
+    emb = sentence_transformer_model.encode(Image.open(assetPath))
+    return emb.tolist(), 201
+
+@server.route("/sentence-transformer/encode-text", methods=['POST'])
+def clip_encode_text():
+    text = request.json['text']
+    emb = sentence_transformer_model.encode(text)
+    return emb.tolist(), 201
 
 def run_engine(engine, path):
     result = []
