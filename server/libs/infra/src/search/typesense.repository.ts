@@ -2,11 +2,13 @@ import {
   ISearchRepository,
   SearchCollection,
   SearchCollectionIndexStatus,
+  SearchExploreItem,
   SearchFilter,
   SearchResult,
 } from '@app/domain';
 import { Injectable, Logger } from '@nestjs/common';
 import _, { Dictionary } from 'lodash';
+import { filter, firstValueFrom, from, map, mergeMap, toArray } from 'rxjs';
 import { Client } from 'typesense';
 import { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
 import { DocumentSchema, SearchResponse } from 'typesense/lib/Typesense/Documents';
@@ -14,8 +16,9 @@ import { AlbumEntity, AssetEntity } from '../db';
 import { albumSchema } from './schemas/album.schema';
 import { assetSchema } from './schemas/asset.schema';
 
-interface GeoAssetEntity extends AssetEntity {
+interface CustomAssetEntity extends AssetEntity {
   geo?: [number, number];
+  motion?: boolean;
 }
 
 function removeNil<T extends Dictionary<any>>(item: T): Partial<T> {
@@ -85,6 +88,12 @@ export class TypesenseRepository implements ISearchRepository {
   }
 
   async setup(): Promise<void> {
+    const collections = await this.client.collections().retrieve();
+    for (const collection of collections) {
+      this.logger.debug(`${collection.name} => ${collection.num_documents}`);
+      // await this.client.collections(collection.name).delete();
+    }
+
     // upsert collections
     for (const [collectionName, schema] of schemas) {
       const collection = await this.client
@@ -172,6 +181,59 @@ export class TypesenseRepository implements ISearchRepository {
     }
   }
 
+  async explore(userId: string): Promise<SearchExploreItem<AssetEntity>[]> {
+    const alias = await this.client.aliases(SearchCollection.ASSETS).retrieve();
+
+    const common = {
+      q: '*',
+      filter_by: `ownerId:${userId}`,
+      per_page: 100,
+    };
+
+    const asset$ = this.client.collections<AssetEntity>(alias.collection_name).documents();
+
+    const { facet_counts: facets } = await asset$.search({
+      ...common,
+      query_by: 'exifInfo.imageName',
+      facet_by: this.getFacetFieldNames(SearchCollection.ASSETS),
+      max_facet_values: 50,
+    });
+
+    return firstValueFrom(
+      from(facets || []).pipe(
+        mergeMap(
+          (facet) =>
+            from(facet.counts).pipe(
+              mergeMap(
+                (count) =>
+                  from(
+                    asset$.search({
+                      ...common,
+                      query_by: 'exifInfo.imageName',
+                      filter_by: `${facet.field_name}:${count.value}`,
+                    }),
+                  ).pipe(
+                    map((result) => ({
+                      value: count.value,
+                      data: result.hits?.[0]?.document as AssetEntity,
+                    })),
+                    filter((item) => !!item.data),
+                  ),
+                5,
+              ),
+              toArray(),
+              map((items) => ({
+                fieldName: facet.field_name as string,
+                items,
+              })),
+            ),
+          3,
+        ),
+        toArray(),
+      ),
+    );
+  }
+
   search(collection: SearchCollection.ASSETS, query: string, filter: SearchFilter): Promise<SearchResult<AssetEntity>>;
   search(collection: SearchCollection.ALBUMS, query: string, filter: SearchFilter): Promise<SearchResult<AlbumEntity>>;
   async search(collection: SearchCollection, query: string, filters: SearchFilter) {
@@ -213,10 +275,8 @@ export class TypesenseRepository implements ISearchRepository {
           ].join(','),
           filter_by: _filters.join(' && '),
           per_page: 250,
-          facet_by: (assetSchema.fields || [])
-            .filter((field) => field.facet)
-            .map((field) => field.name)
-            .join(','),
+          sort_by: filters.recent ? 'createdAt:desc' : undefined,
+          facet_by: this.getFacetFieldNames(SearchCollection.ASSETS),
         });
 
       return this.asResponse(results);
@@ -313,13 +373,24 @@ export class TypesenseRepository implements ISearchRepository {
     }
   }
 
-  private patchAsset(asset: AssetEntity): GeoAssetEntity {
+  private patchAsset(asset: AssetEntity): CustomAssetEntity {
+    let custom = asset as CustomAssetEntity;
+
     const lat = asset.exifInfo?.latitude;
     const lng = asset.exifInfo?.longitude;
     if (lat && lng && lat !== 0 && lng !== 0) {
-      return { ...asset, geo: [lat, lng] };
+      custom = { ...custom, geo: [lat, lng] };
     }
 
-    return asset;
+    custom = { ...custom, motion: !!asset.livePhotoVideoId };
+
+    return custom;
+  }
+
+  private getFacetFieldNames(collection: SearchCollection) {
+    return (schemaMap[collection].fields || [])
+      .filter((field) => field.facet)
+      .map((field) => field.name)
+      .join(',');
   }
 }

@@ -1542,6 +1542,44 @@ export interface SearchConfigResponseDto {
 /**
  * 
  * @export
+ * @interface SearchExploreItem
+ */
+export interface SearchExploreItem {
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchExploreItem
+     */
+    'value': string;
+    /**
+     * 
+     * @type {AssetResponseDto}
+     * @memberof SearchExploreItem
+     */
+    'data': AssetResponseDto;
+}
+/**
+ * 
+ * @export
+ * @interface SearchExploreResponseDto
+ */
+export interface SearchExploreResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof SearchExploreResponseDto
+     */
+    'fieldName': string;
+    /**
+     * 
+     * @type {Array<SearchExploreItem>}
+     * @memberof SearchExploreResponseDto
+     */
+    'items': Array<SearchExploreItem>;
+}
+/**
+ * 
+ * @export
  * @interface SearchFacetCountResponseDto
  */
 export interface SearchFacetCountResponseDto {
@@ -6634,6 +6672,41 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        getExploreData: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/search/explore`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            // authentication cookie required
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         getSearchConfig: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/search/config`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -6676,10 +6749,12 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {string} [exifInfoModel] 
          * @param {Array<string>} [smartInfoObjects] 
          * @param {Array<string>} [smartInfoTags] 
+         * @param {boolean} [recent] 
+         * @param {boolean} [motion] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        search: async (query?: string, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        search: async (query?: string, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, recent?: boolean, motion?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/search`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -6738,6 +6813,14 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
                 localVarQueryParameter['smartInfo.tags'] = smartInfoTags;
             }
 
+            if (recent !== undefined) {
+                localVarQueryParameter['recent'] = recent;
+            }
+
+            if (motion !== undefined) {
+                localVarQueryParameter['motion'] = motion;
+            }
+
 
     
             setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -6764,6 +6847,15 @@ export const SearchApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        async getExploreData(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<SearchExploreResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getExploreData(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         async getSearchConfig(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchConfigResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getSearchConfig(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
@@ -6780,11 +6872,13 @@ export const SearchApiFp = function(configuration?: Configuration) {
          * @param {string} [exifInfoModel] 
          * @param {Array<string>} [smartInfoObjects] 
          * @param {Array<string>} [smartInfoTags] 
+         * @param {boolean} [recent] 
+         * @param {boolean} [motion] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async search(query?: string, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.search(query, type, isFavorite, exifInfoCity, exifInfoState, exifInfoCountry, exifInfoMake, exifInfoModel, smartInfoObjects, smartInfoTags, options);
+        async search(query?: string, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, recent?: boolean, motion?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.search(query, type, isFavorite, exifInfoCity, exifInfoState, exifInfoCountry, exifInfoMake, exifInfoModel, smartInfoObjects, smartInfoTags, recent, motion, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -6797,6 +6891,14 @@ export const SearchApiFp = function(configuration?: Configuration) {
 export const SearchApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
     const localVarFp = SearchApiFp(configuration)
     return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getExploreData(options?: any): AxiosPromise<Array<SearchExploreResponseDto>> {
+            return localVarFp.getExploreData(options).then((request) => request(axios, basePath));
+        },
         /**
          * 
          * @param {*} [options] Override http request option.
@@ -6817,11 +6919,13 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
          * @param {string} [exifInfoModel] 
          * @param {Array<string>} [smartInfoObjects] 
          * @param {Array<string>} [smartInfoTags] 
+         * @param {boolean} [recent] 
+         * @param {boolean} [motion] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        search(query?: string, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, options?: any): AxiosPromise<SearchResponseDto> {
-            return localVarFp.search(query, type, isFavorite, exifInfoCity, exifInfoState, exifInfoCountry, exifInfoMake, exifInfoModel, smartInfoObjects, smartInfoTags, options).then((request) => request(axios, basePath));
+        search(query?: string, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, recent?: boolean, motion?: boolean, options?: any): AxiosPromise<SearchResponseDto> {
+            return localVarFp.search(query, type, isFavorite, exifInfoCity, exifInfoState, exifInfoCountry, exifInfoMake, exifInfoModel, smartInfoObjects, smartInfoTags, recent, motion, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -6833,6 +6937,16 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
  * @extends {BaseAPI}
  */
 export class SearchApi extends BaseAPI {
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApi
+     */
+    public getExploreData(options?: AxiosRequestConfig) {
+        return SearchApiFp(this.configuration).getExploreData(options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * 
      * @param {*} [options] Override http request option.
@@ -6855,12 +6969,14 @@ export class SearchApi extends BaseAPI {
      * @param {string} [exifInfoModel] 
      * @param {Array<string>} [smartInfoObjects] 
      * @param {Array<string>} [smartInfoTags] 
+     * @param {boolean} [recent] 
+     * @param {boolean} [motion] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SearchApi
      */
-    public search(query?: string, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, options?: AxiosRequestConfig) {
-        return SearchApiFp(this.configuration).search(query, type, isFavorite, exifInfoCity, exifInfoState, exifInfoCountry, exifInfoMake, exifInfoModel, smartInfoObjects, smartInfoTags, options).then((request) => request(this.axios, this.basePath));
+    public search(query?: string, type?: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'OTHER', isFavorite?: boolean, exifInfoCity?: string, exifInfoState?: string, exifInfoCountry?: string, exifInfoMake?: string, exifInfoModel?: string, smartInfoObjects?: Array<string>, smartInfoTags?: Array<string>, recent?: boolean, motion?: boolean, options?: AxiosRequestConfig) {
+        return SearchApiFp(this.configuration).search(query, type, isFavorite, exifInfoCity, exifInfoState, exifInfoCountry, exifInfoMake, exifInfoModel, smartInfoObjects, smartInfoTags, recent, motion, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

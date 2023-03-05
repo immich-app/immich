@@ -17,6 +17,8 @@ export interface SearchFilter {
   model?: string;
   objects?: string[];
   tags?: string[];
+  recent?: boolean;
+  motion?: boolean;
 }
 
 export interface SearchResult<T> {
@@ -39,6 +41,14 @@ export interface SearchFacet {
   }>;
 }
 
+export interface SearchExploreItem<T> {
+  fieldName: string;
+  items: Array<{
+    value: string;
+    data: T;
+  }>;
+}
+
 export type SearchCollectionIndexStatus = Record<SearchCollection, boolean>;
 
 export const ISearchRepository = 'ISearchRepository';
@@ -57,4 +67,6 @@ export interface ISearchRepository {
 
   search(collection: SearchCollection.ASSETS, query: string, filters: SearchFilter): Promise<SearchResult<AssetEntity>>;
   search(collection: SearchCollection.ALBUMS, query: string, filters: SearchFilter): Promise<SearchResult<AlbumEntity>>;
+
+  explore(userId: string): Promise<SearchExploreItem<AssetEntity>[]>;
 }

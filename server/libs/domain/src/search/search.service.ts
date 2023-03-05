@@ -1,3 +1,4 @@
+import { AssetEntity } from '@app/infra/db/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IAlbumRepository } from '../album/album.repository';
@@ -6,7 +7,7 @@ import { AuthUserDto } from '../auth';
 import { IAlbumJob, IAssetJob, IDeleteJob, IJobRepository, JobName } from '../job';
 import { SearchDto } from './dto';
 import { SearchConfigResponseDto, SearchResponseDto } from './response-dto';
-import { ISearchRepository, SearchCollection } from './search.repository';
+import { ISearchRepository, SearchCollection, SearchExploreItem } from './search.repository';
 
 @Injectable()
 export class SearchService {
@@ -52,10 +53,13 @@ export class SearchService {
     }
   }
 
+  async getExploreData(authUser: AuthUserDto): Promise<SearchExploreItem<AssetEntity>[]> {
+    this.assertEnabled();
+    return this.searchRepository.explore(authUser.id);
+  }
+
   async search(authUser: AuthUserDto, dto: SearchDto): Promise<SearchResponseDto> {
-    if (!this.enabled) {
-      throw new BadRequestException('Search is disabled');
-    }
+    this.assertEnabled();
 
     const query = dto.query || '*';
 
@@ -83,6 +87,7 @@ export class SearchService {
 
       this.logger.log(`Indexing ${assets.length} assets`);
       await this.searchRepository.import(SearchCollection.ASSETS, assets, true);
+      this.logger.debug('Finished re-indexing all assets');
     } catch (error: any) {
       this.logger.error(`Unable to index all assets`, error?.stack);
     }
@@ -94,6 +99,9 @@ export class SearchService {
     }
 
     const { asset } = data;
+    if (!asset.isVisible) {
+      return;
+    }
 
     try {
       await this.searchRepository.index(SearchCollection.ASSETS, asset);
@@ -111,6 +119,7 @@ export class SearchService {
       const albums = await this.albumRepository.getAll();
       this.logger.log(`Indexing ${albums.length} albums`);
       await this.searchRepository.import(SearchCollection.ALBUMS, albums, true);
+      this.logger.debug('Finished re-indexing all albums');
     } catch (error: any) {
       this.logger.error(`Unable to index all albums`, error?.stack);
     }
@@ -149,6 +158,12 @@ export class SearchService {
       await this.searchRepository.delete(collection, id);
     } catch (error: any) {
       this.logger.error(`Unable to remove ${collection}: ${id}`, error?.stack);
+    }
+  }
+
+  private assertEnabled() {
+    if (!this.enabled) {
+      throw new BadRequestException('Search is disabled');
     }
   }
 }

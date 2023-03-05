@@ -2,8 +2,8 @@ import {
   AssetCore,
   IAssetRepository,
   IAssetUploadedJob,
+  IJobRepository,
   IReverseGeocodingJob,
-  ISearchRepository,
   JobName,
   QueueName,
 } from '@app/domain';
@@ -86,14 +86,14 @@ export class MetadataExtractionProcessor {
 
   constructor(
     @Inject(IAssetRepository) assetRepository: IAssetRepository,
-    @Inject(ISearchRepository) searchRepository: ISearchRepository,
+    @Inject(IJobRepository) jobRepository: IJobRepository,
 
     @InjectRepository(ExifEntity)
     private exifRepository: Repository<ExifEntity>,
 
     configService: ConfigService,
   ) {
-    this.assetCore = new AssetCore(assetRepository, searchRepository);
+    this.assetCore = new AssetCore(assetRepository, jobRepository);
 
     if (!configService.get('DISABLE_REVERSE_GEOCODING')) {
       this.logger.log('Initializing Reverse Geocoding');

@@ -8,9 +8,10 @@ export const load = (async ({ locals, parent, url }) => {
 	}
 
 	const term = url.searchParams.get('q') || undefined;
-
 	const { data: results } = await locals.api.searchApi.search(
 		term,
+		undefined,
+		undefined,
 		undefined,
 		undefined,
 		undefined,

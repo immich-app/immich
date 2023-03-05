@@ -640,6 +640,22 @@
                 "type": "string"
               }
             }
+          },
+          {
+            "name": "recent",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "motion",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -658,12 +674,6 @@
           "Search"
         ],
         "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
           {
             "bearer": []
           },
@@ -699,7 +709,34 @@
           },
           {
             "cookie": []
-          },
+          }
+        ]
+      }
+    },
+    "/search/explore": {
+      "get": {
+        "operationId": "getExploreData",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SearchExploreResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Search"
+        ],
+        "security": [
           {
             "bearer": []
           },
@@ -4147,6 +4184,39 @@
         },
         "required": [
           "enabled"
+        ]
+      },
+      "SearchExploreItem": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AssetResponseDto"
+          }
+        },
+        "required": [
+          "value",
+          "data"
+        ]
+      },
+      "SearchExploreResponseDto": {
+        "type": "object",
+        "properties": {
+          "fieldName": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchExploreItem"
+            }
+          }
+        },
+        "required": [
+          "fieldName",
+          "items"
         ]
       },
       "SharedLinkType": {

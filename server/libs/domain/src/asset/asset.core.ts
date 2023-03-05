@@ -1,21 +1,21 @@
 import { AssetEntity, AssetType } from '@app/infra/db/entities';
-import { ISearchRepository, SearchCollection } from '../search/search.repository';
+import { IJobRepository, JobName } from '../job';
 import { AssetSearchOptions, IAssetRepository } from './asset.repository';
 
 export class AssetCore {
-  constructor(private repository: IAssetRepository, private searchRepository: ISearchRepository) {}
+  constructor(private assetRepository: IAssetRepository, private jobRepository: IJobRepository) {}
 
   getAll(options: AssetSearchOptions) {
-    return this.repository.getAll(options);
+    return this.assetRepository.getAll(options);
   }
 
   async save(asset: Partial<AssetEntity>) {
-    const _asset = await this.repository.save(asset);
-    await this.searchRepository.index(SearchCollection.ASSETS, _asset);
+    const _asset = await this.assetRepository.save(asset);
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { asset: _asset } });
     return _asset;
   }
 
   findLivePhotoMatch(livePhotoCID: string, otherAssetId: string, type: AssetType): Promise<AssetEntity | null> {
-    return this.repository.findLivePhotoMatch(livePhotoCID, otherAssetId, type);
+    return this.assetRepository.findLivePhotoMatch(livePhotoCID, otherAssetId, type);
   }
 }

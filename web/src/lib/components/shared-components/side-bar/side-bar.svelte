@@ -4,6 +4,7 @@
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import ImageAlbum from 'svelte-material-icons/ImageAlbum.svelte';
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
+	import Magnify from 'svelte-material-icons/Magnify.svelte';
 	import StarOutline from 'svelte-material-icons/StarOutline.svelte';
 	import { AppRoute } from '../../../constants';
 	import LoadingSpinner from '../loading-spinner.svelte';
@@ -61,6 +62,18 @@
 				{/await}
 			</svelte:fragment>
 		</SideBarButton>
+	</a>
+	<a
+		data-sveltekit-preload-data="hover"
+		data-sveltekit-noscroll
+		href={AppRoute.EXPLORE}
+		draggable="false"
+	>
+		<SideBarButton
+			title="Explore"
+			logo={Magnify}
+			isSelected={$page.route.id === '/(user)/explore'}
+		/>
 	</a>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.SHARING} draggable="false">
 		<SideBarButton

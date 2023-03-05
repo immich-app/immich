@@ -302,6 +302,10 @@ class ApiClient {
           return SearchAssetResponseDto.fromJson(value);
         case 'SearchConfigResponseDto':
           return SearchConfigResponseDto.fromJson(value);
+        case 'SearchExploreItem':
+          return SearchExploreItem.fromJson(value);
+        case 'SearchExploreResponseDto':
+          return SearchExploreResponseDto.fromJson(value);
         case 'SearchFacetCountResponseDto':
           return SearchFacetCountResponseDto.fromJson(value);
         case 'SearchFacetResponseDto':

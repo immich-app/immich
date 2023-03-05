@@ -8,5 +8,6 @@ export const newSearchRepositoryMock = (): jest.Mocked<ISearchRepository> => {
     import: jest.fn(),
     search: jest.fn(),
     delete: jest.fn(),
+    explore: jest.fn(),
   };
 };
