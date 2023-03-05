@@ -3,7 +3,7 @@
 	import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import { AppRoute } from '$lib/constants';
-	import { SearchExploreItem } from '@api';
+	import { AssetTypeEnum, SearchExploreItem } from '@api';
 	import ClockOutline from 'svelte-material-icons/ClockOutline.svelte';
 	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
@@ -66,7 +66,7 @@
 						</div>
 						<div class="flex flex-row flex-wrap gap-4">
 							{#each places as item}
-								<a class="relative" href="/search?${Field.CITY}=${item.value}" draggable="false">
+								<a class="relative" href="/search?{Field.CITY}={item.value}" draggable="false">
 									<div class="filter brightness-75 rounded-xl overflow-hidden">
 										<ImmichThumbnail
 											isRoundedCorner={true}
@@ -93,7 +93,7 @@
 						</div>
 						<div class="flex flex-row flex-wrap gap-4">
 							{#each things as item}
-								<a class="relative" href="/search?${Field.TAGS}=${item.value}" draggable="false">
+								<a class="relative" href="/search?{Field.TAGS}={item.value}" draggable="false">
 									<div class="filter brightness-75 rounded-xl overflow-hidden">
 										<ImmichThumbnail
 											isRoundedCorner={true}
@@ -142,7 +142,10 @@
 					<div class="flex flex-col gap-6 dark:text-immich-dark-fg">
 						<p class="text-sm">CATEGORIES</p>
 						<div class="flex flex-col gap-4 dark:text-immich-dark-fg/80">
-							<a href="/search?type=VIDEO" class="w-full flex text-base items-center gap-2">
+							<a
+								href="/search?type={AssetTypeEnum.Video}"
+								class="w-full flex text-base items-center gap-2"
+							>
 								<PlayCircleOutline size={24} />
 								<span>Videos</span>
 							</a>
