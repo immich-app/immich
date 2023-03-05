@@ -1,7 +1,6 @@
 import { AssetEntity, AssetType } from '@app/infra/db/entities';
 import { Inject } from '@nestjs/common';
 import { IAssetUploadedJob, IJobRepository, JobName } from '../job';
-import { ISearchRepository } from '../search';
 import { AssetCore } from './asset.core';
 import { IAssetRepository } from './asset.repository';
 
@@ -11,9 +10,8 @@ export class AssetService {
   constructor(
     @Inject(IAssetRepository) assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ISearchRepository) searchRepository: ISearchRepository,
   ) {
-    this.assetCore = new AssetCore(assetRepository, searchRepository);
+    this.assetCore = new AssetCore(assetRepository, jobRepository);
   }
 
   async handleAssetUpload(data: IAssetUploadedJob) {

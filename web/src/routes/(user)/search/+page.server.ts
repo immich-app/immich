@@ -19,6 +19,8 @@ export const load = (async ({ locals, parent, url }) => {
 		undefined,
 		undefined,
 		undefined,
+		undefined,
+		undefined,
 		{ params: url.searchParams }
 	);
 	return { user, term, results };

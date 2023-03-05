@@ -16,8 +16,9 @@ import { AlbumEntity, AssetEntity } from '../db';
 import { albumSchema } from './schemas/album.schema';
 import { assetSchema } from './schemas/asset.schema';
 
-interface GeoAssetEntity extends AssetEntity {
+interface CustomAssetEntity extends AssetEntity {
   geo?: [number, number];
+  motion?: boolean;
 }
 
 function removeNil<T extends Dictionary<any>>(item: T): Partial<T> {
@@ -186,7 +187,7 @@ export class TypesenseRepository implements ISearchRepository {
     const common = {
       q: '*',
       filter_by: `ownerId:${userId}`,
-      per_page: 1,
+      per_page: 100,
     };
 
     const asset$ = this.client.collections<AssetEntity>(alias.collection_name).documents();
@@ -195,6 +196,7 @@ export class TypesenseRepository implements ISearchRepository {
       ...common,
       query_by: 'exifInfo.imageName',
       facet_by: this.getFacetFieldNames(SearchCollection.ASSETS),
+      max_facet_values: 50,
     });
 
     return firstValueFrom(
@@ -273,6 +275,7 @@ export class TypesenseRepository implements ISearchRepository {
           ].join(','),
           filter_by: _filters.join(' && '),
           per_page: 250,
+          sort_by: filters.recent ? 'createdAt:desc' : undefined,
           facet_by: this.getFacetFieldNames(SearchCollection.ASSETS),
         });
 
@@ -370,14 +373,18 @@ export class TypesenseRepository implements ISearchRepository {
     }
   }
 
-  private patchAsset(asset: AssetEntity): GeoAssetEntity {
+  private patchAsset(asset: AssetEntity): CustomAssetEntity {
+    let custom = asset as CustomAssetEntity;
+
     const lat = asset.exifInfo?.latitude;
     const lng = asset.exifInfo?.longitude;
     if (lat && lng && lat !== 0 && lng !== 0) {
-      return { ...asset, geo: [lat, lng] };
+      custom = { ...custom, geo: [lat, lng] };
     }
 
-    return asset;
+    custom = { ...custom, motion: !!asset.livePhotoVideoId };
+
+    return custom;
   }
 
   private getFacetFieldNames(collection: SearchCollection) {

@@ -57,6 +57,7 @@
 	};
 
 	const parseVideoDuration = (duration: string) => {
+		duration = duration || '0:00:00.00000';
 		const timePart = duration.split(':');
 		const hours = timePart[0];
 		const minutes = timePart[1];

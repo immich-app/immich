@@ -99,6 +99,9 @@ export class SearchService {
     }
 
     const { asset } = data;
+    if (!asset.isVisible) {
+      return;
+    }
 
     try {
       await this.searchRepository.index(SearchCollection.ASSETS, asset);

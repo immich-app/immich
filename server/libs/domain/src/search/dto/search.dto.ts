@@ -54,4 +54,14 @@ export class SearchDto {
   @IsOptional()
   @Transform(({ value }) => value.split(','))
   'smartInfo.tags'?: string[];
+
+  @IsBoolean()
+  @IsOptional()
+  @Transform(toBoolean)
+  recent?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  @Transform(toBoolean)
+  motion?: boolean;
 }

@@ -17,6 +17,8 @@ export interface SearchFilter {
   model?: string;
   objects?: string[];
   tags?: string[];
+  recent?: boolean;
+  motion?: boolean;
 }
 
 export interface SearchResult<T> {

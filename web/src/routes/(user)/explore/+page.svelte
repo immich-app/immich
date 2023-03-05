@@ -18,6 +18,8 @@
 		OBJECTS = 'smartInfo.objects'
 	}
 
+	const MAX_ITEMS = 12;
+
 	let things: SearchExploreItem[] = [];
 	let places: SearchExploreItem[] = [];
 
@@ -32,6 +34,9 @@
 				break;
 		}
 	}
+
+	things = things.slice(0, MAX_ITEMS);
+	places = places.slice(0, MAX_ITEMS);
 </script>
 
 <section>
@@ -131,7 +136,7 @@
 								<span>Favorites</span>
 							</a>
 							<a
-								href={AppRoute.FAVORITES}
+								href="/search?recent=true"
 								class="w-full flex text-base content-center gap-2"
 								draggable="false"
 							>
@@ -151,7 +156,7 @@
 								<span>Videos</span>
 							</a>
 							<div>
-								<a href="/search?type=VIDEO" class="w-full flex text-base items-center gap-2">
+								<a href="/search?motion=true" class="w-full flex text-base items-center gap-2">
 									<MotionPlayOutline size={24} />
 									<span>Motion photos</span>
 								</a>
