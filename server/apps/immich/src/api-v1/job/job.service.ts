@@ -70,6 +70,7 @@ export class JobService {
         for (const asset of assets) {
           await this.jobRepository.queue({ name: JobName.IMAGE_TAGGING, data: { asset } });
           await this.jobRepository.queue({ name: JobName.OBJECT_DETECTION, data: { asset } });
+          await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: { asset } });
         }
         return assets.length;
       }
