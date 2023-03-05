@@ -98,37 +98,44 @@ class LoginForm extends HookConsumerWidget {
     }
 
     login() async {
+      // Start loading
+      isLoading.value = true;
+
       // This will remove current cache asset state of previous user login.
       ref.read(assetProvider.notifier).clearAllAsset();
 
-      var isAuthenticated =
+      try {
+        final isAuthenticated =
           await ref.read(authenticationProvider.notifier).login(
-                usernameController.text,
-                passwordController.text,
-                serverEndpointController.text,
-              );
-
-      if (isAuthenticated) {
-        // Resume backup (if enable) then navigate
-        if (ref.read(authenticationProvider).shouldChangePassword &&
-            !ref.read(authenticationProvider).isAdmin) {
-          AutoRouter.of(context).push(const ChangePasswordRoute());
-        } else {
-          final hasPermission = await ref
-              .read(galleryPermissionNotifier.notifier)
-              .hasPermission;
-          if (hasPermission) {
-            // Don't resume the backup until we have gallery permission
-            ref.read(backupProvider.notifier).resumeBackup();
+            usernameController.text,
+            passwordController.text,
+            serverEndpointController.text,
+          );
+        if (isAuthenticated) {
+          // Resume backup (if enable) then navigate
+          if (ref.read(authenticationProvider).shouldChangePassword &&
+              !ref.read(authenticationProvider).isAdmin) {
+            AutoRouter.of(context).push(const ChangePasswordRoute());
+          } else {
+            final hasPermission = await ref
+                .read(galleryPermissionNotifier.notifier)
+                .hasPermission;
+            if (hasPermission) {
+              // Don't resume the backup until we have gallery permission
+              ref.read(backupProvider.notifier).resumeBackup();
+            }
+            AutoRouter.of(context).replace(const TabControllerRoute());
           }
-          AutoRouter.of(context).replace(const TabControllerRoute());
+        } else {
+          ImmichToast.show(
+            context: context,
+            msg: "login_form_failed_login".tr(),
+            toastType: ToastType.error,
+          );
         }
-      } else {
-        ImmichToast.show(
-          context: context,
-          msg: "login_form_failed_login".tr(),
-          toastType: ToastType.error,
-        );
+      } finally {
+        // Make sure we stop loading
+        isLoading.value = false;
       }
     }
 
