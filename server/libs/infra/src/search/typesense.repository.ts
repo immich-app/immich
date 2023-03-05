@@ -306,10 +306,12 @@ export class TypesenseRepository implements ISearchRepository {
         {
           collection: alias.collection_name,
           q: '*',
-          vector_query: `smartInfo.clip:([${input.join(',')}], k:100)`,
+          vector_query: `smartInfo.clipEmbedding:([${input.join(',')}], k:100)`,
         } as any,
       ],
     });
+
+    console.log(results[0].hits);
 
     return this.asResponse(results[0] as SearchResponse<AssetEntity>);
   }

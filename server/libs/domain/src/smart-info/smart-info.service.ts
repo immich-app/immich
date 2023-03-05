@@ -55,8 +55,8 @@ export class SmartInfoService {
     }
 
     try {
-      const clip = await this.machineLearning.encodeImage({ thumbnailPath: asset.resizePath });
-      await this.repository.upsert({ assetId: asset.id, clip });
+      const clipEmbedding = await this.machineLearning.encodeImage({ thumbnailPath: asset.resizePath });
+      await this.repository.upsert({ assetId: asset.id, clipEmbedding: clipEmbedding });
     } catch (error: any) {
       this.logger.error(`Unable run clip encoding pipeline: ${asset.id}`, error?.stack);
     }

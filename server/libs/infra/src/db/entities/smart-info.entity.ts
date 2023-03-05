@@ -17,5 +17,5 @@ export class SmartInfoEntity {
   objects!: string[] | null;
 
   @Column('numeric', { precision: 20, scale: 19, nullable: true, array: true })
-  clip!: number[] | null;
+  clipEmbedding!: number[] | null;
 }
