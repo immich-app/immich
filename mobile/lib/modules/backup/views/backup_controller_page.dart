@@ -392,7 +392,7 @@ class BackupControllerPage extends HookConsumerWidget {
                 return Container();
               },
             ),
-          if (isBackgroundEnabled && settings != null)
+          if (Platform.isIOS && isBackgroundEnabled && settings != null)
             IosDebugInfoTile(
               settings: settings,
           ),
