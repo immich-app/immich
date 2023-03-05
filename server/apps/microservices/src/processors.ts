@@ -53,17 +53,17 @@ export class BackgroundTaskProcessor {
 export class MachineLearningProcessor {
   constructor(private smartInfoService: SmartInfoService) {}
 
-  @Process({ name: JobName.IMAGE_TAGGING, concurrency: 2 })
+  @Process({ name: JobName.IMAGE_TAGGING, concurrency: 1 })
   async onTagImage(job: Job<IAssetJob>) {
     await this.smartInfoService.handleTagImage(job.data);
   }
 
-  @Process({ name: JobName.OBJECT_DETECTION, concurrency: 2 })
+  @Process({ name: JobName.OBJECT_DETECTION, concurrency: 1 })
   async onDetectObject(job: Job<IAssetJob>) {
     await this.smartInfoService.handleDetectObjects(job.data);
   }
 
-  @Process({ name: JobName.ENCODE_CLIP, concurrency: 2 })
+  @Process({ name: JobName.ENCODE_CLIP, concurrency: 1 })
   async onEncodeClip(job: Job<IAssetJob>) {
     await this.smartInfoService.handleEncodeClip(job.data);
   }
