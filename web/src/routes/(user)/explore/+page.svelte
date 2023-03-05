@@ -14,7 +14,8 @@
 
 	enum Field {
 		CITY = 'exifInfo.city',
-		TAGS = 'smartInfo.tags'
+		TAGS = 'smartInfo.tags',
+		OBJECTS = 'smartInfo.objects'
 	}
 
 	let things: SearchExploreItem[] = [];
@@ -22,7 +23,7 @@
 
 	for (const item of data.items) {
 		switch (item.fieldName) {
-			case Field.TAGS:
+			case Field.OBJECTS:
 				things = item.items;
 				break;
 
@@ -93,7 +94,7 @@
 						</div>
 						<div class="flex flex-row flex-wrap gap-4">
 							{#each things as item}
-								<a class="relative" href="/search?{Field.TAGS}={item.value}" draggable="false">
+								<a class="relative" href="/search?{Field.OBJECTS}={item.value}" draggable="false">
 									<div class="filter brightness-75 rounded-xl overflow-hidden">
 										<ImmichThumbnail
 											isRoundedCorner={true}
