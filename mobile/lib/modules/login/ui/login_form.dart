@@ -42,7 +42,7 @@ class LoginForm extends HookConsumerWidget {
       duration: const Duration(seconds: 60),
     )..repeat();
 
-    getServeLoginConfig() async {
+    getServerLoginCredential() async {
       if (!serverEndpointFocusNode.hasFocus) {
         var serverUrl = serverEndpointController.text.trim();
 
@@ -74,7 +74,7 @@ class LoginForm extends HookConsumerWidget {
 
     useEffect(
       () {
-        serverEndpointFocusNode.addListener(getServeLoginConfig);
+        serverEndpointFocusNode.addListener(getServerLoginCredential);
 
         var loginInfo = Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox)
             .get(savedLoginInfoKey);
@@ -85,7 +85,7 @@ class LoginForm extends HookConsumerWidget {
           serverEndpointController.text = loginInfo.serverUrl;
         }
 
-        getServeLoginConfig();
+        getServerLoginCredential();
         return null;
       },
       [],
@@ -109,7 +109,7 @@ class LoginForm extends HookConsumerWidget {
           await ref.read(authenticationProvider.notifier).login(
             usernameController.text,
             passwordController.text,
-            serverEndpointController.text,
+            serverEndpointController.text.trim(),
           );
         if (isAuthenticated) {
           // Resume backup (if enable) then navigate
