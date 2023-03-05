@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
 	import SideBarButton from '$lib/components/shared-components/side-bar/side-bar-button.svelte';
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
@@ -9,24 +8,12 @@
 	import StatusBox from '$lib/components/shared-components/status-box.svelte';
 	import { goto } from '$app/navigation';
 	import { AppRoute } from '../../lib/constants';
+	import type { LayoutData } from './$types';
 
-	const getPageTitle = (routeId: string | null) => {
-		switch (routeId) {
-			case AppRoute.ADMIN_USER_MANAGEMENT:
-				return 'User Management';
-			case AppRoute.ADMIN_SETTINGS:
-				return 'System Settings';
-			case AppRoute.ADMIN_JOBS:
-				return 'Jobs';
-			case AppRoute.ADMIN_STATS:
-				return 'Server Stats';
-			default:
-				return '';
-		}
-	};
+	export let data: LayoutData;
 </script>
 
-<NavigationBar user={$page.data.user} />
+<NavigationBar user={data.user} />
 
 <main>
 	<section class="grid grid-cols-[250px_auto] pt-[72px] h-screen">
@@ -34,25 +21,25 @@
 			<SideBarButton
 				title="Users"
 				logo={AccountMultipleOutline}
-				isSelected={$page.route.id === AppRoute.ADMIN_USER_MANAGEMENT}
+				isSelected={false}
 				on:selected={() => goto(AppRoute.ADMIN_USER_MANAGEMENT)}
 			/>
 			<SideBarButton
 				title="Jobs"
 				logo={Sync}
-				isSelected={$page.route.id === AppRoute.ADMIN_JOBS}
+				isSelected={false}
 				on:selected={() => goto(AppRoute.ADMIN_JOBS)}
 			/>
 			<SideBarButton
 				title="Settings"
 				logo={Cog}
-				isSelected={$page.route.id === AppRoute.ADMIN_SETTINGS}
+				isSelected={false}
 				on:selected={() => goto(AppRoute.ADMIN_SETTINGS)}
 			/>
 			<SideBarButton
 				title="Server Stats"
 				logo={Server}
-				isSelected={$page.route.id === AppRoute.ADMIN_STATS}
+				isSelected={false}
 				on:selected={() => goto(AppRoute.ADMIN_STATS)}
 			/>
 			<div class="mb-6 mt-auto">
@@ -63,7 +50,7 @@
 		<section class="overflow-y-auto immich-scrollbar ">
 			<div id="setting-title" class="pt-10 w-full bg-immich-bg dark:bg-immich-dark-bg">
 				<h1 class="text-lg ml-8 mb-4 text-immich-primary dark:text-immich-dark-primary font-medium">
-					{getPageTitle($page.route.id)}
+					Administration
 				</h1>
 				<hr class="dark:border-immich-dark-gray" />
 			</div>
