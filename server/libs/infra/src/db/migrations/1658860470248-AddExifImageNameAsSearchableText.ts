@@ -17,9 +17,7 @@ export class AddExifImageNameAsSearchableText1658860470248 implements MigrationI
                          COALESCE("imageName", '') || ' ' ||
                          COALESCE("city", '') || ' ' ||
                          COALESCE("state", '') || ' ' ||
-                         COALESCE("country", '') || ' ' ||
-                         COALESCE("subject", '') || ' ' ||
-                         COALESCE("keywords", ''))) STORED`);
+                         COALESCE("country", ''))) STORED`);
     await queryRunner.query(
       `DELETE FROM "typeorm_metadata" WHERE "type" = $1 AND "name" = $2 AND "database" = $3 AND "schema" = $4 AND "table" = $5`,
       ['GENERATED_COLUMN', 'exifTextSearchableColumn', 'immich', 'public', 'exif'],
@@ -32,7 +30,7 @@ export class AddExifImageNameAsSearchableText1658860470248 implements MigrationI
         'exif',
         'GENERATED_COLUMN',
         'exifTextSearchableColumn',
-        "TO_TSVECTOR('english',\n                         COALESCE(make, '') || ' ' ||\n                         COALESCE(model, '') || ' ' ||\n                         COALESCE(orientation, '') || ' ' ||\n                         COALESCE(\"lensModel\", '') || ' ' ||\n                         COALESCE(\"imageName\", '') || ' ' ||\n                         COALESCE(\"city\", '') || ' ' ||\n                         COALESCE(\"state\", '') || ' ' ||\n                         COALESCE(\"country\", '') || ' ' ||\n                         COALESCE(\"subject\", '') || ' ' ||\n                         COALESCE(\"keywords\", ''))",
+        "TO_TSVECTOR('english',\n                         COALESCE(make, '') || ' ' ||\n                         COALESCE(model, '') || ' ' ||\n                         COALESCE(orientation, '') || ' ' ||\n                         COALESCE(\"lensModel\", '') || ' ' ||\n                         COALESCE(\"imageName\", '') || ' ' ||\n                         COALESCE(\"city\", '') || ' ' ||\n                         COALESCE(\"state\", '') || ' ' ||\n                         COALESCE(\"country\", ''))",
       ],
     );
   }

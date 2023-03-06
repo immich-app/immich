@@ -9,9 +9,7 @@ export class MatchMigrationsWithTypeORMEntities1656889061566 implements Migratio
                          COALESCE("lensModel", '') || ' ' ||
                          COALESCE("city", '') || ' ' ||
                          COALESCE("state", '') || ' ' ||
-                         COALESCE("country", '') || ' ' ||
-                         COALESCE("subject", '') || ' ' ||
-                         COALESCE("keywords", ''))) STORED`);
+                         COALESCE("country", ''))) STORED`);
     await queryRunner.query(`ALTER TABLE "exif" ALTER COLUMN "exifTextSearchableColumn" SET NOT NULL`);
     await queryRunner.query(
       `DELETE FROM "typeorm_metadata" WHERE "type" = $1 AND "name" = $2 AND "database" = $3 AND "schema" = $4 AND "table" = $5`,
@@ -25,7 +23,7 @@ export class MatchMigrationsWithTypeORMEntities1656889061566 implements Migratio
         'exif',
         'GENERATED_COLUMN',
         'exifTextSearchableColumn',
-        "TO_TSVECTOR('english',\n                         COALESCE(make, '') || ' ' ||\n                         COALESCE(model, '') || ' ' ||\n                         COALESCE(orientation, '') || ' ' ||\n                         COALESCE(\"lensModel\", '') || ' ' ||\n                         COALESCE(\"city\", '') || ' ' ||\n                         COALESCE(\"state\", '') || ' ' ||\n                         COALESCE(\"country\", '') || ' ' ||\n                         COALESCE(\"subject\", '') || ' ' ||\n                         COALESCE(\"keywords\", ''))",
+        "TO_TSVECTOR('english',\n                         COALESCE(make, '') || ' ' ||\n                         COALESCE(model, '') || ' ' ||\n                         COALESCE(orientation, '') || ' ' ||\n                         COALESCE(\"lensModel\", '') || ' ' ||\n                         COALESCE(\"city\", '') || ' ' ||\n                         COALESCE(\"state\", '') || ' ' ||\n                         COALESCE(\"country\", ''))",
       ],
     );
     await queryRunner.query(`ALTER TABLE "users" ALTER COLUMN "firstName" SET NOT NULL`);

@@ -20,9 +20,7 @@ export class DropExifTextSearchableColumns1656888918620 implements MigrationInte
                          COALESCE("lensModel", '') || ' ' ||
                          COALESCE("city", '') || ' ' ||
                          COALESCE("state", '') || ' ' ||
-                         COALESCE("country", '') || ' ' ||
-                         COALESCE("subject", '') || ' ' ||
-                         COALESCE("keywords", '')
+                         COALESCE("country", '')
                   )
               ) STORED;
 

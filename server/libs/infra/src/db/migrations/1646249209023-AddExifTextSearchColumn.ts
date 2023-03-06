@@ -10,9 +10,7 @@ export class AddExifTextSearchColumn1646249209023 implements MigrationInterface 
                          COALESCE(make, '') || ' ' ||
                          COALESCE(model, '') || ' ' ||
                          COALESCE(orientation, '') || ' ' ||
-                         COALESCE("lensModel", '') || ' ' ||
-                         COALESCE("subject", '') || ' ' ||
-                         COALESCE("keywords", '')
+                         COALESCE("lensModel", '')
                   )
               ) STORED;
     `);

@@ -16,9 +16,7 @@ export class AddLocationToExifTextSearch1646710459852 implements MigrationInterf
                          COALESCE("lensModel", '') || ' ' ||
                          COALESCE("city", '') || ' ' ||
                          COALESCE("state", '') || ' ' ||
-                         COALESCE("country", '') || ' ' ||
-                         COALESCE("subject", '') || ' ' ||
-                         COALESCE("keywords", '')
+                         COALESCE("country", '')
                   )
               ) STORED;
 
