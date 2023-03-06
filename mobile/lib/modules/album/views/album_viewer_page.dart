@@ -91,6 +91,8 @@ class AlbumViewerPage extends HookConsumerWidget {
             .addAdditionalUserToAlbum(sharedUserIds, album);
 
         if (isSuccess) {
+          // TODO - update state to reflect changes here
+
           ref.invalidate(sharedAlbumDetailProvider(albumId));
         }
 
