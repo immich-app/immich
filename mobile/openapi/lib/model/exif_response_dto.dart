@@ -32,6 +32,8 @@ class ExifResponseDto {
     this.city,
     this.state,
     this.country,
+    this.subject,
+    this.keywords,
   });
 
   int? fileSizeInByte;
@@ -72,6 +74,10 @@ class ExifResponseDto {
 
   String? country;
 
+  String? subject;
+
+  String? keywords;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ExifResponseDto &&
      other.fileSizeInByte == fileSizeInByte &&
@@ -92,7 +98,9 @@ class ExifResponseDto {
      other.longitude == longitude &&
      other.city == city &&
      other.state == state &&
-     other.country == country;
+     other.country == country &&
+     other.subject == subject &&
+     other.keywords == keywords;
 
   @override
   int get hashCode =>
@@ -115,10 +123,12 @@ class ExifResponseDto {
     (longitude == null ? 0 : longitude!.hashCode) +
     (city == null ? 0 : city!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
-    (country == null ? 0 : country!.hashCode);
+    (country == null ? 0 : country!.hashCode) +
+    (subject == null ? 0 : subject!.hashCode) +
+    (keywords == null ? 0 : keywords!.hashCode);
 
   @override
-  String toString() => 'ExifResponseDto[fileSizeInByte=$fileSizeInByte, make=$make, model=$model, imageName=$imageName, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country]';
+  String toString() => 'ExifResponseDto[fileSizeInByte=$fileSizeInByte, make=$make, model=$model, imageName=$imageName, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country, subject=$subject, keywords=$keywords]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -217,6 +227,16 @@ class ExifResponseDto {
     } else {
       // json[r'country'] = null;
     }
+    if (this.subject != null) {
+      json[r'subject'] = this.subject;
+    } else {
+      // json[r'subject'] = null;
+    }
+    if (this.keywords != null) {
+      json[r'keywords'] = this.keywords;
+    } else {
+      // json[r'keywords'] = null;
+    }
     return json;
   }
 
@@ -272,6 +292,8 @@ class ExifResponseDto {
         city: mapValueOfType<String>(json, r'city'),
         state: mapValueOfType<String>(json, r'state'),
         country: mapValueOfType<String>(json, r'country'),
+        subject: mapValueOfType<String>(json, r'subject'),
+        keywords: mapValueOfType<String>(json, r'keywords'),
       );
     }
     return null;

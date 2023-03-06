@@ -111,6 +111,16 @@ void main() {
       // TODO
     });
 
+    // String subject
+    test('to test the property `subject`', () async {
+      // TODO
+    });
+
+    // String keywords
+    test('to test the property `keywords`', () async {
+      // TODO
+    });
+
 
   });
 

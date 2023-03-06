@@ -9,4 +9,6 @@ export class SearchPropertiesDto {
   city?: string;
   state?: string;
   country?: string;
+  subject?: string;
+  keywords?: string;
 }

@@ -78,6 +78,11 @@ export class ExifEntity {
   @Column({ type: 'varchar', nullable: true })
   exposureTime!: string | null;
 
+  @Column({ type: 'varchar', nullable: true })
+  subject!: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  keywords!: string | null;
   /* Video info */
   @Column({ type: 'float8', nullable: true })
   fps?: number | null;
@@ -94,7 +99,9 @@ export class ExifEntity {
                          COALESCE("imageName", '') || ' ' ||
                          COALESCE("city", '') || ' ' ||
                          COALESCE("state", '') || ' ' ||
-                         COALESCE("country", ''))`,
+                         COALESCE("country", '') || ' ' ||
+                         COALESCE("subject", '') || ' ' ||
+                         COALESCE("keywords", ''))`,
   })
   exifTextSearchableColumn!: string;
 }

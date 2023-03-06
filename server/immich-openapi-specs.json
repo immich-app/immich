@@ -620,6 +620,22 @@
             }
           },
           {
+            "name": "exifInfo.subject",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "exifInfo.keywords",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "smartInfo.objects",
             "required": false,
             "in": "query",
@@ -3865,6 +3881,16 @@
             "default": null
           },
           "country": {
+            "type": "string",
+            "nullable": true,
+            "default": null
+          },
+          "subject": {
+            "type": "string",
+            "nullable": true,
+            "default": null
+          },
+          "keywords": {
             "type": "string",
             "nullable": true,
             "default": null

@@ -29,7 +29,9 @@ export class CreateExifTable1645130817965 implements MigrationInterface {
             iso                integer,
             "exposureTime"     double precision,
             latitude           double precision,
-            longitude          double precision
+            longitude          double precision,
+            subject            varchar,
+            keywords           varchar
         );
 
         create unique index if not exists "IDX_c0117fdbc50b917ef9067740c4" on exif ("assetId");

@@ -209,6 +209,8 @@ export class AssetRepository implements IAssetRepository {
       .addSelect('ei.city', 'city')
       .addSelect('ei.state', 'state')
       .addSelect('ei.country', 'country')
+      .addSelect('ei.subject', 'subject')
+      .addSelect('ei.keywords', 'keywords')
       .distinctOn(['si.tags'])
       .getRawMany();
   }

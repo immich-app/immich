@@ -21,6 +21,8 @@ class ExifInfo {
   String? city;
   String? state;
   String? country;
+  String? subject;
+  String? keywords;
 
   @ignore
   String get exposureTime {
@@ -58,7 +60,9 @@ class ExifInfo {
         long = dto.longitude?.toDouble(),
         city = dto.city,
         state = dto.state,
-        country = dto.country;
+        country = dto.country,
+        subject = dto.subject,
+        keywords = dto.keywords;
 
   ExifInfo({
     this.fileSize,
@@ -74,6 +78,8 @@ class ExifInfo {
     this.city,
     this.state,
     this.country,
+    this.subject,
+    this.keywords,
   });
 }
 

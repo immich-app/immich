@@ -45,4 +45,10 @@ export class CreateExifDto {
 
   @IsOptional()
   exposureTime?: number;
+
+  @IsOptional()
+  subject?: string;
+  
+  @IsOptional()
+  keywords?: string;
 }

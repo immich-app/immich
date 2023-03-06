@@ -192,6 +192,8 @@ const assetInfo: ExifResponseDto = {
   city: 'city',
   state: 'state',
   country: 'country',
+  subject: 'subject',
+  keywords: 'keywords',
 };
 
 const assetResponse: AssetResponseDto = {
@@ -479,6 +481,8 @@ export const sharedLinkStub = {
             iso: 100,
             exposureTime: '1/16',
             fps: 100,
+            subject: 'subject',
+            keywords: 'keywords',
             asset: null as any,
             exifTextSearchableColumn: '',
           },

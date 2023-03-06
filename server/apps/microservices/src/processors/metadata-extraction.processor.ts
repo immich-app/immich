@@ -191,6 +191,8 @@ export class MetadataExtractionProcessor {
       newExif.latitude = exifData?.GPSLatitude || null;
       newExif.longitude = exifData?.GPSLongitude || null;
       newExif.livePhotoCID = exifData?.MediaGroupUUID || null;
+      newExif.subject = exifData?.Subject?.toString() || null;
+      newExif.keywords = exifData?.Keywords?.toString() || null;
 
       if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
         const motionAsset = await this.assetCore.findLivePhotoMatch(newExif.livePhotoCID, asset.id, AssetType.VIDEO);

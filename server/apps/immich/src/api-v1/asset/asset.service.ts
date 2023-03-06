@@ -476,6 +476,12 @@ export class AssetService {
       possibleSearchTerm.add(row.city?.toLowerCase() || '');
       possibleSearchTerm.add(row.state?.toLowerCase() || '');
       possibleSearchTerm.add(row.country?.toLowerCase() || '');
+	  
+      // Subject
+      possibleSearchTerm.add(row.subject?.toLowerCase() || '');
+
+      // Keywords
+      possibleSearchTerm.add(row.keywords?.toLowerCase() || '');
     });
 
     return Array.from(possibleSearchTerm).filter((x) => x != null && x != '');
