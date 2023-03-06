@@ -247,6 +247,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               (showAppBar.value && !isZoomed.value)) &&
           !isPlayingVideo.value;
 
+      // Change to and from immersive mode, hiding navigation and app bar
       if (show) {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       } else {
@@ -299,6 +300,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       backgroundColor: Colors.black,
       body: WillPopScope(
         onWillPop: () async {
+          // Change immersive mode back to normal "edgeToEdge" mode
           await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
           return true;
         },
