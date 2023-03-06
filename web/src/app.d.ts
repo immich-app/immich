@@ -8,7 +8,13 @@ declare namespace App {
 		api: import('@api').ImmichApi;
 	}
 
-	// interface Platform {}
+	interface PageData {
+		meta: {
+			title: string;
+			description?: string;
+			imageUrl?: string;
+		};
+	}
 
 	interface Error {
 		message: string;
