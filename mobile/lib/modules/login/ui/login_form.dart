@@ -36,63 +36,54 @@ class LoginForm extends HookConsumerWidget {
     final passwordFocusNode = useFocusNode();
     final serverEndpointFocusNode = useFocusNode();
     final isLoading = useState<bool>(false);
+    final isLoadingServer = useState<bool>(false);
     final isOauthEnable = useState<bool>(false);
     final oAuthButtonLabel = useState<String>('OAuth');
     final logoAnimationController = useAnimationController(
       duration: const Duration(seconds: 60),
     )..repeat();
 
-    // The string of the server URL currently being fetched (or null)
-    final ValueNotifier<String?> fetchingServerCredentialUrl = useState(null);
+    final ValueNotifier<String?> serverEndpoint = useState<String?>(null);
 
-    getServerLoginCredential() async {
-      if (!serverEndpointFocusNode.hasFocus) {
-        final serverUrl = serverEndpointController.text.trim();
+    /// Fetch the server login credential and enables oAuth login if necessary
+    /// Returns true if successful, false otherwise
+    Future<bool> getServerLoginCredential() async {
+      final serverUrl = serverEndpointController.text.trim();
 
-        // Guard empty URL
-        if (serverUrl.isEmpty) {
-          return;
-        }
-
-        // Guard already fetching the server credential
-        // in the case where we hit "Go" and don't want to make
-        // duplicate requests
-        if (fetchingServerCredentialUrl.value == serverUrl) {
-          return;
-        }
-
-        // Set the trimmed server URL to the currently-being-fetched state
-        fetchingServerCredentialUrl.value = serverUrl;
-
-        try {
-          if (serverUrl.isNotEmpty) {
-            final serverEndpoint =
-                await apiService.resolveAndSetEndpoint(serverUrl.toString());
-
-            var loginConfig = await apiService.oAuthApi.generateConfig(
-              OAuthConfigDto(redirectUri: serverEndpoint),
-            );
-
-            if (loginConfig != null) {
-              isOauthEnable.value = loginConfig.enabled;
-              oAuthButtonLabel.value = loginConfig.buttonText ?? 'OAuth';
-            } else {
-              isOauthEnable.value = false;
-            }
-          }
-        } catch (_) {
-          isOauthEnable.value = false;
-        }
+      // Guard empty URL
+      if (serverUrl.isEmpty) {
+        return false;
       }
 
-      // Done fetching the login credential, so clear it to null
-      fetchingServerCredentialUrl.value = null;
+      try {
+        isLoadingServer.value = true;
+        final endpoint = 
+            await apiService.resolveAndSetEndpoint(serverUrl);
+
+        final loginConfig = await apiService.oAuthApi.generateConfig(
+          OAuthConfigDto(redirectUri: serverUrl),
+        );
+
+        if (loginConfig != null) {
+          isOauthEnable.value = loginConfig.enabled;
+          oAuthButtonLabel.value = loginConfig.buttonText ?? 'OAuth';
+        } else {
+          isOauthEnable.value = false;
+        }
+
+        serverEndpoint.value = endpoint;
+      } catch (e) {
+        isOauthEnable.value = false;
+        isLoadingServer.value = false;
+        return false;
+      } 
+
+      isLoadingServer.value = false;
+      return true;
     }
 
     useEffect(
       () {
-        serverEndpointFocusNode.addListener(getServerLoginCredential);
-
         var loginInfo = Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox)
             .get(savedLoginInfoKey);
 
@@ -102,7 +93,6 @@ class LoginForm extends HookConsumerWidget {
           serverEndpointController.text = loginInfo.serverUrl;
         }
 
-        getServerLoginCredential();
         return null;
       },
       [],
@@ -219,96 +209,160 @@ class LoginForm extends HookConsumerWidget {
       }
     }
 
+    buildSelectServer() {
+      return ConstrainedBox(
+        key: const ValueKey('server'),
+        constraints: const BoxConstraints(maxWidth: 300),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ServerEndpointInput(
+              controller: serverEndpointController,
+              focusNode: serverEndpointFocusNode,
+              onSubmit: getServerLoginCredential,
+            ),
+            const SizedBox(height: 18),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              onPressed: isLoadingServer.value ? null : getServerLoginCredential,
+              icon: const Icon(Icons.arrow_forward_rounded),
+              label: const Text(
+                'Next',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              ).tr(),
+            ),
+            if (isLoadingServer.value)
+              const Padding(
+                padding: EdgeInsets.only(top: 18.0),
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+          ],
+        ),
+      );
+    }
+
+    buildLogin() {
+      return ConstrainedBox(
+        key: const ValueKey('login'),
+        constraints: const BoxConstraints(maxWidth: 300),
+        child: AutofillGroup(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                serverEndpointController.text,
+                style: Theme.of(context).textTheme.displaySmall,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 18),
+              EmailInput(
+                controller: usernameController,
+                focusNode: emailFocusNode,
+                onSubmit: passwordFocusNode.requestFocus,
+              ),
+              const SizedBox(height: 8),
+              PasswordInput(
+                controller: passwordController,
+                focusNode: passwordFocusNode,
+                onSubmit: login,
+              ),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 500),
+                child: isLoading.value 
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 18),
+                        LoginButton(onPressed: login),
+                        if (isOauthEnable.value) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                            ),
+                            child: Divider(
+                              color:
+                                  Brightness.dark == Theme.of(context).brightness
+                                      ? Colors.white
+                                      : Colors.black,
+                            ),
+                          ),
+                          OAuthLoginButton(
+                            serverEndpointController: serverEndpointController,
+                            buttonLabel: oAuthButtonLabel.value,
+                            isLoading: isLoading,
+                            onPressed: oAuthLogin,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 12),
+                TextButton.icon(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => serverEndpoint.value = null,
+                  label: const Text('Back'),
+                ),
+            ],
+          ),
+        ),
+      );
+    }
+    final child = serverEndpoint.value == null 
+      ? buildSelectServer()
+      : buildLogin();
 
     return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 300),
-        child: SingleChildScrollView(
-          child: AutofillGroup(
-            child: Wrap(
-              spacing: 16,
-              runSpacing: 16,
-              alignment: WrapAlignment.center,
+      child: CustomScrollView(
+        slivers: [
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                GestureDetector(
-                  onDoubleTap: () => populateTestLoginInfo(),
-                  child: RotationTransition(
-                    turns: logoAnimationController,
-                    child: const ImmichLogo(
-                      heroTag: 'logo',
-                    ),
-                  ),
-                ),
-                const ImmichTitleText(),
-                EmailInput(
-                  controller: usernameController,
-                  focusNode: emailFocusNode,
-                  onSubmit: passwordFocusNode.requestFocus,
-                ),
-                PasswordInput(
-                  controller: passwordController,
-                  focusNode: passwordFocusNode,
-                  onSubmit: serverEndpointFocusNode.requestFocus,
-                ),
-                ServerEndpointInput(
-                  controller: serverEndpointController,
-                  focusNode: serverEndpointFocusNode,
-                  onSubmit: () async {
-                    isLoading.value = true;
-                    
-                    // We need the server login credential first to see if 
-                    // we enable OAuth
-                    await getServerLoginCredential();
-
-                    // See if we have OAuth
-                    if (isOauthEnable.value) {
-                      // 
-                    } else {
-                      // Login
-                      await login();
-                    }
-                  },
-                ),
-                if (isLoading.value)
-                  const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                    ),
-                  ),
-                if (!isLoading.value)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    mainAxisAlignment: MainAxisAlignment.center,
+                Flexible(
+                  flex: 5,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      const SizedBox(height: 18),
-                      LoginButton(onPressed: login),
-                      if (isOauthEnable.value) ...[
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                          ),
-                          child: Divider(
-                            color:
-                                Brightness.dark == Theme.of(context).brightness
-                                    ? Colors.white
-                                    : Colors.black,
+                      GestureDetector(
+                        onDoubleTap: () => populateTestLoginInfo(),
+                        child: RotationTransition(
+                          turns: logoAnimationController,
+                          child: const ImmichLogo(
+                            heroTag: 'logo',
                           ),
                         ),
-                        OAuthLoginButton(
-                          serverEndpointController: serverEndpointController,
-                          buttonLabel: oAuthButtonLabel.value,
-                          isLoading: isLoading,
-                          onPressed: oAuthLogin,
-                        ),
-                      ],
+                      ),
+                      const ImmichTitleText(),
                     ],
-                  )
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Flexible(
+                  flex: 5,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 500),
+                    child: child, 
+                  ),
+                ),
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -430,7 +484,7 @@ class PasswordInput extends StatelessWidget {
       keyboardType: TextInputType.text,
       onFieldSubmitted: (_) => onSubmit?.call(),
       focusNode: focusNode,
-      textInputAction: TextInputAction.next,
+      textInputAction: TextInputAction.go,
     );
   }
 }
