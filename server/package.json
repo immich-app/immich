@@ -158,6 +158,7 @@
       "@app/common": "<rootDir>/libs/common/src",
       "^@app/infra(|/.*)$": "<rootDir>/libs/infra/src/$1",
       "^@app/domain(|/.*)$": "<rootDir>/libs/domain/src/$1"
-    }
+    },
+    "globalSetup": "<rootDir>/libs/domain/test/global-setup.js"
   }
 }
