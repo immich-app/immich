@@ -343,47 +343,41 @@ class LoginForm extends HookConsumerWidget {
       ? buildSelectServer()
       : buildLogin();
 
-    return Center(
-      child: CustomScrollView(
-        slivers: [
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Flexible(
-                  flex: 4,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      GestureDetector(
-                        onDoubleTap: () => populateTestLoginInfo(),
-                        child: RotationTransition(
-                          turns: logoAnimationController,
-                          child: const ImmichLogo(
-                            heroTag: 'logo',
-                          ),
-                        ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                height: constraints.maxHeight / 5,
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  GestureDetector(
+                    onDoubleTap: () => populateTestLoginInfo(),
+                    child: RotationTransition(
+                      turns: logoAnimationController,
+                      child: const ImmichLogo(
+                        heroTag: 'logo',
                       ),
-                      const ImmichTitleText(),
-                    ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 18),
-                Flexible(
-                  flex: 5,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 500),
-                    child: child, 
-                  ),
-                ),
-              ],
-            ),
+                  const ImmichTitleText(),
+                ],
+              ),
+              const SizedBox(height: 18),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 500),
+                child: child, 
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
