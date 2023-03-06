@@ -52,6 +52,12 @@ class LoginForm extends HookConsumerWidget {
 
       // Guard empty URL
       if (serverUrl.isEmpty) {
+        ImmichToast.show(
+          context: context,
+          msg: "login_form_server_empty".tr(),
+          toastType: ToastType.error,
+        );
+ 
         return false;
       }
 
@@ -72,7 +78,21 @@ class LoginForm extends HookConsumerWidget {
         }
 
         serverEndpoint.value = endpoint;
+      } on ApiException catch (e) {
+        ImmichToast.show(
+          context: context,
+          msg: e.message ?? 'login_form_api_exception'.tr(),
+          toastType: ToastType.error,
+        );
+        isOauthEnable.value = false;
+        isLoadingServer.value = false;
+        return false;
       } catch (e) {
+        ImmichToast.show(
+          context: context,
+          msg: 'login_form_server_error'.tr(),
+          toastType: ToastType.error,
+        );
         isOauthEnable.value = false;
         isLoadingServer.value = false;
         return false;
@@ -254,7 +274,7 @@ class LoginForm extends HookConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                serverEndpointController.text,
+                'photos.domain.com',
                 style: Theme.of(context).textTheme.displaySmall,
                 textAlign: TextAlign.center,
               ),
@@ -333,7 +353,7 @@ class LoginForm extends HookConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Flexible(
-                  flex: 5,
+                  flex: 4,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -441,6 +461,7 @@ class EmailInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      autofocus: true,
       controller: controller,
       decoration: InputDecoration(
         labelText: 'login_form_label_email'.tr(),
