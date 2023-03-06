@@ -19,7 +19,8 @@ class Asset {
         fileCreatedAt = DateTime.parse(remote.fileCreatedAt).toUtc(),
         fileModifiedAt = DateTime.parse(remote.fileModifiedAt).toUtc(),
         updatedAt = DateTime.parse(remote.updatedAt).toUtc(),
-        durationInSeconds = remote.duration.toDuration().inSeconds,
+        // use -1 as fallback duration (to not mix it up with non-video assets correctly having duration=0)
+        durationInSeconds = remote.duration.toDuration()?.inSeconds ?? -1,
         fileName = p.basename(remote.originalPath),
         height = remote.exifInfo?.exifImageHeight?.toInt(),
         width = remote.exifInfo?.exifImageWidth?.toInt(),
