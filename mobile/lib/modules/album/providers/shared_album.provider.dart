@@ -37,12 +37,20 @@ class SharedAlbumNotifier extends StateNotifier<List<Album>> {
   }
 
   Future<void> getAllSharedAlbums() async {
-    var albums = await _db.albums.filter().sharedEqualTo(true).findAll();
+    var albums = await _db.albums
+        .filter()
+        .sharedEqualTo(true)
+        .sortByCreatedAtDesc()
+        .findAll();
     if (!const ListEquality().equals(albums, state)) {
       state = albums;
     }
     await _albumService.refreshRemoteAlbums(isShared: true);
-    albums = await _db.albums.filter().sharedEqualTo(true).findAll();
+    albums = await _db.albums
+        .filter()
+        .sharedEqualTo(true)
+        .sortByCreatedAtDesc()
+        .findAll();
     if (!const ListEquality().equals(albums, state)) {
       state = albums;
     }

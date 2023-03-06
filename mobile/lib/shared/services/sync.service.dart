@@ -501,7 +501,6 @@ Triple<List<Asset>, List<Asset>, List<Asset>> _diffAssets(
           (!a.isLocal && b.isLocal) ||
           (!a.isRemote && b.isRemote)) {
         toUpdate.add(b.updateFromDb(a));
-        debugPrint("both");
         return true;
       }
       return false;
