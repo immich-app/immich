@@ -211,6 +211,9 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent),
+    );
 
     return MaterialApp(
       localizationsDelegates: context.localizationDelegates,
