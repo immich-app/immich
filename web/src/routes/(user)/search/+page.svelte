@@ -6,21 +6,13 @@
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import ImageOffOutline from 'svelte-material-icons/ImageOffOutline.svelte';
 	import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
-	import { afterNavigate, goto } from '$app/navigation';
 
 	export let data: PageData;
 	$: term = $page.url.searchParams.get('q') || data.term || '';
-
-	let goBackRoute = '/explore';
-	afterNavigate((r) => {
-		if (r.from) {
-			goBackRoute = r.from.url.href;
-		}
-	});
 </script>
 
 <section>
-	<ControlAppBar on:close-button-click={() => goto(goBackRoute)} backIcon={ArrowLeft}>
+	<ControlAppBar on:close-button-click={() => history.back()} backIcon={ArrowLeft}>
 		<div class="w-full max-w-2xl flex-1 pl-4">
 			<SearchBar grayTheme={false} value={term} replaceHistoryState={true} />
 		</div>
