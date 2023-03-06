@@ -59,6 +59,15 @@ class GalleryViewerPage extends HookConsumerWidget {
     late Offset localPosition;
     final authToken = 'Bearer ${box.get(accessTokenKey)}';
 
+    showAppBar.addListener(() {
+      // Change to and from immersive mode, hiding navigation and app bar
+      if (showAppBar.value) {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      } else {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+      }
+    });
+
     useEffect(
       () {
         isLoadPreview.value =
@@ -246,13 +255,6 @@ class GalleryViewerPage extends HookConsumerWidget {
       final show = (showAppBar.value || // onTap has the final say
               (showAppBar.value && !isZoomed.value)) &&
           !isPlayingVideo.value;
-
-      // Change to and from immersive mode, hiding navigation and app bar
-      if (show) {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-      } else {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-      }
 
       return AnimatedOpacity(
         duration: const Duration(milliseconds: 100),
