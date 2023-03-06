@@ -274,7 +274,7 @@ class LoginForm extends HookConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'photos.domain.com',
+                serverEndpointController.text,
                 style: Theme.of(context).textTheme.displaySmall,
                 textAlign: TextAlign.center,
               ),
