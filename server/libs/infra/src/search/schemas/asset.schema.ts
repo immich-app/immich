@@ -25,6 +25,8 @@ export const assetSchema: CollectionCreateSchema = {
     { name: 'exifInfo.make', type: 'string', facet: true, optional: true },
     { name: 'exifInfo.model', type: 'string', facet: true, optional: true },
     { name: 'exifInfo.orientation', type: 'string', optional: true },
+    { name: 'exifInfo.subject', type: 'string', optional: true },
+    { name: 'exifInfo.keywords', type: 'string', optional: true },
 
     // smart info
     { name: 'smartInfo.objects', type: 'string[]', facet: true, optional: true },
