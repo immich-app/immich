@@ -1,6 +1,5 @@
 import {
   AlbumEntity,
-  APIKeyEntity,
   AssetEntity,
   AssetType,
   SharedLinkEntity,
@@ -9,6 +8,7 @@ import {
   UserEntity,
   UserTokenEntity,
 } from '@app/infra/db/entities';
+import type { ApiKey, User } from '@prisma/client';
 import {
   AlbumResponseDto,
   AssetResponseDto,
@@ -91,6 +91,33 @@ export const userEntityStub = {
     updatedAt: '2021-01-01',
     tags: [],
     assets: [],
+  }),
+};
+
+export const userEntityPrismaStub = {
+  admin: Object.freeze<User>({
+    ...authStub.admin,
+    password: 'admin_password',
+    firstName: 'admin_first_name',
+    lastName: 'admin_last_name',
+    oauthId: '',
+    shouldChangePassword: false,
+    profileImagePath: '',
+    createdAt: new Date('2021-01-01'),
+    updatedAt: new Date('2021-01-01'),
+    deletedAt: null,
+  }),
+  user1: Object.freeze<User>({
+    ...authStub.user1,
+    password: 'immich_password',
+    firstName: 'immich_first_name',
+    lastName: 'immich_last_name',
+    oauthId: '',
+    shouldChangePassword: false,
+    profileImagePath: '',
+    createdAt: new Date('2021-01-01'),
+    updatedAt: new Date('2021-01-01'),
+    deletedAt: null,
   }),
 };
 
@@ -248,9 +275,11 @@ export const keyStub = {
     id: 'my-random-guid',
     name: 'My Key',
     key: 'my-api-key (hashed)',
+    createdAt: today,
+    updatedAt: today,
     userId: authStub.admin.id,
-    user: userEntityStub.admin,
-  } as APIKeyEntity),
+    user: userEntityPrismaStub.admin,
+  } as ApiKey & { user: User }),
 };
 
 export const systemConfigStub = {

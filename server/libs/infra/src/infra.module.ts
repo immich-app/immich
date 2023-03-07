@@ -32,6 +32,7 @@ import {
   databaseConfig,
   DeviceInfoEntity,
   DeviceInfoRepository,
+  PrismaService,
   SharedLinkEntity,
   SharedLinkRepository,
   SmartInfoEntity,
@@ -102,7 +103,7 @@ const providers: Provider[] = [
     }),
     BullModule.registerQueue(...Object.values(QueueName).map((name) => ({ name }))),
   ],
-  providers: [...providers, CommunicationGateway],
+  providers: [...providers, CommunicationGateway, PrismaService],
   exports: [...providers, BullModule],
 })
 export class InfraModule {}

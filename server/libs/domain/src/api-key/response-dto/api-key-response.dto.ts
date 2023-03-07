@@ -1,13 +1,13 @@
-import { APIKeyEntity } from '@app/infra/db/entities';
+import type { ApiKey } from '@prisma/client';
 
 export class APIKeyResponseDto {
   id!: string;
   name!: string;
-  createdAt!: string;
-  updatedAt!: string;
+  createdAt!: Date;
+  updatedAt!: Date;
 }
 
-export function mapKey(entity: APIKeyEntity): APIKeyResponseDto {
+export function mapKey(entity: ApiKey): APIKeyResponseDto {
   return {
     id: entity.id,
     name: entity.name,

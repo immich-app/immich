@@ -51,7 +51,7 @@ Setting these in the IDE give a better developer experience, auto-formatting cod
 
 ### VSCode
 
-Install `Flutter`, `Prettier`, `ESLint` and `Svelte` extensions.
+Install `Flutter`, `Prettier`, `ESLint`, `Svelte` and `Prisma` extensions.
 
 in User `settings.json` (`cmd + shift + p` and search for `Open User Settings JSON`) add the following:
 
@@ -77,6 +77,10 @@ in User `settings.json` (`cmd + shift + p` and search for `Open User Settings JS
     "editor.tabCompletion": "onlySnippets",
     "editor.wordBasedSuggestions": false,
     "editor.defaultFormatter": "Dart-Code.dart-code"
+  },
+  "[prisma]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "Prisma.prisma"
   }
 }
 ```

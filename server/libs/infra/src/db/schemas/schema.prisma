@@ -1,0 +1,249 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions", "extendedWhereUnique"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = ""
+  extensions = [uuidOssp(map: "uuid-ossp")]
+}
+
+model Album {
+  id                  String               @id(map: "PK_7f71c7b5bc7c87b8f94c9a93a00") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  ownerId             String               @db.Uuid
+  albumName           String               @default("Untitled Album") @db.VarChar
+  createdAt           DateTime             @default(now()) @db.Timestamptz(6)
+  thumbnailId         String?              @map("albumThumbnailAssetId") @db.Uuid
+  updatedAt           DateTime             @default(now()) @updatedAt @db.Timestamptz(6)
+  thumbnail           Asset?               @relation(fields: [thumbnailId], references: [id], map: "FK_05895aa505a670300d4816debce")
+  owner               User                 @relation(fields: [ownerId], references: [id], onDelete: Cascade, map: "FK_b22c53f35ef20c28c21637c85f4")
+  albumsToAssets      AlbumToAssets[]
+  sharedAlbumsToUsers SharedAlbumToUsers[]
+  sharedLinks         SharedLink[]
+
+  @@map("albums")
+}
+
+model AlbumToAssets {
+  albumId String @map("albumsId") @db.Uuid
+  assetId String @map("assetsId") @db.Uuid
+  asset   Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade, map: "FK_4bd1303d199f4e72ccdf998c621")
+  album   Album  @relation(fields: [albumId], references: [id], onDelete: Cascade, map: "FK_e590fa396c6898fcd4a50e40927")
+
+  @@id([albumId, assetId], map: "PK_c67bc36fa845fb7b18e0e398180")
+  @@index([assetId], map: "IDX_4bd1303d199f4e72ccdf998c62")
+  @@index([albumId], map: "IDX_e590fa396c6898fcd4a50e4092")
+  @@map("albums_assets_assets")
+}
+
+model SharedAlbumToUsers {
+  albumId String @map("albumsId") @db.Uuid
+  userId  String @map("usersId") @db.Uuid
+  album   Album  @relation(fields: [albumId], references: [id], onDelete: Cascade, map: "FK_427c350ad49bd3935a50baab737")
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade, map: "FK_f48513bf9bccefd6ff3ad30bd06")
+
+  @@id([albumId, userId], map: "PK_7df55657e0b2e8b626330a0ebc8")
+  @@index([albumId], map: "IDX_427c350ad49bd3935a50baab73")
+  @@index([userId], map: "IDX_f48513bf9bccefd6ff3ad30bd0")
+  @@map("albums_shared_users_users")
+}
+
+model ApiKey {
+  name      String   @db.VarChar
+  key       String   @db.VarChar
+  userId    String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  id        String   @id(map: "PK_5c8a79801b44bd27b79228e1dad") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_6c2e267ae764a9413b863a29342")
+
+  @@map("api_keys")
+}
+
+model Asset {
+  id                    String               @id(map: "PK_da96729a8b113377cfb6a62439c") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  deviceAssetId         String               @db.VarChar
+  ownerId               String               @db.Uuid
+  deviceId              String               @db.VarChar
+  type                  String               @db.VarChar
+  originalPath          String               @db.VarChar
+  resizePath            String?              @db.VarChar
+  fileCreatedAt         DateTime             @db.Timestamptz(6)
+  fileModifiedAt        DateTime             @db.Timestamptz(6)
+  isFavorite            Boolean              @default(false)
+  mimeType              String?              @db.VarChar
+  duration              String?              @db.VarChar
+  webpPath              String?              @default("") @db.VarChar
+  encodedVideoPath      String?              @default("") @db.VarChar
+  checksum              Bytes?
+  isVisible             Boolean              @default(true)
+  livePhotoVideoId      String?              @unique(map: "UQ_16294b83fa8c0149719a1f631ef") @db.Uuid
+  updatedAt             DateTime             @default(now()) @updatedAt @db.Timestamptz(6)
+  createdAt             DateTime             @default(now()) @db.Timestamptz(6)
+  albums                Album[]
+  albumsToAssets        AlbumToAssets[]
+  livePhotoVideo        Asset?               @relation("livePhotoVideoToAsset", fields: [livePhotoVideoId], references: [id], map: "FK_16294b83fa8c0149719a1f631ef")
+  livePhotoVideoToAsset Asset?               @relation("livePhotoVideoToAsset")
+  owner                 User                 @relation(fields: [ownerId], references: [id], onDelete: Cascade, map: "FK_2c5ac0d6fb58b238fd2068de67d")
+  exif                  Exif?
+  sharedLinksToAssets   SharedLinkToAssets[]
+  smartInfo             SmartInfo?
+  tagsToAssets          TagToAssets[]
+
+  @@unique([ownerId, checksum], map: "UQ_userid_checksum")
+  @@map("assets")
+}
+
+model DeviceInfo {
+  id                Int      @id(map: "PK_b1c15a80b0a4e5f4eebadbdd92c") @default(autoincrement())
+  userId            String   @db.VarChar
+  deviceId          String   @db.VarChar
+  deviceType        String   @db.VarChar
+  notificationToken String?  @db.VarChar
+  createdAt         DateTime @default(now()) @db.Timestamp(6)
+  isAutoBackup      Boolean  @default(false)
+
+  @@unique([userId, deviceId], map: "UQ_ebad78f36b10d15fbea8560e107")
+  @@map("device_info")
+}
+
+model Exif {
+  assetId                  String                  @id(map: "PK_c0117fdbc50b917ef9067740c44") @unique(map: "REL_c0117fdbc50b917ef9067740c4") @db.Uuid
+  make                     String?                 @db.VarChar
+  model                    String?                 @db.VarChar
+  imageName                String?                 @db.VarChar
+  exifImageWidth           Int?
+  exifImageHeight          Int?
+  fileSizeInByte           BigInt?
+  orientation              String?                 @db.VarChar
+  dateTimeOriginal         DateTime?               @db.Timestamptz(6)
+  modifyDate               DateTime?               @db.Timestamptz(6)
+  lensModel                String?                 @db.VarChar
+  fNumber                  Float?
+  focalLength              Float?
+  iso                      Int?
+  latitude                 Float?
+  longitude                Float?
+  city                     String?                 @db.VarChar
+  state                    String?                 @db.VarChar
+  country                  String?                 @db.VarChar
+  exifTextSearchableColumn Unsupported("tsvector") @default(dbgenerated("to_tsvector('english'::regconfig, (((((((((((((((COALESCE(make, ''::character varying))::text || ' '::text) || (COALESCE(model, ''::character varying))::text) || ' '::text) || (COALESCE(orientation, ''::character varying))::text) || ' '::text) || (COALESCE(\"lensModel\", ''::character varying))::text) || ' '::text) || (COALESCE(\"imageName\", ''::character varying))::text) || ' '::text) || (COALESCE(city, ''::character varying))::text) || ' '::text) || (COALESCE(state, ''::character varying))::text) || ' '::text) || (COALESCE(country, ''::character varying))::text))"))
+  description              String                  @default("")
+  fps                      Float?
+  exposureTime             String?                 @db.VarChar
+  livePhotoCID             String?                 @db.VarChar
+  asset                    Asset                   @relation(fields: [assetId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_c0117fdbc50b917ef9067740c44")
+
+  @@index([livePhotoCID], map: "IDX_live_photo_cid")
+  @@map("exif")
+}
+
+model SharedLinkToAssets {
+  assetId      String     @map("assetsId") @db.Uuid
+  sharedLinkId String     @map("sharedLinksId") @db.Uuid
+  assets       Asset      @relation(fields: [assetId], references: [id], onDelete: Cascade, map: "FK_5b7decce6c8d3db9593d6111a66")
+  sharedLinks  SharedLink @relation(fields: [sharedLinkId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_c9fab4aa97ffd1b034f3d6581ab")
+
+  @@id([assetId, sharedLinkId], map: "PK_9b4f3687f9b31d1e311336b05e3")
+  @@index([assetId], map: "IDX_5b7decce6c8d3db9593d6111a6")
+  @@index([sharedLinkId], map: "IDX_c9fab4aa97ffd1b034f3d6581a")
+  @@map("shared_link__asset")
+}
+
+model SharedLink {
+  id                  String               @id(map: "PK_642e2b0f619e4876e5f90a43465") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  description         String?              @db.VarChar
+  userId              String               @db.Uuid
+  key                 Bytes                @unique(map: "UQ_sharedlink_key")
+  type                String               @db.VarChar
+  createdAt           DateTime             @default(now()) @db.Timestamptz(6)
+  expiresAt           DateTime?            @db.Timestamptz(6)
+  allowUpload         Boolean              @default(false)
+  albumId             String?              @db.Uuid
+  allowDownload       Boolean              @default(true)
+  showExif            Boolean              @default(true)
+  sharedLinksToAssets SharedLinkToAssets[]
+  album               Album?               @relation(fields: [albumId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_0c6ce9058c29f07cdf7014eac66")
+  user                User                 @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_66fe3837414c5a9f1c33ca49340")
+
+  @@index([albumId], map: "IDX_sharedlink_albumId")
+  @@index([key], map: "IDX_sharedlink_key")
+  @@map("shared_links")
+}
+
+model SmartInfo {
+  assetId String   @id(map: "PK_5e3753aadd956110bf3ec0244ac") @unique(map: "UQ_5e3753aadd956110bf3ec0244ac") @db.Uuid
+  tags    String[]
+  objects String[]
+  asset   Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_5e3753aadd956110bf3ec0244ac")
+
+  @@map("smart_info")
+}
+
+model SystemConfig {
+  key   String  @id(map: "PK_aab69295b445016f56731f4d535") @db.VarChar
+  value String? @db.VarChar
+
+  @@map("system_config")
+}
+
+model TagToAssets {
+  assetId String @map("assetsId") @db.Uuid
+  tagId   String @map("tagsId") @db.Uuid
+  tag     Tag    @relation(fields: [tagId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_e99f31ea4cdf3a2c35c7287eb42")
+  asset   Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade, map: "FK_f8e8a9e893cb5c54907f1b798e9")
+
+  @@id([assetId, tagId], map: "PK_ef5346fe522b5fb3bc96454747e")
+  @@index([tagId], map: "IDX_e99f31ea4cdf3a2c35c7287eb4")
+  @@index([assetId], map: "IDX_f8e8a9e893cb5c54907f1b798e")
+  @@map("tag_asset")
+}
+
+model Tag {
+  id           String        @id(map: "PK_e7dc17249a1148a1970748eda99") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  type         String        @db.VarChar
+  name         String        @db.VarChar
+  userId       String        @db.Uuid
+  renameTagId  String?       @db.Uuid
+  tagsToAssets TagToAssets[]
+  user         User          @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_92e67dc508c705dd66c94615576")
+
+  @@unique([name, userId], map: "UQ_tag_name_userId")
+  @@map("tags")
+}
+
+model UserToken {
+  id        String   @id(map: "PK_48cb6b5c20faa63157b3c1baf7f") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  token     String   @db.VarChar
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  userId    String?  @db.Uuid
+  user      User?    @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_d37db50eecdf9b8ce4eedd2f918")
+
+  @@map("user_token")
+}
+
+model User {
+  id                   String               @id(map: "PK_a3ffb1c0c8416b9fc6f907b7433") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  email                String               @unique(map: "UQ_97672ac88f789774dd47f7c8be3") @db.VarChar
+  password             String               @default("") @db.VarChar
+  createdAt            DateTime             @default(now()) @db.Timestamp(6)
+  firstName            String               @default("") @db.VarChar
+  lastName             String               @default("") @db.VarChar
+  profileImagePath     String               @default("") @db.VarChar
+  isAdmin              Boolean              @default(false)
+  shouldChangePassword Boolean              @default(true)
+  deletedAt            DateTime?            @db.Timestamp(6)
+  oauthId              String               @default("") @db.VarChar
+  updatedAt            DateTime             @default(now()) @updatedAt @db.Timestamptz(6)
+  albums               Album[]
+  sharedAlbumsToUsers  SharedAlbumToUsers[]
+  apiKeys              ApiKey[]
+  assets               Asset[]
+  sharedLinks          SharedLink[]
+  tags                 Tag[]
+  userTokens           UserToken[]
+
+  @@map("users")
+}

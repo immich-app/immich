@@ -34,6 +34,7 @@
     "typeorm:migrations:revert": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:revert -d ./libs/infra/src/db/config/database.config.ts",
     "typeorm:schema:drop": "node --require ts-node/register ./node_modules/typeorm/cli.js schema:drop -d ./libs/infra/src/db/config/database.config.ts",
     "typeorm:schema:reset": "npm run typeorm:schema:drop && npm run typeorm:migrations:run",
+    "prisma:generate": "prisma generate --schema=./libs/infra/src/db/schemas/schema.prisma",
     "api:typescript": "bash ./bin/generate-open-api.sh web",
     "api:dart": "bash ./bin/generate-open-api.sh mobile",
     "api:generate": "bash ./bin/generate-open-api.sh"
@@ -50,6 +51,7 @@
     "@nestjs/swagger": "^6.1.4",
     "@nestjs/typeorm": "^9.0.1",
     "@nestjs/websockets": "^9.2.1",
+    "@prisma/client": "^4.11.0",
     "@socket.io/redis-adapter": "^8.0.1",
     "archiver": "^5.3.1",
     "axios": "^0.26.0",
@@ -110,6 +112,7 @@
     "jest": "^27.2.5",
     "jest-when": "^3.5.2",
     "prettier": "^2.3.2",
+    "prisma": "^4.11.0",
     "rimraf": "^3.0.2",
     "source-map-support": "^0.5.20",
     "supertest": "^6.1.3",

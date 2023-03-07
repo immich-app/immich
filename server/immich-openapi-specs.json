@@ -3404,9 +3404,11 @@
             "type": "string"
           },
           "createdAt": {
+            "format": "date-time",
             "type": "string"
           },
           "updatedAt": {
+            "format": "date-time",
             "type": "string"
           }
         },

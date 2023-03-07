@@ -23,9 +23,9 @@ class APIKeyResponseDto {
 
   String name;
 
-  String createdAt;
+  DateTime createdAt;
 
-  String updatedAt;
+  DateTime updatedAt;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is APIKeyResponseDto &&
@@ -49,8 +49,8 @@ class APIKeyResponseDto {
     final json = <String, dynamic>{};
       json[r'id'] = this.id;
       json[r'name'] = this.name;
-      json[r'createdAt'] = this.createdAt;
-      json[r'updatedAt'] = this.updatedAt;
+      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
+      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
 
@@ -75,8 +75,8 @@ class APIKeyResponseDto {
       return APIKeyResponseDto(
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
-        createdAt: mapValueOfType<String>(json, r'createdAt')!,
-        updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
+        createdAt: mapDateTime(json, r'createdAt', '')!,
+        updatedAt: mapDateTime(json, r'updatedAt', '')!,
       );
     }
     return null;

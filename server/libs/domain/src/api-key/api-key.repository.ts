@@ -1,17 +1,16 @@
-import { APIKeyEntity } from '@app/infra/db/entities';
+import type { ApiKey, Prisma, User } from '@prisma/client';
 
 export const IKeyRepository = 'IKeyRepository';
 
 export interface IKeyRepository {
-  create(dto: Partial<APIKeyEntity>): Promise<APIKeyEntity>;
-  update(userId: string, id: string, dto: Partial<APIKeyEntity>): Promise<APIKeyEntity>;
-  delete(userId: string, id: string): Promise<void>;
-  deleteAll(userId: string): Promise<void>;
+  create(data: Prisma.ApiKeyUncheckedCreateInput): Promise<ApiKey>;
+  update(userId: string, id: string, data: Prisma.ApiKeyUpdateInput): Promise<ApiKey>;
+  delete(userId: string, id: string): Promise<ApiKey>;
+  deleteAll(userId: string): Promise<Prisma.BatchPayload>;
   /**
    * Includes the hashed `key` for verification
-   * @param id
    */
-  getKey(hashedToken: string): Promise<APIKeyEntity | null>;
-  getById(userId: string, id: string): Promise<APIKeyEntity | null>;
-  getByUserId(userId: string): Promise<APIKeyEntity[]>;
+  getKey(hashedToken: string): Promise<(ApiKey & { user: User }) | null>;
+  getById(userId: string, id: string): Promise<ApiKey | null>;
+  getByUserId(userId: string): Promise<ApiKey[]>;
 }

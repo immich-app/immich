@@ -10,7 +10,7 @@ export class APIKeyCore {
   async validate(token: string): Promise<AuthUserDto | null> {
     const hashedToken = this.crypto.hashSha256(token);
     const keyEntity = await this.repository.getKey(hashedToken);
-    if (keyEntity?.user) {
+    if (keyEntity) {
       const user = keyEntity.user;
 
       return {

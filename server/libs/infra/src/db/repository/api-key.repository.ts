@@ -1,49 +1,59 @@
 import { IKeyRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { APIKeyEntity } from '../entities';
+import { PrismaService } from '../services';
+import type { ApiKey, Prisma, User } from '@prisma/client';
 
 @Injectable()
 export class APIKeyRepository implements IKeyRepository {
-  constructor(@InjectRepository(APIKeyEntity) private repository: Repository<APIKeyEntity>) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async create(dto: Partial<APIKeyEntity>): Promise<APIKeyEntity> {
-    return this.repository.save(dto);
-  }
-
-  async update(userId: string, id: string, dto: Partial<APIKeyEntity>): Promise<APIKeyEntity> {
-    await this.repository.update({ userId, id }, dto);
-    return this.repository.findOneOrFail({ where: { id: dto.id } });
-  }
-
-  async delete(userId: string, id: string): Promise<void> {
-    await this.repository.delete({ userId, id });
-  }
-
-  async deleteAll(userId: string): Promise<void> {
-    await this.repository.delete({ userId });
-  }
-
-  getKey(hashedToken: string): Promise<APIKeyEntity | null> {
-    return this.repository.findOne({
-      select: {
-        id: true,
-        key: true,
-        userId: true,
-      },
-      where: { key: hashedToken },
-      relations: {
-        user: true,
+  create({ userId, ...data }: Prisma.ApiKeyUncheckedCreateInput): Promise<ApiKey> {
+    return this.prisma.apiKey.create({
+      data: {
+        ...data,
+        user: {
+          connect: { id: userId },
+        },
       },
     });
   }
 
-  getById(userId: string, id: string): Promise<APIKeyEntity | null> {
-    return this.repository.findOne({ where: { userId, id } });
+  update(userId: string, id: string, data: Prisma.ApiKeyUpdateInput): Promise<ApiKey> {
+    return this.prisma.apiKey.update({
+      where: { id, userId },
+      data,
+    });
   }
 
-  getByUserId(userId: string): Promise<APIKeyEntity[]> {
-    return this.repository.find({ where: { userId }, order: { createdAt: 'DESC' } });
+  delete(userId: string, id: string): Promise<ApiKey> {
+    return this.prisma.apiKey.delete({
+      where: { id, userId },
+    });
+  }
+
+  deleteAll(userId: string): Promise<Prisma.BatchPayload> {
+    return this.prisma.apiKey.deleteMany({
+      where: { userId },
+    });
+  }
+
+  getKey(hashedToken: string): Promise<(ApiKey & { user: User }) | null> {
+    return this.prisma.apiKey.findFirst({
+      where: { key: hashedToken },
+      include: { user: true },
+    });
+  }
+
+  getById(userId: string, id: string): Promise<ApiKey | null> {
+    return this.prisma.apiKey.findUnique({
+      where: { id, userId },
+    });
+  }
+
+  getByUserId(userId: string): Promise<ApiKey[]> {
+    return this.prisma.apiKey.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 }

@@ -12,6 +12,10 @@ const urlOrParts = url
       database: process.env.DB_DATABASE_NAME || 'immich',
     };
 
+export const connectionUrl =
+  url ??
+  `postgresql://${urlOrParts.username}:${urlOrParts.password}@${urlOrParts.host}:${urlOrParts.port}/${urlOrParts.database}`;
+
 export const databaseConfig: PostgresConnectionOptions = {
   type: 'postgres',
   entities: [__dirname + '/../**/*.entity.{js,ts}'],
