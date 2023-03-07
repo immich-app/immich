@@ -270,6 +270,8 @@ export class TypesenseRepository implements ISearchRepository {
             'exifInfo.state',
             'exifInfo.city',
             'exifInfo.description',
+            'exifInfo.subject',
+            'exifInfo.keywords',
             'smartInfo.tags',
             'smartInfo.objects',
           ].join(','),
