@@ -1,21 +1,28 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { fade } from 'svelte/transition';
-
 	import ChangePasswordForm from '$lib/components/forms/change-password-form.svelte';
+	import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
+	import { AppRoute } from '$lib/constants';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 
 	const onSuccessHandler = async () => {
-		await fetch('auth/logout', { method: 'POST' });
+		await fetch(AppRoute.AUTH_LOGOUT, { method: 'POST' });
 
-		goto('/auth/login');
+		goto(AppRoute.AUTH_LOGIN);
 	};
 </script>
 
-<section class="h-screen w-screen flex place-items-center place-content-center">
-	<div in:fade={{ duration: 100 }} out:fade={{ duration: 100 }}>
-		<ChangePasswordForm user={data.user} on:success={onSuccessHandler} />
-	</div>
-</section>
+<FullscreenContainer title={data.meta.title}>
+	<p slot="message">
+		Hi {data.user.firstName}
+		{data.user.lastName} ({data.user.email}),
+		<br />
+		<br />
+		This is either the first time you are signing into the system or a request has been made to change
+		your password. Please enter the new password below.
+	</p>
+
+	<ChangePasswordForm user={data.user} on:success={onSuccessHandler} />
+</FullscreenContainer>
