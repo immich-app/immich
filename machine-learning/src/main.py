@@ -4,55 +4,52 @@ from transformers import pipeline
 from sentence_transformers import SentenceTransformer, util
 from PIL import Image
 
-
-server = Flask(__name__)
-
+is_dev = os.getenv('NODE_ENV') == 'development'
+server_port = os.getenv('MACHINE_LEARNING_PORT', 3003)
+server_host = os.getenv('MACHINE_LEARNING_HOST', '0.0.0.0')
+classification_model = os.getenv('MACHINE_LEARNING_CLASSIFICATION_MODEL', 'microsoft/resnet-50')
+object_model = os.getenv('MACHINE_LEARNING_OBJECT_MODEL', 'hustvl/yolos-tiny')
+clip_model = os.getenv('MACHINE_LEARNING_CLIP_MODEL', 'clip-ViT-B-32')
 
 classifier = pipeline(
     task="image-classification",
-    model="microsoft/resnet-50"
+    model=classification_model
 )
 
 detector = pipeline(
     task="object-detection",
-    model="hustvl/yolos-tiny"
+    model=object_model
 )
 
-sentence_transformer_model = SentenceTransformer('clip-ViT-B-32')
+sentence_transformer_model = SentenceTransformer(clip_model)
 
-
-# Environment resolver
-is_dev = os.getenv('NODE_ENV') == 'development'
-server_port = os.getenv('MACHINE_LEARNING_PORT') or 3003
-
+server = Flask(__name__)
 
 @server.route("/ping")
 def ping():
     return "pong"
 
-
 @server.route("/object-detection/detect-object", methods=['POST'])
 def object_detection():
     assetPath = request.json['thumbnailPath']
-    return run_engine(detector, assetPath), 201
-
+    return run_engine(detector, assetPath), 200
 
 @server.route("/image-classifier/tag-image", methods=['POST'])
 def image_classification():
     assetPath = request.json['thumbnailPath']
-    return run_engine(classifier, assetPath), 201
+    return run_engine(classifier, assetPath), 200
 
 @server.route("/sentence-transformer/encode-image", methods=['POST'])
 def clip_encode_image():
     assetPath = request.json['thumbnailPath']
     emb = sentence_transformer_model.encode(Image.open(assetPath))
-    return emb.tolist(), 201
+    return emb.tolist(), 200
 
 @server.route("/sentence-transformer/encode-text", methods=['POST'])
 def clip_encode_text():
     text = request.json['text']
     emb = sentence_transformer_model.encode(text)
-    return emb.tolist(), 201
+    return emb.tolist(), 200
 
 def run_engine(engine, path):
     result = []
@@ -70,4 +67,4 @@ def run_engine(engine, path):
 
 
 if __name__ == "__main__":
-    server.run(debug=is_dev, host='0.0.0.0', port=server_port)
+    server.run(debug=is_dev, host=server_host, port=server_port)
