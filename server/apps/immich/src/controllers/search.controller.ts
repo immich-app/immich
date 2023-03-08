@@ -20,7 +20,7 @@ export class SearchController {
   @Get()
   async search(
     @GetAuthUser() authUser: AuthUserDto,
-    @Query(new ValidationPipe({ transform: true })) dto: SearchDto,
+    @Query(new ValidationPipe({ transform: true })) dto: SearchDto | any,
   ): Promise<SearchResponseDto> {
     return this.searchService.search(authUser, dto);
   }

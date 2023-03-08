@@ -11,7 +11,13 @@ import { IBulkEntityJob, IJobRepository, JobName } from '../job';
 import { IMachineLearningRepository } from '../smart-info';
 import { SearchDto } from './dto';
 import { SearchConfigResponseDto, SearchResponseDto } from './response-dto';
-import { ISearchRepository, SearchCollection, SearchExploreItem, SearchResult } from './search.repository';
+import {
+  ISearchRepository,
+  SearchCollection,
+  SearchExploreItem,
+  SearchResult,
+  SearchStrategy,
+} from './search.repository';
 
 interface SyncQueue {
   upsert: Set<string>;
@@ -92,17 +98,25 @@ export class SearchService {
   async search(authUser: AuthUserDto, dto: SearchDto): Promise<SearchResponseDto> {
     this.assertEnabled();
 
-    const query = dto.query || '*';
+    const query = dto.q || dto.query || '*';
+    const strategy = dto.clip ? SearchStrategy.CLIP : SearchStrategy.TEXT;
+    const filters = { userId: authUser.id, ...dto };
 
     let assets: SearchResult<AssetEntity>;
-    if (MACHINE_LEARNING_ENABLED) {
-      const clip = await this.machineLearning.encodeText(query);
-      assets = await this.searchRepository.vectorSearch(authUser.id, clip);
-    } else {
-      assets = await this.searchRepository.searchAssets(query, { userId: authUser.id, ...dto });
+    switch (strategy) {
+      case SearchStrategy.TEXT:
+        assets = await this.searchRepository.searchAssets(query, filters);
+        break;
+      case SearchStrategy.CLIP:
+      default:
+        if (!MACHINE_LEARNING_ENABLED) {
+          throw new BadRequestException('Machine Learning is disabled');
+        }
+        const clip = await this.machineLearning.encodeText(query);
+        assets = await this.searchRepository.vectorSearch(clip, filters);
     }
 
-    const albums = await this.searchRepository.searchAlbums(query, { userId: authUser.id, ...dto });
+    const albums = await this.searchRepository.searchAlbums(query, filters);
 
     return {
       albums: { ...albums, items: albums.items.map(mapAlbum) },

@@ -5,6 +5,11 @@ export enum SearchCollection {
   ALBUMS = 'albums',
 }
 
+export enum SearchStrategy {
+  CLIP = 'CLIP',
+  TEXT = 'TEXT',
+}
+
 export interface SearchFilter {
   id?: string;
   userId: string;
@@ -65,8 +70,7 @@ export interface ISearchRepository {
 
   searchAlbums(query: string, filters: SearchFilter): Promise<SearchResult<AlbumEntity>>;
   searchAssets(query: string, filters: SearchFilter): Promise<SearchResult<AssetEntity>>;
-
-  vectorSearch(userId: string, input: number[]): Promise<SearchResult<AssetEntity>>;
+  vectorSearch(query: number[], filters: SearchFilter): Promise<SearchResult<AssetEntity>>;
 
   explore(userId: string): Promise<SearchExploreItem<AssetEntity>[]>;
 }

@@ -227,7 +227,7 @@ export class TypesenseRepository implements ISearchRepository {
       }
     }
 
-    this.logger.debug(`Searching query='${query}', filters='${JSON.stringify(_filters)}'`);
+    this.logger.debug(`Searching album: query='${query}', filters='${JSON.stringify(_filters)}'`);
 
     const results = await this.client
       .collections<AlbumEntity>(alias.collection_name)
@@ -259,7 +259,7 @@ export class TypesenseRepository implements ISearchRepository {
       }
     }
 
-    this.logger.debug(`Searching query='${query}', filters='${JSON.stringify(_filters)}'`);
+    this.logger.debug(`Searching assets: query='${query}', filters='${JSON.stringify(_filters)}'`);
 
     const results = await this.client
       .collections<AssetEntity>(alias.collection_name)
@@ -275,25 +275,27 @@ export class TypesenseRepository implements ISearchRepository {
           'smartInfo.tags',
           'smartInfo.objects',
         ].join(','),
-        filter_by: _filters.join(' && '),
         per_page: 250,
-        sort_by: filters.recent ? 'createdAt:desc' : undefined,
         facet_by: this.getFacetFieldNames(SearchCollection.ASSETS),
+        filter_by: this.getAssetFilters(filters),
+        sort_by: filters.recent ? 'createdAt:desc' : undefined,
       });
 
     return this.asResponse(results);
   }
 
-  async vectorSearch(userId: string, input: number[]): Promise<SearchResult<AssetEntity>> {
+  async vectorSearch(input: number[], filters: SearchFilter): Promise<SearchResult<AssetEntity>> {
     const alias = await this.client.aliases(SearchCollection.ASSETS).retrieve();
-    const _filters = [`ownerId:${userId}`];
+
     const { results } = await this.client.multiSearch.perform({
       searches: [
         {
           collection: alias.collection_name,
           q: '*',
           vector_query: `smartInfo.clipEmbedding:([${input.join(',')}], k:100)`,
-          filter_by: _filters.join(' && '),
+          per_page: 250,
+          facet_by: this.getFacetFieldNames(SearchCollection.ASSETS),
+          filter_by: this.getAssetFilters(filters),
         } as any,
       ],
     });
@@ -376,5 +378,19 @@ export class TypesenseRepository implements ISearchRepository {
       .filter((field) => field.facet)
       .map((field) => field.name)
       .join(',');
+  }
+
+  private getAssetFilters(filters: SearchFilter) {
+    const _filters = [`ownerId:${filters.userId}`];
+    for (const item of assetSchema.fields || []) {
+      let value = filters[item.name as keyof SearchFilter];
+      if (Array.isArray(value)) {
+        value = `[${value.join(',')}]`;
+      }
+      if (item.facet && value !== undefined) {
+        _filters.push(`${item.name}:${value}`);
+      }
+    }
+    return _filters.join(' && ');
   }
 }

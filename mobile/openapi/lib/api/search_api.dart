@@ -110,33 +110,7 @@ class SearchApi {
   /// 
   ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] query:
-  ///
-  /// * [String] type:
-  ///
-  /// * [bool] isFavorite:
-  ///
-  /// * [String] exifInfoPeriodCity:
-  ///
-  /// * [String] exifInfoPeriodState:
-  ///
-  /// * [String] exifInfoPeriodCountry:
-  ///
-  /// * [String] exifInfoPeriodMake:
-  ///
-  /// * [String] exifInfoPeriodModel:
-  ///
-  /// * [List<String>] smartInfoPeriodObjects:
-  ///
-  /// * [List<String>] smartInfoPeriodTags:
-  ///
-  /// * [bool] recent:
-  ///
-  /// * [bool] motion:
-  Future<Response> searchWithHttpInfo({ String? query, String? type, bool? isFavorite, String? exifInfoPeriodCity, String? exifInfoPeriodState, String? exifInfoPeriodCountry, String? exifInfoPeriodMake, String? exifInfoPeriodModel, List<String>? smartInfoPeriodObjects, List<String>? smartInfoPeriodTags, bool? recent, bool? motion, }) async {
+  Future<Response> searchWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/search';
 
@@ -146,43 +120,6 @@ class SearchApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
-
-    if (query != null) {
-      queryParams.addAll(_queryParams('', 'query', query));
-    }
-    if (type != null) {
-      queryParams.addAll(_queryParams('', 'type', type));
-    }
-    if (isFavorite != null) {
-      queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
-    }
-    if (exifInfoPeriodCity != null) {
-      queryParams.addAll(_queryParams('', 'exifInfo.city', exifInfoPeriodCity));
-    }
-    if (exifInfoPeriodState != null) {
-      queryParams.addAll(_queryParams('', 'exifInfo.state', exifInfoPeriodState));
-    }
-    if (exifInfoPeriodCountry != null) {
-      queryParams.addAll(_queryParams('', 'exifInfo.country', exifInfoPeriodCountry));
-    }
-    if (exifInfoPeriodMake != null) {
-      queryParams.addAll(_queryParams('', 'exifInfo.make', exifInfoPeriodMake));
-    }
-    if (exifInfoPeriodModel != null) {
-      queryParams.addAll(_queryParams('', 'exifInfo.model', exifInfoPeriodModel));
-    }
-    if (smartInfoPeriodObjects != null) {
-      queryParams.addAll(_queryParams('multi', 'smartInfo.objects', smartInfoPeriodObjects));
-    }
-    if (smartInfoPeriodTags != null) {
-      queryParams.addAll(_queryParams('multi', 'smartInfo.tags', smartInfoPeriodTags));
-    }
-    if (recent != null) {
-      queryParams.addAll(_queryParams('', 'recent', recent));
-    }
-    if (motion != null) {
-      queryParams.addAll(_queryParams('', 'motion', motion));
-    }
 
     const contentTypes = <String>[];
 
@@ -199,34 +136,8 @@ class SearchApi {
   }
 
   /// 
-  ///
-  /// Parameters:
-  ///
-  /// * [String] query:
-  ///
-  /// * [String] type:
-  ///
-  /// * [bool] isFavorite:
-  ///
-  /// * [String] exifInfoPeriodCity:
-  ///
-  /// * [String] exifInfoPeriodState:
-  ///
-  /// * [String] exifInfoPeriodCountry:
-  ///
-  /// * [String] exifInfoPeriodMake:
-  ///
-  /// * [String] exifInfoPeriodModel:
-  ///
-  /// * [List<String>] smartInfoPeriodObjects:
-  ///
-  /// * [List<String>] smartInfoPeriodTags:
-  ///
-  /// * [bool] recent:
-  ///
-  /// * [bool] motion:
-  Future<SearchResponseDto?> search({ String? query, String? type, bool? isFavorite, String? exifInfoPeriodCity, String? exifInfoPeriodState, String? exifInfoPeriodCountry, String? exifInfoPeriodMake, String? exifInfoPeriodModel, List<String>? smartInfoPeriodObjects, List<String>? smartInfoPeriodTags, bool? recent, bool? motion, }) async {
-    final response = await searchWithHttpInfo( query: query, type: type, isFavorite: isFavorite, exifInfoPeriodCity: exifInfoPeriodCity, exifInfoPeriodState: exifInfoPeriodState, exifInfoPeriodCountry: exifInfoPeriodCountry, exifInfoPeriodMake: exifInfoPeriodMake, exifInfoPeriodModel: exifInfoPeriodModel, smartInfoPeriodObjects: smartInfoPeriodObjects, smartInfoPeriodTags: smartInfoPeriodTags, recent: recent, motion: motion, );
+  Future<SearchResponseDto?> search() async {
+    final response = await searchWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

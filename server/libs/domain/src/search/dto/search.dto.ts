@@ -7,7 +7,17 @@ export class SearchDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
+  q?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
   query?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  @Transform(toBoolean)
+  clip?: boolean;
 
   @IsEnum(AssetType)
   @IsOptional()

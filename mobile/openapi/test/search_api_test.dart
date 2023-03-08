@@ -33,7 +33,7 @@ void main() {
 
     // 
     //
-    //Future<SearchResponseDto> search({ String query, String type, bool isFavorite, String exifInfoPeriodCity, String exifInfoPeriodState, String exifInfoPeriodCountry, String exifInfoPeriodMake, String exifInfoPeriodModel, List<String> smartInfoPeriodObjects, List<String> smartInfoPeriodTags, bool recent, bool motion }) async
+    //Future<SearchResponseDto> search() async
     test('test search', () async {
       // TODO
     });

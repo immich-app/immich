@@ -9,7 +9,14 @@ export class AlbumRepository implements IAlbumRepository {
   constructor(@InjectRepository(AlbumEntity) private repository: Repository<AlbumEntity>) {}
 
   getByIds(ids: string[]): Promise<AlbumEntity[]> {
-    return this.repository.find({ where: { id: In(ids) } });
+    return this.repository.find({
+      where: {
+        id: In(ids),
+      },
+      relations: {
+        owner: true,
+      },
+    });
   }
 
   async deleteAll(userId: string): Promise<void> {
@@ -17,7 +24,11 @@ export class AlbumRepository implements IAlbumRepository {
   }
 
   getAll(): Promise<AlbumEntity[]> {
-    return this.repository.find();
+    return this.repository.find({
+      relations: {
+        owner: true,
+      },
+    });
   }
 
   async save(album: Partial<AlbumEntity>) {
