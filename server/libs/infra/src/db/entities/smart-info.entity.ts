@@ -16,6 +16,6 @@ export class SmartInfoEntity {
   @Column({ type: 'text', array: true, nullable: true })
   objects!: string[] | null;
 
-  @Column('numeric', { precision: 20, scale: 19, nullable: true, array: true })
+  @Column({ type: 'numeric', array: true, nullable: true, precision: 20, scale: 19 })
   clipEmbedding!: number[] | null;
 }
