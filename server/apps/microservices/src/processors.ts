@@ -1,10 +1,9 @@
 import {
   AssetService,
-  IAlbumJob,
   IAssetJob,
   IAssetUploadedJob,
+  IBulkEntityJob,
   IDeleteFilesJob,
-  IDeleteJob,
   IUserDeletionJob,
   JobName,
   MediaService,
@@ -84,23 +83,23 @@ export class SearchIndexProcessor {
   }
 
   @Process(JobName.SEARCH_INDEX_ALBUM)
-  async onIndexAlbum(job: Job<IAlbumJob>) {
-    await this.searchService.handleIndexAlbum(job.data);
+  onIndexAlbum(job: Job<IBulkEntityJob>) {
+    this.searchService.handleIndexAlbum(job.data);
   }
 
   @Process(JobName.SEARCH_INDEX_ASSET)
-  async onIndexAsset(job: Job<IAssetJob>) {
-    await this.searchService.handleIndexAsset(job.data);
+  onIndexAsset(job: Job<IBulkEntityJob>) {
+    this.searchService.handleIndexAsset(job.data);
   }
 
   @Process(JobName.SEARCH_REMOVE_ALBUM)
-  async onRemoveAlbum(job: Job<IDeleteJob>) {
-    await this.searchService.handleRemoveAlbum(job.data);
+  onRemoveAlbum(job: Job<IBulkEntityJob>) {
+    this.searchService.handleRemoveAlbum(job.data);
   }
 
   @Process(JobName.SEARCH_REMOVE_ASSET)
-  async onRemoveAsset(job: Job<IDeleteJob>) {
-    await this.searchService.handleRemoveAsset(job.data);
+  onRemoveAsset(job: Job<IBulkEntityJob>) {
+    this.searchService.handleRemoveAsset(job.data);
   }
 }
 

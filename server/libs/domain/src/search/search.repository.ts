@@ -57,17 +57,16 @@ export interface ISearchRepository {
   setup(): Promise<void>;
   checkMigrationStatus(): Promise<SearchCollectionIndexStatus>;
 
-  index(collection: SearchCollection.ASSETS, item: AssetEntity): Promise<void>;
-  index(collection: SearchCollection.ALBUMS, item: AlbumEntity): Promise<void>;
+  importAlbums(items: AlbumEntity[], done: boolean): Promise<void>;
+  importAssets(items: AssetEntity[], done: boolean): Promise<void>;
 
-  delete(collection: SearchCollection, id: string): Promise<void>;
+  deleteAlbums(ids: string[]): Promise<void>;
+  deleteAssets(ids: string[]): Promise<void>;
 
-  import(collection: SearchCollection.ASSETS, items: AssetEntity[], done: boolean): Promise<void>;
-  import(collection: SearchCollection.ALBUMS, items: AlbumEntity[], done: boolean): Promise<void>;
+  searchAlbums(query: string, filters: SearchFilter): Promise<SearchResult<AlbumEntity>>;
+  searchAssets(query: string, filters: SearchFilter): Promise<SearchResult<AssetEntity>>;
 
-  search(collection: SearchCollection.ASSETS, query: string, filters: SearchFilter): Promise<SearchResult<AssetEntity>>;
-  search(collection: SearchCollection.ALBUMS, query: string, filters: SearchFilter): Promise<SearchResult<AlbumEntity>>;
-  vectorSearch(input: number[]): Promise<SearchResult<AssetEntity>>;
+  vectorSearch(userId: string, input: number[]): Promise<SearchResult<AssetEntity>>;
 
   explore(userId: string): Promise<SearchExploreItem<AssetEntity>[]>;
 }

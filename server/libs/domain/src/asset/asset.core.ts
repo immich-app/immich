@@ -11,7 +11,10 @@ export class AssetCore {
 
   async save(asset: Partial<AssetEntity>) {
     const _asset = await this.assetRepository.save(asset);
-    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { asset: _asset } });
+    await this.jobRepository.queue({
+      name: JobName.SEARCH_INDEX_ASSET,
+      data: { ids: [_asset.id] },
+    });
     return _asset;
   }
 

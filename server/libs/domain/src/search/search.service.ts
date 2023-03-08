@@ -1,20 +1,38 @@
 import { MACHINE_LEARNING_ENABLED } from '@app/common';
-import { AssetEntity } from '@app/infra/db/entities';
+import { AlbumEntity, AssetEntity } from '@app/infra/db/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { mapAlbum } from '../album';
 import { IAlbumRepository } from '../album/album.repository';
+import { mapAsset } from '../asset';
 import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
-import { IAlbumJob, IAssetJob, IDeleteJob, IJobRepository, JobName } from '../job';
+import { IBulkEntityJob, IJobRepository, JobName } from '../job';
 import { IMachineLearningRepository } from '../smart-info';
 import { SearchDto } from './dto';
 import { SearchConfigResponseDto, SearchResponseDto } from './response-dto';
-import { ISearchRepository, SearchCollection, SearchExploreItem } from './search.repository';
+import { ISearchRepository, SearchCollection, SearchExploreItem, SearchResult } from './search.repository';
+
+interface SyncQueue {
+  upsert: Set<string>;
+  delete: Set<string>;
+}
 
 @Injectable()
 export class SearchService {
   private logger = new Logger(SearchService.name);
   private enabled: boolean;
+  private timer: NodeJS.Timer | null = null;
+
+  private albumQueue: SyncQueue = {
+    upsert: new Set(),
+    delete: new Set(),
+  };
+
+  private assetQueue: SyncQueue = {
+    upsert: new Set(),
+    delete: new Set(),
+  };
 
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
@@ -25,6 +43,16 @@ export class SearchService {
     configService: ConfigService,
   ) {
     this.enabled = configService.get('TYPESENSE_ENABLED') !== 'false';
+    if (this.enabled) {
+      this.timer = setInterval(() => this.flush(), 5_000);
+    }
+  }
+
+  teardown() {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
   }
 
   isEnabled() {
@@ -66,59 +94,20 @@ export class SearchService {
 
     const query = dto.query || '*';
 
-    let assets: any;
+    let assets: SearchResult<AssetEntity>;
     if (MACHINE_LEARNING_ENABLED) {
       const clip = await this.machineLearning.encodeText(query);
-      assets = await this.searchRepository.vectorSearch(clip);
+      assets = await this.searchRepository.vectorSearch(authUser.id, clip);
     } else {
-      assets = await this.searchRepository.search(SearchCollection.ASSETS, query, {
-        userId: authUser.id,
-        ...dto,
-      });
+      assets = await this.searchRepository.searchAssets(query, { userId: authUser.id, ...dto });
     }
+
+    const albums = await this.searchRepository.searchAlbums(query, { userId: authUser.id, ...dto });
 
     return {
-      albums: (await this.searchRepository.search(SearchCollection.ALBUMS, query, {
-        userId: authUser.id,
-        ...dto,
-      })) as any,
-      assets,
-    } as any;
-  }
-
-  async handleIndexAssets() {
-    if (!this.enabled) {
-      return;
-    }
-
-    try {
-      this.logger.debug(`Running indexAssets`);
-      // TODO: do this in batches based on searchIndexVersion
-      const assets = await this.assetRepository.getAll({ isVisible: true });
-
-      this.logger.log(`Indexing ${assets.length} assets`);
-      await this.searchRepository.import(SearchCollection.ASSETS, assets, true);
-      this.logger.debug('Finished re-indexing all assets');
-    } catch (error: any) {
-      this.logger.error(`Unable to index all assets`, error?.stack);
-    }
-  }
-
-  async handleIndexAsset(data: IAssetJob) {
-    if (!this.enabled) {
-      return;
-    }
-
-    const { asset } = data;
-    if (!asset.isVisible) {
-      return;
-    }
-
-    try {
-      await this.searchRepository.index(SearchCollection.ASSETS, asset);
-    } catch (error: any) {
-      this.logger.error(`Unable to index asset: ${asset.id}`, error?.stack);
-    }
+      albums: { ...albums, items: albums.items.map(mapAlbum) },
+      assets: { ...assets, items: assets.items.map(mapAsset) },
+    };
   }
 
   async handleIndexAlbums() {
@@ -127,48 +116,103 @@ export class SearchService {
     }
 
     try {
-      const albums = await this.albumRepository.getAll();
-      this.logger.log(`Indexing ${albums.length} albums`);
-      await this.searchRepository.import(SearchCollection.ALBUMS, albums, true);
-      this.logger.debug('Finished re-indexing all albums');
+      const albums = this.patchAlbums(await this.albumRepository.getAll());
+      if (albums.length > 0) {
+        this.logger.log(`Indexing ${albums.length} albums`);
+        await this.searchRepository.importAlbums(albums, true);
+      }
     } catch (error: any) {
       this.logger.error(`Unable to index all albums`, error?.stack);
     }
   }
 
-  async handleIndexAlbum(data: IAlbumJob) {
+  async handleIndexAssets() {
     if (!this.enabled) {
       return;
     }
 
-    const { album } = data;
-
     try {
-      await this.searchRepository.index(SearchCollection.ALBUMS, album);
+      // TODO: do this in batches based on searchIndexVersion
+      const assets = this.patchAssets(await this.assetRepository.getAll({ isVisible: true }));
+      if (assets.length > 0) {
+        this.logger.log(`Indexing ${assets.length} assets`);
+        await this.searchRepository.importAssets(assets, true);
+        this.logger.debug('Finished re-indexing all assets');
+      }
     } catch (error: any) {
-      this.logger.error(`Unable to index album: ${album.id}`, error?.stack);
+      this.logger.error(`Unable to index all assets`, error?.stack);
     }
   }
 
-  async handleRemoveAlbum(data: IDeleteJob) {
-    await this.handleRemove(SearchCollection.ALBUMS, data);
-  }
-
-  async handleRemoveAsset(data: IDeleteJob) {
-    await this.handleRemove(SearchCollection.ASSETS, data);
-  }
-
-  private async handleRemove(collection: SearchCollection, data: IDeleteJob) {
+  handleIndexAlbum({ ids }: IBulkEntityJob) {
     if (!this.enabled) {
       return;
     }
 
-    const { id } = data;
+    for (const id of ids) {
+      this.albumQueue.upsert.add(id);
+    }
+  }
 
-    try {
-      await this.searchRepository.delete(collection, id);
-    } catch (error: any) {
-      this.logger.error(`Unable to remove ${collection}: ${id}`, error?.stack);
+  handleIndexAsset({ ids }: IBulkEntityJob) {
+    if (!this.enabled) {
+      return;
+    }
+
+    for (const id of ids) {
+      this.assetQueue.upsert.add(id);
+    }
+  }
+
+  handleRemoveAlbum({ ids }: IBulkEntityJob) {
+    if (!this.enabled) {
+      return;
+    }
+
+    for (const id of ids) {
+      this.albumQueue.delete.add(id);
+    }
+  }
+
+  handleRemoveAsset({ ids }: IBulkEntityJob) {
+    if (!this.enabled) {
+      return;
+    }
+
+    for (const id of ids) {
+      this.assetQueue.delete.add(id);
+    }
+  }
+
+  private async flush() {
+    if (this.albumQueue.upsert.size > 0) {
+      const ids = [...this.albumQueue.upsert.keys()];
+      const items = await this.idsToAlbums(ids);
+      this.logger.debug(`Flushing ${items.length} album upserts`);
+      await this.searchRepository.importAlbums(items, false);
+      this.albumQueue.upsert.clear();
+    }
+
+    if (this.albumQueue.delete.size > 0) {
+      const ids = [...this.albumQueue.delete.keys()];
+      this.logger.debug(`Flushing ${ids.length} album deletes`);
+      await this.searchRepository.deleteAlbums(ids);
+      this.albumQueue.delete.clear();
+    }
+
+    if (this.assetQueue.upsert.size > 0) {
+      const ids = [...this.assetQueue.upsert.keys()];
+      const items = await this.idsToAssets(ids);
+      this.logger.debug(`Flushing ${items.length} asset upserts`);
+      await this.searchRepository.importAssets(items, false);
+      this.assetQueue.upsert.clear();
+    }
+
+    if (this.assetQueue.delete.size > 0) {
+      const ids = [...this.assetQueue.delete.keys()];
+      this.logger.debug(`Flushing ${ids.length} asset deletes`);
+      await this.searchRepository.deleteAssets(ids);
+      this.assetQueue.delete.clear();
     }
   }
 
@@ -176,5 +220,23 @@ export class SearchService {
     if (!this.enabled) {
       throw new BadRequestException('Search is disabled');
     }
+  }
+
+  private async idsToAlbums(ids: string[]): Promise<AlbumEntity[]> {
+    const entities = await this.albumRepository.getByIds(ids);
+    return this.patchAlbums(entities);
+  }
+
+  private async idsToAssets(ids: string[]): Promise<AssetEntity[]> {
+    const entities = await this.assetRepository.getByIds(ids);
+    return this.patchAssets(entities.filter((entity) => entity.isVisible));
+  }
+
+  private patchAssets(assets: AssetEntity[]): AssetEntity[] {
+    return assets;
+  }
+
+  private patchAlbums(albums: AlbumEntity[]): AlbumEntity[] {
+    return albums.map((entity) => ({ ...entity, assets: [] }));
   }
 }
