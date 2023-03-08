@@ -9,7 +9,8 @@ server_port = os.getenv('MACHINE_LEARNING_PORT', 3003)
 server_host = os.getenv('MACHINE_LEARNING_HOST', '0.0.0.0')
 classification_model = os.getenv('MACHINE_LEARNING_CLASSIFICATION_MODEL', 'microsoft/resnet-50')
 object_model = os.getenv('MACHINE_LEARNING_OBJECT_MODEL', 'hustvl/yolos-tiny')
-clip_model = os.getenv('MACHINE_LEARNING_CLIP_MODEL', 'clip-ViT-B-32')
+image_model = os.getenv('MACHINE_LEARNING_CLIP_IMAGE_MODEL', 'clip-ViT-B-32')
+text_model = os.getenv('MACHINE_LEARNING_CLIP_TEXT_MODEL', 'clip-ViT-B-32')
 
 classifier = pipeline(
     task="image-classification",
@@ -21,7 +22,8 @@ detector = pipeline(
     model=object_model
 )
 
-sentence_transformer_model = SentenceTransformer(clip_model)
+clip_image_model = SentenceTransformer(image_model)
+clip_text_model = SentenceTransformer(text_model)
 
 server = Flask(__name__)
 
@@ -42,13 +44,13 @@ def image_classification():
 @server.route("/sentence-transformer/encode-image", methods=['POST'])
 def clip_encode_image():
     assetPath = request.json['thumbnailPath']
-    emb = sentence_transformer_model.encode(Image.open(assetPath))
+    emb = clip_image_model.encode(Image.open(assetPath))
     return emb.tolist(), 200
 
 @server.route("/sentence-transformer/encode-text", methods=['POST'])
 def clip_encode_text():
     text = request.json['text']
-    emb = sentence_transformer_model.encode(text)
+    emb = clip_text_model.encode(text)
     return emb.tolist(), 200
 
 def run_engine(engine, path):
