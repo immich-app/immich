@@ -4,6 +4,7 @@ import { plainToInstance } from 'class-transformer';
 import {
   albumStub,
   assetEntityStub,
+  asyncTick,
   authStub,
   newAlbumRepositoryMock,
   newAssetRepositoryMock,
@@ -20,6 +21,8 @@ import { IMachineLearningRepository } from '../smart-info';
 import { SearchDto } from './dto';
 import { ISearchRepository } from './search.repository';
 import { SearchService } from './search.service';
+
+jest.useFakeTimers();
 
 describe(SearchService.name, () => {
   let sut: SearchService;
@@ -191,6 +194,8 @@ describe(SearchService.name, () => {
       searchMock.importAssets.mockRejectedValue(new Error('import failed'));
 
       await sut.handleIndexAssets();
+
+      expect(searchMock.importAssets).toHaveBeenCalled();
     });
 
     it('should skip if search is disabled', async () => {
@@ -238,6 +243,15 @@ describe(SearchService.name, () => {
 
       expect(searchMock.importAlbums).toHaveBeenCalledWith([albumStub.empty], true);
     });
+
+    it('should log an error', async () => {
+      albumMock.getAll.mockResolvedValue([albumStub.empty]);
+      searchMock.importAlbums.mockRejectedValue(new Error('import failed'));
+
+      await sut.handleIndexAlbums();
+
+      expect(searchMock.importAlbums).toHaveBeenCalled();
+    });
   });
 
   describe('handleIndexAlbum', () => {
@@ -273,6 +287,54 @@ describe(SearchService.name, () => {
 
     it('should remove the asset', () => {
       sut.handleRemoveAsset({ ids: ['asset1'] });
+    });
+  });
+
+  describe('flush', () => {
+    it('should flush queued album updates', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.empty]);
+
+      sut.handleIndexAlbum({ ids: ['album1'] });
+
+      jest.runOnlyPendingTimers();
+
+      await asyncTick(4);
+
+      expect(albumMock.getByIds).toHaveBeenCalledWith(['album1']);
+      expect(searchMock.importAlbums).toHaveBeenCalledWith([albumStub.empty], false);
+    });
+
+    it('should flush queued album deletes', async () => {
+      sut.handleRemoveAlbum({ ids: ['album1'] });
+
+      jest.runOnlyPendingTimers();
+
+      await asyncTick(4);
+
+      expect(searchMock.deleteAlbums).toHaveBeenCalledWith(['album1']);
+    });
+
+    it('should flush queued asset updates', async () => {
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
+
+      sut.handleIndexAsset({ ids: ['asset1'] });
+
+      jest.runOnlyPendingTimers();
+
+      await asyncTick(4);
+
+      expect(assetMock.getByIds).toHaveBeenCalledWith(['asset1']);
+      expect(searchMock.importAssets).toHaveBeenCalledWith([assetEntityStub.image], false);
+    });
+
+    it('should flush queued asset deletes', async () => {
+      sut.handleRemoveAsset({ ids: ['asset1'] });
+
+      jest.runOnlyPendingTimers();
+
+      await asyncTick(4);
+
+      expect(searchMock.deleteAssets).toHaveBeenCalledWith(['asset1']);
     });
   });
 });
