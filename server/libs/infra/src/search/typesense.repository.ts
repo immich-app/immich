@@ -211,23 +211,6 @@ export class TypesenseRepository implements ISearchRepository {
 
   async searchAlbums(query: string, filters: SearchFilter): Promise<SearchResult<AlbumEntity>> {
     const alias = await this.client.aliases(SearchCollection.ALBUMS).retrieve();
-    const { userId } = filters;
-    const _filters = [`ownerId:${userId}`];
-    if (filters.id) {
-      _filters.push(`id:=${filters.id}`);
-    }
-
-    for (const item of albumSchema.fields || []) {
-      let value = filters[item.name as keyof SearchFilter];
-      if (Array.isArray(value)) {
-        value = `[${value.join(',')}]`;
-      }
-      if (item.facet && value !== undefined) {
-        _filters.push(`${item.name}:${value}`);
-      }
-    }
-
-    this.logger.debug(`Searching album: query='${query}', filters='${JSON.stringify(_filters)}'`);
 
     const results = await this.client
       .collections<AlbumEntity>(alias.collection_name)
@@ -235,7 +218,7 @@ export class TypesenseRepository implements ISearchRepository {
       .search({
         q: query,
         query_by: 'albumName',
-        filter_by: _filters.join(','),
+        filter_by: this.getAlbumFilters(filters),
       });
 
     return this.asResponse(results);
@@ -243,24 +226,6 @@ export class TypesenseRepository implements ISearchRepository {
 
   async searchAssets(query: string, filters: SearchFilter): Promise<SearchResult<AssetEntity>> {
     const alias = await this.client.aliases(SearchCollection.ASSETS).retrieve();
-    const { userId } = filters;
-    const _filters = [`ownerId:${userId}`];
-    if (filters.id) {
-      _filters.push(`id:=${filters.id}`);
-    }
-
-    for (const item of assetSchema.fields || []) {
-      let value = filters[item.name as keyof SearchFilter];
-      if (Array.isArray(value)) {
-        value = `[${value.join(',')}]`;
-      }
-      if (item.facet && value !== undefined) {
-        _filters.push(`${item.name}:${value}`);
-      }
-    }
-
-    this.logger.debug(`Searching assets: query='${query}', filters='${JSON.stringify(_filters)}'`);
-
     const results = await this.client
       .collections<AssetEntity>(alias.collection_name)
       .documents()
@@ -380,8 +345,31 @@ export class TypesenseRepository implements ISearchRepository {
       .join(',');
   }
 
+  private getAlbumFilters(filters: SearchFilter) {
+    const { userId } = filters;
+    const _filters = [`ownerId:${userId}`];
+    if (filters.id) {
+      _filters.push(`id:=${filters.id}`);
+    }
+
+    for (const item of albumSchema.fields || []) {
+      let value = filters[item.name as keyof SearchFilter];
+      if (Array.isArray(value)) {
+        value = `[${value.join(',')}]`;
+      }
+      if (item.facet && value !== undefined) {
+        _filters.push(`${item.name}:${value}`);
+      }
+    }
+
+    return _filters.join(' && ');
+  }
+
   private getAssetFilters(filters: SearchFilter) {
     const _filters = [`ownerId:${filters.userId}`];
+    if (filters.id) {
+      _filters.push(`id:=${filters.id}`);
+    }
     for (const item of assetSchema.fields || []) {
       let value = filters[item.name as keyof SearchFilter];
       if (Array.isArray(value)) {
