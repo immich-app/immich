@@ -1,4 +1,4 @@
-FROM node:16-alpine3.14 as builder
+FROM --platform=$BUILDPLATFORM node:16-alpine3.14 as builder
 
 WORKDIR /usr/src/app
 
