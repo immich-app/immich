@@ -32,7 +32,7 @@ import {
   databaseConfig,
   DeviceInfoEntity,
   DeviceInfoRepository,
-  PrismaService,
+  PrismaModule,
   SharedLinkEntity,
   SharedLinkRepository,
   SmartInfoEntity,
@@ -72,6 +72,7 @@ const providers: Provider[] = [
 @Global()
 @Module({
   imports: [
+    PrismaModule,
     TypeOrmModule.forRoot(databaseConfig),
     TypeOrmModule.forFeature([
       AssetEntity,
@@ -103,7 +104,7 @@ const providers: Provider[] = [
     }),
     BullModule.registerQueue(...Object.values(QueueName).map((name) => ({ name }))),
   ],
-  providers: [...providers, CommunicationGateway, PrismaService],
+  providers: [...providers, CommunicationGateway],
   exports: [...providers, BullModule],
 })
 export class InfraModule {}

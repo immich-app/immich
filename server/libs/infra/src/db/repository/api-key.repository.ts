@@ -1,6 +1,6 @@
 import { IKeyRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../services';
+import { PrismaService } from '../prisma';
 import type { ApiKey, Prisma, User } from '@prisma/client';
 
 @Injectable()
