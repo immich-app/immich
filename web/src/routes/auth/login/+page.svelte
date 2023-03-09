@@ -16,7 +16,7 @@
 
 	<LoginForm
 		authConfig={data.authConfig}
-		on:success={() => goto(AppRoute.PHOTOS)}
+		on:success={() => goto(AppRoute.PHOTOS, { invalidateAll: true })}
 		on:first-login={() => goto(AppRoute.AUTH_CHANGE_PASSWORD)}
 	/>
 </FullscreenContainer>
