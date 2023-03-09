@@ -9,6 +9,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
+import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
+import 'package:immich_mobile/modules/backup/models/duplicated_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_duplicated_assets.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
@@ -104,6 +106,8 @@ Future<Isar> loadDb() async {
       AssetSchema,
       AlbumSchema,
       UserSchema,
+      BackupAlbumSchema,
+      DuplicatedAssetSchema,
     ],
     directory: dir.path,
     maxSizeMiB: 256,
@@ -156,10 +160,12 @@ class ImmichAppState extends ConsumerState<ImmichApp>
 
         ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
 
-        ref.watch(notificationPermissionProvider.notifier)
-          .getNotificationPermission();
-        ref.watch(galleryPermissionNotifier.notifier)
-          .getGalleryPermissionStatus();
+        ref
+            .watch(notificationPermissionProvider.notifier)
+            .getNotificationPermission();
+        ref
+            .watch(galleryPermissionNotifier.notifier)
+            .getGalleryPermissionStatus();
 
         ref.read(iOSBackgroundSettingsProvider.notifier).refresh();
 
