@@ -45,7 +45,7 @@
 	<section class="overflow-y-auto relative immich-scrollbar">
 		<section
 			id="album-content"
-			class="relative pt-8 pl-4 mb-12 bg-immich-bg dark:bg-immich-dark-bg"
+			class="relative pt-8 pl-4 pr-4 mb-12 bg-immich-bg dark:bg-immich-dark-bg"
 		>
 			<div class="px-4 flex justify-between place-items-center dark:text-immich-dark-fg">
 				<div>
@@ -70,7 +70,7 @@
 			</div>
 
 			<!-- Album Card -->
-			<div class="flex flex-wrap gap-8">
+			<div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 3xl:grid-cols-7 4xl:grid-cols-8 5xl:grid-cols-9 gap-8">
 				{#each $albums as album}
 					{#key album.id}
 						<a data-sveltekit-preload-data="hover" href={`albums/${album.id}`}>

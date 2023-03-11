@@ -18,6 +18,11 @@ module.exports = {
 			},
 			fontFamily: {
 				'immich-title': ['Snowburst One', 'cursive']
+			},
+			screens: {
+				'3xl': '1700px',
+				'4xl': '1900px',
+				'5xl': '2100px'
 			}
 		}
 	},
