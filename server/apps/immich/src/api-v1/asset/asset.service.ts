@@ -432,6 +432,10 @@ export class AssetService {
         result.push({ id, status: DeleteAssetStatusEnum.SUCCESS });
         deleteQueue.push(asset.originalPath, asset.webpPath, asset.resizePath);
 
+        if (asset.encodedVideoPath) {
+          deleteQueue.push(asset.encodedVideoPath);
+        }
+
         // TODO refactor this to use cascades
         if (asset.livePhotoVideoId && !ids.includes(asset.livePhotoVideoId)) {
           ids.push(asset.livePhotoVideoId);
