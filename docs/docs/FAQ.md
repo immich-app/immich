@@ -18,7 +18,7 @@ Immich doesn't have the mechanism to sync an existing directory with the server.
 
 ### Why does my uploaded photo show up with the wrong date in Immich?
 
-When a photo is initially uploaded Immich uses the create date of the file to determine where it belongs in the timeline. After that, background jobs will run that [exif metadata](https://en.wikipedia.org/wiki/Exif), including the CreateDate, to provide a more accurate date for the photo. If that is not available it will fallback to the modified date. If you want to ensure your photo has the right date, check the exif metadata before uploading. 
+When a photo is initially uploaded Immich uses the create date of the file to determine where it belongs in the timeline. After that, background jobs will run that extract [exif metadata](https://en.wikipedia.org/wiki/Exif), including the CreateDate, to provide a more accurate date for the photo. If that is not available it will fallback to the modified date. If you want to ensure your photo has the right date, check the exif metadata before uploading. 
 
 ### Why doesn't Immich watch an existing photo gallery directory?
 
