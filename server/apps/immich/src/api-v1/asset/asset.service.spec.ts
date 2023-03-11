@@ -430,6 +430,7 @@ describe('AssetService', () => {
         originalPath: 'original-path-2',
         resizePath: 'resize-path-2',
         webpPath: 'web-path-2',
+        encodedVideoPath: 'encoded-video-path-2',
       };
 
       when(assetRepositoryMock.get)
@@ -458,6 +459,7 @@ describe('AssetService', () => {
                 'original-path-2',
                 'web-path-2',
                 'resize-path-2',
+                'encoded-video-path-2',
               ],
             },
           },
