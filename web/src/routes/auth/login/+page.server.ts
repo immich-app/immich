@@ -1,5 +1,6 @@
 import { AppRoute } from '$lib/constants';
 import { redirect } from '@sveltejs/kit';
+import type { OAuthConfigResponseDto } from '@api';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals: { api } }) => {
@@ -9,9 +10,20 @@ export const load = (async ({ locals: { api } }) => {
 		throw redirect(302, AppRoute.AUTH_REGISTER);
 	}
 
-	// TODO: Figure out how to get correct redirect URI server-side.
-	const { data: authConfig } = await api.oauthApi.generateConfig({ redirectUri: '/' });
-	authConfig.url = undefined;
+	let authConfig: OAuthConfigResponseDto = {
+		passwordLoginEnabled: true,
+		enabled: false
+	};
+
+	try {
+		// TODO: Figure out how to get correct redirect URI server-side.
+		const { data } = await api.oauthApi.generateConfig({ redirectUri: '/' });
+		data.url = undefined;
+
+		authConfig = data;
+	} catch (err) {
+		console.error('[ERROR] login/+page.server.ts:', err);
+	}
 
 	return {
 		authConfig,
