@@ -423,7 +423,6 @@ describe('AssetService', () => {
         originalPath: 'original-path-1',
         resizePath: 'resize-path-1',
         webpPath: 'web-path-1',
-        encodedVideoPath: undefined,
       };
 
       const asset2 = {
