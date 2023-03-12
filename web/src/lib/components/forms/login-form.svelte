@@ -13,20 +13,21 @@
 	let oauthError: string;
 	export let authConfig: OAuthConfigResponseDto;
 	let loading = false;
+	let oauthLoading = true;
 
 	const dispatch = createEventDispatcher();
 
 	onMount(async () => {
 		if (oauth.isCallback(window.location)) {
 			try {
-				loading = true;
 				await oauth.login(window.location);
 				dispatch('success');
 				return;
 			} catch (e) {
 				console.error('Error [login-form] [oauth.callback]', e);
 				oauthError = 'Unable to complete OAuth login';
-				loading = false;
+			} finally {
+				oauthLoading = false;
 			}
 		}
 
@@ -46,7 +47,7 @@
 			handleError(error, 'Unable to connect!');
 		}
 
-		loading = false;
+		oauthLoading = false;
 	});
 
 	const login = async () => {
@@ -112,7 +113,7 @@
 			<button
 				type="submit"
 				class="immich-btn-primary-big inline-flex items-center h-14"
-				disabled={loading}
+				disabled={loading || oauthLoading}
 			>
 				{#if loading}
 					<LoadingSpinner />
@@ -142,12 +143,16 @@
 		<a href={authConfig.url} class="flex w-full">
 			<button
 				type="button"
-				disabled={loading}
-				class={authConfig.passwordLoginEnabled
+				disabled={loading || oauthLoading}
+				class={'inline-flex items-center h-14 ' + authConfig.passwordLoginEnabled
 					? 'immich-btn-secondary-big'
 					: 'immich-btn-primary-big'}
 			>
-				{authConfig.buttonText || 'Login with OAuth'}
+				{#if oauthLoading}
+					<LoadingSpinner />
+				{:else}
+					{authConfig.buttonText || 'Login with OAuth'}
+				{/if}
 			</button>
 		</a>
 	</div>
