@@ -16,7 +16,7 @@
 	export let asset: AssetResponseDto;
 	export let groupIndex = 0;
 	export let thumbnailSize: number | undefined = undefined;
-	export let thumbnailFillWidth: boolean = false;
+	export let thumbnailFillWidth = false;
 	export let format: ThumbnailFormat = ThumbnailFormat.Webp;
 	export let selected = false;
 	export let disabled = false;

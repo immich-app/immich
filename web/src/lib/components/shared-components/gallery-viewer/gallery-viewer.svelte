@@ -9,7 +9,7 @@
 	export let assets: AssetResponseDto[];
 	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
 	export let selectedAssets: Set<AssetResponseDto> = new Set();
-	export let dynamicResponsiveGrid: boolean = false;
+	export let dynamicResponsiveGrid = false;
 
 	let isShowAssetViewer = false;
 
