@@ -107,7 +107,7 @@
 	{/if}
 
 	<!-- Main Section -->
-	<section class="overflow-y-auto relative immich-scrollbar">
+	<section class="overflow-y-auto relative immich-scrollbar pr-6">
 		<section
 			id="favorite-content"
 			class="relative pt-8 pl-4 mb-12 bg-immich-bg dark:bg-immich-dark-bg"
@@ -135,7 +135,7 @@
 				</div>
 			{/if}
 
-			<GalleryViewer assets={favorites} bind:selectedAssets />
+			<GalleryViewer assets={favorites} dynamicResponsiveGrid={true} bind:selectedAssets />
 		</section>
 	</section>
 </section>

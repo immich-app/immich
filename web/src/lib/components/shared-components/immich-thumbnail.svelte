@@ -16,6 +16,7 @@
 	export let asset: AssetResponseDto;
 	export let groupIndex = 0;
 	export let thumbnailSize: number | undefined = undefined;
+	export let thumbnailFillWidth: boolean = false;
 	export let format: ThumbnailFormat = ThumbnailFormat.Webp;
 	export let selected = false;
 	export let disabled = false;
@@ -71,6 +72,10 @@
 	};
 
 	const getSize = () => {
+		if (thumbnailFillWidth) {
+			return 'aspect-square';
+		}
+
 		if (thumbnailSize) {
 			return `w-[${thumbnailSize}px] h-[${thumbnailSize}px]`;
 		}
@@ -149,8 +154,6 @@
 
 <IntersectionObserver once={false} let:intersecting>
 	<div
-		style:width={`${thumbnailSize}px`}
-		style:height={`${thumbnailSize}px`}
 		class={`bg-gray-100 dark:bg-immich-dark-gray relative select-none ${getSize()} ${
 			disabled ? 'cursor-not-allowed' : 'hover:cursor-pointer'
 		}`}
@@ -250,11 +253,9 @@
 		{#if intersecting}
 			<img
 				id={asset.id}
-				style:width={`${thumbnailSize}px`}
-				style:height={`${thumbnailSize}px`}
 				src={`/api/asset/thumbnail/${asset.id}?format=${format}&key=${publicSharedKey}`}
 				alt={asset.id}
-				class={`object-cover ${getSize()} transition-all z-0 ${getThumbnailBorderStyle()}`}
+				class={`object-cover ${getSize()} h-full v-full transition-all z-0 ${getThumbnailBorderStyle()}`}
 				class:opacity-0={isImageLoading}
 				loading="lazy"
 				draggable="false"
@@ -271,7 +272,6 @@
 						preload="none"
 						class="h-full object-cover"
 						width="250px"
-						style:width={`${thumbnailSize}px`}
 						on:canplay={handleCanPlay}
 						bind:this={videoPlayerNode}
 					>
@@ -291,7 +291,6 @@
 						preload="none"
 						class="h-full object-cover"
 						width="250px"
-						style:width={`${thumbnailSize}px`}
 						on:canplay={handleCanPlay}
 						bind:this={videoPlayerNode}
 					>

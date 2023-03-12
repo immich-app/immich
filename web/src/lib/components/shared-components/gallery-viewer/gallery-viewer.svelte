@@ -9,6 +9,7 @@
 	export let assets: AssetResponseDto[];
 	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
 	export let selectedAssets: Set<AssetResponseDto> = new Set();
+	export let dynamicResponsiveGrid: boolean = false;
 
 	let isShowAssetViewer = false;
 
@@ -31,6 +32,12 @@
 			else if (viewWidth > 100) thumbnailSize = Math.floor(viewWidth / 1 - 6);
 		}
 	}
+
+	const gridLayout = `${
+		dynamicResponsiveGrid
+			? 'grid grid-cols-3 lg:grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]'
+			: 'flex flex-wrap'
+	} gap-1 w-full pb-20`;
 
 	const viewAssetHandler = (event: CustomEvent) => {
 		const { asset }: { asset: AssetResponseDto } = event.detail;
@@ -91,11 +98,12 @@
 </script>
 
 {#if assets.length > 0}
-	<div class="flex flex-wrap gap-1 w-full pb-20" bind:clientWidth={viewWidth}>
+	<div class={gridLayout} bind:clientWidth={viewWidth}>
 		{#each assets as asset (asset.id)}
 			<ImmichThumbnail
 				{asset}
 				{thumbnailSize}
+				thumbnailFillWidth={dynamicResponsiveGrid}
 				publicSharedKey={sharedLink?.key}
 				format={assets.length < 7 ? ThumbnailFormat.Jpeg : ThumbnailFormat.Webp}
 				on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}

@@ -479,7 +479,7 @@
 		</ControlAppBar>
 	{/if}
 
-	<section class="flex flex-col my-[160px] px-6 sm:px-12 md:px-24 lg:px-40">
+	<section class="flex flex-col my-[160px] px-6 xl:px-40">
 		<input
 			on:keydown={(e) => {
 				if (e.key == 'Enter') {
@@ -522,7 +522,12 @@
 		{/if}
 
 		{#if album.assetCount > 0}
-			<GalleryViewer assets={album.assets} {sharedLink} bind:selectedAssets={multiSelectAsset} />
+			<GalleryViewer
+				assets={album.assets}
+				{sharedLink}
+				bind:selectedAssets={multiSelectAsset}
+				dynamicResponsiveGrid={true}
+			/>
 		{:else}
 			<!-- Album is empty - Show asset selectection buttons -->
 			<section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
