@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hive/hive.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:isar/isar.dart';
@@ -35,9 +34,7 @@ class ImmichTestHelper {
   }
 
   static Future<void> loadApp(WidgetTester tester) async {
-    // Clear all data from Hive
-    await Hive.deleteFromDisk();
-    await app.openBoxes();
+    await EasyLocalization.ensureInitialized();
     // Clear all data from Isar (reuse existing instance if available)
     final db = Isar.getInstance() ?? await app.loadDb();
     await Store.clear();
@@ -65,12 +62,13 @@ void immichWidgetTest(
 }
 
 Future<void> pumpUntilFound(
-    WidgetTester tester,
-    Finder finder, {
-      Duration timeout = const Duration(seconds: 120),
-    }) async {
+  WidgetTester tester,
+  Finder finder, {
+  Duration timeout = const Duration(seconds: 120),
+}) async {
   bool found = false;
-  final timer = Timer(timeout, () => throw TimeoutException("Pump until has timed out"));
+  final timer =
+      Timer(timeout, () => throw TimeoutException("Pump until has timed out"));
   while (found != true) {
     await tester.pump();
     found = tester.any(finder);

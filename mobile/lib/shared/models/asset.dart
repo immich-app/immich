@@ -1,6 +1,5 @@
 import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
@@ -40,7 +39,7 @@ class Asset {
         width = local.width,
         fileName = local.title!,
         deviceId = Store.get(StoreKey.deviceIdHash),
-        ownerId = Store.get<User>(StoreKey.currentUser)!.isarId,
+        ownerId = Store.get(StoreKey.currentUser).isarId,
         fileModifiedAt = local.modifiedDateTime.toUtc(),
         updatedAt = local.modifiedDateTime.toUtc(),
         isFavorite = local.isFavorite,

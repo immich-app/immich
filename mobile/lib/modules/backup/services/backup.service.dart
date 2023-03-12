@@ -5,13 +5,12 @@ import 'dart:io';
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/duplicated_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
@@ -38,7 +37,7 @@ class BackupService {
   BackupService(this._apiService, this._db);
 
   Future<List<String>?> getDeviceBackupAsset() async {
-    String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
+    final String deviceId = Store.get(StoreKey.deviceId);
 
     try {
       return await _apiService.assetApi.getUserAssetsByDeviceId(deviceId);
@@ -173,7 +172,7 @@ class BackupService {
     }
     final Set<String> existing = {};
     try {
-      final String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
+      final String deviceId = Store.get(StoreKey.deviceId);
       final CheckExistingAssetsResponseDto? duplicates =
           await _apiService.assetApi.checkExistingAssets(
         CheckExistingAssetsDto(
@@ -204,8 +203,8 @@ class BackupService {
     Function(CurrentUploadAsset) setCurrentUploadAssetCb,
     Function(ErrorUploadAsset) errorCb,
   ) async {
-    String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
-    String savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
+    final String deviceId = Store.get(StoreKey.deviceId);
+    final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
     File? file;
     bool anyErrors = false;
     final List<String> duplicatedAssetIds = [];
@@ -236,15 +235,14 @@ class BackupService {
             ),
           );
 
-          var box = Hive.box(userInfoBox);
-
           var req = MultipartRequest(
             'POST',
             Uri.parse('$savedEndpoint/asset/upload'),
             onProgress: ((bytes, totalBytes) =>
                 uploadProgressCb(bytes, totalBytes)),
           );
-          req.headers["Authorization"] = "Bearer ${box.get(accessTokenKey)}";
+          req.headers["Authorization"] =
+              "Bearer ${Store.get(StoreKey.accessToken)}";
 
           req.fields['deviceAssetId'] = entity.id;
           req.fields['deviceId'] = deviceId;

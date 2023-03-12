@@ -265,7 +265,7 @@ class AlbumService {
 
   Future<bool> deleteAlbum(Album album) async {
     try {
-      final userId = Store.get<User>(StoreKey.currentUser)!.isarId;
+      final userId = Store.get(StoreKey.currentUser).isarId;
       if (album.owner.value?.isarId == userId) {
         await _apiService.albumApi.deleteAlbum(album.remoteId!);
       }

@@ -2,10 +2,9 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
@@ -21,7 +20,6 @@ class AlbumThumbnailListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var box = Hive.box(userInfoBox);
     var cardSize = 68.0;
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
@@ -50,7 +48,9 @@ class AlbumThumbnailListTile extends StatelessWidget {
           album,
           type: ThumbnailFormat.JPEG,
         ),
-        httpHeaders: {"Authorization": "Bearer ${box.get(accessTokenKey)}"},
+        httpHeaders: {
+          "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}"
+        },
         cacheKey: getAlbumThumbNailCacheKey(album, type: ThumbnailFormat.JPEG),
         errorWidget: (context, url, error) =>
             const Icon(Icons.image_not_supported_outlined),

@@ -1,9 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -84,7 +83,7 @@ class ImmichImage extends StatelessWidget {
         },
       );
     }
-    final String? token = Hive.box(userInfoBox).get(accessTokenKey);
+    final String? token = Store.get(StoreKey.accessToken);
     final String thumbnailRequestUrl = getThumbnailUrl(asset);
     return CachedNetworkImage(
       imageUrl: thumbnailRequestUrl,

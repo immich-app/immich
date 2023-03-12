@@ -1,10 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/views/version_announcement_overlay.dart';
 import 'package:logging/logging.dart';
 
@@ -13,10 +12,10 @@ class ReleaseInfoNotifier extends StateNotifier<String> {
   final log = Logger('ReleaseInfoNotifier');
   void checkGithubReleaseInfo() async {
     final Client client = Client();
-    var box = Hive.box(hiveGithubReleaseInfoBox);
 
     try {
-      String? localReleaseVersion = box.get(githubReleaseInfoKey);
+      final String? localReleaseVersion =
+          Store.tryGet(StoreKey.githubReleaseInfo);
       final res = await client.get(
         Uri.parse(
           "https://api.github.com/repos/immich-app/immich/releases/latest",
@@ -48,9 +47,7 @@ class ReleaseInfoNotifier extends StateNotifier<String> {
   }
 
   void acknowledgeNewVersion() {
-    var box = Hive.box(hiveGithubReleaseInfoBox);
-
-    box.put(githubReleaseInfoKey, state);
+    Store.put(StoreKey.githubReleaseInfo, state);
     VersionAnnouncementOverlayController.appLoader.hide();
   }
 }
