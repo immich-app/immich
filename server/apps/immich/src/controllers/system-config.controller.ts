@@ -1,10 +1,9 @@
 import { SystemConfigDto, SystemConfigService, SystemConfigTemplateStorageOptionDto } from '@app/domain';
 import { Body, Controller, Get, Put, ValidationPipe } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Authenticated } from '../decorators/authenticated.decorator';
 
 @ApiTags('System Config')
-@ApiBearerAuth()
 @Authenticated({ admin: true })
 @Controller('system-config')
 export class SystemConfigController {

@@ -2,17 +2,18 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 
-class FavoriteSelectionNotifier extends StateNotifier<Set<String>> {
-  FavoriteSelectionNotifier(this.ref) : super({}) {
-    state = ref.watch(assetProvider).allAssets
+class FavoriteSelectionNotifier extends StateNotifier<Set<int>> {
+  FavoriteSelectionNotifier(this.assetsState, this.assetNotifier) : super({}) {
+    state = assetsState.allAssets
         .where((asset) => asset.isFavorite)
         .map((asset) => asset.id)
         .toSet();
   }
 
-  final Ref ref;
+  final AssetsState assetsState;
+  final AssetNotifier assetNotifier;
 
-  void _setFavoriteForAssetId(String id, bool favorite) {
+  void _setFavoriteForAssetId(int id, bool favorite) {
     if (!favorite) {
       state = state.difference({id});
     } else {
@@ -20,7 +21,7 @@ class FavoriteSelectionNotifier extends StateNotifier<Set<String>> {
     }
   }
 
-  bool _isFavorite(String id) {
+  bool _isFavorite(int id) {
     return state.contains(id);
   }
 
@@ -29,7 +30,7 @@ class FavoriteSelectionNotifier extends StateNotifier<Set<String>> {
 
     _setFavoriteForAssetId(asset.id, !_isFavorite(asset.id));
 
-    await ref.watch(assetProvider.notifier).toggleFavorite(
+    await assetNotifier.toggleFavorite(
       asset,
       state.contains(asset.id),
     );
@@ -37,20 +38,23 @@ class FavoriteSelectionNotifier extends StateNotifier<Set<String>> {
 
   Future<void> addToFavorites(Iterable<Asset> assets) {
     state = state.union(assets.map((a) => a.id).toSet());
-    final futures = assets.map((a) => 
-        ref.watch(assetProvider.notifier).toggleFavorite(
-          a,
-          true,
-        ),
-      );
+    final futures = assets.map(
+      (a) => assetNotifier.toggleFavorite(
+        a,
+        true,
+      ),
+    );
 
     return Future.wait(futures);
   }
 }
 
 final favoriteProvider =
-    StateNotifierProvider<FavoriteSelectionNotifier, Set<String>>((ref) {
-  return FavoriteSelectionNotifier(ref);
+    StateNotifierProvider<FavoriteSelectionNotifier, Set<int>>((ref) {
+  return FavoriteSelectionNotifier(
+    ref.watch(assetProvider),
+    ref.watch(assetProvider.notifier),
+  );
 });
 
 final favoriteAssetProvider = StateProvider((ref) {

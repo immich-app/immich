@@ -1,94 +1,63 @@
+import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/utils/hash.dart';
+import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
 
+part 'user.g.dart';
+
+@Collection(inheritance: false)
 class User {
   User({
     required this.id,
+    required this.updatedAt,
     required this.email,
     required this.firstName,
     required this.lastName,
-    required this.profileImagePath,
     required this.isAdmin,
-    required this.oauthId,
   });
+
+  Id get isarId => fastHash(id);
 
   User.fromDto(UserResponseDto dto)
       : id = dto.id,
+        updatedAt = dto.updatedAt != null
+            ? DateTime.parse(dto.updatedAt!).toUtc()
+            : DateTime.now().toUtc(),
         email = dto.email,
         firstName = dto.firstName,
         lastName = dto.lastName,
-        profileImagePath = dto.profileImagePath,
-        isAdmin = dto.isAdmin,
-        oauthId = dto.oauthId;
+        isAdmin = dto.isAdmin;
 
+  @Index(unique: true, replace: false, type: IndexType.hash)
   String id;
+  DateTime updatedAt;
   String email;
   String firstName;
   String lastName;
-  String profileImagePath;
   bool isAdmin;
-  String oauthId;
+  @Backlink(to: 'owner')
+  final IsarLinks<Album> albums = IsarLinks<Album>();
+  @Backlink(to: 'sharedUsers')
+  final IsarLinks<Album> sharedAlbums = IsarLinks<Album>();
 
   @override
   bool operator ==(other) {
     if (other is! User) return false;
     return id == other.id &&
+        updatedAt == other.updatedAt &&
         email == other.email &&
         firstName == other.firstName &&
         lastName == other.lastName &&
-        profileImagePath == other.profileImagePath &&
-        isAdmin == other.isAdmin &&
-        oauthId == other.oauthId;
+        isAdmin == other.isAdmin;
   }
 
   @override
+  @ignore
   int get hashCode =>
       id.hashCode ^
+      updatedAt.hashCode ^
       email.hashCode ^
       firstName.hashCode ^
       lastName.hashCode ^
-      profileImagePath.hashCode ^
-      isAdmin.hashCode ^
-      oauthId.hashCode;
-
-  UserResponseDto toDto() {
-    return UserResponseDto(
-      id: id,
-      email: email,
-      firstName: firstName,
-      lastName: lastName,
-      profileImagePath: profileImagePath,
-      createdAt: '',
-      isAdmin: isAdmin,
-      shouldChangePassword: false,
-      oauthId: oauthId,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    final json = <String, dynamic>{};
-    json["id"] = id;
-    json["email"] = email;
-    json["firstName"] = firstName;
-    json["lastName"] = lastName;
-    json["profileImagePath"] = profileImagePath;
-    json["isAdmin"] = isAdmin;
-    json["oauthId"] = oauthId;
-    return json;
-  }
-
-  static User? fromJson(dynamic value) {
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-      return User(
-        id: json["id"],
-        email: json["email"],
-        firstName: json["firstName"],
-        lastName: json["lastName"],
-        profileImagePath: json["profileImagePath"],
-        isAdmin: json["isAdmin"],
-        oauthId: json["oauthId"],
-      );
-    }
-    return null;
-  }
+      isAdmin.hashCode;
 }

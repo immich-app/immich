@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { AssetEntity } from './asset.entity';
 import { TagEntity } from './tag.entity';
 
 @Entity('users')
@@ -49,4 +50,7 @@ export class UserEntity {
 
   @OneToMany(() => TagEntity, (tag) => tag.user)
   tags!: TagEntity[];
+
+  @OneToMany(() => AssetEntity, (asset) => asset.owner)
+  assets!: AssetEntity[];
 }

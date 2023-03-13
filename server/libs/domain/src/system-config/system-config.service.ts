@@ -19,7 +19,7 @@ export class SystemConfigService {
   private core: SystemConfigCore;
   constructor(
     @Inject(ISystemConfigRepository) repository: ISystemConfigRepository,
-    @Inject(IJobRepository) private queue: IJobRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     this.core = new SystemConfigCore(repository);
   }
@@ -40,7 +40,7 @@ export class SystemConfigService {
 
   async updateConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
     const config = await this.core.updateConfig(dto);
-    await this.queue.add({ name: JobName.CONFIG_CHANGE });
+    await this.jobRepository.queue({ name: JobName.SYSTEM_CONFIG_CHANGE });
     return mapConfig(config);
   }
 

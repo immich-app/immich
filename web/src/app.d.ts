@@ -5,14 +5,21 @@
 declare namespace App {
 	interface Locals {
 		user?: import('@api').UserResponseDto;
+		api: import('@api').ImmichApi;
 	}
 
-	// interface Platform {}
+	interface PageData {
+		meta: {
+			title: string;
+			description?: string;
+			imageUrl?: string;
+		};
+	}
 
 	interface Error {
 		message: string;
 		stack?: string;
-		code?: string;
+		code?: string | number;
 	}
 }
 

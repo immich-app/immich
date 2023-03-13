@@ -34,9 +34,14 @@
 			return;
 		}
 
-		const { data } = await api.assetApi.getAssetThumbnail(thubmnailId, ThumbnailFormat.Jpeg, {
-			responseType: 'blob'
-		});
+		const { data } = await api.assetApi.getAssetThumbnail(
+			thubmnailId,
+			ThumbnailFormat.Jpeg,
+			undefined,
+			{
+				responseType: 'blob'
+			}
+		);
 
 		if (data instanceof Blob) {
 			return URL.createObjectURL(data);
@@ -56,7 +61,7 @@
 </script>
 
 <div
-	class="h-[339px] w-[275px] hover:cursor-pointer mt-4 relative"
+	class="hover:cursor-pointer mt-4 relative"
 	on:click={() => dispatchClick('click', album)}
 	on:keydown={() => dispatchClick('click', album)}
 	data-testid="album-card"
@@ -71,7 +76,7 @@
 		<CircleIconButton logo={DotsVertical} size={'20'} hoverColor={'rgba(95,99,104, 0.5)'} />
 	</div>
 
-	<div class={`h-[275px] w-[275px] z-[-1]`}>
+	<div class={`aspect-square z-[-1]`}>
 		<img
 			src={imageData}
 			alt={album.id}

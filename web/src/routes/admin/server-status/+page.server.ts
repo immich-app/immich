@@ -1,8 +1,7 @@
 import { redirect } from '@sveltejs/kit';
-import { api } from '@api';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ parent }) => {
+export const load = (async ({ parent, locals: { api } }) => {
 	const { user } = await parent();
 
 	if (!user) {
@@ -11,12 +10,12 @@ export const load: PageServerLoad = async ({ parent }) => {
 		throw redirect(302, '/photos');
 	}
 
-	const { data: allUsers } = await api.userApi.getAllUsers(false);
+	const { data: stats } = await api.serverInfoApi.getStats();
 
 	return {
-		allUsers,
+		stats,
 		meta: {
-			title: 'Server Status'
+			title: 'Server Stats'
 		}
 	};
-};
+}) satisfies PageServerLoad;

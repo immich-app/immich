@@ -30,6 +30,14 @@
         },
         "tags": [
           "API Key"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       },
       "get": {
@@ -53,6 +61,14 @@
         },
         "tags": [
           "API Key"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -84,6 +100,14 @@
         },
         "tags": [
           "API Key"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       },
       "put": {
@@ -123,6 +147,14 @@
         },
         "tags": [
           "API Key"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       },
       "delete": {
@@ -145,6 +177,14 @@
         },
         "tags": [
           "API Key"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -238,6 +278,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -275,6 +318,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -298,6 +344,14 @@
         },
         "tags": [
           "Authentication"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -334,6 +388,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -446,6 +503,14 @@
         },
         "tags": [
           "OAuth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -468,6 +533,216 @@
         },
         "tags": [
           "OAuth"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
+    "/search": {
+      "get": {
+        "operationId": "search",
+        "description": "",
+        "parameters": [
+          {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "IMAGE",
+                "VIDEO",
+                "AUDIO",
+                "OTHER"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "exifInfo.city",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "exifInfo.state",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "exifInfo.country",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "exifInfo.make",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "exifInfo.model",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "smartInfo.objects",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "smartInfo.tags",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "recent",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "motion",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Search"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
+    "/search/config": {
+      "get": {
+        "operationId": "getSearchConfig",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchConfigResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Search"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
+    "/search/explore": {
+      "get": {
+        "operationId": "getExploreData",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SearchExploreResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Search"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -493,6 +768,14 @@
         },
         "tags": [
           "share"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -500,7 +783,16 @@
       "get": {
         "operationId": "getMySharedLink",
         "description": "",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -515,6 +807,14 @@
         },
         "tags": [
           "share"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -546,6 +846,14 @@
         },
         "tags": [
           "share"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       },
       "delete": {
@@ -568,6 +876,14 @@
         },
         "tags": [
           "share"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       },
       "patch": {
@@ -607,6 +923,14 @@
         },
         "tags": [
           "share"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -633,6 +957,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       },
@@ -668,6 +995,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -695,6 +1025,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -722,6 +1055,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -761,6 +1097,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       },
@@ -796,6 +1135,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       },
@@ -831,6 +1173,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -889,6 +1234,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -957,6 +1305,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -993,6 +1344,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1031,6 +1385,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1070,7 +1427,16 @@
       "post": {
         "operationId": "uploadFile",
         "description": "",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "description": "Asset Upload Information",
@@ -1100,6 +1466,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1116,18 +1485,27 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "",
             "content": {
-              "application/json": {
+              "application/octet-stream": {
                 "schema": {
-                  "type": "object"
+                  "type": "string",
+                  "format": "binary"
                 }
               }
-            }
+            },
+            "description": ""
           }
         },
         "tags": [
@@ -1136,6 +1514,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1144,7 +1525,16 @@
       "post": {
         "operationId": "downloadFiles",
         "description": "",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1156,15 +1546,19 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "",
+          "200": {
             "content": {
-              "application/json": {
+              "application/octet-stream": {
                 "schema": {
-                  "type": "object"
+                  "type": "string",
+                  "format": "binary"
                 }
               }
-            }
+            },
+            "description": ""
+          },
+          "201": {
+            "description": ""
           }
         },
         "tags": [
@@ -1173,6 +1567,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1189,18 +1586,27 @@
             "schema": {
               "type": "number"
             }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "",
             "content": {
-              "application/json": {
+              "application/octet-stream": {
                 "schema": {
-                  "type": "object"
+                  "type": "string",
+                  "format": "binary"
                 }
               }
-            }
+            },
+            "description": ""
           }
         },
         "tags": [
@@ -1209,6 +1615,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1243,18 +1652,27 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "",
             "content": {
-              "application/json": {
+              "application/octet-stream": {
                 "schema": {
-                  "type": "object"
+                  "type": "string",
+                  "format": "binary"
                 }
               }
-            }
+            },
+            "description": ""
           }
         },
         "tags": [
@@ -1263,6 +1681,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1287,18 +1708,27 @@
             "schema": {
               "$ref": "#/components/schemas/ThumbnailFormat"
             }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "",
             "content": {
-              "application/json": {
+              "application/octet-stream": {
                 "schema": {
-                  "type": "object"
+                  "type": "string",
+                  "format": "binary"
                 }
               }
-            }
+            },
+            "description": ""
           }
         },
         "tags": [
@@ -1307,6 +1737,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1337,6 +1770,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1367,6 +1803,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1397,6 +1836,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1437,6 +1879,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1474,6 +1919,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1501,6 +1949,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1557,6 +2008,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       },
@@ -1595,6 +2049,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1635,6 +2092,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1674,6 +2134,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1687,6 +2150,14 @@
             "name": "assetId",
             "required": true,
             "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
             "schema": {
               "type": "string"
             }
@@ -1710,6 +2181,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1756,6 +2230,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1764,7 +2241,16 @@
       "post": {
         "operationId": "checkDuplicateAsset",
         "description": "Check duplicated asset before uploading - for Web upload used",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1793,6 +2279,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1830,6 +2319,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1867,6 +2359,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1875,7 +2370,16 @@
       "patch": {
         "operationId": "addAssetsToSharedLink",
         "description": "",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1904,6 +2408,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1912,7 +2419,16 @@
       "patch": {
         "operationId": "removeAssetsFromSharedLink",
         "description": "",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1941,6 +2457,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -1974,6 +2493,14 @@
         },
         "tags": [
           "Tag"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       },
       "get": {
@@ -1997,6 +2524,14 @@
         },
         "tags": [
           "Tag"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -2028,6 +2563,14 @@
         },
         "tags": [
           "Tag"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       },
       "patch": {
@@ -2067,6 +2610,14 @@
         },
         "tags": [
           "Tag"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       },
       "delete": {
@@ -2089,6 +2640,14 @@
         },
         "tags": [
           "Tag"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -2115,6 +2674,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -2152,6 +2714,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       },
@@ -2198,6 +2763,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -2244,6 +2812,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -2257,6 +2828,14 @@
             "name": "albumId",
             "required": true,
             "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
             "schema": {
               "type": "string"
             }
@@ -2290,6 +2869,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       },
@@ -2334,6 +2916,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -2347,6 +2932,14 @@
             "name": "albumId",
             "required": true,
             "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
             "schema": {
               "type": "string"
             }
@@ -2370,6 +2963,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       },
@@ -2397,6 +2993,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       },
@@ -2441,6 +3040,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -2478,6 +3080,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -2502,18 +3107,27 @@
             "schema": {
               "type": "number"
             }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "",
             "content": {
-              "application/json": {
+              "application/zip": {
                 "schema": {
-                  "type": "object"
+                  "type": "string",
+                  "format": "binary"
                 }
               }
-            }
+            },
+            "description": ""
           }
         },
         "tags": [
@@ -2522,6 +3136,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -2559,6 +3176,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -2648,6 +3268,14 @@
         },
         "tags": [
           "Server Info"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -2674,6 +3302,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -2720,6 +3351,9 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "cookie": []
           }
         ]
       }
@@ -2728,7 +3362,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.49.0",
+    "version": "1.50.1",
     "contact": {}
   },
   "tags": [],
@@ -2744,6 +3378,11 @@
         "bearerFormat": "JWT",
         "type": "http",
         "in": "header"
+      },
+      "cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "immich_access_token"
       }
     },
     "schemas": {
@@ -2981,6 +3620,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "updatedAt": {
+            "type": "string"
+          },
           "oauthId": {
             "type": "string"
           }
@@ -3115,13 +3757,6 @@
         },
         "required": [
           "url"
-        ]
-      },
-      "SharedLinkType": {
-        "type": "string",
-        "enum": [
-          "ALBUM",
-          "INDIVIDUAL"
         ]
       },
       "AssetTypeEnum": {
@@ -3432,6 +4067,163 @@
           "sharedUsers",
           "assets",
           "owner"
+        ]
+      },
+      "SearchFacetCountResponseDto": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "count",
+          "value"
+        ]
+      },
+      "SearchFacetResponseDto": {
+        "type": "object",
+        "properties": {
+          "fieldName": {
+            "type": "string"
+          },
+          "counts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchFacetCountResponseDto"
+            }
+          }
+        },
+        "required": [
+          "fieldName",
+          "counts"
+        ]
+      },
+      "SearchAlbumResponseDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlbumResponseDto"
+            }
+          },
+          "facets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchFacetResponseDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "count",
+          "items",
+          "facets"
+        ]
+      },
+      "SearchAssetResponseDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            }
+          },
+          "facets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchFacetResponseDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "count",
+          "items",
+          "facets"
+        ]
+      },
+      "SearchResponseDto": {
+        "type": "object",
+        "properties": {
+          "albums": {
+            "$ref": "#/components/schemas/SearchAlbumResponseDto"
+          },
+          "assets": {
+            "$ref": "#/components/schemas/SearchAssetResponseDto"
+          }
+        },
+        "required": [
+          "albums",
+          "assets"
+        ]
+      },
+      "SearchConfigResponseDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ]
+      },
+      "SearchExploreItem": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AssetResponseDto"
+          }
+        },
+        "required": [
+          "value",
+          "data"
+        ]
+      },
+      "SearchExploreResponseDto": {
+        "type": "object",
+        "properties": {
+          "fieldName": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchExploreItem"
+            }
+          }
+        },
+        "required": [
+          "fieldName",
+          "items"
+        ]
+      },
+      "SharedLinkType": {
+        "type": "string",
+        "enum": [
+          "ALBUM",
+          "INDIVIDUAL"
         ]
       },
       "SharedLinkResponseDto": {
@@ -4446,25 +5238,29 @@
           "userId": {
             "type": "string"
           },
-          "videos": {
-            "type": "integer"
+          "userFirstName": {
+            "type": "string"
+          },
+          "userLastName": {
+            "type": "string"
           },
           "photos": {
             "type": "integer"
           },
-          "usageRaw": {
-            "type": "integer",
-            "format": "int64"
+          "videos": {
+            "type": "integer"
           },
           "usage": {
-            "type": "string"
+            "type": "integer",
+            "format": "int64"
           }
         },
         "required": [
           "userId",
-          "videos",
+          "userFirstName",
+          "userLastName",
           "photos",
-          "usageRaw",
+          "videos",
           "usage"
         ]
       },
@@ -4472,22 +5268,20 @@
         "type": "object",
         "properties": {
           "photos": {
-            "type": "integer"
+            "type": "integer",
+            "default": 0
           },
           "videos": {
-            "type": "integer"
-          },
-          "objects": {
-            "type": "integer"
-          },
-          "usageRaw": {
             "type": "integer",
-            "format": "int64"
+            "default": 0
           },
           "usage": {
-            "type": "string"
+            "type": "integer",
+            "default": 0,
+            "format": "int64"
           },
           "usageByUser": {
+            "default": [],
             "title": "Array of usage for each user",
             "example": [
               {
@@ -4505,8 +5299,6 @@
         "required": [
           "photos",
           "videos",
-          "objects",
-          "usageRaw",
           "usage",
           "usageByUser"
         ]

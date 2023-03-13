@@ -1,4 +1,5 @@
 import { applyDecorators, SetMetadata } from '@nestjs/common';
+import { ApiBearerAuth, ApiCookieAuth, ApiQuery } from '@nestjs/swagger';
 
 interface AuthenticatedOptions {
   admin?: boolean;
@@ -12,7 +13,7 @@ export enum Metadata {
 }
 
 export const Authenticated = (options?: AuthenticatedOptions) => {
-  const decorators = [SetMetadata(Metadata.AUTH_ROUTE, true)];
+  const decorators: MethodDecorator[] = [ApiBearerAuth(), ApiCookieAuth(), SetMetadata(Metadata.AUTH_ROUTE, true)];
 
   options = options || {};
 
@@ -22,6 +23,7 @@ export const Authenticated = (options?: AuthenticatedOptions) => {
 
   if (options.isShared) {
     decorators.push(SetMetadata(Metadata.SHARED_ROUTE, true));
+    decorators.push(ApiQuery({ name: 'key', type: String, required: false }));
   }
 
   return applyDecorators(...decorators);

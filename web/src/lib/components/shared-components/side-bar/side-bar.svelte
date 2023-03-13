@@ -4,6 +4,7 @@
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import ImageAlbum from 'svelte-material-icons/ImageAlbum.svelte';
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
+	import Magnify from 'svelte-material-icons/Magnify.svelte';
 	import StarOutline from 'svelte-material-icons/StarOutline.svelte';
 	import { AppRoute } from '../../../constants';
 	import LoadingSpinner from '../loading-spinner.svelte';
@@ -48,7 +49,7 @@
 		<SideBarButton
 			title="Photos"
 			logo={ImageOutline}
-			isSelected={$page.route.id === AppRoute.PHOTOS}
+			isSelected={$page.route.id === '/(user)/photos'}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getAssetCount()}
@@ -62,11 +63,23 @@
 			</svelte:fragment>
 		</SideBarButton>
 	</a>
+	<a
+		data-sveltekit-preload-data="hover"
+		data-sveltekit-noscroll
+		href={AppRoute.EXPLORE}
+		draggable="false"
+	>
+		<SideBarButton
+			title="Explore"
+			logo={Magnify}
+			isSelected={$page.route.id === '/(user)/explore'}
+		/>
+	</a>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.SHARING} draggable="false">
 		<SideBarButton
 			title="Sharing"
 			logo={AccountMultipleOutline}
-			isSelected={$page.route.id === AppRoute.SHARING}
+			isSelected={$page.route.id === '/(user)/sharing'}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getAlbumCount()}
@@ -87,7 +100,7 @@
 		<SideBarButton
 			title="Favorites"
 			logo={StarOutline}
-			isSelected={$page.route.id == AppRoute.FAVORITES}
+			isSelected={$page.route.id == '/(user)/favorites'}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getFavoriteCount()}
@@ -101,7 +114,11 @@
 		</SideBarButton>
 	</a>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.ALBUMS} draggable="false">
-		<SideBarButton title="Albums" logo={ImageAlbum} isSelected={$page.route.id === AppRoute.ALBUMS}>
+		<SideBarButton
+			title="Albums"
+			logo={ImageAlbum}
+			isSelected={$page.route.id === '/(user)/albums'}
+		>
 			<svelte:fragment slot="moreInformation">
 				{#await getAlbumCount()}
 					<LoadingSpinner />

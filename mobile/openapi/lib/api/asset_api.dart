@@ -23,7 +23,9 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [AddAssetsDto] addAssetsDto (required):
-  Future<Response> addAssetsToSharedLinkWithHttpInfo(AddAssetsDto addAssetsDto,) async {
+  ///
+  /// * [String] key:
+  Future<Response> addAssetsToSharedLinkWithHttpInfo(AddAssetsDto addAssetsDto, { String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/shared-link/add';
 
@@ -33,6 +35,10 @@ class AssetApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
 
     const contentTypes = <String>['application/json'];
 
@@ -53,8 +59,10 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [AddAssetsDto] addAssetsDto (required):
-  Future<SharedLinkResponseDto?> addAssetsToSharedLink(AddAssetsDto addAssetsDto,) async {
-    final response = await addAssetsToSharedLinkWithHttpInfo(addAssetsDto,);
+  ///
+  /// * [String] key:
+  Future<SharedLinkResponseDto?> addAssetsToSharedLink(AddAssetsDto addAssetsDto, { String? key, }) async {
+    final response = await addAssetsToSharedLinkWithHttpInfo(addAssetsDto,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -75,7 +83,9 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [CheckDuplicateAssetDto] checkDuplicateAssetDto (required):
-  Future<Response> checkDuplicateAssetWithHttpInfo(CheckDuplicateAssetDto checkDuplicateAssetDto,) async {
+  ///
+  /// * [String] key:
+  Future<Response> checkDuplicateAssetWithHttpInfo(CheckDuplicateAssetDto checkDuplicateAssetDto, { String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/check';
 
@@ -85,6 +95,10 @@ class AssetApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
 
     const contentTypes = <String>['application/json'];
 
@@ -105,8 +119,10 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [CheckDuplicateAssetDto] checkDuplicateAssetDto (required):
-  Future<CheckDuplicateAssetResponseDto?> checkDuplicateAsset(CheckDuplicateAssetDto checkDuplicateAssetDto,) async {
-    final response = await checkDuplicateAssetWithHttpInfo(checkDuplicateAssetDto,);
+  ///
+  /// * [String] key:
+  Future<CheckDuplicateAssetResponseDto?> checkDuplicateAsset(CheckDuplicateAssetDto checkDuplicateAssetDto, { String? key, }) async {
+    final response = await checkDuplicateAssetWithHttpInfo(checkDuplicateAssetDto,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -286,7 +302,9 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [String] assetId (required):
-  Future<Response> downloadFileWithHttpInfo(String assetId,) async {
+  ///
+  /// * [String] key:
+  Future<Response> downloadFileWithHttpInfo(String assetId, { String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/download/{assetId}'
       .replaceAll('{assetId}', assetId);
@@ -297,6 +315,10 @@ class AssetApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
 
     const contentTypes = <String>[];
 
@@ -317,8 +339,10 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [String] assetId (required):
-  Future<Object?> downloadFile(String assetId,) async {
-    final response = await downloadFileWithHttpInfo(assetId,);
+  ///
+  /// * [String] key:
+  Future<MultipartFile?> downloadFile(String assetId, { String? key, }) async {
+    final response = await downloadFileWithHttpInfo(assetId,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -326,7 +350,7 @@ class AssetApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
     
     }
     return null;
@@ -339,7 +363,9 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [DownloadFilesDto] downloadFilesDto (required):
-  Future<Response> downloadFilesWithHttpInfo(DownloadFilesDto downloadFilesDto,) async {
+  ///
+  /// * [String] key:
+  Future<Response> downloadFilesWithHttpInfo(DownloadFilesDto downloadFilesDto, { String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/download-files';
 
@@ -349,6 +375,10 @@ class AssetApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
 
     const contentTypes = <String>['application/json'];
 
@@ -369,8 +399,10 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [DownloadFilesDto] downloadFilesDto (required):
-  Future<Object?> downloadFiles(DownloadFilesDto downloadFilesDto,) async {
-    final response = await downloadFilesWithHttpInfo(downloadFilesDto,);
+  ///
+  /// * [String] key:
+  Future<MultipartFile?> downloadFiles(DownloadFilesDto downloadFilesDto, { String? key, }) async {
+    final response = await downloadFilesWithHttpInfo(downloadFilesDto,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -378,7 +410,7 @@ class AssetApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
     
     }
     return null;
@@ -391,7 +423,9 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [num] skip:
-  Future<Response> downloadLibraryWithHttpInfo({ num? skip, }) async {
+  ///
+  /// * [String] key:
+  Future<Response> downloadLibraryWithHttpInfo({ num? skip, String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/download-library';
 
@@ -404,6 +438,9 @@ class AssetApi {
 
     if (skip != null) {
       queryParams.addAll(_queryParams('', 'skip', skip));
+    }
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
     }
 
     const contentTypes = <String>[];
@@ -425,8 +462,10 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [num] skip:
-  Future<Object?> downloadLibrary({ num? skip, }) async {
-    final response = await downloadLibraryWithHttpInfo( skip: skip, );
+  ///
+  /// * [String] key:
+  Future<MultipartFile?> downloadLibrary({ num? skip, String? key, }) async {
+    final response = await downloadLibraryWithHttpInfo( skip: skip, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -434,7 +473,7 @@ class AssetApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
     
     }
     return null;
@@ -523,7 +562,9 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [String] assetId (required):
-  Future<Response> getAssetByIdWithHttpInfo(String assetId,) async {
+  ///
+  /// * [String] key:
+  Future<Response> getAssetByIdWithHttpInfo(String assetId, { String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/assetById/{assetId}'
       .replaceAll('{assetId}', assetId);
@@ -534,6 +575,10 @@ class AssetApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
 
     const contentTypes = <String>[];
 
@@ -554,8 +599,10 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [String] assetId (required):
-  Future<AssetResponseDto?> getAssetById(String assetId,) async {
-    final response = await getAssetByIdWithHttpInfo(assetId,);
+  ///
+  /// * [String] key:
+  Future<AssetResponseDto?> getAssetById(String assetId, { String? key, }) async {
+    final response = await getAssetByIdWithHttpInfo(assetId,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -776,7 +823,9 @@ class AssetApi {
   /// * [String] assetId (required):
   ///
   /// * [ThumbnailFormat] format:
-  Future<Response> getAssetThumbnailWithHttpInfo(String assetId, { ThumbnailFormat? format, }) async {
+  ///
+  /// * [String] key:
+  Future<Response> getAssetThumbnailWithHttpInfo(String assetId, { ThumbnailFormat? format, String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/thumbnail/{assetId}'
       .replaceAll('{assetId}', assetId);
@@ -790,6 +839,9 @@ class AssetApi {
 
     if (format != null) {
       queryParams.addAll(_queryParams('', 'format', format));
+    }
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
     }
 
     const contentTypes = <String>[];
@@ -813,8 +865,10 @@ class AssetApi {
   /// * [String] assetId (required):
   ///
   /// * [ThumbnailFormat] format:
-  Future<Object?> getAssetThumbnail(String assetId, { ThumbnailFormat? format, }) async {
-    final response = await getAssetThumbnailWithHttpInfo(assetId,  format: format, );
+  ///
+  /// * [String] key:
+  Future<MultipartFile?> getAssetThumbnail(String assetId, { ThumbnailFormat? format, String? key, }) async {
+    final response = await getAssetThumbnailWithHttpInfo(assetId,  format: format, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -822,7 +876,7 @@ class AssetApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
     
     }
     return null;
@@ -985,7 +1039,9 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [RemoveAssetsDto] removeAssetsDto (required):
-  Future<Response> removeAssetsFromSharedLinkWithHttpInfo(RemoveAssetsDto removeAssetsDto,) async {
+  ///
+  /// * [String] key:
+  Future<Response> removeAssetsFromSharedLinkWithHttpInfo(RemoveAssetsDto removeAssetsDto, { String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/shared-link/remove';
 
@@ -995,6 +1051,10 @@ class AssetApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
 
     const contentTypes = <String>['application/json'];
 
@@ -1015,8 +1075,10 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [RemoveAssetsDto] removeAssetsDto (required):
-  Future<SharedLinkResponseDto?> removeAssetsFromSharedLink(RemoveAssetsDto removeAssetsDto,) async {
-    final response = await removeAssetsFromSharedLinkWithHttpInfo(removeAssetsDto,);
+  ///
+  /// * [String] key:
+  Future<SharedLinkResponseDto?> removeAssetsFromSharedLink(RemoveAssetsDto removeAssetsDto, { String? key, }) async {
+    final response = await removeAssetsFromSharedLinkWithHttpInfo(removeAssetsDto,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -1096,7 +1158,9 @@ class AssetApi {
   /// * [bool] isThumb:
   ///
   /// * [bool] isWeb:
-  Future<Response> serveFileWithHttpInfo(String assetId, { bool? isThumb, bool? isWeb, }) async {
+  ///
+  /// * [String] key:
+  Future<Response> serveFileWithHttpInfo(String assetId, { bool? isThumb, bool? isWeb, String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/file/{assetId}'
       .replaceAll('{assetId}', assetId);
@@ -1113,6 +1177,9 @@ class AssetApi {
     }
     if (isWeb != null) {
       queryParams.addAll(_queryParams('', 'isWeb', isWeb));
+    }
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
     }
 
     const contentTypes = <String>[];
@@ -1138,8 +1205,10 @@ class AssetApi {
   /// * [bool] isThumb:
   ///
   /// * [bool] isWeb:
-  Future<Object?> serveFile(String assetId, { bool? isThumb, bool? isWeb, }) async {
-    final response = await serveFileWithHttpInfo(assetId,  isThumb: isThumb, isWeb: isWeb, );
+  ///
+  /// * [String] key:
+  Future<MultipartFile?> serveFile(String assetId, { bool? isThumb, bool? isWeb, String? key, }) async {
+    final response = await serveFileWithHttpInfo(assetId,  isThumb: isThumb, isWeb: isWeb, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -1147,7 +1216,7 @@ class AssetApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
     
     }
     return null;
@@ -1232,12 +1301,14 @@ class AssetApi {
   ///
   /// * [String] fileExtension (required):
   ///
+  /// * [String] key:
+  ///
   /// * [MultipartFile] livePhotoData:
   ///
   /// * [bool] isVisible:
   ///
   /// * [String] duration:
-  Future<Response> uploadFileWithHttpInfo(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { MultipartFile? livePhotoData, bool? isVisible, String? duration, }) async {
+  Future<Response> uploadFileWithHttpInfo(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { String? key, MultipartFile? livePhotoData, bool? isVisible, String? duration, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/upload';
 
@@ -1247,6 +1318,10 @@ class AssetApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
 
     const contentTypes = <String>['multipart/form-data'];
 
@@ -1333,13 +1408,15 @@ class AssetApi {
   ///
   /// * [String] fileExtension (required):
   ///
+  /// * [String] key:
+  ///
   /// * [MultipartFile] livePhotoData:
   ///
   /// * [bool] isVisible:
   ///
   /// * [String] duration:
-  Future<AssetFileUploadResponseDto?> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { MultipartFile? livePhotoData, bool? isVisible, String? duration, }) async {
-    final response = await uploadFileWithHttpInfo(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension,  livePhotoData: livePhotoData, isVisible: isVisible, duration: duration, );
+  Future<AssetFileUploadResponseDto?> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { String? key, MultipartFile? livePhotoData, bool? isVisible, String? duration, }) async {
+    final response = await uploadFileWithHttpInfo(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension,  key: key, livePhotoData: livePhotoData, isVisible: isVisible, duration: duration, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

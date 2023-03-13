@@ -42,18 +42,6 @@ const fixtures = {
 
 const CLIENT_IP = '127.0.0.1';
 
-jest.mock('@nestjs/common', () => ({
-  ...jest.requireActual('@nestjs/common'),
-  Logger: jest.fn().mockReturnValue({
-    verbose: jest.fn(),
-    debug: jest.fn(),
-    log: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-  }),
-}));
-
 describe('AuthService', () => {
   let sut: AuthService;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
@@ -207,6 +195,17 @@ describe('AuthService', () => {
         successful: true,
         redirectUri: '/auth/login?autoLaunch=0',
       });
+    });
+
+    it('should delete the access token', async () => {
+      const authUser = { id: '123', accessTokenId: 'token123' } as AuthUserDto;
+
+      await expect(sut.logout(authUser, AuthType.PASSWORD)).resolves.toEqual({
+        successful: true,
+        redirectUri: '/auth/login?autoLaunch=0',
+      });
+
+      expect(userTokenMock.delete).toHaveBeenCalledWith('token123');
     });
   });
 

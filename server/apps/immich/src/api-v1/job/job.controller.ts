@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Put, ValidationPipe } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AllJobStatusResponseDto } from './response-dto/all-job-status-response.dto';
 import { GetJobDto } from './dto/get-job.dto';
@@ -8,7 +8,6 @@ import { JobCommandDto } from './dto/job-command.dto';
 
 @Authenticated({ admin: true })
 @ApiTags('Job')
-@ApiBearerAuth()
 @Controller('jobs')
 export class JobController {
   constructor(private readonly jobService: JobService) {}

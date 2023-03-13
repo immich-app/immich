@@ -16,6 +16,11 @@ export const immichAppConfig: ConfigModuleOptions = {
     DB_PASSWORD: WHEN_DB_URL_SET,
     DB_DATABASE_NAME: WHEN_DB_URL_SET,
     DB_URL: Joi.string().optional(),
+    TYPESENSE_API_KEY: Joi.when('TYPESENSE_ENABLED', {
+      is: 'false',
+      then: Joi.string().optional(),
+      otherwise: Joi.string().required(),
+    }),
     DISABLE_REVERSE_GEOCODING: Joi.boolean().optional().valid(true, false).default(false),
     REVERSE_GEOCODING_PRECISION: Joi.number().optional().valid(0, 1, 2, 3).default(3),
     LOG_LEVEL: Joi.string().optional().valid('simple', 'verbose', 'debug', 'log', 'warn', 'error').default('log'),

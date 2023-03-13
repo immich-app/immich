@@ -1,86 +1,93 @@
+import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
 import 'package:immich_mobile/utils/builtin_extensions.dart';
 
+part 'exif_info.g.dart';
+
+/// Exif information 1:1 relation with Asset
+@Collection(inheritance: false)
 class ExifInfo {
+  Id? id;
   int? fileSize;
   String? make;
   String? model;
-  String? orientation;
-  String? lensModel;
-  double? fNumber;
-  double? focalLength;
-  int? iso;
-  double? exposureTime;
+  String? lens;
+  float? f;
+  float? mm;
+  short? iso;
+  float? exposureSeconds;
+  float? lat;
+  float? long;
   String? city;
   String? state;
   String? country;
+
+  @ignore
+  String get exposureTime {
+    if (exposureSeconds == null) {
+      return "";
+    } else if (exposureSeconds! < 1) {
+      return "1/${(1.0 / exposureSeconds!).round()} s";
+    } else {
+      return "${exposureSeconds!.toStringAsFixed(1)} s";
+    }
+  }
+
+  @ignore
+  String get fNumber => f != null ? f!.toStringAsFixed(1) : "";
+
+  @ignore
+  String get focalLength => mm != null ? mm!.toStringAsFixed(1) : "";
+
+  @ignore
+  double? get latitude => lat;
+
+  @ignore
+  double? get longitude => long;
 
   ExifInfo.fromDto(ExifResponseDto dto)
       : fileSize = dto.fileSizeInByte,
         make = dto.make,
         model = dto.model,
-        orientation = dto.orientation,
-        lensModel = dto.lensModel,
-        fNumber = dto.fNumber?.toDouble(),
-        focalLength = dto.focalLength?.toDouble(),
+        lens = dto.lensModel,
+        f = dto.fNumber?.toDouble(),
+        mm = dto.focalLength?.toDouble(),
         iso = dto.iso?.toInt(),
-        exposureTime = dto.exposureTime?.toDouble(),
+        exposureSeconds = _exposureTimeToSeconds(dto.exposureTime),
+        lat = dto.latitude?.toDouble(),
+        long = dto.longitude?.toDouble(),
         city = dto.city,
         state = dto.state,
         country = dto.country;
 
-  // stuff below is only required for caching as JSON
-
-  ExifInfo(
+  ExifInfo({
     this.fileSize,
     this.make,
     this.model,
-    this.orientation,
-    this.lensModel,
-    this.fNumber,
-    this.focalLength,
+    this.lens,
+    this.f,
+    this.mm,
     this.iso,
-    this.exposureTime,
+    this.exposureSeconds,
+    this.lat,
+    this.long,
     this.city,
     this.state,
     this.country,
-  );
+  });
+}
 
-  Map<String, dynamic> toJson() {
-    final json = <String, dynamic>{};
-    json["fileSize"] = fileSize;
-    json["make"] = make;
-    json["model"] = model;
-    json["orientation"] = orientation;
-    json["lensModel"] = lensModel;
-    json["fNumber"] = fNumber;
-    json["focalLength"] = focalLength;
-    json["iso"] = iso;
-    json["exposureTime"] = exposureTime;
-    json["city"] = city;
-    json["state"] = state;
-    json["country"] = country;
-    return json;
-  }
-
-  static ExifInfo? fromJson(dynamic value) {
-    if (value is Map) {
-      final json = value.cast<String, dynamic>();
-      return ExifInfo(
-        json["fileSize"],
-        json["make"],
-        json["model"],
-        json["orientation"],
-        json["lensModel"],
-        json["fNumber"],
-        json["focalLength"],
-        json["iso"],
-        json["exposureTime"],
-        json["city"],
-        json["state"],
-        json["country"],
-      );
-    }
+double? _exposureTimeToSeconds(String? s) {
+  if (s == null) {
     return null;
   }
+  double? value = double.tryParse(s);
+  if (value != null) {
+    return value;
+  }
+  final parts = s.split("/");
+  if (parts.length == 2) {
+    return parts[0].toDouble() / parts[1].toDouble();
+  }
+  return null;
 }

@@ -1,4 +1,5 @@
 import {
+  AlbumEntity,
   APIKeyEntity,
   AssetEntity,
   AssetType,
@@ -76,6 +77,7 @@ export const userEntityStub = {
     createdAt: '2021-01-01',
     updatedAt: '2021-01-01',
     tags: [],
+    assets: [],
   }),
   user1: Object.freeze<UserEntity>({
     ...authStub.user1,
@@ -88,6 +90,22 @@ export const userEntityStub = {
     createdAt: '2021-01-01',
     updatedAt: '2021-01-01',
     tags: [],
+    assets: [],
+  }),
+};
+
+export const fileStub = {
+  livePhotoStill: Object.freeze({
+    originalPath: 'fake_path/asset_1.jpeg',
+    mimeType: 'image/jpg',
+    checksum: Buffer.from('file hash', 'utf8'),
+    originalName: 'asset_1.jpeg',
+  }),
+  livePhotoMotion: Object.freeze({
+    originalPath: 'fake_path/asset_1.mp4',
+    mimeType: 'image/jpeg',
+    checksum: Buffer.from('live photo file hash', 'utf8'),
+    originalName: 'asset_1.mp4',
   }),
 };
 
@@ -95,18 +113,18 @@ export const assetEntityStub = {
   image: Object.freeze<AssetEntity>({
     id: 'asset-id',
     deviceAssetId: 'device-asset-id',
-    fileModifiedAt: today.toISOString(),
-    fileCreatedAt: today.toISOString(),
+    fileModifiedAt: '2023-02-23T05:06:29.716Z',
+    fileCreatedAt: '2023-02-23T05:06:29.716Z',
     owner: userEntityStub.user1,
     ownerId: 'user-id',
     deviceId: 'device-id',
-    originalPath: '/original/path',
+    originalPath: '/original/path.ext',
     resizePath: null,
     type: AssetType.IMAGE,
     webpPath: null,
     encodedVideoPath: null,
-    createdAt: today.toISOString(),
-    updatedAt: today.toISOString(),
+    createdAt: '2023-02-23T05:06:29.716Z',
+    updatedAt: '2023-02-23T05:06:29.716Z',
     mimeType: null,
     isFavorite: true,
     duration: null,
@@ -115,6 +133,42 @@ export const assetEntityStub = {
     livePhotoVideoId: null,
     tags: [],
     sharedLinks: [],
+  }),
+  livePhotoMotionAsset: Object.freeze({
+    id: 'live-photo-motion-asset',
+    originalPath: fileStub.livePhotoMotion.originalPath,
+    ownerId: authStub.user1.id,
+    type: AssetType.VIDEO,
+    isVisible: false,
+    fileModifiedAt: '2022-06-19T23:41:36.910Z',
+    fileCreatedAt: '2022-06-19T23:41:36.910Z',
+  } as AssetEntity),
+
+  livePhotoStillAsset: Object.freeze({
+    id: 'live-photo-still-asset',
+    originalPath: fileStub.livePhotoStill.originalPath,
+    ownerId: authStub.user1.id,
+    type: AssetType.IMAGE,
+    livePhotoVideoId: 'live-photo-motion-asset',
+    isVisible: true,
+    fileModifiedAt: '2022-06-19T23:41:36.910Z',
+    fileCreatedAt: '2022-06-19T23:41:36.910Z',
+  } as AssetEntity),
+};
+
+export const albumStub = {
+  empty: Object.freeze<AlbumEntity>({
+    id: 'album-1',
+    albumName: 'Empty album',
+    ownerId: authStub.admin.id,
+    owner: userEntityStub.admin,
+    assets: [],
+    albumThumbnailAsset: null,
+    albumThumbnailAssetId: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    sharedLinks: [],
+    sharedUsers: [],
   }),
 };
 
@@ -284,8 +338,8 @@ export const loginResponseStub = {
       shouldChangePassword: false,
     },
     cookie: [
-      'immich_access_token=cmFuZG9tLWJ5dGVz; HttpOnly; Secure; Path=/; Max-Age=604800; SameSite=Lax;',
-      'immich_auth_type=oauth; HttpOnly; Secure; Path=/; Max-Age=604800; SameSite=Lax;',
+      'immich_access_token=cmFuZG9tLWJ5dGVz; HttpOnly; Secure; Path=/; Max-Age=34560000; SameSite=Lax;',
+      'immich_auth_type=oauth; HttpOnly; Secure; Path=/; Max-Age=34560000; SameSite=Lax;',
     ],
   },
   user1password: {
@@ -300,8 +354,8 @@ export const loginResponseStub = {
       shouldChangePassword: false,
     },
     cookie: [
-      'immich_access_token=cmFuZG9tLWJ5dGVz; HttpOnly; Secure; Path=/; Max-Age=604800; SameSite=Lax;',
-      'immich_auth_type=password; HttpOnly; Secure; Path=/; Max-Age=604800; SameSite=Lax;',
+      'immich_access_token=cmFuZG9tLWJ5dGVz; HttpOnly; Secure; Path=/; Max-Age=34560000; SameSite=Lax;',
+      'immich_auth_type=password; HttpOnly; Secure; Path=/; Max-Age=34560000; SameSite=Lax;',
     ],
   },
   user1insecure: {
@@ -316,8 +370,8 @@ export const loginResponseStub = {
       shouldChangePassword: false,
     },
     cookie: [
-      'immich_access_token=cmFuZG9tLWJ5dGVz; HttpOnly; Path=/; Max-Age=604800; SameSite=Lax;',
-      'immich_auth_type=password; HttpOnly; Path=/; Max-Age=604800; SameSite=Lax;',
+      'immich_access_token=cmFuZG9tLWJ5dGVz; HttpOnly; Path=/; Max-Age=34560000; SameSite=Lax;',
+      'immich_auth_type=password; HttpOnly; Path=/; Max-Age=34560000; SameSite=Lax;',
     ],
   },
 };
@@ -369,6 +423,7 @@ export const sharedLinkStub = {
       albumName: 'Test Album',
       createdAt: today.toISOString(),
       updatedAt: today.toISOString(),
+      albumThumbnailAsset: null,
       albumThumbnailAssetId: null,
       sharedUsers: [],
       sharedLinks: [],

@@ -1,4 +1,4 @@
-import { DeviceInfoEntity, DeviceType } from '@app/infra';
+import { DeviceInfoEntity, DeviceType } from '@app/infra/db/entities';
 import { authStub, newDeviceInfoRepositoryMock } from '../../test';
 import { IDeviceInfoRepository } from './device-info.repository';
 import { DeviceInfoService } from './device-info.service';

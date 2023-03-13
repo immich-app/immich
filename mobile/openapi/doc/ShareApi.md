@@ -26,6 +26,16 @@ Method | HTTP request | Description
 ### Example
 ```dart
 import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = ShareApi();
 final id = id_example; // String | 
@@ -52,7 +62,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-No authorization required
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -71,6 +81,16 @@ No authorization required
 ### Example
 ```dart
 import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = ShareApi();
 
@@ -91,7 +111,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-No authorization required
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -101,7 +121,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getMySharedLink**
-> SharedLinkResponseDto getMySharedLink()
+> SharedLinkResponseDto getMySharedLink(key)
 
 
 
@@ -110,11 +130,22 @@ No authorization required
 ### Example
 ```dart
 import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = ShareApi();
+final key = key_example; // String | 
 
 try {
-    final result = api_instance.getMySharedLink();
+    final result = api_instance.getMySharedLink(key);
     print(result);
 } catch (e) {
     print('Exception when calling ShareApi->getMySharedLink: $e\n');
@@ -122,7 +153,10 @@ try {
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **key** | **String**|  | [optional] 
 
 ### Return type
 
@@ -130,7 +164,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-No authorization required
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -149,6 +183,16 @@ No authorization required
 ### Example
 ```dart
 import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = ShareApi();
 final id = id_example; // String | 
@@ -173,7 +217,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-No authorization required
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -192,6 +236,16 @@ No authorization required
 ### Example
 ```dart
 import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = ShareApi();
 final id = id_example; // String | 
@@ -215,7 +269,7 @@ void (empty response body)
 
 ### Authorization
 
-No authorization required
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
 
 ### HTTP request headers
 

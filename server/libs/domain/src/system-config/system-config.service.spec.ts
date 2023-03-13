@@ -113,6 +113,7 @@ describe(SystemConfigService.name, () => {
           '{{y}}-{{MM}}-{{dd}}/{{filename}}',
           '{{y}}-{{MMM}}-{{dd}}/{{filename}}',
           '{{y}}-{{MMMM}}-{{dd}}/{{filename}}',
+          '{{y}}/{{y}}-{{MM}}/{{filename}}',
         ],
         secondOptions: ['s', 'ss'],
         yearOptions: ['y', 'yy'],
@@ -127,7 +128,7 @@ describe(SystemConfigService.name, () => {
       await expect(sut.updateConfig(updatedConfig)).resolves.toEqual(updatedConfig);
 
       expect(configMock.saveAll).toHaveBeenCalledWith(updates);
-      expect(jobMock.add).toHaveBeenCalledWith({ name: JobName.CONFIG_CHANGE });
+      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.SYSTEM_CONFIG_CHANGE });
     });
 
     it('should throw an error if the config is not valid', async () => {

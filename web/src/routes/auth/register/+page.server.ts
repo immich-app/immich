@@ -1,8 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { api } from '@api';
 
-export const load: PageServerLoad = async () => {
+export const load = (async ({ locals: { api } }) => {
 	const { data } = await api.userApi.getUserCount(true);
 	if (data.userCount != 0) {
 		// Admin has been registered, redirect to login
@@ -14,4 +13,4 @@ export const load: PageServerLoad = async () => {
 			title: 'Admin Registration'
 		}
 	};
-};
+}) satisfies PageServerLoad;

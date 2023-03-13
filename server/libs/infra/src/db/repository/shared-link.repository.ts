@@ -26,6 +26,7 @@ export class SharedLinkRepository implements ISharedLinkRepository {
           assets: {
             exifInfo: true,
           },
+          owner: true,
         },
       },
       order: {
@@ -49,7 +50,9 @@ export class SharedLinkRepository implements ISharedLinkRepository {
       },
       relations: {
         assets: true,
-        album: true,
+        album: {
+          owner: true,
+        },
       },
       order: {
         createdAt: 'DESC',

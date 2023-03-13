@@ -48,14 +48,14 @@ export class JobService {
           ? await this._assetRepository.getAllVideos()
           : await this._assetRepository.getAssetWithNoEncodedVideo();
         for (const asset of assets) {
-          await this.jobRepository.add({ name: JobName.VIDEO_CONVERSION, data: { asset } });
+          await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { asset } });
         }
 
         return assets.length;
       }
 
-      case QueueName.CONFIG:
-        await this.jobRepository.add({ name: JobName.TEMPLATE_MIGRATION });
+      case QueueName.STORAGE_TEMPLATE_MIGRATION:
+        await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION });
         return 1;
 
       case QueueName.MACHINE_LEARNING: {
@@ -68,8 +68,8 @@ export class JobService {
           : await this._assetRepository.getAssetWithNoSmartInfo();
 
         for (const asset of assets) {
-          await this.jobRepository.add({ name: JobName.IMAGE_TAGGING, data: { asset } });
-          await this.jobRepository.add({ name: JobName.OBJECT_DETECTION, data: { asset } });
+          await this.jobRepository.queue({ name: JobName.IMAGE_TAGGING, data: { asset } });
+          await this.jobRepository.queue({ name: JobName.OBJECT_DETECTION, data: { asset } });
         }
         return assets.length;
       }
@@ -81,7 +81,7 @@ export class JobService {
 
         for (const asset of assets) {
           if (asset.type === AssetType.VIDEO) {
-            await this.jobRepository.add({
+            await this.jobRepository.queue({
               name: JobName.EXTRACT_VIDEO_METADATA,
               data: {
                 asset,
@@ -89,7 +89,7 @@ export class JobService {
               },
             });
           } else {
-            await this.jobRepository.add({
+            await this.jobRepository.queue({
               name: JobName.EXIF_EXTRACTION,
               data: {
                 asset,
@@ -107,7 +107,7 @@ export class JobService {
           : await this._assetRepository.getAssetWithNoThumbnail();
 
         for (const asset of assets) {
-          await this.jobRepository.add({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { asset } });
+          await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { asset } });
         }
         return assets.length;
       }
@@ -129,7 +129,7 @@ export class JobService {
         return QueueName.VIDEO_CONVERSION;
 
       case JobId.STORAGE_TEMPLATE_MIGRATION:
-        return QueueName.CONFIG;
+        return QueueName.STORAGE_TEMPLATE_MIGRATION;
 
       case JobId.MACHINE_LEARNING:
         return QueueName.MACHINE_LEARNING;

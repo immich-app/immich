@@ -24,7 +24,7 @@ export class AuthCore {
   }
 
   public getCookies(loginResponse: LoginResponseDto, authType: AuthType, isSecure: boolean) {
-    const maxAge = 7 * 24 * 3600; // 7 days
+    const maxAge = 400 * 24 * 3600; // 400 days
 
     let authTypeCookie = '';
     let accessTokenCookie = '';

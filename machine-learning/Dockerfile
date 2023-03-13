@@ -1,18 +1,25 @@
-FROM python:3.10
+FROM python:3.10 as builder
 
-ENV TRANSFORMERS_CACHE=/cache
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=true
+
+RUN python -m venv /opt/venv
+RUN /opt/venv/bin/pip install --pre torch  -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
+RUN /opt/venv/bin/pip install transformers tqdm numpy scikit-learn scipy nltk sentencepiece flask Pillow gunicorn
+RUN /opt/venv/bin/pip install --no-deps sentence-transformers
+
+FROM python:3.10-slim
+
+COPY --from=builder /opt/venv /opt/venv
+
+ENV TRANSFORMERS_CACHE=/cache \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:$PATH"
 
 WORKDIR /usr/src/app
 
-RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-RUN pip install --no-cache-dir torch==1.13.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
-RUN pip install transformers tqdm numpy scikit-learn scipy nltk sentencepiece flask Pillow
-RUN pip install --no-deps sentence-transformers
-
 COPY . .
 
-CMD ["python", "src/main.py"]
+CMD ["gunicorn", "src.main:server"]

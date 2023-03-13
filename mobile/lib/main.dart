@@ -15,11 +15,16 @@ import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/ios_background_settings.provider.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/modules/settings/providers/permission.provider.dart';
+import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/modules/settings/providers/notification_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
+import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/immich_logger_message.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
@@ -34,12 +39,14 @@ import 'package:immich_mobile/utils/migration.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'constants/hive_box.dart';
 
 void main() async {
   await initApp();
   final db = await loadDb();
   await migrateHiveToStoreIfNecessary();
+  await migrateJsonCacheIfNecessary();
   runApp(getMainWidget(db));
 }
 
@@ -91,7 +98,13 @@ Future<void> initApp() async {
 Future<Isar> loadDb() async {
   final dir = await getApplicationDocumentsDirectory();
   Isar db = await Isar.open(
-    [StoreValueSchema],
+    [
+      StoreValueSchema,
+      ExifInfoSchema,
+      AssetSchema,
+      AlbumSchema,
+      UserSchema,
+    ],
     directory: dir.path,
     maxSizeMiB: 256,
   );
@@ -129,8 +142,10 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         ref.watch(appStateProvider.notifier).state = AppStateEnum.resumed;
 
         var isAuthenticated = ref.watch(authenticationProvider).isAuthenticated;
+        final permission = ref.watch(galleryPermissionNotifier);
 
-        if (isAuthenticated) {
+        // Needs to be logged in and have gallery permissions
+        if (isAuthenticated && (permission.isGranted || permission.isLimited)) {
           ref.read(backupProvider.notifier).resumeBackup();
           ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
           ref.watch(assetProvider.notifier).getAllAsset();
@@ -141,9 +156,10 @@ class ImmichAppState extends ConsumerState<ImmichApp>
 
         ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
 
-        ref
-            .watch(notificationPermissionProvider.notifier)
-            .getNotificationPermission();
+        ref.watch(notificationPermissionProvider.notifier)
+          .getNotificationPermission();
+        ref.watch(galleryPermissionNotifier.notifier)
+          .getGalleryPermissionStatus();
 
         ref.read(iOSBackgroundSettingsProvider.notifier).refresh();
 
@@ -195,6 +211,9 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent),
+    );
 
     return MaterialApp(
       localizationsDelegates: context.localizationDelegates,

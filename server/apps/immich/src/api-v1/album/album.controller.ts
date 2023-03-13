@@ -22,7 +22,7 @@ import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { GetAlbumsDto } from './dto/get-albums.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AlbumResponseDto } from '@app/domain';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
@@ -37,7 +37,6 @@ import { CreateAlbumShareLinkDto as CreateAlbumSharedLinkDto } from './dto/creat
 
 // TODO might be worth creating a AlbumParamsDto that validates `albumId` instead of using the pipe.
 
-@ApiBearerAuth()
 @ApiTags('Album')
 @Controller('album')
 export class AlbumController {
@@ -134,12 +133,13 @@ export class AlbumController {
 
   @Authenticated({ isShared: true })
   @Get('/:albumId/download')
+  @ApiOkResponse({ content: { 'application/zip': { schema: { type: 'string', format: 'binary' } } } })
   async downloadArchive(
     @GetAuthUser() authUser: AuthUserDto,
     @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
     @Query(new ValidationPipe({ transform: true })) dto: DownloadDto,
     @Response({ passthrough: true }) res: Res,
-  ): Promise<any> {
+  ) {
     this.albumService.checkDownloadAccess(authUser);
 
     const { stream, fileName, fileSize, fileCount, complete } = await this.albumService.downloadArchive(

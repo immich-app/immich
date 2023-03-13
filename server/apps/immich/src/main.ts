@@ -11,6 +11,7 @@ import { RedisIoAdapter } from './middlewares/redis-io.adapter.middleware';
 import { json } from 'body-parser';
 import { patchOpenAPI } from './utils/patch-open-api.util';
 import { getLogLevels, MACHINE_LEARNING_ENABLED } from '@app/common';
+import { IMMICH_ACCESS_COOKIE, SearchService } from '@app/domain';
 
 const logger = new Logger('ImmichServer');
 
@@ -42,6 +43,7 @@ async function bootstrap() {
       scheme: 'Bearer',
       in: 'header',
     })
+    .addCookieAuth(IMMICH_ACCESS_COOKIE)
     .addServer('/api')
     .build();
 
@@ -71,6 +73,9 @@ async function bootstrap() {
     );
   });
 
+  const searchService = app.get(SearchService);
+
   logger.warn(`Machine learning is ${MACHINE_LEARNING_ENABLED ? 'enabled' : 'disabled'}`);
+  logger.warn(`Search is ${searchService.isEnabled() ? 'enabled' : 'disabled'}`);
 }
 bootstrap();

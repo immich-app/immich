@@ -281,6 +281,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
+  device_info_plus:
+    dependency: "direct main"
+    description:
+      name: device_info_plus
+      sha256: "1d6e5a61674ba3a68fb048a7c7b4ff4bebfed8d7379dbe8f2b718231be9a7c95"
+      url: "https://pub.dev"
+    source: hosted
+    version: "8.1.0"
+  device_info_plus_platform_interface:
+    dependency: transitive
+    description:
+      name: device_info_plus_platform_interface
+      sha256: d3b01d5868b50ae571cd1dc6e502fc94d956b665756180f7b16ead09e836fd64
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.0.0"
   easy_image_viewer:
     dependency: "direct main"
     description:
@@ -740,6 +756,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
+  mockito:
+    dependency: "direct dev"
+    description:
+      name: mockito
+      sha256: "2a8a17b82b1bde04d514e75d90d634a0ac23f6cb4991f6098009dd56836aeafe"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.3.2"
   nested:
     dependency: transitive
     description:

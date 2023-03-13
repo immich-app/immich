@@ -19,7 +19,7 @@ void main() {
   group('tests for AlbumApi', () {
     // 
     //
-    //Future<AddAssetsResponseDto> addAssetsToAlbum(String albumId, AddAssetsDto addAssetsDto) async
+    //Future<AddAssetsResponseDto> addAssetsToAlbum(String albumId, AddAssetsDto addAssetsDto, { String key }) async
     test('test addAssetsToAlbum', () async {
       // TODO
     });
@@ -54,7 +54,7 @@ void main() {
 
     // 
     //
-    //Future<Object> downloadArchive(String albumId, { num skip }) async
+    //Future<MultipartFile> downloadArchive(String albumId, { num skip, String key }) async
     test('test downloadArchive', () async {
       // TODO
     });
@@ -68,7 +68,7 @@ void main() {
 
     // 
     //
-    //Future<AlbumResponseDto> getAlbumInfo(String albumId) async
+    //Future<AlbumResponseDto> getAlbumInfo(String albumId, { String key }) async
     test('test getAlbumInfo', () async {
       // TODO
     });

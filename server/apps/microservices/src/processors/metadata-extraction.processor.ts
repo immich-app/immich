@@ -1,25 +1,29 @@
-import { AssetEntity, AssetType, ExifEntity } from '@app/infra';
 import {
-  IExifExtractionProcessor,
-  IReverseGeocodingProcessor,
-  IVideoLengthExtractionProcessor,
-  QueueName,
+  AssetCore,
+  IAssetRepository,
+  IAssetUploadedJob,
+  IJobRepository,
+  IReverseGeocodingJob,
   JobName,
+  QueueName,
 } from '@app/domain';
+import { AssetEntity, AssetType, ExifEntity } from '@app/infra';
 import { Process, Processor } from '@nestjs/bull';
-import { Logger } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Job } from 'bull';
-import ffmpeg from 'fluent-ffmpeg';
+import { ExifDateTime, exiftool, Tags } from 'exiftool-vendored';
+import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
+import { getName } from 'i18n-iso-countries';
+import geocoder, { InitOptions } from 'local-reverse-geocoder';
+import fs from 'node:fs';
 import path from 'path';
 import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
-import geocoder, { InitOptions } from 'local-reverse-geocoder';
-import { getName } from 'i18n-iso-countries';
-import fs from 'node:fs';
-import { ExifDateTime, exiftool, Tags } from 'exiftool-vendored';
-import { IsNull, Not } from 'typeorm';
+import { promisify } from 'util';
+
+const ffprobe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 
 interface ImmichTags extends Tags {
   ContentIdentifier?: string;
@@ -78,15 +82,19 @@ export type GeoData = {
 export class MetadataExtractionProcessor {
   private logger = new Logger(MetadataExtractionProcessor.name);
   private isGeocodeInitialized = false;
+  private assetCore: AssetCore;
+
   constructor(
-    @InjectRepository(AssetEntity)
-    private assetRepository: Repository<AssetEntity>,
+    @Inject(IAssetRepository) assetRepository: IAssetRepository,
+    @Inject(IJobRepository) jobRepository: IJobRepository,
 
     @InjectRepository(ExifEntity)
     private exifRepository: Repository<ExifEntity>,
 
     configService: ConfigService,
   ) {
+    this.assetCore = new AssetCore(assetRepository, jobRepository);
+
     if (!configService.get('DISABLE_REVERSE_GEOCODING')) {
       this.logger.log('Initializing Reverse Geocoding');
       geocoderInit({
@@ -141,7 +149,7 @@ export class MetadataExtractionProcessor {
   }
 
   @Process(JobName.EXIF_EXTRACTION)
-  async extractExifInfo(job: Job<IExifExtractionProcessor>) {
+  async extractExifInfo(job: Job<IAssetUploadedJob>) {
     try {
       const { asset, fileName }: { asset: AssetEntity; fileName: string } = job.data;
       const exifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((e) => {
@@ -184,28 +192,11 @@ export class MetadataExtractionProcessor {
       newExif.longitude = exifData?.GPSLongitude || null;
       newExif.livePhotoCID = exifData?.MediaGroupUUID || null;
 
-      await this.assetRepository.save({
-        id: asset.id,
-        fileCreatedAt: fileCreatedAt?.toISOString(),
-      });
-
       if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
-        const motionAsset = await this.assetRepository.findOne({
-          where: {
-            id: Not(asset.id),
-            type: AssetType.VIDEO,
-            exifInfo: {
-              livePhotoCID: newExif.livePhotoCID,
-            },
-          },
-          relations: {
-            exifInfo: true,
-          },
-        });
-
+        const motionAsset = await this.assetCore.findLivePhotoMatch(newExif.livePhotoCID, asset.id, AssetType.VIDEO);
         if (motionAsset) {
-          await this.assetRepository.update(asset.id, { livePhotoVideoId: motionAsset.id });
-          await this.assetRepository.update(motionAsset.id, { isVisible: false });
+          await this.assetCore.save({ id: asset.id, livePhotoVideoId: motionAsset.id });
+          await this.assetCore.save({ id: motionAsset.id, isVisible: false });
         }
       }
 
@@ -243,13 +234,14 @@ export class MetadataExtractionProcessor {
       }
 
       await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
+      await this.assetCore.save({ id: asset.id, fileCreatedAt: fileCreatedAt?.toISOString() });
     } catch (error: any) {
       this.logger.error(`Error extracting EXIF ${error}`, error?.stack);
     }
   }
 
   @Process({ name: JobName.REVERSE_GEOCODING })
-  async reverseGeocoding(job: Job<IReverseGeocodingProcessor>) {
+  async reverseGeocoding(job: Job<IReverseGeocodingJob>) {
     if (this.isGeocodeInitialized) {
       const { latitude, longitude } = job.data;
       const { country, state, city } = await this.reverseGeocodeExif(latitude, longitude);
@@ -258,7 +250,7 @@ export class MetadataExtractionProcessor {
   }
 
   @Process({ name: JobName.EXTRACT_VIDEO_METADATA, concurrency: 2 })
-  async extractVideoMetadata(job: Job<IVideoLengthExtractionProcessor>) {
+  async extractVideoMetadata(job: Job<IAssetUploadedJob>) {
     const { asset, fileName } = job.data;
 
     if (!asset.isVisible) {
@@ -266,18 +258,9 @@ export class MetadataExtractionProcessor {
     }
 
     try {
-      const data = await new Promise<ffmpeg.FfprobeData>((resolve, reject) =>
-        ffmpeg.ffprobe(asset.originalPath, (err, data) => {
-          if (err) return reject(err);
-          return resolve(data);
-        }),
-      );
-      let durationString = asset.duration;
+      const data = await ffprobe(asset.originalPath);
+      const durationString = this.extractDuration(data.format.duration || asset.duration);
       let fileCreatedAt = asset.fileCreatedAt;
-
-      if (data.format.duration) {
-        durationString = this.extractDuration(data.format.duration);
-      }
 
       const videoTags = data.format.tags;
       if (videoTags) {
@@ -309,20 +292,10 @@ export class MetadataExtractionProcessor {
       newExif.livePhotoCID = exifData?.ContentIdentifier || null;
 
       if (newExif.livePhotoCID) {
-        const photoAsset = await this.assetRepository.findOne({
-          where: {
-            id: Not(asset.id),
-            type: AssetType.IMAGE,
-            livePhotoVideoId: IsNull(),
-            exifInfo: {
-              livePhotoCID: newExif.livePhotoCID,
-            },
-          },
-        });
-
+        const photoAsset = await this.assetCore.findLivePhotoMatch(newExif.livePhotoCID, asset.id, AssetType.IMAGE);
         if (photoAsset) {
-          await this.assetRepository.update(photoAsset.id, { livePhotoVideoId: asset.id });
-          await this.assetRepository.update(asset.id, { isVisible: false });
+          await this.assetCore.save({ id: photoAsset.id, livePhotoVideoId: asset.id });
+          await this.assetCore.save({ id: asset.id, isVisible: false });
         }
       }
 
@@ -378,7 +351,7 @@ export class MetadataExtractionProcessor {
       }
 
       await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
-      await this.assetRepository.update({ id: asset.id }, { duration: durationString, fileCreatedAt });
+      await this.assetCore.save({ id: asset.id, duration: durationString, fileCreatedAt });
     } catch (err) {
       ``;
       // do nothing
@@ -386,8 +359,11 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  private extractDuration(duration: number) {
-    const videoDurationInSecond = parseInt(duration.toString(), 0);
+  private extractDuration(duration: number | string | null) {
+    const videoDurationInSecond = Number(duration);
+    if (!videoDurationInSecond) {
+      return null;
+    }
 
     const hours = Math.floor(videoDurationInSecond / 3600);
     const minutes = Math.floor((videoDurationInSecond - hours * 3600) / 60);

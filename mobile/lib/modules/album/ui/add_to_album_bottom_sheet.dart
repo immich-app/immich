@@ -25,7 +25,7 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final albums = ref.watch(albumProvider);
+    final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
     final albumService = ref.watch(albumServiceProvider);
     final sharedAlbums = ref.watch(sharedAlbumProvider);
 

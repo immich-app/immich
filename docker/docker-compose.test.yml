@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   immich-server-test:
@@ -9,7 +9,7 @@ services:
       target: builder
     command: npm run test:e2e
     expose:
-      - '3000'
+      - "3000"
     volumes:
       - ../server:/usr/src/app
       - /usr/src/app/node_modules
@@ -17,6 +17,7 @@ services:
       - .env.test
     environment:
       - NODE_ENV=development
+      - TYPESENSE_ENABLED=false
     depends_on:
       - immich-redis-test
       - immich-database-test

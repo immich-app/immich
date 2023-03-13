@@ -68,7 +68,7 @@ class AlbumThumbnailListTile extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: album.albumThumbnailAssetId == null
+              child: album.thumbnail.value == null
                   ? buildEmptyThumbnail()
                   : buildAlbumThumbnail(),
             ),

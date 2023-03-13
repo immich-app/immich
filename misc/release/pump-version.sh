@@ -76,10 +76,11 @@ sed -i "s/\"android\.injected\.version\.code\" => $CURRENT_MOBILE,/\"android\.in
 sed -i "s/^version: $CURRENT_SERVER+$CURRENT_MOBILE$/version: $NEXT_SERVER+$NEXT_MOBILE/" mobile/pubspec.yaml
 
 # OpenApi Generated Files
-sed -i "s/\"version\": \"$CURRENT_SERVER\",$/\"version\": \"$NEXT_SERVER\",/" mobile/openapi/README.md
-sed -i "s/\"document\": \"$CURRENT_SERVER\",$/\"document\": \"$NEXT_SERVER\",/" web/src/api/open-api/api.ts
-sed -i "s/\"document\": \"$CURRENT_SERVER\",$/\"document\": \"$NEXT_SERVER\",/" web/src/api/open-api/base.ts
-sed -i "s/\"document\": \"$CURRENT_SERVER\",$/\"document\": \"$NEXT_SERVER\",/" web/src/api/open-api/common.ts
-sed -i "s/\"document\": \"$CURRENT_SERVER\",$/\"document\": \"$NEXT_SERVER\",/" web/src/api/open-api/configuration.ts
-sed -i "s/\"document\": \"$CURRENT_SERVER\",$/\"document\": \"$NEXT_SERVER\",/" web/src/api/open-api/index.ts
+sed -i "s/API version: $CURRENT_SERVER,$/API version: $NEXT_SERVER/" mobile/openapi/README.md
+sed -i "s/OpenAPI document: $CURRENT_SERVER,$/OpenAPI document: $NEXT_SERVER/" web/src/api/open-api/api.ts
+sed -i "s/OpenAPI document: $CURRENT_SERVER,$/OpenAPI document: $NEXT_SERVER/" web/src/api/open-api/base.ts
+sed -i "s/OpenAPI document: $CURRENT_SERVER,$/OpenAPI document: $NEXT_SERVER/" web/src/api/open-api/common.ts
+sed -i "s/OpenAPI document: $CURRENT_SERVER,$/OpenAPI document: $NEXT_SERVER/" web/src/api/open-api/configuration.ts
+sed -i "s/OpenAPI document: $CURRENT_SERVER,$/OpenAPI document: $NEXT_SERVER/" web/src/api/open-api/index.ts
+
 echo "IMMICH_VERSION=v$NEXT_SERVER" >>$GITHUB_ENV

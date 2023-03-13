@@ -18,7 +18,7 @@ export class AlbumEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => UserEntity, { eager: true, onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
+  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   owner!: UserEntity;
 
   @Column()
@@ -33,14 +33,17 @@ export class AlbumEntity {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: string;
 
-  @Column({ comment: 'Asset ID to be used as thumbnail', type: 'varchar', nullable: true })
+  @ManyToOne(() => AssetEntity, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
+  albumThumbnailAsset!: AssetEntity | null;
+
+  @Column({ comment: 'Asset ID to be used as thumbnail', nullable: true })
   albumThumbnailAssetId!: string | null;
 
-  @ManyToMany(() => UserEntity, { eager: true })
+  @ManyToMany(() => UserEntity)
   @JoinTable()
   sharedUsers!: UserEntity[];
 
-  @ManyToMany(() => AssetEntity, { eager: true })
+  @ManyToMany(() => AssetEntity)
   @JoinTable()
   assets!: AssetEntity[];
 
