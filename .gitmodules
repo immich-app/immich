@@ -1,0 +1,3 @@
+[submodule "mobile/.isar"]
+	path = mobile/.isar
+	url = https://github.com/isar/isar
