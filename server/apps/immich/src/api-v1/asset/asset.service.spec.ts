@@ -412,7 +412,7 @@ describe('AssetService', () => {
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.DELETE_FILES,
         data: {
-          files: ['fake_path/asset_1.jpeg', undefined, undefined, 'fake_path/asset_1.mp4', undefined, undefined],
+          files: ['fake_path/asset_1.jpeg', undefined, undefined, undefined, 'fake_path/asset_1.mp4', undefined, undefined, undefined],
         },
       });
     });
