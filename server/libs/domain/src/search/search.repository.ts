@@ -24,6 +24,7 @@ export interface SearchFilter {
   tags?: string[];
   recent?: boolean;
   motion?: boolean;
+  debug?: boolean;
 }
 
 export interface SearchResult<T> {

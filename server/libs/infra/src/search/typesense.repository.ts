@@ -128,10 +128,12 @@ export class TypesenseRepository implements ISearchRepository {
     done: boolean,
   ): Promise<void> {
     try {
-      await this.client.collections(schemaMap[collection].name).documents().import(this.patch(collection, items), {
-        action: 'upsert',
-        dirty_values: 'coerce_or_drop',
-      });
+      if (items.length > 0) {
+        await this.client.collections(schemaMap[collection].name).documents().import(this.patch(collection, items), {
+          action: 'upsert',
+          dirty_values: 'coerce_or_drop',
+        });
+      }
 
       if (done) {
         await this.updateAlias(collection);
@@ -221,7 +223,7 @@ export class TypesenseRepository implements ISearchRepository {
         filter_by: this.getAlbumFilters(filters),
       });
 
-    return this.asResponse(results);
+    return this.asResponse(results, filters.debug);
   }
 
   async searchAssets(query: string, filters: SearchFilter): Promise<SearchResult<AssetEntity>> {
@@ -246,7 +248,7 @@ export class TypesenseRepository implements ISearchRepository {
         sort_by: filters.recent ? 'createdAt:desc' : undefined,
       });
 
-    return this.asResponse(results);
+    return this.asResponse(results, filters.debug);
   }
 
   async vectorSearch(input: number[], filters: SearchFilter): Promise<SearchResult<AssetEntity>> {
@@ -265,10 +267,10 @@ export class TypesenseRepository implements ISearchRepository {
       ],
     });
 
-    return this.asResponse(results[0] as SearchResponse<AssetEntity>);
+    return this.asResponse(results[0] as SearchResponse<AssetEntity>, filters.debug);
   }
 
-  private asResponse<T extends DocumentSchema>(results: SearchResponse<T>): SearchResult<T> {
+  private asResponse<T extends DocumentSchema>(results: SearchResponse<T>, debug?: boolean): SearchResult<T> {
     return {
       page: results.page,
       total: results.found,
@@ -278,7 +280,8 @@ export class TypesenseRepository implements ISearchRepository {
         counts: facet.counts.map((item) => ({ count: item.count, value: item.value })),
         fieldName: facet.field_name as string,
       })),
-    };
+      debug: debug ? results : undefined,
+    } as SearchResult<T>;
   }
 
   private handleError(error: any) {
