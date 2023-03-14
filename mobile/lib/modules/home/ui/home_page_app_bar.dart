@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
@@ -123,64 +124,65 @@ class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
         ),
       ),
       actions: [
-        Stack(
-          alignment: AlignmentDirectional.center,
-          children: [
-            if (backupState.backupProgress == BackUpProgressEnum.inProgress)
-              Positioned(
-                top: 10,
-                right: 12,
-                child: SizedBox(
-                  height: 8,
-                  width: 8,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 1,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Theme.of(context).primaryColor,
+        if (!Platform.isLinux)
+          Stack(
+            alignment: AlignmentDirectional.center,
+            children: [
+              if (backupState.backupProgress == BackUpProgressEnum.inProgress)
+                Positioned(
+                  top: 10,
+                  right: 12,
+                  child: SizedBox(
+                    height: 8,
+                    width: 8,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 1,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).primaryColor,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            IconButton(
-              splashRadius: 25,
-              iconSize: 30,
-              icon: isEnableAutoBackup
-                  ? const Icon(
-                      Icons.backup_rounded,
-                    )
-                  : Badge(
-                      padding: const EdgeInsets.all(4),
-                      backgroundColor: Colors.white,
-                      label: const Icon(
-                        Icons.cloud_off_rounded,
-                        size: 8,
-                        color: Colors.indigo,
-                      ),
-                      child: Icon(
+              IconButton(
+                splashRadius: 25,
+                iconSize: 30,
+                icon: isEnableAutoBackup
+                    ? const Icon(
                         Icons.backup_rounded,
-                        color: Theme.of(context).primaryColor,
+                      )
+                    : Badge(
+                        padding: const EdgeInsets.all(4),
+                        backgroundColor: Colors.white,
+                        label: const Icon(
+                          Icons.cloud_off_rounded,
+                          size: 8,
+                          color: Colors.indigo,
+                        ),
+                        child: Icon(
+                          Icons.backup_rounded,
+                          color: Theme.of(context).primaryColor,
+                        ),
                       ),
-                    ),
-              onPressed: () async {
-                var onPop = await AutoRouter.of(context)
-                    .push(const BackupControllerRoute());
+                onPressed: () async {
+                  var onPop = await AutoRouter.of(context)
+                      .push(const BackupControllerRoute());
 
-                if (onPop != null && onPop == true) {
-                  onPopBack!();
-                }
-              },
-            ),
-            if (backupState.backupProgress == BackUpProgressEnum.inProgress)
-              Positioned(
-                bottom: 5,
-                child: Text(
-                  '${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length}',
-                  style:
-                      const TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
-                ),
+                  if (onPop != null && onPop == true) {
+                    onPopBack!();
+                  }
+                },
               ),
-          ],
-        ),
+              if (backupState.backupProgress == BackUpProgressEnum.inProgress)
+                Positioned(
+                  bottom: 5,
+                  child: Text(
+                    '${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length}',
+                    style:
+                        const TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
+                  ),
+                ),
+            ],
+          ),
       ],
     );
   }
