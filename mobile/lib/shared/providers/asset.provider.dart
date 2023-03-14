@@ -104,7 +104,10 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       final bool newLocal = await _albumService.refreshDeviceAlbums();
       log.info("Load assets: ${stopwatch.elapsedMilliseconds}ms");
       stopwatch.reset();
-      if (!newRemote && !newLocal) {
+      if (!newRemote &&
+          !newLocal &&
+          state.allAssets.length ==
+              await _db.assets.filter().ownerIdEqualTo(me.isarId).count()) {
         log.info("state is already up-to-date");
         return;
       }
