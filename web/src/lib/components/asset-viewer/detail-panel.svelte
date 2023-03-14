@@ -4,60 +4,26 @@
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
 	import CameraIris from 'svelte-material-icons/CameraIris.svelte';
 	import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
-	import { createEventDispatcher, onMount } from 'svelte';
-	import { browser } from '$app/environment';
+	import { createEventDispatcher } from 'svelte';
 	import { AssetResponseDto, AlbumResponseDto } from '@api';
 	import { asByteUnitString } from '../../utils/byte-units';
 	import { locale } from '$lib/stores/preferences.store';
-
-	type Leaflet = typeof import('leaflet');
-	type LeafletMap = import('leaflet').Map;
-	type LeafletMarker = import('leaflet').Marker;
-
-	// Map Property
-	let map: LeafletMap;
-	let leaflet: Leaflet;
-	let marker: LeafletMarker;
+	import Map from '../shared-components/leaflet/map.svelte';
+	import TileLayer from '../shared-components/leaflet/tile-layer.svelte';
+	import Marker from '../shared-components/leaflet/marker.svelte';
+	import type { LatLngTuple } from 'leaflet';
 
 	export let asset: AssetResponseDto;
-	$: if (asset.exifInfo?.latitude != null && asset.exifInfo?.longitude != null) {
-		drawMap(asset.exifInfo.latitude, asset.exifInfo.longitude);
-	}
-
 	export let albums: AlbumResponseDto[] = [];
 
-	onMount(async () => {
-		if (browser) {
-			if (asset.exifInfo?.latitude != null && asset.exifInfo?.longitude != null) {
-				await drawMap(asset.exifInfo.latitude, asset.exifInfo.longitude);
-			}
+	$: latlng = (() => {
+		const lat = asset.exifInfo?.latitude;
+		const lng = asset.exifInfo?.longitude;
+
+		if (lat && lng) {
+			return [lat, lng] as LatLngTuple;
 		}
-	});
-
-	async function drawMap(lat: number, lon: number) {
-		if (!leaflet) {
-			leaflet = await import('leaflet');
-		}
-
-		if (!map) {
-			map = leaflet.map('map');
-			leaflet
-				.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-				})
-				.addTo(map);
-		}
-
-		if (marker) {
-			map.removeLayer(marker);
-		}
-
-		map.setView([lat || 0, lon || 0], 17);
-
-		marker = leaflet.marker([lat || 0, lon || 0]);
-		marker.bindPopup(`${(lat || 0).toFixed(7)},${(lon || 0).toFixed(7)}`);
-		map.addLayer(marker);
-	}
+	})();
 
 	const dispatch = createEventDispatcher();
 
@@ -186,9 +152,19 @@
 	</div>
 </section>
 
-<div class={`${asset.exifInfo?.latitude ? 'visible' : 'hidden'}`}>
-	<div class="h-[360px] w-full" id="map" />
-</div>
+{#if latlng}
+	<div class="h-[360px]">
+		<Map {latlng} zoom={14}>
+			<TileLayer
+				urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
+				options={{
+					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+				}}
+			/>
+			<Marker {latlng} popupContent="{latlng[0].toFixed(7)},{latlng[1].toFixed(7)}" />
+		</Map>
+	</div>
+{/if}
 
 <section class="p-2 dark:text-immich-dark-fg">
 	<div class="px-4 py-4">
@@ -225,7 +201,3 @@
 		{/each}
 	</div>
 </section>
-
-<style>
-	@import 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css';
-</style>
