@@ -8,6 +8,8 @@ import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_thumbnail_card.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 
 class LibraryPage extends HookConsumerWidget {
   const LibraryPage({Key? key}) : super(key: key);
@@ -16,6 +18,7 @@ class LibraryPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final albums = ref.watch(albumProvider);
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    var settings = ref.watch(appSettingsServiceProvider);
 
     useEffect(
       () {
@@ -40,7 +43,7 @@ class LibraryPage extends HookConsumerWidget {
       );
     }
 
-    final selectedAlbumSortOrder = useState(0);
+    final selectedAlbumSortOrder = useState(settings.getSetting(AppSettingsEnum.selectedAlbumSortOrder));
 
     List<Album> sortedAlbums() {
       if (selectedAlbumSortOrder.value == 0) {
@@ -91,6 +94,7 @@ class LibraryPage extends HookConsumerWidget {
         },
         onSelected: (int value) {
           selectedAlbumSortOrder.value = value;
+          settings.setSetting(AppSettingsEnum.selectedAlbumSortOrder, value);
         },
         child: Row(
           children: [
