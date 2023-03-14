@@ -5,44 +5,33 @@
 	import type { PageData } from './$types';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import ImageOffOutline from 'svelte-material-icons/ImageOffOutline.svelte';
-	import { afterNavigate, goto } from '$app/navigation';
+	import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
 
 	export let data: PageData;
-	const term = $page.url.searchParams.get('q') || data.term || '';
-
-	let goBackRoute = '/explore';
-	afterNavigate((r) => {
-		if (r.from) {
-			goBackRoute = r.from.url.href;
-		}
-	});
+	$: term = $page.url.searchParams.get('q') || data.term || '';
 </script>
 
 <section>
-	<ControlAppBar on:close-button-click={() => goto(goBackRoute)} backIcon={ArrowLeft}>
-		<svelte:fragment slot="leading">
-			<p class="text-xl capitalize">
-				Search
-				{#if term}
-					- {term}
-				{/if}
-			</p>
-		</svelte:fragment>
+	<ControlAppBar on:close-button-click={() => history.back()} backIcon={ArrowLeft}>
+		<div class="w-full max-w-2xl flex-1 pl-4">
+			<SearchBar grayTheme={false} value={term} replaceHistoryState={true} />
+		</div>
 	</ControlAppBar>
 </section>
 
-<section class="relative pt-[72px] h-screen bg-immich-bg  dark:bg-immich-dark-bg">
+<section class="relative pt-32 mb-12 bg-immich-bg dark:bg-immich-dark-bg">
 	<section class="overflow-y-auto relative immich-scrollbar">
-		<section
-			id="search-content"
-			class="relative pt-8 pl-4 mb-12 bg-immich-bg dark:bg-immich-dark-bg"
-		>
-			{#if data.results?.assets?.items.length != 0}
-				<GalleryViewer assets={data.results.assets.items} />
+		<section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
+			{#if data.results?.assets?.items.length > 0}
+				<div class="pl-4">
+					<GalleryViewer assets={data.results.assets.items} />
+				</div>
 			{:else}
-				<div class="w-full text-center dark:text-white ">
-					<div class="mt-60 flex flex-col place-content-center place-items-center">
-						<ImageOffOutline size="56" />
+				<div
+					class="flex items-center place-content-center w-full min-h-[calc(100vh_-_11rem)] dark:text-white"
+				>
+					<div class="flex flex-col content-center items-center text-center">
+						<ImageOffOutline size="3.5em" />
 						<p class="font-medium text-3xl mt-5">No results</p>
 						<p class="text-base font-normal">Try a synonym or more general keyword</p>
 					</div>

@@ -9,5 +9,11 @@ export const load = (async ({ locals, parent }) => {
 
 	const { data: items } = await locals.api.searchApi.getExploreData();
 
-	return { user, items };
+	return {
+		user,
+		items,
+		meta: {
+			title: 'Explore'
+		}
+	};
 }) satisfies PageServerLoad;

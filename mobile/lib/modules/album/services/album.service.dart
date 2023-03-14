@@ -211,7 +211,11 @@ class AlbumService {
       if (result != null) {
         album.sharedUsers
             .addAll((await _db.users.getAllById(sharedUserIds)).cast());
-        await _db.writeTxn(() => album.sharedUsers.save());
+        album.shared = result.shared;
+        await _db.writeTxn(() async {
+          await _db.albums.put(album);
+          await album.sharedUsers.save();
+        });
         return true;
       }
     } catch (e) {

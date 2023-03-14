@@ -23,5 +23,13 @@ export const load = (async ({ locals, parent, url }) => {
 		undefined,
 		{ params: url.searchParams }
 	);
-	return { user, term, results };
+
+	return {
+		user,
+		term,
+		results,
+		meta: {
+			title: 'Search'
+		}
+	};
 }) satisfies PageServerLoad;
