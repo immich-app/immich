@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
@@ -145,7 +147,14 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     required String serverUrl,
   }) async {
     _apiService.setAccessToken(accessToken);
-    var userResponseDto = await _apiService.userApi.getMyUserInfo();
+    UserResponseDto? userResponseDto;
+    try {
+      userResponseDto = await _apiService.userApi.getMyUserInfo();
+    } on ApiException catch (e) {
+      if (e.innerException is SocketException) {
+        state = state.copyWith(isAuthenticated: true);
+      }
+    }
 
     if (userResponseDto != null) {
       var userInfoHiveBox = await Hive.openBox(userInfoBox);
@@ -200,7 +209,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       state = state.copyWith(deviceInfo: deviceInfo);
     } catch (e) {
       debugPrint("ERROR Register Device Info: $e");
-      return false;
+      return e is ApiException && e.innerException is SocketException;
     }
 
     return true;

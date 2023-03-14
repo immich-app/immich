@@ -29,16 +29,15 @@ class SplashScreenPage extends HookConsumerWidget {
         try {
           // Resolve API server endpoint from user provided serverUrl
           await apiService.resolveAndSetEndpoint(loginInfo.serverUrl);
-
-          isSuccess = await ref
-              .read(authenticationProvider.notifier)
-              .setSuccessLoginInfo(
-                accessToken: loginInfo.accessToken,
-                serverUrl: loginInfo.serverUrl,
-              );
-        } on ApiException catch (e) {
-          isSuccess = e.innerException is SocketException;
+        } catch (e) {
+          // okay, try to continue anyway if offline
         }
+
+        isSuccess =
+            await ref.read(authenticationProvider.notifier).setSuccessLoginInfo(
+                  accessToken: loginInfo.accessToken,
+                  serverUrl: loginInfo.serverUrl,
+                );
       }
       if (isSuccess) {
         final hasPermission =
