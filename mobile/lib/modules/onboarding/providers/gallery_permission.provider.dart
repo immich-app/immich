@@ -48,11 +48,14 @@ class GalleryPermissionNotifier extends StateNotifier<PermissionStatus> {
         state = status;
         return status;
       }
-    } else {
+    } else if (Platform.isIOS) {
       // iOS can use photos
       final photos = await Permission.photos.request();
       state = photos;
       return photos;
+    } else {
+      state = PermissionStatus.granted;
+      return state;
     }
   }
 
@@ -87,11 +90,14 @@ class GalleryPermissionNotifier extends StateNotifier<PermissionStatus> {
         state = status;
         return status;
       }
-    } else {
+    } else if (Platform.isIOS) {
       // iOS can use photos
       final photos = await Permission.photos.status;
       state = photos;
       return photos;
+    } else {
+      state = PermissionStatus.granted;
+      return state;
     }
   }
 }

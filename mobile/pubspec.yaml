@@ -47,6 +47,8 @@ dependencies:
   isar_flutter_libs: *isar_version # contains Isar Core
   permission_handler: ^10.2.0
   device_info_plus: ^8.1.0
+  saf: ^1.0.3+4
+  platform_device_id: ^1.0.1
 
   openapi:
     path: openapi

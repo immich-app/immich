@@ -26,12 +26,14 @@ class DeviceTypeEnum {
   static const IOS = DeviceTypeEnum._(r'IOS');
   static const ANDROID = DeviceTypeEnum._(r'ANDROID');
   static const WEB = DeviceTypeEnum._(r'WEB');
+  static const LINUX = DeviceTypeEnum._(r'LINUX');
 
   /// List of all possible values in this [enum][DeviceTypeEnum].
   static const values = <DeviceTypeEnum>[
     IOS,
     ANDROID,
     WEB,
+    LINUX,
   ];
 
   static DeviceTypeEnum? fromJson(dynamic value) => DeviceTypeEnumTypeTransformer().decode(value);
@@ -73,6 +75,7 @@ class DeviceTypeEnumTypeTransformer {
         case r'IOS': return DeviceTypeEnum.IOS;
         case r'ANDROID': return DeviceTypeEnum.ANDROID;
         case r'WEB': return DeviceTypeEnum.WEB;
+        case r'LINUX': return DeviceTypeEnum.LINUX;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
