@@ -1,7 +1,6 @@
 <script lang="ts">
+	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import ImmichThumbnail from '$lib/components/shared-components/immich-thumbnail.svelte';
-	import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
-	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import { AppRoute } from '$lib/constants';
 	import { AssetTypeEnum, SearchExploreItem } from '@api';
 	import ClockOutline from 'svelte-material-icons/ClockOutline.svelte';
@@ -39,135 +38,109 @@
 	places = places.slice(0, MAX_ITEMS);
 </script>
 
-<section>
-	<NavigationBar user={data.user} shouldShowUploadButton={false} />
-</section>
-
-<section
-	class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg dark:bg-immich-dark-bg"
->
-	<SideBar />
-
-	<section class="overflow-y-auto relative immich-scrollbar">
-		<section
-			id="album-content"
-			class="relative pt-8 pl-4 mb-12 bg-immich-bg dark:bg-immich-dark-bg"
-		>
-			<!-- Main Section -->
-			<div class="px-4 flex justify-between place-items-center dark:text-immich-dark-fg">
+<UserPageLayout user={data.user} title={data.meta.title}>
+	<div class="mx-4 flex flex-col">
+		{#if places.length > 0}
+			<div class="mb-6 mt-2">
 				<div>
-					<p class="font-medium">Explore</p>
+					<p class="mb-4 dark:text-immich-dark-fg font-medium">Places</p>
 				</div>
-			</div>
-
-			<div class="my-4">
-				<hr class="dark:border-immich-dark-gray" />
-			</div>
-
-			<div class="mx-4 flex flex-col">
-				{#if places.length > 0}
-					<div class="mb-6 mt-2">
-						<div>
-							<p class="mb-4 dark:text-immich-dark-fg font-medium">Places</p>
-						</div>
-						<div class="flex flex-row flex-wrap gap-4">
-							{#each places as item}
-								<a class="relative" href="/search?{Field.CITY}={item.value}" draggable="false">
-									<div class="filter brightness-75 rounded-xl overflow-hidden">
-										<ImmichThumbnail
-											isRoundedCorner={true}
-											thumbnailSize={156}
-											asset={item.data}
-											readonly={true}
-										/>
-									</div>
-									<span
-										class="capitalize absolute bottom-2 w-full text-center text-sm font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
-									>
-										{item.value}
-									</span>
-								</a>
-							{/each}
-						</div>
-					</div>
-				{/if}
-
-				{#if things.length > 0}
-					<div class="mb-6 mt-2">
-						<div>
-							<p class="mb-4 dark:text-immich-dark-fg font-medium">Things</p>
-						</div>
-						<div class="flex flex-row flex-wrap gap-4">
-							{#each things as item}
-								<a class="relative" href="/search?{Field.OBJECTS}={item.value}" draggable="false">
-									<div class="filter brightness-75 rounded-xl overflow-hidden">
-										<ImmichThumbnail
-											isRoundedCorner={true}
-											thumbnailSize={156}
-											asset={item.data}
-											readonly={true}
-										/>
-									</div>
-									<span
-										class="capitalize absolute bottom-2 w-full text-center text-sm font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
-									>
-										{item.value}
-									</span>
-								</a>
-							{/each}
-						</div>
-					</div>
-				{/if}
-
-				<hr class="dark:border-immich-dark-gray mb-4" />
-
-				<div
-					class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8"
-				>
-					<div class="flex flex-col gap-6 dark:text-immich-dark-fg">
-						<p class="text-sm">YOUR ACTIVITY</p>
-						<div class="flex flex-col gap-4 dark:text-immich-dark-fg/80">
-							<a
-								href={AppRoute.FAVORITES}
-								class="w-full flex text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary content-center gap-2"
-								draggable="false"
-							>
-								<StarOutline size={24} />
-								<span>Favorites</span>
-							</a>
-							<a
-								href="/search?recent=true"
-								class="w-full flex text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary content-center gap-2"
-								draggable="false"
-							>
-								<ClockOutline size={24} />
-								<span>Recently added</span>
-							</a>
-						</div>
-					</div>
-					<div class="flex flex-col gap-6 dark:text-immich-dark-fg">
-						<p class="text-sm">CATEGORIES</p>
-						<div class="flex flex-col gap-4 dark:text-immich-dark-fg/80">
-							<a
-								href="/search?type={AssetTypeEnum.Video}"
-								class="w-full flex text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary items-center gap-2"
-							>
-								<PlayCircleOutline size={24} />
-								<span>Videos</span>
-							</a>
-							<div>
-								<a
-									href="/search?motion=true"
-									class="w-full flex text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary items-center gap-2"
-								>
-									<MotionPlayOutline size={24} />
-									<span>Motion photos</span>
-								</a>
+				<div class="flex flex-row flex-wrap gap-4">
+					{#each places as item}
+						<a class="relative" href="/search?{Field.CITY}={item.value}" draggable="false">
+							<div class="filter brightness-75 rounded-xl overflow-hidden">
+								<ImmichThumbnail
+									isRoundedCorner={true}
+									thumbnailSize={156}
+									asset={item.data}
+									readonly={true}
+								/>
 							</div>
-						</div>
+							<span
+								class="capitalize absolute bottom-2 w-full text-center text-sm font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
+							>
+								{item.value}
+							</span>
+						</a>
+					{/each}
+				</div>
+			</div>
+		{/if}
+
+		{#if things.length > 0}
+			<div class="mb-6 mt-2">
+				<div>
+					<p class="mb-4 dark:text-immich-dark-fg font-medium">Things</p>
+				</div>
+				<div class="flex flex-row flex-wrap gap-4">
+					{#each things as item}
+						<a class="relative" href="/search?{Field.OBJECTS}={item.value}" draggable="false">
+							<div class="filter brightness-75 rounded-xl overflow-hidden">
+								<ImmichThumbnail
+									isRoundedCorner={true}
+									thumbnailSize={156}
+									asset={item.data}
+									readonly={true}
+								/>
+							</div>
+							<span
+								class="capitalize absolute bottom-2 w-full text-center text-sm font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
+							>
+								{item.value}
+							</span>
+						</a>
+					{/each}
+				</div>
+			</div>
+		{/if}
+
+		<hr class="dark:border-immich-dark-gray mb-4" />
+
+		<div
+			class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8"
+		>
+			<div class="flex flex-col gap-6 dark:text-immich-dark-fg">
+				<p class="text-sm">YOUR ACTIVITY</p>
+				<div class="flex flex-col gap-4 dark:text-immich-dark-fg/80">
+					<a
+						href={AppRoute.FAVORITES}
+						class="w-full flex text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary content-center gap-2"
+						draggable="false"
+					>
+						<StarOutline size={24} />
+						<span>Favorites</span>
+					</a>
+					<a
+						href="/search?recent=true"
+						class="w-full flex text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary content-center gap-2"
+						draggable="false"
+					>
+						<ClockOutline size={24} />
+						<span>Recently added</span>
+					</a>
+				</div>
+			</div>
+			<div class="flex flex-col gap-6 dark:text-immich-dark-fg">
+				<p class="text-sm">CATEGORIES</p>
+				<div class="flex flex-col gap-4 dark:text-immich-dark-fg/80">
+					<a
+						href="/search?type={AssetTypeEnum.Video}"
+						class="w-full flex text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary items-center gap-2"
+					>
+						<PlayCircleOutline size={24} />
+						<span>Videos</span>
+					</a>
+					<div>
+						<a
+							href="/search?motion=true"
+							class="w-full flex text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary items-center gap-2"
+						>
+							<MotionPlayOutline size={24} />
+							<span>Motion photos</span>
+						</a>
 					</div>
 				</div>
 			</div>
-		</section>
-	</section>
-</section>
+		</div>
+	</div>
+</UserPageLayout>

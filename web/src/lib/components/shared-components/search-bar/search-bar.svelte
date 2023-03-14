@@ -24,7 +24,7 @@
 
 <form
 	autocomplete="off"
-	class="relative text-base"
+	class="relative text-sm"
 	action={AppRoute.SEARCH}
 	on:reset={() => (value = '')}
 	on:submit|preventDefault={onSearch}

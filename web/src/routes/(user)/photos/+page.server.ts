@@ -1,21 +1,16 @@
 import type { PageServerLoad } from './$types';
-import { redirect, error } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
+import { AppRoute } from '$lib/constants';
 
-export const load: PageServerLoad = async ({ parent }) => {
-	try {
-		const { user } = await parent();
-		if (!user) {
-			throw error(400, 'Not logged in');
-		}
-
-		return {
-			user,
-			meta: {
-				title: 'Photos'
-			}
-		};
-	} catch (e) {
-		console.log('Photo page load error', e);
-		throw redirect(302, '/auth/login');
+export const load = (async ({ locals: { user } }) => {
+	if (!user) {
+		throw redirect(302, AppRoute.AUTH_LOGIN);
 	}
-};
+
+	return {
+		user,
+		meta: {
+			title: 'Photos'
+		}
+	};
+}) satisfies PageServerLoad;
