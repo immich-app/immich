@@ -181,14 +181,6 @@ describe(SearchService.name, () => {
       expect(searchMock.importAssets).toHaveBeenCalledWith([assetEntityStub.image], true);
     });
 
-    it('should not index an empty list', async () => {
-      assetMock.getAll.mockResolvedValue([]);
-
-      await sut.handleIndexAssets();
-
-      expect(searchMock.importAssets).not.toHaveBeenCalled();
-    });
-
     it('should log an error', async () => {
       assetMock.getAll.mockResolvedValue([assetEntityStub.image]);
       searchMock.importAssets.mockRejectedValue(new Error('import failed'));
@@ -226,14 +218,6 @@ describe(SearchService.name, () => {
       configMock.get.mockReturnValue('false');
       const sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
       sut.handleIndexAlbums();
-    });
-
-    it('should not index an empty list', async () => {
-      albumMock.getAll.mockResolvedValue([]);
-
-      await sut.handleIndexAlbums();
-
-      expect(searchMock.importAlbums).not.toHaveBeenCalled();
     });
 
     it('should index all the albums', async () => {

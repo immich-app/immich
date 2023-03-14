@@ -131,10 +131,8 @@ export class SearchService {
 
     try {
       const albums = this.patchAlbums(await this.albumRepository.getAll());
-      if (albums.length > 0) {
-        this.logger.log(`Indexing ${albums.length} albums`);
-        await this.searchRepository.importAlbums(albums, true);
-      }
+      this.logger.log(`Indexing ${albums.length} albums`);
+      await this.searchRepository.importAlbums(albums, true);
     } catch (error: any) {
       this.logger.error(`Unable to index all albums`, error?.stack);
     }
@@ -148,11 +146,9 @@ export class SearchService {
     try {
       // TODO: do this in batches based on searchIndexVersion
       const assets = this.patchAssets(await this.assetRepository.getAll({ isVisible: true }));
-      if (assets.length > 0) {
-        this.logger.log(`Indexing ${assets.length} assets`);
-        await this.searchRepository.importAssets(assets, true);
-        this.logger.debug('Finished re-indexing all assets');
-      }
+      this.logger.log(`Indexing ${assets.length} assets`);
+      await this.searchRepository.importAssets(assets, true);
+      this.logger.debug('Finished re-indexing all assets');
     } catch (error: any) {
       this.logger.error(`Unable to index all assets`, error?.stack);
     }
