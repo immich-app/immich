@@ -209,16 +209,16 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     for (AssetPathEntity album in albums) {
       AvailableAlbum availableAlbum = AvailableAlbum(albumEntity: album);
 
-      var assetCountInAlbum = await album.assetCountAsync;
+      final assetCountInAlbum = await album.assetCountAsync;
       if (assetCountInAlbum > 0) {
-        var assetList =
+        final assetList =
             await album.getAssetListRange(start: 0, end: assetCountInAlbum);
 
         if (assetList.isNotEmpty) {
-          var thumbnailAsset = assetList.first;
+          final thumbnailAsset = assetList.first;
 
           try {
-            var thumbnailData = await thumbnailAsset
+            final thumbnailData = await thumbnailAsset
                 .thumbnailDataWithSize(const ThumbnailSize(512, 512));
             availableAlbum =
                 availableAlbum.copyWith(thumbnailData: thumbnailData);
@@ -247,7 +247,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       log.info("First time backup; setup 'Recent(s)' album as default");
 
       // Get album that contains all assets
-      var list = await PhotoManager.getAssetPathList(
+      final list = await PhotoManager.getAssetPathList(
         hasAll: true,
         onlyAll: true,
         type: RequestType.common,
@@ -268,17 +268,17 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     // Generate AssetPathEntity from id to add to local state
     try {
-      Set<AvailableAlbum> selectedAlbums = {};
-      for (BackupAlbum ba in selectedBackupAlbums) {
-        var albumAsset = await AssetPathEntity.fromId(ba.id);
+      final Set<AvailableAlbum> selectedAlbums = {};
+      for (final BackupAlbum ba in selectedBackupAlbums) {
+        final albumAsset = await AssetPathEntity.fromId(ba.id);
         selectedAlbums.add(
           AvailableAlbum(albumEntity: albumAsset, lastBackup: ba.lastBackup),
         );
       }
 
-      Set<AvailableAlbum> excludedAlbums = {};
-      for (BackupAlbum ba in excludedBackupAlbums) {
-        var albumAsset = await AssetPathEntity.fromId(ba.id);
+      final Set<AvailableAlbum> excludedAlbums = {};
+      for (final BackupAlbum ba in excludedBackupAlbums) {
+        final albumAsset = await AssetPathEntity.fromId(ba.id);
         excludedAlbums.add(
           AvailableAlbum(albumEntity: albumAsset, lastBackup: ba.lastBackup),
         );
@@ -301,35 +301,35 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   ///
   Future<void> _updateBackupAssetCount() async {
     final duplicatedAssetIds = await _backupService.getDuplicatedAssetIds();
-    Set<AssetEntity> assetsFromSelectedAlbums = {};
-    Set<AssetEntity> assetsFromExcludedAlbums = {};
+    final Set<AssetEntity> assetsFromSelectedAlbums = {};
+    final Set<AssetEntity> assetsFromExcludedAlbums = {};
 
-    for (var album in state.selectedBackupAlbums) {
-      var assets = await album.albumEntity.getAssetListRange(
+    for (final album in state.selectedBackupAlbums) {
+      final assets = await album.albumEntity.getAssetListRange(
         start: 0,
         end: await album.albumEntity.assetCountAsync,
       );
       assetsFromSelectedAlbums.addAll(assets);
     }
 
-    for (var album in state.excludedBackupAlbums) {
-      var assets = await album.albumEntity.getAssetListRange(
+    for (final album in state.excludedBackupAlbums) {
+      final assets = await album.albumEntity.getAssetListRange(
         start: 0,
         end: await album.albumEntity.assetCountAsync,
       );
       assetsFromExcludedAlbums.addAll(assets);
     }
 
-    Set<AssetEntity> allUniqueAssets =
+    final Set<AssetEntity> allUniqueAssets =
         assetsFromSelectedAlbums.difference(assetsFromExcludedAlbums);
-    var allAssetsInDatabase = await _backupService.getDeviceBackupAsset();
+    final allAssetsInDatabase = await _backupService.getDeviceBackupAsset();
 
     if (allAssetsInDatabase == null) {
       return;
     }
 
     // Find asset that were backup from selected albums
-    Set<String> selectedAlbumsBackupAssets =
+    final Set<String> selectedAlbumsBackupAssets =
         Set.from(allUniqueAssets.map((e) => e.id));
 
     selectedAlbumsBackupAssets
@@ -367,7 +367,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// which albums are selected or excluded
   /// and then update the UI according to those information
   Future<void> getBackupInfo() async {
-    var isEnabled = await _backgroundService.isBackgroundBackupEnabled();
+    final isEnabled = await _backgroundService.isBackgroundBackupEnabled();
 
     state = state.copyWith(backgroundBackup: isEnabled);
 
@@ -432,7 +432,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       Set<AssetEntity> assetsWillBeBackup = Set.from(state.allUniqueAssets);
       // Remove item that has already been backed up
-      for (var assetId in state.allAssetsInDatabase) {
+      for (final assetId in state.allAssetsInDatabase) {
         assetsWillBeBackup.removeWhere((e) => e.id == assetId);
       }
 
@@ -532,7 +532,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   Future<void> _updateServerInfo() async {
-    var serverInfo = await _serverInfoService.getServerInfo();
+    final serverInfo = await _serverInfoService.getServerInfo();
 
     // Update server info
     if (serverInfo != null) {
@@ -544,7 +544,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
   Future<void> _resumeBackup() async {
     // Check if user is login
-    var accessKey = Hive.box(userInfoBox).get(accessTokenKey);
+    final accessKey = Hive.box(userInfoBox).get(accessTokenKey);
 
     // User has been logged out return
     if (accessKey == null || !_authState.isAuthenticated) {
