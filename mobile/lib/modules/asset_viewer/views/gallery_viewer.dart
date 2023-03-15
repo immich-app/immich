@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -438,12 +439,6 @@ class GalleryViewerPage extends HookConsumerWidget {
                 }
               },
             ),
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: buildAppBar(),
-            ),
             if (Platform.isLinux)
               CallbackShortcuts(
                 bindings: {
@@ -457,6 +452,8 @@ class GalleryViewerPage extends HookConsumerWidget {
                       duration: const Duration(milliseconds: 200),
                       curve: Curves.easeInOutCubic,
                     ),
+                  const SingleActivator(LogicalKeyboardKey.escape): 
+                    () => isZoomed.value = false,
                 },
                 child: Center(
                   child: Row(
@@ -501,6 +498,13 @@ class GalleryViewerPage extends HookConsumerWidget {
                   ),
                 ),
               ),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: buildAppBar(),
+            ),
+
           ],
         ),
       ),
