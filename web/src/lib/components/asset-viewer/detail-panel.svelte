@@ -8,9 +8,6 @@
 	import { AssetResponseDto, AlbumResponseDto } from '@api';
 	import { asByteUnitString } from '../../utils/byte-units';
 	import { locale } from '$lib/stores/preferences.store';
-	import Map from '../shared-components/leaflet/map.svelte';
-	import TileLayer from '../shared-components/leaflet/tile-layer.svelte';
-	import Marker from '../shared-components/leaflet/marker.svelte';
 	import type { LatLngTuple } from 'leaflet';
 
 	export let asset: AssetResponseDto;
@@ -154,15 +151,18 @@
 
 {#if latlng}
 	<div class="h-[360px]">
-		<Map {latlng} zoom={14}>
-			<TileLayer
-				urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
-				options={{
-					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-				}}
-			/>
-			<Marker {latlng} popupContent="{latlng[0].toFixed(7)},{latlng[1].toFixed(7)}" />
-		</Map>
+		{#await import('../shared-components/leaflet') then { Map, TileLayer, Marker }}
+			<Map {latlng} zoom={14}>
+				<TileLayer
+					urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
+					options={{
+						attribution:
+							'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+					}}
+				/>
+				<Marker {latlng} popupContent="{latlng[0].toFixed(7)},{latlng[1].toFixed(7)}" />
+			</Map>
+		{/await}
 	</div>
 {/if}
 
