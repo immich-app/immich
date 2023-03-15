@@ -1,6 +1,5 @@
 import 'package:flutter_udid/flutter_udid.dart';
 import 'dart:io' show Platform;
-import 'package:platform_device_id/platform_device_id.dart';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:openapi/api.dart';
