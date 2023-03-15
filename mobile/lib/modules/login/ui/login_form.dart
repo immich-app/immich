@@ -57,13 +57,13 @@ class LoginForm extends HookConsumerWidget {
           msg: "login_form_server_empty".tr(),
           toastType: ToastType.error,
         );
- 
+
         return false;
       }
 
       try {
         isLoadingServer.value = true;
-        final endpoint = 
+        final endpoint =
             await apiService.resolveAndSetEndpoint(serverUrl);
 
         final loginConfig = await apiService.oAuthApi.generateConfig(
@@ -96,7 +96,7 @@ class LoginForm extends HookConsumerWidget {
         isOauthEnable.value = false;
         isLoadingServer.value = false;
         return false;
-      } 
+      }
 
       isLoadingServer.value = false;
       return true;
@@ -166,7 +166,6 @@ class LoginForm extends HookConsumerWidget {
       }
     }
 
-
     oAuthLogin() async {
       var oAuthService = ref.watch(oAuthServiceProvider);
       ref.watch(assetProvider.notifier).clearAllAsset();
@@ -230,151 +229,153 @@ class LoginForm extends HookConsumerWidget {
     }
 
     buildSelectServer() {
-      return ConstrainedBox(
-        key: const ValueKey('server'),
-        constraints: const BoxConstraints(maxWidth: 300),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ServerEndpointInput(
+            controller: serverEndpointController,
+            focusNode: serverEndpointFocusNode,
+            onSubmit: getServerLoginCredential,
+          ),
+          const SizedBox(height: 18),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+            onPressed: isLoadingServer.value ? null : getServerLoginCredential,
+            icon: const Icon(Icons.arrow_forward_rounded),
+            label: const Text(
+              'login_form_next_button',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ).tr(),
+          ),
+          if (isLoadingServer.value)
+            const Padding(
+              padding: EdgeInsets.only(top: 18.0),
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+        ],
+      );
+    }
+
+    buildLogin() {
+      return AutofillGroup(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ServerEndpointInput(
-              controller: serverEndpointController,
-              focusNode: serverEndpointFocusNode,
-              onSubmit: getServerLoginCredential,
+            Text(
+              serverEndpointController.text,
+              style: Theme.of(context).textTheme.displaySmall,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 18),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-              onPressed: isLoadingServer.value ? null : getServerLoginCredential,
-              icon: const Icon(Icons.arrow_forward_rounded),
-              label: const Text(
-                'Next',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ).tr(),
+            EmailInput(
+              controller: usernameController,
+              focusNode: emailFocusNode,
+              onSubmit: passwordFocusNode.requestFocus,
             ),
-            if (isLoadingServer.value)
-              const Padding(
-                padding: EdgeInsets.only(top: 18.0),
-                child: Center(
-                  child: CircularProgressIndicator(),
+            const SizedBox(height: 8),
+            PasswordInput(
+              controller: passwordController,
+              focusNode: passwordFocusNode,
+              onSubmit: login,
+            ),
+
+          // Note: This used to have an AnimatedSwitcher, but was removed
+          // because of https://github.com/flutter/flutter/issues/120874
+          isLoading.value
+              ? const Padding(
+                  padding: EdgeInsets.only(top: 18.0),
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: FittedBox(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                    ),
+                  ),
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 18),
+                    LoginButton(onPressed: login),
+                    if (isOauthEnable.value) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                        ),
+                        child: Divider(
+                          color:
+                              Brightness.dark == Theme.of(context).brightness
+                                  ? Colors.white
+                                  : Colors.black,
+                        ),
+                      ),
+                      OAuthLoginButton(
+                        serverEndpointController: serverEndpointController,
+                        buttonLabel: oAuthButtonLabel.value,
+                        isLoading: isLoading,
+                        onPressed: oAuthLogin,
+                      ),
+                    ],
+                  ],
                 ),
+              const SizedBox(height: 12),
+              TextButton.icon(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => serverEndpoint.value = null,
+                label: const Text('Back'),
               ),
           ],
         ),
       );
     }
-
-    buildLogin() {
-      return ConstrainedBox(
-        key: const ValueKey('login'),
-        constraints: const BoxConstraints(maxWidth: 300),
-        child: AutofillGroup(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                serverEndpointController.text,
-                style: Theme.of(context).textTheme.displaySmall,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 18),
-              EmailInput(
-                controller: usernameController,
-                focusNode: emailFocusNode,
-                onSubmit: passwordFocusNode.requestFocus,
-              ),
-              const SizedBox(height: 8),
-              PasswordInput(
-                controller: passwordController,
-                focusNode: passwordFocusNode,
-                onSubmit: login,
-              ),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 500),
-                child: isLoading.value 
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 18),
-                        LoginButton(onPressed: login),
-                        if (isOauthEnable.value) ...[
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0,
-                            ),
-                            child: Divider(
-                              color:
-                                  Brightness.dark == Theme.of(context).brightness
-                                      ? Colors.white
-                                      : Colors.black,
-                            ),
-                          ),
-                          OAuthLoginButton(
-                            serverEndpointController: serverEndpointController,
-                            buttonLabel: oAuthButtonLabel.value,
-                            isLoading: isLoading,
-                            onPressed: oAuthLogin,
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                const SizedBox(height: 12),
-                TextButton.icon(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () => serverEndpoint.value = null,
-                  label: const Text('Back'),
-                ),
-            ],
-          ),
-        ),
-      );
-    }
-    final child = serverEndpoint.value == null 
+    final serverSelectionOrLogin = serverEndpoint.value == null
       ? buildSelectServer()
       : buildLogin();
 
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
-                height: constraints.maxHeight / 5,
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.end,
+          child: Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 300),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  GestureDetector(
-                    onDoubleTap: () => populateTestLoginInfo(),
-                    child: RotationTransition(
-                      turns: logoAnimationController,
-                      child: const ImmichLogo(
-                        heroTag: 'logo',
-                      ),
-                    ),
+                  SizedBox(
+                    height: constraints.maxHeight / 5,
                   ),
-                  const ImmichTitleText(),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      GestureDetector(
+                        onDoubleTap: () => populateTestLoginInfo(),
+                        child: RotationTransition(
+                          turns: logoAnimationController,
+                          child: const ImmichLogo(
+                            heroTag: 'logo',
+                          ),
+                        ),
+                      ),
+                      const ImmichTitleText(),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+
+                  // Note: This used to have an AnimatedSwitcher, but was removed
+                  // because of https://github.com/flutter/flutter/issues/120874
+                  serverSelectionOrLogin,
                 ],
               ),
-              const SizedBox(height: 18),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 500),
-                child: child, 
-              ),
-            ],
+            ),
           ),
         );
       },
@@ -386,7 +387,7 @@ class ServerEndpointInput extends StatelessWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
   final Function()? onSubmit;
-  
+
   const ServerEndpointInput({
     Key? key,
     required this.controller,
@@ -436,7 +437,7 @@ class EmailInput extends StatelessWidget {
   final Function()? onSubmit;
 
   const EmailInput({
-    Key? key, 
+    Key? key,
     required this.controller,
     this.focusNode,
     this.onSubmit,
@@ -480,8 +481,8 @@ class PasswordInput extends StatelessWidget {
 
   const PasswordInput({
     Key? key,
-    required this.controller, 
-    this.focusNode, 
+    required this.controller,
+    this.focusNode,
     this.onSubmit,
   }) : super(key: key);
 

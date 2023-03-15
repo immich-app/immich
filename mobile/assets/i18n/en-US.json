@@ -242,5 +242,6 @@
   "permission_onboarding_go_to_settings": "Go to settings",
   "permission_onboarding_permission_limited": "Permission limited. To let Immich backup and manage your entire gallery collection, grant photo and video permissions in Settings.",
   "permission_onboarding_continue_anyway": "Continue anyway",
-  "permission_onboarding_log_out": "Log out"
+  "permission_onboarding_log_out": "Log out",
+  "login_form_next_button": "Next"
 }
