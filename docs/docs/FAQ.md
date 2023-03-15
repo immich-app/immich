@@ -16,6 +16,10 @@ sidebar_position: 7
 
 Immich doesn't have the mechanism to sync an existing directory with the server. There is however, a helper CLI tool to help you bulk upload the existing photos and videos to the server. You can find the guide to use the CLI tool [here](/docs/features/bulk-upload.md).
 
+### Why does my uploaded photo show up with the wrong date in Immich?
+
+When a photo is initially uploaded Immich uses the create date of the file to determine where it belongs in the timeline. After that, background jobs will run that extract [exif metadata](https://en.wikipedia.org/wiki/Exif), including the CreateDate, to provide a more accurate date for the photo. If that is not available it will fallback to the modified date. If you want to ensure your photo has the right date, check the exif metadata before uploading. 
+
 ### Why doesn't Immich watch an existing photo gallery directory?
 
 The initial approach of Immich is to become a backup tool, primarily for mobile device usage. Thus, all the assets must be uploaded from the mobile client. The app was architectured to perform that job well.
