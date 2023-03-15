@@ -16,9 +16,29 @@ sidebar_position: 7
 
 Immich doesn't have the mechanism to sync an existing directory with the server. There is however, a helper CLI tool to help you bulk upload the existing photos and videos to the server. You can find the guide to use the CLI tool [here](/docs/features/bulk-upload.md).
 
-### Why does my uploaded photo show up with the wrong date in Immich?
+### Why does my uploaded photo show up with the wrong date or time in Immich?
 
 When a photo is initially uploaded Immich uses the create date of the file to determine where it belongs in the timeline. After that, background jobs will run that extract [exif metadata](https://en.wikipedia.org/wiki/Exif), including the CreateDate, to provide a more accurate date for the photo. If that is not available it will fallback to the modified date. If you want to ensure your photo has the right date, check the exif metadata before uploading. 
+
+If the timezone is incorrect in an uploaded photo, check the ``DateTimeOriginal`` exif field of the uploaded file. Immich uses the very competent library [exiftool-vendored.js](https://github.com/photostructure/exiftool-vendored.js#dates) to handle timezones parsing, but in some cases (like photos taken with DSLR cameras) it has to fallback on the local timezone. If you are using docker, this fallback will be UTC. (Note that even the photo backup app that can't be named [has the same bug!](https://photo.stackexchange.com/a/126978)) In Immich, it is possible to change this assumed fallback timezone system-wide by setting the timezone in the microservices docker container. Note that you then must delete and re-upload the affected assets. As an example, the following modification of ```docker-compose.yml``` will set the timezone to be ``Europe/Stockholm``
+
+```
+  immich-microservices:
+    container_name: immich_microservices
+    image: altran1502/immich-server:release
+    entrypoint: [ "/bin/sh", "./start-microservices.sh" ]
+    volumes:
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - TZ=Europe/Stockholm # <---- Change this to your local timezone
+    depends_on:
+      - redis
+      - database
+    restart: always
+```
 
 ### Why doesn't Immich watch an existing photo gallery directory?
 
