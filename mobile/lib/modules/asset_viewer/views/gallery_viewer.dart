@@ -444,9 +444,67 @@ class GalleryViewerPage extends HookConsumerWidget {
               right: 0,
               child: buildAppBar(),
             ),
+            if (Platform.isLinux)
+              CallbackShortcuts(
+                bindings: {
+                  const SingleActivator(LogicalKeyboardKey.arrowLeft): 
+                    () => controller.previousPage(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeInOutCubic,
+                    ),
+                  const SingleActivator(LogicalKeyboardKey.arrowRight): 
+                    () => controller.nextPage(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeInOutCubic,
+                    ),
+                },
+                child: Center(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: IconButton(
+                          hoverColor: Colors.transparent,
+                          icon: const Align(
+                            alignment: Alignment.centerLeft,
+                            child: Icon(
+                              Icons.navigate_before_outlined,
+                              size: 64,
+                            ),
+                          ),
+                          onPressed: () => controller.previousPage(
+                            duration: const Duration(milliseconds: 200),
+                            curve: Curves.easeInOutCubic,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        hoverColor: Colors.transparent,
+                        icon: SizedBox(
+                          height: MediaQuery.of(context).size.height,
+                          width: MediaQuery.of(context).size.width / 2,
+                          child: const Align(
+                            alignment: Alignment.centerRight,
+                            child: Icon(
+                              Icons.navigate_next_outlined,
+                              size: 64,
+                            ),
+                          ),
+                        ),
+                        onPressed: () => controller.nextPage(
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeInOutCubic,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
           ],
         ),
       ),
     );
   }
+
 }
