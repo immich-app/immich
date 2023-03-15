@@ -1,16 +1,22 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { fade } from 'svelte/transition';
-
 	import LoginForm from '$lib/components/forms/login-form.svelte';
+	import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
+	import { AppRoute } from '$lib/constants';
+	import { loginPageMessage } from '$lib/constants';
+	import type { PageData } from './$types';
+
+	export let data: PageData;
 </script>
 
-<section
-	class="min-h-screen w-screen flex place-items-center place-content-center p-4"
-	transition:fade={{ duration: 100 }}
->
+<FullscreenContainer title={data.meta.title} showMessage={!!loginPageMessage}>
+	<p slot="message">
+		{@html loginPageMessage}
+	</p>
+
 	<LoginForm
-		on:success={() => goto('/photos')}
-		on:first-login={() => goto('/auth/change-password')}
+		authConfig={data.authConfig}
+		on:success={() => goto(AppRoute.PHOTOS, { invalidateAll: true })}
+		on:first-login={() => goto(AppRoute.AUTH_CHANGE_PASSWORD)}
 	/>
-</section>
+</FullscreenContainer>
