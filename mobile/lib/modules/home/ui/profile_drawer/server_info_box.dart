@@ -106,7 +106,9 @@ class ServerInfoBox extends HookConsumerWidget {
                     ),
                   ),
                   Text(
-                    "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch_}",
+                    serverInfoState.serverVersion.major > 0
+                        ? "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch_}"
+                        : "?",
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.grey[500],

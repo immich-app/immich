@@ -101,6 +101,7 @@
   "common_change_password": "Change Password",
   "common_create_new_album": "Create new album",
   "common_shared": "Shared",
+  "common_server_error": "Please check your network connection, make sure the server is reachable and app/server versions are compatible.",
   "control_bottom_app_bar_add_to_album": "Add to album",
   "control_bottom_app_bar_album_info": "{} items",
   "control_bottom_app_bar_album_info_shared": "{} items · Shared",

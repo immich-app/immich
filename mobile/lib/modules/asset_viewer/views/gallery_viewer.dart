@@ -18,6 +18,7 @@ import 'package:immich_mobile/shared/services/asset.service.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/shared/ui/immich_image.dart';
 import 'package:immich_mobile/shared/ui/photo_view/photo_view_gallery.dart';
 import 'package:immich_mobile/shared/ui/photo_view/src/photo_view_computed_scale.dart';
 import 'package:immich_mobile/shared/ui/photo_view/src/photo_view_scale_state.dart';
@@ -38,8 +39,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     super.key,
     required this.assetList,
     required this.asset,
-  }) : controller =
-      PageController(initialPage: assetList.indexOf(asset));
+  }) : controller = PageController(initialPage: assetList.indexOf(asset));
 
   Asset? assetDetail;
 
@@ -139,12 +139,16 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     void precacheNextImage(int index) {
-      if (index < assetList.length && index > 0) {
+      if (index < assetList.length && index >= 0) {
         final asset = assetList[index];
+
         if (asset.isLocal) {
           // Preload the local asset
           precacheImage(localImageProvider(asset), context);
         } else {
+          onError(Object exception, StackTrace? stackTrace) {
+            // swallow error silently
+          }
           // Probably load WEBP either way
           precacheImage(
             remoteThumbnailImageProvider(
@@ -152,6 +156,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               api.ThumbnailFormat.WEBP,
             ),
             context,
+            onError: onError,
           );
           if (isLoadPreview.value) {
             // Precache the JPEG thumbnail
@@ -161,6 +166,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 api.ThumbnailFormat.JPEG,
               ),
               context,
+              onError: onError,
             );
           }
           if (isLoadOriginal.value) {
@@ -168,6 +174,7 @@ class GalleryViewerPage extends HookConsumerWidget {
             precacheImage(
               originalImageProvider(asset),
               context,
+              onError: onError,
             );
           }
         }
@@ -350,27 +357,37 @@ class GalleryViewerPage extends HookConsumerWidget {
                             type: api.ThumbnailFormat.WEBP,
                           ),
                           httpHeaders: {'Authorization': authToken},
-                          progressIndicatorBuilder: (_, __, ___) => const Center(
+                          progressIndicatorBuilder: (_, __, ___) =>
+                              const Center(
                             child: ImmichLoadingIndicator(),
                           ),
                           fadeInDuration: const Duration(milliseconds: 0),
                           fit: BoxFit.contain,
+                          errorWidget: (context, url, error) =>
+                              const Icon(Icons.image_not_supported_outlined),
                         );
 
-                        return CachedNetworkImage(
-                          imageUrl: getThumbnailUrl(
-                            asset,
-                            type: api.ThumbnailFormat.JPEG,
-                          ),
-                          cacheKey: getThumbnailCacheKey(
-                            asset,
-                            type: api.ThumbnailFormat.JPEG,
-                          ),
-                          httpHeaders: {'Authorization': authToken},
-                          fit: BoxFit.contain,
-                          fadeInDuration: const Duration(milliseconds: 0),
-                          placeholder: (_, __) => webPThumbnail,
-                        );
+                        if (isLoadOriginal.value) {
+                          // loading the preview in the loadingBuilder only
+                          // makes sense if the original is loaded in the builder
+                          return CachedNetworkImage(
+                            imageUrl: getThumbnailUrl(
+                              asset,
+                              type: api.ThumbnailFormat.JPEG,
+                            ),
+                            cacheKey: getThumbnailCacheKey(
+                              asset,
+                              type: api.ThumbnailFormat.JPEG,
+                            ),
+                            httpHeaders: {'Authorization': authToken},
+                            fit: BoxFit.contain,
+                            fadeInDuration: const Duration(milliseconds: 0),
+                            placeholder: (_, __) => webPThumbnail,
+                            errorWidget: (_, __, ___) => webPThumbnail,
+                          );
+                        } else {
+                          return webPThumbnail;
+                        }
                       } else {
                         return Image(
                           image: localThumbnailImageProvider(asset),
@@ -389,17 +406,23 @@ class GalleryViewerPage extends HookConsumerWidget {
                   } else {
                     if (isLoadOriginal.value) {
                       provider = originalImageProvider(assetList[index]);
-                    } else {
+                    } else if (isLoadPreview.value) {
                       provider = remoteThumbnailImageProvider(
                         assetList[index],
                         api.ThumbnailFormat.JPEG,
+                      );
+                    } else {
+                      provider = remoteThumbnailImageProvider(
+                        assetList[index],
+                        api.ThumbnailFormat.WEBP,
                       );
                     }
                   }
                   return PhotoViewGalleryPageOptions(
                     onDragStart: (_, details, __) =>
                         localPosition = details.localPosition,
-                    onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
+                    onDragUpdate: (_, details, __) =>
+                        handleSwipeUpDown(details),
                     onTapDown: (_, __, ___) =>
                         showAppBar.value = !showAppBar.value,
                     imageProvider: provider,
@@ -409,12 +432,17 @@ class GalleryViewerPage extends HookConsumerWidget {
                     filterQuality: FilterQuality.high,
                     tightMode: true,
                     minScale: PhotoViewComputedScale.contained,
+                    errorBuilder: (context, error, stackTrace) => ImmichImage(
+                      assetList[indexOfAsset.value],
+                      fit: BoxFit.contain,
+                    ),
                   );
                 } else {
                   return PhotoViewGalleryPageOptions.customChild(
                     onDragStart: (_, details, __) =>
                         localPosition = details.localPosition,
-                    onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
+                    onDragUpdate: (_, details, __) =>
+                        handleSwipeUpDown(details),
                     heroAttributes: PhotoViewHeroAttributes(
                       tag: assetList[index].id,
                     ),

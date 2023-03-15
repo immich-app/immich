@@ -40,6 +40,8 @@ class ProfileDrawerHeader extends HookConsumerWidget {
             image:
                 '$endpoint/user/profile-image/${authState.userId}?d=${dummy++}',
             fadeInDuration: const Duration(milliseconds: 200),
+            imageErrorBuilder: (context, error, stackTrace) =>
+                Image.memory(kTransparentImage),
           ),
         ),
       );
