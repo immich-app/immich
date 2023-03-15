@@ -13,7 +13,14 @@
 	const defaultIcon = new Icon({
 		iconUrl,
 		iconRetinaUrl,
-		shadowUrl
+		shadowUrl,
+
+		// Default values from Leaflet
+		iconSize: [25, 41],
+		iconAnchor: [12, 41],
+		popupAnchor: [1, -34],
+		tooltipAnchor: [16, -28],
+		shadowSize: [41, 41]
 	});
 	const map = getMapContext();
 
@@ -27,8 +34,9 @@
 		if (marker) marker.remove();
 	});
 
-	$: if (marker) marker.setLatLng(latlng);
 	$: if (marker) {
+		marker.setLatLng(latlng);
+
 		if (popupContent) {
 			marker.bindPopup(popupContent);
 		} else {
