@@ -1,4 +1,4 @@
-FROM docker.io/nginxinc/nginx-unprivileged:latest
+FROM ghcr.io/nginxinc/nginx-unprivileged:1.23
 
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
