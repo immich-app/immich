@@ -3,7 +3,7 @@ version: "3.8"
 services:
   immich-server:
     container_name: immich_server
-    image: altran1502/immich-server:release
+    image: ghcr.io/immich-app/immich-server:release
     entrypoint: [ "/bin/sh", "./start-server.sh" ]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
@@ -19,7 +19,7 @@ services:
 
   immich-microservices:
     container_name: immich_microservices
-    image: altran1502/immich-server:release
+    image: ghcr.io/immich-app/immich-server:release
     entrypoint: [ "/bin/sh", "./start-microservices.sh" ]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
@@ -35,7 +35,7 @@ services:
 
   immich-machine-learning:
     container_name: immich_machine_learning
-    image: altran1502/immich-machine-learning:release
+    image: ghcr.io/immich-app/immich-machine-learning:release
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - model-cache:/cache
@@ -47,7 +47,7 @@ services:
 
   immich-web:
     container_name: immich_web
-    image: altran1502/immich-web:release
+    image: ghcr.io/immich-app/immich-web:release
     entrypoint: [ "/bin/sh", "./entrypoint.sh" ]
     env_file:
       - .env
@@ -85,7 +85,7 @@ services:
 
   immich-proxy:
     container_name: immich_proxy
-    image: altran1502/immich-proxy:release
+    image: ghcr.io/immich-app/immich-proxy:release
     environment:
       # Make sure these values get passed through from the env file
       - IMMICH_SERVER_URL
