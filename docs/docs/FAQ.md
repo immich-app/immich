@@ -25,21 +25,8 @@ If the timezone is incorrect in an uploaded photo, check the ``DateTimeOriginal`
 As an example, the following modification of ```docker-compose.yml``` will set the timezone of the microservices container to be ``Europe/Stockholm``
 
 ```
-  immich-microservices:
-    container_name: immich_microservices
-    image: altran1502/immich-server:release
-    entrypoint: [ "/bin/sh", "./start-microservices.sh" ]
-    volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
-    env_file:
-      - .env
     environment:
-      - NODE_ENV=production
-      - TZ=Europe/Stockholm # <---- Change this to your local timezone
-    depends_on:
-      - redis
-      - database
-    restart: always
+      - TZ=Europe/Stockholm # <---- Add this line in the microservices config
 ```
 
 ### Why doesn't Immich watch an existing photo gallery directory?
