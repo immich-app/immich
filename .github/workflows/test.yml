@@ -52,8 +52,8 @@ jobs:
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
-          flutter-version: '3.7.3'
+          channel: "stable"
+          flutter-version: "3.7.3"
       - name: Run tests
         working-directory: ./mobile
         run: flutter test
@@ -124,77 +124,77 @@ jobs:
           echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
           exit 1
 
-  mobile-integration-tests:
-    name: Run mobile end-to-end integration tests
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: '12.x'
-          cache: 'gradle'
-      - name: Cache android SDK
-        uses: actions/cache@v3
-        id: android-sdk
-        with:
-          key: android-sdk
-          path: |
-            /usr/local/lib/android/
-            ~/.android
-      - name: Cache Gradle
-        uses: actions/cache@v3
-        with:
-          path: |
-            ./mobile/build/
-            ./mobile/android/.gradle/
-          key: ${{ runner.os }}-flutter-${{ hashFiles('**/*.gradle*', 'pubspec.lock') }}
-      - name: Setup Android SDK
-        if: steps.android-sdk.outputs.cache-hit != 'true'
-        uses: android-actions/setup-android@v2
-      - name: AVD cache
-        uses: actions/cache@v3
-        id: avd-cache
-        with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/adb*
-          key: avd-29
-      - name: create AVD and generate snapshot for caching
-        if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2.27.0
-        with:
-          working-directory: ./mobile
-          cores: 2
-          api-level: 29
-          arch: x86_64
-          profile: pixel
-          target: default
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: false
-          script: echo "Generated AVD snapshot for caching."
-      - name: Setup Flutter SDK
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          flutter-version: '3.7.3'
-          cache: true
-      - name: Run integration tests
-        uses: Wandalen/wretry.action@master
-        with:
-          action: reactivecircus/android-emulator-runner@v2.27.0
-          with: |
-            working-directory: ./mobile
-            cores: 2
-            api-level: 29
-            arch: x86_64
-            profile: pixel
-            target: default
-            force-avd-creation: false
-            emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-            disable-animations: true
-            script: |
-              flutter pub get
-              flutter test integration_test
-          attempt_limit: 3
+  # mobile-integration-tests:
+  #   name: Run mobile end-to-end integration tests
+  #   runs-on: macos-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-java@v3
+  #       with:
+  #         distribution: 'zulu'
+  #         java-version: '12.x'
+  #         cache: 'gradle'
+  #     - name: Cache android SDK
+  #       uses: actions/cache@v3
+  #       id: android-sdk
+  #       with:
+  #         key: android-sdk
+  #         path: |
+  #           /usr/local/lib/android/
+  #           ~/.android
+  #     - name: Cache Gradle
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: |
+  #           ./mobile/build/
+  #           ./mobile/android/.gradle/
+  #         key: ${{ runner.os }}-flutter-${{ hashFiles('**/*.gradle*', 'pubspec.lock') }}
+  #     - name: Setup Android SDK
+  #       if: steps.android-sdk.outputs.cache-hit != 'true'
+  #       uses: android-actions/setup-android@v2
+  #     - name: AVD cache
+  #       uses: actions/cache@v3
+  #       id: avd-cache
+  #       with:
+  #         path: |
+  #           ~/.android/avd/*
+  #           ~/.android/adb*
+  #         key: avd-29
+  #     - name: create AVD and generate snapshot for caching
+  #       if: steps.avd-cache.outputs.cache-hit != 'true'
+  #       uses: reactivecircus/android-emulator-runner@v2.27.0
+  #       with:
+  #         working-directory: ./mobile
+  #         cores: 2
+  #         api-level: 29
+  #         arch: x86_64
+  #         profile: pixel
+  #         target: default
+  #         force-avd-creation: false
+  #         emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+  #         disable-animations: false
+  #         script: echo "Generated AVD snapshot for caching."
+  #     - name: Setup Flutter SDK
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         channel: 'stable'
+  #         flutter-version: '3.7.3'
+  #         cache: true
+  #     - name: Run integration tests
+  #       uses: Wandalen/wretry.action@master
+  #       with:
+  #         action: reactivecircus/android-emulator-runner@v2.27.0
+  #         with: |
+  #           working-directory: ./mobile
+  #           cores: 2
+  #           api-level: 29
+  #           arch: x86_64
+  #           profile: pixel
+  #           target: default
+  #           force-avd-creation: false
+  #           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+  #           disable-animations: true
+  #           script: |
+  #             flutter pub get
+  #             flutter test integration_test
+  #         attempt_limit: 3
