@@ -99,21 +99,18 @@ export class SearchService {
     this.assertEnabled();
 
     const query = dto.q || dto.query || '*';
-    const strategy = dto.clip ? SearchStrategy.CLIP : SearchStrategy.TEXT;
+    const strategy = dto.clip && MACHINE_LEARNING_ENABLED ? SearchStrategy.CLIP : SearchStrategy.TEXT;
     const filters = { userId: authUser.id, ...dto };
 
     let assets: SearchResult<AssetEntity>;
     switch (strategy) {
-      case SearchStrategy.TEXT:
-        assets = await this.searchRepository.searchAssets(query, filters);
-        break;
       case SearchStrategy.CLIP:
-      default:
-        if (!MACHINE_LEARNING_ENABLED) {
-          throw new BadRequestException('Machine Learning is disabled');
-        }
         const clip = await this.machineLearning.encodeText(query);
         assets = await this.searchRepository.vectorSearch(clip, filters);
+      case SearchStrategy.TEXT:
+      default:
+        assets = await this.searchRepository.searchAssets(query, filters);
+        break;
     }
 
     const albums = await this.searchRepository.searchAlbums(query, filters);
