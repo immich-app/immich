@@ -1,7 +1,7 @@
 import os
 from flask import Flask, request
 from transformers import pipeline
-
+from face_processor import FaceProcessor
 
 server = Flask(__name__)
 
@@ -16,6 +16,7 @@ detector = pipeline(
     model="hustvl/yolos-tiny"
 )
 
+face_processor = FaceProcessor()
 
 # Environment resolver
 is_dev = os.getenv('NODE_ENV') == 'development'
@@ -38,6 +39,11 @@ def image_classification():
     assetPath = request.json['thumbnailPath']
     return run_engine(classifier, assetPath), 201
 
+@server.route("/facial-recognition/recognize-persons", methods=['POST'])
+def facial_recognition():
+    assetPath = request.json['thumbnailPath']
+    return face_processor.process_image(assetPath), 201
+    #return run_engine(classifier, assetPath), 201
 
 def run_engine(engine, path):
     result = []
