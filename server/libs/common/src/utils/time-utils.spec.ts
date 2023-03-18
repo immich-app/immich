@@ -3,6 +3,12 @@
 import { timeUtils } from './time-utils';
 
 describe('Time Utilities', () => {
+  describe('timezone', () => {
+    it('should always be UTC', () => {
+      expect(new Date().getTimezoneOffset()).toBe(0);
+    });
+  });
+
   describe('checkValidTimestamp', () => {
     it('check for year 0000', () => {
       const result = timeUtils.checkValidTimestamp('0000-00-00T00:00:00.000Z');
