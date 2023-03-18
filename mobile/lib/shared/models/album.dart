@@ -126,6 +126,9 @@ class Album {
     }
     return a;
   }
+
+  @override
+  String toString() => name;
 }
 
 extension AssetsHelper on IsarCollection<Album> {

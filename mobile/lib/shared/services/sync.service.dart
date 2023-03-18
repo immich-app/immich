@@ -13,6 +13,7 @@ import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/tuple.dart';
 import 'package:isar/isar.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -22,6 +23,7 @@ final syncServiceProvider =
 class SyncService {
   final Isar _db;
   final AsyncMutex _lock = AsyncMutex();
+  final Logger _log = Logger('SyncService');
 
   SyncService(this._db);
 
@@ -278,6 +280,7 @@ class SyncService {
     List<Asset> deleteCandidates,
   ) async {
     if (album.isLocal) {
+      _log.info("Removing local album $album from DB");
       // delete assets in DB unless they are remote or part of some other album
       deleteCandidates.addAll(
         await album.assets.filter().remoteIdIsNull().findAll(),
@@ -289,8 +292,13 @@ class SyncService {
         await album.assets.filter().not().ownerIdEqualTo(user.isarId).findAll(),
       );
     }
-    final bool ok = await _db.writeTxn(() => _db.albums.delete(album.id));
-    assert(ok);
+    try {
+      final bool ok = await _db.writeTxn(() => _db.albums.delete(album.id));
+      assert(ok);
+      _log.info("Removed local album $album from DB");
+    } catch (e) {
+      _log.warning("Failed to remove local album $album from DB");
+    }
   }
 
   /// Syncs all device albums and their assets to the database
@@ -299,6 +307,7 @@ class SyncService {
     List<AssetPathEntity> onDevice, [
     Set<String>? excludedAssets,
   ]) async {
+    _log.info("Syncing ${onDevice.length} albums from device: $onDevice");
     onDevice.sort((a, b) => a.id.compareTo(b.id));
     final List<Album> inDb =
         await _db.albums.where().localIdIsNotNull().sortByLocalId().findAll();
@@ -325,6 +334,9 @@ class SyncService {
         await _db.assets.deleteAll(pair.first);
         await _db.assets.putAll(pair.second);
       });
+      _log.info(
+        "Removed ${pair.first.length} and updated ${pair.second.length} local assets from DB",
+      );
     }
     return anyChanges;
   }
@@ -383,8 +395,9 @@ class SyncService {
         album.thumbnail.value ??= await album.assets.filter().findFirst();
         await album.thumbnail.save();
       });
+      _log.info("Synced changes of local album $ape to DB");
     } on IsarError catch (e) {
-      debugPrint(e.toString());
+      _log.warning("Failed to update synced album $ape in DB: $e");
     }
 
     return true;
@@ -419,8 +432,10 @@ class SyncService {
         await album.assets.update(link: result.first + result.second);
         await _db.albums.put(album);
       });
+      _log.info("Fast synced local album $ape to DB");
     } on IsarError catch (e) {
-      debugPrint(e.toString());
+      _log.warning("Failed to fast sync local album $ape to DB: $e");
+      return false;
     }
 
     return true;
@@ -433,9 +448,13 @@ class SyncService {
     List<Asset> existing, [
     Set<String>? excludedAssets,
   ]) async {
+    _log.info("Syncing a new local album to DB: $ape");
     final Album a = Album.local(ape);
     final result = await _linkWithExistingFromDb(
       await ape.getAssets(excludedAssets: excludedAssets),
+    );
+    _log.info(
+      "${result.first.length} assets already existed in DB, to upsert ${result.second.length}",
     );
     await _upsertAssetsWithExif(result.second);
     existing.addAll(result.first);
@@ -445,8 +464,9 @@ class SyncService {
     a.thumbnail.value = thumb;
     try {
       await _db.writeTxn(() => _db.albums.store(a));
+      _log.info("Added a new local album to DB: $ape");
     } on IsarError catch (e) {
-      debugPrint(e.toString());
+      _log.warning("Failed to add new local album $ape to DB: $e");
     }
   }
 
@@ -503,8 +523,11 @@ class SyncService {
         }
         await _db.exifInfos.putAll(exifInfos);
       });
+      _log.info("Upserted ${assets.length} assets into the DB");
     } on IsarError catch (e) {
-      debugPrint(e.toString());
+      _log.warning(
+        "Failed to upsert ${assets.length} assets into the DB: ${e.toString()}",
+      );
     }
   }
 }
