@@ -7,22 +7,9 @@ export const load = (async ({ locals, parent, url }) => {
 		throw redirect(302, '/auth/login');
 	}
 
-	const term = url.searchParams.get('q') || undefined;
-	const { data: results } = await locals.api.searchApi.search(
-		term,
-		undefined,
-		undefined,
-		undefined,
-		undefined,
-		undefined,
-		undefined,
-		undefined,
-		undefined,
-		undefined,
-		undefined,
-		undefined,
-		{ params: url.searchParams }
-	);
+	const term = url.searchParams.get('q') || url.searchParams.get('query') || undefined;
+
+	const { data: results } = await locals.api.searchApi.search({ params: url.searchParams });
 
 	return {
 		user,

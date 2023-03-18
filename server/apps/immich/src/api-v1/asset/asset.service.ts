@@ -170,7 +170,7 @@ export class AssetService {
 
     const updatedAsset = await this._assetRepository.update(authUser.id, asset, dto);
 
-    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { asset: updatedAsset } });
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: [assetId] } });
 
     return mapAsset(updatedAsset);
   }
@@ -251,8 +251,8 @@ export class AssetService {
       res.header('Cache-Control', 'none');
       Logger.error(`Cannot create read stream for asset ${asset.id}`, 'getAssetThumbnail');
       throw new InternalServerErrorException(
-        e,
         `Cannot read thumbnail file for asset ${asset.id} - contact your administrator`,
+        { cause: e as Error },
       );
     }
   }
@@ -427,7 +427,7 @@ export class AssetService {
 
       try {
         await this._assetRepository.remove(asset);
-        await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { id } });
+        await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [id] } });
 
         result.push({ id, status: DeleteAssetStatusEnum.SUCCESS });
         deleteQueue.push(asset.originalPath, asset.webpPath, asset.resizePath, asset.encodedVideoPath);

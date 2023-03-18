@@ -13,3 +13,9 @@ export * from './storage.repository.mock';
 export * from './system-config.repository.mock';
 export * from './user-token.repository.mock';
 export * from './user.repository.mock';
+
+export async function asyncTick(steps: number) {
+  for (let i = 0; i < steps; i++) {
+    await Promise.resolve();
+  }
+}

@@ -15,7 +15,8 @@
 
 	function onSearch() {
 		const params = new URLSearchParams({
-			q: value
+			q: value,
+			clip: 'true'
 		});
 
 		goto(`${AppRoute.SEARCH}?${params}`, { replaceState: replaceHistoryState });

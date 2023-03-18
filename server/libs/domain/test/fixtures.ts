@@ -15,6 +15,7 @@ import {
   AuthUserDto,
   ExifResponseDto,
   mapUser,
+  SearchResult,
   SharedLinkResponseDto,
 } from '../src';
 
@@ -448,6 +449,7 @@ export const sharedLinkStub = {
             tags: [],
             objects: ['a', 'b', 'c'],
             asset: null as any,
+            clipEmbedding: [0.12, 0.13, 0.14],
           },
           webpPath: '',
           encodedVideoPath: '',
@@ -550,3 +552,13 @@ export const sharedLinkResponseStub = {
 
 // TODO - the constructor isn't used anywhere, so not test coverage
 new ExifResponseDto();
+
+export const searchStub = {
+  emptyResults: Object.freeze<SearchResult<any>>({
+    total: 0,
+    count: 0,
+    page: 1,
+    items: [],
+    facets: [],
+  }),
+};

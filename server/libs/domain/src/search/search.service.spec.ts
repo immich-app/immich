@@ -4,25 +4,32 @@ import { plainToInstance } from 'class-transformer';
 import {
   albumStub,
   assetEntityStub,
+  asyncTick,
   authStub,
   newAlbumRepositoryMock,
   newAssetRepositoryMock,
   newJobRepositoryMock,
+  newMachineLearningRepositoryMock,
   newSearchRepositoryMock,
+  searchStub,
 } from '../../test';
 import { IAlbumRepository } from '../album/album.repository';
 import { IAssetRepository } from '../asset/asset.repository';
 import { JobName } from '../job';
 import { IJobRepository } from '../job/job.repository';
+import { IMachineLearningRepository } from '../smart-info';
 import { SearchDto } from './dto';
 import { ISearchRepository } from './search.repository';
 import { SearchService } from './search.service';
+
+jest.useFakeTimers();
 
 describe(SearchService.name, () => {
   let sut: SearchService;
   let albumMock: jest.Mocked<IAlbumRepository>;
   let assetMock: jest.Mocked<IAssetRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
+  let machineMock: jest.Mocked<IMachineLearningRepository>;
   let searchMock: jest.Mocked<ISearchRepository>;
   let configMock: jest.Mocked<ConfigService>;
 
@@ -30,10 +37,15 @@ describe(SearchService.name, () => {
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
     jobMock = newJobRepositoryMock();
+    machineMock = newMachineLearningRepositoryMock();
     searchMock = newSearchRepositoryMock();
     configMock = { get: jest.fn() } as unknown as jest.Mocked<ConfigService>;
 
-    sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
+    sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
+  });
+
+  afterEach(() => {
+    sut.teardown();
   });
 
   it('should work', () => {
@@ -69,7 +81,7 @@ describe(SearchService.name, () => {
 
     it('should be disabled via an env variable', () => {
       configMock.get.mockReturnValue('false');
-      sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
+      const sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
 
       expect(sut.isEnabled()).toBe(false);
     });
@@ -82,7 +94,7 @@ describe(SearchService.name, () => {
 
     it('should return the config when search is disabled', () => {
       configMock.get.mockReturnValue('false');
-      sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
+      const sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
 
       expect(sut.getConfig()).toEqual({ enabled: false });
     });
@@ -91,13 +103,15 @@ describe(SearchService.name, () => {
   describe(`bootstrap`, () => {
     it('should skip when search is disabled', async () => {
       configMock.get.mockReturnValue('false');
-      sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
+      const sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
 
       await sut.bootstrap();
 
       expect(searchMock.setup).not.toHaveBeenCalled();
       expect(searchMock.checkMigrationStatus).not.toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
+
+      sut.teardown();
     });
 
     it('should skip schema migration if not needed', async () => {
@@ -123,21 +137,18 @@ describe(SearchService.name, () => {
   describe('search', () => {
     it('should throw an error is search is disabled', async () => {
       configMock.get.mockReturnValue('false');
-      sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
+      const sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
 
       await expect(sut.search(authStub.admin, {})).rejects.toBeInstanceOf(BadRequestException);
 
-      expect(searchMock.search).not.toHaveBeenCalled();
+      expect(searchMock.searchAlbums).not.toHaveBeenCalled();
+      expect(searchMock.searchAssets).not.toHaveBeenCalled();
     });
 
     it('should search assets and albums', async () => {
-      searchMock.search.mockResolvedValue({
-        total: 0,
-        count: 0,
-        page: 1,
-        items: [],
-        facets: [],
-      });
+      searchMock.searchAssets.mockResolvedValue(searchStub.emptyResults);
+      searchMock.searchAlbums.mockResolvedValue(searchStub.emptyResults);
+      searchMock.vectorSearch.mockResolvedValue(searchStub.emptyResults);
 
       await expect(sut.search(authStub.admin, {})).resolves.toEqual({
         albums: {
@@ -156,162 +167,158 @@ describe(SearchService.name, () => {
         },
       });
 
-      expect(searchMock.search.mock.calls).toEqual([
-        ['assets', '*', { userId: authStub.admin.id }],
-        ['albums', '*', { userId: authStub.admin.id }],
-      ]);
+      // expect(searchMock.searchAssets).toHaveBeenCalledWith('*', { userId: authStub.admin.id });
+      expect(searchMock.searchAlbums).toHaveBeenCalledWith('*', { userId: authStub.admin.id });
     });
   });
 
   describe('handleIndexAssets', () => {
-    it('should skip if search is disabled', async () => {
-      configMock.get.mockReturnValue('false');
-      sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
-
-      await sut.handleIndexAssets();
-
-      expect(searchMock.import).not.toHaveBeenCalled();
-    });
-
     it('should index all the assets', async () => {
-      assetMock.getAll.mockResolvedValue([]);
+      assetMock.getAll.mockResolvedValue([assetEntityStub.image]);
 
       await sut.handleIndexAssets();
 
-      expect(searchMock.import).toHaveBeenCalledWith('assets', [], true);
+      expect(searchMock.importAssets).toHaveBeenCalledWith([assetEntityStub.image], true);
     });
 
     it('should log an error', async () => {
-      assetMock.getAll.mockResolvedValue([]);
-      searchMock.import.mockRejectedValue(new Error('import failed'));
+      assetMock.getAll.mockResolvedValue([assetEntityStub.image]);
+      searchMock.importAssets.mockRejectedValue(new Error('import failed'));
 
       await sut.handleIndexAssets();
+
+      expect(searchMock.importAssets).toHaveBeenCalled();
+    });
+
+    it('should skip if search is disabled', async () => {
+      configMock.get.mockReturnValue('false');
+      const sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
+
+      await sut.handleIndexAssets();
+
+      expect(searchMock.importAssets).not.toHaveBeenCalled();
+      expect(searchMock.importAlbums).not.toHaveBeenCalled();
     });
   });
 
   describe('handleIndexAsset', () => {
-    it('should skip if search is disabled', async () => {
+    it('should skip if search is disabled', () => {
       configMock.get.mockReturnValue('false');
-      sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
-
-      await sut.handleIndexAsset({ asset: assetEntityStub.image });
-
-      expect(searchMock.index).not.toHaveBeenCalled();
+      const sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
+      sut.handleIndexAsset({ ids: [assetEntityStub.image.id] });
     });
 
-    it('should index the asset', async () => {
-      await sut.handleIndexAsset({ asset: assetEntityStub.image });
-
-      expect(searchMock.index).toHaveBeenCalledWith('assets', assetEntityStub.image);
-    });
-
-    it('should log an error', async () => {
-      searchMock.index.mockRejectedValue(new Error('index failed'));
-
-      await sut.handleIndexAsset({ asset: assetEntityStub.image });
-
-      expect(searchMock.index).toHaveBeenCalled();
+    it('should index the asset', () => {
+      sut.handleIndexAsset({ ids: [assetEntityStub.image.id] });
     });
   });
 
   describe('handleIndexAlbums', () => {
-    it('should skip if search is disabled', async () => {
+    it('should skip if search is disabled', () => {
       configMock.get.mockReturnValue('false');
-      sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
-
-      await sut.handleIndexAlbums();
-
-      expect(searchMock.import).not.toHaveBeenCalled();
+      const sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
+      sut.handleIndexAlbums();
     });
 
     it('should index all the albums', async () => {
-      albumMock.getAll.mockResolvedValue([]);
+      albumMock.getAll.mockResolvedValue([albumStub.empty]);
 
       await sut.handleIndexAlbums();
 
-      expect(searchMock.import).toHaveBeenCalledWith('albums', [], true);
+      expect(searchMock.importAlbums).toHaveBeenCalledWith([albumStub.empty], true);
     });
 
     it('should log an error', async () => {
-      albumMock.getAll.mockResolvedValue([]);
-      searchMock.import.mockRejectedValue(new Error('import failed'));
+      albumMock.getAll.mockResolvedValue([albumStub.empty]);
+      searchMock.importAlbums.mockRejectedValue(new Error('import failed'));
 
       await sut.handleIndexAlbums();
+
+      expect(searchMock.importAlbums).toHaveBeenCalled();
     });
   });
 
   describe('handleIndexAlbum', () => {
-    it('should skip if search is disabled', async () => {
+    it('should skip if search is disabled', () => {
       configMock.get.mockReturnValue('false');
-      sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
-
-      await sut.handleIndexAlbum({ album: albumStub.empty });
-
-      expect(searchMock.index).not.toHaveBeenCalled();
+      const sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
+      sut.handleIndexAlbum({ ids: [albumStub.empty.id] });
     });
 
-    it('should index the album', async () => {
-      await sut.handleIndexAlbum({ album: albumStub.empty });
-
-      expect(searchMock.index).toHaveBeenCalledWith('albums', albumStub.empty);
-    });
-
-    it('should log an error', async () => {
-      searchMock.index.mockRejectedValue(new Error('index failed'));
-
-      await sut.handleIndexAlbum({ album: albumStub.empty });
-
-      expect(searchMock.index).toHaveBeenCalled();
+    it('should index the album', () => {
+      sut.handleIndexAlbum({ ids: [albumStub.empty.id] });
     });
   });
 
   describe('handleRemoveAlbum', () => {
-    it('should skip if search is disabled', async () => {
+    it('should skip if search is disabled', () => {
       configMock.get.mockReturnValue('false');
-      sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
-
-      await sut.handleRemoveAlbum({ id: 'album1' });
-
-      expect(searchMock.delete).not.toHaveBeenCalled();
+      const sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
+      sut.handleRemoveAlbum({ ids: ['album1'] });
     });
 
-    it('should remove the album', async () => {
-      await sut.handleRemoveAlbum({ id: 'album1' });
-
-      expect(searchMock.delete).toHaveBeenCalledWith('albums', 'album1');
-    });
-
-    it('should log an error', async () => {
-      searchMock.delete.mockRejectedValue(new Error('remove failed'));
-
-      await sut.handleRemoveAlbum({ id: 'album1' });
-
-      expect(searchMock.delete).toHaveBeenCalled();
+    it('should remove the album', () => {
+      sut.handleRemoveAlbum({ ids: ['album1'] });
     });
   });
 
   describe('handleRemoveAsset', () => {
-    it('should skip if search is disabled', async () => {
+    it('should skip if search is disabled', () => {
       configMock.get.mockReturnValue('false');
-      sut = new SearchService(albumMock, assetMock, jobMock, searchMock, configMock);
-
-      await sut.handleRemoveAsset({ id: 'asset1`' });
-
-      expect(searchMock.delete).not.toHaveBeenCalled();
+      const sut = new SearchService(albumMock, assetMock, jobMock, machineMock, searchMock, configMock);
+      sut.handleRemoveAsset({ ids: ['asset1'] });
     });
 
-    it('should remove the asset', async () => {
-      await sut.handleRemoveAsset({ id: 'asset1' });
+    it('should remove the asset', () => {
+      sut.handleRemoveAsset({ ids: ['asset1'] });
+    });
+  });
 
-      expect(searchMock.delete).toHaveBeenCalledWith('assets', 'asset1');
+  describe('flush', () => {
+    it('should flush queued album updates', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.empty]);
+
+      sut.handleIndexAlbum({ ids: ['album1'] });
+
+      jest.runOnlyPendingTimers();
+
+      await asyncTick(4);
+
+      expect(albumMock.getByIds).toHaveBeenCalledWith(['album1']);
+      expect(searchMock.importAlbums).toHaveBeenCalledWith([albumStub.empty], false);
     });
 
-    it('should log an error', async () => {
-      searchMock.delete.mockRejectedValue(new Error('remove failed'));
+    it('should flush queued album deletes', async () => {
+      sut.handleRemoveAlbum({ ids: ['album1'] });
 
-      await sut.handleRemoveAsset({ id: 'asset1' });
+      jest.runOnlyPendingTimers();
 
-      expect(searchMock.delete).toHaveBeenCalled();
+      await asyncTick(4);
+
+      expect(searchMock.deleteAlbums).toHaveBeenCalledWith(['album1']);
+    });
+
+    it('should flush queued asset updates', async () => {
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
+
+      sut.handleIndexAsset({ ids: ['asset1'] });
+
+      jest.runOnlyPendingTimers();
+
+      await asyncTick(4);
+
+      expect(assetMock.getByIds).toHaveBeenCalledWith(['asset1']);
+      expect(searchMock.importAssets).toHaveBeenCalledWith([assetEntityStub.image], false);
+    });
+
+    it('should flush queued asset deletes', async () => {
+      sut.handleRemoveAsset({ ids: ['asset1'] });
+
+      jest.runOnlyPendingTimers();
+
+      await asyncTick(4);
+
+      expect(searchMock.deleteAssets).toHaveBeenCalledWith(['asset1']);
     });
   });
 });

@@ -1,12 +1,23 @@
 import { AssetSearchOptions, IAssetRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetType } from '../entities';
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
   constructor(@InjectRepository(AssetEntity) private repository: Repository<AssetEntity>) {}
+
+  getByIds(ids: string[]): Promise<AssetEntity[]> {
+    return this.repository.find({
+      where: { id: In(ids) },
+      relations: {
+        exifInfo: true,
+        smartInfo: true,
+        tags: true,
+      },
+    });
+  }
 
   async deleteAll(ownerId: string): Promise<void> {
     await this.repository.delete({ ownerId });
