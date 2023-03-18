@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
+import 'package:immich_mobile/modules/album/ui/album_thumbnail_card.dart';
 import 'package:immich_mobile/modules/album/ui/sharing_sliver_appbar.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
@@ -26,6 +27,28 @@ class SharingPage extends HookConsumerWidget {
       },
       [],
     );
+
+    buildAlbumGrid() {
+      return SliverPadding(
+        padding: const EdgeInsets.all(18.0),
+        sliver: SliverGrid(
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: 250,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: .8,
+          ),
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              return AlbumThumbnailCard(
+                album: sharedAlbums[index],
+              );
+            },
+            childCount: sharedAlbums.length,
+          ),
+        ),
+      );
+    }
 
     buildAlbumList() {
       return SliverList(
@@ -53,9 +76,11 @@ class SharingPage extends HookConsumerWidget {
                       fontWeight: FontWeight.bold,
                     ),
               ),
-              subtitle: !isOwner && album.ownerName != null
-                ? Text(album.ownerName!)
-                : null,
+              subtitle: isOwner 
+                ? const Text('Owned')
+                : album.ownerName != null
+                  ? Text('Shared by ${album.ownerName!}')
+                  : null,
               onTap: () {
                 AutoRouter.of(context)
                     .push(AlbumViewerRoute(albumId: sharedAlbums[index].id));
@@ -131,9 +156,19 @@ class SharingPage extends HookConsumerWidget {
               ).tr(),
             ),
           ),
-          sharedAlbums.isNotEmpty
-              ? buildAlbumList()
-              : buildEmptyListIndication()
+          SliverLayoutBuilder(
+            builder: (context, constraints) {
+              if (sharedAlbums.isEmpty) {
+                return buildEmptyListIndication();
+              }
+
+              if (constraints.crossAxisExtent < 600) {
+                return buildAlbumList();
+              } else {
+                return buildAlbumGrid();
+              }
+            },
+          ),
         ],
       ),
     );

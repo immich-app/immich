@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 
 class AlbumThumbnailCard extends StatelessWidget {
@@ -86,12 +87,16 @@ class AlbumThumbnailCard extends StatelessWidget {
                           ),
                         ).tr(args: ['${album.assetCount}']),
                         if (album.shared)
-                          const Text(
-                            'album_thumbnail_card_shared',
-                            style: TextStyle(
+                          Text(
+                            album.ownerId == Store.get(StoreKey.userRemoteId) 
+                              ? ' · Owned' 
+                              : album.ownerName == null 
+                                ? 'album_thumbnail_card_shared'.tr()
+                                : ' · ${album.ownerName}',
+                            style: const TextStyle(
                               fontSize: 12,
                             ),
-                          ).tr()
+                          )
                       ],
                     )
                   ],
