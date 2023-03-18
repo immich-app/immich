@@ -32,7 +32,7 @@ def get_image(path: str, to_rgb=False) -> np.array:
 class FaceProcessor:
     # See for model properties: https://github.com/deepinsight/insightface/tree/master/model_zoo
     def __init__(self,
-                 model_size: str = "xsmall",
+                 model_size: str = "large",
                  model_dir: str = "./",
                  detection_threshold : float = 0.7,
                  min_face_width_ratio : float = 0.03,
