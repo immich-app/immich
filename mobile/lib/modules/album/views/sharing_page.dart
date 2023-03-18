@@ -7,6 +7,8 @@ import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart
 import 'package:immich_mobile/modules/album/ui/sharing_sliver_appbar.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/shared/models/store.dart' as store;
+import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 
 class SharingPage extends HookConsumerWidget {
@@ -15,6 +17,7 @@ class SharingPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final List<Album> sharedAlbums = ref.watch(sharedAlbumProvider);
+    final userId = store.Store.get(store.StoreKey.userRemoteId);
 
     useEffect(
       () {
@@ -29,6 +32,7 @@ class SharingPage extends HookConsumerWidget {
         delegate: SliverChildBuilderDelegate(
           (BuildContext context, int index) {
             final album = sharedAlbums[index];
+            final isOwner = album.ownerId == userId;
 
             return ListTile(
               contentPadding:
@@ -42,13 +46,16 @@ class SharingPage extends HookConsumerWidget {
                 ),
               ),
               title: Text(
-                sharedAlbums[index].name,
+                album.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
               ),
+              subtitle: !isOwner && album.ownerName != null
+                ? Text(album.ownerName!)
+                : null,
               onTap: () {
                 AutoRouter.of(context)
                     .push(AlbumViewerRoute(albumId: sharedAlbums[index].id));

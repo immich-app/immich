@@ -51,6 +51,24 @@ class Album {
   @ignore
   String? get ownerId => owner.value?.id;
 
+  @ignore
+  String? get ownerName {
+    // Guard null owner
+    if (owner.value == null) {
+      return null;
+    }
+
+    final name = <String>[];
+    if (owner.value?.firstName != null) {
+      name.add(owner.value!.firstName);
+    }
+    if (owner.value?.lastName != null) {
+      name.add(owner.value!.lastName);
+    }
+
+    return name.join(' ');
+  }
+
   Future<void> loadSortedAssets() async {
     _sortedAssets = await assets.filter().sortByFileCreatedAt().findAll();
   }
