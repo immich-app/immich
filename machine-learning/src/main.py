@@ -1,7 +1,7 @@
 import os
 from flask import Flask, request
 from transformers import pipeline
-from face_processor import FaceProcessor
+from .face_processor import FaceProcessor
 
 server = Flask(__name__)
 
