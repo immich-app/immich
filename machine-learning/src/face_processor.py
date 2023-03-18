@@ -6,6 +6,18 @@ from insightface.app import FaceAnalysis
 
 
 def get_image(path: str, to_rgb=False) -> np.array:
+    """Utility to load images from given path.
+
+    Args:
+        path (str): Path to the image
+        to_rgb (bool, optional): Whether to convert the image into rgb. Defaults to False.
+
+    Raises:
+        FileNotFoundError: File at given path does not exist
+
+    Returns:
+        np.array: Image
+    """
     if not os.path.exists(path):
         raise FileNotFoundError
 
@@ -32,6 +44,15 @@ class FaceProcessor:
         self.min_face_height_ratio = min_face_height_ratio
 
     def load_model(self, model_size: str, model_dir: str):
+        """Loading the model specified in the init method.
+
+        Args:
+            model_size (str): Model type / size. Options are xsmall|small|large
+            model_dir (str): Root directory where the models are being stored.
+
+        Returns:
+            model: a loaded model
+        """
         if model_size == "xsmall":
             model_name = "buffalo_sc"
 
@@ -55,6 +76,14 @@ class FaceProcessor:
         return model
 
     def process_image(self, image_path: str):
+        """Encapsulates the detection and recognition process
+
+        Args:
+            image_path (str): Path to the image which should be processed
+
+        Returns:
+            list: list of found faces and there attributed.
+        """
         img = get_image(image_path)
 
         faces = self.model.get(img)
@@ -63,6 +92,15 @@ class FaceProcessor:
         return results
 
     def post_process(self, faces: list, img: np.array):
+        """Filter faces that appear to small or with low confidence.
+
+        Args:
+            faces (list): List of found faces output by the model
+            img (np.array): Original image
+
+        Returns:
+            list: filtered list of the found faces
+        """
         filtered_faces = []
         for face in faces:
             if face.det_score >= self.detection_threshold:
@@ -79,6 +117,14 @@ class FaceProcessor:
 
     
     def prepare_for_deliver(self, filtered_faces):
+        """Converts results from model otuput into JSON serializable format.
+
+        Args:
+            filtered_faces (list): List of the found faces.
+
+        Returns:
+            list: List of the found faces converted into a JSON serializable format.
+        """
         results = []
         for face in filtered_faces:
             item = {
