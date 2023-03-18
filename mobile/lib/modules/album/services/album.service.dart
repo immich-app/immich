@@ -15,6 +15,7 @@ import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
 import 'package:immich_mobile/shared/services/user.service.dart';
 import 'package:isar/isar.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -34,6 +35,7 @@ class AlbumService {
   final SyncService _syncService;
   final Isar _db;
   final BackupService _backupService;
+  final Logger _log = Logger('AlbumService');
   Completer<bool> _localCompleter = Completer()..complete(false);
   Completer<bool> _remoteCompleter = Completer()..complete(false);
 
@@ -50,6 +52,7 @@ class AlbumService {
   Future<bool> refreshDeviceAlbums() async {
     if (!_localCompleter.isCompleted) {
       // guard against concurrent calls
+      _log.info("refreshDeviceAlbums is already in progress");
       return _localCompleter.future;
     }
     _localCompleter = Completer();
@@ -68,9 +71,13 @@ class AlbumService {
         hasAll: true,
         filterOption: FilterOptionGroup(containsPathModified: true),
       );
+      _log.info("Found ${onDevice.length} device albums");
       if (excludedIds.isNotEmpty) {
         // remove all excluded albums
         onDevice.removeWhere((e) => excludedIds.contains(e.id));
+        _log.info(
+          "Ignoring ${excludedIds.length} excluded albums resulting in ${onDevice.length} device albums",
+        );
       }
       final hasAll = selectedIds
           .map((id) => onDevice.firstWhereOrNull((a) => a.id == id))
@@ -79,11 +86,15 @@ class AlbumService {
       if (hasAll) {
         // remove the virtual "Recents" album and keep and individual albums
         onDevice.removeWhere((e) => e.isAll);
+        _log.info("'Recents' is selected, keeping all individual albums");
       } else {
         // keep only the explicitly selected albums
         onDevice.removeWhere((e) => !selectedIds.contains(e.id));
+        _log.info("'Recents' is not selected, keeping only selected albums");
       }
+      _log.info("Syncing ${onDevice.length} albums: $onDevice");
       changes = await _syncService.syncLocalAlbumAssetsToDb(onDevice);
+      _log.info("Syncing completed. Changes: $changes");
     } finally {
       _localCompleter.complete(changes);
     }

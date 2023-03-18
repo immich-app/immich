@@ -13,6 +13,7 @@ import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/tuple.dart';
 import 'package:isar/isar.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -22,6 +23,7 @@ final syncServiceProvider =
 class SyncService {
   final Isar _db;
   final AsyncMutex _lock = AsyncMutex();
+  final Logger _log = Logger('SyncService');
 
   SyncService(this._db);
 
@@ -293,9 +295,11 @@ class SyncService {
   /// Syncs all device albums and their assets to the database
   /// Returns `true` if there were any changes
   Future<bool> _syncLocalAlbumAssetsToDb(List<AssetPathEntity> onDevice) async {
+    _log.info("Syncing ${onDevice.length} albums from device: $onDevice");
     onDevice.sort((a, b) => a.id.compareTo(b.id));
     final List<Album> inDb =
         await _db.albums.where().localIdIsNotNull().sortByLocalId().findAll();
+    _log.info("Currently, there are ${inDb.length} local assets in DB");
     final List<Asset> deleteCandidates = [];
     final List<Asset> existing = [];
     final bool anyChanges = await diffSortedLists(
@@ -313,6 +317,9 @@ class SyncService {
         await _db.assets.deleteAll(pair.first);
         await _db.assets.putAll(pair.second);
       });
+      _log.info(
+        "Removed ${pair.first.length} and updated ${pair.second.length} local assets from DB",
+      );
     }
     return anyChanges;
   }
@@ -408,8 +415,12 @@ class SyncService {
     AssetPathEntity ape,
     List<Asset> existing,
   ) async {
+    _log.info("Syncing a new local album to DB: $ape");
     final Album a = Album.local(ape);
     final result = await _linkWithExistingFromDb(await ape.getAssets());
+    _log.info(
+      "${result.first.length} assets already existed in DB, to upsert ${result.second.length}",
+    );
     await _upsertAssetsWithExif(result.second);
     existing.addAll(result.first);
     a.assets.addAll(result.first);
@@ -418,6 +429,7 @@ class SyncService {
     a.thumbnail.value = thumb;
     try {
       await _db.writeTxn(() => _db.albums.store(a));
+      _log.info("Added a new local album to DB: $ape");
     } on IsarError catch (e) {
       debugPrint(e.toString());
     }
@@ -476,8 +488,11 @@ class SyncService {
         }
         await _db.exifInfos.putAll(exifInfos);
       });
+      _log.info("Upserted ${assets.length} assets into the DB");
     } on IsarError catch (e) {
-      debugPrint(e.toString());
+      _log.warning(
+        "Failed to upsert ${assets.length} assets into the DB: ${e.toString()}",
+      );
     }
   }
 }
