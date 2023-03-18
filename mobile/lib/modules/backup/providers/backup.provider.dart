@@ -1,22 +1,26 @@
 import 'package:cancellation_token_http/http.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
+import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
-import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
-import 'package:immich_mobile/modules/backup/models/hive_duplicated_assets.model.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/app_state.provider.dart';
+import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/server_info.service.dart';
+import 'package:immich_mobile/utils/diff.dart';
+import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -29,6 +33,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     this._authState,
     this._backgroundService,
     this._galleryPermissionNotifier,
+    this._db,
     this.ref,
   ) : super(
           BackUpState(
@@ -69,6 +74,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final AuthenticationState _authState;
   final BackgroundService _backgroundService;
   final GalleryPermissionNotifier _galleryPermissionNotifier;
+  final Isar _db;
   final Ref ref;
 
   ///
@@ -157,11 +163,13 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             triggerMaxDelay: state.backupTriggerDelay * 10,
           );
       if (success) {
-        final box = Hive.box(backgroundBackupInfoBox);
         await Future.wait([
-          box.put(backupRequireWifi, state.backupRequireWifi),
-          box.put(backupRequireCharging, state.backupRequireCharging),
-          box.put(backupTriggerDelay, state.backupTriggerDelay),
+          Store.put(StoreKey.backupRequireWifi, state.backupRequireWifi),
+          Store.put(
+            StoreKey.backupRequireCharging,
+            state.backupRequireCharging,
+          ),
+          Store.put(StoreKey.backupTriggerDelay, state.backupTriggerDelay),
         ]);
       } else {
         state = state.copyWith(
@@ -201,16 +209,16 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     for (AssetPathEntity album in albums) {
       AvailableAlbum availableAlbum = AvailableAlbum(albumEntity: album);
 
-      var assetCountInAlbum = await album.assetCountAsync;
+      final assetCountInAlbum = await album.assetCountAsync;
       if (assetCountInAlbum > 0) {
-        var assetList =
+        final assetList =
             await album.getAssetListRange(start: 0, end: assetCountInAlbum);
 
         if (assetList.isNotEmpty) {
-          var thumbnailAsset = assetList.first;
+          final thumbnailAsset = assetList.first;
 
           try {
-            var thumbnailData = await thumbnailAsset
+            final thumbnailData = await thumbnailAsset
                 .thumbnailDataWithSize(const ThumbnailSize(512, 512));
             availableAlbum =
                 availableAlbum.copyWith(thumbnailData: thumbnailData);
@@ -229,34 +237,17 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     state = state.copyWith(availableAlbums: availableAlbums);
 
-    // Put persistent storage info into local state of the app
-    // Get local storage on selected backup album
-    Box<HiveBackupAlbums> backupAlbumInfoBox =
-        Hive.box<HiveBackupAlbums>(hiveBackupInfoBox);
-    HiveBackupAlbums? backupAlbumInfo = backupAlbumInfoBox.get(
-      backupInfoKey,
-      defaultValue: HiveBackupAlbums(
-        selectedAlbumIds: [],
-        excludedAlbumsIds: [],
-        lastSelectedBackupTime: [],
-        lastExcludedBackupTime: [],
-      ),
-    );
-
-    if (backupAlbumInfo == null) {
-      log.severe(
-        "backupAlbumInfo == null",
-        "Failed to get Hive backup album information",
-      );
-      return;
-    }
+    final List<BackupAlbum> excludedBackupAlbums =
+        await _backupService.excludedAlbumsQuery().findAll();
+    final List<BackupAlbum> selectedBackupAlbums =
+        await _backupService.selectedAlbumsQuery().findAll();
 
     // First time backup - set isAll album is the default one for backup.
-    if (backupAlbumInfo.selectedAlbumIds.isEmpty) {
+    if (selectedBackupAlbums.isEmpty) {
       log.info("First time backup; setup 'Recent(s)' album as default");
 
       // Get album that contains all assets
-      var list = await PhotoManager.getAssetPathList(
+      final list = await PhotoManager.getAssetPathList(
         hasAll: true,
         onlyAll: true,
         type: RequestType.common,
@@ -267,48 +258,29 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       }
       AssetPathEntity albumHasAllAssets = list.first;
 
-      backupAlbumInfoBox.put(
-        backupInfoKey,
-        HiveBackupAlbums(
-          selectedAlbumIds: [albumHasAllAssets.id],
-          excludedAlbumsIds: [],
-          lastSelectedBackupTime: [
-            DateTime.fromMillisecondsSinceEpoch(0, isUtc: true)
-          ],
-          lastExcludedBackupTime: [],
-        ),
+      final ba = BackupAlbum(
+        albumHasAllAssets.id,
+        DateTime.fromMillisecondsSinceEpoch(0),
+        BackupSelection.select,
       );
-
-      backupAlbumInfo = backupAlbumInfoBox.get(backupInfoKey);
+      await _db.writeTxn(() => _db.backupAlbums.put(ba));
     }
 
     // Generate AssetPathEntity from id to add to local state
     try {
-      Set<AvailableAlbum> selectedAlbums = {};
-      for (var i = 0; i < backupAlbumInfo!.selectedAlbumIds.length; i++) {
-        var albumAsset =
-            await AssetPathEntity.fromId(backupAlbumInfo.selectedAlbumIds[i]);
+      final Set<AvailableAlbum> selectedAlbums = {};
+      for (final BackupAlbum ba in selectedBackupAlbums) {
+        final albumAsset = await AssetPathEntity.fromId(ba.id);
         selectedAlbums.add(
-          AvailableAlbum(
-            albumEntity: albumAsset,
-            lastBackup: backupAlbumInfo.lastSelectedBackupTime.length > i
-                ? backupAlbumInfo.lastSelectedBackupTime[i]
-                : DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
-          ),
+          AvailableAlbum(albumEntity: albumAsset, lastBackup: ba.lastBackup),
         );
       }
 
-      Set<AvailableAlbum> excludedAlbums = {};
-      for (var i = 0; i < backupAlbumInfo.excludedAlbumsIds.length; i++) {
-        var albumAsset =
-            await AssetPathEntity.fromId(backupAlbumInfo.excludedAlbumsIds[i]);
+      final Set<AvailableAlbum> excludedAlbums = {};
+      for (final BackupAlbum ba in excludedBackupAlbums) {
+        final albumAsset = await AssetPathEntity.fromId(ba.id);
         excludedAlbums.add(
-          AvailableAlbum(
-            albumEntity: albumAsset,
-            lastBackup: backupAlbumInfo.lastExcludedBackupTime.length > i
-                ? backupAlbumInfo.lastExcludedBackupTime[i]
-                : DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
-          ),
+          AvailableAlbum(albumEntity: albumAsset, lastBackup: ba.lastBackup),
         );
       }
       state = state.copyWith(
@@ -328,36 +300,36 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Those assets are unique and are used as the total assets
   ///
   Future<void> _updateBackupAssetCount() async {
-    Set<String> duplicatedAssetIds = _backupService.getDuplicatedAssetIds();
-    Set<AssetEntity> assetsFromSelectedAlbums = {};
-    Set<AssetEntity> assetsFromExcludedAlbums = {};
+    final duplicatedAssetIds = await _backupService.getDuplicatedAssetIds();
+    final Set<AssetEntity> assetsFromSelectedAlbums = {};
+    final Set<AssetEntity> assetsFromExcludedAlbums = {};
 
-    for (var album in state.selectedBackupAlbums) {
-      var assets = await album.albumEntity.getAssetListRange(
+    for (final album in state.selectedBackupAlbums) {
+      final assets = await album.albumEntity.getAssetListRange(
         start: 0,
         end: await album.albumEntity.assetCountAsync,
       );
       assetsFromSelectedAlbums.addAll(assets);
     }
 
-    for (var album in state.excludedBackupAlbums) {
-      var assets = await album.albumEntity.getAssetListRange(
+    for (final album in state.excludedBackupAlbums) {
+      final assets = await album.albumEntity.getAssetListRange(
         start: 0,
         end: await album.albumEntity.assetCountAsync,
       );
       assetsFromExcludedAlbums.addAll(assets);
     }
 
-    Set<AssetEntity> allUniqueAssets =
+    final Set<AssetEntity> allUniqueAssets =
         assetsFromSelectedAlbums.difference(assetsFromExcludedAlbums);
-    var allAssetsInDatabase = await _backupService.getDeviceBackupAsset();
+    final allAssetsInDatabase = await _backupService.getDeviceBackupAsset();
 
     if (allAssetsInDatabase == null) {
       return;
     }
 
     // Find asset that were backup from selected albums
-    Set<String> selectedAlbumsBackupAssets =
+    final Set<String> selectedAlbumsBackupAssets =
         Set.from(allUniqueAssets.map((e) => e.id));
 
     selectedAlbumsBackupAssets
@@ -386,7 +358,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
 
     // Save to persistent storage
-    _updatePersistentAlbumsSelection();
+    await _updatePersistentAlbumsSelection();
 
     return;
   }
@@ -395,7 +367,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// which albums are selected or excluded
   /// and then update the UI according to those information
   Future<void> getBackupInfo() async {
-    var isEnabled = await _backgroundService.isBackgroundBackupEnabled();
+    final isEnabled = await _backgroundService.isBackgroundBackupEnabled();
 
     state = state.copyWith(backgroundBackup: isEnabled);
 
@@ -406,25 +378,38 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
   }
 
-  /// Save user selection of selected albums and excluded albums to
-  /// Hive database
-  void _updatePersistentAlbumsSelection() {
+  /// Save user selection of selected albums and excluded albums to database
+  Future<void> _updatePersistentAlbumsSelection() {
     final epoch = DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
-    Box<HiveBackupAlbums> backupAlbumInfoBox =
-        Hive.box<HiveBackupAlbums>(hiveBackupInfoBox);
-    backupAlbumInfoBox.put(
-      backupInfoKey,
-      HiveBackupAlbums(
-        selectedAlbumIds: state.selectedBackupAlbums.map((e) => e.id).toList(),
-        excludedAlbumsIds: state.excludedBackupAlbums.map((e) => e.id).toList(),
-        lastSelectedBackupTime: state.selectedBackupAlbums
-            .map((e) => e.lastBackup ?? epoch)
-            .toList(),
-        lastExcludedBackupTime: state.excludedBackupAlbums
-            .map((e) => e.lastBackup ?? epoch)
-            .toList(),
-      ),
+    final selected = state.selectedBackupAlbums.map(
+      (e) => BackupAlbum(e.id, e.lastBackup ?? epoch, BackupSelection.select),
     );
+    final excluded = state.excludedBackupAlbums.map(
+      (e) => BackupAlbum(e.id, e.lastBackup ?? epoch, BackupSelection.exclude),
+    );
+    final backupAlbums = selected.followedBy(excluded).toList();
+    backupAlbums.sortBy((e) => e.id);
+    return _db.writeTxn(() async {
+      final dbAlbums = await _db.backupAlbums.where().sortById().findAll();
+      final List<int> toDelete = [];
+      final List<BackupAlbum> toUpsert = [];
+      // stores the most recent `lastBackup` per album but always keeps the `selection` the user just made
+      diffSortedListsSync(
+        dbAlbums,
+        backupAlbums,
+        compare: (BackupAlbum a, BackupAlbum b) => a.id.compareTo(b.id),
+        both: (BackupAlbum a, BackupAlbum b) {
+          b.lastBackup =
+              a.lastBackup.isAfter(b.lastBackup) ? a.lastBackup : b.lastBackup;
+          toUpsert.add(b);
+          return true;
+        },
+        onlyFirst: (BackupAlbum a) => toDelete.add(a.isarId),
+        onlySecond: (BackupAlbum b) => toUpsert.add(b),
+      );
+      await _db.backupAlbums.deleteAll(toDelete);
+      await _db.backupAlbums.putAll(toUpsert);
+    });
   }
 
   /// Invoke backup process
@@ -447,7 +432,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       Set<AssetEntity> assetsWillBeBackup = Set.from(state.allUniqueAssets);
       // Remove item that has already been backed up
-      for (var assetId in state.allAssetsInDatabase) {
+      for (final assetId in state.allAssetsInDatabase) {
         assetsWillBeBackup.removeWhere((e) => e.id == assetId);
       }
 
@@ -547,7 +532,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   Future<void> _updateServerInfo() async {
-    var serverInfo = await _serverInfoService.getServerInfo();
+    final serverInfo = await _serverInfoService.getServerInfo();
 
     // Update server info
     if (serverInfo != null) {
@@ -559,7 +544,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
   Future<void> _resumeBackup() async {
     // Check if user is login
-    var accessKey = Hive.box(userInfoBox).get(accessTokenKey);
+    final accessKey = Hive.box(userInfoBox).get(accessTokenKey);
 
     // User has been logged out return
     if (accessKey == null || !_authState.isAuthenticated) {
@@ -590,65 +575,56 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   Future<void> resumeBackup() async {
-    // assumes the background service is currently running
-    // if true, waits until it has stopped to update the app state from HiveDB
-    // before actually resuming backup by calling the internal `_resumeBackup`
-    final BackUpProgressEnum previous = state.backupProgress;
-    state = state.copyWith(backupProgress: BackUpProgressEnum.inBackground);
-    final bool hasLock = await _backgroundService.acquireLock();
-    if (!hasLock) {
-      log.warning("WARNING [resumeBackup] failed to acquireLock");
-      return;
-    }
-
-    await Future.wait([
-      Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
-      Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
-      Hive.openBox(backgroundBackupInfoBox),
-    ]);
-    final HiveBackupAlbums? albums =
-        Hive.box<HiveBackupAlbums>(hiveBackupInfoBox).get(backupInfoKey);
+    final List<BackupAlbum> selectedBackupAlbums = await _db.backupAlbums
+        .filter()
+        .selectionEqualTo(BackupSelection.select)
+        .findAll();
+    final List<BackupAlbum> excludedBackupAlbums = await _db.backupAlbums
+        .filter()
+        .selectionEqualTo(BackupSelection.select)
+        .findAll();
     Set<AvailableAlbum> selectedAlbums = state.selectedBackupAlbums;
     Set<AvailableAlbum> excludedAlbums = state.excludedBackupAlbums;
-    if (albums != null) {
-      if (selectedAlbums.isNotEmpty) {
-        selectedAlbums = _updateAlbumsBackupTime(
-          selectedAlbums,
-          albums.selectedAlbumIds,
-          albums.lastSelectedBackupTime,
-        );
-      }
-
-      if (excludedAlbums.isNotEmpty) {
-        excludedAlbums = _updateAlbumsBackupTime(
-          excludedAlbums,
-          albums.excludedAlbumsIds,
-          albums.lastExcludedBackupTime,
-        );
-      }
+    if (selectedAlbums.isNotEmpty) {
+      selectedAlbums = _updateAlbumsBackupTime(
+        selectedAlbums,
+        selectedBackupAlbums,
+      );
     }
-    final Box backgroundBox = Hive.box(backgroundBackupInfoBox);
+
+    if (excludedAlbums.isNotEmpty) {
+      excludedAlbums = _updateAlbumsBackupTime(
+        excludedAlbums,
+        excludedBackupAlbums,
+      );
+    }
+    final BackUpProgressEnum previous = state.backupProgress;
     state = state.copyWith(
-      backupProgress: previous,
+      backupProgress: BackUpProgressEnum.inBackground,
       selectedBackupAlbums: selectedAlbums,
       excludedBackupAlbums: excludedAlbums,
-      backupRequireWifi: backgroundBox.get(backupRequireWifi),
-      backupRequireCharging: backgroundBox.get(backupRequireCharging),
-      backupTriggerDelay: backgroundBox.get(backupTriggerDelay),
+      backupRequireWifi: Store.get(StoreKey.backupRequireWifi),
+      backupRequireCharging: Store.get(StoreKey.backupRequireCharging),
+      backupTriggerDelay: Store.get(StoreKey.backupTriggerDelay),
     );
+    // assumes the background service is currently running
+    // if true, waits until it has stopped to start the backup
+    final bool hasLock = await _backgroundService.acquireLock();
+    if (hasLock) {
+      state = state.copyWith(backupProgress: previous);
+    }
     return _resumeBackup();
   }
 
   Set<AvailableAlbum> _updateAlbumsBackupTime(
     Set<AvailableAlbum> albums,
-    List<String> ids,
-    List<DateTime> times,
+    List<BackupAlbum> backupAlbums,
   ) {
     Set<AvailableAlbum> result = {};
-    for (int i = 0; i < ids.length; i++) {
+    for (BackupAlbum ba in backupAlbums) {
       try {
-        AvailableAlbum a = albums.firstWhere((e) => e.id == ids[i]);
-        result.add(a.copyWith(lastBackup: times[i]));
+        AvailableAlbum a = albums.firstWhere((e) => e.id == ba.id);
+        result.add(a.copyWith(lastBackup: ba.lastBackup));
       } on StateError {
         log.severe(
           "[_updateAlbumBackupTime] failed to find album in state",
@@ -667,35 +643,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       AppStateEnum.detached,
     ];
     if (allowedStates.contains(ref.read(appStateProvider.notifier).state)) {
-      try {
-        if (Hive.isBoxOpen(hiveBackupInfoBox)) {
-          await Hive.box<HiveBackupAlbums>(hiveBackupInfoBox).close();
-        }
-      } catch (error) {
-        log.info("[_notifyBackgroundServiceCanRun] failed to close box");
-      }
-      try {
-        if (Hive.isBoxOpen(duplicatedAssetsBox)) {
-          await Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox).close();
-        }
-      } catch (error, stackTrace) {
-        log.severe(
-          "[_notifyBackgroundServiceCanRun] failed to close box",
-          error,
-          stackTrace,
-        );
-      }
-      try {
-        if (Hive.isBoxOpen(backgroundBackupInfoBox)) {
-          await Hive.box(backgroundBackupInfoBox).close();
-        }
-      } catch (error, stackTrace) {
-        log.severe(
-          "[_notifyBackgroundServiceCanRun] failed to close box",
-          error,
-          stackTrace,
-        );
-      }
       _backgroundService.releaseLock();
     }
   }
@@ -709,6 +656,7 @@ final backupProvider =
     ref.watch(authenticationProvider),
     ref.watch(backgroundServiceProvider),
     ref.watch(galleryPermissionNotifier.notifier),
+    ref.watch(dbProvider),
     ref,
   );
 });
