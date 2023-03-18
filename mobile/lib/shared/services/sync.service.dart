@@ -501,7 +501,6 @@ Triple<List<Asset>, List<Asset>, List<Asset>> _diffAssets(
           (!a.isLocal && b.isLocal) ||
           (!a.isRemote && b.isRemote)) {
         toUpdate.add(b.updateFromDb(a));
-        debugPrint("both");
         return true;
       }
       return false;
@@ -554,5 +553,6 @@ bool _hasAlbumResponseDtoChanged(AlbumResponseDto dto, Album a) {
       dto.albumName != a.name ||
       dto.albumThumbnailAssetId != a.thumbnail.value?.remoteId ||
       dto.shared != a.shared ||
+      dto.sharedUsers.length != a.sharedUsers.length ||
       DateTime.parse(dto.updatedAt).toUtc() != a.modifiedAt.toUtc();
 }

@@ -21,31 +21,30 @@ class SplashScreenPage extends HookConsumerWidget {
         Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).get(savedLoginInfoKey);
 
     void performLoggingIn() async {
-      try {
-        if (loginInfo != null) {
+      bool isSuccess = false;
+      if (loginInfo != null) {
+        try {
           // Resolve API server endpoint from user provided serverUrl
           await apiService.resolveAndSetEndpoint(loginInfo.serverUrl);
-
-          var isSuccess = await ref
-              .read(authenticationProvider.notifier)
-              .setSuccessLoginInfo(
-                accessToken: loginInfo.accessToken,
-                serverUrl: loginInfo.serverUrl,
-              );
-          if (isSuccess) {
-            final hasPermission = await ref
-                .read(galleryPermissionNotifier.notifier)
-                .hasPermission;
-            if (hasPermission) {
-              // Resume backup (if enable) then navigate
-              ref.watch(backupProvider.notifier).resumeBackup();
-            }
-            AutoRouter.of(context).replace(const TabControllerRoute());
-          } else {
-            AutoRouter.of(context).replace(const LoginRoute());
-          }
+        } catch (e) {
+          // okay, try to continue anyway if offline
         }
-      } catch (_) {
+
+        isSuccess =
+            await ref.read(authenticationProvider.notifier).setSuccessLoginInfo(
+                  accessToken: loginInfo.accessToken,
+                  serverUrl: loginInfo.serverUrl,
+                );
+      }
+      if (isSuccess) {
+        final hasPermission =
+            await ref.read(galleryPermissionNotifier.notifier).hasPermission;
+        if (hasPermission) {
+          // Resume backup (if enable) then navigate
+          ref.watch(backupProvider.notifier).resumeBackup();
+        }
+        AutoRouter.of(context).replace(const TabControllerRoute());
+      } else {
         AutoRouter.of(context).replace(const LoginRoute());
       }
     }

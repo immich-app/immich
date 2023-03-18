@@ -11,15 +11,17 @@ import 'package:photo_manager/photo_manager.dart';
 class ImmichImage extends StatelessWidget {
   const ImmichImage(
     this.asset, {
-    required this.width,
-    required this.height,
+    this.width,
+    this.height,
+    this.fit = BoxFit.cover,
     this.useGrayBoxPlaceholder = false,
     super.key,
   });
   final Asset? asset;
   final bool useGrayBoxPlaceholder;
-  final double width;
-  final double height;
+  final double? width;
+  final double? height;
+  final BoxFit fit;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +49,7 @@ class ImmichImage extends StatelessWidget {
         ),
         width: width,
         height: height,
-        fit: BoxFit.cover,
+        fit: fit,
         frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
           if (wasSynchronouslyLoaded || frame != null) {
             return child;
@@ -93,7 +95,7 @@ class ImmichImage extends StatelessWidget {
       // keeping memCacheWidth, memCacheHeight, maxWidthDiskCache and
       // maxHeightDiskCache = null allows to simply store the webp thumbnail
       // from the server and use it for all rendered thumbnail sizes
-      fit: BoxFit.cover,
+      fit: fit,
       fadeInDuration: const Duration(milliseconds: 250),
       progressIndicatorBuilder: (context, url, downloadProgress) {
         if (useGrayBoxPlaceholder) {

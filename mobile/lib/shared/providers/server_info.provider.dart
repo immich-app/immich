@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:immich_mobile/shared/models/server_info_state.model.dart';
@@ -28,8 +29,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
     if (serverVersion == null) {
       state = state.copyWith(
         isVersionMismatch: true,
-        versionMismatchErrorMessage:
-            "Server is out of date. Some functionalities might not working correctly. Download and rebuild server",
+        versionMismatchErrorMessage: "common_server_error".tr(),
       );
       return;
     }

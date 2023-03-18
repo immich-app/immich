@@ -412,7 +412,16 @@ describe('AssetService', () => {
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.DELETE_FILES,
         data: {
-          files: ['fake_path/asset_1.jpeg', undefined, undefined, 'fake_path/asset_1.mp4', undefined, undefined],
+          files: [
+            'fake_path/asset_1.jpeg',
+            undefined,
+            undefined,
+            undefined,
+            'fake_path/asset_1.mp4',
+            undefined,
+            undefined,
+            undefined,
+          ],
         },
       });
     });
@@ -430,6 +439,7 @@ describe('AssetService', () => {
         originalPath: 'original-path-2',
         resizePath: 'resize-path-2',
         webpPath: 'web-path-2',
+        encodedVideoPath: 'encoded-video-path-2',
       };
 
       when(assetRepositoryMock.get)
@@ -455,9 +465,11 @@ describe('AssetService', () => {
                 'original-path-1',
                 'web-path-1',
                 'resize-path-1',
+                undefined,
                 'original-path-2',
                 'web-path-2',
                 'resize-path-2',
+                'encoded-video-path-2',
               ],
             },
           },

@@ -1,23 +1,18 @@
-export const prerender = false;
-
+import { AppRoute } from '$lib/constants';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ locals: { api } }) => {
-	try {
-		const { data: userInfo } = await api.userApi.getMyUserInfo();
-
-		if (userInfo.shouldChangePassword) {
-			return {
-				user: userInfo,
-				meta: {
-					title: 'Change Password'
-				}
-			};
-		} else {
-			throw redirect(302, '/photos');
-		}
-	} catch (e) {
-		throw redirect(302, '/auth/login');
+export const load = (async ({ locals: { user } }) => {
+	if (!user) {
+		throw redirect(302, AppRoute.AUTH_LOGIN);
+	} else if (!user.shouldChangePassword) {
+		throw redirect(302, AppRoute.PHOTOS);
 	}
+
+	return {
+		user,
+		meta: {
+			title: 'Change Password'
+		}
+	};
 }) satisfies PageServerLoad;

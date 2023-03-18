@@ -57,7 +57,7 @@
 
 		const substitutions: Record<string, string> = {
 			filename: 'IMAGE_56437',
-			ext: 'jpeg',
+			ext: 'jpg',
 			filetype: 'IMG',
 			filetypefull: 'IMAGE'
 		};
@@ -179,7 +179,7 @@
 				>
 					<span class="text-immich-fg/25 dark:text-immich-dark-fg/50"
 						>UPLOAD_LOCATION/{user.id}</span
-					>/{parsedTemplate()}.jpeg
+					>/{parsedTemplate()}.jpg
 				</p>
 
 				<form autocomplete="off" class="flex flex-col" on:submit|preventDefault>
@@ -210,7 +210,7 @@
 							<SettingInputField
 								label="EXTENSION"
 								inputType={SettingInputFieldType.TEXT}
-								value={'.jpeg'}
+								value={'.jpg'}
 								disabled
 							/>
 						</div>
