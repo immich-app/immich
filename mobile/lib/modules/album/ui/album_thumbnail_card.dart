@@ -44,6 +44,39 @@ class AlbumThumbnailCard extends StatelessWidget {
               height: cardSize,
             );
 
+        buildAlbumTextRow() {
+          String? owner;
+          if (album.ownerId == Store.get(StoreKey.userRemoteId)) {
+            owner = 'Owned';
+          } else if (album.ownerName != null) {
+            owner = 'Shared by ${album.ownerName}';
+          }
+
+          return RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: album.assetCount == 1
+                      ? 'album_thumbnail_card_item'
+                        .tr(args: ['${album.assetCount}'])
+                      : 'album_thumbnail_card_items'
+                        .tr(args: ['${album.assetCount}']),
+                  style: const TextStyle(
+                    fontSize: 12,
+                  ),
+                ),
+                if (owner != null) 
+                  const TextSpan(text: ' · '),
+                if (owner != null)
+                  TextSpan(
+                    text: owner,
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+              ],
+            ),
+          );
+        }
+
         return GestureDetector(
           onTap: onTap,
           child: Flex(
@@ -75,30 +108,7 @@ class AlbumThumbnailCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          album.assetCount == 1
-                              ? 'album_thumbnail_card_item'
-                              : 'album_thumbnail_card_items',
-                          style: const TextStyle(
-                            fontSize: 12,
-                          ),
-                        ).tr(args: ['${album.assetCount}']),
-                        if (album.shared)
-                          Text(
-                            album.ownerId == Store.get(StoreKey.userRemoteId) 
-                              ? ' · Owned' 
-                              : album.ownerName == null 
-                                ? 'album_thumbnail_card_shared'.tr()
-                                : ' · ${album.ownerName}',
-                            style: const TextStyle(
-                              fontSize: 12,
-                            ),
-                          )
-                      ],
-                    )
+                    buildAlbumTextRow(),         
                   ],
                 ),
               ),
