@@ -18,7 +18,8 @@ enum AppSettingsEnum<T> {
   thumbnailCacheSize<int>("thumbnailCacheSize", 10000),
   imageCacheSize<int>("imageCacheSize", 350),
   albumThumbnailCacheSize<int>("albumThumbnailCacheSize", 200),
-  useExperimentalAssetGrid<bool>("useExperimentalAssetGrid", false);
+  useExperimentalAssetGrid<bool>("useExperimentalAssetGrid", false),
+  selectedAlbumSortOrder<int>("selectedAlbumSortOrder", 0);
 
   const AppSettingsEnum(this.hiveKey, this.defaultValue);
 
