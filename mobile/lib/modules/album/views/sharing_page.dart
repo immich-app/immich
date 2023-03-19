@@ -41,6 +41,10 @@ class SharingPage extends HookConsumerWidget {
             (context, index) {
               return AlbumThumbnailCard(
                 album: sharedAlbums[index],
+                onTap: () {
+                  AutoRouter.of(context)
+                      .push(AlbumViewerRoute(albumId: sharedAlbums[index].id));
+                },
               );
             },
             childCount: sharedAlbums.length,
