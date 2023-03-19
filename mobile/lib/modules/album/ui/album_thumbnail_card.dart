@@ -112,8 +112,11 @@ class AlbumThumbnailCard extends StatelessWidget {
                         width: cardSize,
                         child: Text(
                           album.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
+                            color: isDarkMode
+                                ? Theme.of(context).primaryColor
+                                : Colors.black,
                           ),
                         ),
                       ),
