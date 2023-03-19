@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:collection';
+import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
@@ -68,7 +70,11 @@ class AlbumService {
         hasAll: true,
         filterOption: FilterOptionGroup(containsPathModified: true),
       );
+      Set<String>? excludedAssets;
       if (excludedIds.isNotEmpty) {
+        if (Platform.isIOS) {
+          excludedAssets = await _loadExcludedAssetIds(onDevice, excludedIds);
+        }
         // remove all excluded albums
         onDevice.removeWhere((e) => excludedIds.contains(e.id));
       }
@@ -77,18 +83,37 @@ class AlbumService {
           .whereNotNull()
           .any((a) => a.isAll);
       if (hasAll) {
-        // remove the virtual "Recents" album and keep and individual albums
-        onDevice.removeWhere((e) => e.isAll);
+        if (Platform.isAndroid) {
+          // remove the virtual "Recents" album and keep and individual albums
+          onDevice.removeWhere((e) => e.isAll);
+        }
       } else {
         // keep only the explicitly selected albums
         onDevice.removeWhere((e) => !selectedIds.contains(e.id));
       }
-      changes = await _syncService.syncLocalAlbumAssetsToDb(onDevice);
+
+      changes =
+          await _syncService.syncLocalAlbumAssetsToDb(onDevice, excludedAssets);
     } finally {
       _localCompleter.complete(changes);
     }
     debugPrint("refreshDeviceAlbums took ${sw.elapsedMilliseconds}ms");
     return changes;
+  }
+
+  Future<Set<String>> _loadExcludedAssetIds(
+    List<AssetPathEntity> albums,
+    List<String> excludedAlbumIds,
+  ) async {
+    final Set<String> result = HashSet<String>();
+    for (AssetPathEntity a in albums) {
+      if (excludedAlbumIds.contains(a.name)) {
+        final List<AssetEntity> assets =
+            await a.getAssetListRange(start: 0, end: 0x7fffffffffffffff);
+        result.addAll(assets.map((e) => e.id));
+      }
+    }
+    return result;
   }
 
   /// Checks remote albums (owned if `isShared` is false) for changes,

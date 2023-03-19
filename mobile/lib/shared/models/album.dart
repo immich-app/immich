@@ -142,8 +142,15 @@ extension AssetPathEntityHelper on AssetPathEntity {
   Future<List<Asset>> getAssets({
     int start = 0,
     int end = 0x7fffffffffffffff,
+    Set<String>? excludedAssets,
   }) async {
     final assetEntities = await getAssetListRange(start: start, end: end);
+    if (excludedAssets != null) {
+      return assetEntities
+          .where((e) => !excludedAssets.contains(e.id))
+          .map(Asset.local)
+          .toList();
+    }
     return assetEntities.map(Asset.local).toList();
   }
 }

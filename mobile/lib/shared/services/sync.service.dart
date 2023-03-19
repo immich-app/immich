@@ -73,8 +73,11 @@ class SyncService {
 
   /// Syncs all device albums and their assets to the database
   /// Returns `true` if there were any changes
-  Future<bool> syncLocalAlbumAssetsToDb(List<AssetPathEntity> onDevice) =>
-      _lock.run(() => _syncLocalAlbumAssetsToDb(onDevice));
+  Future<bool> syncLocalAlbumAssetsToDb(
+    List<AssetPathEntity> onDevice, [
+    Set<String>? excludedAssets,
+  ]) =>
+      _lock.run(() => _syncLocalAlbumAssetsToDb(onDevice, excludedAssets));
 
   /// returns all Asset IDs that are not contained in the existing list
   List<int> sharedAssetsToRemove(
@@ -292,7 +295,10 @@ class SyncService {
 
   /// Syncs all device albums and their assets to the database
   /// Returns `true` if there were any changes
-  Future<bool> _syncLocalAlbumAssetsToDb(List<AssetPathEntity> onDevice) async {
+  Future<bool> _syncLocalAlbumAssetsToDb(
+    List<AssetPathEntity> onDevice, [
+    Set<String>? excludedAssets,
+  ]) async {
     onDevice.sort((a, b) => a.id.compareTo(b.id));
     final List<Album> inDb =
         await _db.albums.where().localIdIsNotNull().sortByLocalId().findAll();
@@ -302,9 +308,15 @@ class SyncService {
       onDevice,
       inDb,
       compare: (AssetPathEntity a, Album b) => a.id.compareTo(b.localId!),
-      both: (AssetPathEntity ape, Album album) =>
-          _syncAlbumInDbAndOnDevice(ape, album, deleteCandidates, existing),
-      onlyFirst: (AssetPathEntity ape) => _addAlbumFromDevice(ape, existing),
+      both: (AssetPathEntity ape, Album album) => _syncAlbumInDbAndOnDevice(
+        ape,
+        album,
+        deleteCandidates,
+        existing,
+        excludedAssets,
+      ),
+      onlyFirst: (AssetPathEntity ape) =>
+          _addAlbumFromDevice(ape, existing, excludedAssets),
       onlySecond: (Album a) => _removeAlbumFromDb(a, deleteCandidates),
     );
     final pair = _handleAssetRemoval(deleteCandidates, existing);
@@ -325,21 +337,33 @@ class SyncService {
     Album album,
     List<Asset> deleteCandidates,
     List<Asset> existing, [
+    Set<String>? excludedAssets,
     bool forceRefresh = false,
   ]) async {
     if (!forceRefresh && !await _hasAssetPathEntityChanged(ape, album)) {
       return false;
     }
-    if (!forceRefresh && await _syncDeviceAlbumFast(ape, album)) {
+    if (!forceRefresh &&
+        excludedAssets == null &&
+        await _syncDeviceAlbumFast(ape, album)) {
       return true;
     }
 
-    // general case, e.g. some assets have been deleted
+    // general case, e.g. some assets have been deleted or there are excluded albums on iOS
     final inDb = await album.assets.filter().sortByLocalId().findAll();
-    final List<Asset> onDevice = await ape.getAssets();
+    final List<Asset> onDevice =
+        await ape.getAssets(excludedAssets: excludedAssets);
     onDevice.sort(Asset.compareByLocalId);
     final d = _diffAssets(onDevice, inDb, compare: Asset.compareByLocalId);
     final List<Asset> toAdd = d.first, toUpdate = d.second, toDelete = d.third;
+    if (toAdd.isEmpty &&
+        toUpdate.isEmpty &&
+        toDelete.isEmpty &&
+        album.name == ape.name &&
+        album.modifiedAt == ape.lastModified) {
+      // changes only affeted excluded albums
+      return false;
+    }
     final result = await _linkWithExistingFromDb(toAdd);
     deleteCandidates.addAll(toDelete);
     existing.addAll(result.first);
@@ -406,10 +430,13 @@ class SyncService {
   /// assets already existing in the database to the list of `existing` assets
   Future<void> _addAlbumFromDevice(
     AssetPathEntity ape,
-    List<Asset> existing,
-  ) async {
+    List<Asset> existing, [
+    Set<String>? excludedAssets,
+  ]) async {
     final Album a = Album.local(ape);
-    final result = await _linkWithExistingFromDb(await ape.getAssets());
+    final result = await _linkWithExistingFromDb(
+      await ape.getAssets(excludedAssets: excludedAssets),
+    );
     await _upsertAssetsWithExif(result.second);
     existing.addAll(result.first);
     a.assets.addAll(result.first);
