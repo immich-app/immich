@@ -77,6 +77,13 @@ class AlbumService {
       Set<String>? excludedAssets;
       if (excludedIds.isNotEmpty) {
         if (Platform.isIOS) {
+          // iOS and Android device album working principle differ significantly
+          // on iOS, an asset can be in multiple albums
+          // on Android, an asset can only be in exactly one album (folder!) at the same time
+          // thus, on Android, excluding an album can be done by ignoring that album
+          // however, on iOS, it it necessary to load the assets from all excluded
+          // albums and check every asset from any selected album against the set
+          // of excluded assets
           excludedAssets = await _loadExcludedAssetIds(onDevice, excludedIds);
           _log.info("Found ${excludedAssets.length} assets to exclude");
         }
@@ -92,7 +99,8 @@ class AlbumService {
           .any((a) => a.isAll);
       if (hasAll) {
         if (Platform.isAndroid) {
-          // remove the virtual "Recents" album and keep and individual albums
+          // remove the virtual "Recent" album and keep and individual albums
+          // on Android, the virtual "Recent" `lastModified` value is always null
           onDevice.removeWhere((e) => e.isAll);
           _log.info("'Recents' is selected, keeping all individual albums");
         }
@@ -117,7 +125,7 @@ class AlbumService {
   ) async {
     final Set<String> result = HashSet<String>();
     for (AssetPathEntity a in albums) {
-      if (excludedAlbumIds.contains(a.name)) {
+      if (excludedAlbumIds.contains(a.id)) {
         final List<AssetEntity> assets =
             await a.getAssetListRange(start: 0, end: 0x7fffffffffffffff);
         result.addAll(assets.map((e) => e.id));
