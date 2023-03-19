@@ -160,7 +160,10 @@ class SyncService {
     if (isShared && toDelete.isNotEmpty) {
       final List<int> idsToRemove = sharedAssetsToRemove(toDelete, existing);
       if (idsToRemove.isNotEmpty) {
-        await _db.writeTxn(() => _db.assets.deleteAll(idsToRemove));
+        await _db.writeTxn(() async {
+          await _db.assets.deleteAll(idsToRemove);
+          await _db.exifInfos.deleteAll(idsToRemove);
+        });
       }
     } else {
       assert(toDelete.isEmpty);
@@ -332,6 +335,7 @@ class SyncService {
     if (pair.first.isNotEmpty || pair.second.isNotEmpty) {
       await _db.writeTxn(() async {
         await _db.assets.deleteAll(pair.first);
+        await _db.exifInfos.deleteAll(pair.first);
         await _db.assets.putAll(pair.second);
       });
       _log.info(
