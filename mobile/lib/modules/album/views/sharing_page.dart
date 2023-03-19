@@ -41,6 +41,7 @@ class SharingPage extends HookConsumerWidget {
             (context, index) {
               return AlbumThumbnailCard(
                 album: sharedAlbums[index],
+                showOwner: true,
                 onTap: () {
                   AutoRouter.of(context)
                       .push(AlbumViewerRoute(albumId: sharedAlbums[index].id));

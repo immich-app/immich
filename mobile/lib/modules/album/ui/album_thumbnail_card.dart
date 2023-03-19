@@ -7,10 +7,15 @@ import 'package:immich_mobile/shared/ui/immich_image.dart';
 class AlbumThumbnailCard extends StatelessWidget {
   final Function()? onTap;
 
+  /// Whether or not to show the owner of the album (or "Owned")
+  /// in the subtitle of the album
+  final bool showOwner;
+
   const AlbumThumbnailCard({
     Key? key,
     required this.album,
-    this.onTap,
+    this.onTap, 
+    this.showOwner = false,
   }) : super(key: key);
 
   final Album album;
@@ -45,12 +50,15 @@ class AlbumThumbnailCard extends StatelessWidget {
             );
 
         buildAlbumTextRow() {
+          // Add the owner name to the subtitle
           String? owner;
-          if (album.ownerId == Store.get(StoreKey.userRemoteId)) {
-            owner = 'album_thumbnail_owned'.tr();
-          } else if (album.ownerName != null) {
-            owner = 'album_thumbnail_shared_by'
-                .tr(args: [album.ownerName!]);
+          if (showOwner) {
+            if (album.ownerId == Store.get(StoreKey.userRemoteId)) {
+              owner = 'album_thumbnail_owned'.tr();
+            } else if (album.ownerName != null) {
+              owner = 'album_thumbnail_shared_by'
+                  .tr(args: [album.ownerName!]);
+            }
           }
 
           return RichText(
