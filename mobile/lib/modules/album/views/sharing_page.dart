@@ -18,6 +18,7 @@ class SharingPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final List<Album> sharedAlbums = ref.watch(sharedAlbumProvider);
     final userId = store.Store.get(store.StoreKey.userRemoteId);
+    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     useEffect(
       () {
@@ -78,21 +79,23 @@ class SharingPage extends HookConsumerWidget {
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      // color: Theme.of(context).primaryColor,
+                      color: isDarkMode
+                          ? Theme.of(context).primaryColor
+                          : Colors.black,
                     ),
               ),
               subtitle: isOwner
                   ? const Text(
                       'Owned',
                       style: TextStyle(
-                        fontSize: 11.0,
+                        fontSize: 12.0,
                       ),
                     )
                   : album.ownerName != null
                       ? Text(
                           'Shared by ${album.ownerName!}',
                           style: const TextStyle(
-                            fontSize: 11.0,
+                            fontSize: 12.0,
                           ),
                         )
                       : null,
