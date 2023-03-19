@@ -1,7 +1,3 @@
----
-sidebar_position: 2
----
-
 # Reverse Proxy
 
 When deploying Immich it is important to understand that a reverse proxy is required in front of the server and web container. The reverse proxy acts as an intermediary between the user and container, forwarding requests to the correct container based on the URL path.
@@ -23,4 +19,4 @@ Users can deploy a custom reverse proxy that forwards requests to Immich's rever
 
 ## Replacing the Default Reverse Proxy
 
-Replacing Immich's default reverse proxy is an advanced deployment and support may be limited. When replacing Immich's default proxy it is important to ensure that requests to `/api/*` are routed to the server container and all other requests to the web container. Additionally, the previously mentioned headers should be configured accordingly.
+Replacing Immich's default reverse proxy is an advanced deployment and support may be limited. When replacing Immich's default proxy it is important to ensure that requests to `/api/*` are routed to the server container and all other requests to the web container. Additionally, the previously mentioned headers should be configured accordingly. You may find our [nginx configuration file](https://github.com/immich-app/immich/blob/main/nginx/templates/default.conf.template) a helpful reference.
