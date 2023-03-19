@@ -47,12 +47,14 @@ class AlbumThumbnailCard extends StatelessWidget {
         buildAlbumTextRow() {
           String? owner;
           if (album.ownerId == Store.get(StoreKey.userRemoteId)) {
-            owner = 'Owned';
+            owner = 'album_thumbnail_owned'.tr();
           } else if (album.ownerName != null) {
-            owner = 'Shared by ${album.ownerName}';
+            owner = 'album_thumbnail_shared_by'
+                .tr(args: [album.ownerName!]);
           }
 
           return RichText(
+            overflow: TextOverflow.fade,
             text: TextSpan(
               children: [
                 TextSpan(
