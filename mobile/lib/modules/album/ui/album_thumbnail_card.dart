@@ -14,7 +14,7 @@ class AlbumThumbnailCard extends StatelessWidget {
   const AlbumThumbnailCard({
     Key? key,
     required this.album,
-    this.onTap, 
+    this.onTap,
     this.showOwner = false,
   }) : super(key: key);
 
@@ -56,8 +56,7 @@ class AlbumThumbnailCard extends StatelessWidget {
             if (album.ownerId == Store.get(StoreKey.userRemoteId)) {
               owner = 'album_thumbnail_owned'.tr();
             } else if (album.ownerName != null) {
-              owner = 'album_thumbnail_shared_by'
-                  .tr(args: [album.ownerName!]);
+              owner = 'album_thumbnail_shared_by'.tr(args: [album.ownerName!]);
             }
           }
 
@@ -68,15 +67,16 @@ class AlbumThumbnailCard extends StatelessWidget {
                 TextSpan(
                   text: album.assetCount == 1
                       ? 'album_thumbnail_card_item'
-                        .tr(args: ['${album.assetCount}'])
+                          .tr(args: ['${album.assetCount}'])
                       : 'album_thumbnail_card_items'
-                        .tr(args: ['${album.assetCount}']),
-                  style: const TextStyle(
+                          .tr(args: ['${album.assetCount}']),
+                  style: TextStyle(
+                    fontFamily: 'WorkSans',
                     fontSize: 12,
+                    color: isDarkMode ? Colors.white : Colors.black,
                   ),
                 ),
-                if (owner != null) 
-                  const TextSpan(text: ' · '),
+                if (owner != null) const TextSpan(text: ' · '),
                 if (owner != null)
                   TextSpan(
                     text: owner,
@@ -118,7 +118,7 @@ class AlbumThumbnailCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    buildAlbumTextRow(),         
+                    buildAlbumTextRow(),
                   ],
                 ),
               ),

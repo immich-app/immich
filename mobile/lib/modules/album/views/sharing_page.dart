@@ -78,13 +78,24 @@ class SharingPage extends HookConsumerWidget {
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.bold,
+                      // color: Theme.of(context).primaryColor,
                     ),
               ),
-              subtitle: isOwner 
-                ? const Text('Owned')
-                : album.ownerName != null
-                  ? Text('Shared by ${album.ownerName!}')
-                  : null,
+              subtitle: isOwner
+                  ? const Text(
+                      'Owned',
+                      style: TextStyle(
+                        fontSize: 11.0,
+                      ),
+                    )
+                  : album.ownerName != null
+                      ? Text(
+                          'Shared by ${album.ownerName!}',
+                          style: const TextStyle(
+                            fontSize: 11.0,
+                          ),
+                        )
+                      : null,
               onTap: () {
                 AutoRouter.of(context)
                     .push(AlbumViewerRoute(albumId: sharedAlbums[index].id));
