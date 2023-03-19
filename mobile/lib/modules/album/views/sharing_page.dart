@@ -35,7 +35,7 @@ class SharingPage extends HookConsumerWidget {
             maxCrossAxisExtent: 250,
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
-            childAspectRatio: .8,
+            childAspectRatio: .7,
           ),
           delegate: SliverChildBuilderDelegate(
             (context, index) {
