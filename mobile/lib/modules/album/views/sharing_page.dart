@@ -9,7 +9,6 @@ import 'package:immich_mobile/modules/album/ui/sharing_sliver_appbar.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/store.dart' as store;
-import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 
 class SharingPage extends HookConsumerWidget {
