@@ -13,50 +13,68 @@ part of openapi.api;
 class AllJobStatusResponseDto {
   /// Returns a new [AllJobStatusResponseDto] instance.
   AllJobStatusResponseDto({
-    required this.thumbnailGeneration,
-    required this.metadataExtraction,
-    required this.videoConversion,
-    required this.machineLearning,
-    required this.storageTemplateMigration,
+    required this.thumbnailGenerationQueue,
+    required this.metadataExtractionQueue,
+    required this.videoConversionQueue,
+    required this.objectTaggingQueue,
+    required this.clipEncodingQueue,
+    required this.storageTemplateMigrationQueue,
+    required this.backgroundTaskQueue,
+    required this.searchQueue,
   });
 
-  JobCounts thumbnailGeneration;
+  JobCountsDto thumbnailGenerationQueue;
 
-  JobCounts metadataExtraction;
+  JobCountsDto metadataExtractionQueue;
 
-  JobCounts videoConversion;
+  JobCountsDto videoConversionQueue;
 
-  JobCounts machineLearning;
+  JobCountsDto objectTaggingQueue;
 
-  JobCounts storageTemplateMigration;
+  JobCountsDto clipEncodingQueue;
+
+  JobCountsDto storageTemplateMigrationQueue;
+
+  JobCountsDto backgroundTaskQueue;
+
+  JobCountsDto searchQueue;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AllJobStatusResponseDto &&
-     other.thumbnailGeneration == thumbnailGeneration &&
-     other.metadataExtraction == metadataExtraction &&
-     other.videoConversion == videoConversion &&
-     other.machineLearning == machineLearning &&
-     other.storageTemplateMigration == storageTemplateMigration;
+     other.thumbnailGenerationQueue == thumbnailGenerationQueue &&
+     other.metadataExtractionQueue == metadataExtractionQueue &&
+     other.videoConversionQueue == videoConversionQueue &&
+     other.objectTaggingQueue == objectTaggingQueue &&
+     other.clipEncodingQueue == clipEncodingQueue &&
+     other.storageTemplateMigrationQueue == storageTemplateMigrationQueue &&
+     other.backgroundTaskQueue == backgroundTaskQueue &&
+     other.searchQueue == searchQueue;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (thumbnailGeneration.hashCode) +
-    (metadataExtraction.hashCode) +
-    (videoConversion.hashCode) +
-    (machineLearning.hashCode) +
-    (storageTemplateMigration.hashCode);
+    (thumbnailGenerationQueue.hashCode) +
+    (metadataExtractionQueue.hashCode) +
+    (videoConversionQueue.hashCode) +
+    (objectTaggingQueue.hashCode) +
+    (clipEncodingQueue.hashCode) +
+    (storageTemplateMigrationQueue.hashCode) +
+    (backgroundTaskQueue.hashCode) +
+    (searchQueue.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[thumbnailGeneration=$thumbnailGeneration, metadataExtraction=$metadataExtraction, videoConversion=$videoConversion, machineLearning=$machineLearning, storageTemplateMigration=$storageTemplateMigration]';
+  String toString() => 'AllJobStatusResponseDto[thumbnailGenerationQueue=$thumbnailGenerationQueue, metadataExtractionQueue=$metadataExtractionQueue, videoConversionQueue=$videoConversionQueue, objectTaggingQueue=$objectTaggingQueue, clipEncodingQueue=$clipEncodingQueue, storageTemplateMigrationQueue=$storageTemplateMigrationQueue, backgroundTaskQueue=$backgroundTaskQueue, searchQueue=$searchQueue]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'thumbnail-generation'] = this.thumbnailGeneration;
-      json[r'metadata-extraction'] = this.metadataExtraction;
-      json[r'video-conversion'] = this.videoConversion;
-      json[r'machine-learning'] = this.machineLearning;
-      json[r'storage-template-migration'] = this.storageTemplateMigration;
+      json[r'thumbnail-generation-queue'] = this.thumbnailGenerationQueue;
+      json[r'metadata-extraction-queue'] = this.metadataExtractionQueue;
+      json[r'video-conversion-queue'] = this.videoConversionQueue;
+      json[r'object-tagging-queue'] = this.objectTaggingQueue;
+      json[r'clip-encoding-queue'] = this.clipEncodingQueue;
+      json[r'storage-template-migration-queue'] = this.storageTemplateMigrationQueue;
+      json[r'background-task-queue'] = this.backgroundTaskQueue;
+      json[r'search-queue'] = this.searchQueue;
     return json;
   }
 
@@ -79,11 +97,14 @@ class AllJobStatusResponseDto {
       }());
 
       return AllJobStatusResponseDto(
-        thumbnailGeneration: JobCounts.fromJson(json[r'thumbnail-generation'])!,
-        metadataExtraction: JobCounts.fromJson(json[r'metadata-extraction'])!,
-        videoConversion: JobCounts.fromJson(json[r'video-conversion'])!,
-        machineLearning: JobCounts.fromJson(json[r'machine-learning'])!,
-        storageTemplateMigration: JobCounts.fromJson(json[r'storage-template-migration'])!,
+        thumbnailGenerationQueue: JobCountsDto.fromJson(json[r'thumbnail-generation-queue'])!,
+        metadataExtractionQueue: JobCountsDto.fromJson(json[r'metadata-extraction-queue'])!,
+        videoConversionQueue: JobCountsDto.fromJson(json[r'video-conversion-queue'])!,
+        objectTaggingQueue: JobCountsDto.fromJson(json[r'object-tagging-queue'])!,
+        clipEncodingQueue: JobCountsDto.fromJson(json[r'clip-encoding-queue'])!,
+        storageTemplateMigrationQueue: JobCountsDto.fromJson(json[r'storage-template-migration-queue'])!,
+        backgroundTaskQueue: JobCountsDto.fromJson(json[r'background-task-queue'])!,
+        searchQueue: JobCountsDto.fromJson(json[r'search-queue'])!,
       );
     }
     return null;
@@ -133,11 +154,14 @@ class AllJobStatusResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'thumbnail-generation',
-    'metadata-extraction',
-    'video-conversion',
-    'machine-learning',
-    'storage-template-migration',
+    'thumbnail-generation-queue',
+    'metadata-extraction-queue',
+    'video-conversion-queue',
+    'object-tagging-queue',
+    'clip-encoding-queue',
+    'storage-template-migration-queue',
+    'background-task-queue',
+    'search-queue',
   };
 }
 

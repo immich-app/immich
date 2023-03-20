@@ -14,31 +14,31 @@ class JobCommandDto {
   /// Returns a new [JobCommandDto] instance.
   JobCommandDto({
     required this.command,
-    required this.includeAllAssets,
+    required this.force,
   });
 
   JobCommand command;
 
-  bool includeAllAssets;
+  bool force;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is JobCommandDto &&
      other.command == command &&
-     other.includeAllAssets == includeAllAssets;
+     other.force == force;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (command.hashCode) +
-    (includeAllAssets.hashCode);
+    (force.hashCode);
 
   @override
-  String toString() => 'JobCommandDto[command=$command, includeAllAssets=$includeAllAssets]';
+  String toString() => 'JobCommandDto[command=$command, force=$force]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'command'] = this.command;
-      json[r'includeAllAssets'] = this.includeAllAssets;
+      json[r'force'] = this.force;
     return json;
   }
 
@@ -62,7 +62,7 @@ class JobCommandDto {
 
       return JobCommandDto(
         command: JobCommand.fromJson(json[r'command'])!,
-        includeAllAssets: mapValueOfType<bool>(json, r'includeAllAssets')!,
+        force: mapValueOfType<bool>(json, r'force')!,
       );
     }
     return null;
@@ -113,7 +113,7 @@ class JobCommandDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'command',
-    'includeAllAssets',
+    'force',
   };
 }
 
