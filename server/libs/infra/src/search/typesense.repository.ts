@@ -166,23 +166,23 @@ export class TypesenseRepository implements ISearchRepository {
         mergeMap(
           (facet) =>
             from(facet.counts).pipe(
-              mergeMap(
-                (count) =>
-                  from(
-                    asset$.search({
-                      ...common,
-                      query_by: 'exifInfo.imageName',
-                      filter_by: `${facet.field_name}:${count.value}`,
-                    }),
-                  ).pipe(
-                    map((result) => ({
-                      value: count.value,
-                      data: result.hits?.[0]?.document as AssetEntity,
-                    })),
-                    filter((item) => !!item.data),
-                  ),
-                5,
-              ),
+              mergeMap((count) => {
+                const config = {
+                  ...common,
+                  query_by: 'exifInfo.imageName',
+                  filter_by: `${facet.field_name}:${count.value}`,
+                };
+
+                this.logger.debug(`Explore subquery for ${facet.field_name}: ${JSON.stringify(config)} `);
+
+                return from(asset$.search(config)).pipe(
+                  map((result) => ({
+                    value: count.value,
+                    data: result.hits?.[0]?.document as AssetEntity,
+                  })),
+                  filter((item) => !!item.data),
+                );
+              }, 5),
               toArray(),
               map((items) => ({
                 fieldName: facet.field_name as string,
