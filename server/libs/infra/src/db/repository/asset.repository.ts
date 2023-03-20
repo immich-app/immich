@@ -94,7 +94,9 @@ export class AssetRepository implements IAssetRepository {
         where = {
           isVisible: true,
           resizePath: Not(IsNull()),
-          exifInfo: IsNull(),
+          exifInfo: {
+            assetId: IsNull(),
+          },
         };
         break;
 
