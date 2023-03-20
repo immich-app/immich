@@ -13,6 +13,7 @@ import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/tuple.dart';
 import 'package:isar/isar.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -22,6 +23,7 @@ final syncServiceProvider =
 class SyncService {
   final Isar _db;
   final AsyncMutex _lock = AsyncMutex();
+  final Logger _log = Logger('SyncService');
 
   SyncService(this._db);
 
@@ -73,8 +75,11 @@ class SyncService {
 
   /// Syncs all device albums and their assets to the database
   /// Returns `true` if there were any changes
-  Future<bool> syncLocalAlbumAssetsToDb(List<AssetPathEntity> onDevice) =>
-      _lock.run(() => _syncLocalAlbumAssetsToDb(onDevice));
+  Future<bool> syncLocalAlbumAssetsToDb(
+    List<AssetPathEntity> onDevice, [
+    Set<String>? excludedAssets,
+  ]) =>
+      _lock.run(() => _syncLocalAlbumAssetsToDb(onDevice, excludedAssets));
 
   /// returns all Asset IDs that are not contained in the existing list
   List<int> sharedAssetsToRemove(
@@ -155,7 +160,10 @@ class SyncService {
     if (isShared && toDelete.isNotEmpty) {
       final List<int> idsToRemove = sharedAssetsToRemove(toDelete, existing);
       if (idsToRemove.isNotEmpty) {
-        await _db.writeTxn(() => _db.assets.deleteAll(idsToRemove));
+        await _db.writeTxn(() async {
+          await _db.assets.deleteAll(idsToRemove);
+          await _db.exifInfos.deleteAll(idsToRemove);
+        });
       }
     } else {
       assert(toDelete.isEmpty);
@@ -275,6 +283,7 @@ class SyncService {
     List<Asset> deleteCandidates,
   ) async {
     if (album.isLocal) {
+      _log.info("Removing local album $album from DB");
       // delete assets in DB unless they are remote or part of some other album
       deleteCandidates.addAll(
         await album.assets.filter().remoteIdIsNull().findAll(),
@@ -286,13 +295,22 @@ class SyncService {
         await album.assets.filter().not().ownerIdEqualTo(user.isarId).findAll(),
       );
     }
-    final bool ok = await _db.writeTxn(() => _db.albums.delete(album.id));
-    assert(ok);
+    try {
+      final bool ok = await _db.writeTxn(() => _db.albums.delete(album.id));
+      assert(ok);
+      _log.info("Removed local album $album from DB");
+    } catch (e) {
+      _log.warning("Failed to remove local album $album from DB");
+    }
   }
 
   /// Syncs all device albums and their assets to the database
   /// Returns `true` if there were any changes
-  Future<bool> _syncLocalAlbumAssetsToDb(List<AssetPathEntity> onDevice) async {
+  Future<bool> _syncLocalAlbumAssetsToDb(
+    List<AssetPathEntity> onDevice, [
+    Set<String>? excludedAssets,
+  ]) async {
+    _log.info("Syncing ${onDevice.length} albums from device: $onDevice");
     onDevice.sort((a, b) => a.id.compareTo(b.id));
     final List<Album> inDb =
         await _db.albums.where().localIdIsNotNull().sortByLocalId().findAll();
@@ -302,17 +320,27 @@ class SyncService {
       onDevice,
       inDb,
       compare: (AssetPathEntity a, Album b) => a.id.compareTo(b.localId!),
-      both: (AssetPathEntity ape, Album album) =>
-          _syncAlbumInDbAndOnDevice(ape, album, deleteCandidates, existing),
-      onlyFirst: (AssetPathEntity ape) => _addAlbumFromDevice(ape, existing),
+      both: (AssetPathEntity ape, Album album) => _syncAlbumInDbAndOnDevice(
+        ape,
+        album,
+        deleteCandidates,
+        existing,
+        excludedAssets,
+      ),
+      onlyFirst: (AssetPathEntity ape) =>
+          _addAlbumFromDevice(ape, existing, excludedAssets),
       onlySecond: (Album a) => _removeAlbumFromDb(a, deleteCandidates),
     );
     final pair = _handleAssetRemoval(deleteCandidates, existing);
     if (pair.first.isNotEmpty || pair.second.isNotEmpty) {
       await _db.writeTxn(() async {
         await _db.assets.deleteAll(pair.first);
+        await _db.exifInfos.deleteAll(pair.first);
         await _db.assets.putAll(pair.second);
       });
+      _log.info(
+        "Removed ${pair.first.length} and updated ${pair.second.length} local assets from DB",
+      );
     }
     return anyChanges;
   }
@@ -325,21 +353,33 @@ class SyncService {
     Album album,
     List<Asset> deleteCandidates,
     List<Asset> existing, [
+    Set<String>? excludedAssets,
     bool forceRefresh = false,
   ]) async {
     if (!forceRefresh && !await _hasAssetPathEntityChanged(ape, album)) {
       return false;
     }
-    if (!forceRefresh && await _syncDeviceAlbumFast(ape, album)) {
+    if (!forceRefresh &&
+        excludedAssets == null &&
+        await _syncDeviceAlbumFast(ape, album)) {
       return true;
     }
 
-    // general case, e.g. some assets have been deleted
+    // general case, e.g. some assets have been deleted or there are excluded albums on iOS
     final inDb = await album.assets.filter().sortByLocalId().findAll();
-    final List<Asset> onDevice = await ape.getAssets();
+    final List<Asset> onDevice =
+        await ape.getAssets(excludedAssets: excludedAssets);
     onDevice.sort(Asset.compareByLocalId);
     final d = _diffAssets(onDevice, inDb, compare: Asset.compareByLocalId);
     final List<Asset> toAdd = d.first, toUpdate = d.second, toDelete = d.third;
+    if (toAdd.isEmpty &&
+        toUpdate.isEmpty &&
+        toDelete.isEmpty &&
+        album.name == ape.name &&
+        album.modifiedAt == ape.lastModified) {
+      // changes only affeted excluded albums
+      return false;
+    }
     final result = await _linkWithExistingFromDb(toAdd);
     deleteCandidates.addAll(toDelete);
     existing.addAll(result.first);
@@ -359,8 +399,9 @@ class SyncService {
         album.thumbnail.value ??= await album.assets.filter().findFirst();
         await album.thumbnail.save();
       });
+      _log.info("Synced changes of local album $ape to DB");
     } on IsarError catch (e) {
-      debugPrint(e.toString());
+      _log.warning("Failed to update synced album $ape in DB: $e");
     }
 
     return true;
@@ -395,8 +436,10 @@ class SyncService {
         await album.assets.update(link: result.first + result.second);
         await _db.albums.put(album);
       });
+      _log.info("Fast synced local album $ape to DB");
     } on IsarError catch (e) {
-      debugPrint(e.toString());
+      _log.warning("Failed to fast sync local album $ape to DB: $e");
+      return false;
     }
 
     return true;
@@ -406,10 +449,17 @@ class SyncService {
   /// assets already existing in the database to the list of `existing` assets
   Future<void> _addAlbumFromDevice(
     AssetPathEntity ape,
-    List<Asset> existing,
-  ) async {
+    List<Asset> existing, [
+    Set<String>? excludedAssets,
+  ]) async {
+    _log.info("Syncing a new local album to DB: $ape");
     final Album a = Album.local(ape);
-    final result = await _linkWithExistingFromDb(await ape.getAssets());
+    final result = await _linkWithExistingFromDb(
+      await ape.getAssets(excludedAssets: excludedAssets),
+    );
+    _log.info(
+      "${result.first.length} assets already existed in DB, to upsert ${result.second.length}",
+    );
     await _upsertAssetsWithExif(result.second);
     existing.addAll(result.first);
     a.assets.addAll(result.first);
@@ -418,8 +468,9 @@ class SyncService {
     a.thumbnail.value = thumb;
     try {
       await _db.writeTxn(() => _db.albums.store(a));
+      _log.info("Added a new local album to DB: $ape");
     } on IsarError catch (e) {
-      debugPrint(e.toString());
+      _log.warning("Failed to add new local album $ape to DB: $e");
     }
   }
 
@@ -476,8 +527,11 @@ class SyncService {
         }
         await _db.exifInfos.putAll(exifInfos);
       });
+      _log.info("Upserted ${assets.length} assets into the DB");
     } on IsarError catch (e) {
-      debugPrint(e.toString());
+      _log.warning(
+        "Failed to upsert ${assets.length} assets into the DB: ${e.toString()}",
+      );
     }
   }
 }

@@ -41,6 +41,7 @@ export class JobRepository implements IJobRepository {
 
       case JobName.OBJECT_DETECTION:
       case JobName.IMAGE_TAGGING:
+      case JobName.ENCODE_CLIP:
         await this.machineLearning.add(item.name, item.data);
         break;
 
@@ -73,7 +74,7 @@ export class JobRepository implements IJobRepository {
 
       case JobName.SEARCH_INDEX_ASSETS:
       case JobName.SEARCH_INDEX_ALBUMS:
-        await this.searchIndex.add(item.name);
+        await this.searchIndex.add(item.name, {});
         break;
 
       case JobName.SEARCH_INDEX_ASSET:

@@ -1,36 +1,15 @@
 <script lang="ts">
-	import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
-	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
+	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import UserSettingsList from '$lib/components/user-settings-page/user-settings-list.svelte';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 </script>
 
-<section>
-	<NavigationBar user={data.user} shouldShowUploadButton={false} />
-</section>
-
-<section
-	class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg dark:bg-immich-dark-bg"
->
-	<SideBar />
-
-	<section class="overflow-y-auto ">
-		<div
-			id="user-setting-title"
-			class="pt-10 fixed w-full z-10 bg-immich-bg dark:bg-immich-dark-bg"
-		>
-			<h1 class="text-lg ml-8 mb-4 text-immich-primary dark:text-immich-dark-primary font-medium">
-				User Settings
-			</h1>
-			<hr class="dark:border-immich-dark-gray" />
+<UserPageLayout user={data.user} title={data.meta.title}>
+	<section class="flex place-content-center mx-4">
+		<div class="w-full max-w-3xl">
+			<UserSettingsList user={data.user} />
 		</div>
-
-		<section id="user-setting-content" class="pt-[85px] flex place-content-center">
-			<section class="w-[800px] pt-5">
-				<UserSettingsList user={data.user} />
-			</section>
-		</section>
 	</section>
-</section>
+</UserPageLayout>

@@ -54,7 +54,7 @@ describe(AssetService.name, () => {
       expect(assetMock.save).toHaveBeenCalledWith(assetEntityStub.image);
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.SEARCH_INDEX_ASSET,
-        data: { asset: assetEntityStub.image },
+        data: { ids: [assetEntityStub.image.id] },
       });
     });
   });

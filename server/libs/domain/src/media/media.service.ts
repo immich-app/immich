@@ -54,6 +54,7 @@ export class MediaService {
       await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: { asset } });
       await this.jobRepository.queue({ name: JobName.IMAGE_TAGGING, data: { asset } });
       await this.jobRepository.queue({ name: JobName.OBJECT_DETECTION, data: { asset } });
+      await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: { asset } });
 
       this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
     }
@@ -72,6 +73,7 @@ export class MediaService {
         await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: { asset } });
         await this.jobRepository.queue({ name: JobName.IMAGE_TAGGING, data: { asset } });
         await this.jobRepository.queue({ name: JobName.OBJECT_DETECTION, data: { asset } });
+        await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: { asset } });
 
         this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
       } catch (error: any) {

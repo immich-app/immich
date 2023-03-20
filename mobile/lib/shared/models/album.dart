@@ -51,6 +51,24 @@ class Album {
   @ignore
   String? get ownerId => owner.value?.id;
 
+  @ignore
+  String? get ownerName {
+    // Guard null owner
+    if (owner.value == null) {
+      return null;
+    }
+
+    final name = <String>[];
+    if (owner.value?.firstName != null) {
+      name.add(owner.value!.firstName);
+    }
+    if (owner.value?.lastName != null) {
+      name.add(owner.value!.lastName);
+    }
+
+    return name.join(' ');
+  }
+
   Future<void> loadSortedAssets() async {
     _sortedAssets = await assets.filter().sortByFileCreatedAt().findAll();
   }
@@ -126,6 +144,9 @@ class Album {
     }
     return a;
   }
+
+  @override
+  String toString() => name;
 }
 
 extension AssetsHelper on IsarCollection<Album> {
@@ -142,8 +163,15 @@ extension AssetPathEntityHelper on AssetPathEntity {
   Future<List<Asset>> getAssets({
     int start = 0,
     int end = 0x7fffffffffffffff,
+    Set<String>? excludedAssets,
   }) async {
     final assetEntities = await getAssetListRange(start: start, end: end);
+    if (excludedAssets != null) {
+      return assetEntities
+          .where((e) => !excludedAssets.contains(e.id))
+          .map(Asset.local)
+          .toList();
+    }
     return assetEntities.map(Asset.local).toList();
   }
 }

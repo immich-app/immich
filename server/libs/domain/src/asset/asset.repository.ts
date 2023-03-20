@@ -7,6 +7,7 @@ export interface AssetSearchOptions {
 export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
+  getByIds(ids: string[]): Promise<AssetEntity[]>;
   deleteAll(ownerId: string): Promise<void>;
   getAll(options?: AssetSearchOptions): Promise<AssetEntity[]>;
   save(asset: Partial<AssetEntity>): Promise<AssetEntity>;

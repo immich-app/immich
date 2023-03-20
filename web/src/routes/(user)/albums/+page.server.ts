@@ -1,14 +1,13 @@
+import { AppRoute } from '$lib/constants';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ parent, locals: { api } }) => {
+export const load = (async ({ locals: { api, user } }) => {
+	if (!user) {
+		throw redirect(302, AppRoute.AUTH_LOGIN);
+	}
+
 	try {
-		const { user } = await parent();
-
-		if (!user) {
-			throw Error('User is not logged in');
-		}
-
 		const { data: albums } = await api.albumApi.getAllAlbums();
 
 		return {
@@ -19,6 +18,6 @@ export const load = (async ({ parent, locals: { api } }) => {
 			}
 		};
 	} catch (e) {
-		throw redirect(302, '/auth/login');
+		throw redirect(302, AppRoute.AUTH_LOGIN);
 	}
 }) satisfies PageServerLoad;

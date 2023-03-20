@@ -1,5 +1,6 @@
 import { AssetEntity } from '@app/infra/db/entities';
-import { newMachineLearningRepositoryMock, newSmartInfoRepositoryMock } from '../../test';
+import { newJobRepositoryMock, newMachineLearningRepositoryMock, newSmartInfoRepositoryMock } from '../../test';
+import { IJobRepository } from '../job';
 import { IMachineLearningRepository } from './machine-learning.interface';
 import { ISmartInfoRepository } from './smart-info.repository';
 import { SmartInfoService } from './smart-info.service';
@@ -11,13 +12,15 @@ const asset = {
 
 describe(SmartInfoService.name, () => {
   let sut: SmartInfoService;
+  let jobMock: jest.Mocked<IJobRepository>;
   let smartMock: jest.Mocked<ISmartInfoRepository>;
   let machineMock: jest.Mocked<IMachineLearningRepository>;
 
   beforeEach(async () => {
     smartMock = newSmartInfoRepositoryMock();
+    jobMock = newJobRepositoryMock();
     machineMock = newMachineLearningRepositoryMock();
-    sut = new SmartInfoService(smartMock, machineMock);
+    sut = new SmartInfoService(jobMock, smartMock, machineMock);
   });
 
   it('should work', () => {

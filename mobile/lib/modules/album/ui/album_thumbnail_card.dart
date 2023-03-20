@@ -1,15 +1,21 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 
 class AlbumThumbnailCard extends StatelessWidget {
   final Function()? onTap;
 
+  /// Whether or not to show the owner of the album (or "Owned")
+  /// in the subtitle of the album
+  final bool showOwner;
+
   const AlbumThumbnailCard({
     Key? key,
     required this.album,
     this.onTap,
+    this.showOwner = false,
   }) : super(key: key);
 
   final Album album;
@@ -43,6 +49,44 @@ class AlbumThumbnailCard extends StatelessWidget {
               height: cardSize,
             );
 
+        buildAlbumTextRow() {
+          // Add the owner name to the subtitle
+          String? owner;
+          if (showOwner) {
+            if (album.ownerId == Store.get(StoreKey.userRemoteId)) {
+              owner = 'album_thumbnail_owned'.tr();
+            } else if (album.ownerName != null) {
+              owner = 'album_thumbnail_shared_by'.tr(args: [album.ownerName!]);
+            }
+          }
+
+          return RichText(
+            overflow: TextOverflow.fade,
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: album.assetCount == 1
+                      ? 'album_thumbnail_card_item'
+                          .tr(args: ['${album.assetCount}'])
+                      : 'album_thumbnail_card_items'
+                          .tr(args: ['${album.assetCount}']),
+                  style: TextStyle(
+                    fontFamily: 'WorkSans',
+                    fontSize: 12,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
+                if (owner != null) const TextSpan(text: ' · '),
+                if (owner != null)
+                  TextSpan(
+                    text: owner,
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+              ],
+            ),
+          );
+        }
+
         return GestureDetector(
           onTap: onTap,
           child: Flex(
@@ -68,32 +112,16 @@ class AlbumThumbnailCard extends StatelessWidget {
                         width: cardSize,
                         child: Text(
                           album.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
+                            color: isDarkMode
+                                ? Theme.of(context).primaryColor
+                                : Colors.black,
                           ),
                         ),
                       ),
                     ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          album.assetCount == 1
-                              ? 'album_thumbnail_card_item'
-                              : 'album_thumbnail_card_items',
-                          style: const TextStyle(
-                            fontSize: 12,
-                          ),
-                        ).tr(args: ['${album.assetCount}']),
-                        if (album.shared)
-                          const Text(
-                            'album_thumbnail_card_shared',
-                            style: TextStyle(
-                              fontSize: 12,
-                            ),
-                          ).tr()
-                      ],
-                    )
+                    buildAlbumTextRow(),
                   ],
                 ),
               ),

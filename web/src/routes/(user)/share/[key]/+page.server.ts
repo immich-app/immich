@@ -1,14 +1,10 @@
-export const prerender = false;
 import { error } from '@sveltejs/kit';
-
 import { getThumbnailUrl } from '$lib/utils/asset-utils';
 import { ThumbnailFormat } from '@api';
 import type { PageServerLoad } from './$types';
 import featurePanelUrl from '$lib/assets/feature-panel.png';
 
-export const load: PageServerLoad = async ({ params, parent, locals: { api } }) => {
-	const { user } = await parent();
-
+export const load = (async ({ params, locals: { api } }) => {
 	const { key } = params;
 
 	try {
@@ -25,12 +21,11 @@ export const load: PageServerLoad = async ({ params, parent, locals: { api } }) 
 				imageUrl: assetId
 					? getThumbnailUrl(assetId, ThumbnailFormat.Webp, sharedLink.key)
 					: featurePanelUrl
-			},
-			user
+			}
 		};
 	} catch (e) {
 		throw error(404, {
 			message: 'Invalid shared link'
 		});
 	}
-};
+}) satisfies PageServerLoad;

@@ -5,6 +5,11 @@ export enum SearchCollection {
   ALBUMS = 'albums',
 }
 
+export enum SearchStrategy {
+  CLIP = 'CLIP',
+  TEXT = 'TEXT',
+}
+
 export interface SearchFilter {
   id?: string;
   userId: string;
@@ -19,6 +24,7 @@ export interface SearchFilter {
   tags?: string[];
   recent?: boolean;
   motion?: boolean;
+  debug?: boolean;
 }
 
 export interface SearchResult<T> {
@@ -57,16 +63,15 @@ export interface ISearchRepository {
   setup(): Promise<void>;
   checkMigrationStatus(): Promise<SearchCollectionIndexStatus>;
 
-  index(collection: SearchCollection.ASSETS, item: AssetEntity): Promise<void>;
-  index(collection: SearchCollection.ALBUMS, item: AlbumEntity): Promise<void>;
+  importAlbums(items: AlbumEntity[], done: boolean): Promise<void>;
+  importAssets(items: AssetEntity[], done: boolean): Promise<void>;
 
-  delete(collection: SearchCollection, id: string): Promise<void>;
+  deleteAlbums(ids: string[]): Promise<void>;
+  deleteAssets(ids: string[]): Promise<void>;
 
-  import(collection: SearchCollection.ASSETS, items: AssetEntity[], done: boolean): Promise<void>;
-  import(collection: SearchCollection.ALBUMS, items: AlbumEntity[], done: boolean): Promise<void>;
-
-  search(collection: SearchCollection.ASSETS, query: string, filters: SearchFilter): Promise<SearchResult<AssetEntity>>;
-  search(collection: SearchCollection.ALBUMS, query: string, filters: SearchFilter): Promise<SearchResult<AlbumEntity>>;
+  searchAlbums(query: string, filters: SearchFilter): Promise<SearchResult<AlbumEntity>>;
+  searchAssets(query: string, filters: SearchFilter): Promise<SearchResult<AssetEntity>>;
+  vectorSearch(query: number[], filters: SearchFilter): Promise<SearchResult<AssetEntity>>;
 
   explore(userId: string): Promise<SearchExploreItem<AssetEntity>[]>;
 }

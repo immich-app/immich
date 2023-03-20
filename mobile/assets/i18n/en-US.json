@@ -244,5 +244,7 @@
   "permission_onboarding_permission_limited": "Permission limited. To let Immich backup and manage your entire gallery collection, grant photo and video permissions in Settings.",
   "permission_onboarding_continue_anyway": "Continue anyway",
   "permission_onboarding_log_out": "Log out",
-  "login_form_next_button": "Next"
+  "login_form_next_button": "Next",
+  "album_thumbnail_shared_by": "Shared by {}",
+  "album_thumbnail_owned": "Owned"
 }

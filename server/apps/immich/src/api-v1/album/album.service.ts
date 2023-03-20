@@ -59,7 +59,7 @@ export class AlbumService {
 
   async create(authUser: AuthUserDto, createAlbumDto: CreateAlbumDto): Promise<AlbumResponseDto> {
     const albumEntity = await this.albumRepository.create(authUser.id, createAlbumDto);
-    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { album: albumEntity } });
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [albumEntity.id] } });
     return mapAlbum(albumEntity);
   }
 
@@ -107,7 +107,7 @@ export class AlbumService {
     }
 
     await this.albumRepository.delete(album);
-    await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ALBUM, data: { id: albumId } });
+    await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ALBUM, data: { ids: [albumId] } });
   }
 
   async removeUserFromAlbum(authUser: AuthUserDto, albumId: string, userId: string | 'me'): Promise<void> {
@@ -171,7 +171,7 @@ export class AlbumService {
 
     const updatedAlbum = await this.albumRepository.updateAlbum(album, updateAlbumDto);
 
-    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { album: updatedAlbum } });
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [updatedAlbum.id] } });
 
     return mapAlbum(updatedAlbum);
   }

@@ -163,7 +163,7 @@ describe('Album service', () => {
 
     expect(result.id).toEqual(albumEntity.id);
     expect(result.albumName).toEqual(albumEntity.albumName);
-    expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.SEARCH_INDEX_ALBUM, data: { album: albumEntity } });
+    expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [albumEntity.id] } });
   });
 
   it('gets list of albums for auth user', async () => {
@@ -316,7 +316,7 @@ describe('Album service', () => {
       albumName: updatedAlbumName,
       albumThumbnailAssetId: updatedAlbumThumbnailAssetId,
     });
-    expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.SEARCH_INDEX_ALBUM, data: { album: updatedAlbum } });
+    expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [updatedAlbum.id] } });
   });
 
   it('prevents updating a not owned album (shared with auth user)', async () => {

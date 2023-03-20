@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
+import 'package:immich_mobile/modules/album/ui/album_thumbnail_card.dart';
 import 'package:immich_mobile/modules/album/ui/sharing_sliver_appbar.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/shared/models/store.dart' as store;
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 
 class SharingPage extends HookConsumerWidget {
@@ -15,6 +17,8 @@ class SharingPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final List<Album> sharedAlbums = ref.watch(sharedAlbumProvider);
+    final userId = store.Store.get(store.StoreKey.userRemoteId);
+    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     useEffect(
       () {
@@ -24,11 +28,39 @@ class SharingPage extends HookConsumerWidget {
       [],
     );
 
+    buildAlbumGrid() {
+      return SliverPadding(
+        padding: const EdgeInsets.all(18.0),
+        sliver: SliverGrid(
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: 250,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: .7,
+          ),
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              return AlbumThumbnailCard(
+                album: sharedAlbums[index],
+                showOwner: true,
+                onTap: () {
+                  AutoRouter.of(context)
+                      .push(AlbumViewerRoute(albumId: sharedAlbums[index].id));
+                },
+              );
+            },
+            childCount: sharedAlbums.length,
+          ),
+        ),
+      );
+    }
+
     buildAlbumList() {
       return SliverList(
         delegate: SliverChildBuilderDelegate(
           (BuildContext context, int index) {
             final album = sharedAlbums[index];
+            final isOwner = album.ownerId == userId;
 
             return ListTile(
               contentPadding:
@@ -42,13 +74,31 @@ class SharingPage extends HookConsumerWidget {
                 ),
               ),
               title: Text(
-                sharedAlbums[index].name,
+                album.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.bold,
+                      color: isDarkMode
+                          ? Theme.of(context).primaryColor
+                          : Colors.black,
                     ),
               ),
+              subtitle: isOwner
+                  ? const Text(
+                      'Owned',
+                      style: TextStyle(
+                        fontSize: 12.0,
+                      ),
+                    )
+                  : album.ownerName != null
+                      ? Text(
+                          'Shared by ${album.ownerName!}',
+                          style: const TextStyle(
+                            fontSize: 12.0,
+                          ),
+                        )
+                      : null,
               onTap: () {
                 AutoRouter.of(context)
                     .push(AlbumViewerRoute(albumId: sharedAlbums[index].id));
@@ -124,9 +174,19 @@ class SharingPage extends HookConsumerWidget {
               ).tr(),
             ),
           ),
-          sharedAlbums.isNotEmpty
-              ? buildAlbumList()
-              : buildEmptyListIndication()
+          SliverLayoutBuilder(
+            builder: (context, constraints) {
+              if (sharedAlbums.isEmpty) {
+                return buildEmptyListIndication();
+              }
+
+              if (constraints.crossAxisExtent < 600) {
+                return buildAlbumList();
+              } else {
+                return buildAlbumGrid();
+              }
+            },
+          ),
         ],
       ),
     );

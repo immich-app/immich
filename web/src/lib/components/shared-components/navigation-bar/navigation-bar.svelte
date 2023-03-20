@@ -40,14 +40,14 @@
 
 <section
 	id="dashboard-navbar"
-	class="fixed w-screen z-[900] bg-immich-bg dark:bg-immich-dark-bg text-sm"
+	class="fixed h-[4.25rem] w-screen z-[900] bg-immich-bg dark:bg-immich-dark-bg text-sm"
 >
 	<div
 		class="grid grid-cols-[250px_auto] border-b dark:border-b-immich-dark-gray items-center py-2"
 	>
 		<a
 			data-sveltekit-preload-data="hover"
-			class="flex gap-2 px-6 place-items-center hover:cursor-pointer"
+			class="flex gap-2 mx-6 place-items-center"
 			href={AppRoute.PHOTOS}
 		>
 			<ImmichLogo height="35" width="35" />

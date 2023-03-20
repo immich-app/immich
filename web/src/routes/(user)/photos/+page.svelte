@@ -7,12 +7,10 @@
 	import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
-	import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
 	import {
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
-	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
 	import {
 		assetInteractionStore,
 		isMultiSelectStoreState,
@@ -20,17 +18,18 @@
 	} from '$lib/stores/asset-interaction.store';
 	import { assetStore } from '$lib/stores/assets.store';
 	import { addAssetsToAlbum, bulkDownload } from '$lib/utils/asset-utils';
-	import { openFileUploadDialog } from '$lib/utils/file-uploader';
 	import { AlbumResponseDto, api, SharedLinkType } from '@api';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 	import Plus from 'svelte-material-icons/Plus.svelte';
 	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
-	import type { PageData } from './$types';
 	import { locale } from '$lib/stores/preferences.store';
+	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+	import type { PageData } from './$types';
 
 	export let data: PageData;
+
 	let isShowCreateSharedLinkModal = false;
 	const deleteSelectedAssetHandler = async () => {
 		try {
@@ -144,73 +143,68 @@
 	};
 </script>
 
-<section>
-	{#if $isMultiSelectStoreState}
-		<ControlAppBar
-			on:close-button-click={() => assetInteractionStore.clearMultiselect()}
-			backIcon={Close}
-			tailwindClasses={'bg-white shadow-md'}
-		>
-			<svelte:fragment slot="leading">
-				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
-					Selected {$selectedAssets.size.toLocaleString($locale)}
-				</p>
-			</svelte:fragment>
-			<svelte:fragment slot="trailing">
-				<CircleIconButton
-					title="Share"
-					logo={ShareVariantOutline}
-					on:click={handleCreateSharedLink}
-				/>
-				<CircleIconButton
-					title="Download"
-					logo={CloudDownloadOutline}
-					on:click={handleDownloadFiles}
-				/>
-				<CircleIconButton title="Add" logo={Plus} on:click={handleShowMenu} />
-				<CircleIconButton
-					title="Delete"
-					logo={DeleteOutline}
-					on:click={deleteSelectedAssetHandler}
-				/>
-			</svelte:fragment>
-		</ControlAppBar>
-	{:else}
-		<NavigationBar user={data.user} on:uploadClicked={() => openFileUploadDialog()} />
-	{/if}
+<UserPageLayout user={data.user} hideNavbar={$isMultiSelectStoreState} showUploadButton>
+	<svelte:fragment slot="header">
+		{#if $isMultiSelectStoreState}
+			<ControlAppBar
+				on:close-button-click={() => assetInteractionStore.clearMultiselect()}
+				backIcon={Close}
+				tailwindClasses={'bg-white shadow-md'}
+			>
+				<svelte:fragment slot="leading">
+					<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
+						Selected {$selectedAssets.size.toLocaleString($locale)}
+					</p>
+				</svelte:fragment>
+				<svelte:fragment slot="trailing">
+					<CircleIconButton
+						title="Share"
+						logo={ShareVariantOutline}
+						on:click={handleCreateSharedLink}
+					/>
+					<CircleIconButton
+						title="Download"
+						logo={CloudDownloadOutline}
+						on:click={handleDownloadFiles}
+					/>
+					<CircleIconButton title="Add" logo={Plus} on:click={handleShowMenu} />
+					<CircleIconButton
+						title="Delete"
+						logo={DeleteOutline}
+						on:click={deleteSelectedAssetHandler}
+					/>
+				</svelte:fragment>
+			</ControlAppBar>
+		{/if}
 
-	{#if isShowAddMenu}
-		<ContextMenu {...contextMenuPosition} on:clickoutside={() => (isShowAddMenu = false)}>
-			<div class="flex flex-col rounded-lg ">
-				<MenuOption on:click={handleAddToFavorites} text="Add to Favorites" />
-				<MenuOption on:click={() => handleShowAlbumPicker(false)} text="Add to Album" />
-				<MenuOption on:click={() => handleShowAlbumPicker(true)} text="Add to Shared Album" />
-			</div>
-		</ContextMenu>
-	{/if}
+		{#if isShowAddMenu}
+			<ContextMenu {...contextMenuPosition} on:clickoutside={() => (isShowAddMenu = false)}>
+				<div class="flex flex-col rounded-lg ">
+					<MenuOption on:click={handleAddToFavorites} text="Add to Favorites" />
+					<MenuOption on:click={() => handleShowAlbumPicker(false)} text="Add to Album" />
+					<MenuOption on:click={() => handleShowAlbumPicker(true)} text="Add to Shared Album" />
+				</div>
+			</ContextMenu>
+		{/if}
 
-	{#if isShowAlbumPicker}
-		<AlbumSelectionModal
-			shared={addToSharedAlbum}
-			on:newAlbum={handleAddToNewAlbum}
-			on:newSharedAlbum={handleAddToNewAlbum}
-			on:album={handleAddToAlbum}
-			on:close={() => (isShowAlbumPicker = false)}
-		/>
-	{/if}
+		{#if isShowAlbumPicker}
+			<AlbumSelectionModal
+				shared={addToSharedAlbum}
+				on:newAlbum={handleAddToNewAlbum}
+				on:newSharedAlbum={handleAddToNewAlbum}
+				on:album={handleAddToAlbum}
+				on:close={() => (isShowAlbumPicker = false)}
+			/>
+		{/if}
 
-	{#if isShowCreateSharedLinkModal}
-		<CreateSharedLinkModal
-			sharedAssets={Array.from($selectedAssets)}
-			shareType={SharedLinkType.Individual}
-			on:close={handleCloseSharedLinkModal}
-		/>
-	{/if}
-</section>
+		{#if isShowCreateSharedLinkModal}
+			<CreateSharedLinkModal
+				sharedAssets={Array.from($selectedAssets)}
+				shareType={SharedLinkType.Individual}
+				on:close={handleCloseSharedLinkModal}
+			/>
+		{/if}
+	</svelte:fragment>
 
-<section
-	class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg dark:bg-immich-dark-bg"
->
-	<SideBar />
-	<AssetGrid />
-</section>
+	<AssetGrid slot="content" />
+</UserPageLayout>

@@ -8,31 +8,34 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
+import 'package:immich_mobile/modules/backup/models/duplicated_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
-import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
+import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/utils/files_helper.dart';
+import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:cancellation_token_http/http.dart' as http;
 
-import '../models/hive_duplicated_assets.model.dart';
-
 final backupServiceProvider = Provider(
   (ref) => BackupService(
     ref.watch(apiServiceProvider),
+    ref.watch(dbProvider),
   ),
 );
 
 class BackupService {
   final httpClient = http.Client();
   final ApiService _apiService;
+  final Isar _db;
 
-  BackupService(this._apiService);
+  BackupService(this._apiService, this._db);
 
   Future<List<String>?> getDeviceBackupAsset() async {
     String deviceId = Hive.box(userInfoBox).get(deviceIdKey);
@@ -45,32 +48,28 @@ class BackupService {
     }
   }
 
-  void _saveDuplicatedAssetIdToLocalStorage(List<String> deviceAssetIds) {
-    HiveDuplicatedAssets duplicatedAssets =
-        Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
-                .get(duplicatedAssetsKey) ??
-            HiveDuplicatedAssets(duplicatedAssetIds: []);
-
-    duplicatedAssets.duplicatedAssetIds =
-        {...duplicatedAssets.duplicatedAssetIds, ...deviceAssetIds}.toList();
-
-    Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
-        .put(duplicatedAssetsKey, duplicatedAssets);
+  Future<void> _saveDuplicatedAssetIds(List<String> deviceAssetIds) {
+    final duplicates = deviceAssetIds.map((id) => DuplicatedAsset(id)).toList();
+    return _db.writeTxn(() => _db.duplicatedAssets.putAll(duplicates));
   }
 
-  /// Get duplicated asset id from Hive storage
-  Set<String> getDuplicatedAssetIds() {
-    HiveDuplicatedAssets duplicatedAssets =
-        Hive.box<HiveDuplicatedAssets>(duplicatedAssetsBox)
-                .get(duplicatedAssetsKey) ??
-            HiveDuplicatedAssets(duplicatedAssetIds: []);
-
-    return duplicatedAssets.duplicatedAssetIds.toSet();
+  /// Get duplicated asset id from database
+  Future<Set<String>> getDuplicatedAssetIds() async {
+    final duplicates = await _db.duplicatedAssets.where().findAll();
+    return duplicates.map((e) => e.id).toSet();
   }
+
+  QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
+      selectedAlbumsQuery() =>
+          _db.backupAlbums.filter().selectionEqualTo(BackupSelection.select);
+  QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
+      excludedAlbumsQuery() =>
+          _db.backupAlbums.filter().selectionEqualTo(BackupSelection.exclude);
 
   /// Returns all assets newer than the last successful backup per album
   Future<List<AssetEntity>> buildUploadCandidates(
-    HiveBackupAlbums backupAlbums,
+    List<BackupAlbum> selectedBackupAlbums,
+    List<BackupAlbum> excludedBackupAlbums,
   ) async {
     final filter = FilterOptionGroup(
       containsPathModified: true,
@@ -81,66 +80,55 @@ class BackupService {
     );
     final now = DateTime.now();
     final List<AssetPathEntity?> selectedAlbums =
-        await _loadAlbumsWithTimeFilter(
-      backupAlbums.selectedAlbumIds,
-      backupAlbums.lastSelectedBackupTime,
-      filter,
-      now,
-    );
+        await _loadAlbumsWithTimeFilter(selectedBackupAlbums, filter, now);
     if (selectedAlbums.every((e) => e == null)) {
       return [];
     }
     final int allIdx = selectedAlbums.indexWhere((e) => e != null && e.isAll);
     if (allIdx != -1) {
       final List<AssetPathEntity?> excludedAlbums =
-          await _loadAlbumsWithTimeFilter(
-        backupAlbums.excludedAlbumsIds,
-        backupAlbums.lastExcludedBackupTime,
-        filter,
-        now,
-      );
+          await _loadAlbumsWithTimeFilter(excludedBackupAlbums, filter, now);
       final List<AssetEntity> toAdd = await _fetchAssetsAndUpdateLastBackup(
         selectedAlbums.slice(allIdx, allIdx + 1),
-        backupAlbums.lastSelectedBackupTime.slice(allIdx, allIdx + 1),
+        selectedBackupAlbums.slice(allIdx, allIdx + 1),
         now,
       );
       final List<AssetEntity> toRemove = await _fetchAssetsAndUpdateLastBackup(
         excludedAlbums,
-        backupAlbums.lastExcludedBackupTime,
+        excludedBackupAlbums,
         now,
       );
       return toAdd.toSet().difference(toRemove.toSet()).toList();
     } else {
       return await _fetchAssetsAndUpdateLastBackup(
         selectedAlbums,
-        backupAlbums.lastSelectedBackupTime,
+        selectedBackupAlbums,
         now,
       );
     }
   }
 
   Future<List<AssetPathEntity?>> _loadAlbumsWithTimeFilter(
-    List<String> albumIds,
-    List<DateTime> lastBackups,
+    List<BackupAlbum> albums,
     FilterOptionGroup filter,
     DateTime now,
   ) async {
-    List<AssetPathEntity?> result = List.filled(albumIds.length, null);
-    for (int i = 0; i < albumIds.length; i++) {
+    List<AssetPathEntity?> result = [];
+    for (BackupAlbum a in albums) {
       try {
         final AssetPathEntity album =
             await AssetPathEntity.obtainPathFromProperties(
-          id: albumIds[i],
+          id: a.id,
           optionGroup: filter.copyWith(
             updateTimeCond: DateTimeCond(
               // subtract 2 seconds to prevent missing assets due to rounding issues
-              min: lastBackups[i].subtract(const Duration(seconds: 2)),
+              min: a.lastBackup.subtract(const Duration(seconds: 2)),
               max: now,
             ),
           ),
           maxDateTimeToNow: false,
         );
-        result[i] = album;
+        result.add(album);
       } on StateError {
         // either there are no assets matching the filter criteria OR the album no longer exists
       }
@@ -150,17 +138,18 @@ class BackupService {
 
   Future<List<AssetEntity>> _fetchAssetsAndUpdateLastBackup(
     List<AssetPathEntity?> albums,
-    List<DateTime> lastBackup,
+    List<BackupAlbum> backupAlbums,
     DateTime now,
   ) async {
     List<AssetEntity> result = [];
     for (int i = 0; i < albums.length; i++) {
       final AssetPathEntity? a = albums[i];
-      if (a != null && a.lastModified?.isBefore(lastBackup[i]) != true) {
+      if (a != null &&
+          a.lastModified?.isBefore(backupAlbums[i].lastBackup) != true) {
         result.addAll(
           await a.getAssetListRange(start: 0, end: await a.assetCountAsync),
         );
-        lastBackup[i] = now;
+        backupAlbums[i].lastBackup = now;
       }
     }
     return result;
@@ -173,7 +162,7 @@ class BackupService {
     if (candidates.isEmpty) {
       return candidates;
     }
-    final Set<String> duplicatedAssetIds = getDuplicatedAssetIds();
+    final Set<String> duplicatedAssetIds = await getDuplicatedAssetIds();
     candidates = duplicatedAssetIds.isEmpty
         ? candidates
         : candidates
@@ -261,7 +250,8 @@ class BackupService {
           req.fields['deviceId'] = deviceId;
           req.fields['assetType'] = _getAssetType(entity.type);
           req.fields['fileCreatedAt'] = entity.createDateTime.toIso8601String();
-          req.fields['fileModifiedAt'] = entity.modifiedDateTime.toIso8601String();
+          req.fields['fileModifiedAt'] =
+              entity.modifiedDateTime.toIso8601String();
           req.fields['isFavorite'] = entity.isFavorite.toString();
           req.fields['fileExtension'] = fileExtension;
           req.fields['duration'] = entity.videoDuration.toString();
@@ -332,7 +322,7 @@ class BackupService {
       }
     }
     if (duplicatedAssetIds.isNotEmpty) {
-      _saveDuplicatedAssetIdToLocalStorage(duplicatedAssetIds);
+      await _saveDuplicatedAssetIds(duplicatedAssetIds);
     }
     return !anyErrors;
   }

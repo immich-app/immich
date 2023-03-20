@@ -16,12 +16,7 @@ import { AlbumEntity, AssetEntity } from '../db';
 import { albumSchema } from './schemas/album.schema';
 import { assetSchema } from './schemas/asset.schema';
 
-interface CustomAssetEntity extends AssetEntity {
-  geo?: [number, number];
-  motion?: boolean;
-}
-
-function removeNil<T extends Dictionary<any>>(item: T): Partial<T> {
+function removeNil<T extends Dictionary<any>>(item: T): T {
   _.forOwn(item, (value, key) => {
     if (_.isNil(value) || (_.isObject(value) && !_.isDate(value) && _.isEmpty(removeNil(value)))) {
       delete item[key];
@@ -31,6 +26,11 @@ function removeNil<T extends Dictionary<any>>(item: T): Partial<T> {
   return item;
 }
 
+interface CustomAssetEntity extends AssetEntity {
+  geo?: [number, number];
+  motion?: boolean;
+}
+
 const schemaMap: Record<SearchCollection, CollectionCreateSchema> = {
   [SearchCollection.ASSETS]: assetSchema,
   [SearchCollection.ALBUMS]: albumSchema,
@@ -38,24 +38,9 @@ const schemaMap: Record<SearchCollection, CollectionCreateSchema> = {
 
 const schemas = Object.entries(schemaMap) as [SearchCollection, CollectionCreateSchema][];
 
-interface SearchUpdateQueue<T = any> {
-  upsert: T[];
-  delete: string[];
-}
-
 @Injectable()
 export class TypesenseRepository implements ISearchRepository {
   private logger = new Logger(TypesenseRepository.name);
-  private queue: Record<SearchCollection, SearchUpdateQueue> = {
-    [SearchCollection.ASSETS]: {
-      upsert: [],
-      delete: [],
-    },
-    [SearchCollection.ALBUMS]: {
-      upsert: [],
-      delete: [],
-    },
-  };
 
   private _client: Client | null = null;
   private get client(): Client {
@@ -83,8 +68,6 @@ export class TypesenseRepository implements ISearchRepository {
       numRetries: 3,
       connectionTimeoutSeconds: 10,
     });
-
-    setInterval(() => this.flush(), 5_000);
   }
 
   async setup(): Promise<void> {
@@ -131,48 +114,27 @@ export class TypesenseRepository implements ISearchRepository {
     return migrationMap;
   }
 
-  async index(collection: SearchCollection, item: AssetEntity | AlbumEntity, immediate?: boolean): Promise<void> {
-    const schema = schemaMap[collection];
-
-    if (collection === SearchCollection.ASSETS) {
-      item = this.patchAsset(item as AssetEntity);
-    }
-
-    if (immediate) {
-      await this.client.collections(schema.name).documents().upsert(item);
-      return;
-    }
-
-    this.queue[collection].upsert.push(item);
+  async importAlbums(items: AlbumEntity[], done: boolean): Promise<void> {
+    await this.import(SearchCollection.ALBUMS, items, done);
   }
 
-  async delete(collection: SearchCollection, id: string, immediate?: boolean): Promise<void> {
-    const schema = schemaMap[collection];
-
-    if (immediate) {
-      await this.client.collections(schema.name).documents().delete(id);
-      return;
-    }
-
-    this.queue[collection].delete.push(id);
+  async importAssets(items: AssetEntity[], done: boolean): Promise<void> {
+    await this.import(SearchCollection.ASSETS, items, done);
   }
 
-  async import(collection: SearchCollection, items: AssetEntity[] | AlbumEntity[], done: boolean): Promise<void> {
+  private async import(
+    collection: SearchCollection,
+    items: AlbumEntity[] | AssetEntity[],
+    done: boolean,
+  ): Promise<void> {
     try {
-      const schema = schemaMap[collection];
-      const _items = items.map((item) => {
-        if (collection === SearchCollection.ASSETS) {
-          item = this.patchAsset(item as AssetEntity);
-        }
-        // null values are invalid for typesense documents
-        return removeNil(item);
-      });
-      if (_items.length > 0) {
-        await this.client
-          .collections(schema.name)
-          .documents()
-          .import(_items, { action: 'upsert', dirty_values: 'coerce_or_drop' });
+      if (items.length > 0) {
+        await this.client.collections(schemaMap[collection].name).documents().import(this.patch(collection, items), {
+          action: 'upsert',
+          dirty_values: 'coerce_or_drop',
+        });
       }
+
       if (done) {
         await this.updateAlias(collection);
       }
@@ -234,71 +196,81 @@ export class TypesenseRepository implements ISearchRepository {
     );
   }
 
-  search(collection: SearchCollection.ASSETS, query: string, filter: SearchFilter): Promise<SearchResult<AssetEntity>>;
-  search(collection: SearchCollection.ALBUMS, query: string, filter: SearchFilter): Promise<SearchResult<AlbumEntity>>;
-  async search(collection: SearchCollection, query: string, filters: SearchFilter) {
-    const alias = await this.client.aliases(collection).retrieve();
-
-    const { userId } = filters;
-
-    const _filters = [`ownerId:${userId}`];
-
-    if (filters.id) {
-      _filters.push(`id:=${filters.id}`);
-    }
-    if (collection === SearchCollection.ASSETS) {
-      for (const item of schemaMap[collection].fields || []) {
-        let value = filters[item.name as keyof SearchFilter];
-        if (Array.isArray(value)) {
-          value = `[${value.join(',')}]`;
-        }
-        if (item.facet && value !== undefined) {
-          _filters.push(`${item.name}:${value}`);
-        }
-      }
-
-      this.logger.debug(`Searching query='${query}', filters='${JSON.stringify(_filters)}'`);
-
-      const results = await this.client
-        .collections<AssetEntity>(alias.collection_name)
-        .documents()
-        .search({
-          q: query,
-          query_by: [
-            'exifInfo.imageName',
-            'exifInfo.country',
-            'exifInfo.state',
-            'exifInfo.city',
-            'exifInfo.description',
-            'smartInfo.tags',
-            'smartInfo.objects',
-          ].join(','),
-          filter_by: _filters.join(' && '),
-          per_page: 250,
-          sort_by: filters.recent ? 'createdAt:desc' : undefined,
-          facet_by: this.getFacetFieldNames(SearchCollection.ASSETS),
-        });
-
-      return this.asResponse(results);
-    }
-
-    if (collection === SearchCollection.ALBUMS) {
-      const results = await this.client
-        .collections<AlbumEntity>(alias.collection_name)
-        .documents()
-        .search({
-          q: query,
-          query_by: 'albumName',
-          filter_by: _filters.join(','),
-        });
-
-      return this.asResponse(results);
-    }
-
-    throw new Error(`Invalid collection: ${collection}`);
+  async deleteAlbums(ids: string[]): Promise<void> {
+    await this.delete(SearchCollection.ALBUMS, ids);
   }
 
-  private asResponse<T extends DocumentSchema>(results: SearchResponse<T>): SearchResult<T> {
+  async deleteAssets(ids: string[]): Promise<void> {
+    await this.delete(SearchCollection.ASSETS, ids);
+  }
+
+  async delete(collection: SearchCollection, ids: string[]): Promise<void> {
+    await this.client
+      .collections(schemaMap[collection].name)
+      .documents()
+      .delete({ filter_by: `id: [${ids.join(',')}]` });
+  }
+
+  async searchAlbums(query: string, filters: SearchFilter): Promise<SearchResult<AlbumEntity>> {
+    const alias = await this.client.aliases(SearchCollection.ALBUMS).retrieve();
+
+    const results = await this.client
+      .collections<AlbumEntity>(alias.collection_name)
+      .documents()
+      .search({
+        q: query,
+        query_by: 'albumName',
+        filter_by: this.getAlbumFilters(filters),
+      });
+
+    return this.asResponse(results, filters.debug);
+  }
+
+  async searchAssets(query: string, filters: SearchFilter): Promise<SearchResult<AssetEntity>> {
+    const alias = await this.client.aliases(SearchCollection.ASSETS).retrieve();
+    const results = await this.client
+      .collections<AssetEntity>(alias.collection_name)
+      .documents()
+      .search({
+        q: query,
+        query_by: [
+          'exifInfo.imageName',
+          'exifInfo.country',
+          'exifInfo.state',
+          'exifInfo.city',
+          'exifInfo.description',
+          'smartInfo.tags',
+          'smartInfo.objects',
+        ].join(','),
+        per_page: 250,
+        facet_by: this.getFacetFieldNames(SearchCollection.ASSETS),
+        filter_by: this.getAssetFilters(filters),
+        sort_by: filters.recent ? 'createdAt:desc' : undefined,
+      });
+
+    return this.asResponse(results, filters.debug);
+  }
+
+  async vectorSearch(input: number[], filters: SearchFilter): Promise<SearchResult<AssetEntity>> {
+    const alias = await this.client.aliases(SearchCollection.ASSETS).retrieve();
+
+    const { results } = await this.client.multiSearch.perform({
+      searches: [
+        {
+          collection: alias.collection_name,
+          q: '*',
+          vector_query: `smartInfo.clipEmbedding:([${input.join(',')}], k:100)`,
+          per_page: 250,
+          facet_by: this.getFacetFieldNames(SearchCollection.ASSETS),
+          filter_by: this.getAssetFilters(filters),
+        } as any,
+      ],
+    });
+
+    return this.asResponse(results[0] as SearchResponse<AssetEntity>, filters.debug);
+  }
+
+  private asResponse<T extends DocumentSchema>(results: SearchResponse<T>, debug?: boolean): SearchResult<T> {
     return {
       page: results.page,
       total: results.found,
@@ -308,51 +280,23 @@ export class TypesenseRepository implements ISearchRepository {
         counts: facet.counts.map((item) => ({ count: item.count, value: item.value })),
         fieldName: facet.field_name as string,
       })),
-    };
+      debug: debug ? results : undefined,
+    } as SearchResult<T>;
   }
 
-  private async flush() {
-    for (const [collection, schema] of schemas) {
-      if (this.queue[collection].upsert.length > 0) {
-        try {
-          const items = this.queue[collection].upsert.map((item) => removeNil(item));
-          this.logger.debug(`Flushing ${items.length} ${collection} upserts to typesense`);
-          await this.client
-            .collections(schema.name)
-            .documents()
-            .import(items, { action: 'upsert', dirty_values: 'coerce_or_drop' });
-          this.queue[collection].upsert = [];
-        } catch (error) {
-          this.handleError(error);
-        }
-      }
-
-      if (this.queue[collection].delete.length > 0) {
-        try {
-          const items = this.queue[collection].delete;
-          this.logger.debug(`Flushing ${items.length} ${collection} deletes to typesense`);
-          await this.client
-            .collections(schema.name)
-            .documents()
-            .delete({ filter_by: `id: [${items.join(',')}]` });
-          this.queue[collection].delete = [];
-        } catch (error) {
-          this.handleError(error);
-        }
-      }
-    }
-  }
-
-  private handleError(error: any): never {
+  private handleError(error: any) {
     this.logger.error('Unable to index documents');
     const results = error.importResults || [];
     for (const result of results) {
       try {
         result.document = JSON.parse(result.document);
+        if (result.document?.smartInfo?.clipEmbedding) {
+          result.document.smartInfo.clipEmbedding = '<truncated>';
+        }
       } catch {}
     }
+
     this.logger.verbose(JSON.stringify(results, null, 2));
-    throw error;
   }
 
   private async updateAlias(collection: SearchCollection) {
@@ -373,6 +317,18 @@ export class TypesenseRepository implements ISearchRepository {
     }
   }
 
+  private patch(collection: SearchCollection, items: AssetEntity[] | AlbumEntity[]) {
+    return items.map((item) =>
+      collection === SearchCollection.ASSETS
+        ? this.patchAsset(item as AssetEntity)
+        : this.patchAlbum(item as AlbumEntity),
+    );
+  }
+
+  private patchAlbum(album: AlbumEntity): AlbumEntity {
+    return removeNil(album);
+  }
+
   private patchAsset(asset: AssetEntity): CustomAssetEntity {
     let custom = asset as CustomAssetEntity;
 
@@ -382,9 +338,7 @@ export class TypesenseRepository implements ISearchRepository {
       custom = { ...custom, geo: [lat, lng] };
     }
 
-    custom = { ...custom, motion: !!asset.livePhotoVideoId };
-
-    return custom;
+    return removeNil({ ...custom, motion: !!asset.livePhotoVideoId });
   }
 
   private getFacetFieldNames(collection: SearchCollection) {
@@ -392,5 +346,42 @@ export class TypesenseRepository implements ISearchRepository {
       .filter((field) => field.facet)
       .map((field) => field.name)
       .join(',');
+  }
+
+  private getAlbumFilters(filters: SearchFilter) {
+    const { userId } = filters;
+    const _filters = [`ownerId:${userId}`];
+    if (filters.id) {
+      _filters.push(`id:=${filters.id}`);
+    }
+
+    for (const item of albumSchema.fields || []) {
+      let value = filters[item.name as keyof SearchFilter];
+      if (Array.isArray(value)) {
+        value = `[${value.join(',')}]`;
+      }
+      if (item.facet && value !== undefined) {
+        _filters.push(`${item.name}:${value}`);
+      }
+    }
+
+    return _filters.join(' && ');
+  }
+
+  private getAssetFilters(filters: SearchFilter) {
+    const _filters = [`ownerId:${filters.userId}`];
+    if (filters.id) {
+      _filters.push(`id:=${filters.id}`);
+    }
+    for (const item of assetSchema.fields || []) {
+      let value = filters[item.name as keyof SearchFilter];
+      if (Array.isArray(value)) {
+        value = `[${value.join(',')}]`;
+      }
+      if (item.facet && value !== undefined) {
+        _filters.push(`${item.name}:${value}`);
+      }
+    }
+    return _filters.join(' && ');
   }
 }

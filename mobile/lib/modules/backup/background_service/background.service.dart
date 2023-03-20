@@ -4,21 +4,25 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui' show DartPluginRegistrant, IsolateNameServer, PluginUtilities;
 import 'package:cancellation_token_http/http.dart';
+import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/main.dart';
 import 'package:immich_mobile/modules/backup/background_service/localization.dart';
+import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
-import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
-import 'package:immich_mobile/modules/backup/models/hive_duplicated_assets.model.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:immich_mobile/utils/diff.dart';
+import 'package:isar/isar.dart';
 import 'package:path_provider_ios/path_provider_ios.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -51,10 +55,6 @@ class BackgroundService {
       _Throttle(_updateProgress, notifyInterval);
   late final _Throttle _throttledDetailNotify =
       _Throttle(_updateDetailProgress, notifyInterval);
-  Completer<bool> _hasAccessCompleter = Completer();
-  late Future<bool> _hasAccess = _hasAccessCompleter.future;
-
-  Future<bool> get hasAccess => _hasAccess;
 
   bool get isBackgroundInitialized {
     return _isBackgroundInitialized;
@@ -194,11 +194,6 @@ class BackgroundService {
       debugPrint("WARNING: [acquireLock] called more than once");
       return true;
     }
-    if (_hasAccessCompleter.isCompleted) {
-      debugPrint("WARNING: [acquireLock] _hasAccessCompleter is completed");
-      _hasAccessCompleter = Completer();
-      _hasAccess = _hasAccessCompleter.future;
-    }
     final int lockTime = Timeline.now;
     _wantsLockTime = lockTime;
     final ReceivePort rp = ReceivePort(_portNameLock);
@@ -217,7 +212,6 @@ class BackgroundService {
     }
     _hasLock = true;
     rp.listen(_heartbeatListener);
-    _hasAccessCompleter.complete(true);
     return true;
   }
 
@@ -267,8 +261,6 @@ class BackgroundService {
   void releaseLock() {
     _wantsLockTime = 0;
     if (_hasLock) {
-      _hasAccessCompleter = Completer();
-      _hasAccess = _hasAccessCompleter.future;
       IsolateNameServer.removePortNameMapping(_portNameLock);
       _waitingIsolate?.send(true);
       _waitingIsolate = null;
@@ -339,29 +331,24 @@ class BackgroundService {
   }
 
   Future<bool> _onAssetsChanged() async {
+    final Isar db = await loadDb();
     await Hive.initFlutter();
 
     Hive.registerAdapter(HiveSavedLoginInfoAdapter());
-    Hive.registerAdapter(HiveBackupAlbumsAdapter());
-    Hive.registerAdapter(HiveDuplicatedAssetsAdapter());
 
     await Future.wait([
       Hive.openBox(userInfoBox),
       Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox),
       Hive.openBox(userSettingInfoBox),
-      Hive.openBox(backgroundBackupInfoBox),
-      Hive.openBox<HiveDuplicatedAssets>(duplicatedAssetsBox),
-      Hive.openBox<HiveBackupAlbums>(hiveBackupInfoBox),
     ]);
     ApiService apiService = ApiService();
     apiService.setAccessToken(Hive.box(userInfoBox).get(accessTokenKey));
-    BackupService backupService = BackupService(apiService);
+    BackupService backupService = BackupService(apiService, db);
     AppSettingsService settingsService = AppSettingsService();
 
-    final Box<HiveBackupAlbums> box =
-        Hive.box<HiveBackupAlbums>(hiveBackupInfoBox);
-    final HiveBackupAlbums? backupAlbumInfo = box.get(backupInfoKey);
-    if (backupAlbumInfo == null) {
+    final selectedAlbums = backupService.selectedAlbumsQuery().findAllSync();
+    final excludedAlbums = backupService.excludedAlbumsQuery().findAllSync();
+    if (selectedAlbums.isEmpty) {
       return true;
     }
 
@@ -371,18 +358,37 @@ class BackgroundService {
       final bool backupOk = await _runBackup(
         backupService,
         settingsService,
-        backupAlbumInfo,
+        selectedAlbums,
+        excludedAlbums,
       );
       if (backupOk) {
-        await Hive.box(backgroundBackupInfoBox).delete(backupFailedSince);
-        await box.put(
-          backupInfoKey,
-          backupAlbumInfo,
-        );
-      } else if (Hive.box(backgroundBackupInfoBox).get(backupFailedSince) ==
-          null) {
-        Hive.box(backgroundBackupInfoBox)
-            .put(backupFailedSince, DateTime.now());
+        await Store.delete(StoreKey.backupFailedSince);
+        final backupAlbums = [...selectedAlbums, ...excludedAlbums];
+        backupAlbums.sortBy((e) => e.id);
+        db.writeTxnSync(() {
+          final dbAlbums = db.backupAlbums.where().sortById().findAllSync();
+          final List<int> toDelete = [];
+          final List<BackupAlbum> toUpsert = [];
+          // stores the most recent `lastBackup` per album but always keeps the `selection` from the most recent DB state
+          diffSortedListsSync(
+            dbAlbums,
+            backupAlbums,
+            compare: (BackupAlbum a, BackupAlbum b) => a.id.compareTo(b.id),
+            both: (BackupAlbum a, BackupAlbum b) {
+              a.lastBackup = a.lastBackup.isAfter(b.lastBackup)
+                  ? a.lastBackup
+                  : b.lastBackup;
+              toUpsert.add(a);
+              return true;
+            },
+            onlyFirst: (BackupAlbum a) => toUpsert.add(a),
+            onlySecond: (BackupAlbum b) => toDelete.add(b.isarId),
+          );
+          db.backupAlbums.deleteAllSync(toDelete);
+          db.backupAlbums.putAllSync(toUpsert);
+        });
+      } else if (Store.get(StoreKey.backupFailedSince) == null) {
+        Store.put(StoreKey.backupFailedSince, DateTime.now());
         return false;
       }
       // Android should check for new assets added while performing backup
@@ -395,7 +401,8 @@ class BackgroundService {
   Future<bool> _runBackup(
     BackupService backupService,
     AppSettingsService settingsService,
-    HiveBackupAlbums backupAlbumInfo,
+    List<BackupAlbum> selectedAlbums,
+    List<BackupAlbum> excludedAlbums,
   ) async {
     _errorGracePeriodExceeded = _isErrorGracePeriodExceeded(settingsService);
     final bool notifyTotalProgress = settingsService
@@ -407,8 +414,10 @@ class BackgroundService {
       return false;
     }
 
-    List<AssetEntity> toUpload =
-        await backupService.buildUploadCandidates(backupAlbumInfo);
+    List<AssetEntity> toUpload = await backupService.buildUploadCandidates(
+      selectedAlbums,
+      excludedAlbums,
+    );
 
     try {
       toUpload = await backupService.removeAlreadyUploadedAssets(toUpload);
@@ -520,8 +529,7 @@ class BackgroundService {
     } else if (value == 5) {
       return false;
     }
-    final DateTime? failedSince =
-        Hive.box(backgroundBackupInfoBox).get(backupFailedSince);
+    final DateTime? failedSince = Store.get(StoreKey.backupFailedSince);
     if (failedSince == null) {
       return false;
     }

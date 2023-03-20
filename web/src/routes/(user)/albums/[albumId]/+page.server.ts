@@ -1,11 +1,10 @@
+import { AppRoute } from '$lib/constants';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ parent, params, locals: { api } }) => {
-	const { user } = await parent();
-
+export const load = (async ({ params, locals: { api, user } }) => {
 	if (!user) {
-		throw redirect(302, '/auth/login');
+		throw redirect(302, AppRoute.AUTH_LOGIN);
 	}
 
 	const albumId = params['albumId'];
@@ -19,6 +18,6 @@ export const load = (async ({ parent, params, locals: { api } }) => {
 			}
 		};
 	} catch (e) {
-		throw redirect(302, '/albums');
+		throw redirect(302, AppRoute.ALBUMS);
 	}
 }) satisfies PageServerLoad;

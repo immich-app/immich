@@ -78,7 +78,7 @@
     "sanitize-filename": "^1.6.3",
     "sharp": "^0.28.0",
     "typeorm": "^0.3.11",
-    "typesense": "^1.5.2"
+    "typesense": "^1.5.3"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.1.8",

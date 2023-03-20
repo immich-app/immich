@@ -15,7 +15,8 @@
 
 	function onSearch() {
 		const params = new URLSearchParams({
-			q: value
+			q: value,
+			clip: 'true'
 		});
 
 		goto(`${AppRoute.SEARCH}?${params}`, { replaceState: replaceHistoryState });
@@ -24,7 +25,7 @@
 
 <form
 	autocomplete="off"
-	class="relative text-base"
+	class="relative text-sm"
 	action={AppRoute.SEARCH}
 	on:reset={() => (value = '')}
 	on:submit|preventDefault={onSearch}

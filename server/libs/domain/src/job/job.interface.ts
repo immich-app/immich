@@ -8,13 +8,13 @@ export interface IAssetJob {
   asset: AssetEntity;
 }
 
+export interface IBulkEntityJob {
+  ids: string[];
+}
+
 export interface IAssetUploadedJob {
   asset: AssetEntity;
   fileName: string;
-}
-
-export interface IDeleteJob {
-  id: string;
 }
 
 export interface IDeleteFilesJob {
