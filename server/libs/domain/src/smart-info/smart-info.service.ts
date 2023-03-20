@@ -17,13 +17,17 @@ export class SmartInfoService {
   ) {}
 
   async handleQueueObjectTagging({ force }: IBaseJob) {
-    const assets = force
-      ? await this.assetRepository.getAll()
-      : await this.assetRepository.getWithout(WithoutProperty.OBJECT_TAGS);
+    try {
+      const assets = force
+        ? await this.assetRepository.getAll()
+        : await this.assetRepository.getWithout(WithoutProperty.OBJECT_TAGS);
 
-    for (const asset of assets) {
-      await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: { asset } });
-      await this.jobRepository.queue({ name: JobName.DETECT_OBJECTS, data: { asset } });
+      for (const asset of assets) {
+        await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: { asset } });
+        await this.jobRepository.queue({ name: JobName.DETECT_OBJECTS, data: { asset } });
+      }
+    } catch (error: any) {
+      this.logger.error(`Unable to queue object tagging`, error?.stack);
     }
   }
 
@@ -64,12 +68,16 @@ export class SmartInfoService {
   }
 
   async handleQueueEncodeClip({ force }: IBaseJob) {
-    const assets = force
-      ? await this.assetRepository.getAll()
-      : await this.assetRepository.getWithout(WithoutProperty.CLIP_ENCODING);
+    try {
+      const assets = force
+        ? await this.assetRepository.getAll()
+        : await this.assetRepository.getWithout(WithoutProperty.CLIP_ENCODING);
 
-    for (const asset of assets) {
-      await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: { asset } });
+      for (const asset of assets) {
+        await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: { asset } });
+      }
+    } catch (error: any) {
+      this.logger.error(`Unable to queue clip encoding`, error?.stack);
     }
   }
 

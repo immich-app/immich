@@ -96,6 +96,7 @@ export class AssetRepository implements IAssetRepository {
           resizePath: Not(IsNull()),
           exifInfo: IsNull(),
         };
+        break;
 
       case WithoutProperty.CLIP_ENCODING:
         relations = {
@@ -120,6 +121,7 @@ export class AssetRepository implements IAssetRepository {
             tags: IsNull(),
           },
         };
+        break;
 
       default:
         throw new Error(`Invalid getWithout property: ${property}`);
