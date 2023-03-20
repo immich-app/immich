@@ -8,12 +8,12 @@ Docker Compose is the recommended method to run Immich in production. Below are 
 
 ### Step 1 - Download the required files
 
-Create a directory of your choice (e.g. `./immich-app`) to hold the docker-compose.yml and .env files.
+Create a directory of your choice (e.g. `./immich-app`) to hold the `docker-compose.yml` and `.env` files.
 
 Download [`docker-compose.yml`][compose-file] and [`example.env`][env-file], either by running the following commands:
 
 ```bash title="Move to the directory you created"
-cd ./immich-app #(Use the actual directory you created)
+cd ./immich-app     #(Use the actual directory you created)
 ```
 
 ```bash title="Get docker-compose.yml file"
@@ -26,7 +26,7 @@ wget -O .env https://github.com/immich-app/immich/releases/latest/download/examp
 
 or by downloading from your browser and moving the files to the directory that you created.
 
-Note: If you downloaded the files from your browser, also ensure that you rename example.env to .env without anything before the period.
+Note: If you downloaded the files from your browser, also ensure that you rename `example.env` to `.env`.
 
 ### Step 2 - Populate the .env file with custom values
 
@@ -132,14 +132,12 @@ IMMICH_MACHINE_LEARNING_URL=http://immich-machine-learning:3003
 
 - Populate custom database information if necessary.
 - Populate `UPLOAD_LOCATION` with your preferred location for storing backup assets.
-- Consider changing DB_PASSWORD to something randomly generated
-- Consider changing TYPESENSE_API_KEY to something randomly generated
+- Consider changing `DB_PASSWORD` to something randomly generated
+- Consider changing `TYPESENSE_API_KEY` to something randomly generated
 
 ### Step 3 - Start the containers
 
-```bash title="Navigate to the directory you created"
-cd ./immich-app     #(Use the actual directory you created)
-```
+From the directory you created in Step 1, (which should now contain your customized `docker-compose.yml` and `.env` files) run `docker-compose up -d`.
 
 ```bash title="Start the containers using docker compose command"
 docker-compose up -d     # or `docker compose up -d` based on your docker-compose version
@@ -154,7 +152,7 @@ For more information on how to use the application, please refer to the [Post In
 When a new version of Immich is [released](https://github.com/immich-app/immich/releases), the application can be upgraded with the following commands, run in the directory with the `docker-compose.yml` file:
 
 ```bash title="Upgrade Immich"
-docker-compose pull && docker-compose up -d # Or `docker compose`
+docker-compose pull && docker-compose up -d     # Or `docker compose up -d`
 ```
 
 :::caution Automatic Updates
