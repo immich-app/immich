@@ -146,10 +146,6 @@ describe('AssetService', () => {
       getAssetByTimeBucket: jest.fn(),
       getAssetByChecksum: jest.fn(),
       getAssetCountByUserId: jest.fn(),
-      getAssetWithNoEXIF: jest.fn(),
-      getAssetWithNoThumbnail: jest.fn(),
-      getAssetWithNoSmartInfo: jest.fn(),
-      getAssetWithNoEncodedVideo: jest.fn(),
       getExistingAssets: jest.fn(),
       countByIdAndUser: jest.fn(),
     };

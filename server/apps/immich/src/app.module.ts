@@ -7,7 +7,6 @@ import { AlbumModule } from './api-v1/album/album.module';
 import { AppController } from './app.controller';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
-import { JobModule } from './api-v1/job/job.module';
 import { TagModule } from './api-v1/tag/tag.module';
 import { DomainModule, SearchService } from '@app/domain';
 import { InfraModule } from '@app/infra';
@@ -15,6 +14,7 @@ import {
   APIKeyController,
   AuthController,
   DeviceInfoController,
+  JobController,
   OAuthController,
   SearchController,
   ShareController,
@@ -42,8 +42,6 @@ import { AuthGuard } from './middlewares/auth.guard';
 
     ScheduleTasksModule,
 
-    JobModule,
-
     TagModule,
   ],
   controllers: [
@@ -51,6 +49,7 @@ import { AuthGuard } from './middlewares/auth.guard';
     APIKeyController,
     AuthController,
     DeviceInfoController,
+    JobController,
     OAuthController,
     SearchController,
     ShareController,

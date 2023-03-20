@@ -62,7 +62,7 @@ import { AssetSearchDto } from './dto/asset-search.dto';
 import { AddAssetsDto } from '../album/dto/add-assets.dto';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
 import path from 'path';
-import { getFileNameWithoutExtension } from '../../utils/file-name.util';
+import { getFileNameWithoutExtension } from '@app/domain';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 
 const fileInfo = promisify(stat);
