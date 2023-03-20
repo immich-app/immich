@@ -365,7 +365,11 @@ export class TypesenseRepository implements ISearchRepository {
       }
     }
 
-    return _filters.join(' && ');
+    const result = _filters.join(' && ');
+
+    this.logger.debug(`Album filters are: ${result}`);
+
+    return result;
   }
 
   private getAssetFilters(filters: SearchFilter) {
@@ -382,6 +386,11 @@ export class TypesenseRepository implements ISearchRepository {
         _filters.push(`${item.name}:${value}`);
       }
     }
-    return _filters.join(' && ');
+
+    const result = _filters.join(' && ');
+
+    this.logger.debug(`Asset filters are: ${result}`);
+
+    return result;
   }
 }

@@ -51,8 +51,8 @@ doc/GetAssetCountByTimeBucketDto.md
 doc/JobApi.md
 doc/JobCommand.md
 doc/JobCommandDto.md
-doc/JobCounts.md
-doc/JobId.md
+doc/JobCountsDto.md
+doc/JobName.md
 doc/LoginCredentialDto.md
 doc/LoginResponseDto.md
 doc/LogoutResponseDto.md
@@ -168,8 +168,8 @@ lib/model/get_asset_by_time_bucket_dto.dart
 lib/model/get_asset_count_by_time_bucket_dto.dart
 lib/model/job_command.dart
 lib/model/job_command_dto.dart
-lib/model/job_counts.dart
-lib/model/job_id.dart
+lib/model/job_counts_dto.dart
+lib/model/job_name.dart
 lib/model/login_credential_dto.dart
 lib/model/login_response_dto.dart
 lib/model/logout_response_dto.dart
@@ -262,8 +262,8 @@ test/get_asset_count_by_time_bucket_dto_test.dart
 test/job_api_test.dart
 test/job_command_dto_test.dart
 test/job_command_test.dart
-test/job_counts_test.dart
-test/job_id_test.dart
+test/job_counts_dto_test.dart
+test/job_name_test.dart
 test/login_credential_dto_test.dart
 test/login_response_dto_test.dart
 test/logout_response_dto_test.dart

@@ -145,7 +145,15 @@ export class SearchService {
       // TODO: do this in batches based on searchIndexVersion
       const assets = this.patchAssets(await this.assetRepository.getAll({ isVisible: true }));
       this.logger.log(`Indexing ${assets.length} assets`);
-      await this.searchRepository.importAssets(assets, true);
+
+      const chunkSize = 1000;
+      for (let i = 0; i < assets.length; i += chunkSize) {
+        const end = i + chunkSize;
+        const chunk = assets.slice(i, end);
+        const done = end >= assets.length - 1;
+        await this.searchRepository.importAssets(chunk, done);
+      }
+
       this.logger.debug('Finished re-indexing all assets');
     } catch (error: any) {
       this.logger.error(`Unable to index all assets`, error?.stack);

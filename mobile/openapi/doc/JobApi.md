@@ -63,7 +63,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **sendJobCommand**
-> num sendJobCommand(jobId, jobCommandDto)
+> sendJobCommand(jobId, jobCommandDto)
 
 
 
@@ -84,12 +84,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = JobApi();
-final jobId = ; // JobId | 
+final jobId = ; // JobName | 
 final jobCommandDto = JobCommandDto(); // JobCommandDto | 
 
 try {
-    final result = api_instance.sendJobCommand(jobId, jobCommandDto);
-    print(result);
+    api_instance.sendJobCommand(jobId, jobCommandDto);
 } catch (e) {
     print('Exception when calling JobApi->sendJobCommand: $e\n');
 }
@@ -99,12 +98,12 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **jobId** | [**JobId**](.md)|  | 
+ **jobId** | [**JobName**](.md)|  | 
  **jobCommandDto** | [**JobCommandDto**](JobCommandDto.md)|  | 
 
 ### Return type
 
-**num**
+void (empty response body)
 
 ### Authorization
 
@@ -113,7 +112,7 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: application/json
+ - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

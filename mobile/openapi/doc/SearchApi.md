@@ -113,7 +113,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **search**
-> SearchResponseDto search()
+> SearchResponseDto search(q, query, clip, type, isFavorite, exifInfoPeriodCity, exifInfoPeriodState, exifInfoPeriodCountry, exifInfoPeriodMake, exifInfoPeriodModel, smartInfoPeriodObjects, smartInfoPeriodTags, recent, motion)
 
 
 
@@ -134,9 +134,23 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = SearchApi();
+final q = q_example; // String | 
+final query = query_example; // String | 
+final clip = true; // bool | 
+final type = type_example; // String | 
+final isFavorite = true; // bool | 
+final exifInfoPeriodCity = exifInfoPeriodCity_example; // String | 
+final exifInfoPeriodState = exifInfoPeriodState_example; // String | 
+final exifInfoPeriodCountry = exifInfoPeriodCountry_example; // String | 
+final exifInfoPeriodMake = exifInfoPeriodMake_example; // String | 
+final exifInfoPeriodModel = exifInfoPeriodModel_example; // String | 
+final smartInfoPeriodObjects = []; // List<String> | 
+final smartInfoPeriodTags = []; // List<String> | 
+final recent = true; // bool | 
+final motion = true; // bool | 
 
 try {
-    final result = api_instance.search();
+    final result = api_instance.search(q, query, clip, type, isFavorite, exifInfoPeriodCity, exifInfoPeriodState, exifInfoPeriodCountry, exifInfoPeriodMake, exifInfoPeriodModel, smartInfoPeriodObjects, smartInfoPeriodTags, recent, motion);
     print(result);
 } catch (e) {
     print('Exception when calling SearchApi->search: $e\n');
@@ -144,7 +158,23 @@ try {
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **q** | **String**|  | [optional] 
+ **query** | **String**|  | [optional] 
+ **clip** | **bool**|  | [optional] 
+ **type** | **String**|  | [optional] 
+ **isFavorite** | **bool**|  | [optional] 
+ **exifInfoPeriodCity** | **String**|  | [optional] 
+ **exifInfoPeriodState** | **String**|  | [optional] 
+ **exifInfoPeriodCountry** | **String**|  | [optional] 
+ **exifInfoPeriodMake** | **String**|  | [optional] 
+ **exifInfoPeriodModel** | **String**|  | [optional] 
+ **smartInfoPeriodObjects** | [**List<String>**](String.md)|  | [optional] [default to const []]
+ **smartInfoPeriodTags** | [**List<String>**](String.md)|  | [optional] [default to const []]
+ **recent** | **bool**|  | [optional] 
+ **motion** | **bool**|  | [optional] 
 
 ### Return type
 
