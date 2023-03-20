@@ -3,9 +3,9 @@ import { AssetType } from '@app/infra/db/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { join } from 'path';
 import sanitize from 'sanitize-filename';
-import { IAssetRepository, mapAsset } from '../asset';
+import { IAssetRepository, mapAsset, WithoutProperty } from '../asset';
 import { CommunicationEvent, ICommunicationRepository } from '../communication';
-import { IAssetJob, IJobRepository, JobName } from '../job';
+import { IAssetJob, IBaseJob, IJobRepository, JobName } from '../job';
 import { IStorageRepository } from '../storage';
 import { IMediaRepository } from './media.repository';
 
@@ -20,6 +20,22 @@ export class MediaService {
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {}
+
+  async handleQueueGenerateThumbnails(job: IBaseJob): Promise<void> {
+    try {
+      const { force } = job;
+
+      const assets = force
+        ? await this.assetRepository.getAll()
+        : await this.assetRepository.getWithout(WithoutProperty.THUMBNAIL);
+
+      for (const asset of assets) {
+        await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { asset } });
+      }
+    } catch (error: any) {
+      this.logger.error('Failed to queue generate thumbnail jobs', error.stack);
+    }
+  }
 
   async handleGenerateJpegThumbnail(data: IAssetJob): Promise<void> {
     const { asset } = data;
@@ -52,8 +68,8 @@ export class MediaService {
       asset.resizePath = jpegThumbnailPath;
 
       await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: { asset } });
-      await this.jobRepository.queue({ name: JobName.IMAGE_TAGGING, data: { asset } });
-      await this.jobRepository.queue({ name: JobName.OBJECT_DETECTION, data: { asset } });
+      await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: { asset } });
+      await this.jobRepository.queue({ name: JobName.DETECT_OBJECTS, data: { asset } });
       await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: { asset } });
 
       this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
@@ -71,8 +87,8 @@ export class MediaService {
         asset.resizePath = jpegThumbnailPath;
 
         await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: { asset } });
-        await this.jobRepository.queue({ name: JobName.IMAGE_TAGGING, data: { asset } });
-        await this.jobRepository.queue({ name: JobName.OBJECT_DETECTION, data: { asset } });
+        await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: { asset } });
+        await this.jobRepository.queue({ name: JobName.DETECT_OBJECTS, data: { asset } });
         await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: { asset } });
 
         this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));

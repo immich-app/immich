@@ -4,7 +4,7 @@
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
 	import { handleError } from '$lib/utils/handle-error';
-	import { AllJobStatusResponseDto, api, JobCommand, JobId } from '@api';
+	import { AllJobStatusResponseDto, api, JobCommand, JobName } from '@api';
 	import { onDestroy, onMount } from 'svelte';
 	import JobTile from './job-tile.svelte';
 
@@ -18,35 +18,42 @@
 
 	onMount(async () => {
 		await load();
-		timer = setInterval(async () => await load(), 1_000);
+		timer = setInterval(async () => await load(), 5_000);
 	});
 
 	onDestroy(() => {
 		clearInterval(timer);
 	});
 
-	const run = async (
-		jobId: JobId,
-		jobName: string,
-		emptyMessage: string,
-		includeAllAssets: boolean
-	) => {
-		try {
-			const { data } = await api.jobApi.sendJobCommand(jobId, {
-				command: JobCommand.Start,
-				includeAllAssets
-			});
+	function getJobLabel(jobName: JobName) {
+		const names: Record<JobName, string> = {
+			[JobName.ThumbnailGenerationQueue]: 'Generate Thumbnails',
+			[JobName.MetadataExtractionQueue]: 'Extract Metadata',
+			[JobName.VideoConversionQueue]: 'Transcode Videos',
+			[JobName.ObjectTaggingQueue]: 'Tag Objects',
+			[JobName.ClipEncodingQueue]: 'Clip Encoding',
+			[JobName.BackgroundTaskQueue]: 'Background Task',
+			[JobName.StorageTemplateMigrationQueue]: 'Storage Template Migration',
+			[JobName.SearchQueue]: 'Search'
+		};
 
-			if (data) {
-				notificationController.show({
-					message: includeAllAssets ? `Started ${jobName} for all assets` : `Started ${jobName}`,
-					type: NotificationType.Info
-				});
-			} else {
-				notificationController.show({ message: emptyMessage, type: NotificationType.Info });
-			}
+		return names[jobName];
+	}
+
+	const start = async (jobId: JobName, force: boolean) => {
+		const label = getJobLabel(jobId);
+
+		try {
+			await api.jobApi.sendJobCommand(jobId, { command: JobCommand.Start, force });
+
+			jobs[jobId].active += 1;
+
+			notificationController.show({
+				message: `Started job: ${label}`,
+				type: NotificationType.Info
+			});
 		} catch (error) {
-			handleError(error, `Unable to start ${jobName}`);
+			handleError(error, `Unable to start job: ${label}`);
 		}
 	};
 </script>
@@ -54,76 +61,48 @@
 <div class="flex flex-col gap-7">
 	{#if jobs}
 		<JobTile
-			title={'Generate thumbnails'}
-			subtitle={'Regenerate JPEG and WebP thumbnails'}
-			on:click={(e) => {
-				const { includeAllAssets } = e.detail;
-
-				run(
-					JobId.ThumbnailGeneration,
-					'thumbnail generation',
-					'No missing thumbnails found',
-					includeAllAssets
-				);
-			}}
-			jobCounts={jobs[JobId.ThumbnailGeneration]}
+			title="Generate thumbnails"
+			subtitle="Regenerate JPEG and WebP thumbnails"
+			on:click={(e) => start(JobName.ThumbnailGenerationQueue, e.detail.force)}
+			jobCounts={jobs[JobName.ThumbnailGenerationQueue]}
 		/>
 
 		<JobTile
-			title={'EXTRACT METADATA'}
-			subtitle={'Extract metadata information i.e. GPS, resolution...etc'}
-			on:click={(e) => {
-				const { includeAllAssets } = e.detail;
-				run(JobId.MetadataExtraction, 'extract EXIF', 'No missing EXIF found', includeAllAssets);
-			}}
-			jobCounts={jobs[JobId.MetadataExtraction]}
+			title="Extract Metadata"
+			subtitle="Extract metadata information i.e. GPS, resolution...etc"
+			on:click={(e) => start(JobName.MetadataExtractionQueue, e.detail.force)}
+			jobCounts={jobs[JobName.MetadataExtractionQueue]}
 		/>
 
 		<JobTile
-			title={'Detect objects'}
-			subtitle={'Run machine learning process to detect and classify objects'}
-			on:click={(e) => {
-				const { includeAllAssets } = e.detail;
-
-				run(
-					JobId.MachineLearning,
-					'object detection',
-					'No missing object detection found',
-					includeAllAssets
-				);
-			}}
-			jobCounts={jobs[JobId.MachineLearning]}
+			title="Tag Objects"
+			subtitle="Run machine learning to tag objects"
+			on:click={(e) => start(JobName.ObjectTaggingQueue, e.detail.force)}
+			jobCounts={jobs[JobName.ObjectTaggingQueue]}
 		>
 			Note that some assets may not have any objects detected
 		</JobTile>
 
 		<JobTile
-			title={'Video transcoding'}
-			subtitle={'Transcode videos not in the desired format'}
-			on:click={(e) => {
-				const { includeAllAssets } = e.detail;
-				run(
-					JobId.VideoConversion,
-					'video conversion',
-					'No videos without an encoded version found',
-					includeAllAssets
-				);
-			}}
-			jobCounts={jobs[JobId.VideoConversion]}
+			title="Encode Clip"
+			subtitle="Run machine learning to generate clip embeddings"
+			on:click={(e) => start(JobName.ClipEncodingQueue, e.detail.force)}
+			jobCounts={jobs[JobName.ClipEncodingQueue]}
 		/>
 
 		<JobTile
-			title={'Storage migration'}
+			title="Transcode Videos"
+			subtitle="Transcode videos not in the desired format"
+			on:click={(e) => start(JobName.VideoConversionQueue, e.detail.force)}
+			jobCounts={jobs[JobName.VideoConversionQueue]}
+		/>
+
+		<JobTile
+			title="Storage migration"
 			showOptions={false}
 			subtitle={''}
-			on:click={() =>
-				run(
-					JobId.StorageTemplateMigration,
-					'storage template migration',
-					'All files have been migrated to the new storage template',
-					false
-				)}
-			jobCounts={jobs[JobId.StorageTemplateMigration]}
+			on:click={(e) => start(JobName.StorageTemplateMigrationQueue, e.detail.force)}
+			jobCounts={jobs[JobName.StorageTemplateMigrationQueue]}
 		>
 			Apply the current
 			<a

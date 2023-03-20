@@ -276,10 +276,10 @@ class ApiClient {
           return JobCommandTypeTransformer().decode(value);
         case 'JobCommandDto':
           return JobCommandDto.fromJson(value);
-        case 'JobCounts':
-          return JobCounts.fromJson(value);
-        case 'JobId':
-          return JobIdTypeTransformer().decode(value);
+        case 'JobCountsDto':
+          return JobCountsDto.fromJson(value);
+        case 'JobName':
+          return JobNameTypeTransformer().decode(value);
         case 'LoginCredentialDto':
           return LoginCredentialDto.fromJson(value);
         case 'LoginResponseDto':

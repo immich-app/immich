@@ -291,34 +291,52 @@ export interface AlbumResponseDto {
 export interface AllJobStatusResponseDto {
     /**
      * 
-     * @type {JobCounts}
+     * @type {JobCountsDto}
      * @memberof AllJobStatusResponseDto
      */
-    'thumbnail-generation': JobCounts;
+    'thumbnail-generation-queue': JobCountsDto;
     /**
      * 
-     * @type {JobCounts}
+     * @type {JobCountsDto}
      * @memberof AllJobStatusResponseDto
      */
-    'metadata-extraction': JobCounts;
+    'metadata-extraction-queue': JobCountsDto;
     /**
      * 
-     * @type {JobCounts}
+     * @type {JobCountsDto}
      * @memberof AllJobStatusResponseDto
      */
-    'video-conversion': JobCounts;
+    'video-conversion-queue': JobCountsDto;
     /**
      * 
-     * @type {JobCounts}
+     * @type {JobCountsDto}
      * @memberof AllJobStatusResponseDto
      */
-    'machine-learning': JobCounts;
+    'object-tagging-queue': JobCountsDto;
     /**
      * 
-     * @type {JobCounts}
+     * @type {JobCountsDto}
      * @memberof AllJobStatusResponseDto
      */
-    'storage-template-migration': JobCounts;
+    'clip-encoding-queue': JobCountsDto;
+    /**
+     * 
+     * @type {JobCountsDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'storage-template-migration-queue': JobCountsDto;
+    /**
+     * 
+     * @type {JobCountsDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'background-task-queue': JobCountsDto;
+    /**
+     * 
+     * @type {JobCountsDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'search-queue': JobCountsDto;
 }
 /**
  * 
@@ -1203,7 +1221,8 @@ export interface GetAssetCountByTimeBucketDto {
 
 export const JobCommand = {
     Start: 'start',
-    Stop: 'stop'
+    Pause: 'pause',
+    Empty: 'empty'
 } as const;
 
 export type JobCommand = typeof JobCommand[keyof typeof JobCommand];
@@ -1226,42 +1245,42 @@ export interface JobCommandDto {
      * @type {boolean}
      * @memberof JobCommandDto
      */
-    'includeAllAssets': boolean;
+    'force': boolean;
 }
 /**
  * 
  * @export
- * @interface JobCounts
+ * @interface JobCountsDto
  */
-export interface JobCounts {
+export interface JobCountsDto {
     /**
      * 
      * @type {number}
-     * @memberof JobCounts
+     * @memberof JobCountsDto
      */
     'active': number;
     /**
      * 
      * @type {number}
-     * @memberof JobCounts
+     * @memberof JobCountsDto
      */
     'completed': number;
     /**
      * 
      * @type {number}
-     * @memberof JobCounts
+     * @memberof JobCountsDto
      */
     'failed': number;
     /**
      * 
      * @type {number}
-     * @memberof JobCounts
+     * @memberof JobCountsDto
      */
     'delayed': number;
     /**
      * 
      * @type {number}
-     * @memberof JobCounts
+     * @memberof JobCountsDto
      */
     'waiting': number;
 }
@@ -1271,15 +1290,18 @@ export interface JobCounts {
  * @enum {string}
  */
 
-export const JobId = {
-    ThumbnailGeneration: 'thumbnail-generation',
-    MetadataExtraction: 'metadata-extraction',
-    VideoConversion: 'video-conversion',
-    MachineLearning: 'machine-learning',
-    StorageTemplateMigration: 'storage-template-migration'
+export const JobName = {
+    ThumbnailGenerationQueue: 'thumbnail-generation-queue',
+    MetadataExtractionQueue: 'metadata-extraction-queue',
+    VideoConversionQueue: 'video-conversion-queue',
+    ObjectTaggingQueue: 'object-tagging-queue',
+    ClipEncodingQueue: 'clip-encoding-queue',
+    BackgroundTaskQueue: 'background-task-queue',
+    StorageTemplateMigrationQueue: 'storage-template-migration-queue',
+    SearchQueue: 'search-queue'
 } as const;
 
-export type JobId = typeof JobId[keyof typeof JobId];
+export type JobName = typeof JobName[keyof typeof JobName];
 
 
 /**
@@ -6169,12 +6191,12 @@ export const JobApiAxiosParamCreator = function (configuration?: Configuration) 
         },
         /**
          * 
-         * @param {JobId} jobId 
+         * @param {JobName} jobId 
          * @param {JobCommandDto} jobCommandDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        sendJobCommand: async (jobId: JobId, jobCommandDto: JobCommandDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        sendJobCommand: async (jobId: JobName, jobCommandDto: JobCommandDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'jobId' is not null or undefined
             assertParamExists('sendJobCommand', 'jobId', jobId)
             // verify required parameter 'jobCommandDto' is not null or undefined
@@ -6233,12 +6255,12 @@ export const JobApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {JobId} jobId 
+         * @param {JobName} jobId 
          * @param {JobCommandDto} jobCommandDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async sendJobCommand(jobId: JobId, jobCommandDto: JobCommandDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<number>> {
+        async sendJobCommand(jobId: JobName, jobCommandDto: JobCommandDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.sendJobCommand(jobId, jobCommandDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -6262,12 +6284,12 @@ export const JobApiFactory = function (configuration?: Configuration, basePath?:
         },
         /**
          * 
-         * @param {JobId} jobId 
+         * @param {JobName} jobId 
          * @param {JobCommandDto} jobCommandDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        sendJobCommand(jobId: JobId, jobCommandDto: JobCommandDto, options?: any): AxiosPromise<number> {
+        sendJobCommand(jobId: JobName, jobCommandDto: JobCommandDto, options?: any): AxiosPromise<void> {
             return localVarFp.sendJobCommand(jobId, jobCommandDto, options).then((request) => request(axios, basePath));
         },
     };
@@ -6292,13 +6314,13 @@ export class JobApi extends BaseAPI {
 
     /**
      * 
-     * @param {JobId} jobId 
+     * @param {JobName} jobId 
      * @param {JobCommandDto} jobCommandDto 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof JobApi
      */
-    public sendJobCommand(jobId: JobId, jobCommandDto: JobCommandDto, options?: AxiosRequestConfig) {
+    public sendJobCommand(jobId: JobName, jobCommandDto: JobCommandDto, options?: AxiosRequestConfig) {
         return JobApiFp(this.configuration).sendJobCommand(jobId, jobCommandDto, options).then((request) => request(this.axios, this.basePath));
     }
 }

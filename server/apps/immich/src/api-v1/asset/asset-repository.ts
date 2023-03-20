@@ -38,10 +38,6 @@ export interface IAssetRepository {
   getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getAssetByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity>;
-  getAssetWithNoThumbnail(): Promise<AssetEntity[]>;
-  getAssetWithNoEncodedVideo(): Promise<AssetEntity[]>;
-  getAssetWithNoEXIF(): Promise<AssetEntity[]>;
-  getAssetWithNoSmartInfo(): Promise<AssetEntity[]>;
   getExistingAssets(
     userId: string,
     checkDuplicateAssetDto: CheckExistingAssetsDto,
@@ -74,45 +70,6 @@ export class AssetRepository implements IAssetRepository {
         smartInfo: true,
       },
     });
-  }
-
-  async getAssetWithNoSmartInfo(): Promise<AssetEntity[]> {
-    return await this.assetRepository
-      .createQueryBuilder('asset')
-      .leftJoinAndSelect('asset.smartInfo', 'si')
-      .where('asset.resizePath IS NOT NULL')
-      .andWhere('si.assetId IS NULL')
-      .andWhere('asset.isVisible = true')
-      .getMany();
-  }
-
-  async getAssetWithNoThumbnail(): Promise<AssetEntity[]> {
-    return await this.assetRepository.find({
-      where: [
-        { resizePath: IsNull(), isVisible: true },
-        { resizePath: '', isVisible: true },
-        { webpPath: IsNull(), isVisible: true },
-        { webpPath: '', isVisible: true },
-      ],
-    });
-  }
-
-  async getAssetWithNoEncodedVideo(): Promise<AssetEntity[]> {
-    return await this.assetRepository.find({
-      where: [
-        { type: AssetType.VIDEO, encodedVideoPath: IsNull() },
-        { type: AssetType.VIDEO, encodedVideoPath: '' },
-      ],
-    });
-  }
-
-  async getAssetWithNoEXIF(): Promise<AssetEntity[]> {
-    return await this.assetRepository
-      .createQueryBuilder('asset')
-      .leftJoinAndSelect('asset.exifInfo', 'ei')
-      .where('ei."assetId" IS NULL')
-      .andWhere('asset.isVisible = true')
-      .getMany();
   }
 
   async getAssetCountByUserId(ownerId: string): Promise<AssetCountByUserIdResponseDto> {

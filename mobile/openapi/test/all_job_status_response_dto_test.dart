@@ -16,28 +16,43 @@ void main() {
   // final instance = AllJobStatusResponseDto();
 
   group('test AllJobStatusResponseDto', () {
-    // JobCounts thumbnailGeneration
-    test('to test the property `thumbnailGeneration`', () async {
+    // JobCountsDto thumbnailGenerationQueue
+    test('to test the property `thumbnailGenerationQueue`', () async {
       // TODO
     });
 
-    // JobCounts metadataExtraction
-    test('to test the property `metadataExtraction`', () async {
+    // JobCountsDto metadataExtractionQueue
+    test('to test the property `metadataExtractionQueue`', () async {
       // TODO
     });
 
-    // JobCounts videoConversion
-    test('to test the property `videoConversion`', () async {
+    // JobCountsDto videoConversionQueue
+    test('to test the property `videoConversionQueue`', () async {
       // TODO
     });
 
-    // JobCounts machineLearning
-    test('to test the property `machineLearning`', () async {
+    // JobCountsDto objectTaggingQueue
+    test('to test the property `objectTaggingQueue`', () async {
       // TODO
     });
 
-    // JobCounts storageTemplateMigration
-    test('to test the property `storageTemplateMigration`', () async {
+    // JobCountsDto clipEncodingQueue
+    test('to test the property `clipEncodingQueue`', () async {
+      // TODO
+    });
+
+    // JobCountsDto storageTemplateMigrationQueue
+    test('to test the property `storageTemplateMigrationQueue`', () async {
+      // TODO
+    });
+
+    // JobCountsDto backgroundTaskQueue
+    test('to test the property `backgroundTaskQueue`', () async {
+      // TODO
+    });
+
+    // JobCountsDto searchQueue
+    test('to test the property `searchQueue`', () async {
       // TODO
     });
 

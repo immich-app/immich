@@ -21,8 +21,8 @@ void main() {
       // TODO
     });
 
-    // bool includeAllAssets
-    test('to test the property `includeAllAssets`', () async {
+    // bool force
+    test('to test the property `force`', () async {
       // TODO
     });
 

@@ -6,7 +6,8 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   BackgroundTaskProcessor,
-  MachineLearningProcessor,
+  ClipEncodingProcessor,
+  ObjectTaggingProcessor,
   SearchIndexProcessor,
   StorageTemplateMigrationProcessor,
   ThumbnailGeneratorProcessor,
@@ -24,7 +25,8 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
     ThumbnailGeneratorProcessor,
     MetadataExtractionProcessor,
     VideoTranscodeProcessor,
-    MachineLearningProcessor,
+    ObjectTaggingProcessor,
+    ClipEncodingProcessor,
     StorageTemplateMigrationProcessor,
     BackgroundTaskProcessor,
     SearchIndexProcessor,
