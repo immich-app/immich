@@ -5,11 +5,11 @@
 	import AllInclusive from 'svelte-material-icons/AllInclusive.svelte';
 	import { locale } from '$lib/stores/preferences.store';
 	import { createEventDispatcher } from 'svelte';
-	import { JobCounts } from '@api';
+	import { JobCountsDto } from '@api';
 
 	export let title: string;
 	export let subtitle: string;
-	export let jobCounts: JobCounts;
+	export let jobCounts: JobCountsDto;
 	/**
 	 * Show options to run job on all assets of just missing ones
 	 */
@@ -19,8 +19,8 @@
 
 	const dispatch = createEventDispatcher();
 
-	const run = (includeAllAssets: boolean) => {
-		dispatch('click', { includeAllAssets });
+	const run = (force: boolean) => {
+		dispatch('click', { force });
 	};
 </script>
 

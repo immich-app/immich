@@ -2,6 +2,7 @@ import {
   AssetService,
   IAssetJob,
   IAssetUploadedJob,
+  IBaseJob,
   IBulkEntityJob,
   IDeleteFilesJob,
   IUserDeletionJob,
@@ -48,18 +49,33 @@ export class BackgroundTaskProcessor {
   }
 }
 
-@Processor(QueueName.MACHINE_LEARNING)
-export class MachineLearningProcessor {
+@Processor(QueueName.OBJECT_TAGGING)
+export class ObjectTaggingProcessor {
   constructor(private smartInfoService: SmartInfoService) {}
 
-  @Process({ name: JobName.IMAGE_TAGGING, concurrency: 1 })
-  async onTagImage(job: Job<IAssetJob>) {
-    await this.smartInfoService.handleTagImage(job.data);
+  @Process({ name: JobName.QUEUE_OBJECT_TAGGING, concurrency: 1 })
+  async onQueueObjectTagging(job: Job<IBaseJob>) {
+    await this.smartInfoService.handleQueueObjectTagging(job.data);
   }
 
-  @Process({ name: JobName.OBJECT_DETECTION, concurrency: 1 })
-  async onDetectObject(job: Job<IAssetJob>) {
+  @Process({ name: JobName.DETECT_OBJECTS, concurrency: 1 })
+  async onDetectObjects(job: Job<IAssetJob>) {
     await this.smartInfoService.handleDetectObjects(job.data);
+  }
+
+  @Process({ name: JobName.CLASSIFY_IMAGE, concurrency: 1 })
+  async onClassifyImage(job: Job<IAssetJob>) {
+    await this.smartInfoService.handleClassifyImage(job.data);
+  }
+}
+
+@Processor(QueueName.CLIP_ENCODING)
+export class ClipEncodingProcessor {
+  constructor(private smartInfoService: SmartInfoService) {}
+
+  @Process({ name: JobName.QUEUE_ENCODE_CLIP, concurrency: 1 })
+  async onQueueClipEncoding(job: Job<IBaseJob>) {
+    await this.smartInfoService.handleQueueEncodeClip(job.data);
   }
 
   @Process({ name: JobName.ENCODE_CLIP, concurrency: 1 })
@@ -116,6 +132,11 @@ export class StorageTemplateMigrationProcessor {
 @Processor(QueueName.THUMBNAIL_GENERATION)
 export class ThumbnailGeneratorProcessor {
   constructor(private mediaService: MediaService) {}
+
+  @Process({ name: JobName.QUEUE_GENERATE_THUMBNAILS, concurrency: 1 })
+  async handleQueueGenerateThumbnails(job: Job<IBaseJob>) {
+    await this.mediaService.handleQueueGenerateThumbnails(job.data);
+  }
 
   @Process({ name: JobName.GENERATE_JPEG_THUMBNAIL, concurrency: 3 })
   async handleGenerateJpegThumbnail(job: Job<IAssetJob>) {

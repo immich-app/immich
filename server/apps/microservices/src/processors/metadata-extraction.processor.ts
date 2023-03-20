@@ -1,11 +1,14 @@
 import {
   AssetCore,
+  getFileNameWithoutExtension,
   IAssetRepository,
   IAssetUploadedJob,
+  IBaseJob,
   IJobRepository,
   IReverseGeocodingJob,
   JobName,
   QueueName,
+  WithoutProperty,
 } from '@app/domain';
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra';
 import { Process, Processor } from '@nestjs/bull';
@@ -85,8 +88,8 @@ export class MetadataExtractionProcessor {
   private assetCore: AssetCore;
 
   constructor(
-    @Inject(IAssetRepository) assetRepository: IAssetRepository,
-    @Inject(IJobRepository) jobRepository: IJobRepository,
+    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
 
     @InjectRepository(ExifEntity)
     private exifRepository: Repository<ExifEntity>,
@@ -146,6 +149,24 @@ export class MetadataExtractionProcessor {
     }
 
     return { country, state, city };
+  }
+
+  @Process(JobName.QUEUE_METADATA_EXTRACTION)
+  async handleQueueMetadataExtraction(job: Job<IBaseJob>) {
+    try {
+      const { force } = job.data;
+      const assets = force
+        ? await this.assetRepository.getAll()
+        : await this.assetRepository.getWithout(WithoutProperty.EXIF);
+
+      for (const asset of assets) {
+        const fileName = asset.exifInfo?.imageName ?? getFileNameWithoutExtension(asset.originalPath);
+        const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
+        await this.jobRepository.queue({ name, data: { asset, fileName } });
+      }
+    } catch (error: any) {
+      this.logger.error(`Unable to queue metadata extraction`, error?.stack);
+    }
   }
 
   @Process(JobName.EXIF_EXTRACTION)

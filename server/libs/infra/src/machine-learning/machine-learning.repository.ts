@@ -7,7 +7,7 @@ const client = axios.create({ baseURL: MACHINE_LEARNING_URL });
 
 @Injectable()
 export class MachineLearningRepository implements IMachineLearningRepository {
-  tagImage(input: MachineLearningInput): Promise<string[]> {
+  classifyImage(input: MachineLearningInput): Promise<string[]> {
     return client.post<string[]>('/image-classifier/tag-image', input).then((res) => res.data);
   }
 

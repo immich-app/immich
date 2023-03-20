@@ -1,5 +1,11 @@
 import { AssetEntity } from '@app/infra/db/entities';
-import { newJobRepositoryMock, newMachineLearningRepositoryMock, newSmartInfoRepositoryMock } from '../../test';
+import {
+  newAssetRepositoryMock,
+  newJobRepositoryMock,
+  newMachineLearningRepositoryMock,
+  newSmartInfoRepositoryMock,
+} from '../../test';
+import { IAssetRepository } from '../asset';
 import { IJobRepository } from '../job';
 import { IMachineLearningRepository } from './machine-learning.interface';
 import { ISmartInfoRepository } from './smart-info.repository';
@@ -12,15 +18,17 @@ const asset = {
 
 describe(SmartInfoService.name, () => {
   let sut: SmartInfoService;
+  let assetMock: jest.Mocked<IAssetRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let smartMock: jest.Mocked<ISmartInfoRepository>;
   let machineMock: jest.Mocked<IMachineLearningRepository>;
 
   beforeEach(async () => {
+    assetMock = newAssetRepositoryMock();
     smartMock = newSmartInfoRepositoryMock();
     jobMock = newJobRepositoryMock();
     machineMock = newMachineLearningRepositoryMock();
-    sut = new SmartInfoService(jobMock, smartMock, machineMock);
+    sut = new SmartInfoService(assetMock, jobMock, smartMock, machineMock);
   });
 
   it('should work', () => {
@@ -29,18 +37,18 @@ describe(SmartInfoService.name, () => {
 
   describe('handleTagImage', () => {
     it('should skip assets without a resize path', async () => {
-      await sut.handleTagImage({ asset: { resizePath: '' } as AssetEntity });
+      await sut.handleClassifyImage({ asset: { resizePath: '' } as AssetEntity });
 
       expect(smartMock.upsert).not.toHaveBeenCalled();
-      expect(machineMock.tagImage).not.toHaveBeenCalled();
+      expect(machineMock.classifyImage).not.toHaveBeenCalled();
     });
 
     it('should save the returned tags', async () => {
-      machineMock.tagImage.mockResolvedValue(['tag1', 'tag2', 'tag3']);
+      machineMock.classifyImage.mockResolvedValue(['tag1', 'tag2', 'tag3']);
 
-      await sut.handleTagImage({ asset });
+      await sut.handleClassifyImage({ asset });
 
-      expect(machineMock.tagImage).toHaveBeenCalledWith({ thumbnailPath: 'path/to/resize.ext' });
+      expect(machineMock.classifyImage).toHaveBeenCalledWith({ thumbnailPath: 'path/to/resize.ext' });
       expect(smartMock.upsert).toHaveBeenCalledWith({
         assetId: 'asset-1',
         tags: ['tag1', 'tag2', 'tag3'],
@@ -48,19 +56,19 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should handle an error with the machine learning pipeline', async () => {
-      machineMock.tagImage.mockRejectedValue(new Error('Unable to read thumbnail'));
+      machineMock.classifyImage.mockRejectedValue(new Error('Unable to read thumbnail'));
 
-      await sut.handleTagImage({ asset });
+      await sut.handleClassifyImage({ asset });
 
       expect(smartMock.upsert).not.toHaveBeenCalled();
     });
 
     it('should no update the smart info if no tags were returned', async () => {
-      machineMock.tagImage.mockResolvedValue([]);
+      machineMock.classifyImage.mockResolvedValue([]);
 
-      await sut.handleTagImage({ asset });
+      await sut.handleClassifyImage({ asset });
 
-      expect(machineMock.tagImage).toHaveBeenCalled();
+      expect(machineMock.classifyImage).toHaveBeenCalled();
       expect(smartMock.upsert).not.toHaveBeenCalled();
     });
   });
