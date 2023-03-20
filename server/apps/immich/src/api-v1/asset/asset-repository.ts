@@ -44,7 +44,7 @@ export interface IAssetRepository {
   getAssetWithNoSmartInfo(): Promise<AssetEntity[]>;
   getExistingAssets(
     userId: string,
-    checkDuplicateAssetDto: CheckExistingAssetsDto,
+    checkExistingAssetsDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto>;
   countByIdAndUser(assetId: string, userId: string): Promise<number>;
 }
@@ -352,17 +352,14 @@ export class AssetRepository implements IAssetRepository {
 
   async getExistingAssets(
     ownerId: string,
-    checkDuplicateAssetDto: CheckExistingAssetsDto,
+    checkExistingAssetsDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
-    const existingAssets = await this.assetRepository.find({
-      select: { deviceAssetId: true },
-      where: {
-        deviceAssetId: In(checkDuplicateAssetDto.deviceAssetIds),
-        deviceId: checkDuplicateAssetDto.deviceId,
-        ownerId,
-      },
+    console.log(checkExistingAssetsDto);
+    const queryResult = await this.assetRepository.exist({
+      select: { checksum: true },
     });
-    return new CheckExistingAssetsResponseDto(existingAssets.map((a) => a.deviceAssetId));
+    console.log(queryResult);
+    return new CheckExistingAssetsResponseDto(['a'], ['a'], ['a']);
   }
 
   async countByIdAndUser(assetId: string, ownerId: string): Promise<number> {

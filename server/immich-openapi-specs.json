@@ -2289,7 +2289,7 @@
     "/asset/exist": {
       "post": {
         "operationId": "checkExistingAssets",
-        "description": "Checks if multiple assets exist on the server and returns all existing - used by background backup",
+        "description": "Checks if asset checksums exist on the server",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4926,28 +4926,51 @@
           "isExist"
         ]
       },
-      "CheckExistingAssetsDto": {
+      "CheckExistingAssetDto": {
         "type": "object",
         "properties": {
-          "deviceAssetIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+          "path": {
+            "type": "string"
           },
-          "deviceId": {
+          "checksum": {
             "type": "string"
           }
         },
         "required": [
-          "deviceAssetIds",
-          "deviceId"
+          "path",
+          "checksum"
+        ]
+      },
+      "CheckExistingAssetsDto": {
+        "type": "object",
+        "properties": {
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CheckExistingAssetDto"
+            }
+          }
+        },
+        "required": [
+          "assets"
         ]
       },
       "CheckExistingAssetsResponseDto": {
         "type": "object",
         "properties": {
-          "existingIds": {
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reasons": {
             "type": "array",
             "items": {
               "type": "string"
@@ -4955,7 +4978,8 @@
           }
         },
         "required": [
-          "existingIds"
+          "paths",
+          "actions"
         ]
       },
       "CreateAssetsShareLinkDto": {

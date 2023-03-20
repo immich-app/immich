@@ -18,6 +18,7 @@ import {
   Patch,
   StreamableFile,
   ParseFilePipe,
+  ParseArrayPipe,
 } from '@nestjs/common';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AssetService } from './asset.service';
@@ -41,7 +42,7 @@ import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
-import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
+import { CheckExistingAssetDto, CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { DownloadDto } from './dto/download-library.dto';
@@ -313,15 +314,16 @@ export class AssetController {
   }
 
   /**
-   * Checks if multiple assets exist on the server and returns all existing - used by background backup
+   * Checks if asset checksums exist on the server
    */
   @Authenticated()
   @Post('/exist')
   @HttpCode(200)
   async checkExistingAssets(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) checkExistingAssetsDto: CheckExistingAssetsDto,
+    @Body(new ParseArrayPipe({ items: CheckExistingAssetDto })) checkExistingAssetsDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
+    console.log(checkExistingAssetsDto);
     return await this.assetService.checkExistingAssets(authUser, checkExistingAssetsDto);
   }
 

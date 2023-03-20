@@ -1,6 +1,13 @@
 export class CheckExistingAssetsResponseDto {
-  constructor(existingIds: string[]) {
-    this.existingIds = existingIds;
+  constructor(paths: string[], actions: string[], reasons: string[]) {
+    this.paths = paths;
+    this.actions = actions;
+    this.reasons = reasons;
   }
-  existingIds: string[];
+  paths!: string[];
+  // "Accept" or "Reject"
+  actions!: string[];
+  // empty or "Duplicate"
+  // In the future we might also do "Unsupported" if we want to pre-upload mime type checks etc.
+  reasons?: string[];
 }
