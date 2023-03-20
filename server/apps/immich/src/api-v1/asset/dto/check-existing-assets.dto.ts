@@ -4,7 +4,7 @@ import { IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 export class CheckExistingAssetDto {
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
-  path!: string;
+  id!: string;
 
   @IsString({ each: true })
   @IsNotEmpty({ each: true })

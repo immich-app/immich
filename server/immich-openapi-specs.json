@@ -4820,7 +4820,7 @@
       "CheckExistingAssetDto": {
         "type": "object",
         "properties": {
-          "path": {
+          "id": {
             "type": "string"
           },
           "checksum": {
@@ -4828,7 +4828,7 @@
           }
         },
         "required": [
-          "path",
+          "id",
           "checksum"
         ]
       },
@@ -4846,31 +4846,36 @@
           "assets"
         ]
       },
+      "CheckExistingAssetResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "action"
+        ]
+      },
       "CheckExistingAssetsResponseDto": {
         "type": "object",
         "properties": {
-          "paths": {
+          "assets": {
             "type": "array",
             "items": {
-              "type": "string"
-            }
-          },
-          "actions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "reasons": {
-            "type": "array",
-            "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/CheckExistingAssetResponseDto"
             }
           }
         },
         "required": [
-          "paths",
-          "actions"
+          "assets"
         ]
       },
       "CreateAssetsShareLinkDto": {

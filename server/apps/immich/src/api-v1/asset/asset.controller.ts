@@ -18,7 +18,6 @@ import {
   Patch,
   StreamableFile,
   ParseFilePipe,
-  ParseArrayPipe,
 } from '@nestjs/common';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AssetService } from './asset.service';
@@ -42,7 +41,6 @@ import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
-import { CheckExistingAssetDto, CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { DownloadDto } from './dto/download-library.dto';
@@ -58,6 +56,7 @@ import { AssetSearchDto } from './dto/asset-search.dto';
 import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
+import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 
 function asStreamableFile({ stream, type, length }: ImmichReadStream) {
   return new StreamableFile(stream, { type, length });
@@ -321,9 +320,8 @@ export class AssetController {
   @HttpCode(200)
   async checkExistingAssets(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(new ParseArrayPipe({ items: CheckExistingAssetDto })) checkExistingAssetsDto: CheckExistingAssetsDto,
+    @Body(ValidationPipe) checkExistingAssetsDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
-    console.log(checkExistingAssetsDto);
     return await this.assetService.checkExistingAssets(authUser, checkExistingAssetsDto);
   }
 

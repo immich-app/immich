@@ -10,12 +10,15 @@ import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
-import { In } from 'typeorm/find-options/operator/In';
+
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { ITagRepository } from '../tag/tag.repository';
 import { IsNull, Not } from 'typeorm';
 import { AssetSearchDto } from './dto/asset-search.dto';
+import {
+  CheckExistingAssetResponseDto,
+  CheckExistingAssetsResponseDto,
+} from './response-dto/check-existing-assets-response.dto';
 
 export interface IAssetRepository {
   get(id: string): Promise<AssetEntity | null>;
@@ -354,12 +357,18 @@ export class AssetRepository implements IAssetRepository {
     ownerId: string,
     checkExistingAssetsDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
-    console.log(checkExistingAssetsDto);
-    const queryResult = await this.assetRepository.exist({
-      select: { checksum: true },
+    const assets: Promise<CheckExistingAssetResponseDto>[] = checkExistingAssetsDto.assets.map(async (assetToCheck) => {
+      const checksum: Buffer = Buffer.from(assetToCheck.checksum, 'hex');
+      if (
+        await this.assetRepository.exist({
+          where: { ownerId, checksum },
+        })
+      ) {
+        return new CheckExistingAssetResponseDto(assetToCheck.id, 'Reject', 'Duplicate');
+      }
+      return new CheckExistingAssetResponseDto(assetToCheck.id, 'Accept');
     });
-    console.log(queryResult);
-    return new CheckExistingAssetsResponseDto(['a'], ['a'], ['a']);
+    return new CheckExistingAssetsResponseDto(await Promise.all(assets));
   }
 
   async countByIdAndUser(assetId: string, ownerId: string): Promise<number> {
