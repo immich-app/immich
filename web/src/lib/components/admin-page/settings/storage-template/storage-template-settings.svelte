@@ -34,7 +34,7 @@
 			api.systemConfigApi.getStorageTemplateOptions().then((res) => res.data)
 		]);
 
-		selectedPreset = templateOptions.presetOptions[0];
+		selectedPreset = savedConfig.template;
 	}
 
 	const getSupportDateTimeFormat = async () => {
