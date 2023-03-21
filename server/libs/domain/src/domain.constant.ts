@@ -1,4 +1,4 @@
-import pkg from 'package.json';
+import pkg from '../../../package.json';
 
 const [major, minor, patch] = pkg.version.split('.');
 
@@ -15,3 +15,5 @@ export const serverVersion: IServerVersion = {
 };
 
 export const SERVER_VERSION = `${serverVersion.major}.${serverVersion.minor}.${serverVersion.patch}`;
+
+export const APP_UPLOAD_LOCATION = './upload';

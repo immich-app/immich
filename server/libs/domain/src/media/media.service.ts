@@ -1,10 +1,10 @@
-import { APP_UPLOAD_LOCATION } from '@app/common';
 import { AssetType } from '@app/infra/db/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { join } from 'path';
 import sanitize from 'sanitize-filename';
 import { IAssetRepository, mapAsset, WithoutProperty } from '../asset';
 import { CommunicationEvent, ICommunicationRepository } from '../communication';
+import { APP_UPLOAD_LOCATION } from '../domain.constant';
 import { IAssetJob, IBaseJob, IJobRepository, JobName } from '../job';
 import { IStorageRepository } from '../storage';
 import { IMediaRepository } from './media.repository';

@@ -1,7 +1,7 @@
-import { APP_UPLOAD_LOCATION } from '@app/common';
 import { AssetEntity, SystemConfig } from '@app/infra/db/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IAssetRepository } from '../asset/asset.repository';
+import { APP_UPLOAD_LOCATION } from '../domain.constant';
 import { IStorageRepository } from '../storage/storage.repository';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
 import { StorageTemplateCore } from './storage-template.core';
