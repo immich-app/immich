@@ -70,15 +70,8 @@ async function fileUploader(
 	const fileExtension = getFilenameExtension(asset.name);
 	const formData = new FormData();
 	const fileCreatedAt = new Date(asset.lastModified).toISOString();
-	const deviceAssetId = 'web' + '-' + asset.name + '-' + asset.lastModified;
 
 	try {
-		// Create and add Unique ID of asset on the device
-		formData.append('deviceAssetId', deviceAssetId);
-
-		// Get device id - for web -> use WEB
-		formData.append('deviceId', 'WEB');
-
 		// Get asset type
 		formData.append('assetType', assetType);
 
