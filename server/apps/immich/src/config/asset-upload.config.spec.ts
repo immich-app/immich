@@ -78,6 +78,30 @@ describe('assetUploadOption', () => {
       expect(callback).toHaveBeenCalledWith(null, true);
     });
 
+    it('should allow .wmv videos', () => {
+      const file = { mimetype: 'video/x-ms-wmv', originalname: 'test.wmv' } as any;
+      fileFilter(mock.userRequest, file, callback);
+      expect(callback).toHaveBeenCalledWith(null, true);
+    });
+
+    it('should allow .mkv videos', () => {
+      const file = { mimetype: 'video/x-matroska', originalname: 'test.mkv' } as any;
+      fileFilter(mock.userRequest, file, callback);
+      expect(callback).toHaveBeenCalledWith(null, true);
+    });
+
+    it('should allow .mpg videos', () => {
+      const file = { mimetype: 'video/mpeg', originalname: 'test.mpg' } as any;
+      fileFilter(mock.userRequest, file, callback);
+      expect(callback).toHaveBeenCalledWith(null, true);
+    });
+
+    it('should allow .flv videos', () => {
+      const file = { mimetype: 'video/x-flv', originalname: 'test.flv' } as any;
+      fileFilter(mock.userRequest, file, callback);
+      expect(callback).toHaveBeenCalledWith(null, true);
+    });
+
     it('should not allow unknown types', async () => {
       const file = { mimetype: 'application/html', originalname: 'test.html' } as any;
       const callback = jest.fn();
