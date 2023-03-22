@@ -11,6 +11,7 @@ import { TagModule } from './api-v1/tag/tag.module';
 import { DomainModule, SearchService } from '@app/domain';
 import { InfraModule } from '@app/infra';
 import {
+  AlbumController,
   APIKeyController,
   AuthController,
   DeviceInfoController,
@@ -46,6 +47,7 @@ import { AuthGuard } from './middlewares/auth.guard';
   ],
   controllers: [
     AppController,
+    AlbumController,
     APIKeyController,
     AuthController,
     DeviceInfoController,

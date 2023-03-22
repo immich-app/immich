@@ -12,6 +12,7 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
+import { AlbumEntity } from './album.entity';
 import { ExifEntity } from './exif.entity';
 import { SharedLinkEntity } from './shared-link.entity';
 import { SmartInfoEntity } from './smart-info.entity';
@@ -99,6 +100,9 @@ export class AssetEntity {
   @ManyToMany(() => SharedLinkEntity, (link) => link.assets, { cascade: true })
   @JoinTable({ name: 'shared_link__asset' })
   sharedLinks!: SharedLinkEntity[];
+
+  @ManyToMany(() => AlbumEntity, (album) => album.assets)
+  albums?: AlbumEntity[];
 }
 
 export enum AssetType {

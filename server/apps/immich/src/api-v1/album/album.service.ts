@@ -5,8 +5,7 @@ import { AlbumEntity, SharedLinkType } from '@app/infra';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
-import { GetAlbumsDto } from './dto/get-albums.dto';
-import { AlbumResponseDto, IJobRepository, JobName, mapAlbum, mapAlbumExcludeAssetInfo } from '@app/domain';
+import { AlbumResponseDto, IJobRepository, JobName, mapAlbum } from '@app/domain';
 import { IAlbumRepository } from './album-repository';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
@@ -15,7 +14,6 @@ import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from '../asset/dto/download-library.dto';
 import { ShareCore, ISharedLinkRepository, mapSharedLink, SharedLinkResponseDto, ICryptoRepository } from '@app/domain';
 import { CreateAlbumShareLinkDto } from './dto/create-album-shared-link.dto';
-import _ from 'lodash';
 
 @Injectable()
 export class AlbumService {
@@ -61,31 +59,6 @@ export class AlbumService {
     const albumEntity = await this.albumRepository.create(authUser.id, createAlbumDto);
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [albumEntity.id] } });
     return mapAlbum(albumEntity);
-  }
-
-  /**
-   * Get all shared album, including owned and shared one.
-   * @param authUser AuthUserDto
-   * @returns All Shared Album And Its Members
-   */
-  async getAllAlbums(authUser: AuthUserDto, getAlbumsDto: GetAlbumsDto): Promise<AlbumResponseDto[]> {
-    await this.albumRepository.updateThumbnails();
-
-    let albums: AlbumEntity[];
-    if (typeof getAlbumsDto.assetId === 'string') {
-      albums = await this.albumRepository.getListByAssetId(authUser.id, getAlbumsDto.assetId);
-    } else {
-      albums = await this.albumRepository.getList(authUser.id, getAlbumsDto);
-
-      if (getAlbumsDto.shared) {
-        const publicSharingAlbums = await this.albumRepository.getPublicSharingList(authUser.id);
-        albums = [...albums, ...publicSharingAlbums];
-      }
-    }
-
-    albums = _.uniqBy(albums, (album) => album.id);
-
-    return albums.map((album) => mapAlbumExcludeAssetInfo(album));
   }
 
   async getAlbumInfo(authUser: AuthUserDto, albumId: string): Promise<AlbumResponseDto> {
