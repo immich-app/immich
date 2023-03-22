@@ -41,8 +41,7 @@ export class MediaService {
     const { asset } = data;
 
     const basePath = APP_UPLOAD_LOCATION;
-    const sanitizedChecksum = sanitize(String(asset.checksum));
-    const resizePath = join(basePath, asset.ownerId, 'thumb', sanitizedChecksum);
+    const resizePath = join(basePath, asset.ownerId, 'thumb', asset.checksum);
     const jpegThumbnailPath = join(resizePath, `${asset.id}.jpeg`);
 
     this.storageRepository.mkdirSync(resizePath);
