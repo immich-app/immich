@@ -113,12 +113,10 @@ export const fileStub = {
 export const assetEntityStub = {
   image: Object.freeze<AssetEntity>({
     id: 'asset-id',
-    deviceAssetId: 'device-asset-id',
     fileModifiedAt: '2023-02-23T05:06:29.716Z',
     fileCreatedAt: '2023-02-23T05:06:29.716Z',
     owner: userEntityStub.user1,
     ownerId: 'user-id',
-    deviceId: 'device-id',
     originalPath: '/original/path.ext',
     resizePath: null,
     type: AssetType.IMAGE,
@@ -197,9 +195,7 @@ const assetInfo: ExifResponseDto = {
 
 const assetResponse: AssetResponseDto = {
   id: 'id_1',
-  deviceAssetId: 'device_asset_id_1',
   ownerId: 'user_id_1',
-  deviceId: 'device_id_1',
   type: AssetType.VIDEO,
   originalPath: 'fake_path/jpeg',
   resizePath: '',
@@ -433,8 +429,6 @@ export const sharedLinkStub = {
           id: 'id_1',
           owner: userEntityStub.user1,
           ownerId: 'user_id_1',
-          deviceAssetId: 'device_asset_id_1',
-          deviceId: 'device_id_1',
           type: AssetType.VIDEO,
           originalPath: 'fake_path/jpeg',
           resizePath: '',

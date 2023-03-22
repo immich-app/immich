@@ -32,7 +32,6 @@ export interface IAssetRepository {
   getAll(): Promise<AssetEntity[]>;
   getAllVideos(): Promise<AssetEntity[]>;
   getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
-  getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
@@ -176,7 +175,7 @@ export class AssetRepository implements IAssetRepository {
   async getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]> {
     return await this.assetRepository.query(
       `
-        SELECT DISTINCT ON (unnest(si.objects)) a.id, unnest(si.objects) as "object", a."resizePath", a."deviceAssetId", a."deviceId"
+        SELECT DISTINCT ON (unnest(si.objects)) a.id, unnest(si.objects) as "object", a."resizePath", a."checksum", a."deviceId"
         FROM assets a
         LEFT JOIN smart_info si ON a.id = si."assetId"
         WHERE a."ownerId" = $1
@@ -190,7 +189,7 @@ export class AssetRepository implements IAssetRepository {
   async getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]> {
     return await this.assetRepository.query(
       `
-        SELECT DISTINCT ON (e.city) a.id, e.city, a."resizePath", a."deviceAssetId", a."deviceId"
+        SELECT DISTINCT ON (e.city) a.id, e.city, a."resizePath", a."checksum", a."deviceId"
         FROM assets a
         LEFT JOIN exif e ON a.id = e."assetId"
         WHERE a."ownerId" = $1
@@ -273,28 +272,6 @@ export class AssetRepository implements IAssetRepository {
   }
 
   /**
-   * Get assets by device's Id on the database
-   * @param ownerId
-   * @param deviceId
-   *
-   * @returns Promise<string[]> - Array of assetIds belong to the device
-   */
-  async getAllByDeviceId(ownerId: string, deviceId: string): Promise<string[]> {
-    const rows = await this.assetRepository.find({
-      where: {
-        ownerId,
-        deviceId,
-        isVisible: true,
-      },
-      select: ['deviceAssetId'],
-    });
-    const res: string[] = [];
-    rows.forEach((v) => res.push(v.deviceAssetId));
-
-    return res;
-  }
-
-  /**
    * Get asset by checksum on the database
    * @param ownerId
    * @param checksum
@@ -310,6 +287,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  // TODO: rename
   async getExistingAssets(
     ownerId: string,
     checkExistingAssetsDto: CheckExistingAssetsDto,

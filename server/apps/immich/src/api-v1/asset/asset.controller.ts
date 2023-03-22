@@ -27,12 +27,10 @@ import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
-import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { AssetResponseDto, ImmichReadStream } from '@app/domain';
-import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { CreateAssetDto, mapToUploadFile } from './dto/create-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { DeleteAssetResponseDto } from './response-dto/delete-asset-response.dto';
@@ -254,15 +252,6 @@ export class AssetController {
   }
 
   /**
-   * Get all asset of a device that are in the database, ID only.
-   */
-  @Authenticated()
-  @Get('/:deviceId')
-  async getUserAssetsByDeviceId(@GetAuthUser() authUser: AuthUserDto, @Param('deviceId') deviceId: string) {
-    return await this.assetService.getUserAssetsByDeviceId(authUser, deviceId);
-  }
-
-  /**
    * Get a single asset's information
    */
   @Authenticated({ isShared: true })
@@ -297,19 +286,6 @@ export class AssetController {
   ): Promise<DeleteAssetResponseDto[]> {
     await this.assetService.checkAssetsAccess(authUser, dto.ids, true);
     return this.assetService.deleteAll(authUser, dto);
-  }
-
-  /**
-   * Check duplicated asset before uploading - for Web upload used
-   */
-  @Authenticated({ isShared: true })
-  @Post('/check')
-  @HttpCode(200)
-  async checkDuplicateAsset(
-    @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) checkDuplicateAssetDto: CheckDuplicateAssetDto,
-  ): Promise<CheckDuplicateAssetResponseDto> {
-    return await this.assetService.checkDuplicatedAsset(authUser, checkDuplicateAssetDto);
   }
 
   /**

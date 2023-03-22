@@ -20,7 +20,6 @@ import { promisify } from 'util';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
 import fs from 'fs/promises';
-import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import {
   AssetResponseDto,
@@ -35,7 +34,6 @@ import {
 import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
-import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { IAssetRepository } from './asset-repository';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import {
@@ -130,10 +128,6 @@ export class AssetService {
       this.logger.error(`Error uploading file ${error}`, error?.stack);
       throw new BadRequestException(`Error uploading file`, `${error}`);
     }
-  }
-
-  public async getUserAssetsByDeviceId(authUser: AuthUserDto, deviceId: string) {
-    return this._assetRepository.getAllByDeviceId(authUser.id, deviceId);
   }
 
   public async getAllAssets(authUser: AuthUserDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
@@ -511,23 +505,6 @@ export class AssetService {
 
   async getCuratedObject(authUser: AuthUserDto): Promise<CuratedObjectsResponseDto[]> {
     return this._assetRepository.getDetectedObjectsByUserId(authUser.id);
-  }
-
-  async checkDuplicatedAsset(
-    authUser: AuthUserDto,
-    checkDuplicateAssetDto: CheckDuplicateAssetDto,
-  ): Promise<CheckDuplicateAssetResponseDto> {
-    const res = await this.assetRepository.findOne({
-      where: {
-        deviceAssetId: checkDuplicateAssetDto.deviceAssetId,
-        deviceId: checkDuplicateAssetDto.deviceId,
-        ownerId: authUser.id,
-      },
-    });
-
-    const isDuplicated = res ? true : false;
-
-    return new CheckDuplicateAssetResponseDto(isDuplicated, res?.id);
   }
 
   async checkExistingAssets(

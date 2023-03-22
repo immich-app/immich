@@ -2187,48 +2187,6 @@
         ]
       }
     },
-    "/asset/{deviceId}": {
-      "get": {
-        "operationId": "getUserAssetsByDeviceId",
-        "description": "Get all asset of a device that are in the database, ID only.",
-        "parameters": [
-          {
-            "name": "deviceId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Asset"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          }
-        ]
-      }
-    },
     "/asset/assetById/{assetId}": {
       "get": {
         "operationId": "getAssetById",
@@ -2307,55 +2265,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AssetResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Asset"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          }
-        ]
-      }
-    },
-    "/asset/check": {
-      "post": {
-        "operationId": "checkDuplicateAsset",
-        "description": "Check duplicated asset before uploading - for Web upload used",
-        "parameters": [
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CheckDuplicateAssetDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CheckDuplicateAssetResponseDto"
                 }
               }
             }
@@ -4045,13 +3954,7 @@
           "id": {
             "type": "string"
           },
-          "deviceAssetId": {
-            "type": "string"
-          },
           "ownerId": {
-            "type": "string"
-          },
-          "deviceId": {
             "type": "string"
           },
           "originalPath": {
@@ -4108,9 +4011,7 @@
         "required": [
           "type",
           "id",
-          "deviceAssetId",
           "ownerId",
-          "deviceId",
           "originalPath",
           "resizePath",
           "fileCreatedAt",
@@ -4705,12 +4606,6 @@
             "type": "string",
             "format": "binary"
           },
-          "deviceAssetId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          },
           "fileCreatedAt": {
             "type": "string"
           },
@@ -4733,8 +4628,6 @@
         "required": [
           "assetType",
           "assetData",
-          "deviceAssetId",
-          "deviceId",
           "fileCreatedAt",
           "fileModifiedAt",
           "isFavorite",
@@ -5006,35 +4899,6 @@
         "required": [
           "status",
           "id"
-        ]
-      },
-      "CheckDuplicateAssetDto": {
-        "type": "object",
-        "properties": {
-          "deviceAssetId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "deviceAssetId",
-          "deviceId"
-        ]
-      },
-      "CheckDuplicateAssetResponseDto": {
-        "type": "object",
-        "properties": {
-          "isExist": {
-            "type": "boolean"
-          },
-          "id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "isExist"
         ]
       },
       "CheckExistingAssetDto": {

@@ -5,12 +5,6 @@ import { ImmichFile } from '../../../config/asset-upload.config';
 
 export class CreateAssetDto {
   @IsNotEmpty()
-  deviceAssetId!: string;
-
-  @IsNotEmpty()
-  deviceId!: string;
-
-  @IsNotEmpty()
   @IsEnum(AssetType)
   @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   assetType!: AssetType;
