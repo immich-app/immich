@@ -292,9 +292,9 @@ export class AssetController {
    * Checks if asset checksums exist on the server
    */
   @Authenticated()
-  @Post('/doAssetsExist')
+  @Post('/exist')
   @HttpCode(200)
-  async doAssetsExist(
+  async checkIfAssetsExist(
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) doChecksumsExistDto: CheckExistenceOfAssetsDto,
   ): Promise<CheckExistenceOfAssetsResponseDto> {

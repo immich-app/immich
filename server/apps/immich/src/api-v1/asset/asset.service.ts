@@ -10,7 +10,7 @@ import {
   StreamableFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QueryFailedError, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetEntity, AssetType, SharedLinkType, SystemConfig } from '@app/infra';
 import { constants, createReadStream, ReadStream, stat } from 'fs';
@@ -533,8 +533,9 @@ export class AssetService {
       const matchedAsset = (await existingAssets).find(
         (dbAsset) => dbAsset.checksum.toString('hex') === asset.checksum,
       );
-      const returnedAsset = new CheckExistenceOfAssetResponseDto();
 
+      const returnedAsset = new CheckExistenceOfAssetResponseDto();
+      returnedAsset.clientId = asset.id;
       if (matchedAsset) {
         returnedAsset.id = matchedAsset.id;
         returnedAsset.action = CheckExistenceOfAssetResponseActionType.REJECT;

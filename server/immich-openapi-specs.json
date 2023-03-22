@@ -2379,9 +2379,9 @@
         ]
       }
     },
-    "/asset/doAssetsExist": {
+    "/asset/exist": {
       "post": {
-        "operationId": "doAssetsExist",
+        "operationId": "checkIfAssetsExist",
         "description": "Checks if asset checksums exist on the server",
         "parameters": [],
         "requestBody": {
@@ -5078,6 +5078,9 @@
           "id": {
             "type": "string"
           },
+          "clientId": {
+            "type": "string"
+          },
           "action": {
             "type": "string",
             "enum": [
@@ -5086,14 +5089,16 @@
             ]
           },
           "reason": {
-            "type": "string"
-          },
-          "assetId": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "Duplicate",
+              ""
+            ]
           }
         },
         "required": [
           "id",
+          "clientId",
           "action"
         ]
       },
