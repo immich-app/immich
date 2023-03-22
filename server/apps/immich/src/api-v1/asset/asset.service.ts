@@ -279,7 +279,7 @@ export class AssetService {
         /**
          * Serve file viewer on the web
          */
-        if (query.isWeb) {
+        if (query.isWeb && asset.mimeType != 'image/gif') {
           res.set({
             'Content-Type': 'image/jpeg',
           });
