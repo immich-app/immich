@@ -1,4 +1,3 @@
-import { APP_UPLOAD_LOCATION } from '@app/common';
 import {
   IStorageRepository,
   ISystemConfigRepository,
@@ -15,6 +14,7 @@ import handlebar from 'handlebars';
 import * as luxon from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
+import { APP_UPLOAD_LOCATION } from '../domain.constant';
 import { SystemConfigCore } from '../system-config/system-config.core';
 
 export class StorageTemplateCore {

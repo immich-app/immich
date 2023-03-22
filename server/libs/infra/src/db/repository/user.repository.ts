@@ -1,5 +1,5 @@
 import { UserEntity } from '../entities';
-import { IUserRepository, UserListFilter } from '@app/domain';
+import { IUserRepository, UserListFilter, UserStatsQueryResponse } from '@app/domain';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
@@ -75,5 +75,29 @@ export class UserRepository implements IUserRepository {
 
   async restore(user: UserEntity): Promise<UserEntity> {
     return this.userRepository.recover(user);
+  }
+
+  async getUserStats(): Promise<UserStatsQueryResponse[]> {
+    const stats = await this.userRepository
+      .createQueryBuilder('users')
+      .select('users.id', 'userId')
+      .addSelect('users.firstName', 'userFirstName')
+      .addSelect('users.lastName', 'userLastName')
+      .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'IMAGE' AND assets.isVisible)`, 'photos')
+      .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'VIDEO' AND assets.isVisible)`, 'videos')
+      .addSelect('COALESCE(SUM(exif.fileSizeInByte), 0)', 'usage')
+      .leftJoin('users.assets', 'assets')
+      .leftJoin('assets.exifInfo', 'exif')
+      .groupBy('users.id')
+      .orderBy('users.createdAt', 'ASC')
+      .getRawMany();
+
+    for (const stat of stats) {
+      stat.photos = Number(stat.photos);
+      stat.videos = Number(stat.videos);
+      stat.usage = Number(stat.usage);
+    }
+
+    return stats;
   }
 }

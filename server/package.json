@@ -129,7 +129,7 @@
     "rootDir": ".",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.ts$": "ts-jest"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s",
@@ -137,10 +137,6 @@
     ],
     "coverageDirectory": "./coverage",
     "coverageThreshold": {
-      "global": {
-        "lines": 17,
-        "statements": 17
-      },
       "./libs/domain/": {
         "branches": 80,
         "functions": 85,

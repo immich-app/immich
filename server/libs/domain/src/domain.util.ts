@@ -1,3 +1,9 @@
+import { basename, extname } from 'node:path';
+
+export function getFileNameWithoutExtension(path: string): string {
+  return basename(path, extname(path));
+}
+
 const KiB = Math.pow(1024, 1);
 const MiB = Math.pow(1024, 2);
 const GiB = Math.pow(1024, 3);

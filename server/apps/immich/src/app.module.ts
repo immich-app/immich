@@ -2,7 +2,6 @@ import { immichAppConfig } from '@app/common/config';
 import { Module, OnModuleInit } from '@nestjs/common';
 import { AssetModule } from './api-v1/asset/asset.module';
 import { ConfigModule } from '@nestjs/config';
-import { ServerInfoModule } from './api-v1/server-info/server-info.module';
 import { AlbumModule } from './api-v1/album/album.module';
 import { AppController } from './app.controller';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -17,6 +16,7 @@ import {
   JobController,
   OAuthController,
   SearchController,
+  ServerInfoController,
   ShareController,
   SystemConfigController,
   UserController,
@@ -34,8 +34,6 @@ import { AuthGuard } from './middlewares/auth.guard';
 
     AssetModule,
 
-    ServerInfoModule,
-
     AlbumModule,
 
     ScheduleModule.forRoot(),
@@ -52,6 +50,7 @@ import { AuthGuard } from './middlewares/auth.guard';
     JobController,
     OAuthController,
     SearchController,
+    ServerInfoController,
     ShareController,
     SystemConfigController,
     UserController,

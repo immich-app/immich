@@ -6,6 +6,7 @@ export const newUserRepositoryMock = (): jest.Mocked<IUserRepository> => {
     getAdmin: jest.fn(),
     getByEmail: jest.fn(),
     getByOAuthId: jest.fn(),
+    getUserStats: jest.fn(),
     getList: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),

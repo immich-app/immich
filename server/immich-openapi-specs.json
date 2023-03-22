@@ -834,6 +834,102 @@
         ]
       }
     },
+    "/server-info": {
+      "get": {
+        "operationId": "getServerInfo",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerInfoResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
+    "/server-info/ping": {
+      "get": {
+        "operationId": "pingServer",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerPingResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
+    "/server-info/version": {
+      "get": {
+        "operationId": "getServerVersion",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerVersionReponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
+    "/server-info/stats": {
+      "get": {
+        "operationId": "getStats",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerStatsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Server Info"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
     "/share": {
       "get": {
         "operationId": "getAllSharedLinks",
@@ -3270,102 +3366,6 @@
           }
         ]
       }
-    },
-    "/server-info": {
-      "get": {
-        "operationId": "getServerInfo",
-        "description": "",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerInfoResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Server Info"
-        ]
-      }
-    },
-    "/server-info/ping": {
-      "get": {
-        "operationId": "pingServer",
-        "description": "",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerPingResponse"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Server Info"
-        ]
-      }
-    },
-    "/server-info/version": {
-      "get": {
-        "operationId": "getServerVersion",
-        "description": "",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerVersionReponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Server Info"
-        ]
-      }
-    },
-    "/server-info/stats": {
-      "get": {
-        "operationId": "getStats",
-        "description": "",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerStatsResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Server Info"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          }
-        ]
-      }
     }
   },
   "info": {
@@ -4330,6 +4330,148 @@
           "items"
         ]
       },
+      "ServerInfoResponseDto": {
+        "type": "object",
+        "properties": {
+          "diskSizeRaw": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "diskUseRaw": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "diskAvailableRaw": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "diskUsagePercentage": {
+            "type": "number",
+            "format": "float"
+          },
+          "diskSize": {
+            "type": "string"
+          },
+          "diskUse": {
+            "type": "string"
+          },
+          "diskAvailable": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "diskSizeRaw",
+          "diskUseRaw",
+          "diskAvailableRaw",
+          "diskUsagePercentage",
+          "diskSize",
+          "diskUse",
+          "diskAvailable"
+        ]
+      },
+      "ServerPingResponse": {
+        "type": "object",
+        "properties": {
+          "res": {
+            "type": "string",
+            "readOnly": true,
+            "example": "pong"
+          }
+        },
+        "required": [
+          "res"
+        ]
+      },
+      "ServerVersionReponseDto": {
+        "type": "object",
+        "properties": {
+          "major": {
+            "type": "integer"
+          },
+          "minor": {
+            "type": "integer"
+          },
+          "patch": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "major",
+          "minor",
+          "patch"
+        ]
+      },
+      "UsageByUserDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "userFirstName": {
+            "type": "string"
+          },
+          "userLastName": {
+            "type": "string"
+          },
+          "photos": {
+            "type": "integer"
+          },
+          "videos": {
+            "type": "integer"
+          },
+          "usage": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "userId",
+          "userFirstName",
+          "userLastName",
+          "photos",
+          "videos",
+          "usage"
+        ]
+      },
+      "ServerStatsResponseDto": {
+        "type": "object",
+        "properties": {
+          "photos": {
+            "type": "integer",
+            "default": 0
+          },
+          "videos": {
+            "type": "integer",
+            "default": 0
+          },
+          "usage": {
+            "type": "integer",
+            "default": 0,
+            "format": "int64"
+          },
+          "usageByUser": {
+            "default": [],
+            "title": "Array of usage for each user",
+            "example": [
+              {
+                "photos": 1,
+                "videos": 1,
+                "diskUsageRaw": 1
+              }
+            ],
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageByUserDto"
+            }
+          }
+        },
+        "required": [
+          "photos",
+          "videos",
+          "usage",
+          "usageByUser"
+        ]
+      },
       "SharedLinkType": {
         "type": "string",
         "enum": [
@@ -5270,148 +5412,6 @@
         },
         "required": [
           "albumId"
-        ]
-      },
-      "ServerInfoResponseDto": {
-        "type": "object",
-        "properties": {
-          "diskSizeRaw": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "diskUseRaw": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "diskAvailableRaw": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "diskUsagePercentage": {
-            "type": "number",
-            "format": "float"
-          },
-          "diskSize": {
-            "type": "string"
-          },
-          "diskUse": {
-            "type": "string"
-          },
-          "diskAvailable": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "diskSizeRaw",
-          "diskUseRaw",
-          "diskAvailableRaw",
-          "diskUsagePercentage",
-          "diskSize",
-          "diskUse",
-          "diskAvailable"
-        ]
-      },
-      "ServerPingResponse": {
-        "type": "object",
-        "properties": {
-          "res": {
-            "type": "string",
-            "readOnly": true,
-            "example": "pong"
-          }
-        },
-        "required": [
-          "res"
-        ]
-      },
-      "ServerVersionReponseDto": {
-        "type": "object",
-        "properties": {
-          "major": {
-            "type": "integer"
-          },
-          "minor": {
-            "type": "integer"
-          },
-          "patch": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "major",
-          "minor",
-          "patch"
-        ]
-      },
-      "UsageByUserDto": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string"
-          },
-          "userFirstName": {
-            "type": "string"
-          },
-          "userLastName": {
-            "type": "string"
-          },
-          "photos": {
-            "type": "integer"
-          },
-          "videos": {
-            "type": "integer"
-          },
-          "usage": {
-            "type": "integer",
-            "format": "int64"
-          }
-        },
-        "required": [
-          "userId",
-          "userFirstName",
-          "userLastName",
-          "photos",
-          "videos",
-          "usage"
-        ]
-      },
-      "ServerStatsResponseDto": {
-        "type": "object",
-        "properties": {
-          "photos": {
-            "type": "integer",
-            "default": 0
-          },
-          "videos": {
-            "type": "integer",
-            "default": 0
-          },
-          "usage": {
-            "type": "integer",
-            "default": 0,
-            "format": "int64"
-          },
-          "usageByUser": {
-            "default": [],
-            "title": "Array of usage for each user",
-            "example": [
-              {
-                "photos": 1,
-                "videos": 1,
-                "diskUsageRaw": 1
-              }
-            ],
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UsageByUserDto"
-            }
-          }
-        },
-        "required": [
-          "photos",
-          "videos",
-          "usage",
-          "usageByUser"
         ]
       }
     }

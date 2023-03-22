@@ -3,12 +3,12 @@ import { BadRequestException, Inject, Injectable, Logger, NotFoundException } fr
 import { randomBytes } from 'crypto';
 import { ReadStream } from 'fs';
 import { join } from 'path';
-import { APP_UPLOAD_LOCATION } from '@app/common';
 import { IAlbumRepository } from '../album/album.repository';
 import { IKeyRepository } from '../api-key/api-key.repository';
 import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto/crypto.repository';
+import { APP_UPLOAD_LOCATION } from '../domain.constant';
 import { IJobRepository, IUserDeletionJob, JobName } from '../job';
 import { IStorageRepository } from '../storage/storage.repository';
 import { IUserTokenRepository } from '../user-token/user-token.repository';
