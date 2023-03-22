@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 
-export class CheckExistingAssetDto {
+export class CheckExistenceOfAssetDto {
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
   id!: string;
@@ -11,9 +11,9 @@ export class CheckExistingAssetDto {
   checksum!: string;
 }
 
-export class CheckExistingAssetsDto {
+export class CheckExistenceOfAssetsDto {
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CheckExistingAssetDto)
-  assets!: CheckExistingAssetDto[];
+  @Type(() => CheckExistenceOfAssetDto)
+  assets!: CheckExistenceOfAssetDto[];
 }

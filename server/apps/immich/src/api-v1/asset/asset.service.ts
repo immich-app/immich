@@ -44,7 +44,7 @@ import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-buck
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { AssetCore } from './asset.core';
-import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
+import { CheckExistenceOfAssetsDto } from './dto/check-existing-assets.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { ICryptoRepository, IJobRepository } from '@app/domain';
@@ -61,7 +61,10 @@ import { AddAssetsDto } from '../album/dto/add-assets.dto';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
 import path from 'path';
 import { getFileNameWithoutExtension } from '@app/domain';
-import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
+import {
+  CheckExistenceOfAssetResponseDto,
+  CheckExistenceOfAssetsResponseDto,
+} from './response-dto/check-existing-assets-response.dto';
 
 const fileInfo = promisify(stat);
 
@@ -103,6 +106,13 @@ export class AssetService {
 
     let livePhotoAsset: AssetEntity | null = null;
 
+    const duplicate = (await this._assetRepository.getAssetsByChecksums(authUser.id, [file.checksum]))[0];
+
+    if (duplicate) {
+      this.logger.log(`Duplicate upload detected, skipping ${file.originalName}`);
+      return { id: duplicate.id, duplicate: true };
+    }
+
     try {
       if (livePhotoFile) {
         const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false };
@@ -118,12 +128,6 @@ export class AssetService {
         name: JobName.DELETE_FILES,
         data: { files: [file.originalPath, livePhotoFile?.originalPath] },
       });
-
-      // handle duplicates with a success response
-      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_userid_checksum') {
-        const duplicate = await this.getAssetByChecksum(authUser.id, file.checksum);
-        return { id: duplicate.id, duplicate: true };
-      }
 
       this.logger.error(`Error uploading file ${error}`, error?.stack);
       throw new BadRequestException(`Error uploading file`, `${error}`);
@@ -507,11 +511,38 @@ export class AssetService {
     return this._assetRepository.getDetectedObjectsByUserId(authUser.id);
   }
 
-  async checkExistingAssets(
+  async doAssetsExist(
     authUser: AuthUserDto,
-    checkExistingAssetsDto: CheckExistingAssetsDto,
-  ): Promise<CheckExistingAssetsResponseDto> {
-    return this._assetRepository.getExistingAssets(authUser.id, checkExistingAssetsDto);
+    checkExistenceOfAssetsDto: CheckExistenceOfAssetsDto,
+  ): Promise<CheckExistenceOfAssetsResponseDto> {
+    const queriedChecksums: Buffer[] = checkExistenceOfAssetsDto.assets.map((asset) =>
+      Buffer.from(asset.checksum, 'hex'),
+    );
+
+    const existingAssets: Promise<AssetEntity[]> = this._assetRepository.getAssetsByChecksums(
+      authUser.id,
+      queriedChecksums,
+    );
+
+    const returnedAssets = checkExistenceOfAssetsDto.assets.map(async (asset) => {
+      const matchedAsset = (await existingAssets).find(
+        (dbAsset) => dbAsset.checksum.toString('hex') === asset.checksum,
+      );
+      const returnedAsset = new CheckExistenceOfAssetResponseDto();
+
+      if (matchedAsset) {
+        returnedAsset.id = matchedAsset.id;
+        returnedAsset.action = 'Reject';
+        returnedAsset.assetId = matchedAsset.id;
+      } else {
+        returnedAsset.id = asset.id;
+        returnedAsset.action = 'Accept';
+      }
+
+      return returnedAsset;
+    });
+
+    return new CheckExistenceOfAssetsResponseDto(await Promise.all(returnedAssets));
   }
 
   async getAssetCountByTimeBucket(
@@ -524,10 +555,6 @@ export class AssetService {
     );
 
     return mapAssetCountByTimeBucket(result);
-  }
-
-  getAssetByChecksum(userId: string, checksum: Buffer) {
-    return this._assetRepository.getAssetByChecksum(userId, checksum);
   }
 
   getAssetCountByUserId(authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {

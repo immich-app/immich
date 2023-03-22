@@ -39,7 +39,7 @@ import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
-import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
+import { CheckExistenceOfAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { DownloadDto } from './dto/download-library.dto';
 import {
@@ -54,7 +54,7 @@ import { AssetSearchDto } from './dto/asset-search.dto';
 import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
-import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
+import { CheckExistenceOfAssetsDto } from './dto/check-existing-assets.dto';
 
 function asStreamableFile({ stream, type, length }: ImmichReadStream) {
   return new StreamableFile(stream, { type, length });
@@ -292,13 +292,13 @@ export class AssetController {
    * Checks if asset checksums exist on the server
    */
   @Authenticated()
-  @Post('/exist')
+  @Post('/doAssetsExist')
   @HttpCode(200)
-  async checkExistingAssets(
+  async doAssetsExist(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) checkExistingAssetsDto: CheckExistingAssetsDto,
-  ): Promise<CheckExistingAssetsResponseDto> {
-    return await this.assetService.checkExistingAssets(authUser, checkExistingAssetsDto);
+    @Body(ValidationPipe) doChecksumsExistDto: CheckExistenceOfAssetsDto,
+  ): Promise<CheckExistenceOfAssetsResponseDto> {
+    return await this.assetService.doAssetsExist(authUser, doChecksumsExistDto);
   }
 
   @Authenticated()

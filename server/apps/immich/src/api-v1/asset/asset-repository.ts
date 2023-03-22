@@ -9,15 +9,15 @@ import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
-import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
+import { CheckExistenceOfAssetsDto } from './dto/check-existing-assets.dto';
 
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { ITagRepository } from '../tag/tag.repository';
-import { IsNull, Not } from 'typeorm';
+import { In, IsNull, Not } from 'typeorm';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import {
-  CheckExistingAssetResponseDto,
-  CheckExistingAssetsResponseDto,
+  CheckExistenceOfAssetResponseDto,
+  CheckExistenceOfAssetsResponseDto,
 } from './response-dto/check-existing-assets-response.dto';
 
 export interface IAssetRepository {
@@ -39,11 +39,7 @@ export interface IAssetRepository {
   getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum): Promise<AssetCountByTimeBucket[]>;
   getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
-  getAssetByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity>;
-  getExistingAssets(
-    userId: string,
-    checkExistingAssetsDto: CheckExistingAssetsDto,
-  ): Promise<CheckExistingAssetsResponseDto>;
+  getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetEntity[]>;
   countByIdAndUser(assetId: string, userId: string): Promise<number>;
 }
 
@@ -272,38 +268,16 @@ export class AssetRepository implements IAssetRepository {
   }
 
   /**
-   * Get asset by checksum on the database
+   * Get assets by checksums on the database
    * @param ownerId
    * @param checksum
    *
    */
-  getAssetByChecksum(ownerId: string, checksum: Buffer): Promise<AssetEntity> {
-    return this.assetRepository.findOneOrFail({
-      where: {
-        ownerId,
-        checksum,
-      },
-      relations: ['exifInfo'],
+  async getAssetsByChecksums(ownerId: string, checksums: Buffer[]): Promise<AssetEntity[]> {
+    return this.assetRepository.find({
+      select: ['id', 'checksum'],
+      where: { ownerId: ownerId, checksum: In([...checksums]) },
     });
-  }
-
-  // TODO: rename
-  async getExistingAssets(
-    ownerId: string,
-    checkExistingAssetsDto: CheckExistingAssetsDto,
-  ): Promise<CheckExistingAssetsResponseDto> {
-    const assets: Promise<CheckExistingAssetResponseDto>[] = checkExistingAssetsDto.assets.map(async (assetToCheck) => {
-      const checksum: Buffer = Buffer.from(assetToCheck.checksum, 'hex');
-      if (
-        await this.assetRepository.exist({
-          where: { ownerId, checksum },
-        })
-      ) {
-        return new CheckExistingAssetResponseDto(assetToCheck.id, 'Reject', 'Duplicate');
-      }
-      return new CheckExistingAssetResponseDto(assetToCheck.id, 'Accept');
-    });
-    return new CheckExistingAssetsResponseDto(await Promise.all(assets));
   }
 
   async countByIdAndUser(assetId: string, ownerId: string): Promise<number> {

@@ -2379,9 +2379,9 @@
         ]
       }
     },
-    "/asset/exist": {
+    "/asset/doAssetsExist": {
       "post": {
-        "operationId": "checkExistingAssets",
+        "operationId": "doAssetsExist",
         "description": "Checks if asset checksums exist on the server",
         "parameters": [],
         "requestBody": {
@@ -2389,7 +2389,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CheckExistingAssetsDto"
+                "$ref": "#/components/schemas/CheckExistenceOfAssetsDto"
               }
             }
           }
@@ -2400,7 +2400,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CheckExistingAssetsResponseDto"
+                  "$ref": "#/components/schemas/CheckExistenceOfAssetsResponseDto"
                 }
               }
             }
@@ -5043,7 +5043,7 @@
           "id"
         ]
       },
-      "CheckExistingAssetDto": {
+      "CheckExistenceOfAssetDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -5058,13 +5058,13 @@
           "checksum"
         ]
       },
-      "CheckExistingAssetsDto": {
+      "CheckExistenceOfAssetsDto": {
         "type": "object",
         "properties": {
           "assets": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CheckExistingAssetDto"
+              "$ref": "#/components/schemas/CheckExistenceOfAssetDto"
             }
           }
         },
@@ -5072,7 +5072,7 @@
           "assets"
         ]
       },
-      "CheckExistingAssetResponseDto": {
+      "CheckExistenceOfAssetResponseDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -5083,6 +5083,9 @@
           },
           "reason": {
             "type": "string"
+          },
+          "assetId": {
+            "type": "string"
           }
         },
         "required": [
@@ -5090,13 +5093,13 @@
           "action"
         ]
       },
-      "CheckExistingAssetsResponseDto": {
+      "CheckExistenceOfAssetsResponseDto": {
         "type": "object",
         "properties": {
           "assets": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CheckExistingAssetResponseDto"
+              "$ref": "#/components/schemas/CheckExistenceOfAssetResponseDto"
             }
           }
         },
