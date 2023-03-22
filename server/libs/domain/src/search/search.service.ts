@@ -148,11 +148,10 @@ export class SearchService {
 
       const chunkSize = 1000;
       for (let i = 0; i < assets.length; i += chunkSize) {
-        const end = i + chunkSize;
-        const chunk = assets.slice(i, end);
-        const done = end >= assets.length - 1;
-        await this.searchRepository.importAssets(chunk, done);
+        await this.searchRepository.importAssets(assets.slice(i, i + chunkSize), false);
       }
+
+      await this.searchRepository.importAssets([], true);
 
       this.logger.debug('Finished re-indexing all assets');
     } catch (error: any) {

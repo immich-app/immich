@@ -173,12 +173,23 @@ describe(SearchService.name, () => {
   });
 
   describe('handleIndexAssets', () => {
+    it('should call done, even when there are no assets', async () => {
+      assetMock.getAll.mockResolvedValue([]);
+
+      await sut.handleIndexAssets();
+
+      expect(searchMock.importAssets).toHaveBeenCalledWith([], true);
+    });
+
     it('should index all the assets', async () => {
       assetMock.getAll.mockResolvedValue([assetEntityStub.image]);
 
       await sut.handleIndexAssets();
 
-      expect(searchMock.importAssets).toHaveBeenCalledWith([assetEntityStub.image], true);
+      expect(searchMock.importAssets.mock.calls).toEqual([
+        [[assetEntityStub.image], false],
+        [[], true],
+      ]);
     });
 
     it('should log an error', async () => {
