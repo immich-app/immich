@@ -46,103 +46,84 @@ class SearchPage extends HookConsumerWidget {
 
     buildPlaces() {
       return curatedLocation.when(
-        loading: () => SizedBox(
-          height: imageSize,
-          child: const Center(child: ImmichLoadingIndicator()),
+        loading: () => SliverToBoxAdapter(
+          child: SizedBox(
+            height: imageSize,
+            child: const Center(child: ImmichLoadingIndicator()),
+          ),
         ),
-        error: (err, stack) => Text('Error: $err'),
+        error: (err, stack) => SliverToBoxAdapter(
+          child: Text('Error: $err'),
+        ),
         data: (curatedLocations) {
-          return curatedLocations.isNotEmpty
-              ? SizedBox(
-                  height: imageSize,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.only(left: 16),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: curatedLocation.value?.length,
-                    itemBuilder: ((context, index) {
-                      var locationInfo = curatedLocations[index];
-                      var thumbnailRequestUrl =
-                          '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${locationInfo.id}';
-                      return ThumbnailWithInfo(
-                        imageUrl: thumbnailRequestUrl,
-                        textInfo: locationInfo.city,
-                        onTap: () {
-                          AutoRouter.of(context).push(
-                            SearchResultRoute(searchTerm: locationInfo.city),
-                          );
-                        },
-                      );
-                    }),
-                  ),
-                )
-              : SizedBox(
-                  height: imageSize,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.only(left: 16),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 1,
-                    itemBuilder: ((context, index) {
-                      return ThumbnailWithInfo(
-                        textInfo: '',
-                        onTap: () {},
-                      );
-                    }),
-                  ),
+          return SliverGrid(
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 140,
+              mainAxisSpacing: 4,
+              crossAxisSpacing: 4,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final locationInfo = curatedLocations[index];
+                final thumbnailRequestUrl =
+                    '${box.get(serverEndpointKey)}/asset/thumbnail/${locationInfo.id}';
+                return ThumbnailWithInfo(
+                  imageUrl: thumbnailRequestUrl,
+                  textInfo: locationInfo.city,
+                  onTap: () {
+                    AutoRouter.of(context).push(
+                      SearchResultRoute(searchTerm: locationInfo.city),
+                    );
+                  },
                 );
+              },
+              childCount: curatedLocations.length,
+            ),
+          );
         },
       );
     }
 
     buildThings() {
       return curatedObjects.when(
-        loading: () => SizedBox(
-          height: imageSize,
-          child: const Center(child: ImmichLoadingIndicator()),
+        loading: () => SliverToBoxAdapter(
+          child: SizedBox(
+            height: imageSize,
+            child: const Center(child: ImmichLoadingIndicator()),
+          ),
         ),
-        error: (err, stack) => Text('Error: $err'),
+        error: (err, stack) => SliverToBoxAdapter(
+          child: Text('Error: $err'),
+        ),
         data: (objects) {
-          return objects.isNotEmpty
-              ? SizedBox(
-                  height: imageSize,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.only(left: 16),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: curatedObjects.value?.length,
-                    itemBuilder: ((context, index) {
-                      var curatedObjectInfo = objects[index];
-                      var thumbnailRequestUrl =
-                          '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${curatedObjectInfo.id}';
+          return SliverGrid(
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 140,
+              mainAxisSpacing: 4,
+              crossAxisSpacing: 4,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final curatedObjectInfo = objects[index];
+                final thumbnailRequestUrl =
+                    '${box.get(serverEndpointKey)}/asset/thumbnail/${curatedObjectInfo.id}';
 
-                      return ThumbnailWithInfo(
-                        imageUrl: thumbnailRequestUrl,
-                        textInfo: curatedObjectInfo.object,
-                        onTap: () {
-                          AutoRouter.of(context).push(
-                            SearchResultRoute(
-                              searchTerm: curatedObjectInfo.object
-                                  .capitalizeFirstLetter(),
-                            ),
-                          );
-                        },
-                      );
-                    }),
-                  ),
-                )
-              : SizedBox(
-                  height: imageSize,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.only(left: 16),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 1,
-                    itemBuilder: ((context, index) {
-                      return ThumbnailWithInfo(
-                        textInfo: '',
-                        noImageIcon: Icons.signal_cellular_no_sim_sharp,
-                        onTap: () {},
-                      );
-                    }),
-                  ),
+                return ThumbnailWithInfo(
+                  imageUrl: thumbnailRequestUrl,
+                  textInfo: curatedObjectInfo.object,
+                  onTap: () {
+                    AutoRouter.of(context).push(
+                      SearchResultRoute(
+                        searchTerm: curatedObjectInfo.object
+                            .capitalizeFirstLetter(),
+                      ),
+                    );
+                  },
                 );
+              },
+              childCount: objects.length,
+            ),
+          );
         },
       );
     }
@@ -159,25 +140,34 @@ class SearchPage extends HookConsumerWidget {
         },
         child: Stack(
           children: [
-            ListView(
-              shrinkWrap: true,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: const Text(
-                    "search_page_places",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                  ).tr(),
+            CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: const Text(
+                      "search_page_places",
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    ).tr(),
+                  ),
                 ),
-                buildPlaces(),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: const Text(
-                    "search_page_things",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                  ).tr(),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  sliver: buildPlaces(),
                 ),
-                buildThings()
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: const Text(
+                      "search_page_things",
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    ).tr(),
+                  ),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  sliver: buildThings(),
+                ),
               ],
             ),
             if (isSearchEnabled)
