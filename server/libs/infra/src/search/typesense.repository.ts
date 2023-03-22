@@ -8,7 +8,7 @@ import {
 } from '@app/domain';
 import { Injectable, Logger } from '@nestjs/common';
 import _, { Dictionary } from 'lodash';
-import { filter, firstValueFrom, from, map, mergeMap, toArray } from 'rxjs';
+import { catchError, filter, firstValueFrom, from, map, mergeMap, of, toArray } from 'rxjs';
 import { Client } from 'typesense';
 import { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
 import { DocumentSchema, SearchResponse } from 'typesense/lib/Typesense/Documents';
@@ -148,7 +148,7 @@ export class TypesenseRepository implements ISearchRepository {
 
     const common = {
       q: '*',
-      filter_by: `ownerId:${userId}`,
+      filter_by: this.buildFilterBy('ownerId', userId, true),
       per_page: 100,
     };
 
@@ -157,8 +157,8 @@ export class TypesenseRepository implements ISearchRepository {
     const { facet_counts: facets } = await asset$.search({
       ...common,
       query_by: 'exifInfo.imageName',
-      facet_by: this.getFacetFieldNames(SearchCollection.ASSETS),
-      max_facet_values: 50,
+      facet_by: 'exifInfo.city,smartInfo.objects',
+      max_facet_values: 12,
     });
 
     return firstValueFrom(
@@ -166,23 +166,31 @@ export class TypesenseRepository implements ISearchRepository {
         mergeMap(
           (facet) =>
             from(facet.counts).pipe(
-              mergeMap(
-                (count) =>
-                  from(
-                    asset$.search({
-                      ...common,
-                      query_by: 'exifInfo.imageName',
-                      filter_by: `${facet.field_name}:${count.value}`,
-                    }),
-                  ).pipe(
-                    map((result) => ({
-                      value: count.value,
-                      data: result.hits?.[0]?.document as AssetEntity,
-                    })),
-                    filter((item) => !!item.data),
-                  ),
-                5,
-              ),
+              mergeMap((count) => {
+                const config = {
+                  ...common,
+                  query_by: 'exifInfo.imageName',
+                  filter_by: [
+                    this.buildFilterBy('ownerId', userId, true),
+                    this.buildFilterBy(facet.field_name, count.value, true),
+                  ].join(' && '),
+                  per_page: 1,
+                };
+
+                this.logger.verbose(`Explore subquery: "filter_by:${config.filter_by}" (count:${count.count})`);
+
+                return from(asset$.search(config)).pipe(
+                  catchError((error: any) => {
+                    this.logger.warn(`Explore subquery error: ${error}`, error?.stack);
+                    return of({ hits: [] });
+                  }),
+                  map((result) => ({
+                    value: count.value,
+                    data: result.hits?.[0]?.document as AssetEntity,
+                  })),
+                  filter((item) => !!item.data),
+                );
+              }, 5),
               toArray(),
               map((items) => ({
                 fieldName: facet.field_name as string,
@@ -208,7 +216,7 @@ export class TypesenseRepository implements ISearchRepository {
     await this.client
       .collections(schemaMap[collection].name)
       .documents()
-      .delete({ filter_by: `id: [${ids.join(',')}]` });
+      .delete({ filter_by: this.buildFilterBy('id', ids, true) });
   }
 
   async searchAlbums(query: string, filters: SearchFilter): Promise<SearchResult<AlbumEntity>> {
@@ -350,18 +358,17 @@ export class TypesenseRepository implements ISearchRepository {
 
   private getAlbumFilters(filters: SearchFilter) {
     const { userId } = filters;
-    const _filters = [`ownerId:${userId}`];
+
+    const _filters = [this.buildFilterBy('ownerId', userId, true)];
+
     if (filters.id) {
-      _filters.push(`id:=${filters.id}`);
+      _filters.push(this.buildFilterBy('id', filters.id, true));
     }
 
     for (const item of albumSchema.fields || []) {
-      let value = filters[item.name as keyof SearchFilter];
-      if (Array.isArray(value)) {
-        value = `[${value.join(',')}]`;
-      }
+      const value = filters[item.name as keyof SearchFilter];
       if (item.facet && value !== undefined) {
-        _filters.push(`${item.name}:${value}`);
+        _filters.push(this.buildFilterBy(item.name, value));
       }
     }
 
@@ -373,17 +380,17 @@ export class TypesenseRepository implements ISearchRepository {
   }
 
   private getAssetFilters(filters: SearchFilter) {
-    const _filters = [`ownerId:${filters.userId}`];
+    const { userId } = filters;
+    const _filters = [this.buildFilterBy('ownerId', userId, true)];
+
     if (filters.id) {
-      _filters.push(`id:=${filters.id}`);
+      _filters.push(this.buildFilterBy('id', filters.id, true));
     }
+
     for (const item of assetSchema.fields || []) {
-      let value = filters[item.name as keyof SearchFilter];
-      if (Array.isArray(value)) {
-        value = `[${value.join(',')}]`;
-      }
+      const value = filters[item.name as keyof SearchFilter];
       if (item.facet && value !== undefined) {
-        _filters.push(`${item.name}:${value}`);
+        _filters.push(this.buildFilterBy(item.name, value));
       }
     }
 
@@ -392,5 +399,20 @@ export class TypesenseRepository implements ISearchRepository {
     this.logger.debug(`Asset filters are: ${result}`);
 
     return result;
+  }
+
+  private buildFilterBy(key: string, values: boolean | string | string[], exact?: boolean) {
+    const token = exact ? ':=' : ':';
+
+    const _values = (Array.isArray(values) ? values : [values]).map((value) => {
+      if (typeof value === 'boolean' || value === 'true' || value === 'false') {
+        return value;
+      }
+      return '`' + value + '`';
+    });
+
+    const value = _values.length > 1 ? `[${_values.join(',')}]` : _values[0];
+
+    return `${key}${token}${value}`;
   }
 }

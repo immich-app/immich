@@ -1,6 +1,5 @@
-import { APP_UPLOAD_LOCATION } from '@app/common/constants';
-import { AssetEntity, AssetType } from '@app/infra';
 import {
+  APP_UPLOAD_LOCATION,
   IAssetJob,
   IAssetRepository,
   IBaseJob,
@@ -10,6 +9,7 @@ import {
   SystemConfigService,
   WithoutProperty,
 } from '@app/domain';
+import { AssetEntity, AssetType } from '@app/infra';
 import { Process, Processor } from '@nestjs/bull';
 import { Inject, Logger } from '@nestjs/common';
 import { Job } from 'bull';
