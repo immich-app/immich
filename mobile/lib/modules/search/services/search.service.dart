@@ -33,7 +33,7 @@ class SearchService {
     // TODO search in local DB: 1. when offline, 2. to find local assets
     try {
       final SearchResponseDto? results = await _apiService.searchApi
-          .search(query: searchTerm, q: searchTerm);
+          .search(query: searchTerm, clip: true);
       if (results == null) {
         return null;
       }
