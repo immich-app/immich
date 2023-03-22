@@ -19,7 +19,7 @@ async function bootstrap() {
     logger: getLogLevels(),
   });
 
-  app.set('trust proxy');
+  app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
   app.set('etag', 'strong');
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
