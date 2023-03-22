@@ -62,7 +62,9 @@ import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
 import path from 'path';
 import { getFileNameWithoutExtension } from '@app/domain';
 import {
+  CheckExistenceOfAssetResponseActionType,
   CheckExistenceOfAssetResponseDto,
+  CheckExistenceOfAssetResponseReasonType,
   CheckExistenceOfAssetsResponseDto,
 } from './response-dto/check-existing-assets-response.dto';
 
@@ -535,11 +537,11 @@ export class AssetService {
 
       if (matchedAsset) {
         returnedAsset.id = matchedAsset.id;
-        returnedAsset.action = 'Reject';
-        returnedAsset.assetId = matchedAsset.id;
+        returnedAsset.action = CheckExistenceOfAssetResponseActionType.REJECT;
+        returnedAsset.reason = CheckExistenceOfAssetResponseReasonType.DUPLICATE;
       } else {
         returnedAsset.id = asset.id;
-        returnedAsset.action = 'Accept';
+        returnedAsset.action = CheckExistenceOfAssetResponseActionType.ACCEPT;
       }
 
       return returnedAsset;

@@ -5079,7 +5079,11 @@
             "type": "string"
           },
           "action": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "Accept",
+              "Reject"
+            ]
           },
           "reason": {
             "type": "string"
