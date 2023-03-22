@@ -2,7 +2,7 @@ import { AssetEntity } from '@app/infra';
 import { BadRequestException, Injectable, InternalServerErrorException, Logger, StreamableFile } from '@nestjs/common';
 import archiver from 'archiver';
 import { extname } from 'path';
-import { asHumanReadable, HumanReadableSize } from '../../utils/human-readable.util';
+import { asHumanReadable, HumanReadableSize } from '@app/domain';
 
 export interface DownloadArchive {
   stream: StreamableFile;

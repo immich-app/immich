@@ -395,6 +395,78 @@
         ]
       }
     },
+    "/jobs": {
+      "get": {
+        "operationId": "getAllJobsStatus",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AllJobStatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Job"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
+    "/jobs/{jobId}": {
+      "put": {
+        "operationId": "sendJobCommand",
+        "description": "",
+        "parameters": [
+          {
+            "name": "jobId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/JobName"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobCommandDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Job"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
     "/oauth/mobile-redirect": {
       "get": {
         "operationId": "mobileRedirect",
@@ -548,7 +620,132 @@
       "get": {
         "operationId": "search",
         "description": "",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "IMAGE",
+                "VIDEO",
+                "AUDIO",
+                "OTHER"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "exifInfo.city",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "exifInfo.state",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "exifInfo.country",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "exifInfo.make",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "exifInfo.model",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "smartInfo.objects",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "smartInfo.tags",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "recent",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "motion",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -626,6 +823,102 @@
         },
         "tags": [
           "Search"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
+    "/server-info": {
+      "get": {
+        "operationId": "getServerInfo",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerInfoResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
+    "/server-info/ping": {
+      "get": {
+        "operationId": "pingServer",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerPingResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
+    "/server-info/version": {
+      "get": {
+        "operationId": "getServerVersion",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerVersionReponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Server Info"
+        ]
+      }
+    },
+    "/server-info/stats": {
+      "get": {
+        "operationId": "getStats",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerStatsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Server Info"
         ],
         "security": [
           {
@@ -3073,187 +3366,12 @@
           }
         ]
       }
-    },
-    "/server-info": {
-      "get": {
-        "operationId": "getServerInfo",
-        "description": "",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerInfoResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Server Info"
-        ]
-      }
-    },
-    "/server-info/ping": {
-      "get": {
-        "operationId": "pingServer",
-        "description": "",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerPingResponse"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Server Info"
-        ]
-      }
-    },
-    "/server-info/version": {
-      "get": {
-        "operationId": "getServerVersion",
-        "description": "",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerVersionReponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Server Info"
-        ]
-      }
-    },
-    "/server-info/stats": {
-      "get": {
-        "operationId": "getStats",
-        "description": "",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ServerStatsResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Server Info"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          }
-        ]
-      }
-    },
-    "/jobs": {
-      "get": {
-        "operationId": "getAllJobsStatus",
-        "description": "",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AllJobStatusResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Job"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          }
-        ]
-      }
-    },
-    "/jobs/{jobId}": {
-      "put": {
-        "operationId": "sendJobCommand",
-        "description": "",
-        "parameters": [
-          {
-            "name": "jobId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "$ref": "#/components/schemas/JobId"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/JobCommandDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "number"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Job"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          }
-        ]
-      }
     }
   },
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.50.1",
+    "version": "1.51.1",
     "contact": {}
   },
   "tags": [],
@@ -3602,6 +3720,108 @@
           "deviceId",
           "createdAt",
           "isAutoBackup"
+        ]
+      },
+      "JobCountsDto": {
+        "type": "object",
+        "properties": {
+          "active": {
+            "type": "integer"
+          },
+          "completed": {
+            "type": "integer"
+          },
+          "failed": {
+            "type": "integer"
+          },
+          "delayed": {
+            "type": "integer"
+          },
+          "waiting": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "active",
+          "completed",
+          "failed",
+          "delayed",
+          "waiting"
+        ]
+      },
+      "AllJobStatusResponseDto": {
+        "type": "object",
+        "properties": {
+          "thumbnail-generation-queue": {
+            "$ref": "#/components/schemas/JobCountsDto"
+          },
+          "metadata-extraction-queue": {
+            "$ref": "#/components/schemas/JobCountsDto"
+          },
+          "video-conversion-queue": {
+            "$ref": "#/components/schemas/JobCountsDto"
+          },
+          "object-tagging-queue": {
+            "$ref": "#/components/schemas/JobCountsDto"
+          },
+          "clip-encoding-queue": {
+            "$ref": "#/components/schemas/JobCountsDto"
+          },
+          "storage-template-migration-queue": {
+            "$ref": "#/components/schemas/JobCountsDto"
+          },
+          "background-task-queue": {
+            "$ref": "#/components/schemas/JobCountsDto"
+          },
+          "search-queue": {
+            "$ref": "#/components/schemas/JobCountsDto"
+          }
+        },
+        "required": [
+          "thumbnail-generation-queue",
+          "metadata-extraction-queue",
+          "video-conversion-queue",
+          "object-tagging-queue",
+          "clip-encoding-queue",
+          "storage-template-migration-queue",
+          "background-task-queue",
+          "search-queue"
+        ]
+      },
+      "JobName": {
+        "type": "string",
+        "enum": [
+          "thumbnail-generation-queue",
+          "metadata-extraction-queue",
+          "video-conversion-queue",
+          "object-tagging-queue",
+          "clip-encoding-queue",
+          "background-task-queue",
+          "storage-template-migration-queue",
+          "search-queue"
+        ]
+      },
+      "JobCommand": {
+        "type": "string",
+        "enum": [
+          "start",
+          "pause",
+          "empty"
+        ]
+      },
+      "JobCommandDto": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "$ref": "#/components/schemas/JobCommand"
+          },
+          "force": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "command",
+          "force"
         ]
       },
       "OAuthConfigDto": {
@@ -4108,6 +4328,148 @@
         "required": [
           "fieldName",
           "items"
+        ]
+      },
+      "ServerInfoResponseDto": {
+        "type": "object",
+        "properties": {
+          "diskSizeRaw": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "diskUseRaw": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "diskAvailableRaw": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "diskUsagePercentage": {
+            "type": "number",
+            "format": "float"
+          },
+          "diskSize": {
+            "type": "string"
+          },
+          "diskUse": {
+            "type": "string"
+          },
+          "diskAvailable": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "diskSizeRaw",
+          "diskUseRaw",
+          "diskAvailableRaw",
+          "diskUsagePercentage",
+          "diskSize",
+          "diskUse",
+          "diskAvailable"
+        ]
+      },
+      "ServerPingResponse": {
+        "type": "object",
+        "properties": {
+          "res": {
+            "type": "string",
+            "readOnly": true,
+            "example": "pong"
+          }
+        },
+        "required": [
+          "res"
+        ]
+      },
+      "ServerVersionReponseDto": {
+        "type": "object",
+        "properties": {
+          "major": {
+            "type": "integer"
+          },
+          "minor": {
+            "type": "integer"
+          },
+          "patch": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "major",
+          "minor",
+          "patch"
+        ]
+      },
+      "UsageByUserDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "userFirstName": {
+            "type": "string"
+          },
+          "userLastName": {
+            "type": "string"
+          },
+          "photos": {
+            "type": "integer"
+          },
+          "videos": {
+            "type": "integer"
+          },
+          "usage": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "userId",
+          "userFirstName",
+          "userLastName",
+          "photos",
+          "videos",
+          "usage"
+        ]
+      },
+      "ServerStatsResponseDto": {
+        "type": "object",
+        "properties": {
+          "photos": {
+            "type": "integer",
+            "default": 0
+          },
+          "videos": {
+            "type": "integer",
+            "default": 0
+          },
+          "usage": {
+            "type": "integer",
+            "default": 0,
+            "format": "int64"
+          },
+          "usageByUser": {
+            "default": [],
+            "title": "Array of usage for each user",
+            "example": [
+              {
+                "photos": 1,
+                "videos": 1,
+                "diskUsageRaw": 1
+              }
+            ],
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageByUserDto"
+            }
+          }
+        },
+        "required": [
+          "photos",
+          "videos",
+          "usage",
+          "usageByUser"
         ]
       },
       "SharedLinkType": {
@@ -5050,234 +5412,6 @@
         },
         "required": [
           "albumId"
-        ]
-      },
-      "ServerInfoResponseDto": {
-        "type": "object",
-        "properties": {
-          "diskSizeRaw": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "diskUseRaw": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "diskAvailableRaw": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "diskUsagePercentage": {
-            "type": "number",
-            "format": "float"
-          },
-          "diskSize": {
-            "type": "string"
-          },
-          "diskUse": {
-            "type": "string"
-          },
-          "diskAvailable": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "diskSizeRaw",
-          "diskUseRaw",
-          "diskAvailableRaw",
-          "diskUsagePercentage",
-          "diskSize",
-          "diskUse",
-          "diskAvailable"
-        ]
-      },
-      "ServerPingResponse": {
-        "type": "object",
-        "properties": {
-          "res": {
-            "type": "string",
-            "readOnly": true,
-            "example": "pong"
-          }
-        },
-        "required": [
-          "res"
-        ]
-      },
-      "ServerVersionReponseDto": {
-        "type": "object",
-        "properties": {
-          "major": {
-            "type": "integer"
-          },
-          "minor": {
-            "type": "integer"
-          },
-          "patch": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "major",
-          "minor",
-          "patch"
-        ]
-      },
-      "UsageByUserDto": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string"
-          },
-          "userFirstName": {
-            "type": "string"
-          },
-          "userLastName": {
-            "type": "string"
-          },
-          "photos": {
-            "type": "integer"
-          },
-          "videos": {
-            "type": "integer"
-          },
-          "usage": {
-            "type": "integer",
-            "format": "int64"
-          }
-        },
-        "required": [
-          "userId",
-          "userFirstName",
-          "userLastName",
-          "photos",
-          "videos",
-          "usage"
-        ]
-      },
-      "ServerStatsResponseDto": {
-        "type": "object",
-        "properties": {
-          "photos": {
-            "type": "integer",
-            "default": 0
-          },
-          "videos": {
-            "type": "integer",
-            "default": 0
-          },
-          "usage": {
-            "type": "integer",
-            "default": 0,
-            "format": "int64"
-          },
-          "usageByUser": {
-            "default": [],
-            "title": "Array of usage for each user",
-            "example": [
-              {
-                "photos": 1,
-                "videos": 1,
-                "diskUsageRaw": 1
-              }
-            ],
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UsageByUserDto"
-            }
-          }
-        },
-        "required": [
-          "photos",
-          "videos",
-          "usage",
-          "usageByUser"
-        ]
-      },
-      "JobCounts": {
-        "type": "object",
-        "properties": {
-          "active": {
-            "type": "integer"
-          },
-          "completed": {
-            "type": "integer"
-          },
-          "failed": {
-            "type": "integer"
-          },
-          "delayed": {
-            "type": "integer"
-          },
-          "waiting": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "active",
-          "completed",
-          "failed",
-          "delayed",
-          "waiting"
-        ]
-      },
-      "AllJobStatusResponseDto": {
-        "type": "object",
-        "properties": {
-          "thumbnail-generation": {
-            "$ref": "#/components/schemas/JobCounts"
-          },
-          "metadata-extraction": {
-            "$ref": "#/components/schemas/JobCounts"
-          },
-          "video-conversion": {
-            "$ref": "#/components/schemas/JobCounts"
-          },
-          "machine-learning": {
-            "$ref": "#/components/schemas/JobCounts"
-          },
-          "storage-template-migration": {
-            "$ref": "#/components/schemas/JobCounts"
-          }
-        },
-        "required": [
-          "thumbnail-generation",
-          "metadata-extraction",
-          "video-conversion",
-          "machine-learning",
-          "storage-template-migration"
-        ]
-      },
-      "JobId": {
-        "type": "string",
-        "enum": [
-          "thumbnail-generation",
-          "metadata-extraction",
-          "video-conversion",
-          "machine-learning",
-          "storage-template-migration"
-        ]
-      },
-      "JobCommand": {
-        "type": "string",
-        "enum": [
-          "start",
-          "stop"
-        ]
-      },
-      "JobCommandDto": {
-        "type": "object",
-        "properties": {
-          "command": {
-            "$ref": "#/components/schemas/JobCommand"
-          },
-          "includeAllAssets": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "command",
-          "includeAllAssets"
         ]
       }
     }

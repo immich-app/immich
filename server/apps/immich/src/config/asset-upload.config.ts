@@ -1,4 +1,4 @@
-import { APP_UPLOAD_LOCATION } from '@app/common/constants';
+import { APP_UPLOAD_LOCATION } from '@app/domain/domain.constant';
 import { BadRequestException, Logger, UnauthorizedException } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import { createHash, randomUUID } from 'crypto';

@@ -24,12 +24,14 @@ class JobCommand {
   String toJson() => value;
 
   static const start = JobCommand._(r'start');
-  static const stop = JobCommand._(r'stop');
+  static const pause = JobCommand._(r'pause');
+  static const empty = JobCommand._(r'empty');
 
   /// List of all possible values in this [enum][JobCommand].
   static const values = <JobCommand>[
     start,
-    stop,
+    pause,
+    empty,
   ];
 
   static JobCommand? fromJson(dynamic value) => JobCommandTypeTransformer().decode(value);
@@ -69,7 +71,8 @@ class JobCommandTypeTransformer {
     if (data != null) {
       switch (data.toString()) {
         case r'start': return JobCommand.start;
-        case r'stop': return JobCommand.stop;
+        case r'pause': return JobCommand.pause;
+        case r'empty': return JobCommand.empty;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

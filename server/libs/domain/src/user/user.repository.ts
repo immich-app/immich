@@ -4,6 +4,15 @@ export interface UserListFilter {
   excludeId?: string;
 }
 
+export interface UserStatsQueryResponse {
+  userId: string;
+  userFirstName: string;
+  userLastName: string;
+  photos: number;
+  videos: number;
+  usage: number;
+}
+
 export const IUserRepository = 'IUserRepository';
 
 export interface IUserRepository {
@@ -13,6 +22,7 @@ export interface IUserRepository {
   getByOAuthId(oauthId: string): Promise<UserEntity | null>;
   getDeletedUsers(): Promise<UserEntity[]>;
   getList(filter?: UserListFilter): Promise<UserEntity[]>;
+  getUserStats(): Promise<UserStatsQueryResponse[]>;
   create(user: Partial<UserEntity>): Promise<UserEntity>;
   update(id: string, user: Partial<UserEntity>): Promise<UserEntity>;
   delete(user: UserEntity, hard?: boolean): Promise<UserEntity>;

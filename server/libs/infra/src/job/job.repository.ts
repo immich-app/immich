@@ -1,18 +1,38 @@
-import { IAssetJob, IJobRepository, IMetadataExtractionJob, JobCounts, JobItem, JobName, QueueName } from '@app/domain';
+import {
+  IAssetJob,
+  IBaseJob,
+  IJobRepository,
+  IMetadataExtractionJob,
+  JobCounts,
+  JobItem,
+  JobName,
+  QueueName,
+} from '@app/domain';
 import { InjectQueue } from '@nestjs/bull';
-import { BadRequestException, Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { Queue } from 'bull';
 
 export class JobRepository implements IJobRepository {
   private logger = new Logger(JobRepository.name);
+  private queueMap: Record<QueueName, Queue> = {
+    [QueueName.STORAGE_TEMPLATE_MIGRATION]: this.storageTemplateMigration,
+    [QueueName.THUMBNAIL_GENERATION]: this.generateThumbnail,
+    [QueueName.METADATA_EXTRACTION]: this.metadataExtraction,
+    [QueueName.OBJECT_TAGGING]: this.objectTagging,
+    [QueueName.CLIP_ENCODING]: this.clipEmbedding,
+    [QueueName.VIDEO_CONVERSION]: this.videoTranscode,
+    [QueueName.BACKGROUND_TASK]: this.backgroundTask,
+    [QueueName.SEARCH]: this.searchIndex,
+  };
 
   constructor(
     @InjectQueue(QueueName.BACKGROUND_TASK) private backgroundTask: Queue,
-    @InjectQueue(QueueName.MACHINE_LEARNING) private machineLearning: Queue<IAssetJob>,
-    @InjectQueue(QueueName.METADATA_EXTRACTION) private metadataExtraction: Queue<IMetadataExtractionJob>,
+    @InjectQueue(QueueName.OBJECT_TAGGING) private objectTagging: Queue<IAssetJob | IBaseJob>,
+    @InjectQueue(QueueName.CLIP_ENCODING) private clipEmbedding: Queue<IAssetJob | IBaseJob>,
+    @InjectQueue(QueueName.METADATA_EXTRACTION) private metadataExtraction: Queue<IMetadataExtractionJob | IBaseJob>,
     @InjectQueue(QueueName.STORAGE_TEMPLATE_MIGRATION) private storageTemplateMigration: Queue,
-    @InjectQueue(QueueName.THUMBNAIL_GENERATION) private thumbnail: Queue,
-    @InjectQueue(QueueName.VIDEO_CONVERSION) private videoTranscode: Queue<IAssetJob>,
+    @InjectQueue(QueueName.THUMBNAIL_GENERATION) private generateThumbnail: Queue,
+    @InjectQueue(QueueName.VIDEO_CONVERSION) private videoTranscode: Queue<IAssetJob | IBaseJob>,
     @InjectQueue(QueueName.SEARCH) private searchIndex: Queue,
   ) {}
 
@@ -21,12 +41,16 @@ export class JobRepository implements IJobRepository {
     return !!counts.active;
   }
 
+  pause(name: QueueName) {
+    return this.queueMap[name].pause();
+  }
+
   empty(name: QueueName) {
-    return this.getQueue(name).empty();
+    return this.queueMap[name].empty();
   }
 
   getJobCounts(name: QueueName): Promise<JobCounts> {
-    return this.getQueue(name).getJobCounts();
+    return this.queueMap[name].getJobCounts();
   }
 
   async queue(item: JobItem): Promise<void> {
@@ -39,21 +63,28 @@ export class JobRepository implements IJobRepository {
         await this.backgroundTask.add(item.name, item.data);
         break;
 
-      case JobName.OBJECT_DETECTION:
-      case JobName.IMAGE_TAGGING:
-      case JobName.ENCODE_CLIP:
-        await this.machineLearning.add(item.name, item.data);
+      case JobName.QUEUE_OBJECT_TAGGING:
+      case JobName.DETECT_OBJECTS:
+      case JobName.CLASSIFY_IMAGE:
+        await this.objectTagging.add(item.name, item.data);
         break;
 
+      case JobName.QUEUE_ENCODE_CLIP:
+      case JobName.ENCODE_CLIP:
+        await this.clipEmbedding.add(item.name, item.data);
+        break;
+
+      case JobName.QUEUE_METADATA_EXTRACTION:
       case JobName.EXIF_EXTRACTION:
       case JobName.EXTRACT_VIDEO_METADATA:
       case JobName.REVERSE_GEOCODING:
         await this.metadataExtraction.add(item.name, item.data);
         break;
 
+      case JobName.QUEUE_GENERATE_THUMBNAILS:
       case JobName.GENERATE_JPEG_THUMBNAIL:
       case JobName.GENERATE_WEBP_THUMBNAIL:
-        await this.thumbnail.add(item.name, item.data);
+        await this.generateThumbnail.add(item.name, item.data);
         break;
 
       case JobName.USER_DELETION:
@@ -68,6 +99,7 @@ export class JobRepository implements IJobRepository {
         await this.backgroundTask.add(item.name, {});
         break;
 
+      case JobName.QUEUE_VIDEO_CONVERSION:
       case JobName.VIDEO_CONVERSION:
         await this.videoTranscode.add(item.name, item.data);
         break;
@@ -85,25 +117,7 @@ export class JobRepository implements IJobRepository {
         break;
 
       default:
-        // TODO inject remaining queues and map job to queue
         this.logger.error('Invalid job', item);
-    }
-  }
-
-  private getQueue(name: QueueName) {
-    switch (name) {
-      case QueueName.STORAGE_TEMPLATE_MIGRATION:
-        return this.storageTemplateMigration;
-      case QueueName.THUMBNAIL_GENERATION:
-        return this.thumbnail;
-      case QueueName.METADATA_EXTRACTION:
-        return this.metadataExtraction;
-      case QueueName.VIDEO_CONVERSION:
-        return this.videoTranscode;
-      case QueueName.MACHINE_LEARNING:
-        return this.machineLearning;
-      default:
-        throw new BadRequestException('Invalid job name');
     }
   }
 }

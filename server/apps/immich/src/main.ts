@@ -6,12 +6,11 @@ import cookieParser from 'cookie-parser';
 import { writeFileSync } from 'fs';
 import path from 'path';
 import { AppModule } from './app.module';
-import { SERVER_VERSION } from './constants/server_version.constant';
 import { RedisIoAdapter } from './middlewares/redis-io.adapter.middleware';
 import { json } from 'body-parser';
 import { patchOpenAPI } from './utils/patch-open-api.util';
 import { getLogLevels, MACHINE_LEARNING_ENABLED } from '@app/common';
-import { IMMICH_ACCESS_COOKIE, SearchService } from '@app/domain';
+import { SERVER_VERSION, IMMICH_ACCESS_COOKIE, SearchService } from '@app/domain';
 
 const logger = new Logger('ImmichServer');
 
