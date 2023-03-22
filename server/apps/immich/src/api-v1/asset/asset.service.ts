@@ -279,19 +279,7 @@ export class AssetService {
         /**
          * Serve file viewer on the web
          */
-        if (query.isWeb && asset.mimeType == 'image/gif') {
-          res.set({
-            'Content-Type': asset.mimeType,
-          });
-
-          if (await processETag(asset.originalPath, res, headers)) {
-            return;
-          }
-          await fs.access(asset.originalPath, constants.R_OK | constants.W_OK);
-          fileReadStream = createReadStream(asset.originalPath);
-
-          return new StreamableFile(fileReadStream);
-        } else if (query.isWeb) {
+        if (query.isWeb) {
           res.set({
             'Content-Type': 'image/jpeg',
           });
@@ -314,7 +302,7 @@ export class AssetService {
         /**
          * Serve thumbnail image for both web and mobile app
          */
-        if (!query.isThumb && allowOriginalFile) {
+        if ((!query.isThumb && allowOriginalFile) || (query.isWeb && asset.mimeType === 'image/gif')) {
           res.set({
             'Content-Type': asset.mimeType,
           });
