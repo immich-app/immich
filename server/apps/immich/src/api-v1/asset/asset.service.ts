@@ -279,17 +279,20 @@ export class AssetService {
         /**
          * Serve file viewer on the web
          */
-        if (query.isWeb) {
+        if (query.isWeb && asset.mimeType != 'image/gif') {
           res.set({
             'Content-Type': 'image/jpeg',
           });
+
           if (!asset.resizePath) {
             Logger.error('Error serving IMAGE asset for web', 'ServeFile');
             throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
           }
+
           if (await processETag(asset.resizePath, res, headers)) {
             return;
           }
+
           await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
           fileReadStream = createReadStream(asset.resizePath);
 
@@ -299,7 +302,7 @@ export class AssetService {
         /**
          * Serve thumbnail image for both web and mobile app
          */
-        if (!query.isThumb && allowOriginalFile) {
+        if ((!query.isThumb && allowOriginalFile) || (query.isWeb && asset.mimeType === 'image/gif')) {
           res.set({
             'Content-Type': asset.mimeType,
           });
