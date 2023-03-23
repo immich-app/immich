@@ -72,8 +72,7 @@ function destination(req: Request, file: Express.Multer.File, cb: any) {
   const user = req.user as AuthUserDto;
 
   const basePath = APP_UPLOAD_LOCATION;
-  const sanitizedDeviceId = sanitize(String(req.body['deviceId']));
-  const originalUploadFolder = join(basePath, user.id, 'original', sanitizedDeviceId);
+  const originalUploadFolder = join(basePath, user.id, 'original');
 
   if (!existsSync(originalUploadFolder)) {
     mkdirSync(originalUploadFolder, { recursive: true });
