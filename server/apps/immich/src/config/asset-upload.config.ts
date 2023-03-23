@@ -97,6 +97,6 @@ function filename(req: Request, file: Express.Multer.File, cb: any) {
     return cb(null, sanitize(livePhotoFileName));
   }
 
-  const fileName = `${fileNameUUID}${req.body['fileExtension'].toLowerCase()}`;
+  const fileName = `${fileNameUUID}${req.body['fileExtension']}`;
   return cb(null, sanitize(fileName));
 }
