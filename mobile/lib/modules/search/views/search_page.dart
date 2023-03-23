@@ -48,11 +48,12 @@ class SearchPage extends HookConsumerWidget {
       return SizedBox(
         height: imageSize,
         child: curatedLocation.when(
-        loading: () => const Center(child: ImmichLoadingIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
-        data: (curatedLocations) =>
-          ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16,),
+          loading: () => const Center(child: ImmichLoadingIndicator()),
+          error: (err, stack) => Center(child: Text('Error: $err')),
+          data: (curatedLocations) => ListView.builder(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+            ),
             scrollDirection: Axis.horizontal,
             itemBuilder: (context, index) {
               final locationInfo = curatedLocations[index];
@@ -90,13 +91,11 @@ class SearchPage extends HookConsumerWidget {
             height: imageSize,
             child: ThumbnailWithInfo(
               textInfo: '',
-              onTap: () {
-              },
+              onTap: () {},
             ),
           ),
         ),
       );
-
     }
 
     buildThings() {
@@ -110,36 +109,38 @@ class SearchPage extends HookConsumerWidget {
           child: Center(child: Text('Error: $err')),
         ),
         data: (objects) => objects.isEmpty
-          ? buildEmptyThumbnail()
-          : ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16,),
-            itemBuilder: (context, index) {
-              final curatedObjectInfo = objects[index];
-              final thumbnailRequestUrl =
-                  '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${curatedObjectInfo.id}';
-              return SizedBox(
-                width: imageSize,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 4.0),
-                  child: ThumbnailWithInfo(
-                    imageUrl: thumbnailRequestUrl,
-                    textInfo: curatedObjectInfo.object,
-                    onTap: () {
-                      AutoRouter.of(context).push(
-                        SearchResultRoute(
-                          searchTerm: curatedObjectInfo.object
-                              .capitalizeFirstLetter(),
-                        ),
-                      );
-                    },
-                  ),
+            ? buildEmptyThumbnail()
+            : ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
                 ),
-              );
-            },
-            itemCount: objects.length.clamp(0, 4),
-          ),
-        );
+                itemBuilder: (context, index) {
+                  final curatedObjectInfo = objects[index];
+                  final thumbnailRequestUrl =
+                      '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${curatedObjectInfo.id}';
+                  return SizedBox(
+                    width: imageSize,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 4.0),
+                      child: ThumbnailWithInfo(
+                        imageUrl: thumbnailRequestUrl,
+                        textInfo: curatedObjectInfo.object,
+                        onTap: () {
+                          AutoRouter.of(context).push(
+                            SearchResultRoute(
+                              searchTerm: curatedObjectInfo.object
+                                  .capitalizeFirstLetter(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
+                itemCount: objects.length.clamp(0, 4),
+              ),
+      );
     }
 
     return Scaffold(
@@ -166,10 +167,20 @@ class SearchPage extends HookConsumerWidget {
                     children: [
                       const Text(
                         "search_page_places",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ).tr(),
                       TextButton(
-                        child: const Text('search_page_view_all_button').tr(),
+                        child: Text(
+                          'search_page_view_all_button',
+                          style: TextStyle(
+                            color: Theme.of(context).primaryColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14.0,
+                          ),
+                        ).tr(),
                         onPressed: () => AutoRouter.of(context).push(
                           const CuratedLocationRoute(),
                         ),
@@ -188,10 +199,20 @@ class SearchPage extends HookConsumerWidget {
                     children: [
                       const Text(
                         "search_page_things",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ).tr(),
                       TextButton(
-                        child: const Text('search_page_view_all_button').tr(),
+                        child: Text(
+                          'search_page_view_all_button',
+                          style: TextStyle(
+                            color: Theme.of(context).primaryColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14.0,
+                          ),
+                        ).tr(),
                         onPressed: () => AutoRouter.of(context).push(
                           const CuratedObjectRoute(),
                         ),

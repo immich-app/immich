@@ -9,7 +9,6 @@ import 'package:immich_mobile/utils/capitalize_first_letter.dart';
 import 'package:openapi/api.dart';
 
 class CuratedObjectPage extends HookConsumerWidget {
-
   const CuratedObjectPage({
     super.key,
   });
@@ -21,24 +20,31 @@ class CuratedObjectPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('curated_object_page_title').tr(),
+        title: Text(
+          'curated_object_page_title',
+          style: TextStyle(
+            color: Theme.of(context).primaryColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 16.0,
+          ),
+        ).tr(),
       ),
       body: curatedObjects.when(
         loading: () => const Center(child: ImmichLoadingIndicator()),
         error: (err, stack) => Center(
           child: Text('Error: $err'),
         ),
-        data: (curatedLocations) =>
-          ExploreGrid(
-            curatedContent: curatedLocations.map(
-              (l) => CuratedContent(
-                label: l.object.capitalizeFirstLetter(),
-                id: l.id,
-              ),
-            ).toList(),
-          ),
+        data: (curatedLocations) => ExploreGrid(
+          curatedContent: curatedLocations
+              .map(
+                (l) => CuratedContent(
+                  label: l.object.capitalizeFirstLetter(),
+                  id: l.id,
+                ),
+              )
+              .toList(),
+        ),
       ),
     );
   }
-
 }

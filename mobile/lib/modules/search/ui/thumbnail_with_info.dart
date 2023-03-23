@@ -31,10 +31,6 @@ class ThumbnailWithInfo extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(25),
               color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
-              border: Border.all(
-                color: isDarkMode ? Colors.grey[800]! : Colors.grey[400]!,
-                width: 1,
-              ),
             ),
             child: imageUrl != null
                 ? ClipRRect(
@@ -45,7 +41,8 @@ class ThumbnailWithInfo extends StatelessWidget {
                       fit: BoxFit.cover,
                       imageUrl: imageUrl!,
                       httpHeaders: {
-                        "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}"
+                        "Authorization":
+                            "Bearer ${Store.get(StoreKey.accessToken)}"
                       },
                       errorWidget: (context, url, error) =>
                           const Icon(Icons.image_not_supported_outlined),

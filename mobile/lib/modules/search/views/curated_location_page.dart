@@ -8,7 +8,6 @@ import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:openapi/api.dart';
 
 class CuratedLocationPage extends HookConsumerWidget {
-
   const CuratedLocationPage({super.key});
 
   @override
@@ -18,24 +17,31 @@ class CuratedLocationPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('curated_location_page_title').tr(),
+        title: Text(
+          'curated_location_page_title',
+          style: TextStyle(
+            color: Theme.of(context).primaryColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 16.0,
+          ),
+        ).tr(),
       ),
       body: curatedLocation.when(
         loading: () => const Center(child: ImmichLoadingIndicator()),
         error: (err, stack) => Center(
           child: Text('Error: $err'),
         ),
-        data: (curatedLocations) =>
-          ExploreGrid(
-            curatedContent: curatedLocations.map(
-              (l) => CuratedContent(
-                label: l.city,
-                id: l.id,
-              ),
-            ).toList(),
-          ),
+        data: (curatedLocations) => ExploreGrid(
+          curatedContent: curatedLocations
+              .map(
+                (l) => CuratedContent(
+                  label: l.city,
+                  id: l.id,
+                ),
+              )
+              .toList(),
+        ),
       ),
     );
   }
-
 }
