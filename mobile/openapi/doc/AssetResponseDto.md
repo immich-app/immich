@@ -10,9 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **type** | [**AssetTypeEnum**](AssetTypeEnum.md) |  | 
 **id** | **String** |  | 
-**deviceAssetId** | **String** |  | 
 **ownerId** | **String** |  | 
-**deviceId** | **String** |  | 
 **originalPath** | **String** |  | 
 **resizePath** | **String** |  | 
 **fileCreatedAt** | **String** |  | 

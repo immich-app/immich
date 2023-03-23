@@ -10,8 +10,7 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**addAssetsToSharedLink**](AssetApi.md#addassetstosharedlink) | **PATCH** /asset/shared-link/add | 
-[**checkDuplicateAsset**](AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
-[**checkExistingAssets**](AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
+[**checkIfAssetsExist**](AssetApi.md#checkifassetsexist) | **POST** /asset/exist | 
 [**createAssetsSharedLink**](AssetApi.md#createassetssharedlink) | **POST** /asset/shared-link | 
 [**deleteAsset**](AssetApi.md#deleteasset) | **DELETE** /asset | 
 [**downloadFile**](AssetApi.md#downloadfile) | **GET** /asset/download/{assetId} | 
@@ -26,7 +25,6 @@ Method | HTTP request | Description
 [**getAssetThumbnail**](AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{assetId} | 
 [**getCuratedLocations**](AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 [**getCuratedObjects**](AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
-[**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 [**removeAssetsFromSharedLink**](AssetApi.md#removeassetsfromsharedlink) | **PATCH** /asset/shared-link/remove | 
 [**searchAsset**](AssetApi.md#searchasset) | **POST** /asset/search | 
 [**serveFile**](AssetApi.md#servefile) | **GET** /asset/file/{assetId} | 
@@ -89,67 +87,12 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **checkDuplicateAsset**
-> CheckDuplicateAssetResponseDto checkDuplicateAsset(checkDuplicateAssetDto, key)
+# **checkIfAssetsExist**
+> CheckExistenceOfAssetsResponseDto checkIfAssetsExist(checkExistenceOfAssetsDto)
 
 
 
-Check duplicated asset before uploading - for Web upload used
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-
-final api_instance = AssetApi();
-final checkDuplicateAssetDto = CheckDuplicateAssetDto(); // CheckDuplicateAssetDto | 
-final key = key_example; // String | 
-
-try {
-    final result = api_instance.checkDuplicateAsset(checkDuplicateAssetDto, key);
-    print(result);
-} catch (e) {
-    print('Exception when calling AssetApi->checkDuplicateAsset: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **checkDuplicateAssetDto** | [**CheckDuplicateAssetDto**](CheckDuplicateAssetDto.md)|  | 
- **key** | **String**|  | [optional] 
-
-### Return type
-
-[**CheckDuplicateAssetResponseDto**](CheckDuplicateAssetResponseDto.md)
-
-### Authorization
-
-[bearer](../README.md#bearer), [cookie](../README.md#cookie)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **checkExistingAssets**
-> CheckExistingAssetsResponseDto checkExistingAssets(checkExistingAssetsDto)
-
-
-
-Checks if multiple assets exist on the server and returns all existing - used by background backup
+Checks if asset checksums exist on the server
 
 ### Example
 ```dart
@@ -166,13 +109,13 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
-final checkExistingAssetsDto = CheckExistingAssetsDto(); // CheckExistingAssetsDto | 
+final checkExistenceOfAssetsDto = CheckExistenceOfAssetsDto(); // CheckExistenceOfAssetsDto | 
 
 try {
-    final result = api_instance.checkExistingAssets(checkExistingAssetsDto);
+    final result = api_instance.checkIfAssetsExist(checkExistenceOfAssetsDto);
     print(result);
 } catch (e) {
-    print('Exception when calling AssetApi->checkExistingAssets: $e\n');
+    print('Exception when calling AssetApi->checkIfAssetsExist: $e\n');
 }
 ```
 
@@ -180,11 +123,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **checkExistingAssetsDto** | [**CheckExistingAssetsDto**](CheckExistingAssetsDto.md)|  | 
+ **checkExistenceOfAssetsDto** | [**CheckExistenceOfAssetsDto**](CheckExistenceOfAssetsDto.md)|  | 
 
 ### Return type
 
-[**CheckExistingAssetsResponseDto**](CheckExistingAssetsResponseDto.md)
+[**CheckExistenceOfAssetsResponseDto**](CheckExistenceOfAssetsResponseDto.md)
 
 ### Authorization
 
@@ -939,59 +882,6 @@ This endpoint does not need any parameter.
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getUserAssetsByDeviceId**
-> List<String> getUserAssetsByDeviceId(deviceId)
-
-
-
-Get all asset of a device that are in the database, ID only.
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-
-final api_instance = AssetApi();
-final deviceId = deviceId_example; // String | 
-
-try {
-    final result = api_instance.getUserAssetsByDeviceId(deviceId);
-    print(result);
-} catch (e) {
-    print('Exception when calling AssetApi->getUserAssetsByDeviceId: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **deviceId** | **String**|  | 
-
-### Return type
-
-**List<String>**
-
-### Authorization
-
-[bearer](../README.md#bearer), [cookie](../README.md#cookie)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
 # **removeAssetsFromSharedLink**
 > SharedLinkResponseDto removeAssetsFromSharedLink(removeAssetsDto, key)
 
@@ -1215,7 +1105,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadFile**
-> AssetFileUploadResponseDto uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, isVisible, duration)
+> AssetFileUploadResponseDto uploadFile(assetType, assetData, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, deviceAssetId, deviceId, isVisible, duration)
 
 
 
@@ -1238,19 +1128,19 @@ import 'package:openapi/api.dart';
 final api_instance = AssetApi();
 final assetType = ; // AssetTypeEnum | 
 final assetData = BINARY_DATA_HERE; // MultipartFile | 
-final deviceAssetId = deviceAssetId_example; // String | 
-final deviceId = deviceId_example; // String | 
 final fileCreatedAt = fileCreatedAt_example; // String | 
 final fileModifiedAt = fileModifiedAt_example; // String | 
 final isFavorite = true; // bool | 
 final fileExtension = fileExtension_example; // String | 
 final key = key_example; // String | 
 final livePhotoData = BINARY_DATA_HERE; // MultipartFile | 
+final deviceAssetId = deviceAssetId_example; // String | 
+final deviceId = deviceId_example; // String | 
 final isVisible = true; // bool | 
 final duration = duration_example; // String | 
 
 try {
-    final result = api_instance.uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, isVisible, duration);
+    final result = api_instance.uploadFile(assetType, assetData, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, deviceAssetId, deviceId, isVisible, duration);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->uploadFile: $e\n');
@@ -1263,14 +1153,14 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **assetType** | [**AssetTypeEnum**](AssetTypeEnum.md)|  | 
  **assetData** | **MultipartFile**|  | 
- **deviceAssetId** | **String**|  | 
- **deviceId** | **String**|  | 
  **fileCreatedAt** | **String**|  | 
  **fileModifiedAt** | **String**|  | 
  **isFavorite** | **bool**|  | 
  **fileExtension** | **String**|  | 
  **key** | **String**|  | [optional] 
  **livePhotoData** | **MultipartFile**|  | [optional] 
+ **deviceAssetId** | **String**|  | [optional] 
+ **deviceId** | **String**|  | [optional] 
  **isVisible** | **bool**|  | [optional] 
  **duration** | **String**|  | [optional] 
 

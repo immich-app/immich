@@ -24,17 +24,10 @@ void main() {
       // TODO
     });
 
-    // Check duplicated asset before uploading - for Web upload used
+    // Checks if asset checksums exist on the server
     //
-    //Future<CheckDuplicateAssetResponseDto> checkDuplicateAsset(CheckDuplicateAssetDto checkDuplicateAssetDto, { String key }) async
-    test('test checkDuplicateAsset', () async {
-      // TODO
-    });
-
-    // Checks if multiple assets exist on the server and returns all existing - used by background backup
-    //
-    //Future<CheckExistingAssetsResponseDto> checkExistingAssets(CheckExistingAssetsDto checkExistingAssetsDto) async
-    test('test checkExistingAssets', () async {
+    //Future<CheckExistenceOfAssetsResponseDto> checkIfAssetsExist(CheckExistenceOfAssetsDto checkExistenceOfAssetsDto) async
+    test('test checkIfAssetsExist', () async {
       // TODO
     });
 
@@ -136,13 +129,6 @@ void main() {
       // TODO
     });
 
-    // Get all asset of a device that are in the database, ID only.
-    //
-    //Future<List<String>> getUserAssetsByDeviceId(String deviceId) async
-    test('test getUserAssetsByDeviceId', () async {
-      // TODO
-    });
-
     // 
     //
     //Future<SharedLinkResponseDto> removeAssetsFromSharedLink(RemoveAssetsDto removeAssetsDto, { String key }) async
@@ -173,7 +159,7 @@ void main() {
 
     // 
     //
-    //Future<AssetFileUploadResponseDto> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { String key, MultipartFile livePhotoData, bool isVisible, String duration }) async
+    //Future<AssetFileUploadResponseDto> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { String key, MultipartFile livePhotoData, String deviceAssetId, String deviceId, bool isVisible, String duration }) async
     test('test uploadFile', () async {
       // TODO
     });
