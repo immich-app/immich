@@ -110,35 +110,39 @@ class SearchPage extends HookConsumerWidget {
         ),
         data: (objects) => objects.isEmpty
             ? buildEmptyThumbnail()
-            : ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                ),
-                itemBuilder: (context, index) {
-                  final curatedObjectInfo = objects[index];
-                  final thumbnailRequestUrl =
-                      '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${curatedObjectInfo.id}';
-                  return SizedBox(
-                    width: imageSize,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 4.0),
-                      child: ThumbnailWithInfo(
-                        imageUrl: thumbnailRequestUrl,
-                        textInfo: curatedObjectInfo.object,
-                        onTap: () {
-                          AutoRouter.of(context).push(
-                            SearchResultRoute(
-                              searchTerm: curatedObjectInfo.object
-                                  .capitalizeFirstLetter(),
-                            ),
-                          );
-                        },
+            : SizedBox(
+                height: imageSize,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                  ),
+                  itemBuilder: (context, index) {
+                    final curatedObjectInfo = objects[index];
+                    final thumbnailRequestUrl =
+                        '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${curatedObjectInfo.id}';
+                    return SizedBox(
+                      width: imageSize,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 4.0),
+                        child: ThumbnailWithInfo(
+                          imageUrl: thumbnailRequestUrl,
+                          textInfo: curatedObjectInfo.object,
+                          onTap: () {
+                            AutoRouter.of(context).push(
+                              SearchResultRoute(
+                                searchTerm: curatedObjectInfo.object
+                                    .capitalizeFirstLetter(),
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                  );
-                },
-                itemCount: objects.length.clamp(0, 4),
+                    );
+                  },
+                  itemCount: objects.length.clamp(0, 10),
+                ),
               ),
       );
     }
