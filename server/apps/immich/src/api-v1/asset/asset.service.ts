@@ -13,7 +13,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetEntity, AssetType, SharedLinkType, SystemConfig } from '@app/infra';
-import { constants, createReadStream, ReadStream, stat } from 'fs';
+import { constants, createReadStream, stat } from 'fs';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
 import { promisify } from 'util';
@@ -66,6 +66,11 @@ import path from 'path';
 import { getFileNameWithoutExtension } from '@app/domain';
 
 const fileInfo = promisify(stat);
+
+interface ServableFile {
+  filepath: string;
+  contentType: string;
+}
 
 @Injectable()
 export class AssetService {
@@ -216,37 +221,15 @@ export class AssetService {
     throw new NotFoundException();
   }
 
-  public async getAssetThumbnail(
-    assetId: string,
-    query: GetAssetThumbnailDto,
-    res: Res,
-    headers: Record<string, string>,
-  ) {
-    let fileReadStream: ReadStream;
-
+  async getAssetThumbnail(assetId: string, query: GetAssetThumbnailDto, res: Res, headers: Record<string, string>) {
     const asset = await this._assetRepository.get(assetId);
     if (!asset) {
       throw new NotFoundException('Asset not found');
     }
 
     try {
-      if (query.format == GetAssetThumbnailFormatEnum.WEBP && asset.webpPath && asset.webpPath.length > 0) {
-        if (await processETag(asset.webpPath, res, headers)) {
-          return;
-        }
-        await fs.access(asset.webpPath, constants.R_OK);
-        fileReadStream = createReadStream(asset.webpPath);
-      } else {
-        if (!asset.resizePath) {
-          throw new NotFoundException('resizePath not set');
-        }
-        if (await processETag(asset.resizePath, res, headers)) {
-          return;
-        }
-        await fs.access(asset.resizePath, constants.R_OK);
-        fileReadStream = createReadStream(asset.resizePath);
-      }
-      return new StreamableFile(fileReadStream);
+      const thumbnailPath = this.getThumbnailPath(asset, query.format);
+      return this.streamFile(thumbnailPath, res, headers);
     } catch (e) {
       res.header('Cache-Control', 'none');
       Logger.error(`Cannot create read stream for asset ${asset.id}`, 'getAssetThumbnail');
@@ -264,11 +247,9 @@ export class AssetService {
     res: Res,
     headers: Record<string, string>,
   ) {
-    const allowOriginalFile = !authUser.isPublicUser || authUser.isAllowDownload;
+    const allowOriginalFile = !!(!authUser.isPublicUser || authUser.isAllowDownload);
 
-    let fileReadStream: ReadStream;
     const asset = await this._assetRepository.getById(assetId);
-
     if (!asset) {
       throw new NotFoundException('Asset does not exist');
     }
@@ -276,69 +257,8 @@ export class AssetService {
     // Handle Sending Images
     if (asset.type == AssetType.IMAGE) {
       try {
-        /**
-         * Serve file viewer on the web
-         */
-        if (query.isWeb && asset.mimeType != 'image/gif') {
-          res.set({
-            'Content-Type': 'image/jpeg',
-          });
-
-          if (!asset.resizePath) {
-            Logger.error('Error serving IMAGE asset for web', 'ServeFile');
-            throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
-          }
-
-          if (await processETag(asset.resizePath, res, headers)) {
-            return;
-          }
-
-          await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
-          fileReadStream = createReadStream(asset.resizePath);
-
-          return new StreamableFile(fileReadStream);
-        }
-
-        /**
-         * Serve thumbnail image for both web and mobile app
-         */
-        if ((!query.isThumb && allowOriginalFile) || (query.isWeb && asset.mimeType === 'image/gif')) {
-          res.set({
-            'Content-Type': asset.mimeType,
-          });
-          if (await processETag(asset.originalPath, res, headers)) {
-            return;
-          }
-          await fs.access(asset.originalPath, constants.R_OK | constants.W_OK);
-          fileReadStream = createReadStream(asset.originalPath);
-        } else {
-          if (asset.webpPath && asset.webpPath.length > 0) {
-            res.set({
-              'Content-Type': 'image/webp',
-            });
-            if (await processETag(asset.webpPath, res, headers)) {
-              return;
-            }
-            await fs.access(asset.webpPath, constants.R_OK | constants.W_OK);
-            fileReadStream = createReadStream(asset.webpPath);
-          } else {
-            res.set({
-              'Content-Type': 'image/jpeg',
-            });
-
-            if (!asset.resizePath) {
-              throw new Error('resizePath not set');
-            }
-            if (await processETag(asset.resizePath, res, headers)) {
-              return;
-            }
-
-            await fs.access(asset.resizePath, constants.R_OK | constants.W_OK);
-            fileReadStream = createReadStream(asset.resizePath);
-          }
-        }
-
-        return new StreamableFile(fileReadStream);
+        const { filepath, contentType } = this.getServePath(asset, query, allowOriginalFile);
+        return this.streamFile(filepath, res, headers, contentType);
       } catch (e) {
         Logger.error(`Cannot create read stream for asset ${asset.id} ${JSON.stringify(e)}`, 'serveFile[IMAGE]');
         throw new InternalServerErrorException(
@@ -350,7 +270,6 @@ export class AssetService {
       try {
         // Handle Video
         let videoPath = asset.originalPath;
-
         let mimeType = asset.mimeType;
 
         await fs.access(videoPath, constants.R_OK | constants.W_OK);
@@ -382,9 +301,7 @@ export class AssetService {
           if (start >= size || end >= size) {
             console.error('Bad Request');
             // Return the 416 Range Not Satisfiable.
-            res.status(416).set({
-              'Content-Range': `bytes */${size}`,
-            });
+            res.status(416).set({ 'Content-Range': `bytes */${size}` });
 
             throw new BadRequestException('Bad Request Range');
           }
@@ -397,20 +314,14 @@ export class AssetService {
             'Content-Type': mimeType,
           });
 
-          const videoStream = createReadStream(videoPath, { start: start, end: end });
+          const videoStream = createReadStream(videoPath, { start, end });
 
           return new StreamableFile(videoStream);
-        } else {
-          res.set({
-            'Content-Type': mimeType,
-          });
-          if (await processETag(asset.originalPath, res, headers)) {
-            return;
-          }
-          return new StreamableFile(createReadStream(videoPath));
         }
+
+        return this.streamFile(asset.originalPath, res, headers, mimeType);
       } catch (e) {
-        Logger.error(`Error serving VIDEO asset id ${asset.id}`, 'serveFile[VIDEO]');
+        this.logger.error(`Error serving VIDEO asset=${asset.id}`);
         throw new InternalServerErrorException(`Failed to serve video asset ${e}`, 'ServeFile');
       }
     }
@@ -648,15 +559,70 @@ export class AssetService {
   getExifPermission(authUser: AuthUserDto) {
     return !authUser.isPublicUser || authUser.isShowExif;
   }
-}
 
-async function processETag(path: string, res: Res, headers: Record<string, string>): Promise<boolean> {
-  const { size, mtimeNs } = await fs.stat(path, { bigint: true });
-  const etag = `W/"${size}-${mtimeNs}"`;
-  res.setHeader('ETag', etag);
-  if (etag === headers['if-none-match']) {
-    res.status(304);
-    return true;
+  private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
+    switch (format) {
+      case GetAssetThumbnailFormatEnum.WEBP:
+        if (asset.webpPath && asset.webpPath.length > 0) {
+          return asset.webpPath;
+        }
+
+      case GetAssetThumbnailFormatEnum.JPEG:
+      default:
+        if (!asset.resizePath) {
+          throw new NotFoundException('resizePath not set');
+        }
+        return asset.resizePath;
+    }
   }
-  return false;
+
+  private getServePath(asset: AssetEntity, query: ServeFileDto, allowOriginalFile: boolean): ServableFile {
+    /**
+     * Serve file viewer on the web
+     */
+    if (query.isWeb && asset.mimeType != 'image/gif') {
+      if (!asset.resizePath) {
+        this.logger.error('Error serving IMAGE asset for web');
+        throw new InternalServerErrorException(`Failed to serve image asset for web`, 'ServeFile');
+      }
+
+      return { filepath: asset.resizePath, contentType: 'image/jpeg' };
+    }
+
+    /**
+     * Serve thumbnail image for both web and mobile app
+     */
+    if ((!query.isThumb && allowOriginalFile) || (query.isWeb && asset.mimeType === 'image/gif')) {
+      return { filepath: asset.originalPath, contentType: asset.mimeType as string };
+    }
+
+    if (asset.webpPath && asset.webpPath.length > 0) {
+      return { filepath: asset.webpPath, contentType: 'image/webp' };
+    }
+
+    if (!asset.resizePath) {
+      throw new Error('resizePath not set');
+    }
+
+    return { filepath: asset.resizePath, contentType: 'image/jpeg' };
+  }
+
+  private async streamFile(filepath: string, res: Res, headers: Record<string, string>, contentType?: string | null) {
+    if (contentType) {
+      res.header('Content-Type', contentType);
+    }
+
+    // etag
+    const { size, mtimeNs } = await fs.stat(filepath, { bigint: true });
+    const etag = `W/"${size}-${mtimeNs}"`;
+    res.setHeader('ETag', etag);
+    if (etag === headers['if-none-match']) {
+      res.status(304);
+      return;
+    }
+
+    await fs.access(filepath, constants.R_OK);
+
+    return new StreamableFile(createReadStream(filepath));
+  }
 }
