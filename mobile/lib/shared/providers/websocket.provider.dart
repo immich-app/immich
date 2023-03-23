@@ -1,11 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -58,9 +57,9 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     var authenticationState = ref.read(authenticationProvider);
 
     if (authenticationState.isAuthenticated) {
-      var accessToken = Hive.box(userInfoBox).get(accessTokenKey);
+      final accessToken = Store.get(StoreKey.accessToken);
       try {
-        var endpoint = Uri.parse(Hive.box(userInfoBox).get(serverEndpointKey));
+        final endpoint = Uri.parse(Store.get(StoreKey.serverEndpoint));
 
         debugPrint("Attempting to connect to websocket");
         // Configure socket transports must be specified

@@ -241,7 +241,7 @@ class SyncService {
     }
 
     if (album.shared || dto.shared) {
-      final userId = Store.get<User>(StoreKey.currentUser)!.isarId;
+      final userId = Store.get(StoreKey.currentUser).isarId;
       final foreign =
           await album.assets.filter().not().ownerIdEqualTo(userId).findAll();
       existing.addAll(foreign);

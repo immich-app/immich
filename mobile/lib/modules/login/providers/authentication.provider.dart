@@ -2,12 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
-import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
@@ -91,11 +88,10 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     try {
       await Future.wait([
         _apiService.authenticationApi.logout(),
-        Hive.box(userInfoBox).delete(accessTokenKey),
         Store.delete(StoreKey.assetETag),
         Store.delete(StoreKey.userRemoteId),
         Store.delete(StoreKey.currentUser),
-        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).delete(savedLoginInfoKey)
+        Store.delete(StoreKey.accessToken),
       ]);
 
       state = state.copyWith(isAuthenticated: false);
@@ -157,14 +153,13 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     }
 
     if (userResponseDto != null) {
-      var userInfoHiveBox = await Hive.openBox(userInfoBox);
       var deviceInfo = await _deviceInfoService.getDeviceInfo();
-      userInfoHiveBox.put(deviceIdKey, deviceInfo["deviceId"]);
-      userInfoHiveBox.put(accessTokenKey, accessToken);
       Store.put(StoreKey.deviceId, deviceInfo["deviceId"]);
       Store.put(StoreKey.deviceIdHash, fastHash(deviceInfo["deviceId"]));
       Store.put(StoreKey.userRemoteId, userResponseDto.id);
       Store.put(StoreKey.currentUser, User.fromDto(userResponseDto));
+      Store.put(StoreKey.serverUrl, serverUrl);
+      Store.put(StoreKey.accessToken, accessToken);
 
       state = state.copyWith(
         isAuthenticated: true,
@@ -177,17 +172,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         shouldChangePassword: userResponseDto.shouldChangePassword,
         deviceId: deviceInfo["deviceId"],
         deviceType: deviceInfo["deviceType"],
-      );
-
-      // Save login info to local storage
-      Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).put(
-        savedLoginInfoKey,
-        HiveSavedLoginInfo(
-          email: "",
-          password: "",
-          serverUrl: serverUrl,
-          accessToken: accessToken,
-        ),
       );
     }
 

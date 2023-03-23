@@ -1,13 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:chewie/chewie.dart';
 import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_state.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:video_player/video_player.dart';
@@ -54,17 +53,15 @@ class VideoViewerPage extends HookConsumerWidget {
     }
     final downloadAssetStatus =
         ref.watch(imageViewerStateProvider).downloadAssetStatus;
-    final box = Hive.box(userInfoBox);
-    final String jwtToken = box.get(accessTokenKey);
     final String videoUrl = isMotionVideo
-        ? '${box.get(serverEndpointKey)}/asset/file/${asset.livePhotoVideoId}'
-        : '${box.get(serverEndpointKey)}/asset/file/${asset.remoteId}';
+        ? '${Store.get(StoreKey.serverEndpoint)}/asset/file/${asset.livePhotoVideoId}'
+        : '${Store.get(StoreKey.serverEndpoint)}/asset/file/${asset.remoteId}';
 
     return Stack(
       children: [
         VideoThumbnailPlayer(
           url: videoUrl,
-          jwtToken: jwtToken,
+          jwtToken: Store.get(StoreKey.accessToken),
           isMotionVideo: isMotionVideo,
           onVideoEnded: onVideoEnded,
           onPaused: onPaused,

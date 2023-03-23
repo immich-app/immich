@@ -1,59 +1,63 @@
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 
 enum AppSettingsEnum<T> {
-  loadPreview<bool>("loadPreview", true),
-  loadOriginal<bool>("loadOriginal", false),
-  themeMode<String>("themeMode", "system"), // "light","dark","system"
-  tilesPerRow<int>("tilesPerRow", 4),
-  dynamicLayout<bool>("dynamicLayout", false),
-  groupAssetsBy<int>("groupBy", 0),
+  loadPreview<bool>(StoreKey.loadPreview, "loadPreview", true),
+  loadOriginal<bool>(StoreKey.loadOriginal, "loadOriginal", false),
+  themeMode<String>(
+    StoreKey.themeMode,
+    "themeMode",
+    "system",
+  ), // "light","dark","system"
+  tilesPerRow<int>(StoreKey.tilesPerRow, "tilesPerRow", 4),
+  dynamicLayout<bool>(StoreKey.dynamicLayout, "dynamicLayout", false),
+  groupAssetsBy<int>(StoreKey.groupAssetsBy, "groupBy", 0),
   uploadErrorNotificationGracePeriod<int>(
+    StoreKey.uploadErrorNotificationGracePeriod,
     "uploadErrorNotificationGracePeriod",
     2,
   ),
-  backgroundBackupTotalProgress<bool>("backgroundBackupTotalProgress", true),
-  backgroundBackupSingleProgress<bool>("backgroundBackupSingleProgress", false),
-  storageIndicator<bool>("storageIndicator", true),
-  thumbnailCacheSize<int>("thumbnailCacheSize", 10000),
-  imageCacheSize<int>("imageCacheSize", 350),
-  albumThumbnailCacheSize<int>("albumThumbnailCacheSize", 200),
-  useExperimentalAssetGrid<bool>("useExperimentalAssetGrid", false),
-  selectedAlbumSortOrder<int>("selectedAlbumSortOrder", 0);
+  backgroundBackupTotalProgress<bool>(
+    StoreKey.backgroundBackupTotalProgress,
+    "backgroundBackupTotalProgress",
+    true,
+  ),
+  backgroundBackupSingleProgress<bool>(
+    StoreKey.backgroundBackupSingleProgress,
+    "backgroundBackupSingleProgress",
+    false,
+  ),
+  storageIndicator<bool>(StoreKey.storageIndicator, "storageIndicator", true),
+  thumbnailCacheSize<int>(
+    StoreKey.thumbnailCacheSize,
+    "thumbnailCacheSize",
+    10000,
+  ),
+  imageCacheSize<int>(StoreKey.imageCacheSize, "imageCacheSize", 350),
+  albumThumbnailCacheSize<int>(
+    StoreKey.albumThumbnailCacheSize,
+    "albumThumbnailCacheSize",
+    200,
+  ),
+  selectedAlbumSortOrder<int>(
+    StoreKey.selectedAlbumSortOrder,
+    "selectedAlbumSortOrder",
+    0,
+  ),
+  ;
 
-  const AppSettingsEnum(this.hiveKey, this.defaultValue);
+  const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
 
+  final StoreKey<T> storeKey;
   final String hiveKey;
   final T defaultValue;
 }
 
 class AppSettingsService {
-  late final Box hiveBox;
-
-  AppSettingsService() {
-    hiveBox = Hive.box(userSettingInfoBox);
+  T getSetting<T>(AppSettingsEnum<T> setting) {
+    return Store.get(setting.storeKey, setting.defaultValue);
   }
 
-  T getSetting<T>(AppSettingsEnum<T> settingType) {
-    if (!hiveBox.containsKey(settingType.hiveKey)) {
-      return _setDefault(settingType);
-    }
-
-    var result = hiveBox.get(settingType.hiveKey);
-
-    if (result is! T) {
-      return _setDefault(settingType);
-    }
-
-    return result;
-  }
-
-  setSetting<T>(AppSettingsEnum<T> settingType, T value) {
-    hiveBox.put(settingType.hiveKey, value);
-  }
-
-  T _setDefault<T>(AppSettingsEnum<T> settingType) {
-    hiveBox.put(settingType.hiveKey, settingType.defaultValue);
-    return settingType.defaultValue;
+  void setSetting<T>(AppSettingsEnum<T> setting, T value) {
+    Store.put(setting.storeKey, value);
   }
 }

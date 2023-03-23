@@ -42,7 +42,7 @@ class UserService {
     if (self) {
       return _db.users.where().findAll();
     }
-    final int userId = Store.get<User>(StoreKey.currentUser)!.isarId;
+    final int userId = Store.get(StoreKey.currentUser).isarId;
     return _db.users.where().isarIdNotEqualTo(userId).findAll();
   }
 

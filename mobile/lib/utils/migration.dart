@@ -1,5 +1,7 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
@@ -8,6 +10,9 @@ import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/duplicated_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
 import 'package:immich_mobile/modules/backup/models/hive_duplicated_assets.model.dart';
+import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/shared/models/immich_logger_message.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/services/asset_cache.service.dart';
 import 'package:isar/isar.dart';
@@ -23,11 +28,37 @@ Future<void> migrateHiveToStoreIfNecessary() async {
     duplicatedAssetsBox,
     _migrateDuplicatedAssetsBox,
   );
+  await _migrateHiveBoxIfNecessary(
+    hiveGithubReleaseInfoBox,
+    _migrateReleaseInfoBox,
+  );
+
+  await _migrateHiveBoxIfNecessary(hiveLoginInfoBox, _migrateLoginInfoBox);
+  await _migrateHiveBoxIfNecessary(
+    immichLoggerBox,
+    (Box<ImmichLoggerMessage> box) => box.deleteFromDisk(),
+  );
+  await _migrateHiveBoxIfNecessary(userSettingInfoBox, _migrateAppSettingsBox);
+}
+
+FutureOr<void> _migrateReleaseInfoBox(Box box) =>
+    _migrateKey(box, githubReleaseInfoKey, StoreKey.githubReleaseInfo);
+
+Future<void> _migrateLoginInfoBox(Box<HiveSavedLoginInfo> box) async {
+  final HiveSavedLoginInfo? info = box.get(savedLoginInfoKey);
+  if (info != null) {
+    await Store.put(StoreKey.serverUrl, info.serverUrl);
+    await Store.put(StoreKey.accessToken, info.accessToken);
+  }
 }
 
 Future<void> _migrateHiveUserInfoBox(Box box) async {
   await _migrateKey(box, userIdKey, StoreKey.userRemoteId);
   await _migrateKey(box, assetEtagKey, StoreKey.assetETag);
+  if (Store.tryGet(StoreKey.deviceId) == null) {
+    await _migrateKey(box, deviceIdKey, StoreKey.deviceId);
+  }
+  await _migrateKey(box, serverEndpointKey, StoreKey.serverEndpoint);
 }
 
 Future<void> _migrateHiveBackgroundBackupInfoBox(Box box) async {
@@ -35,16 +66,15 @@ Future<void> _migrateHiveBackgroundBackupInfoBox(Box box) async {
   await _migrateKey(box, backupRequireWifi, StoreKey.backupRequireWifi);
   await _migrateKey(box, backupRequireCharging, StoreKey.backupRequireCharging);
   await _migrateKey(box, backupTriggerDelay, StoreKey.backupTriggerDelay);
-  return box.deleteFromDisk();
 }
 
-Future<void> _migrateBackupInfoBox(Box<HiveBackupAlbums> box) async {
-  final Isar? db = Isar.getInstance();
-  if (db == null) {
-    throw Exception("_migrateBackupInfoBox could not load database");
-  }
+FutureOr<void> _migrateBackupInfoBox(Box<HiveBackupAlbums> box) {
   final HiveBackupAlbums? infos = box.get(backupInfoKey);
   if (infos != null) {
+    final Isar? db = Isar.getInstance();
+    if (db == null) {
+      throw Exception("_migrateBackupInfoBox could not load database");
+    }
     List<BackupAlbum> albums = [];
     for (int i = 0; i < infos.selectedAlbumIds.length; i++) {
       final album = BackupAlbum(
@@ -62,48 +92,49 @@ Future<void> _migrateBackupInfoBox(Box<HiveBackupAlbums> box) async {
       );
       albums.add(album);
     }
-    await db.writeTxn(() => db.backupAlbums.putAll(albums));
-  } else {
-    debugPrint("_migrateBackupInfoBox deletes empty box");
+    return db.writeTxn(() => db.backupAlbums.putAll(albums));
   }
-  return box.deleteFromDisk();
 }
 
-Future<void> _migrateDuplicatedAssetsBox(Box<HiveDuplicatedAssets> box) async {
-  final Isar? db = Isar.getInstance();
-  if (db == null) {
-    throw Exception("_migrateBackupInfoBox could not load database");
-  }
+FutureOr<void> _migrateDuplicatedAssetsBox(Box<HiveDuplicatedAssets> box) {
   final HiveDuplicatedAssets? duplicatedAssets = box.get(duplicatedAssetsKey);
   if (duplicatedAssets != null) {
+    final Isar? db = Isar.getInstance();
+    if (db == null) {
+      throw Exception("_migrateBackupInfoBox could not load database");
+    }
     final duplicatedAssetIds = duplicatedAssets.duplicatedAssetIds
         .map((id) => DuplicatedAsset(id))
         .toList();
-    await db.writeTxn(() => db.duplicatedAssets.putAll(duplicatedAssetIds));
-  } else {
-    debugPrint("_migrateDuplicatedAssetsBox deletes empty box");
+    return db.writeTxn(() => db.duplicatedAssets.putAll(duplicatedAssetIds));
   }
-  return box.deleteFromDisk();
+}
+
+Future<void> _migrateAppSettingsBox(Box box) async {
+  for (AppSettingsEnum s in AppSettingsEnum.values) {
+    await _migrateKey(box, s.hiveKey, s.storeKey);
+  }
 }
 
 Future<void> _migrateHiveBoxIfNecessary<T>(
   String boxName,
-  Future<void> Function(Box<T>) migrate,
+  FutureOr<void> Function(Box<T>) migrate,
 ) async {
   try {
     if (await Hive.boxExists(boxName)) {
-      await migrate(await Hive.openBox<T>(boxName));
+      final box = await Hive.openBox<T>(boxName);
+      await migrate(box);
+      await box.deleteFromDisk();
     }
   } catch (e) {
     debugPrint("Error while migrating $boxName $e");
   }
 }
 
-_migrateKey(Box box, String hiveKey, StoreKey key) async {
-  final String? value = box.get(hiveKey);
+FutureOr<void> _migrateKey<T>(Box box, String hiveKey, StoreKey<T> key) {
+  final T? value = box.get(hiveKey);
   if (value != null) {
-    await Store.put(key, value);
-    await box.delete(hiveKey);
+    return Store.put(key, value);
   }
 }
 

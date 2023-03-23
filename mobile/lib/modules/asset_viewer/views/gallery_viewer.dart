@@ -4,16 +4,15 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:hive/hive.dart';
+import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/services/asset.service.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
@@ -47,7 +46,6 @@ class GalleryViewerPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Box<dynamic> box = Hive.box(userInfoBox);
     final settings = ref.watch(appSettingsServiceProvider);
     final isLoadPreview = useState(AppSettingsEnum.loadPreview.defaultValue);
     final isLoadOriginal = useState(AppSettingsEnum.loadOriginal.defaultValue);
@@ -57,7 +55,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isPlayingMotionVideo = useState(false);
     final isPlayingVideo = useState(false);
     late Offset localPosition;
-    final authToken = 'Bearer ${box.get(accessTokenKey)}';
+    final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
 
     showAppBar.addListener(() {
       // Change to and from immersive mode, hiding navigation and app bar

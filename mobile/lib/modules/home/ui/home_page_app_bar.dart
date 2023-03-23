@@ -2,9 +2,7 @@ import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 
@@ -12,6 +10,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/shared/models/server_info_state.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/ui/transparent_image.dart';
 
@@ -47,7 +46,7 @@ class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
           },
         );
       } else {
-        String endpoint = Hive.box(userInfoBox).get(serverEndpointKey);
+        final String? endpoint = Store.get(StoreKey.serverEndpoint);
         var dummy = Random().nextInt(1024);
         return InkWell(
           onTap: () {
