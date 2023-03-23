@@ -179,5 +179,18 @@ describe('assetUploadOption', () => {
       expect(error).toBeNull();
       expect(name.endsWith(mock.userRequest.body.fileExtension)).toBeTruthy();
     });
+
+    it('should not change the casing of the extension', () => {
+      // Case is deliberately mixed to cover both .upper() and .lower()
+      const body = { ...mock.userRequest.body, fileExtension: '.JpEg' };
+      const request = { ...mock.userRequest, body } as Request;
+
+      filename(request, mock.file, callback);
+
+      expect(callback).toHaveBeenCalled();
+      const [error, name] = callback.mock.calls[0];
+      expect(error).toBeNull();
+      expect(name.endsWith(body.fileExtension)).toBeTruthy();
+    });
   });
 });
