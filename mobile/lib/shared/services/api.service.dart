@@ -15,7 +15,6 @@ class ApiService {
   late AlbumApi albumApi;
   late AssetApi assetApi;
   late ServerInfoApi serverInfoApi;
-  late DeviceInfoApi deviceInfoApi;
 
   ApiService() {
     final endpoint = Store.tryGet(StoreKey.serverEndpoint);
@@ -36,7 +35,6 @@ class ApiService {
     albumApi = AlbumApi(_apiClient);
     assetApi = AssetApi(_apiClient);
     serverInfoApi = ServerInfoApi(_apiClient);
-    deviceInfoApi = DeviceInfoApi(_apiClient);
   }
 
   Future<String> resolveAndSetEndpoint(String serverUrl) async {

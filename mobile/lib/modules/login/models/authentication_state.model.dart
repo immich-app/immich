@@ -11,7 +11,6 @@ class AuthenticationState {
   final bool isAdmin;
   final bool shouldChangePassword;
   final String profileImagePath;
-  final DeviceInfoResponseDto deviceInfo;
   AuthenticationState({
     required this.deviceId,
     required this.deviceType,
@@ -23,7 +22,6 @@ class AuthenticationState {
     required this.isAdmin,
     required this.shouldChangePassword,
     required this.profileImagePath,
-    required this.deviceInfo,
   });
 
   AuthenticationState copyWith({
@@ -37,7 +35,6 @@ class AuthenticationState {
     bool? isAdmin,
     bool? shouldChangePassword,
     String? profileImagePath,
-    DeviceInfoResponseDto? deviceInfo,
   }) {
     return AuthenticationState(
       deviceId: deviceId ?? this.deviceId,
@@ -50,13 +47,12 @@ class AuthenticationState {
       isAdmin: isAdmin ?? this.isAdmin,
       shouldChangePassword: shouldChangePassword ?? this.shouldChangePassword,
       profileImagePath: profileImagePath ?? this.profileImagePath,
-      deviceInfo: deviceInfo ?? this.deviceInfo,
     );
   }
 
   @override
   String toString() {
-    return 'AuthenticationState(deviceId: $deviceId, deviceType: $deviceType, userId: $userId, userEmail: $userEmail, isAuthenticated: $isAuthenticated, firstName: $firstName, lastName: $lastName, isAdmin: $isAdmin, shouldChangePassword: $shouldChangePassword, profileImagePath: $profileImagePath, deviceInfo: $deviceInfo)';
+    return 'AuthenticationState(deviceId: $deviceId, deviceType: $deviceType, userId: $userId, userEmail: $userEmail, isAuthenticated: $isAuthenticated, firstName: $firstName, lastName: $lastName, isAdmin: $isAdmin, shouldChangePassword: $shouldChangePassword, profileImagePath: $profileImagePath)';
   }
 
   @override
@@ -73,8 +69,7 @@ class AuthenticationState {
         other.lastName == lastName &&
         other.isAdmin == isAdmin &&
         other.shouldChangePassword == shouldChangePassword &&
-        other.profileImagePath == profileImagePath &&
-        other.deviceInfo == deviceInfo;
+        other.profileImagePath == profileImagePath;
   }
 
   @override
@@ -88,7 +83,6 @@ class AuthenticationState {
         lastName.hashCode ^
         isAdmin.hashCode ^
         shouldChangePassword.hashCode ^
-        profileImagePath.hashCode ^
-        deviceInfo.hashCode;
+        profileImagePath.hashCode;
   }
 }
