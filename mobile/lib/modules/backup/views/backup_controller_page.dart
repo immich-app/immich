@@ -10,9 +10,7 @@ import 'package:immich_mobile/modules/backup/providers/error_backup_list.provide
 import 'package:immich_mobile/modules/backup/providers/ios_background_settings.provider.dart';
 import 'package:immich_mobile/modules/backup/ui/current_backup_asset_info_box.dart';
 import 'package:immich_mobile/modules/backup/ui/ios_debug_info_tile.dart';
-import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
-import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
@@ -26,7 +24,6 @@ class BackupControllerPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     BackUpState backupState = ref.watch(backupProvider);
-    AuthenticationState authenticationState = ref.watch(authenticationProvider);
     final settings = ref.watch(iOSBackgroundSettingsProvider.notifier).settings;
 
     final appRefreshDisabled =
@@ -102,11 +99,11 @@ class BackupControllerPage extends HookConsumerWidget {
     }
 
     ListTile buildAutoBackupController() {
-      var backUpOption = authenticationState.deviceInfo.isAutoBackup
+      final isAutoBackup = backupState.autoBackup;
+      final backUpOption = isAutoBackup
           ? "backup_controller_page_status_on".tr()
           : "backup_controller_page_status_off".tr();
-      var isAutoBackup = authenticationState.deviceInfo.isAutoBackup;
-      var backupBtnText = authenticationState.deviceInfo.isAutoBackup
+      final backupBtnText = isAutoBackup
           ? "backup_controller_page_turn_off".tr()
           : "backup_controller_page_turn_on".tr();
       return ListTile(
@@ -134,17 +131,9 @@ class BackupControllerPage extends HookConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: ElevatedButton(
-                  onPressed: () {
-                    if (isAutoBackup) {
-                      ref
-                          .read(authenticationProvider.notifier)
-                          .setAutoBackup(false);
-                    } else {
-                      ref
-                          .read(authenticationProvider.notifier)
-                          .setAutoBackup(true);
-                    }
-                  },
+                  onPressed: () => ref
+                      .read(backupProvider.notifier)
+                      .setAutoBackup(!isAutoBackup),
                   child: Text(
                     backupBtnText,
                     style: const TextStyle(

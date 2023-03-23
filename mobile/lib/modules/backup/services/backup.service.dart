@@ -363,31 +363,6 @@ class BackupService {
         return "OTHER";
     }
   }
-
-  Future<DeviceInfoResponseDto> setAutoBackup(
-    bool status,
-    String deviceId,
-    DeviceTypeEnum deviceType,
-  ) async {
-    try {
-      var updatedDeviceInfo = await _apiService.deviceInfoApi.upsertDeviceInfo(
-        UpsertDeviceInfoDto(
-          deviceId: deviceId,
-          deviceType: deviceType,
-          isAutoBackup: status,
-        ),
-      );
-
-      if (updatedDeviceInfo == null) {
-        throw Exception("Error updating device info");
-      }
-
-      return updatedDeviceInfo;
-    } catch (e) {
-      debugPrint("Error setAutoBackup: ${e.toString()}");
-      throw Error();
-    }
-  }
 }
 
 class MultipartRequest extends http.MultipartRequest {

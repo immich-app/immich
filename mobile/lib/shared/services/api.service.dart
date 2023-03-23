@@ -16,7 +16,6 @@ class ApiService {
   late AssetApi assetApi;
   late SearchApi searchApi;
   late ServerInfoApi serverInfoApi;
-  late DeviceInfoApi deviceInfoApi;
 
   ApiService() {
     final endpoint = Store.tryGet(StoreKey.serverEndpoint);
@@ -38,7 +37,6 @@ class ApiService {
     assetApi = AssetApi(_apiClient);
     serverInfoApi = ServerInfoApi(_apiClient);
     searchApi = SearchApi(_apiClient);
-    deviceInfoApi = DeviceInfoApi(_apiClient);
   }
 
   Future<String> resolveAndSetEndpoint(String serverUrl) async {
