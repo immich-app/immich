@@ -3,7 +3,9 @@
 	import Magnify from 'svelte-material-icons/Magnify.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import { goto } from '$app/navigation';
-
+	import { savedSearchTerms } from '$lib/stores/search.store';
+	import { clickOutside } from '$lib/utils/click-outside';
+	import { fly } from 'svelte/transition';
 	export let value = '';
 	export let grayTheme: boolean;
 
@@ -11,24 +13,53 @@
 	// of having to go through every search query.
 	export let replaceHistoryState = false;
 
+	let showBigSearchBar = false;
 	$: showClearIcon = value.length > 0;
 
-	function onSearch() {
+	function onSearch(saveSearch: boolean) {
+		let clipSearch = 'true';
+		let searchValue = value;
+
+		if (value.slice(0, 2) == 'm:') {
+			clipSearch = 'false';
+			searchValue = value.slice(2);
+		}
+
+		if (saveSearch) {
+			saveSearchTerm(value);
+		}
+
 		const params = new URLSearchParams({
 			q: value,
-			clip: 'true'
+			clip: clipSearch
 		});
 
 		goto(`${AppRoute.SEARCH}?${params}`, { replaceState: replaceHistoryState });
 	}
+
+	const saveSearchTerm = (saveValue: string) => {
+		$savedSearchTerms = [saveValue, ...$savedSearchTerms];
+
+		if ($savedSearchTerms.length > 5) {
+			$savedSearchTerms = $savedSearchTerms.slice(0, 5);
+		}
+	};
+
+	const clearSearchTerm = () => {
+		$savedSearchTerms = [];
+	};
 </script>
 
 <form
+	draggable="false"
 	autocomplete="off"
 	class="relative text-sm"
 	action={AppRoute.SEARCH}
 	on:reset={() => (value = '')}
-	on:submit|preventDefault={onSearch}
+	on:submit|preventDefault={() => onSearch(true)}
+	on:focusin={() => (showBigSearchBar = true)}
+	use:clickOutside
+	on:outclick={() => (showBigSearchBar = false)}
 >
 	<label>
 		<div class="absolute inset-y-0 left-0 flex items-center pl-6">
@@ -39,10 +70,12 @@
 		<input
 			type="text"
 			name="q"
-			class="w-full rounded-3xl bg-gray-200 {grayTheme
+			class="w-full transition-all  {grayTheme
 				? 'dark:bg-immich-dark-gray'
-				: 'dark:bg-immich-dark-bg'} text-immich-fg/75 dark:text-immich-dark-fg px-14 py-4"
-			placeholder="Search"
+				: 'dark:bg-immich-dark-bg'} text-immich-fg/75 dark:text-immich-dark-fg px-14 py-4 {showBigSearchBar
+				? 'rounded-t-3xl bg-white  border border-gray-200 dark:border-gray-800'
+				: 'rounded-3xl bg-gray-200 border border-transparent'}"
+			placeholder="Search your photos"
 			required
 			bind:value
 		/>
@@ -55,6 +88,44 @@
 			>
 				<Close size="1.5em" />
 			</button>
+		</div>
+	{/if}
+
+	{#if showBigSearchBar}
+		<div
+			transition:fly={{ y: 25, duration: 250 }}
+			class="w-full pb-5 absolute bg-white transition-all rounded-b-3xl shadow-2xl border border-gray-200 dark:bg-immich-dark-gray dark:border-gray-800 dark:text-gray-300"
+		>
+			<div class="px-5 pt-5 text-xs">
+				<p>
+					Smart search is enabled by default, to search for metadata use the syntax <span
+						class="font-mono p-2 font-semibold text-immich-primary dark:text-immich-dark-primary bg-gray-100 rounded-lg dark:bg-gray-900"
+						>m:your-search-term</span
+					>
+				</p>
+			</div>
+			<div class="px-5 pt-5 text-xs flex justify-between">
+				<p>RECENT SEARCHES</p>
+				<button
+					type="button"
+					class="text-immich-primary dark:text-immich-dark-primary font-semibold p-2 hover:bg-immich-primary/25 rounded-lg"
+					on:click={clearSearchTerm}>Clear all</button
+				>
+			</div>
+
+			{#each $savedSearchTerms as savedSearchTerm, i (i)}
+				<button
+					type="button"
+					class="w-full hover:bg-gray-100 dark:hover:bg-gray-500/10 px-5 py-3 cursor-pointer flex gap-3 text-black dark:text-gray-300"
+					on:click={() => {
+						value = savedSearchTerm;
+						onSearch(false);
+					}}
+				>
+					<Magnify size="1.5em" />
+					{savedSearchTerm}
+				</button>
+			{/each}
 		</div>
 	{/if}
 </form>
