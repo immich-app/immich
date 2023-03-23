@@ -102,6 +102,18 @@ class _$AppRouter extends RootStackRouter {
         ),
       );
     },
+    CuratedLocationRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const CuratedLocationPage(),
+      );
+    },
+    CuratedObjectRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const CuratedObjectPage(),
+      );
+    },
     CreateAlbumRoute.name: (routeData) {
       final args = routeData.argsAs<CreateAlbumRouteArgs>();
       return MaterialPageX<dynamic>(
@@ -326,6 +338,22 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           SearchResultRoute.name,
           path: '/search-result-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          CuratedLocationRoute.name,
+          path: '/curated-location-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          CuratedObjectRoute.name,
+          path: '/curated-object-page',
           guards: [
             authGuard,
             duplicateGuard,
@@ -616,6 +644,30 @@ class SearchResultRouteArgs {
   String toString() {
     return 'SearchResultRouteArgs{key: $key, searchTerm: $searchTerm}';
   }
+}
+
+/// generated route for
+/// [CuratedLocationPage]
+class CuratedLocationRoute extends PageRouteInfo<void> {
+  const CuratedLocationRoute()
+      : super(
+          CuratedLocationRoute.name,
+          path: '/curated-location-page',
+        );
+
+  static const String name = 'CuratedLocationRoute';
+}
+
+/// generated route for
+/// [CuratedObjectPage]
+class CuratedObjectRoute extends PageRouteInfo<void> {
+  const CuratedObjectRoute()
+      : super(
+          CuratedObjectRoute.name,
+          path: '/curated-object-page',
+        );
+
+  static const String name = 'CuratedObjectRoute';
 }
 
 /// generated route for
