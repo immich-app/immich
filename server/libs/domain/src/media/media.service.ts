@@ -40,7 +40,7 @@ export class MediaService {
     const { asset } = data;
 
     const basePath = APP_UPLOAD_LOCATION;
-    const resizePath = join(basePath, asset.ownerId, 'thumb', Buffer.from(asset.checksum).toString('hex'));
+    const resizePath = join(basePath, asset.ownerId, 'thumb');
 
     const jpegThumbnailPath = join(resizePath, `${asset.id}.jpeg`);
 
