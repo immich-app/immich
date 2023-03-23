@@ -1,7 +1,6 @@
 import { AssetType } from '@app/infra/db/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { join } from 'path';
-import sanitize from 'sanitize-filename';
 import { IAssetRepository, mapAsset, WithoutProperty } from '../asset';
 import { CommunicationEvent, ICommunicationRepository } from '../communication';
 import { APP_UPLOAD_LOCATION } from '../domain.constant';
@@ -41,7 +40,8 @@ export class MediaService {
     const { asset } = data;
 
     const basePath = APP_UPLOAD_LOCATION;
-    const resizePath = join(basePath, asset.ownerId, 'thumb', asset.checksum.toString('hex'));
+    const resizePath = join(basePath, asset.ownerId, 'thumb', Buffer.from(asset.checksum).toString('hex'));
+
     const jpegThumbnailPath = join(resizePath, `${asset.id}.jpeg`);
 
     this.storageRepository.mkdirSync(resizePath);
