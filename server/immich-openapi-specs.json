@@ -4748,6 +4748,12 @@
             "type": "string",
             "format": "binary"
           },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
           "fileCreatedAt": {
             "type": "string"
           },

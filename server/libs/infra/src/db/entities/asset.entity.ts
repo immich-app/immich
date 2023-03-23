@@ -24,11 +24,17 @@ export class AssetEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
+  @Column()
+  deviceAssetId!: string;
+
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   owner!: UserEntity;
 
   @Column()
   ownerId!: string;
+
+  @Column()
+  deviceId!: string;
 
   @Column()
   type!: AssetType;
@@ -63,7 +69,7 @@ export class AssetEntity {
   @Column({ type: 'varchar', nullable: true })
   mimeType!: string | null;
 
-  @Column({ type: 'bytea', nullable: true })
+  @Column({ type: 'bytea', nullable: true, select: false })
   @Index({ where: `'checksum' IS NOT NULL` }) // avoid null index
   checksum!: Buffer; // sha1 checksum
 
