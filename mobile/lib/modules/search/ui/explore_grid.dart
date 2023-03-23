@@ -14,6 +14,21 @@ class ExploreGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (curatedContent.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: SizedBox(
+          height: 100,
+          width: 100,
+          child: ThumbnailWithInfo(
+            textInfo: '',
+            onTap: () {
+            },
+          ),
+        ),
+      );
+    }
+
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: 140,
