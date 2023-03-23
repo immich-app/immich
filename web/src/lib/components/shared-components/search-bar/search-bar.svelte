@@ -3,9 +3,9 @@
 	import Magnify from 'svelte-material-icons/Magnify.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import { goto } from '$app/navigation';
-	import { enableClip, savedSearchTerms } from '$lib/stores/search.store';
+	import { savedSearchTerms } from '$lib/stores/search.store';
 	import { clickOutside } from '$lib/utils/click-outside';
-	import { fade, fly } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 	export let value = '';
 	export let grayTheme: boolean;
 
