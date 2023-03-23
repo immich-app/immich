@@ -1,14 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
-import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 
 class SplashScreenPage extends HookConsumerWidget {
@@ -17,23 +15,23 @@ class SplashScreenPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final apiService = ref.watch(apiServiceProvider);
-    HiveSavedLoginInfo? loginInfo =
-        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).get(savedLoginInfoKey);
+    final serverUrl = Store.tryGet(StoreKey.serverUrl);
+    final accessToken = Store.tryGet(StoreKey.accessToken);
 
     void performLoggingIn() async {
       bool isSuccess = false;
-      if (loginInfo != null) {
+      if (accessToken != null && serverUrl != null) {
         try {
           // Resolve API server endpoint from user provided serverUrl
-          await apiService.resolveAndSetEndpoint(loginInfo.serverUrl);
+          await apiService.resolveAndSetEndpoint(serverUrl);
         } catch (e) {
           // okay, try to continue anyway if offline
         }
 
         isSuccess =
             await ref.read(authenticationProvider.notifier).setSuccessLoginInfo(
-                  accessToken: loginInfo.accessToken,
-                  serverUrl: loginInfo.serverUrl,
+                  accessToken: accessToken,
+                  serverUrl: serverUrl,
                 );
       }
       if (isSuccess) {
@@ -51,7 +49,7 @@ class SplashScreenPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        if (loginInfo != null) {
+        if (serverUrl != null && accessToken != null) {
           performLoggingIn();
         } else {
           AutoRouter.of(context).replace(const LoginRoute());

@@ -5,7 +5,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
@@ -44,7 +43,7 @@ class AssetService {
         .where()
         .remoteIdIsNotNull()
         .filter()
-        .ownerIdEqualTo(Store.get<User>(StoreKey.currentUser)!.isarId)
+        .ownerIdEqualTo(Store.get(StoreKey.currentUser).isarId)
         .count();
     final List<AssetResponseDto>? dtos =
         await _getRemoteAssets(hasCache: numOwnedRemoteAssets > 0);
@@ -63,7 +62,7 @@ class AssetService {
     required bool hasCache,
   }) async {
     try {
-      final etag = hasCache ? Store.get(StoreKey.assetETag) : null;
+      final etag = hasCache ? Store.tryGet(StoreKey.assetETag) : null;
       final Pair<List<AssetResponseDto>, String?>? remote =
           await _apiService.assetApi.getAllAssetsWithETag(eTag: etag);
       if (remote == null) {

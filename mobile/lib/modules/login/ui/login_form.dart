@@ -1,14 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:hive/hive.dart';
+import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/providers/oauth.provider.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
@@ -63,8 +61,7 @@ class LoginForm extends HookConsumerWidget {
 
       try {
         isLoadingServer.value = true;
-        final endpoint =
-            await apiService.resolveAndSetEndpoint(serverUrl);
+        final endpoint = await apiService.resolveAndSetEndpoint(serverUrl);
 
         final loginConfig = await apiService.oAuthApi.generateConfig(
           OAuthConfigDto(redirectUri: serverUrl),
@@ -104,15 +101,10 @@ class LoginForm extends HookConsumerWidget {
 
     useEffect(
       () {
-        var loginInfo = Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox)
-            .get(savedLoginInfoKey);
-
-        if (loginInfo != null) {
-          usernameController.text = loginInfo.email;
-          passwordController.text = loginInfo.password;
-          serverEndpointController.text = loginInfo.serverUrl;
+        final serverUrl = Store.tryGet(StoreKey.serverUrl);
+        if (serverUrl != null) {
+          serverEndpointController.text = serverUrl;
         }
-
         return null;
       },
       [],
@@ -133,11 +125,11 @@ class LoginForm extends HookConsumerWidget {
 
       try {
         final isAuthenticated =
-          await ref.read(authenticationProvider.notifier).login(
-            usernameController.text,
-            passwordController.text,
-            serverEndpointController.text.trim(),
-          );
+            await ref.read(authenticationProvider.notifier).login(
+                  usernameController.text,
+                  passwordController.text,
+                  serverEndpointController.text.trim(),
+                );
         if (isAuthenticated) {
           // Resume backup (if enable) then navigate
           if (ref.read(authenticationProvider).shouldChangePassword &&
@@ -283,61 +275,61 @@ class LoginForm extends HookConsumerWidget {
               onSubmit: login,
             ),
 
-          // Note: This used to have an AnimatedSwitcher, but was removed
-          // because of https://github.com/flutter/flutter/issues/120874
-          isLoading.value
-              ? const Padding(
-                  padding: EdgeInsets.only(top: 18.0),
-                  child: SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: FittedBox(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
+            // Note: This used to have an AnimatedSwitcher, but was removed
+            // because of https://github.com/flutter/flutter/issues/120874
+            isLoading.value
+                ? const Padding(
+                    padding: EdgeInsets.only(top: 18.0),
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: FittedBox(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                        ),
                       ),
                     ),
-                  ),
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 18),
-                    LoginButton(onPressed: login),
-                    if (isOauthEnable.value) ...[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 18),
+                      LoginButton(onPressed: login),
+                      if (isOauthEnable.value) ...[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                          ),
+                          child: Divider(
+                            color:
+                                Brightness.dark == Theme.of(context).brightness
+                                    ? Colors.white
+                                    : Colors.black,
+                          ),
                         ),
-                        child: Divider(
-                          color:
-                              Brightness.dark == Theme.of(context).brightness
-                                  ? Colors.white
-                                  : Colors.black,
+                        OAuthLoginButton(
+                          serverEndpointController: serverEndpointController,
+                          buttonLabel: oAuthButtonLabel.value,
+                          isLoading: isLoading,
+                          onPressed: oAuthLogin,
                         ),
-                      ),
-                      OAuthLoginButton(
-                        serverEndpointController: serverEndpointController,
-                        buttonLabel: oAuthButtonLabel.value,
-                        isLoading: isLoading,
-                        onPressed: oAuthLogin,
-                      ),
+                      ],
                     ],
-                  ],
-                ),
-              const SizedBox(height: 12),
-              TextButton.icon(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => serverEndpoint.value = null,
-                label: const Text('Back'),
-              ),
+                  ),
+            const SizedBox(height: 12),
+            TextButton.icon(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => serverEndpoint.value = null,
+              label: const Text('Back'),
+            ),
           ],
         ),
       );
     }
-    final serverSelectionOrLogin = serverEndpoint.value == null
-      ? buildSelectServer()
-      : buildLogin();
+
+    final serverSelectionOrLogin =
+        serverEndpoint.value == null ? buildSelectServer() : buildLogin();
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -545,7 +537,6 @@ class OAuthLoginButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     return ElevatedButton.icon(
       style: ElevatedButton.styleFrom(
         backgroundColor: Theme.of(context).primaryColor.withAlpha(230),

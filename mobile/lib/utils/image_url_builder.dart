@@ -1,9 +1,7 @@
-import 'package:hive/hive.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:openapi/api.dart';
-
-import '../constants/hive_box.dart';
 
 String getThumbnailUrl(
   final Asset asset, {
@@ -48,8 +46,7 @@ String getAlbumThumbNailCacheKey(
 }
 
 String getImageUrl(final Asset asset) {
-  final box = Hive.box(userInfoBox);
-  return '${box.get(serverEndpointKey)}/asset/file/${asset.remoteId}?isThumb=false';
+  return '${Store.get(StoreKey.serverEndpoint)}/asset/file/${asset.remoteId}?isThumb=false';
 }
 
 String getImageCacheKey(final Asset asset) {
@@ -60,7 +57,5 @@ String _getThumbnailUrl(
   final String id, {
   ThumbnailFormat type = ThumbnailFormat.WEBP,
 }) {
-  final box = Hive.box(userInfoBox);
-
-  return '${box.get(serverEndpointKey)}/asset/thumbnail/$id?format=${type.value}';
+  return '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/$id?format=${type.value}';
 }

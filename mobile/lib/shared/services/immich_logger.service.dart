@@ -1,15 +1,15 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
-import 'package:hive/hive.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
-import 'package:immich_mobile/shared/models/immich_logger_message.model.dart';
+import 'package:immich_mobile/shared/models/logger_message.model.dart';
+import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 /// [ImmichLogger] is a custom logger that is built on top of the [logging] package.
-/// The logs are written to a Hive box and onto console, using `debugPrint` method.
+/// The logs are written to the database and onto console, using `debugPrint` method.
 ///
 /// The logs are deleted when exceeding the `maxLogEntries` (default 200) property
 /// in the class.
@@ -17,48 +17,61 @@ import 'package:share_plus/share_plus.dart';
 /// Logs can be shared by calling the `shareLogs` method, which will open a share dialog
 /// and generate a csv file.
 class ImmichLogger {
+  static final ImmichLogger _instance = ImmichLogger._internal();
   final maxLogEntries = 200;
-  final Box<ImmichLoggerMessage> _box = Hive.box(immichLoggerBox);
+  final Isar _db = Isar.getInstance()!;
+  final List<LoggerMessage> _msgBuffer = [];
+  Timer? _timer;
 
-  List<ImmichLoggerMessage> get messages =>
-      _box.values.toList().reversed.toList();
+  factory ImmichLogger() => _instance;
 
-  ImmichLogger() {
+  ImmichLogger._internal() {
     _removeOverflowMessages();
-  }
-
-  init() {
     Logger.root.level = Level.INFO;
-    Logger.root.onRecord.listen(_writeLogToHiveBox);
+    Logger.root.onRecord.listen(_writeLogToDatabase);
   }
 
-  _removeOverflowMessages() {
-    if (_box.length > maxLogEntries) {
-      var numberOfEntryToBeDeleted = _box.length - maxLogEntries;
-      for (var i = 0; i < numberOfEntryToBeDeleted; i++) {
-        _box.deleteAt(0);
-      }
+  List<LoggerMessage> get messages {
+    final inDb =
+        _db.loggerMessages.where(sort: Sort.desc).anyId().findAllSync();
+    return _msgBuffer.isEmpty ? inDb : _msgBuffer.reversed.toList() + inDb;
+  }
+
+  void _removeOverflowMessages() {
+    final msgCount = _db.loggerMessages.countSync();
+    if (msgCount > maxLogEntries) {
+      final numberOfEntryToBeDeleted = msgCount - maxLogEntries;
+      _db.loggerMessages.where().limit(numberOfEntryToBeDeleted).deleteAll();
     }
   }
 
-  _writeLogToHiveBox(LogRecord record) {
-    final Box<ImmichLoggerMessage> box = Hive.box(immichLoggerBox);
-    var formattedMessage = record.message;
-
+  void _writeLogToDatabase(LogRecord record) {
     debugPrint('[${record.level.name}] [${record.time}] ${record.message}');
-    box.add(
-      ImmichLoggerMessage(
-        message: formattedMessage,
-        level: record.level.name,
-        createdAt: record.time,
-        context1: record.loggerName,
-        context2: record.stackTrace?.toString(),
-      ),
+    final lm = LoggerMessage(
+      message: record.message,
+      level: record.level.toLogLevel(),
+      createdAt: record.time,
+      context1: record.loggerName,
+      context2: record.stackTrace?.toString(),
     );
+    _msgBuffer.add(lm);
+
+    // delayed batch writing to database: increases performance when logging
+    // messages in quick succession and reduces NAND wear
+    _timer ??= Timer(const Duration(seconds: 5), _flushBufferToDatabase);
+  }
+
+  void _flushBufferToDatabase() {
+    _timer = null;
+    _db.writeTxnSync(() => _db.loggerMessages.putAllSync(_msgBuffer));
+    _msgBuffer.clear();
   }
 
   void clearLogs() {
-    _box.clear();
+    _timer?.cancel();
+    _timer = null;
+    _msgBuffer.clear();
+    _db.writeTxn(() => _db.loggerMessages.clear());
   }
 
   Future<void> shareLogs() async {
@@ -92,5 +105,13 @@ class ImmichLogger {
 
     // Clean up temp file
     await logFile.delete();
+  }
+
+  /// Flush pending log messages to persistent storage
+  void flush() {
+    if (_timer != null) {
+      _timer!.cancel();
+      _flushBufferToDatabase();
+    }
   }
 }

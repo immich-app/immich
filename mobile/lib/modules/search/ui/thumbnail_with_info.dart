@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 
 class ThumbnailWithInfo extends StatelessWidget {
   const ThumbnailWithInfo({
@@ -19,7 +18,6 @@ class ThumbnailWithInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var box = Hive.box(userInfoBox);
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
     var textAndIconColor = isDarkMode ? Colors.grey[100] : Colors.grey[700];
     return GestureDetector(
@@ -51,7 +49,8 @@ class ThumbnailWithInfo extends StatelessWidget {
                           fit: BoxFit.cover,
                           imageUrl: imageUrl!,
                           httpHeaders: {
-                            "Authorization": "Bearer ${box.get(accessTokenKey)}"
+                            "Authorization":
+                                "Bearer ${Store.get(StoreKey.accessToken)}"
                           },
                           errorWidget: (context, url, error) =>
                               const Icon(Icons.image_not_supported_outlined),
