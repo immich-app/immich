@@ -169,7 +169,7 @@ class SearchPage extends HookConsumerWidget {
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                       ).tr(),
                       TextButton(
-                        child: const Text('View all'),
+                        child: const Text('search_page_view_all_button').tr(),
                         onPressed: () => AutoRouter.of(context).push(
                           const CuratedLocationRoute(),
                         ),
@@ -191,7 +191,7 @@ class SearchPage extends HookConsumerWidget {
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                       ).tr(),
                       TextButton(
-                        child: const Text('View all'),
+                        child: const Text('search_page_view_all_button').tr(),
                         onPressed: () => AutoRouter.of(context).push(
                           const CuratedObjectRoute(),
                         ),
