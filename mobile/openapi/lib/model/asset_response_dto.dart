@@ -15,7 +15,9 @@ class AssetResponseDto {
   AssetResponseDto({
     required this.type,
     required this.id,
+    required this.deviceAssetId,
     required this.ownerId,
+    required this.deviceId,
     required this.originalPath,
     required this.resizePath,
     required this.fileCreatedAt,
@@ -36,7 +38,11 @@ class AssetResponseDto {
 
   String id;
 
+  String? deviceAssetId;
+
   String ownerId;
+
+  String? deviceId;
 
   String originalPath;
 
@@ -82,7 +88,9 @@ class AssetResponseDto {
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
      other.type == type &&
      other.id == id &&
+     other.deviceAssetId == deviceAssetId &&
      other.ownerId == ownerId &&
+     other.deviceId == deviceId &&
      other.originalPath == originalPath &&
      other.resizePath == resizePath &&
      other.fileCreatedAt == fileCreatedAt &&
@@ -103,7 +111,9 @@ class AssetResponseDto {
     // ignore: unnecessary_parenthesis
     (type.hashCode) +
     (id.hashCode) +
+    (deviceAssetId == null ? 0 : deviceAssetId!.hashCode) +
     (ownerId.hashCode) +
+    (deviceId == null ? 0 : deviceId!.hashCode) +
     (originalPath.hashCode) +
     (resizePath == null ? 0 : resizePath!.hashCode) +
     (fileCreatedAt.hashCode) +
@@ -120,13 +130,23 @@ class AssetResponseDto {
     (tags.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[type=$type, id=$id, ownerId=$ownerId, originalPath=$originalPath, resizePath=$resizePath, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, updatedAt=$updatedAt, isFavorite=$isFavorite, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags]';
+  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, resizePath=$resizePath, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, updatedAt=$updatedAt, isFavorite=$isFavorite, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'type'] = this.type;
       json[r'id'] = this.id;
+    if (this.deviceAssetId != null) {
+      json[r'deviceAssetId'] = this.deviceAssetId;
+    } else {
+      // json[r'deviceAssetId'] = null;
+    }
       json[r'ownerId'] = this.ownerId;
+    if (this.deviceId != null) {
+      json[r'deviceId'] = this.deviceId;
+    } else {
+      // json[r'deviceId'] = null;
+    }
       json[r'originalPath'] = this.originalPath;
     if (this.resizePath != null) {
       json[r'resizePath'] = this.resizePath;
@@ -193,7 +213,9 @@ class AssetResponseDto {
       return AssetResponseDto(
         type: AssetTypeEnum.fromJson(json[r'type'])!,
         id: mapValueOfType<String>(json, r'id')!,
+        deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId'),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
+        deviceId: mapValueOfType<String>(json, r'deviceId'),
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
         resizePath: mapValueOfType<String>(json, r'resizePath'),
         fileCreatedAt: mapValueOfType<String>(json, r'fileCreatedAt')!,
@@ -259,7 +281,9 @@ class AssetResponseDto {
   static const requiredKeys = <String>{
     'type',
     'id',
+    'deviceAssetId',
     'ownerId',
+    'deviceId',
     'originalPath',
     'resizePath',
     'fileCreatedAt',

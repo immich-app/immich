@@ -2283,6 +2283,48 @@
         ]
       }
     },
+    "/asset/{deviceId}": {
+      "get": {
+        "operationId": "getUserAssetsByDeviceId",
+        "description": "Get all asset of a device that are in the database, ID only.",
+        "parameters": [
+          {
+            "name": "deviceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
     "/asset/assetById/{assetId}": {
       "get": {
         "operationId": "getAssetById",

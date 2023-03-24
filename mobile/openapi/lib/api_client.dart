@@ -228,14 +228,22 @@ class ApiClient {
           return AssetTypeEnumTypeTransformer().decode(value);
         case 'ChangePasswordDto':
           return ChangePasswordDto.fromJson(value);
-        case 'CheckExistenceOfAssetDto':
-          return CheckExistenceOfAssetDto.fromJson(value);
+        case 'CheckDuplicateAssetDto':
+          return CheckDuplicateAssetDto.fromJson(value);
+        case 'CheckDuplicateAssetResponseDto':
+          return CheckDuplicateAssetResponseDto.fromJson(value);
+        case 'CheckExistenceOfAssetByChecksumDto':
+          return CheckExistenceOfAssetByChecksumDto.fromJson(value);
         case 'CheckExistenceOfAssetResponseDto':
           return CheckExistenceOfAssetResponseDto.fromJson(value);
-        case 'CheckExistenceOfAssetsDto':
-          return CheckExistenceOfAssetsDto.fromJson(value);
+        case 'CheckExistenceOfAssetsByChecksumDto':
+          return CheckExistenceOfAssetsByChecksumDto.fromJson(value);
         case 'CheckExistenceOfAssetsResponseDto':
           return CheckExistenceOfAssetsResponseDto.fromJson(value);
+        case 'CheckExistingAssetsDto':
+          return CheckExistingAssetsDto.fromJson(value);
+        case 'CheckExistingAssetsResponseDto':
+          return CheckExistingAssetsResponseDto.fromJson(value);
         case 'CreateAlbumDto':
           return CreateAlbumDto.fromJson(value);
         case 'CreateAlbumShareLinkDto':

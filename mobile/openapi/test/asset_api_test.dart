@@ -24,10 +24,24 @@ void main() {
       // TODO
     });
 
-    // Checks if asset checksums exist on the server
+    // Check duplicated asset before uploading - for Web upload used
     //
-    //Future<CheckExistenceOfAssetsResponseDto> checkIfAssetsExist(CheckExistenceOfAssetsDto checkExistenceOfAssetsDto) async
-    test('test checkIfAssetsExist', () async {
+    //Future<CheckDuplicateAssetResponseDto> checkDuplicateAsset(CheckDuplicateAssetDto checkDuplicateAssetDto, { String key }) async
+    test('test checkDuplicateAsset', () async {
+      // TODO
+    });
+
+    // Checks if multiple assets exist on the server and returns all existing - used by background backup
+    //
+    //Future<CheckExistingAssetsResponseDto> checkExistingAssets(CheckExistingAssetsDto checkExistingAssetsDto) async
+    test('test checkExistingAssets', () async {
+      // TODO
+    });
+
+    // Checks if assets exist by checksums
+    //
+    //Future<CheckExistenceOfAssetsResponseDto> checkIfAssetsExistByChecksum(CheckExistenceOfAssetsByChecksumDto checkExistenceOfAssetsByChecksumDto) async
+    test('test checkIfAssetsExistByChecksum', () async {
       // TODO
     });
 
@@ -126,6 +140,13 @@ void main() {
     //
     //Future<List<CuratedObjectsResponseDto>> getCuratedObjects() async
     test('test getCuratedObjects', () async {
+      // TODO
+    });
+
+    // Get all asset of a device that are in the database, ID only.
+    //
+    //Future<List<Object>> getUserAssetsByDeviceId(String deviceId) async
+    test('test getUserAssetsByDeviceId', () async {
       // TODO
     });
 

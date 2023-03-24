@@ -455,7 +455,19 @@ export interface AssetResponseDto {
      * @type {string}
      * @memberof AssetResponseDto
      */
+    'deviceAssetId': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetResponseDto
+     */
     'ownerId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetResponseDto
+     */
+    'deviceId': string | null;
     /**
      * 
      * @type {string}
@@ -579,19 +591,57 @@ export interface ChangePasswordDto {
 /**
  * 
  * @export
- * @interface CheckExistenceOfAssetDto
+ * @interface CheckDuplicateAssetDto
  */
-export interface CheckExistenceOfAssetDto {
+export interface CheckDuplicateAssetDto {
     /**
      * 
      * @type {string}
-     * @memberof CheckExistenceOfAssetDto
+     * @memberof CheckDuplicateAssetDto
+     */
+    'deviceAssetId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof CheckDuplicateAssetDto
+     */
+    'deviceId': string;
+}
+/**
+ * 
+ * @export
+ * @interface CheckDuplicateAssetResponseDto
+ */
+export interface CheckDuplicateAssetResponseDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof CheckDuplicateAssetResponseDto
+     */
+    'isExist': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof CheckDuplicateAssetResponseDto
+     */
+    'id'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface CheckExistenceOfAssetByChecksumDto
+ */
+export interface CheckExistenceOfAssetByChecksumDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof CheckExistenceOfAssetByChecksumDto
      */
     'id': string;
     /**
      * 
      * @type {string}
-     * @memberof CheckExistenceOfAssetDto
+     * @memberof CheckExistenceOfAssetByChecksumDto
      */
     'checksum': string;
 }
@@ -643,15 +693,15 @@ export type CheckExistenceOfAssetResponseDtoReasonEnum = typeof CheckExistenceOf
 /**
  * 
  * @export
- * @interface CheckExistenceOfAssetsDto
+ * @interface CheckExistenceOfAssetsByChecksumDto
  */
-export interface CheckExistenceOfAssetsDto {
+export interface CheckExistenceOfAssetsByChecksumDto {
     /**
      * 
-     * @type {Array<CheckExistenceOfAssetDto>}
-     * @memberof CheckExistenceOfAssetsDto
+     * @type {Array<CheckExistenceOfAssetByChecksumDto>}
+     * @memberof CheckExistenceOfAssetsByChecksumDto
      */
-    'assets': Array<CheckExistenceOfAssetDto>;
+    'assets': Array<CheckExistenceOfAssetByChecksumDto>;
 }
 /**
  * 
@@ -665,6 +715,38 @@ export interface CheckExistenceOfAssetsResponseDto {
      * @memberof CheckExistenceOfAssetsResponseDto
      */
     'assets': Array<CheckExistenceOfAssetResponseDto>;
+}
+/**
+ * 
+ * @export
+ * @interface CheckExistingAssetsDto
+ */
+export interface CheckExistingAssetsDto {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof CheckExistingAssetsDto
+     */
+    'deviceAssetIds': Array<string>;
+    /**
+     * 
+     * @type {string}
+     * @memberof CheckExistingAssetsDto
+     */
+    'deviceId': string;
+}
+/**
+ * 
+ * @export
+ * @interface CheckExistingAssetsResponseDto
+ */
+export interface CheckExistingAssetsResponseDto {
+    /**
+     * 
+     * @type {Array<object>}
+     * @memberof CheckExistingAssetsResponseDto
+     */
+    'existingIds': Array<object>;
 }
 /**
  * 
@@ -3888,14 +3970,60 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
-         * Checks if asset checksums exist on the server
-         * @param {CheckExistenceOfAssetsDto} checkExistenceOfAssetsDto 
+         * Check duplicated asset before uploading - for Web upload used
+         * @param {CheckDuplicateAssetDto} checkDuplicateAssetDto 
+         * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        checkIfAssetsExist: async (checkExistenceOfAssetsDto: CheckExistenceOfAssetsDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'checkExistenceOfAssetsDto' is not null or undefined
-            assertParamExists('checkIfAssetsExist', 'checkExistenceOfAssetsDto', checkExistenceOfAssetsDto)
+        checkDuplicateAsset: async (checkDuplicateAssetDto: CheckDuplicateAssetDto, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'checkDuplicateAssetDto' is not null or undefined
+            assertParamExists('checkDuplicateAsset', 'checkDuplicateAssetDto', checkDuplicateAssetDto)
+            const localVarPath = `/asset/check`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            // authentication cookie required
+
+            if (key !== undefined) {
+                localVarQueryParameter['key'] = key;
+            }
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(checkDuplicateAssetDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Checks if multiple assets exist on the server and returns all existing - used by background backup
+         * @param {CheckExistingAssetsDto} checkExistingAssetsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        checkExistingAssets: async (checkExistingAssetsDto: CheckExistingAssetsDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'checkExistingAssetsDto' is not null or undefined
+            assertParamExists('checkExistingAssets', 'checkExistingAssetsDto', checkExistingAssetsDto)
             const localVarPath = `/asset/exist`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -3921,7 +4049,48 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(checkExistenceOfAssetsDto, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(checkExistingAssetsDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Checks if assets exist by checksums
+         * @param {CheckExistenceOfAssetsByChecksumDto} checkExistenceOfAssetsByChecksumDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        checkIfAssetsExistByChecksum: async (checkExistenceOfAssetsByChecksumDto: CheckExistenceOfAssetsByChecksumDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'checkExistenceOfAssetsByChecksumDto' is not null or undefined
+            assertParamExists('checkIfAssetsExistByChecksum', 'checkExistenceOfAssetsByChecksumDto', checkExistenceOfAssetsByChecksumDto)
+            const localVarPath = `/asset/existByChecksum`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            // authentication cookie required
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(checkExistenceOfAssetsByChecksumDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -4511,6 +4680,45 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
+         * Get all asset of a device that are in the database, ID only.
+         * @param {string} deviceId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUserAssetsByDeviceId: async (deviceId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'deviceId' is not null or undefined
+            assertParamExists('getUserAssetsByDeviceId', 'deviceId', deviceId)
+            const localVarPath = `/asset/{deviceId}`
+                .replace(`{${"deviceId"}}`, encodeURIComponent(String(deviceId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            // authentication cookie required
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * 
          * @param {RemoveAssetsDto} removeAssetsDto 
          * @param {string} [key] 
@@ -4829,13 +5037,34 @@ export const AssetApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         * Checks if asset checksums exist on the server
-         * @param {CheckExistenceOfAssetsDto} checkExistenceOfAssetsDto 
+         * Check duplicated asset before uploading - for Web upload used
+         * @param {CheckDuplicateAssetDto} checkDuplicateAssetDto 
+         * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async checkIfAssetsExist(checkExistenceOfAssetsDto: CheckExistenceOfAssetsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CheckExistenceOfAssetsResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.checkIfAssetsExist(checkExistenceOfAssetsDto, options);
+        async checkDuplicateAsset(checkDuplicateAssetDto: CheckDuplicateAssetDto, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CheckDuplicateAssetResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.checkDuplicateAsset(checkDuplicateAssetDto, key, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * Checks if multiple assets exist on the server and returns all existing - used by background backup
+         * @param {CheckExistingAssetsDto} checkExistingAssetsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async checkExistingAssets(checkExistingAssetsDto: CheckExistingAssetsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CheckExistingAssetsResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.checkExistingAssets(checkExistingAssetsDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * Checks if assets exist by checksums
+         * @param {CheckExistenceOfAssetsByChecksumDto} checkExistenceOfAssetsByChecksumDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async checkIfAssetsExistByChecksum(checkExistenceOfAssetsByChecksumDto: CheckExistenceOfAssetsByChecksumDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CheckExistenceOfAssetsResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.checkIfAssetsExistByChecksum(checkExistenceOfAssetsByChecksumDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -4983,6 +5212,16 @@ export const AssetApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
+         * Get all asset of a device that are in the database, ID only.
+         * @param {string} deviceId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getUserAssetsByDeviceId(deviceId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<object>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getUserAssetsByDeviceId(deviceId, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
          * 
          * @param {RemoveAssetsDto} removeAssetsDto 
          * @param {string} [key] 
@@ -5069,13 +5308,32 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
             return localVarFp.addAssetsToSharedLink(addAssetsDto, key, options).then((request) => request(axios, basePath));
         },
         /**
-         * Checks if asset checksums exist on the server
-         * @param {CheckExistenceOfAssetsDto} checkExistenceOfAssetsDto 
+         * Check duplicated asset before uploading - for Web upload used
+         * @param {CheckDuplicateAssetDto} checkDuplicateAssetDto 
+         * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        checkIfAssetsExist(checkExistenceOfAssetsDto: CheckExistenceOfAssetsDto, options?: any): AxiosPromise<CheckExistenceOfAssetsResponseDto> {
-            return localVarFp.checkIfAssetsExist(checkExistenceOfAssetsDto, options).then((request) => request(axios, basePath));
+        checkDuplicateAsset(checkDuplicateAssetDto: CheckDuplicateAssetDto, key?: string, options?: any): AxiosPromise<CheckDuplicateAssetResponseDto> {
+            return localVarFp.checkDuplicateAsset(checkDuplicateAssetDto, key, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Checks if multiple assets exist on the server and returns all existing - used by background backup
+         * @param {CheckExistingAssetsDto} checkExistingAssetsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        checkExistingAssets(checkExistingAssetsDto: CheckExistingAssetsDto, options?: any): AxiosPromise<CheckExistingAssetsResponseDto> {
+            return localVarFp.checkExistingAssets(checkExistingAssetsDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Checks if assets exist by checksums
+         * @param {CheckExistenceOfAssetsByChecksumDto} checkExistenceOfAssetsByChecksumDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        checkIfAssetsExistByChecksum(checkExistenceOfAssetsByChecksumDto: CheckExistenceOfAssetsByChecksumDto, options?: any): AxiosPromise<CheckExistenceOfAssetsResponseDto> {
+            return localVarFp.checkIfAssetsExistByChecksum(checkExistenceOfAssetsByChecksumDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5208,6 +5466,15 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
             return localVarFp.getCuratedObjects(options).then((request) => request(axios, basePath));
         },
         /**
+         * Get all asset of a device that are in the database, ID only.
+         * @param {string} deviceId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUserAssetsByDeviceId(deviceId: string, options?: any): AxiosPromise<Array<object>> {
+            return localVarFp.getUserAssetsByDeviceId(deviceId, options).then((request) => request(axios, basePath));
+        },
+        /**
          * 
          * @param {RemoveAssetsDto} removeAssetsDto 
          * @param {string} [key] 
@@ -5291,14 +5558,37 @@ export class AssetApi extends BaseAPI {
     }
 
     /**
-     * Checks if asset checksums exist on the server
-     * @param {CheckExistenceOfAssetsDto} checkExistenceOfAssetsDto 
+     * Check duplicated asset before uploading - for Web upload used
+     * @param {CheckDuplicateAssetDto} checkDuplicateAssetDto 
+     * @param {string} [key] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public checkIfAssetsExist(checkExistenceOfAssetsDto: CheckExistenceOfAssetsDto, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).checkIfAssetsExist(checkExistenceOfAssetsDto, options).then((request) => request(this.axios, this.basePath));
+    public checkDuplicateAsset(checkDuplicateAssetDto: CheckDuplicateAssetDto, key?: string, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).checkDuplicateAsset(checkDuplicateAssetDto, key, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Checks if multiple assets exist on the server and returns all existing - used by background backup
+     * @param {CheckExistingAssetsDto} checkExistingAssetsDto 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public checkExistingAssets(checkExistingAssetsDto: CheckExistingAssetsDto, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).checkExistingAssets(checkExistingAssetsDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Checks if assets exist by checksums
+     * @param {CheckExistenceOfAssetsByChecksumDto} checkExistenceOfAssetsByChecksumDto 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public checkIfAssetsExistByChecksum(checkExistenceOfAssetsByChecksumDto: CheckExistenceOfAssetsByChecksumDto, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).checkIfAssetsExistByChecksum(checkExistenceOfAssetsByChecksumDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5457,6 +5747,17 @@ export class AssetApi extends BaseAPI {
      */
     public getCuratedObjects(options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).getCuratedObjects(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Get all asset of a device that are in the database, ID only.
+     * @param {string} deviceId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public getUserAssetsByDeviceId(deviceId: string, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).getUserAssetsByDeviceId(deviceId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

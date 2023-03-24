@@ -26,8 +26,18 @@ void main() {
       // TODO
     });
 
+    // String deviceAssetId
+    test('to test the property `deviceAssetId`', () async {
+      // TODO
+    });
+
     // String ownerId
     test('to test the property `ownerId`', () async {
+      // TODO
+    });
+
+    // String deviceId
+    test('to test the property `deviceId`', () async {
       // TODO
     });
 

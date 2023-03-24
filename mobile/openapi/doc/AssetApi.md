@@ -10,7 +10,9 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**addAssetsToSharedLink**](AssetApi.md#addassetstosharedlink) | **PATCH** /asset/shared-link/add | 
-[**checkIfAssetsExist**](AssetApi.md#checkifassetsexist) | **POST** /asset/exist | 
+[**checkDuplicateAsset**](AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
+[**checkExistingAssets**](AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
+[**checkIfAssetsExistByChecksum**](AssetApi.md#checkifassetsexistbychecksum) | **POST** /asset/existByChecksum | 
 [**createAssetsSharedLink**](AssetApi.md#createassetssharedlink) | **POST** /asset/shared-link | 
 [**deleteAsset**](AssetApi.md#deleteasset) | **DELETE** /asset | 
 [**downloadFile**](AssetApi.md#downloadfile) | **GET** /asset/download/{assetId} | 
@@ -25,6 +27,7 @@ Method | HTTP request | Description
 [**getAssetThumbnail**](AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{assetId} | 
 [**getCuratedLocations**](AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 [**getCuratedObjects**](AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
+[**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 [**removeAssetsFromSharedLink**](AssetApi.md#removeassetsfromsharedlink) | **PATCH** /asset/shared-link/remove | 
 [**searchAsset**](AssetApi.md#searchasset) | **POST** /asset/search | 
 [**serveFile**](AssetApi.md#servefile) | **GET** /asset/file/{assetId} | 
@@ -87,12 +90,12 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **checkIfAssetsExist**
-> CheckExistenceOfAssetsResponseDto checkIfAssetsExist(checkExistenceOfAssetsDto)
+# **checkDuplicateAsset**
+> CheckDuplicateAssetResponseDto checkDuplicateAsset(checkDuplicateAssetDto, key)
 
 
 
-Checks if asset checksums exist on the server
+Check duplicated asset before uploading - for Web upload used
 
 ### Example
 ```dart
@@ -109,13 +112,14 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
-final checkExistenceOfAssetsDto = CheckExistenceOfAssetsDto(); // CheckExistenceOfAssetsDto | 
+final checkDuplicateAssetDto = CheckDuplicateAssetDto(); // CheckDuplicateAssetDto | 
+final key = key_example; // String | 
 
 try {
-    final result = api_instance.checkIfAssetsExist(checkExistenceOfAssetsDto);
+    final result = api_instance.checkDuplicateAsset(checkDuplicateAssetDto, key);
     print(result);
 } catch (e) {
-    print('Exception when calling AssetApi->checkIfAssetsExist: $e\n');
+    print('Exception when calling AssetApi->checkDuplicateAsset: $e\n');
 }
 ```
 
@@ -123,7 +127,114 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **checkExistenceOfAssetsDto** | [**CheckExistenceOfAssetsDto**](CheckExistenceOfAssetsDto.md)|  | 
+ **checkDuplicateAssetDto** | [**CheckDuplicateAssetDto**](CheckDuplicateAssetDto.md)|  | 
+ **key** | **String**|  | [optional] 
+
+### Return type
+
+[**CheckDuplicateAssetResponseDto**](CheckDuplicateAssetResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **checkExistingAssets**
+> CheckExistingAssetsResponseDto checkExistingAssets(checkExistingAssetsDto)
+
+
+
+Checks if multiple assets exist on the server and returns all existing - used by background backup
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+
+final api_instance = AssetApi();
+final checkExistingAssetsDto = CheckExistingAssetsDto(); // CheckExistingAssetsDto | 
+
+try {
+    final result = api_instance.checkExistingAssets(checkExistingAssetsDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->checkExistingAssets: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **checkExistingAssetsDto** | [**CheckExistingAssetsDto**](CheckExistingAssetsDto.md)|  | 
+
+### Return type
+
+[**CheckExistingAssetsResponseDto**](CheckExistingAssetsResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **checkIfAssetsExistByChecksum**
+> CheckExistenceOfAssetsResponseDto checkIfAssetsExistByChecksum(checkExistenceOfAssetsByChecksumDto)
+
+
+
+Checks if assets exist by checksums
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+
+final api_instance = AssetApi();
+final checkExistenceOfAssetsByChecksumDto = CheckExistenceOfAssetsByChecksumDto(); // CheckExistenceOfAssetsByChecksumDto | 
+
+try {
+    final result = api_instance.checkIfAssetsExistByChecksum(checkExistenceOfAssetsByChecksumDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->checkIfAssetsExistByChecksum: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **checkExistenceOfAssetsByChecksumDto** | [**CheckExistenceOfAssetsByChecksumDto**](CheckExistenceOfAssetsByChecksumDto.md)|  | 
 
 ### Return type
 
@@ -870,6 +981,59 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**List<CuratedObjectsResponseDto>**](CuratedObjectsResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getUserAssetsByDeviceId**
+> List<Object> getUserAssetsByDeviceId(deviceId)
+
+
+
+Get all asset of a device that are in the database, ID only.
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+
+final api_instance = AssetApi();
+final deviceId = deviceId_example; // String | 
+
+try {
+    final result = api_instance.getUserAssetsByDeviceId(deviceId);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->getUserAssetsByDeviceId: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **deviceId** | **String**|  | 
+
+### Return type
+
+[**List<Object>**](Object.md)
 
 ### Authorization
 

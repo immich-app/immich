@@ -86,7 +86,9 @@ Class | Method | HTTP request | Description
 *AlbumApi* | [**removeUserFromAlbum**](doc//AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{albumId}/user/{userId} | 
 *AlbumApi* | [**updateAlbumInfo**](doc//AlbumApi.md#updatealbuminfo) | **PATCH** /album/{albumId} | 
 *AssetApi* | [**addAssetsToSharedLink**](doc//AssetApi.md#addassetstosharedlink) | **PATCH** /asset/shared-link/add | 
-*AssetApi* | [**checkIfAssetsExist**](doc//AssetApi.md#checkifassetsexist) | **POST** /asset/exist | 
+*AssetApi* | [**checkDuplicateAsset**](doc//AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
+*AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
+*AssetApi* | [**checkIfAssetsExistByChecksum**](doc//AssetApi.md#checkifassetsexistbychecksum) | **POST** /asset/existByChecksum | 
 *AssetApi* | [**createAssetsSharedLink**](doc//AssetApi.md#createassetssharedlink) | **POST** /asset/shared-link | 
 *AssetApi* | [**deleteAsset**](doc//AssetApi.md#deleteasset) | **DELETE** /asset | 
 *AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **GET** /asset/download/{assetId} | 
@@ -101,6 +103,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{assetId} | 
 *AssetApi* | [**getCuratedLocations**](doc//AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 *AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
+*AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 *AssetApi* | [**removeAssetsFromSharedLink**](doc//AssetApi.md#removeassetsfromsharedlink) | **PATCH** /asset/shared-link/remove | 
 *AssetApi* | [**searchAsset**](doc//AssetApi.md#searchasset) | **POST** /asset/search | 
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{assetId} | 
@@ -172,10 +175,14 @@ Class | Method | HTTP request | Description
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
  - [ChangePasswordDto](doc//ChangePasswordDto.md)
- - [CheckExistenceOfAssetDto](doc//CheckExistenceOfAssetDto.md)
+ - [CheckDuplicateAssetDto](doc//CheckDuplicateAssetDto.md)
+ - [CheckDuplicateAssetResponseDto](doc//CheckDuplicateAssetResponseDto.md)
+ - [CheckExistenceOfAssetByChecksumDto](doc//CheckExistenceOfAssetByChecksumDto.md)
  - [CheckExistenceOfAssetResponseDto](doc//CheckExistenceOfAssetResponseDto.md)
- - [CheckExistenceOfAssetsDto](doc//CheckExistenceOfAssetsDto.md)
+ - [CheckExistenceOfAssetsByChecksumDto](doc//CheckExistenceOfAssetsByChecksumDto.md)
  - [CheckExistenceOfAssetsResponseDto](doc//CheckExistenceOfAssetsResponseDto.md)
+ - [CheckExistingAssetsDto](doc//CheckExistingAssetsDto.md)
+ - [CheckExistingAssetsResponseDto](doc//CheckExistingAssetsResponseDto.md)
  - [CreateAlbumDto](doc//CreateAlbumDto.md)
  - [CreateAlbumShareLinkDto](doc//CreateAlbumShareLinkDto.md)
  - [CreateAssetsShareLinkDto](doc//CreateAssetsShareLinkDto.md)
