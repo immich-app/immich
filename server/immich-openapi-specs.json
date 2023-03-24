@@ -2379,17 +2379,26 @@
         ]
       }
     },
-    "/asset/exist": {
+    "/asset/check": {
       "post": {
-        "operationId": "checkExistingAssets",
-        "description": "Checks if assets exist by deviceAssetId and deviceId (deprecated)",
-        "parameters": [],
+        "operationId": "checkDuplicateAsset",
+        "description": "Check duplicated asset before uploading - for Web upload used",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CheckExistenceOfAssetsByDeviceAssetIdsDto"
+                "$ref": "#/components/schemas/CheckDuplicateAssetDto"
               }
             }
           }
@@ -2400,7 +2409,47 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CheckExistenceOfAssetsByDeviceAssetIdResponseDto"
+                  "$ref": "#/components/schemas/CheckDuplicateAssetResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
+    "/asset/exist": {
+      "post": {
+        "operationId": "checkExistingAssets",
+        "description": "Checks if multiple assets exist on the server and returns all existing - used by background backup",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckExistingAssetsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckExistingAssetsResponseDto"
                 }
               }
             }
@@ -5099,7 +5148,36 @@
           "id"
         ]
       },
-      "CheckExistenceOfAssetsByDeviceAssetIdsDto": {
+      "CheckDuplicateAssetDto": {
+        "type": "object",
+        "properties": {
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "deviceAssetId",
+          "deviceId"
+        ]
+      },
+      "CheckDuplicateAssetResponseDto": {
+        "type": "object",
+        "properties": {
+          "isExist": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "isExist"
+        ]
+      },
+      "CheckExistingAssetsDto": {
         "type": "object",
         "properties": {
           "deviceAssetIds": {
@@ -5117,7 +5195,7 @@
           "deviceId"
         ]
       },
-      "CheckExistenceOfAssetsByDeviceAssetIdResponseDto": {
+      "CheckExistingAssetsResponseDto": {
         "type": "object",
         "properties": {
           "existingIds": {

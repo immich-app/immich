@@ -13,8 +13,8 @@ import { UpdateAssetDto } from './dto/update-asset.dto';
 import { ITagRepository } from '../tag/tag.repository';
 import { In, IsNull, Not } from 'typeorm';
 import { AssetSearchDto } from './dto/asset-search.dto';
-import { CheckExistenceOfAssetsByDeviceAssetIdsDto } from './dto/check-existence-of-assets.dto';
-import { CheckExistenceOfAssetsByDeviceAssetIdResponseDto } from './response-dto/check-existence-of-assets-response.dto';
+import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
+import { CheckExistingAssetsResponseDto } from './response-dto/check-existence-of-assets-response.dto';
 
 export interface IAssetRepository {
   get(id: string): Promise<AssetEntity | null>;
@@ -37,8 +37,8 @@ export interface IAssetRepository {
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getExistingAssetsByDeviceAssetId(
     ownerId: string,
-    checkDuplicateAssetDto: CheckExistenceOfAssetsByDeviceAssetIdsDto,
-  ): Promise<CheckExistenceOfAssetsByDeviceAssetIdResponseDto>;
+    checkDuplicateAssetDto: CheckExistingAssetsDto,
+  ): Promise<CheckExistingAssetsResponseDto>;
   getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetEntity[]>;
   countByIdAndUser(assetId: string, userId: string): Promise<number>;
 }
@@ -269,8 +269,8 @@ export class AssetRepository implements IAssetRepository {
 
   async getExistingAssetsByDeviceAssetId(
     ownerId: string,
-    checkDuplicateAssetDto: CheckExistenceOfAssetsByDeviceAssetIdsDto,
-  ): Promise<CheckExistenceOfAssetsByDeviceAssetIdResponseDto> {
+    checkDuplicateAssetDto: CheckExistingAssetsDto,
+  ): Promise<CheckExistingAssetsResponseDto> {
     const existingAssets = await this.assetRepository.find({
       select: { deviceAssetId: true },
       where: {
@@ -279,7 +279,7 @@ export class AssetRepository implements IAssetRepository {
         ownerId,
       },
     });
-    return new CheckExistenceOfAssetsByDeviceAssetIdResponseDto(existingAssets.map((asset) => asset.deviceAssetId));
+    return new CheckExistingAssetsResponseDto(existingAssets.map((asset) => asset.deviceAssetId));
   }
 
   /**

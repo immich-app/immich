@@ -53,14 +53,12 @@ import { AssetSearchDto } from './dto/asset-search.dto';
 import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
-import {
-  CheckExistenceOfAssetsByChecksumDto,
-  CheckExistenceOfAssetsByDeviceAssetIdsDto,
-} from './dto/check-existence-of-assets.dto';
-import {
-  CheckExistenceOfAssetsByDeviceAssetIdResponseDto,
-  CheckExistenceOfAssetsResponseDto,
-} from './response-dto/check-existence-of-assets-response.dto';
+import { CheckExistenceOfAssetsByChecksumDto } from './dto/check-existence-of-assets.dto';
+import { CheckExistingAssetsResponseDto } from './response-dto/check-existence-of-assets-response.dto';
+import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
+import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
+import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
+import { CheckExistenceOfAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 
 function asStreamableFile({ stream, type, length }: ImmichReadStream) {
   return new StreamableFile(stream, { type, length });
@@ -295,19 +293,29 @@ export class AssetController {
   }
 
   /**
-   * Checks if assets exist by deviceAssetId and deviceId (deprecated)
+   * Check duplicated asset before uploading - for Web upload used
+   */
+  @Authenticated({ isShared: true })
+  @Post('/check')
+  @HttpCode(200)
+  async checkDuplicateAsset(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) checkDuplicateAssetDto: CheckDuplicateAssetDto,
+  ): Promise<CheckDuplicateAssetResponseDto> {
+    return await this.assetService.checkDuplicatedAsset(authUser, checkDuplicateAssetDto);
+  }
+
+  /**
+   * Checks if multiple assets exist on the server and returns all existing - used by background backup
    */
   @Authenticated()
   @Post('/exist')
   @HttpCode(200)
   async checkExistingAssets(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) checkExistenceOfAssetsByDeviceAssetIdsDto: CheckExistenceOfAssetsByDeviceAssetIdsDto,
-  ): Promise<CheckExistenceOfAssetsByDeviceAssetIdResponseDto> {
-    return await this.assetService.checkExistenceOfAssetsByDeviceAssetId(
-      authUser,
-      checkExistenceOfAssetsByDeviceAssetIdsDto,
-    );
+    @Body(ValidationPipe) checkExistingAssetsDto: CheckExistingAssetsDto,
+  ): Promise<CheckExistingAssetsResponseDto> {
+    return await this.assetService.checkExistenceOfAssetsByDeviceAssetId(authUser, checkExistingAssetsDto);
   }
 
   /**

@@ -44,10 +44,7 @@ import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-buck
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { AssetCore } from './asset.core';
-import {
-  CheckExistenceOfAssetsByChecksumDto,
-  CheckExistenceOfAssetsByDeviceAssetIdsDto,
-} from './dto/check-existence-of-assets.dto';
+
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { ICryptoRepository, IJobRepository } from '@app/domain';
@@ -64,13 +61,18 @@ import { AddAssetsDto } from '../album/dto/add-assets.dto';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
 import path from 'path';
 import { getFileNameWithoutExtension } from '@app/domain';
+
+import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
+import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
+import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
+import { CheckExistenceOfAssetsByChecksumDto } from './dto/check-existence-of-assets.dto';
 import {
   CheckExistenceOfAssetResponseActionType,
   CheckExistenceOfAssetResponseDto,
   CheckExistenceOfAssetResponseReasonType,
-  CheckExistenceOfAssetsByDeviceAssetIdResponseDto,
   CheckExistenceOfAssetsResponseDto,
-} from './response-dto/check-existence-of-assets-response.dto';
+} from './response-dto/check-existing-assets-response.dto';
+import { CheckExistingAssetsResponseDto } from './response-dto/check-existence-of-assets-response.dto';
 
 const fileInfo = promisify(stat);
 
@@ -431,10 +433,27 @@ export class AssetService {
     return this._assetRepository.getDetectedObjectsByUserId(authUser.id);
   }
 
+  async checkDuplicatedAsset(
+    authUser: AuthUserDto,
+    checkDuplicateAssetDto: CheckDuplicateAssetDto,
+  ): Promise<CheckDuplicateAssetResponseDto> {
+    const res = await this.assetRepository.findOne({
+      where: {
+        deviceAssetId: checkDuplicateAssetDto.deviceAssetId,
+        deviceId: checkDuplicateAssetDto.deviceId,
+        ownerId: authUser.id,
+      },
+    });
+
+    const isDuplicated = res ? true : false;
+
+    return new CheckDuplicateAssetResponseDto(isDuplicated, res?.id);
+  }
+
   async checkExistenceOfAssetsByDeviceAssetId(
     authUser: AuthUserDto,
-    checkExistenceOfAssetsByDeviceAssetIdsDto: CheckExistenceOfAssetsByDeviceAssetIdsDto,
-  ): Promise<CheckExistenceOfAssetsByDeviceAssetIdResponseDto> {
+    checkExistenceOfAssetsByDeviceAssetIdsDto: CheckExistingAssetsDto,
+  ): Promise<CheckExistingAssetsResponseDto> {
     return this._assetRepository.getExistingAssetsByDeviceAssetId(
       authUser.id,
       checkExistenceOfAssetsByDeviceAssetIdsDto,

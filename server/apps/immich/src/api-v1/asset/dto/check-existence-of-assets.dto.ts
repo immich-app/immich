@@ -1,15 +1,5 @@
 import { Type } from 'class-transformer';
-import { ArrayNotEmpty, IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
-
-export class CheckExistenceOfAssetsByDeviceAssetIdsDto {
-  @ArrayNotEmpty()
-  @IsString({ each: true })
-  @IsNotEmpty({ each: true })
-  deviceAssetIds!: string[];
-
-  @IsNotEmpty()
-  deviceId!: string;
-}
+import { IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 
 export class CheckExistenceOfAssetByChecksumDto {
   @IsString({ each: true })
