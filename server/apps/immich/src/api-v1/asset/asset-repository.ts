@@ -28,6 +28,7 @@ export interface IAssetRepository {
   getAll(): Promise<AssetEntity[]>;
   getAllVideos(): Promise<AssetEntity[]>;
   getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
+  getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
@@ -35,7 +36,7 @@ export interface IAssetRepository {
   getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum): Promise<AssetCountByTimeBucket[]>;
   getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
-  checkExistingAssets(
+  getExistingAssets(
     ownerId: string,
     checkDuplicateAssetDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto>;
@@ -267,7 +268,7 @@ export class AssetRepository implements IAssetRepository {
     return await this.assetRepository.save(asset);
   }
 
-  async checkExistingAssets(
+  async getExistingAssets(
     ownerId: string,
     checkDuplicateAssetDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
@@ -279,7 +280,29 @@ export class AssetRepository implements IAssetRepository {
         ownerId,
       },
     });
-    return new CheckExistingAssetsResponseDto(existingAssets.map((asset) => asset.deviceAssetId));
+    return new CheckExistingAssetsResponseDto(existingAssets.map((a) => a.deviceAssetId));
+  }
+
+  /**
+   * Get assets by device's Id on the database
+   * @param ownerId
+   * @param deviceId
+   *
+   * @returns Promise<string[]> - Array of assetIds belong to the device
+   */
+  async getAllByDeviceId(ownerId: string, deviceId: string): Promise<(string | null)[]> {
+    const rows = await this.assetRepository.find({
+      where: {
+        ownerId,
+        deviceId,
+        isVisible: true,
+      },
+      select: ['deviceAssetId'],
+    });
+    const res: (string | null)[] = [];
+    rows.forEach((v) => res.push(v.deviceAssetId));
+
+    return res;
   }
 
   /**

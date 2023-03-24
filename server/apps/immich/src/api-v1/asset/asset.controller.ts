@@ -256,6 +256,15 @@ export class AssetController {
   }
 
   /**
+   * Get all asset of a device that are in the database, ID only.
+   */
+  @Authenticated()
+  @Get('/:deviceId')
+  async getUserAssetsByDeviceId(@GetAuthUser() authUser: AuthUserDto, @Param('deviceId') deviceId: string) {
+    return await this.assetService.getUserAssetsByDeviceId(authUser, deviceId);
+  }
+
+  /**
    * Get a single asset's information
    */
   @Authenticated({ isShared: true })

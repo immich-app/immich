@@ -145,6 +145,10 @@ export class AssetService {
     }
   }
 
+  public async getUserAssetsByDeviceId(authUser: AuthUserDto, deviceId: string) {
+    return this._assetRepository.getAllByDeviceId(authUser.id, deviceId);
+  }
+
   public async getAllAssets(authUser: AuthUserDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
     const assets = await this._assetRepository.getAllByUserId(authUser.id, dto);
 
@@ -452,7 +456,7 @@ export class AssetService {
     authUser: AuthUserDto,
     checkExistingAssetsDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
-    return this._assetRepository.checkExistingAssets(authUser.id, checkExistingAssetsDto);
+    return this._assetRepository.getExistingAssets(authUser.id, checkExistingAssetsDto);
   }
 
   async checkExistenceOfAssetsByChecksum(
