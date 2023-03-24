@@ -10,9 +10,9 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**addAssetsToSharedLink**](AssetApi.md#addassetstosharedlink) | **PATCH** /asset/shared-link/add | 
+[**bulkUploadCheck**](AssetApi.md#bulkuploadcheck) | **POST** /asset/bulk-upload-check | 
 [**checkDuplicateAsset**](AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 [**checkExistingAssets**](AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
-[**checkIfAssetsExistByChecksum**](AssetApi.md#checkifassetsexistbychecksum) | **POST** /asset/existByChecksum | 
 [**createAssetsSharedLink**](AssetApi.md#createassetssharedlink) | **POST** /asset/shared-link | 
 [**deleteAsset**](AssetApi.md#deleteasset) | **DELETE** /asset | 
 [**downloadFile**](AssetApi.md#downloadfile) | **GET** /asset/download/{assetId} | 
@@ -78,6 +78,59 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**SharedLinkResponseDto**](SharedLinkResponseDto.md)
+
+### Authorization
+
+[bearer](../README.md#bearer), [cookie](../README.md#cookie)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **bulkUploadCheck**
+> AssetBulkUploadCheckResponseDto bulkUploadCheck(assetBulkUploadCheckDto)
+
+
+
+Checks if assets exist by checksums
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+
+final api_instance = AssetApi();
+final assetBulkUploadCheckDto = AssetBulkUploadCheckDto(); // AssetBulkUploadCheckDto | 
+
+try {
+    final result = api_instance.bulkUploadCheck(assetBulkUploadCheckDto);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->bulkUploadCheck: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **assetBulkUploadCheckDto** | [**AssetBulkUploadCheckDto**](AssetBulkUploadCheckDto.md)|  | 
+
+### Return type
+
+[**AssetBulkUploadCheckResponseDto**](AssetBulkUploadCheckResponseDto.md)
 
 ### Authorization
 
@@ -186,59 +239,6 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**CheckExistingAssetsResponseDto**](CheckExistingAssetsResponseDto.md)
-
-### Authorization
-
-[bearer](../README.md#bearer), [cookie](../README.md#cookie)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **checkIfAssetsExistByChecksum**
-> CheckExistenceOfAssetsResponseDto checkIfAssetsExistByChecksum(checkExistenceOfAssetsByChecksumDto)
-
-
-
-Checks if assets exist by checksums
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-
-final api_instance = AssetApi();
-final checkExistenceOfAssetsByChecksumDto = CheckExistenceOfAssetsByChecksumDto(); // CheckExistenceOfAssetsByChecksumDto | 
-
-try {
-    final result = api_instance.checkIfAssetsExistByChecksum(checkExistenceOfAssetsByChecksumDto);
-    print(result);
-} catch (e) {
-    print('Exception when calling AssetApi->checkIfAssetsExistByChecksum: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **checkExistenceOfAssetsByChecksumDto** | [**CheckExistenceOfAssetsByChecksumDto**](CheckExistenceOfAssetsByChecksumDto.md)|  | 
-
-### Return type
-
-[**CheckExistenceOfAssetsResponseDto**](CheckExistenceOfAssetsResponseDto.md)
 
 ### Authorization
 

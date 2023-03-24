@@ -24,6 +24,13 @@ void main() {
       // TODO
     });
 
+    // Checks if assets exist by checksums
+    //
+    //Future<AssetBulkUploadCheckResponseDto> bulkUploadCheck(AssetBulkUploadCheckDto assetBulkUploadCheckDto) async
+    test('test bulkUploadCheck', () async {
+      // TODO
+    });
+
     // Check duplicated asset before uploading - for Web upload used
     //
     //Future<CheckDuplicateAssetResponseDto> checkDuplicateAsset(CheckDuplicateAssetDto checkDuplicateAssetDto, { String key }) async
@@ -35,13 +42,6 @@ void main() {
     //
     //Future<CheckExistingAssetsResponseDto> checkExistingAssets(CheckExistingAssetsDto checkExistingAssetsDto) async
     test('test checkExistingAssets', () async {
-      // TODO
-    });
-
-    // Checks if assets exist by checksums
-    //
-    //Future<CheckExistenceOfAssetsResponseDto> checkIfAssetsExistByChecksum(CheckExistenceOfAssetsByChecksumDto checkExistenceOfAssetsByChecksumDto) async
-    test('test checkIfAssetsExistByChecksum', () async {
       // TODO
     });
 

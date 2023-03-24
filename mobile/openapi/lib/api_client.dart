@@ -214,6 +214,14 @@ class ApiClient {
           return AlbumResponseDto.fromJson(value);
         case 'AllJobStatusResponseDto':
           return AllJobStatusResponseDto.fromJson(value);
+        case 'AssetBulkUploadCheckDto':
+          return AssetBulkUploadCheckDto.fromJson(value);
+        case 'AssetBulkUploadCheckItem':
+          return AssetBulkUploadCheckItem.fromJson(value);
+        case 'AssetBulkUploadCheckResponseDto':
+          return AssetBulkUploadCheckResponseDto.fromJson(value);
+        case 'AssetBulkUploadCheckResult':
+          return AssetBulkUploadCheckResult.fromJson(value);
         case 'AssetCountByTimeBucket':
           return AssetCountByTimeBucket.fromJson(value);
         case 'AssetCountByTimeBucketResponseDto':
@@ -232,14 +240,6 @@ class ApiClient {
           return CheckDuplicateAssetDto.fromJson(value);
         case 'CheckDuplicateAssetResponseDto':
           return CheckDuplicateAssetResponseDto.fromJson(value);
-        case 'CheckExistenceOfAssetByChecksumDto':
-          return CheckExistenceOfAssetByChecksumDto.fromJson(value);
-        case 'CheckExistenceOfAssetResponseDto':
-          return CheckExistenceOfAssetResponseDto.fromJson(value);
-        case 'CheckExistenceOfAssetsByChecksumDto':
-          return CheckExistenceOfAssetsByChecksumDto.fromJson(value);
-        case 'CheckExistenceOfAssetsResponseDto':
-          return CheckExistenceOfAssetsResponseDto.fromJson(value);
         case 'CheckExistingAssetsDto':
           return CheckExistingAssetsDto.fromJson(value);
         case 'CheckExistingAssetsResponseDto':

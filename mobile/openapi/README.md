@@ -86,9 +86,9 @@ Class | Method | HTTP request | Description
 *AlbumApi* | [**removeUserFromAlbum**](doc//AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{albumId}/user/{userId} | 
 *AlbumApi* | [**updateAlbumInfo**](doc//AlbumApi.md#updatealbuminfo) | **PATCH** /album/{albumId} | 
 *AssetApi* | [**addAssetsToSharedLink**](doc//AssetApi.md#addassetstosharedlink) | **PATCH** /asset/shared-link/add | 
+*AssetApi* | [**bulkUploadCheck**](doc//AssetApi.md#bulkuploadcheck) | **POST** /asset/bulk-upload-check | 
 *AssetApi* | [**checkDuplicateAsset**](doc//AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
-*AssetApi* | [**checkIfAssetsExistByChecksum**](doc//AssetApi.md#checkifassetsexistbychecksum) | **POST** /asset/existByChecksum | 
 *AssetApi* | [**createAssetsSharedLink**](doc//AssetApi.md#createassetssharedlink) | **POST** /asset/shared-link | 
 *AssetApi* | [**deleteAsset**](doc//AssetApi.md#deleteasset) | **DELETE** /asset | 
 *AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **GET** /asset/download/{assetId} | 
@@ -168,6 +168,10 @@ Class | Method | HTTP request | Description
  - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
  - [AllJobStatusResponseDto](doc//AllJobStatusResponseDto.md)
+ - [AssetBulkUploadCheckDto](doc//AssetBulkUploadCheckDto.md)
+ - [AssetBulkUploadCheckItem](doc//AssetBulkUploadCheckItem.md)
+ - [AssetBulkUploadCheckResponseDto](doc//AssetBulkUploadCheckResponseDto.md)
+ - [AssetBulkUploadCheckResult](doc//AssetBulkUploadCheckResult.md)
  - [AssetCountByTimeBucket](doc//AssetCountByTimeBucket.md)
  - [AssetCountByTimeBucketResponseDto](doc//AssetCountByTimeBucketResponseDto.md)
  - [AssetCountByUserIdResponseDto](doc//AssetCountByUserIdResponseDto.md)
@@ -177,10 +181,6 @@ Class | Method | HTTP request | Description
  - [ChangePasswordDto](doc//ChangePasswordDto.md)
  - [CheckDuplicateAssetDto](doc//CheckDuplicateAssetDto.md)
  - [CheckDuplicateAssetResponseDto](doc//CheckDuplicateAssetResponseDto.md)
- - [CheckExistenceOfAssetByChecksumDto](doc//CheckExistenceOfAssetByChecksumDto.md)
- - [CheckExistenceOfAssetResponseDto](doc//CheckExistenceOfAssetResponseDto.md)
- - [CheckExistenceOfAssetsByChecksumDto](doc//CheckExistenceOfAssetsByChecksumDto.md)
- - [CheckExistenceOfAssetsResponseDto](doc//CheckExistenceOfAssetsResponseDto.md)
  - [CheckExistingAssetsDto](doc//CheckExistingAssetsDto.md)
  - [CheckExistingAssetsResponseDto](doc//CheckExistingAssetsResponseDto.md)
  - [CreateAlbumDto](doc//CreateAlbumDto.md)

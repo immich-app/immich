@@ -341,6 +341,96 @@ export interface AllJobStatusResponseDto {
 /**
  * 
  * @export
+ * @interface AssetBulkUploadCheckDto
+ */
+export interface AssetBulkUploadCheckDto {
+    /**
+     * 
+     * @type {Array<AssetBulkUploadCheckItem>}
+     * @memberof AssetBulkUploadCheckDto
+     */
+    'assets': Array<AssetBulkUploadCheckItem>;
+}
+/**
+ * 
+ * @export
+ * @interface AssetBulkUploadCheckItem
+ */
+export interface AssetBulkUploadCheckItem {
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetBulkUploadCheckItem
+     */
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetBulkUploadCheckItem
+     */
+    'checksum': string;
+}
+/**
+ * 
+ * @export
+ * @interface AssetBulkUploadCheckResponseDto
+ */
+export interface AssetBulkUploadCheckResponseDto {
+    /**
+     * 
+     * @type {Array<AssetBulkUploadCheckResult>}
+     * @memberof AssetBulkUploadCheckResponseDto
+     */
+    'results': Array<AssetBulkUploadCheckResult>;
+}
+/**
+ * 
+ * @export
+ * @interface AssetBulkUploadCheckResult
+ */
+export interface AssetBulkUploadCheckResult {
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetBulkUploadCheckResult
+     */
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetBulkUploadCheckResult
+     */
+    'action': AssetBulkUploadCheckResultActionEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetBulkUploadCheckResult
+     */
+    'reason'?: AssetBulkUploadCheckResultReasonEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetBulkUploadCheckResult
+     */
+    'assetId'?: string;
+}
+
+export const AssetBulkUploadCheckResultActionEnum = {
+    Accept: 'accept',
+    Reject: 'reject'
+} as const;
+
+export type AssetBulkUploadCheckResultActionEnum = typeof AssetBulkUploadCheckResultActionEnum[keyof typeof AssetBulkUploadCheckResultActionEnum];
+export const AssetBulkUploadCheckResultReasonEnum = {
+    Duplicate: 'duplicate',
+    UnsupportedFormat: 'unsupported-format'
+} as const;
+
+export type AssetBulkUploadCheckResultReasonEnum = typeof AssetBulkUploadCheckResultReasonEnum[keyof typeof AssetBulkUploadCheckResultReasonEnum];
+
+/**
+ * 
+ * @export
  * @interface AssetCountByTimeBucket
  */
 export interface AssetCountByTimeBucket {
@@ -625,96 +715,6 @@ export interface CheckDuplicateAssetResponseDto {
      * @memberof CheckDuplicateAssetResponseDto
      */
     'id'?: string;
-}
-/**
- * 
- * @export
- * @interface CheckExistenceOfAssetByChecksumDto
- */
-export interface CheckExistenceOfAssetByChecksumDto {
-    /**
-     * 
-     * @type {string}
-     * @memberof CheckExistenceOfAssetByChecksumDto
-     */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CheckExistenceOfAssetByChecksumDto
-     */
-    'checksum': string;
-}
-/**
- * 
- * @export
- * @interface CheckExistenceOfAssetResponseDto
- */
-export interface CheckExistenceOfAssetResponseDto {
-    /**
-     * 
-     * @type {string}
-     * @memberof CheckExistenceOfAssetResponseDto
-     */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CheckExistenceOfAssetResponseDto
-     */
-    'clientId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof CheckExistenceOfAssetResponseDto
-     */
-    'action': CheckExistenceOfAssetResponseDtoActionEnum;
-    /**
-     * 
-     * @type {string}
-     * @memberof CheckExistenceOfAssetResponseDto
-     */
-    'reason'?: CheckExistenceOfAssetResponseDtoReasonEnum;
-}
-
-export const CheckExistenceOfAssetResponseDtoActionEnum = {
-    Accept: 'Accept',
-    Reject: 'Reject'
-} as const;
-
-export type CheckExistenceOfAssetResponseDtoActionEnum = typeof CheckExistenceOfAssetResponseDtoActionEnum[keyof typeof CheckExistenceOfAssetResponseDtoActionEnum];
-export const CheckExistenceOfAssetResponseDtoReasonEnum = {
-    Duplicate: 'Duplicate',
-    Empty: ''
-} as const;
-
-export type CheckExistenceOfAssetResponseDtoReasonEnum = typeof CheckExistenceOfAssetResponseDtoReasonEnum[keyof typeof CheckExistenceOfAssetResponseDtoReasonEnum];
-
-/**
- * 
- * @export
- * @interface CheckExistenceOfAssetsByChecksumDto
- */
-export interface CheckExistenceOfAssetsByChecksumDto {
-    /**
-     * 
-     * @type {Array<CheckExistenceOfAssetByChecksumDto>}
-     * @memberof CheckExistenceOfAssetsByChecksumDto
-     */
-    'assets': Array<CheckExistenceOfAssetByChecksumDto>;
-}
-/**
- * 
- * @export
- * @interface CheckExistenceOfAssetsResponseDto
- */
-export interface CheckExistenceOfAssetsResponseDto {
-    /**
-     * 
-     * @type {Array<CheckExistenceOfAssetResponseDto>}
-     * @memberof CheckExistenceOfAssetsResponseDto
-     */
-    'assets': Array<CheckExistenceOfAssetResponseDto>;
 }
 /**
  * 
@@ -3970,6 +3970,47 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
+         * Checks if assets exist by checksums
+         * @param {AssetBulkUploadCheckDto} assetBulkUploadCheckDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        bulkUploadCheck: async (assetBulkUploadCheckDto: AssetBulkUploadCheckDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assetBulkUploadCheckDto' is not null or undefined
+            assertParamExists('bulkUploadCheck', 'assetBulkUploadCheckDto', assetBulkUploadCheckDto)
+            const localVarPath = `/asset/bulk-upload-check`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            // authentication cookie required
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(assetBulkUploadCheckDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Check duplicated asset before uploading - for Web upload used
          * @param {CheckDuplicateAssetDto} checkDuplicateAssetDto 
          * @param {string} [key] 
@@ -4050,47 +4091,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(checkExistingAssetsDto, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Checks if assets exist by checksums
-         * @param {CheckExistenceOfAssetsByChecksumDto} checkExistenceOfAssetsByChecksumDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        checkIfAssetsExistByChecksum: async (checkExistenceOfAssetsByChecksumDto: CheckExistenceOfAssetsByChecksumDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'checkExistenceOfAssetsByChecksumDto' is not null or undefined
-            assertParamExists('checkIfAssetsExistByChecksum', 'checkExistenceOfAssetsByChecksumDto', checkExistenceOfAssetsByChecksumDto)
-            const localVarPath = `/asset/existByChecksum`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-            // authentication cookie required
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(checkExistenceOfAssetsByChecksumDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -5037,6 +5037,16 @@ export const AssetApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
+         * Checks if assets exist by checksums
+         * @param {AssetBulkUploadCheckDto} assetBulkUploadCheckDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async bulkUploadCheck(assetBulkUploadCheckDto: AssetBulkUploadCheckDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetBulkUploadCheckResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.bulkUploadCheck(assetBulkUploadCheckDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
          * Check duplicated asset before uploading - for Web upload used
          * @param {CheckDuplicateAssetDto} checkDuplicateAssetDto 
          * @param {string} [key] 
@@ -5055,16 +5065,6 @@ export const AssetApiFp = function(configuration?: Configuration) {
          */
         async checkExistingAssets(checkExistingAssetsDto: CheckExistingAssetsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CheckExistingAssetsResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.checkExistingAssets(checkExistingAssetsDto, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * Checks if assets exist by checksums
-         * @param {CheckExistenceOfAssetsByChecksumDto} checkExistenceOfAssetsByChecksumDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async checkIfAssetsExistByChecksum(checkExistenceOfAssetsByChecksumDto: CheckExistenceOfAssetsByChecksumDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CheckExistenceOfAssetsResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.checkIfAssetsExistByChecksum(checkExistenceOfAssetsByChecksumDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -5308,6 +5308,15 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
             return localVarFp.addAssetsToSharedLink(addAssetsDto, key, options).then((request) => request(axios, basePath));
         },
         /**
+         * Checks if assets exist by checksums
+         * @param {AssetBulkUploadCheckDto} assetBulkUploadCheckDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        bulkUploadCheck(assetBulkUploadCheckDto: AssetBulkUploadCheckDto, options?: any): AxiosPromise<AssetBulkUploadCheckResponseDto> {
+            return localVarFp.bulkUploadCheck(assetBulkUploadCheckDto, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Check duplicated asset before uploading - for Web upload used
          * @param {CheckDuplicateAssetDto} checkDuplicateAssetDto 
          * @param {string} [key] 
@@ -5325,15 +5334,6 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          */
         checkExistingAssets(checkExistingAssetsDto: CheckExistingAssetsDto, options?: any): AxiosPromise<CheckExistingAssetsResponseDto> {
             return localVarFp.checkExistingAssets(checkExistingAssetsDto, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Checks if assets exist by checksums
-         * @param {CheckExistenceOfAssetsByChecksumDto} checkExistenceOfAssetsByChecksumDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        checkIfAssetsExistByChecksum(checkExistenceOfAssetsByChecksumDto: CheckExistenceOfAssetsByChecksumDto, options?: any): AxiosPromise<CheckExistenceOfAssetsResponseDto> {
-            return localVarFp.checkIfAssetsExistByChecksum(checkExistenceOfAssetsByChecksumDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5558,6 +5558,17 @@ export class AssetApi extends BaseAPI {
     }
 
     /**
+     * Checks if assets exist by checksums
+     * @param {AssetBulkUploadCheckDto} assetBulkUploadCheckDto 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public bulkUploadCheck(assetBulkUploadCheckDto: AssetBulkUploadCheckDto, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).bulkUploadCheck(assetBulkUploadCheckDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * Check duplicated asset before uploading - for Web upload used
      * @param {CheckDuplicateAssetDto} checkDuplicateAssetDto 
      * @param {string} [key] 
@@ -5578,17 +5589,6 @@ export class AssetApi extends BaseAPI {
      */
     public checkExistingAssets(checkExistingAssetsDto: CheckExistingAssetsDto, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).checkExistingAssets(checkExistingAssetsDto, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Checks if assets exist by checksums
-     * @param {CheckExistenceOfAssetsByChecksumDto} checkExistenceOfAssetsByChecksumDto 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AssetApi
-     */
-    public checkIfAssetsExistByChecksum(checkExistenceOfAssetsByChecksumDto: CheckExistenceOfAssetsByChecksumDto, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).checkIfAssetsExistByChecksum(checkExistenceOfAssetsByChecksumDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
