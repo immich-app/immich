@@ -30,7 +30,7 @@
 		}
 
 		const params = new URLSearchParams({
-			q: value,
+			q: searchValue,
 			clip: clipSearch
 		});
 
@@ -104,14 +104,17 @@
 					>
 				</p>
 			</div>
-			<div class="px-5 pt-5 text-xs flex justify-between">
-				<p>RECENT SEARCHES</p>
-				<button
-					type="button"
-					class="text-immich-primary dark:text-immich-dark-primary font-semibold p-2 hover:bg-immich-primary/25 rounded-lg"
-					on:click={clearSearchTerm}>Clear all</button
-				>
-			</div>
+
+			{#if $savedSearchTerms.length > 0}
+				<div class="px-5 pt-5 text-xs flex justify-between">
+					<p>RECENT SEARCHES</p>
+					<button
+						type="button"
+						class="text-immich-primary dark:text-immich-dark-primary font-semibold p-2 hover:bg-immich-primary/25 rounded-lg"
+						on:click={clearSearchTerm}>Clear all</button
+					>
+				</div>
+			{/if}
 
 			{#each $savedSearchTerms as savedSearchTerm, i (i)}
 				<button
