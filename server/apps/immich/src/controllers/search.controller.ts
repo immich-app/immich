@@ -12,26 +12,26 @@ import { GetAuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
 
 @ApiTags('Search')
-@Authenticated()
 @Controller('search')
+@Authenticated()
 export class SearchController {
-  constructor(private readonly searchService: SearchService) {}
+  constructor(private service: SearchService) {}
 
   @Get()
-  async search(
+  search(
     @GetAuthUser() authUser: AuthUserDto,
     @Query(new ValidationPipe({ transform: true })) dto: SearchDto,
   ): Promise<SearchResponseDto> {
-    return this.searchService.search(authUser, dto);
+    return this.service.search(authUser, dto);
   }
 
   @Get('config')
   getSearchConfig(): SearchConfigResponseDto {
-    return this.searchService.getConfig();
+    return this.service.getConfig();
   }
 
   @Get('explore')
   getExploreData(@GetAuthUser() authUser: AuthUserDto): Promise<SearchExploreResponseDto[]> {
-    return this.searchService.getExploreData(authUser) as Promise<SearchExploreResponseDto[]>;
+    return this.service.getExploreData(authUser) as Promise<SearchExploreResponseDto[]>;
   }
 }

@@ -1,5 +1,5 @@
-import { assertMachineLearningEnabled } from '@app/common';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
+import { assertMachineLearningEnabled } from '../domain.constant';
 import { JobCommandDto } from './dto';
 import { JobCommand, JobName, QueueName } from './job.constants';
 import { IJobRepository } from './job.repository';

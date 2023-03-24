@@ -12,7 +12,7 @@ import { Authenticated } from '../decorators/authenticated.decorator';
 @ApiTags('Server Info')
 @Controller('server-info')
 export class ServerInfoController {
-  constructor(private readonly service: ServerInfoService) {}
+  constructor(private service: ServerInfoService) {}
 
   @Get()
   getServerInfo(): Promise<ServerInfoResponseDto> {

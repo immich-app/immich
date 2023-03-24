@@ -3,19 +3,19 @@ import { Body, Controller, Get, Param, Put, ValidationPipe } from '@nestjs/commo
 import { ApiTags } from '@nestjs/swagger';
 import { Authenticated } from '../decorators/authenticated.decorator';
 
-@Authenticated({ admin: true })
 @ApiTags('Job')
 @Controller('jobs')
+@Authenticated({ admin: true })
 export class JobController {
-  constructor(private readonly jobService: JobService) {}
+  constructor(private service: JobService) {}
 
   @Get()
   getAllJobsStatus(): Promise<AllJobStatusResponseDto> {
-    return this.jobService.getAllJobsStatus();
+    return this.service.getAllJobsStatus();
   }
 
   @Put('/:jobId')
   sendJobCommand(@Param(ValidationPipe) { jobId }: JobIdDto, @Body(ValidationPipe) dto: JobCommandDto): Promise<void> {
-    return this.jobService.handleCommand(jobId, dto);
+    return this.service.handleCommand(jobId, dto);
   }
 }

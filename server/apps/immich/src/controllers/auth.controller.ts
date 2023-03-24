@@ -22,7 +22,7 @@ import { Authenticated } from '../decorators/authenticated.decorator';
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly service: AuthService) {}
 
   @Post('login')
   async login(
@@ -31,8 +31,8 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<LoginResponseDto> {
-    const { response, cookie } = await this.authService.login(loginCredential, clientIp, req.secure);
-    res.setHeader('Set-Cookie', cookie);
+    const { response, cookie } = await this.service.login(loginCredential, clientIp, req.secure);
+    res.header('Set-Cookie', cookie);
     return response;
   }
 
@@ -41,25 +41,24 @@ export class AuthController {
   adminSignUp(
     @Body(new ValidationPipe({ transform: true })) signUpCredential: SignUpDto,
   ): Promise<AdminSignupResponseDto> {
-    return this.authService.adminSignUp(signUpCredential);
+    return this.service.adminSignUp(signUpCredential);
   }
 
   @Authenticated()
   @Post('validateToken')
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  validateAccessToken(@GetAuthUser() authUser: AuthUserDto): ValidateAccessTokenResponseDto {
+  validateAccessToken(): ValidateAccessTokenResponseDto {
     return { authStatus: true };
   }
 
   @Authenticated()
   @Post('change-password')
-  async changePassword(@GetAuthUser() authUser: AuthUserDto, @Body() dto: ChangePasswordDto): Promise<UserResponseDto> {
-    return this.authService.changePassword(authUser, dto);
+  changePassword(@GetAuthUser() authUser: AuthUserDto, @Body() dto: ChangePasswordDto): Promise<UserResponseDto> {
+    return this.service.changePassword(authUser, dto);
   }
 
   @Authenticated()
   @Post('logout')
-  async logout(
+  logout(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
     @GetAuthUser() authUser: AuthUserDto,
@@ -69,6 +68,6 @@ export class AuthController {
     res.clearCookie(IMMICH_ACCESS_COOKIE);
     res.clearCookie(IMMICH_AUTH_TYPE_COOKIE);
 
-    return this.authService.logout(authUser, authType);
+    return this.service.logout(authUser, authType);
   }
 }
