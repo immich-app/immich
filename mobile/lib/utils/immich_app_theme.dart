@@ -76,15 +76,14 @@ ThemeData immichLightTheme = ThemeData(
       color: Colors.indigo,
     ),
     titleSmall: TextStyle(
-      fontSize: 26.0,
-      fontWeight: FontWeight.bold,
+      fontSize: 14.0,
     ),
     titleMedium: TextStyle(
       fontSize: 16.0,
       fontWeight: FontWeight.bold,
     ),
     titleLarge: TextStyle(
-      fontSize: 12.0,
+      fontSize: 26.0,
       fontWeight: FontWeight.bold,
     ),
   ),
@@ -172,15 +171,14 @@ ThemeData immichDarkTheme = ThemeData(
       color: immichDarkThemePrimaryColor,
     ),
     titleSmall: const TextStyle(
-      fontSize: 26.0,
-      fontWeight: FontWeight.bold,
+      fontSize: 14.0,
     ),
     titleMedium: const TextStyle(
       fontSize: 16.0,
       fontWeight: FontWeight.bold,
     ),
     titleLarge: const TextStyle(
-      fontSize: 12.0,
+      fontSize: 26.0,
       fontWeight: FontWeight.bold,
     ),
 

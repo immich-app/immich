@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid_view.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/providers/search_result_page.provider.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
@@ -113,11 +114,6 @@ class SearchResultPage extends HookConsumerWidget {
       var searchResultRenderList = ref.watch(searchRenderListProvider);
       var allSearchAssets = ref.watch(searchResultPageProvider).searchResult;
 
-      var settings = ref.watch(appSettingsServiceProvider);
-      final assetsPerRow = settings.getSetting(AppSettingsEnum.tilesPerRow);
-      final showStorageIndicator =
-          settings.getSetting(AppSettingsEnum.storageIndicator);
-
       if (searchResultPageState.isError) {
         return Padding(
           padding: const EdgeInsets.all(12),
@@ -129,22 +125,10 @@ class SearchResultPage extends HookConsumerWidget {
         return const Center(child: ImmichLoadingIndicator());
       }
 
+
       if (searchResultPageState.isSuccess) {
-        return searchResultRenderList.when(
-          data: (result) {
-            return ImmichAssetGrid(
-              allAssets: allSearchAssets,
-              renderList: result,
-              assetsPerRow: assetsPerRow,
-              showStorageIndicator: showStorageIndicator,
-            );
-          },
-          error: (err, stack) {
-            return Text("$err");
-          },
-          loading: () {
-            return const CircularProgressIndicator();
-          },
+        return ImmichAssetGrid(
+            assets: allSearchAssets,
         );
       }
 

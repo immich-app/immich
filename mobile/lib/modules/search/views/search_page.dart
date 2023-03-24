@@ -220,7 +220,7 @@ class SearchPage extends HookConsumerWidget {
                   child: Divider(),
                 ),
                 ListTile(
-                  title: Text('Motion photos'),
+                  title: Text('Motion Photos'),
                   leading: Icon(Icons.motion_photos_on_outlined),
                   //onTap: () => AutoRouter.of(context).push(
                     //const AllMotionVideosRoute(),
