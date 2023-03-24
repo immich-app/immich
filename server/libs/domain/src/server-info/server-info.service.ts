@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { APP_UPLOAD_LOCATION, serverVersion } from '../domain.constant';
+import { APP_MEDIA_LOCATION, serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
 import { IStorageRepository } from '../storage';
 import { IUserRepository, UserStatsQueryResponse } from '../user';
@@ -13,7 +13,7 @@ export class ServerInfoService {
   ) {}
 
   async getInfo(): Promise<ServerInfoResponseDto> {
-    const diskInfo = await this.storageRepository.checkDiskUsage(APP_UPLOAD_LOCATION);
+    const diskInfo = await this.storageRepository.checkDiskUsage(APP_MEDIA_LOCATION);
 
     const usagePercentage = (((diskInfo.total - diskInfo.free) / diskInfo.total) * 100).toFixed(2);
 

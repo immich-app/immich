@@ -85,7 +85,7 @@ describe('profileImageUploadOption', () => {
       destination(mock.userRequest, mock.file, callback);
 
       expect(mkdirSync).not.toHaveBeenCalled();
-      expect(callback).toHaveBeenCalledWith(null, './upload/test-user/profile');
+      expect(callback).toHaveBeenCalledWith(null, 'upload/profile/test-user');
     });
   });
 

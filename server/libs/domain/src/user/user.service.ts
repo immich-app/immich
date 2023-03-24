@@ -2,14 +2,13 @@ import { UserEntity } from '@app/infra/db/entities';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { ReadStream } from 'fs';
-import { join } from 'path';
 import { IAlbumRepository } from '../album/album.repository';
 import { IKeyRepository } from '../api-key/api-key.repository';
 import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto/crypto.repository';
-import { APP_UPLOAD_LOCATION } from '../domain.constant';
 import { IJobRepository, IUserDeletionJob, JobName } from '../job';
+import { StorageCore, StorageFolder } from '../storage';
 import { IStorageRepository } from '../storage/storage.repository';
 import { IUserTokenRepository } from '../user-token/user-token.repository';
 import { IUserRepository } from '../user/user.repository';
@@ -28,6 +27,8 @@ import { UserCore } from './user.core';
 export class UserService {
   private logger = new Logger(UserService.name);
   private userCore: UserCore;
+  private storageCore = new StorageCore();
+
   constructor(
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
@@ -162,9 +163,18 @@ export class UserService {
     this.logger.log(`Deleting user: ${user.id}`);
 
     try {
-      const userAssetDir = join(APP_UPLOAD_LOCATION, user.id);
-      this.logger.warn(`Removing user from filesystem: ${userAssetDir}`);
-      await this.storageRepository.unlinkDir(userAssetDir, { recursive: true, force: true });
+      const folders = [
+        this.storageCore.getFolderLocation(StorageFolder.LIBRARY, user.id),
+        this.storageCore.getFolderLocation(StorageFolder.UPLOAD, user.id),
+        this.storageCore.getFolderLocation(StorageFolder.PROFILE, user.id),
+        this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, user.id),
+        this.storageCore.getFolderLocation(StorageFolder.ENCODED_VIDEO, user.id),
+      ];
+
+      for (const folder of folders) {
+        this.logger.warn(`Removing user from filesystem: ${folder}`);
+        await this.storageRepository.unlinkDir(folder, { recursive: true, force: true });
+      }
 
       this.logger.warn(`Removing user from database: ${user.id}`);
 

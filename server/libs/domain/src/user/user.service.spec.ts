@@ -467,7 +467,13 @@ describe(UserService.name, () => {
 
       await sut.handleUserDelete({ user });
 
-      expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/deleted-user', { force: true, recursive: true });
+      const options = { force: true, recursive: true };
+
+      expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/library/deleted-user', options);
+      expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/upload/deleted-user', options);
+      expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/profile/deleted-user', options);
+      expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/thumbs/deleted-user', options);
+      expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/encoded-video/deleted-user', options);
       expect(tokenMock.deleteAll).toHaveBeenCalledWith(user.id);
       expect(keyMock.deleteAll).toHaveBeenCalledWith(user.id);
       expect(albumMock.deleteAll).toHaveBeenCalledWith(user.id);

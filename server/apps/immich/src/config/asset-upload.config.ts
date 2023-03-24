@@ -1,11 +1,11 @@
-import { APP_UPLOAD_LOCATION } from '@app/domain/domain.constant';
+import { StorageCore, StorageFolder } from '@app/domain/storage';
 import { BadRequestException, Logger, UnauthorizedException } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import { createHash, randomUUID } from 'crypto';
 import { Request } from 'express';
 import { existsSync, mkdirSync } from 'fs';
 import { diskStorage, StorageEngine } from 'multer';
-import { extname, join } from 'path';
+import { extname } from 'path';
 import sanitize from 'sanitize-filename';
 import { AuthUserDto } from '../decorators/auth-user.decorator';
 import { patchFormData } from '../utils/path-form-data.util';
@@ -19,6 +19,8 @@ export const assetUploadOption: MulterOptions = {
   fileFilter,
   storage: customStorage(),
 };
+
+const storageCore = new StorageCore();
 
 export function customStorage(): StorageEngine {
   const storage = diskStorage({ destination, filename });
@@ -71,16 +73,13 @@ function destination(req: Request, file: Express.Multer.File, cb: any) {
 
   const user = req.user as AuthUserDto;
 
-  const basePath = APP_UPLOAD_LOCATION;
-  const sanitizedDeviceId = sanitize(String(req.body['deviceId']));
-  const originalUploadFolder = join(basePath, user.id, 'original', sanitizedDeviceId);
-
-  if (!existsSync(originalUploadFolder)) {
-    mkdirSync(originalUploadFolder, { recursive: true });
+  const uploadFolder = storageCore.getFolderLocation(StorageFolder.UPLOAD, user.id);
+  if (!existsSync(uploadFolder)) {
+    mkdirSync(uploadFolder, { recursive: true });
   }
 
   // Save original to disk
-  cb(null, originalUploadFolder);
+  cb(null, uploadFolder);
 }
 
 function filename(req: Request, file: Express.Multer.File, cb: any) {

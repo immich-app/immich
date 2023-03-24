@@ -119,7 +119,7 @@ export const assetEntityStub = {
     owner: userEntityStub.user1,
     ownerId: 'user-id',
     deviceId: 'device-id',
-    originalPath: '/original/path.ext',
+    originalPath: 'upload/upload/path.ext',
     resizePath: null,
     type: AssetType.IMAGE,
     webpPath: null,

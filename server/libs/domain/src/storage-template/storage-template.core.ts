@@ -1,5 +1,11 @@
+import { AssetEntity, AssetType, SystemConfig } from '@app/infra/db/entities';
+import { Logger } from '@nestjs/common';
+import handlebar from 'handlebars';
+import * as luxon from 'luxon';
+import path from 'node:path';
+import sanitize from 'sanitize-filename';
+import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import {
-  IStorageRepository,
   ISystemConfigRepository,
   supportedDayTokens,
   supportedHourTokens,
@@ -7,20 +13,14 @@ import {
   supportedMonthTokens,
   supportedSecondTokens,
   supportedYearTokens,
-} from '@app/domain';
-import { AssetEntity, AssetType, SystemConfig } from '@app/infra/db/entities';
-import { Logger } from '@nestjs/common';
-import handlebar from 'handlebars';
-import * as luxon from 'luxon';
-import path from 'node:path';
-import sanitize from 'sanitize-filename';
-import { APP_UPLOAD_LOCATION } from '../domain.constant';
+} from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
 
 export class StorageTemplateCore {
   private logger = new Logger(StorageTemplateCore.name);
   private configCore: SystemConfigCore;
   private storageTemplate: HandlebarsTemplateDelegate<any>;
+  private storageCore = new StorageCore();
 
   constructor(
     configRepository: ISystemConfigRepository,
@@ -38,7 +38,7 @@ export class StorageTemplateCore {
       const source = asset.originalPath;
       const ext = path.extname(source).split('.').pop() as string;
       const sanitized = sanitize(path.basename(filename, `.${ext}`));
-      const rootPath = path.join(APP_UPLOAD_LOCATION, asset.ownerId);
+      const rootPath = this.storageCore.getFolderLocation(StorageFolder.LIBRARY, asset.ownerId);
       const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
       const fullPath = path.normalize(path.join(rootPath, storagePath));
       let destination = `${fullPath}.${ext}`;
