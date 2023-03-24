@@ -10,7 +10,6 @@ import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { In } from 'typeorm/find-options/operator/In';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { ITagRepository } from '../tag/tag.repository';
@@ -43,10 +42,7 @@ export interface IAssetRepository {
   getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetCheck[]>;
-  getExistingAssets(
-    userId: string,
-    checkDuplicateAssetDto: CheckExistingAssetsDto,
-  ): Promise<CheckExistingAssetsResponseDto>;
+  getExistingAssets(userId: string, checkDuplicateAssetDto: CheckExistingAssetsDto): Promise<string[]>;
   countByIdAndUser(assetId: string, userId: string): Promise<number>;
 }
 
@@ -314,11 +310,8 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  async getExistingAssets(
-    ownerId: string,
-    checkDuplicateAssetDto: CheckExistingAssetsDto,
-  ): Promise<CheckExistingAssetsResponseDto> {
-    const existingAssets = await this.assetRepository.find({
+  async getExistingAssets(ownerId: string, checkDuplicateAssetDto: CheckExistingAssetsDto): Promise<string[]> {
+    const assets = await this.assetRepository.find({
       select: { deviceAssetId: true },
       where: {
         deviceAssetId: In(checkDuplicateAssetDto.deviceAssetIds),
@@ -326,7 +319,7 @@ export class AssetRepository implements IAssetRepository {
         ownerId,
       },
     });
-    return new CheckExistingAssetsResponseDto(existingAssets.map((a) => a.deviceAssetId));
+    return assets.map((asset) => asset.deviceAssetId) as string[];
   }
 
   async countByIdAndUser(assetId: string, ownerId: string): Promise<number> {

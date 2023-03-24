@@ -18,7 +18,6 @@ import {
   Patch,
   StreamableFile,
   ParseFilePipe,
-  HttpStatus,
 } from '@nestjs/common';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AssetService } from './asset.service';

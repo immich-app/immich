@@ -455,7 +455,9 @@ export class AssetService {
     authUser: AuthUserDto,
     checkExistingAssetsDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
-    return this._assetRepository.getExistingAssets(authUser.id, checkExistingAssetsDto);
+    return {
+      existingIds: await this._assetRepository.getExistingAssets(authUser.id, checkExistingAssetsDto),
+    };
   }
 
   async bulkUploadCheck(authUser: AuthUserDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {

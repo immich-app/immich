@@ -5243,7 +5243,7 @@
           "existingIds": {
             "type": "array",
             "items": {
-              "type": "object"
+              "type": "string"
             }
           }
         },
