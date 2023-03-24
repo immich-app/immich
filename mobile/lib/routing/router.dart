@@ -75,7 +75,7 @@ part 'router.gr.dart';
     AutoRoute(page: FavoritesPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: AllVideosPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: AllMotionPhotosPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: RecentlyAddedPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(page: RecentlyAddedPage, guards: [AuthGuard, DuplicateGuard],),
     CustomRoute<AssetSelectionPageResult?>(
       page: AssetSelectionPage,
       guards: [AuthGuard, DuplicateGuard],

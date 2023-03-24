@@ -3,10 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
-import 'package:immich_mobile/modules/favorite/ui/favorite_image.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
-import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 
 class FavoritesPage extends HookConsumerWidget {
   const FavoritesPage({Key? key}) : super(key: key);

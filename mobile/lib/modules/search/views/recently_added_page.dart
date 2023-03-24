@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/search/providers/recently_added.provider.dart';
+import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 class RecentlyAddedPage extends HookConsumerWidget {
   const RecentlyAddedPage({super.key});
@@ -10,6 +11,19 @@ class RecentlyAddedPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final recents = ref.watch(recentlyAddedProvider);
+    
+    // Needs to suppress hero animations 
+    final enableHeroAnimations = useState(false);
+    // Wait for transition to complete, then re-enable
+    ModalRoute.of(context)?.animation?.addListener(() {
+      if (enableHeroAnimations.value) {
+        return;
+      }
+      final animation = ModalRoute.of(context)?.animation;
+      if (animation != null) {
+        enableHeroAnimations.value = animation.isCompleted;
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -17,12 +31,22 @@ class RecentlyAddedPage extends HookConsumerWidget {
       ),
       body: recents.when(
         data: (searchResponse) =>
-          ImmichAssetGrid(
-            assets: searchResponse,
+          WillPopScope(
+            onWillPop: () async {
+              // Disable the hero animation back
+              enableHeroAnimations.value = false;
+              return true;
+            },
+            child: HeroMode(
+              enabled: enableHeroAnimations.value,
+              child: ImmichAssetGrid(
+                assets: searchResponse,
+              ),
+            ),
           ),
         error: (e, s) => Text(e.toString()),
         loading: () => const Center(
-          child: CircularProgressIndicator(),
+          child: ImmichLoadingIndicator(),
         ),
       ),
     );
