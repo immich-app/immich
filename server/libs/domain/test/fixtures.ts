@@ -146,6 +146,7 @@ export const assetEntityStub = {
     deviceId: 'device-id',
     originalPath: '/original/path.ext',
     resizePath: '/uploads/user-id/thumbs/path.ext',
+    checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.IMAGE,
     webpPath: null,
     encodedVideoPath: null,
