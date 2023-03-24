@@ -144,9 +144,14 @@ class _$AppRouter extends RootStackRouter {
       );
     },
     RecentlyAddedRoute.name: (routeData) {
-      return MaterialPageX<dynamic>(
+      return CustomPage<dynamic>(
         routeData: routeData,
         child: const RecentlyAddedPage(),
+        transitionsBuilder: TransitionsBuilders.noTransition,
+        durationInMilliseconds: 200,
+        reverseDurationInMilliseconds: 200,
+        opaque: true,
+        barrierDismissible: false,
       );
     },
     AssetSelectionRoute.name: (routeData) {
