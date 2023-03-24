@@ -29,15 +29,15 @@ export interface IAssetRepository {
   getAll(): Promise<AssetEntity[]>;
   getAllVideos(): Promise<AssetEntity[]>;
   getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
-  getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
+  getAllByDeviceId(userId: string, deviceId: string): Promise<(string | null)[]>;
   getById(assetId: string): Promise<AssetEntity>;
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
   getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum): Promise<AssetCountByTimeBucket[]>;
-  getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetEntity[]>;
   getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
+  getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetEntity[]>;
   getExistingAssets(
     userId: string,
     checkDuplicateAssetDto: CheckExistingAssetsDto,
