@@ -20,6 +20,7 @@ import { promisify } from 'util';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
 import fs from 'fs/promises';
+import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import {
   AssetResponseDto,
@@ -34,6 +35,7 @@ import {
 import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
+import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { IAssetRepository } from './asset-repository';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import {
@@ -61,9 +63,6 @@ import { AddAssetsDto } from '../album/dto/add-assets.dto';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
 import path from 'path';
 import { getFileNameWithoutExtension } from '@app/domain';
-
-import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
-import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistenceOfAssetsByChecksumDto } from './dto/check-existence-of-assets.dto';
 import {
