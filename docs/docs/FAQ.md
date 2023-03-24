@@ -18,7 +18,7 @@ Immich doesn't have two-way synchronization ([yet](https://github.com/immich-app
 
 ### Why doesn't Immich watch an existing photo gallery directory?
 
-The initial approach of Immich is to become a backup tool, primarily for mobile device usage. Thus, all the assets must be uploaded from the mobile client. The app was architectured to perform that job well, however contributions are welcome to add more features.
+The initial approach of Immich is to become a backup tool, primarily for mobile device usage. Thus, all the assets must be uploaded from the mobile client. The app was architectured to perform that job well.
 
 ### Why does my uploaded photo show up with the wrong date or time in Immich?
 
