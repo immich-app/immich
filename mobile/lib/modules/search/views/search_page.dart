@@ -8,7 +8,6 @@ import 'package:immich_mobile/modules/search/providers/search_page_state.provide
 import 'package:immich_mobile/modules/search/ui/curated_row.dart';
 import 'package:immich_mobile/modules/search/ui/search_bar.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
-import 'package:immich_mobile/modules/search/views/all_motion_videos_page.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:openapi/api.dart';
@@ -174,13 +173,13 @@ class SearchPage extends HookConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
-                    'Your activity',
+                    'search_page_your_activity',
                     style: Theme.of(context).textTheme.titleMedium,
-                  ),
+                  ).tr(),
                 ),
                 ListTile(
                   leading: const Icon(Icons.star_outline),
-                  title: const Text('Favorites'),
+                  title: const Text('search_page_favorites').tr(),
                   onTap: () => AutoRouter.of(context).push(
                     const FavoritesRoute(),
                   ),
@@ -194,7 +193,7 @@ class SearchPage extends HookConsumerWidget {
                 ),
                 ListTile(
                   leading: const Icon(Icons.schedule_outlined),
-                  title: const Text('Recently Added'),
+                  title: const Text('search_page_recently_added').tr(),
                   onTap: () => AutoRouter.of(context).push(
                     const RecentlyAddedRoute(),
                   ),
@@ -203,12 +202,12 @@ class SearchPage extends HookConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
-                    'Categories',
+                    'search_page_categories',
                     style: Theme.of(context).textTheme.titleMedium,
-                  ),
+                  ).tr(),
                 ),
                 ListTile(
-                  title: const Text('Videos'),
+                  title: const Text('search_page_videos').tr(),
                   leading: const Icon(Icons.play_circle_outline),
                   onTap: () => AutoRouter.of(context).push(
                     const AllVideosRoute(),
@@ -222,7 +221,7 @@ class SearchPage extends HookConsumerWidget {
                   child: Divider(),
                 ),
                 ListTile(
-                  title: const Text('Motion Photos'),
+                  title: const Text('search_page_motion_photos').tr(),
                   leading: const Icon(Icons.motion_photos_on_outlined),
                   onTap: () => AutoRouter.of(context).push(
                     const AllMotionPhotosRoute(),

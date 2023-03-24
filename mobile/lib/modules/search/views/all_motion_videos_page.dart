@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
@@ -13,7 +14,7 @@ class AllMotionPhotosPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Motion Photos'),
+        title: const Text('motion_photos_page_title').tr(),
       ),
       body: motionPhotos.when(
         data: (assets) => ImmichAssetGrid(
