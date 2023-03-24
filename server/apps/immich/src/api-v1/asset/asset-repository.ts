@@ -34,7 +34,7 @@ export interface IAssetRepository {
   getAll(): Promise<AssetEntity[]>;
   getAllVideos(): Promise<AssetEntity[]>;
   getAllByUserId(userId: string, dto: AssetSearchDto): Promise<AssetEntity[]>;
-  getAllByDeviceId(userId: string, deviceId: string): Promise<(string | null)[]>;
+  getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getById(assetId: string): Promise<AssetEntity>;
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
@@ -281,19 +281,18 @@ export class AssetRepository implements IAssetRepository {
    *
    * @returns Promise<string[]> - Array of assetIds belong to the device
    */
-  async getAllByDeviceId(ownerId: string, deviceId: string): Promise<(string | null)[]> {
-    const rows = await this.assetRepository.find({
+  async getAllByDeviceId(ownerId: string, deviceId: string): Promise<string[]> {
+    const items = await this.assetRepository.find({
+      select: { deviceAssetId: true },
       where: {
         ownerId,
         deviceId,
         isVisible: true,
+        deviceAssetId: Not(IsNull()),
       },
-      select: ['deviceAssetId'],
     });
-    const res: (string | null)[] = [];
-    rows.forEach((v) => res.push(v.deviceAssetId));
 
-    return res;
+    return items.map((asset) => asset.deviceAssetId) as string[];
   }
 
   /**

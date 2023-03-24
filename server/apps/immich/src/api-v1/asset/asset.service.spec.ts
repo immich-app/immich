@@ -67,32 +67,6 @@ const _getAsset_1 = () => {
   return asset_1;
 };
 
-const _getAsset_2 = () => {
-  const asset_2 = new AssetEntity();
-
-  asset_2.id = 'id_2';
-  asset_2.ownerId = 'user_id_1';
-  asset_2.deviceAssetId = 'device_asset_id_2';
-  asset_2.deviceId = 'device_id_1';
-  asset_2.type = AssetType.VIDEO;
-  asset_2.originalPath = 'fake_path/asset_2.jpeg';
-  asset_2.resizePath = '';
-  asset_2.fileModifiedAt = '2022-06-19T23:41:36.910Z';
-  asset_2.fileCreatedAt = '2022-06-19T23:41:36.910Z';
-  asset_2.updatedAt = '2022-06-19T23:41:36.910Z';
-  asset_2.isFavorite = false;
-  asset_2.mimeType = 'image/jpeg';
-  asset_2.webpPath = '';
-  asset_2.encodedVideoPath = '';
-  asset_2.duration = '0:00:00.000000';
-
-  return asset_2;
-};
-
-const _getAssets = () => {
-  return [_getAsset_1(), _getAsset_2()];
-};
-
 const _getAssetCountByTimeBucket = (): AssetCountByTimeBucket[] => {
   const result1 = new AssetCountByTimeBucket();
   result1.count = 2;
@@ -144,7 +118,7 @@ describe('AssetService', () => {
       getLocationsByUserId: jest.fn(),
       getSearchPropertiesByUserId: jest.fn(),
       getAssetByTimeBucket: jest.fn(),
-      getAssetByChecksum: jest.fn(),
+      getAssetsByChecksums: jest.fn(),
       getAssetCountByUserId: jest.fn(),
       getExistingAssets: jest.fn(),
       countByIdAndUser: jest.fn(),
@@ -291,7 +265,7 @@ describe('AssetService', () => {
       (error as any).constraint = 'UQ_userid_checksum';
 
       assetRepositoryMock.create.mockRejectedValue(error);
-      assetRepositoryMock.getAssetByChecksum.mockResolvedValue(_getAsset_1());
+      assetRepositoryMock.getAssetsByChecksums.mockResolvedValue([_getAsset_1()]);
 
       await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({ duplicate: true, id: 'id_1' });
 
@@ -337,17 +311,14 @@ describe('AssetService', () => {
   });
 
   it('get assets by device id', async () => {
-    const assets = _getAssets();
+    assetRepositoryMock.getAllByDeviceId.mockResolvedValue(['device_asset_id_1', 'device_asset_id_2']);
 
-    assetRepositoryMock.getAllByDeviceId.mockImplementation(() =>
-      Promise.resolve<string[]>(Array.from(assets.map((asset) => asset.deviceAssetId))),
-    );
+    await expect(sut.getUserAssetsByDeviceId(authStub.user1, 'device_id_1')).resolves.toEqual([
+      'device_asset_id_1',
+      'device_asset_id_2',
+    ]);
 
-    const deviceId = 'device_id_1';
-    const result = await sut.getUserAssetsByDeviceId(authStub.user1, deviceId);
-
-    expect(result.length).toEqual(2);
-    expect(result).toEqual(assets.map((asset) => asset.deviceAssetId));
+    expect(assetRepositoryMock.getAllByDeviceId).toHaveBeenCalledWith('immich_id', 'device_id_1');
   });
 
   it('get assets count by time bucket', async () => {
