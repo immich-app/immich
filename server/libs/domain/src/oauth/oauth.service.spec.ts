@@ -63,6 +63,16 @@ describe('OAuthService', () => {
     expect(sut).toBeDefined();
   });
 
+  describe('getMobileRedirect', () => {
+    it('should pass along the query params', () => {
+      expect(sut.getMobileRedirect('http://immich.app?code=123&state=456')).toEqual('app.immich:/?code=123&state=456');
+    });
+
+    it('should work if called without query params', () => {
+      expect(sut.getMobileRedirect('http://immich.app')).toEqual('app.immich:/?');
+    });
+  });
+
   describe('generateConfig', () => {
     it('should work when oauth is not configured', async () => {
       await expect(sut.generateConfig({ redirectUri: 'http://callback' })).resolves.toEqual({

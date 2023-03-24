@@ -151,6 +151,7 @@ enum StoreKey<T> {
   serverUrl<String>(10, type: String),
   accessToken<String>(11, type: String),
   serverEndpoint<String>(12, type: String),
+  autoBackup<bool>(13, type: bool),
   // user settings from [AppSettingsEnum] below:
   loadPreview<bool>(100, type: bool),
   loadOriginal<bool>(101, type: bool),

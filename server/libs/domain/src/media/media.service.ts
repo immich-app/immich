@@ -46,24 +46,25 @@ export class MediaService {
 
     this.storageRepository.mkdirSync(resizePath);
 
-    if (asset.type == AssetType.IMAGE) {
-      try {
-        await this.mediaRepository
-          .resize(asset.originalPath, jpegThumbnailPath, { size: 1440, format: 'jpeg' })
-          .catch(() => {
-            this.logger.warn(
-              'Failed to generate jpeg thumbnail for asset: ' +
-                asset.id +
-                ' using sharp, failing over to exiftool-vendored',
-            );
-            return this.mediaRepository.extractThumbnailFromExif(asset.originalPath, jpegThumbnailPath);
-          });
-        await this.assetRepository.save({ id: asset.id, resizePath: jpegThumbnailPath });
-      } catch (error: any) {
-        this.logger.error('Failed to generate jpeg thumbnail for asset: ' + asset.id, error.stack);
+      if (asset.type == AssetType.IMAGE) {
+        try {
+          await this.mediaRepository.resize(asset.originalPath, jpegThumbnailPath, { size: 1440, format: 'jpeg' });
+        } catch (error) {
+          this.logger.warn(
+            `Failed to generate jpeg thumbnail using sharp, trying with exiftool-vendored (asset=${asset.id})`,
+          );
+          await this.mediaRepository.extractThumbnailFromExif(asset.originalPath, jpegThumbnailPath);
+        }
       }
 
-      // Update resize path to send to generate webp queue
+      if (asset.type == AssetType.VIDEO) {
+        this.logger.log('Start Generating Video Thumbnail');
+        await this.mediaRepository.extractVideoThumbnail(asset.originalPath, jpegThumbnailPath);
+        this.logger.log(`Generating Video Thumbnail Success ${asset.id}`);
+      }
+
+      await this.assetRepository.save({ id: asset.id, resizePath: jpegThumbnailPath });
+
       asset.resizePath = jpegThumbnailPath;
 
       await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: { asset } });
@@ -72,28 +73,8 @@ export class MediaService {
       await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: { asset } });
 
       this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
-    }
-
-    if (asset.type == AssetType.VIDEO) {
-      try {
-        this.logger.log('Start Generating Video Thumbnail');
-        await this.mediaRepository.extractVideoThumbnail(asset.originalPath, jpegThumbnailPath);
-        this.logger.log(`Generating Video Thumbnail Success ${asset.id}`);
-
-        await this.assetRepository.save({ id: asset.id, resizePath: jpegThumbnailPath });
-
-        // Update resize path to send to generate webp queue
-        asset.resizePath = jpegThumbnailPath;
-
-        await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: { asset } });
-        await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: { asset } });
-        await this.jobRepository.queue({ name: JobName.DETECT_OBJECTS, data: { asset } });
-        await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: { asset } });
-
-        this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
-      } catch (error: any) {
-        this.logger.error(`Cannot Generate Video Thumbnail: ${asset.id}`, error?.stack);
-      }
+    } catch (error: any) {
+      this.logger.error(`Failed to generate thumbnail for asset: ${asset.id}/${asset.type}`, error.stack);
     }
   }
 

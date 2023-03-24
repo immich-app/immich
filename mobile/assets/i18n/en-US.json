@@ -246,5 +246,8 @@
   "permission_onboarding_log_out": "Log out",
   "login_form_next_button": "Next",
   "album_thumbnail_shared_by": "Shared by {}",
-  "album_thumbnail_owned": "Owned"
+  "album_thumbnail_owned": "Owned",
+  "curated_object_page_title": "Things",
+  "curated_location_page_title": "Places",
+  "search_page_view_all_button": "View All"
 }

@@ -45,51 +45,56 @@ class SearchPage extends HookConsumerWidget {
     }
 
     buildPlaces() {
-      return curatedLocation.when(
-        loading: () => SizedBox(
-          height: imageSize,
-          child: const Center(child: ImmichLoadingIndicator()),
+      return SizedBox(
+        height: imageSize,
+        child: curatedLocation.when(
+          loading: () => const Center(child: ImmichLoadingIndicator()),
+          error: (err, stack) => Center(child: Text('Error: $err')),
+          data: (curatedLocations) => ListView.builder(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+            ),
+            scrollDirection: Axis.horizontal,
+            itemBuilder: (context, index) {
+              final locationInfo = curatedLocations[index];
+              final thumbnailRequestUrl =
+                  '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${locationInfo.id}';
+              return SizedBox(
+                width: imageSize,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 4.0),
+                  child: ThumbnailWithInfo(
+                    imageUrl: thumbnailRequestUrl,
+                    textInfo: locationInfo.city,
+                    onTap: () {
+                      AutoRouter.of(context).push(
+                        SearchResultRoute(searchTerm: locationInfo.city),
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
+            itemCount: curatedLocations.length.clamp(0, 10),
+          ),
         ),
-        error: (err, stack) => Text('Error: $err'),
-        data: (curatedLocations) {
-          return curatedLocations.isNotEmpty
-              ? SizedBox(
-                  height: imageSize,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.only(left: 16),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: curatedLocation.value?.length,
-                    itemBuilder: ((context, index) {
-                      var locationInfo = curatedLocations[index];
-                      var thumbnailRequestUrl =
-                          '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${locationInfo.id}';
-                      return ThumbnailWithInfo(
-                        imageUrl: thumbnailRequestUrl,
-                        textInfo: locationInfo.city,
-                        onTap: () {
-                          AutoRouter.of(context).push(
-                            SearchResultRoute(searchTerm: locationInfo.city),
-                          );
-                        },
-                      );
-                    }),
-                  ),
-                )
-              : SizedBox(
-                  height: imageSize,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.only(left: 16),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 1,
-                    itemBuilder: ((context, index) {
-                      return ThumbnailWithInfo(
-                        textInfo: '',
-                        onTap: () {},
-                      );
-                    }),
-                  ),
-                );
-        },
+      );
+    }
+
+    buildEmptyThumbnail() {
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: SizedBox(
+            width: imageSize,
+            height: imageSize,
+            child: ThumbnailWithInfo(
+              textInfo: '',
+              onTap: () {},
+            ),
+          ),
+        ),
       );
     }
 
@@ -99,51 +104,46 @@ class SearchPage extends HookConsumerWidget {
           height: imageSize,
           child: const Center(child: ImmichLoadingIndicator()),
         ),
-        error: (err, stack) => Text('Error: $err'),
-        data: (objects) {
-          return objects.isNotEmpty
-              ? SizedBox(
-                  height: imageSize,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.only(left: 16),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: curatedObjects.value?.length,
-                    itemBuilder: ((context, index) {
-                      var curatedObjectInfo = objects[index];
-                      var thumbnailRequestUrl =
-                          '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${curatedObjectInfo.id}';
-
-                      return ThumbnailWithInfo(
-                        imageUrl: thumbnailRequestUrl,
-                        textInfo: curatedObjectInfo.object,
-                        onTap: () {
-                          AutoRouter.of(context).push(
-                            SearchResultRoute(
-                              searchTerm: curatedObjectInfo.object
-                                  .capitalizeFirstLetter(),
-                            ),
-                          );
-                        },
-                      );
-                    }),
+        error: (err, stack) => SizedBox(
+          height: imageSize,
+          child: Center(child: Text('Error: $err')),
+        ),
+        data: (objects) => objects.isEmpty
+            ? buildEmptyThumbnail()
+            : SizedBox(
+                height: imageSize,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
                   ),
-                )
-              : SizedBox(
-                  height: imageSize,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.only(left: 16),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 1,
-                    itemBuilder: ((context, index) {
-                      return ThumbnailWithInfo(
-                        textInfo: '',
-                        noImageIcon: Icons.signal_cellular_no_sim_sharp,
-                        onTap: () {},
-                      );
-                    }),
-                  ),
-                );
-        },
+                  itemBuilder: (context, index) {
+                    final curatedObjectInfo = objects[index];
+                    final thumbnailRequestUrl =
+                        '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${curatedObjectInfo.id}';
+                    return SizedBox(
+                      width: imageSize,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 4.0),
+                        child: ThumbnailWithInfo(
+                          imageUrl: thumbnailRequestUrl,
+                          textInfo: curatedObjectInfo.object,
+                          onTap: () {
+                            AutoRouter.of(context).push(
+                              SearchResultRoute(
+                                searchTerm: curatedObjectInfo.object
+                                    .capitalizeFirstLetter(),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                  itemCount: objects.length.clamp(0, 10),
+                ),
+              ),
       );
     }
 
@@ -160,24 +160,71 @@ class SearchPage extends HookConsumerWidget {
         child: Stack(
           children: [
             ListView(
-              shrinkWrap: true,
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: const Text(
-                    "search_page_places",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                  ).tr(),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 4.0,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "search_page_places",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ).tr(),
+                      TextButton(
+                        child: Text(
+                          'search_page_view_all_button',
+                          style: TextStyle(
+                            color: Theme.of(context).primaryColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14.0,
+                          ),
+                        ).tr(),
+                        onPressed: () => AutoRouter.of(context).push(
+                          const CuratedLocationRoute(),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 buildPlaces(),
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: const Text(
-                    "search_page_things",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                  ).tr(),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 4.0,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "search_page_things",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ).tr(),
+                      TextButton(
+                        child: Text(
+                          'search_page_view_all_button',
+                          style: TextStyle(
+                            color: Theme.of(context).primaryColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14.0,
+                          ),
+                        ).tr(),
+                        onPressed: () => AutoRouter.of(context).push(
+                          const CuratedObjectRoute(),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                buildThings()
+                buildThings(),
               ],
             ),
             if (isSearchEnabled)

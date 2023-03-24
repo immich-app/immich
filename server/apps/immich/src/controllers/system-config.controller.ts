@@ -4,28 +4,28 @@ import { ApiTags } from '@nestjs/swagger';
 import { Authenticated } from '../decorators/authenticated.decorator';
 
 @ApiTags('System Config')
-@Authenticated({ admin: true })
 @Controller('system-config')
+@Authenticated({ admin: true })
 export class SystemConfigController {
-  constructor(private readonly systemConfigService: SystemConfigService) {}
+  constructor(private readonly service: SystemConfigService) {}
 
   @Get()
-  public getConfig(): Promise<SystemConfigDto> {
-    return this.systemConfigService.getConfig();
+  getConfig(): Promise<SystemConfigDto> {
+    return this.service.getConfig();
   }
 
   @Get('defaults')
-  public getDefaults(): SystemConfigDto {
-    return this.systemConfigService.getDefaults();
+  getDefaults(): SystemConfigDto {
+    return this.service.getDefaults();
   }
 
   @Put()
-  public updateConfig(@Body(ValidationPipe) dto: SystemConfigDto): Promise<SystemConfigDto> {
-    return this.systemConfigService.updateConfig(dto);
+  updateConfig(@Body(ValidationPipe) dto: SystemConfigDto): Promise<SystemConfigDto> {
+    return this.service.updateConfig(dto);
   }
 
   @Get('storage-template-options')
-  public getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
-    return this.systemConfigService.getStorageTemplateOptions();
+  getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
+    return this.service.getStorageTemplateOptions();
   }
 }

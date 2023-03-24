@@ -24,63 +24,50 @@ class ThumbnailWithInfo extends StatelessWidget {
       onTap: () {
         onTap();
       },
-      child: Padding(
-        padding: const EdgeInsets.only(right: 8.0),
-        child: SizedBox(
-          width: MediaQuery.of(context).size.width / 3,
-          child: Stack(
-            alignment: Alignment.bottomCenter,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(25),
-                  color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
-                  border: Border.all(
-                    color: isDarkMode ? Colors.grey[800]! : Colors.grey[400]!,
-                    width: 1,
-                  ),
-                ),
-                child: imageUrl != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: CachedNetworkImage(
-                          width: 250,
-                          height: 250,
-                          fit: BoxFit.cover,
-                          imageUrl: imageUrl!,
-                          httpHeaders: {
-                            "Authorization":
-                                "Bearer ${Store.get(StoreKey.accessToken)}"
-                          },
-                          errorWidget: (context, url, error) =>
-                              const Icon(Icons.image_not_supported_outlined),
-                        ),
-                      )
-                    : Center(
-                        child: Icon(
-                          noImageIcon ?? Icons.not_listed_location,
-                          color: textAndIconColor,
-                        ),
-                      ),
-              ),
-              Positioned(
-                bottom: 12,
-                left: 14,
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width / 3,
-                  child: Text(
-                    textInfo,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
+      child: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(25),
+              color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
+            ),
+            child: imageUrl != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: CachedNetworkImage(
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                      imageUrl: imageUrl!,
+                      httpHeaders: {
+                        "Authorization":
+                            "Bearer ${Store.get(StoreKey.accessToken)}"
+                      },
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.image_not_supported_outlined),
+                    ),
+                  )
+                : Center(
+                    child: Icon(
+                      noImageIcon ?? Icons.not_listed_location,
+                      color: textAndIconColor,
                     ),
                   ),
-                ),
-              ),
-            ],
           ),
-        ),
+          Positioned(
+            bottom: 12,
+            left: 14,
+            child: Text(
+              textInfo,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
