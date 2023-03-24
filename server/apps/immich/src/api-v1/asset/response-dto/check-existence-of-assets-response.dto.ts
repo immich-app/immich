@@ -1,3 +1,10 @@
+export class CheckExistenceOfAssetsByDeviceAssetIdResponseDto {
+  constructor(existingIds: string[]) {
+    this.existingIds = existingIds;
+  }
+  existingIds: string[];
+}
+
 export class CheckExistenceOfAssetResponseDto {
   // id of asset in the server db (field from the asset entity)
   id!: string;

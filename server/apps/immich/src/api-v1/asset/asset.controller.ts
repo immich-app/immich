@@ -39,7 +39,6 @@ import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
-import { CheckExistenceOfAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { DownloadDto } from './dto/download-library.dto';
 import {
@@ -54,7 +53,14 @@ import { AssetSearchDto } from './dto/asset-search.dto';
 import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
-import { CheckExistenceOfAssetsDto } from './dto/check-existing-assets.dto';
+import {
+  CheckExistenceOfAssetsByChecksumDto,
+  CheckExistenceOfAssetsByDeviceAssetIdsDto,
+} from './dto/check-existence-of-assets.dto';
+import {
+  CheckExistenceOfAssetsByDeviceAssetIdResponseDto,
+  CheckExistenceOfAssetsResponseDto,
+} from './response-dto/check-existence-of-assets-response.dto';
 
 function asStreamableFile({ stream, type, length }: ImmichReadStream) {
   return new StreamableFile(stream, { type, length });
@@ -289,16 +295,32 @@ export class AssetController {
   }
 
   /**
-   * Checks if asset checksums exist on the server
+   * Checks if assets exist by deviceAssetId and deviceId (deprecated)
    */
   @Authenticated()
   @Post('/exist')
   @HttpCode(200)
-  async checkIfAssetsExist(
+  async checkExistingAssets(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) doChecksumsExistDto: CheckExistenceOfAssetsDto,
+    @Body(ValidationPipe) checkExistenceOfAssetsByDeviceAssetIdsDto: CheckExistenceOfAssetsByDeviceAssetIdsDto,
+  ): Promise<CheckExistenceOfAssetsByDeviceAssetIdResponseDto> {
+    return await this.assetService.checkExistenceOfAssetsByDeviceAssetId(
+      authUser,
+      checkExistenceOfAssetsByDeviceAssetIdsDto,
+    );
+  }
+
+  /**
+   * Checks if assets exist by checksums
+   */
+  @Authenticated()
+  @Post('/existByChecksum')
+  @HttpCode(200)
+  async checkIfAssetsExistByChecksum(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) doChecksumsExistDto: CheckExistenceOfAssetsByChecksumDto,
   ): Promise<CheckExistenceOfAssetsResponseDto> {
-    return await this.assetService.doAssetsExist(authUser, doChecksumsExistDto);
+    return await this.assetService.checkExistenceOfAssets(authUser, doChecksumsExistDto);
   }
 
   @Authenticated()

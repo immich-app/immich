@@ -44,7 +44,10 @@ import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-buck
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { AssetCore } from './asset.core';
-import { CheckExistenceOfAssetsDto } from './dto/check-existing-assets.dto';
+import {
+  CheckExistenceOfAssetsByChecksumDto,
+  CheckExistenceOfAssetsByDeviceAssetIdsDto,
+} from './dto/check-existence-of-assets.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { ICryptoRepository, IJobRepository } from '@app/domain';
@@ -65,8 +68,9 @@ import {
   CheckExistenceOfAssetResponseActionType,
   CheckExistenceOfAssetResponseDto,
   CheckExistenceOfAssetResponseReasonType,
+  CheckExistenceOfAssetsByDeviceAssetIdResponseDto,
   CheckExistenceOfAssetsResponseDto,
-} from './response-dto/check-existing-assets-response.dto';
+} from './response-dto/check-existence-of-assets-response.dto';
 
 const fileInfo = promisify(stat);
 
@@ -427,9 +431,19 @@ export class AssetService {
     return this._assetRepository.getDetectedObjectsByUserId(authUser.id);
   }
 
-  async doAssetsExist(
+  async checkExistenceOfAssetsByDeviceAssetId(
     authUser: AuthUserDto,
-    checkExistenceOfAssetsDto: CheckExistenceOfAssetsDto,
+    checkExistenceOfAssetsByDeviceAssetIdsDto: CheckExistenceOfAssetsByDeviceAssetIdsDto,
+  ): Promise<CheckExistenceOfAssetsByDeviceAssetIdResponseDto> {
+    return this._assetRepository.getExistingAssetsByDeviceAssetId(
+      authUser.id,
+      checkExistenceOfAssetsByDeviceAssetIdsDto,
+    );
+  }
+
+  async checkExistenceOfAssets(
+    authUser: AuthUserDto,
+    checkExistenceOfAssetsDto: CheckExistenceOfAssetsByChecksumDto,
   ): Promise<CheckExistenceOfAssetsResponseDto> {
     const queriedChecksums: Buffer[] = checkExistenceOfAssetsDto.assets.map((asset) =>
       Buffer.from(asset.checksum, 'hex'),

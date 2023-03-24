@@ -13,6 +13,8 @@ import { UpdateAssetDto } from './dto/update-asset.dto';
 import { ITagRepository } from '../tag/tag.repository';
 import { In, IsNull, Not } from 'typeorm';
 import { AssetSearchDto } from './dto/asset-search.dto';
+import { CheckExistenceOfAssetsByDeviceAssetIdsDto } from './dto/check-existence-of-assets.dto';
+import { CheckExistenceOfAssetsByDeviceAssetIdResponseDto } from './response-dto/check-existence-of-assets-response.dto';
 
 export interface IAssetRepository {
   get(id: string): Promise<AssetEntity | null>;
@@ -33,6 +35,10 @@ export interface IAssetRepository {
   getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum): Promise<AssetCountByTimeBucket[]>;
   getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
+  getExistingAssetsByDeviceAssetId(
+    ownerId: string,
+    checkDuplicateAssetDto: CheckExistenceOfAssetsByDeviceAssetIdsDto,
+  ): Promise<CheckExistenceOfAssetsByDeviceAssetIdResponseDto>;
   getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetEntity[]>;
   countByIdAndUser(assetId: string, userId: string): Promise<number>;
 }
@@ -261,10 +267,25 @@ export class AssetRepository implements IAssetRepository {
     return await this.assetRepository.save(asset);
   }
 
+  async getExistingAssetsByDeviceAssetId(
+    ownerId: string,
+    checkDuplicateAssetDto: CheckExistenceOfAssetsByDeviceAssetIdsDto,
+  ): Promise<CheckExistenceOfAssetsByDeviceAssetIdResponseDto> {
+    const existingAssets = await this.assetRepository.find({
+      select: { deviceAssetId: true },
+      where: {
+        deviceAssetId: In(checkDuplicateAssetDto.deviceAssetIds),
+        deviceId: checkDuplicateAssetDto.deviceId,
+        ownerId,
+      },
+    });
+    return new CheckExistenceOfAssetsByDeviceAssetIdResponseDto(existingAssets.map((a) => a.deviceAssetId));
+  }
+
   /**
    * Get assets by checksums on the database
    * @param ownerId
-   * @param checksum
+   * @param checksums
    *
    */
   async getAssetsByChecksums(ownerId: string, checksums: Buffer[]): Promise<AssetEntity[]> {
