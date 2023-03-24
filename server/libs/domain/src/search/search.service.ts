@@ -1,4 +1,3 @@
-import { MACHINE_LEARNING_ENABLED } from '@app/common';
 import { AlbumEntity, AssetEntity } from '@app/infra/db/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -7,6 +6,7 @@ import { IAlbumRepository } from '../album/album.repository';
 import { mapAsset } from '../asset';
 import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
+import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
 import { IBulkEntityJob, IJobRepository, JobName } from '../job';
 import { IMachineLearningRepository } from '../smart-info';
 import { SearchDto } from './dto';

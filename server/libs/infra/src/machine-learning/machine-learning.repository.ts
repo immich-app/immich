@@ -1,5 +1,4 @@
-import { MACHINE_LEARNING_URL } from '@app/common';
-import { IMachineLearningRepository, MachineLearningInput } from '@app/domain';
+import { IMachineLearningRepository, MachineLearningInput, MACHINE_LEARNING_URL } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 

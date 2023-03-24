@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { SERVER_VERSION } from '@app/domain';
-import { getLogLevels } from '@app/common';
+import { getLogLevels } from '@app/domain';
 import { RedisIoAdapter } from '../../immich/src/middlewares/redis-io.adapter.middleware';
 import { MicroservicesModule } from './microservices.module';
 

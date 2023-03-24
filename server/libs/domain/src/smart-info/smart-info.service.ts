@@ -1,6 +1,6 @@
-import { MACHINE_LEARNING_ENABLED } from '@app/common';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IAssetRepository, WithoutProperty } from '../asset';
+import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
 import { IAssetJob, IBaseJob, IJobRepository, JobName } from '../job';
 import { IMachineLearningRepository } from './machine-learning.interface';
 import { ISmartInfoRepository } from './smart-info.repository';
