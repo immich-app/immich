@@ -8,6 +8,7 @@ import 'package:immich_mobile/modules/search/providers/search_page_state.provide
 import 'package:immich_mobile/modules/search/ui/curated_row.dart';
 import 'package:immich_mobile/modules/search/ui/search_bar.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
+import 'package:immich_mobile/modules/search/views/all_motion_videos_page.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:openapi/api.dart';
@@ -171,15 +172,15 @@ class SearchPage extends HookConsumerWidget {
                 buildThings(),
                 const SizedBox(height: 12.0),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
                     'Your activity',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
                 ListTile(
-                  leading: Icon(Icons.star_outline),
-                  title: Text('Favorites'),
+                  leading: const Icon(Icons.star_outline),
+                  title: const Text('Favorites'),
                   onTap: () => AutoRouter.of(context).push(
                     const FavoritesRoute(),
                   ),
@@ -192,11 +193,11 @@ class SearchPage extends HookConsumerWidget {
                   child: Divider(),
                 ),
                 ListTile(
-                  leading: Icon(Icons.schedule_outlined),
-                  title: Text('Recently Added'),
-                  //onTap: () => AutoRouter.of(context).push(
-                    //const RecentlyAddedRoute(),
-                  //),
+                  leading: const Icon(Icons.schedule_outlined),
+                  title: const Text('Recently Added'),
+                  onTap: () => AutoRouter.of(context).push(
+                    const RecentlyAddedRoute(),
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -220,11 +221,11 @@ class SearchPage extends HookConsumerWidget {
                   child: Divider(),
                 ),
                 ListTile(
-                  title: Text('Motion Photos'),
-                  leading: Icon(Icons.motion_photos_on_outlined),
-                  //onTap: () => AutoRouter.of(context).push(
-                    //const AllMotionVideosRoute(),
-                  //),
+                  title: const Text('Motion Photos'),
+                  leading: const Icon(Icons.motion_photos_on_outlined),
+                  onTap: () => AutoRouter.of(context).push(
+                    const AllMotionPhotosRoute(),
+                  ),
                 ),
               ],
             ),

@@ -137,6 +137,18 @@ class _$AppRouter extends RootStackRouter {
         child: const AllVideosPage(),
       );
     },
+    AllMotionPhotosRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const AllMotionPhotosPage(),
+      );
+    },
+    RecentlyAddedRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const RecentlyAddedPage(),
+      );
+    },
     AssetSelectionRoute.name: (routeData) {
       return CustomPage<AssetSelectionPageResult?>(
         routeData: routeData,
@@ -384,6 +396,22 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           AllVideosRoute.name,
           path: '/all-videos-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          AllMotionPhotosRoute.name,
+          path: '/all-motion-photos-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          RecentlyAddedRoute.name,
+          path: '/recently-added-page',
           guards: [
             authGuard,
             duplicateGuard,
@@ -745,6 +773,30 @@ class AllVideosRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'AllVideosRoute';
+}
+
+/// generated route for
+/// [AllMotionPhotosPage]
+class AllMotionPhotosRoute extends PageRouteInfo<void> {
+  const AllMotionPhotosRoute()
+      : super(
+          AllMotionPhotosRoute.name,
+          path: '/all-motion-photos-page',
+        );
+
+  static const String name = 'AllMotionPhotosRoute';
+}
+
+/// generated route for
+/// [RecentlyAddedPage]
+class RecentlyAddedRoute extends PageRouteInfo<void> {
+  const RecentlyAddedRoute()
+      : super(
+          RecentlyAddedRoute.name,
+          path: '/recently-added-page',
+        );
+
+  static const String name = 'RecentlyAddedRoute';
 }
 
 /// generated route for

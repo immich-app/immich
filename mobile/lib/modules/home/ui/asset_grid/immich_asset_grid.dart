@@ -42,6 +42,8 @@ class ImmichAssetGrid extends HookConsumerWidget {
         showStorageIndicator: showStorageIndicator 
           ?? settings.getSetting(AppSettingsEnum.storageIndicator),
         renderList: renderList!,
+        margin: margin,
+        selectionActive: selectionActive,
       );
     }
 
@@ -55,6 +57,8 @@ class ImmichAssetGrid extends HookConsumerWidget {
           showStorageIndicator: showStorageIndicator 
             ?? settings.getSetting(AppSettingsEnum.storageIndicator),
           renderList: renderList,
+          margin: margin,
+          selectionActive: selectionActive,
         ),
       error: (err, stack) =>
         Center(child: Text("$err")),
