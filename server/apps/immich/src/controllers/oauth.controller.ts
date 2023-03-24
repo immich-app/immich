@@ -1,7 +1,6 @@
 import {
   AuthUserDto,
   LoginResponseDto,
-  MOBILE_REDIRECT,
   OAuthCallbackDto,
   OAuthConfigDto,
   OAuthConfigResponseDto,
@@ -17,43 +16,42 @@ import { Authenticated } from '../decorators/authenticated.decorator';
 @ApiTags('OAuth')
 @Controller('oauth')
 export class OAuthController {
-  constructor(private readonly oauthService: OAuthService) {}
+  constructor(private service: OAuthService) {}
 
   @Get('mobile-redirect')
   @Redirect()
-  public mobileRedirect(@Req() req: Request) {
-    const url = `${MOBILE_REDIRECT}?${req.url.split('?')[1] || ''}`;
-    return { url, statusCode: HttpStatus.TEMPORARY_REDIRECT };
+  mobileRedirect(@Req() req: Request) {
+    return {
+      url: this.service.getMobileRedirect(req.url),
+      statusCode: HttpStatus.TEMPORARY_REDIRECT,
+    };
   }
 
   @Post('config')
-  public generateConfig(@Body(ValidationPipe) dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
-    return this.oauthService.generateConfig(dto);
+  generateConfig(@Body(ValidationPipe) dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
+    return this.service.generateConfig(dto);
   }
 
   @Post('callback')
-  public async callback(
+  async callback(
     @Res({ passthrough: true }) res: Response,
     @Body(ValidationPipe) dto: OAuthCallbackDto,
     @Req() req: Request,
   ): Promise<LoginResponseDto> {
-    const { response, cookie } = await this.oauthService.login(dto, req.secure);
-    res.setHeader('Set-Cookie', cookie);
+    const { response, cookie } = await this.service.login(dto, req.secure);
+    res.header('Set-Cookie', cookie);
     return response;
   }
 
   @Authenticated()
   @Post('link')
-  public async link(
-    @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: OAuthCallbackDto,
-  ): Promise<UserResponseDto> {
-    return this.oauthService.link(authUser, dto);
+  link(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) dto: OAuthCallbackDto): Promise<UserResponseDto> {
+    return this.service.link(authUser, dto);
   }
 
   @Authenticated()
   @Post('unlink')
-  public async unlink(@GetAuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
-    return this.oauthService.unlink(authUser);
+  unlink(@GetAuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
+    return this.service.unlink(authUser);
   }
 }

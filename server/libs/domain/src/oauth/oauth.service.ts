@@ -1,14 +1,15 @@
 import { SystemConfig } from '@app/infra/db/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { AuthType, AuthUserDto, LoginResponseDto } from '../auth';
-import { ICryptoRepository } from '../crypto';
 import { AuthCore } from '../auth/auth.core';
+import { ICryptoRepository } from '../crypto';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
 import { IUserRepository, UserCore, UserResponseDto } from '../user';
+import { IUserTokenRepository } from '../user-token';
 import { OAuthCallbackDto, OAuthConfigDto } from './dto';
+import { MOBILE_REDIRECT } from './oauth.constants';
 import { OAuthCore } from './oauth.core';
 import { OAuthConfigResponseDto } from './response-dto';
-import { IUserTokenRepository } from '../user-token';
 
 @Injectable()
 export class OAuthService {
@@ -28,6 +29,10 @@ export class OAuthService {
     this.authCore = new AuthCore(cryptoRepository, configRepository, userTokenRepository, initialConfig);
     this.userCore = new UserCore(userRepository, cryptoRepository);
     this.oauthCore = new OAuthCore(configRepository, initialConfig);
+  }
+
+  getMobileRedirect(url: string) {
+    return `${MOBILE_REDIRECT}?${url.split('?')[1] || ''}`;
   }
 
   generateConfig(dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
