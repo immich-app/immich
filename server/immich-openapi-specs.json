@@ -2381,15 +2381,55 @@
     },
     "/asset/exist": {
       "post": {
-        "operationId": "checkIfAssetsExist",
-        "description": "Checks if asset checksums exist on the server",
+        "operationId": "checkExistingAssets",
+        "description": "Checks if assets exist by deviceAssetId and deviceId (deprecated)",
         "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CheckExistenceOfAssetsDto"
+                "$ref": "#/components/schemas/CheckExistenceOfAssetsByDeviceAssetIdsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckExistenceOfAssetsByDeviceAssetIdResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
+    "/asset/existByChecksum": {
+      "post": {
+        "operationId": "checkIfAssetsExistByChecksum",
+        "description": "Checks if assets exist by checksums",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckExistenceOfAssetsByChecksumDto"
               }
             }
           }
@@ -3954,8 +3994,16 @@
           "id": {
             "type": "string"
           },
+          "deviceAssetId": {
+            "type": "string",
+            "nullable": true
+          },
           "ownerId": {
             "type": "string"
+          },
+          "deviceId": {
+            "type": "string",
+            "nullable": true
           },
           "originalPath": {
             "type": "string"
@@ -4011,7 +4059,9 @@
         "required": [
           "type",
           "id",
+          "deviceAssetId",
           "ownerId",
+          "deviceId",
           "originalPath",
           "resizePath",
           "fileCreatedAt",
@@ -5049,7 +5099,39 @@
           "id"
         ]
       },
-      "CheckExistenceOfAssetDto": {
+      "CheckExistenceOfAssetsByDeviceAssetIdsDto": {
+        "type": "object",
+        "properties": {
+          "deviceAssetIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "deviceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "deviceAssetIds",
+          "deviceId"
+        ]
+      },
+      "CheckExistenceOfAssetsByDeviceAssetIdResponseDto": {
+        "type": "object",
+        "properties": {
+          "existingIds": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "existingIds"
+        ]
+      },
+      "CheckExistenceOfAssetByChecksumDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -5064,13 +5146,13 @@
           "checksum"
         ]
       },
-      "CheckExistenceOfAssetsDto": {
+      "CheckExistenceOfAssetsByChecksumDto": {
         "type": "object",
         "properties": {
           "assets": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CheckExistenceOfAssetDto"
+              "$ref": "#/components/schemas/CheckExistenceOfAssetByChecksumDto"
             }
           }
         },
