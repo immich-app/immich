@@ -20,7 +20,6 @@ class FavoritesPage extends HookConsumerWidget {
         automaticallyImplyLeading: false,
         title: const Text(
           'favorites_page_title',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ).tr(),
       );
     }

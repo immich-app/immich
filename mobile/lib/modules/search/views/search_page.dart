@@ -199,6 +199,7 @@ class SearchPage extends HookConsumerWidget {
                     const RecentlyAddedRoute(),
                   ),
                 ),
+                const SizedBox(height: 12.0),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(

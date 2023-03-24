@@ -41,6 +41,8 @@ ThemeData immichLightTheme = ThemeData(
     titleTextStyle: const TextStyle(
       fontFamily: 'WorkSans',
       color: Colors.indigo,
+      fontWeight: FontWeight.bold,
+      fontSize: 18,
     ),
     backgroundColor: immichBackgroundColor,
     foregroundColor: Colors.indigo,
@@ -76,10 +78,10 @@ ThemeData immichLightTheme = ThemeData(
       color: Colors.indigo,
     ),
     titleSmall: TextStyle(
-      fontSize: 14.0,
+      fontSize: 16.0,
     ),
     titleMedium: TextStyle(
-      fontSize: 16.0,
+      fontSize: 18.0,
       fontWeight: FontWeight.bold,
     ),
     titleLarge: TextStyle(
@@ -138,6 +140,8 @@ ThemeData immichDarkTheme = ThemeData(
     titleTextStyle: TextStyle(
       fontFamily: 'WorkSans',
       color: immichDarkThemePrimaryColor,
+      fontWeight: FontWeight.bold,
+      fontSize: 18,
     ),
     backgroundColor: const Color.fromARGB(255, 32, 33, 35),
     foregroundColor: immichDarkThemePrimaryColor,
@@ -171,10 +175,10 @@ ThemeData immichDarkTheme = ThemeData(
       color: immichDarkThemePrimaryColor,
     ),
     titleSmall: const TextStyle(
-      fontSize: 14.0,
+      fontSize: 16.0,
     ),
     titleMedium: const TextStyle(
-      fontSize: 16.0,
+      fontSize: 18.0,
       fontWeight: FontWeight.bold,
     ),
     titleLarge: const TextStyle(
