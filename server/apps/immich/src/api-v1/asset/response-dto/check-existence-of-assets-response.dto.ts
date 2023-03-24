@@ -1,8 +1,8 @@
 export class CheckExistenceOfAssetsByDeviceAssetIdResponseDto {
-  constructor(existingIds: string[]) {
+  constructor(existingIds: (string | null)[]) {
     this.existingIds = existingIds;
   }
-  existingIds: string[];
+  existingIds: (string | null)[];
 }
 
 export class CheckExistenceOfAssetResponseDto {

@@ -279,7 +279,7 @@ export class AssetRepository implements IAssetRepository {
         ownerId,
       },
     });
-    return new CheckExistenceOfAssetsByDeviceAssetIdResponseDto(existingAssets.map((a) => a.deviceAssetId));
+    return new CheckExistenceOfAssetsByDeviceAssetIdResponseDto(existingAssets.map((asset) => asset.deviceAssetId));
   }
 
   /**

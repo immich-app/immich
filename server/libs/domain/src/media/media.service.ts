@@ -38,13 +38,13 @@ export class MediaService {
 
   async handleGenerateJpegThumbnail(data: IAssetJob): Promise<void> {
     const { asset } = data;
+    try {
+      const basePath = APP_UPLOAD_LOCATION;
+      const resizePath = join(basePath, asset.ownerId, 'thumb');
 
-    const basePath = APP_UPLOAD_LOCATION;
-    const resizePath = join(basePath, asset.ownerId, 'thumb');
+      const jpegThumbnailPath = join(resizePath, `${asset.id}.jpeg`);
 
-    const jpegThumbnailPath = join(resizePath, `${asset.id}.jpeg`);
-
-    this.storageRepository.mkdirSync(resizePath);
+      this.storageRepository.mkdirSync(resizePath);
 
       if (asset.type == AssetType.IMAGE) {
         try {
