@@ -99,7 +99,7 @@ describe(StorageTemplateService.name, () => {
 
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(storageMock.moveFile).toHaveBeenCalledWith(
-        'upload/upload/path.ext',
+        '/original/path.ext',
         'upload/library/user-id/2023/2023-02-23/asset-id.ext',
       );
       expect(assetMock.save).toHaveBeenCalledWith({
@@ -116,7 +116,7 @@ describe(StorageTemplateService.name, () => {
 
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(storageMock.moveFile).toHaveBeenCalledWith(
-        'upload/upload/path.ext',
+        '/original/path.ext',
         'upload/library/user-id/2023/2023-02-23/asset-id.ext',
       );
       expect(assetMock.save).not.toHaveBeenCalled();
@@ -134,8 +134,8 @@ describe(StorageTemplateService.name, () => {
         originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id.ext',
       });
       expect(storageMock.moveFile.mock.calls).toEqual([
-        ['upload/upload/path.ext', 'upload/library/user-id/2023/2023-02-23/asset-id.ext'],
-        ['upload/library/user-id/2023/2023-02-23/asset-id.ext', 'upload/upload/path.ext'],
+        ['/original/path.ext', 'upload/library/user-id/2023/2023-02-23/asset-id.ext'],
+        ['upload/library/user-id/2023/2023-02-23/asset-id.ext', '/original/path.ext'],
       ]);
     });
   });
