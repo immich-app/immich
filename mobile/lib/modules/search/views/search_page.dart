@@ -3,14 +3,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
+import 'package:immich_mobile/modules/search/ui/curated_row.dart';
 import 'package:immich_mobile/modules/search/ui/search_bar.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
-import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
-import 'package:immich_mobile/utils/capitalize_first_letter.dart';
 import 'package:openapi/api.dart';
 
 // ignore: must_be_immutable
@@ -50,100 +49,51 @@ class SearchPage extends HookConsumerWidget {
         child: curatedLocation.when(
           loading: () => const Center(child: ImmichLoadingIndicator()),
           error: (err, stack) => Center(child: Text('Error: $err')),
-          data: (curatedLocations) => ListView.builder(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-            ),
-            scrollDirection: Axis.horizontal,
-            itemBuilder: (context, index) {
-              final locationInfo = curatedLocations[index];
-              final thumbnailRequestUrl =
-                  '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${locationInfo.id}';
-              return SizedBox(
-                width: imageSize,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 4.0),
-                  child: ThumbnailWithInfo(
-                    imageUrl: thumbnailRequestUrl,
-                    textInfo: locationInfo.city,
-                    onTap: () {
-                      AutoRouter.of(context).push(
-                        SearchResultRoute(searchTerm: locationInfo.city),
-                      );
-                    },
-                  ),
-                ),
+          data: (locations) => CuratedRow(
+            content: locations.map(
+              (o) => CuratedContent(
+                id: o.id,
+                label: o.city,
+              ),
+            ).toList(),
+            imageSize: imageSize,
+            onTap: (content, index) {
+              AutoRouter.of(context).push(
+                SearchResultRoute(searchTerm: content.label),
               );
             },
-            itemCount: curatedLocations.length.clamp(0, 10),
-          ),
-        ),
-      );
-    }
-
-    buildEmptyThumbnail() {
-      return Align(
-        alignment: Alignment.centerLeft,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: SizedBox(
-            width: imageSize,
-            height: imageSize,
-            child: ThumbnailWithInfo(
-              textInfo: '',
-              onTap: () {},
-            ),
           ),
         ),
       );
     }
 
     buildThings() {
-      return curatedObjects.when(
-        loading: () => SizedBox(
-          height: imageSize,
-          child: const Center(child: ImmichLoadingIndicator()),
-        ),
-        error: (err, stack) => SizedBox(
-          height: imageSize,
-          child: Center(child: Text('Error: $err')),
-        ),
-        data: (objects) => objects.isEmpty
-            ? buildEmptyThumbnail()
-            : SizedBox(
-                height: imageSize,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                  ),
-                  itemBuilder: (context, index) {
-                    final curatedObjectInfo = objects[index];
-                    final thumbnailRequestUrl =
-                        '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${curatedObjectInfo.id}';
-                    return SizedBox(
-                      width: imageSize,
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 4.0),
-                        child: ThumbnailWithInfo(
-                          imageUrl: thumbnailRequestUrl,
-                          textInfo: curatedObjectInfo.object,
-                          onTap: () {
-                            AutoRouter.of(context).push(
-                              SearchResultRoute(
-                                searchTerm: curatedObjectInfo.object
-                                    .capitalizeFirstLetter(),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    );
-                  },
-                  itemCount: objects.length.clamp(0, 10),
-                ),
+      return SizedBox(
+        height: imageSize,
+        child: curatedObjects.when(
+          loading: () => SizedBox(
+            height: imageSize,
+            child: const Center(child: ImmichLoadingIndicator()),
+          ),
+          error: (err, stack) => SizedBox(
+            height: imageSize,
+            child: Center(child: Text('Error: $err')),
+          ),
+          data: (objects) => CuratedRow(
+            content: objects.map(
+              (o) => CuratedContent(
+                id: o.id,
+                label: o.object,
               ),
+            ).toList(),
+            imageSize: imageSize,
+            onTap: (content, index) {
+              AutoRouter.of(context).push(
+                SearchResultRoute(searchTerm: content.label),
+              );
+            },
+          ),
+        ),
       );
     }
 
@@ -169,12 +119,9 @@ class SearchPage extends HookConsumerWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         "search_page_places",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium,
                       ).tr(),
                       TextButton(
                         child: Text(
@@ -201,12 +148,9 @@ class SearchPage extends HookConsumerWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         "search_page_things",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium,
                       ).tr(),
                       TextButton(
                         child: Text(
@@ -225,6 +169,63 @@ class SearchPage extends HookConsumerWidget {
                   ),
                 ),
                 buildThings(),
+                const SizedBox(height: 12.0),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    'Your activity',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                ListTile(
+                  leading: Icon(Icons.star_outline),
+                  title: Text('Favorites'),
+                  onTap: () => AutoRouter.of(context).push(
+                    const FavoritesRoute(),
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(
+                    left: 72,
+                    right: 16,
+                  ),
+                  child: Divider(),
+                ),
+                ListTile(
+                  leading: Icon(Icons.schedule_outlined),
+                  title: Text('Recently Added'),
+                  //onTap: () => AutoRouter.of(context).push(
+                    //const RecentlyAddedRoute(),
+                  //),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    'Categories',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                ListTile(
+                  title: Text('Videos'),
+                  leading: Icon(Icons.play_circle_outline),
+                  //onTap: () => AutoRouter.of(context).push(
+                    //const AllVideosRoute(),
+                  //),
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(
+                    left: 72,
+                    right: 16,
+                  ),
+                  child: Divider(),
+                ),
+                ListTile(
+                  title: Text('Motion photos'),
+                  leading: Icon(Icons.motion_photos_on_outlined),
+                  //onTap: () => AutoRouter.of(context).push(
+                    //const AllMotionVideosRoute(),
+                  //),
+                ),
               ],
             ),
             if (isSearchEnabled)
