@@ -1,35 +1,36 @@
+import { AuthUserDto, EditSharedLinkDto, SharedLinkResponseDto, ShareService } from '@app/domain';
 import { Body, Controller, Delete, Get, Param, Patch, ValidationPipe } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
-import { AuthUserDto, EditSharedLinkDto, SharedLinkResponseDto, ShareService } from '@app/domain';
 
 @ApiTags('share')
 @Controller('share')
 export class ShareController {
-  constructor(private readonly shareService: ShareService) {}
+  constructor(private readonly service: ShareService) {}
+
   @Authenticated()
   @Get()
   getAllSharedLinks(@GetAuthUser() authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {
-    return this.shareService.getAll(authUser);
+    return this.service.getAll(authUser);
   }
 
   @Authenticated({ isShared: true })
   @Get('me')
   getMySharedLink(@GetAuthUser() authUser: AuthUserDto): Promise<SharedLinkResponseDto> {
-    return this.shareService.getMine(authUser);
+    return this.service.getMine(authUser);
   }
 
   @Authenticated()
   @Get(':id')
   getSharedLinkById(@GetAuthUser() authUser: AuthUserDto, @Param('id') id: string): Promise<SharedLinkResponseDto> {
-    return this.shareService.getById(authUser, id, true);
+    return this.service.getById(authUser, id, true);
   }
 
   @Authenticated()
   @Delete(':id')
   removeSharedLink(@GetAuthUser() authUser: AuthUserDto, @Param('id') id: string): Promise<void> {
-    return this.shareService.remove(authUser, id);
+    return this.service.remove(authUser, id);
   }
 
   @Authenticated()
@@ -37,8 +38,8 @@ export class ShareController {
   editSharedLink(
     @GetAuthUser() authUser: AuthUserDto,
     @Param('id') id: string,
-    @Body(new ValidationPipe()) dto: EditSharedLinkDto,
+    @Body(ValidationPipe) dto: EditSharedLinkDto,
   ): Promise<SharedLinkResponseDto> {
-    return this.shareService.edit(authUser, id, dto);
+    return this.service.edit(authUser, id, dto);
   }
 }
