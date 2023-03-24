@@ -35,13 +35,13 @@ export interface IAssetRepository {
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
   getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum): Promise<AssetCountByTimeBucket[]>;
+  getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetEntity[]>;
   getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getExistingAssets(
     userId: string,
     checkDuplicateAssetDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto>;
-  getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetEntity[]>;
   countByIdAndUser(assetId: string, userId: string): Promise<number>;
 }
 
@@ -291,21 +291,6 @@ export class AssetRepository implements IAssetRepository {
     return res;
   }
 
-  async getExistingAssets(
-    userId: string,
-    checkDuplicateAssetDto: CheckExistingAssetsDto,
-  ): Promise<CheckExistingAssetsResponseDto> {
-    const existingAssets = await this.assetRepository.find({
-      select: { deviceAssetId: true },
-      where: {
-        deviceAssetId: In(checkDuplicateAssetDto.deviceAssetIds),
-        deviceId: checkDuplicateAssetDto.deviceId,
-        ownerId: userId,
-      },
-    });
-    return new CheckExistingAssetsResponseDto(existingAssets.map((a) => a.deviceAssetId));
-  }
-
   /**
    * Get assets by checksums on the database
    * @param ownerId
@@ -317,6 +302,21 @@ export class AssetRepository implements IAssetRepository {
       select: ['id', 'checksum'],
       where: { ownerId: ownerId, checksum: In([...checksums]) },
     });
+  }
+
+  async getExistingAssets(
+    ownerId: string,
+    checkDuplicateAssetDto: CheckExistingAssetsDto,
+  ): Promise<CheckExistingAssetsResponseDto> {
+    const existingAssets = await this.assetRepository.find({
+      select: { deviceAssetId: true },
+      where: {
+        deviceAssetId: In(checkDuplicateAssetDto.deviceAssetIds),
+        deviceId: checkDuplicateAssetDto.deviceId,
+        ownerId,
+      },
+    });
+    return new CheckExistingAssetsResponseDto(existingAssets.map((a) => a.deviceAssetId));
   }
 
   async countByIdAndUser(assetId: string, ownerId: string): Promise<number> {
