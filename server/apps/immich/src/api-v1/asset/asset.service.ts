@@ -10,7 +10,7 @@ import {
   StreamableFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AssetEntity, AssetType, SharedLinkType, SystemConfig } from '@app/infra';
 import { constants, createReadStream, stat } from 'fs';
@@ -64,13 +64,12 @@ import { AddAssetsDto } from '../album/dto/add-assets.dto';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
 import path from 'path';
 import { getFileNameWithoutExtension } from '@app/domain';
-import { CheckExistenceOfAssetsByChecksumDto } from './dto/check-existence-of-assets.dto';
+import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import {
-  CheckExistenceOfAssetResponseActionType,
-  CheckExistenceOfAssetResponseDto,
-  CheckExistenceOfAssetResponseReasonType,
-  CheckExistenceOfAssetsResponseDto,
-} from './response-dto/check-existence-of-assets-response.dto';
+  AssetUploadAction,
+  AssetRejectReason,
+  AssetBulkUploadCheckResponseDto,
+} from './response-dto/asset-check-response.dto';
 
 const fileInfo = promisify(stat);
 
@@ -117,13 +116,6 @@ export class AssetService {
 
     let livePhotoAsset: AssetEntity | null = null;
 
-    const duplicate = (await this._assetRepository.getAssetsByChecksums(authUser.id, [file.checksum]))[0];
-
-    if (duplicate) {
-      this.logger.log(`Duplicate upload detected, skipping ${file.originalName}`);
-      return { id: duplicate.id, duplicate: true };
-    }
-
     try {
       if (livePhotoFile) {
         const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false };
@@ -139,6 +131,13 @@ export class AssetService {
         name: JobName.DELETE_FILES,
         data: { files: [file.originalPath, livePhotoFile?.originalPath] },
       });
+
+      // handle duplicates with a success response
+      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_userid_checksum') {
+        const checksums = [file.checksum, livePhotoFile?.checksum].filter((checksum) => !!checksum) as Buffer[];
+        const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, checksums);
+        return { id: duplicate.id, duplicate: true };
+      }
 
       this.logger.error(`Error uploading file ${error}`, error?.stack);
       throw new BadRequestException(`Error uploading file`, `${error}`);
@@ -459,39 +458,35 @@ export class AssetService {
     return this._assetRepository.getExistingAssets(authUser.id, checkExistingAssetsDto);
   }
 
-  async checkExistenceOfAssetsByChecksum(
-    authUser: AuthUserDto,
-    checkExistenceOfAssetsDto: CheckExistenceOfAssetsByChecksumDto,
-  ): Promise<CheckExistenceOfAssetsResponseDto> {
-    const queriedChecksums: Buffer[] = checkExistenceOfAssetsDto.assets.map((asset) =>
-      Buffer.from(asset.checksum, 'hex'),
-    );
+  async bulkUploadCheck(authUser: AuthUserDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
+    const checksums: Buffer[] = dto.assets.map((asset) => Buffer.from(asset.checksum, 'hex'));
+    const results = await this._assetRepository.getAssetsByChecksums(authUser.id, checksums);
+    const resultsMap: Record<string, string> = {};
 
-    const existingAssets: Promise<AssetEntity[]> = this._assetRepository.getAssetsByChecksums(
-      authUser.id,
-      queriedChecksums,
-    );
+    for (const { id, checksum } of results) {
+      resultsMap[checksum.toString('hex')] = id;
+    }
 
-    const returnedAssets = checkExistenceOfAssetsDto.assets.map(async (asset) => {
-      const matchedAsset = (await existingAssets).find(
-        (dbAsset) => dbAsset.checksum.toString('hex') === asset.checksum,
-      );
+    return {
+      results: dto.assets.map(({ id, checksum }) => {
+        const duplicate = resultsMap[checksum];
+        if (duplicate) {
+          return {
+            id,
+            assetId: duplicate,
+            action: AssetUploadAction.REJECT,
+            reason: AssetRejectReason.DUPLICATE,
+          };
+        }
 
-      const returnedAsset = new CheckExistenceOfAssetResponseDto();
-      returnedAsset.clientId = asset.id;
-      if (matchedAsset) {
-        returnedAsset.id = matchedAsset.id;
-        returnedAsset.action = CheckExistenceOfAssetResponseActionType.REJECT;
-        returnedAsset.reason = CheckExistenceOfAssetResponseReasonType.DUPLICATE;
-      } else {
-        returnedAsset.id = asset.id;
-        returnedAsset.action = CheckExistenceOfAssetResponseActionType.ACCEPT;
-      }
+        // TODO mime-check
 
-      return returnedAsset;
-    });
-
-    return new CheckExistenceOfAssetsResponseDto(await Promise.all(returnedAssets));
+        return {
+          id,
+          action: AssetUploadAction.ACCEPT,
+        };
+      }),
+    };
   }
 
   async getAssetCountByTimeBucket(

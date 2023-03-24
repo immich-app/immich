@@ -17,6 +17,11 @@ import { ITagRepository } from '../tag/tag.repository';
 import { IsNull, Not } from 'typeorm';
 import { AssetSearchDto } from './dto/asset-search.dto';
 
+export interface AssetCheck {
+  id: string;
+  checksum: Buffer;
+}
+
 export interface IAssetRepository {
   get(id: string): Promise<AssetEntity | null>;
   create(
@@ -37,7 +42,7 @@ export interface IAssetRepository {
   getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum): Promise<AssetCountByTimeBucket[]>;
   getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
-  getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetEntity[]>;
+  getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetCheck[]>;
   getExistingAssets(
     userId: string,
     checkDuplicateAssetDto: CheckExistingAssetsDto,
@@ -299,8 +304,14 @@ export class AssetRepository implements IAssetRepository {
    */
   async getAssetsByChecksums(ownerId: string, checksums: Buffer[]): Promise<AssetEntity[]> {
     return this.assetRepository.find({
-      select: ['id', 'checksum'],
-      where: { ownerId: ownerId, checksum: In([...checksums]) },
+      select: {
+        id: true,
+        checksum: true,
+      },
+      where: {
+        ownerId,
+        checksum: In(checksums),
+      },
     });
   }
 

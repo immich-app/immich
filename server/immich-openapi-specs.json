@@ -2510,9 +2510,9 @@
         ]
       }
     },
-    "/asset/existByChecksum": {
+    "/asset/bulk-upload-check": {
       "post": {
-        "operationId": "checkIfAssetsExistByChecksum",
+        "operationId": "bulkUploadCheck",
         "description": "Checks if assets exist by checksums",
         "parameters": [],
         "requestBody": {
@@ -2520,18 +2520,18 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CheckExistenceOfAssetsByChecksumDto"
+                "$ref": "#/components/schemas/AssetBulkUploadCheckDto"
               }
             }
           }
         },
         "responses": {
-          "200": {
+          "207": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CheckExistenceOfAssetsResponseDto"
+                  "$ref": "#/components/schemas/AssetBulkUploadCheckResponseDto"
                 }
               }
             }
@@ -5251,7 +5251,7 @@
           "existingIds"
         ]
       },
-      "CheckExistenceOfAssetByChecksumDto": {
+      "AssetBulkUploadCheckItem": {
         "type": "object",
         "properties": {
           "id": {
@@ -5266,13 +5266,13 @@
           "checksum"
         ]
       },
-      "CheckExistenceOfAssetsByChecksumDto": {
+      "AssetBulkUploadCheckDto": {
         "type": "object",
         "properties": {
           "assets": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CheckExistenceOfAssetByChecksumDto"
+              "$ref": "#/components/schemas/AssetBulkUploadCheckItem"
             }
           }
         },
@@ -5280,48 +5280,47 @@
           "assets"
         ]
       },
-      "CheckExistenceOfAssetResponseDto": {
+      "AssetBulkUploadCheckResult": {
         "type": "object",
         "properties": {
           "id": {
             "type": "string"
           },
-          "clientId": {
-            "type": "string"
-          },
           "action": {
             "type": "string",
             "enum": [
-              "Accept",
-              "Reject"
+              "accept",
+              "reject"
             ]
           },
           "reason": {
             "type": "string",
             "enum": [
-              "Duplicate",
-              ""
+              "duplicate",
+              "unsupported-format"
             ]
+          },
+          "assetId": {
+            "type": "string"
           }
         },
         "required": [
           "id",
-          "clientId",
           "action"
         ]
       },
-      "CheckExistenceOfAssetsResponseDto": {
+      "AssetBulkUploadCheckResponseDto": {
         "type": "object",
         "properties": {
-          "assets": {
+          "results": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CheckExistenceOfAssetResponseDto"
+              "$ref": "#/components/schemas/AssetBulkUploadCheckResult"
             }
           }
         },
         "required": [
-          "assets"
+          "results"
         ]
       },
       "CreateAssetsShareLinkDto": {

@@ -18,6 +18,7 @@ import {
   Patch,
   StreamableFile,
   ParseFilePipe,
+  HttpStatus,
 } from '@nestjs/common';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AssetService } from './asset.service';
@@ -57,8 +58,8 @@ import { AssetSearchDto } from './dto/asset-search.dto';
 import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
-import { CheckExistenceOfAssetsByChecksumDto } from './dto/check-existence-of-assets.dto';
-import { CheckExistenceOfAssetsResponseDto } from './response-dto/check-existence-of-assets-response.dto';
+import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
+import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-response.dto';
 
 function asStreamableFile({ stream, type, length }: ImmichReadStream) {
   return new StreamableFile(stream, { type, length });
@@ -331,13 +332,13 @@ export class AssetController {
    * Checks if assets exist by checksums
    */
   @Authenticated()
-  @Post('/existByChecksum')
-  @HttpCode(200)
-  async checkIfAssetsExistByChecksum(
+  @Post('/bulk-upload-check')
+  @HttpCode(207)
+  bulkUploadCheck(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) doChecksumsExistDto: CheckExistenceOfAssetsByChecksumDto,
-  ): Promise<CheckExistenceOfAssetsResponseDto> {
-    return await this.assetService.checkExistenceOfAssetsByChecksum(authUser, doChecksumsExistDto);
+    @Body(ValidationPipe) dto: AssetBulkUploadCheckDto,
+  ): Promise<AssetBulkUploadCheckResponseDto> {
+    return this.assetService.bulkUploadCheck(authUser, dto);
   }
 
   @Authenticated()
