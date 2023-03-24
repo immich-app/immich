@@ -206,11 +206,11 @@ class SearchPage extends HookConsumerWidget {
                   ),
                 ),
                 ListTile(
-                  title: Text('Videos'),
-                  leading: Icon(Icons.play_circle_outline),
-                  //onTap: () => AutoRouter.of(context).push(
-                    //const AllVideosRoute(),
-                  //),
+                  title: const Text('Videos'),
+                  leading: const Icon(Icons.play_circle_outline),
+                  onTap: () => AutoRouter.of(context).push(
+                    const AllVideosRoute(),
+                  ),
                 ),
                 const Padding(
                   padding: EdgeInsets.only(

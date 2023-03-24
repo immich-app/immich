@@ -131,6 +131,12 @@ class _$AppRouter extends RootStackRouter {
         child: const FavoritesPage(),
       );
     },
+    AllVideosRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const AllVideosPage(),
+      );
+    },
     AssetSelectionRoute.name: (routeData) {
       return CustomPage<AssetSelectionPageResult?>(
         routeData: routeData,
@@ -370,6 +376,14 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           FavoritesRoute.name,
           path: '/favorites-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          AllVideosRoute.name,
+          path: '/all-videos-page',
           guards: [
             authGuard,
             duplicateGuard,
@@ -719,6 +733,18 @@ class FavoritesRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'FavoritesRoute';
+}
+
+/// generated route for
+/// [AllVideosPage]
+class AllVideosRoute extends PageRouteInfo<void> {
+  const AllVideosRoute()
+      : super(
+          AllVideosRoute.name,
+          path: '/all-videos-page',
+        );
+
+  static const String name = 'AllVideosRoute';
 }
 
 /// generated route for

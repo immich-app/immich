@@ -21,6 +21,7 @@ import 'package:immich_mobile/modules/login/views/change_password_page.dart';
 import 'package:immich_mobile/modules/login/views/login_page.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/modules/onboarding/views/permission_onboarding_page.dart';
+import 'package:immich_mobile/modules/search/views/all_videos_page.dart';
 import 'package:immich_mobile/modules/search/views/curated_location_page.dart';
 import 'package:immich_mobile/modules/search/views/curated_object_page.dart';
 import 'package:immich_mobile/modules/search/views/search_page.dart';
@@ -70,6 +71,7 @@ part 'router.gr.dart';
     AutoRoute(page: CuratedObjectPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: CreateAlbumPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: FavoritesPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(page: AllVideosPage, guards: [AuthGuard, DuplicateGuard]),
     CustomRoute<AssetSelectionPageResult?>(
       page: AssetSelectionPage,
       guards: [AuthGuard, DuplicateGuard],
