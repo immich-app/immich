@@ -6,7 +6,9 @@ import { SmartInfoResponseDto, mapSmartInfo } from './smart-info-response.dto';
 
 export class AssetResponseDto {
   id!: string;
+  deviceAssetId!: string;
   ownerId!: string;
+  deviceId!: string;
 
   @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type!: AssetType;
@@ -29,7 +31,9 @@ export class AssetResponseDto {
 export function mapAsset(entity: AssetEntity): AssetResponseDto {
   return {
     id: entity.id,
+    deviceAssetId: entity.deviceAssetId,
     ownerId: entity.ownerId,
+    deviceId: entity.deviceId,
     type: entity.type,
     originalPath: entity.originalPath,
     resizePath: entity.resizePath,
@@ -51,7 +55,9 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
 export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
   return {
     id: entity.id,
+    deviceAssetId: entity.deviceAssetId,
     ownerId: entity.ownerId,
+    deviceId: entity.deviceId,
     type: entity.type,
     originalPath: entity.originalPath,
     resizePath: entity.resizePath,

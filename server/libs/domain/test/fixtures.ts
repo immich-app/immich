@@ -246,7 +246,9 @@ const assetInfo: ExifResponseDto = {
 
 const assetResponse: AssetResponseDto = {
   id: 'id_1',
+  deviceAssetId: 'device_asset_id_1',
   ownerId: 'user_id_1',
+  deviceId: 'device_id_1',
   type: AssetType.VIDEO,
   originalPath: 'fake_path/jpeg',
   resizePath: '',
@@ -478,9 +480,9 @@ export const sharedLinkStub = {
       assets: [
         {
           id: 'id_1',
-          deviceAssetId: 'device_asset_id_1',
           owner: userEntityStub.user1,
           ownerId: 'user_id_1',
+          deviceAssetId: 'device_asset_id_1',
           deviceId: 'device_id_1',
           type: AssetType.VIDEO,
           originalPath: 'fake_path/jpeg',
