@@ -32,13 +32,13 @@ class SearchService {
   Future<List<Asset>?> searchAsset(String searchTerm) async {
     // TODO search in local DB: 1. when offline, 2. to find local assets
     try {
-      final List<AssetResponseDto>? results = await _apiService.assetApi
-          .searchAsset(SearchAssetDto(searchTerm: searchTerm));
+      final SearchResponseDto? results = await _apiService.searchApi
+          .search(query: searchTerm, clip: true);
       if (results == null) {
         return null;
       }
       // TODO local DB might be out of date; add assets not yet in DB?
-      return _db.assets.getAllByRemoteId(results.map((e) => e.id));
+      return _db.assets.getAllByRemoteId(results.assets.items.map((e) => e.id));
     } catch (e) {
       debugPrint("[ERROR] [searchAsset] ${e.toString()}");
       return null;

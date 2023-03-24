@@ -39,6 +39,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             allAssetsInDatabase: const [],
             progressInPercentage: 0,
             cancelToken: CancellationToken(),
+            autoBackup: Store.get(StoreKey.autoBackup, false),
             backgroundBackup: false,
             backupRequireWifi: Store.get(StoreKey.backupRequireWifi, true),
             backupRequireCharging:
@@ -119,6 +120,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     state = state.copyWith(excludedBackupAlbums: currentExcludedAlbums);
     _updateBackupAssetCount();
+  }
+
+  void setAutoBackup(bool enabled) {
+    Store.put(StoreKey.autoBackup, enabled);
+    state = state.copyWith(autoBackup: enabled);
   }
 
   void configureBackgroundBackup({
@@ -550,8 +556,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
 
     // Check if this device is enable backup by the user
-    if ((_authState.deviceInfo.deviceId == _authState.deviceId) &&
-        _authState.deviceInfo.isAutoBackup) {
+    if (state.autoBackup) {
       // check if backup is alreayd in process - then return
       if (state.backupProgress == BackUpProgressEnum.inProgress) {
         log.info("[_resumeBackup] Backup is already in progress - abort");
@@ -567,7 +572,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       log.info("[_resumeBackup] Start back up");
       await startBackupProcess();
     }
-
     return;
   }
 

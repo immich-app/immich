@@ -20,6 +20,7 @@ import { ExifDateTime, exiftool, Tags } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { getName } from 'i18n-iso-countries';
 import geocoder, { InitOptions } from 'local-reverse-geocoder';
+import { Duration } from 'luxon';
 import fs from 'node:fs';
 import path from 'path';
 import sharp from 'sharp';
@@ -386,10 +387,6 @@ export class MetadataExtractionProcessor {
       return null;
     }
 
-    const hours = Math.floor(videoDurationInSecond / 3600);
-    const minutes = Math.floor((videoDurationInSecond - hours * 3600) / 60);
-    const seconds = videoDurationInSecond - hours * 3600 - minutes * 60;
-
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.000000`;
+    return Duration.fromObject({ seconds: videoDurationInSecond }).toFormat('hh:mm:ss.SSS');
   }
 }

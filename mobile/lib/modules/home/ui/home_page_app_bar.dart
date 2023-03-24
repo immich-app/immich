@@ -28,8 +28,8 @@ class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final BackUpState backupState = ref.watch(backupProvider);
-    bool isEnableAutoBackup = backupState.backgroundBackup ||
-        ref.watch(authenticationProvider).deviceInfo.isAutoBackup;
+    final bool isEnableAutoBackup =
+        backupState.backgroundBackup || backupState.autoBackup;
     final ServerInfoState serverInfoState = ref.watch(serverInfoProvider);
     AuthenticationState authState = ref.watch(authenticationProvider);
 
