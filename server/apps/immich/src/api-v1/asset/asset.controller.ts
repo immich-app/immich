@@ -315,7 +315,7 @@ export class AssetController {
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) checkExistingAssetsDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
-    return await this.assetService.checkExistenceOfAssetsByDeviceAssetId(authUser, checkExistingAssetsDto);
+    return await this.assetService.checkExistingAssets(authUser, checkExistingAssetsDto);
   }
 
   /**
@@ -328,7 +328,7 @@ export class AssetController {
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) doChecksumsExistDto: CheckExistenceOfAssetsByChecksumDto,
   ): Promise<CheckExistenceOfAssetsResponseDto> {
-    return await this.assetService.checkExistenceOfAssets(authUser, doChecksumsExistDto);
+    return await this.assetService.checkExistenceOfAssetsByChecksum(authUser, doChecksumsExistDto);
   }
 
   @Authenticated()

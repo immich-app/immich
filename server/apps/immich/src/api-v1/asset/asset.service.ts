@@ -450,17 +450,14 @@ export class AssetService {
     return new CheckDuplicateAssetResponseDto(isDuplicated, res?.id);
   }
 
-  async checkExistenceOfAssetsByDeviceAssetId(
+  async checkExistingAssets(
     authUser: AuthUserDto,
-    checkExistenceOfAssetsByDeviceAssetIdsDto: CheckExistingAssetsDto,
+    checkExistingAssetsDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
-    return this._assetRepository.getExistingAssetsByDeviceAssetId(
-      authUser.id,
-      checkExistenceOfAssetsByDeviceAssetIdsDto,
-    );
+    return this._assetRepository.checkExistingAssets(authUser.id, checkExistingAssetsDto);
   }
 
-  async checkExistenceOfAssets(
+  async checkExistenceOfAssetsByChecksum(
     authUser: AuthUserDto,
     checkExistenceOfAssetsDto: CheckExistenceOfAssetsByChecksumDto,
   ): Promise<CheckExistenceOfAssetsResponseDto> {

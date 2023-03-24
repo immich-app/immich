@@ -35,7 +35,7 @@ export interface IAssetRepository {
   getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum): Promise<AssetCountByTimeBucket[]>;
   getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
-  getExistingAssetsByDeviceAssetId(
+  checkExistingAssets(
     ownerId: string,
     checkDuplicateAssetDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto>;
@@ -267,7 +267,7 @@ export class AssetRepository implements IAssetRepository {
     return await this.assetRepository.save(asset);
   }
 
-  async getExistingAssetsByDeviceAssetId(
+  async checkExistingAssets(
     ownerId: string,
     checkDuplicateAssetDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
