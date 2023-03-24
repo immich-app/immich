@@ -16,8 +16,6 @@
     "esModuleInterop": true,
     "baseUrl": "./",
     "paths": {
-      "@app/common": ["libs/common/src"],
-      "@app/common/*": ["libs/common/src/*"],
       "@app/infra": ["libs/infra/src"],
       "@app/infra/*": ["libs/infra/src/*"],
       "@app/domain": ["libs/domain/src"],

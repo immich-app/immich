@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import pkg from '../../../package.json';
 
 const [major, minor, patch] = pkg.version.split('.');
@@ -17,3 +18,12 @@ export const serverVersion: IServerVersion = {
 export const SERVER_VERSION = `${serverVersion.major}.${serverVersion.minor}.${serverVersion.patch}`;
 
 export const APP_UPLOAD_LOCATION = './upload';
+
+export const MACHINE_LEARNING_URL = process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003';
+export const MACHINE_LEARNING_ENABLED = MACHINE_LEARNING_URL !== 'false';
+
+export function assertMachineLearningEnabled() {
+  if (!MACHINE_LEARNING_ENABLED) {
+    throw new BadRequestException('Machine learning is not enabled.');
+  }
+}

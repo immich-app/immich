@@ -1,4 +1,4 @@
-import { immichAppConfig } from '@app/common/config';
+import { immichAppConfig } from '@app/domain';
 import { DomainModule } from '@app/domain';
 import { ExifEntity, InfraModule } from '@app/infra';
 import { Module } from '@nestjs/common';

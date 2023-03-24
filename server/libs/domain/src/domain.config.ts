@@ -1,3 +1,5 @@
+// TODO: remove nestjs references from domain
+import { LogLevel } from '@nestjs/common';
 import { ConfigModuleOptions } from '@nestjs/config';
 import Joi from 'joi';
 
@@ -29,3 +31,13 @@ export const immichAppConfig: ConfigModuleOptions = {
     SERVER_PORT: Joi.number().optional(),
   }),
 };
+
+export function getLogLevels() {
+  const LOG_LEVELS: LogLevel[] = ['verbose', 'debug', 'log', 'warn', 'error'];
+  let logLevel = process.env.LOG_LEVEL || 'log';
+  if (logLevel === 'simple') {
+    logLevel = 'log';
+  }
+  const logLevelIndex = LOG_LEVELS.indexOf(logLevel as LogLevel);
+  return logLevelIndex === -1 ? [] : LOG_LEVELS.slice(logLevelIndex);
+}
