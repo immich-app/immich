@@ -141,7 +141,7 @@ export class UserService {
     return { admin, password, provided: !!providedPassword };
   }
 
-  async handleUserDeleteCheck() {
+  async handleQueueUserDelete() {
     const users = await this.userRepository.getDeletedUsers();
     for (const user of users) {
       if (this.isReadyForDeletion(user)) {
