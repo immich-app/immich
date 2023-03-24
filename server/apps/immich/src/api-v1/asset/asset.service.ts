@@ -47,7 +47,7 @@ import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { AssetCore } from './asset.core';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CheckExistingAssetsResponseDto } from './response-dto/check-existence-of-assets-response.dto';
+import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { ICryptoRepository, IJobRepository } from '@app/domain';
@@ -70,7 +70,7 @@ import {
   CheckExistenceOfAssetResponseDto,
   CheckExistenceOfAssetResponseReasonType,
   CheckExistenceOfAssetsResponseDto,
-} from './response-dto/check-existing-assets-response.dto';
+} from './response-dto/check-existence-of-assets-response.dto';
 
 const fileInfo = promisify(stat);
 

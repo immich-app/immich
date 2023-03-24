@@ -27,10 +27,12 @@ import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
+import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { AssetResponseDto, ImmichReadStream } from '@app/domain';
+import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { CreateAssetDto, mapToUploadFile } from './dto/create-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { DeleteAssetResponseDto } from './response-dto/delete-asset-response.dto';
@@ -39,6 +41,8 @@ import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
+import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
+import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { DownloadDto } from './dto/download-library.dto';
 import {
@@ -54,11 +58,7 @@ import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config'
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
 import { CheckExistenceOfAssetsByChecksumDto } from './dto/check-existence-of-assets.dto';
-import { CheckExistingAssetsResponseDto } from './response-dto/check-existence-of-assets-response.dto';
-import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
-import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
-import { CheckExistenceOfAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
+import { CheckExistenceOfAssetsResponseDto } from './response-dto/check-existence-of-assets-response.dto';
 
 function asStreamableFile({ stream, type, length }: ImmichReadStream) {
   return new StreamableFile(stream, { type, length });

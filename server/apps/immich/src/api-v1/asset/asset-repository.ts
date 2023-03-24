@@ -9,12 +9,12 @@ import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
+import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
+import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { ITagRepository } from '../tag/tag.repository';
 import { In, IsNull, Not } from 'typeorm';
 import { AssetSearchDto } from './dto/asset-search.dto';
-import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CheckExistingAssetsResponseDto } from './response-dto/check-existence-of-assets-response.dto';
 
 export interface IAssetRepository {
   get(id: string): Promise<AssetEntity | null>;
