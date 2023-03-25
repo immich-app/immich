@@ -25,6 +25,8 @@ import 'package:immich_mobile/modules/search/views/all_motion_videos_page.dart';
 import 'package:immich_mobile/modules/search/views/all_videos_page.dart';
 import 'package:immich_mobile/modules/search/views/curated_location_page.dart';
 import 'package:immich_mobile/modules/search/views/curated_object_page.dart';
+import 'package:immich_mobile/modules/search/views/location_page.dart';
+import 'package:immich_mobile/modules/search/views/object_page.dart';
 import 'package:immich_mobile/modules/search/views/recently_added_page.dart';
 import 'package:immich_mobile/modules/search/views/search_page.dart';
 import 'package:immich_mobile/modules/search/views/search_result_page.dart';
@@ -76,6 +78,8 @@ part 'router.gr.dart';
     AutoRoute(page: AllVideosPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: AllMotionPhotosPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: RecentlyAddedPage, guards: [AuthGuard, DuplicateGuard],),
+    AutoRoute(page: LocationPage, guards: [AuthGuard, DuplicateGuard],),
+    AutoRoute(page: ObjectPage, guards: [AuthGuard, DuplicateGuard],),
     CustomRoute<AssetSelectionPageResult?>(
       page: AssetSelectionPage,
       guards: [AuthGuard, DuplicateGuard],

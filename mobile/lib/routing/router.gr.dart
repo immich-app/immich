@@ -144,14 +144,29 @@ class _$AppRouter extends RootStackRouter {
       );
     },
     RecentlyAddedRoute.name: (routeData) {
-      return CustomPage<dynamic>(
+      return MaterialPageX<dynamic>(
         routeData: routeData,
         child: const RecentlyAddedPage(),
-        transitionsBuilder: TransitionsBuilders.noTransition,
-        durationInMilliseconds: 200,
-        reverseDurationInMilliseconds: 200,
-        opaque: true,
-        barrierDismissible: false,
+      );
+    },
+    LocationRoute.name: (routeData) {
+      final args = routeData.argsAs<LocationRouteArgs>();
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: LocationPage(
+          key: args.key,
+          city: args.city,
+        ),
+      );
+    },
+    ObjectRoute.name: (routeData) {
+      final args = routeData.argsAs<ObjectRouteArgs>();
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: ObjectPage(
+          key: args.key,
+          object: args.object,
+        ),
       );
     },
     AssetSelectionRoute.name: (routeData) {
@@ -417,6 +432,22 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           RecentlyAddedRoute.name,
           path: '/recently-added-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          LocationRoute.name,
+          path: '/location-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          ObjectRoute.name,
+          path: '/object-page',
           guards: [
             authGuard,
             duplicateGuard,
@@ -802,6 +833,74 @@ class RecentlyAddedRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'RecentlyAddedRoute';
+}
+
+/// generated route for
+/// [LocationPage]
+class LocationRoute extends PageRouteInfo<LocationRouteArgs> {
+  LocationRoute({
+    Key? key,
+    required String city,
+  }) : super(
+          LocationRoute.name,
+          path: '/location-page',
+          args: LocationRouteArgs(
+            key: key,
+            city: city,
+          ),
+        );
+
+  static const String name = 'LocationRoute';
+}
+
+class LocationRouteArgs {
+  const LocationRouteArgs({
+    this.key,
+    required this.city,
+  });
+
+  final Key? key;
+
+  final String city;
+
+  @override
+  String toString() {
+    return 'LocationRouteArgs{key: $key, city: $city}';
+  }
+}
+
+/// generated route for
+/// [ObjectPage]
+class ObjectRoute extends PageRouteInfo<ObjectRouteArgs> {
+  ObjectRoute({
+    Key? key,
+    required String object,
+  }) : super(
+          ObjectRoute.name,
+          path: '/object-page',
+          args: ObjectRouteArgs(
+            key: key,
+            object: object,
+          ),
+        );
+
+  static const String name = 'ObjectRoute';
+}
+
+class ObjectRouteArgs {
+  const ObjectRouteArgs({
+    this.key,
+    required this.object,
+  });
+
+  final Key? key;
+
+  final String object;
+
+  @override
+  String toString() {
+    return 'ObjectRouteArgs{key: $key, object: $object}';
+  }
 }
 
 /// generated route for

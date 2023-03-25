@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/ui/explore_grid.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/utils/capitalize_first_letter.dart';
 import 'package:openapi/api.dart';
@@ -39,15 +40,20 @@ class CuratedObjectPage extends HookConsumerWidget {
         error: (err, stack) => Center(
           child: Text('Error: $err'),
         ),
-        data: (curatedLocations) => ExploreGrid(
-          curatedContent: curatedLocations
+        data: (curatedObjects) => ExploreGrid(
+          curatedContent: curatedObjects
               .map(
                 (l) => CuratedContent(
-                  label: l.object.capitalizeFirstLetter(),
+                  label: l.object.capitalizeWords(),
                   id: l.id,
                 ),
               )
               .toList(),
+              onTap: (content, index) {
+                AutoRouter.of(context).push(
+                  ObjectRoute(object: curatedObjects[index].object),
+                );
+              }
         ),
       ),
     );

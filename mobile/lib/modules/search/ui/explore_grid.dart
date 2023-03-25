@@ -1,15 +1,16 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 
 class ExploreGrid extends StatelessWidget {
   final List<CuratedContent> curatedContent;
+  final Function(CuratedContent, int)? onTap;
+
   const ExploreGrid({
     super.key,
     required this.curatedContent,
+    this.onTap,
   });
 
   @override
@@ -42,11 +43,7 @@ class ExploreGrid extends StatelessWidget {
         return ThumbnailWithInfo(
           imageUrl: thumbnailRequestUrl,
           textInfo: content.label,
-          onTap: () {
-            AutoRouter.of(context).push(
-              SearchResultRoute(searchTerm: content.label),
-            );
-          },
+          onTap: () => onTap?.call(content, index),
         );
       },
       itemCount: curatedContent.length,

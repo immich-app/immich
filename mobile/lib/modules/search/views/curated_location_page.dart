@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/ui/explore_grid.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:openapi/api.dart';
 
@@ -45,6 +46,11 @@ class CuratedLocationPage extends HookConsumerWidget {
                 ),
               )
               .toList(),
+              onTap: (content, index) {
+                AutoRouter.of(context).push(
+                  LocationRoute(city: curatedLocations[index].city),
+                );
+              },
         ),
       ),
     );

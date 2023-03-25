@@ -10,6 +10,7 @@ import 'package:immich_mobile/modules/search/ui/search_bar.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/utils/capitalize_first_letter.dart';
 import 'package:openapi/api.dart';
 
 // ignore: must_be_immutable
@@ -67,7 +68,7 @@ class SearchPage extends HookConsumerWidget {
             imageSize: imageSize,
             onTap: (content, index) {
               AutoRouter.of(context).push(
-                SearchResultRoute(searchTerm: content.label),
+                LocationRoute(city: locations[index].city),
               );
             },
           ),
@@ -99,7 +100,7 @@ class SearchPage extends HookConsumerWidget {
             imageSize: imageSize,
             onTap: (content, index) {
               AutoRouter.of(context).push(
-                SearchResultRoute(searchTerm: content.label),
+                ObjectRoute(object: objects[index].object),
               );
             },
           ),
