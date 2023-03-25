@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
@@ -20,6 +21,10 @@ class ObjectPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(object.capitalizeWords()),
+        leading: IconButton(
+          onPressed: () => AutoRouter.of(context).pop(),
+          icon: const Icon(Icons.arrow_back_ios_rounded),
+        ),
       ),
       body: locationAssets.when(
         data: (assets) => ImmichAssetGrid(

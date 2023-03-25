@@ -93,7 +93,7 @@ class SearchPage extends HookConsumerWidget {
                 .map(
                   (o) => CuratedContent(
                     id: o.id,
-                    label: o.object,
+                    label: o.object.capitalizeWords(),
                   ),
                 )
                 .toList(),
