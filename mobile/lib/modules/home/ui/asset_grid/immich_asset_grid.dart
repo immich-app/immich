@@ -36,19 +36,23 @@ class ImmichAssetGrid extends HookConsumerWidget {
 
     // Needs to suppress hero animations when navigating to this widget
     final enableHeroAnimations = useState(false);
+    final duration = ModalRoute.of(context)?.transitionDuration;
 
-    // Wait for transition to complete, then re-enable
-    ModalRoute.of(context)?.animation?.addListener(() {
-      // If we've already enabled, we are done
-      if (enableHeroAnimations.value) {
-        return;
-      }
-      final animation = ModalRoute.of(context)?.animation;
-      if (animation != null) {
-        // When the animation is complete, re-enable hero animations
-        enableHeroAnimations.value = animation.isCompleted;
-      }
-    });
+    useEffect(
+      () {
+        if (duration == null) {
+          // No duration, so enable hero animations right away
+          enableHeroAnimations.value = true;
+        } else {
+          // Wait for transition to complete, then re-enable hero animations
+          Future.delayed(duration).then((_) =>
+            enableHeroAnimations.value = true,
+          );
+        }
+        return null;
+      }, 
+      [],
+    );
 
     Future<bool> onWillPop() async {
       enableHeroAnimations.value = false;
