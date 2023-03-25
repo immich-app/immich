@@ -25,8 +25,14 @@ class SearchPage extends HookConsumerWidget {
         ref.watch(getCuratedLocationProvider);
     AsyncValue<List<CuratedObjectsResponseDto>> curatedObjects =
         ref.watch(getCuratedObjectProvider);
-
+    var isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     double imageSize = MediaQuery.of(context).size.width / 3;
+    TextStyle categoryTitleStyle = const TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 14.0,
+    );
+
+    Color categoryIconColor = isDarkTheme ? Colors.white : Colors.black;
 
     useEffect(
       () {
@@ -50,12 +56,14 @@ class SearchPage extends HookConsumerWidget {
           loading: () => const Center(child: ImmichLoadingIndicator()),
           error: (err, stack) => Center(child: Text('Error: $err')),
           data: (locations) => CuratedRow(
-            content: locations.map(
-              (o) => CuratedContent(
-                id: o.id,
-                label: o.city,
-              ),
-            ).toList(),
+            content: locations
+                .map(
+                  (o) => CuratedContent(
+                    id: o.id,
+                    label: o.city,
+                  ),
+                )
+                .toList(),
             imageSize: imageSize,
             onTap: (content, index) {
               AutoRouter.of(context).push(
@@ -80,12 +88,14 @@ class SearchPage extends HookConsumerWidget {
             child: Center(child: Text('Error: $err')),
           ),
           data: (objects) => CuratedRow(
-            content: objects.map(
-              (o) => CuratedContent(
-                id: o.id,
-                label: o.object,
-              ),
-            ).toList(),
+            content: objects
+                .map(
+                  (o) => CuratedContent(
+                    id: o.id,
+                    label: o.object,
+                  ),
+                )
+                .toList(),
             imageSize: imageSize,
             onTap: (content, index) {
               AutoRouter.of(context).push(
@@ -141,9 +151,11 @@ class SearchPage extends HookConsumerWidget {
                 ),
                 buildPlaces(),
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 4.0,
+                  padding: const EdgeInsets.only(
+                    top: 24.0,
+                    bottom: 4.0,
+                    left: 16.0,
+                    right: 16.0,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -169,7 +181,7 @@ class SearchPage extends HookConsumerWidget {
                   ),
                 ),
                 buildThings(),
-                const SizedBox(height: 12.0),
+                const SizedBox(height: 24.0),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
@@ -178,8 +190,13 @@ class SearchPage extends HookConsumerWidget {
                   ).tr(),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.star_outline),
-                  title: const Text('search_page_favorites').tr(),
+                  leading: Icon(
+                    Icons.star_outline,
+                    color: categoryIconColor,
+                  ),
+                  title:
+                      Text('search_page_favorites', style: categoryTitleStyle)
+                          .tr(),
                   onTap: () => AutoRouter.of(context).push(
                     const FavoritesRoute(),
                   ),
@@ -192,13 +209,19 @@ class SearchPage extends HookConsumerWidget {
                   child: Divider(),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.schedule_outlined),
-                  title: const Text('search_page_recently_added').tr(),
+                  leading: Icon(
+                    Icons.schedule_outlined,
+                    color: categoryIconColor,
+                  ),
+                  title: Text(
+                    'search_page_recently_added',
+                    style: categoryTitleStyle,
+                  ).tr(),
                   onTap: () => AutoRouter.of(context).push(
                     const RecentlyAddedRoute(),
                   ),
                 ),
-                const SizedBox(height: 12.0),
+                const SizedBox(height: 24.0),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
@@ -207,8 +230,12 @@ class SearchPage extends HookConsumerWidget {
                   ).tr(),
                 ),
                 ListTile(
-                  title: const Text('search_page_videos').tr(),
-                  leading: const Icon(Icons.play_circle_outline),
+                  title: Text('search_page_videos', style: categoryTitleStyle)
+                      .tr(),
+                  leading: Icon(
+                    Icons.play_circle_outline,
+                    color: categoryIconColor,
+                  ),
                   onTap: () => AutoRouter.of(context).push(
                     const AllVideosRoute(),
                   ),
@@ -221,8 +248,14 @@ class SearchPage extends HookConsumerWidget {
                   child: Divider(),
                 ),
                 ListTile(
-                  title: const Text('search_page_motion_photos').tr(),
-                  leading: const Icon(Icons.motion_photos_on_outlined),
+                  title: Text(
+                    'search_page_motion_photos',
+                    style: categoryTitleStyle,
+                  ).tr(),
+                  leading: Icon(
+                    Icons.motion_photos_on_outlined,
+                    color: categoryIconColor,
+                  ),
                   onTap: () => AutoRouter.of(context).push(
                     const AllMotionPhotosRoute(),
                   ),
