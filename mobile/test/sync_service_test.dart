@@ -53,6 +53,7 @@ void main() {
     late final Isar db;
     setUpAll(() async {
       WidgetsFlutterBinding.ensureInitialized();
+      await Isar.initializeIsarCore(download: true);
       db = loadDb();
       ImmichLogger();
       db.writeTxnSync(() => db.clearSync());
