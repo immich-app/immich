@@ -8,16 +8,13 @@ import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/main.dart';
 import 'package:immich_mobile/modules/backup/background_service/localization.dart';
 import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/current_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/models/error_upload_asset.model.dart';
 import 'package:immich_mobile/modules/backup/services/backup.service.dart';
-import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
@@ -317,7 +314,6 @@ class BackgroundService {
           debugPrint(error.toString());
           return false;
         } finally {
-          await Hive.close();
           releaseLock();
         }
       case "systemStop":
@@ -332,17 +328,9 @@ class BackgroundService {
 
   Future<bool> _onAssetsChanged() async {
     final Isar db = await loadDb();
-    await Hive.initFlutter();
 
-    Hive.registerAdapter(HiveSavedLoginInfoAdapter());
-
-    await Future.wait([
-      Hive.openBox(userInfoBox),
-      Hive.openBox<HiveSavedLoginInfo>(hiveLoginInfoBox),
-      Hive.openBox(userSettingInfoBox),
-    ]);
     ApiService apiService = ApiService();
-    apiService.setAccessToken(Hive.box(userInfoBox).get(accessTokenKey));
+    apiService.setAccessToken(Store.get(StoreKey.accessToken));
     BackupService backupService = BackupService(apiService, db);
     AppSettingsService settingsService = AppSettingsService();
 
@@ -387,7 +375,7 @@ class BackgroundService {
           db.backupAlbums.deleteAllSync(toDelete);
           db.backupAlbums.putAllSync(toUpsert);
         });
-      } else if (Store.get(StoreKey.backupFailedSince) == null) {
+      } else if (Store.tryGet(StoreKey.backupFailedSince) == null) {
         Store.put(StoreKey.backupFailedSince, DateTime.now());
         return false;
       }
@@ -529,7 +517,7 @@ class BackgroundService {
     } else if (value == 5) {
       return false;
     }
-    final DateTime? failedSince = Store.get(StoreKey.backupFailedSince);
+    final DateTime? failedSince = Store.tryGet(StoreKey.backupFailedSince);
     if (failedSince == null) {
       return false;
     }

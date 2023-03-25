@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/shared/models/logger_message.model.dart';
 import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:intl/intl.dart';
 
@@ -31,29 +32,29 @@ class AppLogPage extends HookConsumerWidget {
       );
     }
 
-    Widget buildLeadingIcon(String level) {
+    Widget buildLeadingIcon(LogLevel level) {
       switch (level) {
-        case "INFO":
+        case LogLevel.INFO:
           return colorStatusIndicator(Theme.of(context).primaryColor);
-        case "SEVERE":
+        case LogLevel.SEVERE:
           return colorStatusIndicator(Colors.redAccent);
 
-        case "WARNING":
+        case LogLevel.WARNING:
           return colorStatusIndicator(Colors.orangeAccent);
         default:
           return colorStatusIndicator(Colors.grey);
       }
     }
 
-    getTileColor(String level) {
+    getTileColor(LogLevel level) {
       switch (level) {
-        case "INFO":
+        case LogLevel.INFO:
           return Colors.transparent;
-        case "SEVERE":
+        case LogLevel.SEVERE:
           return Theme.of(context).brightness == Brightness.dark
               ? Colors.redAccent.withOpacity(0.25)
               : Colors.redAccent.withOpacity(0.075);
-        case "WARNING":
+        case LogLevel.WARNING:
           return Theme.of(context).brightness == Brightness.dark
               ? Colors.orangeAccent.withOpacity(0.25)
               : Colors.orangeAccent.withOpacity(0.075);

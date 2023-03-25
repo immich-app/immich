@@ -9,9 +9,9 @@ import { ApiTags } from '@nestjs/swagger';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
 
-@Authenticated()
 @ApiTags('Device Info')
 @Controller('device-info')
+@Authenticated()
 export class DeviceInfoController {
   constructor(private readonly service: DeviceInfoService) {}
 

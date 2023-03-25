@@ -78,6 +78,30 @@ describe('assetUploadOption', () => {
       expect(callback).toHaveBeenCalledWith(null, true);
     });
 
+    it('should allow .wmv videos', () => {
+      const file = { mimetype: 'video/x-ms-wmv', originalname: 'test.wmv' } as any;
+      fileFilter(mock.userRequest, file, callback);
+      expect(callback).toHaveBeenCalledWith(null, true);
+    });
+
+    it('should allow .mkv videos', () => {
+      const file = { mimetype: 'video/x-matroska', originalname: 'test.mkv' } as any;
+      fileFilter(mock.userRequest, file, callback);
+      expect(callback).toHaveBeenCalledWith(null, true);
+    });
+
+    it('should allow .mpg videos', () => {
+      const file = { mimetype: 'video/mpeg', originalname: 'test.mpg' } as any;
+      fileFilter(mock.userRequest, file, callback);
+      expect(callback).toHaveBeenCalledWith(null, true);
+    });
+
+    it('should allow .flv videos', () => {
+      const file = { mimetype: 'video/x-flv', originalname: 'test.flv' } as any;
+      fileFilter(mock.userRequest, file, callback);
+      expect(callback).toHaveBeenCalledWith(null, true);
+    });
+
     it('should not allow unknown types', async () => {
       const file = { mimetype: 'application/html', originalname: 'test.html' } as any;
       const callback = jest.fn();
@@ -113,16 +137,7 @@ describe('assetUploadOption', () => {
       destination(mock.userRequest, mock.file, callback);
 
       expect(mkdirSync).not.toHaveBeenCalled();
-      expect(callback).toHaveBeenCalledWith(null, 'upload/test-user/original/test-device');
-    });
-
-    it('should sanitize the deviceId', () => {
-      const request = { ...mock.userRequest, body: { deviceId: 'test-devi\u0000ce' } } as Request;
-      destination(request, mock.file, callback);
-
-      const [folderName] = existsSync.mock.calls[0];
-      expect(folderName.endsWith('test-device')).toBeTruthy();
-      expect(callback).toHaveBeenCalledWith(null, 'upload/test-user/original/test-device');
+      expect(callback).toHaveBeenCalledWith(null, 'upload/upload/test-user');
     });
   });
 
@@ -154,6 +169,19 @@ describe('assetUploadOption', () => {
       const [error, name] = callback.mock.calls[0];
       expect(error).toBeNull();
       expect(name.endsWith(mock.userRequest.body.fileExtension)).toBeTruthy();
+    });
+
+    it('should not change the casing of the extension', () => {
+      // Case is deliberately mixed to cover both .upper() and .lower()
+      const body = { ...mock.userRequest.body, fileExtension: '.JpEg' };
+      const request = { ...mock.userRequest, body } as Request;
+
+      filename(request, mock.file, callback);
+
+      expect(callback).toHaveBeenCalled();
+      const [error, name] = callback.mock.calls[0];
+      expect(error).toBeNull();
+      expect(name.endsWith(body.fileExtension)).toBeTruthy();
     });
   });
 });

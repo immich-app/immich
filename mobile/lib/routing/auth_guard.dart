@@ -13,7 +13,6 @@ class AuthGuard extends AutoRouteGuard {
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
     try {
       var res = await _apiService.authenticationApi.validateAccessToken();
-
       if (res != null && res.authStatus) {
         resolver.next(true);
       } else {

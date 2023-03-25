@@ -8,6 +8,7 @@ import { JobService } from './job';
 import { MediaService } from './media';
 import { OAuthService } from './oauth';
 import { SearchService } from './search';
+import { ServerInfoService } from './server-info';
 import { ShareService } from './share';
 import { SmartInfoService } from './smart-info';
 import { StorageService } from './storage';
@@ -24,6 +25,7 @@ const providers: Provider[] = [
   JobService,
   MediaService,
   OAuthService,
+  ServerInfoService,
   SmartInfoService,
   StorageService,
   StorageTemplateService,

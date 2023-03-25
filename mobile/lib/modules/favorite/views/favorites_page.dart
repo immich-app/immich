@@ -3,9 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
-import 'package:immich_mobile/modules/favorite/ui/favorite_image.dart';
-import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 
 class FavoritesPage extends HookConsumerWidget {
   const FavoritesPage({Key? key}) : super(key: key);
@@ -22,46 +20,14 @@ class FavoritesPage extends HookConsumerWidget {
         automaticallyImplyLeading: false,
         title: const Text(
           'favorites_page_title',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ).tr(),
       );
     }
 
-    Widget buildImageGrid() {
-      final appSettingService = ref.watch(appSettingsServiceProvider);
-
-      if (ref.watch(favoriteAssetProvider).isNotEmpty) {
-        return SliverPadding(
-          padding: const EdgeInsets.only(top: 10.0),
-          sliver: SliverGrid(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount:
-                  appSettingService.getSetting(AppSettingsEnum.tilesPerRow),
-              crossAxisSpacing: 5.0,
-              mainAxisSpacing: 5,
-            ),
-            delegate: SliverChildBuilderDelegate(
-              (
-                BuildContext context,
-                int index,
-              ) {
-                return FavoriteImage(
-                  ref.watch(favoriteAssetProvider)[index],
-                  ref.watch(favoriteAssetProvider),
-                );
-              },
-              childCount: ref.watch(favoriteAssetProvider).length,
-            ),
-          ),
-        );
-      }
-      return const SliverToBoxAdapter();
-    }
-
     return Scaffold(
       appBar: buildAppBar(),
-      body: CustomScrollView(
-        slivers: [buildImageGrid()],
+      body: ImmichAssetGrid(
+        assets: ref.watch(favoriteAssetProvider),
       ),
     );
   }

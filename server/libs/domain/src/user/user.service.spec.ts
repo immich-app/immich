@@ -426,7 +426,7 @@ describe(UserService.name, () => {
     });
   });
 
-  describe('handleUserDeleteCheck', () => {
+  describe('handleQueueUserDelete', () => {
     it('should skip users not ready for deletion', async () => {
       userRepositoryMock.getDeletedUsers.mockResolvedValue([
         {},
@@ -435,7 +435,7 @@ describe(UserService.name, () => {
         { deletedAt: makeDeletedAt(5) },
       ] as UserEntity[]);
 
-      await sut.handleUserDeleteCheck();
+      await sut.handleQueueUserDelete();
 
       expect(userRepositoryMock.getDeletedUsers).toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
@@ -445,7 +445,7 @@ describe(UserService.name, () => {
       const user = { deletedAt: makeDeletedAt(10) };
       userRepositoryMock.getDeletedUsers.mockResolvedValue([user] as UserEntity[]);
 
-      await sut.handleUserDeleteCheck();
+      await sut.handleQueueUserDelete();
 
       expect(userRepositoryMock.getDeletedUsers).toHaveBeenCalled();
       expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.USER_DELETION, data: { user } });
@@ -467,7 +467,13 @@ describe(UserService.name, () => {
 
       await sut.handleUserDelete({ user });
 
-      expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/deleted-user', { force: true, recursive: true });
+      const options = { force: true, recursive: true };
+
+      expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/library/deleted-user', options);
+      expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/upload/deleted-user', options);
+      expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/profile/deleted-user', options);
+      expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/thumbs/deleted-user', options);
+      expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/encoded-video/deleted-user', options);
       expect(tokenMock.deleteAll).toHaveBeenCalledWith(user.id);
       expect(keyMock.deleteAll).toHaveBeenCalledWith(user.id);
       expect(albumMock.deleteAll).toHaveBeenCalledWith(user.id);

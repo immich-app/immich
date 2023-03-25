@@ -42,11 +42,11 @@ describe(StorageTemplateService.name, () => {
       assetMock.save.mockResolvedValue(assetEntityStub.image);
 
       when(storageMock.checkFileExists)
-        .calledWith('upload/user-id/2023/2023-02-23/asset-id.ext')
+        .calledWith('upload/library/user-id/2023/2023-02-23/asset-id.ext')
         .mockResolvedValue(true);
 
       when(storageMock.checkFileExists)
-        .calledWith('upload/user-id/2023/2023-02-23/asset-id+1.ext')
+        .calledWith('upload/library/user-id/2023/2023-02-23/asset-id+1.ext')
         .mockResolvedValue(false);
 
       await sut.handleTemplateMigration();
@@ -55,7 +55,7 @@ describe(StorageTemplateService.name, () => {
       expect(storageMock.checkFileExists).toHaveBeenCalledTimes(2);
       expect(assetMock.save).toHaveBeenCalledWith({
         id: assetEntityStub.image.id,
-        originalPath: 'upload/user-id/2023/2023-02-23/asset-id+1.ext',
+        originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id+1.ext',
       });
     });
 
@@ -63,7 +63,7 @@ describe(StorageTemplateService.name, () => {
       assetMock.getAll.mockResolvedValue([
         {
           ...assetEntityStub.image,
-          originalPath: 'upload/user-id/2023/2023-02-23/asset-id.ext',
+          originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id.ext',
         },
       ]);
 
@@ -79,7 +79,7 @@ describe(StorageTemplateService.name, () => {
       assetMock.getAll.mockResolvedValue([
         {
           ...assetEntityStub.image,
-          originalPath: 'upload/user-id/2023/2023-02-23/asset-id+1.ext',
+          originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id+1.ext',
         },
       ]);
 
@@ -100,11 +100,11 @@ describe(StorageTemplateService.name, () => {
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(storageMock.moveFile).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/user-id/2023/2023-02-23/asset-id.ext',
+        'upload/library/user-id/2023/2023-02-23/asset-id.ext',
       );
       expect(assetMock.save).toHaveBeenCalledWith({
         id: assetEntityStub.image.id,
-        originalPath: 'upload/user-id/2023/2023-02-23/asset-id.ext',
+        originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id.ext',
       });
     });
 
@@ -117,7 +117,7 @@ describe(StorageTemplateService.name, () => {
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(storageMock.moveFile).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/user-id/2023/2023-02-23/asset-id.ext',
+        'upload/library/user-id/2023/2023-02-23/asset-id.ext',
       );
       expect(assetMock.save).not.toHaveBeenCalled();
     });
@@ -131,11 +131,11 @@ describe(StorageTemplateService.name, () => {
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(assetMock.save).toHaveBeenCalledWith({
         id: assetEntityStub.image.id,
-        originalPath: 'upload/user-id/2023/2023-02-23/asset-id.ext',
+        originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id.ext',
       });
       expect(storageMock.moveFile.mock.calls).toEqual([
-        ['/original/path.ext', 'upload/user-id/2023/2023-02-23/asset-id.ext'],
-        ['upload/user-id/2023/2023-02-23/asset-id.ext', '/original/path.ext'],
+        ['/original/path.ext', 'upload/library/user-id/2023/2023-02-23/asset-id.ext'],
+        ['upload/library/user-id/2023/2023-02-23/asset-id.ext', '/original/path.ext'],
       ]);
     });
   });

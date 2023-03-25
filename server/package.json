@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.51.1",
+  "version": "1.51.2",
   "description": "",
   "author": "",
   "private": true,
@@ -29,6 +29,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/immich/test/jest-e2e.json --runInBand",
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
+    "typeorm:migrations:create": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:create",
     "typeorm:migrations:generate": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:generate -d ./libs/infra/src/db/config/database.config.ts",
     "typeorm:migrations:run": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:run -d ./libs/infra/src/db/config/database.config.ts",
     "typeorm:migrations:revert": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:revert -d ./libs/infra/src/db/config/database.config.ts",
@@ -129,7 +130,7 @@
     "rootDir": ".",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.ts$": "ts-jest"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s",
@@ -137,10 +138,6 @@
     ],
     "coverageDirectory": "./coverage",
     "coverageThreshold": {
-      "global": {
-        "lines": 17,
-        "statements": 17
-      },
       "./libs/domain/": {
         "branches": 80,
         "functions": 85,
@@ -157,7 +154,6 @@
       "<rootDir>/libs/"
     ],
     "moduleNameMapper": {
-      "@app/common": "<rootDir>/libs/common/src",
       "^@app/infra(|/.*)$": "<rootDir>/libs/infra/src/$1",
       "^@app/domain(|/.*)$": "<rootDir>/libs/domain/src/$1"
     },

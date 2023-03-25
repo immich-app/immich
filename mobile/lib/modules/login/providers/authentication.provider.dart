@@ -2,13 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
-import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
-import 'package:immich_mobile/modules/backup/services/backup.service.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
@@ -19,7 +15,6 @@ import 'package:openapi/api.dart';
 class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   AuthenticationNotifier(
     this._deviceInfoService,
-    this._backupService,
     this._apiService,
   ) : super(
           AuthenticationState(
@@ -33,19 +28,10 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
             isAdmin: false,
             shouldChangePassword: false,
             isAuthenticated: false,
-            deviceInfo: DeviceInfoResponseDto(
-              id: 0,
-              userId: "",
-              deviceId: "",
-              deviceType: DeviceTypeEnum.ANDROID,
-              createdAt: "",
-              isAutoBackup: false,
-            ),
           ),
         );
 
   final DeviceInfoService _deviceInfoService;
-  final BackupService _backupService;
   final ApiService _apiService;
 
   Future<bool> login(
@@ -91,11 +77,10 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     try {
       await Future.wait([
         _apiService.authenticationApi.logout(),
-        Hive.box(userInfoBox).delete(accessTokenKey),
         Store.delete(StoreKey.assetETag),
         Store.delete(StoreKey.userRemoteId),
         Store.delete(StoreKey.currentUser),
-        Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).delete(savedLoginInfoKey)
+        Store.delete(StoreKey.accessToken),
       ]);
 
       state = state.copyWith(isAuthenticated: false);
@@ -105,18 +90,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       debugPrint("Error logging out $e");
       return false;
     }
-  }
-
-  setAutoBackup(bool backupState) async {
-    var deviceInfo = await _deviceInfoService.getDeviceInfo();
-    var deviceId = deviceInfo["deviceId"];
-
-    DeviceTypeEnum deviceType = deviceInfo["deviceType"];
-
-    DeviceInfoResponseDto updatedDeviceInfo =
-        await _backupService.setAutoBackup(backupState, deviceId, deviceType);
-
-    state = state.copyWith(deviceInfo: updatedDeviceInfo);
   }
 
   updateUserProfileImagePath(String path) {
@@ -157,14 +130,13 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     }
 
     if (userResponseDto != null) {
-      var userInfoHiveBox = await Hive.openBox(userInfoBox);
       var deviceInfo = await _deviceInfoService.getDeviceInfo();
-      userInfoHiveBox.put(deviceIdKey, deviceInfo["deviceId"]);
-      userInfoHiveBox.put(accessTokenKey, accessToken);
       Store.put(StoreKey.deviceId, deviceInfo["deviceId"]);
       Store.put(StoreKey.deviceIdHash, fastHash(deviceInfo["deviceId"]));
       Store.put(StoreKey.userRemoteId, userResponseDto.id);
       Store.put(StoreKey.currentUser, User.fromDto(userResponseDto));
+      Store.put(StoreKey.serverUrl, serverUrl);
+      Store.put(StoreKey.accessToken, accessToken);
 
       state = state.copyWith(
         isAuthenticated: true,
@@ -178,40 +150,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         deviceId: deviceInfo["deviceId"],
         deviceType: deviceInfo["deviceType"],
       );
-
-      // Save login info to local storage
-      Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).put(
-        savedLoginInfoKey,
-        HiveSavedLoginInfo(
-          email: "",
-          password: "",
-          serverUrl: serverUrl,
-          accessToken: accessToken,
-        ),
-      );
     }
-
-    // Register device info
-    try {
-      DeviceInfoResponseDto? deviceInfo =
-          await _apiService.deviceInfoApi.upsertDeviceInfo(
-        UpsertDeviceInfoDto(
-          deviceId: state.deviceId,
-          deviceType: state.deviceType,
-        ),
-      );
-
-      if (deviceInfo == null) {
-        debugPrint('Device Info Response is null');
-        return false;
-      }
-
-      state = state.copyWith(deviceInfo: deviceInfo);
-    } catch (e) {
-      debugPrint("ERROR Register Device Info: $e");
-      return e is ApiException && e.innerException is SocketException;
-    }
-
     return true;
   }
 }
@@ -220,7 +159,6 @@ final authenticationProvider =
     StateNotifierProvider<AuthenticationNotifier, AuthenticationState>((ref) {
   return AuthenticationNotifier(
     ref.watch(deviceInfoServiceProvider),
-    ref.watch(backupServiceProvider),
     ref.watch(apiServiceProvider),
   );
 });

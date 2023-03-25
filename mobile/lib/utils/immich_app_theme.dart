@@ -41,6 +41,8 @@ ThemeData immichLightTheme = ThemeData(
     titleTextStyle: const TextStyle(
       fontFamily: 'WorkSans',
       color: Colors.indigo,
+      fontWeight: FontWeight.bold,
+      fontSize: 18,
     ),
     backgroundColor: immichBackgroundColor,
     foregroundColor: Colors.indigo,
@@ -74,6 +76,17 @@ ThemeData immichLightTheme = ThemeData(
       fontSize: 12,
       fontWeight: FontWeight.bold,
       color: Colors.indigo,
+    ),
+    titleSmall: TextStyle(
+      fontSize: 16.0,
+    ),
+    titleMedium: TextStyle(
+      fontSize: 18.0,
+      fontWeight: FontWeight.bold,
+    ),
+    titleLarge: TextStyle(
+      fontSize: 26.0,
+      fontWeight: FontWeight.bold,
     ),
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
@@ -127,6 +140,8 @@ ThemeData immichDarkTheme = ThemeData(
     titleTextStyle: TextStyle(
       fontFamily: 'WorkSans',
       color: immichDarkThemePrimaryColor,
+      fontWeight: FontWeight.bold,
+      fontSize: 18,
     ),
     backgroundColor: const Color.fromARGB(255, 32, 33, 35),
     foregroundColor: immichDarkThemePrimaryColor,
@@ -159,6 +174,18 @@ ThemeData immichDarkTheme = ThemeData(
       fontWeight: FontWeight.bold,
       color: immichDarkThemePrimaryColor,
     ),
+    titleSmall: const TextStyle(
+      fontSize: 16.0,
+    ),
+    titleMedium: const TextStyle(
+      fontSize: 18.0,
+      fontWeight: FontWeight.bold,
+    ),
+    titleLarge: const TextStyle(
+      fontSize: 26.0,
+      fontWeight: FontWeight.bold,
+    ),
+
   ),
   cardColor: Colors.grey[900],
   elevatedButtonTheme: ElevatedButtonThemeData(

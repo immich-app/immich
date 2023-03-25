@@ -1,8 +1,9 @@
-import { ImmichReadStream, IStorageRepository } from '@app/domain';
+import { DiskUsage, ImmichReadStream, IStorageRepository } from '@app/domain';
 import { constants, createReadStream, existsSync, mkdirSync } from 'fs';
 import fs from 'fs/promises';
 import mv from 'mv';
 import { promisify } from 'node:util';
+import diskUsage from 'diskusage';
 import path from 'path';
 
 const moveFile = promisify<string, string, mv.Options>(mv);
@@ -65,5 +66,9 @@ export class FilesystemProvider implements IStorageRepository {
     if (!existsSync(filepath)) {
       mkdirSync(filepath, { recursive: true });
     }
+  }
+
+  checkDiskUsage(folder: string): Promise<DiskUsage> {
+    return diskUsage.check(folder);
   }
 }

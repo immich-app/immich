@@ -1,9 +1,7 @@
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/backup/models/available_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
@@ -41,10 +39,12 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             allAssetsInDatabase: const [],
             progressInPercentage: 0,
             cancelToken: CancellationToken(),
+            autoBackup: Store.get(StoreKey.autoBackup, false),
             backgroundBackup: false,
-            backupRequireWifi: true,
-            backupRequireCharging: false,
-            backupTriggerDelay: 5000,
+            backupRequireWifi: Store.get(StoreKey.backupRequireWifi, true),
+            backupRequireCharging:
+                Store.get(StoreKey.backupRequireCharging, false),
+            backupTriggerDelay: Store.get(StoreKey.backupTriggerDelay, 5000),
             serverInfo: ServerInfoResponseDto(
               diskAvailable: "0",
               diskAvailableRaw: 0,
@@ -122,6 +122,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     _updateBackupAssetCount();
   }
 
+  void setAutoBackup(bool enabled) {
+    Store.put(StoreKey.autoBackup, enabled);
+    state = state.copyWith(autoBackup: enabled);
+  }
+
   void configureBackgroundBackup({
     bool? enabled,
     bool? requireWifi,
@@ -163,14 +168,12 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             triggerMaxDelay: state.backupTriggerDelay * 10,
           );
       if (success) {
-        await Future.wait([
-          Store.put(StoreKey.backupRequireWifi, state.backupRequireWifi),
-          Store.put(
-            StoreKey.backupRequireCharging,
-            state.backupRequireCharging,
-          ),
-          Store.put(StoreKey.backupTriggerDelay, state.backupTriggerDelay),
-        ]);
+        await Store.put(StoreKey.backupRequireWifi, state.backupRequireWifi);
+        await Store.put(
+          StoreKey.backupRequireCharging,
+          state.backupRequireCharging,
+        );
+        await Store.put(StoreKey.backupTriggerDelay, state.backupTriggerDelay);
       } else {
         state = state.copyWith(
           backgroundBackup: wasEnabled,
@@ -544,7 +547,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
   Future<void> _resumeBackup() async {
     // Check if user is login
-    final accessKey = Hive.box(userInfoBox).get(accessTokenKey);
+    final accessKey = Store.tryGet(StoreKey.accessToken);
 
     // User has been logged out return
     if (accessKey == null || !_authState.isAuthenticated) {
@@ -553,8 +556,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
 
     // Check if this device is enable backup by the user
-    if ((_authState.deviceInfo.deviceId == _authState.deviceId) &&
-        _authState.deviceInfo.isAutoBackup) {
+    if (state.autoBackup) {
       // check if backup is alreayd in process - then return
       if (state.backupProgress == BackUpProgressEnum.inProgress) {
         log.info("[_resumeBackup] Backup is already in progress - abort");
@@ -570,7 +572,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       log.info("[_resumeBackup] Start back up");
       await startBackupProcess();
     }
-
     return;
   }
 
@@ -603,9 +604,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       backupProgress: BackUpProgressEnum.inBackground,
       selectedBackupAlbums: selectedAlbums,
       excludedBackupAlbums: excludedAlbums,
-      backupRequireWifi: Store.get(StoreKey.backupRequireWifi),
-      backupRequireCharging: Store.get(StoreKey.backupRequireCharging),
-      backupTriggerDelay: Store.get(StoreKey.backupTriggerDelay),
     );
     // assumes the background service is currently running
     // if true, waits until it has stopped to start the backup

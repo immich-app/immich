@@ -1,8 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
-import 'package:immich_mobile/constants/hive_box.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:openapi/api.dart';
 import 'package:http/http.dart';
@@ -15,17 +14,13 @@ class ApiService {
   late OAuthApi oAuthApi;
   late AlbumApi albumApi;
   late AssetApi assetApi;
+  late SearchApi searchApi;
   late ServerInfoApi serverInfoApi;
-  late DeviceInfoApi deviceInfoApi;
 
   ApiService() {
-    if (Hive.isBoxOpen(userInfoBox)) {
-      final endpoint = Hive.box(userInfoBox).get(serverEndpointKey) as String?;
-      if (endpoint != null && endpoint.isNotEmpty) {
-        setEndpoint(endpoint);
-      }
-    } else {
-      debugPrint("Cannot init ApiServer endpoint, userInfoBox not open yet.");
+    final endpoint = Store.tryGet(StoreKey.serverEndpoint);
+    if (endpoint != null && endpoint.isNotEmpty) {
+      setEndpoint(endpoint);
     }
   }
   String? _authToken;
@@ -41,7 +36,7 @@ class ApiService {
     albumApi = AlbumApi(_apiClient);
     assetApi = AssetApi(_apiClient);
     serverInfoApi = ServerInfoApi(_apiClient);
-    deviceInfoApi = DeviceInfoApi(_apiClient);
+    searchApi = SearchApi(_apiClient);
   }
 
   Future<String> resolveAndSetEndpoint(String serverUrl) async {
@@ -49,7 +44,7 @@ class ApiService {
     setEndpoint(endpoint);
 
     // Save in hivebox for next startup
-    Hive.box(userInfoBox).put(serverEndpointKey, endpoint);
+    Store.put(StoreKey.serverEndpoint, endpoint);
     return endpoint;
   }
 

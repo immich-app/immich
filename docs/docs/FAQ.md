@@ -14,7 +14,11 @@ sidebar_position: 7
 
 ### How can I sync an existing directory with Immich's server?
 
-Immich doesn't have the mechanism to sync an existing directory with the server. There is however, a helper CLI tool to help you bulk upload the existing photos and videos to the server. You can find the guide to use the CLI tool [here](/docs/features/bulk-upload.md).
+Immich doesn't have two-way synchronization ([yet](https://github.com/immich-app/immich/discussions/1006)), but the [command line tool](/docs/features/bulk-upload.md) can bulk upload items from a directory to Immich.
+
+### Why doesn't Immich watch an existing photo gallery directory?
+
+The initial approach of Immich is to become a backup tool, primarily for mobile device usage. Thus, all the assets must be uploaded from the mobile client. The app was architectured to perform that job well.
 
 ### Why does my uploaded photo show up with the wrong date or time in Immich?
 
@@ -29,13 +33,18 @@ As an example, the following modification of ```docker-compose.yml``` will set t
       - TZ=Europe/Stockholm # <---- Add this line in the microservices config
 ```
 
-### Why doesn't Immich watch an existing photo gallery directory?
+### Why are only photos and not videos being uploaded to Immich?
+This often happens when using a reverse proxy or cloudflare tunnel in front of Immich. Make sure to set your reverse proxy to allow large POST requests. In `nginx`, set `client_max_body_size 50000M;` or similar. Cloudflare tunnels are limited to 100 mb file sizes.
 
-The initial approach of Immich is to become a backup tool, primarily for mobile device usage. Thus, all the assets must be uploaded from the mobile client. The app was architectured to perform that job well.
+### Why is Immich slow on low-memory systems like the Raspberry Pi?
+Immich uses optional machine-learning features to enhance search results. This feature, however, can be too heavy to run on a Raspberry Pi. To disable machine learning, comment out the `immich-machine-learning` section of your docker-compose.yml and set `IMMICH_MACHINE_LEARNING_URL=false` in your .env file.
 
 ### What happens to existing files after I choose a new [Storage Template](/docs/administration/storage-template.mdx)?
 
 Template changes will only apply to new assets. To retroactively apply the template to previously uploaded assets, run the Storage Migration Job, available on the [Jobs](/docs/administration/jobs.md) page.
+
+### In the uploads folder, why are photos stored in the wrong date?
+This is fixed by running the storage migration job.
 
 ### Why is object detection not very good?
 

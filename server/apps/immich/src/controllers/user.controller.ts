@@ -33,60 +33,58 @@ import { UserCountDto } from '@app/domain';
 @ApiTags('User')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private service: UserService) {}
 
   @Authenticated()
   @Get()
-  async getAllUsers(
+  getAllUsers(
     @GetAuthUser() authUser: AuthUserDto,
     @Query('isAll', ParseBoolPipe) isAll: boolean,
   ): Promise<UserResponseDto[]> {
-    return await this.userService.getAllUsers(authUser, isAll);
+    return this.service.getAllUsers(authUser, isAll);
   }
 
   @Get('/info/:userId')
-  async getUserById(@Param('userId') userId: string): Promise<UserResponseDto> {
-    return await this.userService.getUserById(userId);
+  getUserById(@Param('userId') userId: string): Promise<UserResponseDto> {
+    return this.service.getUserById(userId);
   }
 
   @Authenticated()
   @Get('me')
-  async getMyUserInfo(@GetAuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
-    return await this.userService.getUserInfo(authUser);
+  getMyUserInfo(@GetAuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
+    return this.service.getUserInfo(authUser);
   }
 
   @Authenticated({ admin: true })
   @Post()
-  async createUser(
-    @Body(new ValidationPipe({ transform: true })) createUserDto: CreateUserDto,
-  ): Promise<UserResponseDto> {
-    return await this.userService.createUser(createUserDto);
+  createUser(@Body(new ValidationPipe({ transform: true })) createUserDto: CreateUserDto): Promise<UserResponseDto> {
+    return this.service.createUser(createUserDto);
   }
 
   @Get('/count')
-  async getUserCount(@Query(new ValidationPipe({ transform: true })) dto: UserCountDto): Promise<UserCountResponseDto> {
-    return await this.userService.getUserCount(dto);
+  getUserCount(@Query(new ValidationPipe({ transform: true })) dto: UserCountDto): Promise<UserCountResponseDto> {
+    return this.service.getUserCount(dto);
   }
 
   @Authenticated({ admin: true })
   @Delete('/:userId')
-  async deleteUser(@GetAuthUser() authUser: AuthUserDto, @Param('userId') userId: string): Promise<UserResponseDto> {
-    return await this.userService.deleteUser(authUser, userId);
+  deleteUser(@GetAuthUser() authUser: AuthUserDto, @Param('userId') userId: string): Promise<UserResponseDto> {
+    return this.service.deleteUser(authUser, userId);
   }
 
   @Authenticated({ admin: true })
   @Post('/:userId/restore')
-  async restoreUser(@GetAuthUser() authUser: AuthUserDto, @Param('userId') userId: string): Promise<UserResponseDto> {
-    return await this.userService.restoreUser(authUser, userId);
+  restoreUser(@GetAuthUser() authUser: AuthUserDto, @Param('userId') userId: string): Promise<UserResponseDto> {
+    return this.service.restoreUser(authUser, userId);
   }
 
   @Authenticated()
   @Put()
-  async updateUser(
+  updateUser(
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) updateUserDto: UpdateUserDto,
   ): Promise<UserResponseDto> {
-    return await this.userService.updateUser(authUser, updateUserDto);
+    return this.service.updateUser(authUser, updateUserDto);
   }
 
   @UseInterceptors(FileInterceptor('file', profileImageUploadOption))
@@ -97,20 +95,18 @@ export class UserController {
     type: CreateProfileImageDto,
   })
   @Post('/profile-image')
-  async createProfileImage(
+  createProfileImage(
     @GetAuthUser() authUser: AuthUserDto,
     @UploadedFile() fileInfo: Express.Multer.File,
   ): Promise<CreateProfileImageResponseDto> {
-    return await this.userService.createProfileImage(authUser, fileInfo);
+    return this.service.createProfileImage(authUser, fileInfo);
   }
 
   @Get('/profile-image/:userId')
   @Header('Cache-Control', 'max-age=600')
   async getProfileImage(@Param('userId') userId: string, @Response({ passthrough: true }) res: Res): Promise<any> {
-    const readableStream = await this.userService.getUserProfileImage(userId);
-    res.set({
-      'Content-Type': 'image/jpeg',
-    });
+    const readableStream = await this.service.getUserProfileImage(userId);
+    res.header('Content-Type', 'image/jpeg');
     return new StreamableFile(readableStream);
   }
 }

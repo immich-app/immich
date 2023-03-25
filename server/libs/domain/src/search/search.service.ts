@@ -1,4 +1,3 @@
-import { MACHINE_LEARNING_ENABLED } from '@app/common';
 import { AlbumEntity, AssetEntity } from '@app/infra/db/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -7,6 +6,7 @@ import { IAlbumRepository } from '../album/album.repository';
 import { mapAsset } from '../asset';
 import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
+import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
 import { IBulkEntityJob, IJobRepository, JobName } from '../job';
 import { IMachineLearningRepository } from '../smart-info';
 import { SearchDto } from './dto';
@@ -148,11 +148,10 @@ export class SearchService {
 
       const chunkSize = 1000;
       for (let i = 0; i < assets.length; i += chunkSize) {
-        const end = i + chunkSize;
-        const chunk = assets.slice(i, end);
-        const done = end >= assets.length - 1;
-        await this.searchRepository.importAssets(chunk, done);
+        await this.searchRepository.importAssets(assets.slice(i, i + chunkSize), false);
       }
+
+      await this.searchRepository.importAssets([], true);
 
       this.logger.debug('Finished re-indexing all assets');
     } catch (error: any) {
