@@ -7,8 +7,6 @@ import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart'
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/providers/search_result_page.provider.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
-import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 class SearchResultPage extends HookConsumerWidget {
@@ -110,13 +108,7 @@ class SearchResultPage extends HookConsumerWidget {
 
     buildSearchResult() {
       var searchResultPageState = ref.watch(searchResultPageProvider);
-      var searchResultRenderList = ref.watch(searchRenderListProvider);
       var allSearchAssets = ref.watch(searchResultPageProvider).searchResult;
-
-      var settings = ref.watch(appSettingsServiceProvider);
-      final assetsPerRow = settings.getSetting(AppSettingsEnum.tilesPerRow);
-      final showStorageIndicator =
-          settings.getSetting(AppSettingsEnum.storageIndicator);
 
       if (searchResultPageState.isError) {
         return Padding(
@@ -129,22 +121,10 @@ class SearchResultPage extends HookConsumerWidget {
         return const Center(child: ImmichLoadingIndicator());
       }
 
+
       if (searchResultPageState.isSuccess) {
-        return searchResultRenderList.when(
-          data: (result) {
-            return ImmichAssetGrid(
-              allAssets: allSearchAssets,
-              renderList: result,
-              assetsPerRow: assetsPerRow,
-              showStorageIndicator: showStorageIndicator,
-            );
-          },
-          error: (err, stack) {
-            return Text("$err");
-          },
-          loading: () {
-            return const CircularProgressIndicator();
-          },
+        return ImmichAssetGrid(
+            assets: allSearchAssets,
         );
       }
 

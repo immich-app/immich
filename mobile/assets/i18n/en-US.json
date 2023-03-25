@@ -249,5 +249,14 @@
   "album_thumbnail_owned": "Owned",
   "curated_object_page_title": "Things",
   "curated_location_page_title": "Places",
-  "search_page_view_all_button": "View All"
+  "search_page_view_all_button": "View all",
+  "search_page_your_activity": "Your activity",
+  "search_page_favorites": "Favorites",
+  "search_page_videos": "Videos",
+  "all_videos_page_title": "Videos",
+  "recently_added_page_title": "Recently Added",
+  "motion_photos_page_title": "Motion Photos",
+  "search_page_motion_photos": "Motion Photos",
+  "search_page_recently_added": "Recently added",
+  "search_page_categories": "Categories"
 }

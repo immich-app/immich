@@ -169,7 +169,10 @@ class TabControllerPage extends ConsumerWidget {
                 );
               }
               return Scaffold(
-                body: body,
+                body: HeroControllerScope(
+                  controller: HeroController(),
+                  child: body,
+                ),
                 bottomNavigationBar: multiselectEnabled ? null : bottom,
               );
             },

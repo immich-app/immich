@@ -131,6 +131,29 @@ class _$AppRouter extends RootStackRouter {
         child: const FavoritesPage(),
       );
     },
+    AllVideosRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const AllVideosPage(),
+      );
+    },
+    AllMotionPhotosRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const AllMotionPhotosPage(),
+      );
+    },
+    RecentlyAddedRoute.name: (routeData) {
+      return CustomPage<dynamic>(
+        routeData: routeData,
+        child: const RecentlyAddedPage(),
+        transitionsBuilder: TransitionsBuilders.noTransition,
+        durationInMilliseconds: 200,
+        reverseDurationInMilliseconds: 200,
+        opaque: true,
+        barrierDismissible: false,
+      );
+    },
     AssetSelectionRoute.name: (routeData) {
       return CustomPage<AssetSelectionPageResult?>(
         routeData: routeData,
@@ -370,6 +393,30 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           FavoritesRoute.name,
           path: '/favorites-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          AllVideosRoute.name,
+          path: '/all-videos-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          AllMotionPhotosRoute.name,
+          path: '/all-motion-photos-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          RecentlyAddedRoute.name,
+          path: '/recently-added-page',
           guards: [
             authGuard,
             duplicateGuard,
@@ -719,6 +766,42 @@ class FavoritesRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'FavoritesRoute';
+}
+
+/// generated route for
+/// [AllVideosPage]
+class AllVideosRoute extends PageRouteInfo<void> {
+  const AllVideosRoute()
+      : super(
+          AllVideosRoute.name,
+          path: '/all-videos-page',
+        );
+
+  static const String name = 'AllVideosRoute';
+}
+
+/// generated route for
+/// [AllMotionPhotosPage]
+class AllMotionPhotosRoute extends PageRouteInfo<void> {
+  const AllMotionPhotosRoute()
+      : super(
+          AllMotionPhotosRoute.name,
+          path: '/all-motion-photos-page',
+        );
+
+  static const String name = 'AllMotionPhotosRoute';
+}
+
+/// generated route for
+/// [RecentlyAddedPage]
+class RecentlyAddedRoute extends PageRouteInfo<void> {
+  const RecentlyAddedRoute()
+      : super(
+          RecentlyAddedRoute.name,
+          path: '/recently-added-page',
+        );
+
+  static const String name = 'RecentlyAddedRoute';
 }
 
 /// generated route for
