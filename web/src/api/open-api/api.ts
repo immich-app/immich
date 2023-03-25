@@ -1993,8 +1993,18 @@ export interface SystemConfigFFmpegDto {
 	 * @type {string}
 	 * @memberof SystemConfigFFmpegDto
 	 */
-	transcode: string;
+	transcode: SystemConfigFFmpegDtoTranscodeEnum;
 }
+
+export const SystemConfigFFmpegDtoTranscodeEnum = {
+	All: 'all',
+	Optimal: 'optimal',
+	Required: 'required'
+} as const;
+
+export type SystemConfigFFmpegDtoTranscodeEnum =
+	(typeof SystemConfigFFmpegDtoTranscodeEnum)[keyof typeof SystemConfigFFmpegDtoTranscodeEnum];
+
 /**
  *
  * @export

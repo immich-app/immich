@@ -4577,7 +4577,12 @@
             "type": "string"
           },
           "transcode": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "all",
+              "optimal",
+              "required"
+            ]
           }
         },
         "required": [
