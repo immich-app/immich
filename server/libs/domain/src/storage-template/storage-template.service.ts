@@ -1,7 +1,7 @@
 import { AssetEntity, SystemConfig } from '@app/infra/db/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IAssetRepository } from '../asset/asset.repository';
-import { APP_UPLOAD_LOCATION } from '../domain.constant';
+import { APP_MEDIA_LOCATION } from '../domain.constant';
 import { IStorageRepository } from '../storage/storage.repository';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
 import { StorageTemplateCore } from './storage-template.core';
@@ -41,7 +41,7 @@ export class StorageTemplateService {
       }
 
       this.logger.debug('Cleaning up empty directories...');
-      await this.storageRepository.removeEmptyDirs(APP_UPLOAD_LOCATION);
+      await this.storageRepository.removeEmptyDirs(APP_MEDIA_LOCATION);
     } catch (error: any) {
       this.logger.error('Error running template migration', error);
     } finally {
