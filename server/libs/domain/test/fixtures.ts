@@ -401,7 +401,7 @@ export const systemConfigStub = {
       targetAudioCodec: 'aac',
       targetScaling: '1280:-2',
       targetVideoCodec: 'h264',
-      transcodeAll: false,
+      transcode: 'required',
     },
     oauth: {
       autoLaunch: false,

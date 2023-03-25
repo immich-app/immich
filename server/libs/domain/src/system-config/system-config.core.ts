@@ -14,7 +14,7 @@ const defaults: SystemConfig = Object.freeze({
     targetVideoCodec: 'h264',
     targetAudioCodec: 'aac',
     targetScaling: '1280:-2',
-    transcodeAll: false,
+    transcode: 'required',
   },
   oauth: {
     enabled: false,

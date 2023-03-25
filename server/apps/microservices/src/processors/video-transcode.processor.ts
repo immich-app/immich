@@ -74,7 +74,7 @@ export class VideoTranscodeProcessor {
   async runVideoEncode(asset: AssetEntity, savedEncodedPath: string): Promise<void> {
     const config = await this.systemConfigService.getConfig();
 
-    if (config.ffmpeg.transcodeAll) {
+    if (config.ffmpeg.transcode == 'all') {
       return this.runFFMPEGPipeLine(asset, savedEncodedPath);
     }
 
@@ -93,6 +93,13 @@ export class VideoTranscodeProcessor {
     //TODO: If video or audio are already the correct format, don't re-encode, copy the stream
     if (longestVideoStream.codec_name !== config.ffmpeg.targetVideoCodec) {
       return this.runFFMPEGPipeLine(asset, savedEncodedPath);
+    }
+
+    if (config.ffmpeg.transcode == 'optimal') {
+      const videoHeightThreshold = 1080;
+      if (!longestVideoStream.height || longestVideoStream.height > videoHeightThreshold) {
+        return this.runFFMPEGPipeLine(asset, savedEncodedPath);
+      }
     }
   }
 

@@ -7,7 +7,7 @@
 	import SettingButtonsRow from '../setting-buttons-row.svelte';
 	import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
 	import SettingSelect from '../setting-select.svelte';
-	import SettingSwitch from '../setting-switch.svelte';
+	import SettingTranscode from '../setting-transcode.svelte';
 	import { isEqual } from 'lodash-es';
 	import { fade } from 'svelte/transition';
 
@@ -117,11 +117,18 @@
 						isEdited={!(ffmpegConfig.targetScaling == savedConfig.targetScaling)}
 					/>
 
-					<SettingSwitch
-						title="TRANSCODE ALL"
-						subtitle="Transcode all files, even if they already match the specified format?"
-						bind:checked={ffmpegConfig.transcodeAll}
-						isEdited={!(ffmpegConfig.transcodeAll == savedConfig.transcodeAll)}
+					<SettingTranscode
+						label="TRANSCODE"
+						bind:value={ffmpegConfig.transcode}
+						options={[
+							{ value: 'all', description: 'All videos' },
+							{
+								value: 'optimal',
+								description: 'Videos higher than 1080p or not in the desired format'
+							},
+							{ value: 'required', description: 'Only videos not in the desired format' }
+						]}
+						isEdited={!(ffmpegConfig.transcode == savedConfig.transcode)}
 					/>
 				</div>
 
