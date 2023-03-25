@@ -12,6 +12,8 @@ import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dar
 import 'package:immich_mobile/modules/backup/models/hive_duplicated_assets.model.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/immich_logger_message.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/services/asset_cache.service.dart';
@@ -53,7 +55,6 @@ Future<void> _migrateLoginInfoBox(Box<HiveSavedLoginInfo> box) async {
 }
 
 Future<void> _migrateHiveUserInfoBox(Box box) async {
-  await _migrateKey(box, userIdKey, StoreKey.userRemoteId);
   await _migrateKey(box, assetEtagKey, StoreKey.assetETag);
   if (Store.tryGet(StoreKey.deviceId) == null) {
     await _migrateKey(box, deviceIdKey, StoreKey.deviceId);
@@ -142,4 +143,21 @@ Future<void> migrateJsonCacheIfNecessary() async {
   await AlbumCacheService().invalidate();
   await SharedAlbumCacheService().invalidate();
   await AssetCacheService().invalidate();
+}
+
+Future<void> migrateDatabaseIfNeeded(Isar db) async {
+  final int version = Store.get(StoreKey.version, 1);
+  switch (version) {
+    case 1:
+      await _migrateV1ToV2(db);
+  }
+}
+
+Future<void> _migrateV1ToV2(Isar db) async {
+  await Store.delete(StoreKey.assetETag);
+  await db.writeTxn(() async {
+    await db.assets.clear();
+    await db.exifInfos.clear();
+  });
+  await Store.put(StoreKey.version, 2);
 }

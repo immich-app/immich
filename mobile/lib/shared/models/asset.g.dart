@@ -77,13 +77,19 @@ const AssetSchema = CollectionSchema(
       name: r'remoteId',
       type: IsarType.string,
     ),
-    r'updatedAt': PropertySchema(
+    r'type': PropertySchema(
       id: 12,
+      name: r'type',
+      type: IsarType.byte,
+      enumMap: _AssettypeEnumValueMap,
+    ),
+    r'updatedAt': PropertySchema(
+      id: 13,
       name: r'updatedAt',
       type: IsarType.dateTime,
     ),
     r'width': PropertySchema(
-      id: 13,
+      id: 14,
       name: r'width',
       type: IsarType.int,
     )
@@ -110,7 +116,7 @@ const AssetSchema = CollectionSchema(
     r'localId_deviceId': IndexSchema(
       id: 7649417350086526165,
       name: r'localId_deviceId',
-      unique: true,
+      unique: false,
       replace: false,
       properties: [
         IndexPropertySchema(
@@ -175,8 +181,9 @@ void _assetSerialize(
   writer.writeString(offsets[9], object.localId);
   writer.writeLong(offsets[10], object.ownerId);
   writer.writeString(offsets[11], object.remoteId);
-  writer.writeDateTime(offsets[12], object.updatedAt);
-  writer.writeInt(offsets[13], object.width);
+  writer.writeByte(offsets[12], object.type.index);
+  writer.writeDateTime(offsets[13], object.updatedAt);
+  writer.writeInt(offsets[14], object.width);
 }
 
 Asset _assetDeserialize(
@@ -198,8 +205,10 @@ Asset _assetDeserialize(
     localId: reader.readString(offsets[9]),
     ownerId: reader.readLong(offsets[10]),
     remoteId: reader.readStringOrNull(offsets[11]),
-    updatedAt: reader.readDateTime(offsets[12]),
-    width: reader.readIntOrNull(offsets[13]),
+    type: _AssettypeValueEnumMap[reader.readByteOrNull(offsets[12])] ??
+        AssetType.other,
+    updatedAt: reader.readDateTime(offsets[13]),
+    width: reader.readIntOrNull(offsets[14]),
   );
   object.id = id;
   return object;
@@ -237,13 +246,29 @@ P _assetDeserializeProp<P>(
     case 11:
       return (reader.readStringOrNull(offset)) as P;
     case 12:
-      return (reader.readDateTime(offset)) as P;
+      return (_AssettypeValueEnumMap[reader.readByteOrNull(offset)] ??
+          AssetType.other) as P;
     case 13:
+      return (reader.readDateTime(offset)) as P;
+    case 14:
       return (reader.readIntOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
+
+const _AssettypeEnumValueMap = {
+  'other': 0,
+  'image': 1,
+  'video': 2,
+  'audio': 3,
+};
+const _AssettypeValueEnumMap = {
+  0: AssetType.other,
+  1: AssetType.image,
+  2: AssetType.video,
+  3: AssetType.audio,
+};
 
 Id _assetGetId(Asset object) {
   return object.id;
@@ -255,94 +280,6 @@ List<IsarLinkBase<dynamic>> _assetGetLinks(Asset object) {
 
 void _assetAttach(IsarCollection<dynamic> col, Id id, Asset object) {
   object.id = id;
-}
-
-extension AssetByIndex on IsarCollection<Asset> {
-  Future<Asset?> getByLocalIdDeviceId(String localId, int deviceId) {
-    return getByIndex(r'localId_deviceId', [localId, deviceId]);
-  }
-
-  Asset? getByLocalIdDeviceIdSync(String localId, int deviceId) {
-    return getByIndexSync(r'localId_deviceId', [localId, deviceId]);
-  }
-
-  Future<bool> deleteByLocalIdDeviceId(String localId, int deviceId) {
-    return deleteByIndex(r'localId_deviceId', [localId, deviceId]);
-  }
-
-  bool deleteByLocalIdDeviceIdSync(String localId, int deviceId) {
-    return deleteByIndexSync(r'localId_deviceId', [localId, deviceId]);
-  }
-
-  Future<List<Asset?>> getAllByLocalIdDeviceId(
-      List<String> localIdValues, List<int> deviceIdValues) {
-    final len = localIdValues.length;
-    assert(deviceIdValues.length == len,
-        'All index values must have the same length');
-    final values = <List<dynamic>>[];
-    for (var i = 0; i < len; i++) {
-      values.add([localIdValues[i], deviceIdValues[i]]);
-    }
-
-    return getAllByIndex(r'localId_deviceId', values);
-  }
-
-  List<Asset?> getAllByLocalIdDeviceIdSync(
-      List<String> localIdValues, List<int> deviceIdValues) {
-    final len = localIdValues.length;
-    assert(deviceIdValues.length == len,
-        'All index values must have the same length');
-    final values = <List<dynamic>>[];
-    for (var i = 0; i < len; i++) {
-      values.add([localIdValues[i], deviceIdValues[i]]);
-    }
-
-    return getAllByIndexSync(r'localId_deviceId', values);
-  }
-
-  Future<int> deleteAllByLocalIdDeviceId(
-      List<String> localIdValues, List<int> deviceIdValues) {
-    final len = localIdValues.length;
-    assert(deviceIdValues.length == len,
-        'All index values must have the same length');
-    final values = <List<dynamic>>[];
-    for (var i = 0; i < len; i++) {
-      values.add([localIdValues[i], deviceIdValues[i]]);
-    }
-
-    return deleteAllByIndex(r'localId_deviceId', values);
-  }
-
-  int deleteAllByLocalIdDeviceIdSync(
-      List<String> localIdValues, List<int> deviceIdValues) {
-    final len = localIdValues.length;
-    assert(deviceIdValues.length == len,
-        'All index values must have the same length');
-    final values = <List<dynamic>>[];
-    for (var i = 0; i < len; i++) {
-      values.add([localIdValues[i], deviceIdValues[i]]);
-    }
-
-    return deleteAllByIndexSync(r'localId_deviceId', values);
-  }
-
-  Future<Id> putByLocalIdDeviceId(Asset object) {
-    return putByIndex(r'localId_deviceId', object);
-  }
-
-  Id putByLocalIdDeviceIdSync(Asset object, {bool saveLinks = true}) {
-    return putByIndexSync(r'localId_deviceId', object, saveLinks: saveLinks);
-  }
-
-  Future<List<Id>> putAllByLocalIdDeviceId(List<Asset> objects) {
-    return putAllByIndex(r'localId_deviceId', objects);
-  }
-
-  List<Id> putAllByLocalIdDeviceIdSync(List<Asset> objects,
-      {bool saveLinks = true}) {
-    return putAllByIndexSync(r'localId_deviceId', objects,
-        saveLinks: saveLinks);
-  }
 }
 
 extension AssetQueryWhereSort on QueryBuilder<Asset, Asset, QWhere> {
@@ -1582,6 +1519,59 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> typeEqualTo(
+      AssetType value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'type',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> typeGreaterThan(
+    AssetType value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'type',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> typeLessThan(
+    AssetType value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'type',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> typeBetween(
+    AssetType lower,
+    AssetType upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'type',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<Asset, Asset, QAfterFilterCondition> updatedAtEqualTo(
       DateTime value) {
     return QueryBuilder.apply(this, (query) {
@@ -1853,6 +1843,18 @@ extension AssetQuerySortBy on QueryBuilder<Asset, Asset, QSortBy> {
     });
   }
 
+  QueryBuilder<Asset, Asset, QAfterSortBy> sortByType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'type', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterSortBy> sortByTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'type', Sort.desc);
+    });
+  }
+
   QueryBuilder<Asset, Asset, QAfterSortBy> sortByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.asc);
@@ -2035,6 +2037,18 @@ extension AssetQuerySortThenBy on QueryBuilder<Asset, Asset, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Asset, Asset, QAfterSortBy> thenByType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'type', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterSortBy> thenByTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'type', Sort.desc);
+    });
+  }
+
   QueryBuilder<Asset, Asset, QAfterSortBy> thenByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.asc);
@@ -2138,6 +2152,12 @@ extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
     });
   }
 
+  QueryBuilder<Asset, Asset, QDistinct> distinctByType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'type');
+    });
+  }
+
   QueryBuilder<Asset, Asset, QDistinct> distinctByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'updatedAt');
@@ -2227,6 +2247,12 @@ extension AssetQueryProperty on QueryBuilder<Asset, Asset, QQueryProperty> {
   QueryBuilder<Asset, String?, QQueryOperations> remoteIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'remoteId');
+    });
+  }
+
+  QueryBuilder<Asset, AssetType, QQueryOperations> typeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'type');
     });
   }
 

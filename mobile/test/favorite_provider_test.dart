@@ -23,6 +23,7 @@ Asset _getTestAsset(int id, bool favorite) {
     updatedAt: DateTime.now(),
     isLocal: false,
     durationInSeconds: 0,
+    type: AssetType.image,
     fileName: '',
     isFavorite: favorite,
   );

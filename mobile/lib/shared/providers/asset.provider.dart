@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/shared/models/album.dart';
@@ -170,7 +169,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     try {
       await _db.writeTxn(() => newAsset.put(_db));
     } on IsarError catch (e) {
-      debugPrint(e.toString());
+      log.severe("Failed to put new asset into db: $e");
     }
   }
 
