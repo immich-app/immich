@@ -4576,8 +4576,8 @@
           "targetScaling": {
             "type": "string"
           },
-          "transcodeAll": {
-            "type": "boolean"
+          "transcode": {
+            "type": "string"
           }
         },
         "required": [
@@ -4586,7 +4586,7 @@
           "targetVideoCodec",
           "targetAudioCodec",
           "targetScaling",
-          "transcodeAll"
+          "transcode"
         ]
       },
       "SystemConfigOAuthDto": {
