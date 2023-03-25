@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { quintOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
+	import { SystemConfigFFmpegDtoTranscodeEnum } from '@api';
 
 	export let value: string;
-	export let options: { value: 'all' | 'optimal' | 'required'; description: string }[];
+	export let options: { value: SystemConfigFFmpegDtoTranscodeEnum; description: string }[];
 	export let label = '';
 	export let isEdited = false;
 

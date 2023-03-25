@@ -33,6 +33,12 @@ export enum SystemConfigKey {
   STORAGE_TEMPLATE = 'storageTemplate.template',
 }
 
+export enum TranscodePreset {
+  ALL = 'all',
+  OPTIMAL = 'optimal',
+  REQUIRED = 'required',
+}
+
 export interface SystemConfig {
   ffmpeg: {
     crf: string;
@@ -40,7 +46,7 @@ export interface SystemConfig {
     targetVideoCodec: string;
     targetAudioCodec: string;
     targetScaling: string;
-    transcode: string;
+    transcode: TranscodePreset;
   };
   oauth: {
     enabled: boolean;

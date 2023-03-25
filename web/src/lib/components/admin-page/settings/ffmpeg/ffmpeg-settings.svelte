@@ -3,7 +3,7 @@
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
-	import { api, SystemConfigFFmpegDto } from '@api';
+	import { api, SystemConfigFFmpegDto, SystemConfigFFmpegDtoTranscodeEnum } from '@api';
 	import SettingButtonsRow from '../setting-buttons-row.svelte';
 	import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
 	import SettingSelect from '../setting-select.svelte';
@@ -121,12 +121,15 @@
 						label="TRANSCODE"
 						bind:value={ffmpegConfig.transcode}
 						options={[
-							{ value: 'all', description: 'All videos' },
+							{ value: SystemConfigFFmpegDtoTranscodeEnum.All, description: 'All videos' },
 							{
-								value: 'optimal',
+								value: SystemConfigFFmpegDtoTranscodeEnum.Optimal,
 								description: 'Videos higher than 1080p or not in the desired format'
 							},
-							{ value: 'required', description: 'Only videos not in the desired format' }
+							{
+								value: SystemConfigFFmpegDtoTranscodeEnum.Required,
+								description: 'Only videos not in the desired format'
+							}
 						]}
 						isEdited={!(ffmpegConfig.transcode == savedConfig.transcode)}
 					/>

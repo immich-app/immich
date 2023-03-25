@@ -12,6 +12,7 @@ import {
   WithoutProperty,
 } from '@app/domain';
 import { AssetEntity, AssetType } from '@app/infra';
+import { TranscodePreset } from '@app/infra/db/entities';
 import { Process, Processor } from '@nestjs/bull';
 import { Inject, Logger } from '@nestjs/common';
 import { Job } from 'bull';
@@ -74,7 +75,7 @@ export class VideoTranscodeProcessor {
   async runVideoEncode(asset: AssetEntity, savedEncodedPath: string): Promise<void> {
     const config = await this.systemConfigService.getConfig();
 
-    if (config.ffmpeg.transcode == 'all') {
+    if (config.ffmpeg.transcode == TranscodePreset.ALL) {
       return this.runFFMPEGPipeLine(asset, savedEncodedPath);
     }
 
@@ -95,7 +96,7 @@ export class VideoTranscodeProcessor {
       return this.runFFMPEGPipeLine(asset, savedEncodedPath);
     }
 
-    if (config.ffmpeg.transcode == 'optimal') {
+    if (config.ffmpeg.transcode == TranscodePreset.OPTIMAL) {
       const videoHeightThreshold = 1080;
       if (!longestVideoStream.height || longestVideoStream.height > videoHeightThreshold) {
         return this.runFFMPEGPipeLine(asset, savedEncodedPath);
