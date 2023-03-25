@@ -53,7 +53,7 @@ class CuratedObjectPage extends HookConsumerWidget {
                 AutoRouter.of(context).push(
                   ObjectRoute(object: curatedObjects[index].object),
                 );
-              }
+              },
         ),
       ),
     );
