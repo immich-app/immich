@@ -137,16 +137,7 @@ describe('assetUploadOption', () => {
       destination(mock.userRequest, mock.file, callback);
 
       expect(mkdirSync).not.toHaveBeenCalled();
-      expect(callback).toHaveBeenCalledWith(null, 'upload/test-user/original/test-device');
-    });
-
-    it('should sanitize the deviceId', () => {
-      const request = { ...mock.userRequest, body: { deviceId: 'test-devi\u0000ce' } } as Request;
-      destination(request, mock.file, callback);
-
-      const [folderName] = existsSync.mock.calls[0];
-      expect(folderName.endsWith('test-device')).toBeTruthy();
-      expect(callback).toHaveBeenCalledWith(null, 'upload/test-user/original/test-device');
+      expect(callback).toHaveBeenCalledWith(null, 'upload/upload/test-user');
     });
   });
 

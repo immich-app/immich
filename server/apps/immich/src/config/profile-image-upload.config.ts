@@ -1,4 +1,4 @@
-import { APP_UPLOAD_LOCATION } from '@app/domain/domain.constant';
+import { StorageCore, StorageFolder } from '@app/domain/storage';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import { Request } from 'express';
@@ -19,6 +19,8 @@ export const profileImageUploadOption: MulterOptions = {
 
 export const multerUtils = { fileFilter, filename, destination };
 
+const storageCore = new StorageCore();
+
 function fileFilter(req: Request, file: any, cb: any) {
   if (!req.user) {
     return cb(new UnauthorizedException());
@@ -38,9 +40,7 @@ function destination(req: Request, file: Express.Multer.File, cb: any) {
 
   const user = req.user as AuthUserDto;
 
-  const basePath = APP_UPLOAD_LOCATION;
-  const profileImageLocation = `${basePath}/${user.id}/profile`;
-
+  const profileImageLocation = storageCore.getFolderLocation(StorageFolder.PROFILE, user.id);
   if (!existsSync(profileImageLocation)) {
     mkdirSync(profileImageLocation, { recursive: true });
   }
