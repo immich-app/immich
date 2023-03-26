@@ -60,8 +60,10 @@ class SyncService {
 
   /// Syncs remote assets owned by the logged-in user to the DB
   /// Returns `true` if there were any changes
-  Future<bool> syncRemoteAssetsToDb(List<Asset> remote) =>
-      _lock.run(() => _syncRemoteAssetsToDb(remote));
+  Future<bool> syncRemoteAssetsToDb(
+    FutureOr<List<Asset>?> Function() loadAssets,
+  ) =>
+      _lock.run(() => _syncRemoteAssetsToDb(loadAssets));
 
   /// Syncs remote albums to the database
   /// returns `true` if there were any changes
@@ -96,11 +98,63 @@ class SyncService {
         .toList();
   }
 
+  /// Syncs a new asset to the db. Returns `true` if successful
+  Future<bool> syncNewAssetToDb(Asset newAsset) =>
+      _lock.run(() => _syncNewAssetToDb(newAsset));
+
   // private methods:
+
+  /// Syncs a new asset to the db. Returns `true` if successful
+  Future<bool> _syncNewAssetToDb(Asset newAsset) async {
+    final List<Asset> inDb = await _db.assets
+        .where()
+        .localIdDeviceIdEqualTo(newAsset.localId, newAsset.deviceId)
+        .findAll();
+    Asset? match;
+    if (inDb.length == 1) {
+      // exactly one match: trivial case
+      match = inDb.first;
+    } else if (inDb.length > 1) {
+      // TODO instead of this heuristics: match by checksum once available
+      for (Asset a in inDb) {
+        if (a.ownerId == newAsset.ownerId &&
+            a.fileModifiedAt == newAsset.fileModifiedAt) {
+          assert(match == null);
+          match = a;
+        }
+      }
+      if (match == null) {
+        for (Asset a in inDb) {
+          if (a.ownerId == newAsset.ownerId) {
+            assert(match == null);
+            match = a;
+          }
+        }
+      }
+    }
+    if (match != null) {
+      // unify local/remote assets by replacing the
+      // local-only asset in the DB with a local&remote asset
+      newAsset.updateFromDb(match);
+    }
+    try {
+      await _db.writeTxn(() => newAsset.put(_db));
+    } on IsarError catch (e) {
+      _log.severe("Failed to put new asset into db: $e");
+      return false;
+    }
+    return true;
+  }
 
   /// Syncs remote assets to the databas
   /// returns `true` if there were any changes
-  Future<bool> _syncRemoteAssetsToDb(List<Asset> remote) async {
+  Future<bool> _syncRemoteAssetsToDb(
+    FutureOr<List<Asset>?> Function() loadAssets,
+  ) async {
+    final List<Asset>? remote = await loadAssets();
+    if (remote == null) {
+      return false;
+    }
     final User user = Store.get(StoreKey.currentUser);
     final List<Asset> inDb = await _db.assets
         .filter()

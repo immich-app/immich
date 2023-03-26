@@ -199,21 +199,23 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       addRepaintBoundaries: true,
     );
 
-    if (!useDragScrolling) {
-      return listWidget;
-    }
+    final child = useDragScrolling
+        ? DraggableScrollbar.semicircle(
+            scrollStateListener: dragScrolling,
+            itemPositionsListener: _itemPositionsListener,
+            controller: _itemScrollController,
+            backgroundColor: Theme.of(context).hintColor,
+            labelTextBuilder: _labelBuilder,
+            labelConstraints: const BoxConstraints(maxHeight: 28),
+            scrollbarAnimationDuration: const Duration(seconds: 1),
+            scrollbarTimeToFade: const Duration(seconds: 4),
+            child: listWidget,
+          )
+        : listWidget;
 
-    return DraggableScrollbar.semicircle(
-      scrollStateListener: dragScrolling,
-      itemPositionsListener: _itemPositionsListener,
-      controller: _itemScrollController,
-      backgroundColor: Theme.of(context).hintColor,
-      labelTextBuilder: _labelBuilder,
-      labelConstraints: const BoxConstraints(maxHeight: 28),
-      scrollbarAnimationDuration: const Duration(seconds: 1),
-      scrollbarTimeToFade: const Duration(seconds: 4),
-      child: listWidget,
-    );
+    return widget.onRefresh == null
+        ? child
+        : RefreshIndicator(onRefresh: widget.onRefresh!, child: child);
   }
 
   @override
@@ -248,7 +250,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   }
 
   void _scrollToTop() {
-    // for some reason, this is necessary as well in order 
+    // for some reason, this is necessary as well in order
     // to correctly reposition the drag thumb scroll bar
     _itemScrollController.jumpTo(
       index: 0,
@@ -281,6 +283,7 @@ class ImmichAssetGridView extends StatefulWidget {
   final ImmichAssetGridSelectionListener? listener;
   final bool selectionActive;
   final List<Asset> allAssets;
+  final Future<void> Function()? onRefresh;
 
   const ImmichAssetGridView({
     super.key,
@@ -291,6 +294,7 @@ class ImmichAssetGridView extends StatefulWidget {
     this.listener,
     this.margin = 5.0,
     this.selectionActive = false,
+    this.onRefresh,
   });
 
   @override
