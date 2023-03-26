@@ -7,7 +7,8 @@
 
 	export let url: string;
 	export let durationInSeconds = 0;
-	export let enablePlayback = true;
+	export let enablePlayback = false;
+	export let playbackOnIconHover = false;
 	export let showTime = true;
 	export let playIcon = PlayCircleOutline;
 	export let pauseIcon = PauseCircleOutline;
@@ -29,15 +30,27 @@
 </script>
 
 <div
-	class="absolute right-2 top-2 text-white text-xs font-medium flex gap-1 place-items-center z-10"
+	class="absolute right-0 top-0 text-white text-xs font-medium flex gap-1 place-items-center z-20"
 >
 	{#if showTime}
-		<span>
+		<span class="pt-2">
 			{Duration.fromObject({ seconds: remainingSeconds }).toFormat('m:ss')}
 		</span>
 	{/if}
 
-	<span>
+	<span
+		class="pt-2 pr-2"
+		on:mouseenter={() => {
+			if (playbackOnIconHover) {
+				enablePlayback = true;
+			}
+		}}
+		on:mouseleave={() => {
+			if (playbackOnIconHover) {
+				enablePlayback = false;
+			}
+		}}
+	>
 		{#if enablePlayback}
 			{#if loading}
 				<LoadingSpinner />

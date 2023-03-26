@@ -127,10 +127,10 @@
 					<div class="absolute w-full h-full top-0">
 						<VideoThumbnail
 							url={api.getAssetFileUrl(asset.livePhotoVideoId, false, true, publicSharedKey)}
-							enablePlayback={mouseOver}
 							pauseIcon={MotionPauseOutline}
 							playIcon={MotionPlayOutline}
 							showTime={false}
+							playbackOnIconHover
 						/>
 					</div>
 				{/if}
