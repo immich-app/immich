@@ -21,7 +21,6 @@ import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
-import { GetAlbumsDto } from './dto/get-albums.dto';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AlbumResponseDto } from '@app/domain';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
@@ -72,15 +71,6 @@ export class AlbumController {
     @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
   ): Promise<AddAssetsResponseDto> {
     return this.albumService.addAssetsToAlbum(authUser, addAssetsDto, albumId);
-  }
-
-  @Authenticated()
-  @Get()
-  async getAllAlbums(
-    @GetAuthUser() authUser: AuthUserDto,
-    @Query(new ValidationPipe({ transform: true })) query: GetAlbumsDto,
-  ) {
-    return this.albumService.getAllAlbums(authUser, query);
   }
 
   @Authenticated({ isShared: true })

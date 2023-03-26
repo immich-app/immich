@@ -1,6 +1,96 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/album": {
+      "get": {
+        "operationId": "getAllAlbums",
+        "description": "",
+        "parameters": [
+          {
+            "name": "shared",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "assetId",
+            "required": false,
+            "in": "query",
+            "description": "Only returns albums that contain the asset\nIgnores the shared parameter\nundefined: get all albums",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AlbumResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Album"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createAlbum",
+        "description": "",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAlbumDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlbumResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Album"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
     "/api-key": {
       "post": {
         "operationId": "createKey",
@@ -2865,95 +2955,6 @@
         ]
       }
     },
-    "/album": {
-      "post": {
-        "operationId": "createAlbum",
-        "description": "",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateAlbumDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AlbumResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Album"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          }
-        ]
-      },
-      "get": {
-        "operationId": "getAllAlbums",
-        "description": "",
-        "parameters": [
-          {
-            "name": "shared",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "assetId",
-            "required": false,
-            "in": "query",
-            "description": "Only returns albums that contain the asset\nIgnores the shared parameter\nundefined: get all albums",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/AlbumResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Album"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          }
-        ]
-      }
-    },
     "/album/{albumId}/users": {
       "put": {
         "operationId": "addUsersToAlbum",
@@ -3395,209 +3396,6 @@
       }
     },
     "schemas": {
-      "APIKeyCreateDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "APIKeyResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
-      "APIKeyCreateResponseDto": {
-        "type": "object",
-        "properties": {
-          "secret": {
-            "type": "string"
-          },
-          "apiKey": {
-            "$ref": "#/components/schemas/APIKeyResponseDto"
-          }
-        },
-        "required": [
-          "secret",
-          "apiKey"
-        ]
-      },
-      "APIKeyUpdateDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name"
-        ]
-      },
-      "LoginCredentialDto": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "example": "testuser@email.com"
-          },
-          "password": {
-            "type": "string",
-            "example": "password"
-          }
-        },
-        "required": [
-          "email",
-          "password"
-        ]
-      },
-      "LoginResponseDto": {
-        "type": "object",
-        "properties": {
-          "accessToken": {
-            "type": "string",
-            "readOnly": true
-          },
-          "userId": {
-            "type": "string",
-            "readOnly": true
-          },
-          "userEmail": {
-            "type": "string",
-            "readOnly": true
-          },
-          "firstName": {
-            "type": "string",
-            "readOnly": true
-          },
-          "lastName": {
-            "type": "string",
-            "readOnly": true
-          },
-          "profileImagePath": {
-            "type": "string",
-            "readOnly": true
-          },
-          "isAdmin": {
-            "type": "boolean",
-            "readOnly": true
-          },
-          "shouldChangePassword": {
-            "type": "boolean",
-            "readOnly": true
-          }
-        },
-        "required": [
-          "accessToken",
-          "userId",
-          "userEmail",
-          "firstName",
-          "lastName",
-          "profileImagePath",
-          "isAdmin",
-          "shouldChangePassword"
-        ]
-      },
-      "SignUpDto": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "example": "testuser@email.com"
-          },
-          "password": {
-            "type": "string",
-            "example": "password"
-          },
-          "firstName": {
-            "type": "string",
-            "example": "Admin"
-          },
-          "lastName": {
-            "type": "string",
-            "example": "Doe"
-          }
-        },
-        "required": [
-          "email",
-          "password",
-          "firstName",
-          "lastName"
-        ]
-      },
-      "AdminSignupResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "email",
-          "firstName",
-          "lastName",
-          "createdAt"
-        ]
-      },
-      "ValidateAccessTokenResponseDto": {
-        "type": "object",
-        "properties": {
-          "authStatus": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "authStatus"
-        ]
-      },
-      "ChangePasswordDto": {
-        "type": "object",
-        "properties": {
-          "password": {
-            "type": "string",
-            "example": "password"
-          },
-          "newPassword": {
-            "type": "string",
-            "example": "password"
-          }
-        },
-        "required": [
-          "password",
-          "newPassword"
-        ]
-      },
       "UserResponseDto": {
         "type": "object",
         "properties": {
@@ -3646,228 +3444,6 @@
           "shouldChangePassword",
           "isAdmin",
           "oauthId"
-        ]
-      },
-      "LogoutResponseDto": {
-        "type": "object",
-        "properties": {
-          "successful": {
-            "type": "boolean",
-            "readOnly": true
-          },
-          "redirectUri": {
-            "type": "string",
-            "readOnly": true
-          }
-        },
-        "required": [
-          "successful",
-          "redirectUri"
-        ]
-      },
-      "DeviceTypeEnum": {
-        "type": "string",
-        "enum": [
-          "IOS",
-          "ANDROID",
-          "WEB"
-        ]
-      },
-      "UpsertDeviceInfoDto": {
-        "type": "object",
-        "properties": {
-          "deviceType": {
-            "$ref": "#/components/schemas/DeviceTypeEnum"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "isAutoBackup": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "deviceType",
-          "deviceId"
-        ]
-      },
-      "DeviceInfoResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "deviceType": {
-            "$ref": "#/components/schemas/DeviceTypeEnum"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "isAutoBackup": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "deviceType",
-          "userId",
-          "deviceId",
-          "createdAt",
-          "isAutoBackup"
-        ]
-      },
-      "JobCountsDto": {
-        "type": "object",
-        "properties": {
-          "active": {
-            "type": "integer"
-          },
-          "completed": {
-            "type": "integer"
-          },
-          "failed": {
-            "type": "integer"
-          },
-          "delayed": {
-            "type": "integer"
-          },
-          "waiting": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "active",
-          "completed",
-          "failed",
-          "delayed",
-          "waiting"
-        ]
-      },
-      "AllJobStatusResponseDto": {
-        "type": "object",
-        "properties": {
-          "thumbnail-generation-queue": {
-            "$ref": "#/components/schemas/JobCountsDto"
-          },
-          "metadata-extraction-queue": {
-            "$ref": "#/components/schemas/JobCountsDto"
-          },
-          "video-conversion-queue": {
-            "$ref": "#/components/schemas/JobCountsDto"
-          },
-          "object-tagging-queue": {
-            "$ref": "#/components/schemas/JobCountsDto"
-          },
-          "clip-encoding-queue": {
-            "$ref": "#/components/schemas/JobCountsDto"
-          },
-          "storage-template-migration-queue": {
-            "$ref": "#/components/schemas/JobCountsDto"
-          },
-          "background-task-queue": {
-            "$ref": "#/components/schemas/JobCountsDto"
-          },
-          "search-queue": {
-            "$ref": "#/components/schemas/JobCountsDto"
-          }
-        },
-        "required": [
-          "thumbnail-generation-queue",
-          "metadata-extraction-queue",
-          "video-conversion-queue",
-          "object-tagging-queue",
-          "clip-encoding-queue",
-          "storage-template-migration-queue",
-          "background-task-queue",
-          "search-queue"
-        ]
-      },
-      "JobName": {
-        "type": "string",
-        "enum": [
-          "thumbnail-generation-queue",
-          "metadata-extraction-queue",
-          "video-conversion-queue",
-          "object-tagging-queue",
-          "clip-encoding-queue",
-          "background-task-queue",
-          "storage-template-migration-queue",
-          "search-queue"
-        ]
-      },
-      "JobCommand": {
-        "type": "string",
-        "enum": [
-          "start",
-          "pause",
-          "empty"
-        ]
-      },
-      "JobCommandDto": {
-        "type": "object",
-        "properties": {
-          "command": {
-            "$ref": "#/components/schemas/JobCommand"
-          },
-          "force": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "command",
-          "force"
-        ]
-      },
-      "OAuthConfigDto": {
-        "type": "object",
-        "properties": {
-          "redirectUri": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "redirectUri"
-        ]
-      },
-      "OAuthConfigResponseDto": {
-        "type": "object",
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "passwordLoginEnabled": {
-            "type": "boolean"
-          },
-          "url": {
-            "type": "string"
-          },
-          "buttonText": {
-            "type": "string"
-          },
-          "autoLaunch": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled",
-          "passwordLoginEnabled"
-        ]
-      },
-      "OAuthCallbackDto": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "url"
         ]
       },
       "AssetTypeEnum": {
@@ -4178,6 +3754,431 @@
           "sharedUsers",
           "assets",
           "owner"
+        ]
+      },
+      "APIKeyCreateDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "APIKeyResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "APIKeyCreateResponseDto": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string"
+          },
+          "apiKey": {
+            "$ref": "#/components/schemas/APIKeyResponseDto"
+          }
+        },
+        "required": [
+          "secret",
+          "apiKey"
+        ]
+      },
+      "APIKeyUpdateDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "LoginCredentialDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "testuser@email.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "password"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "LoginResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "readOnly": true
+          },
+          "userId": {
+            "type": "string",
+            "readOnly": true
+          },
+          "userEmail": {
+            "type": "string",
+            "readOnly": true
+          },
+          "firstName": {
+            "type": "string",
+            "readOnly": true
+          },
+          "lastName": {
+            "type": "string",
+            "readOnly": true
+          },
+          "profileImagePath": {
+            "type": "string",
+            "readOnly": true
+          },
+          "isAdmin": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "shouldChangePassword": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "required": [
+          "accessToken",
+          "userId",
+          "userEmail",
+          "firstName",
+          "lastName",
+          "profileImagePath",
+          "isAdmin",
+          "shouldChangePassword"
+        ]
+      },
+      "SignUpDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "testuser@email.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "password"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "Admin"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "firstName",
+          "lastName"
+        ]
+      },
+      "AdminSignupResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "firstName",
+          "lastName",
+          "createdAt"
+        ]
+      },
+      "ValidateAccessTokenResponseDto": {
+        "type": "object",
+        "properties": {
+          "authStatus": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "authStatus"
+        ]
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "example": "password"
+          },
+          "newPassword": {
+            "type": "string",
+            "example": "password"
+          }
+        },
+        "required": [
+          "password",
+          "newPassword"
+        ]
+      },
+      "LogoutResponseDto": {
+        "type": "object",
+        "properties": {
+          "successful": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "redirectUri": {
+            "type": "string",
+            "readOnly": true
+          }
+        },
+        "required": [
+          "successful",
+          "redirectUri"
+        ]
+      },
+      "DeviceTypeEnum": {
+        "type": "string",
+        "enum": [
+          "IOS",
+          "ANDROID",
+          "WEB"
+        ]
+      },
+      "UpsertDeviceInfoDto": {
+        "type": "object",
+        "properties": {
+          "deviceType": {
+            "$ref": "#/components/schemas/DeviceTypeEnum"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "isAutoBackup": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "deviceType",
+          "deviceId"
+        ]
+      },
+      "DeviceInfoResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "deviceType": {
+            "$ref": "#/components/schemas/DeviceTypeEnum"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "isAutoBackup": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "deviceType",
+          "userId",
+          "deviceId",
+          "createdAt",
+          "isAutoBackup"
+        ]
+      },
+      "JobCountsDto": {
+        "type": "object",
+        "properties": {
+          "active": {
+            "type": "integer"
+          },
+          "completed": {
+            "type": "integer"
+          },
+          "failed": {
+            "type": "integer"
+          },
+          "delayed": {
+            "type": "integer"
+          },
+          "waiting": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "active",
+          "completed",
+          "failed",
+          "delayed",
+          "waiting"
+        ]
+      },
+      "AllJobStatusResponseDto": {
+        "type": "object",
+        "properties": {
+          "thumbnail-generation-queue": {
+            "$ref": "#/components/schemas/JobCountsDto"
+          },
+          "metadata-extraction-queue": {
+            "$ref": "#/components/schemas/JobCountsDto"
+          },
+          "video-conversion-queue": {
+            "$ref": "#/components/schemas/JobCountsDto"
+          },
+          "object-tagging-queue": {
+            "$ref": "#/components/schemas/JobCountsDto"
+          },
+          "clip-encoding-queue": {
+            "$ref": "#/components/schemas/JobCountsDto"
+          },
+          "storage-template-migration-queue": {
+            "$ref": "#/components/schemas/JobCountsDto"
+          },
+          "background-task-queue": {
+            "$ref": "#/components/schemas/JobCountsDto"
+          },
+          "search-queue": {
+            "$ref": "#/components/schemas/JobCountsDto"
+          }
+        },
+        "required": [
+          "thumbnail-generation-queue",
+          "metadata-extraction-queue",
+          "video-conversion-queue",
+          "object-tagging-queue",
+          "clip-encoding-queue",
+          "storage-template-migration-queue",
+          "background-task-queue",
+          "search-queue"
+        ]
+      },
+      "JobName": {
+        "type": "string",
+        "enum": [
+          "thumbnail-generation-queue",
+          "metadata-extraction-queue",
+          "video-conversion-queue",
+          "object-tagging-queue",
+          "clip-encoding-queue",
+          "background-task-queue",
+          "storage-template-migration-queue",
+          "search-queue"
+        ]
+      },
+      "JobCommand": {
+        "type": "string",
+        "enum": [
+          "start",
+          "pause",
+          "empty"
+        ]
+      },
+      "JobCommandDto": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "$ref": "#/components/schemas/JobCommand"
+          },
+          "force": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "command",
+          "force"
+        ]
+      },
+      "OAuthConfigDto": {
+        "type": "object",
+        "properties": {
+          "redirectUri": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "redirectUri"
+        ]
+      },
+      "OAuthConfigResponseDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "passwordLoginEnabled": {
+            "type": "boolean"
+          },
+          "url": {
+            "type": "string"
+          },
+          "buttonText": {
+            "type": "string"
+          },
+          "autoLaunch": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "passwordLoginEnabled"
+        ]
+      },
+      "OAuthCallbackDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
         ]
       },
       "SearchFacetCountResponseDto": {
