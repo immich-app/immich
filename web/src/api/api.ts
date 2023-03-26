@@ -12,8 +12,11 @@ import {
 	ServerInfoApi,
 	ShareApi,
 	SystemConfigApi,
+	ThumbnailFormat,
 	UserApi
 } from './open-api';
+import { BASE_PATH } from './open-api/base';
+import { DUMMY_BASE_URL, toPathString } from './open-api/common';
 
 export class ImmichApi {
 	public userApi: UserApi;
@@ -48,6 +51,21 @@ export class ImmichApi {
 		this.shareApi = new ShareApi(this.config);
 	}
 
+	private createUrl(path: string, params?: Record<string, unknown>) {
+		const searchParams = new URLSearchParams();
+		for (const key in params) {
+			const value = params[key];
+			if (value !== undefined && value !== null) {
+				searchParams.set(key, value.toString());
+			}
+		}
+
+		const url = new URL(path, DUMMY_BASE_URL);
+		url.search = searchParams.toString();
+
+		return (this.config.basePath || BASE_PATH) + toPathString(url);
+	}
+
 	public setAccessToken(accessToken: string) {
 		this.config.accessToken = accessToken;
 	}
@@ -58,6 +76,16 @@ export class ImmichApi {
 
 	public setBaseUrl(baseUrl: string) {
 		this.config.basePath = baseUrl;
+	}
+
+	public getAssetFileUrl(assetId: string, isThumb?: boolean, isWeb?: boolean, key?: string) {
+		const path = `/asset/file/${assetId}`;
+		return this.createUrl(path, { isThumb, isWeb, key });
+	}
+
+	public getAssetThumbnailUrl(assetId: string, format?: ThumbnailFormat, key?: string) {
+		const path = `/asset/thumbnail/${assetId}`;
+		return this.createUrl(path, { format, key });
 	}
 }
 
