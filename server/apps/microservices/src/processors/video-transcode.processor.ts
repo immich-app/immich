@@ -97,19 +97,15 @@ export class VideoTranscodeProcessor {
         }
         break;
 
-      case TranscodePreset.OPTIMAL:
-        {
-          const videoStream = await this.getVideoStream(asset);
-          if (videoStream.codec_name !== ffmpegConfig.targetVideoCodec) {
-            return true;
-          }
-
-          const videoHeightThreshold = 1080;
-          if (!videoStream.height || videoStream.height > videoHeightThreshold) {
-            return true;
-          }
+      case TranscodePreset.OPTIMAL: {
+        const videoStream = await this.getVideoStream(asset);
+        if (videoStream.codec_name !== ffmpegConfig.targetVideoCodec) {
+          return true;
         }
-        break;
+
+        const videoHeightThreshold = 1080;
+        return !videoStream.height || videoStream.height > videoHeightThreshold;
+      }
     }
     return false;
   }
