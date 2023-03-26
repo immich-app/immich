@@ -3,14 +3,14 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { join } from 'path';
 import { IAssetRepository, mapAsset, WithoutProperty } from '../asset';
 import { CommunicationEvent, ICommunicationRepository } from '../communication';
-import { APP_UPLOAD_LOCATION } from '../domain.constant';
 import { IAssetJob, IBaseJob, IJobRepository, JobName } from '../job';
-import { IStorageRepository } from '../storage';
+import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { IMediaRepository } from './media.repository';
 
 @Injectable()
 export class MediaService {
   private logger = new Logger(MediaService.name);
+  private storageCore = new StorageCore();
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -39,12 +39,9 @@ export class MediaService {
   async handleGenerateJpegThumbnail(data: IAssetJob): Promise<void> {
     const { asset } = data;
     try {
-      const basePath = APP_UPLOAD_LOCATION;
-      const resizePath = join(basePath, asset.ownerId, 'thumb');
-
-      const jpegThumbnailPath = join(resizePath, `${asset.id}.jpeg`);
-
+      const resizePath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
       this.storageRepository.mkdirSync(resizePath);
+      const jpegThumbnailPath = join(resizePath, `${asset.id}.jpeg`);
 
       if (asset.type == AssetType.IMAGE) {
         try {

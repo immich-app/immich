@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -28,6 +29,10 @@ class CuratedObjectPage extends HookConsumerWidget {
             fontSize: 16.0,
           ),
         ).tr(),
+        leading: IconButton(
+          onPressed: () => AutoRouter.of(context).pop(),
+          icon: const Icon(Icons.arrow_back_ios_rounded),
+        ),
       ),
       body: curatedObjects.when(
         loading: () => const Center(child: ImmichLoadingIndicator()),

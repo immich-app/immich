@@ -1,11 +1,10 @@
 import { AlbumEntity, AssetEntity, dataSource, UserEntity } from '@app/infra';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not, IsNull, FindManyOptions } from 'typeorm';
+import { Repository } from 'typeorm';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';
 import { CreateAlbumDto } from './dto/create-album.dto';
-import { GetAlbumsDto } from './dto/get-albums.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
@@ -13,8 +12,6 @@ import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 
 export interface IAlbumRepository {
   create(ownerId: string, createAlbumDto: CreateAlbumDto): Promise<AlbumEntity>;
-  getList(ownerId: string, getAlbumsDto: GetAlbumsDto): Promise<AlbumEntity[]>;
-  getPublicSharingList(ownerId: string): Promise<AlbumEntity[]>;
   get(albumId: string): Promise<AlbumEntity | null>;
   delete(album: AlbumEntity): Promise<void>;
   addSharedUsers(album: AlbumEntity, addUsersDto: AddUsersDto): Promise<AlbumEntity>;
@@ -23,7 +20,6 @@ export interface IAlbumRepository {
   addAssets(album: AlbumEntity, addAssetsDto: AddAssetsDto): Promise<AddAssetsResponseDto>;
   updateAlbum(album: AlbumEntity, updateAlbumDto: UpdateAlbumDto): Promise<AlbumEntity>;
   updateThumbnails(): Promise<number | undefined>;
-  getListByAssetId(userId: string, assetId: string): Promise<AlbumEntity[]>;
   getCountByUserId(userId: string): Promise<AlbumCountResponseDto>;
   getSharedWithUserAlbumCount(userId: string, assetId: string): Promise<number>;
 }
@@ -39,22 +35,6 @@ export class AlbumRepository implements IAlbumRepository {
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
   ) {}
-
-  async getPublicSharingList(ownerId: string): Promise<AlbumEntity[]> {
-    return this.albumRepository.find({
-      relations: {
-        sharedLinks: true,
-        assets: true,
-        owner: true,
-      },
-      where: {
-        ownerId,
-        sharedLinks: {
-          id: Not(IsNull()),
-        },
-      },
-    });
-  }
 
   async getCountByUserId(userId: string): Promise<AlbumCountResponseDto> {
     const ownedAlbums = await this.albumRepository.find({ where: { ownerId: userId }, relations: ['sharedUsers'] });
@@ -75,59 +55,6 @@ export class AlbumRepository implements IAlbumRepository {
 
     // need to re-load the relations
     return this.get(album.id) as Promise<AlbumEntity>;
-  }
-
-  async getList(ownerId: string, getAlbumsDto: GetAlbumsDto): Promise<AlbumEntity[]> {
-    const filteringByShared = typeof getAlbumsDto.shared == 'boolean';
-    const userId = ownerId;
-
-    const queryProperties: FindManyOptions<AlbumEntity> = {
-      relations: { sharedUsers: true, assets: true, sharedLinks: true, owner: true },
-      select: { assets: { id: true } },
-      order: { createdAt: 'DESC' },
-    };
-
-    let albumsQuery: Promise<AlbumEntity[]>;
-
-    /**
-     * `shared` boolean usage
-     * true = shared with me, and my albums that are shared
-     * false = my albums that are not shared
-     * undefined = all my albums
-     */
-    if (filteringByShared) {
-      if (getAlbumsDto.shared) {
-        // shared albums
-        albumsQuery = this.albumRepository.find({
-          where: [{ sharedUsers: { id: userId } }, { ownerId: userId, sharedUsers: { id: Not(IsNull()) } }],
-          ...queryProperties,
-        });
-      } else {
-        // owned, not shared albums
-        albumsQuery = this.albumRepository.find({
-          where: { ownerId: userId, sharedUsers: { id: IsNull() } },
-          ...queryProperties,
-        });
-      }
-    } else {
-      // owned
-      albumsQuery = this.albumRepository.find({
-        where: { ownerId: userId },
-        ...queryProperties,
-      });
-    }
-
-    return albumsQuery;
-  }
-
-  async getListByAssetId(userId: string, assetId: string): Promise<AlbumEntity[]> {
-    const albums = await this.albumRepository.find({
-      where: { ownerId: userId },
-      relations: { owner: true, assets: true, sharedUsers: true },
-      order: { assets: { fileCreatedAt: 'ASC' } },
-    });
-
-    return albums.filter((album) => album.assets.some((asset) => asset.id === assetId));
   }
 
   async get(albumId: string): Promise<AlbumEntity | null> {

@@ -75,15 +75,15 @@ describe(MediaService.name, () => {
     it('should generate a thumbnail for an image', async () => {
       await sut.handleGenerateJpegThumbnail({ asset: _.cloneDeep(assetEntityStub.image) });
 
-      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/user-id/thumb');
-      expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.ext', 'upload/user-id/thumb/asset-id.jpeg', {
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
+      expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.ext', 'upload/thumbs/user-id/asset-id.jpeg', {
         size: 1440,
         format: 'jpeg',
       });
       expect(mediaMock.extractThumbnailFromExif).not.toHaveBeenCalled();
       expect(assetMock.save).toHaveBeenCalledWith({
         id: 'asset-id',
-        resizePath: 'upload/user-id/thumb/asset-id.jpeg',
+        resizePath: 'upload/thumbs/user-id/asset-id.jpeg',
       });
     });
 
@@ -92,32 +92,32 @@ describe(MediaService.name, () => {
 
       await sut.handleGenerateJpegThumbnail({ asset: _.cloneDeep(assetEntityStub.image) });
 
-      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/user-id/thumb');
-      expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.ext', 'upload/user-id/thumb/asset-id.jpeg', {
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
+      expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.ext', 'upload/thumbs/user-id/asset-id.jpeg', {
         size: 1440,
         format: 'jpeg',
       });
       expect(mediaMock.extractThumbnailFromExif).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/user-id/thumb/asset-id.jpeg',
+        'upload/thumbs/user-id/asset-id.jpeg',
       );
       expect(assetMock.save).toHaveBeenCalledWith({
         id: 'asset-id',
-        resizePath: 'upload/user-id/thumb/asset-id.jpeg',
+        resizePath: 'upload/thumbs/user-id/asset-id.jpeg',
       });
     });
 
     it('should generate a thumbnail for a video', async () => {
       await sut.handleGenerateJpegThumbnail({ asset: _.cloneDeep(assetEntityStub.video) });
 
-      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/user-id/thumb');
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
       expect(mediaMock.extractVideoThumbnail).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/user-id/thumb/asset-id.jpeg',
+        'upload/thumbs/user-id/asset-id.jpeg',
       );
       expect(assetMock.save).toHaveBeenCalledWith({
         id: 'asset-id',
-        resizePath: 'upload/user-id/thumb/asset-id.jpeg',
+        resizePath: 'upload/thumbs/user-id/asset-id.jpeg',
       });
     });
 

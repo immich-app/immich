@@ -1,3 +1,4 @@
+export * from './album.controller';
 export * from './api-key.controller';
 export * from './auth.controller';
 export * from './device-info.controller';

@@ -137,7 +137,7 @@ describe('assetUploadOption', () => {
       destination(mock.userRequest, mock.file, callback);
 
       expect(mkdirSync).not.toHaveBeenCalled();
-      expect(callback).toHaveBeenCalledWith(null, 'upload/test-user/original');
+      expect(callback).toHaveBeenCalledWith(null, 'upload/upload/test-user');
     });
   });
 

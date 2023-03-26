@@ -29,6 +29,7 @@ export class AssetRepository implements IAssetRepository {
     return this.repository.find({
       where: {
         isVisible: options.isVisible,
+        type: options.type,
       },
       relations: {
         exifInfo: true,
@@ -132,6 +133,13 @@ export class AssetRepository implements IAssetRepository {
     return this.repository.find({
       relations,
       where,
+    });
+  }
+
+  getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null> {
+    return this.repository.findOne({
+      where: { albums: { id: albumId } },
+      order: { fileCreatedAt: 'DESC' },
     });
   }
 }

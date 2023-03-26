@@ -1,11 +1,13 @@
 import {
-  APP_UPLOAD_LOCATION,
   IAssetJob,
   IAssetRepository,
   IBaseJob,
   IJobRepository,
+  IStorageRepository,
   JobName,
   QueueName,
+  StorageCore,
+  StorageFolder,
   SystemConfigService,
   WithoutProperty,
 } from '@app/domain';
@@ -14,15 +16,18 @@ import { Process, Processor } from '@nestjs/bull';
 import { Inject, Logger } from '@nestjs/common';
 import { Job } from 'bull';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
-import { existsSync, mkdirSync } from 'fs';
+import { join } from 'path';
 
 @Processor(QueueName.VIDEO_CONVERSION)
 export class VideoTranscodeProcessor {
   readonly logger = new Logger(VideoTranscodeProcessor.name);
+  private storageCore = new StorageCore();
+
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     private systemConfigService: SystemConfigService,
+    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {}
 
   @Process({ name: JobName.QUEUE_VIDEO_CONVERSION, concurrency: 1 })
@@ -43,14 +48,12 @@ export class VideoTranscodeProcessor {
   @Process({ name: JobName.VIDEO_CONVERSION, concurrency: 2 })
   async handleVideoConversion(job: Job<IAssetJob>) {
     const { asset } = job.data;
-    const basePath = APP_UPLOAD_LOCATION;
-    const encodedVideoPath = `${basePath}/${asset.ownerId}/encoded-video`;
 
-    if (!existsSync(encodedVideoPath)) {
-      mkdirSync(encodedVideoPath, { recursive: true });
-    }
+    const encodedVideoPath = this.storageCore.getFolderLocation(StorageFolder.ENCODED_VIDEO, asset.ownerId);
 
-    const savedEncodedPath = `${encodedVideoPath}/${asset.id}.mp4`;
+    this.storageRepository.mkdirSync(encodedVideoPath);
+
+    const savedEncodedPath = join(encodedVideoPath, `${asset.id}.mp4`);
 
     await this.runVideoEncode(asset, savedEncodedPath);
   }
