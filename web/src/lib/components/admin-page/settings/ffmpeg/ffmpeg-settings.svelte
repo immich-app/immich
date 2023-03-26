@@ -7,7 +7,6 @@
 	import SettingButtonsRow from '../setting-buttons-row.svelte';
 	import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
 	import SettingSelect from '../setting-select.svelte';
-	import SettingTranscode from '../setting-transcode.svelte';
 	import { isEqual } from 'lodash-es';
 	import { fade } from 'svelte/transition';
 
@@ -105,7 +104,12 @@
 					<SettingSelect
 						label="VIDEO CODEC (-vcodec)"
 						bind:value={ffmpegConfig.targetVideoCodec}
-						options={['h264', 'hevc', 'vp9']}
+						options={[
+							{ value: 'h264', text: 'h264' },
+							{ value: 'hevc', text: 'hevc' },
+							{ value: 'vp9', text: 'vp9' }
+						]}
+						name="vcodec"
 						isEdited={!(ffmpegConfig.targetVideoCodec == savedConfig.targetVideoCodec)}
 					/>
 
@@ -117,18 +121,19 @@
 						isEdited={!(ffmpegConfig.targetScaling == savedConfig.targetScaling)}
 					/>
 
-					<SettingTranscode
+					<SettingSelect
 						label="TRANSCODE"
 						bind:value={ffmpegConfig.transcode}
+						name="transcode"
 						options={[
-							{ value: SystemConfigFFmpegDtoTranscodeEnum.All, description: 'All videos' },
+							{ value: SystemConfigFFmpegDtoTranscodeEnum.All, text: 'All videos' },
 							{
 								value: SystemConfigFFmpegDtoTranscodeEnum.Optimal,
-								description: 'Videos higher than 1080p or not in the desired format'
+								text: 'Videos higher than 1080p or not in the desired format'
 							},
 							{
 								value: SystemConfigFFmpegDtoTranscodeEnum.Required,
-								description: 'Only videos not in the desired format'
+								text: 'Only videos not in the desired format'
 							}
 						]}
 						isEdited={!(ffmpegConfig.transcode == savedConfig.transcode)}
