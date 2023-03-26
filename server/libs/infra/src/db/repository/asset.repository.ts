@@ -134,4 +134,11 @@ export class AssetRepository implements IAssetRepository {
       where,
     });
   }
+
+  getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null> {
+    return this.repository.findOne({
+      where: { albums: { id: albumId } },
+      order: { fileCreatedAt: 'DESC' },
+    });
+  }
 }

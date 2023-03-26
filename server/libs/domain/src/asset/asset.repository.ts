@@ -18,6 +18,7 @@ export const IAssetRepository = 'IAssetRepository';
 export interface IAssetRepository {
   getByIds(ids: string[]): Promise<AssetEntity[]>;
   getWithout(property: WithoutProperty): Promise<AssetEntity[]>;
+  getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   deleteAll(ownerId: string): Promise<void>;
   getAll(options?: AssetSearchOptions): Promise<AssetEntity[]>;
   save(asset: Partial<AssetEntity>): Promise<AssetEntity>;
