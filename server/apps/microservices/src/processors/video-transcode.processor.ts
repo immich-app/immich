@@ -8,6 +8,7 @@ import {
   QueueName,
   StorageCore,
   StorageFolder,
+  SystemConfigFFmpegDto,
   SystemConfigService,
   WithoutProperty,
 } from '@app/domain';
@@ -75,10 +76,45 @@ export class VideoTranscodeProcessor {
   async runVideoEncode(asset: AssetEntity, savedEncodedPath: string): Promise<void> {
     const config = await this.systemConfigService.getConfig();
 
-    if (config.ffmpeg.transcode == TranscodePreset.ALL) {
+    const transcode = await this.needsTranscoding(asset, config.ffmpeg);
+    if (transcode) {
+      //TODO: If video or audio are already the correct format, don't re-encode, copy the stream
       return this.runFFMPEGPipeLine(asset, savedEncodedPath);
     }
+  }
 
+  async needsTranscoding(asset: AssetEntity, ffmpegConfig: SystemConfigFFmpegDto): Promise<boolean> {
+    switch (ffmpegConfig.transcode) {
+      case TranscodePreset.ALL:
+        return true;
+
+      case TranscodePreset.REQUIRED:
+        {
+          const videoStream = await this.getVideoStream(asset);
+          if (videoStream.codec_name !== ffmpegConfig.targetVideoCodec) {
+            return true;
+          }
+        }
+        break;
+
+      case TranscodePreset.OPTIMAL:
+        {
+          const videoStream = await this.getVideoStream(asset);
+          if (videoStream.codec_name !== ffmpegConfig.targetVideoCodec) {
+            return true;
+          }
+
+          const videoHeightThreshold = 1080;
+          if (!videoStream.height || videoStream.height > videoHeightThreshold) {
+            return true;
+          }
+        }
+        break;
+    }
+    return false;
+  }
+
+  async getVideoStream(asset: AssetEntity): Promise<ffmpeg.FfprobeStream> {
     const videoInfo = await this.runFFProbePipeline(asset);
 
     const videoStreams = videoInfo.streams.filter((stream) => {
@@ -91,17 +127,7 @@ export class VideoTranscodeProcessor {
       return stream2Frames - stream1Frames;
     })[0];
 
-    //TODO: If video or audio are already the correct format, don't re-encode, copy the stream
-    if (longestVideoStream.codec_name !== config.ffmpeg.targetVideoCodec) {
-      return this.runFFMPEGPipeLine(asset, savedEncodedPath);
-    }
-
-    if (config.ffmpeg.transcode == TranscodePreset.OPTIMAL) {
-      const videoHeightThreshold = 1080;
-      if (!longestVideoStream.height || longestVideoStream.height > videoHeightThreshold) {
-        return this.runFFMPEGPipeLine(asset, savedEncodedPath);
-      }
-    }
+    return longestVideoStream;
   }
 
   async runFFMPEGPipeLine(asset: AssetEntity, savedEncodedPath: string): Promise<void> {
