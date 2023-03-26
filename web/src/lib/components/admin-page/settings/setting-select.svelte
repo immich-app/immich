@@ -15,7 +15,7 @@
 
 <div class="w-full">
 	<div class={`flex place-items-center gap-1 h-[26px]`}>
-		<label class={`immich-form-label text-sm`} for={label}>{label}</label>
+		<label class={`immich-form-label text-sm`} for="{name}-select">{label}</label>
 
 		{#if isEdited}
 			<div
