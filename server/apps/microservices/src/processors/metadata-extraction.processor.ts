@@ -10,7 +10,7 @@ import {
   QueueName,
   WithoutProperty,
 } from '@app/domain';
-import { AssetEntity, AssetType, ExifEntity } from '@app/infra';
+import { AssetType, ExifEntity } from '@app/infra';
 import { Process, Processor } from '@nestjs/bull';
 import { Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -173,7 +173,8 @@ export class MetadataExtractionProcessor {
   @Process(JobName.EXIF_EXTRACTION)
   async extractExifInfo(job: Job<IAssetUploadedJob>) {
     try {
-      const { asset, fileName }: { asset: AssetEntity; fileName: string } = job.data;
+      let asset = job.data.asset;
+      const fileName = job.data.fileName;
       const exifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((e) => {
         this.logger.warn(`The exifData parsing failed due to: ${e} on file ${asset.originalPath}`);
         return null;
@@ -256,7 +257,8 @@ export class MetadataExtractionProcessor {
       }
 
       await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
-      await this.assetCore.save({ id: asset.id, fileCreatedAt: fileCreatedAt?.toISOString() });
+      asset = await this.assetCore.save({ id: asset.id, fileCreatedAt: fileCreatedAt?.toISOString() });
+      await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { asset, fileName } });
     } catch (error: any) {
       this.logger.error(`Error extracting EXIF ${error}`, error?.stack);
     }

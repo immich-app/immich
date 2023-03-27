@@ -8,14 +8,7 @@ import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { DownloadService } from '../../modules/download/download.service';
 import { AlbumRepository, IAlbumRepository } from '../album/album-repository';
-import {
-  ICryptoRepository,
-  IJobRepository,
-  ISharedLinkRepository,
-  IStorageRepository,
-  ISystemConfigRepository,
-  JobName,
-} from '@app/domain';
+import { ICryptoRepository, IJobRepository, ISharedLinkRepository, IStorageRepository, JobName } from '@app/domain';
 import {
   assetEntityStub,
   authStub,
@@ -24,10 +17,8 @@ import {
   newJobRepositoryMock,
   newSharedLinkRepositoryMock,
   newStorageRepositoryMock,
-  newSystemConfigRepositoryMock,
   sharedLinkResponseStub,
   sharedLinkStub,
-  systemConfigStub,
 } from '@app/domain/../test';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
@@ -121,7 +112,6 @@ describe('AssetService', () => {
   let albumRepositoryMock: jest.Mocked<IAlbumRepository>;
   let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
   let sharedLinkRepositoryMock: jest.Mocked<ISharedLinkRepository>;
-  let configMock: jest.Mocked<ISystemConfigRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
@@ -160,7 +150,6 @@ describe('AssetService', () => {
 
     sharedLinkRepositoryMock = newSharedLinkRepositoryMock();
     jobMock = newJobRepositoryMock();
-    configMock = newSystemConfigRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
     storageMock = newStorageRepositoryMock();
 
@@ -171,8 +160,6 @@ describe('AssetService', () => {
       downloadServiceMock as DownloadService,
       sharedLinkRepositoryMock,
       jobMock,
-      configMock,
-      systemConfigStub.defaults,
       cryptoMock,
       storageMock,
     );
@@ -273,10 +260,6 @@ describe('AssetService', () => {
       await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({ duplicate: false, id: 'id_1' });
 
       expect(assetRepositoryMock.create).toHaveBeenCalled();
-      expect(assetRepositoryMock.save).toHaveBeenCalledWith({
-        id: 'id_1',
-        originalPath: 'upload/library/user_id_1/2022/2022-06-19/asset_1.jpeg',
-      });
     });
 
     it('should handle a duplicate', async () => {

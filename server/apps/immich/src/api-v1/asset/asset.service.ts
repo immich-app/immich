@@ -12,7 +12,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { AssetEntity, AssetType, SharedLinkType, SystemConfig } from '@app/infra';
+import { AssetEntity, AssetType, SharedLinkType } from '@app/infra';
 import { constants, createReadStream, stat } from 'fs';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
@@ -25,9 +25,7 @@ import { CuratedObjectsResponseDto } from './response-dto/curated-objects-respon
 import {
   AssetResponseDto,
   ImmichReadStream,
-  INITIAL_SYSTEM_CONFIG,
   IStorageRepository,
-  ISystemConfigRepository,
   JobName,
   mapAsset,
   mapAssetWithoutExif,
@@ -86,12 +84,10 @@ export class AssetService {
     private downloadService: DownloadService,
     @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
-    @Inject(INITIAL_SYSTEM_CONFIG) config: SystemConfig,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
-    this.assetCore = new AssetCore(_assetRepository, jobRepository, configRepository, config, storageRepository);
+    this.assetCore = new AssetCore(_assetRepository, jobRepository);
     this.shareCore = new ShareCore(sharedLinkRepository, cryptoRepository);
   }
 
