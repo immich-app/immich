@@ -4,10 +4,11 @@ import {
 } from './../components/shared-components/notification/notification';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import type { UploadAsset } from '../models/upload-asset';
-import { api, AssetFileUploadResponseDto } from '@api';
+import { api, AssetBulkUploadCheckResultReasonEnum, AssetFileUploadResponseDto } from '@api';
 import { addAssetsToAlbum, getFileMimeType, getFilenameExtension } from '$lib/utils/asset-utils';
 import { mergeMap, filter, firstValueFrom, from, of, combineLatestAll } from 'rxjs';
 import axios from 'axios';
+import crypto from 'crypto';
 
 export const openFileUploadDialog = async (
 	albumId: string | undefined = undefined,
@@ -59,6 +60,52 @@ export const fileUploadHandler = async (
 	);
 };
 
+async function sha1(file: File): Promise<string> {
+	const reader = new FileReader();
+	reader.readAsArrayBuffer(file);
+	await new Promise((resolve) => (reader.onload = resolve));
+	const blob = new Blob([reader.result as ArrayBuffer]);
+
+	const stream = blob.stream();
+
+	const buffer = await streamToBuffer(stream);
+
+	const hashBuffer = await crypto.subtle.digest('SHA-1', buffer);
+	const hashArray = Array.from(new Uint8Array(hashBuffer));
+	const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+
+	return hashHex;
+}
+
+function streamToBuffer(stream: ReadableStream): Promise<ArrayBuffer> {
+	const chunks: Uint8Array[] = [];
+	const reader = stream.getReader();
+	return new Promise((resolve, reject) => {
+		reader
+			.read()
+			.then(function processResult(result) {
+				if (result.done) {
+					resolve(concatenateChunks(chunks));
+				} else {
+					chunks.push(result.value);
+					reader.read().then(processResult).catch(reject);
+				}
+			})
+			.catch(reject);
+	});
+}
+
+function concatenateChunks(chunks: Uint8Array[]): ArrayBuffer {
+	const totalLength = chunks.reduce((length, chunk) => length + chunk.length, 0);
+	const result = new Uint8Array(totalLength);
+	let offset = 0;
+	for (const chunk of chunks) {
+		result.set(chunk, offset);
+		offset += chunk.length;
+	}
+	return result.buffer;
+}
+
 //TODO: should probably use the @api SDK
 async function fileUploader(
 	asset: File,
@@ -90,30 +137,31 @@ async function fileUploader(
 		// Get asset file extension
 		formData.append('fileExtension', '.' + fileExtension);
 
+		const checksum = await sha1(asset);
+
 		// Get asset binary data with a custom MIME type, because browsers will
 		// use application/octet-stream for unsupported MIME types, leading to
 		// failed uploads.
 		formData.append('assetData', new File([asset], asset.name, { type: mimeType }));
 
 		// Check if asset upload on server before performing upload
-		const { data, status } = await api.assetApi.checkDuplicateAsset(
-			{
-				deviceAssetId: String(deviceAssetId),
-				deviceId: 'WEB'
-			},
-			sharedKey
-		);
+		const { data, status } = await api.assetApi.bulkUploadCheck({
+			assets: [{ id: 'web', checksum: checksum }]
+		});
 
-		if (status === 200 && data.isExist && data.id) {
+		if (
+			status === 200 &&
+			data.results[0].reason === AssetBulkUploadCheckResultReasonEnum.Duplicate
+		) {
 			if (albumId) {
-				await addAssetsToAlbum(albumId, [data.id], sharedKey);
+				await addAssetsToAlbum(albumId, [data.results[0].id], sharedKey);
 			}
 
-			return data.id;
+			return asset.name;
 		}
 
 		const newUploadAsset: UploadAsset = {
-			id: deviceAssetId,
+			id: asset.name,
 			file: asset,
 			progress: 0,
 			fileExtension: fileExtension
@@ -127,7 +175,7 @@ async function fileUploader(
 			},
 			onUploadProgress: (event) => {
 				const percentComplete = Math.floor((event.loaded / event.total) * 100);
-				uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
+				uploadAssetsStore.updateProgress(asset.name, percentComplete);
 			}
 		});
 
@@ -139,7 +187,7 @@ async function fileUploader(
 			}
 
 			setTimeout(() => {
-				uploadAssetsStore.removeUploadAsset(deviceAssetId);
+				uploadAssetsStore.removeUploadAsset(asset.name);
 			}, 1000);
 
 			return res.id;
@@ -147,7 +195,7 @@ async function fileUploader(
 	} catch (e) {
 		console.log('error uploading file ', e);
 		handleUploadError(asset, JSON.stringify(e));
-		uploadAssetsStore.removeUploadAsset(deviceAssetId);
+		uploadAssetsStore.removeUploadAsset(asset.name);
 	}
 }
 
