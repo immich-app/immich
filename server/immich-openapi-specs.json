@@ -943,6 +943,14 @@
         },
         "tags": [
           "Server Info"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -1482,6 +1490,14 @@
         },
         "tags": [
           "User"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },
@@ -1694,6 +1710,14 @@
         },
         "tags": [
           "User"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
         ]
       }
     },

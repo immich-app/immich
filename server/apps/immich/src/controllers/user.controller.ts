@@ -44,6 +44,7 @@ export class UserController {
     return this.service.getAllUsers(authUser, isAll);
   }
 
+  @Authenticated()
   @Get('/info/:userId')
   getUserById(@Param('userId') userId: string): Promise<UserResponseDto> {
     return this.service.getUserById(userId);
@@ -87,8 +88,8 @@ export class UserController {
     return this.service.updateUser(authUser, updateUserDto);
   }
 
-  @UseInterceptors(FileInterceptor('file', profileImageUploadOption))
   @Authenticated()
+  @UseInterceptors(FileInterceptor('file', profileImageUploadOption))
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     description: 'A new avatar for the user',
@@ -102,6 +103,7 @@ export class UserController {
     return this.service.createProfileImage(authUser, fileInfo);
   }
 
+  @Authenticated()
   @Get('/profile-image/:userId')
   @Header('Cache-Control', 'max-age=600')
   async getProfileImage(@Param('userId') userId: string, @Response({ passthrough: true }) res: Res): Promise<any> {
