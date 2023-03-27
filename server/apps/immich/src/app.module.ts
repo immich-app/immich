@@ -1,7 +1,5 @@
-import { immichAppConfig } from '@app/domain';
 import { Module, OnModuleInit } from '@nestjs/common';
 import { AssetModule } from './api-v1/asset/asset.module';
-import { ConfigModule } from '@nestjs/config';
 import { AlbumModule } from './api-v1/album/album.module';
 import { AppController } from './app.controller';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -27,7 +25,6 @@ import { AppCronJobs } from './app.cron-jobs';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(immichAppConfig),
     DomainModule.register({ imports: [InfraModule] }),
     AssetModule,
     AlbumModule,

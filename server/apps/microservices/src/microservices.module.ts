@@ -1,8 +1,6 @@
-import { immichAppConfig } from '@app/domain';
 import { DomainModule } from '@app/domain';
 import { ExifEntity, InfraModule } from '@app/infra';
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   BackgroundTaskProcessor,
@@ -17,7 +15,7 @@ import { VideoTranscodeProcessor } from './processors/video-transcode.processor'
 
 @Module({
   imports: [
-    ConfigModule.forRoot(immichAppConfig),
+    //
     DomainModule.register({ imports: [InfraModule] }),
     TypeOrmModule.forFeature([ExifEntity]),
   ],
