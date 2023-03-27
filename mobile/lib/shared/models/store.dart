@@ -138,7 +138,7 @@ class StoreKeyNotFoundException implements Exception {
 /// Key for each possible value in the `Store`.
 /// Defines the data type for each value
 enum StoreKey<T> {
-  userRemoteId<String>(0, type: String),
+  version<int>(0, type: int),
   assetETag<String>(1, type: String),
   currentUser<User>(2, type: User, fromDb: _getUser, toDb: _toUser),
   deviceIdHash<int>(3, type: int),
