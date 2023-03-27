@@ -275,7 +275,8 @@ export class MetadataExtractionProcessor {
 
   @Process({ name: JobName.EXTRACT_VIDEO_METADATA, concurrency: 2 })
   async extractVideoMetadata(job: Job<IAssetUploadedJob>) {
-    const { asset, fileName } = job.data;
+    let asset = job.data.asset;
+    const fileName = job.data.fileName;
 
     if (!asset.isVisible) {
       return;
@@ -375,7 +376,8 @@ export class MetadataExtractionProcessor {
       }
 
       await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
-      await this.assetCore.save({ id: asset.id, duration: durationString, fileCreatedAt });
+      asset = await this.assetCore.save({ id: asset.id, duration: durationString, fileCreatedAt });
+      await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { asset, fileName } });
     } catch (err) {
       ``;
       // do nothing
