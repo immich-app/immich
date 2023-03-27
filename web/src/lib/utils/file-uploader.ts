@@ -8,7 +8,7 @@ import { api, AssetBulkUploadCheckResultReasonEnum, AssetFileUploadResponseDto }
 import { addAssetsToAlbum, getFileMimeType, getFilenameExtension } from '$lib/utils/asset-utils';
 import { mergeMap, filter, firstValueFrom, from, of, combineLatestAll } from 'rxjs';
 import axios from 'axios';
-import crypto from 'crypto';
+import { Sha1 } from 'wasm-crypto';
 
 export const openFileUploadDialog = async (
 	albumId: string | undefined = undefined,
@@ -70,7 +70,9 @@ async function sha1(file: File): Promise<string> {
 
 	const buffer = await streamToBuffer(stream);
 
-	const hashBuffer = await crypto.subtle.digest('SHA-1', buffer);
+	const sha1 = new Sha1();
+	sha1.update(buffer);
+	const hashBuffer = sha1.digest();
 	const hashArray = Array.from(new Uint8Array(hashBuffer));
 	const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 
