@@ -1,6 +1,6 @@
 <script lang="ts">
+	import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-	import ImmichThumbnail from '$lib/components/shared-components/immich-thumbnail.svelte';
 	import { AppRoute } from '$lib/constants';
 	import { AssetTypeEnum, SearchExploreItem } from '@api';
 	import ClockOutline from 'svelte-material-icons/ClockOutline.svelte';
@@ -49,12 +49,7 @@
 					{#each places as item}
 						<a class="relative" href="/search?{Field.CITY}={item.value}" draggable="false">
 							<div class="filter brightness-75 rounded-xl overflow-hidden">
-								<ImmichThumbnail
-									isRoundedCorner={true}
-									thumbnailSize={156}
-									asset={item.data}
-									readonly={true}
-								/>
+								<Thumbnail thumbnailSize={156} asset={item.data} readonly />
 							</div>
 							<span
 								class="capitalize absolute bottom-2 w-full text-center text-sm font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
@@ -76,12 +71,7 @@
 					{#each things as item}
 						<a class="relative" href="/search?{Field.OBJECTS}={item.value}" draggable="false">
 							<div class="filter brightness-75 rounded-xl overflow-hidden">
-								<ImmichThumbnail
-									isRoundedCorner={true}
-									thumbnailSize={156}
-									asset={item.data}
-									readonly={true}
-								/>
+								<Thumbnail thumbnailSize={156} asset={item.data} readonly />
 							</div>
 							<span
 								class="capitalize absolute bottom-2 w-full text-center text-sm font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
