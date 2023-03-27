@@ -17,7 +17,7 @@ export class SmartInfoEntity {
   objects!: string[] | null;
 
   @Column({
-    type: 'float8',
+    type: 'float4',
     array: true,
     nullable: true,
   })
