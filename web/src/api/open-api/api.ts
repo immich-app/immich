@@ -743,10 +743,10 @@ export interface CheckExistingAssetsDto {
 export interface CheckExistingAssetsResponseDto {
     /**
      * 
-     * @type {Array<object>}
+     * @type {Array<string>}
      * @memberof CheckExistingAssetsResponseDto
      */
-    'existingIds': Array<object>;
+    'existingIds': Array<string>;
 }
 /**
  * 
@@ -5217,7 +5217,7 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getUserAssetsByDeviceId(deviceId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<object>>> {
+        async getUserAssetsByDeviceId(deviceId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<string>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getUserAssetsByDeviceId(deviceId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -5471,7 +5471,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getUserAssetsByDeviceId(deviceId: string, options?: any): AxiosPromise<Array<object>> {
+        getUserAssetsByDeviceId(deviceId: string, options?: any): AxiosPromise<Array<string>> {
             return localVarFp.getUserAssetsByDeviceId(deviceId, options).then((request) => request(axios, basePath));
         },
         /**

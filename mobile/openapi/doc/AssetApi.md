@@ -994,7 +994,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getUserAssetsByDeviceId**
-> List<Object> getUserAssetsByDeviceId(deviceId)
+> List<String> getUserAssetsByDeviceId(deviceId)
 
 
 
@@ -1033,7 +1033,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**List<Object>**](Object.md)
+**List<String>**
 
 ### Authorization
 

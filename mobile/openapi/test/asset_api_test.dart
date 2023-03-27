@@ -145,7 +145,7 @@ void main() {
 
     // Get all asset of a device that are in the database, ID only.
     //
-    //Future<List<Object>> getUserAssetsByDeviceId(String deviceId) async
+    //Future<List<String>> getUserAssetsByDeviceId(String deviceId) async
     test('test getUserAssetsByDeviceId', () async {
       // TODO
     });

@@ -16,7 +16,7 @@ void main() {
   // final instance = CheckExistingAssetsResponseDto();
 
   group('test CheckExistingAssetsResponseDto', () {
-    // List<Object> existingIds (default value: const [])
+    // List<String> existingIds (default value: const [])
     test('to test the property `existingIds`', () async {
       // TODO
     });
