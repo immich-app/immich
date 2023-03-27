@@ -17,10 +17,12 @@ class ImmichAssetGrid extends HookConsumerWidget {
   final bool selectionActive;
   final List<Asset> assets;
   final RenderList? renderList;
+  final Future<void> Function()? onRefresh;
 
   const ImmichAssetGrid({
     super.key,
     required this.assets,
+    this.onRefresh,
     this.renderList,
     this.assetsPerRow,
     this.showStorageIndicator,
@@ -62,11 +64,12 @@ class ImmichAssetGrid extends HookConsumerWidget {
           enabled: enableHeroAnimations.value,
           child: ImmichAssetGridView(
             allAssets: assets,
-            assetsPerRow: assetsPerRow 
-              ?? settings.getSetting(AppSettingsEnum.tilesPerRow),
+            onRefresh: onRefresh,
+            assetsPerRow: assetsPerRow ??
+                settings.getSetting(AppSettingsEnum.tilesPerRow),
             listener: listener,
-            showStorageIndicator: showStorageIndicator 
-              ?? settings.getSetting(AppSettingsEnum.storageIndicator),
+            showStorageIndicator: showStorageIndicator ??
+                settings.getSetting(AppSettingsEnum.storageIndicator),
             renderList: renderList!,
             margin: margin,
             selectionActive: selectionActive,
@@ -76,26 +79,25 @@ class ImmichAssetGrid extends HookConsumerWidget {
     }
 
     return renderListFuture.when(
-      data: (renderList) =>
-        WillPopScope(
-          onWillPop: onWillPop,
-          child: HeroMode(
-            enabled: enableHeroAnimations.value,
-            child: ImmichAssetGridView(
-              allAssets: assets,
-              assetsPerRow: assetsPerRow 
-                ?? settings.getSetting(AppSettingsEnum.tilesPerRow),
-              listener: listener,
-              showStorageIndicator: showStorageIndicator 
-                ?? settings.getSetting(AppSettingsEnum.storageIndicator),
-              renderList: renderList,
-              margin: margin,
-              selectionActive: selectionActive,
-            ),
+      data: (renderList) => WillPopScope(
+        onWillPop: onWillPop,
+        child: HeroMode(
+          enabled: enableHeroAnimations.value,
+          child: ImmichAssetGridView(
+            allAssets: assets,
+            onRefresh: onRefresh,
+            assetsPerRow: assetsPerRow ??
+                settings.getSetting(AppSettingsEnum.tilesPerRow),
+            listener: listener,
+            showStorageIndicator: showStorageIndicator ??
+                settings.getSetting(AppSettingsEnum.storageIndicator),
+            renderList: renderList,
+            margin: margin,
+            selectionActive: selectionActive,
           ),
         ),
-      error: (err, stack) =>
-        Center(child: Text("$err")),
+      ),
+      error: (err, stack) => Center(child: Text("$err")),
       loading: () => const Center(
         child: ImmichLoadingIndicator(),
       ),

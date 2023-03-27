@@ -3,8 +3,8 @@
 	import { createEventDispatcher } from 'svelte';
 	import { quintOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
+	import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
 	import ControlAppBar from '../shared-components/control-app-bar.svelte';
-	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
 
 	export let album: AlbumResponseDto;
 
@@ -43,7 +43,7 @@
 		<!-- Image grid -->
 		<div class="flex flex-wrap gap-[2px]">
 			{#each album.assets as asset}
-				<ImmichThumbnail
+				<Thumbnail
 					{asset}
 					on:click={() => (selectedThumbnail = asset)}
 					selected={isSelected(asset.id)}

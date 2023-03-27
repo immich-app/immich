@@ -20,6 +20,7 @@ void main() {
         fileModifiedAt: date,
         updatedAt: date,
         durationInSeconds: 0,
+        type: AssetType.image,
         fileName: '',
         isFavorite: false,
         isLocal: false,

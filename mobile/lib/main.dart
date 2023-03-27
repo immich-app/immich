@@ -50,6 +50,7 @@ void main() async {
   await initApp();
   await migrateHiveToStoreIfNecessary();
   await migrateJsonCacheIfNecessary();
+  await migrateDatabaseIfNeeded(db);
   runApp(getMainWidget(db));
 }
 

@@ -53,7 +53,7 @@ class AlbumThumbnailCard extends StatelessWidget {
           // Add the owner name to the subtitle
           String? owner;
           if (showOwner) {
-            if (album.ownerId == Store.get(StoreKey.userRemoteId)) {
+            if (album.ownerId == Store.get(StoreKey.currentUser).id) {
               owner = 'album_thumbnail_owned'.tr();
             } else if (album.ownerName != null) {
               owner = 'album_thumbnail_shared_by'.tr(args: [album.ownerName!]);

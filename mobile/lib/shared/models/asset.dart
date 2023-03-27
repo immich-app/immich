@@ -15,11 +15,11 @@ class Asset {
   Asset.remote(AssetResponseDto remote)
       : remoteId = remote.id,
         isLocal = false,
-        fileCreatedAt = DateTime.parse(remote.fileCreatedAt).toUtc(),
-        fileModifiedAt = DateTime.parse(remote.fileModifiedAt).toUtc(),
-        updatedAt = DateTime.parse(remote.updatedAt).toUtc(),
-        // use -1 as fallback duration (to not mix it up with non-video assets correctly having duration=0)
-        durationInSeconds = remote.duration.toDuration()?.inSeconds ?? -1,
+        fileCreatedAt = DateTime.parse(remote.fileCreatedAt),
+        fileModifiedAt = DateTime.parse(remote.fileModifiedAt),
+        updatedAt = DateTime.parse(remote.updatedAt),
+        durationInSeconds = remote.duration.toDuration()?.inSeconds ?? 0,
+        type = remote.type.toAssetType(),
         fileName = p.basename(remote.originalPath),
         height = remote.exifInfo?.exifImageHeight?.toInt(),
         width = remote.exifInfo?.exifImageWidth?.toInt(),
@@ -35,15 +35,16 @@ class Asset {
       : localId = local.id,
         isLocal = true,
         durationInSeconds = local.duration,
+        type = AssetType.values[local.typeInt],
         height = local.height,
         width = local.width,
         fileName = local.title!,
         deviceId = Store.get(StoreKey.deviceIdHash),
         ownerId = Store.get(StoreKey.currentUser).isarId,
-        fileModifiedAt = local.modifiedDateTime.toUtc(),
-        updatedAt = local.modifiedDateTime.toUtc(),
+        fileModifiedAt = local.modifiedDateTime,
+        updatedAt = local.modifiedDateTime,
         isFavorite = local.isFavorite,
-        fileCreatedAt = local.createDateTime.toUtc() {
+        fileCreatedAt = local.createDateTime {
     if (fileCreatedAt.year == 1970) {
       fileCreatedAt = fileModifiedAt;
     }
@@ -61,6 +62,7 @@ class Asset {
     required this.fileModifiedAt,
     required this.updatedAt,
     required this.durationInSeconds,
+    required this.type,
     this.width,
     this.height,
     required this.fileName,
@@ -77,10 +79,10 @@ class Asset {
   AssetEntity? get local {
     if (isLocal && _local == null) {
       _local = AssetEntity(
-        id: localId.toString(),
+        id: localId,
         typeInt: isImage ? 1 : 2,
-        width: width!,
-        height: height!,
+        width: width ?? 0,
+        height: height ?? 0,
         duration: durationInSeconds,
         createDateSecond: fileCreatedAt.millisecondsSinceEpoch ~/ 1000,
         modifiedDateSecond: fileModifiedAt.millisecondsSinceEpoch ~/ 1000,
@@ -96,7 +98,7 @@ class Asset {
   String? remoteId;
 
   @Index(
-    unique: true,
+    unique: false,
     replace: false,
     type: IndexType.hash,
     composite: [CompositeIndex('deviceId')],
@@ -114,6 +116,9 @@ class Asset {
   DateTime updatedAt;
 
   int durationInSeconds;
+
+  @Enumerated(EnumType.ordinal)
+  AssetType type;
 
   short? width;
 
@@ -140,7 +145,7 @@ class Asset {
   bool get isRemote => remoteId != null;
 
   @ignore
-  bool get isImage => durationInSeconds == 0;
+  bool get isImage => type == AssetType.image;
 
   @ignore
   Duration get duration => Duration(seconds: durationInSeconds);
@@ -148,12 +153,43 @@ class Asset {
   @override
   bool operator ==(other) {
     if (other is! Asset) return false;
-    return id == other.id;
+    return id == other.id &&
+        remoteId == other.remoteId &&
+        localId == other.localId &&
+        deviceId == other.deviceId &&
+        ownerId == other.ownerId &&
+        fileCreatedAt == other.fileCreatedAt &&
+        fileModifiedAt == other.fileModifiedAt &&
+        updatedAt == other.updatedAt &&
+        durationInSeconds == other.durationInSeconds &&
+        type == other.type &&
+        width == other.width &&
+        height == other.height &&
+        fileName == other.fileName &&
+        livePhotoVideoId == other.livePhotoVideoId &&
+        isFavorite == other.isFavorite &&
+        isLocal == other.isLocal;
   }
 
   @override
   @ignore
-  int get hashCode => id.hashCode;
+  int get hashCode =>
+      id.hashCode ^
+      remoteId.hashCode ^
+      localId.hashCode ^
+      deviceId.hashCode ^
+      ownerId.hashCode ^
+      fileCreatedAt.hashCode ^
+      fileModifiedAt.hashCode ^
+      updatedAt.hashCode ^
+      durationInSeconds.hashCode ^
+      type.hashCode ^
+      width.hashCode ^
+      height.hashCode ^
+      fileName.hashCode ^
+      livePhotoVideoId.hashCode ^
+      isFavorite.hashCode ^
+      isLocal.hashCode;
 
   bool updateFromAssetEntity(AssetEntity ae) {
     // TODO check more fields;
@@ -192,15 +228,54 @@ class Asset {
     }
   }
 
-  static int compareByDeviceIdLocalId(Asset a, Asset b) {
-    final int order = a.deviceId.compareTo(b.deviceId);
-    return order == 0 ? a.localId.compareTo(b.localId) : order;
+  /// compares assets by [ownerId], [deviceId], [localId]
+  static int compareByOwnerDeviceLocalId(Asset a, Asset b) {
+    final int ownerIdOrder = a.ownerId.compareTo(b.ownerId);
+    if (ownerIdOrder != 0) {
+      return ownerIdOrder;
+    }
+    final int deviceIdOrder = a.deviceId.compareTo(b.deviceId);
+    if (deviceIdOrder != 0) {
+      return deviceIdOrder;
+    }
+    final int localIdOrder = a.localId.compareTo(b.localId);
+    return localIdOrder;
+  }
+
+  /// compares assets by [ownerId], [deviceId], [localId], [fileModifiedAt]
+  static int compareByOwnerDeviceLocalIdModified(Asset a, Asset b) {
+    final int order = compareByOwnerDeviceLocalId(a, b);
+    return order != 0 ? order : a.fileModifiedAt.compareTo(b.fileModifiedAt);
   }
 
   static int compareById(Asset a, Asset b) => a.id.compareTo(b.id);
 
   static int compareByLocalId(Asset a, Asset b) =>
       a.localId.compareTo(b.localId);
+}
+
+enum AssetType {
+  // do not change this order!
+  other,
+  image,
+  video,
+  audio,
+}
+
+extension AssetTypeEnumHelper on AssetTypeEnum {
+  AssetType toAssetType() {
+    switch (this) {
+      case AssetTypeEnum.IMAGE:
+        return AssetType.image;
+      case AssetTypeEnum.VIDEO:
+        return AssetType.video;
+      case AssetTypeEnum.AUDIO:
+        return AssetType.audio;
+      case AssetTypeEnum.OTHER:
+        return AssetType.other;
+    }
+    throw Exception();
+  }
 }
 
 extension AssetsHelper on IsarCollection<Asset> {

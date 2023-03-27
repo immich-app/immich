@@ -78,7 +78,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       await Future.wait([
         _apiService.authenticationApi.logout(),
         Store.delete(StoreKey.assetETag),
-        Store.delete(StoreKey.userRemoteId),
         Store.delete(StoreKey.currentUser),
         Store.delete(StoreKey.accessToken),
       ]);
@@ -133,7 +132,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       var deviceInfo = await _deviceInfoService.getDeviceInfo();
       Store.put(StoreKey.deviceId, deviceInfo["deviceId"]);
       Store.put(StoreKey.deviceIdHash, fastHash(deviceInfo["deviceId"]));
-      Store.put(StoreKey.userRemoteId, userResponseDto.id);
       Store.put(StoreKey.currentUser, User.fromDto(userResponseDto));
       Store.put(StoreKey.serverUrl, serverUrl);
       Store.put(StoreKey.accessToken, accessToken);
