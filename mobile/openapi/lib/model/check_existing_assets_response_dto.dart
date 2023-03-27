@@ -16,7 +16,7 @@ class CheckExistingAssetsResponseDto {
     this.existingIds = const [],
   });
 
-  List<Object> existingIds;
+  List<String> existingIds;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CheckExistingAssetsResponseDto &&
@@ -55,7 +55,9 @@ class CheckExistingAssetsResponseDto {
       }());
 
       return CheckExistingAssetsResponseDto(
-        existingIds: Object.listFromJson(json[r'existingIds'])!,
+        existingIds: json[r'existingIds'] is List
+            ? (json[r'existingIds'] as List).cast<String>()
+            : const [],
       );
     }
     return null;
