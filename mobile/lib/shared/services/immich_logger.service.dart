@@ -20,7 +20,7 @@ class ImmichLogger {
   static final ImmichLogger _instance = ImmichLogger._internal();
   final maxLogEntries = 200;
   final Isar _db = Isar.getInstance()!;
-  final List<LoggerMessage> _msgBuffer = [];
+  List<LoggerMessage> _msgBuffer = [];
   Timer? _timer;
 
   factory ImmichLogger() => _instance;
@@ -41,7 +41,12 @@ class ImmichLogger {
     final msgCount = _db.loggerMessages.countSync();
     if (msgCount > maxLogEntries) {
       final numberOfEntryToBeDeleted = msgCount - maxLogEntries;
-      _db.loggerMessages.where().limit(numberOfEntryToBeDeleted).deleteAll();
+      _db.writeTxn(
+        () => _db.loggerMessages
+            .where()
+            .limit(numberOfEntryToBeDeleted)
+            .deleteAll(),
+      );
     }
   }
 
@@ -63,8 +68,9 @@ class ImmichLogger {
 
   void _flushBufferToDatabase() {
     _timer = null;
-    _db.writeTxnSync(() => _db.loggerMessages.putAllSync(_msgBuffer));
-    _msgBuffer.clear();
+    final buffer = _msgBuffer;
+    _msgBuffer = [];
+    _db.writeTxn(() => _db.loggerMessages.putAll(buffer));
   }
 
   void clearLogs() {
@@ -111,7 +117,7 @@ class ImmichLogger {
   void flush() {
     if (_timer != null) {
       _timer!.cancel();
-      _flushBufferToDatabase();
+      _db.writeTxnSync(() => _db.loggerMessages.putAllSync(_msgBuffer));
     }
   }
 }

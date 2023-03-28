@@ -1,7 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
-import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
@@ -12,6 +10,9 @@ import 'package:immich_mobile/modules/settings/providers/app_settings.provider.d
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:collection/collection.dart';
+import 'package:immich_mobile/shared/services/sync.service.dart';
+import 'package:immich_mobile/utils/async_mutex.dart';
+import 'package:immich_mobile/utils/db.dart';
 import 'package:intl/intl.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
@@ -53,15 +54,18 @@ class AssetNotifier extends StateNotifier<AssetsState> {
   final AssetService _assetService;
   final AppSettingsService _settingsService;
   final AlbumService _albumService;
+  final SyncService _syncService;
   final Isar _db;
   final log = Logger('AssetNotifier');
   bool _getAllAssetInProgress = false;
   bool _deleteInProgress = false;
+  final AsyncMutex _stateUpdateLock = AsyncMutex();
 
   AssetNotifier(
     this._assetService,
     this._settingsService,
     this._albumService,
+    this._syncService,
     this._db,
   ) : super(AssetsState.fromAssetList([]));
 
@@ -81,24 +85,30 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     await _updateAssetsState(state.allAssets);
   }
 
-  getAllAsset() async {
+  Future<void> getAllAsset({bool clear = false}) async {
     if (_getAllAssetInProgress || _deleteInProgress) {
       // guard against multiple calls to this method while it's still working
       return;
     }
-    final stopwatch = Stopwatch();
+    final stopwatch = Stopwatch()..start();
     try {
       _getAllAssetInProgress = true;
       final User me = Store.get(StoreKey.currentUser);
-      final int cachedCount =
-          await _db.assets.filter().ownerIdEqualTo(me.isarId).count();
-      stopwatch.start();
-      if (cachedCount > 0 && cachedCount != state.allAssets.length) {
-        await _updateAssetsState(await _getUserAssets(me.isarId));
-        log.info(
-          "Reading assets ${state.allAssets.length} from DB: ${stopwatch.elapsedMilliseconds}ms",
-        );
-        stopwatch.reset();
+      if (clear) {
+        await clearAssetsAndAlbums(_db);
+        log.info("Manual refresh requested, cleared assets and albums from db");
+      } else if (_stateUpdateLock.enqueued <= 1) {
+        final int cachedCount =
+            await _db.assets.filter().ownerIdEqualTo(me.isarId).count();
+        if (cachedCount > 0 && cachedCount != state.allAssets.length) {
+          await _stateUpdateLock.run(
+            () async => _updateAssetsState(await _getUserAssets(me.isarId)),
+          );
+          log.info(
+            "Reading assets ${state.allAssets.length} from DB: ${stopwatch.elapsedMilliseconds}ms",
+          );
+          stopwatch.reset();
+        }
       }
       final bool newRemote = await _assetService.refreshRemoteAssets();
       final bool newLocal = await _albumService.refreshDeviceAlbums();
@@ -112,10 +122,14 @@ class AssetNotifier extends StateNotifier<AssetsState> {
         return;
       }
       stopwatch.reset();
-      final assets = await _getUserAssets(me.isarId);
-      if (!const ListEquality().equals(assets, state.allAssets)) {
-        log.info("setting new asset state");
-        await _updateAssetsState(assets);
+      if (_stateUpdateLock.enqueued <= 1) {
+        _stateUpdateLock.run(() async {
+          final assets = await _getUserAssets(me.isarId);
+          if (!const ListEquality().equals(assets, state.allAssets)) {
+            log.info("setting new asset state");
+            await _updateAssetsState(assets);
+          }
+        });
       }
     } finally {
       _getAllAssetInProgress = false;
@@ -130,47 +144,18 @@ class AssetNotifier extends StateNotifier<AssetsState> {
 
   Future<void> clearAllAsset() {
     state = AssetsState.empty();
-    return _db.writeTxn(() async {
-      await _db.assets.clear();
-      await _db.exifInfos.clear();
-      await _db.albums.clear();
-    });
+    return clearAssetsAndAlbums(_db);
   }
 
   Future<void> onNewAssetUploaded(Asset newAsset) async {
-    final int i = state.allAssets.indexWhere(
-      (a) =>
-          a.isRemote ||
-          (a.localId == newAsset.localId && a.deviceId == newAsset.deviceId),
-    );
-
-    if (i == -1 ||
-        state.allAssets[i].localId != newAsset.localId ||
-        state.allAssets[i].deviceId != newAsset.deviceId) {
-      await _updateAssetsState([...state.allAssets, newAsset]);
-    } else {
-      // unify local/remote assets by replacing the
-      // local-only asset in the DB with a local&remote asset
-      final Asset? inDb = await _db.assets
-          .where()
-          .localIdDeviceIdEqualTo(newAsset.localId, newAsset.deviceId)
-          .findFirst();
-      if (inDb != null) {
-        newAsset.id = inDb.id;
-        newAsset.isLocal = inDb.isLocal;
-      }
-
-      // order is important to keep all local-only assets at the beginning!
-      await _updateAssetsState([
-        ...state.allAssets.slice(0, i),
-        ...state.allAssets.slice(i + 1),
-        newAsset,
-      ]);
-    }
-    try {
-      await _db.writeTxn(() => newAsset.put(_db));
-    } on IsarError catch (e) {
-      debugPrint(e.toString());
+    final bool ok = await _syncService.syncNewAssetToDb(newAsset);
+    if (ok && _stateUpdateLock.enqueued <= 1) {
+      // run this sequentially if there is at most 1 other task waiting
+      await _stateUpdateLock.run(() async {
+        final userId = Store.get(StoreKey.currentUser).isarId;
+        final assets = await _getUserAssets(userId);
+        await _updateAssetsState(assets);
+      });
     }
   }
 
@@ -253,6 +238,7 @@ final assetProvider = StateNotifierProvider<AssetNotifier, AssetsState>((ref) {
     ref.watch(assetServiceProvider),
     ref.watch(appSettingsServiceProvider),
     ref.watch(albumServiceProvider),
+    ref.watch(syncServiceProvider),
     ref.watch(dbProvider),
   );
 });

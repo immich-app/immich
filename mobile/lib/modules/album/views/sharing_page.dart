@@ -17,7 +17,7 @@ class SharingPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final List<Album> sharedAlbums = ref.watch(sharedAlbumProvider);
-    final userId = store.Store.get(store.StoreKey.userRemoteId);
+    final userId = store.Store.get(store.StoreKey.currentUser).id;
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     useEffect(

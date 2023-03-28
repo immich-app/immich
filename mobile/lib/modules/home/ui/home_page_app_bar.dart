@@ -1,8 +1,7 @@
-import 'dart:math';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/home/ui/user_circle_avatar.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 
@@ -10,9 +9,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/shared/models/server_info_state.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
-import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
-import 'package:immich_mobile/shared/ui/transparent_image.dart';
 
 class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
   @override
@@ -46,29 +43,13 @@ class HomePageAppBar extends ConsumerWidget with PreferredSizeWidget {
           },
         );
       } else {
-        final String? endpoint = Store.get(StoreKey.serverEndpoint);
-        var dummy = Random().nextInt(1024);
         return InkWell(
           onTap: () {
             Scaffold.of(context).openDrawer();
           },
-          child: CircleAvatar(
-            backgroundColor: Theme.of(context).primaryColor,
+          child: const UserCircleAvatar(
             radius: 18,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(50),
-              child: FadeInImage.memoryNetwork(
-                fit: BoxFit.cover,
-                placeholder: kTransparentImage,
-                width: 33,
-                height: 33,
-                image:
-                    '$endpoint/user/profile-image/${authState.userId}?d=${dummy++}',
-                fadeInDuration: const Duration(milliseconds: 200),
-                imageErrorBuilder: (context, error, stackTrace) =>
-                    Image.memory(kTransparentImage),
-              ),
-            ),
+            size: 33,
           ),
         );
       }

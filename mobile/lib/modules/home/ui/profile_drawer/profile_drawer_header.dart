@@ -1,15 +1,12 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:immich_mobile/modules/home/providers/upload_profile_image.provider.dart';
+import 'package:immich_mobile/modules/home/ui/user_circle_avatar.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
-import 'package:immich_mobile/shared/ui/transparent_image.dart';
 
 class ProfileDrawerHeader extends HookConsumerWidget {
   const ProfileDrawerHeader({
@@ -18,31 +15,15 @@ class ProfileDrawerHeader extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final String endpoint = Store.get(StoreKey.serverEndpoint);
     AuthenticationState authState = ref.watch(authenticationProvider);
     final uploadProfileImageStatus =
         ref.watch(uploadProfileImageProvider).status;
-    var dummy = Random().nextInt(1024);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     buildUserProfileImage() {
-      var userImage = CircleAvatar(
-        backgroundColor: Theme.of(context).primaryColor,
+      var userImage = const UserCircleAvatar(
         radius: 35,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(50),
-          child: FadeInImage.memoryNetwork(
-            fit: BoxFit.cover,
-            placeholder: kTransparentImage,
-            width: 66,
-            height: 66,
-            image:
-                '$endpoint/user/profile-image/${authState.userId}?d=${dummy++}',
-            fadeInDuration: const Duration(milliseconds: 200),
-            imageErrorBuilder: (context, error, stackTrace) =>
-                Image.memory(kTransparentImage),
-          ),
-        ),
+        size: 66,
       );
 
       if (authState.profileImagePath.isEmpty) {

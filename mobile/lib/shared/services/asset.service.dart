@@ -45,14 +45,11 @@ class AssetService {
         .filter()
         .ownerIdEqualTo(Store.get(StoreKey.currentUser).isarId)
         .count();
-    final List<AssetResponseDto>? dtos =
-        await _getRemoteAssets(hasCache: numOwnedRemoteAssets > 0);
-    if (dtos == null) {
-      debugPrint("refreshRemoteAssets fast took ${sw.elapsedMilliseconds}ms");
-      return false;
-    }
-    final bool changes = await _syncService
-        .syncRemoteAssetsToDb(dtos.map(Asset.remote).toList());
+    final bool changes = await _syncService.syncRemoteAssetsToDb(
+      () async => (await _getRemoteAssets(hasCache: numOwnedRemoteAssets > 0))
+          ?.map(Asset.remote)
+          .toList(),
+    );
     debugPrint("refreshRemoteAssets full took ${sw.elapsedMilliseconds}ms");
     return changes;
   }

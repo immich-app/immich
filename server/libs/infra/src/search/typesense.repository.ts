@@ -65,7 +65,8 @@ export class TypesenseRepository implements ISearchRepository {
         },
       ],
       apiKey,
-      numRetries: 3,
+      numRetries: 15,
+      retryIntervalSeconds: 4,
       connectionTimeoutSeconds: 10,
     });
   }

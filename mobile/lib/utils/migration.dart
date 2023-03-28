@@ -15,6 +15,7 @@ import 'package:immich_mobile/modules/settings/services/app_settings.service.dar
 import 'package:immich_mobile/shared/models/immich_logger_message.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/services/asset_cache.service.dart';
+import 'package:immich_mobile/utils/db.dart';
 import 'package:isar/isar.dart';
 
 Future<void> migrateHiveToStoreIfNecessary() async {
@@ -53,7 +54,6 @@ Future<void> _migrateLoginInfoBox(Box<HiveSavedLoginInfo> box) async {
 }
 
 Future<void> _migrateHiveUserInfoBox(Box box) async {
-  await _migrateKey(box, userIdKey, StoreKey.userRemoteId);
   await _migrateKey(box, assetEtagKey, StoreKey.assetETag);
   if (Store.tryGet(StoreKey.deviceId) == null) {
     await _migrateKey(box, deviceIdKey, StoreKey.deviceId);
@@ -142,4 +142,17 @@ Future<void> migrateJsonCacheIfNecessary() async {
   await AlbumCacheService().invalidate();
   await SharedAlbumCacheService().invalidate();
   await AssetCacheService().invalidate();
+}
+
+Future<void> migrateDatabaseIfNeeded(Isar db) async {
+  final int version = Store.get(StoreKey.version, 1);
+  switch (version) {
+    case 1:
+      await _migrateV1ToV2(db);
+  }
+}
+
+Future<void> _migrateV1ToV2(Isar db) async {
+  await clearAssetsAndAlbums(db);
+  await Store.put(StoreKey.version, 2);
 }
