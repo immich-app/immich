@@ -18,7 +18,7 @@ export enum SystemConfigKey {
   FFMPEG_TARGET_VIDEO_CODEC = 'ffmpeg.targetVideoCodec',
   FFMPEG_TARGET_AUDIO_CODEC = 'ffmpeg.targetAudioCodec',
   FFMPEG_TARGET_SCALING = 'ffmpeg.targetScaling',
-  FFMPEG_TRANSCODE_ALL = 'ffmpeg.transcodeAll',
+  FFMPEG_TRANSCODE = 'ffmpeg.transcode',
   OAUTH_ENABLED = 'oauth.enabled',
   OAUTH_ISSUER_URL = 'oauth.issuerUrl',
   OAUTH_CLIENT_ID = 'oauth.clientId',
@@ -33,6 +33,12 @@ export enum SystemConfigKey {
   STORAGE_TEMPLATE = 'storageTemplate.template',
 }
 
+export enum TranscodePreset {
+  ALL = 'all',
+  OPTIMAL = 'optimal',
+  REQUIRED = 'required',
+}
+
 export interface SystemConfig {
   ffmpeg: {
     crf: string;
@@ -40,7 +46,7 @@ export interface SystemConfig {
     targetVideoCodec: string;
     targetAudioCodec: string;
     targetScaling: string;
-    transcodeAll: boolean;
+    transcode: TranscodePreset;
   };
   oauth: {
     enabled: boolean;

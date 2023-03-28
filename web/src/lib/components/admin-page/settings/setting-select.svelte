@@ -3,8 +3,9 @@
 	import { fly } from 'svelte/transition';
 
 	export let value: string;
-	export let options: string[];
+	export let options: { value: string; text: string }[];
 	export let label = '';
+	export let name = '';
 	export let isEdited = false;
 
 	const handleChange = (e: Event) => {
@@ -14,7 +15,7 @@
 
 <div class="w-full">
 	<div class={`flex place-items-center gap-1 h-[26px]`}>
-		<label class={`immich-form-label text-sm`} for={label}>{label}</label>
+		<label class={`immich-form-label text-sm`} for="{name}-select">{label}</label>
 
 		{#if isEdited}
 			<div
@@ -27,13 +28,13 @@
 	</div>
 	<select
 		class="immich-form-input w-full"
-		name="presets"
-		id="preset-select"
+		{name}
+		id="{name}-select"
 		bind:value
 		on:change={handleChange}
 	>
 		{#each options as option}
-			<option value={option}>{option}</option>
+			<option value={option.value}>{option.text}</option>
 		{/each}
 	</select>
 </div>
