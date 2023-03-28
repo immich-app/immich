@@ -4141,6 +4141,7 @@
         "enum": [
           "start",
           "pause",
+          "resume",
           "empty"
         ]
       },
