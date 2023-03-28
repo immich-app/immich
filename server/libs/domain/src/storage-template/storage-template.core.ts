@@ -133,10 +133,9 @@ export class StorageTemplateCore {
     const substitutions: Record<string, string> = {
       filename,
       ext,
+      filetype: asset.type == AssetType.IMAGE ? 'IMG' : 'VID',
+      filetypefull: asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO',
     };
-
-    const fileType = asset.type == AssetType.IMAGE ? 'IMG' : 'VID';
-    const fileTypeFull = asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO';
 
     const dt = luxon.DateTime.fromISO(new Date(asset.fileCreatedAt).toISOString());
 
@@ -152,10 +151,6 @@ export class StorageTemplateCore {
     for (const token of dateTokens) {
       substitutions[token] = dt.toFormat(token);
     }
-
-    // Support file type token
-    substitutions.filetype = fileType;
-    substitutions.filetypefull = fileTypeFull;
 
     return template(substitutions);
   }
