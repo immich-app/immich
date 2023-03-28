@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AlbumService } from './album.service';
 import { AlbumController } from './album.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AlbumEntity, AssetEntity } from '@app/infra';
+import { AlbumEntity, AssetEntity } from '@app/infra/db/entities';
 import { AlbumRepository, IAlbumRepository } from './album-repository';
 import { DownloadModule } from '../../modules/download/download.module';
 

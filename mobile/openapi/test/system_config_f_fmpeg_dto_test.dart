@@ -41,8 +41,8 @@ void main() {
       // TODO
     });
 
-    // bool transcodeAll
-    test('to test the property `transcodeAll`', () async {
+    // String transcode
+    test('to test the property `transcode`', () async {
       // TODO
     });
 

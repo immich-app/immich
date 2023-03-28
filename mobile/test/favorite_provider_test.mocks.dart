@@ -187,6 +187,16 @@ class MockAssetNotifier extends _i1.Mock implements _i2.AssetNotifier {
         returnValueForMissingStub: _i5.Future<void>.value(),
       ) as _i5.Future<void>);
   @override
+  _i5.Future<void> getAllAsset({bool? clear = false}) => (super.noSuchMethod(
+        Invocation.method(
+          #getAllAsset,
+          [],
+          {#clear: clear},
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+  @override
   _i5.Future<void> clearAllAsset() => (super.noSuchMethod(
         Invocation.method(
           #clearAllAsset,

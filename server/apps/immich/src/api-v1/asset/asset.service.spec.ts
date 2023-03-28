@@ -1,7 +1,7 @@
 import { IAssetRepository } from './asset-repository';
 import { AssetService } from './asset.service';
 import { QueryFailedError, Repository } from 'typeorm';
-import { AssetEntity, AssetType } from '@app/infra';
+import { AssetEntity, AssetType } from '@app/infra/db/entities';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';

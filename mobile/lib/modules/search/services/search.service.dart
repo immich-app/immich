@@ -29,11 +29,16 @@ class SearchService {
     }
   }
 
-  Future<List<Asset>?> searchAsset(String searchTerm) async {
+  Future<List<Asset>?> searchAsset(
+    String searchTerm, {
+    bool clipEnable = true,
+  }) async {
     // TODO search in local DB: 1. when offline, 2. to find local assets
     try {
-      final SearchResponseDto? results = await _apiService.searchApi
-          .search(query: searchTerm, clip: true);
+      final SearchResponseDto? results = await _apiService.searchApi.search(
+        query: searchTerm,
+        clip: clipEnable,
+      );
       if (results == null) {
         return null;
       }

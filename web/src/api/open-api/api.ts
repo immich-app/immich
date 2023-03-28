@@ -1222,6 +1222,7 @@ export interface GetAssetCountByTimeBucketDto {
 export const JobCommand = {
     Start: 'start',
     Pause: 'pause',
+    Resume: 'resume',
     Empty: 'empty'
 } as const;
 
@@ -1986,11 +1987,20 @@ export interface SystemConfigFFmpegDto {
     'targetScaling': string;
     /**
      * 
-     * @type {boolean}
+     * @type {string}
      * @memberof SystemConfigFFmpegDto
      */
-    'transcodeAll': boolean;
+    'transcode': SystemConfigFFmpegDtoTranscodeEnum;
 }
+
+export const SystemConfigFFmpegDtoTranscodeEnum = {
+    All: 'all',
+    Optimal: 'optimal',
+    Required: 'required'
+} as const;
+
+export type SystemConfigFFmpegDtoTranscodeEnum = typeof SystemConfigFFmpegDtoTranscodeEnum[keyof typeof SystemConfigFFmpegDtoTranscodeEnum];
+
 /**
  * 
  * @export

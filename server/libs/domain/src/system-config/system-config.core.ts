@@ -1,4 +1,4 @@
-import { SystemConfig, SystemConfigEntity, SystemConfigKey } from '@app/infra/db/entities';
+import { SystemConfig, SystemConfigEntity, SystemConfigKey, TranscodePreset } from '@app/infra/db/entities';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import * as _ from 'lodash';
 import { Subject } from 'rxjs';
@@ -14,7 +14,7 @@ const defaults: SystemConfig = Object.freeze({
     targetVideoCodec: 'h264',
     targetAudioCodec: 'aac',
     targetScaling: '1280:-2',
-    transcodeAll: false,
+    transcode: TranscodePreset.REQUIRED,
   },
   oauth: {
     enabled: false,

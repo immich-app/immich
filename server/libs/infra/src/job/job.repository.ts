@@ -45,6 +45,10 @@ export class JobRepository implements IJobRepository {
     return this.queueMap[name].pause();
   }
 
+  resume(name: QueueName) {
+    return this.queueMap[name].resume();
+  }
+
   empty(name: QueueName) {
     return this.queueMap[name].empty();
   }

@@ -21,6 +21,9 @@ export class JobService {
       case JobCommand.PAUSE:
         return this.jobRepository.pause(queueName);
 
+      case JobCommand.RESUME:
+        return this.jobRepository.resume(queueName);
+
       case JobCommand.EMPTY:
         return this.jobRepository.empty(queueName);
     }
