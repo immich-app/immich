@@ -210,13 +210,7 @@ class SearchPage extends HookConsumerWidget {
                     const FavoritesRoute(),
                   ),
                 ),
-                const Padding(
-                  padding: EdgeInsets.only(
-                    left: 72,
-                    right: 16,
-                  ),
-                  child: Divider(),
-                ),
+                const CategoryDivider(),
                 ListTile(
                   leading: Icon(
                     Icons.schedule_outlined,
@@ -239,6 +233,33 @@ class SearchPage extends HookConsumerWidget {
                   ).tr(),
                 ),
                 ListTile(
+                  title: Text('Screenshots', style: categoryTitleStyle).tr(),
+                  leading: Icon(
+                    Icons.screenshot,
+                    color: categoryIconColor,
+                  ),
+                  onTap: () => AutoRouter.of(context).push(
+                    SearchResultRoute(
+                      searchTerm: 'screenshots',
+                    ),
+                  ),
+                ),
+                const CategoryDivider(),
+                ListTile(
+                  title: Text('search_page_selfies', style: categoryTitleStyle)
+                      .tr(),
+                  leading: Icon(
+                    Icons.photo_camera_front_outlined,
+                    color: categoryIconColor,
+                  ),
+                  onTap: () => AutoRouter.of(context).push(
+                    SearchResultRoute(
+                      searchTerm: 'selfies',
+                    ),
+                  ),
+                ),
+                const CategoryDivider(),
+                ListTile(
                   title: Text('search_page_videos', style: categoryTitleStyle)
                       .tr(),
                   leading: Icon(
@@ -249,13 +270,7 @@ class SearchPage extends HookConsumerWidget {
                     const AllVideosRoute(),
                   ),
                 ),
-                const Padding(
-                  padding: EdgeInsets.only(
-                    left: 72,
-                    right: 16,
-                  ),
-                  child: Divider(),
-                ),
+                const CategoryDivider(),
                 ListTile(
                   title: Text(
                     'search_page_motion_photos',
@@ -275,6 +290,23 @@ class SearchPage extends HookConsumerWidget {
               SearchSuggestionList(onSubmitted: onSearchSubmitted),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class CategoryDivider extends StatelessWidget {
+  const CategoryDivider({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.only(
+        left: 72,
+        right: 16,
+      ),
+      child: Divider(
+        height: 0,
       ),
     );
   }
