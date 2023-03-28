@@ -12,8 +12,7 @@ import {
   SystemConfigService,
   WithoutProperty,
 } from '@app/domain';
-import { AssetEntity, AssetType } from '@app/infra/db/entities';
-import { TranscodePreset } from '@app/infra/db/entities';
+import { AssetEntity, AssetType, TranscodePreset } from '@app/infra/db/entities';
 import { Process, Processor } from '@nestjs/bull';
 import { Inject, Logger } from '@nestjs/common';
 import { Job } from 'bull';
