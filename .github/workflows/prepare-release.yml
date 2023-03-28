@@ -41,8 +41,9 @@ jobs:
         id: push-tag
         uses: EndBug/add-and-commit@v9
         with:
-          author_name: Immich Release Bot
-          author_email: bot@immich.app
+          author_name: Alex The Bot
+          author_email: alex.tran1502@gmail.com
+          default_author: user_info 
           message: "Version ${{ env.IMMICH_VERSION }}"
           tag: ${{ env.IMMICH_VERSION }}
           push: true
