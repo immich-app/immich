@@ -4,6 +4,10 @@ export function getFileNameWithoutExtension(path: string): string {
   return basename(path, extname(path));
 }
 
+export function getLivePhotoMotionFilename(stillName: string, motionName: string) {
+  return getFileNameWithoutExtension(stillName) + extname(motionName);
+}
+
 const KiB = Math.pow(1024, 1);
 const MiB = Math.pow(1024, 2);
 const GiB = Math.pow(1024, 3);

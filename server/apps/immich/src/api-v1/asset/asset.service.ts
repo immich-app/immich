@@ -24,6 +24,7 @@ import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import {
   AssetResponseDto,
+  getLivePhotoMotionFilename,
   ImmichReadStream,
   IStorageRepository,
   JobName,
@@ -60,8 +61,6 @@ import { mapSharedLink, SharedLinkResponseDto } from '@app/domain';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { AddAssetsDto } from '../album/dto/add-assets.dto';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
-import path from 'path';
-import { getFileNameWithoutExtension } from '@app/domain';
 
 const fileInfo = promisify(stat);
 
@@ -100,7 +99,7 @@ export class AssetService {
     if (livePhotoFile) {
       livePhotoFile = {
         ...livePhotoFile,
-        originalName: getFileNameWithoutExtension(file.originalName) + path.extname(livePhotoFile.originalName),
+        originalName: getLivePhotoMotionFilename(file.originalName, livePhotoFile.originalName),
       };
     }
 

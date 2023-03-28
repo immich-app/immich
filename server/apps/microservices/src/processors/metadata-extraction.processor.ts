@@ -258,7 +258,7 @@ export class MetadataExtractionProcessor {
 
       await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
       asset = await this.assetCore.save({ id: asset.id, fileCreatedAt: fileCreatedAt?.toISOString() });
-      await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { asset, fileName } });
+      await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { asset } });
     } catch (error: any) {
       this.logger.error(`Error extracting EXIF ${error}`, error?.stack);
     }
@@ -321,6 +321,7 @@ export class MetadataExtractionProcessor {
         if (photoAsset) {
           await this.assetCore.save({ id: photoAsset.id, livePhotoVideoId: asset.id });
           await this.assetCore.save({ id: asset.id, isVisible: false });
+          newExif.imageName = (photoAsset.exifInfo as ExifEntity).imageName;
         }
       }
 
@@ -377,7 +378,7 @@ export class MetadataExtractionProcessor {
 
       await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
       asset = await this.assetCore.save({ id: asset.id, duration: durationString, fileCreatedAt });
-      await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { asset, fileName } });
+      await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { asset } });
     } catch (err) {
       ``;
       // do nothing

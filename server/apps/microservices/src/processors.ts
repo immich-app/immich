@@ -129,7 +129,7 @@ export class StorageTemplateMigrationProcessor {
   }
 
   @Process({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE })
-  async onTemplateMigrationSingle(job: Job<IAssetUploadedJob>) {
+  async onTemplateMigrationSingle(job: Job<IAssetJob>) {
     await this.storageTemplateService.handleTemplateMigrationSingle(job.data);
   }
 }
