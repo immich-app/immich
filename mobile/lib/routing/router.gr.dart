@@ -99,8 +99,6 @@ class _$AppRouter extends RootStackRouter {
         child: SearchResultPage(
           key: args.key,
           searchTerm: args.searchTerm,
-          clipSearch: args.clipSearch,
-          displayDateGroup: args.displayDateGroup,
         ),
       );
     },
@@ -662,16 +660,12 @@ class SearchResultRoute extends PageRouteInfo<SearchResultRouteArgs> {
   SearchResultRoute({
     Key? key,
     required String searchTerm,
-    bool clipSearch = true,
-    bool displayDateGroup = true,
   }) : super(
           SearchResultRoute.name,
           path: '/search-result-page',
           args: SearchResultRouteArgs(
             key: key,
             searchTerm: searchTerm,
-            clipSearch: clipSearch,
-            displayDateGroup: displayDateGroup,
           ),
         );
 
@@ -682,21 +676,15 @@ class SearchResultRouteArgs {
   const SearchResultRouteArgs({
     this.key,
     required this.searchTerm,
-    this.clipSearch = true,
-    this.displayDateGroup = true,
   });
 
   final Key? key;
 
   final String searchTerm;
 
-  final bool clipSearch;
-
-  final bool displayDateGroup;
-
   @override
   String toString() {
-    return 'SearchResultRouteArgs{key: $key, searchTerm: $searchTerm, clipSearch: $clipSearch, displayDateGroup: $displayDateGroup}';
+    return 'SearchResultRouteArgs{key: $key, searchTerm: $searchTerm}';
   }
 }
 

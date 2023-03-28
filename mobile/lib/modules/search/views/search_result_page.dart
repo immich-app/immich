@@ -9,19 +9,29 @@ import 'package:immich_mobile/modules/search/providers/search_result_page.provid
 import 'package:immich_mobile/modules/search/ui/search_result_grid.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
-import 'package:immich_mobile/utils/capitalize_first_letter.dart';
+
+class SearchType {
+  SearchType({required this.isClip, required this.searchTerm});
+
+  final bool isClip;
+  final String searchTerm;
+}
+
+SearchType _getSearchType(String searchTerm) {
+  if (searchTerm.startsWith('m:')) {
+    return SearchType(isClip: false, searchTerm: searchTerm.substring(2));
+  } else {
+    return SearchType(isClip: true, searchTerm: searchTerm);
+  }
+}
 
 class SearchResultPage extends HookConsumerWidget {
-  SearchResultPage({
+  const SearchResultPage({
     Key? key,
     required this.searchTerm,
-    this.clipSearch = true,
-    this.displayDateGroup = true,
   }) : super(key: key);
 
   final String searchTerm;
-  bool clipSearch;
-  bool displayDateGroup;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,6 +39,7 @@ class SearchResultPage extends HookConsumerWidget {
     final isNewSearch = useState(false);
     final currentSearchTerm = useState(searchTerm);
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final isDisplayDateGroup = useState(true);
 
     FocusNode? searchFocusNode;
 
@@ -36,11 +47,16 @@ class SearchResultPage extends HookConsumerWidget {
       () {
         searchFocusNode = FocusNode();
 
+        var searchType = _getSearchType(searchTerm);
+        searchType.isClip
+            ? isDisplayDateGroup.value = false
+            : isDisplayDateGroup.value = true;
+
         Future.delayed(
           Duration.zero,
           () => ref
               .read(searchResultPageProvider.notifier)
-              .search(searchTerm, clipEnable: clipSearch),
+              .search(searchType.searchTerm, clipEnable: searchType.isClip),
         );
         return () => searchFocusNode?.dispose();
       },
@@ -52,7 +68,15 @@ class SearchResultPage extends HookConsumerWidget {
       searchFocusNode?.unfocus();
       isNewSearch.value = false;
       currentSearchTerm.value = newSearchTerm;
-      ref.watch(searchResultPageProvider.notifier).search(newSearchTerm);
+
+      var searchType = _getSearchType(newSearchTerm);
+      searchType.isClip
+          ? isDisplayDateGroup.value = false
+          : isDisplayDateGroup.value = true;
+
+      ref
+          .watch(searchResultPageProvider.notifier)
+          .search(searchType.searchTerm, clipEnable: searchType.isClip);
     }
 
     buildTextField() {
@@ -104,7 +128,7 @@ class SearchResultPage extends HookConsumerWidget {
           alignment: WrapAlignment.center,
           children: [
             Text(
-              currentSearchTerm.value.capitalizeFirstLetter(),
+              currentSearchTerm.value,
               style: TextStyle(
                 color: Theme.of(context).primaryColor,
                 fontSize: 13,
@@ -139,7 +163,7 @@ class SearchResultPage extends HookConsumerWidget {
       }
 
       if (searchResultPageState.isSuccess) {
-        if (displayDateGroup) {
+        if (isDisplayDateGroup.value) {
           return ImmichAssetGrid(
             assets: allSearchAssets,
           );

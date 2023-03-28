@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
@@ -29,12 +30,11 @@ class SearchSuggestionList extends ConsumerWidget {
                   text: TextSpan(
                     children: [
                       TextSpan(
-                        text:
-                            'Smart search is enabled by default, to search for metadata use the syntax ',
+                        text: 'search_suggestion_list_smart_search_hint_1'.tr(),
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       TextSpan(
-                        text: 'm:your-search-term',
+                        text: 'search_suggestion_list_smart_search_hint_2'.tr(),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: Theme.of(context).primaryColor,
                               fontWeight: FontWeight.bold,

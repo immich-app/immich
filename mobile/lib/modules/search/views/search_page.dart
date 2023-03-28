@@ -50,7 +50,6 @@ class SearchPage extends HookConsumerWidget {
       AutoRouter.of(context).push(
         SearchResultRoute(
           searchTerm: searchTerm,
-          displayDateGroup: false,
         ),
       );
     }
@@ -74,8 +73,7 @@ class SearchPage extends HookConsumerWidget {
             onTap: (content, index) {
               AutoRouter.of(context).push(
                 SearchResultRoute(
-                  searchTerm: content.label,
-                  clipSearch: false,
+                  searchTerm: 'm:${content.label}',
                 ),
               );
             },
@@ -109,8 +107,7 @@ class SearchPage extends HookConsumerWidget {
             onTap: (content, index) {
               AutoRouter.of(context).push(
                 SearchResultRoute(
-                  searchTerm: content.label,
-                  clipSearch: false,
+                  searchTerm: 'm:${content.label}',
                 ),
               );
             },
