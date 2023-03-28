@@ -12,6 +12,7 @@ class SearchSuggestionList extends ConsumerWidget {
     final searchTerm = ref.watch(searchPageStateProvider).searchTerm;
     final searchSuggestion =
         ref.watch(searchPageStateProvider).searchSuggestion;
+    var isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       color: searchTerm.isEmpty
@@ -19,6 +20,32 @@ class SearchSuggestionList extends ConsumerWidget {
           : Theme.of(context).scaffoldBackgroundColor,
       child: CustomScrollView(
         slivers: [
+          SliverToBoxAdapter(
+            child: Container(
+              color: isDarkTheme ? Colors.grey[800] : Colors.grey[100],
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text:
+                            'Smart search is enabled by default, to search for metadata use the syntax ',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      TextSpan(
+                        text: 'm:your-search-term',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
           SliverFillRemaining(
             hasScrollBody: true,
             child: ListView.builder(
