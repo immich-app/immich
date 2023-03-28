@@ -6,7 +6,7 @@ import 'package:immich_mobile/shared/models/store.dart';
 class CuratedRow extends StatelessWidget {
   final List<CuratedContent> content;
   final double imageSize;
-  
+
   /// Callback with the content and the index when tapped
   final Function(CuratedContent, int)? onTap;
 
@@ -19,7 +19,6 @@ class CuratedRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     // Guard empty [content]
     if (content.isEmpty) {
       // Return empty thumbnail

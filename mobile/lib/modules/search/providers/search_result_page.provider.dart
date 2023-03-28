@@ -18,7 +18,7 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
 
   final SearchService _searchService;
 
-  void search(String searchTerm) async {
+  void search(String searchTerm, {bool clipEnable = true}) async {
     state = state.copyWith(
       searchResult: [],
       isError: false,
@@ -26,7 +26,10 @@ class SearchResultPageNotifier extends StateNotifier<SearchResultPageState> {
       isSuccess: false,
     );
 
-    List<Asset>? assets = await _searchService.searchAsset(searchTerm);
+    List<Asset>? assets = await _searchService.searchAsset(
+      searchTerm,
+      clipEnable: clipEnable,
+    );
 
     if (assets != null) {
       state = state.copyWith(
