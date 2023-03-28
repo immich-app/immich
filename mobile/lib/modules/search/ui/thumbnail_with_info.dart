@@ -68,7 +68,9 @@ class ThumbnailWithInfo extends StatelessWidget {
                 end: FractionalOffset.bottomCenter,
                 colors: [
                   Colors.grey.withOpacity(0.0),
-                  Colors.black.withOpacity(0.5),
+                  textInfo == ''
+                      ? Colors.black.withOpacity(0.1)
+                      : Colors.black.withOpacity(0.5),
                 ],
                 stops: const [0.0, 1.0],
               ),
@@ -78,7 +80,7 @@ class ThumbnailWithInfo extends StatelessWidget {
             bottom: 12,
             left: 14,
             child: Text(
-              textInfo.capitalizeFirstLetter(),
+              textInfo == '' ? textInfo : textInfo.capitalizeFirstLetter(),
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,

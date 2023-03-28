@@ -52,7 +52,7 @@ class SearchSuggestionList extends ConsumerWidget {
               itemBuilder: ((context, index) {
                 return ListTile(
                   onTap: () {
-                    onSubmitted(searchSuggestion[index]);
+                    onSubmitted("m:${searchSuggestion[index]}");
                   },
                   title: Text(searchSuggestion[index]),
                 );

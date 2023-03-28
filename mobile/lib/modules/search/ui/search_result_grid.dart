@@ -23,12 +23,7 @@ class SearchResultGrid extends HookConsumerWidget {
         return ThumbnailImage(
           asset: asset,
           assetList: assets,
-          // multiselectEnabled: widget.selectionActive,
-          // isSelected: widget.selectionActive && _selectedAssets.contains(asset.id),
-          // onSelect: () => _selectAssets([asset]),
-          // onDeselect: () => _deselectAssets([asset]),
           useGrayBoxPlaceholder: true,
-          // showStorageIndicator: widget.showStorageIndicator,
         );
       },
     );
