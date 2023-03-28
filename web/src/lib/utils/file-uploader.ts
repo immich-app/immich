@@ -8,7 +8,6 @@ import { api, AssetBulkUploadCheckResultReasonEnum, AssetFileUploadResponseDto }
 import { addAssetsToAlbum, getFileMimeType, getFilenameExtension } from '$lib/utils/asset-utils';
 import { mergeMap, filter, firstValueFrom, from, of, combineLatestAll } from 'rxjs';
 import axios from 'axios';
-import { Sha1 } from 'wasm-crypto';
 
 export const openFileUploadDialog = async (
 	albumId: string | undefined = undefined,
@@ -61,51 +60,13 @@ export const fileUploadHandler = async (
 };
 
 async function sha1(file: File): Promise<string> {
-	const reader = new FileReader();
-	reader.readAsArrayBuffer(file);
-	await new Promise((resolve) => (reader.onload = resolve));
-	const blob = new Blob([reader.result as ArrayBuffer]);
+	const fileBuffer = await file.arrayBuffer();
+	const hashBuffer = await crypto.subtle.digest('SHA-1', fileBuffer);
 
-	const stream = blob.stream();
-
-	const buffer = await streamToBuffer(stream);
-
-	const sha1 = new Sha1();
-	sha1.update(buffer);
-	const hashBuffer = sha1.digest();
 	const hashArray = Array.from(new Uint8Array(hashBuffer));
 	const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 
 	return hashHex;
-}
-
-function streamToBuffer(stream: ReadableStream): Promise<ArrayBuffer> {
-	const chunks: Uint8Array[] = [];
-	const reader = stream.getReader();
-	return new Promise((resolve, reject) => {
-		reader
-			.read()
-			.then(function processResult(result) {
-				if (result.done) {
-					resolve(concatenateChunks(chunks));
-				} else {
-					chunks.push(result.value);
-					reader.read().then(processResult).catch(reject);
-				}
-			})
-			.catch(reject);
-	});
-}
-
-function concatenateChunks(chunks: Uint8Array[]): ArrayBuffer {
-	const totalLength = chunks.reduce((length, chunk) => length + chunk.length, 0);
-	const result = new Uint8Array(totalLength);
-	let offset = 0;
-	for (const chunk of chunks) {
-		result.set(chunk, offset);
-		offset += chunk.length;
-	}
-	return result.buffer;
 }
 
 //TODO: should probably use the @api SDK
