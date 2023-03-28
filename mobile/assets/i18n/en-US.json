@@ -258,5 +258,9 @@
   "motion_photos_page_title": "Motion Photos",
   "search_page_motion_photos": "Motion Photos",
   "search_page_recently_added": "Recently added",
-  "search_page_categories": "Categories"
+  "search_page_categories": "Categories",
+  "search_page_screenshots": "Screenshots",
+  "search_page_selfies": "Selfies",
+  "search_suggestion_list_smart_search_hint_1": "Smart search is enabled by default, to search for metadata use the syntax ",
+  "search_suggestion_list_smart_search_hint_2": "m:your-search-term"
 }

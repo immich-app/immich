@@ -22,8 +22,7 @@ class ExploreGrid extends StatelessWidget {
           width: 100,
           child: ThumbnailWithInfo(
             textInfo: '',
-            onTap: () {
-            },
+            onTap: () {},
           ),
         ),
       );
@@ -42,9 +41,10 @@ class ExploreGrid extends StatelessWidget {
         return ThumbnailWithInfo(
           imageUrl: thumbnailRequestUrl,
           textInfo: content.label,
+          borderRadius: 0,
           onTap: () {
             AutoRouter.of(context).push(
-              SearchResultRoute(searchTerm: content.label),
+              SearchResultRoute(searchTerm: 'm:${content.label}'),
             );
           },
         );
@@ -52,5 +52,4 @@ class ExploreGrid extends StatelessWidget {
       itemCount: curatedContent.length,
     );
   }
-
 }

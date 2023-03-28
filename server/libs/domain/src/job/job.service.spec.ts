@@ -93,6 +93,12 @@ describe(JobService.name, () => {
       expect(jobMock.pause).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION);
     });
 
+    it('should handle a resume command', async () => {
+      await sut.handleCommand(QueueName.METADATA_EXTRACTION, { command: JobCommand.RESUME, force: false });
+
+      expect(jobMock.resume).toHaveBeenCalledWith(QueueName.METADATA_EXTRACTION);
+    });
+
     it('should handle an empty command', async () => {
       await sut.handleCommand(QueueName.METADATA_EXTRACTION, { command: JobCommand.EMPTY, force: false });
 

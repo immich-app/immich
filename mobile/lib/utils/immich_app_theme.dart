@@ -79,6 +79,7 @@ ThemeData immichLightTheme = ThemeData(
     ),
     titleSmall: TextStyle(
       fontSize: 16.0,
+      fontWeight: FontWeight.bold,
     ),
     titleMedium: TextStyle(
       fontSize: 18.0,
@@ -176,6 +177,7 @@ ThemeData immichDarkTheme = ThemeData(
     ),
     titleSmall: const TextStyle(
       fontSize: 16.0,
+      fontWeight: FontWeight.bold,
     ),
     titleMedium: const TextStyle(
       fontSize: 18.0,
@@ -185,7 +187,6 @@ ThemeData immichDarkTheme = ThemeData(
       fontSize: 26.0,
       fontWeight: FontWeight.bold,
     ),
-
   ),
   cardColor: Colors.grey[900],
   elevatedButtonTheme: ElevatedButtonThemeData(

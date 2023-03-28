@@ -1222,6 +1222,7 @@ export interface GetAssetCountByTimeBucketDto {
 export const JobCommand = {
     Start: 'start',
     Pause: 'pause',
+    Resume: 'resume',
     Empty: 'empty'
 } as const;
 

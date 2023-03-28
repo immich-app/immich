@@ -12,6 +12,7 @@ export enum QueueName {
 export enum JobCommand {
   START = 'start',
   PAUSE = 'pause',
+  RESUME = 'resume',
   EMPTY = 'empty',
 }
 
