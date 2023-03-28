@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/capitalize_first_letter.dart';
 
+// ignore: must_be_immutable
 class ThumbnailWithInfo extends StatelessWidget {
   ThumbnailWithInfo({
     Key? key,
