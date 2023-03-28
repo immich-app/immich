@@ -69,6 +69,7 @@ export const IJobRepository = 'IJobRepository';
 export interface IJobRepository {
   queue(item: JobItem): Promise<void>;
   pause(name: QueueName): Promise<void>;
+  resume(name: QueueName): Promise<void>;
   empty(name: QueueName): Promise<void>;
   isActive(name: QueueName): Promise<boolean>;
   getJobCounts(name: QueueName): Promise<JobCounts>;
