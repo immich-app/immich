@@ -36,6 +36,7 @@ export type JobItem =
 
   // Storage Template
   | { name: JobName.STORAGE_TEMPLATE_MIGRATION }
+  | { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE; data: IAssetJob }
   | { name: JobName.SYSTEM_CONFIG_CHANGE }
 
   // Metadata Extraction

@@ -12,7 +12,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { AssetEntity, AssetType, SharedLinkType, SystemConfig } from '@app/infra/db/entities';
+import { AssetEntity, AssetType, SharedLinkType } from '@app/infra/db/entities';
 import { constants, createReadStream, stat } from 'fs';
 import { ServeFileDto } from './dto/serve-file.dto';
 import { Response as Res } from 'express';
@@ -24,10 +24,9 @@ import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import {
   AssetResponseDto,
+  getLivePhotoMotionFilename,
   ImmichReadStream,
-  INITIAL_SYSTEM_CONFIG,
   IStorageRepository,
-  ISystemConfigRepository,
   JobName,
   mapAsset,
   mapAssetWithoutExif,
@@ -62,8 +61,6 @@ import { mapSharedLink, SharedLinkResponseDto } from '@app/domain';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { AddAssetsDto } from '../album/dto/add-assets.dto';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
-import path from 'path';
-import { getFileNameWithoutExtension } from '@app/domain';
 
 const fileInfo = promisify(stat);
 
@@ -86,12 +83,10 @@ export class AssetService {
     private downloadService: DownloadService,
     @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
-    @Inject(INITIAL_SYSTEM_CONFIG) config: SystemConfig,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
-    this.assetCore = new AssetCore(_assetRepository, jobRepository, configRepository, config, storageRepository);
+    this.assetCore = new AssetCore(_assetRepository, jobRepository);
     this.shareCore = new ShareCore(sharedLinkRepository, cryptoRepository);
   }
 
@@ -104,7 +99,7 @@ export class AssetService {
     if (livePhotoFile) {
       livePhotoFile = {
         ...livePhotoFile,
-        originalName: getFileNameWithoutExtension(file.originalName) + path.extname(livePhotoFile.originalName),
+        originalName: getLivePhotoMotionFilename(file.originalName, livePhotoFile.originalName),
       };
     }
 
