@@ -44,6 +44,9 @@ class FileHelper {
       case '3gp':
         return {"type": "video", "subType": "3gpp"};
 
+      case 'webm':
+        return {"type": "video", "subType": "webm"};
+
       default:
         return {"type": "unsupport", "subType": "unsupport"};
     }

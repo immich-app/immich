@@ -29,6 +29,7 @@ export class AssetRepository implements IAssetRepository {
     return this.repository.find({
       where: {
         isVisible: options.isVisible,
+        type: options.type,
       },
       relations: {
         exifInfo: true,

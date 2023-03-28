@@ -1,13 +1,16 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/utils/capitalize_first_letter.dart';
 
+// ignore: must_be_immutable
 class ThumbnailWithInfo extends StatelessWidget {
-  const ThumbnailWithInfo({
+  ThumbnailWithInfo({
     Key? key,
     required this.textInfo,
     this.imageUrl,
     this.noImageIcon,
+    this.borderRadius = 10,
     required this.onTap,
   }) : super(key: key);
 
@@ -15,6 +18,7 @@ class ThumbnailWithInfo extends StatelessWidget {
   final String? imageUrl;
   final Function onTap;
   final IconData? noImageIcon;
+  double borderRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -29,12 +33,12 @@ class ThumbnailWithInfo extends StatelessWidget {
         children: [
           Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(25),
+              borderRadius: BorderRadius.circular(borderRadius),
               color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
             ),
             child: imageUrl != null
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(borderRadius),
                     child: CachedNetworkImage(
                       width: double.infinity,
                       height: double.infinity,
@@ -55,15 +59,32 @@ class ThumbnailWithInfo extends StatelessWidget {
                     ),
                   ),
           ),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(borderRadius),
+              color: Colors.white,
+              gradient: LinearGradient(
+                begin: FractionalOffset.topCenter,
+                end: FractionalOffset.bottomCenter,
+                colors: [
+                  Colors.grey.withOpacity(0.0),
+                  textInfo == ''
+                      ? Colors.black.withOpacity(0.1)
+                      : Colors.black.withOpacity(0.5),
+                ],
+                stops: const [0.0, 1.0],
+              ),
+            ),
+          ),
           Positioned(
             bottom: 12,
             left: 14,
             child: Text(
-              textInfo,
+              textInfo == '' ? textInfo : textInfo.capitalizeFirstLetter(),
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
-                fontSize: 12,
+                fontSize: 14,
               ),
             ),
           ),

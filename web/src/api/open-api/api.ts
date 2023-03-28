@@ -1222,6 +1222,7 @@ export interface GetAssetCountByTimeBucketDto {
 export const JobCommand = {
     Start: 'start',
     Pause: 'pause',
+    Resume: 'resume',
     Empty: 'empty'
 } as const;
 
@@ -7052,6 +7053,12 @@ export const ServerInfoApiAxiosParamCreator = function (configuration?: Configur
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            // authentication cookie required
+
 
     
             setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -8595,6 +8602,12 @@ export const UserApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            // authentication cookie required
+
 
     
             setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -8627,6 +8640,12 @@ export const UserApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            // authentication cookie required
 
 
     

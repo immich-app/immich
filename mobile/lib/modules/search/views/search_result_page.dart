@@ -6,12 +6,30 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/providers/search_result_page.provider.dart';
+import 'package:immich_mobile/modules/search/ui/search_result_grid.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
+class SearchType {
+  SearchType({required this.isClip, required this.searchTerm});
+
+  final bool isClip;
+  final String searchTerm;
+}
+
+SearchType _getSearchType(String searchTerm) {
+  if (searchTerm.startsWith('m:')) {
+    return SearchType(isClip: false, searchTerm: searchTerm.substring(2));
+  } else {
+    return SearchType(isClip: true, searchTerm: searchTerm);
+  }
+}
+
 class SearchResultPage extends HookConsumerWidget {
-  const SearchResultPage({Key? key, required this.searchTerm})
-      : super(key: key);
+  const SearchResultPage({
+    Key? key,
+    required this.searchTerm,
+  }) : super(key: key);
 
   final String searchTerm;
 
@@ -20,6 +38,8 @@ class SearchResultPage extends HookConsumerWidget {
     final searchTermController = useTextEditingController(text: "");
     final isNewSearch = useState(false);
     final currentSearchTerm = useState(searchTerm);
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final isDisplayDateGroup = useState(true);
 
     FocusNode? searchFocusNode;
 
@@ -27,9 +47,16 @@ class SearchResultPage extends HookConsumerWidget {
       () {
         searchFocusNode = FocusNode();
 
+        var searchType = _getSearchType(searchTerm);
+        searchType.isClip
+            ? isDisplayDateGroup.value = false
+            : isDisplayDateGroup.value = true;
+
         Future.delayed(
           Duration.zero,
-          () => ref.read(searchResultPageProvider.notifier).search(searchTerm),
+          () => ref
+              .read(searchResultPageProvider.notifier)
+              .search(searchType.searchTerm, clipEnable: searchType.isClip),
         );
         return () => searchFocusNode?.dispose();
       },
@@ -41,7 +68,15 @@ class SearchResultPage extends HookConsumerWidget {
       searchFocusNode?.unfocus();
       isNewSearch.value = false;
       currentSearchTerm.value = newSearchTerm;
-      ref.watch(searchResultPageProvider.notifier).search(newSearchTerm);
+
+      var searchType = _getSearchType(newSearchTerm);
+      searchType.isClip
+          ? isDisplayDateGroup.value = false
+          : isDisplayDateGroup.value = true;
+
+      ref
+          .watch(searchResultPageProvider.notifier)
+          .search(searchType.searchTerm, clipEnable: searchType.isClip);
     }
 
     buildTextField() {
@@ -73,6 +108,12 @@ class SearchResultPage extends HookConsumerWidget {
           ),
           focusedBorder: const UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.transparent),
+          ),
+          hintStyle: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16.0,
+            color:
+                isDarkTheme ? Colors.grey[500] : Colors.black.withOpacity(0.5),
           ),
         ),
       );
@@ -121,11 +162,16 @@ class SearchResultPage extends HookConsumerWidget {
         return const Center(child: ImmichLoadingIndicator());
       }
 
-
       if (searchResultPageState.isSuccess) {
-        return ImmichAssetGrid(
+        if (isDisplayDateGroup.value) {
+          return ImmichAssetGrid(
             assets: allSearchAssets,
-        );
+          );
+        } else {
+          return SearchResultGrid(
+            assets: allSearchAssets,
+          );
+        }
       }
 
       return const SizedBox();

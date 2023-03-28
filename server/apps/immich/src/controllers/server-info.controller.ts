@@ -14,6 +14,7 @@ import { Authenticated } from '../decorators/authenticated.decorator';
 export class ServerInfoController {
   constructor(private service: ServerInfoService) {}
 
+  @Authenticated()
   @Get()
   getServerInfo(): Promise<ServerInfoResponseDto> {
     return this.service.getInfo();

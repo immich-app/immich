@@ -5,7 +5,6 @@
 	import { fly } from 'svelte/transition';
 	import { AssetResponseDto } from '@api';
 	import lodash from 'lodash-es';
-	import ImmichThumbnail from '../shared-components/immich-thumbnail.svelte';
 	import {
 		assetInteractionStore,
 		assetsInAlbumStoreState,
@@ -14,6 +13,7 @@
 		selectedGroup
 	} from '$lib/stores/asset-interaction.store';
 	import { locale } from '$lib/stores/preferences.store';
+	import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
 
 	export let assets: AssetResponseDto[];
 	export let bucketDate: string;
@@ -156,7 +156,7 @@
 			<!-- Image grid -->
 			<div class="flex flex-wrap gap-[2px]">
 				{#each assetsInDateGroup as asset (asset.id)}
-					<ImmichThumbnail
+					<Thumbnail
 						{asset}
 						{groupIndex}
 						on:click={() => assetClickHandler(asset, assetsInDateGroup, dateGroupTitle)}
