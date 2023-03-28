@@ -59,14 +59,12 @@ export const fileUploadHandler = async (
 	);
 };
 
-async function sha1(file: File): Promise<string> {
+async function computeSha1Checksum(file: File): Promise<string> {
 	const fileBuffer = await file.arrayBuffer();
 	const hashBuffer = await crypto.subtle.digest('SHA-1', fileBuffer);
 
 	const hashArray = Array.from(new Uint8Array(hashBuffer));
-	const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-
-	return hashHex;
+	return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 //TODO: should probably use the @api SDK
@@ -100,7 +98,7 @@ async function fileUploader(
 		// Get asset file extension
 		formData.append('fileExtension', '.' + fileExtension);
 
-		const checksum = await sha1(asset);
+		const checksum = await computeSha1Checksum(asset);
 
 		// Get asset binary data with a custom MIME type, because browsers will
 		// use application/octet-stream for unsupported MIME types, leading to
