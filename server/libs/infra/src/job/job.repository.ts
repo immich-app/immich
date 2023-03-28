@@ -99,6 +99,10 @@ export class JobRepository implements IJobRepository {
         await this.storageTemplateMigration.add(item.name);
         break;
 
+      case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE:
+        await this.storageTemplateMigration.add(item.name, item.data);
+        break;
+
       case JobName.SYSTEM_CONFIG_CHANGE:
         await this.backgroundTask.add(item.name, {});
         break;
