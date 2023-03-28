@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/utils/capitalize_first_letter.dart';
 
 class ThumbnailWithInfo extends StatelessWidget {
   const ThumbnailWithInfo({
@@ -55,15 +56,30 @@ class ThumbnailWithInfo extends StatelessWidget {
                     ),
                   ),
           ),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: Colors.white,
+              gradient: LinearGradient(
+                begin: FractionalOffset.topCenter,
+                end: FractionalOffset.bottomCenter,
+                colors: [
+                  Colors.grey.withOpacity(0.0),
+                  Colors.black.withOpacity(0.5),
+                ],
+                stops: const [0.0, 1.0],
+              ),
+            ),
+          ),
           Positioned(
             bottom: 12,
             left: 14,
             child: Text(
-              textInfo,
+              textInfo.capitalizeFirstLetter(),
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
-                fontSize: 12,
+                fontSize: 14,
               ),
             ),
           ),

@@ -27,6 +27,7 @@ class SearchPage extends HookConsumerWidget {
         ref.watch(getCuratedObjectProvider);
     var isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     double imageSize = MediaQuery.of(context).size.width / 3;
+
     TextStyle categoryTitleStyle = const TextStyle(
       fontWeight: FontWeight.bold,
       fontSize: 14.0,
@@ -46,7 +47,12 @@ class SearchPage extends HookConsumerWidget {
       searchFocusNode.unfocus();
       ref.watch(searchPageStateProvider.notifier).disableSearch();
 
-      AutoRouter.of(context).push(SearchResultRoute(searchTerm: searchTerm));
+      AutoRouter.of(context).push(
+        SearchResultRoute(
+          searchTerm: searchTerm,
+          displayDateGroup: false,
+        ),
+      );
     }
 
     buildPlaces() {
@@ -67,7 +73,10 @@ class SearchPage extends HookConsumerWidget {
             imageSize: imageSize,
             onTap: (content, index) {
               AutoRouter.of(context).push(
-                SearchResultRoute(searchTerm: content.label),
+                SearchResultRoute(
+                  searchTerm: content.label,
+                  clipSearch: false,
+                ),
               );
             },
           ),
@@ -99,7 +108,10 @@ class SearchPage extends HookConsumerWidget {
             imageSize: imageSize,
             onTap: (content, index) {
               AutoRouter.of(context).push(
-                SearchResultRoute(searchTerm: content.label),
+                SearchResultRoute(
+                  searchTerm: content.label,
+                  clipSearch: false,
+                ),
               );
             },
           ),
@@ -131,7 +143,7 @@ class SearchPage extends HookConsumerWidget {
                     children: [
                       Text(
                         "search_page_places",
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: Theme.of(context).textTheme.titleSmall,
                       ).tr(),
                       TextButton(
                         child: Text(
@@ -162,7 +174,7 @@ class SearchPage extends HookConsumerWidget {
                     children: [
                       Text(
                         "search_page_things",
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: Theme.of(context).textTheme.titleSmall,
                       ).tr(),
                       TextButton(
                         child: Text(
@@ -186,7 +198,7 @@ class SearchPage extends HookConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
                     'search_page_your_activity',
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: Theme.of(context).textTheme.titleSmall,
                   ).tr(),
                 ),
                 ListTile(
@@ -226,7 +238,7 @@ class SearchPage extends HookConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
                     'search_page_categories',
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: Theme.of(context).textTheme.titleSmall,
                   ).tr(),
                 ),
                 ListTile(

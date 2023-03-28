@@ -6,20 +6,29 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/providers/search_result_page.provider.dart';
+import 'package:immich_mobile/modules/search/ui/search_result_grid.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/utils/capitalize_first_letter.dart';
 
 class SearchResultPage extends HookConsumerWidget {
-  const SearchResultPage({Key? key, required this.searchTerm})
-      : super(key: key);
+  SearchResultPage({
+    Key? key,
+    required this.searchTerm,
+    this.clipSearch = true,
+    this.displayDateGroup = true,
+  }) : super(key: key);
 
   final String searchTerm;
+  bool clipSearch;
+  bool displayDateGroup;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final searchTermController = useTextEditingController(text: "");
     final isNewSearch = useState(false);
     final currentSearchTerm = useState(searchTerm);
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     FocusNode? searchFocusNode;
 
@@ -29,7 +38,9 @@ class SearchResultPage extends HookConsumerWidget {
 
         Future.delayed(
           Duration.zero,
-          () => ref.read(searchResultPageProvider.notifier).search(searchTerm),
+          () => ref
+              .read(searchResultPageProvider.notifier)
+              .search(searchTerm, clipEnable: clipSearch),
         );
         return () => searchFocusNode?.dispose();
       },
@@ -74,6 +85,12 @@ class SearchResultPage extends HookConsumerWidget {
           focusedBorder: const UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.transparent),
           ),
+          hintStyle: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16.0,
+            color:
+                isDarkTheme ? Colors.grey[500] : Colors.black.withOpacity(0.5),
+          ),
         ),
       );
     }
@@ -87,7 +104,7 @@ class SearchResultPage extends HookConsumerWidget {
           alignment: WrapAlignment.center,
           children: [
             Text(
-              currentSearchTerm.value,
+              currentSearchTerm.value.capitalizeFirstLetter(),
               style: TextStyle(
                 color: Theme.of(context).primaryColor,
                 fontSize: 13,
@@ -121,11 +138,16 @@ class SearchResultPage extends HookConsumerWidget {
         return const Center(child: ImmichLoadingIndicator());
       }
 
-
       if (searchResultPageState.isSuccess) {
-        return ImmichAssetGrid(
+        if (displayDateGroup) {
+          return ImmichAssetGrid(
             assets: allSearchAssets,
-        );
+          );
+        } else {
+          return SearchResultGrid(
+            assets: allSearchAssets,
+          );
+        }
       }
 
       return const SizedBox();
