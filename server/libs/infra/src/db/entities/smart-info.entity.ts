@@ -17,12 +17,9 @@ export class SmartInfoEntity {
   objects!: string[] | null;
 
   @Column({
-    type: 'numeric',
+    type: 'float4',
     array: true,
     nullable: true,
-    // note: migration generator is broken for numeric[], but these _are_ set in the database
-    // precision: 20,
-    // scale: 19,
   })
   clipEmbedding!: number[] | null;
 }
