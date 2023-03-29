@@ -41,6 +41,11 @@ void main() {
       // TODO
     });
 
+    // int paused
+    test('to test the property `paused`', () async {
+      // TODO
+    });
+
 
   });
 

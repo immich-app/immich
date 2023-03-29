@@ -88,7 +88,6 @@
     "@openapitools/openapi-generator-cli": "2.5.1",
     "@types/archiver": "^5.3.1",
     "@types/bcrypt": "^5.0.0",
-    "@types/bull": "^3.15.9",
     "@types/cookie-parser": "^1.4.3",
     "@types/cron": "^2.0.0",
     "@types/express": "^4.17.13",
