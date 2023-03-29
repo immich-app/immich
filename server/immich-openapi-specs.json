@@ -4074,6 +4074,9 @@
           },
           "waiting": {
             "type": "integer"
+          },
+          "paused": {
+            "type": "integer"
           }
         },
         "required": [
@@ -4081,7 +4084,8 @@
           "completed",
           "failed",
           "delayed",
-          "waiting"
+          "waiting",
+          "paused"
         ]
       },
       "AllJobStatusResponseDto": {

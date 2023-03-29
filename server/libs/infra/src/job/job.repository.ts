@@ -10,7 +10,7 @@ import {
 } from '@app/domain';
 import { InjectQueue } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
-import { Queue } from 'bull';
+import { Queue, type JobCounts as BullJobCounts } from 'bull';
 
 export class JobRepository implements IJobRepository {
   private logger = new Logger(JobRepository.name);
@@ -54,7 +54,9 @@ export class JobRepository implements IJobRepository {
   }
 
   getJobCounts(name: QueueName): Promise<JobCounts> {
-    return this.queueMap[name].getJobCounts();
+    // Typecast needed because the `paused` key is missing from Bull's
+    // type definition. Can be removed once fixed upstream.
+    return this.queueMap[name].getJobCounts() as Promise<BullJobCounts & { paused: number }>;
   }
 
   async queue(item: JobItem): Promise<void> {

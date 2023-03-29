@@ -15,6 +15,7 @@ export interface JobCounts {
   failed: number;
   delayed: number;
   waiting: number;
+  paused: number;
 }
 
 export type JobItem =

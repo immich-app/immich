@@ -12,6 +12,8 @@ export class JobCountsDto {
   delayed!: number;
   @ApiProperty({ type: 'integer' })
   waiting!: number;
+  @ApiProperty({ type: 'integer' })
+  paused!: number;
 }
 
 export class AllJobStatusResponseDto implements Record<QueueName, JobCountsDto> {

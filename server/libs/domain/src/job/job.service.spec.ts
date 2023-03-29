@@ -23,6 +23,7 @@ describe(JobService.name, () => {
         failed: 1,
         delayed: 1,
         waiting: 1,
+        paused: 1,
       });
 
       await expect(sut.getAllJobsStatus()).resolves.toEqual({
@@ -32,6 +33,7 @@ describe(JobService.name, () => {
           delayed: 1,
           failed: 1,
           waiting: 1,
+          paused: 1,
         },
         'clip-encoding-queue': {
           active: 1,
@@ -39,6 +41,7 @@ describe(JobService.name, () => {
           delayed: 1,
           failed: 1,
           waiting: 1,
+          paused: 1,
         },
         'metadata-extraction-queue': {
           active: 1,
@@ -46,6 +49,7 @@ describe(JobService.name, () => {
           delayed: 1,
           failed: 1,
           waiting: 1,
+          paused: 1,
         },
         'object-tagging-queue': {
           active: 1,
@@ -53,6 +57,7 @@ describe(JobService.name, () => {
           delayed: 1,
           failed: 1,
           waiting: 1,
+          paused: 1,
         },
         'search-queue': {
           active: 1,
@@ -60,6 +65,7 @@ describe(JobService.name, () => {
           delayed: 1,
           failed: 1,
           waiting: 1,
+          paused: 1,
         },
         'storage-template-migration-queue': {
           active: 1,
@@ -67,6 +73,7 @@ describe(JobService.name, () => {
           delayed: 1,
           failed: 1,
           waiting: 1,
+          paused: 1,
         },
         'thumbnail-generation-queue': {
           active: 1,
@@ -74,6 +81,7 @@ describe(JobService.name, () => {
           delayed: 1,
           failed: 1,
           waiting: 1,
+          paused: 1,
         },
         'video-conversion-queue': {
           active: 1,
@@ -81,6 +89,7 @@ describe(JobService.name, () => {
           delayed: 1,
           failed: 1,
           waiting: 1,
+          paused: 1,
         },
       });
     });

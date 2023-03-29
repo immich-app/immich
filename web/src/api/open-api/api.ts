@@ -1284,6 +1284,12 @@ export interface JobCountsDto {
      * @memberof JobCountsDto
      */
     'waiting': number;
+    /**
+     * 
+     * @type {number}
+     * @memberof JobCountsDto
+     */
+    'paused': number;
 }
 /**
  * 
