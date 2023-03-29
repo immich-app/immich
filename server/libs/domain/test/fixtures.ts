@@ -6,6 +6,7 @@ import {
   SharedLinkEntity,
   SharedLinkType,
   SystemConfig,
+  TranscodePreset,
   UserEntity,
   UserTokenEntity,
 } from '@app/infra/db/entities';
@@ -404,7 +405,7 @@ export const systemConfigStub = {
       targetAudioCodec: 'aac',
       targetScaling: '1280:-2',
       targetVideoCodec: 'h264',
-      transcodeAll: false,
+      transcode: TranscodePreset.REQUIRED,
     },
     oauth: {
       autoLaunch: false,

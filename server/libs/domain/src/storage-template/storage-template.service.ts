@@ -2,6 +2,8 @@ import { AssetEntity, SystemConfig } from '@app/infra/db/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IAssetRepository } from '../asset/asset.repository';
 import { APP_MEDIA_LOCATION } from '../domain.constant';
+import { getLivePhotoMotionFilename } from '../domain.util';
+import { IAssetJob } from '../job';
 import { IStorageRepository } from '../storage/storage.repository';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
 import { StorageTemplateCore } from './storage-template.core';
@@ -18,6 +20,24 @@ export class StorageTemplateService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.core = new StorageTemplateCore(configRepository, config, storageRepository);
+  }
+
+  async handleTemplateMigrationSingle(data: IAssetJob) {
+    const { asset } = data;
+
+    try {
+      const filename = asset.exifInfo?.imageName || asset.id;
+      await this.moveAsset(asset, filename);
+
+      // move motion part of live photo
+      if (asset.livePhotoVideoId) {
+        const [livePhotoVideo] = await this.assetRepository.getByIds([asset.livePhotoVideoId]);
+        const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
+        await this.moveAsset(livePhotoVideo, motionFilename);
+      }
+    } catch (error: any) {
+      this.logger.error('Error running single template migration', error);
+    }
   }
 
   async handleTemplateMigration() {

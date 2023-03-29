@@ -30,7 +30,10 @@ class SearchBar extends HookConsumerWidget with PreferredSizeWidget {
               },
               icon: const Icon(Icons.arrow_back_ios_rounded),
             )
-          : const Icon(Icons.search_rounded),
+          : const Icon(
+              Icons.search_rounded,
+              size: 20,
+            ),
       title: TextField(
         controller: searchTermController,
         focusNode: searchFocusNode,
@@ -55,6 +58,8 @@ class SearchBar extends HookConsumerWidget with PreferredSizeWidget {
           hintText: 'search_bar_hint'.tr(),
           hintStyle: Theme.of(context).textTheme.titleSmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
               ),
           enabledBorder: const UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.transparent),

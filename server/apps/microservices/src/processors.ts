@@ -127,6 +127,11 @@ export class StorageTemplateMigrationProcessor {
   async onTemplateMigration() {
     await this.storageTemplateService.handleTemplateMigration();
   }
+
+  @Process({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE })
+  async onTemplateMigrationSingle(job: Job<IAssetJob>) {
+    await this.storageTemplateService.handleTemplateMigrationSingle(job.data);
+  }
 }
 
 @Processor(QueueName.THUMBNAIL_GENERATION)

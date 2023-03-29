@@ -1,4 +1,5 @@
-import { IsBoolean, IsString } from 'class-validator';
+import { IsEnum, IsString } from 'class-validator';
+import { TranscodePreset } from '@app/infra/db/entities';
 
 export class SystemConfigFFmpegDto {
   @IsString()
@@ -16,6 +17,6 @@ export class SystemConfigFFmpegDto {
   @IsString()
   targetScaling!: string;
 
-  @IsBoolean()
-  transcodeAll!: boolean;
+  @IsEnum(TranscodePreset)
+  transcode!: TranscodePreset;
 }

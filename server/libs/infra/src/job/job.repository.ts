@@ -45,6 +45,10 @@ export class JobRepository implements IJobRepository {
     return this.queueMap[name].pause();
   }
 
+  resume(name: QueueName) {
+    return this.queueMap[name].resume();
+  }
+
   empty(name: QueueName) {
     return this.queueMap[name].empty();
   }
@@ -93,6 +97,10 @@ export class JobRepository implements IJobRepository {
 
       case JobName.STORAGE_TEMPLATE_MIGRATION:
         await this.storageTemplateMigration.add(item.name);
+        break;
+
+      case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE:
+        await this.storageTemplateMigration.add(item.name, item.data);
         break;
 
       case JobName.SYSTEM_CONFIG_CHANGE:

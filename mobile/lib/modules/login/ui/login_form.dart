@@ -454,6 +454,10 @@ class EmailInput extends StatelessWidget {
         labelText: 'login_form_label_email'.tr(),
         border: const OutlineInputBorder(),
         hintText: 'login_form_email_hint'.tr(),
+        hintStyle: const TextStyle(
+          fontWeight: FontWeight.normal,
+          fontSize: 14,
+        ),
       ),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,
@@ -487,6 +491,10 @@ class PasswordInput extends StatelessWidget {
         labelText: 'login_form_label_password'.tr(),
         border: const OutlineInputBorder(),
         hintText: 'login_form_password_hint'.tr(),
+        hintStyle: const TextStyle(
+          fontWeight: FontWeight.normal,
+          fontSize: 14,
+        ),
       ),
       autofillHints: const [AutofillHints.password],
       keyboardType: TextInputType.text,

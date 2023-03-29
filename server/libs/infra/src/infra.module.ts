@@ -8,6 +8,7 @@ import {
   IKeyRepository,
   IMachineLearningRepository,
   IMediaRepository,
+  immichAppConfig,
   ISearchRepository,
   ISharedLinkRepository,
   ISmartInfoRepository,
@@ -19,6 +20,7 @@ import {
 } from '@app/domain';
 import { BullModule } from '@nestjs/bull';
 import { Global, Module, Provider } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CryptoRepository } from './auth/crypto.repository';
 import { CommunicationGateway, CommunicationRepository } from './communication';
@@ -71,6 +73,8 @@ const providers: Provider[] = [
 @Global()
 @Module({
   imports: [
+    ConfigModule.forRoot(immichAppConfig),
+
     TypeOrmModule.forRoot(databaseConfig),
     TypeOrmModule.forFeature([
       AssetEntity,
@@ -83,6 +87,7 @@ const providers: Provider[] = [
       SystemConfigEntity,
       UserTokenEntity,
     ]),
+
     BullModule.forRootAsync({
       useFactory: async () => ({
         prefix: 'immich_bull',

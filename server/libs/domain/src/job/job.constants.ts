@@ -12,6 +12,7 @@ export enum QueueName {
 export enum JobCommand {
   START = 'start',
   PAUSE = 'pause',
+  RESUME = 'resume',
   EMPTY = 'empty',
 }
 
@@ -40,6 +41,7 @@ export enum JobName {
 
   // storage template
   STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration',
+  STORAGE_TEMPLATE_MIGRATION_SINGLE = 'storage-template-migration-single',
   SYSTEM_CONFIG_CHANGE = 'system-config-change',
 
   // object tagging

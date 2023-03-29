@@ -25,12 +25,14 @@ class JobCommand {
 
   static const start = JobCommand._(r'start');
   static const pause = JobCommand._(r'pause');
+  static const resume = JobCommand._(r'resume');
   static const empty = JobCommand._(r'empty');
 
   /// List of all possible values in this [enum][JobCommand].
   static const values = <JobCommand>[
     start,
     pause,
+    resume,
     empty,
   ];
 
@@ -72,6 +74,7 @@ class JobCommandTypeTransformer {
       switch (data.toString()) {
         case r'start': return JobCommand.start;
         case r'pause': return JobCommand.pause;
+        case r'resume': return JobCommand.resume;
         case r'empty': return JobCommand.empty;
         default:
           if (!allowNull) {

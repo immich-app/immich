@@ -243,6 +243,7 @@ class BackupService {
           );
           req.headers["Authorization"] =
               "Bearer ${Store.get(StoreKey.accessToken)}";
+          req.headers["Transfer-Encoding"] = "chunked";
 
           req.fields['deviceAssetId'] = entity.id;
           req.fields['deviceId'] = deviceId;
