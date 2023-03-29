@@ -3436,7 +3436,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.52.0",
+    "version": "1.52.1",
     "contact": {}
   },
   "tags": [],
@@ -4116,6 +4116,9 @@
           },
           "waiting": {
             "type": "integer"
+          },
+          "paused": {
+            "type": "integer"
           }
         },
         "required": [
@@ -4123,7 +4126,8 @@
           "completed",
           "failed",
           "delayed",
-          "waiting"
+          "waiting",
+          "paused"
         ]
       },
       "AllJobStatusResponseDto": {

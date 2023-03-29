@@ -18,6 +18,7 @@ class JobCountsDto {
     required this.failed,
     required this.delayed,
     required this.waiting,
+    required this.paused,
   });
 
   int active;
@@ -30,13 +31,16 @@ class JobCountsDto {
 
   int waiting;
 
+  int paused;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is JobCountsDto &&
      other.active == active &&
      other.completed == completed &&
      other.failed == failed &&
      other.delayed == delayed &&
-     other.waiting == waiting;
+     other.waiting == waiting &&
+     other.paused == paused;
 
   @override
   int get hashCode =>
@@ -45,10 +49,11 @@ class JobCountsDto {
     (completed.hashCode) +
     (failed.hashCode) +
     (delayed.hashCode) +
-    (waiting.hashCode);
+    (waiting.hashCode) +
+    (paused.hashCode);
 
   @override
-  String toString() => 'JobCountsDto[active=$active, completed=$completed, failed=$failed, delayed=$delayed, waiting=$waiting]';
+  String toString() => 'JobCountsDto[active=$active, completed=$completed, failed=$failed, delayed=$delayed, waiting=$waiting, paused=$paused]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -57,6 +62,7 @@ class JobCountsDto {
       json[r'failed'] = this.failed;
       json[r'delayed'] = this.delayed;
       json[r'waiting'] = this.waiting;
+      json[r'paused'] = this.paused;
     return json;
   }
 
@@ -84,6 +90,7 @@ class JobCountsDto {
         failed: mapValueOfType<int>(json, r'failed')!,
         delayed: mapValueOfType<int>(json, r'delayed')!,
         waiting: mapValueOfType<int>(json, r'waiting')!,
+        paused: mapValueOfType<int>(json, r'paused')!,
       );
     }
     return null;
@@ -138,6 +145,7 @@ class JobCountsDto {
     'failed',
     'delayed',
     'waiting',
+    'paused',
   };
 }
 
