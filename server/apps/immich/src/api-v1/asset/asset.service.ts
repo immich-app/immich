@@ -314,7 +314,7 @@ export class AssetService {
           return new StreamableFile(videoStream);
         }
 
-        return this.streamFile(asset.originalPath, res, headers, mimeType);
+        return this.streamFile(videoPath, res, headers, mimeType);
       } catch (e) {
         this.logger.error(`Error serving VIDEO asset=${asset.id}`);
         throw new InternalServerErrorException(`Failed to serve video asset ${e}`, 'ServeFile');
