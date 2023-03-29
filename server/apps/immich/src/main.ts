@@ -6,7 +6,7 @@ import cookieParser from 'cookie-parser';
 import { writeFileSync } from 'fs';
 import path from 'path';
 import { AppModule } from './app.module';
-import { RedisIoAdapter } from './middlewares/redis-io.adapter.middleware';
+import { RedisIoAdapter } from '@app/infra';
 import { json } from 'body-parser';
 import { patchOpenAPI } from './utils/patch-open-api.util';
 import { getLogLevels, MACHINE_LEARNING_ENABLED } from '@app/domain';
@@ -29,9 +29,7 @@ async function bootstrap() {
 
   const serverPort = Number(process.env.SERVER_PORT) || 3001;
 
-  const redisIoAdapter = new RedisIoAdapter(app);
-  await redisIoAdapter.connectToRedis();
-  app.useWebSocketAdapter(redisIoAdapter);
+  app.useWebSocketAdapter(new RedisIoAdapter(app));
 
   const config = new DocumentBuilder()
     .setTitle('Immich')
