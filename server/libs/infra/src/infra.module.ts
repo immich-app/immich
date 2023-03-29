@@ -22,7 +22,9 @@ import { Global, Module, Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommunicationGateway } from './communication.gateway';
-import { bullConfig, bullQueues, databaseConfig, databaseEntities } from './infra.config';
+import { databaseConfig } from './database.config';
+import { databaseEntities } from './entities';
+import { bullConfig, bullQueues } from './infra.config';
 import {
   AlbumRepository,
   APIKeyRepository,
