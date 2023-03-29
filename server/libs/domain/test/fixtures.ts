@@ -9,7 +9,7 @@ import {
   TranscodePreset,
   UserEntity,
   UserTokenEntity,
-} from '@app/infra/db/entities';
+} from '@app/infra/entities';
 import {
   AlbumResponseDto,
   AssetResponseDto,

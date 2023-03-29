@@ -1,4 +1,4 @@
-import { AlbumEntity, AssetEntity } from '@app/infra/db/entities';
+import { AlbumEntity, AssetEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { mapAlbum } from '../album';

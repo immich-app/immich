@@ -2,8 +2,8 @@ import { AlbumAssetCount, IAlbumRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, IsNull, Not, Repository } from 'typeorm';
-import { dataSource } from '../config';
 import { AlbumEntity } from '../entities';
+import { dataSource } from '../infra.config';
 
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {

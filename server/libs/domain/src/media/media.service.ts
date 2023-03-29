@@ -1,4 +1,4 @@
-import { AssetType } from '@app/infra/db/entities';
+import { AssetType } from '@app/infra/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { join } from 'path';
 import { IAssetRepository, mapAsset, WithoutProperty } from '../asset';

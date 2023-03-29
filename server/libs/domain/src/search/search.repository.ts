@@ -1,4 +1,4 @@
-import { AlbumEntity, AssetEntity, AssetType } from '@app/infra/db/entities';
+import { AlbumEntity, AssetEntity, AssetType } from '@app/infra/entities';
 
 export enum SearchCollection {
   ASSETS = 'assets',

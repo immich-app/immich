@@ -1,4 +1,4 @@
-import { SmartInfoEntity } from '@app/infra/db/entities';
+import { SmartInfoEntity } from '@app/infra/entities';
 
 export const ISmartInfoRepository = 'ISmartInfoRepository';
 

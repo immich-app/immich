@@ -1,4 +1,4 @@
-import { UserTokenEntity } from '@app/infra/db/entities';
+import { UserTokenEntity } from '@app/infra/entities';
 
 export const IUserTokenRepository = 'IUserTokenRepository';
 

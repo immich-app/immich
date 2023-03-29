@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AssetService } from './asset.service';
 import { AssetController } from './asset.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AssetEntity } from '@app/infra/db/entities';
+import { AssetEntity } from '@app/infra/entities';
 import { AssetRepository, IAssetRepository } from './asset-repository';
 import { DownloadModule } from '../../modules/download/download.module';
 import { TagModule } from '../tag/tag.module';

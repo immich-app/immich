@@ -1,4 +1,4 @@
-import { SystemConfig } from '@app/infra/db/entities';
+import { SystemConfig } from '@app/infra/entities';
 import { ValidateNested } from 'class-validator';
 import { SystemConfigFFmpegDto } from './system-config-ffmpeg.dto';
 import { SystemConfigOAuthDto } from './system-config-oauth.dto';

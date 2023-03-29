@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/infra/db/entities';
+import { UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { ReadStream } from 'fs';

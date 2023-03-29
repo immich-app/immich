@@ -1,4 +1,4 @@
-import { SystemConfig } from '@app/infra/db/entities';
+import { SystemConfig } from '@app/infra/entities';
 import {
   BadRequestException,
   Inject,

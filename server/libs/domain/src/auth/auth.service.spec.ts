@@ -1,4 +1,4 @@
-import { SystemConfig, UserEntity } from '@app/infra/db/entities';
+import { SystemConfig, UserEntity } from '@app/infra/entities';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { IncomingHttpHeaders } from 'http';
 import { generators, Issuer } from 'openid-client';

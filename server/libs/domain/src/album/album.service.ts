@@ -1,4 +1,4 @@
-import { AlbumEntity } from '@app/infra/db/entities';
+import { AlbumEntity } from '@app/infra/entities';
 import { Inject, Injectable } from '@nestjs/common';
 import { IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';

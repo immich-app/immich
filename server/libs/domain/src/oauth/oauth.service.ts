@@ -1,4 +1,4 @@
-import { SystemConfig } from '@app/infra/db/entities';
+import { SystemConfig } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { AuthType, AuthUserDto, LoginResponseDto } from '../auth';
 import { AuthCore } from '../auth/auth.core';

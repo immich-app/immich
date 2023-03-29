@@ -1,6 +1,6 @@
 import { CommunicationEvent } from '@app/domain';
 import { Injectable } from '@nestjs/common';
-import { CommunicationGateway } from './communication.gateway';
+import { CommunicationGateway } from '../communication.gateway';
 
 @Injectable()
 export class CommunicationRepository {

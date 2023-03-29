@@ -10,7 +10,7 @@ import {
   QueueName,
   WithoutProperty,
 } from '@app/domain';
-import { AssetType, ExifEntity } from '@app/infra/db/entities';
+import { AssetType, ExifEntity } from '@app/infra/entities';
 import { Process, Processor } from '@nestjs/bull';
 import { Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
