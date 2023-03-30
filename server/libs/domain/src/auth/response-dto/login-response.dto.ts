@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/infra/db/entities';
+import { UserEntity } from '@app/infra/entities';
 import { ApiResponseProperty } from '@nestjs/swagger';
 
 export class LoginResponseDto {

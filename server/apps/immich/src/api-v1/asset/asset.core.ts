@@ -1,5 +1,5 @@
 import { AuthUserDto, IJobRepository, JobName } from '@app/domain';
-import { AssetEntity, UserEntity } from '@app/infra/db/entities';
+import { AssetEntity, UserEntity } from '@app/infra/entities';
 import { IAssetRepository } from './asset-repository';
 import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
 

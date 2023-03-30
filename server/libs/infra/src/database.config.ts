@@ -1,5 +1,5 @@
-import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import { DataSource } from 'typeorm';
+import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 
 const url = process.env.DB_URL;
 const urlOrParts = url
@@ -14,12 +14,13 @@ const urlOrParts = url
 
 export const databaseConfig: PostgresConnectionOptions = {
   type: 'postgres',
-  entities: [__dirname + '/../**/*.entity.{js,ts}'],
+  entities: [__dirname + '/entities/*.entity.{js,ts}'],
   synchronize: false,
-  migrations: [__dirname + '/../migrations/*.{js,ts}'],
+  migrations: [__dirname + '/migrations/*.{js,ts}'],
   migrationsRun: true,
   connectTimeoutMS: 10000, // 10 seconds
   ...urlOrParts,
 };
 
+// this export is used by TypeORM commands in package.json#scripts
 export const dataSource = new DataSource(databaseConfig);

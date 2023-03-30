@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/infra/db/entities';
+import { UserEntity } from '@app/infra/entities';
 
 export class UserResponseDto {
   id!: string;

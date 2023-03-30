@@ -1,5 +1,5 @@
 import { IsEnum, IsString } from 'class-validator';
-import { TranscodePreset } from '@app/infra/db/entities';
+import { TranscodePreset } from '@app/infra/entities';
 
 export class SystemConfigFFmpegDto {
   @IsString()

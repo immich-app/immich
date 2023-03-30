@@ -1,4 +1,4 @@
-import { SystemConfig, UserEntity } from '@app/infra/db/entities';
+import { SystemConfig, UserEntity } from '@app/infra/entities';
 import { ISystemConfigRepository } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE } from './auth.constant';

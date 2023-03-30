@@ -2,7 +2,7 @@ import { AlbumAssetCount, IAlbumRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, IsNull, Not, Repository } from 'typeorm';
-import { dataSource } from '../config';
+import { dataSource } from '../database.config';
 import { AlbumEntity } from '../entities';
 
 @Injectable()

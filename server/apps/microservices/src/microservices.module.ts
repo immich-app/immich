@@ -1,6 +1,6 @@
 import { DomainModule } from '@app/domain';
 import { InfraModule } from '@app/infra';
-import { ExifEntity } from '@app/infra/db/entities';
+import { ExifEntity } from '@app/infra/entities';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {

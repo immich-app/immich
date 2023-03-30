@@ -1,4 +1,4 @@
-import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra/db/entities';
+import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra/entities';
 
 export interface IBaseJob {
   force?: boolean;

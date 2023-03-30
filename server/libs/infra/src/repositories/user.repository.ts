@@ -1,8 +1,8 @@
-import { UserEntity } from '../entities';
 import { IUserRepository, UserListFilter, UserStatsQueryResponse } from '@app/domain';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
+import { UserEntity } from '../entities';
 
 @Injectable()
 export class UserRepository implements IUserRepository {

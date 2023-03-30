@@ -1,4 +1,4 @@
-import { AssetEntity, AssetType } from '@app/infra/db/entities';
+import { AssetEntity, AssetType } from '@app/infra/entities';
 
 export interface AssetSearchOptions {
   isVisible?: boolean;

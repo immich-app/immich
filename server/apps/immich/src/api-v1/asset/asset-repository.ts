@@ -1,6 +1,6 @@
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
-import { AssetEntity, AssetType } from '@app/infra/db/entities';
+import { AssetEntity, AssetType } from '@app/infra/entities';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';

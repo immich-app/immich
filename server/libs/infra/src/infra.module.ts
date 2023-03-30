@@ -16,40 +16,33 @@ import {
   ISystemConfigRepository,
   IUserRepository,
   IUserTokenRepository,
-  QueueName,
 } from '@app/domain';
 import { BullModule } from '@nestjs/bull';
 import { Global, Module, Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CryptoRepository } from './auth/crypto.repository';
-import { CommunicationGateway, CommunicationRepository } from './communication';
+import { CommunicationGateway } from './communication.gateway';
+import { databaseConfig } from './database.config';
+import { databaseEntities } from './entities';
+import { bullConfig, bullQueues } from './infra.config';
 import {
-  AlbumEntity,
   AlbumRepository,
-  APIKeyEntity,
   APIKeyRepository,
-  AssetEntity,
   AssetRepository,
-  databaseConfig,
-  DeviceInfoEntity,
+  CommunicationRepository,
+  CryptoRepository,
   DeviceInfoRepository,
-  SharedLinkEntity,
+  FilesystemProvider,
+  JobRepository,
+  MachineLearningRepository,
+  MediaRepository,
   SharedLinkRepository,
-  SmartInfoEntity,
   SmartInfoRepository,
-  SystemConfigEntity,
   SystemConfigRepository,
-  UserEntity,
+  TypesenseRepository,
   UserRepository,
-  UserTokenEntity,
   UserTokenRepository,
-} from './db';
-import { JobRepository } from './job';
-import { MachineLearningRepository } from './machine-learning';
-import { MediaRepository } from './media';
-import { TypesenseRepository } from './search';
-import { FilesystemProvider } from './storage';
+} from './repositories';
 
 const providers: Provider[] = [
   { provide: IAlbumRepository, useClass: AlbumRepository },
@@ -74,38 +67,10 @@ const providers: Provider[] = [
 @Module({
   imports: [
     ConfigModule.forRoot(immichAppConfig),
-
     TypeOrmModule.forRoot(databaseConfig),
-    TypeOrmModule.forFeature([
-      AssetEntity,
-      AlbumEntity,
-      APIKeyEntity,
-      DeviceInfoEntity,
-      UserEntity,
-      SharedLinkEntity,
-      SmartInfoEntity,
-      SystemConfigEntity,
-      UserTokenEntity,
-    ]),
-
-    BullModule.forRootAsync({
-      useFactory: async () => ({
-        prefix: 'immich_bull',
-        redis: {
-          host: process.env.REDIS_HOSTNAME || 'immich_redis',
-          port: parseInt(process.env.REDIS_PORT || '6379'),
-          db: parseInt(process.env.REDIS_DBINDEX || '0'),
-          password: process.env.REDIS_PASSWORD || undefined,
-          path: process.env.REDIS_SOCKET || undefined,
-        },
-        defaultJobOptions: {
-          attempts: 3,
-          removeOnComplete: true,
-          removeOnFail: false,
-        },
-      }),
-    }),
-    BullModule.registerQueue(...Object.values(QueueName).map((name) => ({ name }))),
+    TypeOrmModule.forFeature(databaseEntities),
+    BullModule.forRoot(bullConfig),
+    BullModule.registerQueue(...bullQueues),
   ],
   providers: [...providers, CommunicationGateway],
   exports: [...providers, BullModule],

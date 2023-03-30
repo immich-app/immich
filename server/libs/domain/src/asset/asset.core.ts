@@ -1,4 +1,4 @@
-import { AssetEntity, AssetType } from '@app/infra/db/entities';
+import { AssetEntity, AssetType } from '@app/infra/entities';
 import { IJobRepository, JobName } from '../job';
 import { AssetSearchOptions, IAssetRepository } from './asset.repository';
 

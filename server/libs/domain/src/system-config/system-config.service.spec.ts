@@ -1,4 +1,4 @@
-import { SystemConfigEntity, SystemConfigKey, TranscodePreset } from '@app/infra/db/entities';
+import { SystemConfigEntity, SystemConfigKey, TranscodePreset } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import { newJobRepositoryMock, newSystemConfigRepositoryMock, systemConfigStub } from '../../test';
 import { IJobRepository, JobName } from '../job';

@@ -12,9 +12,9 @@ import { catchError, filter, firstValueFrom, from, map, mergeMap, of, toArray } 
 import { Client } from 'typesense';
 import { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
 import { DocumentSchema, SearchResponse } from 'typesense/lib/Typesense/Documents';
-import { AlbumEntity, AssetEntity } from '../db';
-import { albumSchema } from './schemas/album.schema';
-import { assetSchema } from './schemas/asset.schema';
+import { AlbumEntity, AssetEntity } from '../entities';
+import { typesenseConfig } from '../infra.config';
+import { albumSchema, assetSchema } from '../typesense-schemas';
 
 function removeNil<T extends Dictionary<any>>(item: T): T {
   _.forOwn(item, (value, key) => {
@@ -51,24 +51,11 @@ export class TypesenseRepository implements ISearchRepository {
   }
 
   constructor() {
-    const apiKey = process.env.TYPESENSE_API_KEY;
-    if (!apiKey) {
+    if (!typesenseConfig.apiKey) {
       return;
     }
 
-    this._client = new Client({
-      nodes: [
-        {
-          host: process.env.TYPESENSE_HOST || 'typesense',
-          port: Number(process.env.TYPESENSE_PORT) || 8108,
-          protocol: process.env.TYPESENSE_PROTOCOL || 'http',
-        },
-      ],
-      apiKey,
-      numRetries: 15,
-      retryIntervalSeconds: 4,
-      connectionTimeoutSeconds: 10,
-    });
+    this._client = new Client(typesenseConfig);
   }
 
   async setup(): Promise<void> {

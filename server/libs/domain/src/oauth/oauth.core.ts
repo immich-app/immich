@@ -1,4 +1,4 @@
-import { SystemConfig } from '@app/infra/db/entities';
+import { SystemConfig } from '@app/infra/entities';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ClientMetadata, custom, generators, Issuer, UserinfoResponse } from 'openid-client';
 import { ISystemConfigRepository } from '../system-config';
