@@ -14,7 +14,7 @@ import { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
 import { DocumentSchema, SearchResponse } from 'typesense/lib/Typesense/Documents';
 import { AlbumEntity, AssetEntity } from '../entities';
 import { typesenseConfig } from '../infra.config';
-import { albumSchema, assetSchema } from '../schemas';
+import { albumSchema, assetSchema } from '../typesense-schemas';
 
 function removeNil<T extends Dictionary<any>>(item: T): T {
   _.forOwn(item, (value, key) => {
