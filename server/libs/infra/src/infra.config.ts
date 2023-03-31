@@ -8,13 +8,13 @@ export function redisConfig(): RedisOptions {
   if (redisUrl != undefined && redisUrl.startsWith('ioredis://')) {
     let customOptions = {};
     try {
-      const decodedString = Buffer.from(redisUrl.slice(10), "base64").toString();
+      const decodedString = Buffer.from(redisUrl.slice(10), 'base64').toString();
       customOptions = JSON.parse(decodedString);
     } catch (error) {
       throw new Error(`Failed to decode redis options: ${error}`);
     }
     return customOptions;
-  }else {
+  } else {
     {
       return {
         host: process.env.REDIS_HOSTNAME || 'immich_redis',
@@ -27,7 +27,6 @@ export function redisConfig(): RedisOptions {
     }
   }
 }
-
 
 export const bullConfig: BullModuleOptions = {
   prefix: 'immich_bull',
