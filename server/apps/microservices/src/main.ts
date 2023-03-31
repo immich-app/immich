@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { SERVER_VERSION } from '@app/domain';
 import { getLogLevels } from '@app/domain';
-import { RedisIoAdapter } from '../../immich/src/middlewares/redis-io.adapter.middleware';
+import { RedisIoAdapter } from '@app/infra';
 import { MicroservicesModule } from './microservices.module';
 
 const logger = new Logger('ImmichMicroservice');
@@ -14,9 +14,7 @@ async function bootstrap() {
 
   const listeningPort = Number(process.env.MICROSERVICES_PORT) || 3002;
 
-  const redisIoAdapter = new RedisIoAdapter(app);
-  await redisIoAdapter.connectToRedis();
-  app.useWebSocketAdapter(redisIoAdapter);
+  app.useWebSocketAdapter(new RedisIoAdapter(app));
 
   await app.listen(listeningPort, () => {
     const envName = (process.env.NODE_ENV || 'development').toUpperCase();
