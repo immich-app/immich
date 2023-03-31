@@ -5,12 +5,13 @@ import {
   ServerStatsResponseDto,
   ServerVersionReponseDto,
 } from '@app/domain';
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Authenticated } from '../decorators/authenticated.decorator';
 
 @ApiTags('Server Info')
 @Controller('server-info')
+@UsePipes(new ValidationPipe({ transform: true }))
 export class ServerInfoController {
   constructor(private service: ServerInfoService) {}
 

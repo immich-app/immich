@@ -11,9 +11,9 @@ import {
   UseInterceptors,
   UploadedFile,
   Response,
-  ParseBoolPipe,
   StreamableFile,
   Header,
+  UsePipes,
 } from '@nestjs/common';
 import { UserService } from '@app/domain';
 import { Authenticated } from '../decorators/authenticated.decorator';
@@ -32,15 +32,13 @@ import { UserCountDto } from '@app/domain';
 
 @ApiTags('User')
 @Controller('user')
+@UsePipes(new ValidationPipe({ transform: true }))
 export class UserController {
   constructor(private service: UserService) {}
 
   @Authenticated()
   @Get()
-  getAllUsers(
-    @GetAuthUser() authUser: AuthUserDto,
-    @Query('isAll', ParseBoolPipe) isAll: boolean,
-  ): Promise<UserResponseDto[]> {
+  getAllUsers(@GetAuthUser() authUser: AuthUserDto, @Query('isAll') isAll: boolean): Promise<UserResponseDto[]> {
     return this.service.getAllUsers(authUser, isAll);
   }
 
@@ -58,12 +56,12 @@ export class UserController {
 
   @Authenticated({ admin: true })
   @Post()
-  createUser(@Body(new ValidationPipe({ transform: true })) createUserDto: CreateUserDto): Promise<UserResponseDto> {
+  createUser(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
     return this.service.createUser(createUserDto);
   }
 
   @Get('/count')
-  getUserCount(@Query(new ValidationPipe({ transform: true })) dto: UserCountDto): Promise<UserCountResponseDto> {
+  getUserCount(@Query() dto: UserCountDto): Promise<UserCountResponseDto> {
     return this.service.getUserCount(dto);
   }
 
@@ -81,10 +79,7 @@ export class UserController {
 
   @Authenticated()
   @Put()
-  updateUser(
-    @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) updateUserDto: UpdateUserDto,
-  ): Promise<UserResponseDto> {
+  updateUser(@GetAuthUser() authUser: AuthUserDto, @Body() updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
     return this.service.updateUser(authUser, updateUserDto);
   }
 

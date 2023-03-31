@@ -7,7 +7,7 @@ import {
   OAuthService,
   UserResponseDto,
 } from '@app/domain';
-import { Body, Controller, Get, HttpStatus, Post, Redirect, Req, Res, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Post, Redirect, Req, Res, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
@@ -15,6 +15,7 @@ import { Authenticated } from '../decorators/authenticated.decorator';
 
 @ApiTags('OAuth')
 @Controller('oauth')
+@UsePipes(new ValidationPipe({ transform: true }))
 export class OAuthController {
   constructor(private service: OAuthService) {}
 
@@ -28,14 +29,14 @@ export class OAuthController {
   }
 
   @Post('config')
-  generateConfig(@Body(ValidationPipe) dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
+  generateConfig(@Body() dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
     return this.service.generateConfig(dto);
   }
 
   @Post('callback')
   async callback(
     @Res({ passthrough: true }) res: Response,
-    @Body(ValidationPipe) dto: OAuthCallbackDto,
+    @Body() dto: OAuthCallbackDto,
     @Req() req: Request,
   ): Promise<LoginResponseDto> {
     const { response, cookie } = await this.service.login(dto, req.secure);
@@ -45,7 +46,7 @@ export class OAuthController {
 
   @Authenticated()
   @Post('link')
-  link(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) dto: OAuthCallbackDto): Promise<UserResponseDto> {
+  link(@GetAuthUser() authUser: AuthUserDto, @Body() dto: OAuthCallbackDto): Promise<UserResponseDto> {
     return this.service.link(authUser, dto);
   }
 
