@@ -6,7 +6,7 @@ import {
   SearchResponseDto,
   SearchService,
 } from '@app/domain';
-import { Controller, Get, Query, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
@@ -14,14 +14,12 @@ import { Authenticated } from '../decorators/authenticated.decorator';
 @ApiTags('Search')
 @Controller('search')
 @Authenticated()
+@UsePipes(new ValidationPipe({ transform: true }))
 export class SearchController {
   constructor(private service: SearchService) {}
 
   @Get()
-  search(
-    @GetAuthUser() authUser: AuthUserDto,
-    @Query(new ValidationPipe({ transform: true })) dto: SearchDto,
-  ): Promise<SearchResponseDto> {
+  search(@GetAuthUser() authUser: AuthUserDto, @Query() dto: SearchDto): Promise<SearchResponseDto> {
     return this.service.search(authUser, dto);
   }
 
