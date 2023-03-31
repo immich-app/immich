@@ -6,7 +6,7 @@ import { redisConfig } from './infra.config';
 
 export class RedisIoAdapter extends IoAdapter {
   createIOServer(port: number, options?: ServerOptions): any {
-    const pubClient = new Redis(redisConfig());
+    const pubClient = new Redis(redisConfig);
     const subClient = pubClient.duplicate();
     const server = super.createIOServer(port, options);
     server.adapter(createAdapter(pubClient, subClient));
