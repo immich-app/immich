@@ -11,7 +11,11 @@ export class MediaRepository implements IMediaRepository {
   async resize(input: string, output: string, options: ResizeOptions): Promise<void> {
     switch (options.format) {
       case 'webp':
-        await sharp(input, { failOnError: false }).resize(250).webp().rotate().toFile(output);
+        await sharp(input, { failOnError: false })
+          .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
+          .webp()
+          .rotate()
+          .toFile(output);
         return;
 
       case 'jpeg':
