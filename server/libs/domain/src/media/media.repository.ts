@@ -7,6 +7,6 @@ export interface ResizeOptions {
 
 export interface IMediaRepository {
   resize(input: string, output: string, options: ResizeOptions): Promise<void>;
-  extractVideoThumbnail(input: string, output: string): Promise<void>;
+  extractVideoThumbnail(input: string, output: string, size: number): Promise<void>;
   extractThumbnailFromExif(input: string, output: string): Promise<void>;
 }

@@ -24,10 +24,14 @@ export class MediaRepository implements IMediaRepository {
     }
   }
 
-  extractVideoThumbnail(input: string, output: string) {
+  extractVideoThumbnail(input: string, output: string, size: number) {
     return new Promise<void>((resolve, reject) => {
       ffmpeg(input)
-        .outputOptions(['-ss 00:00:00.000', '-frames:v 1'])
+        .outputOptions([
+          '-ss 00:00:00.000',
+          '-frames:v 1',
+          `-vf scale='min(${size},iw)':'min(${size},ih)':force_original_aspect_ratio=increase`,
+        ])
         .output(output)
         .on('error', reject)
         .on('end', resolve)
