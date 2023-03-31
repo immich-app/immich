@@ -136,6 +136,10 @@ export class VideoTranscodeProcessor {
           `-vcodec ${config.ffmpeg.targetVideoCodec}`,
           `-acodec ${config.ffmpeg.targetAudioCodec}`,
           `-vf scale=${config.ffmpeg.targetScaling}`,
+
+          // Makes a second pass moving the moov atom to the beginning of
+          // the file for improved playback speed.
+          `-movflags faststart`,
         ])
         .output(savedEncodedPath)
         .on('start', () => {
