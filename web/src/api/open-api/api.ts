@@ -2334,12 +2334,6 @@ export interface UpdateUserDto {
      * @memberof UpdateUserDto
      */
     'shouldChangePassword'?: boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateUserDto
-     */
-    'profileImagePath'?: string;
 }
 /**
  * 

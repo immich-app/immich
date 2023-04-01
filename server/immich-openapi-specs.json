@@ -4832,9 +4832,6 @@
           },
           "shouldChangePassword": {
             "type": "boolean"
-          },
-          "profileImagePath": {
-            "type": "string"
           }
         },
         "required": [

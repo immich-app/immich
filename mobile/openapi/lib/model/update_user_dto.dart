@@ -20,7 +20,6 @@ class UpdateUserDto {
     this.lastName,
     this.isAdmin,
     this.shouldChangePassword,
-    this.profileImagePath,
   });
 
   String id;
@@ -73,14 +72,6 @@ class UpdateUserDto {
   ///
   bool? shouldChangePassword;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? profileImagePath;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateUserDto &&
      other.id == id &&
@@ -89,8 +80,7 @@ class UpdateUserDto {
      other.firstName == firstName &&
      other.lastName == lastName &&
      other.isAdmin == isAdmin &&
-     other.shouldChangePassword == shouldChangePassword &&
-     other.profileImagePath == profileImagePath;
+     other.shouldChangePassword == shouldChangePassword;
 
   @override
   int get hashCode =>
@@ -101,11 +91,10 @@ class UpdateUserDto {
     (firstName == null ? 0 : firstName!.hashCode) +
     (lastName == null ? 0 : lastName!.hashCode) +
     (isAdmin == null ? 0 : isAdmin!.hashCode) +
-    (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode) +
-    (profileImagePath == null ? 0 : profileImagePath!.hashCode);
+    (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode);
 
   @override
-  String toString() => 'UpdateUserDto[id=$id, email=$email, password=$password, firstName=$firstName, lastName=$lastName, isAdmin=$isAdmin, shouldChangePassword=$shouldChangePassword, profileImagePath=$profileImagePath]';
+  String toString() => 'UpdateUserDto[id=$id, email=$email, password=$password, firstName=$firstName, lastName=$lastName, isAdmin=$isAdmin, shouldChangePassword=$shouldChangePassword]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -140,11 +129,6 @@ class UpdateUserDto {
     } else {
       // json[r'shouldChangePassword'] = null;
     }
-    if (this.profileImagePath != null) {
-      json[r'profileImagePath'] = this.profileImagePath;
-    } else {
-      // json[r'profileImagePath'] = null;
-    }
     return json;
   }
 
@@ -174,7 +158,6 @@ class UpdateUserDto {
         lastName: mapValueOfType<String>(json, r'lastName'),
         isAdmin: mapValueOfType<bool>(json, r'isAdmin'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword'),
-        profileImagePath: mapValueOfType<String>(json, r'profileImagePath'),
       );
     }
     return null;

@@ -51,11 +51,6 @@ void main() {
       // TODO
     });
 
-    // String profileImagePath
-    test('to test the property `profileImagePath`', () async {
-      // TODO
-    });
-
 
   });
 
