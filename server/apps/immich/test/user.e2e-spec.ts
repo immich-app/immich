@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { clearDb, authCustom } from './test-utils';
-import { CreateUserDto, UserService, AuthUserDto } from '@app/domain';
+import { CreateUserDto, UserService, AuthUserDto, UserResponseDto } from '@app/domain';
 import { DataSource } from 'typeorm';
 import { AuthService } from '@app/domain';
 import { AppModule } from '../src/app.module';
@@ -39,10 +39,11 @@ describe('User', () => {
     });
   });
 
-  describe('with auth', () => {
+  describe('with admin auth', () => {
     let userService: UserService;
     let authService: AuthService;
     let authUser: AuthUserDto;
+    let userOne: UserResponseDto;
 
     beforeAll(async () => {
       const builder = Test.createTestingModule({ imports: [AppModule] });
@@ -69,7 +70,8 @@ describe('User', () => {
           password: '1234',
         });
         authUser = { ...adminSignupResponseDto, isAdmin: true }; // TODO: find out why adminSignUp doesn't have isAdmin (maybe can just return UserResponseDto)
-        await Promise.allSettled([
+
+        [userOne] = await Promise.all([
           _createUser(userService, {
             firstName: 'one',
             lastName: 'test',
@@ -120,6 +122,67 @@ describe('User', () => {
           ]),
         );
         expect(body).toEqual(expect.not.arrayContaining([expect.objectContaining({ email: authUserEmail })]));
+      });
+
+      it('disallows admin user from creating a second admin account', async () => {
+        const { status } = await request(app.getHttpServer())
+          .put('/user')
+          .send({
+            ...userOne,
+            isAdmin: true,
+          });
+        expect(status).toEqual(400);
+      });
+
+      it('ignores updates to createdAt, updatedAt and deletedAt', async () => {
+        const { status, body } = await request(app.getHttpServer())
+          .put('/user')
+          .send({
+            ...userOne,
+            createdAt: '2023-01-01T00:00:00.000Z',
+            updatedAt: '2023-01-01T00:00:00.000Z',
+            deletedAt: '2023-01-01T00:00:00.000Z',
+          });
+        expect(status).toEqual(200);
+        expect(body).toStrictEqual({
+          ...userOne,
+          createdAt: new Date(userOne.createdAt).toISOString(),
+          updatedAt: expect.anything(),
+        });
+      });
+
+      it('ignores updates to profileImagePath', async () => {
+        const { status, body } = await request(app.getHttpServer())
+          .put('/user')
+          .send({
+            ...userOne,
+            profileImagePath: 'invalid.jpg',
+          });
+        expect(status).toEqual(200);
+        expect(body).toStrictEqual({
+          ...userOne,
+          createdAt: new Date(userOne.createdAt).toISOString(),
+          updatedAt: expect.anything(),
+        });
+      });
+
+      it('allows to update first and last name', async () => {
+        const { status, body } = await request(app.getHttpServer())
+          .put('/user')
+          .send({
+            ...userOne,
+            firstName: 'newFirstName',
+            lastName: 'newLastName',
+          });
+
+        expect(status).toEqual(200);
+        expect(body).toMatchObject({
+          ...userOne,
+          createdAt: new Date(userOne.createdAt).toISOString(),
+          updatedAt: expect.anything(),
+          firstName: 'newFirstName',
+          lastName: 'newLastName',
+        });
       });
     });
   });
