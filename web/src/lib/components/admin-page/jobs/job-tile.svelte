@@ -16,23 +16,23 @@
 
 	$: isRunning = jobCounts.active > 0 || jobCounts.waiting > 0;
 	$: waitingCount = jobCounts.waiting + jobCounts.paused;
+	$: isPause = jobCounts.paused > 0;
 
 	const dispatch = createEventDispatcher<{ command: JobCommandDto }>();
 </script>
 
-<div class="flex justify-between rounded-3xl bg-gray-100 dark:bg-immich-dark-gray">
+<div
+	class="flex justify-between rounded-3xl bg-gray-100 dark:bg-immich-dark-gray transition-all
+  {isRunning ? 'dark:bg-immich-primary/30 bg-immich-primary/30' : ''} 
+  {isPause ? 'dark:bg-yellow-100/30 bg-yellow-500/20' : ''}"
+>
 	<div id="job-info" class="w-full p-9">
-		<div class="flex flex-col gap-2">
+		<div class="flex flex-col gap-2 ">
 			<div
 				class="flex items-center gap-4 text-xl font-semibold text-immich-primary dark:text-immich-dark-primary"
 			>
 				<span>{title.toUpperCase()}</span>
 				<div class="flex gap-2">
-					{#if isRunning}
-						<Badge color="success">Active</Badge>
-					{:else if jobCounts.paused > 0}
-						<Badge color="warning">Paused</Badge>
-					{/if}
 					{#if jobCounts.failed > 0}
 						<Badge color="danger">
 							{jobCounts.failed.toLocaleString($locale)} failed
@@ -79,10 +79,12 @@
 			</button>
 		{:else if jobCounts.paused > 0}
 			<button
-				class="job-play-button bg-gray-300/90 dark:bg-gray-600/90"
+				class="job-play-button bg-gray-300 dark:bg-gray-600/90"
 				on:click={() => dispatch('command', { command: JobCommand.Resume, force: false })}
 			>
-				<FastForward size="48" /> RESUME
+				<span class=" {isPause ? 'animate-pulse' : ''}">
+					<FastForward size="48" /> RESUME
+				</span>
 			</button>
 		{:else if allowForceCommand}
 			<button
