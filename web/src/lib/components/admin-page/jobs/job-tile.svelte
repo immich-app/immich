@@ -94,7 +94,7 @@
 						color="gray"
 						on:click={() => dispatch('command', { command: JobCommand.Empty, force: false })}
 					>
-						<Close size="28" /> CLEAR
+						<Close size="24" /> CLEAR
 					</JobTileButton>
 				{/if}
 				{#if queueStatus.isPaused}
@@ -102,7 +102,7 @@
 						color="light-gray"
 						on:click={() => dispatch('command', { command: JobCommand.Resume, force: false })}
 					>
-						{@const size = waitingCount > 0 ? '28' : '48'}
+						{@const size = waitingCount > 0 ? '24' : '48'}
 
 						<!-- size property is not reactive, so have to use width and height -->
 						<FastForward width={size} height={size} /> RESUME
@@ -112,7 +112,7 @@
 						color="light-gray"
 						on:click={() => dispatch('command', { command: JobCommand.Pause, force: false })}
 					>
-						<Pause size="28" /> PAUSE
+						<Pause size="24" /> PAUSE
 					</JobTileButton>
 				{/if}
 			{:else if allowForceCommand}
@@ -120,13 +120,13 @@
 					color="gray"
 					on:click={() => dispatch('command', { command: JobCommand.Start, force: true })}
 				>
-					<AllInclusive size="28" /> ALL
+					<AllInclusive size="24" /> ALL
 				</JobTileButton>
 				<JobTileButton
 					color="light-gray"
 					on:click={() => dispatch('command', { command: JobCommand.Start, force: false })}
 				>
-					<SelectionSearch size="28" /> MISSING
+					<SelectionSearch size="24" /> MISSING
 				</JobTileButton>
 			{:else}
 				<JobTileButton
