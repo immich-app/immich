@@ -25,10 +25,6 @@ export class UserCore {
       throw new ForbiddenException('You are not allowed to update this user');
     }
 
-    if (dto.isAdmin && authUser.isAdmin && authUser.id !== id) {
-      throw new BadRequestException('Admin user exists');
-    }
-
     if (dto.email) {
       const duplicate = await this.userRepository.getByEmail(dto.email);
       if (duplicate && duplicate.id !== id) {
