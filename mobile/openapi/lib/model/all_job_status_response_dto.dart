@@ -23,21 +23,21 @@ class AllJobStatusResponseDto {
     required this.searchQueue,
   });
 
-  JobCountsDto thumbnailGenerationQueue;
+  JobStatusDto thumbnailGenerationQueue;
 
-  JobCountsDto metadataExtractionQueue;
+  JobStatusDto metadataExtractionQueue;
 
-  JobCountsDto videoConversionQueue;
+  JobStatusDto videoConversionQueue;
 
-  JobCountsDto objectTaggingQueue;
+  JobStatusDto objectTaggingQueue;
 
-  JobCountsDto clipEncodingQueue;
+  JobStatusDto clipEncodingQueue;
 
-  JobCountsDto storageTemplateMigrationQueue;
+  JobStatusDto storageTemplateMigrationQueue;
 
-  JobCountsDto backgroundTaskQueue;
+  JobStatusDto backgroundTaskQueue;
 
-  JobCountsDto searchQueue;
+  JobStatusDto searchQueue;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AllJobStatusResponseDto &&
@@ -97,14 +97,14 @@ class AllJobStatusResponseDto {
       }());
 
       return AllJobStatusResponseDto(
-        thumbnailGenerationQueue: JobCountsDto.fromJson(json[r'thumbnail-generation-queue'])!,
-        metadataExtractionQueue: JobCountsDto.fromJson(json[r'metadata-extraction-queue'])!,
-        videoConversionQueue: JobCountsDto.fromJson(json[r'video-conversion-queue'])!,
-        objectTaggingQueue: JobCountsDto.fromJson(json[r'object-tagging-queue'])!,
-        clipEncodingQueue: JobCountsDto.fromJson(json[r'clip-encoding-queue'])!,
-        storageTemplateMigrationQueue: JobCountsDto.fromJson(json[r'storage-template-migration-queue'])!,
-        backgroundTaskQueue: JobCountsDto.fromJson(json[r'background-task-queue'])!,
-        searchQueue: JobCountsDto.fromJson(json[r'search-queue'])!,
+        thumbnailGenerationQueue: JobStatusDto.fromJson(json[r'thumbnail-generation-queue'])!,
+        metadataExtractionQueue: JobStatusDto.fromJson(json[r'metadata-extraction-queue'])!,
+        videoConversionQueue: JobStatusDto.fromJson(json[r'video-conversion-queue'])!,
+        objectTaggingQueue: JobStatusDto.fromJson(json[r'object-tagging-queue'])!,
+        clipEncodingQueue: JobStatusDto.fromJson(json[r'clip-encoding-queue'])!,
+        storageTemplateMigrationQueue: JobStatusDto.fromJson(json[r'storage-template-migration-queue'])!,
+        backgroundTaskQueue: JobStatusDto.fromJson(json[r'background-task-queue'])!,
+        searchQueue: JobStatusDto.fromJson(json[r'search-queue'])!,
       );
     }
     return null;

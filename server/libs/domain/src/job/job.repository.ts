@@ -18,6 +18,11 @@ export interface JobCounts {
   paused: number;
 }
 
+export interface QueueStatus {
+  isActive: boolean;
+  isPaused: boolean;
+}
+
 export type JobItem =
   // Asset Upload
   | { name: JobName.ASSET_UPLOADED; data: IAssetUploadedJob }
@@ -73,6 +78,6 @@ export interface IJobRepository {
   pause(name: QueueName): Promise<void>;
   resume(name: QueueName): Promise<void>;
   empty(name: QueueName): Promise<void>;
-  isActive(name: QueueName): Promise<boolean>;
+  getQueueStatus(name: QueueName): Promise<QueueStatus>;
   getJobCounts(name: QueueName): Promise<JobCounts>;
 }

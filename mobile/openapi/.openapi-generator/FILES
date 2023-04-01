@@ -53,6 +53,7 @@ doc/JobCommand.md
 doc/JobCommandDto.md
 doc/JobCountsDto.md
 doc/JobName.md
+doc/JobStatusDto.md
 doc/LoginCredentialDto.md
 doc/LoginResponseDto.md
 doc/LogoutResponseDto.md
@@ -60,6 +61,7 @@ doc/OAuthApi.md
 doc/OAuthCallbackDto.md
 doc/OAuthConfigDto.md
 doc/OAuthConfigResponseDto.md
+doc/QueueStatusDto.md
 doc/RemoveAssetsDto.md
 doc/SearchAlbumResponseDto.md
 doc/SearchApi.md
@@ -170,12 +172,14 @@ lib/model/job_command.dart
 lib/model/job_command_dto.dart
 lib/model/job_counts_dto.dart
 lib/model/job_name.dart
+lib/model/job_status_dto.dart
 lib/model/login_credential_dto.dart
 lib/model/login_response_dto.dart
 lib/model/logout_response_dto.dart
 lib/model/o_auth_callback_dto.dart
 lib/model/o_auth_config_dto.dart
 lib/model/o_auth_config_response_dto.dart
+lib/model/queue_status_dto.dart
 lib/model/remove_assets_dto.dart
 lib/model/search_album_response_dto.dart
 lib/model/search_asset_dto.dart
@@ -264,6 +268,7 @@ test/job_command_dto_test.dart
 test/job_command_test.dart
 test/job_counts_dto_test.dart
 test/job_name_test.dart
+test/job_status_dto_test.dart
 test/login_credential_dto_test.dart
 test/login_response_dto_test.dart
 test/logout_response_dto_test.dart
@@ -271,6 +276,7 @@ test/o_auth_api_test.dart
 test/o_auth_callback_dto_test.dart
 test/o_auth_config_dto_test.dart
 test/o_auth_config_response_dto_test.dart
+test/queue_status_dto_test.dart
 test/remove_assets_dto_test.dart
 test/search_album_response_dto_test.dart
 test/search_api_test.dart

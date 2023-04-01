@@ -7,6 +7,7 @@ import {
   JobItem,
   JobName,
   QueueName,
+  QueueStatus,
 } from '@app/domain';
 import { InjectQueue } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
@@ -36,9 +37,13 @@ export class JobRepository implements IJobRepository {
     @InjectQueue(QueueName.SEARCH) private searchIndex: Queue,
   ) {}
 
-  async isActive(name: QueueName): Promise<boolean> {
-    const counts = await this.getJobCounts(name);
-    return !!counts.active;
+  async getQueueStatus(name: QueueName): Promise<QueueStatus> {
+    const queue = this.queueMap[name];
+
+    return {
+      isActive: !!(await queue.getActiveCount()),
+      isPaused: await queue.isPaused(),
+    };
   }
 
   pause(name: QueueName) {

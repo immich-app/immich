@@ -541,7 +541,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobStatusDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -4088,32 +4095,62 @@
           "paused"
         ]
       },
+      "QueueStatusDto": {
+        "type": "object",
+        "properties": {
+          "isActive": {
+            "type": "boolean"
+          },
+          "isPaused": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isActive",
+          "isPaused"
+        ]
+      },
+      "JobStatusDto": {
+        "type": "object",
+        "properties": {
+          "jobCounts": {
+            "$ref": "#/components/schemas/JobCountsDto"
+          },
+          "queueStatus": {
+            "$ref": "#/components/schemas/QueueStatusDto"
+          }
+        },
+        "required": [
+          "jobCounts",
+          "queueStatus"
+        ]
+      },
       "AllJobStatusResponseDto": {
         "type": "object",
         "properties": {
           "thumbnail-generation-queue": {
-            "$ref": "#/components/schemas/JobCountsDto"
+            "$ref": "#/components/schemas/JobStatusDto"
           },
           "metadata-extraction-queue": {
-            "$ref": "#/components/schemas/JobCountsDto"
+            "$ref": "#/components/schemas/JobStatusDto"
           },
           "video-conversion-queue": {
-            "$ref": "#/components/schemas/JobCountsDto"
+            "$ref": "#/components/schemas/JobStatusDto"
           },
           "object-tagging-queue": {
-            "$ref": "#/components/schemas/JobCountsDto"
+            "$ref": "#/components/schemas/JobStatusDto"
           },
           "clip-encoding-queue": {
-            "$ref": "#/components/schemas/JobCountsDto"
+            "$ref": "#/components/schemas/JobStatusDto"
           },
           "storage-template-migration-queue": {
-            "$ref": "#/components/schemas/JobCountsDto"
+            "$ref": "#/components/schemas/JobStatusDto"
           },
           "background-task-queue": {
-            "$ref": "#/components/schemas/JobCountsDto"
+            "$ref": "#/components/schemas/JobStatusDto"
           },
           "search-queue": {
-            "$ref": "#/components/schemas/JobCountsDto"
+            "$ref": "#/components/schemas/JobStatusDto"
           }
         },
         "required": [

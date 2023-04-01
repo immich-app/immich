@@ -280,6 +280,8 @@ class ApiClient {
           return JobCountsDto.fromJson(value);
         case 'JobName':
           return JobNameTypeTransformer().decode(value);
+        case 'JobStatusDto':
+          return JobStatusDto.fromJson(value);
         case 'LoginCredentialDto':
           return LoginCredentialDto.fromJson(value);
         case 'LoginResponseDto':
@@ -292,6 +294,8 @@ class ApiClient {
           return OAuthConfigDto.fromJson(value);
         case 'OAuthConfigResponseDto':
           return OAuthConfigResponseDto.fromJson(value);
+        case 'QueueStatusDto':
+          return QueueStatusDto.fromJson(value);
         case 'RemoveAssetsDto':
           return RemoveAssetsDto.fromJson(value);
         case 'SearchAlbumResponseDto':

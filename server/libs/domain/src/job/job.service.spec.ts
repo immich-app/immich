@@ -25,72 +25,35 @@ describe(JobService.name, () => {
         waiting: 1,
         paused: 1,
       });
+      jobMock.getQueueStatus.mockResolvedValue({
+        isActive: true,
+        isPaused: true,
+      });
+
+      const expectedJobStatus = {
+        jobCounts: {
+          active: 1,
+          completed: 1,
+          delayed: 1,
+          failed: 1,
+          waiting: 1,
+          paused: 1,
+        },
+        queueStatus: {
+          isActive: true,
+          isPaused: true,
+        },
+      };
 
       await expect(sut.getAllJobsStatus()).resolves.toEqual({
-        'background-task-queue': {
-          active: 1,
-          completed: 1,
-          delayed: 1,
-          failed: 1,
-          waiting: 1,
-          paused: 1,
-        },
-        'clip-encoding-queue': {
-          active: 1,
-          completed: 1,
-          delayed: 1,
-          failed: 1,
-          waiting: 1,
-          paused: 1,
-        },
-        'metadata-extraction-queue': {
-          active: 1,
-          completed: 1,
-          delayed: 1,
-          failed: 1,
-          waiting: 1,
-          paused: 1,
-        },
-        'object-tagging-queue': {
-          active: 1,
-          completed: 1,
-          delayed: 1,
-          failed: 1,
-          waiting: 1,
-          paused: 1,
-        },
-        'search-queue': {
-          active: 1,
-          completed: 1,
-          delayed: 1,
-          failed: 1,
-          waiting: 1,
-          paused: 1,
-        },
-        'storage-template-migration-queue': {
-          active: 1,
-          completed: 1,
-          delayed: 1,
-          failed: 1,
-          waiting: 1,
-          paused: 1,
-        },
-        'thumbnail-generation-queue': {
-          active: 1,
-          completed: 1,
-          delayed: 1,
-          failed: 1,
-          waiting: 1,
-          paused: 1,
-        },
-        'video-conversion-queue': {
-          active: 1,
-          completed: 1,
-          delayed: 1,
-          failed: 1,
-          waiting: 1,
-          paused: 1,
-        },
+        'background-task-queue': expectedJobStatus,
+        'clip-encoding-queue': expectedJobStatus,
+        'metadata-extraction-queue': expectedJobStatus,
+        'object-tagging-queue': expectedJobStatus,
+        'search-queue': expectedJobStatus,
+        'storage-template-migration-queue': expectedJobStatus,
+        'thumbnail-generation-queue': expectedJobStatus,
+        'video-conversion-queue': expectedJobStatus,
       });
     });
   });
@@ -115,7 +78,7 @@ describe(JobService.name, () => {
     });
 
     it('should not start a job that is already running', async () => {
-      jobMock.isActive.mockResolvedValue(true);
+      jobMock.getQueueStatus.mockResolvedValue({ isActive: true, isPaused: false });
 
       await expect(
         sut.handleCommand(QueueName.VIDEO_CONVERSION, { command: JobCommand.START, force: false }),
@@ -125,7 +88,7 @@ describe(JobService.name, () => {
     });
 
     it('should handle a start video conversion command', async () => {
-      jobMock.isActive.mockResolvedValue(false);
+      jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
       await sut.handleCommand(QueueName.VIDEO_CONVERSION, { command: JobCommand.START, force: false });
 
@@ -133,7 +96,7 @@ describe(JobService.name, () => {
     });
 
     it('should handle a start storage template migration command', async () => {
-      jobMock.isActive.mockResolvedValue(false);
+      jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
       await sut.handleCommand(QueueName.STORAGE_TEMPLATE_MIGRATION, { command: JobCommand.START, force: false });
 
@@ -141,7 +104,7 @@ describe(JobService.name, () => {
     });
 
     it('should handle a start object tagging command', async () => {
-      jobMock.isActive.mockResolvedValue(false);
+      jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
       await sut.handleCommand(QueueName.OBJECT_TAGGING, { command: JobCommand.START, force: false });
 
@@ -149,7 +112,7 @@ describe(JobService.name, () => {
     });
 
     it('should handle a start clip encoding command', async () => {
-      jobMock.isActive.mockResolvedValue(false);
+      jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
       await sut.handleCommand(QueueName.CLIP_ENCODING, { command: JobCommand.START, force: false });
 
@@ -157,7 +120,7 @@ describe(JobService.name, () => {
     });
 
     it('should handle a start metadata extraction command', async () => {
-      jobMock.isActive.mockResolvedValue(false);
+      jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
       await sut.handleCommand(QueueName.METADATA_EXTRACTION, { command: JobCommand.START, force: false });
 
@@ -165,7 +128,7 @@ describe(JobService.name, () => {
     });
 
     it('should handle a start thumbnail generation command', async () => {
-      jobMock.isActive.mockResolvedValue(false);
+      jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
       await sut.handleCommand(QueueName.THUMBNAIL_GENERATION, { command: JobCommand.START, force: false });
 
@@ -173,7 +136,7 @@ describe(JobService.name, () => {
     });
 
     it('should throw a bad request when an invalid queue is used', async () => {
-      jobMock.isActive.mockResolvedValue(false);
+      jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
       await expect(
         sut.handleCommand(QueueName.BACKGROUND_TASK, { command: JobCommand.START, force: false }),
