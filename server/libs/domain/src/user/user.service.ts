@@ -99,10 +99,6 @@ export class UserService {
       }
     }
 
-    if (dto.profileImagePath) {
-      throw new BadRequestException('Cannot change profile image path');
-    }
-    
     const updatedUser = await this.userCore.updateUser(authUser, dto.id, dto);
     return mapUser(updatedUser);
   }

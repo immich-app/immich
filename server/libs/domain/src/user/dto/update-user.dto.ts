@@ -22,7 +22,4 @@ export class UpdateUserDto {
 
   @IsOptional()
   shouldChangePassword?: boolean;
-
-  @IsOptional()
-  profileImagePath?: string;
 }
