@@ -4,38 +4,47 @@
 	import Pause from 'svelte-material-icons/Pause.svelte';
 	import FastForward from 'svelte-material-icons/FastForward.svelte';
 	import AllInclusive from 'svelte-material-icons/AllInclusive.svelte';
+	import Close from 'svelte-material-icons/Close.svelte';
 	import { locale } from '$lib/stores/preferences.store';
 	import { createEventDispatcher } from 'svelte';
-	import { JobCommand, JobCommandDto, JobCountsDto } from '@api';
+	import { JobCommand, JobCommandDto, JobCountsDto, QueueStatusDto } from '@api';
 	import Badge from '$lib/components/elements/badge.svelte';
+	import JobTileButton from './job-tile-button.svelte';
+	import JobTileStatus from './job-tile-status.svelte';
 
 	export let title: string;
 	export let subtitle: string | undefined = undefined;
 	export let jobCounts: JobCountsDto;
+	export let queueStatus: QueueStatusDto;
 	export let allowForceCommand = true;
 
-	$: isRunning = jobCounts.active > 0 || jobCounts.waiting > 0;
-	$: waitingCount = jobCounts.waiting + jobCounts.paused;
-	$: isPause = jobCounts.paused > 0;
+	$: waitingCount = jobCounts.waiting + jobCounts.paused + jobCounts.delayed;
+	$: isIdle = !queueStatus.isActive && !queueStatus.isPaused;
 
 	const dispatch = createEventDispatcher<{ command: JobCommandDto }>();
 </script>
 
-<div
-	class="flex justify-between rounded-3xl bg-gray-100 dark:bg-immich-dark-gray transition-all
-  {isRunning ? 'dark:bg-immich-primary/30 bg-immich-primary/20' : ''} 
-  {isPause ? 'dark:bg-yellow-100/30 bg-yellow-500/20' : ''}"
->
-	<div id="job-info" class="w-full p-9">
-		<div class="flex flex-col gap-2 ">
+<div class="flex bg-gray-100 dark:bg-immich-dark-gray rounded-3xl overflow-hidden">
+	<div class="flex flex-col w-full">
+		{#if queueStatus.isPaused}
+			<JobTileStatus color="warning">Paused</JobTileStatus>
+		{:else if queueStatus.isActive}
+			<JobTileStatus color="success">Active</JobTileStatus>
+		{/if}
+		<div class="flex flex-col gap-2 p-9">
 			<div
 				class="flex items-center gap-4 text-xl font-semibold text-immich-primary dark:text-immich-dark-primary"
 			>
 				<span>{title.toUpperCase()}</span>
 				<div class="flex gap-2">
 					{#if jobCounts.failed > 0}
-						<Badge color="danger">
+						<Badge color="primary">
 							{jobCounts.failed.toLocaleString($locale)} failed
+						</Badge>
+					{/if}
+					{#if jobCounts.delayed > 0}
+						<Badge color="secondary">
+							{jobCounts.delayed.toLocaleString($locale)} delayed
 						</Badge>
 					{/if}
 				</div>
@@ -69,43 +78,54 @@
 			</div>
 		</div>
 	</div>
-	<div id="job-action" class="flex flex-col rounded-r-3xl w-32 overflow-hidden">
-		{#if isRunning}
-			<button
-				class="job-play-button bg-gray-300/90 dark:bg-gray-600/90"
-				on:click={() => dispatch('command', { command: JobCommand.Pause, force: false })}
-			>
-				<Pause size="48" /> PAUSE
-			</button>
-		{:else if jobCounts.paused > 0}
-			<button
-				class="job-play-button bg-gray-300 dark:bg-gray-600/90"
-				on:click={() => dispatch('command', { command: JobCommand.Resume, force: false })}
-			>
-				<span class=" {isPause ? 'animate-pulse' : ''}">
-					<FastForward size="48" /> RESUME
-				</span>
-			</button>
+	<div class="flex flex-col w-32 overflow-hidden">
+		{#if !isIdle}
+			{#if waitingCount > 0}
+				<JobTileButton
+					color="gray"
+					on:click={() => dispatch('command', { command: JobCommand.Empty, force: false })}
+				>
+					<Close size="24" /> CLEAR
+				</JobTileButton>
+			{/if}
+			{#if queueStatus.isPaused}
+				<JobTileButton
+					color="light-gray"
+					on:click={() => dispatch('command', { command: JobCommand.Resume, force: false })}
+				>
+					{@const size = waitingCount > 0 ? '24' : '48'}
+
+					<!-- size property is not reactive, so have to use width and height -->
+					<FastForward width={size} height={size} /> RESUME
+				</JobTileButton>
+			{:else}
+				<JobTileButton
+					color="light-gray"
+					on:click={() => dispatch('command', { command: JobCommand.Pause, force: false })}
+				>
+					<Pause size="24" /> PAUSE
+				</JobTileButton>
+			{/if}
 		{:else if allowForceCommand}
-			<button
-				class="job-play-button bg-gray-300 dark:bg-gray-600"
+			<JobTileButton
+				color="gray"
 				on:click={() => dispatch('command', { command: JobCommand.Start, force: true })}
 			>
-				<AllInclusive size="18" /> ALL
-			</button>
-			<button
-				class="job-play-button bg-gray-300/90 dark:bg-gray-600/90"
+				<AllInclusive size="24" /> ALL
+			</JobTileButton>
+			<JobTileButton
+				color="light-gray"
 				on:click={() => dispatch('command', { command: JobCommand.Start, force: false })}
 			>
-				<SelectionSearch size="18" /> MISSING
-			</button>
+				<SelectionSearch size="24" /> MISSING
+			</JobTileButton>
 		{:else}
-			<button
-				class="job-play-button bg-gray-300/90 dark:bg-gray-600/90"
+			<JobTileButton
+				color="light-gray"
 				on:click={() => dispatch('command', { command: JobCommand.Start, force: false })}
 			>
 				<Play size="48" /> START
-			</button>
+			</JobTileButton>
 		{/if}
 	</div>
 </div>

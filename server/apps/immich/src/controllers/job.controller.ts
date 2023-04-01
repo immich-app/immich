@@ -1,4 +1,4 @@
-import { AllJobStatusResponseDto, JobCommandDto, JobIdDto, JobService } from '@app/domain';
+import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto, JobIdDto, JobService } from '@app/domain';
 import { Body, Controller, Get, Param, Put, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Authenticated } from '../decorators/authenticated.decorator';
@@ -16,7 +16,8 @@ export class JobController {
   }
 
   @Put('/:jobId')
-  sendJobCommand(@Param() { jobId }: JobIdDto, @Body() dto: JobCommandDto): Promise<void> {
-    return this.service.handleCommand(jobId, dto);
+  async sendJobCommand(@Param() { jobId }: JobIdDto, @Body() dto: JobCommandDto): Promise<JobStatusDto> {
+    await this.service.handleCommand(jobId, dto);
+    return await this.service.getJobStatus(jobId);
   }
 }
