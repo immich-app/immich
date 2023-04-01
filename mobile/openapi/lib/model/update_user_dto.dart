@@ -13,17 +13,14 @@ part of openapi.api;
 class UpdateUserDto {
   /// Returns a new [UpdateUserDto] instance.
   UpdateUserDto({
-    required this.id,
     this.email,
     this.password,
     this.firstName,
     this.lastName,
+    required this.id,
     this.isAdmin,
     this.shouldChangePassword,
-    this.profileImagePath,
   });
-
-  String id;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -57,6 +54,8 @@ class UpdateUserDto {
   ///
   String? lastName;
 
+  String id;
+
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -73,43 +72,32 @@ class UpdateUserDto {
   ///
   bool? shouldChangePassword;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? profileImagePath;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateUserDto &&
-     other.id == id &&
      other.email == email &&
      other.password == password &&
      other.firstName == firstName &&
      other.lastName == lastName &&
+     other.id == id &&
      other.isAdmin == isAdmin &&
-     other.shouldChangePassword == shouldChangePassword &&
-     other.profileImagePath == profileImagePath;
+     other.shouldChangePassword == shouldChangePassword;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id.hashCode) +
     (email == null ? 0 : email!.hashCode) +
     (password == null ? 0 : password!.hashCode) +
     (firstName == null ? 0 : firstName!.hashCode) +
     (lastName == null ? 0 : lastName!.hashCode) +
+    (id.hashCode) +
     (isAdmin == null ? 0 : isAdmin!.hashCode) +
-    (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode) +
-    (profileImagePath == null ? 0 : profileImagePath!.hashCode);
+    (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode);
 
   @override
-  String toString() => 'UpdateUserDto[id=$id, email=$email, password=$password, firstName=$firstName, lastName=$lastName, isAdmin=$isAdmin, shouldChangePassword=$shouldChangePassword, profileImagePath=$profileImagePath]';
+  String toString() => 'UpdateUserDto[email=$email, password=$password, firstName=$firstName, lastName=$lastName, id=$id, isAdmin=$isAdmin, shouldChangePassword=$shouldChangePassword]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'id'] = this.id;
     if (this.email != null) {
       json[r'email'] = this.email;
     } else {
@@ -130,6 +118,7 @@ class UpdateUserDto {
     } else {
       // json[r'lastName'] = null;
     }
+      json[r'id'] = this.id;
     if (this.isAdmin != null) {
       json[r'isAdmin'] = this.isAdmin;
     } else {
@@ -139,11 +128,6 @@ class UpdateUserDto {
       json[r'shouldChangePassword'] = this.shouldChangePassword;
     } else {
       // json[r'shouldChangePassword'] = null;
-    }
-    if (this.profileImagePath != null) {
-      json[r'profileImagePath'] = this.profileImagePath;
-    } else {
-      // json[r'profileImagePath'] = null;
     }
     return json;
   }
@@ -167,14 +151,13 @@ class UpdateUserDto {
       }());
 
       return UpdateUserDto(
-        id: mapValueOfType<String>(json, r'id')!,
         email: mapValueOfType<String>(json, r'email'),
         password: mapValueOfType<String>(json, r'password'),
         firstName: mapValueOfType<String>(json, r'firstName'),
         lastName: mapValueOfType<String>(json, r'lastName'),
+        id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword'),
-        profileImagePath: mapValueOfType<String>(json, r'profileImagePath'),
       );
     }
     return null;

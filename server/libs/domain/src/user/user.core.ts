@@ -21,12 +21,16 @@ export class UserCore {
   constructor(private userRepository: IUserRepository, private cryptoRepository: ICryptoRepository) {}
 
   async updateUser(authUser: AuthUserDto, id: string, dto: Partial<UserEntity>): Promise<UserEntity> {
-    if (!(authUser.isAdmin || authUser.id === id)) {
+    if (!authUser.isAdmin && authUser.id !== id) {
       throw new ForbiddenException('You are not allowed to update this user');
     }
 
-    if (dto.isAdmin && authUser.isAdmin && authUser.id !== id) {
-      throw new BadRequestException('Admin user exists');
+    if (!authUser.isAdmin) {
+      // Users can never update the isAdmin property.
+      delete dto.isAdmin;
+    } else if (dto.isAdmin && authUser.id !== id) {
+      // Admin cannot create another admin.
+      throw new BadRequestException('The server already has an admin');
     }
 
     if (dto.email) {

@@ -2297,12 +2297,6 @@ export interface UpdateUserDto {
      * @type {string}
      * @memberof UpdateUserDto
      */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateUserDto
-     */
     'email'?: string;
     /**
      * 
@@ -2324,6 +2318,12 @@ export interface UpdateUserDto {
     'lastName'?: string;
     /**
      * 
+     * @type {string}
+     * @memberof UpdateUserDto
+     */
+    'id': string;
+    /**
+     * 
      * @type {boolean}
      * @memberof UpdateUserDto
      */
@@ -2334,12 +2334,6 @@ export interface UpdateUserDto {
      * @memberof UpdateUserDto
      */
     'shouldChangePassword'?: boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateUserDto
-     */
-    'profileImagePath'?: string;
 }
 /**
  * 

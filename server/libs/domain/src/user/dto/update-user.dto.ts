@@ -1,28 +1,18 @@
-import { IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
+import { CreateUserDto } from './create-user.dto';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 
-export class UpdateUserDto {
+export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsNotEmpty()
+  @IsUUID('4')
+  @ApiProperty({ format: 'uuid' })
   id!: string;
 
-  @IsEmail()
   @IsOptional()
-  email?: string;
-
-  @IsOptional()
-  password?: string;
-
-  @IsOptional()
-  firstName?: string;
-
-  @IsOptional()
-  lastName?: string;
-
-  @IsOptional()
+  @IsBoolean()
   isAdmin?: boolean;
 
   @IsOptional()
+  @IsBoolean()
   shouldChangePassword?: boolean;
-
-  @IsOptional()
-  profileImagePath?: string;
 }

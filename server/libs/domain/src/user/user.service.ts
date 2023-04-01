@@ -90,6 +90,7 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
+
     const updatedUser = await this.userCore.updateUser(authUser, dto.id, dto);
     return mapUser(updatedUser);
   }
