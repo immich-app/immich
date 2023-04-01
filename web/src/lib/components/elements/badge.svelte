@@ -16,10 +16,10 @@
 </script>
 
 <span
-	class="inline-block h-min whitespace-nowrap px-[0.65em] pt-[0.35em] pb-[0.25em] text-center align-baseline text-[0.75em] leading-none {colorClasses[
+	class="inline-block h-min whitespace-nowrap px-4 pt-[0.55em] pb-[0.55em] text-center align-baseline text-xs leading-none {colorClasses[
 		color
 	]}"
-	class:rounded={rounded === true}
+	class:rounded-md={rounded === true}
 	class:rounded-full={rounded === 'full'}
 >
 	<slot />
