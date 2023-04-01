@@ -23,7 +23,7 @@
 
 <div
 	class="flex justify-between rounded-3xl bg-gray-100 dark:bg-immich-dark-gray transition-all
-  {isRunning ? 'dark:bg-immich-primary/30 bg-immich-primary/30' : ''} 
+  {isRunning ? 'dark:bg-immich-primary/30 bg-immich-primary/20' : ''} 
   {isPause ? 'dark:bg-yellow-100/30 bg-yellow-500/20' : ''}"
 >
 	<div id="job-info" class="w-full p-9">
