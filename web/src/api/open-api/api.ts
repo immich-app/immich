@@ -291,52 +291,52 @@ export interface AlbumResponseDto {
 export interface AllJobStatusResponseDto {
     /**
      * 
-     * @type {JobCountsDto}
+     * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'thumbnail-generation-queue': JobCountsDto;
+    'thumbnail-generation-queue': JobStatusDto;
     /**
      * 
-     * @type {JobCountsDto}
+     * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'metadata-extraction-queue': JobCountsDto;
+    'metadata-extraction-queue': JobStatusDto;
     /**
      * 
-     * @type {JobCountsDto}
+     * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'video-conversion-queue': JobCountsDto;
+    'video-conversion-queue': JobStatusDto;
     /**
      * 
-     * @type {JobCountsDto}
+     * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'object-tagging-queue': JobCountsDto;
+    'object-tagging-queue': JobStatusDto;
     /**
      * 
-     * @type {JobCountsDto}
+     * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'clip-encoding-queue': JobCountsDto;
+    'clip-encoding-queue': JobStatusDto;
     /**
      * 
-     * @type {JobCountsDto}
+     * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'storage-template-migration-queue': JobCountsDto;
+    'storage-template-migration-queue': JobStatusDto;
     /**
      * 
-     * @type {JobCountsDto}
+     * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'background-task-queue': JobCountsDto;
+    'background-task-queue': JobStatusDto;
     /**
      * 
-     * @type {JobCountsDto}
+     * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'search-queue': JobCountsDto;
+    'search-queue': JobStatusDto;
 }
 /**
  * 
@@ -1314,6 +1314,25 @@ export type JobName = typeof JobName[keyof typeof JobName];
 /**
  * 
  * @export
+ * @interface JobStatusDto
+ */
+export interface JobStatusDto {
+    /**
+     * 
+     * @type {JobCountsDto}
+     * @memberof JobStatusDto
+     */
+    'jobCounts': JobCountsDto;
+    /**
+     * 
+     * @type {QueueStatusDto}
+     * @memberof JobStatusDto
+     */
+    'queueStatus': QueueStatusDto;
+}
+/**
+ * 
+ * @export
  * @interface LoginCredentialDto
  */
 export interface LoginCredentialDto {
@@ -1466,6 +1485,25 @@ export interface OAuthConfigResponseDto {
      * @memberof OAuthConfigResponseDto
      */
     'autoLaunch'?: boolean;
+}
+/**
+ * 
+ * @export
+ * @interface QueueStatusDto
+ */
+export interface QueueStatusDto {
+    /**
+     * 
+     * @type {boolean}
+     * @memberof QueueStatusDto
+     */
+    'isActive': boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof QueueStatusDto
+     */
+    'isPaused': boolean;
 }
 /**
  * 
@@ -6270,7 +6308,7 @@ export const JobApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async sendJobCommand(jobId: JobName, jobCommandDto: JobCommandDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async sendJobCommand(jobId: JobName, jobCommandDto: JobCommandDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobStatusDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.sendJobCommand(jobId, jobCommandDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -6299,7 +6337,7 @@ export const JobApiFactory = function (configuration?: Configuration, basePath?:
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        sendJobCommand(jobId: JobName, jobCommandDto: JobCommandDto, options?: any): AxiosPromise<void> {
+        sendJobCommand(jobId: JobName, jobCommandDto: JobCommandDto, options?: any): AxiosPromise<JobStatusDto> {
             return localVarFp.sendJobCommand(jobId, jobCommandDto, options).then((request) => request(axios, basePath));
         },
     };

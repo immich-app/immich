@@ -8,14 +8,14 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**thumbnailGenerationQueue** | [**JobCountsDto**](JobCountsDto.md) |  | 
-**metadataExtractionQueue** | [**JobCountsDto**](JobCountsDto.md) |  | 
-**videoConversionQueue** | [**JobCountsDto**](JobCountsDto.md) |  | 
-**objectTaggingQueue** | [**JobCountsDto**](JobCountsDto.md) |  | 
-**clipEncodingQueue** | [**JobCountsDto**](JobCountsDto.md) |  | 
-**storageTemplateMigrationQueue** | [**JobCountsDto**](JobCountsDto.md) |  | 
-**backgroundTaskQueue** | [**JobCountsDto**](JobCountsDto.md) |  | 
-**searchQueue** | [**JobCountsDto**](JobCountsDto.md) |  | 
+**thumbnailGenerationQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**metadataExtractionQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**videoConversionQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**objectTaggingQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**clipEncodingQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**storageTemplateMigrationQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**backgroundTaskQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**searchQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

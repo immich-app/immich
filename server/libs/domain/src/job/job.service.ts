@@ -3,7 +3,7 @@ import { assertMachineLearningEnabled } from '../domain.constant';
 import { JobCommandDto } from './dto';
 import { JobCommand, JobName, QueueName } from './job.constants';
 import { IJobRepository } from './job.repository';
-import { AllJobStatusResponseDto } from './response-dto';
+import { AllJobStatusResponseDto, JobStatusDto } from './response-dto';
 
 @Injectable()
 export class JobService {
@@ -29,16 +29,25 @@ export class JobService {
     }
   }
 
+  async getJobStatus(queueName: QueueName): Promise<JobStatusDto> {
+    const [jobCounts, queueStatus] = await Promise.all([
+      this.jobRepository.getJobCounts(queueName),
+      this.jobRepository.getQueueStatus(queueName),
+    ]);
+
+    return { jobCounts, queueStatus };
+  }
+
   async getAllJobsStatus(): Promise<AllJobStatusResponseDto> {
     const response = new AllJobStatusResponseDto();
     for (const queueName of Object.values(QueueName)) {
-      response[queueName] = await this.jobRepository.getJobCounts(queueName);
+      response[queueName] = await this.getJobStatus(queueName);
     }
     return response;
   }
 
   private async start(name: QueueName, { force }: JobCommandDto): Promise<void> {
-    const isActive = await this.jobRepository.isActive(name);
+    const { isActive } = await this.jobRepository.getQueueStatus(name);
     if (isActive) {
       throw new BadRequestException(`Job is already running`);
     }

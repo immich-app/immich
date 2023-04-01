@@ -16,28 +16,41 @@ export class JobCountsDto {
   paused!: number;
 }
 
-export class AllJobStatusResponseDto implements Record<QueueName, JobCountsDto> {
-  @ApiProperty({ type: JobCountsDto })
-  [QueueName.THUMBNAIL_GENERATION]!: JobCountsDto;
+export class QueueStatusDto {
+  isActive!: boolean;
+  isPaused!: boolean;
+}
 
+export class JobStatusDto {
   @ApiProperty({ type: JobCountsDto })
-  [QueueName.METADATA_EXTRACTION]!: JobCountsDto;
+  jobCounts!: JobCountsDto;
 
-  @ApiProperty({ type: JobCountsDto })
-  [QueueName.VIDEO_CONVERSION]!: JobCountsDto;
+  @ApiProperty({ type: QueueStatusDto })
+  queueStatus!: QueueStatusDto;
+}
 
-  @ApiProperty({ type: JobCountsDto })
-  [QueueName.OBJECT_TAGGING]!: JobCountsDto;
+export class AllJobStatusResponseDto implements Record<QueueName, JobStatusDto> {
+  @ApiProperty({ type: JobStatusDto })
+  [QueueName.THUMBNAIL_GENERATION]!: JobStatusDto;
 
-  @ApiProperty({ type: JobCountsDto })
-  [QueueName.CLIP_ENCODING]!: JobCountsDto;
+  @ApiProperty({ type: JobStatusDto })
+  [QueueName.METADATA_EXTRACTION]!: JobStatusDto;
 
-  @ApiProperty({ type: JobCountsDto })
-  [QueueName.STORAGE_TEMPLATE_MIGRATION]!: JobCountsDto;
+  @ApiProperty({ type: JobStatusDto })
+  [QueueName.VIDEO_CONVERSION]!: JobStatusDto;
 
-  @ApiProperty({ type: JobCountsDto })
-  [QueueName.BACKGROUND_TASK]!: JobCountsDto;
+  @ApiProperty({ type: JobStatusDto })
+  [QueueName.OBJECT_TAGGING]!: JobStatusDto;
 
-  @ApiProperty({ type: JobCountsDto })
-  [QueueName.SEARCH]!: JobCountsDto;
+  @ApiProperty({ type: JobStatusDto })
+  [QueueName.CLIP_ENCODING]!: JobStatusDto;
+
+  @ApiProperty({ type: JobStatusDto })
+  [QueueName.STORAGE_TEMPLATE_MIGRATION]!: JobStatusDto;
+
+  @ApiProperty({ type: JobStatusDto })
+  [QueueName.BACKGROUND_TASK]!: JobStatusDto;
+
+  @ApiProperty({ type: JobStatusDto })
+  [QueueName.SEARCH]!: JobStatusDto;
 }

@@ -1,4 +1,8 @@
 <script lang="ts">
+	import {
+		notificationController,
+		NotificationType
+	} from '$lib/components/shared-components/notification/notification';
 	import { handleError } from '$lib/utils/handle-error';
 	import { AllJobStatusResponseDto, api, JobCommand, JobCommandDto, JobName } from '@api';
 	import type { ComponentType } from 'svelte';
@@ -49,21 +53,15 @@
 		const title = jobDetails[jobId]?.title;
 
 		try {
-			await api.jobApi.sendJobCommand(jobId, jobCommand);
+			const { data } = await api.jobApi.sendJobCommand(jobId, jobCommand);
+			jobs[jobId] = data;
 
-			// TODO: Return actual job status from server and use that.
 			switch (jobCommand.command) {
-				case JobCommand.Start:
-					jobs[jobId].active += 1;
-					break;
-				case JobCommand.Resume:
-					jobs[jobId].active += 1;
-					jobs[jobId].paused = 0;
-					break;
-				case JobCommand.Pause:
-					jobs[jobId].paused += 1;
-					jobs[jobId].active = 0;
-					jobs[jobId].waiting = 0;
+				case JobCommand.Empty:
+					notificationController.show({
+						message: `Cleared jobs for: ${title}`,
+						type: NotificationType.Info
+					});
 					break;
 			}
 		} catch (error) {
@@ -74,12 +72,14 @@
 
 <div class="flex flex-col gap-7">
 	{#each jobDetailsArray as [jobName, { title, subtitle, allowForceCommand, component }]}
+		{@const { jobCounts, queueStatus } = jobs[jobName]}
 		<JobTile
 			{title}
 			{subtitle}
 			{allowForceCommand}
+			{jobCounts}
+			{queueStatus}
 			on:command={({ detail }) => runJob(jobName, detail)}
-			jobCounts={jobs[jobName]}
 		>
 			<svelte:component this={component} />
 		</JobTile>
