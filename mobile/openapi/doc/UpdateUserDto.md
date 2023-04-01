@@ -8,11 +8,11 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **String** |  | 
 **email** | **String** |  | [optional] 
 **password** | **String** |  | [optional] 
 **firstName** | **String** |  | [optional] 
 **lastName** | **String** |  | [optional] 
+**id** | **String** |  | 
 **isAdmin** | **bool** |  | [optional] 
 **shouldChangePassword** | **bool** |  | [optional] 
 

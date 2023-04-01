@@ -91,14 +91,6 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
-    if (dto.isAdmin && !user.isAdmin) {
-      let users = await this.userCore.getList();
-      users = users.filter((user) => user.isAdmin);
-      if (users.length > 0) {
-        throw new BadRequestException('There is already an admin user');
-      }
-    }
-
     const updatedUser = await this.userCore.updateUser(authUser, dto.id, dto);
     return mapUser(updatedUser);
   }

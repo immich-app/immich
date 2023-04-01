@@ -2297,12 +2297,6 @@ export interface UpdateUserDto {
      * @type {string}
      * @memberof UpdateUserDto
      */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateUserDto
-     */
     'email'?: string;
     /**
      * 
@@ -2322,6 +2316,12 @@ export interface UpdateUserDto {
      * @memberof UpdateUserDto
      */
     'lastName'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateUserDto
+     */
+    'id': string;
     /**
      * 
      * @type {boolean}

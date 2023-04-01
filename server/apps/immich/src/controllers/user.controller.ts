@@ -32,7 +32,7 @@ import { UserCountDto } from '@app/domain';
 
 @ApiTags('User')
 @Controller('user')
-@UsePipes(new ValidationPipe({ transform: true }))
+@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class UserController {
   constructor(private service: UserService) {}
 

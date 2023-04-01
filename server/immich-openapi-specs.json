@@ -4812,20 +4812,25 @@
       "UpdateUserDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string"
-          },
           "email": {
-            "type": "string"
+            "type": "string",
+            "example": "testuser@email.com"
           },
           "password": {
-            "type": "string"
+            "type": "string",
+            "example": "password"
           },
           "firstName": {
-            "type": "string"
+            "type": "string",
+            "example": "John"
           },
           "lastName": {
-            "type": "string"
+            "type": "string",
+            "example": "Doe"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
           },
           "isAdmin": {
             "type": "boolean"
