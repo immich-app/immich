@@ -14,7 +14,7 @@ import { Authenticated } from '../decorators/authenticated.decorator';
 @ApiTags('Search')
 @Controller('search')
 @Authenticated()
-@UsePipes(new ValidationPipe({ transform: true }))
+@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class SearchController {
   constructor(private service: SearchService) {}
 

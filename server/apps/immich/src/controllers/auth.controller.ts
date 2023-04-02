@@ -21,7 +21,7 @@ import { Authenticated } from '../decorators/authenticated.decorator';
 
 @ApiTags('Authentication')
 @Controller('auth')
-@UsePipes(new ValidationPipe({ transform: true }))
+@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class AuthController {
   constructor(private readonly service: AuthService) {}
 

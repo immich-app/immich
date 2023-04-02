@@ -8,7 +8,7 @@ import { Authenticated } from '../decorators/authenticated.decorator';
 @ApiTags('Album')
 @Controller('album')
 @Authenticated()
-@UsePipes(new ValidationPipe({ transform: true }))
+@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class AlbumController {
   constructor(private service: AlbumService) {}
 

@@ -14,7 +14,7 @@ import { Authenticated } from '../decorators/authenticated.decorator';
 @ApiTags('API Key')
 @Controller('api-key')
 @Authenticated()
-@UsePipes(new ValidationPipe({ transform: true }))
+@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class APIKeyController {
   constructor(private service: APIKeyService) {}
 

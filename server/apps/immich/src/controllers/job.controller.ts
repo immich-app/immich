@@ -6,7 +6,7 @@ import { Authenticated } from '../decorators/authenticated.decorator';
 @ApiTags('Job')
 @Controller('jobs')
 @Authenticated({ admin: true })
-@UsePipes(new ValidationPipe({ transform: true }))
+@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class JobController {
   constructor(private service: JobService) {}
 

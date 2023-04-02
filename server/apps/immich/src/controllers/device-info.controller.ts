@@ -12,7 +12,7 @@ import { Authenticated } from '../decorators/authenticated.decorator';
 @ApiTags('Device Info')
 @Controller('device-info')
 @Authenticated()
-@UsePipes(new ValidationPipe({ transform: true }))
+@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class DeviceInfoController {
   constructor(private readonly service: DeviceInfoService) {}
 

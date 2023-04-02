@@ -11,7 +11,7 @@ import { Authenticated } from '../decorators/authenticated.decorator';
 
 @ApiTags('Server Info')
 @Controller('server-info')
-@UsePipes(new ValidationPipe({ transform: true }))
+@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class ServerInfoController {
   constructor(private service: ServerInfoService) {}
 
