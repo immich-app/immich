@@ -61,6 +61,11 @@ void main() {
       // TODO
     });
 
+    // String timeZone
+    test('to test the property `timeZone`', () async {
+      // TODO
+    });
+
     // String lensModel
     test('to test the property `lensModel`', () async {
       // TODO

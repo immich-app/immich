@@ -17,6 +17,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Job } from 'bull';
 import { ExifDateTime, exiftool, Tags } from 'exiftool-vendored';
+import tz_lookup from '@photostructure/tz-lookup';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { getName } from 'i18n-iso-countries';
 import geocoder, { InitOptions } from 'local-reverse-geocoder';
@@ -190,6 +191,17 @@ export class MetadataExtractionProcessor {
         return exifDate.toDate();
       };
 
+      const exifTimeZone = (exifDate: string | ExifDateTime | undefined) => {
+        if (!exifDate) return null;
+
+        if (typeof exifDate === 'string') {
+          return null;
+        }
+
+        return exifDate.zone ?? null;
+      };
+
+      const timeZone = exifTimeZone(exifData?.DateTimeOriginal ?? exifData?.CreateDate ?? asset.fileCreatedAt);
       const fileCreatedAt = exifToDate(exifData?.DateTimeOriginal ?? exifData?.CreateDate ?? asset.fileCreatedAt);
       const fileModifiedAt = exifToDate(exifData?.ModifyDate ?? asset.fileModifiedAt);
       const fileStats = fs.statSync(asset.originalPath);
@@ -207,6 +219,7 @@ export class MetadataExtractionProcessor {
       newExif.orientation = exifData?.Orientation?.toString() || null;
       newExif.dateTimeOriginal = fileCreatedAt;
       newExif.modifyDate = fileModifiedAt;
+      newExif.timeZone = timeZone;
       newExif.lensModel = exifData?.LensModel || null;
       newExif.fNumber = exifData?.FNumber || null;
       newExif.focalLength = exifData?.FocalLength ? parseFloat(exifData.FocalLength) : null;
@@ -308,6 +321,7 @@ export class MetadataExtractionProcessor {
       newExif.fileSizeInByte = data.format.size || null;
       newExif.dateTimeOriginal = fileCreatedAt ? new Date(fileCreatedAt) : null;
       newExif.modifyDate = null;
+      newExif.timeZone = null;
       newExif.latitude = null;
       newExif.longitude = null;
       newExif.city = null;
@@ -342,6 +356,14 @@ export class MetadataExtractionProcessor {
         if (match?.length === 4) {
           newExif.latitude = parseFloat(match[1]);
           newExif.longitude = parseFloat(match[2]);
+        }
+      }
+
+      if (newExif.longitude && newExif.latitude) {
+        try {
+          newExif.timeZone = tz_lookup(newExif.latitude, newExif.longitude);
+        } catch (error: any) {
+          this.logger.warn(`Error while calculating timezone from gps coordinates: ${error}`, error?.stack);
         }
       }
 

@@ -13,6 +13,7 @@ export class ExifResponseDto {
   orientation?: string | null = null;
   dateTimeOriginal?: Date | null = null;
   modifyDate?: Date | null = null;
+  timeZone?: string | null = null;
   lensModel?: string | null = null;
   fNumber?: number | null = null;
   focalLength?: number | null = null;
@@ -36,6 +37,7 @@ export function mapExif(entity: ExifEntity): ExifResponseDto {
     orientation: entity.orientation,
     dateTimeOriginal: entity.dateTimeOriginal,
     modifyDate: entity.modifyDate,
+    timeZone: entity.timeZone,
     lensModel: entity.lensModel,
     fNumber: entity.fNumber,
     focalLength: entity.focalLength,

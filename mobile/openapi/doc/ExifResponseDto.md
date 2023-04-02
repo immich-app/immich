@@ -17,6 +17,7 @@ Name | Type | Description | Notes
 **orientation** | **String** |  | [optional] 
 **dateTimeOriginal** | [**DateTime**](DateTime.md) |  | [optional] 
 **modifyDate** | [**DateTime**](DateTime.md) |  | [optional] 
+**timeZone** | **String** |  | [optional] 
 **lensModel** | **String** |  | [optional] 
 **fNumber** | **num** |  | [optional] 
 **focalLength** | **num** |  | [optional] 

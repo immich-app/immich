@@ -3537,6 +3537,11 @@
             "nullable": true,
             "default": null
           },
+          "timeZone": {
+            "type": "string",
+            "nullable": true,
+            "default": null
+          },
           "lensModel": {
             "type": "string",
             "nullable": true,
