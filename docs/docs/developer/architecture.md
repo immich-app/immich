@@ -20,7 +20,7 @@ Immich is a full-stack [TypeScript](https://www.typescriptlang.org/) application
 ### Web
 
 - [SvelteKit](https://kit.svelte.dev/)
-- [tailwindcss](https://tailwindcss.com/)
+- [Tailwindcss](https://tailwindcss.com/)
 
 ### Server
 
@@ -34,6 +34,8 @@ Immich is a full-stack [TypeScript](https://www.typescriptlang.org/) application
 
 - [PostgreSQL](https://www.postgresql.org/)
 - [Redis](https://redis.io/) for job queuing.
+- [Typesense](https://typesense.org/) for search.
+
 
 ### Web Server
 
