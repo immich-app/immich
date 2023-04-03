@@ -17,7 +17,7 @@ export enum SystemConfigKey {
   FFMPEG_PRESET = 'ffmpeg.preset',
   FFMPEG_TARGET_VIDEO_CODEC = 'ffmpeg.targetVideoCodec',
   FFMPEG_TARGET_AUDIO_CODEC = 'ffmpeg.targetAudioCodec',
-  FFMPEG_TARGET_SCALING = 'ffmpeg.targetScaling',
+  FFMPEG_TARGET_RESOLUTION = 'ffmpeg.targetResolution',
   FFMPEG_TRANSCODE = 'ffmpeg.transcode',
   OAUTH_ENABLED = 'oauth.enabled',
   OAUTH_ISSUER_URL = 'oauth.issuerUrl',
@@ -45,7 +45,7 @@ export interface SystemConfig {
     preset: string;
     targetVideoCodec: string;
     targetAudioCodec: string;
-    targetScaling: string;
+    targetResolution: string;
     transcode: TranscodePreset;
   };
   oauth: {

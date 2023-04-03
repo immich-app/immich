@@ -2034,7 +2034,7 @@ export interface SystemConfigFFmpegDto {
      * @type {string}
      * @memberof SystemConfigFFmpegDto
      */
-    'targetScaling': string;
+    'targetResolution': string;
     /**
      * 
      * @type {string}

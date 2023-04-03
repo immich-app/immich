@@ -16,7 +16,7 @@ const updatedConfig = Object.freeze({
     crf: 'a new value',
     preset: 'ultrafast',
     targetAudioCodec: 'aac',
-    targetScaling: '1280:-2',
+    targetResolution: '720',
     targetVideoCodec: 'h264',
     transcode: TranscodePreset.REQUIRED,
   },
