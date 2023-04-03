@@ -39,15 +39,18 @@ export const bullQueues: BullModuleOptions[] = Object.values(QueueName).map((nam
 
 function parseTypeSenseConfig(): ConfigurationOptions {
   const typesenseURL = process.env.TYPESENSE_URL;
+  const common = {
+    apiKey: process.env.TYPESENSE_API_KEY as string,
+    numRetries: 15,
+    retryIntervalSeconds: 4,
+    connectionTimeoutSeconds: 10,
+  };
   if (typesenseURL && typesenseURL.startsWith('ha://')) {
     try {
       const decodedString = Buffer.from(typesenseURL.slice(5), 'base64').toString();
       return {
-        nodes: JSON.parse(decodedString).nodes,
-        apiKey: process.env.TYPESENSE_API_KEY as string,
-        numRetries: 15,
-        retryIntervalSeconds: 4,
-        connectionTimeoutSeconds: 10,
+        nodes: JSON.parse(decodedString),
+        ...common,
       };
     } catch (error) {
       throw new Error(`Failed to decode typesense options: ${error}`);
@@ -61,10 +64,7 @@ function parseTypeSenseConfig(): ConfigurationOptions {
         protocol: process.env.TYPESENSE_PROTOCOL || 'http',
       },
     ],
-    apiKey: process.env.TYPESENSE_API_KEY as string,
-    numRetries: 15,
-    retryIntervalSeconds: 4,
-    connectionTimeoutSeconds: 10,
+    ...common,
   };
 }
 
