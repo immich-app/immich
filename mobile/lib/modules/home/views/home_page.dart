@@ -244,6 +244,7 @@ class HomePage extends HookConsumerWidget {
 
       return SafeArea(
         top: true,
+        bottom: false,
         child: Stack(
           children: [
             ref.watch(assetProvider).renderList == null ||
@@ -261,17 +262,14 @@ class HomePage extends HookConsumerWidget {
                     onRefresh: refreshAssets,
                   ),
             if (selectionEnabledHook.value)
-              SafeArea(
-                bottom: true,
-                child: ControlBottomAppBar(
-                  onShare: onShareAssets,
-                  onFavorite: onFavoriteAssets,
-                  onDelete: onDelete,
-                  onAddToAlbum: onAddToAlbum,
-                  albums: albums,
-                  sharedAlbums: sharedAlbums,
-                  onCreateNewAlbum: onCreateNewAlbum,
-                ),
+              ControlBottomAppBar(
+                onShare: onShareAssets,
+                onFavorite: onFavoriteAssets,
+                onDelete: onDelete,
+                onAddToAlbum: onAddToAlbum,
+                albums: albums,
+                sharedAlbums: sharedAlbums,
+                onCreateNewAlbum: onCreateNewAlbum,
               ),
           ],
         ),
@@ -279,9 +277,11 @@ class HomePage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: HomePageAppBar(
-        onPopBack: reloadAllAsset,
-      ),
+      appBar: !selectionEnabledHook.value
+          ? HomePageAppBar(
+              onPopBack: reloadAllAsset,
+            )
+          : null,
       drawer: const ProfileDrawer(),
       body: buildBody(),
     );

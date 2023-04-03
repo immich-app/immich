@@ -60,7 +60,7 @@ class AppLogDetailPage extends HookConsumerWidget {
                 child: SelectableText(
                   stackTrace,
                   style: const TextStyle(
-                    fontSize: 10.0,
+                    fontSize: 12.0,
                     fontWeight: FontWeight.bold,
                     fontFamily: "Inconsolata",
                   ),
@@ -119,7 +119,7 @@ class AppLogDetailPage extends HookConsumerWidget {
                 child: SelectableText(
                   message,
                   style: const TextStyle(
-                    fontSize: 10.0,
+                    fontSize: 12.0,
                     fontWeight: FontWeight.bold,
                     fontFamily: "Inconsolata",
                   ),
@@ -158,7 +158,7 @@ class AppLogDetailPage extends HookConsumerWidget {
                 child: SelectableText(
                   context1.toString(),
                   style: const TextStyle(
-                    fontSize: 10.0,
+                    fontSize: 12.0,
                     fontWeight: FontWeight.bold,
                     fontFamily: "Inconsolata",
                   ),
