@@ -17,7 +17,6 @@ import 'package:share_plus/share_plus.dart';
 /// Logs can be shared by calling the `shareLogs` method, which will open a share dialog
 /// and generate a csv file.
 class ImmichLogger {
-  final _logger = Logger('ImmichLogger');
   static final ImmichLogger _instance = ImmichLogger._internal();
   final maxLogEntries = 200;
   final Isar _db = Isar.getInstance()!;
