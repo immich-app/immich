@@ -34,8 +34,10 @@ import 'package:immich_mobile/routing/duplicate_guard.dart';
 import 'package:immich_mobile/routing/gallery_permission_guard.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/shared/models/logger_message.model.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:immich_mobile/shared/views/app_log_detail_page.dart';
 import 'package:immich_mobile/shared/views/app_log_page.dart';
 import 'package:immich_mobile/shared/views/splash_screen.dart';
 import 'package:immich_mobile/shared/views/tab_controller_page.dart';
@@ -47,8 +49,12 @@ part 'router.gr.dart';
   replaceInRouteName: 'Page,Route',
   routes: <AutoRoute>[
     AutoRoute(page: SplashScreenPage, initial: true),
-    AutoRoute(page: PermissionOnboardingPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: LoginPage,
+    AutoRoute(
+      page: PermissionOnboardingPage,
+      guards: [AuthGuard, DuplicateGuard],
+    ),
+    AutoRoute(
+      page: LoginPage,
       guards: [
         DuplicateGuard,
       ],
@@ -65,7 +71,10 @@ part 'router.gr.dart';
       ],
       transitionsBuilder: TransitionsBuilders.fadeIn,
     ),
-    AutoRoute(page: GalleryViewerPage, guards: [AuthGuard, DuplicateGuard, GalleryPermissionGuard]),
+    AutoRoute(
+      page: GalleryViewerPage,
+      guards: [AuthGuard, DuplicateGuard, GalleryPermissionGuard],
+    ),
     AutoRoute(page: VideoViewerPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: BackupControllerPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: SearchResultPage, guards: [AuthGuard, DuplicateGuard]),
@@ -75,7 +84,10 @@ part 'router.gr.dart';
     AutoRoute(page: FavoritesPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: AllVideosPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: AllMotionPhotosPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: RecentlyAddedPage, guards: [AuthGuard, DuplicateGuard],),
+    AutoRoute(
+      page: RecentlyAddedPage,
+      guards: [AuthGuard, DuplicateGuard],
+    ),
     CustomRoute<AssetSelectionPageResult?>(
       page: AssetSelectionPage,
       guards: [AuthGuard, DuplicateGuard],
@@ -92,14 +104,18 @@ part 'router.gr.dart';
       guards: [AuthGuard, DuplicateGuard],
       transitionsBuilder: TransitionsBuilders.slideBottom,
     ),
-    AutoRoute(page: BackupAlbumSelectionPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(
+      page: BackupAlbumSelectionPage,
+      guards: [AuthGuard, DuplicateGuard],
+    ),
     AutoRoute(page: AlbumPreviewPage, guards: [AuthGuard, DuplicateGuard]),
     CustomRoute(
       page: FailedBackupStatusPage,
       guards: [AuthGuard, DuplicateGuard],
       transitionsBuilder: TransitionsBuilders.slideBottom,
     ),
-    AutoRoute(page: SettingsPage, 
+    AutoRoute(
+      page: SettingsPage,
       guards: [
         AuthGuard,
         DuplicateGuard,
@@ -109,6 +125,9 @@ part 'router.gr.dart';
       page: AppLogPage,
       transitionsBuilder: TransitionsBuilders.slideBottom,
     ),
+    AutoRoute(
+      page: AppLogDetailPage,
+    ),
   ],
 )
 class AppRouter extends _$AppRouter {
@@ -116,14 +135,19 @@ class AppRouter extends _$AppRouter {
   final ApiService _apiService;
 
   AppRouter(
-    this._apiService, 
+    this._apiService,
     GalleryPermissionNotifier galleryPermissionNotifier,
-    ) : super(
-          authGuard: AuthGuard(_apiService), 
+  ) : super(
+          authGuard: AuthGuard(_apiService),
           duplicateGuard: DuplicateGuard(),
-          galleryPermissionGuard: GalleryPermissionGuard(galleryPermissionNotifier),
+          galleryPermissionGuard:
+              GalleryPermissionGuard(galleryPermissionNotifier),
         );
 }
 
-final appRouterProvider =
-    Provider((ref) => AppRouter(ref.watch(apiServiceProvider), ref.watch(galleryPermissionNotifier.notifier)));
+final appRouterProvider = Provider(
+  (ref) => AppRouter(
+    ref.watch(apiServiceProvider),
+    ref.watch(galleryPermissionNotifier.notifier),
+  ),
+);
