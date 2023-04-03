@@ -27,6 +27,7 @@ import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/services/share.service.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/shared/ui/share_dialog.dart';
 
 class HomePage extends HookConsumerWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -81,7 +82,19 @@ class HomePage extends HookConsumerWidget {
       }
 
       void onShareAssets() {
-        ref.watch(shareServiceProvider).shareAssets(selection.value.toList());
+        showDialog(
+          context: context,
+          builder: (BuildContext buildContext) {
+            ref
+                .watch(shareServiceProvider)
+                .shareAssets(selection.value.toList())
+                .then((_) => Navigator.of(buildContext).pop());
+            return const ShareDialog();
+          },
+          barrierDismissible: false,
+        );
+
+        // ref.watch(shareServiceProvider).shareAssets(selection.value.toList());
         selectionEnabledHook.value = false;
       }
 
