@@ -9,8 +9,6 @@ services:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
     env_file:
       - .env
-    environment:
-      - NODE_ENV=production
     depends_on:
       - redis
       - database
@@ -25,8 +23,6 @@ services:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
     env_file:
       - .env
-    environment:
-      - NODE_ENV=production
     depends_on:
       - redis
       - database
@@ -41,8 +37,6 @@ services:
       - model-cache:/cache
     env_file:
       - .env
-    environment:
-      - NODE_ENV=production
     restart: always
 
   immich-web:
