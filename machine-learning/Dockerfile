@@ -11,6 +11,8 @@ RUN /opt/venv/bin/pip install --no-deps sentence-transformers
 
 FROM python:3.10-slim
 
+ENV NODE_ENV=production
+
 COPY --from=builder /opt/venv /opt/venv
 
 ENV TRANSFORMERS_CACHE=/cache \

@@ -1,4 +1,4 @@
-FROM node:16-alpine3.14 as builder
+FROM node:16-alpine3.17 as builder
 
 WORKDIR /usr/src/app
 
@@ -17,7 +17,9 @@ RUN npm run build
 RUN npm prune --omit=dev --omit=optional
 
 
-FROM node:16-alpine3.14
+FROM node:16-alpine3.17
+
+ENV NODE_ENV=production
 
 WORKDIR /usr/src/app
 
