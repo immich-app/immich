@@ -16,7 +16,7 @@ import { AssetEntity, AssetType, TranscodePreset } from '@app/infra/entities';
 import { Process, Processor } from '@nestjs/bull';
 import { Inject, Logger } from '@nestjs/common';
 import { Job } from 'bull';
-import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
+import ffmpeg, { FfprobeData, FfprobeStream } from 'fluent-ffmpeg';
 import { join } from 'path';
 
 @Processor(QueueName.VIDEO_CONVERSION)
@@ -74,22 +74,22 @@ export class VideoTranscodeProcessor {
 
   async runVideoEncode(asset: AssetEntity, savedEncodedPath: string): Promise<void> {
     const config = await this.systemConfigService.getConfig();
+    const videoStream = await this.getVideoStream(asset);
 
-    const transcode = await this.needsTranscoding(asset, config.ffmpeg);
+    const transcode = await this.needsTranscoding(videoStream, config.ffmpeg);
     if (transcode) {
       //TODO: If video or audio are already the correct format, don't re-encode, copy the stream
-      return this.runFFMPEGPipeLine(asset, savedEncodedPath);
+      return this.runFFMPEGPipeLine(asset, videoStream, savedEncodedPath);
     }
   }
 
-  async needsTranscoding(asset: AssetEntity, ffmpegConfig: SystemConfigFFmpegDto): Promise<boolean> {
+  async needsTranscoding(videoStream: FfprobeStream, ffmpegConfig: SystemConfigFFmpegDto): Promise<boolean> {
     switch (ffmpegConfig.transcode) {
       case TranscodePreset.ALL:
         return true;
 
       case TranscodePreset.REQUIRED:
         {
-          const videoStream = await this.getVideoStream(asset);
           if (videoStream.codec_name !== ffmpegConfig.targetVideoCodec) {
             return true;
           }
@@ -97,12 +97,13 @@ export class VideoTranscodeProcessor {
         break;
 
       case TranscodePreset.OPTIMAL: {
-        const videoStream = await this.getVideoStream(asset);
         if (videoStream.codec_name !== ffmpegConfig.targetVideoCodec) {
           return true;
         }
 
-        const videoHeightThreshold = 1080;
+        const config = await this.systemConfigService.getConfig();
+
+        const videoHeightThreshold = Number.parseInt(config.ffmpeg.targetResolution);
         return !videoStream.height || videoStream.height > videoHeightThreshold;
       }
     }
@@ -125,22 +126,45 @@ export class VideoTranscodeProcessor {
     return longestVideoStream;
   }
 
-  async runFFMPEGPipeLine(asset: AssetEntity, savedEncodedPath: string): Promise<void> {
+  async runFFMPEGPipeLine(asset: AssetEntity, videoStream: FfprobeStream, savedEncodedPath: string): Promise<void> {
     const config = await this.systemConfigService.getConfig();
+
+    const ffmpegOptions = [
+      `-crf ${config.ffmpeg.crf}`,
+      `-preset ${config.ffmpeg.preset}`,
+      `-vcodec ${config.ffmpeg.targetVideoCodec}`,
+      `-acodec ${config.ffmpeg.targetAudioCodec}`,
+      // Makes a second pass moving the moov atom to the beginning of
+      // the file for improved playback speed.
+      `-movflags faststart`,
+    ];
+
+    if (!videoStream.height || !videoStream.width) {
+      this.logger.error('Height or width undefined for video stream');
+      return;
+    }
+
+    const streamHeight = videoStream.height;
+    const streamWidth = videoStream.width;
+
+    const targetResolution = Number.parseInt(config.ffmpeg.targetResolution);
+
+    let scaling = `-2:${targetResolution}`;
+    const shouldScale = Math.min(streamHeight, streamWidth) > targetResolution;
+
+    const videoIsRotated = Math.abs(Number.parseInt(`${videoStream.rotation ?? 0}`)) === 90;
+
+    if (streamHeight > streamWidth || videoIsRotated) {
+      scaling = `${targetResolution}:-2`;
+    }
+
+    if (shouldScale) {
+      ffmpegOptions.push(`-vf scale=${scaling}`);
+    }
 
     return new Promise((resolve, reject) => {
       ffmpeg(asset.originalPath)
-        .outputOptions([
-          `-crf ${config.ffmpeg.crf}`,
-          `-preset ${config.ffmpeg.preset}`,
-          `-vcodec ${config.ffmpeg.targetVideoCodec}`,
-          `-acodec ${config.ffmpeg.targetAudioCodec}`,
-          `-vf scale=${config.ffmpeg.targetScaling}`,
-
-          // Makes a second pass moving the moov atom to the beginning of
-          // the file for improved playback speed.
-          `-movflags faststart`,
-        ])
+        .outputOptions(ffmpegOptions)
         .output(savedEncodedPath)
         .on('start', () => {
           this.logger.log('Start Converting Video');

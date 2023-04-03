@@ -135,7 +135,7 @@
 							{ value: SystemConfigFFmpegDtoTranscodeEnum.All, text: 'All videos' },
 							{
 								value: SystemConfigFFmpegDtoTranscodeEnum.Optimal,
-								text: 'Videos higher than 1080p or not in the desired format'
+								text: 'Videos higher than target resolution or not in the desired format'
 							},
 							{
 								value: SystemConfigFFmpegDtoTranscodeEnum.Required,
