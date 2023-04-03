@@ -4,15 +4,16 @@ import {
   DeviceInfoService,
   UpsertDeviceInfoDto as UpsertDto,
 } from '@app/domain';
-import { Body, Controller, Put, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
+import { UseValidation } from '../decorators/use-validation.decorator';
 
 @ApiTags('Device Info')
 @Controller('device-info')
 @Authenticated()
-@UsePipes(new ValidationPipe({ transform: true }))
+@UseValidation()
 export class DeviceInfoController {
   constructor(private readonly service: DeviceInfoService) {}
 

@@ -13,15 +13,16 @@ import {
   UserResponseDto,
   ValidateAccessTokenResponseDto,
 } from '@app/domain';
-import { Body, Controller, Ip, Post, Req, Res, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Ip, Post, Req, Res } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
+import { UseValidation } from '../decorators/use-validation.decorator';
 
 @ApiTags('Authentication')
 @Controller('auth')
-@UsePipes(new ValidationPipe({ transform: true }))
+@UseValidation()
 export class AuthController {
   constructor(private readonly service: AuthService) {}
 

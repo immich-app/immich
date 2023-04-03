@@ -1,12 +1,13 @@
 import { SystemConfigDto, SystemConfigService, SystemConfigTemplateStorageOptionDto } from '@app/domain';
-import { Body, Controller, Get, Put, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Authenticated } from '../decorators/authenticated.decorator';
+import { UseValidation } from '../decorators/use-validation.decorator';
 
 @ApiTags('System Config')
 @Controller('system-config')
 @Authenticated({ admin: true })
-@UsePipes(new ValidationPipe({ transform: true }))
+@UseValidation()
 export class SystemConfigController {
   constructor(private readonly service: SystemConfigService) {}
 

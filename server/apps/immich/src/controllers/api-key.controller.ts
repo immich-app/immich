@@ -6,15 +6,16 @@ import {
   APIKeyUpdateDto,
   AuthUserDto,
 } from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
+import { UseValidation } from '../decorators/use-validation.decorator';
 
 @ApiTags('API Key')
 @Controller('api-key')
 @Authenticated()
-@UsePipes(new ValidationPipe({ transform: true }))
+@UseValidation()
 export class APIKeyController {
   constructor(private service: APIKeyService) {}
 

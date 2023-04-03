@@ -1,12 +1,13 @@
 import { AuthUserDto, EditSharedLinkDto, SharedLinkResponseDto, ShareService } from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Patch, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
+import { UseValidation } from '../decorators/use-validation.decorator';
 
 @ApiTags('share')
 @Controller('share')
-@UsePipes(new ValidationPipe({ transform: true }))
+@UseValidation()
 export class ShareController {
   constructor(private readonly service: ShareService) {}
 

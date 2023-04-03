@@ -1,12 +1,13 @@
 import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto, JobIdDto, JobService } from '@app/domain';
-import { Body, Controller, Get, Param, Put, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Authenticated } from '../decorators/authenticated.decorator';
+import { UseValidation } from '../decorators/use-validation.decorator';
 
 @ApiTags('Job')
 @Controller('jobs')
 @Authenticated({ admin: true })
-@UsePipes(new ValidationPipe({ transform: true }))
+@UseValidation()
 export class JobController {
   constructor(private service: JobService) {}
 

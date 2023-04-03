@@ -7,15 +7,16 @@ import {
   OAuthService,
   UserResponseDto,
 } from '@app/domain';
-import { Body, Controller, Get, HttpStatus, Post, Redirect, Req, Res, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
+import { UseValidation } from '../decorators/use-validation.decorator';
 
 @ApiTags('OAuth')
 @Controller('oauth')
-@UsePipes(new ValidationPipe({ transform: true }))
+@UseValidation()
 export class OAuthController {
   constructor(private service: OAuthService) {}
 

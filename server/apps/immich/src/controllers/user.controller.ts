@@ -5,7 +5,6 @@ import {
   Delete,
   Body,
   Param,
-  ValidationPipe,
   Put,
   Query,
   UseInterceptors,
@@ -13,7 +12,6 @@ import {
   Response,
   StreamableFile,
   Header,
-  UsePipes,
 } from '@nestjs/common';
 import { UserService } from '@app/domain';
 import { Authenticated } from '../decorators/authenticated.decorator';
@@ -29,10 +27,11 @@ import { UserCountResponseDto } from '@app/domain';
 import { CreateProfileImageDto } from '@app/domain';
 import { CreateProfileImageResponseDto } from '@app/domain';
 import { UserCountDto } from '@app/domain';
+import { UseValidation } from '../decorators/use-validation.decorator';
 
 @ApiTags('User')
 @Controller('user')
-@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+@UseValidation()
 export class UserController {
   constructor(private service: UserService) {}
 
