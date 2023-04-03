@@ -369,7 +369,6 @@ class SyncService {
     List<AssetPathEntity> onDevice, [
     Set<String>? excludedAssets,
   ]) async {
-    _log.info("Syncing ${onDevice.length} albums from device: $onDevice");
     onDevice.sort((a, b) => a.id.compareTo(b.id));
     final List<Album> inDb =
         await _db.albums.where().localIdIsNotNull().sortByLocalId().findAll();
