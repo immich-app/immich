@@ -1,7 +1,10 @@
-import { IMediaRepository, ResizeOptions } from '@app/domain';
+import { IMediaRepository, ResizeOptions, VideoInfo } from '@app/domain';
 import { exiftool } from 'exiftool-vendored';
-import ffmpeg from 'fluent-ffmpeg';
+import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import sharp from 'sharp';
+import { promisify } from 'util';
+
+const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 
 export class MediaRepository implements IMediaRepository {
   extractThumbnailFromExif(input: string, output: string): Promise<void> {
@@ -36,6 +39,33 @@ export class MediaRepository implements IMediaRepository {
           '-frames:v 1',
           `-vf scale='min(${size},iw)':'min(${size},ih)':force_original_aspect_ratio=increase`,
         ])
+        .output(output)
+        .on('error', reject)
+        .on('end', resolve)
+        .run();
+    });
+  }
+
+  async probe(input: string): Promise<VideoInfo> {
+    const results = await probe(input);
+
+    return {
+      streams: results.streams.map((stream) => ({
+        height: stream.height || 0,
+        width: stream.width || 0,
+        codecName: stream.codec_name,
+        codecType: stream.codec_type,
+        frameCount: Number.parseInt(stream.nb_frames ?? '0'),
+        rotation: Number.parseInt(`${stream.rotation ?? 0}`),
+      })),
+    };
+  }
+
+  transcode(input: string, output: string, options: string[]): Promise<void> {
+    return new Promise((resolve, reject) => {
+      ffmpeg(input)
+        //
+        .outputOptions(options)
         .output(output)
         .on('error', reject)
         .on('end', resolve)

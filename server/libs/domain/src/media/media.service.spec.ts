@@ -1,3 +1,4 @@
+import { AssetType, SystemConfigKey } from '@app/infra/entities';
 import _ from 'lodash';
 import {
   assetEntityStub,
@@ -6,17 +7,21 @@ import {
   newJobRepositoryMock,
   newMediaRepositoryMock,
   newStorageRepositoryMock,
+  newSystemConfigRepositoryMock,
+  probeStub,
 } from '../../test';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { ICommunicationRepository } from '../communication';
 import { IJobRepository, JobName } from '../job';
 import { IStorageRepository } from '../storage';
+import { ISystemConfigRepository } from '../system-config';
 import { IMediaRepository } from './media.repository';
 import { MediaService } from './media.service';
 
 describe(MediaService.name, () => {
   let sut: MediaService;
   let assetMock: jest.Mocked<IAssetRepository>;
+  let configMock: jest.Mocked<ISystemConfigRepository>;
   let communicationMock: jest.Mocked<ICommunicationRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let mediaMock: jest.Mocked<IMediaRepository>;
@@ -24,11 +29,12 @@ describe(MediaService.name, () => {
 
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
+    configMock = newSystemConfigRepositoryMock();
     communicationMock = newCommunicationRepositoryMock();
     jobMock = newJobRepositoryMock();
     mediaMock = newMediaRepositoryMock();
     storageMock = newStorageRepositoryMock();
-    sut = new MediaService(assetMock, communicationMock, jobMock, mediaMock, storageMock);
+    sut = new MediaService(assetMock, communicationMock, jobMock, mediaMock, storageMock, configMock);
   });
 
   it('should be defined', () => {
@@ -167,6 +173,108 @@ describe(MediaService.name, () => {
       await sut.handleGenerateWepbThumbnail({ asset: assetEntityStub.image });
 
       expect(mediaMock.resize).toHaveBeenCalled();
+    });
+  });
+
+  describe('handleQueueVideoConversion', () => {
+    it('should queue all video assets', async () => {
+      assetMock.getAll.mockResolvedValue([assetEntityStub.video]);
+
+      await sut.handleQueueVideoConversion({ force: true });
+
+      expect(assetMock.getAll).toHaveBeenCalledWith({ type: AssetType.VIDEO });
+      expect(assetMock.getWithout).not.toHaveBeenCalled();
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.VIDEO_CONVERSION,
+        data: { asset: assetEntityStub.video },
+      });
+    });
+
+    it('should queue all video assets without encoded videos', async () => {
+      assetMock.getWithout.mockResolvedValue([assetEntityStub.video]);
+
+      await sut.handleQueueVideoConversion({});
+
+      expect(assetMock.getAll).not.toHaveBeenCalled();
+      expect(assetMock.getWithout).toHaveBeenCalledWith(WithoutProperty.ENCODED_VIDEO);
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.VIDEO_CONVERSION,
+        data: { asset: assetEntityStub.video },
+      });
+    });
+
+    it('should log an error', async () => {
+      assetMock.getAll.mockRejectedValue(new Error('database unavailable'));
+
+      await sut.handleQueueVideoConversion({ force: true });
+
+      expect(assetMock.getAll).toHaveBeenCalled();
+    });
+  });
+
+  describe('handleVideoConversion', () => {
+    it('should log an error', async () => {
+      mediaMock.transcode.mockRejectedValue(new Error('unable to transcode'));
+
+      await sut.handleVideoConversion({ asset: assetEntityStub.video });
+
+      expect(storageMock.mkdirSync).toHaveBeenCalled();
+    });
+
+    it('should transcode the longest stream', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.multiple);
+
+      await sut.handleVideoConversion({ asset: assetEntityStub.video });
+
+      expect(mediaMock.probe).toHaveBeenCalledWith('/original/path.ext');
+      expect(configMock.load).toHaveBeenCalled();
+      expect(storageMock.mkdirSync).toHaveBeenCalled();
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        ['-crf 23', '-preset ultrafast', '-vcodec h264', '-acodec aac', '-movflags faststart'],
+      );
+    });
+
+    it('should skip a video without any streams', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.empty);
+      await sut.handleVideoConversion({ asset: assetEntityStub.video });
+      expect(mediaMock.transcode).not.toHaveBeenCalled();
+    });
+
+    it('should skip a video without any height', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.noHeight);
+      await sut.handleVideoConversion({ asset: assetEntityStub.video });
+      expect(mediaMock.transcode).not.toHaveBeenCalled();
+    });
+
+    it('should transcode when set to all', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.multiple);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: 'all' }]);
+      await sut.handleVideoConversion({ asset: assetEntityStub.video });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        ['-crf 23', '-preset ultrafast', '-vcodec h264', '-acodec aac', '-movflags faststart'],
+      );
+    });
+
+    it('should transcode when optimal and too big', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.tooBig);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: 'optimal' }]);
+      await sut.handleVideoConversion({ asset: assetEntityStub.video });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        ['-crf 23', '-preset ultrafast', '-vcodec h264', '-acodec aac', '-movflags faststart', '-vf scale=-2:720'],
+      );
+    });
+
+    it('should not transcode an invalid transcode value', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.tooBig);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: 'invalid' }]);
+      await sut.handleVideoConversion({ asset: assetEntityStub.video });
+      expect(mediaMock.transcode).not.toHaveBeenCalled();
     });
   });
 });

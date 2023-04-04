@@ -153,3 +153,18 @@ export class ThumbnailGeneratorProcessor {
     await this.mediaService.handleGenerateWepbThumbnail(job.data);
   }
 }
+
+@Processor(QueueName.VIDEO_CONVERSION)
+export class VideoTranscodeProcessor {
+  constructor(private mediaService: MediaService) {}
+
+  @Process({ name: JobName.QUEUE_VIDEO_CONVERSION, concurrency: 1 })
+  async onQueueVideoConversion(job: Job<IBaseJob>): Promise<void> {
+    await this.mediaService.handleQueueVideoConversion(job.data);
+  }
+
+  @Process({ name: JobName.VIDEO_CONVERSION, concurrency: 2 })
+  async onVideoConversion(job: Job<IAssetJob>) {
+    await this.mediaService.handleVideoConversion(job.data);
+  }
+}
