@@ -140,7 +140,7 @@ export class MediaService {
         return;
       }
 
-      const options = this.getOptions(stream, config);
+      const options = this.getFfmpegOptions(stream, config);
       await this.mediaRepository.transcode(input, output, options);
 
       this.logger.log(`Converting Success ${asset.id}`);
@@ -182,7 +182,7 @@ export class MediaService {
     }
   }
 
-  private getOptions(stream: VideoStreamInfo, ffmpeg: SystemConfigFFmpegDto) {
+  private getFfmpegOptions(stream: VideoStreamInfo, ffmpeg: SystemConfigFFmpegDto) {
     // TODO: If video or audio are already the correct format, don't re-encode, copy the stream
 
     const options = [
