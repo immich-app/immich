@@ -1,6 +1,6 @@
-import { AssetEntity, AssetType } from '@app/infra/entities';
+import { AssetEntity } from '@app/infra/entities';
 import { IJobRepository, JobName } from '../job';
-import { AssetSearchOptions, IAssetRepository } from './asset.repository';
+import { AssetSearchOptions, IAssetRepository, LivePhotoSearchOptions } from './asset.repository';
 
 export class AssetCore {
   constructor(private assetRepository: IAssetRepository, private jobRepository: IJobRepository) {}
@@ -18,7 +18,7 @@ export class AssetCore {
     return _asset;
   }
 
-  findLivePhotoMatch(livePhotoCID: string, otherAssetId: string, type: AssetType): Promise<AssetEntity | null> {
-    return this.assetRepository.findLivePhotoMatch(livePhotoCID, otherAssetId, type);
+  findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null> {
+    return this.assetRepository.findLivePhotoMatch(options);
   }
 }

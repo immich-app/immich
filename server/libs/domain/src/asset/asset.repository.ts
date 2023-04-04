@@ -5,6 +5,13 @@ export interface AssetSearchOptions {
   type?: AssetType;
 }
 
+export interface LivePhotoSearchOptions {
+  ownerId: string;
+  livePhotoCID: string;
+  otherAssetId: string;
+  type: AssetType;
+}
+
 export enum WithoutProperty {
   THUMBNAIL = 'thumbnail',
   ENCODED_VIDEO = 'encoded-video',
@@ -22,5 +29,5 @@ export interface IAssetRepository {
   deleteAll(ownerId: string): Promise<void>;
   getAll(options?: AssetSearchOptions): Promise<AssetEntity[]>;
   save(asset: Partial<AssetEntity>): Promise<AssetEntity>;
-  findLivePhotoMatch(livePhotoCID: string, otherAssetId: string, type: AssetType): Promise<AssetEntity | null>;
+  findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
 }

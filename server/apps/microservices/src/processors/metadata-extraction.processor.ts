@@ -229,7 +229,12 @@ export class MetadataExtractionProcessor {
       newExif.livePhotoCID = exifData?.MediaGroupUUID || null;
 
       if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
-        const motionAsset = await this.assetCore.findLivePhotoMatch(newExif.livePhotoCID, asset.id, AssetType.VIDEO);
+        const motionAsset = await this.assetCore.findLivePhotoMatch({
+          livePhotoCID: newExif.livePhotoCID,
+          otherAssetId: asset.id,
+          ownerId: asset.ownerId,
+          type: AssetType.VIDEO,
+        });
         if (motionAsset) {
           await this.assetCore.save({ id: asset.id, livePhotoVideoId: motionAsset.id });
           await this.assetCore.save({ id: motionAsset.id, isVisible: false });
@@ -331,7 +336,12 @@ export class MetadataExtractionProcessor {
       newExif.livePhotoCID = exifData?.ContentIdentifier || null;
 
       if (newExif.livePhotoCID) {
-        const photoAsset = await this.assetCore.findLivePhotoMatch(newExif.livePhotoCID, asset.id, AssetType.IMAGE);
+        const photoAsset = await this.assetCore.findLivePhotoMatch({
+          livePhotoCID: newExif.livePhotoCID,
+          ownerId: asset.ownerId,
+          otherAssetId: asset.id,
+          type: AssetType.IMAGE,
+        });
         if (photoAsset) {
           await this.assetCore.save({ id: photoAsset.id, livePhotoVideoId: asset.id });
           await this.assetCore.save({ id: asset.id, isVisible: false });
