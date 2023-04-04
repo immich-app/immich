@@ -38,7 +38,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = ShareApi();
-final id = id_example; // String | 
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final editSharedLinkDto = EditSharedLinkDto(); // EditSharedLinkDto | 
 
 try {
@@ -195,7 +195,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = ShareApi();
-final id = id_example; // String | 
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
     final result = api_instance.getSharedLinkById(id);
@@ -248,7 +248,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = ShareApi();
-final id = id_example; // String | 
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
     api_instance.removeSharedLink(id);

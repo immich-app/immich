@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   ValidationPipe,
-  ParseUUIDPipe,
   Put,
   Query,
   Response,
@@ -33,8 +32,7 @@ import {
 } from '../../constants/download.constant';
 import { DownloadDto } from '../asset/dto/download-library.dto';
 import { CreateAlbumShareLinkDto as CreateAlbumSharedLinkDto } from './dto/create-album-shared-link.dto';
-
-// TODO might be worth creating a AlbumParamsDto that validates `albumId` instead of using the pipe.
+import { AlbumIdDto } from './dto/album-id.dto';
 
 @ApiTags('Album')
 @Controller('album')
@@ -58,7 +56,7 @@ export class AlbumController {
   async addUsersToAlbum(
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) addUsersDto: AddUsersDto,
-    @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
+    @Param() { albumId }: AlbumIdDto,
   ) {
     return this.albumService.addUsersToAlbum(authUser, addUsersDto, albumId);
   }
@@ -68,17 +66,14 @@ export class AlbumController {
   async addAssetsToAlbum(
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) addAssetsDto: AddAssetsDto,
-    @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
+    @Param() { albumId }: AlbumIdDto,
   ): Promise<AddAssetsResponseDto> {
     return this.albumService.addAssetsToAlbum(authUser, addAssetsDto, albumId);
   }
 
   @Authenticated({ isShared: true })
   @Get('/:albumId')
-  async getAlbumInfo(
-    @GetAuthUser() authUser: AuthUserDto,
-    @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
-  ) {
+  async getAlbumInfo(@GetAuthUser() authUser: AuthUserDto, @Param() { albumId }: AlbumIdDto) {
     return this.albumService.getAlbumInfo(authUser, albumId);
   }
 
@@ -87,17 +82,14 @@ export class AlbumController {
   async removeAssetFromAlbum(
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) removeAssetsDto: RemoveAssetsDto,
-    @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
+    @Param() { albumId }: AlbumIdDto,
   ): Promise<AlbumResponseDto> {
     return this.albumService.removeAssetsFromAlbum(authUser, removeAssetsDto, albumId);
   }
 
   @Authenticated()
   @Delete('/:albumId')
-  async deleteAlbum(
-    @GetAuthUser() authUser: AuthUserDto,
-    @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
-  ) {
+  async deleteAlbum(@GetAuthUser() authUser: AuthUserDto, @Param() { albumId }: AlbumIdDto) {
     return this.albumService.deleteAlbum(authUser, albumId);
   }
 
@@ -105,7 +97,7 @@ export class AlbumController {
   @Delete('/:albumId/user/:userId')
   async removeUserFromAlbum(
     @GetAuthUser() authUser: AuthUserDto,
-    @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
+    @Param() { albumId }: AlbumIdDto,
     @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
   ) {
     return this.albumService.removeUserFromAlbum(authUser, albumId, userId);
@@ -116,7 +108,7 @@ export class AlbumController {
   async updateAlbumInfo(
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) updateAlbumInfoDto: UpdateAlbumDto,
-    @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
+    @Param() { albumId }: AlbumIdDto,
   ) {
     return this.albumService.updateAlbumInfo(authUser, updateAlbumInfoDto, albumId);
   }
@@ -126,7 +118,7 @@ export class AlbumController {
   @ApiOkResponse({ content: { 'application/zip': { schema: { type: 'string', format: 'binary' } } } })
   async downloadArchive(
     @GetAuthUser() authUser: AuthUserDto,
-    @Param('albumId', new ParseUUIDPipe({ version: '4' })) albumId: string,
+    @Param() { albumId }: AlbumIdDto,
     @Query(new ValidationPipe({ transform: true })) dto: DownloadDto,
     @Response({ passthrough: true }) res: Res,
   ) {

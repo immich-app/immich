@@ -11,6 +11,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
 import { UseValidation } from '../decorators/use-validation.decorator';
+import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('API Key')
 @Controller('api-key')
@@ -30,21 +31,21 @@ export class APIKeyController {
   }
 
   @Get(':id')
-  getKey(@GetAuthUser() authUser: AuthUserDto, @Param('id') id: string): Promise<APIKeyResponseDto> {
+  getKey(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<APIKeyResponseDto> {
     return this.service.getById(authUser, id);
   }
 
   @Put(':id')
   updateKey(
     @GetAuthUser() authUser: AuthUserDto,
-    @Param('id') id: string,
+    @Param() { id }: UUIDParamDto,
     @Body() dto: APIKeyUpdateDto,
   ): Promise<APIKeyResponseDto> {
     return this.service.update(authUser, id, dto);
   }
 
   @Delete(':id')
-  deleteKey(@GetAuthUser() authUser: AuthUserDto, @Param('id') id: string): Promise<void> {
+  deleteKey(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(authUser, id);
   }
 }

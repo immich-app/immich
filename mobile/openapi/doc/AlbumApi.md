@@ -45,7 +45,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AlbumApi();
-final albumId = albumId_example; // String | 
+final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final addAssetsDto = AddAssetsDto(); // AddAssetsDto | 
 final key = key_example; // String | 
 
@@ -102,7 +102,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AlbumApi();
-final albumId = albumId_example; // String | 
+final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final addUsersDto = AddUsersDto(); // AddUsersDto | 
 
 try {
@@ -263,7 +263,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AlbumApi();
-final albumId = albumId_example; // String | 
+final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
     api_instance.deleteAlbum(albumId);
@@ -315,7 +315,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AlbumApi();
-final albumId = albumId_example; // String | 
+final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final skip = 8.14; // num | 
 final key = key_example; // String | 
 
@@ -421,7 +421,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AlbumApi();
-final albumId = albumId_example; // String | 
+final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final key = key_example; // String | 
 
 try {
@@ -531,7 +531,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AlbumApi();
-final albumId = albumId_example; // String | 
+final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final removeAssetsDto = RemoveAssetsDto(); // RemoveAssetsDto | 
 
 try {
@@ -586,7 +586,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AlbumApi();
-final albumId = albumId_example; // String | 
+final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final userId = userId_example; // String | 
 
 try {
@@ -640,7 +640,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AlbumApi();
-final albumId = albumId_example; // String | 
+final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final updateAlbumDto = UpdateAlbumDto(); // UpdateAlbumDto | 
 
 try {
