@@ -6,9 +6,9 @@ export interface GeoPoint {
 }
 
 export interface ReverseGeocodeResult {
-  country: string;
-  state: string;
-  city: string;
+  country: string | null;
+  state: string | null;
+  city: string | null;
 }
 
 export interface IGeocodingRepository {

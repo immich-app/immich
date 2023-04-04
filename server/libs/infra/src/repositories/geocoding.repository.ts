@@ -36,7 +36,7 @@ export class GeocodingRepository {
     const { countryCode, name: city, admin1Code, admin2Code } = address[0] as GeoData;
     const country = getName(countryCode, 'en');
     const stateParts = [(admin2Code as AdminCode)?.name, (admin1Code as AdminCode)?.name].filter((name) => !!name);
-    const state = stateParts.length > 0 ? stateParts.join(', ') : '';
+    const state = stateParts.length > 0 ? stateParts.join(', ') : null;
     this.logger.debug(`Normalized: ${JSON.stringify({ country, state, city })}`);
 
     return { country, state, city };
