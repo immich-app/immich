@@ -114,6 +114,7 @@ describe(MediaService.name, () => {
       expect(mediaMock.extractVideoThumbnail).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/thumbs/user-id/asset-id.jpeg',
+        1440,
       );
       expect(assetMock.save).toHaveBeenCalledWith({
         id: 'asset-id',
