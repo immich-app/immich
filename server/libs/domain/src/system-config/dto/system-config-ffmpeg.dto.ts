@@ -15,7 +15,7 @@ export class SystemConfigFFmpegDto {
   targetAudioCodec!: string;
 
   @IsString()
-  targetScaling!: string;
+  targetResolution!: string;
 
   @IsEnum(TranscodePreset)
   transcode!: TranscodePreset;

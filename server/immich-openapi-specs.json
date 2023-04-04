@@ -4644,7 +4644,7 @@
           "targetAudioCodec": {
             "type": "string"
           },
-          "targetScaling": {
+          "targetResolution": {
             "type": "string"
           },
           "transcode": {
@@ -4661,7 +4661,7 @@
           "preset",
           "targetVideoCodec",
           "targetAudioCodec",
-          "targetScaling",
+          "targetResolution",
           "transcode"
         ]
       },

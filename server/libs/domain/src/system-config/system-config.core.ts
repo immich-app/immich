@@ -13,7 +13,7 @@ const defaults: SystemConfig = Object.freeze({
     preset: 'ultrafast',
     targetVideoCodec: 'h264',
     targetAudioCodec: 'aac',
-    targetScaling: '1280:-2',
+    targetResolution: '720',
     transcode: TranscodePreset.REQUIRED,
   },
   oauth: {
