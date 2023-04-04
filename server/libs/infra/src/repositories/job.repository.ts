@@ -1,8 +1,8 @@
 import {
   IAssetJob,
+  IAssetUploadedJob,
   IBaseJob,
   IJobRepository,
-  IMetadataExtractionJob,
   JobCounts,
   JobItem,
   JobName,
@@ -30,7 +30,7 @@ export class JobRepository implements IJobRepository {
     @InjectQueue(QueueName.BACKGROUND_TASK) private backgroundTask: Queue,
     @InjectQueue(QueueName.OBJECT_TAGGING) private objectTagging: Queue<IAssetJob | IBaseJob>,
     @InjectQueue(QueueName.CLIP_ENCODING) private clipEmbedding: Queue<IAssetJob | IBaseJob>,
-    @InjectQueue(QueueName.METADATA_EXTRACTION) private metadataExtraction: Queue<IMetadataExtractionJob | IBaseJob>,
+    @InjectQueue(QueueName.METADATA_EXTRACTION) private metadataExtraction: Queue<IAssetUploadedJob | IBaseJob>,
     @InjectQueue(QueueName.STORAGE_TEMPLATE_MIGRATION) private storageTemplateMigration: Queue,
     @InjectQueue(QueueName.THUMBNAIL_GENERATION) private generateThumbnail: Queue,
     @InjectQueue(QueueName.VIDEO_CONVERSION) private videoTranscode: Queue<IAssetJob | IBaseJob>,
@@ -88,7 +88,6 @@ export class JobRepository implements IJobRepository {
       case JobName.QUEUE_METADATA_EXTRACTION:
       case JobName.EXIF_EXTRACTION:
       case JobName.EXTRACT_VIDEO_METADATA:
-      case JobName.REVERSE_GEOCODING:
         await this.metadataExtraction.add(item.name, item.data);
         break;
 

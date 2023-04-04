@@ -5,6 +5,7 @@ export * from './communication.repository';
 export * from './crypto.repository';
 export * from './device-info.repository';
 export * from './filesystem.provider';
+export * from './geocoding.repository';
 export * from './job.repository';
 export * from './machine-learning.repository';
 export * from './media.repository';

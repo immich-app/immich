@@ -33,7 +33,6 @@ export enum JobName {
   QUEUE_METADATA_EXTRACTION = 'queue-metadata-extraction',
   EXIF_EXTRACTION = 'exif-extraction',
   EXTRACT_VIDEO_METADATA = 'extract-video-metadata',
-  REVERSE_GEOCODING = 'reverse-geocoding',
 
   // user deletion
   USER_DELETION = 'user-deletion',

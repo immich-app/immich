@@ -28,11 +28,3 @@ export interface IDeleteFilesJob extends IBaseJob {
 export interface IUserDeletionJob extends IBaseJob {
   user: UserEntity;
 }
-
-export interface IReverseGeocodingJob extends IBaseJob {
-  assetId: string;
-  latitude: number;
-  longitude: number;
-}
-
-export type IMetadataExtractionJob = IAssetUploadedJob | IReverseGeocodingJob;

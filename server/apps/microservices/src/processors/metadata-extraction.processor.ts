@@ -4,8 +4,8 @@ import {
   IAssetRepository,
   IAssetUploadedJob,
   IBaseJob,
+  IGeocodingRepository,
   IJobRepository,
-  IReverseGeocodingJob,
   JobName,
   QueueName,
   WithoutProperty,
@@ -15,12 +15,10 @@ import { Process, Processor } from '@nestjs/bull';
 import { Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
+import tz_lookup from '@photostructure/tz-lookup';
 import { Job } from 'bull';
 import { ExifDateTime, exiftool, Tags } from 'exiftool-vendored';
-import tz_lookup from '@photostructure/tz-lookup';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
-import { getName } from 'i18n-iso-countries';
-import geocoder, { InitOptions } from 'local-reverse-geocoder';
 import { Duration } from 'luxon';
 import fs from 'node:fs';
 import path from 'path';
@@ -34,123 +32,42 @@ interface ImmichTags extends Tags {
   ContentIdentifier?: string;
 }
 
-function geocoderInit(init: InitOptions) {
-  return new Promise<void>(function (resolve) {
-    geocoder.init(init, () => {
-      resolve();
-    });
-  });
-}
-
-function geocoderLookup(points: { latitude: number; longitude: number }[]) {
-  return new Promise<GeoData>(function (resolve) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    geocoder.lookUp(points, 1, (err, addresses) => {
-      resolve(addresses[0][0] as GeoData);
-    });
-  });
-}
-
-const geocodingPrecisionLevels = ['cities15000', 'cities5000', 'cities1000', 'cities500'];
-
-export type AdminCode = {
-  name: string;
-  asciiName: string;
-  geoNameId: string;
-};
-
-export type GeoData = {
-  geoNameId: string;
-  name: string;
-  asciiName: string;
-  alternateNames: string;
-  latitude: string;
-  longitude: string;
-  featureClass: string;
-  featureCode: string;
-  countryCode: string;
-  cc2?: any;
-  admin1Code?: AdminCode | string;
-  admin2Code?: AdminCode | string;
-  admin3Code?: any;
-  admin4Code?: any;
-  population: string;
-  elevation: string;
-  dem: string;
-  timezone: string;
-  modificationDate: string;
-  distance: number;
-};
-
 @Processor(QueueName.METADATA_EXTRACTION)
 export class MetadataExtractionProcessor {
   private logger = new Logger(MetadataExtractionProcessor.name);
-  private isGeocodeInitialized = false;
   private assetCore: AssetCore;
+  private reverseGeocodingEnabled: boolean;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-
-    @InjectRepository(ExifEntity)
-    private exifRepository: Repository<ExifEntity>,
+    @Inject(IGeocodingRepository) private geocodingRepository: IGeocodingRepository,
+    @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
 
     configService: ConfigService,
   ) {
     this.assetCore = new AssetCore(assetRepository, jobRepository);
-
-    if (!configService.get('DISABLE_REVERSE_GEOCODING')) {
-      this.logger.log('Initializing Reverse Geocoding');
-      geocoderInit({
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        citiesFileOverride: geocodingPrecisionLevels[configService.get('REVERSE_GEOCODING_PRECISION')],
-        load: {
-          admin1: true,
-          admin2: true,
-          admin3And4: false,
-          alternateNames: false,
-        },
-        countries: [],
-        dumpDirectory:
-          configService.get('REVERSE_GEOCODING_DUMP_DIRECTORY') || process.cwd() + '/.reverse-geocoding-dump/',
-      }).then(() => {
-        this.isGeocodeInitialized = true;
-        this.logger.log('Reverse Geocoding Initialised');
-      });
-    }
+    this.reverseGeocodingEnabled = !configService.get('DISABLE_REVERSE_GEOCODING');
+    this.init();
   }
 
-  private async reverseGeocodeExif(
-    latitude: number,
-    longitude: number,
-  ): Promise<{ country: string; state: string; city: string }> {
-    const geoCodeInfo = await geocoderLookup([{ latitude, longitude }]);
-
-    const country = getName(geoCodeInfo.countryCode, 'en');
-    const city = geoCodeInfo.name;
-
-    let state = '';
-
-    if (geoCodeInfo.admin2Code) {
-      const adminCode2 = geoCodeInfo.admin2Code as AdminCode;
-      state += adminCode2.name;
+  private async init() {
+    this.logger.warn(`Reverse geocoding is ${this.reverseGeocodingEnabled ? 'enabled' : 'disabled'}`);
+    if (!this.reverseGeocodingEnabled) {
+      return;
     }
 
-    if (geoCodeInfo.admin1Code) {
-      const adminCode1 = geoCodeInfo.admin1Code as AdminCode;
+    try {
+      this.logger.log('Initializing Reverse Geocoding');
 
-      if (geoCodeInfo.admin2Code) {
-        const adminCode2 = geoCodeInfo.admin2Code as AdminCode;
-        if (adminCode2.name) {
-          state += ', ';
-        }
-      }
-      state += adminCode1.name;
+      await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
+      await this.geocodingRepository.init();
+      await this.jobRepository.resume(QueueName.METADATA_EXTRACTION);
+
+      this.logger.log('Reverse Geocoding Initialized');
+    } catch (error: any) {
+      this.logger.error(`Unable to initialize reverse geocoding: ${error}`, error?.stack);
     }
-
-    return { country, state, city };
   }
 
   @Process(JobName.QUEUE_METADATA_EXTRACTION)
@@ -241,18 +158,7 @@ export class MetadataExtractionProcessor {
         }
       }
 
-      /**
-       * Reverse Geocoding
-       *
-       * Get the city, state or region name of the asset
-       * based on lat/lon GPS coordinates.
-       */
-      if (this.isGeocodeInitialized && newExif.latitude && newExif.longitude) {
-        const { country, state, city } = await this.reverseGeocodeExif(newExif.latitude, newExif.longitude);
-        newExif.country = country;
-        newExif.state = state;
-        newExif.city = city;
-      }
+      await this.applyReverseGeocoding(newExif);
 
       /**
        * IF the EXIF doesn't contain the width and height of the image,
@@ -279,15 +185,6 @@ export class MetadataExtractionProcessor {
       await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { asset } });
     } catch (error: any) {
       this.logger.error(`Error extracting EXIF ${error}`, error?.stack);
-    }
-  }
-
-  @Process({ name: JobName.REVERSE_GEOCODING })
-  async reverseGeocoding(job: Job<IReverseGeocodingJob>) {
-    if (this.isGeocodeInitialized) {
-      const { latitude, longitude } = job.data;
-      const { country, state, city } = await this.reverseGeocodeExif(latitude, longitude);
-      await this.exifRepository.update({ assetId: job.data.assetId }, { city, state, country });
     }
   }
 
@@ -377,13 +274,7 @@ export class MetadataExtractionProcessor {
         }
       }
 
-      // Reverse GeoCoding
-      if (this.isGeocodeInitialized && newExif.longitude && newExif.latitude) {
-        const { country, state, city } = await this.reverseGeocodeExif(newExif.latitude, newExif.longitude);
-        newExif.country = country;
-        newExif.state = state;
-        newExif.city = city;
-      }
+      await this.applyReverseGeocoding(newExif);
 
       for (const stream of data.streams) {
         if (stream.codec_type === 'video') {
@@ -415,6 +306,20 @@ export class MetadataExtractionProcessor {
       ``;
       // do nothing
       console.log('Error in video metadata extraction', err);
+    }
+  }
+
+  private async applyReverseGeocoding(newExif: ExifEntity) {
+    const { assetId, latitude, longitude } = newExif;
+    if (this.reverseGeocodingEnabled && longitude && latitude) {
+      try {
+        const { country, state, city } = await this.geocodingRepository.reverseGeocode({ latitude, longitude });
+        newExif.country = country;
+        newExif.state = state;
+        newExif.city = city;
+      } catch (error: any) {
+        this.logger.warn(`Unable to run reverse geocoding for asset: ${assetId}, due to ${error}`, error?.stack);
+      }
     }
   }
 

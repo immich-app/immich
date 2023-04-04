@@ -1,6 +1,7 @@
 import { QueueName } from '@app/domain';
 import { BullModuleOptions } from '@nestjs/bull';
 import { RedisOptions } from 'ioredis';
+import { InitOptions } from 'local-reverse-geocoder';
 import { ConfigurationOptions } from 'typesense/lib/Typesense/Configuration';
 
 function parseRedisConfig(): RedisOptions {
@@ -69,3 +70,21 @@ function parseTypeSenseConfig(): ConfigurationOptions {
 }
 
 export const typesenseConfig: ConfigurationOptions = parseTypeSenseConfig();
+
+function parseLocalGeocodingConfig(): InitOptions {
+  const precision = Number(process.env.REVERSE_GEOCODING_PRECISION);
+
+  return {
+    citiesFileOverride: precision ? ['cities15000', 'cities5000', 'cities1000', 'cities500'][precision] : undefined,
+    load: {
+      admin1: true,
+      admin2: true,
+      admin3And4: false,
+      alternateNames: false,
+    },
+    countries: [],
+    dumpDirectory: process.env.REVERSE_GEOCODING_DUMP_DIRECTORY || process.cwd() + '/.reverse-geocoding-dump/',
+  };
+}
+
+export const localGeocodingConfig: InitOptions = parseLocalGeocodingConfig();
