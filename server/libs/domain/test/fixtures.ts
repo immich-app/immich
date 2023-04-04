@@ -708,7 +708,7 @@ export const searchStub = {
 
 export const probeStub = {
   empty: { streams: [] },
-  multiple: Object.freeze<VideoInfo>({
+  multipleVideoStreams: Object.freeze<VideoInfo>({
     streams: [
       {
         height: 1080,
@@ -740,15 +740,27 @@ export const probeStub = {
       },
     ],
   }),
-  tooBig: Object.freeze<VideoInfo>({
+  videoStream2160p: Object.freeze<VideoInfo>({
     streams: [
       {
-        height: 10000,
-        width: 10000,
+        height: 2160,
+        width: 3840,
         codecName: 'h264',
         codecType: 'video',
         frameCount: 100,
         rotation: 0,
+      },
+    ],
+  }),
+  videoStreamVertical2160p: Object.freeze<VideoInfo>({
+    streams: [
+      {
+        height: 2160,
+        width: 3840,
+        codecName: 'h264',
+        codecType: 'video',
+        frameCount: 100,
+        rotation: 90,
       },
     ],
   }),

@@ -222,7 +222,7 @@ describe(MediaService.name, () => {
     });
 
     it('should transcode the longest stream', async () => {
-      mediaMock.probe.mockResolvedValue(probeStub.multiple);
+      mediaMock.probe.mockResolvedValue(probeStub.multipleVideoStreams);
 
       await sut.handleVideoConversion({ asset: assetEntityStub.video });
 
@@ -249,7 +249,7 @@ describe(MediaService.name, () => {
     });
 
     it('should transcode when set to all', async () => {
-      mediaMock.probe.mockResolvedValue(probeStub.multiple);
+      mediaMock.probe.mockResolvedValue(probeStub.multipleVideoStreams);
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: 'all' }]);
       await sut.handleVideoConversion({ asset: assetEntityStub.video });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
@@ -260,7 +260,7 @@ describe(MediaService.name, () => {
     });
 
     it('should transcode when optimal and too big', async () => {
-      mediaMock.probe.mockResolvedValue(probeStub.tooBig);
+      mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: 'optimal' }]);
       await sut.handleVideoConversion({ asset: assetEntityStub.video });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
@@ -270,8 +270,19 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should transcode with alternate scaling video is vertical', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamVertical2160p);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: 'optimal' }]);
+      await sut.handleVideoConversion({ asset: assetEntityStub.video });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        ['-crf 23', '-preset ultrafast', '-vcodec h264', '-acodec aac', '-movflags faststart', '-vf scale=720:-2'],
+      );
+    });
+
     it('should not transcode an invalid transcode value', async () => {
-      mediaMock.probe.mockResolvedValue(probeStub.tooBig);
+      mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: 'invalid' }]);
       await sut.handleVideoConversion({ asset: assetEntityStub.video });
       expect(mediaMock.transcode).not.toHaveBeenCalled();
