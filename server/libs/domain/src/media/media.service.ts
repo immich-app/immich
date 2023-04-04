@@ -135,7 +135,7 @@ export class MediaService {
 
       const { ffmpeg: config } = await this.configCore.getConfig();
 
-      const required = await this.isTranscodeRequired(stream, config);
+      const required = this.isTranscodeRequired(stream, config);
       if (!required) {
         return;
       }
@@ -198,8 +198,8 @@ export class MediaService {
     const videoIsRotated = Math.abs(stream.rotation) === 90;
     const targetResolution = Number.parseInt(ffmpeg.targetResolution);
 
-    const shouldRotate = stream.height > stream.width || videoIsRotated;
-    const scaling = shouldRotate ? `${targetResolution}:-2` : `-2:${targetResolution}`;
+    const isVideoVertical = stream.height > stream.width || videoIsRotated;
+    const scaling = isVideoVertical ? `${targetResolution}:-2` : `-2:${targetResolution}`;
 
     const shouldScale = Math.min(stream.height, stream.width) > targetResolution;
     if (shouldScale) {
