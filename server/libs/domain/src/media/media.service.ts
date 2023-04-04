@@ -164,8 +164,9 @@ export class MediaService {
     }
 
     const isTargetVideoCodec = stream.codecName === ffmpegConfig.targetVideoCodec;
-    const videoHeightThreshold = Number.parseInt(ffmpegConfig.targetResolution);
-    const isTooBig = stream.height > videoHeightThreshold;
+
+    const targetResolution = Number.parseInt(ffmpegConfig.targetResolution);
+    const isLargerThanTargetResolution = Math.min(stream.height, stream.width) > targetResolution;
 
     switch (ffmpegConfig.transcode) {
       case TranscodePreset.ALL:
@@ -175,7 +176,7 @@ export class MediaService {
         return !isTargetVideoCodec;
 
       case TranscodePreset.OPTIMAL:
-        return !isTargetVideoCodec || isTooBig;
+        return !isTargetVideoCodec || isLargerThanTargetResolution;
 
       default:
         return false;
