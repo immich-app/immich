@@ -5,7 +5,6 @@ import {
   IBaseJob,
   IBulkEntityJob,
   IDeleteFilesJob,
-  IReverseGeocodingJob,
   IUserDeletionJob,
 } from './job.interface';
 
@@ -49,7 +48,6 @@ export type JobItem =
   | { name: JobName.QUEUE_METADATA_EXTRACTION; data: IBaseJob }
   | { name: JobName.EXIF_EXTRACTION; data: IAssetUploadedJob }
   | { name: JobName.EXTRACT_VIDEO_METADATA; data: IAssetUploadedJob }
-  | { name: JobName.REVERSE_GEOCODING; data: IReverseGeocodingJob }
 
   // Object Tagging
   | { name: JobName.QUEUE_OBJECT_TAGGING; data: IBaseJob }

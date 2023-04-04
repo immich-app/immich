@@ -11,6 +11,7 @@ export * from './domain.module';
 export * from './domain.util';
 export * from './job';
 export * from './media';
+export * from './metadata';
 export * from './oauth';
 export * from './search';
 export * from './server-info';
