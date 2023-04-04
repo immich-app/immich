@@ -18,6 +18,7 @@ import {
   mapUser,
   SearchResult,
   SharedLinkResponseDto,
+  VideoInfo,
 } from '../src';
 
 const today = new Date();
@@ -702,5 +703,53 @@ export const searchStub = {
     page: 1,
     items: [],
     facets: [],
+  }),
+};
+
+export const probeStub = {
+  empty: { streams: [] },
+  multiple: Object.freeze<VideoInfo>({
+    streams: [
+      {
+        height: 1080,
+        width: 400,
+        codecName: 'h265',
+        codecType: 'video',
+        frameCount: 100,
+        rotation: 0,
+      },
+      {
+        height: 1080,
+        width: 400,
+        codecName: 'h7000',
+        codecType: 'video',
+        frameCount: 99,
+        rotation: 0,
+      },
+    ],
+  }),
+  noHeight: Object.freeze<VideoInfo>({
+    streams: [
+      {
+        height: 0,
+        width: 400,
+        codecName: 'h265',
+        codecType: 'video',
+        frameCount: 100,
+        rotation: 0,
+      },
+    ],
+  }),
+  tooBig: Object.freeze<VideoInfo>({
+    streams: [
+      {
+        height: 10000,
+        width: 10000,
+        codecName: 'h264',
+        codecType: 'video',
+        frameCount: 100,
+        rotation: 0,
+      },
+    ],
   }),
 };

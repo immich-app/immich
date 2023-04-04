@@ -1,16 +1,19 @@
-import { AssetType } from '@app/infra/entities';
+import { AssetType, TranscodePreset } from '@app/infra/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { join } from 'path';
 import { IAssetRepository, mapAsset, WithoutProperty } from '../asset';
 import { CommunicationEvent, ICommunicationRepository } from '../communication';
 import { IAssetJob, IBaseJob, IJobRepository, JobName } from '../job';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
-import { IMediaRepository } from './media.repository';
+import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config';
+import { SystemConfigCore } from '../system-config/system-config.core';
+import { IMediaRepository, VideoStreamInfo } from './media.repository';
 
 @Injectable()
 export class MediaService {
   private logger = new Logger(MediaService.name);
   private storageCore = new StorageCore();
+  private configCore: SystemConfigCore;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -18,7 +21,10 @@ export class MediaService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-  ) {}
+    @Inject(ISystemConfigRepository) systemConfig: ISystemConfigRepository,
+  ) {
+    this.configCore = new SystemConfigCore(systemConfig);
+  }
 
   async handleQueueGenerateThumbnails(job: IBaseJob): Promise<void> {
     try {
@@ -93,7 +99,114 @@ export class MediaService {
       await this.mediaRepository.resize(asset.resizePath, webpPath, { size: 250, format: 'webp' });
       await this.assetRepository.save({ id: asset.id, webpPath: webpPath });
     } catch (error: any) {
-      this.logger.error('Failed to generate webp thumbnail for asset: ' + asset.id, error.stack);
+      this.logger.error(`Failed to generate webp thumbnail for asset: ${asset.id}`, error.stack);
     }
+  }
+
+  async handleQueueVideoConversion(job: IBaseJob) {
+    const { force } = job;
+
+    try {
+      const assets = force
+        ? await this.assetRepository.getAll({ type: AssetType.VIDEO })
+        : await this.assetRepository.getWithout(WithoutProperty.ENCODED_VIDEO);
+      for (const asset of assets) {
+        await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { asset } });
+      }
+    } catch (error: any) {
+      this.logger.error('Failed to queue video conversions', error.stack);
+    }
+  }
+
+  async handleVideoConversion(job: IAssetJob) {
+    const { asset } = job;
+
+    try {
+      const input = asset.originalPath;
+      const outputFolder = this.storageCore.getFolderLocation(StorageFolder.ENCODED_VIDEO, asset.ownerId);
+      const output = join(outputFolder, `${asset.id}.mp4`);
+      this.storageRepository.mkdirSync(outputFolder);
+
+      const { streams } = await this.mediaRepository.probe(input);
+      const stream = await this.getLongestStream(streams);
+      if (!stream) {
+        return;
+      }
+
+      const { ffmpeg: config } = await this.configCore.getConfig();
+
+      const required = this.isTranscodeRequired(stream, config);
+      if (!required) {
+        return;
+      }
+
+      const options = this.getFfmpegOptions(stream, config);
+      await this.mediaRepository.transcode(input, output, options);
+
+      this.logger.log(`Converting Success ${asset.id}`);
+
+      await this.assetRepository.save({ id: asset.id, encodedVideoPath: output });
+    } catch (error: any) {
+      this.logger.error(`Failed to handle video conversion for asset: ${asset.id}`, error.stack);
+    }
+  }
+
+  private getLongestStream(streams: VideoStreamInfo[]): VideoStreamInfo | null {
+    return streams
+      .filter((stream) => stream.codecType === 'video')
+      .sort((stream1, stream2) => stream2.frameCount - stream1.frameCount)[0];
+  }
+
+  private isTranscodeRequired(stream: VideoStreamInfo, ffmpegConfig: SystemConfigFFmpegDto): boolean {
+    if (!stream.height || !stream.width) {
+      this.logger.error('Skipping transcode, height or width undefined for video stream');
+      return false;
+    }
+
+    const isTargetVideoCodec = stream.codecName === ffmpegConfig.targetVideoCodec;
+
+    const targetResolution = Number.parseInt(ffmpegConfig.targetResolution);
+    const isLargerThanTargetResolution = Math.min(stream.height, stream.width) > targetResolution;
+
+    switch (ffmpegConfig.transcode) {
+      case TranscodePreset.ALL:
+        return true;
+
+      case TranscodePreset.REQUIRED:
+        return !isTargetVideoCodec;
+
+      case TranscodePreset.OPTIMAL:
+        return !isTargetVideoCodec || isLargerThanTargetResolution;
+
+      default:
+        return false;
+    }
+  }
+
+  private getFfmpegOptions(stream: VideoStreamInfo, ffmpeg: SystemConfigFFmpegDto) {
+    // TODO: If video or audio are already the correct format, don't re-encode, copy the stream
+
+    const options = [
+      `-crf ${ffmpeg.crf}`,
+      `-preset ${ffmpeg.preset}`,
+      `-vcodec ${ffmpeg.targetVideoCodec}`,
+      `-acodec ${ffmpeg.targetAudioCodec}`,
+      // Makes a second pass moving the moov atom to the beginning of
+      // the file for improved playback speed.
+      `-movflags faststart`,
+    ];
+
+    const videoIsRotated = Math.abs(stream.rotation) === 90;
+    const targetResolution = Number.parseInt(ffmpeg.targetResolution);
+
+    const isVideoVertical = stream.height > stream.width || videoIsRotated;
+    const scaling = isVideoVertical ? `${targetResolution}:-2` : `-2:${targetResolution}`;
+
+    const shouldScale = Math.min(stream.height, stream.width) > targetResolution;
+    if (shouldScale) {
+      options.push(`-vf scale=${scaling}`);
+    }
+
+    return options;
   }
 }

@@ -10,9 +10,9 @@ import {
   SearchIndexProcessor,
   StorageTemplateMigrationProcessor,
   ThumbnailGeneratorProcessor,
+  VideoTranscodeProcessor,
 } from './processors';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
-import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
 
 @Module({
   imports: [
