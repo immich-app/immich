@@ -1,4 +1,4 @@
-import { AssetSearchOptions, IAssetRepository, WithoutProperty } from '@app/domain';
+import { AssetSearchOptions, IAssetRepository, LivePhotoSearchOptions, WithoutProperty } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
@@ -52,10 +52,13 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  findLivePhotoMatch(livePhotoCID: string, otherAssetId: string, type: AssetType): Promise<AssetEntity | null> {
+  findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null> {
+    const { ownerId, otherAssetId, livePhotoCID, type } = options;
+
     return this.repository.findOne({
       where: {
         id: Not(otherAssetId),
+        ownerId,
         type,
         exifInfo: {
           livePhotoCID,
