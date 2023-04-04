@@ -37,16 +37,35 @@ export const bullConfig: BullModuleOptions = {
 
 export const bullQueues: BullModuleOptions[] = Object.values(QueueName).map((name) => ({ name }));
 
-export const typesenseConfig: ConfigurationOptions = {
-  nodes: [
-    {
-      host: process.env.TYPESENSE_HOST || 'typesense',
-      port: Number(process.env.TYPESENSE_PORT) || 8108,
-      protocol: process.env.TYPESENSE_PROTOCOL || 'http',
-    },
-  ],
-  apiKey: process.env.TYPESENSE_API_KEY as string,
-  numRetries: 15,
-  retryIntervalSeconds: 4,
-  connectionTimeoutSeconds: 10,
-};
+function parseTypeSenseConfig(): ConfigurationOptions {
+  const typesenseURL = process.env.TYPESENSE_URL;
+  const common = {
+    apiKey: process.env.TYPESENSE_API_KEY as string,
+    numRetries: 15,
+    retryIntervalSeconds: 4,
+    connectionTimeoutSeconds: 10,
+  };
+  if (typesenseURL && typesenseURL.startsWith('ha://')) {
+    try {
+      const decodedString = Buffer.from(typesenseURL.slice(5), 'base64').toString();
+      return {
+        nodes: JSON.parse(decodedString),
+        ...common,
+      };
+    } catch (error) {
+      throw new Error(`Failed to decode typesense options: ${error}`);
+    }
+  }
+  return {
+    nodes: [
+      {
+        host: process.env.TYPESENSE_HOST || 'typesense',
+        port: Number(process.env.TYPESENSE_PORT) || 8108,
+        protocol: process.env.TYPESENSE_PROTOCOL || 'http',
+      },
+    ],
+    ...common,
+  };
+}
+
+export const typesenseConfig: ConfigurationOptions = parseTypeSenseConfig();
