@@ -325,7 +325,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
-final assetId = assetId_example; // String | 
+final assetId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final key = key_example; // String | 
 
 try {
@@ -547,7 +547,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
-final assetId = assetId_example; // String | 
+final assetId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final key = key_example; // String | 
 
 try {
@@ -806,7 +806,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
-final assetId = assetId_example; // String | 
+final assetId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final format = ; // ThumbnailFormat | 
 final key = key_example; // String | 
 
@@ -961,7 +961,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
-final deviceId = deviceId_example; // String | 
+final deviceId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
     final result = api_instance.getUserAssetsByDeviceId(deviceId);
@@ -1122,7 +1122,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
-final assetId = assetId_example; // String | 
+final assetId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final isThumb = true; // bool | 
 final isWeb = true; // bool | 
 final key = key_example; // String | 
@@ -1181,7 +1181,7 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
-final assetId = assetId_example; // String | 
+final assetId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final updateAssetDto = UpdateAssetDto(); // UpdateAssetDto | 
 
 try {

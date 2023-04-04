@@ -28,6 +28,7 @@ import { CreateProfileImageDto } from '@app/domain';
 import { CreateProfileImageResponseDto } from '@app/domain';
 import { UserCountDto } from '@app/domain';
 import { UseValidation } from '../decorators/use-validation.decorator';
+import { UserIdDto } from '@app/domain/user/dto/user-id.dto';
 
 @ApiTags('User')
 @Controller('user')
@@ -43,7 +44,7 @@ export class UserController {
 
   @Authenticated()
   @Get('/info/:userId')
-  getUserById(@Param('userId') userId: string): Promise<UserResponseDto> {
+  getUserById(@Param() { userId }: UserIdDto): Promise<UserResponseDto> {
     return this.service.getUserById(userId);
   }
 
@@ -66,13 +67,13 @@ export class UserController {
 
   @Authenticated({ admin: true })
   @Delete('/:userId')
-  deleteUser(@GetAuthUser() authUser: AuthUserDto, @Param('userId') userId: string): Promise<UserResponseDto> {
+  deleteUser(@GetAuthUser() authUser: AuthUserDto, @Param() { userId }: UserIdDto): Promise<UserResponseDto> {
     return this.service.deleteUser(authUser, userId);
   }
 
   @Authenticated({ admin: true })
   @Post('/:userId/restore')
-  restoreUser(@GetAuthUser() authUser: AuthUserDto, @Param('userId') userId: string): Promise<UserResponseDto> {
+  restoreUser(@GetAuthUser() authUser: AuthUserDto, @Param() { userId }: UserIdDto): Promise<UserResponseDto> {
     return this.service.restoreUser(authUser, userId);
   }
 
@@ -100,7 +101,7 @@ export class UserController {
   @Authenticated()
   @Get('/profile-image/:userId')
   @Header('Cache-Control', 'max-age=600')
-  async getProfileImage(@Param('userId') userId: string, @Response({ passthrough: true }) res: Res): Promise<any> {
+  async getProfileImage(@Param() { userId }: UserIdDto, @Response({ passthrough: true }) res: Res): Promise<any> {
     const readableStream = await this.service.getUserProfileImage(userId);
     res.header('Content-Type', 'image/jpeg');
     return new StreamableFile(readableStream);

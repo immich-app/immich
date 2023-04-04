@@ -57,6 +57,8 @@ import { AssetSearchDto } from './dto/asset-search.dto';
 import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
+import { AssetIdDto } from './dto/asset-id.dto';
+import { DeviceIdDto } from './dto/device-id.dto';
 
 function asStreamableFile({ stream, type, length }: ImmichReadStream) {
   return new StreamableFile(stream, { type, length });
@@ -111,7 +113,7 @@ export class AssetController {
   async downloadFile(
     @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
-    @Param('assetId') assetId: string,
+    @Param() { assetId }: AssetIdDto,
   ) {
     return this.assetService.downloadFile(authUser, assetId).then(asStreamableFile);
   }
@@ -163,7 +165,7 @@ export class AssetController {
     @Headers() headers: Record<string, string>,
     @Response({ passthrough: true }) res: Res,
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
-    @Param('assetId') assetId: string,
+    @Param() { assetId }: AssetIdDto,
   ) {
     await this.assetService.checkAssetsAccess(authUser, [assetId]);
     return this.assetService.serveFile(authUser, assetId, query, res, headers);
@@ -177,7 +179,7 @@ export class AssetController {
     @GetAuthUser() authUser: AuthUserDto,
     @Headers() headers: Record<string, string>,
     @Response({ passthrough: true }) res: Res,
-    @Param('assetId') assetId: string,
+    @Param() { assetId }: AssetIdDto,
     @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,
   ) {
     await this.assetService.checkAssetsAccess(authUser, [assetId]);
@@ -258,7 +260,7 @@ export class AssetController {
    */
   @Authenticated()
   @Get('/:deviceId')
-  async getUserAssetsByDeviceId(@GetAuthUser() authUser: AuthUserDto, @Param('deviceId') deviceId: string) {
+  async getUserAssetsByDeviceId(@GetAuthUser() authUser: AuthUserDto, @Param() { deviceId }: DeviceIdDto) {
     return await this.assetService.getUserAssetsByDeviceId(authUser, deviceId);
   }
 
@@ -269,7 +271,7 @@ export class AssetController {
   @Get('/assetById/:assetId')
   async getAssetById(
     @GetAuthUser() authUser: AuthUserDto,
-    @Param('assetId') assetId: string,
+    @Param() { assetId }: AssetIdDto,
   ): Promise<AssetResponseDto> {
     await this.assetService.checkAssetsAccess(authUser, [assetId]);
     return await this.assetService.getAssetById(authUser, assetId);
@@ -282,7 +284,7 @@ export class AssetController {
   @Put('/:assetId')
   async updateAsset(
     @GetAuthUser() authUser: AuthUserDto,
-    @Param('assetId') assetId: string,
+    @Param() { assetId }: AssetIdDto,
     @Body(ValidationPipe) dto: UpdateAssetDto,
   ): Promise<AssetResponseDto> {
     await this.assetService.checkAssetsAccess(authUser, [assetId], true);
