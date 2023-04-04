@@ -574,7 +574,7 @@ class SyncService {
           return true;
         }
       },
-      onlyFirst: (Asset a) => throw Exception("programming error"),
+      onlyFirst: (Asset a) => {},
       onlySecond: (Asset b) => toUpsert.add(b),
     );
     return Pair(existing, toUpsert);
