@@ -163,7 +163,7 @@ export class VideoTranscodeProcessor {
     await this.mediaService.handleQueueVideoConversion(job.data);
   }
 
-  @Process({ name: JobName.VIDEO_CONVERSION, concurrency: 2 })
+  @Process({ name: JobName.VIDEO_CONVERSION, concurrency: 1 })
   async onVideoConversion(job: Job<IAssetJob>) {
     await this.mediaService.handleVideoConversion(job.data);
   }
