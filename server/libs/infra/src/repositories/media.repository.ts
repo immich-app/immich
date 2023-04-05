@@ -76,7 +76,7 @@ export class MediaRepository implements IMediaRepository {
 
   transcode(input: string, output: string, options: string[]): Promise<void> {
     return new Promise((resolve, reject) => {
-      ffmpeg(input)
+      ffmpeg(input, { niceness: 10 })
         //
         .outputOptions(options)
         .output(output)
