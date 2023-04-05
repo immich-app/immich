@@ -364,7 +364,7 @@
 	};
 </script>
 
-<section class="bg-immich-bg dark:bg-immich-dark-bg">
+<section class="bg-immich-bg dark:bg-immich-dark-bg" class:hidden={isShowThumbnailSelection}>
 	<!-- Multiselection mode app bar -->
 	{#if isMultiSelectionMode}
 		<ControlAppBar
