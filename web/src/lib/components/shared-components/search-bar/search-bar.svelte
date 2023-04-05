@@ -4,7 +4,6 @@
 	import Close from 'svelte-material-icons/Close.svelte';
 	import { goto } from '$app/navigation';
 	import { savedSearchTerms } from '$lib/stores/search.store';
-	import { clickOutside } from '$lib/utils/click-outside';
 	import { fly } from 'svelte/transition';
 	export let value = '';
 	export let grayTheme: boolean;
@@ -58,8 +57,7 @@
 	on:reset={() => (value = '')}
 	on:submit|preventDefault={() => onSearch(true)}
 	on:focusin={() => (showBigSearchBar = true)}
-	use:clickOutside
-	on:outclick={() => (showBigSearchBar = false)}
+	on:focusout={() => (showBigSearchBar = false)}
 >
 	<label>
 		<div class="absolute inset-y-0 left-0 flex items-center pl-6">
