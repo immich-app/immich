@@ -23,25 +23,61 @@ class JobName {
 
   String toJson() => value;
 
-  static const thumbnailGenerationQueue = JobName._(r'thumbnail-generation-queue');
-  static const metadataExtractionQueue = JobName._(r'metadata-extraction-queue');
-  static const videoConversionQueue = JobName._(r'video-conversion-queue');
-  static const objectTaggingQueue = JobName._(r'object-tagging-queue');
-  static const clipEncodingQueue = JobName._(r'clip-encoding-queue');
-  static const backgroundTaskQueue = JobName._(r'background-task-queue');
-  static const storageTemplateMigrationQueue = JobName._(r'storage-template-migration-queue');
-  static const searchQueue = JobName._(r'search-queue');
+  static const assetUploaded = JobName._(r'asset-uploaded');
+  static const queueVideoConversion = JobName._(r'queue-video-conversion');
+  static const videoConversion = JobName._(r'video-conversion');
+  static const queueGenerateThumbnails = JobName._(r'queue-generate-thumbnails');
+  static const generateJpegThumbnail = JobName._(r'generate-jpeg-thumbnail');
+  static const generateWebpThumbnail = JobName._(r'generate-webp-thumbnail');
+  static const queueMetadataExtraction = JobName._(r'queue-metadata-extraction');
+  static const exifExtraction = JobName._(r'exif-extraction');
+  static const extractVideoMetadata = JobName._(r'extract-video-metadata');
+  static const queueUserDelete = JobName._(r'queue-user-delete');
+  static const userDelete = JobName._(r'user-delete');
+  static const storageTemplateMigration = JobName._(r'storage-template-migration');
+  static const storageTemplateMigrationSingle = JobName._(r'storage-template-migration-single');
+  static const systemConfigChange = JobName._(r'system-config-change');
+  static const queueObjectTagging = JobName._(r'queue-object-tagging');
+  static const detectObjects = JobName._(r'detect-objects');
+  static const classifyImage = JobName._(r'classify-image');
+  static const deleteFiles = JobName._(r'delete-files');
+  static const searchIndexAssets = JobName._(r'search-index-assets');
+  static const searchIndexAsset = JobName._(r'search-index-asset');
+  static const searchIndexAlbums = JobName._(r'search-index-albums');
+  static const searchIndexAlbum = JobName._(r'search-index-album');
+  static const searchRemoveAlbum = JobName._(r'search-remove-album');
+  static const searchRemoveAsset = JobName._(r'search-remove-asset');
+  static const queueClipEncode = JobName._(r'queue-clip-encode');
+  static const clipEncode = JobName._(r'clip-encode');
 
   /// List of all possible values in this [enum][JobName].
   static const values = <JobName>[
-    thumbnailGenerationQueue,
-    metadataExtractionQueue,
-    videoConversionQueue,
-    objectTaggingQueue,
-    clipEncodingQueue,
-    backgroundTaskQueue,
-    storageTemplateMigrationQueue,
-    searchQueue,
+    assetUploaded,
+    queueVideoConversion,
+    videoConversion,
+    queueGenerateThumbnails,
+    generateJpegThumbnail,
+    generateWebpThumbnail,
+    queueMetadataExtraction,
+    exifExtraction,
+    extractVideoMetadata,
+    queueUserDelete,
+    userDelete,
+    storageTemplateMigration,
+    storageTemplateMigrationSingle,
+    systemConfigChange,
+    queueObjectTagging,
+    detectObjects,
+    classifyImage,
+    deleteFiles,
+    searchIndexAssets,
+    searchIndexAsset,
+    searchIndexAlbums,
+    searchIndexAlbum,
+    searchRemoveAlbum,
+    searchRemoveAsset,
+    queueClipEncode,
+    clipEncode,
   ];
 
   static JobName? fromJson(dynamic value) => JobNameTypeTransformer().decode(value);
@@ -80,14 +116,32 @@ class JobNameTypeTransformer {
   JobName? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data.toString()) {
-        case r'thumbnail-generation-queue': return JobName.thumbnailGenerationQueue;
-        case r'metadata-extraction-queue': return JobName.metadataExtractionQueue;
-        case r'video-conversion-queue': return JobName.videoConversionQueue;
-        case r'object-tagging-queue': return JobName.objectTaggingQueue;
-        case r'clip-encoding-queue': return JobName.clipEncodingQueue;
-        case r'background-task-queue': return JobName.backgroundTaskQueue;
-        case r'storage-template-migration-queue': return JobName.storageTemplateMigrationQueue;
-        case r'search-queue': return JobName.searchQueue;
+        case r'asset-uploaded': return JobName.assetUploaded;
+        case r'queue-video-conversion': return JobName.queueVideoConversion;
+        case r'video-conversion': return JobName.videoConversion;
+        case r'queue-generate-thumbnails': return JobName.queueGenerateThumbnails;
+        case r'generate-jpeg-thumbnail': return JobName.generateJpegThumbnail;
+        case r'generate-webp-thumbnail': return JobName.generateWebpThumbnail;
+        case r'queue-metadata-extraction': return JobName.queueMetadataExtraction;
+        case r'exif-extraction': return JobName.exifExtraction;
+        case r'extract-video-metadata': return JobName.extractVideoMetadata;
+        case r'queue-user-delete': return JobName.queueUserDelete;
+        case r'user-delete': return JobName.userDelete;
+        case r'storage-template-migration': return JobName.storageTemplateMigration;
+        case r'storage-template-migration-single': return JobName.storageTemplateMigrationSingle;
+        case r'system-config-change': return JobName.systemConfigChange;
+        case r'queue-object-tagging': return JobName.queueObjectTagging;
+        case r'detect-objects': return JobName.detectObjects;
+        case r'classify-image': return JobName.classifyImage;
+        case r'delete-files': return JobName.deleteFiles;
+        case r'search-index-assets': return JobName.searchIndexAssets;
+        case r'search-index-asset': return JobName.searchIndexAsset;
+        case r'search-index-albums': return JobName.searchIndexAlbums;
+        case r'search-index-album': return JobName.searchIndexAlbum;
+        case r'search-remove-album': return JobName.searchRemoveAlbum;
+        case r'search-remove-asset': return JobName.searchRemoveAsset;
+        case r'queue-clip-encode': return JobName.queueClipEncode;
+        case r'clip-encode': return JobName.clipEncode;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

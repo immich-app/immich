@@ -13,68 +13,176 @@ part of openapi.api;
 class AllJobStatusResponseDto {
   /// Returns a new [AllJobStatusResponseDto] instance.
   AllJobStatusResponseDto({
-    required this.thumbnailGenerationQueue,
-    required this.metadataExtractionQueue,
-    required this.videoConversionQueue,
-    required this.objectTaggingQueue,
-    required this.clipEncodingQueue,
-    required this.storageTemplateMigrationQueue,
-    required this.backgroundTaskQueue,
-    required this.searchQueue,
+    required this.assetUploaded,
+    required this.queueVideoConversion,
+    required this.videoConversion,
+    required this.queueGenerateThumbnails,
+    required this.generateJpegThumbnail,
+    required this.generateWebpThumbnail,
+    required this.queueMetadataExtraction,
+    required this.exifExtraction,
+    required this.extractVideoMetadata,
+    required this.queueUserDelete,
+    required this.userDelete,
+    required this.storageTemplateMigration,
+    required this.storageTemplateMigrationSingle,
+    required this.systemConfigChange,
+    required this.queueObjectTagging,
+    required this.detectObjects,
+    required this.classifyImage,
+    required this.deleteFiles,
+    required this.searchIndexAssets,
+    required this.searchIndexAsset,
+    required this.searchIndexAlbums,
+    required this.searchIndexAlbum,
+    required this.searchRemoveAlbum,
+    required this.searchRemoveAsset,
+    required this.queueClipEncode,
+    required this.clipEncode,
   });
 
-  JobStatusDto thumbnailGenerationQueue;
+  JobStatusDto assetUploaded;
 
-  JobStatusDto metadataExtractionQueue;
+  JobStatusDto queueVideoConversion;
 
-  JobStatusDto videoConversionQueue;
+  JobStatusDto videoConversion;
 
-  JobStatusDto objectTaggingQueue;
+  JobStatusDto queueGenerateThumbnails;
 
-  JobStatusDto clipEncodingQueue;
+  JobStatusDto generateJpegThumbnail;
 
-  JobStatusDto storageTemplateMigrationQueue;
+  JobStatusDto generateWebpThumbnail;
 
-  JobStatusDto backgroundTaskQueue;
+  JobStatusDto queueMetadataExtraction;
 
-  JobStatusDto searchQueue;
+  JobStatusDto exifExtraction;
+
+  JobStatusDto extractVideoMetadata;
+
+  JobStatusDto queueUserDelete;
+
+  JobStatusDto userDelete;
+
+  JobStatusDto storageTemplateMigration;
+
+  JobStatusDto storageTemplateMigrationSingle;
+
+  JobStatusDto systemConfigChange;
+
+  JobStatusDto queueObjectTagging;
+
+  JobStatusDto detectObjects;
+
+  JobStatusDto classifyImage;
+
+  JobStatusDto deleteFiles;
+
+  JobStatusDto searchIndexAssets;
+
+  JobStatusDto searchIndexAsset;
+
+  JobStatusDto searchIndexAlbums;
+
+  JobStatusDto searchIndexAlbum;
+
+  JobStatusDto searchRemoveAlbum;
+
+  JobStatusDto searchRemoveAsset;
+
+  JobStatusDto queueClipEncode;
+
+  JobStatusDto clipEncode;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AllJobStatusResponseDto &&
-     other.thumbnailGenerationQueue == thumbnailGenerationQueue &&
-     other.metadataExtractionQueue == metadataExtractionQueue &&
-     other.videoConversionQueue == videoConversionQueue &&
-     other.objectTaggingQueue == objectTaggingQueue &&
-     other.clipEncodingQueue == clipEncodingQueue &&
-     other.storageTemplateMigrationQueue == storageTemplateMigrationQueue &&
-     other.backgroundTaskQueue == backgroundTaskQueue &&
-     other.searchQueue == searchQueue;
+     other.assetUploaded == assetUploaded &&
+     other.queueVideoConversion == queueVideoConversion &&
+     other.videoConversion == videoConversion &&
+     other.queueGenerateThumbnails == queueGenerateThumbnails &&
+     other.generateJpegThumbnail == generateJpegThumbnail &&
+     other.generateWebpThumbnail == generateWebpThumbnail &&
+     other.queueMetadataExtraction == queueMetadataExtraction &&
+     other.exifExtraction == exifExtraction &&
+     other.extractVideoMetadata == extractVideoMetadata &&
+     other.queueUserDelete == queueUserDelete &&
+     other.userDelete == userDelete &&
+     other.storageTemplateMigration == storageTemplateMigration &&
+     other.storageTemplateMigrationSingle == storageTemplateMigrationSingle &&
+     other.systemConfigChange == systemConfigChange &&
+     other.queueObjectTagging == queueObjectTagging &&
+     other.detectObjects == detectObjects &&
+     other.classifyImage == classifyImage &&
+     other.deleteFiles == deleteFiles &&
+     other.searchIndexAssets == searchIndexAssets &&
+     other.searchIndexAsset == searchIndexAsset &&
+     other.searchIndexAlbums == searchIndexAlbums &&
+     other.searchIndexAlbum == searchIndexAlbum &&
+     other.searchRemoveAlbum == searchRemoveAlbum &&
+     other.searchRemoveAsset == searchRemoveAsset &&
+     other.queueClipEncode == queueClipEncode &&
+     other.clipEncode == clipEncode;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (thumbnailGenerationQueue.hashCode) +
-    (metadataExtractionQueue.hashCode) +
-    (videoConversionQueue.hashCode) +
-    (objectTaggingQueue.hashCode) +
-    (clipEncodingQueue.hashCode) +
-    (storageTemplateMigrationQueue.hashCode) +
-    (backgroundTaskQueue.hashCode) +
-    (searchQueue.hashCode);
+    (assetUploaded.hashCode) +
+    (queueVideoConversion.hashCode) +
+    (videoConversion.hashCode) +
+    (queueGenerateThumbnails.hashCode) +
+    (generateJpegThumbnail.hashCode) +
+    (generateWebpThumbnail.hashCode) +
+    (queueMetadataExtraction.hashCode) +
+    (exifExtraction.hashCode) +
+    (extractVideoMetadata.hashCode) +
+    (queueUserDelete.hashCode) +
+    (userDelete.hashCode) +
+    (storageTemplateMigration.hashCode) +
+    (storageTemplateMigrationSingle.hashCode) +
+    (systemConfigChange.hashCode) +
+    (queueObjectTagging.hashCode) +
+    (detectObjects.hashCode) +
+    (classifyImage.hashCode) +
+    (deleteFiles.hashCode) +
+    (searchIndexAssets.hashCode) +
+    (searchIndexAsset.hashCode) +
+    (searchIndexAlbums.hashCode) +
+    (searchIndexAlbum.hashCode) +
+    (searchRemoveAlbum.hashCode) +
+    (searchRemoveAsset.hashCode) +
+    (queueClipEncode.hashCode) +
+    (clipEncode.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[thumbnailGenerationQueue=$thumbnailGenerationQueue, metadataExtractionQueue=$metadataExtractionQueue, videoConversionQueue=$videoConversionQueue, objectTaggingQueue=$objectTaggingQueue, clipEncodingQueue=$clipEncodingQueue, storageTemplateMigrationQueue=$storageTemplateMigrationQueue, backgroundTaskQueue=$backgroundTaskQueue, searchQueue=$searchQueue]';
+  String toString() => 'AllJobStatusResponseDto[assetUploaded=$assetUploaded, queueVideoConversion=$queueVideoConversion, videoConversion=$videoConversion, queueGenerateThumbnails=$queueGenerateThumbnails, generateJpegThumbnail=$generateJpegThumbnail, generateWebpThumbnail=$generateWebpThumbnail, queueMetadataExtraction=$queueMetadataExtraction, exifExtraction=$exifExtraction, extractVideoMetadata=$extractVideoMetadata, queueUserDelete=$queueUserDelete, userDelete=$userDelete, storageTemplateMigration=$storageTemplateMigration, storageTemplateMigrationSingle=$storageTemplateMigrationSingle, systemConfigChange=$systemConfigChange, queueObjectTagging=$queueObjectTagging, detectObjects=$detectObjects, classifyImage=$classifyImage, deleteFiles=$deleteFiles, searchIndexAssets=$searchIndexAssets, searchIndexAsset=$searchIndexAsset, searchIndexAlbums=$searchIndexAlbums, searchIndexAlbum=$searchIndexAlbum, searchRemoveAlbum=$searchRemoveAlbum, searchRemoveAsset=$searchRemoveAsset, queueClipEncode=$queueClipEncode, clipEncode=$clipEncode]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'thumbnail-generation-queue'] = this.thumbnailGenerationQueue;
-      json[r'metadata-extraction-queue'] = this.metadataExtractionQueue;
-      json[r'video-conversion-queue'] = this.videoConversionQueue;
-      json[r'object-tagging-queue'] = this.objectTaggingQueue;
-      json[r'clip-encoding-queue'] = this.clipEncodingQueue;
-      json[r'storage-template-migration-queue'] = this.storageTemplateMigrationQueue;
-      json[r'background-task-queue'] = this.backgroundTaskQueue;
-      json[r'search-queue'] = this.searchQueue;
+      json[r'asset-uploaded'] = this.assetUploaded;
+      json[r'queue-video-conversion'] = this.queueVideoConversion;
+      json[r'video-conversion'] = this.videoConversion;
+      json[r'queue-generate-thumbnails'] = this.queueGenerateThumbnails;
+      json[r'generate-jpeg-thumbnail'] = this.generateJpegThumbnail;
+      json[r'generate-webp-thumbnail'] = this.generateWebpThumbnail;
+      json[r'queue-metadata-extraction'] = this.queueMetadataExtraction;
+      json[r'exif-extraction'] = this.exifExtraction;
+      json[r'extract-video-metadata'] = this.extractVideoMetadata;
+      json[r'queue-user-delete'] = this.queueUserDelete;
+      json[r'user-delete'] = this.userDelete;
+      json[r'storage-template-migration'] = this.storageTemplateMigration;
+      json[r'storage-template-migration-single'] = this.storageTemplateMigrationSingle;
+      json[r'system-config-change'] = this.systemConfigChange;
+      json[r'queue-object-tagging'] = this.queueObjectTagging;
+      json[r'detect-objects'] = this.detectObjects;
+      json[r'classify-image'] = this.classifyImage;
+      json[r'delete-files'] = this.deleteFiles;
+      json[r'search-index-assets'] = this.searchIndexAssets;
+      json[r'search-index-asset'] = this.searchIndexAsset;
+      json[r'search-index-albums'] = this.searchIndexAlbums;
+      json[r'search-index-album'] = this.searchIndexAlbum;
+      json[r'search-remove-album'] = this.searchRemoveAlbum;
+      json[r'search-remove-asset'] = this.searchRemoveAsset;
+      json[r'queue-clip-encode'] = this.queueClipEncode;
+      json[r'clip-encode'] = this.clipEncode;
     return json;
   }
 
@@ -97,14 +205,32 @@ class AllJobStatusResponseDto {
       }());
 
       return AllJobStatusResponseDto(
-        thumbnailGenerationQueue: JobStatusDto.fromJson(json[r'thumbnail-generation-queue'])!,
-        metadataExtractionQueue: JobStatusDto.fromJson(json[r'metadata-extraction-queue'])!,
-        videoConversionQueue: JobStatusDto.fromJson(json[r'video-conversion-queue'])!,
-        objectTaggingQueue: JobStatusDto.fromJson(json[r'object-tagging-queue'])!,
-        clipEncodingQueue: JobStatusDto.fromJson(json[r'clip-encoding-queue'])!,
-        storageTemplateMigrationQueue: JobStatusDto.fromJson(json[r'storage-template-migration-queue'])!,
-        backgroundTaskQueue: JobStatusDto.fromJson(json[r'background-task-queue'])!,
-        searchQueue: JobStatusDto.fromJson(json[r'search-queue'])!,
+        assetUploaded: JobStatusDto.fromJson(json[r'asset-uploaded'])!,
+        queueVideoConversion: JobStatusDto.fromJson(json[r'queue-video-conversion'])!,
+        videoConversion: JobStatusDto.fromJson(json[r'video-conversion'])!,
+        queueGenerateThumbnails: JobStatusDto.fromJson(json[r'queue-generate-thumbnails'])!,
+        generateJpegThumbnail: JobStatusDto.fromJson(json[r'generate-jpeg-thumbnail'])!,
+        generateWebpThumbnail: JobStatusDto.fromJson(json[r'generate-webp-thumbnail'])!,
+        queueMetadataExtraction: JobStatusDto.fromJson(json[r'queue-metadata-extraction'])!,
+        exifExtraction: JobStatusDto.fromJson(json[r'exif-extraction'])!,
+        extractVideoMetadata: JobStatusDto.fromJson(json[r'extract-video-metadata'])!,
+        queueUserDelete: JobStatusDto.fromJson(json[r'queue-user-delete'])!,
+        userDelete: JobStatusDto.fromJson(json[r'user-delete'])!,
+        storageTemplateMigration: JobStatusDto.fromJson(json[r'storage-template-migration'])!,
+        storageTemplateMigrationSingle: JobStatusDto.fromJson(json[r'storage-template-migration-single'])!,
+        systemConfigChange: JobStatusDto.fromJson(json[r'system-config-change'])!,
+        queueObjectTagging: JobStatusDto.fromJson(json[r'queue-object-tagging'])!,
+        detectObjects: JobStatusDto.fromJson(json[r'detect-objects'])!,
+        classifyImage: JobStatusDto.fromJson(json[r'classify-image'])!,
+        deleteFiles: JobStatusDto.fromJson(json[r'delete-files'])!,
+        searchIndexAssets: JobStatusDto.fromJson(json[r'search-index-assets'])!,
+        searchIndexAsset: JobStatusDto.fromJson(json[r'search-index-asset'])!,
+        searchIndexAlbums: JobStatusDto.fromJson(json[r'search-index-albums'])!,
+        searchIndexAlbum: JobStatusDto.fromJson(json[r'search-index-album'])!,
+        searchRemoveAlbum: JobStatusDto.fromJson(json[r'search-remove-album'])!,
+        searchRemoveAsset: JobStatusDto.fromJson(json[r'search-remove-asset'])!,
+        queueClipEncode: JobStatusDto.fromJson(json[r'queue-clip-encode'])!,
+        clipEncode: JobStatusDto.fromJson(json[r'clip-encode'])!,
       );
     }
     return null;
@@ -154,14 +280,32 @@ class AllJobStatusResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'thumbnail-generation-queue',
-    'metadata-extraction-queue',
-    'video-conversion-queue',
-    'object-tagging-queue',
-    'clip-encoding-queue',
-    'storage-template-migration-queue',
-    'background-task-queue',
-    'search-queue',
+    'asset-uploaded',
+    'queue-video-conversion',
+    'video-conversion',
+    'queue-generate-thumbnails',
+    'generate-jpeg-thumbnail',
+    'generate-webp-thumbnail',
+    'queue-metadata-extraction',
+    'exif-extraction',
+    'extract-video-metadata',
+    'queue-user-delete',
+    'user-delete',
+    'storage-template-migration',
+    'storage-template-migration-single',
+    'system-config-change',
+    'queue-object-tagging',
+    'detect-objects',
+    'classify-image',
+    'delete-files',
+    'search-index-assets',
+    'search-index-asset',
+    'search-index-albums',
+    'search-index-album',
+    'search-remove-album',
+    'search-remove-asset',
+    'queue-clip-encode',
+    'clip-encode',
   };
 }
 

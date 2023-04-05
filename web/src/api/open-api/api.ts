@@ -294,49 +294,157 @@ export interface AllJobStatusResponseDto {
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'thumbnail-generation-queue': JobStatusDto;
+    'asset-uploaded': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'metadata-extraction-queue': JobStatusDto;
+    'queue-video-conversion': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'video-conversion-queue': JobStatusDto;
+    'video-conversion': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'object-tagging-queue': JobStatusDto;
+    'queue-generate-thumbnails': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'clip-encoding-queue': JobStatusDto;
+    'generate-jpeg-thumbnail': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'storage-template-migration-queue': JobStatusDto;
+    'generate-webp-thumbnail': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'background-task-queue': JobStatusDto;
+    'queue-metadata-extraction': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'search-queue': JobStatusDto;
+    'exif-extraction': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'extract-video-metadata': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'queue-user-delete': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'user-delete': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'storage-template-migration': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'storage-template-migration-single': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'system-config-change': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'queue-object-tagging': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'detect-objects': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'classify-image': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'delete-files': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'search-index-assets': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'search-index-asset': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'search-index-albums': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'search-index-album': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'search-remove-album': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'search-remove-asset': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'queue-clip-encode': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'clip-encode': JobStatusDto;
 }
 /**
  * 
@@ -1304,14 +1412,32 @@ export interface JobCountsDto {
  */
 
 export const JobName = {
-    ThumbnailGenerationQueue: 'thumbnail-generation-queue',
-    MetadataExtractionQueue: 'metadata-extraction-queue',
-    VideoConversionQueue: 'video-conversion-queue',
-    ObjectTaggingQueue: 'object-tagging-queue',
-    ClipEncodingQueue: 'clip-encoding-queue',
-    BackgroundTaskQueue: 'background-task-queue',
-    StorageTemplateMigrationQueue: 'storage-template-migration-queue',
-    SearchQueue: 'search-queue'
+    AssetUploaded: 'asset-uploaded',
+    QueueVideoConversion: 'queue-video-conversion',
+    VideoConversion: 'video-conversion',
+    QueueGenerateThumbnails: 'queue-generate-thumbnails',
+    GenerateJpegThumbnail: 'generate-jpeg-thumbnail',
+    GenerateWebpThumbnail: 'generate-webp-thumbnail',
+    QueueMetadataExtraction: 'queue-metadata-extraction',
+    ExifExtraction: 'exif-extraction',
+    ExtractVideoMetadata: 'extract-video-metadata',
+    QueueUserDelete: 'queue-user-delete',
+    UserDelete: 'user-delete',
+    StorageTemplateMigration: 'storage-template-migration',
+    StorageTemplateMigrationSingle: 'storage-template-migration-single',
+    SystemConfigChange: 'system-config-change',
+    QueueObjectTagging: 'queue-object-tagging',
+    DetectObjects: 'detect-objects',
+    ClassifyImage: 'classify-image',
+    DeleteFiles: 'delete-files',
+    SearchIndexAssets: 'search-index-assets',
+    SearchIndexAsset: 'search-index-asset',
+    SearchIndexAlbums: 'search-index-albums',
+    SearchIndexAlbum: 'search-index-album',
+    SearchRemoveAlbum: 'search-remove-album',
+    SearchRemoveAsset: 'search-remove-asset',
+    QueueClipEncode: 'queue-clip-encode',
+    ClipEncode: 'clip-encode'
 } as const;
 
 export type JobName = typeof JobName[keyof typeof JobName];
