@@ -16,34 +16,49 @@
 		subtitle?: string;
 		allowForceCommand?: boolean;
 		component?: ComponentType;
+		queues: JobName[];
 	};
 
 	const jobDetails: { [Key in JobName]?: JobDetails } = {
-		[JobName.ThumbnailGenerationQueue]: {
+		[JobName.QueueGenerateThumbnails]: {
 			title: 'Generate Thumbnails',
-			subtitle: 'Regenerate JPEG and WebP thumbnails'
+			subtitle: 'Regenerate JPEG and WebP thumbnails',
+			queues: [
+				JobName.QueueGenerateThumbnails,
+				JobName.GenerateJpegThumbnail,
+				JobName.GenerateWebpThumbnail
+			]
 		},
-		[JobName.MetadataExtractionQueue]: {
+		[JobName.QueueMetadataExtraction]: {
 			title: 'Extract Metadata',
-			subtitle: 'Extract metadata information i.e. GPS, resolution...etc'
+			subtitle: 'Extract metadata information i.e. GPS, resolution...etc',
+			queues: [
+				JobName.QueueMetadataExtraction,
+				JobName.ExifExtraction,
+				JobName.ExtractVideoMetadata
+			]
 		},
-		[JobName.ObjectTaggingQueue]: {
+		[JobName.QueueObjectTagging]: {
 			title: 'Tag Objects',
 			subtitle:
-				'Run machine learning to tag objects\nNote that some assets may not have any objects detected'
+				'Run machine learning to tag objects\nNote that some assets may not have any objects detected',
+			queues: [JobName.QueueObjectTagging, JobName.DetectObjects, JobName.ClassifyImage]
 		},
-		[JobName.ClipEncodingQueue]: {
+		[JobName.QueueClipEncode]: {
 			title: 'Encode Clip',
-			subtitle: 'Run machine learning to generate clip embeddings'
+			subtitle: 'Run machine learning to generate clip embeddings',
+			queues: [JobName.QueueClipEncode, JobName.ClipEncode]
 		},
-		[JobName.VideoConversionQueue]: {
+		[JobName.QueueVideoConversion]: {
 			title: 'Transcode Videos',
-			subtitle: 'Transcode videos not in the desired format'
+			subtitle: 'Transcode videos not in the desired format',
+			queues: [JobName.QueueVideoConversion, JobName.VideoConversion]
 		},
-		[JobName.StorageTemplateMigrationQueue]: {
+		[JobName.StorageTemplateMigration]: {
 			title: 'Storage Template Migration',
 			allowForceCommand: false,
-			component: StorageMigrationDescription
+			component: StorageMigrationDescription,
+			queues: [JobName.StorageTemplateMigration, JobName.StorageTemplateMigrationSingle]
 		}
 	};
 
@@ -71,14 +86,40 @@
 </script>
 
 <div class="flex flex-col gap-7">
-	{#each jobDetailsArray as [jobName, { title, subtitle, allowForceCommand, component }]}
-		{@const { jobCounts, queueStatus } = jobs[jobName]}
+	{#each jobDetailsArray as [jobName, { title, subtitle, queues, allowForceCommand, component }]}
 		<JobTile
 			{title}
 			{subtitle}
 			{allowForceCommand}
-			{jobCounts}
-			{queueStatus}
+			jobCounts={queues
+				.map((jobName) => jobs[jobName].jobCounts)
+				.reduce(
+					(total, stats) => ({
+						active: total.active + stats.active,
+						completed: total.completed + stats.completed,
+						failed: total.failed + stats.failed,
+						delayed: total.delayed + stats.delayed,
+						waiting: total.waiting + stats.waiting,
+						paused: total.paused + stats.paused
+					}),
+					{
+						active: 0,
+						completed: 0,
+						failed: 0,
+						delayed: 0,
+						waiting: 0,
+						paused: 0
+					}
+				)}
+			queueStatus={queues
+				.map((jobName) => jobs[jobName].queueStatus)
+				.reduce(
+					(total, stats) => ({
+						isActive: total.isActive || stats.isActive,
+						isPaused: total.isPaused || stats.isPaused
+					}),
+					{ isActive: false, isPaused: false }
+				)}
 			on:command={({ detail }) => runJob(jobName, detail)}
 		>
 			<svelte:component this={component} />
