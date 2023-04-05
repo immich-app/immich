@@ -237,7 +237,7 @@ describe(MediaService.name, () => {
     });
 
     it('should skip a video without any streams', async () => {
-      mediaMock.probe.mockResolvedValue(probeStub.empty);
+      mediaMock.probe.mockResolvedValue(probeStub.noVideoStreams);
       await sut.handleVideoConversion({ asset: assetEntityStub.video });
       expect(mediaMock.transcode).not.toHaveBeenCalled();
     });
@@ -278,6 +278,28 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
         ['-crf 23', '-preset ultrafast', '-vcodec h264', '-acodec aac', '-movflags faststart', '-vf scale=720:-2'],
+      );
+    });
+
+    it('should transcode when audio doesnt match target', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.audioStreamMp3);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: 'optimal' }]);
+      await sut.handleVideoConversion({ asset: assetEntityStub.video });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        ['-crf 23', '-preset ultrafast', '-vcodec h264', '-acodec aac', '-movflags faststart', '-vf scale=-2:720'],
+      );
+    });
+
+    it('should transcode when container doesnt match target', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: 'optimal' }]);
+      await sut.handleVideoConversion({ asset: assetEntityStub.video });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        ['-crf 23', '-preset ultrafast', '-vcodec h264', '-acodec aac', '-movflags faststart', '-vf scale=-2:720'],
       );
     });
 

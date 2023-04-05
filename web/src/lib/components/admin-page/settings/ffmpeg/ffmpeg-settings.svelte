@@ -93,16 +93,20 @@
 						isEdited={!(ffmpegConfig.preset == savedConfig.preset)}
 					/>
 
-					<SettingInputField
-						inputType={SettingInputFieldType.TEXT}
-						label="AUDIO CODEC (-acodec)"
+					<SettingSelect
+						label="AUDIO CODEC"
 						bind:value={ffmpegConfig.targetAudioCodec}
-						required={true}
+						options={[
+							{ value: 'aac', text: 'aac' },
+							{ value: 'mp3', text: 'mp3' },
+							{ value: 'opus', text: 'opus' }
+						]}
+						name="acodec"
 						isEdited={!(ffmpegConfig.targetAudioCodec == savedConfig.targetAudioCodec)}
 					/>
 
 					<SettingSelect
-						label="VIDEO CODEC (-vcodec)"
+						label="VIDEO CODEC"
 						bind:value={ffmpegConfig.targetVideoCodec}
 						options={[
 							{ value: 'h264', text: 'h264' },

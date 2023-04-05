@@ -13,12 +13,15 @@ import {
 import {
   AlbumResponseDto,
   AssetResponseDto,
+  AudioStreamInfo,
   AuthUserDto,
   ExifResponseDto,
   mapUser,
   SearchResult,
   SharedLinkResponseDto,
+  VideoFormat,
   VideoInfo,
+  VideoStreamInfo,
 } from '../src';
 
 const today = new Date();
@@ -706,10 +709,29 @@ export const searchStub = {
   }),
 };
 
+const probeStubDefaultFormat: VideoFormat = {
+  formatName: 'mov,mp4,m4a,3gp,3g2,mj2',
+  formatLongName: 'QuickTime / MOV',
+  duration: 0,
+};
+
+const probeStubDefaultVideoStream: VideoStreamInfo[] = [
+  { height: 1080, width: 1920, codecName: 'h265', codecType: 'video', frameCount: 100, rotation: 0 },
+];
+
+const probeStubDefaultAudioStream: AudioStreamInfo[] = [{ codecName: 'aac', codecType: 'audio' }];
+
+const probeStubDefault: VideoInfo = {
+  format: probeStubDefaultFormat,
+  videoStreams: probeStubDefaultVideoStream,
+  audioStreams: probeStubDefaultAudioStream,
+};
+
 export const probeStub = {
-  empty: { streams: [] },
+  noVideoStreams: Object.freeze<VideoInfo>({ ...probeStubDefault, videoStreams: [] }),
   multipleVideoStreams: Object.freeze<VideoInfo>({
-    streams: [
+    ...probeStubDefault,
+    videoStreams: [
       {
         height: 1080,
         width: 400,
@@ -729,7 +751,8 @@ export const probeStub = {
     ],
   }),
   noHeight: Object.freeze<VideoInfo>({
-    streams: [
+    ...probeStubDefault,
+    videoStreams: [
       {
         height: 0,
         width: 400,
@@ -741,7 +764,8 @@ export const probeStub = {
     ],
   }),
   videoStream2160p: Object.freeze<VideoInfo>({
-    streams: [
+    ...probeStubDefault,
+    videoStreams: [
       {
         height: 2160,
         width: 3840,
@@ -753,7 +777,8 @@ export const probeStub = {
     ],
   }),
   videoStreamVertical2160p: Object.freeze<VideoInfo>({
-    streams: [
+    ...probeStubDefault,
+    videoStreams: [
       {
         height: 2160,
         width: 3840,
@@ -763,5 +788,17 @@ export const probeStub = {
         rotation: 90,
       },
     ],
+  }),
+  audioStreamMp3: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    audioStreams: [{ codecType: 'audio', codecName: 'aac' }],
+  }),
+  matroskaContainer: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    format: {
+      formatName: 'matroska,webm',
+      formatLongName: 'Matroska / WebM',
+      duration: 0,
+    },
   }),
 };
