@@ -144,6 +144,10 @@
 							{
 								value: SystemConfigFFmpegDtoTranscodeEnum.Required,
 								text: 'Only videos not in the desired format'
+							},
+							{
+                value: SystemConfigFFmpegDtoTranscodeEnum.Disabled,
+                text: 'Don\'t transcode any videos, may break playback on some clients'
 							}
 						]}
 						isEdited={!(ffmpegConfig.transcode == savedConfig.transcode)}

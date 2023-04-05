@@ -184,6 +184,9 @@ export class MediaService {
     const isLargerThanTargetResolution = Math.min(videoStream.height, videoStream.width) > targetResolution;
 
     switch (ffmpegConfig.transcode) {
+      case TranscodePreset.DISABLED:
+        return false;
+
       case TranscodePreset.ALL:
         return true;
 
@@ -199,8 +202,6 @@ export class MediaService {
   }
 
   private getFfmpegOptions(stream: VideoStreamInfo, ffmpeg: SystemConfigFFmpegDto) {
-    // TODO: If video or audio are already the correct format, don't re-encode, copy the stream
-
     const options = [
       `-crf ${ffmpeg.crf}`,
       `-preset ${ffmpeg.preset}`,

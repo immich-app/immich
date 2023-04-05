@@ -2046,7 +2046,8 @@ export interface SystemConfigFFmpegDto {
 export const SystemConfigFFmpegDtoTranscodeEnum = {
     All: 'all',
     Optimal: 'optimal',
-    Required: 'required'
+    Required: 'required',
+    Disabled: 'disabled'
 } as const;
 
 export type SystemConfigFFmpegDtoTranscodeEnum = typeof SystemConfigFFmpegDtoTranscodeEnum[keyof typeof SystemConfigFFmpegDtoTranscodeEnum];

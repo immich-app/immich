@@ -4652,7 +4652,8 @@
             "enum": [
               "all",
               "optimal",
-              "required"
+              "required",
+              "disabled"
             ]
           }
         },
