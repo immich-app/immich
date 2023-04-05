@@ -38,12 +38,9 @@
 	};
 </script>
 
-<section
-	id="dashboard-navbar"
-	class="fixed h-[4.25rem] w-screen z-[900] bg-immich-bg dark:bg-immich-dark-bg text-sm"
->
+<section id="dashboard-navbar" class="fixed h-[4.25rem] w-screen z-[900] text-sm">
 	<div
-		class="grid grid-cols-[250px_auto] border-b dark:border-b-immich-dark-gray items-center py-2"
+		class="grid grid-cols-[250px_auto] border-b dark:border-b-immich-dark-gray items-center py-2 bg-immich-bg dark:bg-immich-dark-bg"
 	>
 		<a
 			data-sveltekit-preload-data="hover"
