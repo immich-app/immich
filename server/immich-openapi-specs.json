@@ -4160,53 +4160,143 @@
       "AllJobStatusResponseDto": {
         "type": "object",
         "properties": {
-          "thumbnail-generation-queue": {
+          "asset-uploaded": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "metadata-extraction-queue": {
+          "queue-video-conversion": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "video-conversion-queue": {
+          "video-conversion": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "object-tagging-queue": {
+          "queue-generate-thumbnails": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "clip-encoding-queue": {
+          "generate-jpeg-thumbnail": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "storage-template-migration-queue": {
+          "generate-webp-thumbnail": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "background-task-queue": {
+          "queue-metadata-extraction": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "search-queue": {
+          "exif-extraction": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "extract-video-metadata": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "queue-user-delete": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "user-delete": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "storage-template-migration": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "storage-template-migration-single": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "system-config-change": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "queue-object-tagging": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "detect-objects": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "classify-image": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "delete-files": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "search-index-assets": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "search-index-asset": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "search-index-albums": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "search-index-album": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "search-remove-album": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "search-remove-asset": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "queue-clip-encode": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "clip-encode": {
             "$ref": "#/components/schemas/JobStatusDto"
           }
         },
         "required": [
-          "thumbnail-generation-queue",
-          "metadata-extraction-queue",
-          "video-conversion-queue",
-          "object-tagging-queue",
-          "clip-encoding-queue",
-          "storage-template-migration-queue",
-          "background-task-queue",
-          "search-queue"
+          "asset-uploaded",
+          "queue-video-conversion",
+          "video-conversion",
+          "queue-generate-thumbnails",
+          "generate-jpeg-thumbnail",
+          "generate-webp-thumbnail",
+          "queue-metadata-extraction",
+          "exif-extraction",
+          "extract-video-metadata",
+          "queue-user-delete",
+          "user-delete",
+          "storage-template-migration",
+          "storage-template-migration-single",
+          "system-config-change",
+          "queue-object-tagging",
+          "detect-objects",
+          "classify-image",
+          "delete-files",
+          "search-index-assets",
+          "search-index-asset",
+          "search-index-albums",
+          "search-index-album",
+          "search-remove-album",
+          "search-remove-asset",
+          "queue-clip-encode",
+          "clip-encode"
         ]
       },
       "JobName": {
         "type": "string",
         "enum": [
-          "thumbnail-generation-queue",
-          "metadata-extraction-queue",
-          "video-conversion-queue",
-          "object-tagging-queue",
-          "clip-encoding-queue",
-          "background-task-queue",
-          "storage-template-migration-queue",
-          "search-queue"
+          "asset-uploaded",
+          "queue-video-conversion",
+          "video-conversion",
+          "queue-generate-thumbnails",
+          "generate-jpeg-thumbnail",
+          "generate-webp-thumbnail",
+          "queue-metadata-extraction",
+          "exif-extraction",
+          "extract-video-metadata",
+          "queue-user-delete",
+          "user-delete",
+          "storage-template-migration",
+          "storage-template-migration-single",
+          "system-config-change",
+          "queue-object-tagging",
+          "detect-objects",
+          "classify-image",
+          "delete-files",
+          "search-index-assets",
+          "search-index-asset",
+          "search-index-albums",
+          "search-index-album",
+          "search-remove-album",
+          "search-remove-asset",
+          "queue-clip-encode",
+          "clip-encode"
         ]
       },
       "JobCommand": {

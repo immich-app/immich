@@ -7,16 +7,13 @@ import {
   IGeocodingRepository,
   IJobRepository,
   JobName,
-  QueueName,
   WithoutProperty,
 } from '@app/domain';
 import { AssetType, ExifEntity } from '@app/infra/entities';
-import { Process, Processor } from '@nestjs/bull';
 import { Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import tz_lookup from '@photostructure/tz-lookup';
-import { Job } from 'bull';
 import { ExifDateTime, exiftool, Tags } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { Duration } from 'luxon';
@@ -32,7 +29,6 @@ interface ImmichTags extends Tags {
   ContentIdentifier?: string;
 }
 
-@Processor(QueueName.METADATA_EXTRACTION)
 export class MetadataExtractionProcessor {
   private logger = new Logger(MetadataExtractionProcessor.name);
   private assetCore: AssetCore;
@@ -60,9 +56,9 @@ export class MetadataExtractionProcessor {
     try {
       this.logger.log('Initializing Reverse Geocoding');
 
-      await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
+      // await this.jobRepository.pause(JobName.METADATA_EXTRACTION);
       await this.geocodingRepository.init();
-      await this.jobRepository.resume(QueueName.METADATA_EXTRACTION);
+      // await this.jobRepository.resume(JobName.METADATA_EXTRACTION);
 
       this.logger.log('Reverse Geocoding Initialized');
     } catch (error: any) {
@@ -70,10 +66,9 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process(JobName.QUEUE_METADATA_EXTRACTION)
-  async handleQueueMetadataExtraction(job: Job<IBaseJob>) {
+  async handleQueueMetadataExtraction(job: IBaseJob) {
     try {
-      const { force } = job.data;
+      const { force } = job;
       const assets = force
         ? await this.assetRepository.getAll()
         : await this.assetRepository.getWithout(WithoutProperty.EXIF);
@@ -88,11 +83,10 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process(JobName.EXIF_EXTRACTION)
-  async extractExifInfo(job: Job<IAssetUploadedJob>) {
+  async extractExifInfo(job: IAssetUploadedJob) {
     try {
-      let asset = job.data.asset;
-      const fileName = job.data.fileName;
+      let asset = job.asset;
+      const fileName = job.fileName;
       const exifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((e) => {
         this.logger.warn(`The exifData parsing failed due to: ${e} on file ${asset.originalPath}`);
         return null;
@@ -188,10 +182,9 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process({ name: JobName.EXTRACT_VIDEO_METADATA, concurrency: 2 })
-  async extractVideoMetadata(job: Job<IAssetUploadedJob>) {
-    let asset = job.data.asset;
-    const fileName = job.data.fileName;
+  async extractVideoMetadata(job: IAssetUploadedJob) {
+    let asset = job.asset;
+    const fileName = job.fileName;
 
     if (!asset.isVisible) {
       return;

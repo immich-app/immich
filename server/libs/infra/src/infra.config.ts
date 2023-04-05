@@ -1,4 +1,4 @@
-import { QueueName } from '@app/domain';
+import { JobName } from '@app/domain';
 import { BullModuleOptions } from '@nestjs/bull';
 import { RedisOptions } from 'ioredis';
 import { InitOptions } from 'local-reverse-geocoder';
@@ -36,7 +36,7 @@ export const bullConfig: BullModuleOptions = {
   },
 };
 
-export const bullQueues: BullModuleOptions[] = Object.values(QueueName).map((name) => ({ name }));
+export const bullQueues: BullModuleOptions[] = Object.values(JobName).map((name) => ({ name }));
 
 function parseTypeSenseConfig(): ConfigurationOptions {
   const typesenseURL = process.env.TYPESENSE_URL;

@@ -147,7 +147,7 @@ export class UserService {
     const users = await this.userRepository.getDeletedUsers();
     for (const user of users) {
       if (this.isReadyForDeletion(user)) {
-        await this.jobRepository.queue({ name: JobName.USER_DELETION, data: { user } });
+        await this.jobRepository.queue({ name: JobName.USER_DELETE, data: { user } });
       }
     }
   }

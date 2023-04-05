@@ -448,7 +448,7 @@ describe(UserService.name, () => {
       await sut.handleQueueUserDelete();
 
       expect(userRepositoryMock.getDeletedUsers).toHaveBeenCalled();
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.USER_DELETION, data: { user } });
+      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.USER_DELETE, data: { user } });
     });
   });
 

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IServerVersion } from '@app/domain';
+import { IServerVersion } from '../../domain.constant';
 
 export class ServerVersionReponseDto implements IServerVersion {
   @ApiProperty({ type: 'integer' })

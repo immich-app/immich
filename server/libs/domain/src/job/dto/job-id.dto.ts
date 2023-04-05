@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty } from 'class-validator';
-import { QueueName } from '../job.constants';
+import { JobName } from '../job.constants';
 
 export class JobIdDto {
   @IsNotEmpty()
-  @IsEnum(QueueName)
-  @ApiProperty({ type: String, enum: QueueName, enumName: 'JobName' })
-  jobId!: QueueName;
+  @IsEnum(JobName)
+  @ApiProperty({ type: String, enum: JobName, enumName: 'JobName' })
+  jobId!: JobName;
 }

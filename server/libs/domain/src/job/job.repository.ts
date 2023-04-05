@@ -1,4 +1,4 @@
-import { JobName, QueueName } from './job.constants';
+import { JobName } from './job.constants';
 import {
   IAssetJob,
   IAssetUploadedJob,
@@ -36,8 +36,8 @@ export type JobItem =
   | { name: JobName.GENERATE_WEBP_THUMBNAIL; data: IAssetJob }
 
   // User Deletion
-  | { name: JobName.USER_DELETE_CHECK }
-  | { name: JobName.USER_DELETION; data: IUserDeletionJob }
+  | { name: JobName.QUEUE_USER_DELETE }
+  | { name: JobName.USER_DELETE; data: IUserDeletionJob }
 
   // Storage Template
   | { name: JobName.STORAGE_TEMPLATE_MIGRATION }
@@ -73,9 +73,9 @@ export const IJobRepository = 'IJobRepository';
 
 export interface IJobRepository {
   queue(item: JobItem): Promise<void>;
-  pause(name: QueueName): Promise<void>;
-  resume(name: QueueName): Promise<void>;
-  empty(name: QueueName): Promise<void>;
-  getQueueStatus(name: QueueName): Promise<QueueStatus>;
-  getJobCounts(name: QueueName): Promise<JobCounts>;
+  pause(name: JobName): Promise<void>;
+  resume(name: JobName): Promise<void>;
+  empty(name: JobName): Promise<void>;
+  getQueueStatus(name: JobName): Promise<QueueStatus>;
+  getJobCounts(name: JobName): Promise<JobCounts>;
 }

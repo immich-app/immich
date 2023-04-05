@@ -1,14 +1,3 @@
-export enum QueueName {
-  THUMBNAIL_GENERATION = 'thumbnail-generation-queue',
-  METADATA_EXTRACTION = 'metadata-extraction-queue',
-  VIDEO_CONVERSION = 'video-conversion-queue',
-  OBJECT_TAGGING = 'object-tagging-queue',
-  CLIP_ENCODING = 'clip-encoding-queue',
-  BACKGROUND_TASK = 'background-task-queue',
-  STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration-queue',
-  SEARCH = 'search-queue',
-}
-
 export enum JobCommand {
   START = 'start',
   PAUSE = 'pause',
@@ -35,8 +24,8 @@ export enum JobName {
   EXTRACT_VIDEO_METADATA = 'extract-video-metadata',
 
   // user deletion
-  USER_DELETION = 'user-deletion',
-  USER_DELETE_CHECK = 'user-delete-check',
+  QUEUE_USER_DELETE = 'queue-user-delete',
+  USER_DELETE = 'user-delete',
 
   // storage template
   STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration',
