@@ -37,6 +37,7 @@ export enum TranscodePreset {
   ALL = 'all',
   OPTIMAL = 'optimal',
   REQUIRED = 'required',
+  DISABLED = 'disabled',
 }
 
 export interface SystemConfig {

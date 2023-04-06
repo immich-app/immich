@@ -50,20 +50,33 @@ export class MediaRepository implements IMediaRepository {
     const results = await probe(input);
 
     return {
-      streams: results.streams.map((stream) => ({
-        height: stream.height || 0,
-        width: stream.width || 0,
-        codecName: stream.codec_name,
-        codecType: stream.codec_type,
-        frameCount: Number.parseInt(stream.nb_frames ?? '0'),
-        rotation: Number.parseInt(`${stream.rotation ?? 0}`),
-      })),
+      format: {
+        formatName: results.format.format_name,
+        formatLongName: results.format.format_long_name,
+        duration: results.format.duration || 0,
+      },
+      videoStreams: results.streams
+        .filter((stream) => stream.codec_type === 'video')
+        .map((stream) => ({
+          height: stream.height || 0,
+          width: stream.width || 0,
+          codecName: stream.codec_name,
+          codecType: stream.codec_type,
+          frameCount: Number.parseInt(stream.nb_frames ?? '0'),
+          rotation: Number.parseInt(`${stream.rotation ?? 0}`),
+        })),
+      audioStreams: results.streams
+        .filter((stream) => stream.codec_type === 'audio')
+        .map((stream) => ({
+          codecType: stream.codec_type,
+          codecName: stream.codec_name,
+        })),
     };
   }
 
   transcode(input: string, output: string, options: string[]): Promise<void> {
     return new Promise((resolve, reject) => {
-      ffmpeg(input)
+      ffmpeg(input, { niceness: 10 })
         //
         .outputOptions(options)
         .output(output)

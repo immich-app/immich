@@ -14,8 +14,21 @@ export interface VideoStreamInfo {
   frameCount: number;
 }
 
+export interface AudioStreamInfo {
+  codecName?: string;
+  codecType?: string;
+}
+
+export interface VideoFormat {
+  formatName?: string;
+  formatLongName?: string;
+  duration: number;
+}
+
 export interface VideoInfo {
-  streams: VideoStreamInfo[];
+  format: VideoFormat;
+  videoStreams: VideoStreamInfo[];
+  audioStreams: AudioStreamInfo[];
 }
 
 export interface IMediaRepository {

@@ -165,12 +165,14 @@ class SystemConfigFFmpegDtoTranscodeEnum {
   static const all = SystemConfigFFmpegDtoTranscodeEnum._(r'all');
   static const optimal = SystemConfigFFmpegDtoTranscodeEnum._(r'optimal');
   static const required_ = SystemConfigFFmpegDtoTranscodeEnum._(r'required');
+  static const disabled = SystemConfigFFmpegDtoTranscodeEnum._(r'disabled');
 
   /// List of all possible values in this [enum][SystemConfigFFmpegDtoTranscodeEnum].
   static const values = <SystemConfigFFmpegDtoTranscodeEnum>[
     all,
     optimal,
     required_,
+    disabled,
   ];
 
   static SystemConfigFFmpegDtoTranscodeEnum? fromJson(dynamic value) => SystemConfigFFmpegDtoTranscodeEnumTypeTransformer().decode(value);
@@ -212,6 +214,7 @@ class SystemConfigFFmpegDtoTranscodeEnumTypeTransformer {
         case r'all': return SystemConfigFFmpegDtoTranscodeEnum.all;
         case r'optimal': return SystemConfigFFmpegDtoTranscodeEnum.optimal;
         case r'required': return SystemConfigFFmpegDtoTranscodeEnum.required_;
+        case r'disabled': return SystemConfigFFmpegDtoTranscodeEnum.disabled;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
