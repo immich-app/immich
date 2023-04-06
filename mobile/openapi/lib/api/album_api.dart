@@ -295,10 +295,12 @@ class AlbumApi {
   ///
   /// * [String] albumId (required):
   ///
+  /// * [String] name:
+  ///
   /// * [num] skip:
   ///
   /// * [String] key:
-  Future<Response> downloadArchiveWithHttpInfo(String albumId, { num? skip, String? key, }) async {
+  Future<Response> downloadArchiveWithHttpInfo(String albumId, { String? name, num? skip, String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/album/{albumId}/download'
       .replaceAll('{albumId}', albumId);
@@ -310,6 +312,9 @@ class AlbumApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (name != null) {
+      queryParams.addAll(_queryParams('', 'name', name));
+    }
     if (skip != null) {
       queryParams.addAll(_queryParams('', 'skip', skip));
     }
@@ -337,11 +342,13 @@ class AlbumApi {
   ///
   /// * [String] albumId (required):
   ///
+  /// * [String] name:
+  ///
   /// * [num] skip:
   ///
   /// * [String] key:
-  Future<MultipartFile?> downloadArchive(String albumId, { num? skip, String? key, }) async {
-    final response = await downloadArchiveWithHttpInfo(albumId,  skip: skip, key: key, );
+  Future<MultipartFile?> downloadArchive(String albumId, { String? name, num? skip, String? key, }) async {
+    final response = await downloadArchiveWithHttpInfo(albumId,  name: name, skip: skip, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -422,10 +422,12 @@ class AssetApi {
   ///
   /// Parameters:
   ///
+  /// * [String] name:
+  ///
   /// * [num] skip:
   ///
   /// * [String] key:
-  Future<Response> downloadLibraryWithHttpInfo({ num? skip, String? key, }) async {
+  Future<Response> downloadLibraryWithHttpInfo({ String? name, num? skip, String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/download-library';
 
@@ -436,6 +438,9 @@ class AssetApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (name != null) {
+      queryParams.addAll(_queryParams('', 'name', name));
+    }
     if (skip != null) {
       queryParams.addAll(_queryParams('', 'skip', skip));
     }
@@ -461,11 +466,13 @@ class AssetApi {
   ///
   /// Parameters:
   ///
+  /// * [String] name:
+  ///
   /// * [num] skip:
   ///
   /// * [String] key:
-  Future<MultipartFile?> downloadLibrary({ num? skip, String? key, }) async {
-    final response = await downloadLibraryWithHttpInfo( skip: skip, key: key, );
+  Future<MultipartFile?> downloadLibrary({ String? name, num? skip, String? key, }) async {
+    final response = await downloadLibraryWithHttpInfo( name: name, skip: skip, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

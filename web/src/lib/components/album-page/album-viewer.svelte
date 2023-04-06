@@ -264,6 +264,7 @@
 
 				const { data, status, headers } = await api.albumApi.downloadArchive(
 					album.id,
+					undefined,
 					skip || undefined,
 					sharedLink?.key,
 					{

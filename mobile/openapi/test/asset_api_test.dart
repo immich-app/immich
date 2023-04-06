@@ -68,7 +68,7 @@ void main() {
 
     // Current this is not used in any UI element
     //
-    //Future<MultipartFile> downloadLibrary({ num skip, String key }) async
+    //Future<MultipartFile> downloadLibrary({ String name, num skip, String key }) async
     test('test downloadLibrary', () async {
       // TODO
     });
