@@ -9,6 +9,7 @@
 	export let assets: AssetResponseDto[];
 	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
 	export let selectedAssets: Set<AssetResponseDto> = new Set();
+	export let disableAssetSelect = false;
 
 	let isShowAssetViewer = false;
 
@@ -96,6 +97,7 @@
 			<Thumbnail
 				{asset}
 				{thumbnailSize}
+				readonly={disableAssetSelect}
 				publicSharedKey={sharedLink?.key}
 				format={assets.length < 7 ? ThumbnailFormat.Jpeg : ThumbnailFormat.Webp}
 				on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}

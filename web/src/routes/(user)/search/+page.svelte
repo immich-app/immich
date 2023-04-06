@@ -6,15 +6,29 @@
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import ImageOffOutline from 'svelte-material-icons/ImageOffOutline.svelte';
 	import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
+	import { afterNavigate, goto } from '$app/navigation';
 
 	export let data: PageData;
+
+	// The GalleryViewer pushes it's own history state, which causes weird
+	// behavior for history.back(). To prevent that we store the previous page
+	// manually and navigate back to that.
+	let previousRoute = '/explore';
+
+	afterNavigate(({ from }) => {
+		// Prevent setting previousRoute to the current page.
+		if (from && from.route.id !== $page.route.id) {
+			previousRoute = from.url.href;
+		}
+	});
+
 	$: term = $page.url.searchParams.get('q') || data.term || '';
 </script>
 
 <section>
-	<ControlAppBar on:close-button-click={() => history.back()} backIcon={ArrowLeft}>
+	<ControlAppBar on:close-button-click={() => goto(previousRoute)} backIcon={ArrowLeft}>
 		<div class="w-full max-w-2xl flex-1 pl-4">
-			<SearchBar grayTheme={false} value={term} replaceHistoryState={true} />
+			<SearchBar grayTheme={false} value={term} />
 		</div>
 	</ControlAppBar>
 </section>
@@ -24,7 +38,7 @@
 		<section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
 			{#if data.results?.assets?.items.length > 0}
 				<div class="pl-4">
-					<GalleryViewer assets={data.results.assets.items} />
+					<GalleryViewer assets={data.results.assets.items} disableAssetSelect />
 				</div>
 			{:else}
 				<div
