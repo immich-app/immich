@@ -143,9 +143,11 @@ export class MediaService {
       }
 
       const options = this.getFfmpegOptions(mainVideoStream, config);
+
+      this.logger.log(`Start encoding video ${asset.id} ${options}`);
       await this.mediaRepository.transcode(input, output, options);
 
-      this.logger.log(`Converting Success ${asset.id}`);
+      this.logger.log(`Encoding success ${asset.id}`);
 
       await this.assetRepository.save({ id: asset.id, encodedVideoPath: output });
     } catch (error: any) {
