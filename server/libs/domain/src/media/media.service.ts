@@ -128,8 +128,8 @@ export class MediaService {
       this.storageRepository.mkdirSync(outputFolder);
 
       const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input);
-      const mainVideoStream = await this.getMainVideoStream(videoStreams);
-      const mainAudioStream = await this.getMainAudioStream(audioStreams);
+      const mainVideoStream = this.getMainVideoStream(videoStreams);
+      const mainAudioStream = this.getMainAudioStream(audioStreams);
       const containerExtension = format.formatName;
       if (!mainVideoStream || !mainAudioStream || !containerExtension) {
         return;
@@ -176,7 +176,7 @@ export class MediaService {
     const isTargetAudioCodec = audioStream.codecName === ffmpegConfig.targetAudioCodec;
     const isTargetContainer = ['mov,mp4,m4a,3gp,3g2,mj2', 'mp4', 'mov'].includes(containerExtension);
 
-    this.logger.log(audioStream.codecName, audioStream.codecType, containerExtension);
+    this.logger.debug(audioStream.codecName, audioStream.codecType, containerExtension);
 
     const allTargetsMatching = isTargetVideoCodec && isTargetAudioCodec && isTargetContainer;
 
@@ -220,7 +220,7 @@ export class MediaService {
 
     const shouldScale = Math.min(stream.height, stream.width) > targetResolution;
     if (shouldScale) {
-      options.push(`-vf scale=${scaling}`);
+      options.push(`-vf scale=1280:-2`);
     }
 
     return options;
