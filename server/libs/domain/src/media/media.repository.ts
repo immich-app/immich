@@ -3,6 +3,7 @@ export const IMediaRepository = 'IMediaRepository';
 export interface ResizeOptions {
   size: number;
   format: 'webp' | 'jpeg';
+  raw?: boolean;
 }
 
 export interface VideoStreamInfo {

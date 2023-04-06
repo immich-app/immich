@@ -55,21 +55,35 @@ export class MediaService {
     try {
       const resizePath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
       this.storageRepository.mkdirSync(resizePath);
-      const jpegThumbnailPath = join(resizePath, `${asset.id}.jpeg`);
+      const jpegThumbnailPath = join(resizePath, `${asset.id}.jpg`);
 
       const thumbnailDimension = 1440;
       if (asset.type == AssetType.IMAGE) {
-        try {
-          await this.mediaRepository.resize(asset.originalPath, jpegThumbnailPath, {
+        await this.mediaRepository
+          .resize(asset.originalPath, jpegThumbnailPath, {
             size: thumbnailDimension,
             format: 'jpeg',
+          })
+          .catch((error) => {
+            this.logger.warn(
+              `Failed to generate jpeg thumbnail using sharp, trying with darktable-cli (asset=${asset.id})`,
+              error?.stack,
+            );
+
+            return this.mediaRepository.resize(asset.originalPath, jpegThumbnailPath, {
+              size: thumbnailDimension,
+              format: 'jpeg',
+              raw: true,
+            });
+          })
+          .catch((error) => {
+            this.logger.warn(
+              `Failed to generate jpeg thumbnail using darktable-cli, trying exiftool-vendored (asset=${asset.id})`,
+              error?.stack,
+            );
+
+            return this.mediaRepository.extractThumbnailFromExif(asset.originalPath, jpegThumbnailPath);
           });
-        } catch (error) {
-          this.logger.warn(
-            `Failed to generate jpeg thumbnail using sharp, trying with exiftool-vendored (asset=${asset.id})`,
-          );
-          await this.mediaRepository.extractThumbnailFromExif(asset.originalPath, jpegThumbnailPath);
-        }
       }
 
       if (asset.type == AssetType.VIDEO) {
@@ -100,7 +114,7 @@ export class MediaService {
       return;
     }
 
-    const webpPath = asset.resizePath.replace('jpeg', 'webp');
+    const webpPath = asset.resizePath.replace('jpeg', 'webp').replace('jpg', 'webp');
 
     try {
       await this.mediaRepository.resize(asset.resizePath, webpPath, { size: 250, format: 'webp' });

@@ -1,12 +1,18 @@
-import { IMediaRepository, ResizeOptions, VideoInfo } from '@app/domain';
+import { APP_MEDIA_LOCATION, IMediaRepository, ResizeOptions, VideoInfo } from '@app/domain';
+import { Logger } from '@nestjs/common';
+import { exec as execCallback } from 'child_process';
 import { exiftool } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
+import { stat, unlink } from 'fs/promises';
 import sharp from 'sharp';
 import { promisify } from 'util';
 
+const exec = promisify(execCallback);
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 
 export class MediaRepository implements IMediaRepository {
+  private logger = new Logger(MediaRepository.name);
+
   extractThumbnailFromExif(input: string, output: string): Promise<void> {
     return exiftool.extractThumbnail(input, output);
   }
@@ -22,11 +28,31 @@ export class MediaRepository implements IMediaRepository {
         return;
 
       case 'jpeg':
-        await sharp(input, { failOnError: false })
-          .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
-          .jpeg()
-          .rotate()
-          .toFile(output);
+        if (!options.raw) {
+          await sharp(input, { failOnError: false })
+            .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
+            .jpeg()
+            .rotate()
+            .toFile(output);
+        } else {
+          try {
+            await stat(output);
+            await unlink(output);
+          } catch {}
+          const command = `darktable-cli '${input}' '${output}' --apply-custom-presets false --width ${options.size} --height ${options.size} --core --library :memory:`;
+          this.logger.verbose(command);
+          let { stdout, stderr } = await exec(command, { env: { HOME: APP_MEDIA_LOCATION } });
+
+          stdout = stdout.trim();
+          if (stdout) {
+            this.logger.debug(stdout);
+          }
+
+          stderr = stderr.trim();
+          if (stderr) {
+            this.logger.debug(stderr);
+          }
+        }
         return;
     }
   }
