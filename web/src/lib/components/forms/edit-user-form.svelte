@@ -14,21 +14,12 @@
 
 	const dispatch = createEventDispatcher();
 
-	const editUser = async (event: SubmitEvent) => {
+	const editUser = async () => {
 		try {
-			const formElement = event.target as HTMLFormElement;
-			const form = new FormData(formElement);
+			const { id, email, firstName, lastName } = user;
+			const { status } = await api.userApi.updateUser({ id, email, firstName, lastName });
 
-			const firstName = form.get('firstName');
-			const lastName = form.get('lastName');
-
-			const { status } = await api.userApi.updateUser({
-				id: user.id,
-				firstName: firstName?.toString(),
-				lastName: lastName?.toString()
-			});
-
-			if (status == 200) {
+			if (status === 200) {
 				dispatch('edit-success');
 			}
 		} catch (e) {
@@ -79,13 +70,12 @@
 
 	<form on:submit|preventDefault={editUser} autocomplete="off">
 		<div class="m-4 flex flex-col gap-2">
-			<label class="immich-form-label" for="email">Email (cannot change)</label>
+			<label class="immich-form-label" for="email">Email</label>
 			<input
-				class="immich-form-input disabled:bg-gray-200 hover:cursor-not-allowed"
+				class="immich-form-input"
 				id="email"
 				name="email"
 				type="email"
-				disabled
 				bind:value={user.email}
 			/>
 		</div>
