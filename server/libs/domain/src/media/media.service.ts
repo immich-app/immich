@@ -220,7 +220,7 @@ export class MediaService {
 
     const shouldScale = Math.min(stream.height, stream.width) > targetResolution;
     if (shouldScale) {
-      options.push(`-vf scale=1280:-2`);
+      options.push(`-vf scale=${scaling}`);
     }
 
     return options;
