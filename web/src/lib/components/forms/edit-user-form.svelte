@@ -81,7 +81,7 @@
 		<div class="m-4 flex flex-col gap-2">
 			<label class="immich-form-label" for="email">Email (cannot change)</label>
 			<input
-				class="immich-form-input disabled:bg-gray-200 hover:cursor-not-allowed"
+				class="immich-form-input disabled hover:cursor-not-allowed"
 				id="email"
 				name="email"
 				type="email"
