@@ -1,6 +1,6 @@
-import { IsNotEmpty } from 'class-validator';
+import { ValidateUUID } from 'apps/immich/src/decorators/validate-uuid.decorator';
 
 export class AddUsersDto {
-  @IsNotEmpty()
+  @ValidateUUID({ each: true })
   sharedUserIds!: string[];
 }

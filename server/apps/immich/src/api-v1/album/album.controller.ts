@@ -1,16 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  ValidationPipe,
-  Put,
-  Query,
-  Response,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Query, Response } from '@nestjs/common';
 import { ParseMeUUIDPipe } from '../validation/parse-me-uuid-pipe';
 import { AlbumService } from './album.service';
 import { CreateAlbumDto } from './dto/create-album.dto';
@@ -33,9 +21,11 @@ import {
 import { DownloadDto } from '../asset/dto/download-library.dto';
 import { CreateAlbumShareLinkDto as CreateAlbumSharedLinkDto } from './dto/create-album-shared-link.dto';
 import { AlbumIdDto } from './dto/album-id.dto';
+import { UseValidation } from '../../decorators/use-validation.decorator';
 
 @ApiTags('Album')
 @Controller('album')
+@UseValidation()
 export class AlbumController {
   constructor(private readonly albumService: AlbumService) {}
 
@@ -47,7 +37,8 @@ export class AlbumController {
 
   @Authenticated()
   @Post()
-  async createAlbum(@GetAuthUser() authUser: AuthUserDto, @Body(ValidationPipe) createAlbumDto: CreateAlbumDto) {
+  async createAlbum(@GetAuthUser() authUser: AuthUserDto, @Body() createAlbumDto: CreateAlbumDto) {
+    // TODO: Handle nonexistent sharedWithUserIds and assetIds.
     return this.albumService.create(authUser, createAlbumDto);
   }
 
@@ -55,9 +46,10 @@ export class AlbumController {
   @Put('/:albumId/users')
   async addUsersToAlbum(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) addUsersDto: AddUsersDto,
+    @Body() addUsersDto: AddUsersDto,
     @Param() { albumId }: AlbumIdDto,
   ) {
+    // TODO: Handle nonexistent sharedUserIds.
     return this.albumService.addUsersToAlbum(authUser, addUsersDto, albumId);
   }
 
@@ -65,9 +57,11 @@ export class AlbumController {
   @Put('/:albumId/assets')
   async addAssetsToAlbum(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) addAssetsDto: AddAssetsDto,
+    @Body() addAssetsDto: AddAssetsDto,
     @Param() { albumId }: AlbumIdDto,
   ): Promise<AddAssetsResponseDto> {
+    // TODO: Handle nonexistent assetIds.
+    // TODO: Disallow adding assets of another user to an album.
     return this.albumService.addAssetsToAlbum(authUser, addAssetsDto, albumId);
   }
 
@@ -81,7 +75,7 @@ export class AlbumController {
   @Delete('/:albumId/assets')
   async removeAssetFromAlbum(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) removeAssetsDto: RemoveAssetsDto,
+    @Body() removeAssetsDto: RemoveAssetsDto,
     @Param() { albumId }: AlbumIdDto,
   ): Promise<AlbumResponseDto> {
     return this.albumService.removeAssetsFromAlbum(authUser, removeAssetsDto, albumId);
@@ -107,9 +101,11 @@ export class AlbumController {
   @Patch('/:albumId')
   async updateAlbumInfo(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) updateAlbumInfoDto: UpdateAlbumDto,
+    @Body() updateAlbumInfoDto: UpdateAlbumDto,
     @Param() { albumId }: AlbumIdDto,
   ) {
+    // TODO: Handle nonexistent albumThumbnailAssetId.
+    // TODO: Disallow setting asset from other user as albumThumbnailAssetId.
     return this.albumService.updateAlbumInfo(authUser, updateAlbumInfoDto, albumId);
   }
 
@@ -119,7 +115,7 @@ export class AlbumController {
   async downloadArchive(
     @GetAuthUser() authUser: AuthUserDto,
     @Param() { albumId }: AlbumIdDto,
-    @Query(new ValidationPipe({ transform: true })) dto: DownloadDto,
+    @Query() dto: DownloadDto,
     @Response({ passthrough: true }) res: Res,
   ) {
     this.albumService.checkDownloadAccess(authUser);
@@ -140,7 +136,7 @@ export class AlbumController {
   @Post('/create-shared-link')
   async createAlbumSharedLink(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) createAlbumShareLinkDto: CreateAlbumSharedLinkDto,
+    @Body() createAlbumShareLinkDto: CreateAlbumSharedLinkDto,
   ) {
     return this.albumService.createAlbumSharedLink(authUser, createAlbumShareLinkDto);
   }

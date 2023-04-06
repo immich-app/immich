@@ -414,7 +414,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **downloadLibrary**
-> MultipartFile downloadLibrary(skip, key)
+> MultipartFile downloadLibrary(name, skip, key)
 
 
 
@@ -435,11 +435,12 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
 
 final api_instance = AssetApi();
+final name = name_example; // String | 
 final skip = 8.14; // num | 
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.downloadLibrary(skip, key);
+    final result = api_instance.downloadLibrary(name, skip, key);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->downloadLibrary: $e\n');
@@ -450,6 +451,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
+ **name** | **String**|  | [optional] 
  **skip** | **num**|  | [optional] 
  **key** | **String**|  | [optional] 
 

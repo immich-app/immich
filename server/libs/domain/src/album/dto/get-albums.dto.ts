@@ -1,7 +1,8 @@
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsOptional, IsUUID } from 'class-validator';
+import { IsBoolean, IsOptional } from 'class-validator';
 import { toBoolean } from 'apps/immich/src/utils/transform.util';
 import { ApiProperty } from '@nestjs/swagger';
+import { ValidateUUID } from 'apps/immich/src/decorators/validate-uuid.decorator';
 
 export class GetAlbumsDto {
   @IsOptional()
@@ -20,8 +21,6 @@ export class GetAlbumsDto {
    * Ignores the shared parameter
    * undefined: get all albums
    */
-  @IsOptional()
-  @IsUUID(4)
-  @ApiProperty({ format: 'uuid' })
+  @ValidateUUID({ optional: true })
   assetId?: string;
 }

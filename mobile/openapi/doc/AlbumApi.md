@@ -294,7 +294,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **downloadArchive**
-> MultipartFile downloadArchive(albumId, skip, key)
+> MultipartFile downloadArchive(albumId, name, skip, key)
 
 
 
@@ -316,11 +316,12 @@ import 'package:openapi/api.dart';
 
 final api_instance = AlbumApi();
 final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final name = name_example; // String | 
 final skip = 8.14; // num | 
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.downloadArchive(albumId, skip, key);
+    final result = api_instance.downloadArchive(albumId, name, skip, key);
     print(result);
 } catch (e) {
     print('Exception when calling AlbumApi->downloadArchive: $e\n');
@@ -332,6 +333,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **albumId** | **String**|  | 
+ **name** | **String**|  | [optional] 
  **skip** | **num**|  | [optional] 
  **key** | **String**|  | [optional] 
 
