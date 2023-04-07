@@ -58,7 +58,9 @@ export class MediaService {
             format: 'jpeg',
           });
         } catch (error) {
-          this.logger.warn(`Failed to generate jpeg thumbnail using sharp, trying with exiftool-vendored (asset=${asset.id})`);
+          this.logger.warn(
+            `Failed to generate jpeg thumbnail using sharp, trying with exiftool-vendored (asset=${asset.id})`,
+          );
           await this.mediaRepository.extractThumbnailFromExif(asset.originalPath, jpegThumbnailPath);
         }
       }
