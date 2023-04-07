@@ -5,6 +5,8 @@
 	import { AssetResponseDto, SharedLinkResponseDto, ThumbnailFormat } from '@api';
 
 	import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
+	import { onMount } from 'svelte';
+	import justifiedLayout from 'justified-layout';
 
 	export let assets: AssetResponseDto[];
 	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
@@ -18,20 +20,51 @@
 
 	let viewWidth: number;
 	let thumbnailSize = 300;
+	let justifiedLayoutResult: any;
+	const geoArray: Array<number> = [];
 
-	$: isMultiSelectionMode = selectedAssets.size > 0;
+	onMount(() => {
+		getAssetRatio();
+		buildJustifiedLayout();
+	});
 
 	$: {
-		if (assets.length < 6) {
-			thumbnailSize = Math.min(320, Math.floor(viewWidth / assets.length - assets.length));
-		} else {
-			if (viewWidth > 600) thumbnailSize = Math.floor(viewWidth / 6 - 6);
-			else if (viewWidth > 400) thumbnailSize = Math.floor(viewWidth / 4 - 6);
-			else if (viewWidth > 300) thumbnailSize = Math.floor(viewWidth / 2 - 6);
-			else if (viewWidth > 200) thumbnailSize = Math.floor(viewWidth / 2 - 6);
-			else if (viewWidth > 100) thumbnailSize = Math.floor(viewWidth / 1 - 6);
+		if (viewWidth) {
+			buildJustifiedLayout();
 		}
 	}
+	$: isMultiSelectionMode = selectedAssets.size > 0;
+
+	const getAssetRatio = () => {
+		assets.forEach((a) => {
+			if (a.exifInfo?.exifImageHeight && a.exifInfo?.exifImageWidth) {
+				const height = a.exifInfo?.exifImageHeight;
+				const width = a.exifInfo?.exifImageWidth;
+				const orientation = Number(a.exifInfo?.orientation);
+
+				if (orientation !== null && orientation !== undefined) {
+					if (orientation == 6 || orientation == -90) {
+						geoArray.push(height / width);
+						return;
+					} else {
+						geoArray.push(width / height);
+						return;
+					}
+				}
+
+				geoArray.push(width / height);
+			} else {
+				geoArray.push(1);
+			}
+		});
+	};
+
+	const buildJustifiedLayout = () => {
+		justifiedLayoutResult = justifiedLayout(geoArray, {
+			targetRowHeight: 250,
+			containerWidth: viewWidth
+		});
+	};
 
 	const viewAssetHandler = (event: CustomEvent) => {
 		const { asset }: { asset: AssetResponseDto } = event.detail;
@@ -93,17 +126,20 @@
 
 {#if assets.length > 0}
 	<div class="flex flex-wrap gap-1 w-full pb-20" bind:clientWidth={viewWidth}>
-		{#each assets as asset (asset.id)}
-			<Thumbnail
-				{asset}
-				{thumbnailSize}
-				readonly={disableAssetSelect}
-				publicSharedKey={sharedLink?.key}
-				format={assets.length < 7 ? ThumbnailFormat.Jpeg : ThumbnailFormat.Webp}
-				on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
-				on:select={selectAssetHandler}
-				selected={selectedAssets.has(asset)}
-			/>
+		{#each assets as asset, index (asset.id)}
+			{#if justifiedLayoutResult?.boxes != null && justifiedLayoutResult?.boxes.length > 0}
+				<Thumbnail
+					{asset}
+					thumbnailWidth={justifiedLayoutResult.boxes[index].width || 250}
+					thumbnailHeight={justifiedLayoutResult.boxes[index].height || 250}
+					readonly={disableAssetSelect}
+					publicSharedKey={sharedLink?.key}
+					format={assets.length < 7 ? ThumbnailFormat.Jpeg : ThumbnailFormat.Webp}
+					on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
+					on:select={selectAssetHandler}
+					selected={selectedAssets.has(asset)}
+				/>
+			{/if}
 		{/each}
 	</div>
 {/if}
