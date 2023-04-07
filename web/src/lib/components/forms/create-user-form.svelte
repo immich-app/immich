@@ -6,6 +6,7 @@
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
+	import Button from '../elements/buttons/button.svelte';
 
 	let error: string;
 	let success: string;
@@ -140,13 +141,8 @@
 		{#if success}
 			<p class="text-immich-primary ml-4 text-sm">{success}</p>
 		{/if}
-		<div class="flex w-full">
-			<button
-				type="submit"
-				class="m-4 bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 dark:hover:bg-immich-dark-primary/80 px-6 py-3 text-white dark:text-immich-dark-gray rounded-full shadow-md w-full font-medium"
-				disabled={isCreatingUser}
-				>Create
-			</button>
+		<div class="flex w-full p-4">
+			<Button type="submit" disabled={isCreatingUser} fullwidth>Create</Button>
 		</div>
 	</form>
 </div>

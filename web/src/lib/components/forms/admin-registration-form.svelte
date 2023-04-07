@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { AppRoute } from '$lib/constants';
 	import { api } from '@api';
+	import Button from '../elements/buttons/button.svelte';
 
 	let error: string;
 	let password = '';
@@ -115,6 +116,6 @@
 	{/if}
 
 	<div class="my-5 flex w-full">
-		<button type="submit" class="immich-btn-primary-big">Sign Up</button>
+		<Button type="submit" size="lg" fullwidth>Sign up</Button>
 	</div>
 </form>

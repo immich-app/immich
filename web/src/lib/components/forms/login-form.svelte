@@ -6,6 +6,7 @@
 	import { api, oauth, OAuthConfigResponseDto } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
+	import Button from '../elements/buttons/button.svelte';
 
 	let error: string;
 	let email = '';
@@ -110,22 +111,20 @@
 		</div>
 
 		<div class="my-5 flex w-full">
-			<button
-				type="submit"
-				class="immich-btn-primary-big inline-flex items-center h-14"
-				disabled={loading || oauthLoading}
-			>
+			<Button type="submit" size="lg" fullwidth disabled={loading || oauthLoading}>
 				{#if loading}
-					<LoadingSpinner />
+					<span class="h-6">
+						<LoadingSpinner />
+					</span>
 				{:else}
 					Login
 				{/if}
-			</button>
+			</Button>
 		</div>
 	</form>
 {/if}
 
-{#if authConfig.enabled}
+{#if !authConfig.enabled}
 	{#if authConfig.passwordLoginEnabled}
 		<div class="inline-flex items-center justify-center w-full">
 			<hr class="w-3/4 h-px my-4 bg-gray-200 border-0 dark:bg-gray-600" />
@@ -141,19 +140,21 @@
 			<p class="text-red-400" transition:fade>{oauthError}</p>
 		{/if}
 		<a href={authConfig.url} class="flex w-full">
-			<button
+			<Button
 				type="button"
 				disabled={loading || oauthLoading}
-				class={'inline-flex items-center h-14 ' + authConfig.passwordLoginEnabled
-					? 'immich-btn-secondary-big'
-					: 'immich-btn-primary-big'}
+				size="lg"
+				fullwidth
+				color={authConfig.passwordLoginEnabled ? 'secondary' : 'primary'}
 			>
 				{#if oauthLoading}
-					<LoadingSpinner />
+					<span class="h-6">
+						<LoadingSpinner />
+					</span>
 				{:else}
 					{authConfig.buttonText || 'Login with OAuth'}
 				{/if}
-			</button>
+			</Button>
 		</a>
 	</div>
 {/if}

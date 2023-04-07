@@ -17,7 +17,7 @@
 	import AssetSelection from './asset-selection.svelte';
 	import UserSelectionModal from './user-selection-modal.svelte';
 	import ShareInfoModal from './share-info-modal.svelte';
-	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
+	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 	import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
@@ -42,6 +42,7 @@
 	import { locale } from '$lib/stores/preferences.store';
 	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
 	import ImmichLogo from '../shared-components/immich-logo.svelte';
+	import Button from '../elements/buttons/button.svelte';
 
 	export let album: AlbumResponseDto;
 	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
@@ -469,12 +470,14 @@
 				{/if}
 
 				{#if isCreatingSharedAlbum && album.sharedUsers.length == 0}
-					<button
+					<Button
+						size="sm"
+						rounded="lg"
 						disabled={album.assetCount == 0}
 						on:click={() => (isShowShareUserSelection = true)}
-						class="immich-text-button border bg-immich-primary dark:bg-immich-dark-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed dark:text-immich-dark-bg dark:border-immich-dark-gray"
-						><span class="px-2">Share</span></button
 					>
+						Share
+					</Button>
 				{/if}
 			</svelte:fragment>
 		</ControlAppBar>

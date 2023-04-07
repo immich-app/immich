@@ -6,6 +6,7 @@
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
+	import Button from '../elements/buttons/button.svelte';
 
 	export let user: UserResponseDto;
 
@@ -112,16 +113,8 @@
 			<p class="text-immich-primary ml-4 text-sm">{success}</p>
 		{/if}
 		<div class="flex w-full px-4 gap-4 mt-8">
-			<button
-				on:click={resetPassword}
-				class="flex-1 transition-colors bg-[#F9DEDC] hover:bg-red-50 text-[#410E0B] px-6 py-3 rounded-full w-full font-medium"
-				>Reset password
-			</button>
-			<button
-				type="submit"
-				class="flex-1 transition-colors bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 dark:hover:bg-immich-dark-primary/80 dark:text-immich-dark-gray px-6 py-3 text-white rounded-full shadow-md w-full font-medium"
-				>Confirm
-			</button>
+			<Button color="light-red" fullwidth on:click={resetPassword}>Reset password</Button>
+			<Button type="submit" fullwidth>Confirm</Button>
 		</div>
 	</form>
 </div>

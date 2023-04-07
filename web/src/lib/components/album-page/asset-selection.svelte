@@ -12,6 +12,7 @@
 		selectedAssets
 	} from '$lib/stores/asset-interaction.store';
 	import { locale } from '$lib/stores/preferences.store';
+	import Button from '../elements/buttons/button.svelte';
 
 	const dispatch = createEventDispatcher();
 
@@ -63,12 +64,14 @@
 			>
 				Select from computer
 			</button>
-			<button
+			<Button
+				size="sm"
+				rounded="lg"
 				disabled={$selectedAssets.size === 0}
 				on:click={addSelectedAssets}
-				class="immich-text-button border bg-immich-primary dark:bg-immich-dark-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed dark:text-immich-dark-bg dark:border-immich-dark-gray"
-				><span class="px-2">Done</span></button
 			>
+				Done
+			</Button>
 		</svelte:fragment>
 	</ControlAppBar>
 	<section class="pt-[100px] pl-[70px] grid h-screen bg-immich-bg dark:bg-immich-dark-bg">

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { api, UserResponseDto } from '@api';
 	import { createEventDispatcher } from 'svelte';
+	import Button from '../elements/buttons/button.svelte';
 
 	export let user: UserResponseDto;
 	let error: string;
@@ -78,6 +79,6 @@
 		<p class="text-immich-primary text-sm">{success}</p>
 	{/if}
 	<div class="my-5 flex w-full">
-		<button type="submit" class="immich-btn-primary-big">Change Password</button>
+		<Button type="submit" size="lg" fullwidth>Change password</Button>
 	</div>
 </form>

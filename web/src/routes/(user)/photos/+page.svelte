@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
 	import AlbumSelectionModal from '$lib/components/shared-components/album-selection-modal.svelte';
-	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
+	import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 	import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';

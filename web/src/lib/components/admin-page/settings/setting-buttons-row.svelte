@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '$lib/components/elements/buttons/button.svelte';
 	import { createEventDispatcher } from 'svelte';
 
 	const dispatch = createEventDispatcher();
@@ -19,17 +20,7 @@
 	</div>
 
 	<div class="right">
-		<button
-			on:click={() => dispatch('reset')}
-			class="text-sm bg-gray-500 dark:bg-gray-200 hover:bg-gray-500/75 dark:hover:bg-gray-200/80 px-4 py-2 text-white dark:text-immich-dark-gray rounded-full shadow-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-			>Reset
-		</button>
-
-		<button
-			type="submit"
-			on:click={() => dispatch('save')}
-			class="text-sm bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 dark:hover:bg-immich-dark-primary/80 px-4 py-2 text-white dark:text-immich-dark-gray rounded-full shadow-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-			>Save
-		</button>
+		<Button size="sm" color="gray" on:click={() => dispatch('reset')}>Reset</Button>
+		<Button size="sm" on:click={() => dispatch('save')}>Save</Button>
 	</div>
 </div>

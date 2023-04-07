@@ -7,6 +7,7 @@
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
+	import Button from '../elements/buttons/button.svelte';
 
 	export let secret = '';
 
@@ -54,16 +55,8 @@
 		</div>
 
 		<div class="flex w-full px-4 gap-4 mt-8">
-			<button
-				on:click={() => handleCopy()}
-				class="flex-1 transition-colors bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 dark:hover:bg-immich-dark-primary/80 dark:text-immich-dark-gray px-6 py-3 text-white rounded-full shadow-md w-full font-medium"
-				>Copy to Clipboard</button
-			>
-			<button
-				on:click={() => handleDone()}
-				class="flex-1 transition-colors bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 dark:hover:bg-immich-dark-primary/80 dark:text-immich-dark-gray px-6 py-3 text-white rounded-full shadow-md w-full font-medium"
-				>Done</button
-			>
+			<Button on:click={() => handleCopy()} fullwidth>Copy to Clipboard</Button>
+			<Button on:click={() => handleDone()} fullwidth>Done</Button>
 		</div>
 	</div>
 </FullScreenModal>

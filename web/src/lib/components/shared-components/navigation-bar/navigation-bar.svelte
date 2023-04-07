@@ -10,6 +10,7 @@
 	import AccountInfoPanel from './account-info-panel.svelte';
 	import ImmichLogo from '../immich-logo.svelte';
 	import SearchBar from '../search-bar/search-bar.svelte';
+	import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
 	export let user: UserResponseDto;
 	export let shouldShowUploadButton = true;
 
@@ -61,24 +62,27 @@
 				<ThemeButton />
 
 				{#if !$page.url.pathname.includes('/admin') && shouldShowUploadButton}
-					<button
-						in:fly={{ x: 50, duration: 250 }}
-						on:click={() => dispatch('uploadClicked')}
-						class="immich-text-button dark:hover:bg-immich-dark-primary/25 dark:text-immich-dark-fg"
-					>
-						<TrayArrowUp size="20" />
-						<span> Upload </span>
-					</button>
+					<div in:fly={{ x: 50, duration: 250 }}>
+						<LinkButton on:click={() => dispatch('uploadClicked')}>
+							<div class="flex gap-2">
+								<TrayArrowUp size="20" />
+								<span>Upload</span>
+							</div>
+						</LinkButton>
+					</div>
 				{/if}
 
 				{#if user.isAdmin}
 					<a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_USER_MANAGEMENT}>
-						<button
-							class={`flex place-items-center place-content-center gap-2 hover:bg-immich-primary/5  dark:hover:bg-immich-dark-primary/25 dark:text-immich-dark-fg p-2 rounded-lg font-medium ${
-								$page.url.pathname.includes('/admin') &&
-								'text-immich-primary dark:immich-dark-primary underline'
-							}`}>Administration</button
-						>
+						<LinkButton>
+							<span
+								class={$page.url.pathname.includes('/admin')
+									? 'text-immich-primary dark:text-immich-dark-primary underline'
+									: ''}
+							>
+								Administration
+							</span>
+						</LinkButton>
 					</a>
 				{/if}
 

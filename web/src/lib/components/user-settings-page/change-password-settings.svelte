@@ -8,6 +8,7 @@
 	import SettingInputField, {
 		SettingInputFieldType
 	} from '../admin-page/settings/setting-input-field.svelte';
+	import Button from '../elements/buttons/button.svelte';
 
 	let password = '';
 	let newPassword = '';
@@ -64,13 +65,12 @@
 				/>
 
 				<div class="flex justify-end">
-					<button
+					<Button
 						type="submit"
+						size="sm"
 						disabled={!(password && newPassword && newPassword === confirmPassword)}
-						on:click={() => handleChangePassword()}
-						class="text-sm bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 dark:hover:bg-immich-dark-primary/80 px-4 py-2 text-white dark:text-immich-dark-gray rounded-full shadow-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-						>Save
-					</button>
+						on:click={() => handleChangePassword()}>Save</Button
+					>
 				</div>
 			</div>
 		</form>
