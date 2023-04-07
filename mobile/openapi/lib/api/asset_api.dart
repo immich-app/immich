@@ -16,10 +16,7 @@ class AssetApi {
 
   final ApiClient apiClient;
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'PATCH /asset/shared-link/add' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [AddAssetsDto] addAssetsDto (required):
@@ -54,8 +51,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [AddAssetsDto] addAssetsDto (required):
@@ -188,10 +183,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /asset/shared-link' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [CreateAssetsShareLinkDto] createAssetsShareLinkDto (required):
@@ -220,8 +212,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [CreateAssetsShareLinkDto] createAssetsShareLinkDto (required):
@@ -240,10 +230,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'DELETE /asset' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [DeleteAssetDto] deleteAssetDto (required):
@@ -272,8 +259,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [DeleteAssetDto] deleteAssetDto (required):
@@ -295,10 +280,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'GET /asset/download/{assetId}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] assetId (required):
@@ -334,8 +316,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [String] assetId (required):
@@ -356,10 +336,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /asset/download-files' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [DownloadFilesDto] downloadFilesDto (required):
@@ -394,8 +371,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [DownloadFilesDto] downloadFilesDto (required):
@@ -623,10 +598,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /asset/time-bucket' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [GetAssetByTimeBucketDto] getAssetByTimeBucketDto (required):
@@ -655,8 +627,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [GetAssetByTimeBucketDto] getAssetByTimeBucketDto (required):
@@ -678,10 +648,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /asset/count-by-time-bucket' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [GetAssetCountByTimeBucketDto] getAssetCountByTimeBucketDto (required):
@@ -710,8 +677,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [GetAssetCountByTimeBucketDto] getAssetCountByTimeBucketDto (required):
@@ -730,9 +695,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
+  /// Performs an HTTP 'GET /asset/count-by-user-id' operation and returns the [Response].
   Future<Response> getAssetCountByUserIdWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/asset/count-by-user-id';
@@ -758,7 +721,6 @@ class AssetApi {
     );
   }
 
-  /// 
   Future<AssetCountByUserIdResponseDto?> getAssetCountByUserId() async {
     final response = await getAssetCountByUserIdWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -774,9 +736,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
+  /// Performs an HTTP 'GET /asset/search-terms' operation and returns the [Response].
   Future<Response> getAssetSearchTermsWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/asset/search-terms';
@@ -802,7 +762,6 @@ class AssetApi {
     );
   }
 
-  /// 
   Future<List<String>?> getAssetSearchTerms() async {
     final response = await getAssetSearchTermsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -821,10 +780,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'GET /asset/thumbnail/{assetId}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] assetId (required):
@@ -865,8 +821,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [String] assetId (required):
@@ -889,9 +843,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
+  /// Performs an HTTP 'GET /asset/curated-locations' operation and returns the [Response].
   Future<Response> getCuratedLocationsWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/asset/curated-locations';
@@ -917,7 +869,6 @@ class AssetApi {
     );
   }
 
-  /// 
   Future<List<CuratedLocationsResponseDto>?> getCuratedLocations() async {
     final response = await getCuratedLocationsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -936,9 +887,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
+  /// Performs an HTTP 'GET /asset/curated-objects' operation and returns the [Response].
   Future<Response> getCuratedObjectsWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/asset/curated-objects';
@@ -964,7 +913,6 @@ class AssetApi {
     );
   }
 
-  /// 
   Future<List<CuratedObjectsResponseDto>?> getCuratedObjects() async {
     final response = await getCuratedObjectsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -1039,10 +987,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'PATCH /asset/shared-link/remove' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [RemoveAssetsDto] removeAssetsDto (required):
@@ -1077,8 +1022,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [RemoveAssetsDto] removeAssetsDto (required):
@@ -1099,10 +1042,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /asset/search' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [SearchAssetDto] searchAssetDto (required):
@@ -1131,8 +1071,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [SearchAssetDto] searchAssetDto (required):
@@ -1154,10 +1092,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'GET /asset/file/{assetId}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] assetId (required):
@@ -1203,8 +1138,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [String] assetId (required):
@@ -1286,10 +1219,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /asset/upload' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [AssetTypeEnum] assetType (required):
@@ -1395,8 +1325,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [AssetTypeEnum] assetType (required):

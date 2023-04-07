@@ -16,10 +16,7 @@ class AlbumApi {
 
   final ApiClient apiClient;
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'PUT /album/{albumId}/assets' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -57,8 +54,6 @@ class AlbumApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -81,10 +76,7 @@ class AlbumApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'PUT /album/{albumId}/users' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -116,8 +108,6 @@ class AlbumApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -138,10 +128,7 @@ class AlbumApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /album' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [CreateAlbumDto] createAlbumDto (required):
@@ -170,8 +157,6 @@ class AlbumApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [CreateAlbumDto] createAlbumDto (required):
@@ -190,10 +175,7 @@ class AlbumApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /album/create-shared-link' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [CreateAlbumShareLinkDto] createAlbumShareLinkDto (required):
@@ -222,8 +204,6 @@ class AlbumApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [CreateAlbumShareLinkDto] createAlbumShareLinkDto (required):
@@ -242,10 +222,7 @@ class AlbumApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'DELETE /album/{albumId}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -275,8 +252,6 @@ class AlbumApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -287,10 +262,7 @@ class AlbumApi {
     }
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'GET /album/{albumId}/download' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -336,8 +308,6 @@ class AlbumApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -362,9 +332,7 @@ class AlbumApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
+  /// Performs an HTTP 'GET /album/count-by-user-id' operation and returns the [Response].
   Future<Response> getAlbumCountByUserIdWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/album/count-by-user-id';
@@ -390,7 +358,6 @@ class AlbumApi {
     );
   }
 
-  /// 
   Future<AlbumCountResponseDto?> getAlbumCountByUserId() async {
     final response = await getAlbumCountByUserIdWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -406,10 +373,7 @@ class AlbumApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'GET /album/{albumId}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -445,8 +409,6 @@ class AlbumApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -467,10 +429,7 @@ class AlbumApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'GET /album' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [bool] shared:
@@ -509,8 +468,6 @@ class AlbumApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [bool] shared:
@@ -535,10 +492,7 @@ class AlbumApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'DELETE /album/{albumId}/assets' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -570,8 +524,6 @@ class AlbumApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -592,10 +544,7 @@ class AlbumApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'DELETE /album/{albumId}/user/{userId}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -628,8 +577,6 @@ class AlbumApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -642,10 +589,7 @@ class AlbumApi {
     }
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'PATCH /album/{albumId}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -677,8 +621,6 @@ class AlbumApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):

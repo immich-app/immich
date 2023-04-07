@@ -69,7 +69,7 @@ class TagTypeEnumTypeTransformer {
   /// and users are still using an old app with the old code.
   TagTypeEnum? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
-      switch (data.toString()) {
+      switch (data) {
         case r'OBJECT': return TagTypeEnum.OBJECT;
         case r'FACE': return TagTypeEnum.FACE;
         case r'CUSTOM': return TagTypeEnum.CUSTOM;

@@ -79,7 +79,7 @@ class JobNameTypeTransformer {
   /// and users are still using an old app with the old code.
   JobName? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
-      switch (data.toString()) {
+      switch (data) {
         case r'thumbnail-generation-queue': return JobName.thumbnailGenerationQueue;
         case r'metadata-extraction-queue': return JobName.metadataExtractionQueue;
         case r'video-conversion-queue': return JobName.videoConversionQueue;

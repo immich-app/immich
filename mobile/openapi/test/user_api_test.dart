@@ -17,71 +17,51 @@ void main() {
   // final instance = UserApi();
 
   group('tests for UserApi', () {
-    // 
-    //
     //Future<CreateProfileImageResponseDto> createProfileImage(MultipartFile file) async
     test('test createProfileImage', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<UserResponseDto> createUser(CreateUserDto createUserDto) async
     test('test createUser', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<UserResponseDto> deleteUser(String userId) async
     test('test deleteUser', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<List<UserResponseDto>> getAllUsers(bool isAll) async
     test('test getAllUsers', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<UserResponseDto> getMyUserInfo() async
     test('test getMyUserInfo', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<Object> getProfileImage(String userId) async
     test('test getProfileImage', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<UserResponseDto> getUserById(String userId) async
     test('test getUserById', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<UserCountResponseDto> getUserCount({ bool admin }) async
     test('test getUserCount', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<UserResponseDto> restoreUser(String userId) async
     test('test restoreUser', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<UserResponseDto> updateUser(UpdateUserDto updateUserDto) async
     test('test updateUser', () async {
       // TODO

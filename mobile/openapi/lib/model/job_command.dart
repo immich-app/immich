@@ -71,7 +71,7 @@ class JobCommandTypeTransformer {
   /// and users are still using an old app with the old code.
   JobCommand? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
-      switch (data.toString()) {
+      switch (data) {
         case r'start': return JobCommand.start;
         case r'pause': return JobCommand.pause;
         case r'resume': return JobCommand.resume;
