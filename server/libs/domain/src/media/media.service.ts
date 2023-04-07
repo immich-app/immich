@@ -58,9 +58,7 @@ export class MediaService {
             format: 'jpeg',
           });
         } catch (error) {
-          this.logger.warn(
-            `Failed to generate jpeg thumbnail using sharp, trying with exiftool-vendored (asset=${asset.id})`,
-          );
+          this.logger.warn(`Failed to generate jpeg thumbnail using sharp, trying with exiftool-vendored (asset=${asset.id})`);
           await this.mediaRepository.extractThumbnailFromExif(asset.originalPath, jpegThumbnailPath);
         }
       }
@@ -178,7 +176,7 @@ export class MediaService {
     const isTargetAudioCodec = audioStream.codecName === ffmpegConfig.targetAudioCodec;
     const isTargetContainer = ['mov,mp4,m4a,3gp,3g2,mj2', 'mp4', 'mov'].includes(containerExtension);
 
-    this.logger.debug(audioStream.codecName, audioStream.codecType, containerExtension);
+    //this.logger.debug(audioStream.codecName, audioStream.codecType, containerExtension);
 
     const allTargetsMatching = isTargetVideoCodec && isTargetAudioCodec && isTargetContainer;
 
