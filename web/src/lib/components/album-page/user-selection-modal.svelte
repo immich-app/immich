@@ -7,6 +7,7 @@
 	import ShareCircle from 'svelte-material-icons/ShareCircle.svelte';
 	import { goto } from '$app/navigation';
 	import ImmichLogo from '../shared-components/immich-logo.svelte';
+	import Button from '../elements/buttons/button.svelte';
 
 	export let album: AlbumResponseDto;
 	export let sharedUsersInAlbum: Set<UserResponseDto>;
@@ -117,11 +118,9 @@
 
 		{#if selectedUsers.length > 0}
 			<div class="flex place-content-end p-5 ">
-				<button
-					on:click={() => dispatch('add-user', { selectedUsers })}
-					class="text-white bg-immich-primary px-4 py-2 rounded-lg text-sm font-bold transition-colors hover:bg-immich-primary/75"
-					>Add</button
-				>
+				<Button size="sm" rounded="lg" on:click={() => dispatch('add-user', { selectedUsers })}>
+					Add
+				</Button>
 			</div>
 		{/if}
 	</div>

@@ -6,7 +6,7 @@
 	import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
 	import CircleEditOutline from 'svelte-material-icons/CircleEditOutline.svelte';
 	import * as luxon from 'luxon';
-	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
+	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { goto } from '$app/navigation';
 

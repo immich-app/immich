@@ -9,6 +9,7 @@
 	import { useAlbums } from './albums.bloc';
 	import empty1Url from '$lib/assets/empty-1.svg';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+	import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
 
 	export let data: PageData;
 
@@ -32,15 +33,12 @@
 
 <UserPageLayout user={data.user} title={data.meta.title}>
 	<div slot="buttons">
-		<button
-			on:click={handleCreateAlbum}
-			class="immich-text-button text-sm dark:hover:bg-immich-dark-primary/25 dark:text-immich-dark-fg"
-		>
-			<span>
+		<LinkButton on:click={handleCreateAlbum}>
+			<div class="flex place-items-center gap-2 text-sm">
 				<PlusBoxOutline size="18" />
-			</span>
-			<p>Create album</p>
-		</button>
+				Create album
+			</div>
+		</LinkButton>
 	</div>
 
 	<!-- Album Card -->

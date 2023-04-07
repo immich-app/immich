@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import FullScreenModal from './full-screen-modal.svelte';
+	import Button from '../elements/buttons/button.svelte';
 
 	export let title = 'Confirm';
 	export let prompt = 'Are you sure you want to do this?';
@@ -29,18 +30,8 @@
 			</slot>
 
 			<div class="flex w-full px-4 gap-4 mt-4">
-				<button
-					on:click={() => handleCancel()}
-					class="flex-1 transition-colors bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 dark:hover:bg-immich-dark-primary/80 dark:text-immich-dark-gray px-6 py-3 text-white rounded-full shadow-md w-full font-medium"
-				>
-					{cancelText}
-				</button>
-				<button
-					on:click={() => handleConfirm()}
-					class="flex-1 transition-colors bg-red-500 hover:bg-red-400 px-6 py-3 text-white rounded-full w-full font-medium"
-				>
-					{confirmText}
-				</button>
+				<Button fullwidth on:click={() => handleCancel()}>{cancelText}</Button>
+				<Button color="red" fullwidth on:click={() => handleConfirm()}>{confirmText}</Button>
 			</div>
 		</div>
 	</div>

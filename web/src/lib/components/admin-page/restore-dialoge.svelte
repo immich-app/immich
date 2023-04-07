@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { api, UserResponseDto } from '@api';
 	import { createEventDispatcher } from 'svelte';
+	import Button from '../elements/buttons/button.svelte';
 
 	export let user: UserResponseDto;
 
@@ -30,11 +31,7 @@
 		</p>
 
 		<div class="flex w-full px-4 gap-4 mt-8">
-			<button
-				on:click={restoreUser}
-				class="flex-1 transition-colors bg-lime-600 hover:bg-lime-500 px-6 py-3 text-white rounded-full w-full font-medium"
-				>Confirm
-			</button>
+			<Button color="green" fullwidth on:click={restoreUser}>Confirm</Button>
 		</div>
 	</div>
 </div>

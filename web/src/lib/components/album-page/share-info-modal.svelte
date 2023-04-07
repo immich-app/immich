@@ -4,7 +4,7 @@
 	import BaseModal from '../shared-components/base-modal.svelte';
 	import CircleAvatar from '../shared-components/circle-avatar.svelte';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
-	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
+	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
 	import {

@@ -17,6 +17,7 @@
 		SettingInputFieldType
 	} from '$lib/components/admin-page/settings/setting-input-field.svelte';
 	import { handleError } from '$lib/utils/handle-error';
+	import Button from '$lib/components/elements/buttons/button.svelte';
 
 	export let shareType: SharedLinkType;
 	export let sharedAssets: AssetResponseDto[] = [];
@@ -243,21 +244,11 @@
 		{#if !isShowSharedLink}
 			{#if editingLink}
 				<div class="flex justify-end">
-					<button
-						on:click={handleEditLink}
-						class="text-white dark:text-black bg-immich-primary px-4 py-2 rounded-lg text-sm transition-colors hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:hover:bg-immich-dark-primary/75"
-					>
-						Confirm
-					</button>
+					<Button size="sm" rounded="lg" on:click={handleEditLink}>Confirm</Button>
 				</div>
 			{:else}
 				<div class="flex justify-end">
-					<button
-						on:click={handleCreateSharedLink}
-						class="text-white dark:text-black bg-immich-primary px-4 py-2 rounded-lg text-sm transition-colors hover:bg-immich-primary/75 dark:bg-immich-dark-primary dark:hover:bg-immich-dark-primary/75"
-					>
-						Create Link
-					</button>
+					<Button size="sm" rounded="lg" on:click={handleCreateSharedLink}>Create link</Button>
 				</div>
 			{/if}
 		{/if}
@@ -266,11 +257,7 @@
 			<div class="flex w-full gap-4">
 				<input class="immich-form-input w-full" bind:value={sharedLink} disabled />
 
-				<button
-					on:click={() => handleCopy()}
-					class="flex-1 transition-colors bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 dark:hover:bg-immich-dark-primary/80 dark:text-immich-dark-gray px-6 py-2 text-white rounded-full shadow-md w-full font-medium"
-					>Copy</button
-				>
+				<Button on:click={() => handleCopy()}>Copy</Button>
 			</div>
 		{/if}
 	</section>

@@ -12,6 +12,7 @@
 	import RestoreDialogue from '$lib/components/admin-page/restore-dialoge.svelte';
 	import { page } from '$app/stores';
 	import { locale } from '$lib/stores/preferences.store';
+	import Button from '$lib/components/elements/buttons/button.svelte';
 
 	let allUsers: UserResponseDto[] = [];
 	let shouldShowEditUserForm = false;
@@ -151,12 +152,8 @@
 					Please inform the user, and they will need to change the password at the next log-on.
 				</p>
 
-				<div class="flex w-full">
-					<button
-						on:click={() => (shouldShowInfoPanel = false)}
-						class="mt-6 bg-immich-primary hover:bg-immich-primary/75 px-6 py-3 text-white rounded-full shadow-md w-full font-medium"
-						>Done
-					</button>
+				<div class="flex w-full mt-6">
+					<Button fullwidth on:click={() => (shouldShowInfoPanel = false)}>Done</Button>
 				</div>
 			</div>
 		</FullScreenModal>
@@ -221,7 +218,5 @@
 		</tbody>
 	</table>
 
-	<button on:click={() => (shouldShowCreateUserForm = true)} class="immich-btn-primary"
-		>Create user</button
-	>
+	<Button size="sm" on:click={() => (shouldShowCreateUserForm = true)}>Create user</Button>
 </section>
