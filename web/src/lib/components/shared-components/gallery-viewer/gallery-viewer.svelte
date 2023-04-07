@@ -19,7 +19,6 @@
 	let currentViewAssetIndex = 0;
 
 	let viewWidth: number;
-	let thumbnailSize = 300;
 	let justifiedLayoutResult: any;
 	const geoArray: Array<number> = [];
 
@@ -61,7 +60,7 @@
 
 	const buildJustifiedLayout = () => {
 		justifiedLayoutResult = justifiedLayout(geoArray, {
-			targetRowHeight: 250,
+			targetRowHeight: 235,
 			containerWidth: viewWidth
 		});
 	};
@@ -130,8 +129,8 @@
 			{#if justifiedLayoutResult?.boxes != null && justifiedLayoutResult?.boxes.length > 0}
 				<Thumbnail
 					{asset}
-					thumbnailWidth={justifiedLayoutResult.boxes[index].width || 250}
-					thumbnailHeight={justifiedLayoutResult.boxes[index].height || 250}
+					thumbnailWidth={justifiedLayoutResult.boxes[index].width || 235}
+					thumbnailHeight={justifiedLayoutResult.boxes[index].height || 235}
 					readonly={disableAssetSelect}
 					publicSharedKey={sharedLink?.key}
 					format={assets.length < 7 ? ThumbnailFormat.Jpeg : ThumbnailFormat.Webp}

@@ -63,7 +63,9 @@
 	<div
 		style:width="{width}px"
 		style:height="{height}px"
-		class="relative group {disabled ? 'bg-gray-300' : 'bg-immich-primary/20'}"
+		class="relative group {disabled
+			? 'bg-gray-300'
+			: 'bg-immich-primary/20 dark:bg-immich-dark-primary/20'}"
 		class:cursor-not-allowed={disabled}
 		class:hover:cursor-pointer={!disabled}
 		on:mouseenter={() => (mouseOver = true)}

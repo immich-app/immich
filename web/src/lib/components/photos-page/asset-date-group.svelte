@@ -162,7 +162,8 @@
 						on:click={() => assetClickHandler(asset, assetsInDateGroup, dateGroupTitle)}
 						on:select={() => assetSelectHandler(asset, assetsInDateGroup, dateGroupTitle)}
 						on:mouse-event={() => assetMouseEventHandler(dateGroupTitle)}
-						selected={$selectedAssets.has(asset)}
+						selected={$selectedAssets.has(asset) ||
+							$assetsInAlbumStoreState.findIndex((a) => a.id == asset.id) != -1}
 						disabled={$assetsInAlbumStoreState.findIndex((a) => a.id == asset.id) != -1}
 					/>
 				{/each}
