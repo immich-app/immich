@@ -10,6 +10,12 @@ export class AssetSearchDto {
   isFavorite?: boolean;
 
   @IsOptional()
+  @IsNotEmpty()
+  @IsBoolean()
+  @Transform(toBoolean)
+  isArchived?: boolean;
+
+  @IsOptional()
   @IsNumber()
   skip?: number;
 }

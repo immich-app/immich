@@ -91,6 +91,9 @@ async function fileUploader(
 		// Set Asset is Favorite to false
 		formData.append('isFavorite', 'false');
 
+		// Set Asset is Archived to false
+		formData.append('isArchived', 'false');
+
 		// Get asset duration
 		formData.append('duration', '0:00:00.000000');
 

@@ -18,6 +18,7 @@ export class AssetResponseDto {
   fileModifiedAt!: string;
   updatedAt!: string;
   isFavorite!: boolean;
+  isArchived!: boolean;
   mimeType!: string | null;
   duration!: string;
   webpPath!: string | null;
@@ -41,6 +42,7 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     fileModifiedAt: entity.fileModifiedAt,
     updatedAt: entity.updatedAt,
     isFavorite: entity.isFavorite,
+    isArchived: entity.isArchived,
     mimeType: entity.mimeType,
     webpPath: entity.webpPath,
     encodedVideoPath: entity.encodedVideoPath,
@@ -65,6 +67,7 @@ export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
     fileModifiedAt: entity.fileModifiedAt,
     updatedAt: entity.updatedAt,
     isFavorite: entity.isFavorite,
+    isArchived: entity.isArchived,
     mimeType: entity.mimeType,
     webpPath: entity.webpPath,
     encodedVideoPath: entity.encodedVideoPath,
