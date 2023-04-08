@@ -447,7 +447,7 @@ class SyncService {
     deleteCandidates.addAll(toDelete);
     existing.addAll(result.first);
     album.name = ape.name;
-    album.modifiedAt = ape.lastModified!;
+    album.modifiedAt = ape.lastModified ?? DateTime.now();
     if (album.thumbnail.value != null &&
         toDelete.contains(album.thumbnail.value)) {
       album.thumbnail.value = null;
@@ -491,7 +491,7 @@ class SyncService {
     if (totalOnDevice != album.assets.length + newAssets.length) {
       return false;
     }
-    album.modifiedAt = ape.lastModified!.toUtc();
+    album.modifiedAt = ape.lastModified?.toUtc() ?? DateTime.now().toUtc();
     final result = await _linkWithExistingFromDb(newAssets);
     try {
       await _db.writeTxn(() async {
