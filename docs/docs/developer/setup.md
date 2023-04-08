@@ -43,6 +43,18 @@ The mobile app `(/mobile)` will required Flutter toolchain to be installed on yo
 
 Please refer to the [Flutter's official documentation](https://flutter.dev/docs/get-started/install) for more information on setting up the toolchain on your machine.
 
+### Connect to a remote backend
+
+If you only want to do web development connected to an existing, remote backend, follow these steps:
+
+1. Enter the web directory - `cd web/`
+2. Install web dependencies - `npm i`
+3. Start the web development server
+
+```
+PUBLIC_IMMICH_SERVER_URL=https://demo.immich.app/api npm run dev
+```
+
 ## IDE setup
 
 ### Lint / format extensions
