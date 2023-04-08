@@ -1,11 +1,8 @@
 import { QueueName } from '@app/domain';
-import { Logger } from '@nestjs/common';
 import { BullModuleOptions } from '@nestjs/bull';
 import { RedisOptions } from 'ioredis';
 import { InitOptions } from 'local-reverse-geocoder';
 import { ConfigurationOptions } from 'typesense/lib/Typesense/Configuration';
-
-const logger = new Logger('infra.config');
 
 function parseRedisConfig(): RedisOptions {
   const redisUrl = process.env.REDIS_URL;
@@ -29,20 +26,13 @@ function parseRedisConfig(): RedisOptions {
 
 export const redisConfig: RedisOptions = parseRedisConfig();
 
-interface CustomBullModuleOptions extends BullModuleOptions {
-  onError?: (error: any) => void;
-}
-
-export const bullConfig: CustomBullModuleOptions = {
+export const bullConfig: BullModuleOptions = {
   prefix: 'immich_bull',
   redis: redisConfig,
   defaultJobOptions: {
     attempts: 3,
     removeOnComplete: true,
     removeOnFail: false,
-  },
-  onError: (error) => {
-    logger.error(error);
   },
 };
 
