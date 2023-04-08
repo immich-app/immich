@@ -1,3 +1,53 @@
+<script lang="ts" context="module">
+	/**
+	 * Computed positional and sizing properties of a box in the layout.
+	 */
+	interface LayoutBox {
+		/**
+		 * Aspect ratio of the box.
+		 */
+		aspectRatio: number;
+		/**
+		 * Distance between the top side of the box and the top boundary of the justified layout.
+		 */
+		top: number;
+		/**
+		 * Width of the box in a justified layout.
+		 */
+		width: number;
+		/**
+		 * Height of the box in a justified layout.
+		 */
+		height: number;
+		/**
+		 * Distance between the left side of the box and the left boundary of the justified layout.
+		 */
+		left: number;
+		/**
+		 * Whether or not the aspect ratio was forced.
+		 */
+		forcedAspectRatio?: boolean;
+	}
+
+	/**
+	 * Results from calculating the justified layout.
+	 */
+	export interface JustifiedLayoutResult {
+		/**
+		 * Height of the container containing the justified layout.
+		 */
+		containerHeight: number;
+		/**
+		 * Number of items that are in rows that aren't fully-packed.
+		 */
+		widowCount: number;
+		/**
+		 * Computed positional and sizing properties of a box in the justified layout.
+		 */
+		boxes: LayoutBox[];
+	}
+</script>
+
 <script lang="ts">
 	import { page } from '$app/stores';
 	import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
@@ -19,11 +69,14 @@
 	let currentViewAssetIndex = 0;
 
 	let viewWidth: number;
-	let justifiedLayoutResult: any;
+	let justifiedLayoutResult: JustifiedLayoutResult;
 	const geoArray: Array<number> = [];
 
 	onMount(() => {
-		getAssetRatio();
+		assets.forEach((asset) => {
+			geoArray.push(getAssetRatio(asset));
+		});
+
 		buildJustifiedLayout();
 	});
 
@@ -32,31 +85,34 @@
 			buildJustifiedLayout();
 		}
 	}
+
+	// Recalculate the layout when the assets (add/remove) change
+	$: {
+		assets.forEach((asset) => {
+			geoArray.push(getAssetRatio(asset));
+		});
+	}
 	$: isMultiSelectionMode = selectedAssets.size > 0;
 
-	const getAssetRatio = () => {
-		assets.forEach((a) => {
-			if (a.exifInfo?.exifImageHeight && a.exifInfo?.exifImageWidth) {
-				const height = a.exifInfo?.exifImageHeight;
-				const width = a.exifInfo?.exifImageWidth;
-				const orientation = Number(a.exifInfo?.orientation);
+	function getAssetRatio(asset: AssetResponseDto): number {
+		const height = asset.exifInfo?.exifImageHeight;
+		const width = asset.exifInfo?.exifImageWidth;
+		const orientation = Number(asset.exifInfo?.orientation);
 
-				if (orientation !== null && orientation !== undefined) {
-					if (orientation == 6 || orientation == -90) {
-						geoArray.push(height / width);
-						return;
-					} else {
-						geoArray.push(width / height);
-						return;
-					}
+		if (height && width) {
+			if (orientation) {
+				if (orientation == 6 || orientation == -90) {
+					return height / width;
+				} else {
+					return width / height;
 				}
-
-				geoArray.push(width / height);
-			} else {
-				geoArray.push(1);
 			}
-		});
-	};
+
+			return width / height;
+		}
+
+		return 1;
+	}
 
 	const buildJustifiedLayout = () => {
 		justifiedLayoutResult = justifiedLayout(geoArray, {
@@ -126,7 +182,7 @@
 {#if assets.length > 0}
 	<div class="flex flex-wrap gap-1 w-full pb-20" bind:clientWidth={viewWidth}>
 		{#each assets as asset, index (asset.id)}
-			{#if justifiedLayoutResult?.boxes != null && justifiedLayoutResult?.boxes.length > 0}
+			{#if justifiedLayoutResult?.boxes != null && justifiedLayoutResult?.boxes.length > 0 && justifiedLayoutResult.boxes[index] != null}
 				<Thumbnail
 					{asset}
 					thumbnailWidth={justifiedLayoutResult.boxes[index].width || 235}
