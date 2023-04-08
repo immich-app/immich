@@ -1,61 +1,9 @@
-<script lang="ts" context="module">
-	/**
-	 * Computed positional and sizing properties of a box in the layout.
-	 */
-	interface LayoutBox {
-		/**
-		 * Aspect ratio of the box.
-		 */
-		aspectRatio: number;
-		/**
-		 * Distance between the top side of the box and the top boundary of the justified layout.
-		 */
-		top: number;
-		/**
-		 * Width of the box in a justified layout.
-		 */
-		width: number;
-		/**
-		 * Height of the box in a justified layout.
-		 */
-		height: number;
-		/**
-		 * Distance between the left side of the box and the left boundary of the justified layout.
-		 */
-		left: number;
-		/**
-		 * Whether or not the aspect ratio was forced.
-		 */
-		forcedAspectRatio?: boolean;
-	}
-
-	/**
-	 * Results from calculating the justified layout.
-	 */
-	export interface JustifiedLayoutResult {
-		/**
-		 * Height of the container containing the justified layout.
-		 */
-		containerHeight: number;
-		/**
-		 * Number of items that are in rows that aren't fully-packed.
-		 */
-		widowCount: number;
-		/**
-		 * Computed positional and sizing properties of a box in the justified layout.
-		 */
-		boxes: LayoutBox[];
-	}
-</script>
-
 <script lang="ts">
 	import { page } from '$app/stores';
 	import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
 	import { handleError } from '$lib/utils/handle-error';
 	import { AssetResponseDto, SharedLinkResponseDto, ThumbnailFormat } from '@api';
-
 	import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
-	import { onMount } from 'svelte';
 	import justifiedLayout from 'justified-layout';
 
 	export let assets: AssetResponseDto[];
@@ -69,29 +17,14 @@
 	let currentViewAssetIndex = 0;
 
 	let viewWidth: number;
-	let justifiedLayoutResult: JustifiedLayoutResult;
 	const geoArray: Array<number> = [];
 
-	onMount(() => {
-		assets.forEach((asset) => {
-			geoArray.push(getAssetRatio(asset));
-		});
-
-		buildJustifiedLayout();
-	});
-
-	$: {
-		if (viewWidth) {
-			buildJustifiedLayout();
-		}
-	}
-
 	// Recalculate the layout when the assets (add/remove) change
-	$: {
-		assets.forEach((asset) => {
-			geoArray.push(getAssetRatio(asset));
-		});
-	}
+	// $: {
+	// 	assets.forEach((asset) => {
+	// 		geoArray.push(getAssetRatio(asset));
+	// 	});
+	// }
 	$: isMultiSelectionMode = selectedAssets.size > 0;
 
 	function getAssetRatio(asset: AssetResponseDto): number {
@@ -113,13 +46,6 @@
 
 		return 1;
 	}
-
-	const buildJustifiedLayout = () => {
-		justifiedLayoutResult = justifiedLayout(geoArray, {
-			targetRowHeight: 235,
-			containerWidth: viewWidth
-		});
-	};
 
 	const viewAssetHandler = (event: CustomEvent) => {
 		const { asset }: { asset: AssetResponseDto } = event.detail;
@@ -181,8 +107,14 @@
 
 {#if assets.length > 0}
 	<div class="flex flex-wrap gap-1 w-full pb-20" bind:clientWidth={viewWidth}>
-		{#each assets as asset, index (asset.id)}
-			{#if justifiedLayoutResult?.boxes != null && justifiedLayoutResult?.boxes.length > 0 && justifiedLayoutResult.boxes[index] != null}
+		{#if viewWidth}
+			{@const geoArray = assets.map(getAssetRatio)}
+			{@const justifiedLayoutResult = justifiedLayout(geoArray, {
+				targetRowHeight: 235,
+				containerWidth: Math.floor(viewWidth)
+			})}
+
+			{#each assets as asset, index (asset.id)}
 				<Thumbnail
 					{asset}
 					thumbnailWidth={justifiedLayoutResult.boxes[index].width || 235}
@@ -194,8 +126,8 @@
 					on:select={selectAssetHandler}
 					selected={selectedAssets.has(asset)}
 				/>
-			{/if}
-		{/each}
+			{/each}
+		{/if}
 	</div>
 {/if}
 
