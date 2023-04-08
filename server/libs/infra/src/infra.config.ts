@@ -1,8 +1,11 @@
 import { QueueName } from '@app/domain';
+import { Logger } from '@nestjs/common';
 import { BullModuleOptions } from '@nestjs/bull';
 import { RedisOptions } from 'ioredis';
 import { InitOptions } from 'local-reverse-geocoder';
 import { ConfigurationOptions } from 'typesense/lib/Typesense/Configuration';
+
+const logger = new Logger('infra.config');
 
 function parseRedisConfig(): RedisOptions {
   const redisUrl = process.env.REDIS_URL;
@@ -39,11 +42,11 @@ export const bullConfig: CustomBullModuleOptions = {
     removeOnFail: false,
   },
   onError: (error) => {
-    console.log(error);
+    logger.error(error);
   },
 };
 
-export const bullQueues: CustomBullModuleOptions[] = Object.values(QueueName).map((name) => ({ name }));
+export const bullQueues: BullModuleOptions[] = Object.values(QueueName).map((name) => ({ name }));
 
 function parseTypeSenseConfig(): ConfigurationOptions {
   const typesenseURL = process.env.TYPESENSE_URL;
