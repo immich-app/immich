@@ -26,7 +26,11 @@ function parseRedisConfig(): RedisOptions {
 
 export const redisConfig: RedisOptions = parseRedisConfig();
 
-export const bullConfig: BullModuleOptions = {
+interface CustomBullModuleOptions extends BullModuleOptions {
+  onError?: (error: any) => void;
+}
+
+export const bullConfig: CustomBullModuleOptions = {
   prefix: 'immich_bull',
   redis: redisConfig,
   defaultJobOptions: {
@@ -34,9 +38,12 @@ export const bullConfig: BullModuleOptions = {
     removeOnComplete: true,
     removeOnFail: false,
   },
+  onError: (error) => {
+    console.log(error);
+  },
 };
 
-export const bullQueues: BullModuleOptions[] = Object.values(QueueName).map((name) => ({ name }));
+export const bullQueues: CustomBullModuleOptions[] = Object.values(QueueName).map((name) => ({ name }));
 
 function parseTypeSenseConfig(): ConfigurationOptions {
   const typesenseURL = process.env.TYPESENSE_URL;
