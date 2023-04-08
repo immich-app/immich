@@ -19,6 +19,7 @@ Name | Type | Description | Notes
 **fileModifiedAt** | **String** |  | 
 **updatedAt** | **String** |  | 
 **isFavorite** | **bool** |  | 
+**isArchived** | **bool** |  | 
 **mimeType** | **String** |  | 
 **duration** | **String** |  | 
 **webpPath** | **String** |  | 

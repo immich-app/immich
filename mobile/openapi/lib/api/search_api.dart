@@ -123,6 +123,8 @@ class SearchApi {
   ///
   /// * [bool] isFavorite:
   ///
+  /// * [bool] isArchived:
+  ///
   /// * [String] exifInfoPeriodCity:
   ///
   /// * [String] exifInfoPeriodState:
@@ -140,7 +142,7 @@ class SearchApi {
   /// * [bool] recent:
   ///
   /// * [bool] motion:
-  Future<Response> searchWithHttpInfo({ String? q, String? query, bool? clip, String? type, bool? isFavorite, String? exifInfoPeriodCity, String? exifInfoPeriodState, String? exifInfoPeriodCountry, String? exifInfoPeriodMake, String? exifInfoPeriodModel, List<String>? smartInfoPeriodObjects, List<String>? smartInfoPeriodTags, bool? recent, bool? motion, }) async {
+  Future<Response> searchWithHttpInfo({ String? q, String? query, bool? clip, String? type, bool? isFavorite, bool? isArchived, String? exifInfoPeriodCity, String? exifInfoPeriodState, String? exifInfoPeriodCountry, String? exifInfoPeriodMake, String? exifInfoPeriodModel, List<String>? smartInfoPeriodObjects, List<String>? smartInfoPeriodTags, bool? recent, bool? motion, }) async {
     // ignore: prefer_const_declarations
     final path = r'/search';
 
@@ -165,6 +167,9 @@ class SearchApi {
     }
     if (isFavorite != null) {
       queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
+    }
+    if (isArchived != null) {
+      queryParams.addAll(_queryParams('', 'isArchived', isArchived));
     }
     if (exifInfoPeriodCity != null) {
       queryParams.addAll(_queryParams('', 'exifInfo.city', exifInfoPeriodCity));
@@ -222,6 +227,8 @@ class SearchApi {
   ///
   /// * [bool] isFavorite:
   ///
+  /// * [bool] isArchived:
+  ///
   /// * [String] exifInfoPeriodCity:
   ///
   /// * [String] exifInfoPeriodState:
@@ -239,8 +246,8 @@ class SearchApi {
   /// * [bool] recent:
   ///
   /// * [bool] motion:
-  Future<SearchResponseDto?> search({ String? q, String? query, bool? clip, String? type, bool? isFavorite, String? exifInfoPeriodCity, String? exifInfoPeriodState, String? exifInfoPeriodCountry, String? exifInfoPeriodMake, String? exifInfoPeriodModel, List<String>? smartInfoPeriodObjects, List<String>? smartInfoPeriodTags, bool? recent, bool? motion, }) async {
-    final response = await searchWithHttpInfo( q: q, query: query, clip: clip, type: type, isFavorite: isFavorite, exifInfoPeriodCity: exifInfoPeriodCity, exifInfoPeriodState: exifInfoPeriodState, exifInfoPeriodCountry: exifInfoPeriodCountry, exifInfoPeriodMake: exifInfoPeriodMake, exifInfoPeriodModel: exifInfoPeriodModel, smartInfoPeriodObjects: smartInfoPeriodObjects, smartInfoPeriodTags: smartInfoPeriodTags, recent: recent, motion: motion, );
+  Future<SearchResponseDto?> search({ String? q, String? query, bool? clip, String? type, bool? isFavorite, bool? isArchived, String? exifInfoPeriodCity, String? exifInfoPeriodState, String? exifInfoPeriodCountry, String? exifInfoPeriodMake, String? exifInfoPeriodModel, List<String>? smartInfoPeriodObjects, List<String>? smartInfoPeriodTags, bool? recent, bool? motion, }) async {
+    final response = await searchWithHttpInfo( q: q, query: query, clip: clip, type: type, isFavorite: isFavorite, isArchived: isArchived, exifInfoPeriodCity: exifInfoPeriodCity, exifInfoPeriodState: exifInfoPeriodState, exifInfoPeriodCountry: exifInfoPeriodCountry, exifInfoPeriodMake: exifInfoPeriodMake, exifInfoPeriodModel: exifInfoPeriodModel, smartInfoPeriodObjects: smartInfoPeriodObjects, smartInfoPeriodTags: smartInfoPeriodTags, recent: recent, motion: motion, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
