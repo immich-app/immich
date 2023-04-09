@@ -96,7 +96,7 @@
 	/>
 {/if}
 
-<UserPageLayout user={data.user} title={data.meta.title} hideNavbar={isMultiSelectionMode}>
+<UserPageLayout user={data.user} hideNavbar={isMultiSelectionMode}>
 	<section>
 		<!-- Empty Message -->
 		{#if favorites.length === 0}
