@@ -85,7 +85,7 @@
     "@nestjs/cli": "^9.1.8",
     "@nestjs/schematics": "^9.0.4",
     "@nestjs/testing": "^9.2.1",
-    "@openapitools/openapi-generator-cli": "2.5.1",
+    "@openapitools/openapi-generator-cli": "2.5.2",
     "@types/archiver": "^5.3.1",
     "@types/bcrypt": "^5.0.0",
     "@types/cookie-parser": "^1.4.3",

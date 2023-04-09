@@ -67,7 +67,7 @@ class ThumbnailFormatTypeTransformer {
   /// and users are still using an old app with the old code.
   ThumbnailFormat? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
-      switch (data.toString()) {
+      switch (data) {
         case r'JPEG': return ThumbnailFormat.JPEG;
         case r'WEBP': return ThumbnailFormat.WEBP;
         default:

@@ -69,7 +69,7 @@ class DeviceTypeEnumTypeTransformer {
   /// and users are still using an old app with the old code.
   DeviceTypeEnum? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
-      switch (data.toString()) {
+      switch (data) {
         case r'IOS': return DeviceTypeEnum.IOS;
         case r'ANDROID': return DeviceTypeEnum.ANDROID;
         case r'WEB': return DeviceTypeEnum.WEB;

@@ -67,7 +67,7 @@ class TimeGroupEnumTypeTransformer {
   /// and users are still using an old app with the old code.
   TimeGroupEnum? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
-      switch (data.toString()) {
+      switch (data) {
         case r'day': return TimeGroupEnum.day;
         case r'month': return TimeGroupEnum.month;
         default:

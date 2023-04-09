@@ -67,7 +67,7 @@ class SharedLinkTypeTypeTransformer {
   /// and users are still using an old app with the old code.
   SharedLinkType? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
-      switch (data.toString()) {
+      switch (data) {
         case r'ALBUM': return SharedLinkType.ALBUM;
         case r'INDIVIDUAL': return SharedLinkType.INDIVIDUAL;
         default:

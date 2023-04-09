@@ -210,7 +210,7 @@ class SystemConfigFFmpegDtoTranscodeEnumTypeTransformer {
   /// and users are still using an old app with the old code.
   SystemConfigFFmpegDtoTranscodeEnum? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
-      switch (data.toString()) {
+      switch (data) {
         case r'all': return SystemConfigFFmpegDtoTranscodeEnum.all;
         case r'optimal': return SystemConfigFFmpegDtoTranscodeEnum.optimal;
         case r'required': return SystemConfigFFmpegDtoTranscodeEnum.required_;

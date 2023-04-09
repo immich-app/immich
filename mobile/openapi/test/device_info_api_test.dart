@@ -17,8 +17,6 @@ void main() {
   // final instance = DeviceInfoApi();
 
   group('tests for DeviceInfoApi', () {
-    // 
-    //
     //Future<DeviceInfoResponseDto> upsertDeviceInfo(UpsertDeviceInfoDto upsertDeviceInfoDto) async
     test('test upsertDeviceInfo', () async {
       // TODO
