@@ -21,6 +21,8 @@ Method | HTTP request | Description
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -62,6 +64,8 @@ No authorization required
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -100,6 +104,8 @@ No authorization required
 
 # **link**
 > UserResponseDto link(oAuthCallbackDto)
+
+
 
 
 
@@ -154,6 +160,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -187,6 +195,8 @@ No authorization required
 
 # **unlink**
 > UserResponseDto unlink()
+
+
 
 
 

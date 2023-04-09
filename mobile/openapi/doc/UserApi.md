@@ -26,6 +26,8 @@ Method | HTTP request | Description
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -74,6 +76,8 @@ Name | Type | Description  | Notes
 
 # **createUser**
 > UserResponseDto createUser(createUserDto)
+
+
 
 
 
@@ -128,6 +132,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -176,6 +182,8 @@ Name | Type | Description  | Notes
 
 # **getAllUsers**
 > List<UserResponseDto> getAllUsers(isAll)
+
+
 
 
 
@@ -230,6 +238,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -274,6 +284,8 @@ This endpoint does not need any parameter.
 
 # **getProfileImage**
 > Object getProfileImage(userId)
+
+
 
 
 
@@ -328,6 +340,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -379,6 +393,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -417,6 +433,8 @@ No authorization required
 
 # **restoreUser**
 > UserResponseDto restoreUser(userId)
+
+
 
 
 
@@ -468,6 +486,8 @@ Name | Type | Description  | Notes
 
 # **updateUser**
 > UserResponseDto updateUser(updateUserDto)
+
+
 
 
 

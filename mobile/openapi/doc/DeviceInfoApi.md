@@ -17,6 +17,8 @@ Method | HTTP request | Description
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
