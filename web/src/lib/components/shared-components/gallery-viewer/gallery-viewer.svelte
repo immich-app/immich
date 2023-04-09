@@ -5,6 +5,7 @@
 	import { AssetResponseDto, SharedLinkResponseDto, ThumbnailFormat } from '@api';
 	import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
 	import justifiedLayout from 'justified-layout';
+	import { flip } from 'svelte/animate';
 
 	export let assets: AssetResponseDto[];
 	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
@@ -108,17 +109,19 @@
 			})}
 
 			{#each assets as asset, index (asset.id)}
-				<Thumbnail
-					{asset}
-					thumbnailWidth={justifiedLayoutResult.boxes[index].width || 235}
-					thumbnailHeight={justifiedLayoutResult.boxes[index].height || 235}
-					readonly={disableAssetSelect}
-					publicSharedKey={sharedLink?.key}
-					format={assets.length < 7 ? ThumbnailFormat.Jpeg : ThumbnailFormat.Webp}
-					on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
-					on:select={selectAssetHandler}
-					selected={selectedAssets.has(asset)}
-				/>
+				<div animate:flip={{ duration: 500 }}>
+					<Thumbnail
+						{asset}
+						thumbnailWidth={justifiedLayoutResult.boxes[index].width || 235}
+						thumbnailHeight={justifiedLayoutResult.boxes[index].height || 235}
+						readonly={disableAssetSelect}
+						publicSharedKey={sharedLink?.key}
+						format={assets.length < 7 ? ThumbnailFormat.Jpeg : ThumbnailFormat.Webp}
+						on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
+						on:select={selectAssetHandler}
+						selected={selectedAssets.has(asset)}
+					/>
+				</div>
 			{/each}
 		{/if}
 	</div>
