@@ -21,7 +21,7 @@
 	import Plus from 'svelte-material-icons/Plus.svelte';
 	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
 	import { locale } from '$lib/stores/preferences.store';
-	import empty1Url from '$lib/assets/empty-1.svg';
+	import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import type { PageData } from './$types';
 	import { onMount } from 'svelte';
@@ -184,15 +184,10 @@
 <UserPageLayout user={data.user} hideNavbar={isMultiSelectionMode}>
 	<!-- Empty Message -->
 	{#if archived.length === 0}
-		<div
-			class="border dark:border-immich-dark-gray hover:bg-immich-primary/5 dark:hover:bg-immich-dark-primary/25 hover:cursor-pointer p-5 w-[50%] m-auto mt-10 bg-gray-50 dark:bg-immich-dark-gray rounded-3xl flex flex-col place-content-center place-items-center"
-		>
-			<img src={empty1Url} alt="Empty shared album" width="500" draggable="false" />
-
-			<p class="text-center text-immich-text-gray-500 dark:text-immich-dark-fg">
-				Archive photos and videos to hide them from your Photos view
-			</p>
-		</div>
+		<EmptyPlaceholder
+			text="Archive photos and videos to hide them from your Photos view"
+			alt="Empty archive"
+		/>
 	{/if}
 
 	<svelte:fragment slot="header">
