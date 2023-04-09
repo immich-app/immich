@@ -17,14 +17,7 @@
 	let currentViewAssetIndex = 0;
 
 	let viewWidth: number;
-	const geoArray: Array<number> = [];
 
-	// Recalculate the layout when the assets (add/remove) change
-	// $: {
-	// 	assets.forEach((asset) => {
-	// 		geoArray.push(getAssetRatio(asset));
-	// 	});
-	// }
 	$: isMultiSelectionMode = selectedAssets.size > 0;
 
 	function getAssetRatio(asset: AssetResponseDto): number {
