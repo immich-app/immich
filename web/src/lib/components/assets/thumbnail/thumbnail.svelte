@@ -15,6 +15,8 @@
 	export let asset: AssetResponseDto;
 	export let groupIndex = 0;
 	export let thumbnailSize: number | undefined = undefined;
+	export let thumbnailWidth: number | undefined = undefined;
+	export let thumbnailHeight: number | undefined = undefined;
 	export let format: ThumbnailFormat = ThumbnailFormat.Webp;
 	export let selected = false;
 	export let disabled = false;
@@ -28,6 +30,10 @@
 	$: [width, height] = (() => {
 		if (thumbnailSize) {
 			return [thumbnailSize, thumbnailSize];
+		}
+
+		if (thumbnailWidth && thumbnailHeight) {
+			return [thumbnailWidth, thumbnailHeight];
 		}
 
 		if (asset.exifInfo?.orientation === 'Rotate 90 CW') {
@@ -57,7 +63,9 @@
 	<div
 		style:width="{width}px"
 		style:height="{height}px"
-		class="relative group {disabled ? 'bg-gray-300' : 'bg-immich-primary/20'}"
+		class="relative group {disabled
+			? 'bg-gray-300'
+			: 'bg-immich-primary/20 dark:bg-immich-dark-primary/20'}"
 		class:cursor-not-allowed={disabled}
 		class:hover:cursor-pointer={!disabled}
 		on:mouseenter={() => (mouseOver = true)}
