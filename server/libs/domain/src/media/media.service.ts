@@ -1,4 +1,4 @@
-import { AssetType, TranscodePreset } from '@app/infra/entities';
+import { AssetEntity, AssetType, TranscodePreset } from '@app/infra/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { join } from 'path';
 import { IAssetRepository, mapAsset, WithoutProperty } from '../asset';
@@ -137,7 +137,7 @@ export class MediaService {
 
       const { ffmpeg: config } = await this.configCore.getConfig();
 
-      const required = this.isTranscodeRequired(mainVideoStream, mainAudioStream, containerExtension, config);
+      const required = this.isTranscodeRequired(asset, mainVideoStream, mainAudioStream, containerExtension, config);
       if (!required) {
         return;
       }
@@ -164,6 +164,7 @@ export class MediaService {
   }
 
   private isTranscodeRequired(
+    asset: AssetEntity,
     videoStream: VideoStreamInfo,
     audioStream: AudioStreamInfo,
     containerExtension: string,
@@ -178,7 +179,9 @@ export class MediaService {
     const isTargetAudioCodec = audioStream.codecName === ffmpegConfig.targetAudioCodec;
     const isTargetContainer = ['mov,mp4,m4a,3gp,3g2,mj2', 'mp4', 'mov'].includes(containerExtension);
 
-    this.logger.debug(audioStream.codecName, audioStream.codecType, containerExtension);
+    this.logger.verbose(
+      `${asset.id}: AudioCodecName ${audioStream.codecName}, AudioStreamCodecType ${audioStream.codecType}, containerExtension ${containerExtension}`,
+    );
 
     const allTargetsMatching = isTargetVideoCodec && isTargetAudioCodec && isTargetContainer;
 
