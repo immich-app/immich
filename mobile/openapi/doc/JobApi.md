@@ -18,6 +18,8 @@ Method | HTTP request | Description
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -62,6 +64,8 @@ This endpoint does not need any parameter.
 
 # **sendJobCommand**
 > JobStatusDto sendJobCommand(jobId, jobCommandDto)
+
+
 
 
 

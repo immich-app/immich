@@ -28,6 +28,8 @@ Method | HTTP request | Description
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -80,6 +82,8 @@ Name | Type | Description  | Notes
 
 # **addUsersToAlbum**
 > AlbumResponseDto addUsersToAlbum(albumId, addUsersDto)
+
+
 
 
 
@@ -136,6 +140,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -184,6 +190,8 @@ Name | Type | Description  | Notes
 
 # **createAlbumSharedLink**
 > SharedLinkResponseDto createAlbumSharedLink(createAlbumShareLinkDto)
+
+
 
 
 
@@ -238,6 +246,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -285,6 +295,8 @@ void (empty response body)
 
 # **downloadArchive**
 > MultipartFile downloadArchive(albumId, name, skip, key)
+
+
 
 
 
@@ -345,6 +357,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -389,6 +403,8 @@ This endpoint does not need any parameter.
 
 # **getAlbumInfo**
 > AlbumResponseDto getAlbumInfo(albumId, key)
+
+
 
 
 
@@ -445,6 +461,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -495,6 +513,8 @@ Name | Type | Description  | Notes
 
 # **removeAssetFromAlbum**
 > AlbumResponseDto removeAssetFromAlbum(albumId, removeAssetsDto)
+
+
 
 
 
@@ -551,6 +571,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -600,6 +622,8 @@ void (empty response body)
 
 # **updateAlbumInfo**
 > AlbumResponseDto updateAlbumInfo(albumId, updateAlbumDto)
+
+
 
 
 
