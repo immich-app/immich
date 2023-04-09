@@ -124,7 +124,7 @@
 	</form>
 {/if}
 
-{#if !authConfig.enabled}
+{#if authConfig.enabled}
 	{#if authConfig.passwordLoginEnabled}
 		<div class="inline-flex items-center justify-center w-full">
 			<hr class="w-3/4 h-px my-4 bg-gray-200 border-0 dark:bg-gray-600" />
