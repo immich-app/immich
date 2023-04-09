@@ -345,7 +345,8 @@ export class AssetService {
         if (asset.livePhotoVideoId && !ids.includes(asset.livePhotoVideoId)) {
           ids.push(asset.livePhotoVideoId);
         }
-      } catch {
+      } catch (e){
+        this.logger.error(`Error deleting asset=${id}`, e);
         result.push({ id, status: DeleteAssetStatusEnum.FAILED });
       }
     }

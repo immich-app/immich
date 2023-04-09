@@ -111,8 +111,8 @@ After making any changes in the `server/libs/database/src/entities`, a database 
 2. Run
 
 ```bash
-npm run typeorm -- migration:generate ./libs/infra/src/db/<migration-name> -d ./libs/infra/src/db/config/database.config.ts
+npm run typeorm -- migration:generate ./libs/infra/src/<migration-name> -d ./libs/infra/src/database.config.ts
 ```
 
 3. Check if the migration file makes sense.
-4. Move the migration file to folder `server/libs/database/src/migrations` in your code editor.
+4. Move the migration file to folder `server/libs/infra/src/migrations` in your code editor.

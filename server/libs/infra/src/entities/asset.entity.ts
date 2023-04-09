@@ -102,6 +102,7 @@ export class AssetEntity {
   sharedLinks!: SharedLinkEntity[];
 
   @ManyToMany(() => AlbumEntity, (album) => album.assets)
+  @JoinTable()
   albums?: AlbumEntity[];
 }
 
