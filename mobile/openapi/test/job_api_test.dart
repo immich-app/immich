@@ -17,11 +17,15 @@ void main() {
   // final instance = JobApi();
 
   group('tests for JobApi', () {
+    // 
+    //
     //Future<AllJobStatusResponseDto> getAllJobsStatus() async
     test('test getAllJobsStatus', () async {
       // TODO
     });
 
+    // 
+    //
     //Future<JobStatusDto> sendJobCommand(JobName jobId, JobCommandDto jobCommandDto) async
     test('test sendJobCommand', () async {
       // TODO

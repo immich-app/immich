@@ -16,7 +16,10 @@ class APIKeyApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /api-key' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [APIKeyCreateDto] aPIKeyCreateDto (required):
@@ -45,6 +48,8 @@ class APIKeyApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [APIKeyCreateDto] aPIKeyCreateDto (required):
@@ -63,7 +68,10 @@ class APIKeyApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /api-key/{id}' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -93,6 +101,8 @@ class APIKeyApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -103,7 +113,10 @@ class APIKeyApi {
     }
   }
 
-  /// Performs an HTTP 'GET /api-key/{id}' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -133,6 +146,8 @@ class APIKeyApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -151,7 +166,9 @@ class APIKeyApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /api-key' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getKeysWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/api-key';
@@ -177,6 +194,7 @@ class APIKeyApi {
     );
   }
 
+  /// 
   Future<List<APIKeyResponseDto>?> getKeys() async {
     final response = await getKeysWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -195,7 +213,10 @@ class APIKeyApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /api-key/{id}' operation and returns the [Response].
+  /// 
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -227,6 +248,8 @@ class APIKeyApi {
     );
   }
 
+  /// 
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):

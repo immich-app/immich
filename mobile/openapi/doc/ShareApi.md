@@ -21,6 +21,8 @@ Method | HTTP request | Description
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -74,6 +76,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -118,6 +122,8 @@ This endpoint does not need any parameter.
 
 # **getMySharedLink**
 > SharedLinkResponseDto getMySharedLink(key)
+
+
 
 
 
@@ -172,6 +178,8 @@ Name | Type | Description  | Notes
 
 
 
+
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -220,6 +228,8 @@ Name | Type | Description  | Notes
 
 # **removeSharedLink**
 > removeSharedLink(id)
+
+
 
 
 
