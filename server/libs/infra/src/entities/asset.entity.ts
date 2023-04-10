@@ -101,7 +101,7 @@ export class AssetEntity {
   @JoinTable({ name: 'shared_link__asset' })
   sharedLinks!: SharedLinkEntity[];
 
-  @ManyToMany(() => AlbumEntity, (album) => album.assets)
+  @ManyToMany(() => AlbumEntity, (album) => album.assets, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   albums?: AlbumEntity[];
 }
 
