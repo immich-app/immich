@@ -2,6 +2,7 @@ import { AuthUserDto, IJobRepository, JobName } from '@app/domain';
 import { AssetEntity, UserEntity } from '@app/infra/entities';
 import { IAssetRepository } from './asset-repository';
 import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
+import { parse } from 'node:path';
 
 export class AssetCore {
   constructor(private repository: IAssetRepository, private jobRepository: IJobRepository) {}
@@ -35,6 +36,7 @@ export class AssetCore {
       encodedVideoPath: null,
       tags: [],
       sharedLinks: [],
+      originalFileName: parse(file.originalName).name,
     });
 
     await this.jobRepository.queue({ name: JobName.ASSET_UPLOADED, data: { asset, fileName: file.originalName } });

@@ -87,6 +87,9 @@ export class AssetEntity {
   @Column({ nullable: true })
   livePhotoVideoId!: string | null;
 
+  @Column({ type: 'varchar', nullable: true })
+  originalFileName!: string | null;
+
   @OneToOne(() => ExifEntity, (exifEntity) => exifEntity.asset)
   exifInfo?: ExifEntity;
 

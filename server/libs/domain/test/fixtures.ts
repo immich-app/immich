@@ -118,6 +118,7 @@ export const fileStub = {
 export const assetEntityStub = {
   noResizePath: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    originalFileName: 'asset_1.jpeg',
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: '2023-02-23T05:06:29.716Z',
     fileCreatedAt: '2023-02-23T05:06:29.716Z',
@@ -163,9 +164,11 @@ export const assetEntityStub = {
     livePhotoVideoId: null,
     tags: [],
     sharedLinks: [],
+    originalFileName: 'image.jpeg',
   }),
   video: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    originalFileName: 'image.jpeg',
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: '2023-02-23T05:06:29.716Z',
     fileCreatedAt: '2023-02-23T05:06:29.716Z',
@@ -602,6 +605,7 @@ export const sharedLinkStub = {
           isVisible: true,
           livePhotoVideo: null,
           livePhotoVideoId: null,
+          originalFileName: 'asset_1.jpeg',
           exifInfo: {
             livePhotoCID: null,
             assetId: 'id_1',
