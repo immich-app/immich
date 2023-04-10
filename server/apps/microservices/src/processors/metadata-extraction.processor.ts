@@ -90,8 +90,8 @@ export class MetadataExtractionProcessor {
 
   @Process(JobName.EXIF_EXTRACTION)
   async extractExifInfo(job: Job<IAssetUploadedJob>) {
+    let asset = job.data.asset;
     try {
-      let asset = job.data.asset;
       const fileName = job.data.fileName;
       const exifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((e) => {
         this.logger.warn(`The exifData parsing failed due to: ${e} on file ${asset.originalPath}`);
@@ -184,7 +184,7 @@ export class MetadataExtractionProcessor {
       asset = await this.assetCore.save({ id: asset.id, fileCreatedAt: fileCreatedAt?.toISOString() });
       await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { asset } });
     } catch (error: any) {
-      this.logger.error(`Error extracting EXIF ${error}`, error?.stack);
+      this.logger.error(`Error extracting EXIF ${error} on file ${asset.originalPath}`, error?.stack);
     }
   }
 
@@ -305,7 +305,9 @@ export class MetadataExtractionProcessor {
     } catch (err) {
       ``;
       // do nothing
-      console.log('Error in video metadata extraction', err);
+      this.logger.error(
+        `Error in video metadata extraction for asset ${asset.id} due to ${err} on file ${asset.originalPath}`,
+      );
     }
   }
 
@@ -318,7 +320,7 @@ export class MetadataExtractionProcessor {
         newExif.state = state;
         newExif.city = city;
       } catch (error: any) {
-        this.logger.warn(`Unable to run reverse geocoding for asset: ${assetId}, due to ${error}`, error?.stack);
+        this.logger.warn(`Unable to run reverse geocoding for asset ${assetId} due to ${error}`, error?.stack);
       }
     }
   }
