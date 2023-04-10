@@ -13,6 +13,7 @@ export class AssetResponseDto {
   @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type!: AssetType;
   originalPath!: string;
+  originalFileName!: string;
   resizePath!: string | null;
   fileCreatedAt!: string;
   fileModifiedAt!: string;
@@ -32,6 +33,7 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
   return {
     id: entity.id,
     deviceAssetId: entity.deviceAssetId,
+    originalFileName: entity.originalFileName ?? entity.id,
     ownerId: entity.ownerId,
     deviceId: entity.deviceId,
     type: entity.type,
@@ -60,6 +62,7 @@ export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
     deviceId: entity.deviceId,
     type: entity.type,
     originalPath: entity.originalPath,
+    originalFileName: entity.originalFileName ?? entity.id,
     resizePath: entity.resizePath,
     fileCreatedAt: entity.fileCreatedAt,
     fileModifiedAt: entity.fileModifiedAt,

@@ -4,7 +4,6 @@ import { ApiProperty } from '@nestjs/swagger';
 export class ExifResponseDto {
   make?: string | null = null;
   model?: string | null = null;
-  imageName?: string | null = null;
   exifImageWidth?: number | null = null;
   exifImageHeight?: number | null = null;
 
@@ -30,7 +29,6 @@ export function mapExif(entity: ExifEntity): ExifResponseDto {
   return {
     make: entity.make,
     model: entity.model,
-    imageName: entity.imageName,
     exifImageWidth: entity.exifImageWidth,
     exifImageHeight: entity.exifImageHeight,
     fileSizeInByte: entity.fileSizeInByte ? parseInt(entity.fileSizeInByte.toString()) : null,
