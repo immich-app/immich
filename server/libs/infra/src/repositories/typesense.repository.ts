@@ -144,7 +144,7 @@ export class TypesenseRepository implements ISearchRepository {
 
     const { facet_counts: facets } = await asset$.search({
       ...common,
-      query_by: 'exifInfo.imageName',
+      query_by: 'exifInfo.imageName', // TODO using asset table OriginalFileName column
       facet_by: 'exifInfo.city,smartInfo.objects',
       max_facet_values: 12,
     });
@@ -157,7 +157,7 @@ export class TypesenseRepository implements ISearchRepository {
               mergeMap((count) => {
                 const config = {
                   ...common,
-                  query_by: 'exifInfo.imageName',
+                  query_by: 'exifInfo.imageName', // TODO using asset table OriginalFileName column
                   filter_by: [
                     this.buildFilterBy('ownerId', userId, true),
                     this.buildFilterBy(facet.field_name, count.value, true),
@@ -230,7 +230,7 @@ export class TypesenseRepository implements ISearchRepository {
       .search({
         q: query,
         query_by: [
-          'exifInfo.imageName',
+          'exifInfo.imageName', // @jrasm91 how do we use asset field in this?
           'exifInfo.country',
           'exifInfo.state',
           'exifInfo.city',
