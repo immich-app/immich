@@ -481,6 +481,12 @@ export interface AssetResponseDto {
      * @type {string}
      * @memberof AssetResponseDto
      */
+    'originalFileName': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetResponseDto
+     */
     'resizePath': string | null;
     /**
      * 
@@ -1100,12 +1106,6 @@ export interface ExifResponseDto {
      * @memberof ExifResponseDto
      */
     'model'?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ExifResponseDto
-     */
-    'imageName'?: string | null;
     /**
      * 
      * @type {number}

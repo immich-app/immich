@@ -11,7 +11,6 @@ Name | Type | Description | Notes
 **fileSizeInByte** | **int** |  | [optional] 
 **make** | **String** |  | [optional] 
 **model** | **String** |  | [optional] 
-**imageName** | **String** |  | [optional] 
 **exifImageWidth** | **num** |  | [optional] 
 **exifImageHeight** | **num** |  | [optional] 
 **orientation** | **String** |  | [optional] 

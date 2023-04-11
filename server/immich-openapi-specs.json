@@ -3548,11 +3548,6 @@
             "nullable": true,
             "default": null
           },
-          "imageName": {
-            "type": "string",
-            "nullable": true,
-            "default": null
-          },
           "exifImageWidth": {
             "type": "number",
             "nullable": true,
@@ -3712,6 +3707,9 @@
           "originalPath": {
             "type": "string"
           },
+          "originalFileName": {
+            "type": "string"
+          },
           "resizePath": {
             "type": "string",
             "nullable": true
@@ -3767,6 +3765,7 @@
           "ownerId",
           "deviceId",
           "originalPath",
+          "originalFileName",
           "resizePath",
           "fileCreatedAt",
           "fileModifiedAt",

@@ -31,11 +31,6 @@ void main() {
       // TODO
     });
 
-    // String imageName
-    test('to test the property `imageName`', () async {
-      // TODO
-    });
-
     // num exifImageWidth
     test('to test the property `exifImageWidth`', () async {
       // TODO

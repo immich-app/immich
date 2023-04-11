@@ -19,6 +19,7 @@ class AssetResponseDto {
     required this.ownerId,
     required this.deviceId,
     required this.originalPath,
+    required this.originalFileName,
     required this.resizePath,
     required this.fileCreatedAt,
     required this.fileModifiedAt,
@@ -45,6 +46,8 @@ class AssetResponseDto {
   String deviceId;
 
   String originalPath;
+
+  String originalFileName;
 
   String? resizePath;
 
@@ -92,6 +95,7 @@ class AssetResponseDto {
      other.ownerId == ownerId &&
      other.deviceId == deviceId &&
      other.originalPath == originalPath &&
+     other.originalFileName == originalFileName &&
      other.resizePath == resizePath &&
      other.fileCreatedAt == fileCreatedAt &&
      other.fileModifiedAt == fileModifiedAt &&
@@ -115,6 +119,7 @@ class AssetResponseDto {
     (ownerId.hashCode) +
     (deviceId.hashCode) +
     (originalPath.hashCode) +
+    (originalFileName.hashCode) +
     (resizePath == null ? 0 : resizePath!.hashCode) +
     (fileCreatedAt.hashCode) +
     (fileModifiedAt.hashCode) +
@@ -130,7 +135,7 @@ class AssetResponseDto {
     (tags.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, resizePath=$resizePath, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, updatedAt=$updatedAt, isFavorite=$isFavorite, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags]';
+  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, originalFileName=$originalFileName, resizePath=$resizePath, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, updatedAt=$updatedAt, isFavorite=$isFavorite, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -140,6 +145,7 @@ class AssetResponseDto {
       json[r'ownerId'] = this.ownerId;
       json[r'deviceId'] = this.deviceId;
       json[r'originalPath'] = this.originalPath;
+      json[r'originalFileName'] = this.originalFileName;
     if (this.resizePath != null) {
       json[r'resizePath'] = this.resizePath;
     } else {
@@ -209,6 +215,7 @@ class AssetResponseDto {
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
+        originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
         resizePath: mapValueOfType<String>(json, r'resizePath'),
         fileCreatedAt: mapValueOfType<String>(json, r'fileCreatedAt')!,
         fileModifiedAt: mapValueOfType<String>(json, r'fileModifiedAt')!,
@@ -277,6 +284,7 @@ class AssetResponseDto {
     'ownerId',
     'deviceId',
     'originalPath',
+    'originalFileName',
     'resizePath',
     'fileCreatedAt',
     'fileModifiedAt',
