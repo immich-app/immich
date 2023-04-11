@@ -213,6 +213,10 @@ describe(MediaService.name, () => {
   });
 
   describe('handleVideoConversion', () => {
+    beforeEach(() => {
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
+    });
+
     it('should log an error', async () => {
       mediaMock.transcode.mockRejectedValue(new Error('unable to transcode'));
 
