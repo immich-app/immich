@@ -43,7 +43,11 @@ export class MediaService {
   }
 
   async handleGenerateJpegThumbnail(data: IAssetJob): Promise<void> {
-    const { asset } = data;
+    const [asset] = await this.assetRepository.getByIds([data.asset.id]);
+
+    if (!asset) {
+      return;
+    }
 
     try {
       const resizePath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);

@@ -79,6 +79,7 @@ describe(MediaService.name, () => {
 
   describe('handleGenerateJpegThumbnail', () => {
     it('should generate a thumbnail for an image', async () => {
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
       await sut.handleGenerateJpegThumbnail({ asset: _.cloneDeep(assetEntityStub.image) });
 
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
@@ -94,6 +95,7 @@ describe(MediaService.name, () => {
     });
 
     it('should generate a thumbnail for an image from exif', async () => {
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
       mediaMock.resize.mockRejectedValue(new Error('unsupported format'));
 
       await sut.handleGenerateJpegThumbnail({ asset: _.cloneDeep(assetEntityStub.image) });
@@ -114,6 +116,7 @@ describe(MediaService.name, () => {
     });
 
     it('should generate a thumbnail for a video', async () => {
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
       await sut.handleGenerateJpegThumbnail({ asset: _.cloneDeep(assetEntityStub.video) });
 
       expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
@@ -130,7 +133,7 @@ describe(MediaService.name, () => {
 
     it('should queue some jobs', async () => {
       const asset = _.cloneDeep(assetEntityStub.image);
-
+      assetMock.getByIds.mockResolvedValue([asset]);
       await sut.handleGenerateJpegThumbnail({ asset });
 
       expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: { asset } });
@@ -140,6 +143,7 @@ describe(MediaService.name, () => {
     });
 
     it('should log an error', async () => {
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
       mediaMock.resize.mockRejectedValue(new Error('unsupported format'));
       mediaMock.extractThumbnailFromExif.mockRejectedValue(new Error('unsupported format'));
 
