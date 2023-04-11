@@ -46,6 +46,11 @@ void main() {
       // TODO
     });
 
+    // String originalFileName
+    test('to test the property `originalFileName`', () async {
+      // TODO
+    });
+
     // String resizePath
     test('to test the property `resizePath`', () async {
       // TODO

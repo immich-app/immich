@@ -1,6 +1,5 @@
 import {
   AssetCore,
-  getFileNameWithoutExtension,
   IAssetRepository,
   IAssetUploadedJob,
   IBaseJob,
@@ -21,7 +20,6 @@ import { ExifDateTime, exiftool, Tags } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { Duration } from 'luxon';
 import fs from 'node:fs';
-import path from 'path';
 import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
 import { promisify } from 'util';
@@ -79,7 +77,7 @@ export class MetadataExtractionProcessor {
         : await this.assetRepository.getWithout(WithoutProperty.EXIF);
 
       for (const asset of assets) {
-        const fileName = asset.exifInfo?.imageName ?? getFileNameWithoutExtension(asset.originalPath);
+        const fileName = asset.originalFileName;
         const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
         await this.jobRepository.queue({ name, data: { asset, fileName } });
       }
@@ -92,7 +90,6 @@ export class MetadataExtractionProcessor {
   async extractExifInfo(job: Job<IAssetUploadedJob>) {
     try {
       let asset = job.data.asset;
-      const fileName = job.data.fileName;
       const exifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((e) => {
         this.logger.warn(`The exifData parsing failed due to: ${e} on file ${asset.originalPath}`);
         return null;
@@ -126,7 +123,6 @@ export class MetadataExtractionProcessor {
 
       const newExif = new ExifEntity();
       newExif.assetId = asset.id;
-      newExif.imageName = path.parse(fileName).name;
       newExif.fileSizeInByte = fileSizeInBytes;
       newExif.make = exifData?.Make || null;
       newExif.model = exifData?.Model || null;
@@ -191,7 +187,6 @@ export class MetadataExtractionProcessor {
   @Process({ name: JobName.EXTRACT_VIDEO_METADATA, concurrency: 2 })
   async extractVideoMetadata(job: Job<IAssetUploadedJob>) {
     let asset = job.data.asset;
-    const fileName = job.data.fileName;
 
     if (!asset.isVisible) {
       return;
@@ -219,7 +214,6 @@ export class MetadataExtractionProcessor {
       const newExif = new ExifEntity();
       newExif.assetId = asset.id;
       newExif.description = '';
-      newExif.imageName = path.parse(fileName).name || null;
       newExif.fileSizeInByte = data.format.size || null;
       newExif.dateTimeOriginal = fileCreatedAt ? new Date(fileCreatedAt) : null;
       newExif.modifyDate = null;
@@ -242,7 +236,6 @@ export class MetadataExtractionProcessor {
         if (photoAsset) {
           await this.assetCore.save({ id: photoAsset.id, livePhotoVideoId: asset.id });
           await this.assetCore.save({ id: asset.id, isVisible: false });
-          newExif.imageName = (photoAsset.exifInfo as ExifEntity).imageName;
         }
       }
 

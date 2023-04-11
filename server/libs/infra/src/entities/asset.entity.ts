@@ -90,6 +90,9 @@ export class AssetEntity {
   @Column({ nullable: true })
   livePhotoVideoId!: string | null;
 
+  @Column({ type: 'varchar' })
+  originalFileName!: string;
+
   @OneToOne(() => ExifEntity, (exifEntity) => exifEntity.asset)
   exifInfo?: ExifEntity;
 
@@ -104,7 +107,7 @@ export class AssetEntity {
   @JoinTable({ name: 'shared_link__asset' })
   sharedLinks!: SharedLinkEntity[];
 
-  @ManyToMany(() => AlbumEntity, (album) => album.assets)
+  @ManyToMany(() => AlbumEntity, (album) => album.assets, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   albums?: AlbumEntity[];
 }
 

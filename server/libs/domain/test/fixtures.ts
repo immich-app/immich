@@ -118,6 +118,7 @@ export const fileStub = {
 export const assetEntityStub = {
   noResizePath: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    originalFileName: 'asset_1.jpeg',
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: '2023-02-23T05:06:29.716Z',
     fileCreatedAt: '2023-02-23T05:06:29.716Z',
@@ -165,9 +166,11 @@ export const assetEntityStub = {
     livePhotoVideoId: null,
     tags: [],
     sharedLinks: [],
+    originalFileName: 'asset-id.ext',
   }),
   video: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    originalFileName: 'asset-id.ext',
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: '2023-02-23T05:06:29.716Z',
     fileCreatedAt: '2023-02-23T05:06:29.716Z',
@@ -323,7 +326,6 @@ export const albumStub = {
 const assetInfo: ExifResponseDto = {
   make: 'camera-make',
   model: 'camera-model',
-  imageName: 'fancy-image',
   exifImageWidth: 500,
   exifImageHeight: 500,
   fileSizeInByte: 100,
@@ -350,6 +352,7 @@ const assetResponse: AssetResponseDto = {
   deviceId: 'device_id_1',
   type: AssetType.VIDEO,
   originalPath: 'fake_path/jpeg',
+  originalFileName: 'asset_1.jpeg',
   resizePath: '',
   fileModifiedAt: today.toISOString(),
   fileCreatedAt: today.toISOString(),
@@ -607,6 +610,7 @@ export const sharedLinkStub = {
           isVisible: true,
           livePhotoVideo: null,
           livePhotoVideoId: null,
+          originalFileName: 'asset_1.jpeg',
           exifInfo: {
             livePhotoCID: null,
             assetId: 'id_1',
@@ -625,7 +629,6 @@ export const sharedLinkStub = {
             country: 'country',
             make: 'camera-make',
             model: 'camera-model',
-            imageName: 'fancy-image',
             lensModel: 'fancy',
             fNumber: 100,
             focalLength: 100,

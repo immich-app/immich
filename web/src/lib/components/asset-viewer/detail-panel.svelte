@@ -96,7 +96,7 @@
 				<div><ImageOutline size="24" /></div>
 
 				<div>
-					<p>{`${asset.exifInfo.imageName}.${asset.originalPath.split('.')[1]}` || ''}</p>
+					<p>{`${asset.originalFileName}.${asset.originalPath.split('.')[1]}` || ''}</p>
 					<div class="flex text-sm gap-2">
 						{#if asset.exifInfo.exifImageHeight && asset.exifInfo.exifImageWidth}
 							{#if getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}

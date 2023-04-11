@@ -14,6 +14,7 @@ Name | Type | Description | Notes
 **ownerId** | **String** |  | 
 **deviceId** | **String** |  | 
 **originalPath** | **String** |  | 
+**originalFileName** | **String** |  | 
 **resizePath** | **String** |  | 
 **fileCreatedAt** | **String** |  | 
 **fileModifiedAt** | **String** |  | 
