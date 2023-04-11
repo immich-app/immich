@@ -5055,7 +5055,6 @@
           "fileCreatedAt",
           "fileModifiedAt",
           "isFavorite",
-          "isArchived",
           "fileExtension"
         ]
       },

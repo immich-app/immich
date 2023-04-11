@@ -24,8 +24,9 @@ export class CreateAssetDto {
   @IsNotEmpty()
   isFavorite!: boolean;
 
-  @IsNotEmpty()
-  isArchived!: boolean;
+  @IsOptional()
+  @IsBoolean()
+  isArchived?: boolean;
 
   @IsOptional()
   @IsBoolean()
