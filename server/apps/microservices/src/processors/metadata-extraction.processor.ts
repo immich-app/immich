@@ -1,6 +1,5 @@
 import {
   AssetCore,
-  getFileNameWithoutExtension,
   IAssetRepository,
   IAssetUploadedJob,
   IBaseJob,
