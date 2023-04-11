@@ -9,7 +9,7 @@ import {
   QueueName,
   WithoutProperty,
 } from '@app/domain';
-import { AssetType, ExifEntity } from '@app/infra/entities';
+import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { Process, Processor } from '@nestjs/bull';
 import { Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -88,10 +88,14 @@ export class MetadataExtractionProcessor {
 
   @Process(JobName.EXIF_EXTRACTION)
   async extractExifInfo(job: Job<IAssetUploadedJob>) {
+    let asset = job.data.asset;
+
     try {
-      let asset = job.data.asset;
-      const exifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((e) => {
-        this.logger.warn(`The exifData parsing failed due to: ${e} on file ${asset.originalPath}`);
+      const exifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((error: any) => {
+        this.logger.warn(
+          `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
+          error?.stack,
+        );
         return null;
       });
 
@@ -154,7 +158,7 @@ export class MetadataExtractionProcessor {
         }
       }
 
-      await this.applyReverseGeocoding(newExif);
+      await this.applyReverseGeocoding(asset, newExif);
 
       /**
        * IF the EXIF doesn't contain the width and height of the image,
@@ -180,7 +184,10 @@ export class MetadataExtractionProcessor {
       asset = await this.assetCore.save({ id: asset.id, fileCreatedAt: fileCreatedAt?.toISOString() });
       await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { asset } });
     } catch (error: any) {
-      this.logger.error(`Error extracting EXIF ${error}`, error?.stack);
+      this.logger.error(
+        `Error extracting EXIF ${error} for assetId ${asset.id} at ${asset.originalPath}`,
+        error?.stack,
+      );
     }
   }
 
@@ -206,8 +213,11 @@ export class MetadataExtractionProcessor {
         }
       }
 
-      const exifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((e) => {
-        this.logger.warn(`The exifData parsing failed due to: ${e} on file ${asset.originalPath}`);
+      const exifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((error: any) => {
+        this.logger.warn(
+          `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
+          error?.stack,
+        );
         return null;
       });
 
@@ -267,7 +277,7 @@ export class MetadataExtractionProcessor {
         }
       }
 
-      await this.applyReverseGeocoding(newExif);
+      await this.applyReverseGeocoding(asset, newExif);
 
       for (const stream of data.streams) {
         if (stream.codec_type === 'video') {
@@ -295,15 +305,16 @@ export class MetadataExtractionProcessor {
       await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
       asset = await this.assetCore.save({ id: asset.id, duration: durationString, fileCreatedAt });
       await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { asset } });
-    } catch (err) {
-      ``;
-      // do nothing
-      console.log('Error in video metadata extraction', err);
+    } catch (error: any) {
+      this.logger.error(
+        `Error in video metadata extraction due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
+        error?.stack,
+      );
     }
   }
 
-  private async applyReverseGeocoding(newExif: ExifEntity) {
-    const { assetId, latitude, longitude } = newExif;
+  private async applyReverseGeocoding(asset: AssetEntity, newExif: ExifEntity) {
+    const { latitude, longitude } = newExif;
     if (this.reverseGeocodingEnabled && longitude && latitude) {
       try {
         const { country, state, city } = await this.geocodingRepository.reverseGeocode({ latitude, longitude });
@@ -311,7 +322,10 @@ export class MetadataExtractionProcessor {
         newExif.state = state;
         newExif.city = city;
       } catch (error: any) {
-        this.logger.warn(`Unable to run reverse geocoding for asset: ${assetId}, due to ${error}`, error?.stack);
+        this.logger.warn(
+          `Unable to run reverse geocoding due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
+          error?.stack,
+        );
       }
     }
   }
