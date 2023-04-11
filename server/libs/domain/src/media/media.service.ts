@@ -122,6 +122,10 @@ export class MediaService {
     const assets = await this.assetRepository.getByIds([job.asset.id]);
     const asset = assets[0];
 
+    if (!asset) {
+      return;
+    }
+
     try {
       const input = asset.originalPath;
       const outputFolder = this.storageCore.getFolderLocation(StorageFolder.ENCODED_VIDEO, asset.ownerId);
