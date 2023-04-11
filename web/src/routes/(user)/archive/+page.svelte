@@ -193,7 +193,10 @@
 	<svelte:fragment slot="header">
 		{#if isMultiSelectionMode}
 			<ControlAppBar
-				on:close-button-click={() => assetInteractionStore.clearMultiselect()}
+				on:close-button-click={() => {
+					assetInteractionStore.clearMultiselect();
+					clearMultiSelectAssetAssetHandler();
+				}}
 				backIcon={Close}
 				tailwindClasses={'bg-white shadow-md'}
 			>
