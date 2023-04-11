@@ -64,9 +64,6 @@ export class ExifEntity {
   model!: string | null;
 
   @Column({ type: 'varchar', nullable: true })
-  imageName!: string | null;
-
-  @Column({ type: 'varchar', nullable: true })
   lensModel!: string | null;
 
   @Column({ type: 'float8', nullable: true })
@@ -94,7 +91,6 @@ export class ExifEntity {
                          COALESCE(model, '') || ' ' ||
                          COALESCE(orientation, '') || ' ' ||
                          COALESCE("lensModel", '') || ' ' ||
-                         COALESCE("imageName", '') || ' ' ||
                          COALESCE("city", '') || ' ' ||
                          COALESCE("state", '') || ' ' ||
                          COALESCE("country", ''))`,

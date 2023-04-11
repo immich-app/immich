@@ -16,7 +16,6 @@ class ExifResponseDto {
     this.fileSizeInByte,
     this.make,
     this.model,
-    this.imageName,
     this.exifImageWidth,
     this.exifImageHeight,
     this.orientation,
@@ -40,8 +39,6 @@ class ExifResponseDto {
   String? make;
 
   String? model;
-
-  String? imageName;
 
   num? exifImageWidth;
 
@@ -80,7 +77,6 @@ class ExifResponseDto {
      other.fileSizeInByte == fileSizeInByte &&
      other.make == make &&
      other.model == model &&
-     other.imageName == imageName &&
      other.exifImageWidth == exifImageWidth &&
      other.exifImageHeight == exifImageHeight &&
      other.orientation == orientation &&
@@ -104,7 +100,6 @@ class ExifResponseDto {
     (fileSizeInByte == null ? 0 : fileSizeInByte!.hashCode) +
     (make == null ? 0 : make!.hashCode) +
     (model == null ? 0 : model!.hashCode) +
-    (imageName == null ? 0 : imageName!.hashCode) +
     (exifImageWidth == null ? 0 : exifImageWidth!.hashCode) +
     (exifImageHeight == null ? 0 : exifImageHeight!.hashCode) +
     (orientation == null ? 0 : orientation!.hashCode) +
@@ -123,7 +118,7 @@ class ExifResponseDto {
     (country == null ? 0 : country!.hashCode);
 
   @override
-  String toString() => 'ExifResponseDto[fileSizeInByte=$fileSizeInByte, make=$make, model=$model, imageName=$imageName, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, timeZone=$timeZone, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country]';
+  String toString() => 'ExifResponseDto[fileSizeInByte=$fileSizeInByte, make=$make, model=$model, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, timeZone=$timeZone, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -141,11 +136,6 @@ class ExifResponseDto {
       json[r'model'] = this.model;
     } else {
       // json[r'model'] = null;
-    }
-    if (this.imageName != null) {
-      json[r'imageName'] = this.imageName;
-    } else {
-      // json[r'imageName'] = null;
     }
     if (this.exifImageWidth != null) {
       json[r'exifImageWidth'] = this.exifImageWidth;
@@ -252,7 +242,6 @@ class ExifResponseDto {
         fileSizeInByte: mapValueOfType<int>(json, r'fileSizeInByte'),
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
-        imageName: mapValueOfType<String>(json, r'imageName'),
         exifImageWidth: json[r'exifImageWidth'] == null
             ? null
             : num.parse(json[r'exifImageWidth'].toString()),
