@@ -45,7 +45,11 @@ class AdvancedBottomSheet extends HookConsumerWidget {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.only(
-                          right: 16.0, left: 16, top: 8, bottom: 16),
+                        right: 16.0,
+                        left: 16,
+                        top: 8,
+                        bottom: 16,
+                      ),
                       child: ListView(
                         shrinkWrap: true,
                         children: [
