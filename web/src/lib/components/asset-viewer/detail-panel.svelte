@@ -5,7 +5,7 @@
 	import CameraIris from 'svelte-material-icons/CameraIris.svelte';
 	import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
 	import { createEventDispatcher } from 'svelte';
-	import { AssetResponseDto, AlbumResponseDto } from '@api';
+	import { AssetResponseDto, AlbumResponseDto, api } from '@api';
 	import { asByteUnitString } from '../../utils/byte-units';
 	import { locale } from '$lib/stores/preferences.store';
 	import { DateTime } from 'luxon';
@@ -13,6 +13,19 @@
 
 	export let asset: AssetResponseDto;
 	export let albums: AlbumResponseDto[] = [];
+
+	let textarea: HTMLTextAreaElement;
+	let description: string;
+
+	$: {
+		if (textarea) {
+			if (asset.exifInfo?.description) {
+				textarea.value = asset.exifInfo.description;
+			} else {
+				textarea.value = '';
+			}
+		}
+	}
 
 	$: latlng = (() => {
 		const lat = asset.exifInfo?.latitude;
@@ -34,6 +47,26 @@
 
 		return undefined;
 	};
+
+	const autoGrowHeight = (e: any) => {
+		e.target.style.height = 'auto';
+		e.target.style.height = `${e.target.scrollHeight}px`;
+	};
+
+	const handleFocusIn = () => {
+		dispatch('description-focus-in');
+	};
+
+	const handleFocusOut = async () => {
+		dispatch('description-focus-out');
+		try {
+			await api.assetApi.updateAsset(asset.id, {
+				description: description
+			});
+		} catch (error) {
+			console.error(error);
+		}
+	};
 </script>
 
 <section class="p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
@@ -46,6 +79,19 @@
 		</button>
 
 		<p class="text-immich-fg dark:text-immich-dark-fg text-lg">Info</p>
+	</div>
+
+	<div class="mx-4 mt-10">
+		<textarea
+			bind:this={textarea}
+			class="max-h-[500px]
+      text-base text-black bg-transparent dark:text-white border-b focus:border-b-2 border-gray-500 w-full focus:border-immich-primary dark:focus:border-immich-dark-primary transition-all resize-none overflow-hidden outline-none"
+			placeholder="Add a description"
+			on:focusin={handleFocusIn}
+			on:focusout={handleFocusOut}
+			on:input={autoGrowHeight}
+			bind:value={description}
+		/>
 	</div>
 
 	<div class="px-4 py-4">

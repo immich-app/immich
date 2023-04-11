@@ -21,4 +21,8 @@ export class UpdateAssetDto {
     ],
   })
   tagIds?: string[];
+
+  @IsOptional()
+  @IsString()
+  description?: string;
 }
