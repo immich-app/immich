@@ -363,26 +363,16 @@ describe('AssetService', () => {
 
   it('get asset count by user id', async () => {
     const assetCount = _getAssetCountByUserId();
+    assetRepositoryMock.getAssetCountByUserId.mockResolvedValue(assetCount);
 
-    assetRepositoryMock.getAssetCountByUserId.mockImplementation(() =>
-      Promise.resolve<AssetCountByUserIdResponseDto>(assetCount),
-    );
-
-    const result = await sut.getAssetCountByUserId(authStub.user1);
-
-    expect(result).toEqual(assetCount);
+    expect(await sut.getAssetCountByUserId(authStub.user1)).toEqual(assetCount);
   });
 
   it('get archived asset count by user id', async () => {
     const assetCount = _getArchivedAssetsCountByUserId();
+    assetRepositoryMock.getArchivedAssetCountByUserId.mockResolvedValue(assetCount);
 
-    assetRepositoryMock.getArchivedAssetCountByUserId.mockImplementation(() =>
-      Promise.resolve<AssetCountByUserIdResponseDto>(assetCount),
-    );
-
-    const result = await sut.getArchivedAssetCountByUserId(authStub.user1);
-
-    expect(result).toEqual(assetCount);
+    expect(await sut.getArchivedAssetCountByUserId(authStub.user1)).toEqual(assetCount);
   });
 
   describe('deleteAll', () => {
