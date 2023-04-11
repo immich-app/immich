@@ -21,7 +21,6 @@ import { ExifDateTime, exiftool, Tags } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { Duration } from 'luxon';
 import fs from 'node:fs';
-import path from 'path';
 import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
 import { promisify } from 'util';
@@ -189,7 +188,6 @@ export class MetadataExtractionProcessor {
   @Process({ name: JobName.EXTRACT_VIDEO_METADATA, concurrency: 2 })
   async extractVideoMetadata(job: Job<IAssetUploadedJob>) {
     let asset = job.data.asset;
-    const fileName = job.data.fileName;
 
     if (!asset.isVisible) {
       return;
