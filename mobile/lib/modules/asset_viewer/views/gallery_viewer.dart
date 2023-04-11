@@ -8,6 +8,7 @@ import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/ui/advanced_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
@@ -189,6 +190,11 @@ class GalleryViewerPage extends HookConsumerWidget {
         isScrollControlled: true,
         context: context,
         builder: (context) {
+          if (ref
+              .watch(appSettingsServiceProvider)
+              .getSetting<bool>(AppSettingsEnum.advancedTroubleshooting)) {
+            return AdvancedBottomSheet(assetDetail: assetDetail!);
+          }
           return ExifBottomSheet(assetDetail: assetDetail!);
         },
       );
