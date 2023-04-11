@@ -119,7 +119,12 @@ export class MediaService {
   }
 
   async handleVideoConversion(job: IAssetJob) {
-    const { asset } = job;
+    const assets = await this.assetRepository.getByIds([job.asset.id]);
+    const asset = assets[0];
+
+    if (!asset) {
+      return;
+    }
 
     try {
       const input = asset.originalPath;
