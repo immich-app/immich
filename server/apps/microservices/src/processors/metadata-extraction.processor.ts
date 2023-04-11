@@ -78,7 +78,7 @@ export class MetadataExtractionProcessor {
         : await this.assetRepository.getWithout(WithoutProperty.EXIF);
 
       for (const asset of assets) {
-        const fileName = asset.originalFileName ?? getFileNameWithoutExtension(asset.originalPath);
+        const fileName = asset.originalFileName;
         const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
         await this.jobRepository.queue({ name, data: { asset, fileName } });
       }
