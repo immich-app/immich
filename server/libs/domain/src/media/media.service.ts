@@ -91,7 +91,7 @@ export class MediaService {
   }
 
   async handleGenerateWepbThumbnail(data: IAssetJob): Promise<void> {
-    const { asset } = data;
+    const [asset] = await this.assetRepository.getByIds([data.asset.id]);
 
     if (!asset.resizePath) {
       return;

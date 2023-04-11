@@ -155,12 +155,14 @@ describe(MediaService.name, () => {
 
   describe('handleGenerateWebpThumbnail', () => {
     it('should skip thumbnail generate if resize path is missing', async () => {
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.noResizePath]);
       await sut.handleGenerateWepbThumbnail({ asset: assetEntityStub.noResizePath });
 
       expect(mediaMock.resize).not.toHaveBeenCalled();
     });
 
     it('should generate a thumbnail', async () => {
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
       await sut.handleGenerateWepbThumbnail({ asset: assetEntityStub.image });
 
       expect(mediaMock.resize).toHaveBeenCalledWith(
@@ -172,6 +174,7 @@ describe(MediaService.name, () => {
     });
 
     it('should log an error', async () => {
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
       mediaMock.resize.mockRejectedValue(new Error('service unavailable'));
 
       await sut.handleGenerateWepbThumbnail({ asset: assetEntityStub.image });
