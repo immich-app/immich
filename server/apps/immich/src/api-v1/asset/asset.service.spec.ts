@@ -365,14 +365,14 @@ describe('AssetService', () => {
     const assetCount = _getAssetCountByUserId();
     assetRepositoryMock.getAssetCountByUserId.mockResolvedValue(assetCount);
 
-    expect(await sut.getAssetCountByUserId(authStub.user1)).toEqual(assetCount);
+    await expect(sut.getAssetCountByUserId(authStub.user1)).resolves.toEqual(assetCount);
   });
 
   it('get archived asset count by user id', async () => {
     const assetCount = _getArchivedAssetsCountByUserId();
     assetRepositoryMock.getArchivedAssetCountByUserId.mockResolvedValue(assetCount);
 
-    expect(await sut.getArchivedAssetCountByUserId(authStub.user1)).toEqual(assetCount);
+    await expect(sut.getArchivedAssetCountByUserId(authStub.user1)).resolves.toEqual(assetCount);
   });
 
   describe('deleteAll', () => {
