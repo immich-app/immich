@@ -46,6 +46,9 @@ export class MediaService {
     const [asset] = await this.assetRepository.getByIds([data.asset.id]);
 
     if (!asset) {
+      this.logger.warn(
+        `Asset not found: ${data.asset.id} - Original Path: ${data.asset.originalPath} - Resize Path: ${data.asset.resizePath}`,
+      );
       return;
     }
 
@@ -126,6 +129,7 @@ export class MediaService {
     const [asset] = await this.assetRepository.getByIds([job.asset.id]);
 
     if (!asset) {
+      this.logger.warn(`Asset not found: ${job.asset.id} - Original Path: ${job.asset.originalPath}`);
       return;
     }
 
