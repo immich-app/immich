@@ -10,7 +10,6 @@
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
-	import { assetInteractionStore } from '$lib/stores/asset-interaction.store';
 	import { assetStore } from '$lib/stores/assets.store';
 	import { addAssetsToAlbum, bulkDownload } from '$lib/utils/asset-utils';
 	import { AlbumResponseDto, api, AssetResponseDto, SharedLinkType } from '@api';
@@ -193,10 +192,7 @@
 	<svelte:fragment slot="header">
 		{#if isMultiSelectionMode}
 			<ControlAppBar
-				on:close-button-click={() => {
-					assetInteractionStore.clearMultiselect();
-					clearMultiSelectAssetAssetHandler();
-				}}
+				on:close-button-click={clearMultiSelectAssetAssetHandler}
 				backIcon={Close}
 				tailwindClasses={'bg-white shadow-md'}
 			>
