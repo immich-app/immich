@@ -78,8 +78,15 @@ async function fileUploader(
 	const fileExtension = getFilenameExtension(asset.name);
 	const formData = new FormData();
 	const fileCreatedAt = new Date(asset.lastModified).toISOString();
+	const deviceAssetId = 'web' + '-' + asset.name + '-' + asset.lastModified;
 
 	try {
+		// Create and add pseudo-unique ID of asset on the device
+		formData.append('deviceAssetId', deviceAssetId);
+
+		// Get device id - for web -> use WEB
+		formData.append('deviceId', 'WEB');
+
 		// Get asset type
 		formData.append('assetType', assetType);
 
@@ -122,7 +129,7 @@ async function fileUploader(
 		}
 
 		const newUploadAsset: UploadAsset = {
-			id: asset.name,
+			id: deviceAssetId,
 			file: asset,
 			progress: 0,
 			fileExtension: fileExtension
@@ -136,7 +143,7 @@ async function fileUploader(
 			},
 			onUploadProgress: (event) => {
 				const percentComplete = Math.floor((event.loaded / event.total) * 100);
-				uploadAssetsStore.updateProgress(asset.name, percentComplete);
+				uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
 			}
 		});
 
@@ -148,7 +155,7 @@ async function fileUploader(
 			}
 
 			setTimeout(() => {
-				uploadAssetsStore.removeUploadAsset(asset.name);
+				uploadAssetsStore.removeUploadAsset(deviceAssetId);
 			}, 1000);
 
 			return res.id;
@@ -156,7 +163,7 @@ async function fileUploader(
 	} catch (e) {
 		console.log('error uploading file ', e);
 		handleUploadError(asset, JSON.stringify(e));
-		uploadAssetsStore.removeUploadAsset(asset.name);
+		uploadAssetsStore.removeUploadAsset(deviceAssetId);
 	}
 }
 

@@ -1,4 +1,8 @@
 <script lang="ts">
+	import {
+		notificationController,
+		NotificationType
+	} from '$lib/components/shared-components/notification/notification';
 	import { handleError } from '$lib/utils/handle-error';
 	import { AllJobStatusResponseDto, api, JobCommand, JobCommandDto, JobName } from '@api';
 	import type { ComponentType } from 'svelte';

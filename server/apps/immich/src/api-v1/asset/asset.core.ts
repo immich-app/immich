@@ -20,8 +20,8 @@ export class AssetCore {
       checksum: file.checksum,
       originalPath: file.originalPath,
 
-      deviceAssetId: dto.deviceAssetId || null,
-      deviceId: dto.deviceId || null,
+      deviceAssetId: dto.deviceAssetId,
+      deviceId: dto.deviceId,
 
       fileCreatedAt: dto.fileCreatedAt,
       fileModifiedAt: dto.fileModifiedAt,

@@ -4,11 +4,11 @@ import { IsBoolean, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 import { ImmichFile } from '../../../config/asset-upload.config';
 
 export class CreateAssetDto {
-  @IsOptional()
-  deviceAssetId?: string;
+  @IsNotEmpty()
+  deviceAssetId!: string;
 
-  @IsOptional()
-  deviceId?: string;
+  @IsNotEmpty()
+  deviceId!: string;
 
   @IsNotEmpty()
   @IsEnum(AssetType)

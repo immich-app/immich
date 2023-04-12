@@ -5039,6 +5039,8 @@
         "required": [
           "assetType",
           "assetData",
+          "deviceAssetId",
+          "deviceId",
           "fileCreatedAt",
           "fileModifiedAt",
           "isFavorite",

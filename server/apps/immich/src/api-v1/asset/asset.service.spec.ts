@@ -58,6 +58,32 @@ const _getAsset_1 = () => {
   return asset_1;
 };
 
+const _getAsset_2 = () => {
+  const asset_2 = new AssetEntity();
+
+  asset_2.id = 'id_2';
+  asset_2.ownerId = 'user_id_1';
+  asset_2.deviceAssetId = 'device_asset_id_2';
+  asset_2.deviceId = 'device_id_1';
+  asset_2.type = AssetType.VIDEO;
+  asset_2.originalPath = 'fake_path/asset_2.jpeg';
+  asset_2.resizePath = '';
+  asset_2.fileModifiedAt = '2022-06-19T23:41:36.910Z';
+  asset_2.fileCreatedAt = '2022-06-19T23:41:36.910Z';
+  asset_2.updatedAt = '2022-06-19T23:41:36.910Z';
+  asset_2.isFavorite = false;
+  asset_2.mimeType = 'image/jpeg';
+  asset_2.webpPath = '';
+  asset_2.encodedVideoPath = '';
+  asset_2.duration = '0:00:00.000000';
+
+  return asset_2;
+};
+
+const _getAssets = () => {
+  return [_getAsset_1(), _getAsset_2()];
+};
+
 const _getAssetCountByTimeBucket = (): AssetCountByTimeBucket[] => {
   const result1 = new AssetCountByTimeBucket();
   result1.count = 2;
