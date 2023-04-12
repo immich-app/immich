@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/asset_viewer/providers/asset_description.provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/exif_info.dart';
-import 'package:immich_mobile/shared/providers/api.provider.dart';
-import 'package:immich_mobile/shared/providers/db.provider.dart';
+import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
 
 class DescriptionInput extends HookConsumerWidget {
   DescriptionInput({
@@ -22,31 +20,18 @@ class DescriptionInput extends HookConsumerWidget {
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDarkTheme ? Colors.white : Colors.black;
     final controller = useTextEditingController();
-    final db = ref.watch(dbProvider);
     final focusNode = useFocusNode();
     final isFocus = useState(false);
     final isTextEmpty = useState(controller.text.isEmpty);
+    final descriptionProvider = ref.watch(assetDescriptionProvider);
 
     getLatestDescription() async {
-      final latestAssetFromServer = await ref
-          .watch(apiServiceProvider)
-          .assetApi
-          .getAssetById(asset.remoteId!);
-
-      final localExifId = asset.exifInfo?.id;
-      if (localExifId == null) {
-        return;
-      }
-
-      final localExifInfo = await db.exifInfos.get(localExifId);
-
-      if (latestAssetFromServer != null && localExifInfo != null) {
-        controller.text = latestAssetFromServer.exifInfo?.description ?? '';
-        localExifInfo.description = latestAssetFromServer.exifInfo!.description;
-
-        await db.writeTxn(
-          () => db.exifInfos.put(localExifInfo),
-        );
+      if (asset.exifInfo != null && asset.remoteId != null) {
+        final exifId = asset.exifInfo?.id;
+        if (exifId != null) {
+          controller.text =
+              await descriptionProvider.readLatest(asset.remoteId!, exifId);
+        }
       }
     }
 
@@ -60,30 +45,22 @@ class DescriptionInput extends HookConsumerWidget {
 
     submitDescription(String description) async {
       try {
-        var result = await ref.watch(apiServiceProvider).assetApi.updateAsset(
+        if (asset.exifInfo != null && asset.remoteId != null) {
+          final exifId = asset.exifInfo?.id;
+          if (exifId != null) {
+            descriptionProvider.setDescription(
+              description,
               asset.remoteId!,
-              UpdateAssetDto(description: description),
-            );
-
-        if (result?.exifInfo?.description != null) {
-          controller.text = result!.exifInfo!.description!;
-          var exifInfo = await db.exifInfos.get(asset.exifInfo!.id!);
-
-          if (exifInfo != null) {
-            exifInfo.description = result.exifInfo!.description;
-            await db.writeTxn(
-              () => db.exifInfos.put(exifInfo),
+              exifId,
             );
           }
         }
-      } catch (e) {
-        _log.severe("Error updating description", e);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Failed to update description! Check log for more details',
-            ),
-          ),
+      } catch (error, stack) {
+        _log.severe("Error updating description $error", error, stack);
+        ImmichToast.show(
+          context: context,
+          msg: "Error updating description, check the log for more details",
+          toastType: ToastType.error,
         );
       }
     }
