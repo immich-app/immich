@@ -10,7 +10,6 @@
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
-	import { assetStore } from '$lib/stores/assets.store';
 	import { addAssetsToAlbum, bulkDownload } from '$lib/utils/asset-utils';
 	import { AlbumResponseDto, api, AssetResponseDto, SharedLinkType } from '@api';
 	import Close from 'svelte-material-icons/Close.svelte';
@@ -55,7 +54,7 @@
 
 				for (const asset of deletedAssets) {
 					if (asset.status == 'SUCCESS') {
-						assetStore.removeAsset(asset.id);
+						archived = archived.filter((a) => a.id != asset.id);
 					}
 				}
 
