@@ -93,7 +93,7 @@
 
 <div
 	id="immich-scrubbable-scrollbar"
-	class="fixed right-0 bg-immich-bg z-[100] hover:cursor-row-resize select-none "
+	class="fixed right-0 bg-immich-bg z-[100] hover:cursor-row-resize select-none"
 	style:width={isDragging ? '100vw' : '60px'}
 	style:background-color={isDragging ? 'transparent' : 'transparent'}
 	on:mouseenter={() => (isHover = true)}

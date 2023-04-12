@@ -228,7 +228,7 @@
 
 		{#if isShowAddMenu}
 			<ContextMenu {...contextMenuPosition} on:clickoutside={() => (isShowAddMenu = false)}>
-				<div class="flex flex-col rounded-lg ">
+				<div class="flex flex-col rounded-lg">
 					<MenuOption on:click={handleAddToFavorites} text="Add to Favorites" />
 					<MenuOption on:click={() => handleShowAlbumPicker(false)} text="Add to Album" />
 					<MenuOption on:click={() => handleShowAlbumPicker(true)} text="Add to Shared Album" />

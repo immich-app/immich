@@ -156,13 +156,13 @@
 								<td class="text-sm px-4 w-1/3 text-ellipsis">
 									<button
 										on:click={() => (editKey = key)}
-										class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700  rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
+										class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
 									>
 										<PencilOutline size="16" />
 									</button>
 									<button
 										on:click={() => (deleteKey = key)}
-										class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700  rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
+										class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
 									>
 										<TrashCanOutline size="16" />
 									</button>

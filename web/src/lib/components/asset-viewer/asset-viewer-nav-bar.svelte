@@ -104,7 +104,7 @@
 
 {#if isShowAssetOptions}
 	<ContextMenu {...contextMenuPosition} on:clickoutside={() => (isShowAssetOptions = false)}>
-		<div class="flex flex-col rounded-lg ">
+		<div class="flex flex-col rounded-lg">
 			<MenuOption on:click={() => onMenuClick('addToAlbum')} text="Add to Album" />
 			<MenuOption on:click={() => onMenuClick('addToSharedAlbum')} text="Add to Shared Album" />
 		</div>

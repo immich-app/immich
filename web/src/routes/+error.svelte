@@ -43,7 +43,7 @@
 	</section>
 
 	<div
-		class="fixed top-0 w-full h-full  bg-black/50 flex place-items-center place-content-center overflow-hidden"
+		class="fixed top-0 w-full h-full bg-black/50 flex place-items-center place-content-center overflow-hidden"
 	>
 		<div>
 			<div

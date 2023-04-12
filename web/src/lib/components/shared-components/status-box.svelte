@@ -83,10 +83,10 @@
 			<Dns size={'24'} />
 		</div>
 
-		<div class="text-xs ">
+		<div class="text-xs">
 			<p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Server</p>
 
-			<div class="flex justify-items-center justify-between mt-2 ">
+			<div class="flex justify-items-center justify-between mt-2">
 				<p>Status</p>
 
 				{#if isServerOk}
@@ -96,7 +96,7 @@
 				{/if}
 			</div>
 
-			<div class="flex justify-items-center justify-between mt-2 ">
+			<div class="flex justify-items-center justify-between mt-2">
 				<p>Version</p>
 				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">{serverVersion}</p>
 			</div>
