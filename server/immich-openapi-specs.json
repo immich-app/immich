@@ -40,7 +40,9 @@
             }
           }
         },
-        "tags": ["Album"],
+        "tags": [
+          "Album"
+        ],
         "security": [
           {
             "bearer": []
@@ -76,7 +78,9 @@
             }
           }
         },
-        "tags": ["Album"],
+        "tags": [
+          "Album"
+        ],
         "security": [
           {
             "bearer": []
@@ -114,7 +118,9 @@
             }
           }
         },
-        "tags": ["API Key"],
+        "tags": [
+          "API Key"
+        ],
         "security": [
           {
             "bearer": []
@@ -143,7 +149,9 @@
             }
           }
         },
-        "tags": ["API Key"],
+        "tags": [
+          "API Key"
+        ],
         "security": [
           {
             "bearer": []
@@ -181,7 +189,9 @@
             }
           }
         },
-        "tags": ["API Key"],
+        "tags": [
+          "API Key"
+        ],
         "security": [
           {
             "bearer": []
@@ -227,7 +237,9 @@
             }
           }
         },
-        "tags": ["API Key"],
+        "tags": [
+          "API Key"
+        ],
         "security": [
           {
             "bearer": []
@@ -256,7 +268,9 @@
             "description": ""
           }
         },
-        "tags": ["API Key"],
+        "tags": [
+          "API Key"
+        ],
         "security": [
           {
             "bearer": []
@@ -294,7 +308,9 @@
             }
           }
         },
-        "tags": ["Authentication"]
+        "tags": [
+          "Authentication"
+        ]
       }
     },
     "/auth/admin-sign-up": {
@@ -327,7 +343,9 @@
             "description": "The server already has an admin"
           }
         },
-        "tags": ["Authentication"]
+        "tags": [
+          "Authentication"
+        ]
       }
     },
     "/auth/validateToken": {
@@ -347,7 +365,9 @@
             }
           }
         },
-        "tags": ["Authentication"],
+        "tags": [
+          "Authentication"
+        ],
         "security": [
           {
             "bearer": []
@@ -385,7 +405,9 @@
             }
           }
         },
-        "tags": ["Authentication"],
+        "tags": [
+          "Authentication"
+        ],
         "security": [
           {
             "bearer": []
@@ -413,7 +435,9 @@
             }
           }
         },
-        "tags": ["Authentication"],
+        "tags": [
+          "Authentication"
+        ],
         "security": [
           {
             "bearer": []
@@ -451,7 +475,9 @@
             }
           }
         },
-        "tags": ["Device Info"],
+        "tags": [
+          "Device Info"
+        ],
         "security": [
           {
             "bearer": []
@@ -479,7 +505,9 @@
             }
           }
         },
-        "tags": ["Job"],
+        "tags": [
+          "Job"
+        ],
         "security": [
           {
             "bearer": []
@@ -526,7 +554,9 @@
             }
           }
         },
-        "tags": ["Job"],
+        "tags": [
+          "Job"
+        ],
         "security": [
           {
             "bearer": []
@@ -547,7 +577,9 @@
             "description": ""
           }
         },
-        "tags": ["OAuth"]
+        "tags": [
+          "OAuth"
+        ]
       }
     },
     "/oauth/config": {
@@ -577,7 +609,9 @@
             }
           }
         },
-        "tags": ["OAuth"]
+        "tags": [
+          "OAuth"
+        ]
       }
     },
     "/oauth/callback": {
@@ -607,7 +641,9 @@
             }
           }
         },
-        "tags": ["OAuth"]
+        "tags": [
+          "OAuth"
+        ]
       }
     },
     "/oauth/link": {
@@ -637,7 +673,9 @@
             }
           }
         },
-        "tags": ["OAuth"],
+        "tags": [
+          "OAuth"
+        ],
         "security": [
           {
             "bearer": []
@@ -665,7 +703,9 @@
             }
           }
         },
-        "tags": ["OAuth"],
+        "tags": [
+          "OAuth"
+        ],
         "security": [
           {
             "bearer": []
@@ -710,7 +750,12 @@
             "required": false,
             "in": "query",
             "schema": {
-              "enum": ["IMAGE", "VIDEO", "AUDIO", "OTHER"],
+              "enum": [
+                "IMAGE",
+                "VIDEO",
+                "AUDIO",
+                "OTHER"
+              ],
               "type": "string"
             }
           },
@@ -821,7 +866,9 @@
             }
           }
         },
-        "tags": ["Search"],
+        "tags": [
+          "Search"
+        ],
         "security": [
           {
             "bearer": []
@@ -849,7 +896,9 @@
             }
           }
         },
-        "tags": ["Search"],
+        "tags": [
+          "Search"
+        ],
         "security": [
           {
             "bearer": []
@@ -880,7 +929,9 @@
             }
           }
         },
-        "tags": ["Search"],
+        "tags": [
+          "Search"
+        ],
         "security": [
           {
             "bearer": []
@@ -908,7 +959,9 @@
             }
           }
         },
-        "tags": ["Server Info"],
+        "tags": [
+          "Server Info"
+        ],
         "security": [
           {
             "bearer": []
@@ -936,7 +989,9 @@
             }
           }
         },
-        "tags": ["Server Info"]
+        "tags": [
+          "Server Info"
+        ]
       }
     },
     "/server-info/version": {
@@ -956,7 +1011,9 @@
             }
           }
         },
-        "tags": ["Server Info"]
+        "tags": [
+          "Server Info"
+        ]
       }
     },
     "/server-info/stats": {
@@ -976,7 +1033,9 @@
             }
           }
         },
-        "tags": ["Server Info"],
+        "tags": [
+          "Server Info"
+        ],
         "security": [
           {
             "bearer": []
@@ -1007,7 +1066,9 @@
             }
           }
         },
-        "tags": ["share"],
+        "tags": [
+          "share"
+        ],
         "security": [
           {
             "bearer": []
@@ -1044,7 +1105,9 @@
             }
           }
         },
-        "tags": ["share"],
+        "tags": [
+          "share"
+        ],
         "security": [
           {
             "bearer": []
@@ -1082,7 +1145,9 @@
             }
           }
         },
-        "tags": ["share"],
+        "tags": [
+          "share"
+        ],
         "security": [
           {
             "bearer": []
@@ -1111,7 +1176,9 @@
             "description": ""
           }
         },
-        "tags": ["share"],
+        "tags": [
+          "share"
+        ],
         "security": [
           {
             "bearer": []
@@ -1157,7 +1224,9 @@
             }
           }
         },
-        "tags": ["share"],
+        "tags": [
+          "share"
+        ],
         "security": [
           {
             "bearer": []
@@ -1185,7 +1254,9 @@
             }
           }
         },
-        "tags": ["System Config"],
+        "tags": [
+          "System Config"
+        ],
         "security": [
           {
             "bearer": []
@@ -1221,7 +1292,9 @@
             }
           }
         },
-        "tags": ["System Config"],
+        "tags": [
+          "System Config"
+        ],
         "security": [
           {
             "bearer": []
@@ -1249,7 +1322,9 @@
             }
           }
         },
-        "tags": ["System Config"],
+        "tags": [
+          "System Config"
+        ],
         "security": [
           {
             "bearer": []
@@ -1277,7 +1352,9 @@
             }
           }
         },
-        "tags": ["System Config"],
+        "tags": [
+          "System Config"
+        ],
         "security": [
           {
             "bearer": []
@@ -1317,7 +1394,9 @@
             }
           }
         },
-        "tags": ["User"],
+        "tags": [
+          "User"
+        ],
         "security": [
           {
             "bearer": []
@@ -1353,7 +1432,9 @@
             }
           }
         },
-        "tags": ["User"],
+        "tags": [
+          "User"
+        ],
         "security": [
           {
             "bearer": []
@@ -1389,7 +1470,9 @@
             }
           }
         },
-        "tags": ["User"],
+        "tags": [
+          "User"
+        ],
         "security": [
           {
             "bearer": []
@@ -1427,7 +1510,9 @@
             }
           }
         },
-        "tags": ["User"],
+        "tags": [
+          "User"
+        ],
         "security": [
           {
             "bearer": []
@@ -1455,7 +1540,9 @@
             }
           }
         },
-        "tags": ["User"],
+        "tags": [
+          "User"
+        ],
         "security": [
           {
             "bearer": []
@@ -1493,7 +1580,9 @@
             }
           }
         },
-        "tags": ["User"]
+        "tags": [
+          "User"
+        ]
       }
     },
     "/user/{userId}": {
@@ -1523,7 +1612,9 @@
             }
           }
         },
-        "tags": ["User"],
+        "tags": [
+          "User"
+        ],
         "security": [
           {
             "bearer": []
@@ -1561,7 +1652,9 @@
             }
           }
         },
-        "tags": ["User"],
+        "tags": [
+          "User"
+        ],
         "security": [
           {
             "bearer": []
@@ -1600,7 +1693,9 @@
             }
           }
         },
-        "tags": ["User"],
+        "tags": [
+          "User"
+        ],
         "security": [
           {
             "bearer": []
@@ -1638,7 +1733,9 @@
             }
           }
         },
-        "tags": ["User"],
+        "tags": [
+          "User"
+        ],
         "security": [
           {
             "bearer": []
@@ -1686,7 +1783,9 @@
             }
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -1733,7 +1832,9 @@
             "description": ""
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -1784,7 +1885,9 @@
             "description": ""
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -1838,7 +1941,9 @@
             "description": ""
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -1903,7 +2008,9 @@
             "description": ""
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -1958,7 +2065,9 @@
             "description": ""
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -1989,7 +2098,9 @@
             }
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -2020,7 +2131,9 @@
             }
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -2051,7 +2164,9 @@
             }
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -2092,7 +2207,9 @@
             }
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -2130,7 +2247,9 @@
             }
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -2158,7 +2277,9 @@
             }
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -2186,7 +2307,9 @@
             }
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -2251,7 +2374,9 @@
             }
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -2290,7 +2415,9 @@
             }
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -2331,7 +2458,9 @@
             }
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -2372,7 +2501,9 @@
             }
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -2418,7 +2549,9 @@
             }
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -2466,7 +2599,9 @@
             }
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -2513,7 +2648,9 @@
             }
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -2551,7 +2688,9 @@
             }
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -2589,7 +2728,9 @@
             }
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -2636,7 +2777,9 @@
             }
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -2683,7 +2826,9 @@
             }
           }
         },
-        "tags": ["Asset"],
+        "tags": [
+          "Asset"
+        ],
         "security": [
           {
             "bearer": []
@@ -2721,7 +2866,9 @@
             }
           }
         },
-        "tags": ["Tag"],
+        "tags": [
+          "Tag"
+        ],
         "security": [
           {
             "bearer": []
@@ -2750,7 +2897,9 @@
             }
           }
         },
-        "tags": ["Tag"],
+        "tags": [
+          "Tag"
+        ],
         "security": [
           {
             "bearer": []
@@ -2788,7 +2937,9 @@
             }
           }
         },
-        "tags": ["Tag"],
+        "tags": [
+          "Tag"
+        ],
         "security": [
           {
             "bearer": []
@@ -2834,7 +2985,9 @@
             }
           }
         },
-        "tags": ["Tag"],
+        "tags": [
+          "Tag"
+        ],
         "security": [
           {
             "bearer": []
@@ -2863,7 +3016,9 @@
             "description": ""
           }
         },
-        "tags": ["Tag"],
+        "tags": [
+          "Tag"
+        ],
         "security": [
           {
             "bearer": []
@@ -2891,7 +3046,9 @@
             }
           }
         },
-        "tags": ["Album"],
+        "tags": [
+          "Album"
+        ],
         "security": [
           {
             "bearer": []
@@ -2939,7 +3096,9 @@
             }
           }
         },
-        "tags": ["Album"],
+        "tags": [
+          "Album"
+        ],
         "security": [
           {
             "bearer": []
@@ -2995,7 +3154,9 @@
             }
           }
         },
-        "tags": ["Album"],
+        "tags": [
+          "Album"
+        ],
         "security": [
           {
             "bearer": []
@@ -3041,7 +3202,9 @@
             }
           }
         },
-        "tags": ["Album"],
+        "tags": [
+          "Album"
+        ],
         "security": [
           {
             "bearer": []
@@ -3087,7 +3250,9 @@
             }
           }
         },
-        "tags": ["Album"],
+        "tags": [
+          "Album"
+        ],
         "security": [
           {
             "bearer": []
@@ -3116,7 +3281,9 @@
             "description": ""
           }
         },
-        "tags": ["Album"],
+        "tags": [
+          "Album"
+        ],
         "security": [
           {
             "bearer": []
@@ -3162,7 +3329,9 @@
             }
           }
         },
-        "tags": ["Album"],
+        "tags": [
+          "Album"
+        ],
         "security": [
           {
             "bearer": []
@@ -3201,7 +3370,9 @@
             "description": ""
           }
         },
-        "tags": ["Album"],
+        "tags": [
+          "Album"
+        ],
         "security": [
           {
             "bearer": []
@@ -3264,7 +3435,9 @@
             "description": ""
           }
         },
-        "tags": ["Album"],
+        "tags": [
+          "Album"
+        ],
         "security": [
           {
             "bearer": []
@@ -3302,7 +3475,9 @@
             }
           }
         },
-        "tags": ["Album"],
+        "tags": [
+          "Album"
+        ],
         "security": [
           {
             "bearer": []
@@ -3393,7 +3568,12 @@
       },
       "AssetTypeEnum": {
         "type": "string",
-        "enum": ["IMAGE", "VIDEO", "AUDIO", "OTHER"]
+        "enum": [
+          "IMAGE",
+          "VIDEO",
+          "AUDIO",
+          "OTHER"
+        ]
       },
       "ExifResponseDto": {
         "type": "object",
@@ -3524,7 +3704,11 @@
       },
       "TagTypeEnum": {
         "type": "string",
-        "enum": ["OBJECT", "FACE", "CUSTOM"]
+        "enum": [
+          "OBJECT",
+          "FACE",
+          "CUSTOM"
+        ]
       },
       "TagResponseDto": {
         "type": "object",
@@ -3546,7 +3730,12 @@
             "nullable": true
           }
         },
-        "required": ["id", "type", "name", "userId"]
+        "required": [
+          "id",
+          "type",
+          "name",
+          "userId"
+        ]
       },
       "AssetResponseDto": {
         "type": "object",
@@ -3724,7 +3913,12 @@
             "type": "string"
           }
         },
-        "required": ["id", "name", "createdAt", "updatedAt"]
+        "required": [
+          "id",
+          "name",
+          "createdAt",
+          "updatedAt"
+        ]
       },
       "APIKeyCreateResponseDto": {
         "type": "object",
@@ -3736,7 +3930,10 @@
             "$ref": "#/components/schemas/APIKeyResponseDto"
           }
         },
-        "required": ["secret", "apiKey"]
+        "required": [
+          "secret",
+          "apiKey"
+        ]
       },
       "APIKeyUpdateDto": {
         "type": "object",
@@ -3745,7 +3942,9 @@
             "type": "string"
           }
         },
-        "required": ["name"]
+        "required": [
+          "name"
+        ]
       },
       "LoginCredentialDto": {
         "type": "object",
@@ -3759,7 +3958,10 @@
             "example": "password"
           }
         },
-        "required": ["email", "password"]
+        "required": [
+          "email",
+          "password"
+        ]
       },
       "LoginResponseDto": {
         "type": "object",
@@ -3828,7 +4030,12 @@
             "example": "Doe"
           }
         },
-        "required": ["email", "password", "firstName", "lastName"]
+        "required": [
+          "email",
+          "password",
+          "firstName",
+          "lastName"
+        ]
       },
       "AdminSignupResponseDto": {
         "type": "object",
@@ -3849,7 +4056,13 @@
             "type": "string"
           }
         },
-        "required": ["id", "email", "firstName", "lastName", "createdAt"]
+        "required": [
+          "id",
+          "email",
+          "firstName",
+          "lastName",
+          "createdAt"
+        ]
       },
       "ValidateAccessTokenResponseDto": {
         "type": "object",
@@ -3858,7 +4071,9 @@
             "type": "boolean"
           }
         },
-        "required": ["authStatus"]
+        "required": [
+          "authStatus"
+        ]
       },
       "ChangePasswordDto": {
         "type": "object",
@@ -3872,7 +4087,10 @@
             "example": "password"
           }
         },
-        "required": ["password", "newPassword"]
+        "required": [
+          "password",
+          "newPassword"
+        ]
       },
       "LogoutResponseDto": {
         "type": "object",
@@ -3886,11 +4104,18 @@
             "readOnly": true
           }
         },
-        "required": ["successful", "redirectUri"]
+        "required": [
+          "successful",
+          "redirectUri"
+        ]
       },
       "DeviceTypeEnum": {
         "type": "string",
-        "enum": ["IOS", "ANDROID", "WEB"]
+        "enum": [
+          "IOS",
+          "ANDROID",
+          "WEB"
+        ]
       },
       "UpsertDeviceInfoDto": {
         "type": "object",
@@ -3905,7 +4130,10 @@
             "type": "boolean"
           }
         },
-        "required": ["deviceType", "deviceId"]
+        "required": [
+          "deviceType",
+          "deviceId"
+        ]
       },
       "DeviceInfoResponseDto": {
         "type": "object",
@@ -3929,7 +4157,14 @@
             "type": "boolean"
           }
         },
-        "required": ["id", "deviceType", "userId", "deviceId", "createdAt", "isAutoBackup"]
+        "required": [
+          "id",
+          "deviceType",
+          "userId",
+          "deviceId",
+          "createdAt",
+          "isAutoBackup"
+        ]
       },
       "JobCountsDto": {
         "type": "object",
@@ -3953,7 +4188,14 @@
             "type": "integer"
           }
         },
-        "required": ["active", "completed", "failed", "delayed", "waiting", "paused"]
+        "required": [
+          "active",
+          "completed",
+          "failed",
+          "delayed",
+          "waiting",
+          "paused"
+        ]
       },
       "QueueStatusDto": {
         "type": "object",
@@ -3965,7 +4207,10 @@
             "type": "boolean"
           }
         },
-        "required": ["isActive", "isPaused"]
+        "required": [
+          "isActive",
+          "isPaused"
+        ]
       },
       "JobStatusDto": {
         "type": "object",
@@ -3977,7 +4222,10 @@
             "$ref": "#/components/schemas/QueueStatusDto"
           }
         },
-        "required": ["jobCounts", "queueStatus"]
+        "required": [
+          "jobCounts",
+          "queueStatus"
+        ]
       },
       "AllJobStatusResponseDto": {
         "type": "object",
@@ -4033,7 +4281,12 @@
       },
       "JobCommand": {
         "type": "string",
-        "enum": ["start", "pause", "resume", "empty"]
+        "enum": [
+          "start",
+          "pause",
+          "resume",
+          "empty"
+        ]
       },
       "JobCommandDto": {
         "type": "object",
@@ -4045,7 +4298,10 @@
             "type": "boolean"
           }
         },
-        "required": ["command", "force"]
+        "required": [
+          "command",
+          "force"
+        ]
       },
       "OAuthConfigDto": {
         "type": "object",
@@ -4054,7 +4310,9 @@
             "type": "string"
           }
         },
-        "required": ["redirectUri"]
+        "required": [
+          "redirectUri"
+        ]
       },
       "OAuthConfigResponseDto": {
         "type": "object",
@@ -4075,7 +4333,10 @@
             "type": "boolean"
           }
         },
-        "required": ["enabled", "passwordLoginEnabled"]
+        "required": [
+          "enabled",
+          "passwordLoginEnabled"
+        ]
       },
       "OAuthCallbackDto": {
         "type": "object",
@@ -4084,7 +4345,9 @@
             "type": "string"
           }
         },
-        "required": ["url"]
+        "required": [
+          "url"
+        ]
       },
       "SearchFacetCountResponseDto": {
         "type": "object",
@@ -4096,7 +4359,10 @@
             "type": "string"
           }
         },
-        "required": ["count", "value"]
+        "required": [
+          "count",
+          "value"
+        ]
       },
       "SearchFacetResponseDto": {
         "type": "object",
@@ -4111,7 +4377,10 @@
             }
           }
         },
-        "required": ["fieldName", "counts"]
+        "required": [
+          "fieldName",
+          "counts"
+        ]
       },
       "SearchAlbumResponseDto": {
         "type": "object",
@@ -4135,7 +4404,12 @@
             }
           }
         },
-        "required": ["total", "count", "items", "facets"]
+        "required": [
+          "total",
+          "count",
+          "items",
+          "facets"
+        ]
       },
       "SearchAssetResponseDto": {
         "type": "object",
@@ -4159,7 +4433,12 @@
             }
           }
         },
-        "required": ["total", "count", "items", "facets"]
+        "required": [
+          "total",
+          "count",
+          "items",
+          "facets"
+        ]
       },
       "SearchResponseDto": {
         "type": "object",
@@ -4171,7 +4450,10 @@
             "$ref": "#/components/schemas/SearchAssetResponseDto"
           }
         },
-        "required": ["albums", "assets"]
+        "required": [
+          "albums",
+          "assets"
+        ]
       },
       "SearchConfigResponseDto": {
         "type": "object",
@@ -4180,7 +4462,9 @@
             "type": "boolean"
           }
         },
-        "required": ["enabled"]
+        "required": [
+          "enabled"
+        ]
       },
       "SearchExploreItem": {
         "type": "object",
@@ -4192,7 +4476,10 @@
             "$ref": "#/components/schemas/AssetResponseDto"
           }
         },
-        "required": ["value", "data"]
+        "required": [
+          "value",
+          "data"
+        ]
       },
       "SearchExploreResponseDto": {
         "type": "object",
@@ -4207,7 +4494,10 @@
             }
           }
         },
-        "required": ["fieldName", "items"]
+        "required": [
+          "fieldName",
+          "items"
+        ]
       },
       "ServerInfoResponseDto": {
         "type": "object",
@@ -4257,7 +4547,9 @@
             "example": "pong"
           }
         },
-        "required": ["res"]
+        "required": [
+          "res"
+        ]
       },
       "ServerVersionReponseDto": {
         "type": "object",
@@ -4272,7 +4564,11 @@
             "type": "integer"
           }
         },
-        "required": ["major", "minor", "patch"]
+        "required": [
+          "major",
+          "minor",
+          "patch"
+        ]
       },
       "UsageByUserDto": {
         "type": "object",
@@ -4297,7 +4593,14 @@
             "format": "int64"
           }
         },
-        "required": ["userId", "userFirstName", "userLastName", "photos", "videos", "usage"]
+        "required": [
+          "userId",
+          "userFirstName",
+          "userLastName",
+          "photos",
+          "videos",
+          "usage"
+        ]
       },
       "ServerStatsResponseDto": {
         "type": "object",
@@ -4331,11 +4634,19 @@
             }
           }
         },
-        "required": ["photos", "videos", "usage", "usageByUser"]
+        "required": [
+          "photos",
+          "videos",
+          "usage",
+          "usageByUser"
+        ]
       },
       "SharedLinkType": {
         "type": "string",
-        "enum": ["ALBUM", "INDIVIDUAL"]
+        "enum": [
+          "ALBUM",
+          "INDIVIDUAL"
+        ]
       },
       "SharedLinkResponseDto": {
         "type": "object",
@@ -4435,10 +4746,22 @@
           },
           "transcode": {
             "type": "string",
-            "enum": ["all", "optimal", "required", "disabled"]
+            "enum": [
+              "all",
+              "optimal",
+              "required",
+              "disabled"
+            ]
           }
         },
-        "required": ["crf", "preset", "targetVideoCodec", "targetAudioCodec", "targetResolution", "transcode"]
+        "required": [
+          "crf",
+          "preset",
+          "targetVideoCodec",
+          "targetAudioCodec",
+          "targetResolution",
+          "transcode"
+        ]
       },
       "SystemConfigOAuthDto": {
         "type": "object",
@@ -4494,7 +4817,9 @@
             "type": "boolean"
           }
         },
-        "required": ["enabled"]
+        "required": [
+          "enabled"
+        ]
       },
       "SystemConfigStorageTemplateDto": {
         "type": "object",
@@ -4503,7 +4828,9 @@
             "type": "string"
           }
         },
-        "required": ["template"]
+        "required": [
+          "template"
+        ]
       },
       "SystemConfigDto": {
         "type": "object",
@@ -4521,7 +4848,12 @@
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           }
         },
-        "required": ["ffmpeg", "oauth", "passwordLogin", "storageTemplate"]
+        "required": [
+          "ffmpeg",
+          "oauth",
+          "passwordLogin",
+          "storageTemplate"
+        ]
       },
       "SystemConfigTemplateStorageOptionDto": {
         "type": "object",
@@ -4599,7 +4931,12 @@
             "example": "Doe"
           }
         },
-        "required": ["email", "password", "firstName", "lastName"]
+        "required": [
+          "email",
+          "password",
+          "firstName",
+          "lastName"
+        ]
       },
       "UserCountResponseDto": {
         "type": "object",
@@ -4608,7 +4945,9 @@
             "type": "integer"
           }
         },
-        "required": ["userCount"]
+        "required": [
+          "userCount"
+        ]
       },
       "UpdateUserDto": {
         "type": "object",
@@ -4640,7 +4979,9 @@
             "type": "boolean"
           }
         },
-        "required": ["id"]
+        "required": [
+          "id"
+        ]
       },
       "CreateProfileImageDto": {
         "type": "object",
@@ -4650,7 +4991,9 @@
             "format": "binary"
           }
         },
-        "required": ["file"]
+        "required": [
+          "file"
+        ]
       },
       "CreateProfileImageResponseDto": {
         "type": "object",
@@ -4662,7 +5005,10 @@
             "type": "string"
           }
         },
-        "required": ["userId", "profileImagePath"]
+        "required": [
+          "userId",
+          "profileImagePath"
+        ]
       },
       "CreateAssetDto": {
         "type": "object",
@@ -4727,7 +5073,10 @@
             "type": "boolean"
           }
         },
-        "required": ["id", "duplicate"]
+        "required": [
+          "id",
+          "duplicate"
+        ]
       },
       "DownloadFilesDto": {
         "type": "object",
@@ -4740,11 +5089,16 @@
             }
           }
         },
-        "required": ["assetIds"]
+        "required": [
+          "assetIds"
+        ]
       },
       "ThumbnailFormat": {
         "type": "string",
-        "enum": ["JPEG", "WEBP"]
+        "enum": [
+          "JPEG",
+          "WEBP"
+        ]
       },
       "CuratedObjectsResponseDto": {
         "type": "object",
@@ -4765,7 +5119,13 @@
             "type": "string"
           }
         },
-        "required": ["id", "object", "resizePath", "deviceAssetId", "deviceId"]
+        "required": [
+          "id",
+          "object",
+          "resizePath",
+          "deviceAssetId",
+          "deviceId"
+        ]
       },
       "CuratedLocationsResponseDto": {
         "type": "object",
@@ -4786,7 +5146,13 @@
             "type": "string"
           }
         },
-        "required": ["id", "city", "resizePath", "deviceAssetId", "deviceId"]
+        "required": [
+          "id",
+          "city",
+          "resizePath",
+          "deviceAssetId",
+          "deviceId"
+        ]
       },
       "SearchAssetDto": {
         "type": "object",
@@ -4795,11 +5161,16 @@
             "type": "string"
           }
         },
-        "required": ["searchTerm"]
+        "required": [
+          "searchTerm"
+        ]
       },
       "TimeGroupEnum": {
         "type": "string",
-        "enum": ["day", "month"]
+        "enum": [
+          "day",
+          "month"
+        ]
       },
       "GetAssetCountByTimeBucketDto": {
         "type": "object",
@@ -4808,7 +5179,9 @@
             "$ref": "#/components/schemas/TimeGroupEnum"
           }
         },
-        "required": ["timeGroup"]
+        "required": [
+          "timeGroup"
+        ]
       },
       "AssetCountByTimeBucket": {
         "type": "object",
@@ -4820,7 +5193,10 @@
             "type": "integer"
           }
         },
-        "required": ["timeBucket", "count"]
+        "required": [
+          "timeBucket",
+          "count"
+        ]
       },
       "AssetCountByTimeBucketResponseDto": {
         "type": "object",
@@ -4835,7 +5211,10 @@
             }
           }
         },
-        "required": ["totalCount", "buckets"]
+        "required": [
+          "totalCount",
+          "buckets"
+        ]
       },
       "AssetCountByUserIdResponseDto": {
         "type": "object",
@@ -4861,21 +5240,33 @@
             "default": 0
           }
         },
-        "required": ["audio", "photos", "videos", "other", "total"]
+        "required": [
+          "audio",
+          "photos",
+          "videos",
+          "other",
+          "total"
+        ]
       },
       "GetAssetByTimeBucketDto": {
         "type": "object",
         "properties": {
           "timeBucket": {
             "title": "Array of date time buckets",
-            "example": ["2015-06-01T00:00:00.000Z", "2016-02-01T00:00:00.000Z", "2016-03-01T00:00:00.000Z"],
+            "example": [
+              "2015-06-01T00:00:00.000Z",
+              "2016-02-01T00:00:00.000Z",
+              "2016-03-01T00:00:00.000Z"
+            ],
             "type": "array",
             "items": {
               "type": "string"
             }
           }
         },
-        "required": ["timeBucket"]
+        "required": [
+          "timeBucket"
+        ]
       },
       "UpdateAssetDto": {
         "type": "object",
@@ -4919,11 +5310,16 @@
             }
           }
         },
-        "required": ["ids"]
+        "required": [
+          "ids"
+        ]
       },
       "DeleteAssetStatus": {
         "type": "string",
-        "enum": ["SUCCESS", "FAILED"]
+        "enum": [
+          "SUCCESS",
+          "FAILED"
+        ]
       },
       "DeleteAssetResponseDto": {
         "type": "object",
@@ -4935,7 +5331,10 @@
             "type": "string"
           }
         },
-        "required": ["status", "id"]
+        "required": [
+          "status",
+          "id"
+        ]
       },
       "CheckDuplicateAssetDto": {
         "type": "object",
@@ -4947,7 +5346,10 @@
             "type": "string"
           }
         },
-        "required": ["deviceAssetId", "deviceId"]
+        "required": [
+          "deviceAssetId",
+          "deviceId"
+        ]
       },
       "CheckDuplicateAssetResponseDto": {
         "type": "object",
@@ -4959,7 +5361,9 @@
             "type": "string"
           }
         },
-        "required": ["isExist"]
+        "required": [
+          "isExist"
+        ]
       },
       "CheckExistingAssetsDto": {
         "type": "object",
@@ -4974,7 +5378,10 @@
             "type": "string"
           }
         },
-        "required": ["deviceAssetIds", "deviceId"]
+        "required": [
+          "deviceAssetIds",
+          "deviceId"
+        ]
       },
       "CheckExistingAssetsResponseDto": {
         "type": "object",
@@ -4986,7 +5393,9 @@
             }
           }
         },
-        "required": ["existingIds"]
+        "required": [
+          "existingIds"
+        ]
       },
       "CreateAssetsShareLinkDto": {
         "type": "object",
@@ -5019,7 +5428,9 @@
             "type": "string"
           }
         },
-        "required": ["assetIds"]
+        "required": [
+          "assetIds"
+        ]
       },
       "AddAssetsDto": {
         "type": "object",
@@ -5032,7 +5443,9 @@
             }
           }
         },
-        "required": ["assetIds"]
+        "required": [
+          "assetIds"
+        ]
       },
       "RemoveAssetsDto": {
         "type": "object",
@@ -5045,7 +5458,9 @@
             }
           }
         },
-        "required": ["assetIds"]
+        "required": [
+          "assetIds"
+        ]
       },
       "CreateTagDto": {
         "type": "object",
@@ -5057,7 +5472,10 @@
             "type": "string"
           }
         },
-        "required": ["type", "name"]
+        "required": [
+          "type",
+          "name"
+        ]
       },
       "UpdateTagDto": {
         "type": "object",
@@ -5083,7 +5501,11 @@
             "type": "integer"
           }
         },
-        "required": ["owned", "shared", "sharing"]
+        "required": [
+          "owned",
+          "shared",
+          "sharing"
+        ]
       },
       "CreateAlbumDto": {
         "type": "object",
@@ -5106,7 +5528,9 @@
             }
           }
         },
-        "required": ["albumName"]
+        "required": [
+          "albumName"
+        ]
       },
       "AddUsersDto": {
         "type": "object",
@@ -5119,7 +5543,9 @@
             }
           }
         },
-        "required": ["sharedUserIds"]
+        "required": [
+          "sharedUserIds"
+        ]
       },
       "AddAssetsResponseDto": {
         "type": "object",
@@ -5137,7 +5563,10 @@
             "$ref": "#/components/schemas/AlbumResponseDto"
           }
         },
-        "required": ["successfullyAdded", "alreadyInAlbum"]
+        "required": [
+          "successfullyAdded",
+          "alreadyInAlbum"
+        ]
       },
       "UpdateAlbumDto": {
         "type": "object",
@@ -5175,7 +5604,9 @@
             "type": "string"
           }
         },
-        "required": ["albumId"]
+        "required": [
+          "albumId"
+        ]
       }
     }
   }
