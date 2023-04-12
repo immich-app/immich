@@ -15,6 +15,7 @@ export interface SearchFilter {
   userId: string;
   type?: AssetType;
   isFavorite?: boolean;
+  isArchived?: boolean;
   city?: string;
   state?: string;
   country?: string;

@@ -4,6 +4,7 @@
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
 	import ImageAlbum from 'svelte-material-icons/ImageAlbum.svelte';
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
+	import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
 	import Magnify from 'svelte-material-icons/Magnify.svelte';
 	import StarOutline from 'svelte-material-icons/StarOutline.svelte';
 	import { AppRoute } from '../../../constants';
@@ -13,16 +14,17 @@
 	import { locale } from '$lib/stores/preferences.store';
 
 	const getAssetCount = async () => {
-		const { data: assetCount } = await api.assetApi.getAssetCountByUserId();
+		const { data: allAssetCount } = await api.assetApi.getAssetCountByUserId();
+		const { data: archivedCount } = await api.assetApi.getArchivedAssetCountByUserId();
 
 		return {
-			videos: assetCount.videos,
-			photos: assetCount.photos
+			videos: allAssetCount.videos - archivedCount.videos,
+			photos: allAssetCount.photos - archivedCount.photos
 		};
 	};
 
 	const getFavoriteCount = async () => {
-		const { data: assets } = await api.assetApi.getAllAssets(true);
+		const { data: assets } = await api.assetApi.getAllAssets(true, undefined);
 
 		return {
 			favorites: assets.length
@@ -35,6 +37,15 @@
 			shared: albumCount.shared,
 			sharing: albumCount.sharing,
 			owned: albumCount.owned
+		};
+	};
+
+	const getArchivedAssetsCount = async () => {
+		const { data: assetCount } = await api.assetApi.getArchivedAssetCountByUserId();
+
+		return {
+			videos: assetCount.videos,
+			photos: assetCount.photos
 		};
 	};
 </script>
@@ -125,6 +136,24 @@
 				{:then data}
 					<div>
 						<p>{data.owned.toLocaleString($locale)} Albums</p>
+					</div>
+				{/await}
+			</svelte:fragment>
+		</SideBarButton>
+	</a>
+	<a data-sveltekit-preload-data="hover" href={AppRoute.ARCHIVE} draggable="false">
+		<SideBarButton
+			title="Archive"
+			logo={ArchiveArrowDownOutline}
+			isSelected={$page.route.id === '/(user)/archive'}
+		>
+			<svelte:fragment slot="moreInformation">
+				{#await getArchivedAssetsCount()}
+					<LoadingSpinner />
+				{:then data}
+					<div>
+						<p>{data.videos.toLocaleString($locale)} Videos</p>
+						<p>{data.photos.toLocaleString($locale)} Photos</p>
 					</div>
 				{/await}
 			</svelte:fragment>

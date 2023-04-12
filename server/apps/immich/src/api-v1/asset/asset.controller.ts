@@ -228,6 +228,11 @@ export class AssetController {
     return this.assetService.getAssetCountByUserId(authUser);
   }
 
+  @Authenticated()
+  @Get('/stat/archive')
+  async getArchivedAssetCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
+    return this.assetService.getArchivedAssetCountByUserId(authUser);
+  }
   /**
    * Get all AssetEntity belong to the user
    */

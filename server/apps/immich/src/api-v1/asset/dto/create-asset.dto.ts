@@ -26,6 +26,10 @@ export class CreateAssetDto {
 
   @IsOptional()
   @IsBoolean()
+  isArchived?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
   isVisible?: boolean;
 
   @IsNotEmpty()

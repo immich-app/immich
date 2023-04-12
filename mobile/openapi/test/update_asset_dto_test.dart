@@ -26,6 +26,11 @@ void main() {
       // TODO
     });
 
+    // bool isArchived
+    test('to test the property `isArchived`', () async {
+      // TODO
+    });
+
     // String description
     test('to test the property `description`', () async {
       // TODO

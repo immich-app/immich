@@ -7,6 +7,10 @@ export class UpdateAssetDto {
   isFavorite?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  isArchived?: boolean;
+
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
