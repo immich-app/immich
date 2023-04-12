@@ -17,29 +17,21 @@ void main() {
   // final instance = ServerInfoApi();
 
   group('tests for ServerInfoApi', () {
-    // 
-    //
     //Future<ServerInfoResponseDto> getServerInfo() async
     test('test getServerInfo', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<ServerVersionReponseDto> getServerVersion() async
     test('test getServerVersion', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<ServerStatsResponseDto> getStats() async
     test('test getStats', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<ServerPingResponse> pingServer() async
     test('test pingServer', () async {
       // TODO

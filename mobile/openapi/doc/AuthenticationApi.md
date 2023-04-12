@@ -21,8 +21,6 @@ Method | HTTP request | Description
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -61,8 +59,6 @@ No authorization required
 
 # **changePassword**
 > UserResponseDto changePassword(changePasswordDto)
-
-
 
 
 
@@ -117,8 +113,6 @@ Name | Type | Description  | Notes
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -157,8 +151,6 @@ No authorization required
 
 # **logout**
 > LogoutResponseDto logout()
-
-
 
 
 
@@ -206,8 +198,6 @@ This endpoint does not need any parameter.
 
 # **validateAccessToken**
 > ValidateAccessTokenResponseDto validateAccessToken()
-
-
 
 
 

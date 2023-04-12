@@ -16,9 +16,7 @@ class SearchApi {
 
   final ApiClient apiClient;
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
+  /// Performs an HTTP 'GET /search/explore' operation and returns the [Response].
   Future<Response> getExploreDataWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/search/explore';
@@ -44,7 +42,6 @@ class SearchApi {
     );
   }
 
-  /// 
   Future<List<SearchExploreResponseDto>?> getExploreData() async {
     final response = await getExploreDataWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -63,9 +60,7 @@ class SearchApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
+  /// Performs an HTTP 'GET /search/config' operation and returns the [Response].
   Future<Response> getSearchConfigWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/search/config';
@@ -91,7 +86,6 @@ class SearchApi {
     );
   }
 
-  /// 
   Future<SearchConfigResponseDto?> getSearchConfig() async {
     final response = await getSearchConfigWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -107,10 +101,7 @@ class SearchApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'GET /search' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] q:
@@ -213,8 +204,6 @@ class SearchApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [String] q:
