@@ -25,8 +25,8 @@ export class AssetEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ type: 'varchar', nullable: true })
-  deviceAssetId!: string | null;
+  @Column({ type: 'varchar' })
+  deviceAssetId!: string;
 
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   owner!: UserEntity;
@@ -34,8 +34,8 @@ export class AssetEntity {
   @Column()
   ownerId!: string;
 
-  @Column({ type: 'varchar', nullable: true })
-  deviceId!: string | null;
+  @Column({ type: 'varchar' })
+  deviceId!: string;
 
   @Column()
   type!: AssetType;
