@@ -28,6 +28,5 @@ export class UpdateAssetDto {
 
   @IsOptional()
   @IsString()
-  @IsNotEmpty()
   description?: string;
 }
