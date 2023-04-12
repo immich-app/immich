@@ -2290,7 +2290,7 @@
         ]
       }
     },
-    "/asset/archived-count-by-user-id": {
+    "/asset/stat/archive": {
       "get": {
         "operationId": "getArchivedAssetCountByUserId",
         "description": "",

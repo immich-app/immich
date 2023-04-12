@@ -229,7 +229,7 @@ export class AssetController {
   }
 
   @Authenticated()
-  @Get('/archived-count-by-user-id')
+  @Get('/stat/archive')
   async getArchivedAssetCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
     return this.assetService.getArchivedAssetCountByUserId(authUser);
   }
