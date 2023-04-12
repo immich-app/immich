@@ -1,11 +1,14 @@
 import { AuthUserDto, EditSharedLinkDto, SharedLinkResponseDto, ShareService } from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Patch, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
+import { UseValidation } from '../decorators/use-validation.decorator';
+import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('share')
 @Controller('share')
+@UseValidation()
 export class ShareController {
   constructor(private readonly service: ShareService) {}
 
@@ -23,13 +26,16 @@ export class ShareController {
 
   @Authenticated()
   @Get(':id')
-  getSharedLinkById(@GetAuthUser() authUser: AuthUserDto, @Param('id') id: string): Promise<SharedLinkResponseDto> {
+  getSharedLinkById(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+  ): Promise<SharedLinkResponseDto> {
     return this.service.getById(authUser, id, true);
   }
 
   @Authenticated()
   @Delete(':id')
-  removeSharedLink(@GetAuthUser() authUser: AuthUserDto, @Param('id') id: string): Promise<void> {
+  removeSharedLink(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(authUser, id);
   }
 
@@ -37,8 +43,8 @@ export class ShareController {
   @Patch(':id')
   editSharedLink(
     @GetAuthUser() authUser: AuthUserDto,
-    @Param('id') id: string,
-    @Body(ValidationPipe) dto: EditSharedLinkDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: EditSharedLinkDto,
   ): Promise<SharedLinkResponseDto> {
     return this.service.edit(authUser, id, dto);
   }

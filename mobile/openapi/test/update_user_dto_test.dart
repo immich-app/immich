@@ -16,11 +16,6 @@ void main() {
   // final instance = UpdateUserDto();
 
   group('test UpdateUserDto', () {
-    // String id
-    test('to test the property `id`', () async {
-      // TODO
-    });
-
     // String email
     test('to test the property `email`', () async {
       // TODO
@@ -41,6 +36,11 @@ void main() {
       // TODO
     });
 
+    // String id
+    test('to test the property `id`', () async {
+      // TODO
+    });
+
     // bool isAdmin
     test('to test the property `isAdmin`', () async {
       // TODO
@@ -48,11 +48,6 @@ void main() {
 
     // bool shouldChangePassword
     test('to test the property `shouldChangePassword`', () async {
-      // TODO
-    });
-
-    // String profileImagePath
-    test('to test the property `profileImagePath`', () async {
       // TODO
     });
 

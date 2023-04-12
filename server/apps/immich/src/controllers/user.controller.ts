@@ -5,13 +5,11 @@ import {
   Delete,
   Body,
   Param,
-  ValidationPipe,
   Put,
   Query,
   UseInterceptors,
   UploadedFile,
   Response,
-  ParseBoolPipe,
   StreamableFile,
   Header,
 } from '@nestjs/common';
@@ -29,24 +27,24 @@ import { UserCountResponseDto } from '@app/domain';
 import { CreateProfileImageDto } from '@app/domain';
 import { CreateProfileImageResponseDto } from '@app/domain';
 import { UserCountDto } from '@app/domain';
+import { UseValidation } from '../decorators/use-validation.decorator';
+import { UserIdDto } from '@app/domain/user/dto/user-id.dto';
 
 @ApiTags('User')
 @Controller('user')
+@UseValidation()
 export class UserController {
   constructor(private service: UserService) {}
 
   @Authenticated()
   @Get()
-  getAllUsers(
-    @GetAuthUser() authUser: AuthUserDto,
-    @Query('isAll', ParseBoolPipe) isAll: boolean,
-  ): Promise<UserResponseDto[]> {
+  getAllUsers(@GetAuthUser() authUser: AuthUserDto, @Query('isAll') isAll: boolean): Promise<UserResponseDto[]> {
     return this.service.getAllUsers(authUser, isAll);
   }
 
   @Authenticated()
   @Get('/info/:userId')
-  getUserById(@Param('userId') userId: string): Promise<UserResponseDto> {
+  getUserById(@Param() { userId }: UserIdDto): Promise<UserResponseDto> {
     return this.service.getUserById(userId);
   }
 
@@ -58,33 +56,30 @@ export class UserController {
 
   @Authenticated({ admin: true })
   @Post()
-  createUser(@Body(new ValidationPipe({ transform: true })) createUserDto: CreateUserDto): Promise<UserResponseDto> {
+  createUser(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
     return this.service.createUser(createUserDto);
   }
 
   @Get('/count')
-  getUserCount(@Query(new ValidationPipe({ transform: true })) dto: UserCountDto): Promise<UserCountResponseDto> {
+  getUserCount(@Query() dto: UserCountDto): Promise<UserCountResponseDto> {
     return this.service.getUserCount(dto);
   }
 
   @Authenticated({ admin: true })
   @Delete('/:userId')
-  deleteUser(@GetAuthUser() authUser: AuthUserDto, @Param('userId') userId: string): Promise<UserResponseDto> {
+  deleteUser(@GetAuthUser() authUser: AuthUserDto, @Param() { userId }: UserIdDto): Promise<UserResponseDto> {
     return this.service.deleteUser(authUser, userId);
   }
 
   @Authenticated({ admin: true })
   @Post('/:userId/restore')
-  restoreUser(@GetAuthUser() authUser: AuthUserDto, @Param('userId') userId: string): Promise<UserResponseDto> {
+  restoreUser(@GetAuthUser() authUser: AuthUserDto, @Param() { userId }: UserIdDto): Promise<UserResponseDto> {
     return this.service.restoreUser(authUser, userId);
   }
 
   @Authenticated()
   @Put()
-  updateUser(
-    @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) updateUserDto: UpdateUserDto,
-  ): Promise<UserResponseDto> {
+  updateUser(@GetAuthUser() authUser: AuthUserDto, @Body() updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
     return this.service.updateUser(authUser, updateUserDto);
   }
 
@@ -106,7 +101,7 @@ export class UserController {
   @Authenticated()
   @Get('/profile-image/:userId')
   @Header('Cache-Control', 'max-age=600')
-  async getProfileImage(@Param('userId') userId: string, @Response({ passthrough: true }) res: Res): Promise<any> {
+  async getProfileImage(@Param() { userId }: UserIdDto, @Response({ passthrough: true }) res: Res): Promise<any> {
     const readableStream = await this.service.getUserProfileImage(userId);
     res.header('Content-Type', 'image/jpeg');
     return new StreamableFile(readableStream);

@@ -1,6 +1,6 @@
 import { DomainModule } from '@app/domain';
 import { InfraModule } from '@app/infra';
-import { ExifEntity } from '@app/infra/db/entities';
+import { ExifEntity } from '@app/infra/entities';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
@@ -10,9 +10,9 @@ import {
   SearchIndexProcessor,
   StorageTemplateMigrationProcessor,
   ThumbnailGeneratorProcessor,
+  VideoTranscodeProcessor,
 } from './processors';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
-import { VideoTranscodeProcessor } from './processors/video-transcode.processor';
 
 @Module({
   imports: [

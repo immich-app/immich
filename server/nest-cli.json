@@ -44,51 +44,6 @@
         "tsConfigPath": "apps/cli/tsconfig.app.json"
       }
     },
-    "common": {
-      "type": "library",
-      "root": "libs/common",
-      "entryFile": "index",
-      "sourceRoot": "libs/common/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/common/tsconfig.lib.json"
-      }
-    },
-    "database": {
-      "type": "library",
-      "root": "libs/database",
-      "entryFile": "index",
-      "sourceRoot": "libs/database/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/database/tsconfig.lib.json"
-      }
-    },
-    "job": {
-      "type": "library",
-      "root": "libs/job",
-      "entryFile": "index",
-      "sourceRoot": "libs/job/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/job/tsconfig.lib.json"
-      }
-    },
-    "immich-config": {
-      "type": "library",
-      "root": "libs/immich-config",
-      "entryFile": "index",
-      "sourceRoot": "libs/immich-config/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/immich-config/tsconfig.lib.json"
-      }
-    },
-    "storage": {
-      "type": "library",
-      "root": "libs/storage",
-      "entryFile": "index",
-      "sourceRoot": "libs/storage/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/storage/tsconfig.lib.json"
-      }
-    },
     "infra": {
       "type": "library",
       "root": "libs/infra",

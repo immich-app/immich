@@ -151,6 +151,9 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
 
   _createChewieController() {
     chewieController = ChewieController(
+      controlsSafeAreaMinimum: const EdgeInsets.only(
+        bottom: 156,
+      ),
       showOptions: true,
       showControlsOnInitialize: false,
       videoPlayerController: videoPlayerController,

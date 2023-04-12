@@ -102,6 +102,24 @@ describe('assetUploadOption', () => {
       expect(callback).toHaveBeenCalledWith(null, true);
     });
 
+    it('should allow .mov videos with video/mov mimetype', () => {
+      const file = { mimetype: 'video/mov', originalname: 'test.mov' } as any;
+      fileFilter(mock.userRequest, file, callback);
+      expect(callback).toHaveBeenCalledWith(null, true);
+    });
+
+    it('should allow .avi videos with video/avi mimetype', () => {
+      const file = { mimetype: 'video/avi', originalname: 'test.avi' } as any;
+      fileFilter(mock.userRequest, file, callback);
+      expect(callback).toHaveBeenCalledWith(null, true);
+    });
+
+    it('should allow .avi videos with video/x-msvideo mimetype', () => {
+      const file = { mimetype: 'video/x-msvideo', originalname: 'test.avi' } as any;
+      fileFilter(mock.userRequest, file, callback);
+      expect(callback).toHaveBeenCalledWith(null, true);
+    });
+
     it('should not allow unknown types', async () => {
       const file = { mimetype: 'application/html', originalname: 'test.html' } as any;
       const callback = jest.fn();

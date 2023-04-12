@@ -72,7 +72,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Scrubbable/draggable scrollbar              | Yes    | Yes |
 | Support RAW (HEIC, HEIF, DNG, Apple ProRaw) | Yes    | Yes |
 | Metadata view (EXIF, map)                   | Yes    | Yes |
-| Search by metadata, objects and image tags  | Yes    | No  |
+| Search by metadata, objects and CLIP  | Yes    | No  |
 | Administrative functions (user management)  | N/A    | Yes |
 | Background backup                           | Yes    | N/A |
 | Virtual scroll                              | Yes    | Yes |

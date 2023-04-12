@@ -36,8 +36,8 @@ void main() {
       // TODO
     });
 
-    // String targetScaling
-    test('to test the property `targetScaling`', () async {
+    // String targetResolution
+    test('to test the property `targetResolution`', () async {
       // TODO
     });
 

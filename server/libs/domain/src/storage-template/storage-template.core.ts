@@ -1,4 +1,4 @@
-import { AssetEntity, AssetType, SystemConfig } from '@app/infra/db/entities';
+import { AssetEntity, AssetType, SystemConfig } from '@app/infra/entities';
 import { Logger } from '@nestjs/common';
 import handlebar from 'handlebars';
 import * as luxon from 'luxon';

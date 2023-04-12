@@ -1,4 +1,4 @@
-import { DeviceInfoEntity } from '@app/infra/db/entities';
+import { DeviceInfoEntity } from '@app/infra/entities';
 
 export const IDeviceInfoRepository = 'IDeviceInfoRepository';
 

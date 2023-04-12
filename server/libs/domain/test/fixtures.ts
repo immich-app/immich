@@ -9,15 +9,19 @@ import {
   TranscodePreset,
   UserEntity,
   UserTokenEntity,
-} from '@app/infra/db/entities';
+} from '@app/infra/entities';
 import {
   AlbumResponseDto,
   AssetResponseDto,
+  AudioStreamInfo,
   AuthUserDto,
   ExifResponseDto,
   mapUser,
   SearchResult,
   SharedLinkResponseDto,
+  VideoFormat,
+  VideoInfo,
+  VideoStreamInfo,
 } from '../src';
 
 const today = new Date();
@@ -114,6 +118,7 @@ export const fileStub = {
 export const assetEntityStub = {
   noResizePath: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    originalFileName: 'asset_1.jpeg',
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: '2023-02-23T05:06:29.716Z',
     fileCreatedAt: '2023-02-23T05:06:29.716Z',
@@ -161,9 +166,11 @@ export const assetEntityStub = {
     livePhotoVideoId: null,
     tags: [],
     sharedLinks: [],
+    originalFileName: 'asset-id.ext',
   }),
   video: Object.freeze<AssetEntity>({
     id: 'asset-id',
+    originalFileName: 'asset-id.ext',
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: '2023-02-23T05:06:29.716Z',
     fileCreatedAt: '2023-02-23T05:06:29.716Z',
@@ -319,13 +326,13 @@ export const albumStub = {
 const assetInfo: ExifResponseDto = {
   make: 'camera-make',
   model: 'camera-model',
-  imageName: 'fancy-image',
   exifImageWidth: 500,
   exifImageHeight: 500,
   fileSizeInByte: 100,
   orientation: 'orientation',
   dateTimeOriginal: today,
   modifyDate: today,
+  timeZone: 'America/Los_Angeles',
   lensModel: 'fancy',
   fNumber: 100,
   focalLength: 100,
@@ -345,6 +352,7 @@ const assetResponse: AssetResponseDto = {
   deviceId: 'device_id_1',
   type: AssetType.VIDEO,
   originalPath: 'fake_path/jpeg',
+  originalFileName: 'asset_1.jpeg',
   resizePath: '',
   fileModifiedAt: today.toISOString(),
   fileCreatedAt: today.toISOString(),
@@ -403,7 +411,7 @@ export const systemConfigStub = {
       crf: '23',
       preset: 'ultrafast',
       targetAudioCodec: 'aac',
-      targetScaling: '1280:-2',
+      targetResolution: '720',
       targetVideoCodec: 'h264',
       transcode: TranscodePreset.REQUIRED,
     },
@@ -601,6 +609,7 @@ export const sharedLinkStub = {
           isVisible: true,
           livePhotoVideo: null,
           livePhotoVideoId: null,
+          originalFileName: 'asset_1.jpeg',
           exifInfo: {
             livePhotoCID: null,
             assetId: 'id_1',
@@ -611,6 +620,7 @@ export const sharedLinkStub = {
             orientation: 'orientation',
             dateTimeOriginal: today,
             modifyDate: today,
+            timeZone: 'America/Los_Angeles',
             latitude: 100,
             longitude: 100,
             city: 'city',
@@ -618,7 +628,6 @@ export const sharedLinkStub = {
             country: 'country',
             make: 'camera-make',
             model: 'camera-model',
-            imageName: 'fancy-image',
             lensModel: 'fancy',
             fNumber: 100,
             focalLength: 100,
@@ -704,5 +713,99 @@ export const searchStub = {
     page: 1,
     items: [],
     facets: [],
+  }),
+};
+
+const probeStubDefaultFormat: VideoFormat = {
+  formatName: 'mov,mp4,m4a,3gp,3g2,mj2',
+  formatLongName: 'QuickTime / MOV',
+  duration: 0,
+};
+
+const probeStubDefaultVideoStream: VideoStreamInfo[] = [
+  { height: 1080, width: 1920, codecName: 'h265', codecType: 'video', frameCount: 100, rotation: 0 },
+];
+
+const probeStubDefaultAudioStream: AudioStreamInfo[] = [{ codecName: 'aac', codecType: 'audio' }];
+
+const probeStubDefault: VideoInfo = {
+  format: probeStubDefaultFormat,
+  videoStreams: probeStubDefaultVideoStream,
+  audioStreams: probeStubDefaultAudioStream,
+};
+
+export const probeStub = {
+  noVideoStreams: Object.freeze<VideoInfo>({ ...probeStubDefault, videoStreams: [] }),
+  multipleVideoStreams: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        height: 1080,
+        width: 400,
+        codecName: 'h265',
+        codecType: 'video',
+        frameCount: 100,
+        rotation: 0,
+      },
+      {
+        height: 1080,
+        width: 400,
+        codecName: 'h7000',
+        codecType: 'video',
+        frameCount: 99,
+        rotation: 0,
+      },
+    ],
+  }),
+  noHeight: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        height: 0,
+        width: 400,
+        codecName: 'h265',
+        codecType: 'video',
+        frameCount: 100,
+        rotation: 0,
+      },
+    ],
+  }),
+  videoStream2160p: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        height: 2160,
+        width: 3840,
+        codecName: 'h264',
+        codecType: 'video',
+        frameCount: 100,
+        rotation: 0,
+      },
+    ],
+  }),
+  videoStreamVertical2160p: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        height: 2160,
+        width: 3840,
+        codecName: 'h264',
+        codecType: 'video',
+        frameCount: 100,
+        rotation: 90,
+      },
+    ],
+  }),
+  audioStreamMp3: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    audioStreams: [{ codecType: 'audio', codecName: 'aac' }],
+  }),
+  matroskaContainer: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    format: {
+      formatName: 'matroska,webm',
+      formatLongName: 'Matroska / WebM',
+      duration: 0,
+    },
   }),
 };

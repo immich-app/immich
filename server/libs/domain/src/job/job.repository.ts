@@ -5,7 +5,6 @@ import {
   IBaseJob,
   IBulkEntityJob,
   IDeleteFilesJob,
-  IReverseGeocodingJob,
   IUserDeletionJob,
 } from './job.interface';
 
@@ -16,6 +15,11 @@ export interface JobCounts {
   delayed: number;
   waiting: number;
   paused: number;
+}
+
+export interface QueueStatus {
+  isActive: boolean;
+  isPaused: boolean;
 }
 
 export type JobItem =
@@ -44,7 +48,6 @@ export type JobItem =
   | { name: JobName.QUEUE_METADATA_EXTRACTION; data: IBaseJob }
   | { name: JobName.EXIF_EXTRACTION; data: IAssetUploadedJob }
   | { name: JobName.EXTRACT_VIDEO_METADATA; data: IAssetUploadedJob }
-  | { name: JobName.REVERSE_GEOCODING; data: IReverseGeocodingJob }
 
   // Object Tagging
   | { name: JobName.QUEUE_OBJECT_TAGGING; data: IBaseJob }
@@ -73,6 +76,6 @@ export interface IJobRepository {
   pause(name: QueueName): Promise<void>;
   resume(name: QueueName): Promise<void>;
   empty(name: QueueName): Promise<void>;
-  isActive(name: QueueName): Promise<boolean>;
+  getQueueStatus(name: QueueName): Promise<QueueStatus>;
   getJobCounts(name: QueueName): Promise<JobCounts>;
 }

@@ -1,4 +1,4 @@
-import { AssetEntity, AssetType } from '@app/infra/db/entities';
+import { AssetEntity, AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { mapTag, TagResponseDto } from '../../tag';
 import { ExifResponseDto, mapExif } from './exif-response.dto';
@@ -13,6 +13,7 @@ export class AssetResponseDto {
   @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type!: AssetType;
   originalPath!: string;
+  originalFileName!: string;
   resizePath!: string | null;
   fileCreatedAt!: string;
   fileModifiedAt!: string;
@@ -36,6 +37,7 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     deviceId: entity.deviceId,
     type: entity.type,
     originalPath: entity.originalPath,
+    originalFileName: entity.originalFileName,
     resizePath: entity.resizePath,
     fileCreatedAt: entity.fileCreatedAt,
     fileModifiedAt: entity.fileModifiedAt,
@@ -60,6 +62,7 @@ export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
     deviceId: entity.deviceId,
     type: entity.type,
     originalPath: entity.originalPath,
+    originalFileName: entity.originalFileName,
     resizePath: entity.resizePath,
     fileCreatedAt: entity.fileCreatedAt,
     fileModifiedAt: entity.fileModifiedAt,

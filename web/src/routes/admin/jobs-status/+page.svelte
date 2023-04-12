@@ -5,8 +5,9 @@
 	import type { PageData } from './$types';
 
 	export let data: PageData;
-	let jobs = data.jobs;
 	let timer: NodeJS.Timer;
+
+	$: jobs = data.jobs;
 
 	const load = async () => {
 		const { data } = await api.jobApi.getAllJobsStatus();

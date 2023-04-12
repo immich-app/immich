@@ -4,7 +4,7 @@ import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 export class DownloadDto {
   @IsOptional()
   @IsString()
-  name = '';
+  name?: string;
 
   @IsOptional()
   @IsPositive()

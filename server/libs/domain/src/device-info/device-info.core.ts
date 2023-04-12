@@ -1,4 +1,4 @@
-import { DeviceInfoEntity } from '@app/infra/db/entities';
+import { DeviceInfoEntity } from '@app/infra/entities';
 import { IDeviceInfoRepository } from './device-info.repository';
 
 type UpsertKeys = Pick<DeviceInfoEntity, 'deviceId' | 'userId'>;

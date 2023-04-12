@@ -1,4 +1,4 @@
-import { AssetEntity, AssetType } from '@app/infra/db/entities';
+import { AssetEntity, AssetType } from '@app/infra/entities';
 import { assetEntityStub, newAssetRepositoryMock, newJobRepositoryMock } from '../../test';
 import { AssetService, IAssetRepository } from '../asset';
 import { IJobRepository, JobName } from '../job';

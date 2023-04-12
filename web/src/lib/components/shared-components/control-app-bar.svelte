@@ -3,7 +3,7 @@
 
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
-	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
+	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 	import { fly } from 'svelte/transition';
 
 	export let showBackButton = true;

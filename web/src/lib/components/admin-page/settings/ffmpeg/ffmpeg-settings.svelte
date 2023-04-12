@@ -93,16 +93,20 @@
 						isEdited={!(ffmpegConfig.preset == savedConfig.preset)}
 					/>
 
-					<SettingInputField
-						inputType={SettingInputFieldType.TEXT}
-						label="AUDIO CODEC (-acodec)"
+					<SettingSelect
+						label="AUDIO CODEC"
 						bind:value={ffmpegConfig.targetAudioCodec}
-						required={true}
+						options={[
+							{ value: 'aac', text: 'aac' },
+							{ value: 'mp3', text: 'mp3' },
+							{ value: 'opus', text: 'opus' }
+						]}
+						name="acodec"
 						isEdited={!(ffmpegConfig.targetAudioCodec == savedConfig.targetAudioCodec)}
 					/>
 
 					<SettingSelect
-						label="VIDEO CODEC (-vcodec)"
+						label="VIDEO CODEC"
 						bind:value={ffmpegConfig.targetVideoCodec}
 						options={[
 							{ value: 'h264', text: 'h264' },
@@ -113,12 +117,18 @@
 						isEdited={!(ffmpegConfig.targetVideoCodec == savedConfig.targetVideoCodec)}
 					/>
 
-					<SettingInputField
-						inputType={SettingInputFieldType.TEXT}
-						label="SCALING (-vf scale=)"
-						bind:value={ffmpegConfig.targetScaling}
-						required={true}
-						isEdited={!(ffmpegConfig.targetScaling == savedConfig.targetScaling)}
+					<SettingSelect
+						label="TARGET RESOLUTION"
+						bind:value={ffmpegConfig.targetResolution}
+						options={[
+							{ value: '2160', text: '4k' },
+							{ value: '1440', text: '1440p' },
+							{ value: '1080', text: '1080p' },
+							{ value: '720', text: '720p' },
+							{ value: '480', text: '480p' }
+						]}
+						name="resolution"
+						isEdited={!(ffmpegConfig.targetResolution == savedConfig.targetResolution)}
 					/>
 
 					<SettingSelect
@@ -129,11 +139,15 @@
 							{ value: SystemConfigFFmpegDtoTranscodeEnum.All, text: 'All videos' },
 							{
 								value: SystemConfigFFmpegDtoTranscodeEnum.Optimal,
-								text: 'Videos higher than 1080p or not in the desired format'
+								text: 'Videos higher than target resolution or not in the desired format'
 							},
 							{
 								value: SystemConfigFFmpegDtoTranscodeEnum.Required,
 								text: 'Only videos not in the desired format'
+							},
+							{
+								value: SystemConfigFFmpegDtoTranscodeEnum.Disabled,
+								text: "Don't transcode any videos, may break playback on some clients"
 							}
 						]}
 						isEdited={!(ffmpegConfig.transcode == savedConfig.transcode)}

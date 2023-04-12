@@ -1,4 +1,4 @@
-import { AssetEntity } from '@app/infra/db/entities';
+import { AssetEntity } from '@app/infra/entities';
 import {
   assetEntityStub,
   newAssetRepositoryMock,

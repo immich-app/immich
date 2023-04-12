@@ -13,20 +13,22 @@ import {
   UserResponseDto,
   ValidateAccessTokenResponseDto,
 } from '@app/domain';
-import { Body, Controller, Ip, Post, Req, Res, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Ip, Post, Req, Res } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
+import { UseValidation } from '../decorators/use-validation.decorator';
 
 @ApiTags('Authentication')
 @Controller('auth')
+@UseValidation()
 export class AuthController {
   constructor(private readonly service: AuthService) {}
 
   @Post('login')
   async login(
-    @Body(new ValidationPipe({ transform: true })) loginCredential: LoginCredentialDto,
+    @Body() loginCredential: LoginCredentialDto,
     @Ip() clientIp: string,
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
@@ -38,9 +40,7 @@ export class AuthController {
 
   @Post('admin-sign-up')
   @ApiBadRequestResponse({ description: 'The server already has an admin' })
-  adminSignUp(
-    @Body(new ValidationPipe({ transform: true })) signUpCredential: SignUpDto,
-  ): Promise<AdminSignupResponseDto> {
+  adminSignUp(@Body() signUpCredential: SignUpDto): Promise<AdminSignupResponseDto> {
     return this.service.adminSignUp(signUpCredential);
   }
 

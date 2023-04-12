@@ -1,11 +1,13 @@
-import { AllJobStatusResponseDto, JobCommandDto, JobIdDto, JobService } from '@app/domain';
-import { Body, Controller, Get, Param, Put, ValidationPipe } from '@nestjs/common';
+import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto, JobIdDto, JobService } from '@app/domain';
+import { Body, Controller, Get, Param, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Authenticated } from '../decorators/authenticated.decorator';
+import { UseValidation } from '../decorators/use-validation.decorator';
 
 @ApiTags('Job')
 @Controller('jobs')
 @Authenticated({ admin: true })
+@UseValidation()
 export class JobController {
   constructor(private service: JobService) {}
 
@@ -15,7 +17,8 @@ export class JobController {
   }
 
   @Put('/:jobId')
-  sendJobCommand(@Param(ValidationPipe) { jobId }: JobIdDto, @Body(ValidationPipe) dto: JobCommandDto): Promise<void> {
-    return this.service.handleCommand(jobId, dto);
+  async sendJobCommand(@Param() { jobId }: JobIdDto, @Body() dto: JobCommandDto): Promise<JobStatusDto> {
+    await this.service.handleCommand(jobId, dto);
+    return await this.service.getJobStatus(jobId);
   }
 }

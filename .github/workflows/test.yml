@@ -110,13 +110,13 @@ jobs:
         continue-on-error: true
         run: |
           cd server
-          npm run typeorm:migrations:generate ./libs/infra/src/db/migrations/TestMigration
+          npm run typeorm:migrations:generate ./libs/infra/src/migrations/TestMigration
       - name: Find file changes
         uses: tj-actions/verify-changed-files@v13.1
         id: verify-changed-files
         with:
           files: |
-            server/libs/infra/src/db/migrations/
+            server/libs/infra/src/migrations/
       - name: Verify files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |

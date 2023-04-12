@@ -1,5 +1,5 @@
-import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra/db/entities';
-import { dataSource } from '@app/infra/db/config';
+import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra/entities';
+import { dataSource } from '@app/infra/database.config';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';

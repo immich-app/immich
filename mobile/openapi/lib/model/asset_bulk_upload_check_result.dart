@@ -202,7 +202,7 @@ class AssetBulkUploadCheckResultActionEnumTypeTransformer {
   /// and users are still using an old app with the old code.
   AssetBulkUploadCheckResultActionEnum? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
-      switch (data.toString()) {
+      switch (data) {
         case r'accept': return AssetBulkUploadCheckResultActionEnum.accept;
         case r'reject': return AssetBulkUploadCheckResultActionEnum.reject;
         default:
@@ -276,7 +276,7 @@ class AssetBulkUploadCheckResultReasonEnumTypeTransformer {
   /// and users are still using an old app with the old code.
   AssetBulkUploadCheckResultReasonEnum? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
-      switch (data.toString()) {
+      switch (data) {
         case r'duplicate': return AssetBulkUploadCheckResultReasonEnum.duplicate;
         case r'unsupported-format': return AssetBulkUploadCheckResultReasonEnum.unsupportedFormat;
         default:

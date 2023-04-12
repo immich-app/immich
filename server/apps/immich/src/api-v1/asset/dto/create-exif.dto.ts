@@ -11,9 +11,6 @@ export class CreateExifDto {
   model?: string;
 
   @IsOptional()
-  imageName?: string;
-
-  @IsOptional()
   exifImageWidth?: number;
 
   @IsOptional()

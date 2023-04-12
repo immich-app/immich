@@ -36,7 +36,6 @@ class ShareService {
       }
     });
 
-    // ignore: deprecated_member_use
     Share.shareXFiles(
       await Future.wait(downloadedXFiles),
       sharePositionOrigin: Rect.zero,

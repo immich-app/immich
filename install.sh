@@ -2,18 +2,9 @@ echo "Starting Immich installation..."
 
 ip_address=$(hostname -I | awk '{print $1}')
 
-release_version=$(curl --silent "https://api.github.com/repos/immich-app/immich/releases/latest" |
-  grep '"tag_name":' |
-  sed -E 's/.*"([^"]+)".*/\1/')
 RED='\033[0;31m'
 GREEN='\032[0;31m'
 NC='\033[0m' # No Color
-
-get_release_version() {
-  curl --silent "https://api.github.com/repos/immich-app/immich/releases/latest" | # Get latest release from GitHub api
-    grep '"tag_name":' |                                                           # Get tag line
-    sed -E 's/.*"([^"]+)".*/\1/'                                                   # Pluck JSON value
-}
 
 create_immich_directory() {
   echo "Creating Immich directory..."
@@ -23,12 +14,12 @@ create_immich_directory() {
 
 download_docker_compose_file() {
   echo "Downloading docker-compose.yml..."
-  curl -L https://raw.githubusercontent.com/immich-app/immich/$release_version/docker/docker-compose.yml -o ./docker-compose.yml >/dev/null 2>&1
+  curl -L https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml -o ./docker-compose.yml >/dev/null 2>&1
 }
 
 download_dot_env_file() {
   echo "Downloading .env file..."
-  curl -L https://raw.githubusercontent.com/immich-app/immich/$release_version/docker/example.env -o ./.env >/dev/null 2>&1
+  curl -L https://github.com/immich-app/immich/releases/latest/download/example.env -o ./.env >/dev/null 2>&1
 }
 
 replace_env_value() {
@@ -69,7 +60,7 @@ start_docker_compose() {
 show_friendly_message() {
   echo "Succesfully deployed Immich!"
   echo "You can access the website at http://$ip_address:2283 and the server URL for the mobile app is http://$ip_address:2283/api"
-  echo "The backup (or upload) location is $upload_location"
+  echo "The library location is $upload_location"
   echo "---------------------------------------------------"
   echo "If you want to configure custom information of the server, including the database, Redis information, or the backup (or upload) location, etc. 
   

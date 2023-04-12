@@ -1,4 +1,4 @@
-import { AssetType } from '@app/infra/db/entities';
+import { AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 import { ImmichFile } from '../../../config/asset-upload.config';

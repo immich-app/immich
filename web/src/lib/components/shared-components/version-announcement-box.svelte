@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
 	import FullScreenModal from './full-screen-modal.svelte';
 	import type { ServerVersionReponseDto } from '@api';
+	import Button from '../elements/buttons/button.svelte';
 
 	export let serverVersion: ServerVersionReponseDto;
 
@@ -72,10 +73,7 @@
 			</div>
 
 			<div class="text-right mt-8">
-				<button
-					class="transition-colors bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 dark:hover:bg-immich-dark-primary/80 dark:text-immich-dark-gray px-6 py-3 text-white rounded-full shadow-md w-full font-medium"
-					on:click={onAcknowledge}>Acknowledge</button
-				>
+				<Button fullwidth on:click={onAcknowledge}>Acknowledge</Button>
 			</div>
 		</div>
 	</FullScreenModal>

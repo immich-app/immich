@@ -1,4 +1,4 @@
-import { AssetEntity, SystemConfig } from '@app/infra/db/entities';
+import { AssetEntity, SystemConfig } from '@app/infra/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IAssetRepository } from '../asset/asset.repository';
 import { APP_MEDIA_LOCATION } from '../domain.constant';
@@ -26,7 +26,7 @@ export class StorageTemplateService {
     const { asset } = data;
 
     try {
-      const filename = asset.exifInfo?.imageName || asset.id;
+      const filename = asset.originalFileName || asset.id;
       await this.moveAsset(asset, filename);
 
       // move motion part of live photo
@@ -56,7 +56,7 @@ export class StorageTemplateService {
       for (const asset of assets) {
         const livePhotoParentAsset = livePhotoMap[asset.id];
         // TODO: remove livePhoto specific stuff once upload is fixed
-        const filename = asset.exifInfo?.imageName || livePhotoParentAsset?.exifInfo?.imageName || asset.id;
+        const filename = asset.originalFileName || livePhotoParentAsset?.originalFileName || asset.id;
         await this.moveAsset(asset, filename);
       }
 

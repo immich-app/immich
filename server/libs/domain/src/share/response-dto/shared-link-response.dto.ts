@@ -1,4 +1,4 @@
-import { SharedLinkEntity, SharedLinkType } from '@app/infra/db/entities';
+import { SharedLinkEntity, SharedLinkType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import _ from 'lodash';
 import { AlbumResponseDto, mapAlbumExcludeAssetInfo } from '../../album';

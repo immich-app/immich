@@ -26,7 +26,7 @@ void main() {
 
     // 
     //
-    //Future sendJobCommand(JobName jobId, JobCommandDto jobCommandDto) async
+    //Future<JobStatusDto> sendJobCommand(JobName jobId, JobCommandDto jobCommandDto) async
     test('test sendJobCommand', () async {
       // TODO
     });

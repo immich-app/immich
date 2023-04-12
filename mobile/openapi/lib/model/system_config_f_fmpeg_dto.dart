@@ -17,7 +17,7 @@ class SystemConfigFFmpegDto {
     required this.preset,
     required this.targetVideoCodec,
     required this.targetAudioCodec,
-    required this.targetScaling,
+    required this.targetResolution,
     required this.transcode,
   });
 
@@ -29,7 +29,7 @@ class SystemConfigFFmpegDto {
 
   String targetAudioCodec;
 
-  String targetScaling;
+  String targetResolution;
 
   SystemConfigFFmpegDtoTranscodeEnum transcode;
 
@@ -39,7 +39,7 @@ class SystemConfigFFmpegDto {
      other.preset == preset &&
      other.targetVideoCodec == targetVideoCodec &&
      other.targetAudioCodec == targetAudioCodec &&
-     other.targetScaling == targetScaling &&
+     other.targetResolution == targetResolution &&
      other.transcode == transcode;
 
   @override
@@ -49,11 +49,11 @@ class SystemConfigFFmpegDto {
     (preset.hashCode) +
     (targetVideoCodec.hashCode) +
     (targetAudioCodec.hashCode) +
-    (targetScaling.hashCode) +
+    (targetResolution.hashCode) +
     (transcode.hashCode);
 
   @override
-  String toString() => 'SystemConfigFFmpegDto[crf=$crf, preset=$preset, targetVideoCodec=$targetVideoCodec, targetAudioCodec=$targetAudioCodec, targetScaling=$targetScaling, transcode=$transcode]';
+  String toString() => 'SystemConfigFFmpegDto[crf=$crf, preset=$preset, targetVideoCodec=$targetVideoCodec, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, transcode=$transcode]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -61,7 +61,7 @@ class SystemConfigFFmpegDto {
       json[r'preset'] = this.preset;
       json[r'targetVideoCodec'] = this.targetVideoCodec;
       json[r'targetAudioCodec'] = this.targetAudioCodec;
-      json[r'targetScaling'] = this.targetScaling;
+      json[r'targetResolution'] = this.targetResolution;
       json[r'transcode'] = this.transcode;
     return json;
   }
@@ -89,7 +89,7 @@ class SystemConfigFFmpegDto {
         preset: mapValueOfType<String>(json, r'preset')!,
         targetVideoCodec: mapValueOfType<String>(json, r'targetVideoCodec')!,
         targetAudioCodec: mapValueOfType<String>(json, r'targetAudioCodec')!,
-        targetScaling: mapValueOfType<String>(json, r'targetScaling')!,
+        targetResolution: mapValueOfType<String>(json, r'targetResolution')!,
         transcode: SystemConfigFFmpegDtoTranscodeEnum.fromJson(json[r'transcode'])!,
       );
     }
@@ -144,7 +144,7 @@ class SystemConfigFFmpegDto {
     'preset',
     'targetVideoCodec',
     'targetAudioCodec',
-    'targetScaling',
+    'targetResolution',
     'transcode',
   };
 }
@@ -165,12 +165,14 @@ class SystemConfigFFmpegDtoTranscodeEnum {
   static const all = SystemConfigFFmpegDtoTranscodeEnum._(r'all');
   static const optimal = SystemConfigFFmpegDtoTranscodeEnum._(r'optimal');
   static const required_ = SystemConfigFFmpegDtoTranscodeEnum._(r'required');
+  static const disabled = SystemConfigFFmpegDtoTranscodeEnum._(r'disabled');
 
   /// List of all possible values in this [enum][SystemConfigFFmpegDtoTranscodeEnum].
   static const values = <SystemConfigFFmpegDtoTranscodeEnum>[
     all,
     optimal,
     required_,
+    disabled,
   ];
 
   static SystemConfigFFmpegDtoTranscodeEnum? fromJson(dynamic value) => SystemConfigFFmpegDtoTranscodeEnumTypeTransformer().decode(value);
@@ -208,10 +210,11 @@ class SystemConfigFFmpegDtoTranscodeEnumTypeTransformer {
   /// and users are still using an old app with the old code.
   SystemConfigFFmpegDtoTranscodeEnum? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
-      switch (data.toString()) {
+      switch (data) {
         case r'all': return SystemConfigFFmpegDtoTranscodeEnum.all;
         case r'optimal': return SystemConfigFFmpegDtoTranscodeEnum.optimal;
         case r'required': return SystemConfigFFmpegDtoTranscodeEnum.required_;
+        case r'disabled': return SystemConfigFFmpegDtoTranscodeEnum.disabled;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

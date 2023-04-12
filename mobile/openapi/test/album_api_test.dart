@@ -54,7 +54,7 @@ void main() {
 
     // 
     //
-    //Future<MultipartFile> downloadArchive(String albumId, { num skip, String key }) async
+    //Future<MultipartFile> downloadArchive(String albumId, { String name, num skip, String key }) async
     test('test downloadArchive', () async {
       // TODO
     });

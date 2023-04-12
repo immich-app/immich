@@ -1,4 +1,4 @@
-import { AssetEntity } from '@app/infra/db/entities';
+import { AssetEntity } from '@app/infra/entities';
 import { BadRequestException, Injectable, InternalServerErrorException, Logger, StreamableFile } from '@nestjs/common';
 import archiver from 'archiver';
 import { extname } from 'path';
@@ -28,8 +28,8 @@ export class DownloadService {
       let fileCount = 0;
       let complete = true;
 
-      for (const { id, originalPath, exifInfo } of assets) {
-        const name = `${exifInfo?.imageName || id}${extname(originalPath)}`;
+      for (const { originalPath, exifInfo, originalFileName } of assets) {
+        const name = `${originalFileName}${extname(originalPath)}`;
         archive.file(originalPath, { name });
         totalSize += Number(exifInfo?.fileSizeInByte || 0);
         fileCount++;

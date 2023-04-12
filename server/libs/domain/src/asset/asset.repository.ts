@@ -1,8 +1,15 @@
-import { AssetEntity, AssetType } from '@app/infra/db/entities';
+import { AssetEntity, AssetType } from '@app/infra/entities';
 
 export interface AssetSearchOptions {
   isVisible?: boolean;
   type?: AssetType;
+}
+
+export interface LivePhotoSearchOptions {
+  ownerId: string;
+  livePhotoCID: string;
+  otherAssetId: string;
+  type: AssetType;
 }
 
 export enum WithoutProperty {
@@ -22,5 +29,5 @@ export interface IAssetRepository {
   deleteAll(ownerId: string): Promise<void>;
   getAll(options?: AssetSearchOptions): Promise<AssetEntity[]>;
   save(asset: Partial<AssetEntity>): Promise<AssetEntity>;
-  findLivePhotoMatch(livePhotoCID: string, otherAssetId: string, type: AssetType): Promise<AssetEntity | null>;
+  findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
 }

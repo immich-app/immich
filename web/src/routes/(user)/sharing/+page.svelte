@@ -11,6 +11,7 @@
 	} from '$lib/components/shared-components/notification/notification';
 	import empty2Url from '$lib/assets/empty-2.svg';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+	import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
 
 	export let data: PageData;
 
@@ -34,25 +35,19 @@
 
 <UserPageLayout user={data.user} title={data.meta.title}>
 	<div class="flex" slot="buttons">
-		<button
-			on:click={createSharedAlbum}
-			class="flex place-items-center gap-1 text-sm hover:bg-immich-primary/5 p-2 rounded-lg font-medium hover:text-gray-700 dark:hover:bg-immich-dark-primary/25 dark:text-immich-dark-fg"
-		>
-			<span>
+		<LinkButton on:click={createSharedAlbum}>
+			<div class="flex place-items-center gap-1 text-sm">
 				<PlusBoxOutline size="18" />
-			</span>
-			<p>Create shared album</p>
-		</button>
+				Create shared album
+			</div>
+		</LinkButton>
 
-		<button
-			on:click={() => goto('/sharing/sharedlinks')}
-			class="flex place-items-center gap-1 text-sm hover:bg-immich-primary/5 p-2 rounded-lg font-medium hover:text-gray-700 dark:hover:bg-immich-dark-primary/25 dark:text-immich-dark-fg"
-		>
-			<span>
+		<LinkButton on:click={() => goto('/sharing/sharedlinks')}>
+			<div class="flex place-items-center gap-1 text-sm">
 				<Link size="18" />
-			</span>
-			<p>Shared links</p>
-		</button>
+				Shared links
+			</div>
+		</LinkButton>
 	</div>
 
 	<section>

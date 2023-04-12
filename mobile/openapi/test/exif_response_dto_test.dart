@@ -31,11 +31,6 @@ void main() {
       // TODO
     });
 
-    // String imageName
-    test('to test the property `imageName`', () async {
-      // TODO
-    });
-
     // num exifImageWidth
     test('to test the property `exifImageWidth`', () async {
       // TODO
@@ -58,6 +53,11 @@ void main() {
 
     // DateTime modifyDate
     test('to test the property `modifyDate`', () async {
+      // TODO
+    });
+
+    // String timeZone
+    test('to test the property `timeZone`', () async {
       // TODO
     });
 

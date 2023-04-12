@@ -5,6 +5,7 @@
 	import { fly } from 'svelte/transition';
 	import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
 	import ControlAppBar from '../shared-components/control-app-bar.svelte';
+	import Button from '../elements/buttons/button.svelte';
 
 	export let album: AlbumResponseDto;
 
@@ -30,12 +31,14 @@
 		</svelte:fragment>
 
 		<svelte:fragment slot="trailing">
-			<button
+			<Button
+				size="sm"
+				rounded="lg"
 				disabled={selectedThumbnail == undefined}
 				on:click={() => dispatch('thumbnail-selected', { asset: selectedThumbnail })}
-				class="immich-text-button border bg-immich-primary text-gray-50 hover:bg-immich-primary/75 px-6 text-sm disabled:opacity-25 disabled:bg-gray-500 disabled:cursor-not-allowed"
-				><span class="px-2">Done</span></button
 			>
+				Done
+			</Button>
 		</svelte:fragment>
 	</ControlAppBar>
 

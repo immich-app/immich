@@ -230,6 +230,16 @@ class _$AppRouter extends RootStackRouter {
         barrierDismissible: false,
       );
     },
+    AppLogDetailRoute.name: (routeData) {
+      final args = routeData.argsAs<AppLogDetailRouteArgs>();
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: AppLogDetailPage(
+          key: args.key,
+          logMessage: args.logMessage,
+        ),
+      );
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
         routeData: routeData,
@@ -484,6 +494,10 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           AppLogRoute.name,
           path: '/app-log-page',
+        ),
+        RouteConfig(
+          AppLogDetailRoute.name,
+          path: '/app-log-detail-page',
         ),
       ];
 }
@@ -972,6 +986,40 @@ class AppLogRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'AppLogRoute';
+}
+
+/// generated route for
+/// [AppLogDetailPage]
+class AppLogDetailRoute extends PageRouteInfo<AppLogDetailRouteArgs> {
+  AppLogDetailRoute({
+    Key? key,
+    required LoggerMessage logMessage,
+  }) : super(
+          AppLogDetailRoute.name,
+          path: '/app-log-detail-page',
+          args: AppLogDetailRouteArgs(
+            key: key,
+            logMessage: logMessage,
+          ),
+        );
+
+  static const String name = 'AppLogDetailRoute';
+}
+
+class AppLogDetailRouteArgs {
+  const AppLogDetailRouteArgs({
+    this.key,
+    required this.logMessage,
+  });
+
+  final Key? key;
+
+  final LoggerMessage logMessage;
+
+  @override
+  String toString() {
+    return 'AppLogDetailRouteArgs{key: $key, logMessage: $logMessage}';
+  }
 }
 
 /// generated route for

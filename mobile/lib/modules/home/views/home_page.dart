@@ -27,6 +27,7 @@ import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/services/share.service.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/shared/ui/share_dialog.dart';
 
 class HomePage extends HookConsumerWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -81,7 +82,19 @@ class HomePage extends HookConsumerWidget {
       }
 
       void onShareAssets() {
-        ref.watch(shareServiceProvider).shareAssets(selection.value.toList());
+        showDialog(
+          context: context,
+          builder: (BuildContext buildContext) {
+            ref
+                .watch(shareServiceProvider)
+                .shareAssets(selection.value.toList())
+                .then((_) => Navigator.of(buildContext).pop());
+            return const ShareDialog();
+          },
+          barrierDismissible: false,
+        );
+
+        // ref.watch(shareServiceProvider).shareAssets(selection.value.toList());
         selectionEnabledHook.value = false;
       }
 
@@ -244,6 +257,7 @@ class HomePage extends HookConsumerWidget {
 
       return SafeArea(
         top: true,
+        bottom: false,
         child: Stack(
           children: [
             ref.watch(assetProvider).renderList == null ||
@@ -261,17 +275,14 @@ class HomePage extends HookConsumerWidget {
                     onRefresh: refreshAssets,
                   ),
             if (selectionEnabledHook.value)
-              SafeArea(
-                bottom: true,
-                child: ControlBottomAppBar(
-                  onShare: onShareAssets,
-                  onFavorite: onFavoriteAssets,
-                  onDelete: onDelete,
-                  onAddToAlbum: onAddToAlbum,
-                  albums: albums,
-                  sharedAlbums: sharedAlbums,
-                  onCreateNewAlbum: onCreateNewAlbum,
-                ),
+              ControlBottomAppBar(
+                onShare: onShareAssets,
+                onFavorite: onFavoriteAssets,
+                onDelete: onDelete,
+                onAddToAlbum: onAddToAlbum,
+                albums: albums,
+                sharedAlbums: sharedAlbums,
+                onCreateNewAlbum: onCreateNewAlbum,
               ),
           ],
         ),
@@ -279,9 +290,11 @@ class HomePage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: HomePageAppBar(
-        onPopBack: reloadAllAsset,
-      ),
+      appBar: !selectionEnabledHook.value
+          ? HomePageAppBar(
+              onPopBack: reloadAllAsset,
+            )
+          : null,
       drawer: const ProfileDrawer(),
       body: buildBody(),
     );

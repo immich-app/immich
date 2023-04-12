@@ -44,5 +44,5 @@ download:
       locale_code: ru-RU
     - file: mobile/assets/i18n/cs-CZ.json
       locale_code: cs-CZ
-    - file: mobile/assets/i18n/no-NO.json
-      locale_code: no-NO
+    - file: mobile/assets/i18n/nb-NO.json
+      locale_code: nb-NO

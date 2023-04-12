@@ -1,4 +1,4 @@
-import { SystemConfigEntity, SystemConfigKey, TranscodePreset } from '@app/infra/db/entities';
+import { SystemConfigEntity, SystemConfigKey, TranscodePreset } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import { newJobRepositoryMock, newSystemConfigRepositoryMock, systemConfigStub } from '../../test';
 import { IJobRepository, JobName } from '../job';
@@ -16,7 +16,7 @@ const updatedConfig = Object.freeze({
     crf: 'a new value',
     preset: 'ultrafast',
     targetAudioCodec: 'aac',
-    targetScaling: '1280:-2',
+    targetResolution: '720',
     targetVideoCodec: 'h264',
     transcode: TranscodePreset.REQUIRED,
   },

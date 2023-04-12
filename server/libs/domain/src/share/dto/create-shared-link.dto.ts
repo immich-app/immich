@@ -1,4 +1,4 @@
-import { AlbumEntity, AssetEntity, SharedLinkType } from '@app/infra/db/entities';
+import { AlbumEntity, AssetEntity, SharedLinkType } from '@app/infra/entities';
 
 export class CreateSharedLinkDto {
   description?: string;

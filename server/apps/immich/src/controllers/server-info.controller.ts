@@ -8,9 +8,11 @@ import {
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Authenticated } from '../decorators/authenticated.decorator';
+import { UseValidation } from '../decorators/use-validation.decorator';
 
 @ApiTags('Server Info')
 @Controller('server-info')
+@UseValidation()
 export class ServerInfoController {
   constructor(private service: ServerInfoService) {}
 

@@ -67,7 +67,7 @@ class DeleteAssetStatusTypeTransformer {
   /// and users are still using an old app with the old code.
   DeleteAssetStatus? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
-      switch (data.toString()) {
+      switch (data) {
         case r'SUCCESS': return DeleteAssetStatus.SUCCESS;
         case r'FAILED': return DeleteAssetStatus.FAILED;
         default:

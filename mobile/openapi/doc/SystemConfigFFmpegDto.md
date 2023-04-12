@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 **preset** | **String** |  | 
 **targetVideoCodec** | **String** |  | 
 **targetAudioCodec** | **String** |  | 
-**targetScaling** | **String** |  | 
+**targetResolution** | **String** |  | 
 **transcode** | **String** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

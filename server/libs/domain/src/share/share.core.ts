@@ -1,4 +1,4 @@
-import { AssetEntity, SharedLinkEntity } from '@app/infra/db/entities';
+import { AssetEntity, SharedLinkEntity } from '@app/infra/entities';
 import {
   BadRequestException,
   ForbiddenException,

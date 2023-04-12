@@ -9,6 +9,19 @@ const config = {
 			'@api': path.resolve('./src/api')
 		}
 	},
+	server: {
+		// connect to a remote backend during web-only development
+		proxy: {
+			'/api': {
+				target: process.env.PUBLIC_IMMICH_SERVER_URL,
+				secure: true,
+				changeOrigin: true,
+				logLevel: 'debug',
+				rewrite: (path) => path.replace(/^\/api/, ''),
+				ws: true
+			}
+		}
+	},
 	plugins: [sveltekit()]
 };
 

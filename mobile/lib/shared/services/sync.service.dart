@@ -369,7 +369,6 @@ class SyncService {
     List<AssetPathEntity> onDevice, [
     Set<String>? excludedAssets,
   ]) async {
-    _log.info("Syncing ${onDevice.length} albums from device: $onDevice");
     onDevice.sort((a, b) => a.id.compareTo(b.id));
     final List<Album> inDb =
         await _db.albums.where().localIdIsNotNull().sortByLocalId().findAll();
@@ -448,7 +447,7 @@ class SyncService {
     deleteCandidates.addAll(toDelete);
     existing.addAll(result.first);
     album.name = ape.name;
-    album.modifiedAt = ape.lastModified!;
+    album.modifiedAt = ape.lastModified ?? DateTime.now();
     if (album.thumbnail.value != null &&
         toDelete.contains(album.thumbnail.value)) {
       album.thumbnail.value = null;
@@ -492,7 +491,7 @@ class SyncService {
     if (totalOnDevice != album.assets.length + newAssets.length) {
       return false;
     }
-    album.modifiedAt = ape.lastModified!.toUtc();
+    album.modifiedAt = ape.lastModified?.toUtc() ?? DateTime.now().toUtc();
     final result = await _linkWithExistingFromDb(newAssets);
     try {
       await _db.writeTxn(() async {
@@ -575,7 +574,7 @@ class SyncService {
           return true;
         }
       },
-      onlyFirst: (Asset a) => throw Exception("programming error"),
+      onlyFirst: (Asset a) => {},
       onlySecond: (Asset b) => toUpsert.add(b),
     );
     return Pair(existing, toUpsert);

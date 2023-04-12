@@ -1,6 +1,6 @@
-import { IsNotEmpty } from 'class-validator';
+import { ValidateUUID } from 'apps/immich/src/decorators/validate-uuid.decorator';
 
 export class AddAssetsDto {
-  @IsNotEmpty()
+  @ValidateUUID({ each: true })
   assetIds!: string[];
 }

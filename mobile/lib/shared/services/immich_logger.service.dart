@@ -102,15 +102,13 @@ class ImmichLogger {
     }
 
     // Share file
-    // ignore: deprecated_member_use
-    await Share.shareFiles(
-      [filePath],
+    await Share.shareXFiles(
+      [XFile(filePath)],
       subject: "Immich logs $dateTime",
       sharePositionOrigin: Rect.zero,
+    ).then(
+      (value) => logFile.delete(),
     );
-
-    // Clean up temp file
-    await logFile.delete();
   }
 
   /// Flush pending log messages to persistent storage

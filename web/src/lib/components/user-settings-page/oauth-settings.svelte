@@ -9,6 +9,7 @@
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
+	import Button from '../elements/buttons/button.svelte';
 
 	export let user: UserResponseDto;
 
@@ -67,17 +68,10 @@
 				</div>
 			{:else if config.enabled}
 				{#if user.oauthId}
-					<button
-						on:click={() => handleUnlink()}
-						class="text-sm bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 dark:hover:bg-immich-dark-primary/80 px-4 py-2 text-white dark:text-immich-dark-gray rounded-full shadow-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-						>Unlink OAuth
-					</button>
+					<Button size="sm" on:click={() => handleUnlink()}>Unlink Oauth</Button>
 				{:else}
 					<a href={config.url}>
-						<button
-							class="text-sm bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 dark:hover:bg-immich-dark-primary/80 px-4 py-2 text-white dark:text-immich-dark-gray rounded-full shadow-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-							>Link to OAuth</button
-						>
+						<Button size="sm" on:click={() => handleUnlink()}>Link to OAuth</Button>
 					</a>
 				{/if}
 			{/if}

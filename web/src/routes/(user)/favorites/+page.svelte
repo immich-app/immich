@@ -1,5 +1,5 @@
 <script lang="ts">
-	import CircleIconButton from '$lib/components/shared-components/circle-icon-button.svelte';
+	import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
 	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';

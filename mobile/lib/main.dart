@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -46,6 +47,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   final db = await loadDb();
   await initApp();
   await migrateHiveToStoreIfNecessary();
@@ -185,6 +187,22 @@ class ImmichAppState extends ConsumerState<ImmichApp>
 
   Future<void> initApp() async {
     WidgetsBinding.instance.addObserver(this);
+
+    // Draw the app from edge to edge
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
+    // Sets the navigation bar color
+    SystemUiOverlayStyle overlayStyle = const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent);
+    if (Platform.isAndroid) {
+      // Android 8 does not support transparent app bars
+      final info = await DeviceInfoPlugin().androidInfo;
+      if (info.version.sdkInt <= 26) {
+        overlayStyle = MediaQuery.of(context).platformBrightness == Brightness.light
+            ? SystemUiOverlayStyle.light
+            : SystemUiOverlayStyle.dark;
+      } 
+    }
+    SystemChrome.setSystemUIOverlayStyle(overlayStyle);
   }
 
   @override
@@ -195,6 +213,9 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       // needs to be delayed so that EasyLocalization is working
       ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
     });
+
+
+
   }
 
   @override
@@ -207,11 +228,6 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   Widget build(BuildContext context) {
     var router = ref.watch(appRouterProvider);
     ref.watch(releaseInfoProvider.notifier).checkGithubReleaseInfo();
-
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent),
-    );
 
     return MaterialApp(
       localizationsDelegates: context.localizationDelegates,

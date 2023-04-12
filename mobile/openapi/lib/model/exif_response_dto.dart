@@ -16,12 +16,12 @@ class ExifResponseDto {
     this.fileSizeInByte,
     this.make,
     this.model,
-    this.imageName,
     this.exifImageWidth,
     this.exifImageHeight,
     this.orientation,
     this.dateTimeOriginal,
     this.modifyDate,
+    this.timeZone,
     this.lensModel,
     this.fNumber,
     this.focalLength,
@@ -40,8 +40,6 @@ class ExifResponseDto {
 
   String? model;
 
-  String? imageName;
-
   num? exifImageWidth;
 
   num? exifImageHeight;
@@ -51,6 +49,8 @@ class ExifResponseDto {
   DateTime? dateTimeOriginal;
 
   DateTime? modifyDate;
+
+  String? timeZone;
 
   String? lensModel;
 
@@ -77,12 +77,12 @@ class ExifResponseDto {
      other.fileSizeInByte == fileSizeInByte &&
      other.make == make &&
      other.model == model &&
-     other.imageName == imageName &&
      other.exifImageWidth == exifImageWidth &&
      other.exifImageHeight == exifImageHeight &&
      other.orientation == orientation &&
      other.dateTimeOriginal == dateTimeOriginal &&
      other.modifyDate == modifyDate &&
+     other.timeZone == timeZone &&
      other.lensModel == lensModel &&
      other.fNumber == fNumber &&
      other.focalLength == focalLength &&
@@ -100,12 +100,12 @@ class ExifResponseDto {
     (fileSizeInByte == null ? 0 : fileSizeInByte!.hashCode) +
     (make == null ? 0 : make!.hashCode) +
     (model == null ? 0 : model!.hashCode) +
-    (imageName == null ? 0 : imageName!.hashCode) +
     (exifImageWidth == null ? 0 : exifImageWidth!.hashCode) +
     (exifImageHeight == null ? 0 : exifImageHeight!.hashCode) +
     (orientation == null ? 0 : orientation!.hashCode) +
     (dateTimeOriginal == null ? 0 : dateTimeOriginal!.hashCode) +
     (modifyDate == null ? 0 : modifyDate!.hashCode) +
+    (timeZone == null ? 0 : timeZone!.hashCode) +
     (lensModel == null ? 0 : lensModel!.hashCode) +
     (fNumber == null ? 0 : fNumber!.hashCode) +
     (focalLength == null ? 0 : focalLength!.hashCode) +
@@ -118,7 +118,7 @@ class ExifResponseDto {
     (country == null ? 0 : country!.hashCode);
 
   @override
-  String toString() => 'ExifResponseDto[fileSizeInByte=$fileSizeInByte, make=$make, model=$model, imageName=$imageName, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country]';
+  String toString() => 'ExifResponseDto[fileSizeInByte=$fileSizeInByte, make=$make, model=$model, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, timeZone=$timeZone, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -136,11 +136,6 @@ class ExifResponseDto {
       json[r'model'] = this.model;
     } else {
       // json[r'model'] = null;
-    }
-    if (this.imageName != null) {
-      json[r'imageName'] = this.imageName;
-    } else {
-      // json[r'imageName'] = null;
     }
     if (this.exifImageWidth != null) {
       json[r'exifImageWidth'] = this.exifImageWidth;
@@ -166,6 +161,11 @@ class ExifResponseDto {
       json[r'modifyDate'] = this.modifyDate!.toUtc().toIso8601String();
     } else {
       // json[r'modifyDate'] = null;
+    }
+    if (this.timeZone != null) {
+      json[r'timeZone'] = this.timeZone;
+    } else {
+      // json[r'timeZone'] = null;
     }
     if (this.lensModel != null) {
       json[r'lensModel'] = this.lensModel;
@@ -242,7 +242,6 @@ class ExifResponseDto {
         fileSizeInByte: mapValueOfType<int>(json, r'fileSizeInByte'),
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
-        imageName: mapValueOfType<String>(json, r'imageName'),
         exifImageWidth: json[r'exifImageWidth'] == null
             ? null
             : num.parse(json[r'exifImageWidth'].toString()),
@@ -252,6 +251,7 @@ class ExifResponseDto {
         orientation: mapValueOfType<String>(json, r'orientation'),
         dateTimeOriginal: mapDateTime(json, r'dateTimeOriginal', ''),
         modifyDate: mapDateTime(json, r'modifyDate', ''),
+        timeZone: mapValueOfType<String>(json, r'timeZone'),
         lensModel: mapValueOfType<String>(json, r'lensModel'),
         fNumber: json[r'fNumber'] == null
             ? null

@@ -252,6 +252,28 @@ class Asset {
 
   static int compareByLocalId(Asset a, Asset b) =>
       a.localId.compareTo(b.localId);
+
+  @override
+  String toString() {
+    return """
+{
+  "remoteId": "${remoteId ?? "N/A"}",
+  "localId": "$localId", 
+  "deviceId": "$deviceId", 
+  "ownerId": "$ownerId", 
+  "livePhotoVideoId": "${livePhotoVideoId ?? "N/A"}",
+  "fileCreatedAt": "$fileCreatedAt",
+  "fileModifiedAt": "$fileModifiedAt", 
+  "updatedAt": "$updatedAt", 
+  "durationInSeconds": $durationInSeconds, 
+  "type": "$type",
+  "fileName": "$fileName", 
+  "isFavorite": $isFavorite, 
+  "isLocal": $isLocal,
+  "width": ${width ?? "N/A"},
+  "height": ${height ?? "N/A"}
+}""";
+  }
 }
 
 enum AssetType {

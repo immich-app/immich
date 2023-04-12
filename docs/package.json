@@ -20,6 +20,7 @@
     "@mdx-js/react": "^1.6.22",
     "autoprefixer": "^10.4.13",
     "clsx": "^1.2.1",
+    "docusaurus-lunr-search": "^2.3.2",
     "docusaurus-preset-openapi": "^0.6.3",
     "postcss": "^8.4.20",
     "prism-react-renderer": "^1.3.5",

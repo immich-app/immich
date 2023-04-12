@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/infra/db/entities';
+import { UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { ReadStream } from 'fs';
@@ -90,6 +90,7 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
+
     const updatedUser = await this.userCore.updateUser(authUser, dto.id, dto);
     return mapUser(updatedUser);
   }
