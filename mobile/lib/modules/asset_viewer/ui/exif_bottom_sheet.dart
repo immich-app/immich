@@ -18,7 +18,7 @@ class ExifBottomSheet extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var exifInfo = asset.exifInfo;
+    final exifInfo = asset.exifInfo;
     var isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     var textColor = isDarkTheme ? Colors.white : Colors.black;
 
@@ -131,9 +131,15 @@ class ExifBottomSheet extends HookConsumerWidget {
                       TextSpan(
                         text: exifInfo.city,
                       ),
+                    if (exifInfo != null &&
+                        exifInfo.city != null &&
+                        exifInfo.state != null)
+                      const TextSpan(
+                        text: ", ",
+                      ),
                     if (exifInfo != null && exifInfo.state != null)
                       TextSpan(
-                        text: ", ${exifInfo.state}",
+                        text: "${exifInfo.state}",
                       ),
                   ],
                 ),

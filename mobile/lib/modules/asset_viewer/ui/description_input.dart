@@ -19,20 +19,26 @@ class DescriptionInput extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    var textColor = isDarkTheme ? Colors.white : Colors.black;
-    var controller = useTextEditingController();
-    var db = ref.watch(dbProvider);
-    var focusNode = useFocusNode();
-    var isFocus = useState(false);
-    var isTextEmpty = useState(controller.text.isEmpty);
+    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDarkTheme ? Colors.white : Colors.black;
+    final controller = useTextEditingController();
+    final db = ref.watch(dbProvider);
+    final focusNode = useFocusNode();
+    final isFocus = useState(false);
+    final isTextEmpty = useState(controller.text.isEmpty);
 
     getLatestDescription() async {
-      var latestAssetFromServer = await ref
+      final latestAssetFromServer = await ref
           .watch(apiServiceProvider)
           .assetApi
           .getAssetById(asset.remoteId!);
-      var localExifInfo = await db.exifInfos.get(asset.exifInfo!.id!);
+
+      final localExifId = asset.exifInfo?.id;
+      if (localExifId == null) {
+        return;
+      }
+
+      final localExifInfo = await db.exifInfos.get(localExifId);
 
       if (latestAssetFromServer != null && localExifInfo != null) {
         controller.text = latestAssetFromServer.exifInfo?.description ?? '';
