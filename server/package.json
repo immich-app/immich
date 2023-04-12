@@ -77,7 +77,7 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0",
     "sanitize-filename": "^1.6.3",
-    "sharp": "^0.28.3",
+    "sharp": "^0.32.0",
     "typeorm": "^0.3.14",
     "typesense": "^1.5.3"
   },
@@ -85,7 +85,7 @@
     "@nestjs/cli": "^9.3.0",
     "@nestjs/schematics": "^9.1.0",
     "@nestjs/testing": "^9.4.0",
-    "@openapitools/openapi-generator-cli": "2.5.2",
+    "@openapitools/openapi-generator-cli": "^2.6.0",
     "@types/archiver": "^5.3.2",
     "@types/bcrypt": "^5.0.0",
     "@types/cookie-parser": "^1.4.3",
