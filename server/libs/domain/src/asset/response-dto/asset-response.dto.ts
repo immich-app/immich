@@ -6,9 +6,9 @@ import { SmartInfoResponseDto, mapSmartInfo } from './smart-info-response.dto';
 
 export class AssetResponseDto {
   id!: string;
-  deviceAssetId!: string | null;
+  deviceAssetId!: string;
   ownerId!: string;
-  deviceId!: string | null;
+  deviceId!: string;
 
   @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type!: AssetType;
