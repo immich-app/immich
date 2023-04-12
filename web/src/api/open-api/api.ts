@@ -4344,7 +4344,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @throws {RequiredError}
          */
         getArchivedAssetCountByUserId: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/asset/archived-count-by-user-id`;
+            const localVarPath = `/asset/stat/archive`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;

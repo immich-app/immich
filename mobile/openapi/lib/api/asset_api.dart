@@ -574,7 +574,7 @@ class AssetApi {
   /// Note: This method returns the HTTP [Response].
   Future<Response> getArchivedAssetCountByUserIdWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/asset/archived-count-by-user-id';
+    final path = r'/asset/stat/archive';
 
     // ignore: prefer_final_locals
     Object? postBody;

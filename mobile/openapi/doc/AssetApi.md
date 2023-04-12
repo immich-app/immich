@@ -18,7 +18,7 @@ Method | HTTP request | Description
 [**downloadFiles**](AssetApi.md#downloadfiles) | **POST** /asset/download-files | 
 [**downloadLibrary**](AssetApi.md#downloadlibrary) | **GET** /asset/download-library | 
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
-[**getArchivedAssetCountByUserId**](AssetApi.md#getarchivedassetcountbyuserid) | **GET** /asset/archived-count-by-user-id | 
+[**getArchivedAssetCountByUserId**](AssetApi.md#getarchivedassetcountbyuserid) | **GET** /asset/stat/archive | 
 [**getAssetById**](AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
 [**getAssetByTimeBucket**](AssetApi.md#getassetbytimebucket) | **POST** /asset/time-bucket | 
 [**getAssetCountByTimeBucket**](AssetApi.md#getassetcountbytimebucket) | **POST** /asset/count-by-time-bucket | 
