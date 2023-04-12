@@ -113,7 +113,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **search**
-> SearchResponseDto search(q, query, clip, type, isFavorite, exifInfoPeriodCity, exifInfoPeriodState, exifInfoPeriodCountry, exifInfoPeriodMake, exifInfoPeriodModel, smartInfoPeriodObjects, smartInfoPeriodTags, recent, motion)
+> SearchResponseDto search(q, query, clip, type, isFavorite, isArchived, exifInfoPeriodCity, exifInfoPeriodState, exifInfoPeriodCountry, exifInfoPeriodMake, exifInfoPeriodModel, smartInfoPeriodObjects, smartInfoPeriodTags, recent, motion)
 
 
 
@@ -139,6 +139,7 @@ final query = query_example; // String |
 final clip = true; // bool | 
 final type = type_example; // String | 
 final isFavorite = true; // bool | 
+final isArchived = true; // bool | 
 final exifInfoPeriodCity = exifInfoPeriodCity_example; // String | 
 final exifInfoPeriodState = exifInfoPeriodState_example; // String | 
 final exifInfoPeriodCountry = exifInfoPeriodCountry_example; // String | 
@@ -150,7 +151,7 @@ final recent = true; // bool |
 final motion = true; // bool | 
 
 try {
-    final result = api_instance.search(q, query, clip, type, isFavorite, exifInfoPeriodCity, exifInfoPeriodState, exifInfoPeriodCountry, exifInfoPeriodMake, exifInfoPeriodModel, smartInfoPeriodObjects, smartInfoPeriodTags, recent, motion);
+    final result = api_instance.search(q, query, clip, type, isFavorite, isArchived, exifInfoPeriodCity, exifInfoPeriodState, exifInfoPeriodCountry, exifInfoPeriodMake, exifInfoPeriodModel, smartInfoPeriodObjects, smartInfoPeriodTags, recent, motion);
     print(result);
 } catch (e) {
     print('Exception when calling SearchApi->search: $e\n');
@@ -166,6 +167,7 @@ Name | Type | Description  | Notes
  **clip** | **bool**|  | [optional] 
  **type** | **String**|  | [optional] 
  **isFavorite** | **bool**|  | [optional] 
+ **isArchived** | **bool**|  | [optional] 
  **exifInfoPeriodCity** | **String**|  | [optional] 
  **exifInfoPeriodState** | **String**|  | [optional] 
  **exifInfoPeriodCountry** | **String**|  | [optional] 

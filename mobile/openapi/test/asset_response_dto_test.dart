@@ -76,6 +76,11 @@ void main() {
       // TODO
     });
 
+    // bool isArchived
+    test('to test the property `isArchived`', () async {
+      // TODO
+    });
+
     // String mimeType
     test('to test the property `mimeType`', () async {
       // TODO

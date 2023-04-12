@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
 	import AlbumSelectionModal from '$lib/components/shared-components/album-selection-modal.svelte';
 	import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 	import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
@@ -11,45 +10,55 @@
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
-	import {
-		assetInteractionStore,
-		isMultiSelectStoreState,
-		selectedAssets
-	} from '$lib/stores/asset-interaction.store';
-	import { assetStore } from '$lib/stores/assets.store';
 	import { addAssetsToAlbum, bulkDownload } from '$lib/utils/asset-utils';
-	import { AlbumResponseDto, api, SharedLinkType } from '@api';
-	import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
+	import { AlbumResponseDto, api, AssetResponseDto, SharedLinkType } from '@api';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
+	import ArchiveArrowUpOutline from 'svelte-material-icons/ArchiveArrowUpOutline.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 	import Plus from 'svelte-material-icons/Plus.svelte';
 	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
 	import { locale } from '$lib/stores/preferences.store';
+	import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import type { PageData } from './$types';
+	import { onMount } from 'svelte';
+	import { handleError } from '$lib/utils/handle-error';
+	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
 
 	export let data: PageData;
 
-	let isShowCreateSharedLinkModal = false;
+	onMount(async () => {
+		try {
+			const { data: assets } = await api.assetApi.getAllAssets(undefined, true);
+			archived = assets;
+		} catch {
+			handleError(Error, 'Unable to load archived assets');
+		}
+	});
+
+	const clearMultiSelectAssetAssetHandler = () => {
+		selectedAssets = new Set();
+	};
+
 	const deleteSelectedAssetHandler = async () => {
 		try {
 			if (
 				window.confirm(
-					`Caution! Are you sure you want to delete ${$selectedAssets.size} assets? This step also deletes assets in the album(s) to which they belong. You can not undo this action!`
+					`Caution! Are you sure you want to delete ${selectedAssets.size} assets? This step also deletes assets in the album(s) to which they belong. You can not undo this action!`
 				)
 			) {
 				const { data: deletedAssets } = await api.assetApi.deleteAsset({
-					ids: Array.from($selectedAssets).map((a) => a.id)
+					ids: Array.from(selectedAssets).map((a) => a.id)
 				});
 
 				for (const asset of deletedAssets) {
 					if (asset.status == 'SUCCESS') {
-						assetStore.removeAsset(asset.id);
+						archived = archived.filter((a) => a.id != asset.id);
 					}
 				}
 
-				assetInteractionStore.clearMultiselect();
+				clearMultiSelectAssetAssetHandler();
 			}
 		} catch (e) {
 			notificationController.show({
@@ -60,7 +69,13 @@
 		}
 	};
 
+	$: isMultiSelectionMode = selectedAssets.size > 0;
+
+	let selectedAssets: Set<AssetResponseDto> = new Set();
+	let archived: AssetResponseDto[] = [];
+
 	let contextMenuPosition = { x: 0, y: 0 };
+	let isShowCreateSharedLinkModal = false;
 	let isShowAddMenu = false;
 	let isShowAlbumPicker = false;
 	let addToSharedAlbum = false;
@@ -70,37 +85,15 @@
 		isShowAddMenu = !isShowAddMenu;
 	};
 
-	const handleArchive = async () => {
-		let cnt = 0;
-		for (const asset of $selectedAssets) {
-			if (!asset.isArchived) {
-				api.assetApi.updateAsset(asset.id, {
-					isArchived: true
-				});
-
-				assetStore.removeAsset(asset.id);
-				cnt = cnt + 1;
-			}
-		}
-
-		notificationController.show({
-			message: `Archived ${cnt}`,
-			type: NotificationType.Info
-		});
-
-		assetInteractionStore.clearMultiselect();
-	};
-
 	const handleAddToFavorites = () => {
 		isShowAddMenu = false;
 
 		let cnt = 0;
-		for (const asset of $selectedAssets) {
+		for (const asset of selectedAssets) {
 			if (!asset.isFavorite) {
 				api.assetApi.updateAsset(asset.id, {
 					isFavorite: true
 				});
-				assetStore.updateAsset(asset.id, true);
 				cnt = cnt + 1;
 			}
 		}
@@ -110,7 +103,7 @@
 			type: NotificationType.Info
 		});
 
-		assetInteractionStore.clearMultiselect();
+		clearMultiSelectAssetAssetHandler();
 	};
 
 	const handleShowAlbumPicker = (shared: boolean) => {
@@ -123,7 +116,7 @@
 		isShowAlbumPicker = false;
 
 		const { albumName }: { albumName: string } = event.detail;
-		const assetIds = Array.from($selectedAssets).map((asset) => asset.id);
+		const assetIds = Array.from(selectedAssets).map((asset) => asset.id);
 		api.albumApi.createAlbum({ albumName, assetIds }).then((response) => {
 			const { id, albumName } = response.data;
 
@@ -132,7 +125,7 @@
 				type: NotificationType.Info
 			});
 
-			assetInteractionStore.clearMultiselect();
+			clearMultiSelectAssetAssetHandler();
 
 			goto('/albums/' + id);
 		});
@@ -142,17 +135,38 @@
 		isShowAlbumPicker = false;
 		const album = event.detail.album;
 
-		const assetIds = Array.from($selectedAssets).map((asset) => asset.id);
+		const assetIds = Array.from(selectedAssets).map((asset) => asset.id);
 
 		addAssetsToAlbum(album.id, assetIds).then(() => {
-			assetInteractionStore.clearMultiselect();
+			clearMultiSelectAssetAssetHandler();
 		});
 	};
 
 	const handleDownloadFiles = async () => {
-		await bulkDownload('immich', Array.from($selectedAssets), () => {
-			assetInteractionStore.clearMultiselect();
+		await bulkDownload('immich', Array.from(selectedAssets), () => {
+			clearMultiSelectAssetAssetHandler();
 		});
+	};
+
+	const handleUnarchive = async () => {
+		let cnt = 0;
+		for (const asset of selectedAssets) {
+			if (asset.isArchived) {
+				api.assetApi.updateAsset(asset.id, {
+					isArchived: false
+				});
+				cnt = cnt + 1;
+
+				archived = archived.filter((a) => a.id != asset.id);
+			}
+		}
+
+		notificationController.show({
+			message: `Removed ${cnt} from archive`,
+			type: NotificationType.Info
+		});
+
+		clearMultiSelectAssetAssetHandler();
 	};
 
 	const handleCreateSharedLink = async () => {
@@ -160,22 +174,30 @@
 	};
 
 	const handleCloseSharedLinkModal = () => {
-		assetInteractionStore.clearMultiselect();
+		clearMultiSelectAssetAssetHandler();
 		isShowCreateSharedLinkModal = false;
 	};
 </script>
 
-<UserPageLayout user={data.user} hideNavbar={$isMultiSelectStoreState} showUploadButton>
+<UserPageLayout user={data.user} hideNavbar={isMultiSelectionMode}>
+	<!-- Empty Message -->
+	{#if archived.length === 0}
+		<EmptyPlaceholder
+			text="Archive photos and videos to hide them from your Photos view"
+			alt="Empty archive"
+		/>
+	{/if}
+
 	<svelte:fragment slot="header">
-		{#if $isMultiSelectStoreState}
+		{#if isMultiSelectionMode}
 			<ControlAppBar
-				on:close-button-click={() => assetInteractionStore.clearMultiselect()}
+				on:close-button-click={clearMultiSelectAssetAssetHandler}
 				backIcon={Close}
 				tailwindClasses={'bg-white shadow-md'}
 			>
 				<svelte:fragment slot="leading">
 					<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
-						Selected {$selectedAssets.size.toLocaleString($locale)}
+						Selected {selectedAssets.size.toLocaleString($locale)}
 					</p>
 				</svelte:fragment>
 				<svelte:fragment slot="trailing">
@@ -185,9 +207,9 @@
 						on:click={handleCreateSharedLink}
 					/>
 					<CircleIconButton
-						title="Archive"
-						logo={ArchiveArrowDownOutline}
-						on:click={handleArchive}
+						title="Unarchive"
+						logo={ArchiveArrowUpOutline}
+						on:click={handleUnarchive}
 					/>
 					<CircleIconButton
 						title="Download"
@@ -226,12 +248,12 @@
 
 		{#if isShowCreateSharedLinkModal}
 			<CreateSharedLinkModal
-				sharedAssets={Array.from($selectedAssets)}
+				sharedAssets={Array.from(selectedAssets)}
 				shareType={SharedLinkType.Individual}
 				on:close={handleCloseSharedLinkModal}
 			/>
 		{/if}
 	</svelte:fragment>
 
-	<AssetGrid slot="content" />
+	<GalleryViewer assets={archived} bind:selectedAssets />
 </UserPageLayout>

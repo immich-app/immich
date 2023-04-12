@@ -32,6 +32,7 @@ const _getCreateAssetDto = (): CreateAssetDto => {
   createAssetDto.fileCreatedAt = '2022-06-19T23:41:36.910Z';
   createAssetDto.fileModifiedAt = '2022-06-19T23:41:36.910Z';
   createAssetDto.isFavorite = false;
+  createAssetDto.isArchived = false;
   createAssetDto.duration = '0:00:00.000000';
 
   return createAssetDto;
@@ -51,6 +52,7 @@ const _getAsset_1 = () => {
   asset_1.fileCreatedAt = '2022-06-19T23:41:36.910Z';
   asset_1.updatedAt = '2022-06-19T23:41:36.910Z';
   asset_1.isFavorite = false;
+  asset_1.isArchived = false;
   asset_1.mimeType = 'image/jpeg';
   asset_1.webpPath = '';
   asset_1.encodedVideoPath = '';
@@ -72,6 +74,7 @@ const _getAsset_2 = () => {
   asset_2.fileCreatedAt = '2022-06-19T23:41:36.910Z';
   asset_2.updatedAt = '2022-06-19T23:41:36.910Z';
   asset_2.isFavorite = false;
+  asset_2.isArchived = false;
   asset_2.mimeType = 'image/jpeg';
   asset_2.webpPath = '';
   asset_2.encodedVideoPath = '';
@@ -100,6 +103,15 @@ const _getAssetCountByUserId = (): AssetCountByUserIdResponseDto => {
   const result = new AssetCountByUserIdResponseDto();
 
   result.videos = 2;
+  result.photos = 2;
+
+  return result;
+};
+
+const _getArchivedAssetsCountByUserId = (): AssetCountByUserIdResponseDto => {
+  const result = new AssetCountByUserIdResponseDto();
+
+  result.videos = 1;
   result.photos = 2;
 
   return result;
@@ -136,6 +148,7 @@ describe('AssetService', () => {
       getAssetByTimeBucket: jest.fn(),
       getAssetByChecksum: jest.fn(),
       getAssetCountByUserId: jest.fn(),
+      getArchivedAssetCountByUserId: jest.fn(),
       getExistingAssets: jest.fn(),
       countByIdAndUser: jest.fn(),
     };
@@ -350,14 +363,16 @@ describe('AssetService', () => {
 
   it('get asset count by user id', async () => {
     const assetCount = _getAssetCountByUserId();
+    assetRepositoryMock.getAssetCountByUserId.mockResolvedValue(assetCount);
 
-    assetRepositoryMock.getAssetCountByUserId.mockImplementation(() =>
-      Promise.resolve<AssetCountByUserIdResponseDto>(assetCount),
-    );
+    await expect(sut.getAssetCountByUserId(authStub.user1)).resolves.toEqual(assetCount);
+  });
 
-    const result = await sut.getAssetCountByUserId(authStub.user1);
+  it('get archived asset count by user id', async () => {
+    const assetCount = _getArchivedAssetsCountByUserId();
+    assetRepositoryMock.getArchivedAssetCountByUserId.mockResolvedValue(assetCount);
 
-    expect(result).toEqual(assetCount);
+    await expect(sut.getArchivedAssetCountByUserId(authStub.user1)).resolves.toEqual(assetCount);
   });
 
   describe('deleteAll', () => {

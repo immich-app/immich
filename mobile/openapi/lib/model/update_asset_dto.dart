@@ -15,6 +15,7 @@ class UpdateAssetDto {
   UpdateAssetDto({
     this.tagIds = const [],
     this.isFavorite,
+    this.isArchived,
   });
 
   List<String> tagIds;
@@ -27,19 +28,29 @@ class UpdateAssetDto {
   ///
   bool? isFavorite;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isArchived;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAssetDto &&
      other.tagIds == tagIds &&
-     other.isFavorite == isFavorite;
+     other.isFavorite == isFavorite &&
+     other.isArchived == isArchived;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (tagIds.hashCode) +
-    (isFavorite == null ? 0 : isFavorite!.hashCode);
+    (isFavorite == null ? 0 : isFavorite!.hashCode) +
+    (isArchived == null ? 0 : isArchived!.hashCode);
 
   @override
-  String toString() => 'UpdateAssetDto[tagIds=$tagIds, isFavorite=$isFavorite]';
+  String toString() => 'UpdateAssetDto[tagIds=$tagIds, isFavorite=$isFavorite, isArchived=$isArchived]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -48,6 +59,11 @@ class UpdateAssetDto {
       json[r'isFavorite'] = this.isFavorite;
     } else {
       // json[r'isFavorite'] = null;
+    }
+    if (this.isArchived != null) {
+      json[r'isArchived'] = this.isArchived;
+    } else {
+      // json[r'isArchived'] = null;
     }
     return json;
   }
@@ -75,6 +91,7 @@ class UpdateAssetDto {
             ? (json[r'tagIds'] as List).cast<String>()
             : const [],
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
+        isArchived: mapValueOfType<bool>(json, r'isArchived'),
       );
     }
     return null;

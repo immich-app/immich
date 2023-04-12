@@ -7,7 +7,7 @@
 	import type { PageData } from './$types';
 	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
 	import { useAlbums } from './albums.bloc';
-	import empty1Url from '$lib/assets/empty-1.svg';
+	import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
 
@@ -57,17 +57,11 @@
 
 	<!-- Empty Message -->
 	{#if $albums.length === 0}
-		<div
-			on:click={handleCreateAlbum}
-			on:keydown={handleCreateAlbum}
-			class="border dark:border-immich-dark-gray hover:bg-immich-primary/5 dark:hover:bg-immich-dark-primary/25 hover:cursor-pointer p-5 w-[50%] m-auto mt-10 bg-gray-50 dark:bg-immich-dark-gray rounded-3xl flex flex-col place-content-center place-items-center"
-		>
-			<img src={empty1Url} alt="Empty shared album" width="500" draggable="false" />
-
-			<p class="text-center text-immich-text-gray-500 dark:text-immich-dark-fg">
-				Create an album to organize your photos and videos
-			</p>
-		</div>
+		<EmptyPlaceholder
+			text="Create an album to organize your photos and videos"
+			actionHandler={handleCreateAlbum}
+			alt="Empty albums"
+		/>
 	{/if}
 </UserPageLayout>
 

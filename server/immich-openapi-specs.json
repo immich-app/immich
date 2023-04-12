@@ -768,6 +768,14 @@
             }
           },
           {
+            "name": "isArchived",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "exifInfo.city",
             "required": false,
             "in": "query",
@@ -2282,6 +2290,36 @@
         ]
       }
     },
+    "/asset/stat/archive": {
+      "get": {
+        "operationId": "getArchivedAssetCountByUserId",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetCountByUserIdResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
     "/asset": {
       "get": {
         "operationId": "getAllAssets",
@@ -2289,6 +2327,14 @@
         "parameters": [
           {
             "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isArchived",
             "required": false,
             "in": "query",
             "schema": {
@@ -3726,6 +3772,9 @@
           "isFavorite": {
             "type": "boolean"
           },
+          "isArchived": {
+            "type": "boolean"
+          },
           "mimeType": {
             "type": "string",
             "nullable": true
@@ -3771,6 +3820,7 @@
           "fileModifiedAt",
           "updatedAt",
           "isFavorite",
+          "isArchived",
           "mimeType",
           "duration",
           "webpPath"
@@ -4984,6 +5034,9 @@
           "isFavorite": {
             "type": "boolean"
           },
+          "isArchived": {
+            "type": "boolean"
+          },
           "isVisible": {
             "type": "boolean"
           },
@@ -5226,6 +5279,9 @@
             }
           },
           "isFavorite": {
+            "type": "boolean"
+          },
+          "isArchived": {
             "type": "boolean"
           }
         }

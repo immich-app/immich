@@ -67,6 +67,9 @@ export class AssetEntity {
   @Column({ type: 'boolean', default: false })
   isFavorite!: boolean;
 
+  @Column({ type: 'boolean', default: false })
+  isArchived!: boolean;
+
   @Column({ type: 'varchar', nullable: true })
   mimeType!: string | null;
 
