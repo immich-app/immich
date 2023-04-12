@@ -67,5 +67,9 @@
 		"socket.io-client": "^4.6.1",
 		"svelte-local-storage-store": "^0.4.0",
 		"svelte-material-icons": "^3.0.4"
+	},
+	"volta": {
+		"node": "18.15.0",
+		"npm": "9.5.0"
 	}
 }

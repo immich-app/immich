@@ -98,7 +98,7 @@
     "@types/lodash": "^4.14.192",
     "@types/multer": "^1.4.7",
     "@types/mv": "^2.1.2",
-    "@types/node": "^16.18.23",
+    "@types/node": "^18.15.11",
     "@types/sharp": "^0.31.1",
     "@types/supertest": "^2.0.12",
     "@typescript-eslint/eslint-plugin": "^5.58.0",
@@ -157,5 +157,9 @@
       "^@app/domain(|/.*)$": "<rootDir>/libs/domain/src/$1"
     },
     "globalSetup": "<rootDir>/libs/domain/test/global-setup.js"
+  },
+  "volta": {
+    "node": "18.15.0",
+    "npm": "9.5.0"
   }
 }
