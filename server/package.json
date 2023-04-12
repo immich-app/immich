@@ -53,7 +53,7 @@
     "@nestjs/websockets": "^9.4.0",
     "@socket.io/redis-adapter": "^8.1.0",
     "archiver": "^5.3.1",
-    "axios": "^0.26.0",
+    "axios": "^0.26.1",
     "bcrypt": "^5.1.0",
     "bull": "^4.10.4",
     "class-transformer": "^0.5.1",
