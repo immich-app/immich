@@ -269,7 +269,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                     buildDragHeader(),
                     buildDate(),
                     if (asset.isRemote) DescriptionInput(asset: asset),
-                    const SizedBox(height: 16.0),
+                    const SizedBox(height: 8.0),
                     buildLocation(),
                     SizedBox(height: showMap ? 16.0 : 0.0),
                     buildDetail(),
