@@ -9,6 +9,7 @@
   },
   "moduleNameMapper": {
     "^@app/infra(|/.*)$": "<rootDir>../../../libs/infra/src/$1",
-    "^@app/domain(|/.*)$": "<rootDir>../../../libs/domain/src/$1"
+    "^@app/domain(|/.*)$": "<rootDir>../../../libs/domain/src/$1",
+    "^axios$": "axios/dist/axios.js"
   }
 }
