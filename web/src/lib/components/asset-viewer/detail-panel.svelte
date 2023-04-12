@@ -48,9 +48,10 @@
 		return undefined;
 	};
 
-	const autoGrowHeight = (e: any) => {
-		e.target.style.height = 'auto';
-		e.target.style.height = `${e.target.scrollHeight}px`;
+	const autoGrowHeight = (e: Event) => {
+		const target = e.target as HTMLTextAreaElement;
+		target.style.height = 'auto';
+		target.style.height = `${target.scrollHeight}px`;
 	};
 
 	const handleFocusIn = () => {
@@ -224,7 +225,7 @@
 <section class="p-2 dark:text-immich-dark-fg">
 	<div class="px-4 py-4">
 		{#if albums.length > 0}
-			<p class="text-sm pb-4 ">APPEARS IN</p>
+			<p class="text-sm pb-4">APPEARS IN</p>
 		{/if}
 		{#each albums as album}
 			<a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
