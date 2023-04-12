@@ -148,7 +148,7 @@
 			const { data, status } = await api.assetApi.downloadFile(assetId, key, {
 				responseType: 'blob',
 				onDownloadProgress: (progressEvent) => {
-					if (progressEvent.lengthComputable) {
+					if (progressEvent.total) {
 						const total = progressEvent.total;
 						const current = progressEvent.loaded;
 						$downloadAssets[imageFileName] = Math.floor((current / total) * 100);

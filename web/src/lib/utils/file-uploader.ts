@@ -133,8 +133,10 @@ async function fileUploader(
 				key: sharedKey
 			},
 			onUploadProgress: (event) => {
-				const percentComplete = Math.floor((event.loaded / event.total) * 100);
-				uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
+				if (event.total) {
+					const percentComplete = Math.floor((event.loaded / event.total) * 100);
+					uploadAssetsStore.updateProgress(deviceAssetId, percentComplete);
+				}
 			}
 		});
 
