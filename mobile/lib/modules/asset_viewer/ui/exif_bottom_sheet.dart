@@ -235,11 +235,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                       children: [
                         buildDragHeader(),
                         buildDate(),
-                        if (asset.isRemote)
-                          DescriptionInput(
-                            asset: asset,
-                            description: asset.exifInfo?.description ?? '',
-                          ),
+                        if (asset.isRemote) DescriptionInput(asset: asset),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,11 +268,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                   children: [
                     buildDragHeader(),
                     buildDate(),
-                    if (asset.isRemote)
-                      DescriptionInput(
-                        asset: asset,
-                        description: asset.exifInfo?.description ?? '',
-                      ),
+                    if (asset.isRemote) DescriptionInput(asset: asset),
                     const SizedBox(height: 16.0),
                     buildLocation(),
                     SizedBox(height: showMap ? 16.0 : 0.0),

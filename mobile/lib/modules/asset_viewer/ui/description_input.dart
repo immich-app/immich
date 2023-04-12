@@ -12,10 +12,8 @@ class DescriptionInput extends HookConsumerWidget {
   DescriptionInput({
     super.key,
     required this.asset,
-    required this.description,
   });
 
-  final String description;
   final Asset asset;
   final Logger _log = Logger('DescriptionInput');
 
@@ -23,15 +21,36 @@ class DescriptionInput extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     var isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     var textColor = isDarkTheme ? Colors.white : Colors.black;
-    var controller = useTextEditingController.fromValue(
-      TextEditingValue(
-        text: description,
-      ),
-    );
+    var controller = useTextEditingController();
     var db = ref.watch(dbProvider);
     var focusNode = useFocusNode();
     var isFocus = useState(false);
     var isTextEmpty = useState(controller.text.isEmpty);
+
+    getLatestDescription() async {
+      var latestAssetFromServer = await ref
+          .watch(apiServiceProvider)
+          .assetApi
+          .getAssetById(asset.remoteId!);
+      var localExifInfo = await db.exifInfos.get(asset.exifInfo!.id!);
+
+      if (latestAssetFromServer != null && localExifInfo != null) {
+        controller.text = latestAssetFromServer.exifInfo?.description ?? '';
+        localExifInfo.description = latestAssetFromServer.exifInfo!.description;
+
+        await db.writeTxn(
+          () => db.exifInfos.put(localExifInfo),
+        );
+      }
+    }
+
+    useEffect(
+      () {
+        getLatestDescription();
+        return null;
+      },
+      [],
+    );
 
     submitDescription(String description) async {
       try {
@@ -56,7 +75,8 @@ class DescriptionInput extends HookConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-                'Failed to update description! Check log for more details'),
+              'Failed to update description! Check log for more details',
+            ),
           ),
         );
       }
