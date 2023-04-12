@@ -270,6 +270,12 @@ export class AssetRepository implements IAssetRepository {
     if (asset.exifInfo != null) {
       asset.exifInfo.description = dto.description || '';
       await this.exifRepository.save(asset.exifInfo);
+    } else {
+      const exifInfo = new ExifEntity();
+      exifInfo.description = dto.description || '';
+      exifInfo.asset = asset;
+      await this.exifRepository.save(exifInfo);
+      asset.exifInfo = exifInfo;
     }
 
     return await this.assetRepository.save(asset);

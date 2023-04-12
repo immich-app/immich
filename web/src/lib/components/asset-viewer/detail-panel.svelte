@@ -19,11 +19,7 @@
 
 	$: {
 		if (textarea) {
-			if (asset.exifInfo?.description) {
-				textarea.value = asset.exifInfo.description;
-			} else {
-				textarea.value = '';
-			}
+			textarea.value = asset?.exifInfo?.description || '';
 		}
 	}
 
