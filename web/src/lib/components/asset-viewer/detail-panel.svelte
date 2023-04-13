@@ -18,8 +18,11 @@
 	let description: string;
 
 	$: {
-		if (textarea) {
-			textarea.value = asset?.exifInfo?.description || '';
+		// Get latest description from server
+		if (asset.id) {
+			api.assetApi
+				.getAssetById(asset.id)
+				.then((res) => (textarea.value = res.data?.exifInfo?.description || ''));
 		}
 	}
 

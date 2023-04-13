@@ -24,29 +24,50 @@
 	};
 
 	const getFavoriteCount = async () => {
-		const { data: assets } = await api.assetApi.getAllAssets(true, undefined);
+		try {
+			const { data: assets } = await api.assetApi.getAllAssets(true, undefined);
 
-		return {
-			favorites: assets.length
-		};
+			return {
+				favorites: assets.length
+			};
+		} catch {
+			return {
+				favorites: 0
+			};
+		}
 	};
 
 	const getAlbumCount = async () => {
-		const { data: albumCount } = await api.albumApi.getAlbumCountByUserId();
-		return {
-			shared: albumCount.shared,
-			sharing: albumCount.sharing,
-			owned: albumCount.owned
-		};
+		try {
+			const { data: albumCount } = await api.albumApi.getAlbumCountByUserId();
+			return {
+				shared: albumCount.shared,
+				sharing: albumCount.sharing,
+				owned: albumCount.owned
+			};
+		} catch {
+			return {
+				shared: 0,
+				sharing: 0,
+				owned: 0
+			};
+		}
 	};
 
 	const getArchivedAssetsCount = async () => {
-		const { data: assetCount } = await api.assetApi.getArchivedAssetCountByUserId();
+		try {
+			const { data: assetCount } = await api.assetApi.getArchivedAssetCountByUserId();
 
-		return {
-			videos: assetCount.videos,
-			photos: assetCount.photos
-		};
+			return {
+				videos: assetCount.videos,
+				photos: assetCount.photos
+			};
+		} catch {
+			return {
+				videos: 0,
+				photos: 0
+			};
+		}
 	};
 </script>
 
