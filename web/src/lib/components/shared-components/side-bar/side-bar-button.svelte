@@ -18,12 +18,13 @@
 <div
 	on:click={onButtonClicked}
 	on:keydown={onButtonClicked}
-	class={`flex gap-4 justify-between place-items-center w-full px-5 py-3 rounded-r-full hover:bg-immich-gray dark:hover:bg-immich-dark-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary hover:cursor-pointer
+	class={`flex gap-4 justify-between place-items-center w-full transition-[padding] delay-100 duration-100 py-3 rounded-r-full hover:bg-immich-gray dark:hover:bg-immich-dark-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary hover:cursor-pointer
     ${
 			isSelected
 				? 'bg-immich-primary/10 dark:bg-immich-dark-primary/10 text-immich-primary dark:text-[#adcbfa] hover:bg-immich-primary/25'
 				: ''
 		}
+		${isCollapsed ? 'pl-5' : 'px-5'}
   `}
 >
 	<div class="flex gap-4 place-items-center w-full overflow-hidden">
@@ -32,7 +33,7 @@
 	</div>
 
 	<div
-		class={`opacity-0 transition-all duration-200 delay-1000 ${isCollapsed ? '' : 'opacity-100'}`}
+		class={`transition-[height] duration-100 delay-200 ${isCollapsed ? 'height-0' : 'height-auto'}`}
 	>
 		{#if $$slots.moreInformation && !isCollapsed}
 			<div

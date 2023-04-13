@@ -13,7 +13,8 @@
 	import SideBarButton from './side-bar-button.svelte';
 	import { locale } from '$lib/stores/preferences.store';
 
-	export let isCollapsed: boolean;
+	import { onMount } from 'svelte';
+	let isCollapsed: boolean = true;
 
 	const getAssetCount = async () => {
 		const { data: allAssetCount } = await api.assetApi.getAssetCountByUserId();
@@ -60,8 +61,9 @@
 	};
 
 	//Set the initial state of the sidebar to collapsed or not
-	$: isCollapsed = true;
-	//if screen is resized to be larger than 768px, set the sidebar to not collapsed
+	onMount(() => {
+		handleResize();
+	});
 </script>
 
 <svelte:window on:resize={handleResize} />
@@ -69,9 +71,9 @@
 <section
 	id="sidebar"
 	on:mouseover={() => (isCollapsed = false)}
-	on:focus={() => (isCollapsed = false)}
-	on:mouseleave={() => (isCollapsed = true)}
-	class={`flex flex-col gap-1 pt-8 pr-6 bg-immich-bg dark:bg-immich-dark-bg transition-[width] duration-1000 ${
+	on:focus={() => null}
+	on:mouseleave={() => handleResize()}
+	class={`flex flex-col gap-1 pt-8 pr-6 bg-immich-bg dark:bg-immich-dark-bg transition-[width] duration-200 ${
 		isCollapsed ? 'w-24' : 'w-64'
 	}`}
 >
@@ -131,9 +133,11 @@
 		</SideBarButton>
 	</a>
 
-	<div class="text-xs md:pb-2 md:p-5 p-6 pb-[1.2rem] dark:text-immich-dark-fg">
-		<p class="md:block hidden">LIBRARY</p>
-		<hr class="md:hidden block" />
+	<div
+		class="text-xs md:pb-2 md:p-5 p-6 pb-[1.2rem] dark:text-immich-dark-fg transition-all duration-200"
+	>
+		<p class={`${isCollapsed ? 'hidden' : 'block'}`}>LIBRARY</p>
+		<hr class={`${isCollapsed ? 'block mt-2 mb-[0.45rem]' : 'hidden'}`} />
 	</div>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.FAVORITES} draggable="false">
 		<SideBarButton
@@ -176,6 +180,7 @@
 			title="Archive"
 			logo={ArchiveArrowDownOutline}
 			isSelected={$page.route.id === '/(user)/archive'}
+			{isCollapsed}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getArchivedAssetsCount()}
