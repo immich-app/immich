@@ -56,8 +56,7 @@ class AssetDescriptionNotifier extends StateNotifier<String> {
       return;
     }
 
-    // The stream subscription will be notified of the change
-    // when it is written to the local database
+    // Reads the latest from the remote and writes it to DB in the service
     final latest = await _service.readLatest(remoteAssetId, localExifId);
 
     state = latest;
