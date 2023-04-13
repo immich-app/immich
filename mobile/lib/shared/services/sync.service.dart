@@ -389,7 +389,13 @@ class SyncService {
           _addAlbumFromDevice(ape, existing, excludedAssets),
       onlySecond: (Album a) => _removeAlbumFromDb(a, deleteCandidates),
     );
+    _log.fine(
+      "Syncing all local albums almost done. Collected ${deleteCandidates.length} asset candidates to delete",
+    );
     final pair = _handleAssetRemoval(deleteCandidates, existing, remote: false);
+    _log.fine(
+      "${pair.first.length} assets to delete, ${pair.second.length} to update",
+    );
     if (pair.first.isNotEmpty || pair.second.isNotEmpty) {
       await _db.writeTxn(() async {
         await _db.assets.deleteAll(pair.first);
@@ -415,6 +421,7 @@ class SyncService {
     bool forceRefresh = false,
   ]) async {
     if (!forceRefresh && !await _hasAssetPathEntityChanged(ape, album)) {
+      _log.fine("Local album ${ape.name} has not changed. Skipping sync.");
       return false;
     }
     if (!forceRefresh &&
@@ -441,9 +448,18 @@ class SyncService {
         album.name == ape.name &&
         album.modifiedAt == ape.lastModified) {
       // changes only affeted excluded albums
+      _log.fine(
+        "Only excluded assets in local album ${ape.name} changed. Stopping sync.",
+      );
       return false;
     }
+    _log.fine(
+      "Syncing local album ${ape.name}. ${toAdd.length} assets to add, ${toUpdate.length} to update, ${toDelete.length} to delete",
+    );
     final result = await _linkWithExistingFromDb(toAdd);
+    _log.fine(
+      "Linking assets to add with existing from db. ${result.first.length} existing, ${result.second.length} to update",
+    );
     deleteCandidates.addAll(toDelete);
     existing.addAll(result.first);
     album.name = ape.name;
@@ -462,9 +478,9 @@ class SyncService {
         album.thumbnail.value ??= await album.assets.filter().findFirst();
         await album.thumbnail.save();
       });
-      _log.info("Synced changes of local album $ape to DB");
+      _log.info("Synced changes of local album ${ape.name} to DB");
     } on IsarError catch (e) {
-      _log.severe("Failed to update synced album $ape in DB: $e");
+      _log.severe("Failed to update synced album ${ape.name} in DB: $e");
     }
 
     return true;
@@ -499,9 +515,9 @@ class SyncService {
         await album.assets.update(link: result.first + result.second);
         await _db.albums.put(album);
       });
-      _log.info("Fast synced local album $ape to DB");
+      _log.info("Fast synced local album ${ape.name} to DB");
     } on IsarError catch (e) {
-      _log.severe("Failed to fast sync local album $ape to DB: $e");
+      _log.severe("Failed to fast sync local album ${ape.name} to DB: $e");
       return false;
     }
 
@@ -515,7 +531,7 @@ class SyncService {
     List<Asset> existing, [
     Set<String>? excludedAssets,
   ]) async {
-    _log.info("Syncing a new local album to DB: $ape");
+    _log.info("Syncing a new local album to DB: ${ape.name}");
     final Album a = Album.local(ape);
     final result = await _linkWithExistingFromDb(
       await ape.getAssets(excludedAssets: excludedAssets),
@@ -531,9 +547,9 @@ class SyncService {
     a.thumbnail.value = thumb;
     try {
       await _db.writeTxn(() => _db.albums.store(a));
-      _log.info("Added a new local album to DB: $ape");
+      _log.info("Added a new local album to DB: ${ape.name}");
     } on IsarError catch (e) {
-      _log.severe("Failed to add new local album $ape to DB: $e");
+      _log.severe("Failed to add new local album ${ape.name} to DB: $e");
     }
   }
 
@@ -574,7 +590,11 @@ class SyncService {
           return true;
         }
       },
-      onlyFirst: (Asset a) => {},
+      onlyFirst: (Asset a) => _log.finer(
+        "_linkWithExistingFromDb encountered asset only in DB: $a",
+        null,
+        StackTrace.current,
+      ),
       onlySecond: (Asset b) => toUpsert.add(b),
     );
     return Pair(existing, toUpsert);
@@ -663,6 +683,7 @@ Pair<List<int>, List<Asset>> _handleAssetRemoval(
     compare: Asset.compareById,
     remote: remote,
   );
+  assert(triple.first.isEmpty, "toAdd should be empty in _handleAssetRemoval");
   return Pair(triple.third.map((e) => e.id).toList(), triple.second);
 }
 
