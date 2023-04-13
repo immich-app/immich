@@ -61,18 +61,18 @@
 			</h1>
 		</a>
 		<div class="flex justify-between gap-16 pr-6">
-			<div class="w-full max-w-5xl flex-1 pl-4 z-10 {showBigSearchBar ? '' : 'sm:block hidden'}">
-				<SearchBar bind:showBigSearchBar grayTheme={true} />
+			<div class="w-full max-w-5xl flex-1 pl-4 sm:block hidden">
+				<SearchBar grayTheme={true} />
 			</div>
 
 			<section class="flex gap-4 place-items-center justify-end max-sm:w-full">
-				<div id="search-button" class="sm:hidden pl-4">
-					<IconButton on:click={() => (showBigSearchBar = true)} title="Search">
+				<a href={AppRoute.SEARCH} id="search-button" class="sm:hidden pl-4">
+					<IconButton title="Search">
 						<div class="flex gap-2">
 							<Magnify size="1.5em" />
 						</div>
 					</IconButton>
-				</div>
+				</a>
 
 				<ThemeButton />
 
