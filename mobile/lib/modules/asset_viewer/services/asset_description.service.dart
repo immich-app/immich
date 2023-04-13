@@ -54,7 +54,7 @@ class AssetDescriptionService {
   }
 }
 
-final assetDescriptionProvider = Provider(
+final assetDescriptionServiceProvider = Provider(
   (ref) => AssetDescriptionService(
     ref.watch(dbProvider),
     ref.watch(apiServiceProvider),
