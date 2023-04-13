@@ -31,8 +31,6 @@ class AssetDescriptionService {
           () => _db.exifInfos.put(exifInfo),
         );
       }
-    } else {
-      throw Exception('Could not read description from remote.');
     }
   }
 

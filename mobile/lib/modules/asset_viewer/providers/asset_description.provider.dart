@@ -81,7 +81,6 @@ class AssetDescriptionNotifier extends StateNotifier<String> {
 }
 
 final assetDescriptionProvider = Provider
-    .autoDispose
     .family<AssetDescriptionNotifier, Asset>(
   (ref, asset) => AssetDescriptionNotifier(
     ref.watch(dbProvider),

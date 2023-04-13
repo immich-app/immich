@@ -83,6 +83,7 @@ class DescriptionInput extends HookConsumerWidget {
           await submitDescription(controller.text);
         }
       },
+      autofocus: false,
       maxLines: null,
       keyboardType: TextInputType.multiline,
       controller: controller,
