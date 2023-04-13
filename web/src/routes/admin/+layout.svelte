@@ -108,7 +108,7 @@
 				<hr class="dark:border-immich-dark-gray" />
 			</div>
 
-			<section id="setting-content" class="flex place-content-center">
+			<section id="setting-content" class="flex place-content-center mx-2">
 				<section class="w-[800px] pt-5 pb-28">
 					<slot />
 				</section>
