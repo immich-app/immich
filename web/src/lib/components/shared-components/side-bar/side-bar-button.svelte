@@ -7,6 +7,7 @@
 	export let title: string;
 	export let logo: typeof Icon;
 	export let isSelected: boolean;
+	export let isCollapsed: boolean;
 
 	let showMoreInformation = false;
 
@@ -25,32 +26,36 @@
 		}
   `}
 >
-	<div class="flex gap-4 place-items-center w-full">
-		<svelte:component this={logo} size="1.5em" />
+	<div class="flex gap-4 place-items-center w-full overflow-hidden">
+		<svelte:component this={logo} size="1.5em" class="shrink-0" />
 		<p class="font-medium text-sm">{title}</p>
 	</div>
 
-	{#if $$slots.moreInformation}
-		<div
-			class="relative flex justify-center select-none cursor-default"
-			on:mouseenter={() => (showMoreInformation = true)}
-			on:mouseleave={() => (showMoreInformation = false)}
-		>
-			<div class="hover:cursor-help p-1 text-gray-600 dark:text-gray-400">
-				<InformationOutline />
-			</div>
-
-			{#if showMoreInformation}
-				<div class="absolute left-6 top-0 z-20">
-					<div
-						class="flex place-items-center place-content-center whitespace-nowrap rounded-3xl shadow-lg py-3 px-6 bg-immich-bg text-immich-fg dark:bg-gray-600 dark:text-immich-dark-fg text-xs border dark:border-immich-dark-gray"
-						class:hidden={!showMoreInformation}
-						transition:fade={{ duration: 200 }}
-					>
-						<slot name="moreInformation" />
-					</div>
+	<div
+		class={`opacity-0 transition-all duration-200 delay-1000 ${isCollapsed ? '' : 'opacity-100'}`}
+	>
+		{#if $$slots.moreInformation && !isCollapsed}
+			<div
+				class="relative flex justify-center select-none cursor-default"
+				on:mouseenter={() => (showMoreInformation = true)}
+				on:mouseleave={() => (showMoreInformation = false)}
+			>
+				<div class="hover:cursor-help p-1 text-gray-600 dark:text-gray-400">
+					<InformationOutline />
 				</div>
-			{/if}
-		</div>
-	{/if}
+
+				{#if showMoreInformation}
+					<div class="absolute left-6 top-0 z-20">
+						<div
+							class="flex place-items-center place-content-center whitespace-nowrap rounded-3xl shadow-lg py-3 px-6 bg-immich-bg text-immich-fg dark:bg-gray-600 dark:text-immich-dark-fg text-xs border dark:border-immich-dark-gray"
+							class:hidden={!showMoreInformation}
+							transition:fade={{ duration: 200 }}
+						>
+							<slot name="moreInformation" />
+						</div>
+					</div>
+				{/if}
+			</div>
+		{/if}
+	</div>
 </div>

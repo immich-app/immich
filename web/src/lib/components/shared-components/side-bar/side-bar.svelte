@@ -12,6 +12,8 @@
 	import SideBarButton from './side-bar-button.svelte';
 	import { locale } from '$lib/stores/preferences.store';
 
+	export let isCollapsed: boolean;
+
 	const getAssetCount = async () => {
 		const { data: assetCount } = await api.assetApi.getAssetCountByUserId();
 
@@ -37,9 +39,31 @@
 			owned: albumCount.owned
 		};
 	};
+
+	const handleResize = () => {
+		if (innerWidth > 768) {
+			isCollapsed = false;
+		} else {
+			isCollapsed = true;
+		}
+	};
+
+	//Set the initial state of the sidebar to collapsed or not
+	$: isCollapsed = true;
+	//if screen is resized to be larger than 768px, set the sidebar to not collapsed
 </script>
 
-<section id="sidebar" class="flex flex-col gap-1 pt-8 pr-6 bg-immich-bg dark:bg-immich-dark-bg">
+<svelte:window on:resize={handleResize} />
+
+<section
+	id="sidebar"
+	on:mouseover={() => (isCollapsed = false)}
+	on:focus={() => (isCollapsed = false)}
+	on:mouseleave={() => (isCollapsed = true)}
+	class={`flex flex-col gap-1 pt-8 pr-6 bg-immich-bg dark:bg-immich-dark-bg transition-[width] duration-1000 ${
+		isCollapsed ? 'w-24' : 'w-64'
+	}`}
+>
 	<a
 		data-sveltekit-preload-data="hover"
 		data-sveltekit-noscroll
@@ -50,6 +74,7 @@
 			title="Photos"
 			logo={ImageOutline}
 			isSelected={$page.route.id === '/(user)/photos'}
+			{isCollapsed}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getAssetCount()}
@@ -73,6 +98,7 @@
 			title="Explore"
 			logo={Magnify}
 			isSelected={$page.route.id === '/(user)/explore'}
+			{isCollapsed}
 		/>
 	</a>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.SHARING} draggable="false">
@@ -80,6 +106,7 @@
 			title="Sharing"
 			logo={AccountMultipleOutline}
 			isSelected={$page.route.id === '/(user)/sharing'}
+			{isCollapsed}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getAlbumCount()}
@@ -93,14 +120,16 @@
 		</SideBarButton>
 	</a>
 
-	<div class="text-xs p-5 pb-2 dark:text-immich-dark-fg">
-		<p>LIBRARY</p>
+	<div class="text-xs md:pb-2 md:p-5 p-6 pb-[1.2rem] dark:text-immich-dark-fg">
+		<p class="md:block hidden">LIBRARY</p>
+		<hr class="md:hidden block" />
 	</div>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.FAVORITES} draggable="false">
 		<SideBarButton
 			title="Favorites"
 			logo={StarOutline}
 			isSelected={$page.route.id == '/(user)/favorites'}
+			{isCollapsed}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getFavoriteCount()}
@@ -118,6 +147,7 @@
 			title="Albums"
 			logo={ImageAlbum}
 			isSelected={$page.route.id === '/(user)/albums'}
+			{isCollapsed}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getAlbumCount()}
@@ -133,6 +163,6 @@
 
 	<!-- Status Box -->
 	<div class="mb-6 mt-auto">
-		<StatusBox />
+		<StatusBox {isCollapsed} />
 	</div>
 </section>
