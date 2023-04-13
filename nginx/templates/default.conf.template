@@ -44,6 +44,7 @@ server {
     text/css;
 
   proxy_buffering off;
+  proxy_request_buffering off;
   proxy_buffer_size 16k;
   proxy_busy_buffers_size 24k;
   proxy_buffers 64 4k;
