@@ -38,7 +38,7 @@
 			<div
 				class="bg-immich-gray dark:bg-immich-dark-gray rounded-3xl p-5 flex flex-col justify-between"
 			>
-				<div class="flex gap-12">
+				<div class="flex flex-wrap gap-x-12">
 					<div
 						class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary"
 					>
@@ -52,7 +52,7 @@
 						>
 					</div>
 				</div>
-				<div class="flex gap-12">
+				<div class="flex flex-wrap gap-x-12">
 					<div
 						class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary"
 					>
@@ -66,7 +66,7 @@
 						>
 					</div>
 				</div>
-				<div class="flex gap-7">
+				<div class="flex flex-wrap gap-x-7">
 					<div
 						class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary"
 					>
