@@ -5,6 +5,7 @@ import 'package:immich_mobile/modules/asset_viewer/services/asset_description.se
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:logging/logging.dart';
+import 'package:immich_mobile/shared/models/store.dart' as store;
 
 class DescriptionInput extends HookConsumerWidget {
   DescriptionInput({
@@ -24,6 +25,7 @@ class DescriptionInput extends HookConsumerWidget {
     final isFocus = useState(false);
     final isTextEmpty = useState(controller.text.isEmpty);
     final descriptionProvider = ref.watch(assetDescriptionProvider);
+    final owner = store.Store.get(store.StoreKey.currentUser);
 
     getLatestDescription() async {
       if (asset.exifInfo != null && asset.remoteId != null) {
@@ -66,6 +68,7 @@ class DescriptionInput extends HookConsumerWidget {
     }
 
     return TextField(
+      enabled: owner.isarId == asset.ownerId,
       focusNode: focusNode,
       onTap: () => isFocus.value = true,
       onChanged: (value) {
