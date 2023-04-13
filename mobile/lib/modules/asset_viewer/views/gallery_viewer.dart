@@ -195,7 +195,12 @@ class GalleryViewerPage extends HookConsumerWidget {
               .getSetting<bool>(AppSettingsEnum.advancedTroubleshooting)) {
             return AdvancedBottomSheet(assetDetail: assetDetail!);
           }
-          return ExifBottomSheet(assetDetail: assetDetail!);
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: ExifBottomSheet(asset: assetDetail!),
+          );
         },
       );
     }

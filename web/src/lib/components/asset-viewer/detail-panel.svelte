@@ -5,14 +5,26 @@
 	import CameraIris from 'svelte-material-icons/CameraIris.svelte';
 	import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
 	import { createEventDispatcher } from 'svelte';
-	import { AssetResponseDto, AlbumResponseDto } from '@api';
+	import { AssetResponseDto, AlbumResponseDto, api } from '@api';
 	import { asByteUnitString } from '../../utils/byte-units';
 	import { locale } from '$lib/stores/preferences.store';
 	import { DateTime } from 'luxon';
 	import type { LatLngTuple } from 'leaflet';
+	import { page } from '$app/stores';
 
 	export let asset: AssetResponseDto;
 	export let albums: AlbumResponseDto[] = [];
+	let textarea: HTMLTextAreaElement;
+	let description: string;
+
+	$: {
+		// Get latest description from server
+		if (asset.id) {
+			api.assetApi
+				.getAssetById(asset.id)
+				.then((res) => (textarea.value = res.data?.exifInfo?.description || ''));
+		}
+	}
 
 	$: latlng = (() => {
 		const lat = asset.exifInfo?.latitude;
@@ -34,6 +46,27 @@
 
 		return undefined;
 	};
+
+	const autoGrowHeight = (e: Event) => {
+		const target = e.target as HTMLTextAreaElement;
+		target.style.height = 'auto';
+		target.style.height = `${target.scrollHeight}px`;
+	};
+
+	const handleFocusIn = () => {
+		dispatch('description-focus-in');
+	};
+
+	const handleFocusOut = async () => {
+		dispatch('description-focus-out');
+		try {
+			await api.assetApi.updateAsset(asset.id, {
+				description: description
+			});
+		} catch (error) {
+			console.error(error);
+		}
+	};
 </script>
 
 <section class="p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
@@ -46,6 +79,23 @@
 		</button>
 
 		<p class="text-immich-fg dark:text-immich-dark-fg text-lg">Info</p>
+	</div>
+
+	<div class="mx-4 mt-10">
+		<textarea
+			bind:this={textarea}
+			class="max-h-[500px]
+      text-base text-black bg-transparent dark:text-white border-b focus:border-b-2 border-gray-500 w-full focus:border-immich-primary dark:focus:border-immich-dark-primary transition-all resize-none overflow-hidden outline-none disabled:border-none"
+			placeholder={$page?.data?.user?.id !== asset.ownerId ? '' : 'Add a description'}
+			style:display={$page?.data?.user?.id !== asset.ownerId && textarea?.value == ''
+				? 'none'
+				: 'block'}
+			on:focusin={handleFocusIn}
+			on:focusout={handleFocusOut}
+			on:input={autoGrowHeight}
+			bind:value={description}
+			disabled={$page?.data?.user?.id !== asset.ownerId}
+		/>
 	</div>
 
 	<div class="px-4 py-4">
@@ -178,7 +228,7 @@
 <section class="p-2 dark:text-immich-dark-fg">
 	<div class="px-4 py-4">
 		{#if albums.length > 0}
-			<p class="text-sm pb-4 ">APPEARS IN</p>
+			<p class="text-sm pb-4">APPEARS IN</p>
 		{/if}
 		{#each albums as album}
 			<a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>

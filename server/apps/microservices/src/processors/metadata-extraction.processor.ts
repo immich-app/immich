@@ -223,7 +223,6 @@ export class MetadataExtractionProcessor {
 
       const newExif = new ExifEntity();
       newExif.assetId = asset.id;
-      newExif.description = '';
       newExif.fileSizeInByte = data.format.size || null;
       newExif.dateTimeOriginal = fileCreatedAt ? new Date(fileCreatedAt) : null;
       newExif.modifyDate = null;

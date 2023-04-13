@@ -343,6 +343,7 @@ const assetInfo: ExifResponseDto = {
   city: 'city',
   state: 'state',
   country: 'country',
+  description: 'description',
 };
 
 const assetResponse: AssetResponseDto = {

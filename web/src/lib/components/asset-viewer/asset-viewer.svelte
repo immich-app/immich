@@ -251,6 +251,18 @@
 			}
 		});
 	};
+
+	const disableKeyDownEvent = () => {
+		if (browser) {
+			document.removeEventListener('keydown', onKeyboardPress);
+		}
+	};
+
+	const enableKeyDownEvent = () => {
+		if (browser) {
+			document.addEventListener('keydown', onKeyboardPress);
+		}
+	};
 </script>
 
 <section
@@ -352,7 +364,13 @@
 			class="bg-immich-bg w-[360px] row-span-full transition-all overflow-y-auto dark:bg-immich-dark-bg dark:border-l dark:border-l-immich-dark-gray"
 			translate="yes"
 		>
-			<DetailPanel {asset} albums={appearsInAlbums} on:close={() => (isShowDetail = false)} />
+			<DetailPanel
+				{asset}
+				albums={appearsInAlbums}
+				on:close={() => (isShowDetail = false)}
+				on:description-focus-in={disableKeyDownEvent}
+				on:description-focus-out={enableKeyDownEvent}
+			/>
 		</div>
 	{/if}
 
