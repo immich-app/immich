@@ -8,7 +8,7 @@
 	export let value = '';
 	export let grayTheme: boolean;
 
-	let showBigSearchBar = false;
+	export let showBigSearchBar = false;
 	$: showClearIcon = value.length > 0;
 
 	function onSearch(saveSearch: boolean) {
@@ -48,7 +48,9 @@
 <form
 	draggable="false"
 	autocomplete="off"
-	class="relative text-sm"
+	class="sm:relative text-sm  {showBigSearchBar
+		? 'max-sm:fixed max-sm:left-0 max-sm:top-2 max-sm:mx-4 max-sm:w-[calc(100%-2rem)]'
+		: 'relative'}"
 	action={AppRoute.SEARCH}
 	on:reset={() => (value = '')}
 	on:submit|preventDefault={() => onSearch(true)}

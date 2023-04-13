@@ -11,8 +11,13 @@
 	import ImmichLogo from '../immich-logo.svelte';
 	import SearchBar from '../search-bar/search-bar.svelte';
 	import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+	import Magnify from 'svelte-material-icons/Magnify.svelte';
+	import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
+	import Cog from 'svelte-material-icons/Cog.svelte';
 	export let user: UserResponseDto;
 	export let shouldShowUploadButton = true;
+
+	let showBigSearchBar: boolean;
 
 	let shouldShowAccountInfo = false;
 
@@ -56,35 +61,55 @@
 			</h1>
 		</a>
 		<div class="flex justify-between gap-16 pr-6">
-			<div class="w-full max-w-5xl flex-1 pl-4">
-				<SearchBar grayTheme={true} />
+			<div class="w-full max-w-5xl flex-1 pl-4 {showBigSearchBar ? '' : 'sm:block hidden'}">
+				<SearchBar bind:showBigSearchBar grayTheme={true} />
 			</div>
 
-			<section class="flex gap-4 place-items-center">
+			<section class="flex gap-4 place-items-center justify-end max-sm:w-full">
+				<div id="search-button" class="sm:hidden pl-4">
+					<IconButton on:click={() => (showBigSearchBar = true)} title="Search">
+						<div class="flex gap-2">
+							<Magnify size="1.5em" />
+						</div>
+					</IconButton>
+				</div>
+
 				<ThemeButton />
 
 				{#if !$page.url.pathname.includes('/admin') && shouldShowUploadButton}
 					<div in:fly={{ x: 50, duration: 250 }}>
-						<LinkButton on:click={() => dispatch('uploadClicked')}>
+						<IconButton on:click={() => dispatch('uploadClicked')} title="Upload">
 							<div class="flex gap-2">
 								<TrayArrowUp size="20" />
-								<span>Upload</span>
+								<span class="md:block hidden">Upload</span>
 							</div>
-						</LinkButton>
+						</IconButton>
 					</div>
 				{/if}
 
 				{#if user.isAdmin}
 					<a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_USER_MANAGEMENT}>
-						<LinkButton>
-							<span
+						<div class="sm:block hidden">
+							<LinkButton>
+								<span
+									class={$page.url.pathname.includes('/admin')
+										? 'text-immich-primary dark:text-immich-dark-primary underline item'
+										: ''}
+								>
+									Administration
+								</span>
+							</LinkButton>
+						</div>
+						<div class="sm:hidden block">
+							<IconButton>
+								<Cog size="1.5em" />
+							</IconButton>
+							<hr
 								class={$page.url.pathname.includes('/admin')
-									? 'text-immich-primary dark:text-immich-dark-primary underline'
-									: ''}
-							>
-								Administration
-							</span>
-						</LinkButton>
+									? 'block border-1 w-2/3 mx-auto border-immich-primary dark:border-immich-dark-primary'
+									: 'hidden'}
+							/>
+						</div>
 					</a>
 				{/if}
 
