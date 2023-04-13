@@ -60,7 +60,7 @@
 	const handleFocusOut = async () => {
 		dispatch('description-focus-out');
 		try {
-			const { data } = await api.assetApi.updateAsset(asset.id, {
+			await api.assetApi.updateAsset(asset.id, {
 				description: description
 			});
 		} catch (error) {
