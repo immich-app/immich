@@ -31,6 +31,8 @@ class AssetDescriptionService {
           () => _db.exifInfos.put(exifInfo),
         );
       }
+    } else {
+      throw Exception('Could not read description from remote.');
     }
   }
 
@@ -54,7 +56,7 @@ class AssetDescriptionService {
   }
 }
 
-final assetDescriptionProvider = Provider(
+final assetDescriptionServiceProvider = Provider(
   (ref) => AssetDescriptionService(
     ref.watch(dbProvider),
     ref.watch(apiServiceProvider),
