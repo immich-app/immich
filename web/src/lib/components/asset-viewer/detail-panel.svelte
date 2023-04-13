@@ -86,15 +86,15 @@
 			bind:this={textarea}
 			class="max-h-[500px]
       text-base text-black bg-transparent dark:text-white border-b focus:border-b-2 border-gray-500 w-full focus:border-immich-primary dark:focus:border-immich-dark-primary transition-all resize-none overflow-hidden outline-none disabled:border-none"
-			placeholder={$page.data.user.id !== asset.ownerId ? '' : 'Add a description'}
-			style:display={$page.data.user.id !== asset.ownerId && textarea?.value == ''
+			placeholder={$page?.data?.user?.id !== asset.ownerId ? '' : 'Add a description'}
+			style:display={$page?.data?.user?.id !== asset.ownerId && textarea?.value == ''
 				? 'none'
 				: 'block'}
 			on:focusin={handleFocusIn}
 			on:focusout={handleFocusOut}
 			on:input={autoGrowHeight}
 			bind:value={description}
-			disabled={$page.data.user.id !== asset.ownerId}
+			disabled={$page?.data?.user?.id !== asset.ownerId}
 		/>
 	</div>
 
