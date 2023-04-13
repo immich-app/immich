@@ -20,7 +20,7 @@
 	export let data: LayoutData;
 	import { onMount } from 'svelte';
 
-	export let isCollapsed: boolean = true;
+	export let isCollapsed = true;
 
 	// Circumvents the need to import the page store. Should be replaced by
 	// `$page.data.meta.title` once issue #7405 of SvelteKit is resolved.

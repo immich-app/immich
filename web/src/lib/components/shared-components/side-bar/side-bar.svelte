@@ -15,7 +15,7 @@
 
 	import { onMount } from 'svelte';
 
-	export let isCollapsed: boolean = true;
+	export let isCollapsed = true;
 
 	const getAssetCount = async () => {
 		const { data: allAssetCount } = await api.assetApi.getAssetCountByUserId();
