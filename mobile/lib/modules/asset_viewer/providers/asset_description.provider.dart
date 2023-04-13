@@ -80,8 +80,9 @@ class AssetDescriptionNotifier extends StateNotifier<String> {
   }
 }
 
-final assetDescriptionProvider = Provider
-    .family<AssetDescriptionNotifier, Asset>(
+final assetDescriptionProvider = StateNotifierProvider
+    .autoDispose
+    .family<AssetDescriptionNotifier, String, Asset>(
   (ref, asset) => AssetDescriptionNotifier(
     ref.watch(dbProvider),
     ref.watch(assetDescriptionServiceProvider),

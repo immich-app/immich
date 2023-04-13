@@ -25,14 +25,12 @@ class DescriptionInput extends HookConsumerWidget {
     final focusNode = useFocusNode();
     final isFocus = useState(false);
     final isTextEmpty = useState(controller.text.isEmpty);
-    final descriptionProvider = ref.watch(assetDescriptionProvider(asset));
+    final descriptionProvider = ref.watch(assetDescriptionProvider(asset).notifier);
+    final description = ref.watch(assetDescriptionProvider(asset));
     final owner = store.Store.get(store.StoreKey.currentUser);
-    final description = descriptionProvider.description;
     final hasError = useState(false);
 
-    if (!isFocus.value) {
-      controller.text = description;
-    }
+    controller.text = description;
 
     submitDescription(String description) async {
       hasError.value = false;
