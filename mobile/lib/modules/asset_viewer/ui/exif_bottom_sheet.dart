@@ -2,25 +2,25 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/asset_viewer/ui/description_input.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 
 class ExifBottomSheet extends HookConsumerWidget {
-  final Asset assetDetail;
+  final Asset asset;
 
-  const ExifBottomSheet({Key? key, required this.assetDetail})
-      : super(key: key);
+  const ExifBottomSheet({Key? key, required this.asset}) : super(key: key);
 
   bool get showMap =>
-      assetDetail.exifInfo?.latitude != null &&
-      assetDetail.exifInfo?.longitude != null;
+      asset.exifInfo?.latitude != null && asset.exifInfo?.longitude != null;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ExifInfo? exifInfo = assetDetail.exifInfo;
+    final exifInfo = asset.exifInfo;
+    var isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    var textColor = isDarkTheme ? Colors.white : Colors.black;
 
     buildMap() {
       return Padding(
@@ -76,19 +76,6 @@ class ExifBottomSheet extends HookConsumerWidget {
       );
     }
 
-    final textColor = Theme.of(context).primaryColor;
-
-    buildLocationText() {
-      return Text(
-        "${exifInfo?.city}, ${exifInfo?.state}",
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: textColor,
-        ),
-      );
-    }
-
     buildSizeText(Asset a) {
       String resolution = a.width != null && a.height != null
           ? "${a.height} x ${a.width}  "
@@ -128,13 +115,39 @@ class ExifBottomSheet extends HookConsumerWidget {
             children: [
               Text(
                 "exif_bottom_sheet_location",
-                style: TextStyle(fontSize: 11, color: textColor),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: textColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ).tr(),
               buildMap(),
-              if (exifInfo != null &&
-                  exifInfo.city != null &&
-                  exifInfo.state != null)
-                buildLocationText(),
+              RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                    fontFamily: 'WorkSans',
+                  ),
+                  children: [
+                    if (exifInfo != null && exifInfo.city != null)
+                      TextSpan(
+                        text: exifInfo.city,
+                      ),
+                    if (exifInfo != null &&
+                        exifInfo.city != null &&
+                        exifInfo.state != null)
+                      const TextSpan(
+                        text: ", ",
+                      ),
+                    if (exifInfo != null && exifInfo.state != null)
+                      TextSpan(
+                        text: "${exifInfo.state}",
+                      ),
+                  ],
+                ),
+              ),
               Text(
                 "${exifInfo!.latitude!.toStringAsFixed(4)}, ${exifInfo.longitude!.toStringAsFixed(4)}",
                 style: const TextStyle(fontSize: 12),
@@ -146,7 +159,7 @@ class ExifBottomSheet extends HookConsumerWidget {
     }
 
     buildDate() {
-      final fileCreatedAt = assetDetail.fileCreatedAt.toLocal();
+      final fileCreatedAt = asset.fileCreatedAt.toLocal();
       final date = DateFormat.yMMMEd().format(fileCreatedAt);
       final time = DateFormat.jm().format(fileCreatedAt);
 
@@ -167,27 +180,37 @@ class ExifBottomSheet extends HookConsumerWidget {
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Text(
               "exif_bottom_sheet_details",
-              style: TextStyle(fontSize: 11, color: textColor),
+              style: TextStyle(
+                fontSize: 11,
+                color: textColor,
+                fontWeight: FontWeight.bold,
+              ),
             ).tr(),
           ),
           ListTile(
             contentPadding: const EdgeInsets.all(0),
             dense: true,
-            leading: const Icon(Icons.image),
+            leading: Icon(
+              Icons.image,
+              color: textColor.withAlpha(200),
+            ),
             title: Text(
-              assetDetail.fileName,
+              asset.fileName,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: textColor,
               ),
             ),
-            subtitle: buildSizeText(assetDetail),
+            subtitle: buildSizeText(asset),
           ),
           if (exifInfo?.make != null)
             ListTile(
               contentPadding: const EdgeInsets.all(0),
               dense: true,
-              leading: const Icon(Icons.camera),
+              leading: Icon(
+                Icons.camera,
+                color: textColor.withAlpha(200),
+              ),
               title: Text(
                 "${exifInfo!.make} ${exifInfo.model}",
                 style: TextStyle(
@@ -203,80 +226,75 @@ class ExifBottomSheet extends HookConsumerWidget {
       );
     }
 
-    return SingleChildScrollView(
-      child: Card(
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(15),
-            topRight: Radius.circular(15),
+    return GestureDetector(
+      onTap: () {
+        // FocusScope.of(context).unfocus();
+      },
+      child: SingleChildScrollView(
+        child: Card(
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(15),
+              topRight: Radius.circular(15),
+            ),
           ),
-        ),
-        margin: const EdgeInsets.all(0),
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              if (constraints.maxWidth > 600) {
-                // Two column
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      buildDragHeader(),
-                      buildDate(),
-                      const SizedBox(height: 32.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Flexible(
-                            flex: showMap ? 5 : 0,
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: buildLocation(),
+          margin: const EdgeInsets.all(0),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth > 600) {
+                  // Two column
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        buildDragHeader(),
+                        buildDate(),
+                        if (asset.isRemote) DescriptionInput(asset: asset),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Flexible(
+                              flex: showMap ? 5 : 0,
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: buildLocation(),
+                              ),
                             ),
-                          ),
-                          Flexible(
-                            flex: 5,
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 8.0),
-                              child: buildDetail(),
+                            Flexible(
+                              flex: 5,
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: buildDetail(),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 50),
-                    ],
-                  ),
-                );
-              }
-
-              // One column
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  buildDragHeader(),
-                  buildDate(),
-                  const SizedBox(height: 16.0),
-                  if (showMap)
-                    Divider(
-                      thickness: 1,
-                      color: Colors.grey[600],
+                          ],
+                        ),
+                        const SizedBox(height: 50),
+                      ],
                     ),
-                  const SizedBox(height: 16.0),
-                  buildLocation(),
-                  const SizedBox(height: 16.0),
-                  Divider(
-                    thickness: 1,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(height: 16.0),
-                  buildDetail(),
-                  const SizedBox(height: 50),
-                ],
-              );
-            },
+                  );
+                }
+
+                // One column
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    buildDragHeader(),
+                    buildDate(),
+                    if (asset.isRemote) DescriptionInput(asset: asset),
+                    const SizedBox(height: 8.0),
+                    buildLocation(),
+                    SizedBox(height: showMap ? 16.0 : 0.0),
+                    buildDetail(),
+                    const SizedBox(height: 50),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),

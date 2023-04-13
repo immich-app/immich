@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -25,19 +26,25 @@ class AdvancedSettings extends HookConsumerWidget {
     return ExpansionTile(
       textColor: Theme.of(context).primaryColor,
       title: const Text(
-        "Advanced",
+        "advanced_settings_tile_title",
         style: TextStyle(
           fontWeight: FontWeight.bold,
         ),
-      ),
+      ).tr(),
+      subtitle: const Text(
+        "advanced_settings_tile_subtitle",
+        style: TextStyle(
+          fontSize: 13,
+        ),
+      ).tr(),
       children: [
         SettingsSwitchListTile(
           enabled: true,
           appSettingService: appSettingService,
           valueNotifier: isEnabled,
           settingsEnum: AppSettingsEnum.advancedTroubleshooting,
-          title: "Troubleshooting",
-          subtitle: "Enable additional features for troubleshooting",
+          title: "advanced_settings_troubleshooting_title".tr(),
+          subtitle: "advanced_settings_troubleshooting_subtitle".tr(),
         ),
       ],
     );

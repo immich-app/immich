@@ -27,58 +27,63 @@ const ExifInfoSchema = CollectionSchema(
       name: r'country',
       type: IsarType.string,
     ),
-    r'exposureSeconds': PropertySchema(
+    r'description': PropertySchema(
       id: 2,
+      name: r'description',
+      type: IsarType.string,
+    ),
+    r'exposureSeconds': PropertySchema(
+      id: 3,
       name: r'exposureSeconds',
       type: IsarType.float,
     ),
     r'f': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'f',
       type: IsarType.float,
     ),
     r'fileSize': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'fileSize',
       type: IsarType.long,
     ),
     r'iso': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'iso',
       type: IsarType.int,
     ),
     r'lat': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'lat',
       type: IsarType.float,
     ),
     r'lens': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'lens',
       type: IsarType.string,
     ),
     r'long': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'long',
       type: IsarType.float,
     ),
     r'make': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'make',
       type: IsarType.string,
     ),
     r'mm': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'mm',
       type: IsarType.float,
     ),
     r'model': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'model',
       type: IsarType.string,
     ),
     r'state': PropertySchema(
-      id: 12,
+      id: 13,
       name: r'state',
       type: IsarType.string,
     )
@@ -111,6 +116,12 @@ int _exifInfoEstimateSize(
   }
   {
     final value = object.country;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.description;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
@@ -150,17 +161,18 @@ void _exifInfoSerialize(
 ) {
   writer.writeString(offsets[0], object.city);
   writer.writeString(offsets[1], object.country);
-  writer.writeFloat(offsets[2], object.exposureSeconds);
-  writer.writeFloat(offsets[3], object.f);
-  writer.writeLong(offsets[4], object.fileSize);
-  writer.writeInt(offsets[5], object.iso);
-  writer.writeFloat(offsets[6], object.lat);
-  writer.writeString(offsets[7], object.lens);
-  writer.writeFloat(offsets[8], object.long);
-  writer.writeString(offsets[9], object.make);
-  writer.writeFloat(offsets[10], object.mm);
-  writer.writeString(offsets[11], object.model);
-  writer.writeString(offsets[12], object.state);
+  writer.writeString(offsets[2], object.description);
+  writer.writeFloat(offsets[3], object.exposureSeconds);
+  writer.writeFloat(offsets[4], object.f);
+  writer.writeLong(offsets[5], object.fileSize);
+  writer.writeInt(offsets[6], object.iso);
+  writer.writeFloat(offsets[7], object.lat);
+  writer.writeString(offsets[8], object.lens);
+  writer.writeFloat(offsets[9], object.long);
+  writer.writeString(offsets[10], object.make);
+  writer.writeFloat(offsets[11], object.mm);
+  writer.writeString(offsets[12], object.model);
+  writer.writeString(offsets[13], object.state);
 }
 
 ExifInfo _exifInfoDeserialize(
@@ -172,17 +184,18 @@ ExifInfo _exifInfoDeserialize(
   final object = ExifInfo(
     city: reader.readStringOrNull(offsets[0]),
     country: reader.readStringOrNull(offsets[1]),
-    exposureSeconds: reader.readFloatOrNull(offsets[2]),
-    f: reader.readFloatOrNull(offsets[3]),
-    fileSize: reader.readLongOrNull(offsets[4]),
-    iso: reader.readIntOrNull(offsets[5]),
-    lat: reader.readFloatOrNull(offsets[6]),
-    lens: reader.readStringOrNull(offsets[7]),
-    long: reader.readFloatOrNull(offsets[8]),
-    make: reader.readStringOrNull(offsets[9]),
-    mm: reader.readFloatOrNull(offsets[10]),
-    model: reader.readStringOrNull(offsets[11]),
-    state: reader.readStringOrNull(offsets[12]),
+    description: reader.readStringOrNull(offsets[2]),
+    exposureSeconds: reader.readFloatOrNull(offsets[3]),
+    f: reader.readFloatOrNull(offsets[4]),
+    fileSize: reader.readLongOrNull(offsets[5]),
+    iso: reader.readIntOrNull(offsets[6]),
+    lat: reader.readFloatOrNull(offsets[7]),
+    lens: reader.readStringOrNull(offsets[8]),
+    long: reader.readFloatOrNull(offsets[9]),
+    make: reader.readStringOrNull(offsets[10]),
+    mm: reader.readFloatOrNull(offsets[11]),
+    model: reader.readStringOrNull(offsets[12]),
+    state: reader.readStringOrNull(offsets[13]),
   );
   object.id = id;
   return object;
@@ -200,26 +213,28 @@ P _exifInfoDeserializeProp<P>(
     case 1:
       return (reader.readStringOrNull(offset)) as P;
     case 2:
-      return (reader.readFloatOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 3:
       return (reader.readFloatOrNull(offset)) as P;
     case 4:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readFloatOrNull(offset)) as P;
     case 5:
-      return (reader.readIntOrNull(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 6:
-      return (reader.readFloatOrNull(offset)) as P;
+      return (reader.readIntOrNull(offset)) as P;
     case 7:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readFloatOrNull(offset)) as P;
     case 8:
-      return (reader.readFloatOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 9:
-      return (reader.readStringOrNull(offset)) as P;
-    case 10:
       return (reader.readFloatOrNull(offset)) as P;
-    case 11:
+    case 10:
       return (reader.readStringOrNull(offset)) as P;
+    case 11:
+      return (reader.readFloatOrNull(offset)) as P;
     case 12:
+      return (reader.readStringOrNull(offset)) as P;
+    case 13:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -602,6 +617,155 @@ extension ExifInfoQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'country',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'description',
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+      descriptionIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'description',
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'description',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+      descriptionGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'description',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'description',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'description',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'description',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'description',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'description',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'description',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'description',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+      descriptionIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'description',
         value: '',
       ));
     });
@@ -1825,6 +1989,18 @@ extension ExifInfoQuerySortBy on QueryBuilder<ExifInfo, ExifInfo, QSortBy> {
     });
   }
 
+  QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> sortByDescription() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'description', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> sortByDescriptionDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'description', Sort.desc);
+    });
+  }
+
   QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> sortByExposureSeconds() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'exposureSeconds', Sort.asc);
@@ -1981,6 +2157,18 @@ extension ExifInfoQuerySortThenBy
   QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> thenByCountryDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'country', Sort.desc);
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> thenByDescription() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'description', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> thenByDescriptionDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'description', Sort.desc);
     });
   }
 
@@ -2145,6 +2333,13 @@ extension ExifInfoQueryWhereDistinct
     });
   }
 
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByDescription(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'description', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByExposureSeconds() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'exposureSeconds');
@@ -2233,6 +2428,12 @@ extension ExifInfoQueryProperty
   QueryBuilder<ExifInfo, String?, QQueryOperations> countryProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'country');
+    });
+  }
+
+  QueryBuilder<ExifInfo, String?, QQueryOperations> descriptionProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'description');
     });
   }
 

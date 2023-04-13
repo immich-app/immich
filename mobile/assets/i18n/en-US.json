@@ -262,5 +262,11 @@
   "version_announcement_overlay_text_1": "Hi friend, there is a new release of",
   "version_announcement_overlay_text_2": "please take your time to visit the ",
   "version_announcement_overlay_text_3": " and ensure your docker-compose and .env setup is up-to-date to prevent any misconfigurations, especially if you use WatchTower or any mechanism that handles updating your server application automatically.",
-  "version_announcement_overlay_title": "New Server Version Available \uD83C\uDF89"
+  "version_announcement_overlay_title": "New Server Version Available \uD83C\uDF89",
+  "advanced_settings_tile_title": "Advanced",
+  "advanced_settings_tile_subtitle": "Advanced user's settings",
+  "advanced_settings_troubleshooting_title": "Troubleshooting",
+  "advanced_settings_troubleshooting_subtitle": "Enable additional features for troubleshooting",
+  "description_input_submit_error": "Error updating description, check the log for more details",
+  "description_input_hint_text": "Add description..."
 }

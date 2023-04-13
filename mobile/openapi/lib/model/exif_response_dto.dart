@@ -32,6 +32,7 @@ class ExifResponseDto {
     this.city,
     this.state,
     this.country,
+    this.description,
   });
 
   int? fileSizeInByte;
@@ -72,6 +73,8 @@ class ExifResponseDto {
 
   String? country;
 
+  String? description;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ExifResponseDto &&
      other.fileSizeInByte == fileSizeInByte &&
@@ -92,7 +95,8 @@ class ExifResponseDto {
      other.longitude == longitude &&
      other.city == city &&
      other.state == state &&
-     other.country == country;
+     other.country == country &&
+     other.description == description;
 
   @override
   int get hashCode =>
@@ -115,10 +119,11 @@ class ExifResponseDto {
     (longitude == null ? 0 : longitude!.hashCode) +
     (city == null ? 0 : city!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
-    (country == null ? 0 : country!.hashCode);
+    (country == null ? 0 : country!.hashCode) +
+    (description == null ? 0 : description!.hashCode);
 
   @override
-  String toString() => 'ExifResponseDto[fileSizeInByte=$fileSizeInByte, make=$make, model=$model, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, timeZone=$timeZone, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country]';
+  String toString() => 'ExifResponseDto[fileSizeInByte=$fileSizeInByte, make=$make, model=$model, exifImageWidth=$exifImageWidth, exifImageHeight=$exifImageHeight, orientation=$orientation, dateTimeOriginal=$dateTimeOriginal, modifyDate=$modifyDate, timeZone=$timeZone, lensModel=$lensModel, fNumber=$fNumber, focalLength=$focalLength, iso=$iso, exposureTime=$exposureTime, latitude=$latitude, longitude=$longitude, city=$city, state=$state, country=$country, description=$description]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -217,6 +222,11 @@ class ExifResponseDto {
     } else {
       // json[r'country'] = null;
     }
+    if (this.description != null) {
+      json[r'description'] = this.description;
+    } else {
+      // json[r'description'] = null;
+    }
     return json;
   }
 
@@ -272,6 +282,7 @@ class ExifResponseDto {
         city: mapValueOfType<String>(json, r'city'),
         state: mapValueOfType<String>(json, r'state'),
         country: mapValueOfType<String>(json, r'country'),
+        description: mapValueOfType<String>(json, r'description'),
       );
     }
     return null;

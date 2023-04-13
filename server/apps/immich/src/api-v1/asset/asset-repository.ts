@@ -1,6 +1,6 @@
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
-import { AssetEntity, AssetType } from '@app/infra/entities';
+import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';
@@ -55,6 +55,7 @@ export class AssetRepository implements IAssetRepository {
     private assetRepository: Repository<AssetEntity>,
 
     @Inject(ITagRepository) private _tagRepository: ITagRepository,
+    @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
   ) {}
 
   async getAllVideos(): Promise<AssetEntity[]> {
@@ -266,6 +267,17 @@ export class AssetRepository implements IAssetRepository {
     if (dto.tagIds) {
       const tags = await this._tagRepository.getByIds(userId, dto.tagIds);
       asset.tags = tags;
+    }
+
+    if (asset.exifInfo != null) {
+      asset.exifInfo.description = dto.description || '';
+      await this.exifRepository.save(asset.exifInfo);
+    } else {
+      const exifInfo = new ExifEntity();
+      exifInfo.description = dto.description || '';
+      exifInfo.asset = asset;
+      await this.exifRepository.save(exifInfo);
+      asset.exifInfo = exifInfo;
     }
 
     return await this.assetRepository.save(asset);

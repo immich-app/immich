@@ -16,6 +16,7 @@ class UpdateAssetDto {
     this.tagIds = const [],
     this.isFavorite,
     this.isArchived,
+    this.description,
   });
 
   List<String> tagIds;
@@ -36,21 +37,31 @@ class UpdateAssetDto {
   ///
   bool? isArchived;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? description;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAssetDto &&
      other.tagIds == tagIds &&
      other.isFavorite == isFavorite &&
-     other.isArchived == isArchived;
+     other.isArchived == isArchived &&
+     other.description == description;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (tagIds.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
-    (isArchived == null ? 0 : isArchived!.hashCode);
+    (isArchived == null ? 0 : isArchived!.hashCode) +
+    (description == null ? 0 : description!.hashCode);
 
   @override
-  String toString() => 'UpdateAssetDto[tagIds=$tagIds, isFavorite=$isFavorite, isArchived=$isArchived]';
+  String toString() => 'UpdateAssetDto[tagIds=$tagIds, isFavorite=$isFavorite, isArchived=$isArchived, description=$description]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -64,6 +75,11 @@ class UpdateAssetDto {
       json[r'isArchived'] = this.isArchived;
     } else {
       // json[r'isArchived'] = null;
+    }
+    if (this.description != null) {
+      json[r'description'] = this.description;
+    } else {
+      // json[r'description'] = null;
     }
     return json;
   }
@@ -92,6 +108,7 @@ class UpdateAssetDto {
             : const [],
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
+        description: mapValueOfType<String>(json, r'description'),
       );
     }
     return null;

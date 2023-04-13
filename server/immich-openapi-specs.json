@@ -3675,6 +3675,11 @@
             "type": "string",
             "nullable": true,
             "default": null
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "default": null
           }
         }
       },
@@ -5283,6 +5288,9 @@
           },
           "isArchived": {
             "type": "boolean"
+          },
+          "description": {
+            "type": "string"
           }
         }
       },
