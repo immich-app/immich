@@ -30,9 +30,9 @@
     "url": "^0.11.0"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "2.1.0",
+    "@docusaurus/module-type-aliases": "2.4.0",
     "@tsconfig/docusaurus": "^1.0.7",
-    "typescript": "^4.9.5"
+    "typescript": "^5.0.4"
   },
   "browserslist": {
     "production": [
