@@ -17,8 +17,6 @@
 	export let user: UserResponseDto;
 	export let shouldShowUploadButton = true;
 
-	let showBigSearchBar: boolean;
-
 	let shouldShowAccountInfo = false;
 
 	// Show fallback while loading profile picture and hide when image loads.

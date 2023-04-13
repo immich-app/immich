@@ -18,6 +18,9 @@
 	import type { LayoutData } from './$types';
 
 	export let data: LayoutData;
+	import { onMount } from 'svelte';
+
+	export let isCollapsed: boolean = true;
 
 	// Circumvents the need to import the page store. Should be replaced by
 	// `$page.data.meta.title` once issue #7405 of SvelteKit is resolved.
@@ -35,39 +38,65 @@
 				return '';
 		}
 	};
+	const handleResize = () => {
+		if (innerWidth > 768) {
+			isCollapsed = false;
+		} else {
+			isCollapsed = true;
+		}
+	};
+	//Set the initial state of the sidebar to collapsed or not
+	onMount(() => {
+		handleResize();
+		window.addEventListener('resize', handleResize);
+	});
 </script>
 
 <NavigationBar user={data.user} />
 
 <main>
-	<section class="grid grid-cols-[250px_auto] pt-[72px] h-screen">
-		<section id="admin-sidebar" class="pt-8 pr-6 flex flex-col gap-1">
+	<section class="grid md:grid-cols-[250px_auto] grid-cols-[74px_auto] pt-[72px] h-screen">
+		<section
+			id="admin-sidebar"
+			on:mouseover={() => (innerWidth >= 430 ? (isCollapsed = false) : null)}
+			on:focus={() => null}
+			on:mouseleave={() => handleResize()}
+			class={`flex flex-col gap-1 pt-8 bg-immich-bg dark:bg-immich-dark-bg transition-[width] duration-200 z-10 ${
+				isCollapsed
+					? 'w-[72px]'
+					: 'pr-6 w-64 shadow-2xl md:shadow-none md:border-none border-r dark:border-r-immich-dark-gray'
+			}`}
+		>
 			<SideBarButton
 				title="Users"
 				logo={AccountMultipleOutline}
 				isSelected={data.routeId === AppRoute.ADMIN_USER_MANAGEMENT}
 				on:selected={() => goto(AppRoute.ADMIN_USER_MANAGEMENT)}
+				{isCollapsed}
 			/>
 			<SideBarButton
 				title="Jobs"
 				logo={Sync}
 				isSelected={data.routeId === AppRoute.ADMIN_JOBS}
 				on:selected={() => goto(AppRoute.ADMIN_JOBS)}
+				{isCollapsed}
 			/>
 			<SideBarButton
 				title="Settings"
 				logo={Cog}
 				isSelected={data.routeId === AppRoute.ADMIN_SETTINGS}
 				on:selected={() => goto(AppRoute.ADMIN_SETTINGS)}
+				{isCollapsed}
 			/>
 			<SideBarButton
 				title="Server Stats"
 				logo={Server}
 				isSelected={data.routeId === AppRoute.ADMIN_STATS}
 				on:selected={() => goto(AppRoute.ADMIN_STATS)}
+				{isCollapsed}
 			/>
 			<div class="mb-6 mt-auto">
-				<StatusBox />
+				<StatusBox {isCollapsed} />
 			</div>
 		</section>
 
