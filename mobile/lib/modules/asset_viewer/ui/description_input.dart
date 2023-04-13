@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -26,13 +27,16 @@ class DescriptionInput extends HookConsumerWidget {
     final isTextEmpty = useState(controller.text.isEmpty);
     final descriptionProvider = ref.watch(assetDescriptionProvider);
     final owner = store.Store.get(store.StoreKey.currentUser);
+    final originalDescription = useState("");
 
     getLatestDescription() async {
       if (asset.exifInfo != null && asset.remoteId != null) {
         final exifId = asset.exifInfo?.id;
         if (exifId != null) {
-          controller.text =
+          originalDescription.value =
               await descriptionProvider.readLatest(asset.remoteId!, exifId);
+
+          controller.text = originalDescription.value;
         }
       }
     }
@@ -61,7 +65,7 @@ class DescriptionInput extends HookConsumerWidget {
         _log.severe("Error updating description $error", error, stack);
         ImmichToast.show(
           context: context,
-          msg: "Error updating description, check the log for more details",
+          msg: "description_input_submit_error".tr(),
           toastType: ToastType.error,
         );
       }
@@ -77,7 +81,10 @@ class DescriptionInput extends HookConsumerWidget {
       onTapOutside: (a) async {
         isFocus.value = false;
         focusNode.unfocus();
-        await submitDescription(controller.text);
+
+        if (originalDescription.value != controller.text) {
+          await submitDescription(controller.text);
+        }
       },
       maxLines: null,
       keyboardType: TextInputType.multiline,
@@ -86,7 +93,7 @@ class DescriptionInput extends HookConsumerWidget {
         fontSize: 14,
       ),
       decoration: InputDecoration(
-        hintText: 'Add description...',
+        hintText: 'description_input_hint_text'.tr(),
         border: InputBorder.none,
         hintStyle: TextStyle(
           fontWeight: FontWeight.normal,

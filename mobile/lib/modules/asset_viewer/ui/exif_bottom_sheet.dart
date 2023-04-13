@@ -115,7 +115,11 @@ class ExifBottomSheet extends HookConsumerWidget {
             children: [
               Text(
                 "exif_bottom_sheet_location",
-                style: TextStyle(fontSize: 11, color: textColor),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: textColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ).tr(),
               buildMap(),
               RichText(
@@ -179,13 +183,17 @@ class ExifBottomSheet extends HookConsumerWidget {
               style: TextStyle(
                 fontSize: 11,
                 color: textColor,
+                fontWeight: FontWeight.bold,
               ),
             ).tr(),
           ),
           ListTile(
             contentPadding: const EdgeInsets.all(0),
             dense: true,
-            leading: const Icon(Icons.image),
+            leading: Icon(
+              Icons.image,
+              color: textColor.withAlpha(200),
+            ),
             title: Text(
               asset.fileName,
               style: TextStyle(
@@ -199,7 +207,10 @@ class ExifBottomSheet extends HookConsumerWidget {
             ListTile(
               contentPadding: const EdgeInsets.all(0),
               dense: true,
-              leading: const Icon(Icons.camera),
+              leading: Icon(
+                Icons.camera,
+                color: textColor.withAlpha(200),
+              ),
               title: Text(
                 "${exifInfo!.make} ${exifInfo.model}",
                 style: TextStyle(
