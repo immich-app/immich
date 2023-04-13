@@ -14,7 +14,8 @@
 	import { locale } from '$lib/stores/preferences.store';
 
 	import { onMount } from 'svelte';
-	let isCollapsed: boolean = true;
+
+	export let isCollapsed: boolean = true;
 
 	const getAssetCount = async () => {
 		const { data: allAssetCount } = await api.assetApi.getAssetCountByUserId();
@@ -70,11 +71,13 @@
 
 <section
 	id="sidebar"
-	on:mouseover={() => (isCollapsed = false)}
+	on:mouseover={() => (innerWidth >= 430 ? (isCollapsed = false) : null)}
 	on:focus={() => null}
 	on:mouseleave={() => handleResize()}
-	class={`flex flex-col gap-1 pt-8 pr-6 bg-immich-bg dark:bg-immich-dark-bg transition-[width] duration-200 ${
-		isCollapsed ? 'w-24' : 'w-64'
+	class={`flex flex-col gap-1 pt-8 bg-immich-bg dark:bg-immich-dark-bg transition-[width] duration-200 z-10 ${
+		isCollapsed
+			? 'w-[72px]'
+			: 'pr-6 w-64 shadow-2xl md:shadow-none md:border-none border-r dark:border-r-immich-dark-gray'
 	}`}
 >
 	<a

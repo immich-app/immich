@@ -41,15 +41,17 @@
 
 <section id="dashboard-navbar" class="fixed h-[4.25rem] w-screen z-[900] text-sm">
 	<div
-		class="grid grid-cols-[250px_auto] border-b dark:border-b-immich-dark-gray items-center py-2 bg-immich-bg dark:bg-immich-dark-bg"
+		class="grid md:grid-cols-[250px_auto] grid-cols-[70px_auto] border-b dark:border-b-immich-dark-gray items-center py-2 bg-immich-bg dark:bg-immich-dark-bg"
 	>
 		<a
 			data-sveltekit-preload-data="hover"
-			class="flex gap-2 mx-6 place-items-center"
+			class="flex gap-2 md:mx-6 mx-4 place-items-center"
 			href={AppRoute.PHOTOS}
 		>
 			<ImmichLogo height="35" width="35" />
-			<h1 class="font-immich-title text-2xl text-immich-primary dark:text-immich-dark-primary">
+			<h1
+				class="font-immich-title text-2xl text-immich-primary dark:text-immich-dark-primary md:block hidden"
+			>
 				IMMICH
 			</h1>
 		</a>
