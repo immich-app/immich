@@ -101,8 +101,15 @@
 							</LinkButton>
 						</div>
 						<div class="sm:hidden block">
-							<IconButton>
-								<Cog size="1.5em" />
+							<IconButton title="Administration">
+								<Cog
+									size="1.5em"
+									class="text-immich-fg dark:text-immich-dark-fg {$page.url.pathname.includes(
+										'/admin'
+									)
+										? 'text-immich-primary dark:text-immich-dark-primary'
+										: ''}"
+								/>
 							</IconButton>
 							<hr
 								class={$page.url.pathname.includes('/admin')
