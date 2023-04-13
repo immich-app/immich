@@ -61,7 +61,7 @@
 			</h1>
 		</a>
 		<div class="flex justify-between gap-16 pr-6">
-			<div class="w-full max-w-5xl flex-1 pl-4 {showBigSearchBar ? '' : 'sm:block hidden'}">
+			<div class="w-full max-w-5xl flex-1 pl-4 z-10 {showBigSearchBar ? '' : 'sm:block hidden'}">
 				<SearchBar bind:showBigSearchBar grayTheme={true} />
 			</div>
 
