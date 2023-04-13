@@ -116,7 +116,7 @@
 
 				<ImageThumbnail
 					url={api.getAssetThumbnailUrl(asset.id, format, publicSharedKey)}
-					altText={asset.exifInfo?.imageName ?? asset.id}
+					altText={asset.originalFileName}
 					widthStyle="{width}px"
 					heightStyle="{height}px"
 				/>

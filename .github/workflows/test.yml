@@ -12,7 +12,6 @@ concurrency:
 jobs:
   e2e-tests:
     name: Run end-to-end test suites
-
     runs-on: ubuntu-latest
 
     steps:
@@ -25,24 +24,62 @@ jobs:
   server-unit-tests:
     name: Run server unit test suites and checks
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./server
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Run tests
-        run: cd server && npm ci && npm run check:all
+      - name: Run npm install
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+        if: ${{ !cancelled() }}
+
+      - name: Run formatter
+        run: npm run format
+        if: ${{ !cancelled() }}
+
+      - name: Run tsc
+        run: npm run check
+        if: ${{ !cancelled() }}
+
+      - name: Run unit tests & coverage
+        run: npm run test:cov
+        if: ${{ !cancelled() }}
 
   web-unit-tests:
     name: Run web unit test suites and checks
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./web
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Run tests
-        run: cd web && npm ci && npm run check:all
+      - name: Run npm install
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+        if: ${{ !cancelled() }}
+
+      - name: Run formatter
+        run: npm run format
+        if: ${{ !cancelled() }}
+
+      - name: Run svelte checks
+        run: npm run check
+        if: ${{ !cancelled() }}
+
+      - name: Run unit tests & coverage
+        run: npm run test:cov
+        if: ${{ !cancelled() }}
 
   mobile-unit-tests:
     name: Run mobile unit tests

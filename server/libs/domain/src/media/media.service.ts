@@ -43,7 +43,14 @@ export class MediaService {
   }
 
   async handleGenerateJpegThumbnail(data: IAssetJob): Promise<void> {
-    const { asset } = data;
+    const [asset] = await this.assetRepository.getByIds([data.asset.id]);
+
+    if (!asset) {
+      this.logger.warn(
+        `Asset not found: ${data.asset.id} - Original Path: ${data.asset.originalPath} - Resize Path: ${data.asset.resizePath}`,
+      );
+      return;
+    }
 
     try {
       const resizePath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
@@ -119,7 +126,12 @@ export class MediaService {
   }
 
   async handleVideoConversion(job: IAssetJob) {
-    const { asset } = job;
+    const [asset] = await this.assetRepository.getByIds([job.asset.id]);
+
+    if (!asset) {
+      this.logger.warn(`Asset not found: ${job.asset.id} - Original Path: ${job.asset.originalPath}`);
+      return;
+    }
 
     try {
       const input = asset.originalPath;
