@@ -19,7 +19,7 @@ import 'package:share_plus/share_plus.dart';
 /// and generate a csv file.
 class ImmichLogger {
   static final ImmichLogger _instance = ImmichLogger._internal();
-  final maxLogEntries = 200;
+  final maxLogEntries = 500;
   final Isar _db = Isar.getInstance()!;
   List<LoggerMessage> _msgBuffer = [];
   Timer? _timer;
