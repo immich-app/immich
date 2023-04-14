@@ -4,7 +4,7 @@ import { env } from '$env/dynamic/public';
 import { ImmichApi } from './api/api';
 
 export const handle = (async ({ event, resolve }) => {
-	const basePath = env.PUBLIC_IMMICH_SERVER_URL || 'http://192.168.178.3:3001';
+	const basePath = env.PUBLIC_IMMICH_SERVER_URL || 'http://immich-server:3001';
 	const accessToken = event.cookies.get('immich_access_token');
 	const api = new ImmichApi({ basePath, accessToken });
 
