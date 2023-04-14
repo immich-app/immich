@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -260,12 +261,14 @@ class HomePage extends HookConsumerWidget {
         bottom: false,
         child: Stack(
           children: [
-            ref.watch(assetProvider).renderList == null ||
-                    ref.watch(assetProvider).allAssets.isEmpty
+            ref.watch(assetProvider).allAssets.isEmpty
                 ? buildLoadingIndicator()
                 : ImmichAssetGrid(
-                    renderList: ref.watch(assetProvider).renderList!,
-                    assets: ref.watch(assetProvider).allAssets,
+                    assets: ref
+                        .watch(assetProvider)
+                        .allAssets
+                        .whereNot((a) => a.isArchived)
+                        .toList(),
                     assetsPerRow: appSettingService
                         .getSetting(AppSettingsEnum.tilesPerRow),
                     showStorageIndicator: appSettingService
