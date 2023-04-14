@@ -168,6 +168,7 @@ enum StoreKey<T> {
   albumThumbnailCacheSize<int>(112, type: int),
   selectedAlbumSortOrder<int>(113, type: int),
   advancedTroubleshooting<bool>(114, type: bool),
+  logLevel<int>(115, type: int),
   ;
 
   const StoreKey(
