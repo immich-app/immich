@@ -76,12 +76,12 @@
 
 				{#if !$page.url.pathname.includes('/admin') && shouldShowUploadButton}
 					<div in:fly={{ x: 50, duration: 250 }}>
-						<IconButton on:click={() => dispatch('uploadClicked')} title="Upload">
+						<LinkButton on:click={() => dispatch('uploadClicked')}>
 							<div class="flex gap-2">
 								<TrayArrowUp size="20" />
 								<span class="md:block hidden">Upload</span>
 							</div>
-						</IconButton>
+						</LinkButton>
 					</div>
 				{/if}
 
