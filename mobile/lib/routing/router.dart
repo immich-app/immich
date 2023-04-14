@@ -9,6 +9,7 @@ import 'package:immich_mobile/modules/album/views/library_page.dart';
 import 'package:immich_mobile/modules/album/views/select_additional_user_for_sharing_page.dart';
 import 'package:immich_mobile/modules/album/views/select_user_for_sharing_page.dart';
 import 'package:immich_mobile/modules/album/views/sharing_page.dart';
+import 'package:immich_mobile/modules/archive/views/archive_page.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/gallery_viewer.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
 import 'package:immich_mobile/modules/backup/views/album_preview_page.dart';
@@ -127,6 +128,13 @@ part 'router.gr.dart';
     ),
     AutoRoute(
       page: AppLogDetailPage,
+    ),
+    AutoRoute(
+      page: ArchivePage,
+      guards: [
+        AuthGuard,
+        DuplicateGuard,
+      ],
     ),
   ],
 )

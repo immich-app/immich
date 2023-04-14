@@ -227,7 +227,7 @@ class LibraryPage extends HookConsumerWidget {
                   const SizedBox(width: 12.0),
                   buildLibraryNavButton(
                       "library_page_archive".tr(), Icons.archive_outlined, () {
-                    AutoRouter.of(context).navigate(const SharingRoute());
+                    AutoRouter.of(context).navigate(const ArchiveRoute());
                   }),
                 ],
               ),
