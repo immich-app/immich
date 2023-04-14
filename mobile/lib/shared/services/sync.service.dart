@@ -40,7 +40,7 @@ class SyncService {
       dbUsers,
       compare: (User a, User b) => a.id.compareTo(b.id),
       both: (User a, User b) {
-        if (a.updatedAt != b.updatedAt) {
+        if (!a.updatedAt.isAtSameMomentAs(b.updatedAt)) {
           toUpsert.add(a);
           return true;
         }
@@ -118,7 +118,7 @@ class SyncService {
       // TODO instead of this heuristics: match by checksum once available
       for (Asset a in inDb) {
         if (a.ownerId == newAsset.ownerId &&
-            a.fileModifiedAt == newAsset.fileModifiedAt) {
+            a.fileModifiedAt.isAtSameMomentAs(newAsset.fileModifiedAt)) {
           assert(match == null);
           match = a;
         }
@@ -277,7 +277,7 @@ class SyncService {
 
     album.name = dto.albumName;
     album.shared = dto.shared;
-    album.modifiedAt = DateTime.parse(dto.updatedAt).toUtc();
+    album.modifiedAt = DateTime.parse(dto.updatedAt);
     if (album.thumbnail.value?.remoteId != dto.albumThumbnailAssetId) {
       album.thumbnail.value = await _db.assets
           .where()
@@ -446,7 +446,8 @@ class SyncService {
         toUpdate.isEmpty &&
         toDelete.isEmpty &&
         album.name == ape.name &&
-        album.modifiedAt == ape.lastModified) {
+        ape.lastModified != null &&
+        album.modifiedAt.isAtSameMomentAs(ape.lastModified!)) {
       // changes only affeted excluded albums
       _log.fine(
         "Only excluded assets in local album ${ape.name} changed. Stopping sync.",
@@ -495,7 +496,7 @@ class SyncService {
             filterOptionGroup: FilterOptionGroup(
               updateTimeCond: DateTimeCond(
                 min: album.modifiedAt.add(const Duration(seconds: 1)),
-                max: ape.lastModified!,
+                max: ape.lastModified ?? DateTime.now(),
               ),
             ),
           )
@@ -507,7 +508,7 @@ class SyncService {
     if (totalOnDevice != album.assets.length + newAssets.length) {
       return false;
     }
-    album.modifiedAt = ape.lastModified?.toUtc() ?? DateTime.now().toUtc();
+    album.modifiedAt = ape.lastModified ?? DateTime.now();
     final result = await _linkWithExistingFromDb(newAssets);
     try {
       await _db.writeTxn(() async {
@@ -533,9 +534,8 @@ class SyncService {
   ]) async {
     _log.info("Syncing a new local album to DB: ${ape.name}");
     final Album a = Album.local(ape);
-    final result = await _linkWithExistingFromDb(
-      await ape.getAssets(excludedAssets: excludedAssets),
-    );
+    final assets = await ape.getAssets(excludedAssets: excludedAssets);
+    final result = await _linkWithExistingFromDb(assets);
     _log.info(
       "${result.first.length} assets already existed in DB, to upsert ${result.second.length}",
     );
@@ -580,9 +580,7 @@ class SyncService {
       // client and server, thus never reaching "both" case below
       compare: Asset.compareByOwnerDeviceLocalId,
       both: (Asset a, Asset b) {
-        if ((a.isLocal || !b.isLocal) &&
-            (a.isRemote || !b.isRemote) &&
-            a.updatedAt == b.updatedAt) {
+        if ((a.isLocal || !b.isLocal) && (a.isRemote || !b.isRemote)) {
           existing.add(a);
           return false;
         } else {
@@ -690,7 +688,8 @@ Pair<List<int>, List<Asset>> _handleAssetRemoval(
 /// returns `true` if the albums differ on the surface
 Future<bool> _hasAssetPathEntityChanged(AssetPathEntity a, Album b) async {
   return a.name != b.name ||
-      a.lastModified != b.modifiedAt ||
+      a.lastModified == null ||
+      !a.lastModified!.isAtSameMomentAs(b.modifiedAt) ||
       await a.assetCountAsync != b.assetCount;
 }
 
@@ -701,5 +700,5 @@ bool _hasAlbumResponseDtoChanged(AlbumResponseDto dto, Album a) {
       dto.albumThumbnailAssetId != a.thumbnail.value?.remoteId ||
       dto.shared != a.shared ||
       dto.sharedUsers.length != a.sharedUsers.length ||
-      DateTime.parse(dto.updatedAt).toUtc() != a.modifiedAt.toUtc();
+      !DateTime.parse(dto.updatedAt).isAtSameMomentAs(a.modifiedAt);
 }
