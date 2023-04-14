@@ -18,3 +18,20 @@ extension DurationExtension on String {
     return int.parse(this);
   }
 }
+
+extension ListExtension<E> on List<E> {
+  List<E> uniqueConsecutive<T>([T Function(E element)? key]) {
+    key ??= (E e) => e as T;
+    int i = 1, j = 1;
+    for (; i < length; i++) {
+      if (key(this[i]) != key(this[i - 1])) {
+        if (i != j) {
+          this[j] = this[i];
+        }
+        j++;
+      }
+    }
+    length = length == 0 ? 0 : j;
+    return this;
+  }
+}
