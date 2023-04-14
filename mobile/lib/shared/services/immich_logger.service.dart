@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/shared/models/logger_message.model.dart';
+import 'package:immich_mobile/shared/models/store.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
@@ -18,7 +19,7 @@ import 'package:share_plus/share_plus.dart';
 /// and generate a csv file.
 class ImmichLogger {
   static final ImmichLogger _instance = ImmichLogger._internal();
-  final maxLogEntries = 200;
+  final maxLogEntries = 500;
   final Isar _db = Isar.getInstance()!;
   List<LoggerMessage> _msgBuffer = [];
   Timer? _timer;
@@ -27,9 +28,12 @@ class ImmichLogger {
 
   ImmichLogger._internal() {
     _removeOverflowMessages();
-    Logger.root.level = Level.INFO;
+    final int levelId = Store.get(StoreKey.logLevel, 5); // 5 is INFO
+    Logger.root.level = Level.LEVELS[levelId];
     Logger.root.onRecord.listen(_writeLogToDatabase);
   }
+
+  set level(Level level) => Logger.root.level = level;
 
   List<LoggerMessage> get messages {
     final inDb =
