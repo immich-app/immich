@@ -112,7 +112,9 @@ FutureOr<void> _migrateDuplicatedAssetsBox(Box<HiveDuplicatedAssets> box) {
 
 Future<void> _migrateAppSettingsBox(Box box) async {
   for (AppSettingsEnum s in AppSettingsEnum.values) {
-    await _migrateKey(box, s.hiveKey, s.storeKey);
+    if (s.hiveKey != null) {
+      await _migrateKey(box, s.hiveKey!, s.storeKey);
+    }
   }
 }
 
