@@ -16,11 +16,12 @@
 	import { goto } from '$app/navigation';
 	import { AppRoute } from '../../lib/constants';
 	import type { LayoutData } from './$types';
-
-	export let data: LayoutData;
 	import { onMount } from 'svelte';
 
+	export let data: LayoutData;
+
 	export let isCollapsed = true;
+	let innerWidth: number;
 
 	// Circumvents the need to import the page store. Should be replaced by
 	// `$page.data.meta.title` once issue #7405 of SvelteKit is resolved.
@@ -48,9 +49,10 @@
 
 	onMount(() => {
 		handleResize();
-		window.addEventListener('resize', handleResize);
 	});
 </script>
+
+<svelte:window on:resize={handleResize} bind:innerWidth />
 
 <NavigationBar user={data.user} />
 
@@ -59,7 +61,7 @@
 		<section
 			id="admin-sidebar"
 			on:mouseover={() => (innerWidth >= 430 ? (isCollapsed = false) : null)}
-			on:focus={() => null}
+			on:focus={() => (innerWidth >= 430 ? (isCollapsed = false) : null)}
 			on:mouseleave={() => handleResize()}
 			class="flex flex-col gap-1 pt-8 bg-immich-bg dark:bg-immich-dark-bg transition-[width] duration-200 z-10 {isCollapsed
 				? 'w-[72px]'

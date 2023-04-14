@@ -16,6 +16,7 @@
 	import { onMount } from 'svelte';
 
 	export let isCollapsed = true;
+	let innerWidth: number;
 
 	const getAssetCount = async () => {
 		const { data: allAssetCount } = await api.assetApi.getAssetCountByUserId();
@@ -84,14 +85,15 @@
 
 	onMount(() => {
 		handleResize();
-		window.addEventListener('resize', handleResize);
 	});
 </script>
+
+<svelte:window on:resize={handleResize} bind:innerWidth />
 
 <section
 	id="sidebar"
 	on:mouseover={() => (innerWidth >= 430 ? (isCollapsed = false) : null)}
-	on:focus={() => null}
+	on:focus={() => (innerWidth >= 430 ? (isCollapsed = false) : null)}
 	on:mouseleave={() => handleResize()}
 	class="flex flex-col gap-1 pt-8 bg-immich-bg dark:bg-immich-dark-bg transition-[width] duration-200 z-10 {isCollapsed
 		? 'w-[72px]'
