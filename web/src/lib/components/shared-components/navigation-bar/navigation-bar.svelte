@@ -102,9 +102,7 @@
 							<IconButton title="Administration">
 								<Cog
 									size="1.5em"
-									class="text-immich-fg dark:text-immich-dark-fg {$page.url.pathname.includes(
-										'/admin'
-									)
+									class="dark:text-immich-dark-fg {$page.url.pathname.includes('/admin')
 										? 'text-immich-primary dark:text-immich-dark-primary'
 										: ''}"
 								/>
