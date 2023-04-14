@@ -51,14 +51,14 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
           ImmichToast.show(
             context: context,
             msg: 'add_to_album_bottom_sheet_already_exists'.tr(
-              namedArgs: { "album": album.name },
+              namedArgs: {"album": album.name},
             ),
           );
         } else {
           ImmichToast.show(
             context: context,
             msg: 'add_to_album_bottom_sheet_added'.tr(
-              namedArgs: { "album": album.name },
+              namedArgs: {"album": album.name},
             ),
           );
         }
@@ -71,6 +71,7 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
     }
 
     return Card(
+      elevation: 0,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(15),
@@ -99,8 +100,15 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
                         style: Theme.of(context).textTheme.displayMedium,
                       ),
                       TextButton.icon(
-                        icon: const Icon(Icons.add),
-                        label: Text('common_create_new_album'.tr()),
+                        icon: Icon(
+                          Icons.add,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        label: Text(
+                          'common_create_new_album'.tr(),
+                          style:
+                              TextStyle(color: Theme.of(context).primaryColor),
+                        ),
                         onPressed: () {
                           ref
                               .watch(assetSelectionProvider.notifier)

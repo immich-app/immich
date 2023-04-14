@@ -180,8 +180,8 @@ class LibraryPage extends HookConsumerWidget {
               label,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 12.0,
-                color: isDarkMode ? Colors.white : Colors.black,
+                fontSize: 13.0,
+                color: isDarkMode ? Colors.white : Colors.grey[800],
               ),
             ),
           ),
