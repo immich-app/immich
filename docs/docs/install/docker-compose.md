@@ -76,8 +76,11 @@ UPLOAD_LOCATION=absolute_location_on_your_machine_where_you_want_to_store_the_ba
 ###################################################################################
 # Typesense
 ###################################################################################
-TYPESENSE_API_KEY=some-random-text
 # TYPESENSE_ENABLED=false
+TYPESENSE_API_KEY=some-random-text
+# TYPESENSE_HOST: typesense
+# TYPESENSE_PORT: 8108
+# TYPESENSE_PROTOCOL: http
 
 ###################################################################################
 # Reverse Geocoding
