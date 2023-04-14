@@ -16,12 +16,10 @@
 	import { goto } from '$app/navigation';
 	import { AppRoute } from '../../lib/constants';
 	import type { LayoutData } from './$types';
-	import { onMount } from 'svelte';
+	import SideBarSection from '$lib/components/shared-components/side-bar/side-bar-section.svelte';
 
+	let isCollapsed: boolean;
 	export let data: LayoutData;
-
-	export let isCollapsed = true;
-	let innerWidth: number;
 
 	// Circumvents the need to import the page store. Should be replaced by
 	// `$page.data.meta.title` once issue #7405 of SvelteKit is resolved.
@@ -39,34 +37,13 @@
 				return '';
 		}
 	};
-	const handleResize = () => {
-		if (innerWidth > 768) {
-			isCollapsed = false;
-		} else {
-			isCollapsed = true;
-		}
-	};
-
-	onMount(() => {
-		handleResize();
-	});
 </script>
-
-<svelte:window on:resize={handleResize} bind:innerWidth />
 
 <NavigationBar user={data.user} />
 
 <main>
-	<section class="grid md:grid-cols-[250px_auto] grid-cols-[74px_auto] pt-[72px] h-screen">
-		<section
-			id="admin-sidebar"
-			on:mouseover={() => (innerWidth >= 430 ? (isCollapsed = false) : null)}
-			on:focus={() => (innerWidth >= 430 ? (isCollapsed = false) : null)}
-			on:mouseleave={() => handleResize()}
-			class="flex flex-col gap-1 pt-8 bg-immich-bg dark:bg-immich-dark-bg transition-[width] duration-200 z-10 {isCollapsed
-				? 'w-[72px]'
-				: 'pr-6 w-64 shadow-2xl md:shadow-none md:border-none border-r dark:border-r-immich-dark-gray'}"
-		>
+	<section class="grid md:grid-cols-[250px_auto] grid-cols-[70px_auto] pt-[72px] h-screen">
+		<SideBarSection bind:isCollapsed>
 			<SideBarButton
 				title="Users"
 				logo={AccountMultipleOutline}
@@ -98,7 +75,7 @@
 			<div class="mb-6 mt-auto">
 				<StatusBox {isCollapsed} />
 			</div>
-		</section>
+		</SideBarSection>
 
 		<section class="overflow-y-auto immich-scrollbar ">
 			<div id="setting-title" class="pt-10 w-full bg-immich-bg dark:bg-immich-dark-bg">

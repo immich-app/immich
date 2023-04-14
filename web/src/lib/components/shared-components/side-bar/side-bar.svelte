@@ -12,11 +12,9 @@
 	import StatusBox from '../status-box.svelte';
 	import SideBarButton from './side-bar-button.svelte';
 	import { locale } from '$lib/stores/preferences.store';
+	import SideBarSection from './side-bar-section.svelte';
 
-	import { onMount } from 'svelte';
-
-	export let isCollapsed = true;
-	let innerWidth: number;
+	let isCollapsed: boolean;
 
 	const getAssetCount = async () => {
 		const { data: allAssetCount } = await api.assetApi.getAssetCountByUserId();
@@ -74,31 +72,9 @@
 			};
 		}
 	};
-
-	const handleResize = () => {
-		if (innerWidth > 768) {
-			isCollapsed = false;
-		} else {
-			isCollapsed = true;
-		}
-	};
-
-	onMount(() => {
-		handleResize();
-	});
 </script>
 
-<svelte:window on:resize={handleResize} bind:innerWidth />
-
-<section
-	id="sidebar"
-	on:mouseover={() => (innerWidth >= 430 ? (isCollapsed = false) : null)}
-	on:focus={() => (innerWidth >= 430 ? (isCollapsed = false) : null)}
-	on:mouseleave={() => handleResize()}
-	class="flex flex-col gap-1 pt-8 bg-immich-bg dark:bg-immich-dark-bg transition-[width] duration-200 z-10 {isCollapsed
-		? 'w-[72px]'
-		: 'pr-6 w-64 shadow-2xl md:shadow-none md:border-none border-r dark:border-r-immich-dark-gray'}"
->
+<SideBarSection bind:isCollapsed>
 	<a
 		data-sveltekit-preload-data="hover"
 		data-sveltekit-noscroll
@@ -221,4 +197,4 @@
 	<div class="mb-6 mt-auto">
 		<StatusBox {isCollapsed} />
 	</div>
-</section>
+</SideBarSection>
