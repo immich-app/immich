@@ -43,7 +43,8 @@ class LibraryPage extends HookConsumerWidget {
       );
     }
 
-    final selectedAlbumSortOrder = useState(settings.getSetting(AppSettingsEnum.selectedAlbumSortOrder));
+    final selectedAlbumSortOrder =
+        useState(settings.getSetting(AppSettingsEnum.selectedAlbumSortOrder));
 
     List<Album> sortedAlbums() {
       if (selectedAlbumSortOrder.value == 0) {
@@ -185,7 +186,7 @@ class LibraryPage extends HookConsumerWidget {
             ),
           ),
           style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             backgroundColor: isDarkMode ? Colors.grey[900] : Colors.grey[50],
             side: BorderSide(
               color: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
@@ -225,7 +226,7 @@ class LibraryPage extends HookConsumerWidget {
                   }),
                   const SizedBox(width: 12.0),
                   buildLibraryNavButton(
-                      "library_page_sharing".tr(), Icons.group_outlined, () {
+                      "library_page_archive".tr(), Icons.archive_outlined, () {
                     AutoRouter.of(context).navigate(const SharingRoute());
                   }),
                 ],

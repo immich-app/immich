@@ -147,6 +147,7 @@
   "library_page_favorites": "Favorites",
   "library_page_new_album": "New album",
   "library_page_sharing": "Sharing",
+  "library_page_archive": "Archive",
   "library_page_sort_created": "Most recently created",
   "library_page_sort_title": "Album title",
   "login_form_api_exception": "API exception. Please check the server URL and try again.",
