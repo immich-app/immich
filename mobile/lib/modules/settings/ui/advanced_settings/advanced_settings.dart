@@ -5,6 +5,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/modules/settings/ui/settings_switch_list_tile.dart';
+import 'package:immich_mobile/shared/services/immich_logger.service.dart';
+import 'package:logging/logging.dart';
 
 class AdvancedSettings extends HookConsumerWidget {
   const AdvancedSettings({super.key});
@@ -13,16 +15,21 @@ class AdvancedSettings extends HookConsumerWidget {
     final appSettingService = ref.watch(appSettingsServiceProvider);
     final isEnabled =
         useState(AppSettingsEnum.advancedTroubleshooting.defaultValue);
+    final levelId = useState(AppSettingsEnum.logLevel.defaultValue);
 
     useEffect(
       () {
         isEnabled.value = appSettingService.getSetting<bool>(
           AppSettingsEnum.advancedTroubleshooting,
         );
+        levelId.value = appSettingService.getSetting(AppSettingsEnum.logLevel);
         return null;
       },
       [],
     );
+
+    final logLevel = Level.LEVELS[levelId.value].name;
+
     return ExpansionTile(
       textColor: Theme.of(context).primaryColor,
       title: const Text(
@@ -45,6 +52,30 @@ class AdvancedSettings extends HookConsumerWidget {
           settingsEnum: AppSettingsEnum.advancedTroubleshooting,
           title: "advanced_settings_troubleshooting_title".tr(),
           subtitle: "advanced_settings_troubleshooting_subtitle".tr(),
+        ),
+        ListTile(
+          dense: true,
+          title: Text(
+            // Not translated because the levels are only English
+            "Log level: $logLevel",
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Slider(
+            value: levelId.value.toDouble(),
+            onChanged: (double v) => levelId.value = v.toInt(),
+            onChangeEnd: (double v) {
+              appSettingService.setSetting(
+                AppSettingsEnum.logLevel,
+                v.toInt(),
+              );
+              ImmichLogger().level = Level.LEVELS[v.toInt()];
+            },
+            max: 8,
+            min: 1.0,
+            divisions: 7,
+            label: logLevel,
+            activeColor: Theme.of(context).primaryColor,
+          ),
         ),
       ],
     );
