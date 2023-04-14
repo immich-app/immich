@@ -54,9 +54,9 @@
 <div class="dark:text-immich-dark-fg">
 	<div class="storage-status grid grid-cols-[64px_auto]">
 		<div
-			class={`pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary ${
-				isCollapsed ? 'pb-[2.15rem]' : ''
-			}`}
+			class="pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary {isCollapsed
+				? 'pb-[2.15rem]'
+				: ''}"
 		>
 			<Cloud size={'24'} />
 		</div>
@@ -68,7 +68,7 @@
 						<!-- style={`width: ${$downloadAssets[fileName]}%`} -->
 						<div
 							class="bg-immich-primary dark:bg-immich-dark-primary h-[7px] rounded-full"
-							style={`width: ${getStorageUsagePercentage()}%`}
+							style="width: {getStorageUsagePercentage()}%"
 						/>
 					</div>
 					<p class="text-xs">
@@ -88,9 +88,9 @@
 	</div>
 	<div class="server-status grid grid-cols-[64px_auto]">
 		<div
-			class={`pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary ${
-				isCollapsed ? 'pb-11' : ''
-			}`}
+			class="pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary {isCollapsed
+				? 'pb-11'
+				: ''}"
 		>
 			<Dns size={'24'} />
 		</div>

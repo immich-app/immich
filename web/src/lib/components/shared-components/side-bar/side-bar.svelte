@@ -82,24 +82,20 @@
 		}
 	};
 
-	//Set the initial state of the sidebar to collapsed or not
 	onMount(() => {
 		handleResize();
+		window.addEventListener('resize', handleResize);
 	});
 </script>
-
-<svelte:window on:resize={handleResize} />
 
 <section
 	id="sidebar"
 	on:mouseover={() => (innerWidth >= 430 ? (isCollapsed = false) : null)}
 	on:focus={() => null}
 	on:mouseleave={() => handleResize()}
-	class={`flex flex-col gap-1 pt-8 bg-immich-bg dark:bg-immich-dark-bg transition-[width] duration-200 z-10 ${
-		isCollapsed
-			? 'w-[72px]'
-			: 'pr-6 w-64 shadow-2xl md:shadow-none md:border-none border-r dark:border-r-immich-dark-gray'
-	}`}
+	class="flex flex-col gap-1 pt-8 bg-immich-bg dark:bg-immich-dark-bg transition-[width] duration-200 z-10 {isCollapsed
+		? 'w-[72px]'
+		: 'pr-6 w-64 shadow-2xl md:shadow-none md:border-none border-r dark:border-r-immich-dark-gray'}"
 >
 	<a
 		data-sveltekit-preload-data="hover"
@@ -160,8 +156,8 @@
 	<div
 		class="text-xs md:pb-2 md:p-5 p-6 pb-[1.2rem] dark:text-immich-dark-fg transition-all duration-200"
 	>
-		<p class={`${isCollapsed ? 'hidden' : 'block'}`}>LIBRARY</p>
-		<hr class={`${isCollapsed ? 'block mt-2 mb-[0.45rem]' : 'hidden'}`} />
+		<p class={isCollapsed ? 'hidden' : 'block'}>LIBRARY</p>
+		<hr class={isCollapsed ? 'block mt-2 mb-[0.45rem]' : 'hidden'} />
 	</div>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.FAVORITES} draggable="false">
 		<SideBarButton

@@ -45,7 +45,7 @@
 			isCollapsed = true;
 		}
 	};
-	//Set the initial state of the sidebar to collapsed or not
+
 	onMount(() => {
 		handleResize();
 		window.addEventListener('resize', handleResize);
@@ -61,11 +61,9 @@
 			on:mouseover={() => (innerWidth >= 430 ? (isCollapsed = false) : null)}
 			on:focus={() => null}
 			on:mouseleave={() => handleResize()}
-			class={`flex flex-col gap-1 pt-8 bg-immich-bg dark:bg-immich-dark-bg transition-[width] duration-200 z-10 ${
-				isCollapsed
-					? 'w-[72px]'
-					: 'pr-6 w-64 shadow-2xl md:shadow-none md:border-none border-r dark:border-r-immich-dark-gray'
-			}`}
+			class="flex flex-col gap-1 pt-8 bg-immich-bg dark:bg-immich-dark-bg transition-[width] duration-200 z-10 {isCollapsed
+				? 'w-[72px]'
+				: 'pr-6 w-64 shadow-2xl md:shadow-none md:border-none border-r dark:border-r-immich-dark-gray'}"
 		>
 			<SideBarButton
 				title="Users"
