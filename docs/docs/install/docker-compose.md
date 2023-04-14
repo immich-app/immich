@@ -10,11 +10,12 @@ Docker Compose is the recommended method to run Immich in production. Below are 
 
 Create a directory of your choice (e.g. `./immich-app`) to hold the `docker-compose.yml` and `.env` files.
 
-Download [`docker-compose.yml`][compose-file] and [`example.env`][env-file], either by running the following commands:
-
 ```bash title="Move to the directory you created"
-cd ./immich-app     #(Use the actual directory you created)
+mkdir ./immich-app
+cd ./immich-app
 ```
+
+Download [`docker-compose.yml`][compose-file] and [`example.env`][env-file], either by running the following commands:
 
 ```bash title="Get docker-compose.yml file"
 wget https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
@@ -74,10 +75,19 @@ UPLOAD_LOCATION=absolute_location_on_your_machine_where_you_want_to_store_the_ba
 
 
 ###################################################################################
+# Log message level - [simple|verbose]
+###################################################################################
+
+LOG_LEVEL=simple
+
+###################################################################################
 # Typesense
 ###################################################################################
-TYPESENSE_API_KEY=some-random-text
 # TYPESENSE_ENABLED=false
+TYPESENSE_API_KEY=some-random-text
+# TYPESENSE_HOST: typesense
+# TYPESENSE_PORT: 8108
+# TYPESENSE_PROTOCOL: http
 
 ###################################################################################
 # Reverse Geocoding
