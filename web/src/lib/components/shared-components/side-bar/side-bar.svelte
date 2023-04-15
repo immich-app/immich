@@ -138,7 +138,7 @@
 		<hr
 			class="{isCollapsed
 				? 'block mt-2 mb-[0.45rem]'
-				: 'min-xs:hidden'} xs:block xs:mt-2 xs:mb-[0.45rem]"
+				: 'xs:hidden'} xs:block xs:mt-2 xs:mb-[0.45rem]"
 		/>
 	</div>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.FAVORITES} draggable="false">
