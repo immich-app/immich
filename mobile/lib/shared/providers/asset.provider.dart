@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
@@ -112,6 +113,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       }
       final bool newRemote = await _assetService.refreshRemoteAssets();
       final bool newLocal = await _albumService.refreshDeviceAlbums();
+      debugPrint("newRemote: $newRemote, newLocal: $newLocal");
       log.info("Load assets: ${stopwatch.elapsedMilliseconds}ms");
       stopwatch.reset();
       if (!newRemote &&

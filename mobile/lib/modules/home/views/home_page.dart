@@ -43,8 +43,6 @@ class HomePage extends HookConsumerWidget {
     final sharedAlbums = ref.watch(sharedAlbumProvider);
     final albumService = ref.watch(albumServiceProvider);
 
-    final refreshCount = useState(0);
-
     useEffect(
       () {
         ref.watch(websocketProvider.notifier).connect();
@@ -68,7 +66,7 @@ class HomePage extends HookConsumerWidget {
     );
 
     void reloadAllAsset() {
-      ref.watch(assetProvider.notifier).getAllAsset();
+      ref.watch(assetProvider.notifier).getAllAsset(clear: true);
     }
 
     Widget buildBody() {
@@ -93,7 +91,6 @@ class HomePage extends HookConsumerWidget {
           barrierDismissible: false,
         );
 
-        // ref.watch(shareServiceProvider).shareAssets(selection.value.toList());
         selectionEnabledHook.value = false;
       }
 
@@ -196,19 +193,7 @@ class HomePage extends HookConsumerWidget {
       }
 
       Future<void> refreshAssets() async {
-        debugPrint("refreshCount.value ${refreshCount.value}");
-        final fullRefresh = refreshCount.value > 0;
-        await ref.read(assetProvider.notifier).getAllAsset(clear: fullRefresh);
-        if (fullRefresh) {
-          // refresh was forced: user requested another refresh within 2 seconds
-          refreshCount.value = 0;
-        } else {
-          refreshCount.value++;
-          // set counter back to 0 if user does not request refresh again
-          Timer(const Duration(seconds: 2), () {
-            refreshCount.value = 0;
-          });
-        }
+        await ref.read(assetProvider.notifier).getAllAsset(clear: true);
       }
 
       return SafeArea(
