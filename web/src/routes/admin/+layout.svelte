@@ -16,7 +16,9 @@
 	import { goto } from '$app/navigation';
 	import { AppRoute } from '../../lib/constants';
 	import type { LayoutData } from './$types';
+	import SideBarSection from '$lib/components/shared-components/side-bar/side-bar-section.svelte';
 
+	let isCollapsed: boolean;
 	export let data: LayoutData;
 
 	// Circumvents the need to import the page store. Should be replaced by
@@ -40,36 +42,40 @@
 <NavigationBar user={data.user} />
 
 <main>
-	<section class="grid grid-cols-[250px_auto] pt-[72px] h-screen">
-		<section id="admin-sidebar" class="pt-8 pr-6 flex flex-col gap-1">
+	<section class="grid md:grid-cols-[250px_auto] grid-cols-[70px_auto] pt-[72px] h-screen">
+		<SideBarSection bind:isCollapsed>
 			<SideBarButton
 				title="Users"
 				logo={AccountMultipleOutline}
 				isSelected={data.routeId === AppRoute.ADMIN_USER_MANAGEMENT}
 				on:selected={() => goto(AppRoute.ADMIN_USER_MANAGEMENT)}
+				{isCollapsed}
 			/>
 			<SideBarButton
 				title="Jobs"
 				logo={Sync}
 				isSelected={data.routeId === AppRoute.ADMIN_JOBS}
 				on:selected={() => goto(AppRoute.ADMIN_JOBS)}
+				{isCollapsed}
 			/>
 			<SideBarButton
 				title="Settings"
 				logo={Cog}
 				isSelected={data.routeId === AppRoute.ADMIN_SETTINGS}
 				on:selected={() => goto(AppRoute.ADMIN_SETTINGS)}
+				{isCollapsed}
 			/>
 			<SideBarButton
 				title="Server Stats"
 				logo={Server}
 				isSelected={data.routeId === AppRoute.ADMIN_STATS}
 				on:selected={() => goto(AppRoute.ADMIN_STATS)}
+				{isCollapsed}
 			/>
 			<div class="mb-6 mt-auto">
-				<StatusBox />
+				<StatusBox {isCollapsed} />
 			</div>
-		</section>
+		</SideBarSection>
 
 		<section class="overflow-y-auto immich-scrollbar ">
 			<div id="setting-title" class="pt-10 w-full bg-immich-bg dark:bg-immich-dark-bg">
@@ -79,7 +85,7 @@
 				<hr class="dark:border-immich-dark-gray" />
 			</div>
 
-			<section id="setting-content" class="flex place-content-center">
+			<section id="setting-content" class="flex place-content-center mx-2">
 				<section class="w-[800px] pt-5 pb-28">
 					<slot />
 				</section>

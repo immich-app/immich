@@ -12,6 +12,9 @@
 	import StatusBox from '../status-box.svelte';
 	import SideBarButton from './side-bar-button.svelte';
 	import { locale } from '$lib/stores/preferences.store';
+	import SideBarSection from './side-bar-section.svelte';
+
+	let isCollapsed: boolean;
 
 	const getAssetCount = async () => {
 		const { data: allAssetCount } = await api.assetApi.getAssetCountByUserId();
@@ -71,7 +74,7 @@
 	};
 </script>
 
-<section id="sidebar" class="flex flex-col gap-1 pt-8 pr-6 bg-immich-bg dark:bg-immich-dark-bg">
+<SideBarSection bind:isCollapsed>
 	<a
 		data-sveltekit-preload-data="hover"
 		data-sveltekit-noscroll
@@ -82,6 +85,7 @@
 			title="Photos"
 			logo={ImageOutline}
 			isSelected={$page.route.id === '/(user)/photos'}
+			{isCollapsed}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getAssetCount()}
@@ -105,6 +109,7 @@
 			title="Explore"
 			logo={Magnify}
 			isSelected={$page.route.id === '/(user)/explore'}
+			{isCollapsed}
 		/>
 	</a>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.SHARING} draggable="false">
@@ -112,6 +117,7 @@
 			title="Sharing"
 			logo={AccountMultipleOutline}
 			isSelected={$page.route.id === '/(user)/sharing'}
+			{isCollapsed}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getAlbumCount()}
@@ -125,14 +131,18 @@
 		</SideBarButton>
 	</a>
 
-	<div class="text-xs p-5 pb-2 dark:text-immich-dark-fg">
-		<p>LIBRARY</p>
+	<div
+		class="text-xs md:pb-2 md:p-5 p-6 pb-[1.2rem] dark:text-immich-dark-fg transition-all duration-200"
+	>
+		<p class={isCollapsed ? 'hidden' : 'block'}>LIBRARY</p>
+		<hr class={isCollapsed ? 'block mt-2 mb-[0.45rem]' : 'hidden'} />
 	</div>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.FAVORITES} draggable="false">
 		<SideBarButton
 			title="Favorites"
 			logo={StarOutline}
 			isSelected={$page.route.id == '/(user)/favorites'}
+			{isCollapsed}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getFavoriteCount()}
@@ -150,6 +160,7 @@
 			title="Albums"
 			logo={ImageAlbum}
 			isSelected={$page.route.id === '/(user)/albums'}
+			{isCollapsed}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getAlbumCount()}
@@ -167,6 +178,7 @@
 			title="Archive"
 			logo={ArchiveArrowDownOutline}
 			isSelected={$page.route.id === '/(user)/archive'}
+			{isCollapsed}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getArchivedAssetsCount()}
@@ -183,6 +195,6 @@
 
 	<!-- Status Box -->
 	<div class="mb-6 mt-auto">
-		<StatusBox />
+		<StatusBox {isCollapsed} />
 	</div>
-</section>
+</SideBarSection>
