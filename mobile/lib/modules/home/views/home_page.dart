@@ -43,7 +43,6 @@ class HomePage extends HookConsumerWidget {
     final sharedAlbums = ref.watch(sharedAlbumProvider);
     final albumService = ref.watch(albumServiceProvider);
 
-    final tipOneOpacity = useState(0.0);
     final refreshCount = useState(0);
 
     useEffect(
