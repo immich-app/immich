@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +25,7 @@ import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/services/share.service.dart';
+import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/ui/share_dialog.dart';
 
@@ -42,6 +42,9 @@ class HomePage extends HookConsumerWidget {
     final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
     final sharedAlbums = ref.watch(sharedAlbumProvider);
     final albumService = ref.watch(albumServiceProvider);
+
+    final tipOneOpacity = useState(0.0);
+    final refreshCount = useState(0);
 
     useEffect(
       () {
@@ -66,7 +69,7 @@ class HomePage extends HookConsumerWidget {
     );
 
     void reloadAllAsset() {
-      ref.watch(assetProvider.notifier).getAllAsset(clear: true);
+      ref.watch(assetProvider.notifier).getAllAsset();
     }
 
     Widget buildBody() {
@@ -193,7 +196,62 @@ class HomePage extends HookConsumerWidget {
       }
 
       Future<void> refreshAssets() async {
-        await ref.read(assetProvider.notifier).getAllAsset(clear: true);
+        debugPrint("refreshCount.value ${refreshCount.value}");
+        final fullRefresh = refreshCount.value > 0;
+        await ref.read(assetProvider.notifier).getAllAsset(clear: fullRefresh);
+        if (fullRefresh) {
+          // refresh was forced: user requested another refresh within 2 seconds
+          refreshCount.value = 0;
+        } else {
+          refreshCount.value++;
+          // set counter back to 0 if user does not request refresh again
+          Timer(const Duration(seconds: 2), () {
+            refreshCount.value = 0;
+          });
+        }
+      }
+
+      buildLoadingIndicator() {
+        Timer(const Duration(seconds: 2), () {
+          tipOneOpacity.value = 1;
+        });
+
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const ImmichLoadingIndicator(),
+              Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: Text(
+                  'home_page_building_timeline',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ).tr(),
+              ),
+              AnimatedOpacity(
+                duration: const Duration(milliseconds: 500),
+                opacity: tipOneOpacity.value,
+                child: SizedBox(
+                  width: 250,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: const Text(
+                      'home_page_first_time_notice',
+                      textAlign: TextAlign.justify,
+                      style: TextStyle(
+                        fontSize: 12,
+                      ),
+                    ).tr(),
+                  ),
+                ),
+              )
+            ],
+          ),
+        );
       }
 
       return SafeArea(
@@ -201,20 +259,18 @@ class HomePage extends HookConsumerWidget {
         bottom: false,
         child: Stack(
           children: [
-            ImmichAssetGrid(
-              assets: ref
-                  .watch(assetProvider)
-                  .allAssets
-                  .whereNot((a) => a.isArchived)
-                  .toList(),
-              assetsPerRow:
-                  appSettingService.getSetting(AppSettingsEnum.tilesPerRow),
-              showStorageIndicator: appSettingService
-                  .getSetting(AppSettingsEnum.storageIndicator),
-              listener: selectionListener,
-              selectionActive: selectionEnabledHook.value,
-              onRefresh: refreshAssets,
-            ),
+            ref.watch(assetProvider).allAssets.isEmpty
+                ? buildLoadingIndicator()
+                : ImmichAssetGrid(
+                    assets: ref.watch(assetsWithNoArchived),
+                    assetsPerRow: appSettingService
+                        .getSetting(AppSettingsEnum.tilesPerRow),
+                    showStorageIndicator: appSettingService
+                        .getSetting(AppSettingsEnum.storageIndicator),
+                    listener: selectionListener,
+                    selectionActive: selectionEnabledHook.value,
+                    onRefresh: refreshAssets,
+                  ),
             if (selectionEnabledHook.value)
               ControlBottomAppBar(
                 onShare: onShareAssets,

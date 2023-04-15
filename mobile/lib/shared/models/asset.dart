@@ -224,7 +224,8 @@ class Asset {
     height ??= a.height;
     exifInfo ??= a.exifInfo;
     exifInfo?.id = id;
-    if (isLocal) {
+    if (a.isArchived) {
+      isLocal = false;
       isArchived = a.isArchived;
     }
 
