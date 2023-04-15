@@ -264,7 +264,7 @@ class HomePage extends HookConsumerWidget {
                 ? buildLoadingIndicator()
                 : ImmichAssetGrid(
                     renderList: ref.watch(assetProvider).renderList!,
-                    assets: ref.read(assetsWithNoArchived),
+                    assets: ref.read(assetProvider).allAssets,
                     assetsPerRow: appSettingService
                         .getSetting(AppSettingsEnum.tilesPerRow),
                     showStorageIndicator: appSettingService
@@ -290,9 +290,7 @@ class HomePage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: !selectionEnabledHook.value
-          ? HomePageAppBar(
-              onPopBack: reloadAllAsset,
-            )
+          ? HomePageAppBar(onPopBack: reloadAllAsset)
           : null,
       drawer: const ProfileDrawer(),
       body: buildBody(),

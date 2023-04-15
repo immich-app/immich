@@ -1,6 +1,8 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/providers/db.provider.dart';
+import 'package:isar/isar.dart';
 
 class ArchiveSelectionNotifier extends StateNotifier<Set<int>> {
   ArchiveSelectionNotifier(this.assetsState, this.assetNotifier) : super({}) {
@@ -59,8 +61,9 @@ final archiveProvider =
 
 final archiveAssetProvider = StateProvider((ref) {
   return ref
-      .watch(assetProvider)
-      .allAssets
-      .where((asset) => asset.isArchived)
-      .toList();
+      .watch(dbProvider)
+      .assets
+      .filter()
+      .isArchivedEqualTo(true)
+      .findAllSync();
 });

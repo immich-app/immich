@@ -77,8 +77,12 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       GroupAssetsBy
           .values[_settingsService.getSetting(AppSettingsEnum.groupAssetsBy)],
     );
-    state = await AssetsState.fromAssetList(newAssetList)
-        .withRenderDataStructure(layout);
+
+    // Rendering will not show archived assets by default - use database provider if
+    // you want to access the isArchived assets
+    state = await AssetsState.fromAssetList(
+      newAssetList.whereNot((asset) => asset.isArchived).toList(),
+    ).withRenderDataStructure(layout);
   }
 
   // Just a little helper to trigger a rebuild of the state object
