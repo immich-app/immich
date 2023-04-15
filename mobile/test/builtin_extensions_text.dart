@@ -15,4 +15,35 @@ void main() {
       expect("a:b:c".toDuration(), null);
     });
   });
+  group('Test uniqueConsecutive', () {
+    test('empty', () {
+      final a = [];
+      expect(a.uniqueConsecutive(), []);
+    });
+
+    test('singleElement', () {
+      final a = [5];
+      expect(a.uniqueConsecutive(), [5]);
+    });
+
+    test('noDuplicates', () {
+      final a = [1, 2, 3];
+      expect(a.uniqueConsecutive(), [1, 2, 3]);
+    });
+
+    test('unsortedDuplicates', () {
+      final a = [1, 2, 1, 3];
+      expect(a.uniqueConsecutive(), [1, 2, 1, 3]);
+    });
+
+    test('sortedDuplicates', () {
+      final a = [6, 6, 2, 3, 3, 3, 4, 5, 1, 1];
+      expect(a.uniqueConsecutive(), [6, 2, 3, 4, 5, 1]);
+    });
+
+    test('withKey', () {
+      final a = ["a", "bb", "cc", "ddd"];
+      expect(a.uniqueConsecutive((s) => s.length), ["a", "bb", "ddd"]);
+    });
+  });
 }

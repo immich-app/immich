@@ -9,6 +9,7 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
+import 'package:immich_mobile/utils/builtin_extensions.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/tuple.dart';
 import 'package:isar/isar.dart';
@@ -674,7 +675,9 @@ Pair<List<int>, List<Asset>> _handleAssetRemoval(
     return const Pair([], []);
   }
   deleteCandidates.sort(Asset.compareById);
+  deleteCandidates.uniqueConsecutive((a) => a.id);
   existing.sort(Asset.compareById);
+  existing.uniqueConsecutive((a) => a.id);
   final triple = _diffAssets(
     existing,
     deleteCandidates,
