@@ -259,10 +259,12 @@ class HomePage extends HookConsumerWidget {
         bottom: false,
         child: Stack(
           children: [
-            ref.watch(assetProvider).allAssets.isEmpty
+            ref.watch(assetProvider).renderList == null ||
+                    ref.watch(assetProvider).allAssets.isEmpty
                 ? buildLoadingIndicator()
                 : ImmichAssetGrid(
-                    assets: ref.watch(assetsWithNoArchived),
+                    renderList: ref.watch(assetProvider).renderList!,
+                    assets: ref.read(assetsWithNoArchived),
                     assetsPerRow: appSettingService
                         .getSetting(AppSettingsEnum.tilesPerRow),
                     showStorageIndicator: appSettingService
