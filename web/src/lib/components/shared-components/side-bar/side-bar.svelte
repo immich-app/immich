@@ -134,8 +134,12 @@
 	<div
 		class="text-xs md:pb-2 md:p-5 p-6 pb-[1.2rem] dark:text-immich-dark-fg transition-all duration-200"
 	>
-		<p class={isCollapsed ? 'hidden' : 'block'}>LIBRARY</p>
-		<hr class={isCollapsed ? 'block mt-2 mb-[0.45rem]' : 'hidden'} />
+		<p class="{isCollapsed ? 'hidden' : 'xs:block'} max-xs:hidden">LIBRARY</p>
+		<hr
+			class="{isCollapsed
+				? 'block mt-2 mb-[0.45rem]'
+				: 'min-xs:hidden'} xs:block xs:mt-2 xs:mb-[0.45rem]"
+		/>
 	</div>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.FAVORITES} draggable="false">
 		<SideBarButton
