@@ -237,6 +237,23 @@ class AssetNotifier extends StateNotifier<AssetsState> {
 
     return newAsset.isFavorite;
   }
+
+  Future<bool> toggleArchive(Asset asset, bool status) async {
+    final newAsset = await _assetService.changeFavoriteStatus(asset, status);
+
+    if (newAsset == null) {
+      log.severe("Change favorite status failed for asset ${asset.id}");
+      return asset.isArchived;
+    }
+
+    final index = state.allAssets.indexWhere((a) => asset.id == a.id);
+    if (index > 0) {
+      state.allAssets[index] = newAsset;
+      _updateAssetsState(state.allAssets);
+    }
+
+    return newAsset.isArchived;
+  }
 }
 
 final assetProvider = StateNotifierProvider<AssetNotifier, AssetsState>((ref) {

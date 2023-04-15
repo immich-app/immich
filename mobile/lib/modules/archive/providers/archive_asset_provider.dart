@@ -5,43 +5,45 @@ import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:isar/isar.dart';
 
 class ArchiveSelectionNotifier extends StateNotifier<Set<int>> {
-  ArchiveSelectionNotifier(this.assetsState, this.assetNotifier) : super({}) {
-    state = assetsState.allAssets
-        .where((asset) => asset.isFavorite)
-        .map((asset) => asset.id)
+  ArchiveSelectionNotifier(this.db, this.assetNotifier) : super({}) {
+    state = db.assets
+        .filter()
+        .isArchivedEqualTo(true)
+        .findAllSync()
+        .map((e) => e.id)
         .toSet();
   }
 
-  final AssetsState assetsState;
+  final Isar db;
   final AssetNotifier assetNotifier;
 
-  void _setFavoriteForAssetId(int id, bool favorite) {
-    if (!favorite) {
+  void _setArchiveForAssetId(int id, bool archive) {
+    if (!archive) {
       state = state.difference({id});
     } else {
       state = state.union({id});
     }
   }
 
-  bool _isFavorite(int id) {
+  bool _isArchive(int id) {
     return state.contains(id);
   }
 
-  Future<void> toggleFavorite(Asset asset) async {
-    if (!asset.isRemote) return; // TODO support local favorite assets
+  Future<void> toggleArchive(Asset asset) async {
+    if (!asset.isRemote) return;
 
-    _setFavoriteForAssetId(asset.id, !_isFavorite(asset.id));
+    _setArchiveForAssetId(asset.id, !_isArchive(asset.id));
 
-    await assetNotifier.toggleFavorite(
+    await assetNotifier.toggleArchive(
       asset,
       state.contains(asset.id),
     );
   }
 
-  Future<void> addToFavorites(Iterable<Asset> assets) {
+  Future<void> addToArchives(Iterable<Asset> assets) {
     state = state.union(assets.map((a) => a.id).toSet());
     final futures = assets.map(
-      (a) => assetNotifier.toggleFavorite(
+      (a) => assetNotifier.toggleArchive(
         a,
         true,
       ),
@@ -54,7 +56,7 @@ class ArchiveSelectionNotifier extends StateNotifier<Set<int>> {
 final archiveProvider =
     StateNotifierProvider<ArchiveSelectionNotifier, Set<int>>((ref) {
   return ArchiveSelectionNotifier(
-    ref.watch(assetProvider),
+    ref.watch(dbProvider),
     ref.watch(assetProvider.notifier),
   );
 });

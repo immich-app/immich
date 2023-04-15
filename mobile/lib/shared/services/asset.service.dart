@@ -127,4 +127,8 @@ class AssetService {
   Future<Asset?> changeFavoriteStatus(Asset asset, bool isFavorite) {
     return updateAsset(asset, UpdateAssetDto(isFavorite: isFavorite));
   }
+
+  Future<Asset?> changeArchiveStatus(Asset asset, bool isArchive) {
+    return updateAsset(asset, UpdateAssetDto(isArchived: isArchive));
+  }
 }
