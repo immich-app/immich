@@ -71,6 +71,7 @@
 				: 'rounded-3xl bg-gray-200 border border-transparent'}"
 			placeholder="Search your photos"
 			required
+			pattern="^(?!m:$).*$"
 			bind:value
 		/>
 	</label>
