@@ -24,14 +24,11 @@ class ArchivePage extends HookConsumerWidget {
         .isArchivedEqualTo(true);
     final stream = query.watch();
     final archivedAssets = useState<List<Asset>>([]);
-    debugPrint("build");
 
     useEffect(
       () {
-        debugPrint("useEffect");
         query.findAll().then((value) => archivedAssets.value = value);
         final subscription = stream.listen((e) {
-          debugPrint("event");
           archivedAssets.value = e;
         });
         // Cancel the subscription when the widget is disposed

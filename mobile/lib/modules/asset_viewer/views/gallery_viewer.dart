@@ -323,6 +323,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       final show = (showAppBar.value || // onTap has the final say
               (showAppBar.value && !isZoomed.value)) &&
           !isPlayingVideo.value;
+      final currentAsset = assetList[indexOfAsset.value];
 
       return AnimatedOpacity(
         duration: const Duration(milliseconds: 100),
@@ -342,7 +343,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               tooltip: 'Share',
             ),
             BottomNavigationBarItem(
-              icon: assetList[indexOfAsset.value].isArchived
+              icon: currentAsset.isArchived
                   ? const Icon(Icons.unarchive_rounded)
                   : const Icon(Icons.archive_outlined),
               label: 'Archive',
