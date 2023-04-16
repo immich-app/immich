@@ -283,8 +283,3 @@ final assetGroupByMonthYearProvider = StateProvider((ref) {
     (element) => DateFormat('MMMM, y').format(element.fileCreatedAt.toLocal()),
   );
 });
-
-final assetsWithNoArchived = StateProvider(
-  (ref) =>
-      ref.watch(assetProvider).allAssets.where((a) => !a.isArchived).toList(),
-);

@@ -109,7 +109,7 @@ class RenderList {
 
     final groups = _groupAssets(allAssets, groupBy);
 
-    groups.entries.sortedBy((e) =>e.key).reversed.forEach((entry) {
+    groups.entries.sortedBy((e) => e.key).reversed.forEach((entry) {
       final date = entry.key;
       final assets = entry.value;
 

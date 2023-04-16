@@ -60,12 +60,3 @@ final archiveProvider =
     ref.watch(assetProvider.notifier),
   );
 });
-
-final archiveAssetProvider = StateProvider((ref) {
-  return ref
-      .watch(dbProvider)
-      .assets
-      .filter()
-      .isArchivedEqualTo(true)
-      .findAllSync();
-});
