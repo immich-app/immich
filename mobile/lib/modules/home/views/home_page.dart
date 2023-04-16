@@ -131,6 +131,24 @@ class HomePage extends HookConsumerWidget {
         selectionEnabledHook.value = false;
       }
 
+      void onArchiveAsset() {
+        final remoteAssets = remoteOnlySelection(
+          localErrorMessage: 'home_page_archive_err_local'.tr(),
+        );
+        if (remoteAssets.isNotEmpty) {
+          ref.watch(assetProvider.notifier).toggleArchive(remoteAssets, true);
+
+          final assetOrAssets = remoteAssets.length > 1 ? 'assets' : 'asset';
+          ImmichToast.show(
+            context: context,
+            msg: 'Moved ${remoteAssets.length} $assetOrAssets to archive',
+            gravity: ToastGravity.BOTTOM,
+          );
+        }
+
+        selectionEnabledHook.value = false;
+      }
+
       void onDelete() {
         ref.watch(assetProvider.notifier).deleteAssets(selection.value);
         selectionEnabledHook.value = false;
@@ -277,6 +295,7 @@ class HomePage extends HookConsumerWidget {
               ControlBottomAppBar(
                 onShare: onShareAssets,
                 onFavorite: onFavoriteAssets,
+                onArchive: onArchiveAsset,
                 onDelete: onDelete,
                 onAddToAlbum: onAddToAlbum,
                 albums: albums,
