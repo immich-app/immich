@@ -272,6 +272,11 @@ class GalleryViewerPage extends HookConsumerWidget {
           .shareAsset(assetList[indexOfAsset.value], context);
     }
 
+    handleArchive(Asset asset) {
+      ref.watch(assetProvider.notifier).toggleArchive(asset, !asset.isArchived);
+      AutoRouter.of(context).pop();
+    }
+
     buildAppBar() {
       final show = (showAppBar.value || // onTap has the final say
               (showAppBar.value && !isZoomed.value)) &&
@@ -328,18 +333,20 @@ class GalleryViewerPage extends HookConsumerWidget {
           selectedLabelStyle: const TextStyle(color: Colors.black),
           showSelectedLabels: false,
           showUnselectedLabels: false,
-          items: const [
-            BottomNavigationBarItem(
+          items: [
+            const BottomNavigationBarItem(
               icon: Icon(Icons.ios_share_rounded),
               label: 'Share',
               tooltip: 'Share',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.archive_outlined),
+              icon: assetList[indexOfAsset.value].isArchived
+                  ? const Icon(Icons.unarchive_rounded)
+                  : const Icon(Icons.archive_outlined),
               label: 'Archive',
               tooltip: 'Archive',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.delete_outline),
               label: 'Delete',
               tooltip: 'Delete',
@@ -351,7 +358,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 shareAsset();
                 break;
               case 1:
-                // handleDelete(assetList[indexOfAsset.value]);
+                handleArchive(assetList[indexOfAsset.value]);
                 break;
               case 2:
                 handleDelete(assetList[indexOfAsset.value]);

@@ -270,5 +270,5 @@
   "advanced_settings_troubleshooting_subtitle": "Enable additional features for troubleshooting",
   "description_input_submit_error": "Error updating description, check the log for more details",
   "description_input_hint_text": "Add description...",
-  "archive_page_title": "Archive"
+  "archive_page_title": "Archive ({})"
 }
