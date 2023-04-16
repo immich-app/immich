@@ -1,9 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:isar/isar.dart';
 
@@ -12,12 +15,30 @@ class ArchivePage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final archiveAssets = ref
+    final User me = Store.get(StoreKey.currentUser);
+    final query = ref
         .watch(dbProvider)
         .assets
         .filter()
-        .isArchivedEqualTo(true)
-        .findAllSync();
+        .ownerIdEqualTo(me.isarId)
+        .isArchivedEqualTo(true);
+    final stream = query.watch();
+    final archivedAssets = useState<List<Asset>>([]);
+    debugPrint("build");
+
+    useEffect(
+      () {
+        debugPrint("useEffect");
+        query.findAll().then((value) => archivedAssets.value = value);
+        final subscription = stream.listen((e) {
+          debugPrint("event");
+          archivedAssets.value = e;
+        });
+        // Cancel the subscription when the widget is disposed
+        return subscription.cancel;
+      },
+      [],
+    );
 
     AppBar buildAppBar() {
       return AppBar(
@@ -29,14 +50,14 @@ class ArchivePage extends HookConsumerWidget {
         automaticallyImplyLeading: false,
         title: const Text(
           'archive_page_title',
-        ).tr(args: [archiveAssets.length.toString()]),
+        ).tr(args: [archivedAssets.value.length.toString()]),
       );
     }
 
     return Scaffold(
       appBar: buildAppBar(),
       body: ImmichAssetGrid(
-        assets: archiveAssets,
+        assets: archivedAssets.value,
       ),
     );
   }

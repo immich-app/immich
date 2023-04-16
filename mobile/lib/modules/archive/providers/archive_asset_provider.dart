@@ -35,21 +35,14 @@ class ArchiveSelectionNotifier extends StateNotifier<Set<int>> {
     _setArchiveForAssetId(asset.id, !_isArchive(asset.id));
 
     await assetNotifier.toggleArchive(
-      asset,
+      [asset],
       state.contains(asset.id),
     );
   }
 
   Future<void> addToArchives(Iterable<Asset> assets) {
     state = state.union(assets.map((a) => a.id).toSet());
-    final futures = assets.map(
-      (a) => assetNotifier.toggleArchive(
-        a,
-        true,
-      ),
-    );
-
-    return Future.wait(futures);
+    return assetNotifier.toggleArchive(assets, true);
   }
 }
 

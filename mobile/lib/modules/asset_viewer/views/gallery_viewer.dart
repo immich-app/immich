@@ -273,7 +273,9 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     handleArchive(Asset asset) {
-      ref.watch(assetProvider.notifier).toggleArchive(asset, !asset.isArchived);
+      ref
+          .watch(assetProvider.notifier)
+          .toggleArchive([asset], !asset.isArchived);
       AutoRouter.of(context).pop();
     }
 
