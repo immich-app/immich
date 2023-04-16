@@ -32,6 +32,7 @@ void main() {
       fileName: localId,
       isFavorite: false,
       isLocal: isLocal,
+      isArchived: false,
     );
   }
 

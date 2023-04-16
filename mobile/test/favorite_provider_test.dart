@@ -26,6 +26,7 @@ Asset _getTestAsset(int id, bool favorite) {
     type: AssetType.image,
     fileName: '',
     isFavorite: favorite,
+    isArchived: false,
   );
   a.id = id;
   return a;
