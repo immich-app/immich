@@ -14,8 +14,6 @@
 	import { locale } from '$lib/stores/preferences.store';
 	import SideBarSection from './side-bar-section.svelte';
 
-	let isCollapsed: boolean;
-
 	const getAssetCount = async () => {
 		const { data: allAssetCount } = await api.assetApi.getAssetCountByUserId();
 		const { data: archivedCount } = await api.assetApi.getArchivedAssetCountByUserId();
