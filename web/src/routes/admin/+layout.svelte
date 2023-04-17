@@ -17,7 +17,7 @@
 	import { AppRoute } from '../../lib/constants';
 	import type { LayoutData } from './$types';
 	import SideBarSection from '$lib/components/shared-components/side-bar/side-bar-section.svelte';
-	
+
 	export let data: LayoutData;
 
 	// Circumvents the need to import the page store. Should be replaced by
