@@ -6,6 +6,7 @@ import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart'
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
+import 'package:immich_mobile/utils/storage_indicator.dart';
 
 class ThumbnailImage extends HookConsumerWidget {
   final Asset asset;
@@ -124,11 +125,7 @@ class ThumbnailImage extends HookConsumerWidget {
                 right: 10,
                 bottom: 5,
                 child: Icon(
-                  asset.isRemote
-                      ? (asset.isLocal
-                          ? Icons.cloud_done_outlined
-                          : Icons.cloud_outlined)
-                      : Icons.cloud_off_outlined,
+                  storageIcon(asset),
                   color: Colors.white,
                   size: 18,
                 ),

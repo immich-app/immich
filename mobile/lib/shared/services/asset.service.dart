@@ -101,7 +101,7 @@ class AssetService {
       if (a.isRemote) {
         final dto = await _apiService.assetApi.getAssetById(a.remoteId!);
         if (dto != null && dto.exifInfo != null) {
-          a = a.withUpdatesFromDto(dto);
+          a.exifInfo = Asset.remote(dto).exifInfo!.copyWith(id: a.id);
           if (a.isInDb) {
             _db.writeTxn(() => a.put(_db));
           } else {
@@ -122,7 +122,7 @@ class AssetService {
     final dto =
         await _apiService.assetApi.updateAsset(asset.remoteId!, updateAssetDto);
     if (dto != null) {
-      final updated = Asset.remote(dto).updateFromDb(asset);
+      final updated = asset.updatedCopy(Asset.remote(dto));
       if (updated.isInDb) {
         await _db.writeTxn(() => updated.put(_db));
       }

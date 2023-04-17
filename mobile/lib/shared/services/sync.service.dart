@@ -136,7 +136,7 @@ class SyncService {
     if (match != null) {
       // unify local/remote assets by replacing the
       // local-only asset in the DB with a local&remote asset
-      newAsset.updateFromDb(match);
+      newAsset = match.updatedCopy(newAsset);
     }
     try {
       await _db.writeTxn(() => newAsset.put(_db));
@@ -581,12 +581,12 @@ class SyncService {
       // client and server, thus never reaching "both" case below
       compare: Asset.compareByOwnerDeviceLocalId,
       both: (Asset a, Asset b) {
-        if ((a.isLocal || !b.isLocal) && (a.isRemote || !b.isRemote)) {
+        if (a.canUpdate(b)) {
+          toUpsert.add(a.updatedCopy(b));
+          return true;
+        } else {
           existing.add(a);
           return false;
-        } else {
-          toUpsert.add(b.updateFromDb(a));
-          return true;
         }
       },
       onlyFirst: (Asset a) => _log.finer(
@@ -637,10 +637,8 @@ Triple<List<Asset>, List<Asset>, List<Asset>> _diffAssets(
     assets,
     compare: compare,
     both: (Asset a, Asset b) {
-      if (a.updatedAt.isBefore(b.updatedAt) ||
-          (!a.isLocal && b.isLocal) ||
-          (!a.isRemote && b.isRemote)) {
-        toUpdate.add(b.updateFromDb(a));
+      if (a.canUpdate(b)) {
+        toUpdate.add(a.updatedCopy(b));
         return true;
       }
       return false;

@@ -56,6 +56,7 @@ class Asset {
   }
 
   Asset({
+    this.id = Isar.autoIncrement,
     this.remoteId,
     required this.localId,
     required this.deviceId,
@@ -133,6 +134,7 @@ class Asset {
 
   bool isFavorite;
 
+  /// `true` if this [Asset] is present on the device
   bool isLocal;
 
   bool isArchived;
@@ -146,11 +148,25 @@ class Asset {
   @ignore
   String get name => p.withoutExtension(fileName);
 
+  /// `true` if this [Asset] is present on the server
   @ignore
   bool get isRemote => remoteId != null;
 
   @ignore
   bool get isImage => type == AssetType.image;
+
+  @ignore
+  AssetState get storage {
+    if (isRemote && isLocal) {
+      return AssetState.merged;
+    } else if (isRemote) {
+      return AssetState.remote;
+    } else if (isLocal) {
+      return AssetState.local;
+    } else {
+      throw Exception("Asset has illegal state: $this");
+    }
+  }
 
   @ignore
   Duration get duration => Duration(seconds: durationInSeconds);
@@ -198,37 +214,112 @@ class Asset {
       isLocal.hashCode ^
       isArchived.hashCode;
 
-  bool updateFromAssetEntity(AssetEntity ae) {
-    // TODO check more fields;
-    // width and height are most important because local assets require these
-    final bool hasChanges =
-        isLocal == false || width != ae.width || height != ae.height;
-    if (hasChanges) {
-      isLocal = true;
-      width = ae.width;
-      height = ae.height;
-    }
-    return hasChanges;
-  }
-
-  Asset withUpdatesFromDto(AssetResponseDto dto) =>
-      Asset.remote(dto).updateFromDb(this);
-
-  Asset updateFromDb(Asset a) {
+  /// Returns `true` if this [Asset] can updated with values from parameter [a]
+  bool canUpdate(Asset a) {
+    assert(isInDb);
     assert(localId == a.localId);
     assert(deviceId == a.deviceId);
-    id = a.id;
-    isLocal |= a.isLocal;
-    remoteId ??= a.remoteId;
-    width ??= a.width;
-    height ??= a.height;
-    exifInfo ??= a.exifInfo;
-    exifInfo?.id = id;
-    if (!isRemote) {
-      isArchived = a.isArchived;
-    }
-    return this;
+    assert(a.storage != AssetState.merged);
+    return a.updatedAt.isAfter(updatedAt) ||
+        a.isRemote && !isRemote ||
+        a.isLocal && !isLocal ||
+        width == null && a.width != null ||
+        height == null && a.height != null ||
+        exifInfo == null && a.exifInfo != null ||
+        livePhotoVideoId == null && a.livePhotoVideoId != null ||
+        !isRemote && a.isRemote && isFavorite != a.isFavorite ||
+        !isRemote && a.isRemote && isArchived != a.isArchived;
   }
+
+  /// Returns a new [Asset] with values from this and merged & updated with [a]
+  Asset updatedCopy(Asset a) {
+    assert(canUpdate(a));
+    if (a.updatedAt.isAfter(updatedAt)) {
+      // take most values from newer asset
+      // keep vales that can never be set by the asset not in DB
+      if (a.isRemote) {
+        return a._copyWith(
+          id: id,
+          isLocal: isLocal,
+          width: a.width ?? width,
+          height: a.height ?? height,
+          exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
+        );
+      } else {
+        return a._copyWith(
+          id: id,
+          remoteId: remoteId,
+          livePhotoVideoId: livePhotoVideoId,
+          isFavorite: isFavorite,
+          isArchived: isArchived,
+        );
+      }
+    } else {
+      // fill in potentially missing values, i.e. merge assets
+      if (a.isRemote) {
+        // values from remote take precedence
+        return _copyWith(
+          remoteId: a.remoteId,
+          width: a.width,
+          height: a.height,
+          livePhotoVideoId: a.livePhotoVideoId,
+          // isFavorite + isArchived are not set by device-only assets
+          isFavorite: a.isFavorite,
+          isArchived: a.isArchived,
+          exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
+        );
+      } else {
+        // add only missing values (and set isLocal to true)
+        return _copyWith(
+          isLocal: true,
+          width: width ?? a.width,
+          height: height ?? a.height,
+          exifInfo: exifInfo ?? a.exifInfo?.copyWith(id: id),
+        );
+      }
+    }
+  }
+
+  Asset _copyWith({
+    Id? id,
+    String? remoteId,
+    String? localId,
+    int? deviceId,
+    int? ownerId,
+    DateTime? fileCreatedAt,
+    DateTime? fileModifiedAt,
+    DateTime? updatedAt,
+    int? durationInSeconds,
+    AssetType? type,
+    short? width,
+    short? height,
+    String? fileName,
+    String? livePhotoVideoId,
+    bool? isFavorite,
+    bool? isLocal,
+    bool? isArchived,
+    ExifInfo? exifInfo,
+  }) =>
+      Asset(
+        id: id ?? this.id,
+        remoteId: remoteId ?? this.remoteId,
+        localId: localId ?? this.localId,
+        deviceId: deviceId ?? this.deviceId,
+        ownerId: ownerId ?? this.ownerId,
+        fileCreatedAt: fileCreatedAt ?? this.fileCreatedAt,
+        fileModifiedAt: fileModifiedAt ?? this.fileModifiedAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+        durationInSeconds: durationInSeconds ?? this.durationInSeconds,
+        type: type ?? this.type,
+        width: width ?? this.width,
+        height: height ?? this.height,
+        fileName: fileName ?? this.fileName,
+        livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
+        isFavorite: isFavorite ?? this.isFavorite,
+        isLocal: isLocal ?? this.isLocal,
+        isArchived: isArchived ?? this.isArchived,
+        exifInfo: exifInfo ?? this.exifInfo,
+      );
 
   Future<void> put(Isar db) async {
     await db.assets.put(this);
@@ -309,6 +400,14 @@ extension AssetTypeEnumHelper on AssetTypeEnum {
     }
     throw Exception();
   }
+}
+
+/// Describes where the information of this asset came from:
+/// only from the local device, only from the remote server or merged from both
+enum AssetState {
+  local,
+  remote,
+  merged,
 }
 
 extension AssetsHelper on IsarCollection<Asset> {
