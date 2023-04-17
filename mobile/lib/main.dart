@@ -192,15 +192,18 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
     // Sets the navigation bar color
-    SystemUiOverlayStyle overlayStyle = const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent);
+    SystemUiOverlayStyle overlayStyle = const SystemUiOverlayStyle(
+      systemNavigationBarColor: Colors.transparent,
+    );
     if (Platform.isAndroid) {
       // Android 8 does not support transparent app bars
       final info = await DeviceInfoPlugin().androidInfo;
       if (info.version.sdkInt <= 26) {
-        overlayStyle = MediaQuery.of(context).platformBrightness == Brightness.light
-            ? SystemUiOverlayStyle.light
-            : SystemUiOverlayStyle.dark;
-      } 
+        overlayStyle =
+            MediaQuery.of(context).platformBrightness == Brightness.light
+                ? SystemUiOverlayStyle.light
+                : SystemUiOverlayStyle.dark;
+      }
     }
     SystemChrome.setSystemUIOverlayStyle(overlayStyle);
   }
@@ -213,9 +216,6 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       // needs to be delayed so that EasyLocalization is working
       ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
     });
-
-
-
   }
 
   @override

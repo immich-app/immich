@@ -240,6 +240,12 @@ class _$AppRouter extends RootStackRouter {
         ),
       );
     },
+    ArchiveRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const ArchivePage(),
+      );
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
         routeData: routeData,
@@ -498,6 +504,14 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           AppLogDetailRoute.name,
           path: '/app-log-detail-page',
+        ),
+        RouteConfig(
+          ArchiveRoute.name,
+          path: '/archive-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
         ),
       ];
 }
@@ -1020,6 +1034,18 @@ class AppLogDetailRouteArgs {
   String toString() {
     return 'AppLogDetailRouteArgs{key: $key, logMessage: $logMessage}';
   }
+}
+
+/// generated route for
+/// [ArchivePage]
+class ArchiveRoute extends PageRouteInfo<void> {
+  const ArchiveRoute()
+      : super(
+          ArchiveRoute.name,
+          path: '/archive-page',
+        );
+
+  static const String name = 'ArchiveRoute';
 }
 
 /// generated route for

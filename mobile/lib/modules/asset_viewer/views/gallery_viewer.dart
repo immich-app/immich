@@ -231,11 +231,10 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     void addToAlbum(Asset addToAlbumAsset) {
       showModalBottomSheet(
+        elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15.0),
         ),
-        barrierColor: Colors.transparent,
-        backgroundColor: Colors.transparent,
         context: context,
         builder: (BuildContext _) {
           return AddToAlbumBottomSheet(
@@ -265,6 +264,19 @@ class GalleryViewerPage extends HookConsumerWidget {
       } else if (details.delta.dy < -sensitivity) {
         showInfo();
       }
+    }
+
+    shareAsset() {
+      ref
+          .watch(imageViewerStateProvider.notifier)
+          .shareAsset(assetList[indexOfAsset.value], context);
+    }
+
+    handleArchive(Asset asset) {
+      ref
+          .watch(assetProvider.notifier)
+          .toggleArchive([asset], !asset.isArchived);
+      AutoRouter.of(context).pop();
     }
 
     buildAppBar() {
@@ -297,19 +309,65 @@ class GalleryViewerPage extends HookConsumerWidget {
                           context,
                         );
                   },
-            onSharePressed: () {
-              ref
-                  .watch(imageViewerStateProvider.notifier)
-                  .shareAsset(assetList[indexOfAsset.value], context);
-            },
             onToggleMotionVideo: (() {
               isPlayingMotionVideo.value = !isPlayingMotionVideo.value;
             }),
-            onDeletePressed: () =>
-                handleDelete((assetList[indexOfAsset.value])),
             onAddToAlbumPressed: () =>
                 addToAlbum(assetList[indexOfAsset.value]),
           ),
+        ),
+      );
+    }
+
+    buildBottomBar() {
+      final show = (showAppBar.value || // onTap has the final say
+              (showAppBar.value && !isZoomed.value)) &&
+          !isPlayingVideo.value;
+      final currentAsset = assetList[indexOfAsset.value];
+
+      return AnimatedOpacity(
+        duration: const Duration(milliseconds: 100),
+        opacity: show ? 1.0 : 0.0,
+        child: BottomNavigationBar(
+          backgroundColor: Colors.black.withOpacity(0.4),
+          unselectedIconTheme: const IconThemeData(color: Colors.white),
+          selectedIconTheme: const IconThemeData(color: Colors.white),
+          unselectedLabelStyle: const TextStyle(color: Colors.black),
+          selectedLabelStyle: const TextStyle(color: Colors.black),
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+          items: [
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.ios_share_rounded),
+              label: 'Share',
+              tooltip: 'Share',
+            ),
+            BottomNavigationBarItem(
+              icon: currentAsset.isArchived
+                  ? const Icon(Icons.unarchive_rounded)
+                  : const Icon(Icons.archive_outlined),
+              label: 'Archive',
+              tooltip: 'Archive',
+            ),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.delete_outline),
+              label: 'Delete',
+              tooltip: 'Delete',
+            ),
+          ],
+          onTap: (index) {
+            switch (index) {
+              case 0:
+                shareAsset();
+                break;
+              case 1:
+                handleArchive(assetList[indexOfAsset.value]);
+                break;
+              case 2:
+                handleDelete(assetList[indexOfAsset.value]);
+                break;
+            }
+          },
         ),
       );
     }
@@ -480,6 +538,12 @@ class GalleryViewerPage extends HookConsumerWidget {
               left: 0,
               right: 0,
               child: buildAppBar(),
+            ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: buildBottomBar(),
             ),
           ],
         ),

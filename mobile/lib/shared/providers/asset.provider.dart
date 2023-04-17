@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
@@ -19,6 +20,8 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
 
+/// State does not contain archived assets.
+/// Use database provider if you want to access the isArchived assets
 class AssetsState {
   final List<Asset> allAssets;
   final RenderList? renderList;
@@ -76,6 +79,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       GroupAssetsBy
           .values[_settingsService.getSetting(AppSettingsEnum.groupAssetsBy)],
     );
+
     state = await AssetsState.fromAssetList(newAssetList)
         .withRenderDataStructure(layout);
   }
@@ -112,6 +116,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       }
       final bool newRemote = await _assetService.refreshRemoteAssets();
       final bool newLocal = await _albumService.refreshDeviceAlbums();
+      debugPrint("newRemote: $newRemote, newLocal: $newLocal");
       log.info("Load assets: ${stopwatch.elapsedMilliseconds}ms");
       stopwatch.reset();
       if (!newRemote &&
@@ -139,6 +144,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
   Future<List<Asset>> _getUserAssets(int userId) => _db.assets
       .filter()
       .ownerIdEqualTo(userId)
+      .isArchivedEqualTo(false)
       .sortByFileCreatedAtDesc()
       .findAll();
 
@@ -224,12 +230,45 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     }
 
     final index = state.allAssets.indexWhere((a) => asset.id == a.id);
-    if (index > 0) {
+    if (index != -1) {
       state.allAssets[index] = newAsset;
       _updateAssetsState(state.allAssets);
     }
 
     return newAsset.isFavorite;
+  }
+
+  Future<void> toggleArchive(Iterable<Asset> assets, bool status) async {
+    final newAssets = await Future.wait(
+      assets.map((a) => _assetService.changeArchiveStatus(a, status)),
+    );
+    int i = 0;
+    bool unArchived = false;
+    for (Asset oldAsset in assets) {
+      final newAsset = newAssets[i++];
+      if (newAsset == null) {
+        log.severe("Change archive status failed for asset ${oldAsset.id}");
+        continue;
+      }
+      final index = state.allAssets.indexWhere((a) => oldAsset.id == a.id);
+      if (newAsset.isArchived) {
+        // remove from state
+        if (index != -1) {
+          state.allAssets.removeAt(index);
+        }
+      } else {
+        // add to state is difficult because the list is sorted
+        unArchived = true;
+      }
+    }
+    if (unArchived) {
+      final User me = Store.get(StoreKey.currentUser);
+      await _stateUpdateLock.run(
+        () async => _updateAssetsState(await _getUserAssets(me.isarId)),
+      );
+    } else {
+      _updateAssetsState(state.allAssets);
+    }
   }
 }
 

@@ -111,6 +111,7 @@
   "control_bottom_app_bar_create_new_album": "Create new album",
   "control_bottom_app_bar_delete": "Delete",
   "control_bottom_app_bar_favorite": "Favorite",
+  "control_bottom_app_bar_archive": "Archive",
   "control_bottom_app_bar_share": "Share",
   "create_album_page_untitled": "Untitled",
   "create_shared_album_page_create": "Create",
@@ -139,6 +140,7 @@
   "home_page_add_to_album_success": "Added {added} assets to album {album}.",
   "home_page_building_timeline": "Building the timeline",
   "home_page_favorite_err_local": "Can not favorite local assets yet, skipping",
+  "home_page_archive_err_local": "Can not archive local assets yet, skipping",
   "home_page_first_time_notice": "If this is your first time using the app, please make sure to choose a backup album(s) so that the timeline can populate photos and videos in the album(s).",
   "image_viewer_page_state_provider_download_error": "Download Error",
   "image_viewer_page_state_provider_download_success": "Download Success",
@@ -147,6 +149,7 @@
   "library_page_favorites": "Favorites",
   "library_page_new_album": "New album",
   "library_page_sharing": "Sharing",
+  "library_page_archive": "Archive",
   "library_page_sort_created": "Most recently created",
   "library_page_sort_title": "Album title",
   "login_form_api_exception": "API exception. Please check the server URL and try again.",
@@ -268,5 +271,6 @@
   "advanced_settings_troubleshooting_title": "Troubleshooting",
   "advanced_settings_troubleshooting_subtitle": "Enable additional features for troubleshooting",
   "description_input_submit_error": "Error updating description, check the log for more details",
-  "description_input_hint_text": "Add description..."
+  "description_input_hint_text": "Add description...",
+  "archive_page_title": "Archive ({})"
 }

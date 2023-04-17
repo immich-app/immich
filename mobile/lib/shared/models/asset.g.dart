@@ -47,49 +47,54 @@ const AssetSchema = CollectionSchema(
       name: r'height',
       type: IsarType.int,
     ),
-    r'isFavorite': PropertySchema(
+    r'isArchived': PropertySchema(
       id: 6,
+      name: r'isArchived',
+      type: IsarType.bool,
+    ),
+    r'isFavorite': PropertySchema(
+      id: 7,
       name: r'isFavorite',
       type: IsarType.bool,
     ),
     r'isLocal': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'isLocal',
       type: IsarType.bool,
     ),
     r'livePhotoVideoId': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'livePhotoVideoId',
       type: IsarType.string,
     ),
     r'localId': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'localId',
       type: IsarType.string,
     ),
     r'ownerId': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'ownerId',
       type: IsarType.long,
     ),
     r'remoteId': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'remoteId',
       type: IsarType.string,
     ),
     r'type': PropertySchema(
-      id: 12,
+      id: 13,
       name: r'type',
       type: IsarType.byte,
       enumMap: _AssettypeEnumValueMap,
     ),
     r'updatedAt': PropertySchema(
-      id: 13,
+      id: 14,
       name: r'updatedAt',
       type: IsarType.dateTime,
     ),
     r'width': PropertySchema(
-      id: 14,
+      id: 15,
       name: r'width',
       type: IsarType.int,
     )
@@ -175,15 +180,16 @@ void _assetSerialize(
   writer.writeDateTime(offsets[3], object.fileModifiedAt);
   writer.writeString(offsets[4], object.fileName);
   writer.writeInt(offsets[5], object.height);
-  writer.writeBool(offsets[6], object.isFavorite);
-  writer.writeBool(offsets[7], object.isLocal);
-  writer.writeString(offsets[8], object.livePhotoVideoId);
-  writer.writeString(offsets[9], object.localId);
-  writer.writeLong(offsets[10], object.ownerId);
-  writer.writeString(offsets[11], object.remoteId);
-  writer.writeByte(offsets[12], object.type.index);
-  writer.writeDateTime(offsets[13], object.updatedAt);
-  writer.writeInt(offsets[14], object.width);
+  writer.writeBool(offsets[6], object.isArchived);
+  writer.writeBool(offsets[7], object.isFavorite);
+  writer.writeBool(offsets[8], object.isLocal);
+  writer.writeString(offsets[9], object.livePhotoVideoId);
+  writer.writeString(offsets[10], object.localId);
+  writer.writeLong(offsets[11], object.ownerId);
+  writer.writeString(offsets[12], object.remoteId);
+  writer.writeByte(offsets[13], object.type.index);
+  writer.writeDateTime(offsets[14], object.updatedAt);
+  writer.writeInt(offsets[15], object.width);
 }
 
 Asset _assetDeserialize(
@@ -199,16 +205,17 @@ Asset _assetDeserialize(
     fileModifiedAt: reader.readDateTime(offsets[3]),
     fileName: reader.readString(offsets[4]),
     height: reader.readIntOrNull(offsets[5]),
-    isFavorite: reader.readBool(offsets[6]),
-    isLocal: reader.readBool(offsets[7]),
-    livePhotoVideoId: reader.readStringOrNull(offsets[8]),
-    localId: reader.readString(offsets[9]),
-    ownerId: reader.readLong(offsets[10]),
-    remoteId: reader.readStringOrNull(offsets[11]),
-    type: _AssettypeValueEnumMap[reader.readByteOrNull(offsets[12])] ??
+    isArchived: reader.readBool(offsets[6]),
+    isFavorite: reader.readBool(offsets[7]),
+    isLocal: reader.readBool(offsets[8]),
+    livePhotoVideoId: reader.readStringOrNull(offsets[9]),
+    localId: reader.readString(offsets[10]),
+    ownerId: reader.readLong(offsets[11]),
+    remoteId: reader.readStringOrNull(offsets[12]),
+    type: _AssettypeValueEnumMap[reader.readByteOrNull(offsets[13])] ??
         AssetType.other,
-    updatedAt: reader.readDateTime(offsets[13]),
-    width: reader.readIntOrNull(offsets[14]),
+    updatedAt: reader.readDateTime(offsets[14]),
+    width: reader.readIntOrNull(offsets[15]),
   );
   object.id = id;
   return object;
@@ -238,19 +245,21 @@ P _assetDeserializeProp<P>(
     case 7:
       return (reader.readBool(offset)) as P;
     case 8:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 9:
-      return (reader.readString(offset)) as P;
-    case 10:
-      return (reader.readLong(offset)) as P;
-    case 11:
       return (reader.readStringOrNull(offset)) as P;
+    case 10:
+      return (reader.readString(offset)) as P;
+    case 11:
+      return (reader.readLong(offset)) as P;
     case 12:
+      return (reader.readStringOrNull(offset)) as P;
+    case 13:
       return (_AssettypeValueEnumMap[reader.readByteOrNull(offset)] ??
           AssetType.other) as P;
-    case 13:
-      return (reader.readDateTime(offset)) as P;
     case 14:
+      return (reader.readDateTime(offset)) as P;
+    case 15:
       return (reader.readIntOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1024,6 +1033,16 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> isArchivedEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isArchived',
+        value: value,
+      ));
+    });
+  }
+
   QueryBuilder<Asset, Asset, QAfterFilterCondition> isFavoriteEqualTo(
       bool value) {
     return QueryBuilder.apply(this, (query) {
@@ -1771,6 +1790,18 @@ extension AssetQuerySortBy on QueryBuilder<Asset, Asset, QSortBy> {
     });
   }
 
+  QueryBuilder<Asset, Asset, QAfterSortBy> sortByIsArchived() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isArchived', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterSortBy> sortByIsArchivedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isArchived', Sort.desc);
+    });
+  }
+
   QueryBuilder<Asset, Asset, QAfterSortBy> sortByIsFavorite() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isFavorite', Sort.asc);
@@ -1965,6 +1996,18 @@ extension AssetQuerySortThenBy on QueryBuilder<Asset, Asset, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Asset, Asset, QAfterSortBy> thenByIsArchived() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isArchived', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterSortBy> thenByIsArchivedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isArchived', Sort.desc);
+    });
+  }
+
   QueryBuilder<Asset, Asset, QAfterSortBy> thenByIsFavorite() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isFavorite', Sort.asc);
@@ -2112,6 +2155,12 @@ extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
     });
   }
 
+  QueryBuilder<Asset, Asset, QDistinct> distinctByIsArchived() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isArchived');
+    });
+  }
+
   QueryBuilder<Asset, Asset, QDistinct> distinctByIsFavorite() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'isFavorite');
@@ -2211,6 +2260,12 @@ extension AssetQueryProperty on QueryBuilder<Asset, Asset, QQueryProperty> {
   QueryBuilder<Asset, int?, QQueryOperations> heightProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'height');
+    });
+  }
+
+  QueryBuilder<Asset, bool, QQueryOperations> isArchivedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isArchived');
     });
   }
 

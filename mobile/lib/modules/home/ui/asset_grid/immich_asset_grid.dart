@@ -50,10 +50,9 @@ class ImmichAssetGrid extends HookConsumerWidget {
           // Unfortunately, using the transition animation itself didn't
           // seem to work reliably. So instead, wait until the duration of the
           // animation has elapsed to re-enable the hero animations
-          Future.delayed(transitionDuration)
-              .then((_) {
-                enableHeroAnimations.value = true;
-              });
+          Future.delayed(transitionDuration).then((_) {
+            enableHeroAnimations.value = true;
+          });
         }
         return null;
       },
