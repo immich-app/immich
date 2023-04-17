@@ -36,16 +36,16 @@
 <UserPageLayout user={data.user} title={data.meta.title}>
 	<div class="flex" slot="buttons">
 		<LinkButton on:click={createSharedAlbum}>
-			<div class="flex place-items-center gap-1 text-sm">
-				<PlusBoxOutline size="18" />
-				<span class="max-xs:hidden">Create shared album</span>
+			<div class="flex place-items-center gap-x-1 text-sm flex-wrap justify-center">
+				<PlusBoxOutline size="18" class="shrink-0" />
+				<span class="max-sm:text-xs leading-none">Create shared album</span>
 			</div>
 		</LinkButton>
 
 		<LinkButton on:click={() => goto('/sharing/sharedlinks')}>
-			<div class="flex place-items-center gap-1 text-sm">
-				<Link size="18" />
-				<span class="max-xs:hidden">Shared links</span>
+			<div class="flex place-items-center gap-x-1 text-sm flex-wrap justify-center">
+				<Link size="18" class="shrink-0" />
+				<span class="max-sm:text-xs leading-none">Shared links</span>
 			</div>
 		</LinkButton>
 	</div>
