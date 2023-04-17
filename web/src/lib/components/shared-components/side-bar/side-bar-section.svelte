@@ -21,12 +21,12 @@
 
 <section
 	id="sidebar"
-	on:mouseover={() => (innerWidth >= 430 ? (isCollapsed = false) : null)}
-	on:focus={() => (innerWidth >= 430 ? (isCollapsed = false) : null)}
+	on:mouseover={() => (innerWidth >= 640 ? (isCollapsed = false) : null)}
+	on:focus={() => (innerWidth >= 640 ? (isCollapsed = false) : null)}
 	on:mouseleave={() => handleResize()}
-	class="flex flex-col gap-1 pt-8 bg-immich-bg dark:bg-immich-dark-bg transition-[width] duration-200 z-10 max-xs:w-[72px] {isCollapsed
+	class="flex flex-col gap-1 pt-8 bg-immich-bg dark:bg-immich-dark-bg transition-[width] duration-200 z-10 max-sm:w-[72px] {isCollapsed
 		? 'w-[72px]'
-		: 'xs:pr-6 xs:w-64 xs:shadow-2xl md:shadow-none md:border-none xs:border-r xs:dark:border-r-immich-dark-gray'}"
+		: 'sm:pr-6 sm:w-64 sm:shadow-2xl md:shadow-none md:border-none sm:border-r sm:dark:border-r-immich-dark-gray'}"
 >
 	<slot />
 </section>

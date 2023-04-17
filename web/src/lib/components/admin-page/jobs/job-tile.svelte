@@ -25,7 +25,7 @@
 </script>
 
 <div
-	class="flex xs:flex-row flex-col bg-gray-100 dark:bg-immich-dark-gray rounded-3xl overflow-hidden"
+	class="flex sm:flex-row flex-col bg-gray-100 dark:bg-immich-dark-gray rounded-3xl overflow-hidden"
 >
 	<div class="flex flex-col w-full">
 		{#if queueStatus.isPaused}
@@ -80,7 +80,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="flex xs:flex-col flex-row xs:w-32 w-full overflow-hidden">
+	<div class="flex sm:flex-col flex-row sm:w-32 w-full overflow-hidden">
 		{#if !isIdle}
 			{#if waitingCount > 0}
 				<JobTileButton

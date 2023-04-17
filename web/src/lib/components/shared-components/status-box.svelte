@@ -60,7 +60,7 @@
 		>
 			<Cloud size={'24'} />
 		</div>
-		<div class="max-xs:hidden">
+		<div class="max-sm:hidden">
 			{#if !isCollapsed}
 				<p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Storage</p>
 				{#if serverInfo}
@@ -88,14 +88,14 @@
 	</div>
 	<div class="server-status grid grid-cols-[64px_auto]">
 		<div
-			class="pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary max-xs:pb-11 {isCollapsed
+			class="pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary max-sm:pb-11 {isCollapsed
 				? 'pb-11'
 				: ''}"
 		>
 			<Dns size={'24'} />
 		</div>
 		{#if !isCollapsed}
-			<div class="text-xs max-xs:hidden">
+			<div class="text-xs max-sm:hidden">
 				<p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Server</p>
 
 				<div class="flex justify-items-center justify-between mt-2 ">

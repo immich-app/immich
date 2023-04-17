@@ -22,8 +22,8 @@
     {isSelected
 		? 'bg-immich-primary/10 dark:bg-immich-dark-primary/10 text-immich-primary dark:text-[#adcbfa] hover:bg-immich-primary/25'
 		: ''}
-		max-xs:pl-5
-		{isCollapsed ? 'pl-5' : 'xs:px-5'}
+		max-sm:pl-5
+		{isCollapsed ? 'pl-5' : 'sm:px-5'}
   "
 >
 	<div class="flex gap-4 place-items-center w-full overflow-hidden">
@@ -32,13 +32,13 @@
 	</div>
 
 	<div
-		class="transition-[height] duration-100 delay-200 max-xs:height-0 {isCollapsed
+		class="transition-[height] duration-100 delay-200 max-sm:height-0 {isCollapsed
 			? 'height-0'
-			: 'xs:height-auto'}"
+			: 'sm:height-auto'}"
 	>
 		{#if $$slots.moreInformation && !isCollapsed}
 			<div
-				class="relative flex justify-center select-none cursor-default max-xs:hidden"
+				class="relative flex justify-center select-none cursor-default max-sm:hidden"
 				on:mouseenter={() => (showMoreInformation = true)}
 				on:mouseleave={() => (showMoreInformation = false)}
 			>
