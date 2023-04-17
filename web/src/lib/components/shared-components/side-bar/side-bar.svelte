@@ -74,7 +74,7 @@
 	};
 </script>
 
-<SideBarSection bind:isCollapsed>
+<SideBarSection>
 	<a
 		data-sveltekit-preload-data="hover"
 		data-sveltekit-noscroll
@@ -85,7 +85,6 @@
 			title="Photos"
 			logo={ImageOutline}
 			isSelected={$page.route.id === '/(user)/photos'}
-			{isCollapsed}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getAssetCount()}
@@ -109,7 +108,6 @@
 			title="Explore"
 			logo={Magnify}
 			isSelected={$page.route.id === '/(user)/explore'}
-			{isCollapsed}
 		/>
 	</a>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.SHARING} draggable="false">
@@ -117,7 +115,6 @@
 			title="Sharing"
 			logo={AccountMultipleOutline}
 			isSelected={$page.route.id === '/(user)/sharing'}
-			{isCollapsed}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getAlbumCount()}
@@ -131,22 +128,15 @@
 		</SideBarButton>
 	</a>
 
-	<div
-		class="text-xs md:pb-2 md:p-5 p-6 pb-[1.2rem] dark:text-immich-dark-fg transition-all duration-200"
-	>
-		<p class="{isCollapsed ? 'hidden' : 'sm:block'} max-sm:hidden">LIBRARY</p>
-		<hr
-			class="{isCollapsed
-				? 'block mt-2 mb-[0.45rem]'
-				: 'sm:hidden'} sm:block sm:mt-2 sm:mb-[0.45rem]"
-		/>
+	<div class="text-xs dark:text-immich-dark-fg transition-all duration-200">
+		<p class="p-6 hidden md:block group-hover:sm:block">LIBRARY</p>
+		<hr class="mt-8 mb-[31px] mx-4 block md:hidden group-hover:sm:hidden" />
 	</div>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.FAVORITES} draggable="false">
 		<SideBarButton
 			title="Favorites"
 			logo={StarOutline}
 			isSelected={$page.route.id == '/(user)/favorites'}
-			{isCollapsed}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getFavoriteCount()}
@@ -164,7 +154,6 @@
 			title="Albums"
 			logo={ImageAlbum}
 			isSelected={$page.route.id === '/(user)/albums'}
-			{isCollapsed}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getAlbumCount()}
@@ -182,7 +171,6 @@
 			title="Archive"
 			logo={ArchiveArrowDownOutline}
 			isSelected={$page.route.id === '/(user)/archive'}
-			{isCollapsed}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getArchivedAssetsCount()}
@@ -199,6 +187,6 @@
 
 	<!-- Status Box -->
 	<div class="mb-6 mt-auto">
-		<StatusBox {isCollapsed} />
+		<StatusBox />
 	</div>
 </SideBarSection>

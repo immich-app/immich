@@ -7,7 +7,6 @@
 	export let title: string;
 	export let logo: typeof Icon;
 	export let isSelected: boolean;
-	export let isCollapsed: boolean;
 
 	let showMoreInformation = false;
 
@@ -22,23 +21,20 @@
     {isSelected
 		? 'bg-immich-primary/10 dark:bg-immich-dark-primary/10 text-immich-primary dark:text-[#adcbfa] hover:bg-immich-primary/25'
 		: ''}
-		max-sm:pl-5
-		{isCollapsed ? 'pl-5' : 'sm:px-5'}
+		pl-5 group-hover:sm:px-5 md:px-5
   "
 >
-	<div class="flex gap-4 place-items-center w-full overflow-hidden">
+	<div class="flex gap-4 place-items-center w-full overflow-hidden truncate">
 		<svelte:component this={logo} size="1.5em" class="shrink-0" />
 		<p class="font-medium text-sm">{title}</p>
 	</div>
 
 	<div
-		class="transition-[height] duration-100 delay-200 max-sm:height-0 {isCollapsed
-			? 'height-0'
-			: 'sm:height-auto'}"
+		class="transition-[height] group-hover:sm:overflow-visible md:overflow-visible overflow-hidden duration-100 delay-1000  sm:group-hover:h-auto md:h-auto h-0"
 	>
-		{#if $$slots.moreInformation && !isCollapsed}
+		{#if $$slots.moreInformation}
 			<div
-				class="relative flex justify-center select-none cursor-default max-sm:hidden"
+				class="relative flex justify-center select-none cursor-default"
 				on:mouseenter={() => (showMoreInformation = true)}
 				on:mouseleave={() => (showMoreInformation = false)}
 			>
