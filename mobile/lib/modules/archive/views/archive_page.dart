@@ -93,7 +93,7 @@ class ArchivePage extends HookConsumerWidget {
                         context: context,
                         msg:
                             'Moved ${selection.value.length} $assetOrAssets to library',
-                        gravity: ToastGravity.BOTTOM,
+                        gravity: ToastGravity.CENTER,
                       );
                     }
 

@@ -142,7 +142,7 @@ class HomePage extends HookConsumerWidget {
           ImmichToast.show(
             context: context,
             msg: 'Moved ${remoteAssets.length} $assetOrAssets to archive',
-            gravity: ToastGravity.BOTTOM,
+            gravity: ToastGravity.CENTER,
           );
         }
 
