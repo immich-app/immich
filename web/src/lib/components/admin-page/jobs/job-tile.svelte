@@ -24,7 +24,9 @@
 	const dispatch = createEventDispatcher<{ command: JobCommandDto }>();
 </script>
 
-<div class="xs:flex grid bg-gray-100 dark:bg-immich-dark-gray rounded-3xl overflow-hidden">
+<div
+	class="flex xs:flex-row flex-col bg-gray-100 dark:bg-immich-dark-gray rounded-3xl overflow-hidden"
+>
 	<div class="flex flex-col w-full">
 		{#if queueStatus.isPaused}
 			<JobTileStatus color="warning">Paused</JobTileStatus>
