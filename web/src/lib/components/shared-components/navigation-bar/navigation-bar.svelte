@@ -10,6 +10,10 @@
 	import AccountInfoPanel from './account-info-panel.svelte';
 	import ImmichLogo from '../immich-logo.svelte';
 	import SearchBar from '../search-bar/search-bar.svelte';
+	import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+	import Magnify from 'svelte-material-icons/Magnify.svelte';
+	import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
+	import Cog from 'svelte-material-icons/Cog.svelte';
 	export let user: UserResponseDto;
 	export let shouldShowUploadButton = true;
 
@@ -40,45 +44,75 @@
 
 <section id="dashboard-navbar" class="fixed h-[4.25rem] w-screen z-[900] text-sm">
 	<div
-		class="grid grid-cols-[250px_auto] border-b dark:border-b-immich-dark-gray items-center py-2 bg-immich-bg dark:bg-immich-dark-bg"
+		class="grid md:grid-cols-[250px_auto] grid-cols-[70px_auto] border-b dark:border-b-immich-dark-gray items-center py-2 bg-immich-bg dark:bg-immich-dark-bg"
 	>
 		<a
 			data-sveltekit-preload-data="hover"
-			class="flex gap-2 mx-6 place-items-center"
+			class="flex gap-2 md:mx-6 mx-4 place-items-center"
 			href={AppRoute.PHOTOS}
 		>
 			<ImmichLogo height="35" width="35" />
-			<h1 class="font-immich-title text-2xl text-immich-primary dark:text-immich-dark-primary">
+			<h1
+				class="font-immich-title text-2xl text-immich-primary dark:text-immich-dark-primary md:block hidden"
+			>
 				IMMICH
 			</h1>
 		</a>
 		<div class="flex justify-between gap-16 pr-6">
-			<div class="w-full max-w-5xl flex-1 pl-4">
+			<div class="w-full max-w-5xl flex-1 pl-4 sm:block hidden">
 				<SearchBar grayTheme={true} />
 			</div>
 
-			<section class="flex gap-4 place-items-center">
+			<section class="flex gap-4 place-items-center justify-end max-sm:w-full">
+				<a href={AppRoute.SEARCH} id="search-button" class="sm:hidden pl-4">
+					<IconButton title="Search">
+						<div class="flex gap-2">
+							<Magnify size="1.5em" />
+						</div>
+					</IconButton>
+				</a>
+
 				<ThemeButton />
 
 				{#if !$page.url.pathname.includes('/admin') && shouldShowUploadButton}
-					<button
-						in:fly={{ x: 50, duration: 250 }}
-						on:click={() => dispatch('uploadClicked')}
-						class="immich-text-button dark:hover:bg-immich-dark-primary/25 dark:text-immich-dark-fg"
-					>
-						<TrayArrowUp size="20" />
-						<span> Upload </span>
-					</button>
+					<div in:fly={{ x: 50, duration: 250 }}>
+						<LinkButton on:click={() => dispatch('uploadClicked')}>
+							<div class="flex gap-2">
+								<TrayArrowUp size="20" />
+								<span class="md:block hidden">Upload</span>
+							</div>
+						</LinkButton>
+					</div>
 				{/if}
 
 				{#if user.isAdmin}
 					<a data-sveltekit-preload-data="hover" href={AppRoute.ADMIN_USER_MANAGEMENT}>
-						<button
-							class={`flex place-items-center place-content-center gap-2 hover:bg-immich-primary/5  dark:hover:bg-immich-dark-primary/25 dark:text-immich-dark-fg p-2 rounded-lg font-medium ${
-								$page.url.pathname.includes('/admin') &&
-								'text-immich-primary dark:immich-dark-primary underline'
-							}`}>Administration</button
-						>
+						<div class="sm:block hidden">
+							<LinkButton>
+								<span
+									class={$page.url.pathname.includes('/admin')
+										? 'text-immich-primary dark:text-immich-dark-primary underline item'
+										: ''}
+								>
+									Administration
+								</span>
+							</LinkButton>
+						</div>
+						<div class="sm:hidden block">
+							<IconButton title="Administration">
+								<Cog
+									size="1.5em"
+									class="dark:text-immich-dark-fg {$page.url.pathname.includes('/admin')
+										? 'text-immich-primary dark:text-immich-dark-primary'
+										: ''}"
+								/>
+							</IconButton>
+							<hr
+								class={$page.url.pathname.includes('/admin')
+									? 'block border-1 w-2/3 mx-auto border-immich-primary dark:border-immich-dark-primary'
+									: 'hidden'}
+							/>
+						</div>
 					</a>
 				{/if}
 

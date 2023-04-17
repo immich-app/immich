@@ -1,6 +1,6 @@
 import { SearchPropertiesDto } from './dto/search-properties.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
-import { AssetEntity, AssetType } from '@app/infra/entities';
+import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';
@@ -36,6 +36,7 @@ export interface IAssetRepository {
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
   getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum): Promise<AssetCountByTimeBucket[]>;
   getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
+  getArchivedAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getAssetByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity>;
   getExistingAssets(
@@ -54,6 +55,7 @@ export class AssetRepository implements IAssetRepository {
     private assetRepository: Repository<AssetEntity>,
 
     @Inject(ITagRepository) private _tagRepository: ITagRepository,
+    @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
   ) {}
 
   async getAllVideos(): Promise<AssetEntity[]> {
@@ -83,26 +85,22 @@ export class AssetRepository implements IAssetRepository {
       .groupBy('asset.type')
       .getRawMany();
 
-    const assetCountByUserId = new AssetCountByUserIdResponseDto();
+    return this.getAssetCount(items);
+  }
 
-    // asset type to dto property mapping
-    const map: Record<AssetType, keyof AssetCountByUserIdResponseDto> = {
-      [AssetType.AUDIO]: 'audio',
-      [AssetType.IMAGE]: 'photos',
-      [AssetType.VIDEO]: 'videos',
-      [AssetType.OTHER]: 'other',
-    };
+  async getArchivedAssetCountByUserId(ownerId: string): Promise<AssetCountByUserIdResponseDto> {
+    // Get archived asset count by AssetType
+    const items = await this.assetRepository
+      .createQueryBuilder('asset')
+      .select(`COUNT(asset.id)`, 'count')
+      .addSelect(`asset.type`, 'type')
+      .where('"ownerId" = :ownerId', { ownerId: ownerId })
+      .andWhere('asset.isVisible = true')
+      .andWhere('asset.isArchived = true')
+      .groupBy('asset.type')
+      .getRawMany();
 
-    for (const item of items) {
-      const count = Number(item.count) || 0;
-      const assetType = item.type as AssetType;
-      const type = map[assetType];
-
-      assetCountByUserId[type] = count;
-      assetCountByUserId.total += count;
-    }
-
-    return assetCountByUserId;
+    return this.getAssetCount(items);
   }
 
   async getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]> {
@@ -115,6 +113,7 @@ export class AssetRepository implements IAssetRepository {
       })
       .andWhere('asset.resizePath is not NULL')
       .andWhere('asset.isVisible = true')
+      .andWhere('asset.isArchived = false')
       .orderBy('asset.fileCreatedAt', 'DESC')
       .getMany();
   }
@@ -130,6 +129,7 @@ export class AssetRepository implements IAssetRepository {
         .where('"ownerId" = :userId', { userId: userId })
         .andWhere('asset.resizePath is not NULL')
         .andWhere('asset.isVisible = true')
+        .andWhere('asset.isArchived = false')
         .groupBy(`date_trunc('month', "fileCreatedAt")`)
         .orderBy(`date_trunc('month', "fileCreatedAt")`, 'DESC')
         .getRawMany();
@@ -141,6 +141,7 @@ export class AssetRepository implements IAssetRepository {
         .where('"ownerId" = :userId', { userId: userId })
         .andWhere('asset.resizePath is not NULL')
         .andWhere('asset.isVisible = true')
+        .andWhere('asset.isArchived = false')
         .groupBy(`date_trunc('day', "fileCreatedAt")`)
         .orderBy(`date_trunc('day', "fileCreatedAt")`, 'DESC')
         .getRawMany();
@@ -224,6 +225,7 @@ export class AssetRepository implements IAssetRepository {
         resizePath: Not(IsNull()),
         isVisible: true,
         isFavorite: dto.isFavorite,
+        isArchived: dto.isArchived,
       },
       relations: {
         exifInfo: true,
@@ -260,10 +262,22 @@ export class AssetRepository implements IAssetRepository {
    */
   async update(userId: string, asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity> {
     asset.isFavorite = dto.isFavorite ?? asset.isFavorite;
+    asset.isArchived = dto.isArchived ?? asset.isArchived;
 
     if (dto.tagIds) {
       const tags = await this._tagRepository.getByIds(userId, dto.tagIds);
       asset.tags = tags;
+    }
+
+    if (asset.exifInfo != null) {
+      asset.exifInfo.description = dto.description || '';
+      await this.exifRepository.save(asset.exifInfo);
+    } else {
+      const exifInfo = new ExifEntity();
+      exifInfo.description = dto.description || '';
+      exifInfo.asset = asset;
+      await this.exifRepository.save(exifInfo);
+      asset.exifInfo = exifInfo;
     }
 
     return await this.assetRepository.save(asset);
@@ -329,5 +343,28 @@ export class AssetRepository implements IAssetRepository {
         ownerId,
       },
     });
+  }
+
+  private getAssetCount(items: any): AssetCountByUserIdResponseDto {
+    const assetCountByUserId = new AssetCountByUserIdResponseDto();
+
+    // asset type to dto property mapping
+    const map: Record<AssetType, keyof AssetCountByUserIdResponseDto> = {
+      [AssetType.AUDIO]: 'audio',
+      [AssetType.IMAGE]: 'photos',
+      [AssetType.VIDEO]: 'videos',
+      [AssetType.OTHER]: 'other',
+    };
+
+    for (const item of items) {
+      const count = Number(item.count) || 0;
+      const assetType = item.type as AssetType;
+      const type = map[assetType];
+
+      assetCountByUserId[type] = count;
+      assetCountByUserId.total += count;
+    }
+
+    return assetCountByUserId;
   }
 }

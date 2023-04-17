@@ -12,6 +12,8 @@
 	let serverInfo: ServerInfoResponseDto;
 	let pingServerInterval: NodeJS.Timer;
 
+	export let isCollapsed: boolean;
+
 	onMount(async () => {
 		try {
 			const { data: version } = await api.serverInfoApi.getServerVersion();
@@ -51,27 +53,33 @@
 
 <div class="dark:text-immich-dark-fg">
 	<div class="storage-status grid grid-cols-[64px_auto]">
-		<div class="pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary">
+		<div
+			class="pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary {isCollapsed
+				? 'pb-[2.15rem]'
+				: ''}"
+		>
 			<Cloud size={'24'} />
 		</div>
 		<div>
-			<p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Storage</p>
-			{#if serverInfo}
-				<div class="w-full bg-gray-200 rounded-full h-[7px] dark:bg-gray-700 my-2">
-					<!-- style={`width: ${$downloadAssets[fileName]}%`} -->
-					<div
-						class="bg-immich-primary dark:bg-immich-dark-primary h-[7px] rounded-full"
-						style={`width: ${getStorageUsagePercentage()}%`}
-					/>
-				</div>
-				<p class="text-xs">
-					{asByteUnitString(serverInfo?.diskUseRaw, $locale)} of
-					{asByteUnitString(serverInfo?.diskSizeRaw, $locale)} used
-				</p>
-			{:else}
-				<div class="mt-2">
-					<LoadingSpinner />
-				</div>
+			{#if !isCollapsed}
+				<p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Storage</p>
+				{#if serverInfo}
+					<div class="w-full bg-gray-200 rounded-full h-[7px] dark:bg-gray-700 my-2">
+						<!-- style={`width: ${$downloadAssets[fileName]}%`} -->
+						<div
+							class="bg-immich-primary dark:bg-immich-dark-primary h-[7px] rounded-full"
+							style="width: {getStorageUsagePercentage()}%"
+						/>
+					</div>
+					<p class="text-xs">
+						{asByteUnitString(serverInfo?.diskUseRaw, $locale)} of
+						{asByteUnitString(serverInfo?.diskSizeRaw, $locale)} used
+					</p>
+				{:else}
+					<div class="mt-2">
+						<LoadingSpinner />
+					</div>
+				{/if}
 			{/if}
 		</div>
 	</div>
@@ -79,28 +87,35 @@
 		<hr class="ml-5 my-4 dark:border-immich-dark-gray" />
 	</div>
 	<div class="server-status grid grid-cols-[64px_auto]">
-		<div class="pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary">
+		<div
+			class="pl-5 pr-6 text-immich-primary dark:text-immich-dark-primary {isCollapsed
+				? 'pb-11'
+				: ''}"
+		>
 			<Dns size={'24'} />
 		</div>
+		{#if !isCollapsed}
+			<div class="text-xs ">
+				<p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Server</p>
 
-		<div class="text-xs ">
-			<p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Server</p>
+				<div class="flex justify-items-center justify-between mt-2 ">
+					<p>Status</p>
 
-			<div class="flex justify-items-center justify-between mt-2 ">
-				<p>Status</p>
+					{#if isServerOk}
+						<p class="font-medium text-immich-primary dark:text-immich-dark-primary">Online</p>
+					{:else}
+						<p class="font-medium text-red-500">Offline</p>
+					{/if}
+				</div>
 
-				{#if isServerOk}
-					<p class="font-medium text-immich-primary dark:text-immich-dark-primary">Online</p>
-				{:else}
-					<p class="font-medium text-red-500">Offline</p>
-				{/if}
+				<div class="flex justify-items-center justify-between mt-2 ">
+					<p>Version</p>
+					<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
+						{serverVersion}
+					</p>
+				</div>
 			</div>
-
-			<div class="flex justify-items-center justify-between mt-2 ">
-				<p>Version</p>
-				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">{serverVersion}</p>
-			</div>
-		</div>
+		{/if}
 	</div>
 	<!-- <div>
 		<hr class="ml-5 my-4" />

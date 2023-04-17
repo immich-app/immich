@@ -4,7 +4,7 @@
 	import Close from 'svelte-material-icons/Close.svelte';
 	import { createEventDispatcher, onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
-	import CircleIconButton from './circle-icon-button.svelte';
+	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 	import { clickOutside } from '$lib/utils/click-outside';
 
 	const dispatch = createEventDispatcher();

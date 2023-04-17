@@ -4,7 +4,6 @@ import { ApiProperty } from '@nestjs/swagger';
 export class ExifResponseDto {
   make?: string | null = null;
   model?: string | null = null;
-  imageName?: string | null = null;
   exifImageWidth?: number | null = null;
   exifImageHeight?: number | null = null;
 
@@ -24,13 +23,13 @@ export class ExifResponseDto {
   city?: string | null = null;
   state?: string | null = null;
   country?: string | null = null;
+  description?: string | null = null;
 }
 
 export function mapExif(entity: ExifEntity): ExifResponseDto {
   return {
     make: entity.make,
     model: entity.model,
-    imageName: entity.imageName,
     exifImageWidth: entity.exifImageWidth,
     exifImageHeight: entity.exifImageHeight,
     fileSizeInByte: entity.fileSizeInByte ? parseInt(entity.fileSizeInByte.toString()) : null,
@@ -48,5 +47,6 @@ export function mapExif(entity: ExifEntity): ExifResponseDto {
     city: entity.city,
     state: entity.state,
     country: entity.country,
+    description: entity.description,
   };
 }

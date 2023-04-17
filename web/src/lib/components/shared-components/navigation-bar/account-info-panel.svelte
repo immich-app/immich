@@ -7,6 +7,7 @@
 	import Cog from 'svelte-material-icons/Cog.svelte';
 	import Logout from 'svelte-material-icons/Logout.svelte';
 	import { goto } from '$app/navigation';
+	import Button from '$lib/components/elements/buttons/button.svelte';
 
 	export let user: UserResponseDto;
 
@@ -59,16 +60,22 @@
 
 		<p class="text-sm text-gray-500 dark:text-immich-dark-fg">{user.email}</p>
 
-		<div class=" mt-4 flex place-items-center place-content-center">
-			<button
-				class="flex border rounded-3xl px-6 py-2 hover:bg-immich-primary/10 dark:border-immich-dark-gray dark:bg-gray-500 dark:hover:bg-immich-dark-primary/50 dark:text-white font-medium place-items-center place-content-center gap-2"
+		<div class="mt-4">
+			<Button
+				color="dark-gray"
+				size="sm"
+				shadow={false}
+				border
 				on:click={() => {
 					goto('/user-settings');
 					dispatch('close');
 				}}
 			>
-				<span><Cog size="18" /></span>Account Settings</button
-			>
+				<div class="flex gap-2 place-items-center place-content-center px-2">
+					<Cog size="18" />
+					Account Settings
+				</div>
+			</Button>
 		</div>
 	</div>
 

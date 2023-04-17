@@ -1,4 +1,4 @@
-import { AssetType, TranscodePreset } from '@app/infra/entities';
+import { AssetEntity, AssetType, TranscodePreset } from '@app/infra/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { join } from 'path';
 import { IAssetRepository, mapAsset, WithoutProperty } from '../asset';
@@ -7,7 +7,7 @@ import { IAssetJob, IBaseJob, IJobRepository, JobName } from '../job';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { IMediaRepository, VideoStreamInfo } from './media.repository';
+import { AudioStreamInfo, IMediaRepository, VideoStreamInfo } from './media.repository';
 
 @Injectable()
 export class MediaService {
@@ -43,7 +43,14 @@ export class MediaService {
   }
 
   async handleGenerateJpegThumbnail(data: IAssetJob): Promise<void> {
-    const { asset } = data;
+    const [asset] = await this.assetRepository.getByIds([data.asset.id]);
+
+    if (!asset) {
+      this.logger.warn(
+        `Asset not found: ${data.asset.id} - Original Path: ${data.asset.originalPath} - Resize Path: ${data.asset.resizePath}`,
+      );
+      return;
+    }
 
     try {
       const resizePath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
@@ -120,7 +127,12 @@ export class MediaService {
   }
 
   async handleVideoConversion(job: IAssetJob) {
-    const { asset } = job;
+    const [asset] = await this.assetRepository.getByIds([job.asset.id]);
+
+    if (!asset) {
+      this.logger.warn(`Asset not found: ${job.asset.id} - Original Path: ${job.asset.originalPath}`);
+      return;
+    }
 
     try {
       const input = asset.originalPath;
@@ -128,23 +140,27 @@ export class MediaService {
       const output = join(outputFolder, `${asset.id}.mp4`);
       this.storageRepository.mkdirSync(outputFolder);
 
-      const { streams } = await this.mediaRepository.probe(input);
-      const stream = await this.getLongestStream(streams);
-      if (!stream) {
+      const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input);
+      const mainVideoStream = this.getMainVideoStream(videoStreams);
+      const mainAudioStream = this.getMainAudioStream(audioStreams);
+      const containerExtension = format.formatName;
+      if (!mainVideoStream || !mainAudioStream || !containerExtension) {
         return;
       }
 
       const { ffmpeg: config } = await this.configCore.getConfig();
 
-      const required = this.isTranscodeRequired(stream, config);
+      const required = this.isTranscodeRequired(asset, mainVideoStream, mainAudioStream, containerExtension, config);
       if (!required) {
         return;
       }
 
-      const options = this.getFfmpegOptions(stream, config);
+      const options = this.getFfmpegOptions(mainVideoStream, config);
+
+      this.logger.log(`Start encoding video ${asset.id} ${options}`);
       await this.mediaRepository.transcode(input, output, options);
 
-      this.logger.log(`Converting Success ${asset.id}`);
+      this.logger.log(`Encoding success ${asset.id}`);
 
       await this.assetRepository.save({ id: asset.id, encodedVideoPath: output });
     } catch (error: any) {
@@ -152,32 +168,51 @@ export class MediaService {
     }
   }
 
-  private getLongestStream(streams: VideoStreamInfo[]): VideoStreamInfo | null {
-    return streams
-      .filter((stream) => stream.codecType === 'video')
-      .sort((stream1, stream2) => stream2.frameCount - stream1.frameCount)[0];
+  private getMainVideoStream(streams: VideoStreamInfo[]): VideoStreamInfo | null {
+    return streams.sort((stream1, stream2) => stream2.frameCount - stream1.frameCount)[0];
   }
 
-  private isTranscodeRequired(stream: VideoStreamInfo, ffmpegConfig: SystemConfigFFmpegDto): boolean {
-    if (!stream.height || !stream.width) {
+  private getMainAudioStream(streams: AudioStreamInfo[]): AudioStreamInfo | null {
+    return streams[0];
+  }
+
+  private isTranscodeRequired(
+    asset: AssetEntity,
+    videoStream: VideoStreamInfo,
+    audioStream: AudioStreamInfo,
+    containerExtension: string,
+    ffmpegConfig: SystemConfigFFmpegDto,
+  ): boolean {
+    if (!videoStream.height || !videoStream.width) {
       this.logger.error('Skipping transcode, height or width undefined for video stream');
       return false;
     }
 
-    const isTargetVideoCodec = stream.codecName === ffmpegConfig.targetVideoCodec;
+    const isTargetVideoCodec = videoStream.codecName === ffmpegConfig.targetVideoCodec;
+    const isTargetAudioCodec = audioStream.codecName === ffmpegConfig.targetAudioCodec;
+    const isTargetContainer = ['mov,mp4,m4a,3gp,3g2,mj2', 'mp4', 'mov'].includes(containerExtension);
+
+    this.logger.verbose(
+      `${asset.id}: AudioCodecName ${audioStream.codecName}, AudioStreamCodecType ${audioStream.codecType}, containerExtension ${containerExtension}`,
+    );
+
+    const allTargetsMatching = isTargetVideoCodec && isTargetAudioCodec && isTargetContainer;
 
     const targetResolution = Number.parseInt(ffmpegConfig.targetResolution);
-    const isLargerThanTargetResolution = Math.min(stream.height, stream.width) > targetResolution;
+    const isLargerThanTargetResolution = Math.min(videoStream.height, videoStream.width) > targetResolution;
 
     switch (ffmpegConfig.transcode) {
+      case TranscodePreset.DISABLED:
+        return false;
+
       case TranscodePreset.ALL:
         return true;
 
       case TranscodePreset.REQUIRED:
-        return !isTargetVideoCodec;
+        return !allTargetsMatching;
 
       case TranscodePreset.OPTIMAL:
-        return !isTargetVideoCodec || isLargerThanTargetResolution;
+        return !allTargetsMatching || isLargerThanTargetResolution;
 
       default:
         return false;
@@ -185,8 +220,6 @@ export class MediaService {
   }
 
   private getFfmpegOptions(stream: VideoStreamInfo, ffmpeg: SystemConfigFFmpegDto) {
-    // TODO: If video or audio are already the correct format, don't re-encode, copy the stream
-
     const options = [
       `-crf ${ffmpeg.crf}`,
       `-preset ${ffmpeg.preset}`,

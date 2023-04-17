@@ -93,16 +93,20 @@
 						isEdited={!(ffmpegConfig.preset == savedConfig.preset)}
 					/>
 
-					<SettingInputField
-						inputType={SettingInputFieldType.TEXT}
-						label="AUDIO CODEC (-acodec)"
+					<SettingSelect
+						label="AUDIO CODEC"
 						bind:value={ffmpegConfig.targetAudioCodec}
-						required={true}
+						options={[
+							{ value: 'aac', text: 'aac' },
+							{ value: 'mp3', text: 'mp3' },
+							{ value: 'opus', text: 'opus' }
+						]}
+						name="acodec"
 						isEdited={!(ffmpegConfig.targetAudioCodec == savedConfig.targetAudioCodec)}
 					/>
 
 					<SettingSelect
-						label="VIDEO CODEC (-vcodec)"
+						label="VIDEO CODEC"
 						bind:value={ffmpegConfig.targetVideoCodec}
 						options={[
 							{ value: 'h264', text: 'h264' },
@@ -140,6 +144,10 @@
 							{
 								value: SystemConfigFFmpegDtoTranscodeEnum.Required,
 								text: 'Only videos not in the desired format'
+							},
+							{
+								value: SystemConfigFFmpegDtoTranscodeEnum.Disabled,
+								text: "Don't transcode any videos, may break playback on some clients"
 							}
 						]}
 						isEdited={!(ffmpegConfig.transcode == savedConfig.transcode)}

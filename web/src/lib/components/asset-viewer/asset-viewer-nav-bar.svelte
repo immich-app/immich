@@ -6,7 +6,7 @@
 	import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
-	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
+	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
 	import Star from 'svelte-material-icons/Star.svelte';

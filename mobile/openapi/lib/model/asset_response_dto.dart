@@ -19,11 +19,13 @@ class AssetResponseDto {
     required this.ownerId,
     required this.deviceId,
     required this.originalPath,
+    required this.originalFileName,
     required this.resizePath,
     required this.fileCreatedAt,
     required this.fileModifiedAt,
     required this.updatedAt,
     required this.isFavorite,
+    required this.isArchived,
     required this.mimeType,
     required this.duration,
     required this.webpPath,
@@ -46,6 +48,8 @@ class AssetResponseDto {
 
   String originalPath;
 
+  String originalFileName;
+
   String? resizePath;
 
   String fileCreatedAt;
@@ -55,6 +59,8 @@ class AssetResponseDto {
   String updatedAt;
 
   bool isFavorite;
+
+  bool isArchived;
 
   String? mimeType;
 
@@ -92,11 +98,13 @@ class AssetResponseDto {
      other.ownerId == ownerId &&
      other.deviceId == deviceId &&
      other.originalPath == originalPath &&
+     other.originalFileName == originalFileName &&
      other.resizePath == resizePath &&
      other.fileCreatedAt == fileCreatedAt &&
      other.fileModifiedAt == fileModifiedAt &&
      other.updatedAt == updatedAt &&
      other.isFavorite == isFavorite &&
+     other.isArchived == isArchived &&
      other.mimeType == mimeType &&
      other.duration == duration &&
      other.webpPath == webpPath &&
@@ -115,11 +123,13 @@ class AssetResponseDto {
     (ownerId.hashCode) +
     (deviceId.hashCode) +
     (originalPath.hashCode) +
+    (originalFileName.hashCode) +
     (resizePath == null ? 0 : resizePath!.hashCode) +
     (fileCreatedAt.hashCode) +
     (fileModifiedAt.hashCode) +
     (updatedAt.hashCode) +
     (isFavorite.hashCode) +
+    (isArchived.hashCode) +
     (mimeType == null ? 0 : mimeType!.hashCode) +
     (duration.hashCode) +
     (webpPath == null ? 0 : webpPath!.hashCode) +
@@ -130,7 +140,7 @@ class AssetResponseDto {
     (tags.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, resizePath=$resizePath, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, updatedAt=$updatedAt, isFavorite=$isFavorite, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags]';
+  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, originalFileName=$originalFileName, resizePath=$resizePath, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, updatedAt=$updatedAt, isFavorite=$isFavorite, isArchived=$isArchived, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -140,6 +150,7 @@ class AssetResponseDto {
       json[r'ownerId'] = this.ownerId;
       json[r'deviceId'] = this.deviceId;
       json[r'originalPath'] = this.originalPath;
+      json[r'originalFileName'] = this.originalFileName;
     if (this.resizePath != null) {
       json[r'resizePath'] = this.resizePath;
     } else {
@@ -149,6 +160,7 @@ class AssetResponseDto {
       json[r'fileModifiedAt'] = this.fileModifiedAt;
       json[r'updatedAt'] = this.updatedAt;
       json[r'isFavorite'] = this.isFavorite;
+      json[r'isArchived'] = this.isArchived;
     if (this.mimeType != null) {
       json[r'mimeType'] = this.mimeType;
     } else {
@@ -209,11 +221,13 @@ class AssetResponseDto {
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
+        originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
         resizePath: mapValueOfType<String>(json, r'resizePath'),
         fileCreatedAt: mapValueOfType<String>(json, r'fileCreatedAt')!,
         fileModifiedAt: mapValueOfType<String>(json, r'fileModifiedAt')!,
         updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
+        isArchived: mapValueOfType<bool>(json, r'isArchived')!,
         mimeType: mapValueOfType<String>(json, r'mimeType'),
         duration: mapValueOfType<String>(json, r'duration')!,
         webpPath: mapValueOfType<String>(json, r'webpPath'),
@@ -277,11 +291,13 @@ class AssetResponseDto {
     'ownerId',
     'deviceId',
     'originalPath',
+    'originalFileName',
     'resizePath',
     'fileCreatedAt',
     'fileModifiedAt',
     'updatedAt',
     'isFavorite',
+    'isArchived',
     'mimeType',
     'duration',
     'webpPath',

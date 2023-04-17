@@ -1,9 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsUUID } from 'class-validator';
+import { ValidateUUID } from 'apps/immich/src/decorators/validate-uuid.decorator';
 
 export class AlbumIdDto {
-  @IsNotEmpty()
-  @IsUUID('4')
-  @ApiProperty({ format: 'uuid' })
+  @ValidateUUID()
   albumId!: string;
 }

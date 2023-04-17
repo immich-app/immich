@@ -1,12 +1,16 @@
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { ValidateUUID } from 'apps/immich/src/decorators/validate-uuid.decorator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateAlbumDto {
   @IsNotEmpty()
+  @IsString()
+  @ApiProperty()
   albumName!: string;
 
-  @IsOptional()
+  @ValidateUUID({ optional: true, each: true })
   sharedWithUserIds?: string[];
 
-  @IsOptional()
+  @ValidateUUID({ optional: true, each: true })
   assetIds?: string[];
 }

@@ -43,12 +43,14 @@ enum AppSettingsEnum<T> {
     "selectedAlbumSortOrder",
     0,
   ),
+  advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, null, false),
+  logLevel<int>(StoreKey.logLevel, null, 5) // Level.INFO = 5
   ;
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
 
   final StoreKey<T> storeKey;
-  final String hiveKey;
+  final String? hiveKey;
   final T defaultValue;
 }
 

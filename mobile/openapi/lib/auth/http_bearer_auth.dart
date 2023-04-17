@@ -27,7 +27,7 @@ class HttpBearerAuth implements Authentication {
   }
 
   @override
-  void applyToParams(List<QueryParam> queryParams, Map<String, String> headerParams) {
+  Future<void> applyToParams(List<QueryParam> queryParams, Map<String, String> headerParams,) async {
     if (_accessToken == null) {
       return;
     }

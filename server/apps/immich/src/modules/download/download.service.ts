@@ -28,8 +28,8 @@ export class DownloadService {
       let fileCount = 0;
       let complete = true;
 
-      for (const { id, originalPath, exifInfo } of assets) {
-        const name = `${exifInfo?.imageName || id}${extname(originalPath)}`;
+      for (const { originalPath, exifInfo, originalFileName } of assets) {
+        const name = `${originalFileName}${extname(originalPath)}`;
         archive.file(originalPath, { name });
         totalSize += Number(exifInfo?.fileSizeInByte || 0);
         fileCount++;

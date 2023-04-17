@@ -15,7 +15,6 @@
 
 :root {
 	font-family: 'Work Sans', sans-serif;
-	/* --immich-icon-button-hover-color: #d3d3d3; */
 }
 
 html {
@@ -62,22 +61,6 @@ input:focus-visible {
 
 	.immich-form-label {
 		@apply font-medium text-gray-500 dark:text-gray-300;
-	}
-
-	.immich-btn-primary {
-		@apply bg-immich-primary dark:bg-immich-dark-primary dark:text-immich-dark-gray text-gray-100 border dark:border-immich-dark-gray rounded-xl py-2 px-4 transition-all duration-150 hover:bg-immich-primary dark:hover:bg-immich-dark-primary/90 hover:shadow-lg text-sm font-medium;
-	}
-
-	.immich-btn-primary-big {
-		@apply inline-flex justify-center items-center bg-immich-primary dark:bg-immich-dark-primary dark:text-immich-dark-gray text-white enabled:dark:hover:bg-immich-dark-primary/80 enabled:hover:bg-immich-primary/75 disabled:cursor-not-allowed px-6 py-4 rounded-3xl shadow-md w-full font-semibold;
-	}
-
-	.immich-btn-secondary-big {
-		@apply inline-flex justify-center items-center bg-gray-500 dark:bg-gray-200 text-white enabled:hover:bg-gray-500/75 enabled:dark:hover:bg-gray-200/80 dark:text-immich-dark-gray disabled:cursor-not-allowed px-6 py-4 rounded-3xl shadow-md w-full font-semibold;
-	}
-
-	.immich-text-button {
-		@apply flex place-items-center place-content-center gap-2 hover:bg-immich-primary/5 p-2 rounded-lg font-medium;
 	}
 
 	/* width */

@@ -15,7 +15,7 @@
 	import { AlbumResponseDto, api, ThumbnailFormat } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
-	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
+	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 	import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
 	import { locale } from '$lib/stores/preferences.store';
 

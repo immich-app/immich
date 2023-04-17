@@ -23,7 +23,7 @@
 </header>
 
 <main
-	class="grid grid-cols-[250px_auto] relative pt-[4.25rem] h-screen bg-immich-bg dark:bg-immich-dark-bg immich-scrollbar"
+	class="grid md:grid-cols-[250px_auto] grid-cols-[70px_auto] relative pt-[4.25rem] h-screen bg-immich-bg dark:bg-immich-dark-bg immich-scrollbar"
 >
 	<SideBar />
 

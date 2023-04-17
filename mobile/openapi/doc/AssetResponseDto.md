@@ -14,11 +14,13 @@ Name | Type | Description | Notes
 **ownerId** | **String** |  | 
 **deviceId** | **String** |  | 
 **originalPath** | **String** |  | 
+**originalFileName** | **String** |  | 
 **resizePath** | **String** |  | 
 **fileCreatedAt** | **String** |  | 
 **fileModifiedAt** | **String** |  | 
 **updatedAt** | **String** |  | 
 **isFavorite** | **bool** |  | 
+**isArchived** | **bool** |  | 
 **mimeType** | **String** |  | 
 **duration** | **String** |  | 
 **webpPath** | **String** |  | 

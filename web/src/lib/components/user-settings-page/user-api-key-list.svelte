@@ -13,6 +13,7 @@
 		NotificationType
 	} from '../shared-components/notification/notification';
 	import { locale } from '$lib/stores/preferences.store';
+	import Button from '../elements/buttons/button.svelte';
 
 	let keys: APIKeyResponseDto[] = [];
 
@@ -124,11 +125,7 @@
 <section class="my-4">
 	<div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
 		<div class="flex justify-end mb-2">
-			<button
-				on:click={() => (newKey = { name: 'API Key' })}
-				class="text-sm bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 dark:hover:bg-immich-dark-primary/80 px-4 py-2 text-white dark:text-immich-dark-gray rounded-full shadow-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-				>New API Key
-			</button>
+			<Button size="sm" on:click={() => (newKey = { name: 'API Key' })}>New API Key</Button>
 		</div>
 
 		{#if keys.length > 0}

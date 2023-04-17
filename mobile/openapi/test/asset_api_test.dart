@@ -68,15 +68,22 @@ void main() {
 
     // Current this is not used in any UI element
     //
-    //Future<MultipartFile> downloadLibrary({ num skip, String key }) async
+    //Future<MultipartFile> downloadLibrary({ String name, num skip, String key }) async
     test('test downloadLibrary', () async {
       // TODO
     });
 
     // Get all AssetEntity belong to the user
     //
-    //Future<List<AssetResponseDto>> getAllAssets({ bool isFavorite, num skip, String ifNoneMatch }) async
+    //Future<List<AssetResponseDto>> getAllAssets({ bool isFavorite, bool isArchived, num skip, String ifNoneMatch }) async
     test('test getAllAssets', () async {
+      // TODO
+    });
+
+    // 
+    //
+    //Future<AssetCountByUserIdResponseDto> getArchivedAssetCountByUserId() async
+    test('test getArchivedAssetCountByUserId', () async {
       // TODO
     });
 
@@ -173,7 +180,7 @@ void main() {
 
     // 
     //
-    //Future<AssetFileUploadResponseDto> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { String key, MultipartFile livePhotoData, bool isVisible, String duration }) async
+    //Future<AssetFileUploadResponseDto> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { String key, MultipartFile livePhotoData, bool isArchived, bool isVisible, String duration }) async
     test('test uploadFile', () async {
       // TODO
     });

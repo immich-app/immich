@@ -1,7 +1,4 @@
 <script lang="ts">
-	/**
-	 * This is the circle icon component.
-	 */
 	import type Icon from 'svelte-material-icons/AbTesting.svelte';
 
 	export let logo: typeof Icon;
@@ -15,7 +12,7 @@
 	{title}
 	style:backgroundColor
 	style:--immich-icon-button-hover-color={hoverColor}
-	class={`immich-circle-icon-button dark:text-immich-dark-fg hover:dark:text-immich-dark-gray rounded-full p-3 flex place-items-center place-content-center transition-all`}
+	class="immich-circle-icon-button dark:text-immich-dark-fg hover:dark:text-immich-dark-gray rounded-full p-3 flex place-items-center place-content-center transition-all"
 	on:click
 >
 	<svelte:component this={logo} {size} />

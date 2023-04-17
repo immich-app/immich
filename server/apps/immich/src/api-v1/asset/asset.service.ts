@@ -466,6 +466,10 @@ export class AssetService {
     return this._assetRepository.getAssetCountByUserId(authUser.id);
   }
 
+  getArchivedAssetCountByUserId(authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
+    return this._assetRepository.getArchivedAssetCountByUserId(authUser.id);
+  }
+
   async checkAssetsAccess(authUser: AuthUserDto, assetIds: string[], mustBeOwner = false) {
     for (const assetId of assetIds) {
       // Step 1: Check if asset is part of a public shared

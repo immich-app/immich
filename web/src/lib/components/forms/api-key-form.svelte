@@ -3,6 +3,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import KeyVariant from 'svelte-material-icons/KeyVariant.svelte';
 	import FullScreenModal from '../shared-components/full-screen-modal.svelte';
+	import Button from '../elements/buttons/button.svelte';
 
 	export let apiKey: Partial<APIKeyResponseDto>;
 	export let title = 'API Key';
@@ -40,17 +41,8 @@
 			</div>
 
 			<div class="flex w-full px-4 gap-4 mt-8">
-				<button
-					type="button"
-					on:click={() => handleCancel()}
-					class="flex-1 transition-colors bg-gray-500 dark:bg-gray-200 hover:bg-gray-500/75 dark:hover:bg-gray-200/80 px-6 py-3 text-white dark:text-immich-dark-gray rounded-full shadow-md font-medium"
-					>{cancelText}
-				</button>
-				<button
-					type="submit"
-					class="flex-1 transition-colors bg-immich-primary dark:bg-immich-dark-primary hover:bg-immich-primary/75 dark:hover:bg-immich-dark-primary/80 dark:text-immich-dark-gray px-6 py-3 text-white rounded-full shadow-md w-full font-medium"
-					>{submitText}</button
-				>
+				<Button color="gray" fullwidth on:click={() => handleCancel()}>{cancelText}</Button>
+				<Button type="submit" fullwidth>{submitText}</Button>
 			</div>
 		</form>
 	</div>

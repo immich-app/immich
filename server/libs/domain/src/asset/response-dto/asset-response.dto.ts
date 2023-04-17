@@ -13,11 +13,13 @@ export class AssetResponseDto {
   @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type!: AssetType;
   originalPath!: string;
+  originalFileName!: string;
   resizePath!: string | null;
   fileCreatedAt!: string;
   fileModifiedAt!: string;
   updatedAt!: string;
   isFavorite!: boolean;
+  isArchived!: boolean;
   mimeType!: string | null;
   duration!: string;
   webpPath!: string | null;
@@ -36,11 +38,13 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     deviceId: entity.deviceId,
     type: entity.type,
     originalPath: entity.originalPath,
+    originalFileName: entity.originalFileName,
     resizePath: entity.resizePath,
     fileCreatedAt: entity.fileCreatedAt,
     fileModifiedAt: entity.fileModifiedAt,
     updatedAt: entity.updatedAt,
     isFavorite: entity.isFavorite,
+    isArchived: entity.isArchived,
     mimeType: entity.mimeType,
     webpPath: entity.webpPath,
     encodedVideoPath: entity.encodedVideoPath,
@@ -60,11 +64,13 @@ export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
     deviceId: entity.deviceId,
     type: entity.type,
     originalPath: entity.originalPath,
+    originalFileName: entity.originalFileName,
     resizePath: entity.resizePath,
     fileCreatedAt: entity.fileCreatedAt,
     fileModifiedAt: entity.fileModifiedAt,
     updatedAt: entity.updatedAt,
     isFavorite: entity.isFavorite,
+    isArchived: entity.isArchived,
     mimeType: entity.mimeType,
     webpPath: entity.webpPath,
     encodedVideoPath: entity.encodedVideoPath,

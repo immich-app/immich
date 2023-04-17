@@ -768,6 +768,14 @@
             }
           },
           {
+            "name": "isArchived",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "exifInfo.city",
             "required": false,
             "in": "query",
@@ -1896,6 +1904,14 @@
         "description": "Current this is not used in any UI element",
         "parameters": [
           {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "skip",
             "required": false,
             "in": "query",
@@ -2274,6 +2290,36 @@
         ]
       }
     },
+    "/asset/stat/archive": {
+      "get": {
+        "operationId": "getArchivedAssetCountByUserId",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetCountByUserIdResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
     "/asset": {
       "get": {
         "operationId": "getAllAssets",
@@ -2281,6 +2327,14 @@
         "parameters": [
           {
             "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isArchived",
             "required": false,
             "in": "query",
             "schema": {
@@ -3344,6 +3398,14 @@
             }
           },
           {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "skip",
             "required": false,
             "in": "query",
@@ -3430,7 +3492,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.52.1",
+    "version": "1.53.0",
     "contact": {}
   },
   "tags": [],
@@ -3532,11 +3594,6 @@
             "nullable": true,
             "default": null
           },
-          "imageName": {
-            "type": "string",
-            "nullable": true,
-            "default": null
-          },
           "exifImageWidth": {
             "type": "number",
             "nullable": true,
@@ -3618,6 +3675,11 @@
             "type": "string",
             "nullable": true,
             "default": null
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "default": null
           }
         }
       },
@@ -3696,6 +3758,9 @@
           "originalPath": {
             "type": "string"
           },
+          "originalFileName": {
+            "type": "string"
+          },
           "resizePath": {
             "type": "string",
             "nullable": true
@@ -3710,6 +3775,9 @@
             "type": "string"
           },
           "isFavorite": {
+            "type": "boolean"
+          },
+          "isArchived": {
             "type": "boolean"
           },
           "mimeType": {
@@ -3751,11 +3819,13 @@
           "ownerId",
           "deviceId",
           "originalPath",
+          "originalFileName",
           "resizePath",
           "fileCreatedAt",
           "fileModifiedAt",
           "updatedAt",
           "isFavorite",
+          "isArchived",
           "mimeType",
           "duration",
           "webpPath"
@@ -4684,7 +4754,8 @@
             "enum": [
               "all",
               "optimal",
-              "required"
+              "required",
+              "disabled"
             ]
           }
         },
@@ -4973,6 +5044,9 @@
           "isFavorite": {
             "type": "boolean"
           },
+          "isArchived": {
+            "type": "boolean"
+          },
           "isVisible": {
             "type": "boolean"
           },
@@ -5216,6 +5290,12 @@
           },
           "isFavorite": {
             "type": "boolean"
+          },
+          "isArchived": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string"
           }
         }
       },
@@ -5363,7 +5443,8 @@
           "assetIds": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           }
         },
@@ -5377,7 +5458,8 @@
           "assetIds": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           }
         },
@@ -5439,13 +5521,15 @@
           "sharedWithUserIds": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           },
           "assetIds": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           }
         },
@@ -5459,7 +5543,8 @@
           "sharedUserIds": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           }
         },
@@ -5495,7 +5580,8 @@
             "type": "string"
           },
           "albumThumbnailAssetId": {
-            "type": "string"
+            "type": "string",
+            "format": "uuid"
           }
         }
       },
@@ -5503,10 +5589,12 @@
         "type": "object",
         "properties": {
           "albumId": {
-            "type": "string"
+            "type": "string",
+            "format": "uuid"
           },
           "expiresAt": {
-            "type": "string"
+            "type": "string",
+            "format": "date-time"
           },
           "allowUpload": {
             "type": "boolean"

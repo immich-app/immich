@@ -4,7 +4,7 @@
 	import { api, AssetResponseDto, SharedLinkResponseDto } from '@api';
 	import ControlAppBar from '../shared-components/control-app-bar.svelte';
 	import { goto } from '$app/navigation';
-	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
+	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
 	import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
 	import { openFileUploadDialog } from '$lib/utils/file-uploader';

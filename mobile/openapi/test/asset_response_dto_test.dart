@@ -46,6 +46,11 @@ void main() {
       // TODO
     });
 
+    // String originalFileName
+    test('to test the property `originalFileName`', () async {
+      // TODO
+    });
+
     // String resizePath
     test('to test the property `resizePath`', () async {
       // TODO
@@ -68,6 +73,11 @@ void main() {
 
     // bool isFavorite
     test('to test the property `isFavorite`', () async {
+      // TODO
+    });
+
+    // bool isArchived
+    test('to test the property `isArchived`', () async {
       // TODO
     });
 

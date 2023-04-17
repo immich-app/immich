@@ -8,10 +8,6 @@
 	export let value = '';
 	export let grayTheme: boolean;
 
-	// Replace state to immediately go back to previous page, instead
-	// of having to go through every search query.
-	export let replaceHistoryState = false;
-
 	let showBigSearchBar = false;
 	$: showClearIcon = value.length > 0;
 
@@ -33,7 +29,7 @@
 			clip: clipSearch
 		});
 
-		goto(`${AppRoute.SEARCH}?${params}`, { replaceState: replaceHistoryState });
+		goto(`${AppRoute.SEARCH}?${params}`);
 	}
 
 	const saveSearchTerm = (saveValue: string) => {
@@ -75,6 +71,7 @@
 				: 'rounded-3xl bg-gray-200 border border-transparent'}"
 			placeholder="Search your photos"
 			required
+			pattern="^(?!m:$).*$"
 			bind:value
 		/>
 	</label>

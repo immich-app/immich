@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { colorTheme } from '$lib/stores/preferences.store';
+	import IconButton from '../elements/buttons/icon-button.svelte';
 
 	const toggleTheme = () => {
 		$colorTheme = $colorTheme === 'dark' ? 'light' : 'dark';
@@ -17,11 +18,7 @@
 	}
 </script>
 
-<button
-	on:click={toggleTheme}
-	type="button"
-	class="text-gray-500 dark:text-immich-dark-primary hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none rounded-full p-2.5"
->
+<IconButton on:click={toggleTheme} title="Toggle theme">
 	{#if $colorTheme === 'light'}
 		<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
 			><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg
@@ -35,4 +32,4 @@
 			/></svg
 		>
 	{/if}
-</button>
+</IconButton>

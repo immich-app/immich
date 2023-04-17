@@ -9,8 +9,6 @@ class TopControlAppBar extends HookConsumerWidget {
     required this.asset,
     required this.onMoreInfoPressed,
     required this.onDownloadPressed,
-    required this.onSharePressed,
-    required this.onDeletePressed,
     required this.onAddToAlbumPressed,
     required this.onToggleMotionVideo,
     required this.isPlayingMotionVideo,
@@ -22,10 +20,8 @@ class TopControlAppBar extends HookConsumerWidget {
   final Function onMoreInfoPressed;
   final VoidCallback? onDownloadPressed;
   final VoidCallback onToggleMotionVideo;
-  final VoidCallback onDeletePressed;
   final VoidCallback onAddToAlbumPressed;
   final VoidCallback onFavorite;
-  final Function onSharePressed;
   final bool isPlayingMotionVideo;
   final bool isFavorite;
 
@@ -34,15 +30,15 @@ class TopControlAppBar extends HookConsumerWidget {
     const double iconSize = 18.0;
 
     Widget buildFavoriteButton() {
-        return IconButton(
-          onPressed: () {
-            onFavorite();
-          },
-          icon: Icon(
-            isFavorite ? Icons.star : Icons.star_border,
-            color: Colors.grey[200],
-          ),
-        );
+      return IconButton(
+        onPressed: () {
+          onFavorite();
+        },
+        icon: Icon(
+          isFavorite ? Icons.star : Icons.star_border,
+          color: Colors.grey[200],
+        ),
+      );
     }
 
     return AppBar(
@@ -86,15 +82,6 @@ class TopControlAppBar extends HookConsumerWidget {
               color: Colors.grey[200],
             ),
           ),
-        IconButton(
-          onPressed: () {
-            onSharePressed();
-          },
-          icon: Icon(
-            Icons.ios_share_rounded,
-            color: Colors.grey[200],
-          ),
-        ),
         if (asset.isRemote)
           IconButton(
             onPressed: () {
@@ -105,15 +92,6 @@ class TopControlAppBar extends HookConsumerWidget {
               color: Colors.grey[200],
             ),
           ),
-        IconButton(
-          onPressed: () {
-            onDeletePressed();
-          },
-          icon: Icon(
-            Icons.delete_outline_rounded,
-            color: Colors.grey[200],
-          ),
-        ),
         IconButton(
           onPressed: () {
             onMoreInfoPressed();
