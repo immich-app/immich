@@ -29,7 +29,8 @@ class Asset {
         ownerId = fastHash(remote.ownerId),
         exifInfo =
             remote.exifInfo != null ? ExifInfo.fromDto(remote.exifInfo!) : null,
-        isFavorite = remote.isFavorite;
+        isFavorite = remote.isFavorite,
+        isArchived = remote.isArchived;
 
   Asset.local(AssetEntity local)
       : localId = local.id,
@@ -44,6 +45,7 @@ class Asset {
         fileModifiedAt = local.modifiedDateTime,
         updatedAt = local.modifiedDateTime,
         isFavorite = local.isFavorite,
+        isArchived = false,
         fileCreatedAt = local.createDateTime {
     if (fileCreatedAt.year == 1970) {
       fileCreatedAt = fileModifiedAt;
@@ -70,6 +72,7 @@ class Asset {
     this.exifInfo,
     required this.isFavorite,
     required this.isLocal,
+    required this.isArchived,
   });
 
   @ignore
@@ -132,6 +135,8 @@ class Asset {
 
   bool isLocal;
 
+  bool isArchived;
+
   @ignore
   ExifInfo? exifInfo;
 
@@ -168,7 +173,8 @@ class Asset {
         fileName == other.fileName &&
         livePhotoVideoId == other.livePhotoVideoId &&
         isFavorite == other.isFavorite &&
-        isLocal == other.isLocal;
+        isLocal == other.isLocal &&
+        isArchived == other.isArchived;
   }
 
   @override
@@ -189,7 +195,8 @@ class Asset {
       fileName.hashCode ^
       livePhotoVideoId.hashCode ^
       isFavorite.hashCode ^
-      isLocal.hashCode;
+      isLocal.hashCode ^
+      isArchived.hashCode;
 
   bool updateFromAssetEntity(AssetEntity ae) {
     // TODO check more fields;
@@ -217,6 +224,9 @@ class Asset {
     height ??= a.height;
     exifInfo ??= a.exifInfo;
     exifInfo?.id = id;
+    if (!isRemote) {
+      isArchived = a.isArchived;
+    }
     return this;
   }
 
@@ -271,7 +281,8 @@ class Asset {
   "isFavorite": $isFavorite, 
   "isLocal": $isLocal,
   "width": ${width ?? "N/A"},
-  "height": ${height ?? "N/A"}
+  "height": ${height ?? "N/A"},
+  "isArchived": $isArchived
 }""";
   }
 }

@@ -121,10 +121,21 @@ class AssetService {
   ) async {
     final dto =
         await _apiService.assetApi.updateAsset(asset.remoteId!, updateAssetDto);
-    return dto == null ? null : Asset.remote(dto);
+    if (dto != null) {
+      final updated = Asset.remote(dto).updateFromDb(asset);
+      if (updated.isInDb) {
+        await _db.writeTxn(() => updated.put(_db));
+      }
+      return updated;
+    }
+    return null;
   }
 
   Future<Asset?> changeFavoriteStatus(Asset asset, bool isFavorite) {
     return updateAsset(asset, UpdateAssetDto(isFavorite: isFavorite));
+  }
+
+  Future<Asset?> changeArchiveStatus(Asset asset, bool isArchive) {
+    return updateAsset(asset, UpdateAssetDto(isArchived: isArchive));
   }
 }

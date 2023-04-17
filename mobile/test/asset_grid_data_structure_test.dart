@@ -24,6 +24,7 @@ void main() {
         fileName: '',
         isFavorite: false,
         isLocal: false,
+        isArchived: false,
       ),
     );
   }

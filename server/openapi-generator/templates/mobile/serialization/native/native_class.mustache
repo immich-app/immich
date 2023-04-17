@@ -141,7 +141,7 @@ class {{{classname}}} {
         {{{name}}}: json[r'{{{baseName}}}'] is List
           ? (json[r'{{{baseName}}}'] as List).map((e) =>
               {{#items.complexType}}
-              {{items.complexType}}.listFromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}
+              {{items.complexType}}.listFromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{#uniqueItems}}.toSet(){{/uniqueItems}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}
               {{/items.complexType}}
               {{^items.complexType}}
               e == null ? {{#items.isNullable}}null{{/items.isNullable}}{{^items.isNullable}}const  <{{items.items.dataType}}>[]{{/items.isNullable}} : (e as List).cast<{{items.items.dataType}}>()
@@ -150,7 +150,7 @@ class {{{classname}}} {
           :  {{#isNullable}}null{{/isNullable}}{{^isNullable}}const []{{/isNullable}},
             {{/items.isArray}}
             {{^items.isArray}}
-        {{{name}}}: {{{complexType}}}.listFromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
+        {{{name}}}: {{{complexType}}}.listFromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{#uniqueItems}}.toSet(){{/uniqueItems}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
             {{/items.isArray}}
           {{/isArray}}
           {{^isArray}}
@@ -197,7 +197,7 @@ class {{{classname}}} {
         {{^complexType}}
           {{#isArray}}
             {{#isEnum}}
-        {{{name}}}: {{{items.datatypeWithEnum}}}.listFromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
+        {{{name}}}: {{{items.datatypeWithEnum}}}.listFromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{#uniqueItems}}.toSet(){{/uniqueItems}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
             {{/isEnum}}
             {{^isEnum}}
         {{{name}}}: json[r'{{{baseName}}}'] is {{#uniqueItems}}Set{{/uniqueItems}}{{^uniqueItems}}List{{/uniqueItems}}
