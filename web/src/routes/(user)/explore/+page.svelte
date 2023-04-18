@@ -48,7 +48,9 @@
 				<div class="flex flex-row flex-wrap gap-4">
 					{#each places as item}
 						<a class="relative" href="/search?{Field.CITY}={item.value}" draggable="false">
-							<div class="filter brightness-75 rounded-xl overflow-hidden">
+							<div
+								class="filter brightness-75 rounded-xl overflow-hidden w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] flex justify-center"
+							>
 								<Thumbnail thumbnailSize={156} asset={item.data} readonly />
 							</div>
 							<span
@@ -70,7 +72,9 @@
 				<div class="flex flex-row flex-wrap gap-4">
 					{#each things as item}
 						<a class="relative" href="/search?{Field.OBJECTS}={item.value}" draggable="false">
-							<div class="filter brightness-75 rounded-xl overflow-hidden">
+							<div
+								class="filter brightness-75 rounded-xl overflow-hidden w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] justify-center flex"
+							>
 								<Thumbnail thumbnailSize={156} asset={item.data} readonly />
 							</div>
 							<span
