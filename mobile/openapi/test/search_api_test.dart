@@ -17,22 +17,16 @@ void main() {
   // final instance = SearchApi();
 
   group('tests for SearchApi', () {
-    // 
-    //
     //Future<List<SearchExploreResponseDto>> getExploreData() async
     test('test getExploreData', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<SearchConfigResponseDto> getSearchConfig() async
     test('test getSearchConfig', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<SearchResponseDto> search({ String q, String query, bool clip, String type, bool isFavorite, bool isArchived, String exifInfoPeriodCity, String exifInfoPeriodState, String exifInfoPeriodCountry, String exifInfoPeriodMake, String exifInfoPeriodModel, List<String> smartInfoPeriodObjects, List<String> smartInfoPeriodTags, bool recent, bool motion }) async
     test('test search', () async {
       // TODO

@@ -16,10 +16,7 @@ class OAuthApi {
 
   final ApiClient apiClient;
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /oauth/callback' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [OAuthCallbackDto] oAuthCallbackDto (required):
@@ -48,8 +45,6 @@ class OAuthApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [OAuthCallbackDto] oAuthCallbackDto (required):
@@ -68,10 +63,7 @@ class OAuthApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /oauth/config' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [OAuthConfigDto] oAuthConfigDto (required):
@@ -100,8 +92,6 @@ class OAuthApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [OAuthConfigDto] oAuthConfigDto (required):
@@ -120,10 +110,7 @@ class OAuthApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /oauth/link' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [OAuthCallbackDto] oAuthCallbackDto (required):
@@ -152,8 +139,6 @@ class OAuthApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [OAuthCallbackDto] oAuthCallbackDto (required):
@@ -172,9 +157,7 @@ class OAuthApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
+  /// Performs an HTTP 'GET /oauth/mobile-redirect' operation and returns the [Response].
   Future<Response> mobileRedirectWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/oauth/mobile-redirect';
@@ -200,7 +183,6 @@ class OAuthApi {
     );
   }
 
-  /// 
   Future<void> mobileRedirect() async {
     final response = await mobileRedirectWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -208,9 +190,7 @@ class OAuthApi {
     }
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
+  /// Performs an HTTP 'POST /oauth/unlink' operation and returns the [Response].
   Future<Response> unlinkWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/oauth/unlink';
@@ -236,7 +216,6 @@ class OAuthApi {
     );
   }
 
-  /// 
   Future<UserResponseDto?> unlink() async {
     final response = await unlinkWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {

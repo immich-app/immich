@@ -20,8 +20,6 @@ Method | HTTP request | Description
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -69,8 +67,6 @@ This endpoint does not need any parameter.
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -105,8 +101,6 @@ No authorization required
 
 # **getStats**
 > ServerStatsResponseDto getStats()
-
-
 
 
 
@@ -154,8 +148,6 @@ This endpoint does not need any parameter.
 
 # **pingServer**
 > ServerPingResponse pingServer()
-
-
 
 
 

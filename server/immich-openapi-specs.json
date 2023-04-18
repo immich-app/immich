@@ -4,7 +4,6 @@
     "/album": {
       "get": {
         "operationId": "getAllAlbums",
-        "description": "",
         "parameters": [
           {
             "name": "shared",
@@ -54,7 +53,6 @@
       },
       "post": {
         "operationId": "createAlbum",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -94,7 +92,6 @@
     "/api-key": {
       "post": {
         "operationId": "createKey",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -132,7 +129,6 @@
       },
       "get": {
         "operationId": "getKeys",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -165,7 +161,6 @@
     "/api-key/{id}": {
       "get": {
         "operationId": "getKey",
-        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -203,7 +198,6 @@
       },
       "put": {
         "operationId": "updateKey",
-        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -251,7 +245,6 @@
       },
       "delete": {
         "operationId": "deleteKey",
-        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -284,7 +277,6 @@
     "/auth/login": {
       "post": {
         "operationId": "login",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -316,7 +308,6 @@
     "/auth/admin-sign-up": {
       "post": {
         "operationId": "adminSignUp",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -351,7 +342,6 @@
     "/auth/validateToken": {
       "post": {
         "operationId": "validateAccessToken",
-        "description": "",
         "parameters": [],
         "responses": {
           "201": {
@@ -381,7 +371,6 @@
     "/auth/change-password": {
       "post": {
         "operationId": "changePassword",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -421,7 +410,6 @@
     "/auth/logout": {
       "post": {
         "operationId": "logout",
-        "description": "",
         "parameters": [],
         "responses": {
           "201": {
@@ -451,7 +439,6 @@
     "/device-info": {
       "put": {
         "operationId": "upsertDeviceInfo",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -491,7 +478,6 @@
     "/jobs": {
       "get": {
         "operationId": "getAllJobsStatus",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -521,7 +507,6 @@
     "/jobs/{jobId}": {
       "put": {
         "operationId": "sendJobCommand",
-        "description": "",
         "parameters": [
           {
             "name": "jobId",
@@ -570,7 +555,6 @@
     "/oauth/mobile-redirect": {
       "get": {
         "operationId": "mobileRedirect",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -585,7 +569,6 @@
     "/oauth/config": {
       "post": {
         "operationId": "generateConfig",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -617,7 +600,6 @@
     "/oauth/callback": {
       "post": {
         "operationId": "callback",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -649,7 +631,6 @@
     "/oauth/link": {
       "post": {
         "operationId": "link",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -689,7 +670,6 @@
     "/oauth/unlink": {
       "post": {
         "operationId": "unlink",
-        "description": "",
         "parameters": [],
         "responses": {
           "201": {
@@ -719,7 +699,6 @@
     "/search": {
       "get": {
         "operationId": "search",
-        "description": "",
         "parameters": [
           {
             "name": "q",
@@ -882,7 +861,6 @@
     "/search/config": {
       "get": {
         "operationId": "getSearchConfig",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -912,7 +890,6 @@
     "/search/explore": {
       "get": {
         "operationId": "getExploreData",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -945,7 +922,6 @@
     "/server-info": {
       "get": {
         "operationId": "getServerInfo",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -975,7 +951,6 @@
     "/server-info/ping": {
       "get": {
         "operationId": "pingServer",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -997,7 +972,6 @@
     "/server-info/version": {
       "get": {
         "operationId": "getServerVersion",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -1019,7 +993,6 @@
     "/server-info/stats": {
       "get": {
         "operationId": "getStats",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -1049,7 +1022,6 @@
     "/share": {
       "get": {
         "operationId": "getAllSharedLinks",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -1082,7 +1054,6 @@
     "/share/me": {
       "get": {
         "operationId": "getMySharedLink",
-        "description": "",
         "parameters": [
           {
             "name": "key",
@@ -1121,7 +1092,6 @@
     "/share/{id}": {
       "get": {
         "operationId": "getSharedLinkById",
-        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -1159,7 +1129,6 @@
       },
       "delete": {
         "operationId": "removeSharedLink",
-        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -1190,7 +1159,6 @@
       },
       "patch": {
         "operationId": "editSharedLink",
-        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -1240,7 +1208,6 @@
     "/system-config": {
       "get": {
         "operationId": "getConfig",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -1268,7 +1235,6 @@
       },
       "put": {
         "operationId": "updateConfig",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1308,7 +1274,6 @@
     "/system-config/defaults": {
       "get": {
         "operationId": "getDefaults",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -1338,7 +1303,6 @@
     "/system-config/storage-template-options": {
       "get": {
         "operationId": "getStorageTemplateOptions",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -1368,7 +1332,6 @@
     "/user": {
       "get": {
         "operationId": "getAllUsers",
-        "description": "",
         "parameters": [
           {
             "name": "isAll",
@@ -1408,7 +1371,6 @@
       },
       "post": {
         "operationId": "createUser",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1446,7 +1408,6 @@
       },
       "put": {
         "operationId": "updateUser",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1486,7 +1447,6 @@
     "/user/info/{userId}": {
       "get": {
         "operationId": "getUserById",
-        "description": "",
         "parameters": [
           {
             "name": "userId",
@@ -1526,7 +1486,6 @@
     "/user/me": {
       "get": {
         "operationId": "getMyUserInfo",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -1556,7 +1515,6 @@
     "/user/count": {
       "get": {
         "operationId": "getUserCount",
-        "description": "",
         "parameters": [
           {
             "name": "admin",
@@ -1588,7 +1546,6 @@
     "/user/{userId}": {
       "delete": {
         "operationId": "deleteUser",
-        "description": "",
         "parameters": [
           {
             "name": "userId",
@@ -1628,7 +1585,6 @@
     "/user/{userId}/restore": {
       "post": {
         "operationId": "restoreUser",
-        "description": "",
         "parameters": [
           {
             "name": "userId",
@@ -1668,7 +1624,6 @@
     "/user/profile-image": {
       "post": {
         "operationId": "createProfileImage",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1709,7 +1664,6 @@
     "/user/profile-image/{userId}": {
       "get": {
         "operationId": "getProfileImage",
-        "description": "",
         "parameters": [
           {
             "name": "userId",
@@ -1749,7 +1703,6 @@
     "/asset/upload": {
       "post": {
         "operationId": "uploadFile",
-        "description": "",
         "parameters": [
           {
             "name": "key",
@@ -1799,7 +1752,6 @@
     "/asset/download/{assetId}": {
       "get": {
         "operationId": "downloadFile",
-        "description": "",
         "parameters": [
           {
             "name": "assetId",
@@ -1848,7 +1800,6 @@
     "/asset/download-files": {
       "post": {
         "operationId": "downloadFiles",
-        "description": "",
         "parameters": [
           {
             "name": "key",
@@ -1957,7 +1908,6 @@
     "/asset/file/{assetId}": {
       "get": {
         "operationId": "serveFile",
-        "description": "",
         "parameters": [
           {
             "name": "isThumb",
@@ -2024,7 +1974,6 @@
     "/asset/thumbnail/{assetId}": {
       "get": {
         "operationId": "getAssetThumbnail",
-        "description": "",
         "parameters": [
           {
             "name": "assetId",
@@ -2081,7 +2030,6 @@
     "/asset/curated-objects": {
       "get": {
         "operationId": "getCuratedObjects",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -2114,7 +2062,6 @@
     "/asset/curated-locations": {
       "get": {
         "operationId": "getCuratedLocations",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -2147,7 +2094,6 @@
     "/asset/search-terms": {
       "get": {
         "operationId": "getAssetSearchTerms",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -2180,7 +2126,6 @@
     "/asset/search": {
       "post": {
         "operationId": "searchAsset",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2223,7 +2168,6 @@
     "/asset/count-by-time-bucket": {
       "post": {
         "operationId": "getAssetCountByTimeBucket",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2263,7 +2207,6 @@
     "/asset/count-by-user-id": {
       "get": {
         "operationId": "getAssetCountByUserId",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -2293,7 +2236,6 @@
     "/asset/stat/archive": {
       "get": {
         "operationId": "getArchivedAssetCountByUserId",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -2388,7 +2330,6 @@
       },
       "delete": {
         "operationId": "deleteAsset",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2431,7 +2372,6 @@
     "/asset/time-bucket": {
       "post": {
         "operationId": "getAssetByTimeBucket",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2704,7 +2644,6 @@
     "/asset/shared-link": {
       "post": {
         "operationId": "createAssetsSharedLink",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2744,7 +2683,6 @@
     "/asset/shared-link/add": {
       "patch": {
         "operationId": "addAssetsToSharedLink",
-        "description": "",
         "parameters": [
           {
             "name": "key",
@@ -2793,7 +2731,6 @@
     "/asset/shared-link/remove": {
       "patch": {
         "operationId": "removeAssetsFromSharedLink",
-        "description": "",
         "parameters": [
           {
             "name": "key",
@@ -2842,7 +2779,6 @@
     "/tag": {
       "post": {
         "operationId": "create",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2880,7 +2816,6 @@
       },
       "get": {
         "operationId": "findAll",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -2913,7 +2848,6 @@
     "/tag/{id}": {
       "get": {
         "operationId": "findOne",
-        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -2951,7 +2885,6 @@
       },
       "patch": {
         "operationId": "update",
-        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -2999,7 +2932,6 @@
       },
       "delete": {
         "operationId": "delete",
-        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -3032,7 +2964,6 @@
     "/album/count-by-user-id": {
       "get": {
         "operationId": "getAlbumCountByUserId",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -3062,7 +2993,6 @@
     "/album/{albumId}/users": {
       "put": {
         "operationId": "addUsersToAlbum",
-        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -3112,7 +3042,6 @@
     "/album/{albumId}/assets": {
       "put": {
         "operationId": "addAssetsToAlbum",
-        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -3168,7 +3097,6 @@
       },
       "delete": {
         "operationId": "removeAssetFromAlbum",
-        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -3218,7 +3146,6 @@
     "/album/{albumId}": {
       "get": {
         "operationId": "getAlbumInfo",
-        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -3264,7 +3191,6 @@
       },
       "delete": {
         "operationId": "deleteAlbum",
-        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -3295,7 +3221,6 @@
       },
       "patch": {
         "operationId": "updateAlbumInfo",
-        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -3345,7 +3270,6 @@
     "/album/{albumId}/user/{userId}": {
       "delete": {
         "operationId": "removeUserFromAlbum",
-        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -3386,7 +3310,6 @@
     "/album/{albumId}/download": {
       "get": {
         "operationId": "downloadArchive",
-        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -3451,7 +3374,6 @@
     "/album/create-shared-link": {
       "post": {
         "operationId": "createAlbumSharedLink",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
