@@ -12,6 +12,7 @@
 	import type { LayoutData } from './$types';
 	import { fileUploadHandler } from '$lib/utils/file-uploader';
 	import UploadCover from '$lib/components/shared-components/drag-and-drop-upload-overlay.svelte';
+	import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
 
 	let showNavigationLoadingBar = false;
 	export let data: LayoutData;
@@ -58,6 +59,14 @@
 		<meta name="twitter:image" content={$page.data.meta.imageUrl} />
 	{/if}
 </svelte:head>
+
+<noscript
+	class="h-screen w-screen absolute z-[1000] flex place-items-center place-content-center bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg"
+>
+	<FullscreenContainer title="Welcome to Immich">
+		To use Immich, you must enable JavaScript or use a JavaScript compatible browser.
+	</FullscreenContainer>
+</noscript>
 
 {#if showNavigationLoadingBar}
 	<NavigationLoadingBar />
