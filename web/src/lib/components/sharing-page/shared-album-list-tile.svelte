@@ -32,7 +32,7 @@
 </script>
 
 <div
-	class="grid grid-cols-[75px_1fr] w-[550px] border-b border-gray-300 dark:border-immich-dark-gray place-items-center py-4  gap-6 transition-all hover:border-immich-primary dark:hover:border-immich-dark-primary"
+	class="grid grid-cols-[75px_1fr] w-full md:w-[500px] border-b border-gray-300 dark:border-immich-dark-gray place-items-center py-4  gap-6 transition-all hover:border-immich-primary dark:hover:border-immich-dark-primary"
 >
 	<div>
 		{#await loadImageData(album.albumThumbnailAssetId)}
