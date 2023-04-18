@@ -19,34 +19,15 @@
 	export let shouldShowUploadButton = true;
 
 	let shouldShowAccountInfo = false;
-	let clickedOutsidePanel = false;
-	let clickedOutsideButton = false;
+	let shouldShowAccountInfoPanel = false;
 
 	// Show fallback while loading profile picture and hide when image loads.
 	let showProfilePictureFallback = true;
 
 	const dispatch = createEventDispatcher();
-	let shouldShowAccountInfoPanel = false;
 
 	const getFirstLetter = (text?: string) => {
 		return text?.charAt(0).toUpperCase();
-	};
-
-	const showAccountInfoPanel = () => {
-		if (clickedOutsidePanel) {
-			clickedOutsidePanel = false;
-			return;
-		}
-		shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel;
-	};
-
-	const closeOutsideClick = () => {
-		shouldShowAccountInfoPanel = false;
-		if (clickedOutsideButton) {
-			clickedOutsideButton = false;
-			return;
-		}
-		clickedOutsidePanel = true;
 	};
 
 	const logOut = async () => {
@@ -132,17 +113,15 @@
 					</a>
 				{/if}
 
-				<div
-					on:mouseover={() => (shouldShowAccountInfo = true)}
-					on:focus={() => (shouldShowAccountInfo = true)}
-					on:mouseleave={() => (shouldShowAccountInfo = false)}
-					on:click={showAccountInfoPanel}
-					on:keydown={showAccountInfoPanel}
-					use:clickOutside
-					on:outclick={() => (clickedOutsideButton = true)}
-				>
+				<div use:clickOutside on:outclick={() => (shouldShowAccountInfoPanel = false)}>
 					<button
 						class="flex place-items-center place-content-center rounded-full bg-immich-primary hover:bg-immich-primary/80 h-12 w-12 text-gray-100 dark:text-immich-dark-bg dark:bg-immich-dark-primary"
+						on:mouseover={() => (shouldShowAccountInfo = true)}
+						on:focus={() => (shouldShowAccountInfo = true)}
+						on:blur={() => (shouldShowAccountInfo = false)}
+						on:mouseleave={() => (shouldShowAccountInfo = false)}
+						on:click={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
+						on:keydown={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
 					>
 						{#if user.profileImagePath}
 							<img
@@ -170,12 +149,12 @@
 							<p>{user.email}</p>
 						</div>
 					{/if}
+
+					{#if shouldShowAccountInfoPanel}
+						<AccountInfoPanel {user} on:logout={logOut} />
+					{/if}
 				</div>
 			</section>
 		</div>
 	</div>
-
-	{#if shouldShowAccountInfoPanel}
-		<AccountInfoPanel {user} on:close={closeOutsideClick} on:logout={logOut} />
-	{/if}
 </section>
