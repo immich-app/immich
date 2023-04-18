@@ -121,7 +121,6 @@
 						on:blur={() => (shouldShowAccountInfo = false)}
 						on:mouseleave={() => (shouldShowAccountInfo = false)}
 						on:click={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
-						on:keydown={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
 					>
 						{#if user.profileImagePath}
 							<img
