@@ -188,6 +188,7 @@ ExifInfo _exifInfoDeserialize(
     exposureSeconds: reader.readFloatOrNull(offsets[3]),
     f: reader.readFloatOrNull(offsets[4]),
     fileSize: reader.readLongOrNull(offsets[5]),
+    id: id,
     iso: reader.readIntOrNull(offsets[6]),
     lat: reader.readFloatOrNull(offsets[7]),
     lens: reader.readStringOrNull(offsets[8]),
@@ -197,7 +198,6 @@ ExifInfo _exifInfoDeserialize(
     model: reader.readStringOrNull(offsets[12]),
     state: reader.readStringOrNull(offsets[13]),
   );
-  object.id = id;
   return object;
 }
 

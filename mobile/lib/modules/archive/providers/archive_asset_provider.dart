@@ -30,7 +30,7 @@ class ArchiveSelectionNotifier extends StateNotifier<Set<int>> {
   }
 
   Future<void> toggleArchive(Asset asset) async {
-    if (!asset.isRemote) return;
+    if (asset.storage == AssetState.local) return;
 
     _setArchiveForAssetId(asset.id, !_isArchive(asset.id));
 

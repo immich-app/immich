@@ -26,8 +26,8 @@ class FavoriteSelectionNotifier extends StateNotifier<Set<int>> {
   }
 
   Future<void> toggleFavorite(Asset asset) async {
-    if (!asset.isRemote) return; // TODO support local favorite assets
-
+    // TODO support local favorite assets
+    if (asset.storage == AssetState.local) return;
     _setFavoriteForAssetId(asset.id, !_isFavorite(asset.id));
 
     await assetNotifier.toggleFavorite(
