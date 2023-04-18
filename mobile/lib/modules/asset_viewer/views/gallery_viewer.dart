@@ -301,7 +301,8 @@ class GalleryViewerPage extends HookConsumerWidget {
             onFavorite: () {
               toggleFavorite(assetList[indexOfAsset.value]);
             },
-            onDownloadPressed: assetList[indexOfAsset.value].isLocal
+            onDownloadPressed: assetList[indexOfAsset.value].storage ==
+                    AssetState.local
                 ? null
                 : () {
                     ref.watch(imageViewerStateProvider.notifier).downloadAsset(
@@ -517,6 +518,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     maxScale: 1.0,
                     minScale: 1.0,
                     child: SafeArea(
+                      maintainBottomViewPadding: true,
                       child: VideoViewerPage(
                         onPlaying: () => isPlayingVideo.value = true,
                         onPaused: () => isPlayingVideo.value = false,
