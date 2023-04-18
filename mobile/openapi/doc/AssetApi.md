@@ -40,8 +40,6 @@ Method | HTTP request | Description
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -203,8 +201,6 @@ Name | Type | Description  | Notes
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -253,8 +249,6 @@ Name | Type | Description  | Notes
 
 # **deleteAsset**
 > List<DeleteAssetResponseDto> deleteAsset(deleteAssetDto)
-
-
 
 
 
@@ -309,8 +303,6 @@ Name | Type | Description  | Notes
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -361,8 +353,6 @@ Name | Type | Description  | Notes
 
 # **downloadFiles**
 > MultipartFile downloadFiles(downloadFilesDto, key)
-
-
 
 
 
@@ -535,8 +525,6 @@ Name | Type | Description  | Notes
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -639,8 +627,6 @@ Name | Type | Description  | Notes
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -689,8 +675,6 @@ Name | Type | Description  | Notes
 
 # **getAssetCountByTimeBucket**
 > AssetCountByTimeBucketResponseDto getAssetCountByTimeBucket(getAssetCountByTimeBucketDto)
-
-
 
 
 
@@ -745,8 +729,6 @@ Name | Type | Description  | Notes
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -794,8 +776,6 @@ This endpoint does not need any parameter.
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -840,8 +820,6 @@ This endpoint does not need any parameter.
 
 # **getAssetThumbnail**
 > MultipartFile getAssetThumbnail(assetId, format, key)
-
-
 
 
 
@@ -900,8 +878,6 @@ Name | Type | Description  | Notes
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -946,8 +922,6 @@ This endpoint does not need any parameter.
 
 # **getCuratedObjects**
 > List<CuratedObjectsResponseDto> getCuratedObjects()
-
-
 
 
 
@@ -1051,8 +1025,6 @@ Name | Type | Description  | Notes
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -1106,8 +1078,6 @@ Name | Type | Description  | Notes
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -1156,8 +1126,6 @@ Name | Type | Description  | Notes
 
 # **serveFile**
 > MultipartFile serveFile(assetId, isThumb, isWeb, key)
-
-
 
 
 
@@ -1270,8 +1238,6 @@ Name | Type | Description  | Notes
 
 # **uploadFile**
 > AssetFileUploadResponseDto uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, isArchived, isVisible, duration)
-
-
 
 
 

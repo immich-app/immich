@@ -17,36 +17,26 @@ void main() {
   // final instance = APIKeyApi();
 
   group('tests for APIKeyApi', () {
-    // 
-    //
     //Future<APIKeyCreateResponseDto> createKey(APIKeyCreateDto aPIKeyCreateDto) async
     test('test createKey', () async {
       // TODO
     });
 
-    // 
-    //
     //Future deleteKey(String id) async
     test('test deleteKey', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<APIKeyResponseDto> getKey(String id) async
     test('test getKey', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<List<APIKeyResponseDto>> getKeys() async
     test('test getKeys', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<APIKeyResponseDto> updateKey(String id, APIKeyUpdateDto aPIKeyUpdateDto) async
     test('test updateKey', () async {
       // TODO

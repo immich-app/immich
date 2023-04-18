@@ -19,8 +19,6 @@ Method | HTTP request | Description
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -68,8 +66,6 @@ This endpoint does not need any parameter.
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -114,8 +110,6 @@ This endpoint does not need any parameter.
 
 # **search**
 > SearchResponseDto search(q, query, clip, type, isFavorite, isArchived, exifInfoPeriodCity, exifInfoPeriodState, exifInfoPeriodCountry, exifInfoPeriodMake, exifInfoPeriodModel, smartInfoPeriodObjects, smartInfoPeriodTags, recent, motion)
-
-
 
 
 

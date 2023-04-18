@@ -20,8 +20,6 @@ Method | HTTP request | Description
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -66,8 +64,6 @@ This endpoint does not need any parameter.
 
 # **getDefaults**
 > SystemConfigDto getDefaults()
-
-
 
 
 
@@ -118,8 +114,6 @@ This endpoint does not need any parameter.
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -164,8 +158,6 @@ This endpoint does not need any parameter.
 
 # **updateConfig**
 > SystemConfigDto updateConfig(systemConfigDto)
-
-
 
 
 
