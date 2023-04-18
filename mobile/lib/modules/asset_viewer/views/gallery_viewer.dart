@@ -517,17 +517,19 @@ class GalleryViewerPage extends HookConsumerWidget {
                     filterQuality: FilterQuality.high,
                     maxScale: 1.0,
                     minScale: 1.0,
-                    basePosition: Alignment.topCenter,
-                    child: VideoViewerPage(
-                      onPlaying: () => isPlayingVideo.value = true,
-                      onPaused: () => isPlayingVideo.value = false,
-                      asset: assetList[index],
-                      isMotionVideo: isPlayingMotionVideo.value,
-                      onVideoEnded: () {
-                        if (isPlayingMotionVideo.value) {
-                          isPlayingMotionVideo.value = false;
-                        }
-                      },
+                    basePosition: Alignment.bottomCenter,
+                    child: SafeArea(
+                      child: VideoViewerPage(
+                        onPlaying: () => isPlayingVideo.value = true,
+                        onPaused: () => isPlayingVideo.value = false,
+                        asset: assetList[index],
+                        isMotionVideo: isPlayingMotionVideo.value,
+                        onVideoEnded: () {
+                          if (isPlayingMotionVideo.value) {
+                            isPlayingMotionVideo.value = false;
+                          }
+                        },
+                      ),
                     ),
                   );
                 }

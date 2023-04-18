@@ -155,7 +155,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
   _createChewieController() {
     chewieController = ChewieController(
       controlsSafeAreaMinimum: const EdgeInsets.only(
-        bottom: 156,
+        bottom: 100,
       ),
       showOptions: true,
       showControlsOnInitialize: false,
@@ -180,11 +180,9 @@ class _VideoPlayerState extends State<VideoPlayer> {
   @override
   Widget build(BuildContext context) {
     if (chewieController?.videoPlayerController.value.isInitialized == true) {
-      return SafeArea(
-        child: SizedBox(
-          child: Chewie(
-            controller: chewieController!,
-          ),
+      return SizedBox(
+        child: Chewie(
+          controller: chewieController!,
         ),
       );
     } else {
