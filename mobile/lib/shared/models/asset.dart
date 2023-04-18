@@ -371,6 +371,8 @@ class Asset {
   "fileName": "$fileName", 
   "isFavorite": $isFavorite, 
   "isLocal": $isLocal,
+  "isRemote: $isRemote,
+  "storage": $storage,
   "width": ${width ?? "N/A"},
   "height": ${height ?? "N/A"},
   "isArchived": $isArchived

@@ -27,7 +27,7 @@ class TopControlAppBar extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const double iconSize = 18.0;
+    const double iconSize = 22.0;
 
     Widget buildFavoriteButton() {
       return IconButton(
