@@ -59,15 +59,13 @@ class VideoViewerPage extends HookConsumerWidget {
 
     return Stack(
       children: [
-        SafeArea(
-          child: VideoPlayer(
-            url: videoUrl,
-            jwtToken: Store.get(StoreKey.accessToken),
-            isMotionVideo: isMotionVideo,
-            onVideoEnded: onVideoEnded,
-            onPaused: onPaused,
-            onPlaying: onPlaying,
-          ),
+        VideoPlayer(
+          url: videoUrl,
+          jwtToken: Store.get(StoreKey.accessToken),
+          isMotionVideo: isMotionVideo,
+          onVideoEnded: onVideoEnded,
+          onPaused: onPaused,
+          onPlaying: onPlaying,
         ),
         if (downloadAssetStatus == DownloadAssetStatus.loading)
           const Center(
@@ -165,6 +163,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
       autoPlay: true,
       autoInitialize: true,
       allowFullScreen: true,
+      allowedScreenSleep: false,
       showControls: !widget.isMotionVideo,
       hideControlsTimer: const Duration(seconds: 5),
     );
@@ -180,20 +179,24 @@ class _VideoPlayerState extends State<VideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return chewieController?.videoPlayerController.value.isInitialized == true
-        ? SizedBox(
-            child: Chewie(
-              controller: chewieController!,
-            ),
-          )
-        : const Center(
-            child: SizedBox(
-              width: 75,
-              height: 75,
-              child: CircularProgressIndicator.adaptive(
-                strokeWidth: 2,
-              ),
-            ),
-          );
+    if (chewieController?.videoPlayerController.value.isInitialized == true) {
+      return SafeArea(
+        child: SizedBox(
+          child: Chewie(
+            controller: chewieController!,
+          ),
+        ),
+      );
+    } else {
+      return const Center(
+        child: SizedBox(
+          width: 75,
+          height: 75,
+          child: CircularProgressIndicator.adaptive(
+            strokeWidth: 2,
+          ),
+        ),
+      );
+    }
   }
 }
