@@ -16,6 +16,32 @@
 	</head>
 
 	<body class="bg-immich-bg dark:bg-immich-dark-bg">
+		<noscript>
+			<section
+				class="h-screen w-screen absolute z-[1000] flex place-items-center place-content-center p-4 bg-immich-bg dark:bg-immich-dark-bg"
+			>
+				<div
+					class="flex flex-col gap-4 border bg-white dark:bg-immich-dark-gray dark:border-immich-dark-gray p-8 shadow-sm w-full max-w-lg rounded-3xl"
+				>
+					<div class="flex flex-col place-items-center place-content-center gap-4 py-4">
+						<img
+							src="/src/lib/assets/immich-logo.svg"
+							alt="Immich Logo"
+							draggable="false"
+							class="h-24 w-24"
+						/>
+						<h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium">
+							Welcome to Immich
+						</h1>
+					</div>
+					<div>
+						<p class="dark:text-immich-dark-fg text-center">
+							To use Immich, you must enable JavaScript or use a JavaScript compatible browser.
+						</p>
+					</div>
+				</div>
+			</section>
+		</noscript>
 		<div>%sveltekit.body%</div>
 	</body>
 </html>
