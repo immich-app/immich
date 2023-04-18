@@ -102,8 +102,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
         await clearAssetsAndAlbums(_db);
         log.info("Manual refresh requested, cleared assets and albums from db");
       } else if (_stateUpdateLock.enqueued <= 1) {
-        final int cachedCount =
-            await _db.assets.filter().ownerIdEqualTo(me.isarId).count();
+        final int cachedCount = await _userAssetQuery(me.isarId).count();
         if (cachedCount > 0 && cachedCount != state.allAssets.length) {
           await _stateUpdateLock.run(
             () async => _updateAssetsState(await _getUserAssets(me.isarId)),
@@ -121,8 +120,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       stopwatch.reset();
       if (!newRemote &&
           !newLocal &&
-          state.allAssets.length ==
-              await _db.assets.filter().ownerIdEqualTo(me.isarId).count()) {
+          state.allAssets.length == await _userAssetQuery(me.isarId).count()) {
         log.info("state is already up-to-date");
         return;
       }
@@ -141,12 +139,13 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     }
   }
 
-  Future<List<Asset>> _getUserAssets(int userId) => _db.assets
-      .filter()
-      .ownerIdEqualTo(userId)
-      .isArchivedEqualTo(false)
-      .sortByFileCreatedAtDesc()
-      .findAll();
+  Future<List<Asset>> _getUserAssets(int userId) =>
+      _userAssetQuery(userId).sortByFileCreatedAtDesc().findAll();
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> _userAssetQuery(
+    int userId,
+  ) =>
+      _db.assets.filter().ownerIdEqualTo(userId).isArchivedEqualTo(false);
 
   Future<void> clearAllAsset() {
     state = AssetsState.empty();

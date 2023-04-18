@@ -65,42 +65,44 @@ class ArchivePage extends HookConsumerWidget {
     }
 
     Widget buildBottomBar() {
-      return Align(
-        alignment: Alignment.bottomCenter,
-        child: SizedBox(
-          height: 64,
-          child: Card(
-            child: Column(
-              children: [
-                ListTile(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  leading: const Icon(
-                    Icons.unarchive_rounded,
-                  ),
-                  title:
-                      const Text("Unarchive", style: TextStyle(fontSize: 14)),
-                  onTap: () {
-                    if (selection.value.isNotEmpty) {
-                      ref
-                          .watch(assetProvider.notifier)
-                          .toggleArchive(selection.value, false);
+      return SafeArea(
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: SizedBox(
+            height: 64,
+            child: Card(
+              child: Column(
+                children: [
+                  ListTile(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    leading: const Icon(
+                      Icons.unarchive_rounded,
+                    ),
+                    title:
+                        const Text("Unarchive", style: TextStyle(fontSize: 14)),
+                    onTap: () {
+                      if (selection.value.isNotEmpty) {
+                        ref
+                            .watch(assetProvider.notifier)
+                            .toggleArchive(selection.value, false);
 
-                      final assetOrAssets =
-                          selection.value.length > 1 ? 'assets' : 'asset';
-                      ImmichToast.show(
-                        context: context,
-                        msg:
-                            'Moved ${selection.value.length} $assetOrAssets to library',
-                        gravity: ToastGravity.CENTER,
-                      );
-                    }
+                        final assetOrAssets =
+                            selection.value.length > 1 ? 'assets' : 'asset';
+                        ImmichToast.show(
+                          context: context,
+                          msg:
+                              'Moved ${selection.value.length} $assetOrAssets to library',
+                          gravity: ToastGravity.CENTER,
+                        );
+                      }
 
-                    selectionEnabledHook.value = false;
-                  },
-                )
-              ],
+                      selectionEnabledHook.value = false;
+                    },
+                  )
+                ],
+              ),
             ),
           ),
         ),

@@ -242,6 +242,22 @@ class MockAssetNotifier extends _i1.Mock implements _i2.AssetNotifier {
         returnValueForMissingStub: _i5.Future<bool>.value(false),
       ) as _i5.Future<bool>);
   @override
+  _i5.Future<void> toggleArchive(
+    Iterable<_i4.Asset>? assets,
+    bool? status,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #toggleArchive,
+          [
+            assets,
+            status,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+  @override
   bool updateShouldNotify(
     _i2.AssetsState? old,
     _i2.AssetsState? current,
