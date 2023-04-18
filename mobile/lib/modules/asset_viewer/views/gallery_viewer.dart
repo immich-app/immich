@@ -301,7 +301,8 @@ class GalleryViewerPage extends HookConsumerWidget {
             onFavorite: () {
               toggleFavorite(assetList[indexOfAsset.value]);
             },
-            onDownloadPressed: assetList[indexOfAsset.value].isLocal
+            onDownloadPressed: assetList[indexOfAsset.value].storage ==
+                    AssetState.local
                 ? null
                 : () {
                     ref.watch(imageViewerStateProvider.notifier).downloadAsset(
@@ -391,7 +392,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               scrollPhysics: isZoomed.value
                   ? const NeverScrollableScrollPhysics() // Don't allow paging while scrolled in
                   : (Platform.isIOS
-                      ? const BouncingScrollPhysics() // Use bouncing physics for iOS
+                      ? const ScrollPhysics() // Use bouncing physics for iOS
                       : const ClampingScrollPhysics() // Use heavy physics for Android
                   ),
               itemCount: assetList.length,
@@ -516,6 +517,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     filterQuality: FilterQuality.high,
                     maxScale: 1.0,
                     minScale: 1.0,
+                    basePosition: Alignment.bottomCenter,
                     child: SafeArea(
                       child: VideoViewerPage(
                         onPlaying: () => isPlayingVideo.value = true,
