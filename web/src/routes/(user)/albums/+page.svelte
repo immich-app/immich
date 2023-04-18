@@ -11,7 +11,6 @@
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
 	import { onMount } from 'svelte';
-	import { AlbumResponseDto } from '../../../api/open-api';
 	import { flip } from 'svelte/animate';
 
 	export let data: PageData;
