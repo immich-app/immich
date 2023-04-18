@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { clickOutside } from '$lib/utils/click-outside';
 	import { createEventDispatcher } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
@@ -18,6 +19,8 @@
 	export let shouldShowUploadButton = true;
 
 	let shouldShowAccountInfo = false;
+	let clickedOutsidePanel = false;
+	let clickedOutsideButton = false;
 
 	// Show fallback while loading profile picture and hide when image loads.
 	let showProfilePictureFallback = true;
@@ -30,7 +33,20 @@
 	};
 
 	const showAccountInfoPanel = () => {
-		shouldShowAccountInfoPanel = true;
+		if (clickedOutsidePanel) {
+			clickedOutsidePanel = false;
+			return;
+		}
+		shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel;
+	};
+
+	const closeOutsideClick = () => {
+		shouldShowAccountInfoPanel = false;
+		if (clickedOutsideButton) {
+			clickedOutsideButton = false;
+			return;
+		}
+		clickedOutsidePanel = true;
 	};
 
 	const logOut = async () => {
@@ -122,6 +138,8 @@
 					on:mouseleave={() => (shouldShowAccountInfo = false)}
 					on:click={showAccountInfoPanel}
 					on:keydown={showAccountInfoPanel}
+					use:clickOutside
+					on:outclick={() => (clickedOutsideButton = true)}
 				>
 					<button
 						class="flex place-items-center place-content-center rounded-full bg-immich-primary hover:bg-immich-primary/80 h-12 w-12 text-gray-100 dark:text-immich-dark-bg dark:bg-immich-dark-primary"
@@ -142,7 +160,7 @@
 						{/if}
 					</button>
 
-					{#if shouldShowAccountInfo}
+					{#if shouldShowAccountInfo && !shouldShowAccountInfoPanel}
 						<div
 							in:fade={{ delay: 500, duration: 150 }}
 							out:fade={{ delay: 200, duration: 150 }}
@@ -158,10 +176,6 @@
 	</div>
 
 	{#if shouldShowAccountInfoPanel}
-		<AccountInfoPanel
-			{user}
-			on:close={() => (shouldShowAccountInfoPanel = false)}
-			on:logout={logOut}
-		/>
+		<AccountInfoPanel {user} on:close={closeOutsideClick} on:logout={logOut} />
 	{/if}
 </section>
