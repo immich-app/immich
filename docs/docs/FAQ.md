@@ -83,4 +83,4 @@ After removing the the containers and volumes, the **Files** can be cleaned up (
 
 ### Why iOS app shows duplicate photos on the timeline while the web doesn't?
 
-If you are using `My Photo Stream`, the native Photos app curates those assets that is not properly handled by the library we are using in Immich app to query for the local assets, thus showing duplicated assets. To fix this, you can disable `My Photo Stream` in the native Photos app.
+If you are using `My Photo Stream`, the Photos app temporarily creates duplicates of photos taken in the last 30 days. These photos are included in the `Recents` album and thus shown up twice. To fix this, you can disable `My Photo Stream` in the native Photos app or choose a different album in the backup screen in Immich.
