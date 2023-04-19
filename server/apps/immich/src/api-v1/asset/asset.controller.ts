@@ -31,7 +31,7 @@ import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
-import { AssetResponseDto, ImmichReadStream } from '@app/domain';
+import { AssetResponseDto, MapMarkerResponseDto, ImmichReadStream } from '@app/domain';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { CreateAssetDto, mapToUploadFile } from './dto/create-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
@@ -171,6 +171,8 @@ export class AssetController {
     return this.assetService.serveFile(authUser, assetId, query, res, headers);
   }
 
+
+
   @Authenticated({ isShared: true })
   @Get('/thumbnail/:assetId')
   @Header('Cache-Control', 'max-age=31536000')
@@ -233,6 +235,28 @@ export class AssetController {
   async getArchivedAssetCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
     return this.assetService.getArchivedAssetCountByUserId(authUser);
   }
+
+   /**
+   * Get all Asset exif for mymap 
+   */
+   @Authenticated()
+   @Get('/mapMarker')
+   @ApiHeader({
+     name: 'if-none-match',
+     description: 'ETag of data already cached on the client',
+     required: false,
+     schema: { type: 'string' },
+   })
+   getAllMapAssets(
+    
+     @GetAuthUser() authUser: AuthUserDto,
+     @Query(new ValidationPipe({ transform: true })) dto: AssetSearchDto,
+   ): Promise<MapMarkerResponseDto[]> {
+     return this.assetService.getAllMapAssets(authUser, dto);
+   }
+
+   
+
   /**
    * Get all AssetEntity belong to the user
    */
@@ -250,6 +274,7 @@ export class AssetController {
   ): Promise<AssetResponseDto[]> {
     return this.assetService.getAllAssets(authUser, dto);
   }
+  
 
   @Authenticated()
   @Post('/time-bucket')

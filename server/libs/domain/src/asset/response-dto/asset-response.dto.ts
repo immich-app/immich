@@ -30,6 +30,8 @@ export class AssetResponseDto {
   tags?: TagResponseDto[];
 }
 
+
+
 export function mapAsset(entity: AssetEntity): AssetResponseDto {
   return {
     id: entity.id,
@@ -79,5 +81,23 @@ export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
+  };
+}
+
+
+
+export class MapMarkerResponseDto {
+  id!: string;
+  type!: AssetType;
+  latitude?: number | null = null;
+  longitude?: number | null = null;
+}
+
+export function mapAssetMapMarker(entity: AssetEntity): MapMarkerResponseDto {
+  return {
+    id: entity.id,
+    type: entity.type,
+    longitude: entity.exifInfo?.longitude,
+    latitude: entity.exifInfo?.latitude,
   };
 }

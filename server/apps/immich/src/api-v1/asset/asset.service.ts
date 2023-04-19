@@ -25,10 +25,12 @@ import { CuratedObjectsResponseDto } from './response-dto/curated-objects-respon
 import {
   AssetResponseDto,
   getLivePhotoMotionFilename,
+  MapMarkerResponseDto,
   ImmichReadStream,
   IStorageRepository,
   JobName,
   mapAsset,
+  mapAssetMapMarker,
   mapAssetWithoutExif,
 } from '@app/domain';
 import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
@@ -140,6 +142,11 @@ export class AssetService {
     const assets = await this._assetRepository.getAllByUserId(authUser.id, dto);
 
     return assets.map((asset) => mapAsset(asset));
+  }
+
+  public async getAllMapAssets(authUser: AuthUserDto, dto: AssetSearchDto): Promise<MapMarkerResponseDto[]> {
+    const assets = await this._assetRepository.getAllByUserId(authUser.id, dto);
+    return assets.map((asset) => mapAssetMapMarker(asset));
   }
 
   public async getAssetByTimeBucket(

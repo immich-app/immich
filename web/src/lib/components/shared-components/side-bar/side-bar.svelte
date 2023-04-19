@@ -7,6 +7,7 @@
 	import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
 	import Magnify from 'svelte-material-icons/Magnify.svelte';
 	import StarOutline from 'svelte-material-icons/StarOutline.svelte';
+	import MapLogo from 'svelte-material-icons/Map.svelte';
 	import { AppRoute } from '../../../constants';
 	import LoadingSpinner from '../loading-spinner.svelte';
 	import StatusBox from '../status-box.svelte';
@@ -181,6 +182,14 @@
 				{/await}
 			</svelte:fragment>
 		</SideBarButton>
+	</a>
+	<a
+		data-sveltekit-preload-data="hover"
+		data-sveltekit-noscroll
+		href={AppRoute.MAP}
+		draggable="false"
+	>
+		<SideBarButton title="Map" logo={MapLogo} isSelected={$page.route.id === '/(user)/map'} />
 	</a>
 
 	<!-- Status Box -->

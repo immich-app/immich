@@ -17,7 +17,7 @@
             "name": "assetId",
             "required": false,
             "in": "query",
-            "description": "Only returns albums that contain the asset\nIgnores the shared parameter\nundefined: get all albums",
+            "description": "Only returns albums that contain the asset\rIgnores the shared parameter\rundefined: get all albums",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -2244,6 +2244,73 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AssetCountByUserIdResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
+    "/asset/mapMarker": {
+      "get": {
+        "operationId": "getAllMapAssets",
+        "description": "Get all Asset exif for mymap",
+        "parameters": [
+          {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isArchived",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "if-none-match",
+            "in": "header",
+            "description": "ETag of data already cached on the client",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MapMarkerResponseDto"
+                  }
                 }
               }
             }
@@ -5168,6 +5235,37 @@
           "videos",
           "other",
           "total"
+        ]
+      },
+      "MapMarkerResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "IMAGE",
+              "VIDEO",
+              "AUDIO",
+              "OTHER"
+            ]
+          },
+          "latitude": {
+            "type": "number",
+            "nullable": true,
+            "default": null
+          },
+          "longitude": {
+            "type": "number",
+            "nullable": true,
+            "default": null
+          }
+        },
+        "required": [
+          "id",
+          "type"
         ]
       },
       "GetAssetByTimeBucketDto": {

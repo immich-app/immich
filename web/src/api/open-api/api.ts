@@ -572,6 +572,37 @@ export interface AssetResponseDto {
 /**
  * 
  * @export
+ * @interface MapMarkerResponseDto
+ */
+export interface MapMarkerResponseDto {
+    /**
+     * 
+     * @type {AssetTypeEnum}
+     * @memberof MapMarkerResponseDto
+     */
+    'type': AssetTypeEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof MapMarkerResponseDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {number}
+     * @memberof MapMarkerResponseDto
+     */
+    'longitude'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof MapMarkerResponseDto
+     */
+    'latitude'?: number;
+}
+/**
+ * 
+ * @export
  * @enum {string}
  */
 
@@ -4386,6 +4417,56 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
+         * Get all AssetEntity belong to the user
+         * @param {boolean} [isFavorite] 
+         * @param {number} [skip] 
+         * @param {string} [ifNoneMatch] ETag of data already cached on the client
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAllMapMarkerAssets: async (isFavorite?: boolean, skip?: number, ifNoneMatch?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/asset/mapMarker`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            // authentication cookie required
+
+            if (isFavorite !== undefined) {
+                localVarQueryParameter['isFavorite'] = isFavorite;
+            }
+
+            if (skip !== undefined) {
+                localVarQueryParameter['skip'] = skip;
+            }
+
+            if (ifNoneMatch !== undefined && ifNoneMatch !== null) {
+                localVarHeaderParameter['if-none-match'] = String(ifNoneMatch);
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Get a single asset\'s information
          * @param {string} assetId 
          * @param {string} [key] 
@@ -5153,7 +5234,18 @@ export const AssetApiFp = function(configuration?: Configuration) {
         async getAllAssets(isFavorite?: boolean, isArchived?: boolean, skip?: number, ifNoneMatch?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(isFavorite, isArchived, skip, ifNoneMatch, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
+        }, /**
+        * Get all AssetEntity belong to the user
+        * @param {boolean} [isFavorite] 
+        * @param {number} [skip] 
+        * @param {string} [ifNoneMatch] ETag of data already cached on the client
+        * @param {*} [options] Override http request option.
+        * @throws {RequiredError}
+        */
+       async getAllMapMarkerAssets(isFavorite?: boolean, skip?: number, ifNoneMatch?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<MapMarkerResponseDto>>> {
+           const localVarAxiosArgs = await localVarAxiosParamCreator.getAllMapMarkerAssets(isFavorite, skip, ifNoneMatch, options);
+           return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+       },
         /**
          * 
          * @param {*} [options] Override http request option.
@@ -5695,6 +5787,19 @@ export class AssetApi extends BaseAPI {
      */
     public getArchivedAssetCountByUserId(options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).getArchivedAssetCountByUserId(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Get all AssetEntity belong to the user
+     * @param {boolean} [isFavorite] 
+     * @param {number} [skip] 
+     * @param {string} [ifNoneMatch] ETag of data already cached on the client
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public getAllMapMarkerAssets(isFavorite?: boolean, skip?: number, ifNoneMatch?: string, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).getAllMapMarkerAssets(isFavorite, skip, ifNoneMatch, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
