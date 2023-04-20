@@ -157,7 +157,9 @@
 
 				for (const asset of deletedAssets) {
 					if (asset.status == 'SUCCESS') {
-						data.results.assets.items = data.results.assets.items.filter((a) => a.id != asset.id);
+						data.results.assets.items = data.results.assets.items.filter(
+							(a: AssetResponseDto) => a.id != asset.id
+						);
 					}
 				}
 
