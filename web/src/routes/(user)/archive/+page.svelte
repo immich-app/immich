@@ -255,5 +255,5 @@
 		{/if}
 	</svelte:fragment>
 
-	<GalleryViewer assets={$archivedAsset} bind:selectedAssets />
+	<GalleryViewer assets={$archivedAsset} bind:selectedAssets viewFrom="archive-page" />
 </UserPageLayout>

@@ -271,17 +271,17 @@
 				isArchived: !asset.isArchived
 			});
 
-			navigateAssetForward();
+			asset.isArchived = data.isArchived;
 
 			if (data.isArchived) {
-				assetStore.removeAsset(asset.id);
+				dispatch('archived', data);
 			} else {
-				$archivedAsset = $archivedAsset.filter((a) => a.id != asset.id);
+				dispatch('unarchived', data);
 			}
 
 			notificationController.show({
 				type: NotificationType.Info,
-				message: `Asset ${data.isArchived ? 'archived' : 'unarchived'}`
+				message: asset.isArchived ? `Added to archive` : `Removed from archive`
 			});
 		} catch (error) {
 			console.error(error);
