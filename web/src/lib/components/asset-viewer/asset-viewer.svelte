@@ -25,6 +25,7 @@
 	import { assetStore } from '$lib/stores/assets.store';
 	import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 	import { browser } from '$app/environment';
+	import { archivedAsset } from '$lib/stores/archived-asset.store';
 
 	export let asset: AssetResponseDto;
 	export let publicSharedKey = '';
@@ -263,6 +264,35 @@
 			document.addEventListener('keydown', onKeyboardPress);
 		}
 	};
+
+	const toggleArchive = async () => {
+		try {
+			const { data } = await api.assetApi.updateAsset(asset.id, {
+				isArchived: !asset.isArchived
+			});
+
+			navigateAssetForward();
+
+			if (data.isArchived) {
+				assetStore.removeAsset(asset.id);
+			} else {
+				$archivedAsset = $archivedAsset.filter((a) => a.id != asset.id);
+			}
+
+			notificationController.show({
+				type: NotificationType.Info,
+				message: `Asset ${data.isArchived ? 'archived' : 'unarchived'}`
+			});
+		} catch (error) {
+			console.error(error);
+			notificationController.show({
+				type: NotificationType.Error,
+				message: `Error ${
+					asset.isArchived ? 'archiving' : 'unarchiving'
+				} asset, check console for more details`
+			});
+		}
+	};
 </script>
 
 <section
@@ -285,6 +315,7 @@
 			on:addToSharedAlbum={() => openAlbumPicker(true)}
 			on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
 			on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
+			on:toggleArchive={toggleArchive}
 		/>
 	</div>
 
