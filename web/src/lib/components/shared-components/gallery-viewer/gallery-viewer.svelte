@@ -1,5 +1,10 @@
 <script lang="ts" context="module">
-	export type ViewFrom = 'archive-page' | 'album-page' | 'favorites-page' | 'search-page';
+	export type ViewFrom =
+		| 'archive-page'
+		| 'album-page'
+		| 'favorites-page'
+		| 'search-page'
+		| 'shared-link-page';
 </script>
 
 <script lang="ts">
