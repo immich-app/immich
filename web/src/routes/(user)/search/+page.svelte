@@ -38,7 +38,11 @@
 		<section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
 			{#if data.results?.assets?.items.length > 0}
 				<div class="pl-4">
-					<GalleryViewer assets={data.results.assets.items} disableAssetSelect />
+					<GalleryViewer
+						assets={data.results.assets.items}
+						disableAssetSelect
+						viewFrom="search-page"
+					/>
 				</div>
 			{:else}
 				<div

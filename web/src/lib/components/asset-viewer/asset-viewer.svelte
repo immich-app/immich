@@ -263,6 +263,35 @@
 			document.addEventListener('keydown', onKeyboardPress);
 		}
 	};
+
+	const toggleArchive = async () => {
+		try {
+			const { data } = await api.assetApi.updateAsset(asset.id, {
+				isArchived: !asset.isArchived
+			});
+
+			asset.isArchived = data.isArchived;
+
+			if (data.isArchived) {
+				dispatch('archived', data);
+			} else {
+				dispatch('unarchived', data);
+			}
+
+			notificationController.show({
+				type: NotificationType.Info,
+				message: asset.isArchived ? `Added to archive` : `Removed from archive`
+			});
+		} catch (error) {
+			console.error(error);
+			notificationController.show({
+				type: NotificationType.Error,
+				message: `Error ${
+					asset.isArchived ? 'archiving' : 'unarchiving'
+				} asset, check console for more details`
+			});
+		}
+	};
 </script>
 
 <section
@@ -285,6 +314,7 @@
 			on:addToSharedAlbum={() => openAlbumPicker(true)}
 			on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
 			on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
+			on:toggleArchive={toggleArchive}
 		/>
 	</div>
 
