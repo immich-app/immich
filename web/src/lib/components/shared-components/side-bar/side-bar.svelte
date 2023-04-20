@@ -151,6 +151,7 @@
 		<SideBarButton
 			title="Albums"
 			logo={ImageAlbum}
+			flippedLogo={true}
 			isSelected={$page.route.id === '/(user)/albums'}
 		>
 			<svelte:fragment slot="moreInformation">
