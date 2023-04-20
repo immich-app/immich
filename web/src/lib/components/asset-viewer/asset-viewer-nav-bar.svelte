@@ -51,11 +51,13 @@
 		<CircleIconButton logo={ArrowLeft} on:click={() => dispatch('goBack')} />
 	</div>
 	<div class="text-white flex gap-2">
-		<CircleIconButton
-			logo={asset.isArchived ? ArchiveArrowUpOutline : ArchiveArrowDownOutline}
-			title={asset.isArchived ? 'Unarchive' : 'Archive'}
-			on:click={() => dispatch('toggleArchive')}
-		/>
+		{#if isOwner}
+			<CircleIconButton
+				logo={asset.isArchived ? ArchiveArrowUpOutline : ArchiveArrowDownOutline}
+				title={asset.isArchived ? 'Unarchive' : 'Archive'}
+				on:click={() => dispatch('toggleArchive')}
+			/>
+		{/if}
 
 		{#if showMotionPlayButton}
 			{#if isMotionPhotoPlaying}
