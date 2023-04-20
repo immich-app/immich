@@ -25,7 +25,6 @@
 	import { assetStore } from '$lib/stores/assets.store';
 	import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 	import { browser } from '$app/environment';
-	import { archivedAsset } from '$lib/stores/archived-asset.store';
 
 	export let asset: AssetResponseDto;
 	export let publicSharedKey = '';
