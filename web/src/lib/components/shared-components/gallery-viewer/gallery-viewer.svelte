@@ -32,25 +32,24 @@
 	let viewWidth: number;
 
 	$: isMultiSelectionMode = selectedAssets.size > 0;
+	$: geometry = justifiedLayout(assets.map(getAssetRatio), {
+		boxSpacing: 5,
+		containerWidth: Math.floor(viewWidth),
+		targetRowHeight: 235
+	});
 
-	function getAssetRatio(asset: AssetResponseDto): number {
-		const height = asset.exifInfo?.exifImageHeight;
-		const width = asset.exifInfo?.exifImageWidth;
+	function getAssetRatio(asset: AssetResponseDto) {
+		let height = asset.exifInfo?.exifImageHeight || 235;
+		let width = asset.exifInfo?.exifImageWidth || 235;
+
 		const orientation = Number(asset.exifInfo?.orientation);
-
-		if (height && width) {
-			if (orientation) {
-				if (orientation == 6 || orientation == -90) {
-					return height / width;
-				} else {
-					return width / height;
-				}
+		if (orientation) {
+			if (orientation == 6 || orientation == -90) {
+				[width, height] = [height, width];
 			}
-
-			return width / height;
 		}
 
-		return 1;
+		return { width, height };
 	}
 
 	const viewAssetHandler = (event: CustomEvent) => {
@@ -122,20 +121,23 @@
 </script>
 
 {#if assets.length > 0}
-	<div class="flex flex-wrap gap-1 w-full pb-20" bind:clientWidth={viewWidth}>
+	<div
+		class="relative w-full mb-20"
+		bind:clientWidth={viewWidth}
+		style="height: {geometry.containerHeight}px"
+	>
 		{#if viewWidth}
-			{@const geoArray = assets.map(getAssetRatio)}
-			{@const justifiedLayoutResult = justifiedLayout(geoArray, {
-				targetRowHeight: 235,
-				containerWidth: Math.floor(viewWidth)
-			})}
-
 			{#each assets as asset, index (asset.id)}
-				<div animate:flip={{ duration: 500 }}>
+				{@const box = geometry.boxes[index]}
+				<div
+					class="absolute"
+					style="width: {box.width}px; height: {box.height}px; top: {box.top}px; left: {box.left}px"
+					animate:flip={{ duration: 500 }}
+				>
 					<Thumbnail
 						{asset}
-						thumbnailWidth={justifiedLayoutResult.boxes[index].width || 235}
-						thumbnailHeight={justifiedLayoutResult.boxes[index].height || 235}
+						thumbnailWidth={box.width}
+						thumbnailHeight={box.height}
 						readonly={disableAssetSelect}
 						publicSharedKey={sharedLink?.key}
 						format={assets.length < 7 ? ThumbnailFormat.Jpeg : ThumbnailFormat.Webp}
