@@ -113,8 +113,9 @@
 
 			searchResultAssets = searchResultAssets.map((a) => {
 				if (a.id === asset.id) {
-					a.isArchived = !isAllArchived;
+					a = asset;
 				}
+
 				return a;
 			});
 		}
@@ -141,7 +142,7 @@
 
 			searchResultAssets = searchResultAssets.map((a) => {
 				if (a.id === asset.id) {
-					a.isFavorite = !isAllFavorite;
+					a = asset;
 				}
 				return a;
 			});
