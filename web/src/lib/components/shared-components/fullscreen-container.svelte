@@ -18,7 +18,7 @@
 
 		{#if showMessage}
 			<div
-				class="text-sm border rounded-xl p-4 text-immich-primary dark:text-immich-dark-primary font-medium bg-immich-primary/5 dark:border-immich-dark-bg w-full border-immich-primary border-2"
+				class="text-sm rounded-xl p-4 text-immich-primary dark:text-immich-dark-primary font-medium bg-immich-primary/5 dark:border-immich-dark-bg w-full border-immich-primary border-2"
 			>
 				<slot name="message" />
 			</div>

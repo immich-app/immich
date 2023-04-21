@@ -7,6 +7,7 @@
 	import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
 	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
 	import Star from 'svelte-material-icons/Star.svelte';
+	import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
 	import ImageThumbnail from './image-thumbnail.svelte';
 	import VideoThumbnail from './video-thumbnail.svelte';
 
@@ -22,6 +23,7 @@
 	export let disabled = false;
 	export let readonly = false;
 	export let publicSharedKey: string | undefined = undefined;
+	export let showArchiveIcon = false;
 
 	let mouseOver = false;
 
@@ -114,6 +116,11 @@
 					</div>
 				{/if}
 
+				{#if showArchiveIcon && asset.isArchived}
+					<div class="absolute {asset.isFavorite ? 'bottom-10' : 'bottom-2'} left-2 z-10">
+						<ArchiveArrowDownOutline size="24" class="text-white" />
+					</div>
+				{/if}
 				<ImageThumbnail
 					url={api.getAssetThumbnailUrl(asset.id, format, publicSharedKey)}
 					altText={asset.originalFileName}

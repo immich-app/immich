@@ -25,13 +25,14 @@
 	import { onMount } from 'svelte';
 	import { handleError } from '$lib/utils/handle-error';
 	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
+	import { archivedAsset } from '$lib/stores/archived-asset.store';
 
 	export let data: PageData;
 
 	onMount(async () => {
 		try {
 			const { data: assets } = await api.assetApi.getAllAssets(undefined, true);
-			archived = assets;
+			$archivedAsset = assets;
 		} catch {
 			handleError(Error, 'Unable to load archived assets');
 		}
@@ -54,7 +55,7 @@
 
 				for (const asset of deletedAssets) {
 					if (asset.status == 'SUCCESS') {
-						archived = archived.filter((a) => a.id != asset.id);
+						$archivedAsset = $archivedAsset.filter((a) => a.id != asset.id);
 					}
 				}
 
@@ -72,7 +73,6 @@
 	$: isMultiSelectionMode = selectedAssets.size > 0;
 
 	let selectedAssets: Set<AssetResponseDto> = new Set();
-	let archived: AssetResponseDto[] = [];
 
 	let contextMenuPosition = { x: 0, y: 0 };
 	let isShowCreateSharedLinkModal = false;
@@ -157,7 +157,7 @@
 				});
 				cnt = cnt + 1;
 
-				archived = archived.filter((a) => a.id != asset.id);
+				$archivedAsset = $archivedAsset.filter((a) => a.id != asset.id);
 			}
 		}
 
@@ -181,7 +181,7 @@
 
 <UserPageLayout user={data.user} hideNavbar={isMultiSelectionMode}>
 	<!-- Empty Message -->
-	{#if archived.length === 0}
+	{#if $archivedAsset.length === 0}
 		<EmptyPlaceholder
 			text="Archive photos and videos to hide them from your Photos view"
 			alt="Empty archive"
@@ -255,5 +255,5 @@
 		{/if}
 	</svelte:fragment>
 
-	<GalleryViewer assets={archived} bind:selectedAssets />
+	<GalleryViewer assets={$archivedAsset} bind:selectedAssets viewFrom="archive-page" />
 </UserPageLayout>

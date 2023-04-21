@@ -147,6 +147,6 @@
 		</ControlAppBar>
 	{/if}
 	<section class="flex flex-col my-[160px] px-6 sm:px-12 md:px-24 lg:px-40">
-		<GalleryViewer {assets} {sharedLink} bind:selectedAssets />
+		<GalleryViewer {assets} {sharedLink} bind:selectedAssets viewFrom="shared-link-page" />
 	</section>
 </section>
