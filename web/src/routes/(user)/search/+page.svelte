@@ -239,7 +239,7 @@
 						assets={data.results.assets.items}
 						bind:selectedAssets
 						viewFrom="search-page"
-						isSearchResult={true}
+						showArchiveIcon={true}
 					/>
 				</div>
 			{:else}

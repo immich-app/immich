@@ -23,7 +23,7 @@
 	export let disabled = false;
 	export let readonly = false;
 	export let publicSharedKey: string | undefined = undefined;
-	export let isSearchResult = false;
+	export let showArchiveIcon = false;
 
 	let mouseOver = false;
 
@@ -116,7 +116,7 @@
 					</div>
 				{/if}
 
-				{#if isSearchResult && asset.isArchived}
+				{#if showArchiveIcon && asset.isArchived}
 					<div class="absolute {asset.isFavorite ? 'bottom-10' : 'bottom-2'} left-2 z-10">
 						<ArchiveArrowDownOutline size="24" class="text-white" />
 					</div>
