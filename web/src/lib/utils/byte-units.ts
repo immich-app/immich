@@ -22,7 +22,11 @@ export function getBytesWithUnit(bytes: number, maxPrecision = 1): [number, stri
 		}
 	}
 
-	remainder = parseFloat(remainder.toFixed(maxPrecision));
+	try {
+		remainder = parseFloat(remainder.toFixed(maxPrecision));
+	} catch {
+		remainder = 0;
+	}
 
 	return [remainder, units[magnitude]];
 }
