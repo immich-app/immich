@@ -7,6 +7,7 @@
 	export let title: string;
 	export let logo: typeof Icon;
 	export let isSelected: boolean;
+	export let flippedLogo = false;
 
 	let showMoreInformation = false;
 
@@ -25,7 +26,11 @@
   "
 >
 	<div class="flex gap-4 place-items-center w-full overflow-hidden truncate">
-		<svelte:component this={logo} size="1.5em" class="shrink-0" />
+		<svelte:component
+			this={logo}
+			size="1.5em"
+			class="shrink-0 {flippedLogo ? '-scale-x-100' : ''}"
+		/>
 		<p class="font-medium text-sm">{title}</p>
 	</div>
 

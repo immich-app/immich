@@ -14,6 +14,8 @@
 	import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
 	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
 	import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
+	import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
+	import ArchiveArrowUpOutline from 'svelte-material-icons/ArchiveArrowUpOutline.svelte';
 
 	import { page } from '$app/stores';
 	import { AssetResponseDto } from '../../../api';
@@ -49,6 +51,14 @@
 		<CircleIconButton logo={ArrowLeft} on:click={() => dispatch('goBack')} />
 	</div>
 	<div class="text-white flex gap-2">
+		{#if isOwner}
+			<CircleIconButton
+				logo={asset.isArchived ? ArchiveArrowUpOutline : ArchiveArrowDownOutline}
+				title={asset.isArchived ? 'Unarchive' : 'Archive'}
+				on:click={() => dispatch('toggleArchive')}
+			/>
+		{/if}
+
 		{#if showMotionPlayButton}
 			{#if isMotionPhotoPlaying}
 				<CircleIconButton

@@ -3,7 +3,7 @@
 
 	import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
 	import { assetGridState, assetStore, loadingBucketState } from '$lib/stores/assets.store';
-	import { api, AssetCountByTimeBucketResponseDto, TimeGroupEnum } from '@api';
+	import { api, AssetCountByTimeBucketResponseDto, AssetResponseDto, TimeGroupEnum } from '@api';
 	import AssetDateGroup from './asset-date-group.svelte';
 	import Portal from '../shared-components/portal/portal.svelte';
 	import AssetViewer from '../asset-viewer/asset-viewer.svelte';
@@ -89,6 +89,12 @@
 	const handleScrollbarDrag = (e: OnScrollbarDragDetail) => {
 		assetGridElement.scrollTop = e.scrollTo;
 	};
+
+	const handleArchiveSuccess = (e: CustomEvent) => {
+		const asset = e.detail as AssetResponseDto;
+		navigateToNextAsset();
+		assetStore.removeAsset(asset.id);
+	};
 </script>
 
 {#if bucketInfo && viewportHeight && $assetGridState.timelineHeight > viewportHeight}
@@ -149,6 +155,7 @@
 			on:close={() => {
 				assetInteractionStore.setIsViewingAsset(false);
 			}}
+			on:archived={handleArchiveSuccess}
 		/>
 	{/if}
 </Portal>
