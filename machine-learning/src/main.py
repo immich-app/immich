@@ -3,31 +3,33 @@ from flask import Flask, request
 from transformers import pipeline
 from sentence_transformers import SentenceTransformer, util
 from PIL import Image
+from face_processor import FaceProcessor
 
 is_dev = os.getenv('NODE_ENV') == 'development'
 server_port = os.getenv('MACHINE_LEARNING_PORT', 3003)
 server_host = os.getenv('MACHINE_LEARNING_HOST', '0.0.0.0')
 
-classification_model = os.getenv('MACHINE_LEARNING_CLASSIFICATION_MODEL', 'microsoft/resnet-50')
+classification_model = os.getenv(
+    'MACHINE_LEARNING_CLASSIFICATION_MODEL', 'microsoft/resnet-50')
 object_model = os.getenv('MACHINE_LEARNING_OBJECT_MODEL', 'hustvl/yolos-tiny')
-clip_image_model = os.getenv('MACHINE_LEARNING_CLIP_IMAGE_MODEL', 'clip-ViT-B-32')
-clip_text_model = os.getenv('MACHINE_LEARNING_CLIP_TEXT_MODEL', 'clip-ViT-B-32')
+clip_image_model = os.getenv(
+    'MACHINE_LEARNING_CLIP_IMAGE_MODEL', 'clip-ViT-B-32')
+clip_text_model = os.getenv(
+    'MACHINE_LEARNING_CLIP_TEXT_MODEL', 'clip-ViT-B-32')
 
 _model_cache = {}
+
+
 def _get_model(model, task=None):
-  global _model_cache
-  key = '|'.join([model, str(task)])
-  if key not in _model_cache:
-    if task:
-      _model_cache[key] = pipeline(model=model, task=task)
-    else:
-      _model_cache[key] = SentenceTransformer(model)
-  return _model_cache[key]
+    global _model_cache
+    key = '|'.join([model, str(task)])
+    if key not in _model_cache:
+        if task:
+            _model_cache[key] = pipeline(model=model, task=task)
+        else:
+            _model_cache[key] = SentenceTransformer(model)
+    return _model_cache[key]
 
-server = Flask(__name__)
-
-from face_processor import FaceProcessor
-from .face_processor import FaceProcessor
 
 server = Flask(__name__)
 
@@ -53,11 +55,13 @@ server_port = os.getenv('MACHINE_LEARNING_PORT') or 3003
 def ping():
     return "pong"
 
+
 @server.route("/object-detection/detect-object", methods=['POST'])
 def object_detection():
     model = _get_model(object_model, 'object-detection')
     assetPath = request.json['thumbnailPath']
     return run_engine(model, assetPath), 200
+
 
 @server.route("/image-classifier/tag-image", methods=['POST'])
 def image_classification():
@@ -65,11 +69,13 @@ def image_classification():
     assetPath = request.json['thumbnailPath']
     return run_engine(model, assetPath), 200
 
+
 @server.route("/sentence-transformer/encode-image", methods=['POST'])
 def clip_encode_image():
     model = _get_model(clip_image_model)
     assetPath = request.json['thumbnailPath']
     return model.encode(Image.open(assetPath)).tolist(), 200
+
 
 @server.route("/sentence-transformer/encode-text", methods=['POST'])
 def clip_encode_text():
@@ -77,10 +83,12 @@ def clip_encode_text():
     text = request.json['text']
     return model.encode(text).tolist(), 200
 
+
 @server.route("/facial-recognition/recognize-persons", methods=['POST'])
 def facial_recognition():
     assetPath = request.json['thumbnailPath']
     return face_processor.process_image(assetPath), 201
+
 
 def run_engine(engine, path):
     result = []

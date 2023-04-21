@@ -73,6 +73,9 @@ export class JobService {
       case QueueName.THUMBNAIL_GENERATION:
         return this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force } });
 
+      case QueueName.RECOGNIZE_FACES:
+        return this.jobRepository.queue({ name: JobName.QUEUE_RECOGNIZE_FACES, data: { force } });
+
       default:
         throw new BadRequestException(`Invalid job name: ${name}`);
     }

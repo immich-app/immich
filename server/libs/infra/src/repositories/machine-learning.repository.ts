@@ -23,6 +23,10 @@ export class MachineLearningRepository implements IMachineLearningRepository {
   }
 
   recognizeFaces(input: MachineLearningInput): Promise<string[]> {
-    return client.post<string[]>('/facial-recognition/recognize-persons', input).then((res) => res.data);
+    console.log('regognize face');
+    return client.post<string[]>('/facial-recognition/recognize-persons', input).then((res) => {
+      console.log('res.data', res.data);
+      return res.data;
+    });
   }
 }

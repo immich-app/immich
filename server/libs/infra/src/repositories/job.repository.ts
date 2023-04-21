@@ -96,6 +96,7 @@ export class JobRepository implements IJobRepository {
       case JobName.QUEUE_RECOGNIZE_FACES:
       case JobName.RECOGNIZE_FACES:
         await this.recognizeFaces.add(item.name, item.data);
+        break;
 
       case JobName.QUEUE_GENERATE_THUMBNAILS:
       case JobName.GENERATE_JPEG_THUMBNAIL:
