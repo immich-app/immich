@@ -21,8 +21,6 @@ Method | HTTP request | Description
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -74,8 +72,6 @@ Name | Type | Description  | Notes
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -123,8 +119,6 @@ void (empty response body)
 
 # **getKey**
 > APIKeyResponseDto getKey(id)
-
-
 
 
 
@@ -179,8 +173,6 @@ Name | Type | Description  | Notes
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -225,8 +217,6 @@ This endpoint does not need any parameter.
 
 # **updateKey**
 > APIKeyResponseDto updateKey(id, aPIKeyUpdateDto)
-
-
 
 
 

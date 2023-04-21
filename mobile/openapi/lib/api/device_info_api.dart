@@ -16,10 +16,7 @@ class DeviceInfoApi {
 
   final ApiClient apiClient;
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'PUT /device-info' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [UpsertDeviceInfoDto] upsertDeviceInfoDto (required):
@@ -48,8 +45,6 @@ class DeviceInfoApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [UpsertDeviceInfoDto] upsertDeviceInfoDto (required):

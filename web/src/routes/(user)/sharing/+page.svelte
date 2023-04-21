@@ -36,25 +36,25 @@
 <UserPageLayout user={data.user} title={data.meta.title}>
 	<div class="flex" slot="buttons">
 		<LinkButton on:click={createSharedAlbum}>
-			<div class="flex place-items-center gap-1 text-sm">
-				<PlusBoxOutline size="18" />
-				Create shared album
+			<div class="flex place-items-center gap-x-1 text-sm flex-wrap justify-center">
+				<PlusBoxOutline size="18" class="shrink-0" />
+				<span class="max-sm:text-xs leading-none">Create shared album</span>
 			</div>
 		</LinkButton>
 
 		<LinkButton on:click={() => goto('/sharing/sharedlinks')}>
-			<div class="flex place-items-center gap-1 text-sm">
-				<Link size="18" />
-				Shared links
+			<div class="flex place-items-center gap-x-1 text-sm flex-wrap justify-center">
+				<Link size="18" class="shrink-0" />
+				<span class="max-sm:text-xs leading-none">Shared links</span>
 			</div>
 		</LinkButton>
 	</div>
 
 	<section>
 		<!-- Share Album List -->
-		<div class="w-full flex flex-col place-items-center">
+		<div class="md:w-full flex flex-col place-items-center">
 			{#each data.sharedAlbums as album}
-				<a data-sveltekit-preload-data="hover" href={`albums/${album.id}`}>
+				<a class="max-md:w-full" data-sveltekit-preload-data="hover" href={`albums/${album.id}`}>
 					<SharedAlbumListTile {album} user={data.user} />
 				</a>
 			{/each}
@@ -63,7 +63,7 @@
 		<!-- Empty List -->
 		{#if data.sharedAlbums.length === 0}
 			<div
-				class="border dark:border-immich-dark-gray p-5 w-[50%] m-auto mt-10 bg-gray-50 dark:bg-immich-dark-gray rounded-3xl flex flex-col place-content-center place-items-center dark:text-immich-dark-fg"
+				class="border dark:border-immich-dark-gray p-5 md:w-[500px] w-2/3 m-auto mt-10 bg-gray-50 dark:bg-immich-dark-gray rounded-3xl flex flex-col place-content-center place-items-center dark:text-immich-dark-fg"
 			>
 				<img src={empty2Url} alt="Empty shared album" width="500" draggable="false" />
 				<p class="text-center text-immich-text-gray-500">

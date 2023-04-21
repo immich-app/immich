@@ -205,6 +205,7 @@ Asset _assetDeserialize(
     fileModifiedAt: reader.readDateTime(offsets[3]),
     fileName: reader.readString(offsets[4]),
     height: reader.readIntOrNull(offsets[5]),
+    id: id,
     isArchived: reader.readBool(offsets[6]),
     isFavorite: reader.readBool(offsets[7]),
     isLocal: reader.readBool(offsets[8]),
@@ -217,7 +218,6 @@ Asset _assetDeserialize(
     updatedAt: reader.readDateTime(offsets[14]),
     width: reader.readIntOrNull(offsets[15]),
   );
-  object.id = id;
   return object;
 }
 

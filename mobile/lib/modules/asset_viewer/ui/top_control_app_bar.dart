@@ -27,7 +27,7 @@ class TopControlAppBar extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const double iconSize = 18.0;
+    const double iconSize = 22.0;
 
     Widget buildFavoriteButton() {
       return IconButton(
@@ -75,6 +75,14 @@ class TopControlAppBar extends HookConsumerWidget {
                   ),
           ),
         if (!asset.isLocal)
+          IconButton(
+            onPressed: onDownloadPressed,
+            icon: Icon(
+              Icons.cloud_download_outlined,
+              color: Colors.grey[200],
+            ),
+          ),
+        if (asset.storage == AssetState.merged)
           IconButton(
             onPressed: onDownloadPressed,
             icon: Icon(

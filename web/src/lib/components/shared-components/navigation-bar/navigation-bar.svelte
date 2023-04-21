@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { clickOutside } from '$lib/utils/click-outside';
 	import { createEventDispatcher } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
@@ -18,19 +19,15 @@
 	export let shouldShowUploadButton = true;
 
 	let shouldShowAccountInfo = false;
+	let shouldShowAccountInfoPanel = false;
 
 	// Show fallback while loading profile picture and hide when image loads.
 	let showProfilePictureFallback = true;
 
 	const dispatch = createEventDispatcher();
-	let shouldShowAccountInfoPanel = false;
 
 	const getFirstLetter = (text?: string) => {
 		return text?.charAt(0).toUpperCase();
-	};
-
-	const showAccountInfoPanel = () => {
-		shouldShowAccountInfoPanel = true;
 	};
 
 	const logOut = async () => {
@@ -116,15 +113,14 @@
 					</a>
 				{/if}
 
-				<div
-					on:mouseover={() => (shouldShowAccountInfo = true)}
-					on:focus={() => (shouldShowAccountInfo = true)}
-					on:mouseleave={() => (shouldShowAccountInfo = false)}
-					on:click={showAccountInfoPanel}
-					on:keydown={showAccountInfoPanel}
-				>
+				<div use:clickOutside on:outclick={() => (shouldShowAccountInfoPanel = false)}>
 					<button
 						class="flex place-items-center place-content-center rounded-full bg-immich-primary hover:bg-immich-primary/80 h-12 w-12 text-gray-100 dark:text-immich-dark-bg dark:bg-immich-dark-primary"
+						on:mouseover={() => (shouldShowAccountInfo = true)}
+						on:focus={() => (shouldShowAccountInfo = true)}
+						on:blur={() => (shouldShowAccountInfo = false)}
+						on:mouseleave={() => (shouldShowAccountInfo = false)}
+						on:click={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
 					>
 						{#if user.profileImagePath}
 							<img
@@ -142,7 +138,7 @@
 						{/if}
 					</button>
 
-					{#if shouldShowAccountInfo}
+					{#if shouldShowAccountInfo && !shouldShowAccountInfoPanel}
 						<div
 							in:fade={{ delay: 500, duration: 150 }}
 							out:fade={{ delay: 200, duration: 150 }}
@@ -152,16 +148,12 @@
 							<p>{user.email}</p>
 						</div>
 					{/if}
+
+					{#if shouldShowAccountInfoPanel}
+						<AccountInfoPanel {user} on:logout={logOut} />
+					{/if}
 				</div>
 			</section>
 		</div>
 	</div>
-
-	{#if shouldShowAccountInfoPanel}
-		<AccountInfoPanel
-			{user}
-			on:close={() => (shouldShowAccountInfoPanel = false)}
-			on:logout={logOut}
-		/>
-	{/if}
 </section>

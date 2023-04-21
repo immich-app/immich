@@ -18,7 +18,6 @@
 	import type { LayoutData } from './$types';
 	import SideBarSection from '$lib/components/shared-components/side-bar/side-bar-section.svelte';
 
-	let isCollapsed: boolean;
 	export let data: LayoutData;
 
 	// Circumvents the need to import the page store. Should be replaced by
@@ -43,37 +42,33 @@
 
 <main>
 	<section class="grid md:grid-cols-[250px_auto] grid-cols-[70px_auto] pt-[72px] h-screen">
-		<SideBarSection bind:isCollapsed>
+		<SideBarSection>
 			<SideBarButton
 				title="Users"
 				logo={AccountMultipleOutline}
 				isSelected={data.routeId === AppRoute.ADMIN_USER_MANAGEMENT}
 				on:selected={() => goto(AppRoute.ADMIN_USER_MANAGEMENT)}
-				{isCollapsed}
 			/>
 			<SideBarButton
 				title="Jobs"
 				logo={Sync}
 				isSelected={data.routeId === AppRoute.ADMIN_JOBS}
 				on:selected={() => goto(AppRoute.ADMIN_JOBS)}
-				{isCollapsed}
 			/>
 			<SideBarButton
 				title="Settings"
 				logo={Cog}
 				isSelected={data.routeId === AppRoute.ADMIN_SETTINGS}
 				on:selected={() => goto(AppRoute.ADMIN_SETTINGS)}
-				{isCollapsed}
 			/>
 			<SideBarButton
 				title="Server Stats"
 				logo={Server}
 				isSelected={data.routeId === AppRoute.ADMIN_STATS}
 				on:selected={() => goto(AppRoute.ADMIN_STATS)}
-				{isCollapsed}
 			/>
 			<div class="mb-6 mt-auto">
-				<StatusBox {isCollapsed} />
+				<StatusBox />
 			</div>
 		</SideBarSection>
 
@@ -85,8 +80,8 @@
 				<hr class="dark:border-immich-dark-gray" />
 			</div>
 
-			<section id="setting-content" class="flex place-content-center mx-2">
-				<section class="w-[800px] pt-5 pb-28">
+			<section id="setting-content" class="flex place-content-center mx-4">
+				<section class="w-full sm:w-5/6 md:w-[800px] pt-5 pb-28">
 					<slot />
 				</section>
 			</section>

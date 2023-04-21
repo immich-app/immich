@@ -16,10 +16,7 @@ class AuthenticationApi {
 
   final ApiClient apiClient;
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /auth/admin-sign-up' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [SignUpDto] signUpDto (required):
@@ -48,8 +45,6 @@ class AuthenticationApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [SignUpDto] signUpDto (required):
@@ -68,10 +63,7 @@ class AuthenticationApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /auth/change-password' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [ChangePasswordDto] changePasswordDto (required):
@@ -100,8 +92,6 @@ class AuthenticationApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [ChangePasswordDto] changePasswordDto (required):
@@ -120,10 +110,7 @@ class AuthenticationApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /auth/login' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [LoginCredentialDto] loginCredentialDto (required):
@@ -152,8 +139,6 @@ class AuthenticationApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [LoginCredentialDto] loginCredentialDto (required):
@@ -172,9 +157,7 @@ class AuthenticationApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
+  /// Performs an HTTP 'POST /auth/logout' operation and returns the [Response].
   Future<Response> logoutWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/auth/logout';
@@ -200,7 +183,6 @@ class AuthenticationApi {
     );
   }
 
-  /// 
   Future<LogoutResponseDto?> logout() async {
     final response = await logoutWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -216,9 +198,7 @@ class AuthenticationApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
+  /// Performs an HTTP 'POST /auth/validateToken' operation and returns the [Response].
   Future<Response> validateAccessTokenWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/auth/validateToken';
@@ -244,7 +224,6 @@ class AuthenticationApi {
     );
   }
 
-  /// 
   Future<ValidateAccessTokenResponseDto?> validateAccessToken() async {
     final response = await validateAccessTokenWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {

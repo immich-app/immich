@@ -106,6 +106,6 @@
 			/>
 		{/if}
 
-		<GalleryViewer assets={favorites} bind:selectedAssets />
+		<GalleryViewer assets={favorites} bind:selectedAssets viewFrom="favorites-page" />
 	</section>
 </UserPageLayout>

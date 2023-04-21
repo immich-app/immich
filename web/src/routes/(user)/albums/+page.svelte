@@ -10,6 +10,8 @@
 	import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+	import { onMount } from 'svelte';
+	import { flip } from 'svelte/animate';
 
 	export let data: PageData;
 
@@ -18,6 +20,7 @@
 		isShowContextMenu,
 		contextMenuPosition,
 		createAlbum,
+		deleteAlbum,
 		deleteSelectedContextAlbum,
 		showAlbumContextMenu,
 		closeAlbumContextMenu
@@ -27,6 +30,23 @@
 		const newAlbum = await createAlbum();
 		if (newAlbum) {
 			goto('/albums/' + newAlbum.id);
+		}
+	};
+
+	onMount(() => {
+		removeAlbumsIfEmpty();
+	});
+
+	const removeAlbumsIfEmpty = async () => {
+		try {
+			for (const album of $albums) {
+				if (album.assetCount == 0 && album.albumName == 'Untitled') {
+					await deleteAlbum(album);
+					$albums = $albums.filter((a) => a.id !== album.id);
+				}
+			}
+		} catch (error) {
+			console.log(error);
 		}
 	};
 </script>
@@ -43,15 +63,14 @@
 
 	<!-- Album Card -->
 	<div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-8">
-		{#each $albums as album}
-			{#key album.id}
-				<a data-sveltekit-preload-data="hover" href={`albums/${album.id}`}>
-					<AlbumCard
-						{album}
-						on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)}
-					/>
-				</a>
-			{/key}
+		{#each $albums as album (album.id)}
+			<a
+				data-sveltekit-preload-data="hover"
+				href={`albums/${album.id}`}
+				animate:flip={{ duration: 200 }}
+			>
+				<AlbumCard {album} on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)} />
+			</a>
 		{/each}
 	</div>
 

@@ -16,10 +16,7 @@ class ShareApi {
 
   final ApiClient apiClient;
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'PATCH /share/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -51,8 +48,6 @@ class ShareApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -73,9 +68,7 @@ class ShareApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
+  /// Performs an HTTP 'GET /share' operation and returns the [Response].
   Future<Response> getAllSharedLinksWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/share';
@@ -101,7 +94,6 @@ class ShareApi {
     );
   }
 
-  /// 
   Future<List<SharedLinkResponseDto>?> getAllSharedLinks() async {
     final response = await getAllSharedLinksWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -120,10 +112,7 @@ class ShareApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'GET /share/me' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] key:
@@ -156,8 +145,6 @@ class ShareApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [String] key:
@@ -176,10 +163,7 @@ class ShareApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'GET /share/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -209,8 +193,6 @@ class ShareApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -229,10 +211,7 @@ class ShareApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'DELETE /share/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -262,8 +241,6 @@ class ShareApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [String] id (required):

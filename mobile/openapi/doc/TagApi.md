@@ -21,8 +21,6 @@ Method | HTTP request | Description
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -71,8 +69,6 @@ Name | Type | Description  | Notes
 
 # **delete**
 > delete(id)
-
-
 
 
 
@@ -126,8 +122,6 @@ void (empty response body)
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -172,8 +166,6 @@ This endpoint does not need any parameter.
 
 # **findOne**
 > TagResponseDto findOne(id)
-
-
 
 
 
@@ -225,8 +217,6 @@ Name | Type | Description  | Notes
 
 # **update**
 > TagResponseDto update(id, updateTagDto)
-
-
 
 
 

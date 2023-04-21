@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { clickOutside } from '$lib/utils/click-outside';
 	import { UserResponseDto } from '@api';
 	import { createEventDispatcher } from 'svelte';
 	import { page } from '$app/stores';
@@ -26,8 +25,6 @@
 	out:fade={{ duration: 100 }}
 	id="account-info-panel"
 	class="absolute right-[25px] top-[75px] bg-gray-200 dark:bg-immich-dark-gray dark:border dark:border-immich-dark-gray shadow-lg rounded-3xl w-[360px] text-center z-[100]"
-	use:clickOutside
-	on:outclick={() => dispatch('close')}
 >
 	<div class="bg-white dark:bg-immich-dark-primary/10 rounded-3xl mx-4 mt-4 pb-4">
 		<div class="flex place-items-center place-content-center">

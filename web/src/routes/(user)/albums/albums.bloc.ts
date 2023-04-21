@@ -53,11 +53,7 @@ export const useAlbums = (props: AlbumsProps) => {
 	}
 
 	async function deleteAlbum(album: AlbumResponseDto): Promise<void> {
-		try {
-			await api.albumApi.deleteAlbum(album.id);
-		} catch {
-			// Do nothing?
-		}
+		await api.albumApi.deleteAlbum(album.id);
 	}
 
 	async function showAlbumContextMenu(
@@ -107,6 +103,7 @@ export const useAlbums = (props: AlbumsProps) => {
 		contextMenuPosition,
 		loadAlbums,
 		createAlbum,
+		deleteAlbum,
 		showAlbumContextMenu,
 		closeAlbumContextMenu,
 		deleteSelectedContextAlbum
