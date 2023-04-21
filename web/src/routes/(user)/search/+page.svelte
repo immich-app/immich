@@ -111,7 +111,7 @@
 
 			asset.isArchived = !isAllArchived;
 
-			searchResultAssets = searchResultAssets.map((a) => {
+			searchResultAssets = searchResultAssets.map((a: AssetResponseDto) => {
 				if (a.id === asset.id) {
 					a = asset;
 				}
@@ -140,7 +140,7 @@
 
 			asset.isFavorite = !isAllFavorite;
 
-			searchResultAssets = searchResultAssets.map((a) => {
+			searchResultAssets = searchResultAssets.map((a: AssetResponseDto) => {
 				if (a.id === asset.id) {
 					a = asset;
 				}
