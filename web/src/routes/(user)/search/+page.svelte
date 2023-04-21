@@ -52,6 +52,7 @@
 	let isShowAddMenu = false;
 	let isShowAlbumPicker = false;
 	let addToSharedAlbum = false;
+	$: searchResultAssets = data.results.assets.items;
 
 	const handleShowMenu = ({ x, y }: MouseEvent) => {
 		contextMenuPosition = { x, y };
@@ -109,6 +110,13 @@
 			cnt = cnt + 1;
 
 			asset.isArchived = !isAllArchived;
+
+			searchResultAssets = searchResultAssets.map((a) => {
+				if (a.id === asset.id) {
+					a.isArchived = !isAllArchived;
+				}
+				return a;
+			});
 		}
 
 		notificationController.show({
@@ -130,6 +138,13 @@
 			cnt = cnt + 1;
 
 			asset.isFavorite = !isAllFavorite;
+
+			searchResultAssets = searchResultAssets.map((a) => {
+				if (a.id === asset.id) {
+					a.isFavorite = !isAllFavorite;
+				}
+				return a;
+			});
 		}
 
 		notificationController.show({
@@ -157,7 +172,7 @@
 
 				for (const asset of deletedAssets) {
 					if (asset.status == 'SUCCESS') {
-						data.results.assets.items = data.results.assets.items.filter(
+						searchResultAssets = searchResultAssets.filter(
 							(a: AssetResponseDto) => a.id != asset.id
 						);
 					}
@@ -203,7 +218,7 @@
 				/>
 
 				<CircleIconButton
-					title="Unarchive"
+					title={isAllArchived ? 'Unarchive' : 'Archive'}
 					logo={isAllArchived ? ArchiveArrowUpOutline : ArchiveArrowDownOutline}
 					on:click={toggleArchive}
 				/>
@@ -236,7 +251,7 @@
 			{#if data.results?.assets?.items.length > 0}
 				<div class="pl-4">
 					<GalleryViewer
-						assets={data.results.assets.items}
+						assets={searchResultAssets}
 						bind:selectedAssets
 						viewFrom="search-page"
 						showArchiveIcon={true}
