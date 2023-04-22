@@ -56,16 +56,19 @@
 		<p class="font-medium text-gray-800 dark:text-immich-dark-primary">
 			{album.albumName}
 		</p>
-
-		{#await getAlbumOwnerInfo() then albumOwner}
-			{#if user.email == albumOwner.email}
-				<p class="text-xs text-gray-600 dark:text-immich-dark-fg">Owned</p>
-			{:else}
-				<p class="text-xs text-gray-600 dark:text-immich-dark-fg">
-					Shared by {albumOwner.firstName}
-					{albumOwner.lastName}
-				</p>
-			{/if}
-		{/await}
+		<span class="text-xs flex gap-2 dark:text-immich-dark-fg" data-testid="album-details"
+			><p>{album.assetCount} items</p>
+			<p>·</p>
+			{#await getAlbumOwnerInfo() then albumOwner}
+				{#if user.email == albumOwner.email}
+					<p class="text-xs text-gray-600 dark:text-immich-dark-fg">Owned</p>
+				{:else}
+					<p class="text-xs text-gray-600 dark:text-immich-dark-fg">
+						Shared by {albumOwner.firstName}
+						{albumOwner.lastName}
+					</p>
+				{/if}
+			{/await}
+		</span>
 	</div>
 </div>
