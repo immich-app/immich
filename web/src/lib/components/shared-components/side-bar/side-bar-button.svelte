@@ -20,7 +20,7 @@
 	on:keydown={onButtonClicked}
 	class="flex gap-4 justify-between place-items-center w-full transition-[padding] delay-100 duration-100 py-3 rounded-r-full hover:bg-immich-gray dark:hover:bg-immich-dark-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary hover:cursor-pointer
     {isSelected
-		? 'bg-immich-primary/10 dark:bg-immich-dark-primary/10 text-immich-primary dark:text-[#adcbfa] hover:bg-immich-primary/25'
+		? 'bg-immich-primary/10 dark:bg-immich-dark-primary/10 text-immich-primary dark:text-immich-dark-primary hover:bg-immich-primary/25'
 		: ''}
 		pl-5 group-hover:sm:px-5 md:px-5
   "
