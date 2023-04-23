@@ -1,11 +1,14 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 import { AssetEntity } from './asset.entity';
 import { PersonEntity } from './person.entity';
 
 @Entity('asset_faces')
 export class AssetFaceEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  @PrimaryColumn()
+  assetId!: string;
+
+  @PrimaryColumn()
+  personId!: string;
 
   @Column({
     type: 'float4',

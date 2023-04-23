@@ -24,13 +24,6 @@ export class PersonEntity {
   @Column()
   thumbnailPath!: string;
 
-  @Column({
-    type: 'float4',
-    array: true,
-    nullable: true,
-  })
-  embedding!: number[] | null;
-
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: string;
 
