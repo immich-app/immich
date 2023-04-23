@@ -503,7 +503,11 @@
 		/>
 
 		{#if album.assetCount > 0}
-			<p class="my-4 text-sm text-gray-500 font-medium">{getDateRange()}</p>
+			<span class="flex gap-2 my-4 text-sm text-gray-500 font-medium" data-testid="album-details">
+				<p class="">{getDateRange()}</p>
+				<p>·</p>
+				<p>{album.assetCount} items</p>
+			</span>
 		{/if}
 		{#if album.shared}
 			<div class="my-6 flex">
