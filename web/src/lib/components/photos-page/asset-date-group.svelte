@@ -14,6 +14,7 @@
 	} from '$lib/stores/asset-interaction.store';
 	import { locale } from '$lib/stores/preferences.store';
 	import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
+	import { flip } from 'svelte/animate';
 
 	export let assets: AssetResponseDto[];
 	export let bucketDate: string;
@@ -107,12 +108,17 @@
 		// Show multi select icon on hover on date group
 		hoveredDateGroup = dateGroupTitle;
 	};
+
+	let clientWidth = 0;
 </script>
+
+<!-- <svelte:window bind:innerWidth={clientWidth} /> -->
 
 <section
 	id="asset-group-by-date"
 	class="flex flex-wrap gap-12 mt-5"
 	bind:clientHeight={actualBucketHeight}
+	bind:clientWidth
 >
 	{#each assetsGroupByDate as assetsInDateGroup, groupIndex (assetsInDateGroup[0].id)}
 		{@const dateGroupTitle = new Date(assetsInDateGroup[0].fileCreatedAt).toLocaleDateString(
@@ -122,6 +128,7 @@
 		<!-- Asset Group By Date -->
 
 		<div
+			animate:flip={{ duration: 300 }}
 			class="flex flex-col"
 			on:mouseenter={() => {
 				isMouseOverGroup = true;
@@ -131,7 +138,7 @@
 		>
 			<!-- Date group title -->
 			<p
-				class="font-medium text-sm text-immich-fg dark:text-immich-dark-fg mb-2 flex place-items-center h-6"
+				class="font-medium text-xs md:text-sm text-immich-fg dark:text-immich-dark-fg mb-2 flex place-items-center h-6"
 			>
 				{#if (hoveredDateGroup == dateGroupTitle && isMouseOverGroup) || $selectedGroup.has(dateGroupTitle)}
 					<div
@@ -156,16 +163,20 @@
 			<!-- Image grid -->
 			<div class="flex flex-wrap gap-[2px]">
 				{#each assetsInDateGroup as asset (asset.id)}
-					<Thumbnail
-						{asset}
-						{groupIndex}
-						on:click={() => assetClickHandler(asset, assetsInDateGroup, dateGroupTitle)}
-						on:select={() => assetSelectHandler(asset, assetsInDateGroup, dateGroupTitle)}
-						on:mouse-event={() => assetMouseEventHandler(dateGroupTitle)}
-						selected={$selectedAssets.has(asset) ||
-							$assetsInAlbumStoreState.findIndex((a) => a.id == asset.id) != -1}
-						disabled={$assetsInAlbumStoreState.findIndex((a) => a.id == asset.id) != -1}
-					/>
+					<div animate:flip={{ duration: 300 }}>
+						<Thumbnail
+							thumbnailWidth={clientWidth <= 768 ? clientWidth / 4 - 4 : undefined}
+							thumbnailHeight={clientWidth <= 768 ? clientWidth / 4 - 4 : undefined}
+							{asset}
+							{groupIndex}
+							on:click={() => assetClickHandler(asset, assetsInDateGroup, dateGroupTitle)}
+							on:select={() => assetSelectHandler(asset, assetsInDateGroup, dateGroupTitle)}
+							on:mouse-event={() => assetMouseEventHandler(dateGroupTitle)}
+							selected={$selectedAssets.has(asset) ||
+								$assetsInAlbumStoreState.findIndex((a) => a.id == asset.id) != -1}
+							disabled={$assetsInAlbumStoreState.findIndex((a) => a.id == asset.id) != -1}
+						/>
+					</div>
 				{/each}
 			</div>
 		</div>
