@@ -1,7 +1,9 @@
 import { AlbumEntity } from './album.entity';
 import { APIKeyEntity } from './api-key.entity';
+import { AssetFaceEntity } from './asset-face.entity';
 import { AssetEntity } from './asset.entity';
 import { DeviceInfoEntity } from './device-info.entity';
+import { PersonEntity } from './person.entity';
 import { SharedLinkEntity } from './shared-link.entity';
 import { SmartInfoEntity } from './smart-info.entity';
 import { SystemConfigEntity } from './system-config.entity';
@@ -19,6 +21,8 @@ export * from './system-config.entity';
 export * from './tag.entity';
 export * from './user-token.entity';
 export * from './user.entity';
+export * from './person.entity';
+export * from './asset-face.entity';
 
 export const databaseEntities = [
   AssetEntity,
@@ -30,4 +34,6 @@ export const databaseEntities = [
   SmartInfoEntity,
   SystemConfigEntity,
   UserTokenEntity,
+  PersonEntity,
+  AssetFaceEntity,
 ];
