@@ -120,7 +120,7 @@ export class SmartInfoService {
 
     try {
       const faces = await this.machineLearning.recognizeFaces({ thumbnailPath: asset.resizePath });
-      console.log(faces.length);
+      console.log('faces detected', faces.length);
       if (faces.length > 0) {
         await this.repository.upsert({ assetId: asset.id });
       }
