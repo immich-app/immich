@@ -29,7 +29,7 @@ export class PersonEntity {
     array: true,
     nullable: true,
   })
-  embedded!: number[] | null;
+  embedding!: number[] | null;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: string;

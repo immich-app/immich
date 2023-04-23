@@ -12,7 +12,7 @@ export class AssetFaceEntity {
     array: true,
     nullable: true,
   })
-  embedded!: number[] | null;
+  embedding!: number[] | null;
 
   @ManyToOne(() => AssetEntity, (asset) => asset.faces, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   asset!: AssetEntity;
