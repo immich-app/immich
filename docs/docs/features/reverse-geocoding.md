@@ -4,7 +4,7 @@ Immich supports [Reverse Geocoding](https://en.wikipedia.org/wiki/Reverse_geocod
 
 ## Extraction
 
-During Exif Extraction, assets with latitudes and longitudes are reverse geocoded to determine their City, State, and Country. 
+During Exif Extraction, assets with latitudes and longitudes are reverse geocoded to determine their City, State, and Country.
 
 ## Usage
 

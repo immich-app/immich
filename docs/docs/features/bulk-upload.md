@@ -49,7 +49,6 @@ The API key can be obtained in the user setting panel on the web interface.
 
 ![Obtain Api Key](./img/obtain-api-key.png)
 
-
 ### Run via Docker
 
 You can run the CLI inside of a docker container to avoid needing to install anything.
@@ -74,6 +73,7 @@ immich upload --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api
 
 :::tip Internal networking
 If you are running the CLI container on the same machine as your Immich server, you may not be able to reach the external address. In that case, try the following steps:
+
 1. Find the internal Docker network used by Immich via `docker network ls`.
 2. Adapt the above command to pass the `--network <immich_network>` argument to `docker run`, substituting `<immich_network>` with the result from step 1.
 3. Use `--server http://immich-server:3001/` for the upload command instead of the external address.
@@ -81,6 +81,7 @@ If you are running the CLI container on the same machine as your Immich server, 
 ```bash title="Upload to internal address"
 docker run --network immich_default -it --rm -v "$(pwd):/import" ghcr.io/immich-app/immich-cli:latest upload --key HFEJ38DNSDUEG --server http://immich-server:3001/
 ```
+
 :::
 
 ### Run from source

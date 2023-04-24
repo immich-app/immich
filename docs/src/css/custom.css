@@ -7,12 +7,12 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Snowburst+One&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Snowburst+One&display=swap');
 
 html,
 button {
-  font-family: "Overpass", sans-serif;
+  font-family: 'Overpass', sans-serif;
 }
 
 /* You can override the default Infima variables here. */
@@ -29,7 +29,7 @@ button {
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
-[data-theme="dark"] {
+[data-theme='dark'] {
   --ifm-color-primary: #adcbfa;
   --ifm-color-primary-dark: #85b2f8;
   --ifm-color-primary-darker: #71a5f6;

@@ -10,7 +10,7 @@ View your User ID and email, and update your first and last name.
 
 ## Change Password
 
-Users can change their own passwords. 
+Users can change their own passwords.
 
 ![Change Password](./img/user-change-password.png)
 

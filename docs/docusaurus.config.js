@@ -7,8 +7,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Immich',
-  tagline:
-    'High performance self-hosted photo and video backup solution directly from your mobile phone',
+  tagline: 'High performance self-hosted photo and video backup solution directly from your mobile phone',
   url: 'https://documentation.immich.app',
   baseUrl: '/',
   onBrokenLinks: 'throw',

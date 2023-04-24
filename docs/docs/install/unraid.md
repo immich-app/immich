@@ -5,6 +5,7 @@ sidebar_position: 60
 # Unraid
 
 Immich can easily be installed and updated on Unraid via:
+
 1. [Docker Compose Manager](https://forums.unraid.net/topic/114415-plugin-docker-compose-manager/) plugin from the Unraid Community Apps
 2. Community made template on the Unraid Community Apps
 
@@ -20,7 +21,7 @@ In order to install Immich from the Unraid CA, you will need an existing Redis a
 
 Once you have Redis and PostgreSQL running, search for Immich on the Unraid CA, choose either of the templates listed and fill out the example variables.
 
-For more information about setting up the community image see [here](https://github.com/imagegenius/docker-immich#application-setup) 
+For more information about setting up the community image see [here](https://github.com/imagegenius/docker-immich#application-setup)
 
 ## Docker-Compose Method (Official)
 
