@@ -13,6 +13,7 @@
 	import { fileUploadHandler } from '$lib/utils/file-uploader';
 	import UploadCover from '$lib/components/shared-components/drag-and-drop-upload-overlay.svelte';
 	import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
+	import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
 
 	let showNavigationLoadingBar = false;
 	export let data: LayoutData;
@@ -42,6 +43,9 @@
 <svelte:head>
 	<title>{$page.data.meta?.title || 'Web'} - Immich</title>
 	<link rel="icon" href={faviconUrl} />
+	<link rel="manifest" href="/manifest.json" />
+	<meta name="theme-color" content="currentColor" />
+	<AppleHeader />
 
 	{#if $page.data.meta}
 		<meta name="description" content={$page.data.meta.description} />
