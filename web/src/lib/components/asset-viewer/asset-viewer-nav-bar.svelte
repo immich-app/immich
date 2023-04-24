@@ -45,12 +45,12 @@
 </script>
 
 <div
-	class="h-16 flex justify-between place-items-center px-3 transition-transform duration-200 z-[9999]"
+	class="h-16 flex justify-between place-items-center px-3 transition-transform duration-200 z-[1001]"
 >
 	<div>
 		<CircleIconButton logo={ArrowLeft} on:click={() => dispatch('goBack')} />
 	</div>
-	<div class="text-white flex gap-2">
+	<div class="text-white flex gap-2 justify-end w-[calc(100%-3rem)] overflow-hidden">
 		{#if isOwner}
 			<CircleIconButton
 				logo={asset.isArchived ? ArchiveArrowUpOutline : ArchiveArrowDownOutline}
