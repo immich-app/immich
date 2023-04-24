@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 
+	import { clickOutside } from '$lib/utils/click-outside';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
 	import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
@@ -107,16 +108,21 @@
 
 		{#if isOwner}
 			<CircleIconButton logo={DeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
-			<CircleIconButton logo={DotsVertical} on:click={showOptionsMenu} title="More" />
+			<div use:clickOutside on:outclick={() => (isShowAssetOptions = false)}>
+				<CircleIconButton logo={DotsVertical} on:click={showOptionsMenu} title="More">
+					{#if isShowAssetOptions}
+						<ContextMenu {...contextMenuPosition}>
+							<div class="flex flex-col rounded-lg ">
+								<MenuOption on:click={() => onMenuClick('addToAlbum')} text="Add to Album" />
+								<MenuOption
+									on:click={() => onMenuClick('addToSharedAlbum')}
+									text="Add to Shared Album"
+								/>
+							</div>
+						</ContextMenu>
+					{/if}
+				</CircleIconButton>
+			</div>
 		{/if}
 	</div>
 </div>
-
-{#if isShowAssetOptions}
-	<ContextMenu {...contextMenuPosition} on:clickoutside={() => (isShowAssetOptions = false)}>
-		<div class="flex flex-col rounded-lg ">
-			<MenuOption on:click={() => onMenuClick('addToAlbum')} text="Add to Album" />
-			<MenuOption on:click={() => onMenuClick('addToSharedAlbum')} text="Add to Shared Album" />
-		</div>
-	</ContextMenu>
-{/if}
