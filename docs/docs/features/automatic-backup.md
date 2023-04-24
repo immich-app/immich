@@ -14,17 +14,19 @@ Background backup is available thanks to the contribution effort of [@zoodyy](ht
 
 If background backup is enabled. The app will periodically check if there are any new photos or videos in the selected album(s) to be uploaded to the cloud. If there are, it will upload them to the cloud in the background.
 
-
 :::info Note
 
 #### General
+
 - The app must be in the background for the backup worker to start running.
 - If you reopen the app and the first page you see is the backup page, the counts will not reflect the background uploaded result. You have to navigate out of the page and come back to see the updated counts.
 
 #### Android
+
 - It is a well-known problem that some Android models are very strict with battery optimization settings, which can cause a problem with the background worker. Please visit [Don't kill my app](https://dontkillmyapp.com/) for a guide on disabling this setting on your phone.
 
 #### iOS
+
 - You must enable **Background App Refresh** for the app to work in the background. You can enable it in the Settings app under General > Background App Refresh.
 
 <div style={{textAlign: 'center'}}>

@@ -36,7 +36,6 @@ Immich is a full-stack [TypeScript](https://www.typescriptlang.org/) application
 - [Redis](https://redis.io/) for job queuing.
 - [Typesense](https://typesense.org/) for search.
 
-
 ### Web Server
 
 - [NGINX](https://www.nginx.com/) for internal communication between containers and load balancing when scaling.

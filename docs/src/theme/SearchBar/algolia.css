@@ -11,8 +11,7 @@
   color: #3a33d1;
 }
 /* Highligted search terms in the main category headers */
-.algolia-docsearch-suggestion--category-header
-  .algolia-docsearch-suggestion--highlight {
+.algolia-docsearch-suggestion--category-header .algolia-docsearch-suggestion--highlight {
   background-color: #4d47d5;
 }
 /* Currently selected suggestion */
@@ -343,9 +342,7 @@
   background: inherit;
 }
 
-.algolia-autocomplete
-  .algolia-docsearch-suggestion--text
-  .algolia-docsearch-suggestion--highlight {
+.algolia-autocomplete .algolia-docsearch-suggestion--text .algolia-docsearch-suggestion--highlight {
   padding: 0 0 1px;
   background: inherit;
   box-shadow: inset 0 -2px 0 0 rgba(69, 142, 225, 0.8);
@@ -419,14 +416,11 @@
 .algolia-autocomplete
   .algolia-docsearch-suggestion.algolia-docsearch-suggestion__main
   .algolia-docsearch-suggestion--category-header,
-.algolia-autocomplete
-  .algolia-docsearch-suggestion.algolia-docsearch-suggestion__secondary {
+.algolia-autocomplete .algolia-docsearch-suggestion.algolia-docsearch-suggestion__secondary {
   display: block;
 }
 
-.algolia-autocomplete
-  .algolia-docsearch-suggestion--subcategory-column
-  .algolia-docsearch-suggestion--highlight {
+.algolia-autocomplete .algolia-docsearch-suggestion--subcategory-column .algolia-docsearch-suggestion--highlight {
   background-color: inherit;
   color: inherit;
 }
@@ -459,9 +453,7 @@
   margin-top: -8px;
 }
 
-.algolia-autocomplete
-  .algolia-docsearch-suggestion--no-results
-  .algolia-docsearch-suggestion--text {
+.algolia-autocomplete .algolia-docsearch-suggestion--no-results .algolia-docsearch-suggestion--text {
   color: #ffffff;
   margin-top: 4px;
 }
@@ -477,14 +469,10 @@
   color: #222222;
   background-color: #ebebeb;
   border-radius: 3px;
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
-.algolia-autocomplete
-  .algolia-docsearch-suggestion
-  code
-  .algolia-docsearch-suggestion--highlight {
+.algolia-autocomplete .algolia-docsearch-suggestion code .algolia-docsearch-suggestion--highlight {
   background: none;
 }
 

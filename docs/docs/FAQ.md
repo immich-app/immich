@@ -22,11 +22,11 @@ The initial approach of Immich is to become a backup tool, primarily for mobile 
 
 ### Why does my uploaded photo show up with the wrong date or time in Immich?
 
-When a photo is initially uploaded Immich uses the create date of the file to determine where it belongs in the timeline. After that, background jobs will run that extract [exif metadata](https://en.wikipedia.org/wiki/Exif), including the CreateDate, to provide a more accurate date for the photo. If that is not available it will fallback to the modified date. If you want to ensure your photo has the right date, check the exif metadata before uploading. 
+When a photo is initially uploaded Immich uses the create date of the file to determine where it belongs in the timeline. After that, background jobs will run that extract [exif metadata](https://en.wikipedia.org/wiki/Exif), including the CreateDate, to provide a more accurate date for the photo. If that is not available it will fallback to the modified date. If you want to ensure your photo has the right date, check the exif metadata before uploading.
 
-If the timezone is incorrect in an uploaded photo, check the ``DateTimeOriginal`` exif field of the uploaded file. Immich uses the very competent library [exiftool-vendored.js](https://github.com/photostructure/exiftool-vendored.js#dates) to handle timezone parsing, but in some cases (like photos taken with DSLR cameras) it has to fallback on the local timezone. If you are using docker, this fallback will be UTC. (Note that even the photo backup app that can't be named [has the same bug!](https://photo.stackexchange.com/a/126978)) In Immich, it is possible to change this assumed fallback timezone system-wide by setting the timezone in the microservices docker container. You might need to run the "Extract Metadata" job after to effect the change. 
+If the timezone is incorrect in an uploaded photo, check the `DateTimeOriginal` exif field of the uploaded file. Immich uses the very competent library [exiftool-vendored.js](https://github.com/photostructure/exiftool-vendored.js#dates) to handle timezone parsing, but in some cases (like photos taken with DSLR cameras) it has to fallback on the local timezone. If you are using docker, this fallback will be UTC. (Note that even the photo backup app that can't be named [has the same bug!](https://photo.stackexchange.com/a/126978)) In Immich, it is possible to change this assumed fallback timezone system-wide by setting the timezone in the microservices docker container. You might need to run the "Extract Metadata" job after to effect the change.
 
-As an example, the following modification of ```docker-compose.yml``` will set the timezone of the microservices container to be ``Europe/Stockholm``
+As an example, the following modification of `docker-compose.yml` will set the timezone of the microservices container to be `Europe/Stockholm`
 
 ```
     environment:
@@ -34,9 +34,11 @@ As an example, the following modification of ```docker-compose.yml``` will set t
 ```
 
 ### Why are only photos and not videos being uploaded to Immich?
+
 This often happens when using a reverse proxy or cloudflare tunnel in front of Immich. Make sure to set your reverse proxy to allow large POST requests. In `nginx`, set `client_max_body_size 50000M;` or similar. Cloudflare tunnels are limited to 100 mb file sizes.
 
 ### Why is Immich slow on low-memory systems like the Raspberry Pi?
+
 Immich uses optional machine-learning features to enhance search results. This feature, however, can be too heavy to run on a Raspberry Pi. To disable machine learning, comment out the `immich-machine-learning` section of your docker-compose.yml and set `IMMICH_MACHINE_LEARNING_URL=false` in your .env file.
 
 ### What happens to existing files after I choose a new [Storage Template](/docs/administration/storage-template.mdx)?
@@ -44,6 +46,7 @@ Immich uses optional machine-learning features to enhance search results. This f
 Template changes will only apply to new assets. To retroactively apply the template to previously uploaded assets, run the Storage Migration Job, available on the [Jobs](/docs/administration/jobs.md) page.
 
 ### In the uploads folder, why are photos stored in the wrong date?
+
 This is fixed by running the storage migration job.
 
 ### Why is object detection not very good?
