@@ -7,6 +7,7 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   Unique,
@@ -18,6 +19,7 @@ import { SharedLinkEntity } from './shared-link.entity';
 import { SmartInfoEntity } from './smart-info.entity';
 import { TagEntity } from './tag.entity';
 import { UserEntity } from './user.entity';
+import { AssetFaceEntity } from './asset-face.entity';
 
 @Entity('assets')
 @Unique('UQ_userid_checksum', ['owner', 'checksum'])
@@ -109,6 +111,9 @@ export class AssetEntity {
 
   @ManyToMany(() => AlbumEntity, (album) => album.assets, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   albums?: AlbumEntity[];
+
+  @OneToMany(() => AssetFaceEntity, (assetFace) => assetFace.asset)
+  faces!: AssetFaceEntity[];
 }
 
 export enum AssetType {

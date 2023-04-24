@@ -141,6 +141,7 @@ export const assetEntityStub = {
     livePhotoVideoId: null,
     tags: [],
     sharedLinks: [],
+    faces: [],
   }),
   image: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -167,6 +168,7 @@ export const assetEntityStub = {
     tags: [],
     sharedLinks: [],
     originalFileName: 'asset-id.ext',
+    faces: [],
   }),
   video: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -193,6 +195,7 @@ export const assetEntityStub = {
     livePhotoVideoId: null,
     tags: [],
     sharedLinks: [],
+    faces: [],
   }),
   livePhotoMotionAsset: Object.freeze({
     id: 'live-photo-motion-asset',
@@ -604,7 +607,6 @@ export const sharedLinkStub = {
             objects: ['a', 'b', 'c'],
             asset: null as any,
             clipEmbedding: [0.12, 0.13, 0.14],
-            faces: [],
           },
           webpPath: '',
           encodedVideoPath: '',
@@ -642,6 +644,7 @@ export const sharedLinkStub = {
           },
           tags: [],
           sharedLinks: [],
+          faces: [],
         },
       ],
     },
