@@ -40,7 +40,7 @@
 
 {#if deleteDevice}
 	<ConfirmDialogue
-		prompt="Are you sure you want to log out this device?"
+		prompt="Are you sure you want to logout this device?"
 		on:confirm={() => handleDelete()}
 		on:cancel={() => (deleteDevice = null)}
 	/>
