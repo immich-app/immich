@@ -1,3 +1,5 @@
+*.zip
+*.onnx
 upload/
 venv/
 __pycache__/

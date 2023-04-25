@@ -37,7 +37,6 @@
 - [Installation](https://immich.app/docs/install/requirements)
 - [Contribution Guidelines](https://immich.app/docs/overview/support-the-project)
 - [Support The Project](#support-the-project)
-- [Known Issues](#known-issues)
 
 ## Documentation
 
@@ -72,7 +71,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Scrubbable/draggable scrollbar              | Yes    | Yes |
 | Support RAW (HEIC, HEIF, DNG, Apple ProRaw) | Yes    | Yes |
 | Metadata view (EXIF, map)                   | Yes    | Yes |
-| Search by metadata, objects and CLIP  | Yes    | No  |
+| Search by metadata, objects and CLIP        | Yes    | Yes |
 | Administrative functions (user management)  | N/A    | Yes |
 | Background backup                           | Yes    | N/A |
 | Virtual scroll                              | Yes    | Yes |
@@ -96,11 +95,3 @@ If you feel like this is the right cause and the app is something you are seeing
 - [Librepay](https://liberapay.com/alex.tran1502/)
 - [buymeacoffee](https://www.buymeacoffee.com/altran1502)
 - Bitcoin: 1FvEp6P6NM8EZEkpGUFAN2LqJ1gxusNxZX
-
-# Known Issues
-
-## immich-machine-learning fails to start
-
-Symptoms: the container logs `illegal instruction core dump` and restarts
-
-Solution: https://immich.app/docs/install/requirements#hardware

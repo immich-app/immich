@@ -2,8 +2,8 @@
 sidebar_position: 10
 ---
 
-
 # Requirements
+
 Hardware and software requirements for Immich
 
 ## Software

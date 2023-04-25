@@ -13,36 +13,35 @@ Install Immich using Portainer's Stack feature.
 5. Replace `.env` with `stack.env` for all containers that need to use environment variables in the web editor.
 
 <img
-  src={require('./img/dot-env.png').default}
-  width="50%"
-  style={{border: '1px solid #ddd'}}
-  alt="Dot Env Example"
+src={require('./img/dot-env.png').default}
+width="50%"
+style={{border: '1px solid #ddd'}}
+alt="Dot Env Example"
 />
 
 8. Click on "**Advanced Mode**" in the **Environment Variables** section.
 
 <img
-  src={require('./img/env-1.png').default}
-  width="50%"
-  style={{border: '1px solid #ddd'}}
-  alt="Dot Env Example"
+src={require('./img/env-1.png').default}
+width="50%"
+style={{border: '1px solid #ddd'}}
+alt="Dot Env Example"
 />
 
 9. Copy the content of the `example.env` file from the [GitHub repository](https://github.com/immich-app/immich/releases/latest/download/example.env) and paste into the editor.
 10. Switch back to "**Simple Mode**".
 
 <img
-  src={require('./img/env-2.png').default}
-  width="50%"
-  style={{border: '1px solid #ddd'}}
-  alt="Dot Env Example"
+src={require('./img/env-2.png').default}
+width="50%"
+style={{border: '1px solid #ddd'}}
+alt="Dot Env Example"
 />
 
-* Populate custom database information if necessary.
-* Populate `UPLOAD_LOCATION` with your preferred location for storing backup assets.
+- Populate custom database information if necessary.
+- Populate `UPLOAD_LOCATION` with your preferred location for storing backup assets.
 
 11. Click on "**Deploy the stack**".
-
 
 :::tip
 For more information on how to use the application, please refer to the [Post Installation](/docs/install/post-install.mdx) guide.

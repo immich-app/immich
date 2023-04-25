@@ -21,6 +21,28 @@ jobs:
       - name: Run Immich Server E2E Test
         run: docker-compose -f ./docker/docker-compose.test.yml --env-file ./docker/.env.test up --abort-on-container-exit --exit-code-from immich-server-test
 
+  doc-tests:
+    name: Run documentation checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./docs
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run npm install
+        run: npm ci
+
+      - name: Run formatter
+        run: npm run format
+        if: ${{ !cancelled() }}
+
+      - name: Run tsc
+        run: npm run check
+        if: ${{ !cancelled() }}
+
   server-unit-tests:
     name: Run server unit test suites and checks
     runs-on: ubuntu-latest
