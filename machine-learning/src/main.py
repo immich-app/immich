@@ -1,4 +1,3 @@
-# from flask import Flask, request
 from transformers import pipeline
 from sentence_transformers import SentenceTransformer, util
 from PIL import Image
