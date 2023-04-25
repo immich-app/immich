@@ -257,7 +257,7 @@ export class MediaService {
 
     try {
       const faceId = randomUUID();
-      const outputFolder = this.storageCore.getFolderLocation(StorageFolder.FACES, asset.ownerId);
+      const outputFolder = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
       const output = join(outputFolder, `${faceId}.jpeg`);
       this.storageRepository.mkdirSync(outputFolder);
 
