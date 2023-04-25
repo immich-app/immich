@@ -216,7 +216,7 @@ describe('AuthService', () => {
         redirectUri: '/auth/login?autoLaunch=0',
       });
 
-      expect(userTokenMock.delete).toHaveBeenCalledWith('token123');
+      expect(userTokenMock.delete).toHaveBeenCalledWith('123', 'token123');
     });
   });
 
