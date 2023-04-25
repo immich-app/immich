@@ -14,7 +14,7 @@ export const GetLoginDetails = createParamDecorator((data, ctx: ExecutionContext
   return {
     clientIp: req.clientIp,
     isSecure: req.secure,
-    deviceType: userAgent.browser.name || userAgent.device.type || '',
-    deviceOS: userAgent.os.name || '',
+    deviceType: userAgent.browser.name || userAgent.device.type || req.headers.devicemodel || '',
+    deviceOS: userAgent.os.name || req.headers.devicetype || '',
   };
 });
