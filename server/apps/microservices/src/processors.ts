@@ -16,6 +16,7 @@ import {
   SystemConfigService,
   UserService,
 } from '@app/domain';
+import { FacialRecognitionService } from '@app/domain/facial-recognition';
 import { Process, Processor } from '@nestjs/bull';
 import { Job } from 'bull';
 
@@ -71,16 +72,16 @@ export class ObjectTaggingProcessor {
 
 @Processor(QueueName.RECOGNIZE_FACES)
 export class FacialRecognitionProcessor {
-  constructor(private smartInfoService: SmartInfoService) {}
+  constructor(private facialRecognitionService: FacialRecognitionService) {}
 
   @Process({ name: JobName.QUEUE_RECOGNIZE_FACES, concurrency: 1 })
   async onQueueRecognizeFaces(job: Job<IBaseJob>) {
-    await this.smartInfoService.handleQueueRecognizeFaces(job.data);
+    await this.facialRecognitionService.handleQueueRecognizeFaces(job.data);
   }
 
   @Process({ name: JobName.RECOGNIZE_FACES, concurrency: 1 })
   async onRecognizeFaces(job: Job<IAssetJob>) {
-    await this.smartInfoService.handleRecognizeFaces(job.data);
+    await this.facialRecognitionService.handleRecognizeFaces(job.data);
   }
 }
 
@@ -158,12 +159,12 @@ export class ThumbnailGeneratorProcessor {
     await this.mediaService.handleQueueGenerateThumbnails(job.data);
   }
 
-  @Process({ name: JobName.GENERATE_JPEG_THUMBNAIL, concurrency: 3 })
+  @Process({ name: JobName.GENERATE_JPEG_THUMBNAIL, concurrency: 1 })
   async handleGenerateJpegThumbnail(job: Job<IAssetJob>) {
     await this.mediaService.handleGenerateJpegThumbnail(job.data);
   }
 
-  @Process({ name: JobName.GENERATE_WEBP_THUMBNAIL, concurrency: 3 })
+  @Process({ name: JobName.GENERATE_WEBP_THUMBNAIL, concurrency: 1 })
   async handleGenerateWepbThumbnail(job: Job<IAssetJob>) {
     await this.mediaService.handleGenerateWepbThumbnail(job.data);
   }

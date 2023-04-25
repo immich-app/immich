@@ -29,15 +29,16 @@ def get_image(path: str, to_rgb=False) -> np.array:
 
         return img
 
+
 class FaceProcessor:
     # See for model properties: https://github.com/deepinsight/insightface/tree/master/model_zoo
     def __init__(self,
                  model_size: str = "large",
                  model_dir: str = "./",
-                 detection_threshold : float = 0.7,
-                 min_face_width_ratio : float = 0.03,
-                 min_face_height_ratio : float = 0.05) -> None:
-        
+                 detection_threshold: float = 0.7,
+                 min_face_width_ratio: float = 0.03,
+                 min_face_height_ratio: float = 0.05) -> None:
+
         self.model = self.load_model(model_size, model_dir)
         self.detection_threshold = detection_threshold
         self.min_face_widht_ratio = min_face_width_ratio
@@ -65,7 +66,7 @@ class FaceProcessor:
         else:
             print("Unable to parse model_size. Using default <small>")
             model_name = "buffalo_s"
-            
+
         model = FaceAnalysis(
             name=model_name,
             root=model_dir,
@@ -115,7 +116,6 @@ class FaceProcessor:
 
         return filtered_faces
 
-    
     def prepare_for_deliver(self, filtered_faces):
         """Converts results from model otuput into JSON serializable format.
 
@@ -127,11 +127,17 @@ class FaceProcessor:
         """
         results = []
         for face in filtered_faces:
+            bbox = face.bbox.tolist()
             item = {
-                "bbox" : face.bbox.tolist(),
-                "det_score" : face.det_score.item(),
-                "normed_embedding" : face.normed_embedding.tolist()
+                "boundingBox": {
+                    "x1": bbox[0],
+                    "y1": bbox[1],
+                    "x2": bbox[2],
+                    "y2": bbox[3],
+                },
+                "score": face.det_score.item(),
+                "embedding": face.normed_embedding.tolist()
             }
             results.append(item)
-            
+
         return results

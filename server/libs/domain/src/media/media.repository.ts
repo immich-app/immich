@@ -1,3 +1,5 @@
+import { RecognizeFacesResult } from '../smart-info';
+
 export const IMediaRepository = 'IMediaRepository';
 
 export interface ResizeOptions {
@@ -31,10 +33,23 @@ export interface VideoInfo {
   audioStreams: AudioStreamInfo[];
 }
 
+export interface CropFaceResult {
+  faceId: string;
+  filePath: string;
+}
+
+export interface CropOptions {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
+
 export interface IMediaRepository {
   // image
   extractThumbnailFromExif(input: string, output: string): Promise<void>;
   resize(input: string, output: string, options: ResizeOptions): Promise<void>;
+  crop(input: string, output: string, options: CropOptions): Promise<void>;
 
   // video
   extractVideoThumbnail(input: string, output: string, size: number): Promise<void>;

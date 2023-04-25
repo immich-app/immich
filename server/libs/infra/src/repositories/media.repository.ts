@@ -1,4 +1,4 @@
-import { IMediaRepository, ResizeOptions, VideoInfo } from '@app/domain';
+import { CropOptions, IMediaRepository, RecognizeFacesResult, ResizeOptions, VideoInfo } from '@app/domain';
 import { exiftool } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import sharp from 'sharp';
@@ -7,6 +7,17 @@ import { promisify } from 'util';
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 
 export class MediaRepository implements IMediaRepository {
+  async crop(input: string, output: string, options: CropOptions): Promise<void> {
+    await sharp(input, { failOnError: false })
+      .extract({
+        left: options.left,
+        top: options.top,
+        width: options.width,
+        height: options.height,
+      })
+      .toFile(output);
+  }
+
   extractThumbnailFromExif(input: string, output: string): Promise<void> {
     return exiftool.extractThumbnail(input, output);
   }

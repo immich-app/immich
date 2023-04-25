@@ -1,4 +1,9 @@
-import { IMachineLearningRepository, MachineLearningInput, MACHINE_LEARNING_URL } from '@app/domain';
+import {
+  IMachineLearningRepository,
+  MachineLearningInput,
+  MACHINE_LEARNING_URL,
+  RecognizeFacesResult,
+} from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 
@@ -22,7 +27,7 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     return client.post<number[]>('/sentence-transformer/encode-text', { text: input }).then((res) => res.data);
   }
 
-  recognizeFaces(input: MachineLearningInput): Promise<string[]> {
-    return client.post<string[]>('/facial-recognition/recognize-persons', input).then((res) => res.data);
+  recognizeFaces(input: MachineLearningInput): Promise<RecognizeFacesResult[]> {
+    return client.post<RecognizeFacesResult[]>('/facial-recognition/recognize-persons', input).then((res) => res.data);
   }
 }

@@ -1,7 +1,7 @@
 import { ICryptoRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { compareSync, hash } from 'bcrypt';
-import { randomBytes, createHash } from 'crypto';
+import { randomBytes, createHash, randomUUID } from 'crypto';
 
 @Injectable()
 export class CryptoRepository implements ICryptoRepository {
@@ -13,4 +13,6 @@ export class CryptoRepository implements ICryptoRepository {
   hashSha256(value: string) {
     return createHash('sha256').update(value).digest('base64');
   }
+
+  randomUUID = randomUUID;
 }
