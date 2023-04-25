@@ -5,6 +5,7 @@ import { join } from 'path';
 import sharp from 'sharp';
 import { IAssetRepository, mapAsset, WithoutProperty } from '../asset';
 import { CommunicationEvent, ICommunicationRepository } from '../communication';
+import { ICryptoRepository } from '../crypto';
 import { IAssetJob, IBaseJob, IJobRepository, JobName } from '../job';
 import { RecognizeFacesResult } from '../smart-info';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
@@ -25,6 +26,7 @@ export class MediaService {
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ISystemConfigRepository) systemConfig: ISystemConfigRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
   ) {
     this.configCore = new SystemConfigCore(systemConfig);
   }
@@ -255,7 +257,7 @@ export class MediaService {
       return;
     }
 
-    const faceId = randomUUID();
+    const faceId = this.cryptoRepository.randomUUID();
     const outputFolder = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
     const output = join(outputFolder, `${faceId}.jpeg`);
     this.storageRepository.mkdirSync(outputFolder);
