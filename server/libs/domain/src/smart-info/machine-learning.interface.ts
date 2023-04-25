@@ -5,9 +5,16 @@ export interface MachineLearningInput {
 }
 
 export interface RecognizeFacesResult {
-  bbox: number[];
-  det_score: number;
-  normed_embedding: number[];
+  boundingBox: BoundingBox;
+  score: number;
+  embedding: number[];
+}
+
+interface BoundingBox {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
 }
 
 export interface IMachineLearningRepository {

@@ -54,6 +54,7 @@ const providers: Provider[] = [
   { provide: ICommunicationRepository, useClass: CommunicationRepository },
   { provide: ICryptoRepository, useClass: CryptoRepository },
   { provide: IDeviceInfoRepository, useClass: DeviceInfoRepository },
+  { provide: IFacialRecognitionRepository, useClass: FacialRecognitionRepository },
   { provide: IGeocodingRepository, useClass: GeocodingRepository },
   { provide: IJobRepository, useClass: JobRepository },
   { provide: IKeyRepository, useClass: APIKeyRepository },
@@ -66,7 +67,6 @@ const providers: Provider[] = [
   { provide: ISystemConfigRepository, useClass: SystemConfigRepository },
   { provide: IUserRepository, useClass: UserRepository },
   { provide: IUserTokenRepository, useClass: UserTokenRepository },
-  { provide: IFacialRecognitionRepository, useClass: FacialRecognitionRepository },
 ];
 
 @Global()

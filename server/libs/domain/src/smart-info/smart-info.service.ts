@@ -96,18 +96,4 @@ export class SmartInfoService {
       this.logger.error(`Unable run clip encoding pipeline: ${asset.id}`, error?.stack);
     }
   }
-
-  async handleQueueRecognizeFaces({ force }: IBaseJob) {
-    try {
-      const assets = force
-        ? await this.assetRepository.getAll()
-        : await this.assetRepository.getWithout(WithoutProperty.OBJECT_TAGS);
-
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: { asset } });
-      }
-    } catch (error: any) {
-      this.logger.error(`Unable to queue recognize faces`, error?.stack);
-    }
-  }
 }

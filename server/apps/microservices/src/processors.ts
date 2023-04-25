@@ -72,11 +72,11 @@ export class ObjectTaggingProcessor {
 
 @Processor(QueueName.RECOGNIZE_FACES)
 export class FacialRecognitionProcessor {
-  constructor(private smartInfoService: SmartInfoService, private facialRecognitionService: FacialRecognitionService) {}
+  constructor(private facialRecognitionService: FacialRecognitionService) {}
 
   @Process({ name: JobName.QUEUE_RECOGNIZE_FACES, concurrency: 1 })
   async onQueueRecognizeFaces(job: Job<IBaseJob>) {
-    await this.smartInfoService.handleQueueRecognizeFaces(job.data);
+    await this.facialRecognitionService.handleQueueRecognizeFaces(job.data);
   }
 
   @Process({ name: JobName.RECOGNIZE_FACES, concurrency: 1 })
