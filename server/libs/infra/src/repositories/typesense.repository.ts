@@ -132,15 +132,13 @@ export class TypesenseRepository implements ISearchRepository {
   }
 
   async explore(userId: string): Promise<SearchExploreItem<AssetEntity>[]> {
-    const alias = await this.client.aliases(SearchCollection.ASSETS).retrieve();
-
     const common = {
       q: '*',
       filter_by: this.buildFilterBy('ownerId', userId, true),
       per_page: 100,
     };
 
-    const asset$ = this.client.collections<AssetEntity>(alias.collection_name).documents();
+    const asset$ = this.client.collections<AssetEntity>(assetSchema.name).documents();
 
     const { facet_counts: facets } = await asset$.search({
       ...common,
@@ -208,10 +206,8 @@ export class TypesenseRepository implements ISearchRepository {
   }
 
   async searchAlbums(query: string, filters: SearchFilter): Promise<SearchResult<AlbumEntity>> {
-    const alias = await this.client.aliases(SearchCollection.ALBUMS).retrieve();
-
     const results = await this.client
-      .collections<AlbumEntity>(alias.collection_name)
+      .collections<AlbumEntity>(albumSchema.name)
       .documents()
       .search({
         q: query,
@@ -223,9 +219,8 @@ export class TypesenseRepository implements ISearchRepository {
   }
 
   async searchAssets(query: string, filters: SearchFilter): Promise<SearchResult<AssetEntity>> {
-    const alias = await this.client.aliases(SearchCollection.ASSETS).retrieve();
     const results = await this.client
-      .collections<AssetEntity>(alias.collection_name)
+      .collections<AssetEntity>(assetSchema.name)
       .documents()
       .search({
         q: query,
@@ -248,12 +243,10 @@ export class TypesenseRepository implements ISearchRepository {
   }
 
   async vectorSearch(input: number[], filters: SearchFilter): Promise<SearchResult<AssetEntity>> {
-    const alias = await this.client.aliases(SearchCollection.ASSETS).retrieve();
-
     const { results } = await this.client.multiSearch.perform({
       searches: [
         {
-          collection: alias.collection_name,
+          collection: assetSchema.name,
           q: '*',
           vector_query: `smartInfo.clipEmbedding:([${input.join(',')}], k:100)`,
           per_page: 250,
