@@ -1,5 +1,6 @@
 import { UserEntity, UserTokenEntity } from '@app/infra/entities';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { DateTime } from 'luxon';
 import { LoginDetails } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { IUserTokenRepository } from './user-token.repository';
@@ -10,9 +11,16 @@ export class UserTokenCore {
 
   async validate(tokenValue: string) {
     const hashedToken = this.crypto.hashSha256(tokenValue);
-    const token = await this.repository.getByToken(hashedToken);
+    let token = await this.repository.getByToken(hashedToken);
 
     if (token?.user) {
+      const now = DateTime.now();
+      const updatedAt = DateTime.fromJSDate(token.updatedAt);
+      const diff = now.diff(updatedAt, ['hours']);
+      if (diff.hours > 1) {
+        token = await this.repository.save({ ...token, updatedAt: new Date() });
+      }
+
       return {
         ...token.user,
         isPublicUser: false,

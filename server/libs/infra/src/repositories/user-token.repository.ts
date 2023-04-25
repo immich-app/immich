@@ -31,6 +31,10 @@ export class UserTokenRepository implements IUserTokenRepository {
     return this.repository.save(userToken);
   }
 
+  save(userToken: Partial<UserTokenEntity>): Promise<UserTokenEntity> {
+    return this.repository.save(userToken);
+  }
+
   async delete(userId: string, id: string): Promise<void> {
     await this.repository.delete({ userId, id });
   }

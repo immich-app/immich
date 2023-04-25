@@ -11,8 +11,8 @@ export class AuthDeviceResponseDto {
 
 export const mapUserToken = (entity: UserTokenEntity, currentId?: string): AuthDeviceResponseDto => ({
   id: entity.id,
-  createdAt: entity.createdAt,
-  updatedAt: entity.updatedAt,
+  createdAt: entity.createdAt.toISOString(),
+  updatedAt: entity.updatedAt.toISOString(),
   current: currentId === entity.id,
   deviceOS: entity.deviceOS,
   deviceType: entity.deviceType,

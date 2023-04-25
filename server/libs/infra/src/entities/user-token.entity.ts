@@ -16,10 +16,10 @@ export class UserTokenEntity {
   user!: UserEntity;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: string;
+  createdAt!: Date;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: string;
+  updatedAt!: Date;
 
   @Column({ default: '' })
   deviceType!: string;
