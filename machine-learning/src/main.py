@@ -109,4 +109,4 @@ def _get_model(model, task=None):
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host=server_host,
-                port=int(server_port), reload=True, workers=1)
+                port=int(server_port), reload=is_dev, workers=1)
