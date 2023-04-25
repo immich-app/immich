@@ -4113,12 +4113,10 @@
         "type": "object",
         "properties": {
           "successful": {
-            "type": "boolean",
-            "readOnly": true
+            "type": "boolean"
           },
           "redirectUri": {
-            "type": "string",
-            "readOnly": true
+            "type": "string"
           }
         },
         "required": [
