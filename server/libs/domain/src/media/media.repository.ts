@@ -38,11 +38,18 @@ export interface CropFaceResult {
   filePath: string;
 }
 
+export interface CropOptions {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
+
 export interface IMediaRepository {
   // image
   extractThumbnailFromExif(input: string, output: string): Promise<void>;
   resize(input: string, output: string, options: ResizeOptions): Promise<void>;
-  crop(input: string, output: string, top: number, left: number, width: number, height: number): Promise<void>;
+  crop(input: string, output: string, options: CropOptions): Promise<void>;
 
   // video
   extractVideoThumbnail(input: string, output: string, size: number): Promise<void>;

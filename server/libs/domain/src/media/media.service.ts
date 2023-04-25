@@ -10,7 +10,7 @@ import { RecognizeFacesResult } from '../smart-info';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { AudioStreamInfo, CropFaceResult, IMediaRepository, VideoStreamInfo } from './media.repository';
+import { AudioStreamInfo, CropFaceResult, CropOptions, IMediaRepository, VideoStreamInfo } from './media.repository';
 
 @Injectable()
 export class MediaService {
@@ -270,7 +270,14 @@ export class MediaService {
       return;
     }
 
-    await this.mediaRepository.crop(asset.resizePath, output, left, top, width, height);
+    const cropOptions: CropOptions = {
+      left: left,
+      top: top,
+      width: width,
+      height: height,
+    };
+
+    await this.mediaRepository.crop(asset.resizePath, output, cropOptions);
 
     const result: CropFaceResult = {
       faceId: faceId,
