@@ -1,5 +1,5 @@
 import { AssetEntity, AssetType, TranscodePreset } from '@app/infra/entities';
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { join } from 'path';
 import sharp from 'sharp';
@@ -255,26 +255,28 @@ export class MediaService {
       return;
     }
 
-    try {
-      const faceId = randomUUID();
-      const outputFolder = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
-      const output = join(outputFolder, `${faceId}.jpeg`);
-      this.storageRepository.mkdirSync(outputFolder);
+    const faceId = randomUUID();
+    const outputFolder = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
+    const output = join(outputFolder, `${faceId}.jpeg`);
+    this.storageRepository.mkdirSync(outputFolder);
 
-      const left = Math.round(face.boundingBox.x1);
-      const top = Math.round(face.boundingBox.y1);
-      const width = Math.round(face.boundingBox.x2 - face.boundingBox.x1);
-      const height = Math.round(face.boundingBox.y2 - face.boundingBox.y1);
-      await this.mediaRepository.crop(asset.resizePath, output, left, top, width, height);
+    const left = Math.abs(Math.round(face.boundingBox.x1));
+    const top = Math.abs(Math.round(face.boundingBox.y1));
+    const width = Math.abs(Math.round(face.boundingBox.x2 - face.boundingBox.x1));
+    const height = Math.abs(Math.round(face.boundingBox.y2 - face.boundingBox.y1));
 
-      const result: CropFaceResult = {
-        faceId: faceId,
-        filePath: output,
-      };
-
-      return result;
-    } catch (e: any) {
-      this.logger.error(`Failed to crop face for asset: ${assetId}`, e.stack);
+    if (left < 1 || top < 1 || width < 1 || height < 1) {
+      this.logger.error(`invalid bounding box ${JSON.stringify(face.boundingBox)}`);
+      return;
     }
+
+    await this.mediaRepository.crop(asset.resizePath, output, left, top, width, height);
+
+    const result: CropFaceResult = {
+      faceId: faceId,
+      filePath: output,
+    };
+
+    return result;
   }
 }

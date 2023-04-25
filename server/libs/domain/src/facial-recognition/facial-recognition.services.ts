@@ -6,6 +6,7 @@ import { ISearchRepository } from '../search';
 import { IFacialRecognitionRepository } from './facial-recognition.repository';
 import { MediaService } from '../media';
 import { IAssetRepository, WithoutProperty } from '../asset';
+import { PersonEntity, AssetFaceEntity } from '@app/infra/entities';
 
 export class FacialRecognitionService {
   private logger = new Logger(FacialRecognitionService.name);
@@ -52,13 +53,25 @@ export class FacialRecognitionService {
           if (faceSearchResult.total) {
             this.logger.debug('Found face', faceSearchResult);
           } else {
-            this.logger.debug('No face found - create new face');
-            const result = await this.mediaService.cropFace(asset.id, face);
-            if (!result) {
-              throw new Error('Unable to crop face');
-            }
+            this.logger.debug('No person with associated found, creating new person');
+            const cropFaceResult = await this.mediaService.cropFace(asset.id, face);
 
-            await this.repository.createPerson(face.embedding, asset, result);
+            if (!cropFaceResult) return;
+
+            const person = new PersonEntity();
+            person.id = cropFaceResult.faceId;
+            person.owner = asset.owner;
+            person.ownerId = asset.ownerId;
+            person.thumbnailPath = cropFaceResult.filePath;
+            person.name = 'Unknown';
+
+            const assetFace = new AssetFaceEntity();
+            assetFace.embedding = face.embedding;
+            assetFace.asset = asset;
+            assetFace.assetId = asset.id;
+            assetFace.personId = cropFaceResult.faceId;
+
+            await this.repository.save(person, assetFace);
           }
         });
       }
