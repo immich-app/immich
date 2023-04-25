@@ -69,6 +69,10 @@ The non-root user/group needs read/write access to the volume mounts, including 
 
 The admin password can be reset by running the [reset-admin-password](/docs/administration/server-commands.md) command on the immich-server.
 
+### How can I backup data from Immich?
+
+See [backup and restore](/docs/administration/backup-and-restore.md).
+
 ### How can I **purge** data from Immich?
 
 Data for Immich comes in two forms:
