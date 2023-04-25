@@ -53,7 +53,7 @@ export class FacialRecognitionService {
           if (faceSearchResult.total) {
             this.logger.debug('Found face', faceSearchResult);
           } else {
-            this.logger.debug('No person with associated found, creating new person');
+            this.logger.debug('No person with associated face found, creating new person');
             const cropFaceResult = await this.mediaService.cropFace(asset.id, face);
 
             if (!cropFaceResult) return;
