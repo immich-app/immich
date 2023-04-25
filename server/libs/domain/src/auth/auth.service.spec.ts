@@ -297,6 +297,22 @@ describe('AuthService', () => {
       const headers: IncomingHttpHeaders = { cookie: 'immich_access_token=auth_token' };
       await expect(sut.validate(headers, {})).resolves.toEqual(userEntityStub.user1);
     });
+
+    it('should update when access time exceeds an hour', async () => {
+      userTokenMock.getByToken.mockResolvedValue(userTokenEntityStub.inactiveToken);
+      userTokenMock.save.mockResolvedValue(userTokenEntityStub.userToken);
+      const headers: IncomingHttpHeaders = { cookie: 'immich_access_token=auth_token' };
+      await expect(sut.validate(headers, {})).resolves.toEqual(userEntityStub.user1);
+      expect(userTokenMock.save.mock.calls[0][0]).toMatchObject({
+        id: 'not_active',
+        token: 'auth_token',
+        userId: 'immich_id',
+        createdAt: new Date('2021-01-01'),
+        updatedAt: expect.any(Date),
+        deviceOS: 'Android',
+        deviceType: 'Mobile',
+      });
+    });
   });
 
   describe('validate - api key', () => {
@@ -312,6 +328,40 @@ describe('AuthService', () => {
       const headers: IncomingHttpHeaders = { 'x-api-key': 'auth_token' };
       await expect(sut.validate(headers, {})).resolves.toEqual(authStub.admin);
       expect(keyMock.getKey).toHaveBeenCalledWith('auth_token (hashed)');
+    });
+  });
+
+  describe('getDevices', () => {
+    it('should get the devices', async () => {
+      userTokenMock.getAll.mockResolvedValue([userTokenEntityStub.userToken, userTokenEntityStub.inactiveToken]);
+      await expect(sut.getDevices(authStub.user1)).resolves.toEqual([
+        {
+          createdAt: '2021-01-01T00:00:00.000Z',
+          current: true,
+          deviceOS: '',
+          deviceType: '',
+          id: 'token-id',
+          updatedAt: expect.any(String),
+        },
+        {
+          createdAt: '2021-01-01T00:00:00.000Z',
+          current: false,
+          deviceOS: 'Android',
+          deviceType: 'Mobile',
+          id: 'not_active',
+          updatedAt: expect.any(String),
+        },
+      ]);
+
+      expect(userTokenMock.getAll).toHaveBeenCalledWith(authStub.user1.id);
+    });
+  });
+
+  describe('logoutDevice', () => {
+    it('should logout the device', async () => {
+      await sut.logoutDevice(authStub.user1, 'token-1');
+
+      expect(userTokenMock.delete).toHaveBeenCalledWith(authStub.user1.id, 'token-1');
     });
   });
 });
