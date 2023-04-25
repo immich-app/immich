@@ -1,6 +1,8 @@
 import { AssetEntity, AssetType, TranscodePreset } from '@app/infra/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { join } from 'path';
+import sharp from 'sharp';
 import { IAssetRepository, mapAsset, WithoutProperty } from '../asset';
 import { CommunicationEvent, ICommunicationRepository } from '../communication';
 import { IAssetJob, IBaseJob, IJobRepository, JobName } from '../job';
@@ -242,5 +244,25 @@ export class MediaService {
     }
 
     return options;
+  }
+
+  async cropFace(assetId: string, bbox: number[]): Promise<void> {
+    const [asset] = await this.assetRepository.getByIds([assetId]);
+
+    if (!asset || !asset.resizePath) {
+      this.logger.warn(`Asset not found for facial cropping: ${assetId}`);
+      return;
+    }
+
+    try {
+      const faceId = randomUUID();
+      const outputFolder = this.storageCore.getFolderLocation(StorageFolder.FACES, asset.ownerId);
+      const output = join(outputFolder, `${faceId}.jpeg`);
+      this.storageRepository.mkdirSync(outputFolder);
+
+      await this.mediaRepository.cropFace(asset.resizePath, output, bbox);
+    } catch (e: any) {
+      this.logger.error(`Failed to crop face for asset: ${assetId}`, e.stack);
+    }
   }
 }

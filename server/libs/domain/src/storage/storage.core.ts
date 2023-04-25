@@ -7,6 +7,7 @@ export enum StorageFolder {
   UPLOAD = 'upload',
   PROFILE = 'profile',
   THUMBNAILS = 'thumbs',
+  FACES = 'faces',
 }
 
 export class StorageCore {

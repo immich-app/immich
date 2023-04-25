@@ -35,6 +35,7 @@ export interface IMediaRepository {
   // image
   extractThumbnailFromExif(input: string, output: string): Promise<void>;
   resize(input: string, output: string, options: ResizeOptions): Promise<void>;
+  cropFace(input: string, output: string, bbox: number[]): Promise<void>;
 
   // video
   extractVideoThumbnail(input: string, output: string, size: number): Promise<void>;

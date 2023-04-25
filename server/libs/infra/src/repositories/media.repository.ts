@@ -7,6 +7,17 @@ import { promisify } from 'util';
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 
 export class MediaRepository implements IMediaRepository {
+  async cropFace(input: string, output: string, bbox: number[]): Promise<void> {
+    await sharp(input, { failOnError: false })
+      .extract({
+        left: Math.round(bbox[0]),
+        top: Math.round(bbox[1]),
+        width: Math.round(bbox[2] - bbox[0]),
+        height: Math.round(bbox[3] - bbox[1]),
+      })
+      .toFile(output);
+  }
+
   extractThumbnailFromExif(input: string, output: string): Promise<void> {
     return exiftool.extractThumbnail(input, output);
   }

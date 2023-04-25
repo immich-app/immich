@@ -7,5 +7,6 @@ export const newMediaRepositoryMock = (): jest.Mocked<IMediaRepository> => {
     resize: jest.fn(),
     probe: jest.fn(),
     transcode: jest.fn(),
+    cropFace: jest.fn(),
   };
 };
