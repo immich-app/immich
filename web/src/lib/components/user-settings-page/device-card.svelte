@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { locale } from '$lib/stores/preferences.store';
 	import { AuthDeviceResponseDto } from '@api';
+	import { DateTime, ToRelativeCalendarOptions } from 'luxon';
 	import { createEventDispatcher } from 'svelte';
 	import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
 
@@ -8,13 +9,9 @@
 
 	const dispatcher = createEventDispatcher();
 
-	const format: Intl.DateTimeFormatOptions = {
-		month: 'short',
-		day: 'numeric',
-		year: 'numeric',
-		hour: 'numeric',
-		minute: 'numeric',
-		second: 'numeric'
+	const options: ToRelativeCalendarOptions = {
+		unit: 'days',
+		locale: $locale
 	};
 </script>
 
@@ -23,19 +20,16 @@
 	<!-- <div class="w-16 h-16 bg-immich-dark-primary" /> -->
 	<div class="flex flex-row grow justify-between gap-1">
 		<div class="flex flex-col gap-1 justify-center dark:text-white">
-			{#if device.deviceType && device.deviceOS}
-				<p class="px-4">
-					<span class="text-sm">{device.deviceOS}, {device.deviceType}</span>
-				</p>
-			{:else}
-				<p class="text-sm px-4">
-					<span class="font-bold">ID: </span>
-					<span>{device.id}</span>
-				</p>
-			{/if}
+			<span class="px-4 text-sm">
+				{#if device.deviceType || device.deviceOS}
+					<span>{device.deviceOS || 'Unknown'}, {device.deviceType || 'Unknown'}</span>
+				{:else}
+					<span>Unknown</span>
+				{/if}
+			</span>
 			<div class="text-sm px-4">
-				<span class="text-immich-primary dark:text-immich-dark-primary">Login since</span>
-				<span>{new Date(device.createdAt).toLocaleDateString($locale, format)}</span>
+				<span class="text-immich-primary dark:text-immich-dark-primary">Last seen</span>
+				<span>{DateTime.fromISO(device.updatedAt).toRelativeCalendar(options)}</span>
 			</div>
 		</div>
 		{#if !device.current}
