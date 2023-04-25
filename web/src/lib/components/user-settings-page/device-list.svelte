@@ -49,16 +49,16 @@
 <section class="my-4">
 	{#if currentDevice}
 		<div class="mb-6">
-			<h3 class="font-medium text-immich-primary dark:text-immich-dark-primary text-base mb-2">
-				Current Device
+			<h3 class="font-medium text-xs mb-2 text-immich-primary dark:text-immich-dark-primary">
+				CURRENT DEVICE
 			</h3>
 			<DeviceCard device={currentDevice} />
 		</div>
 	{/if}
 	{#if otherDevices.length > 0}
 		<div>
-			<h3 class="font-medium text-immich-primary dark:text-immich-dark-primary text-base mb-2">
-				Other Devices
+			<h3 class="font-medium text-xs mb-2 text-immich-primary dark:text-immich-dark-primary">
+				OTHER DEVICES
 			</h3>
 			{#each otherDevices as device, i}
 				<DeviceCard {device} on:delete={() => (deleteDevice = device)} />
