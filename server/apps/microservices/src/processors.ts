@@ -16,6 +16,7 @@ import {
   SystemConfigService,
   UserService,
 } from '@app/domain';
+import { FacialRecognitionService } from '@app/domain/facial-recognition';
 import { Process, Processor } from '@nestjs/bull';
 import { Job } from 'bull';
 
@@ -71,7 +72,7 @@ export class ObjectTaggingProcessor {
 
 @Processor(QueueName.RECOGNIZE_FACES)
 export class FacialRecognitionProcessor {
-  constructor(private smartInfoService: SmartInfoService) {}
+  constructor(private smartInfoService: SmartInfoService, private facialRecognitionService: FacialRecognitionService) {}
 
   @Process({ name: JobName.QUEUE_RECOGNIZE_FACES, concurrency: 1 })
   async onQueueRecognizeFaces(job: Job<IBaseJob>) {
@@ -80,7 +81,7 @@ export class FacialRecognitionProcessor {
 
   @Process({ name: JobName.RECOGNIZE_FACES, concurrency: 1 })
   async onRecognizeFaces(job: Job<IAssetJob>) {
-    await this.smartInfoService.handleRecognizeFaces(job.data);
+    await this.facialRecognitionService.handleRecognizeFaces(job.data);
   }
 }
 

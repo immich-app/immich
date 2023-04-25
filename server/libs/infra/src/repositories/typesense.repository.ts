@@ -266,6 +266,24 @@ export class TypesenseRepository implements ISearchRepository {
     return this.asResponse(results[0] as SearchResponse<AssetEntity>, filters.debug);
   }
 
+  async faceSearch(input: number[]): Promise<SearchResult<AssetEntity>> {
+    const alias = await this.client.aliases(SearchCollection.ASSETS).retrieve();
+
+    const { results } = await this.client.multiSearch.perform({
+      searches: [
+        {
+          collection: alias.collection_name,
+          q: '*',
+          vector_query: `faces:([${input.join(',')}], k:100)`,
+          per_page: 250,
+          facet_by: this.getFacetFieldNames(SearchCollection.ASSETS),
+        } as any,
+      ],
+    });
+
+    return this.asResponse(results[0] as SearchResponse<AssetEntity>);
+  }
+
   private asResponse<T extends DocumentSchema>(results: SearchResponse<T>, debug?: boolean): SearchResult<T> {
     return {
       page: results.page,

@@ -23,3 +23,4 @@ export * from './system-config';
 export * from './tag';
 export * from './user';
 export * from './user-token';
+export * from './facial-recognition';

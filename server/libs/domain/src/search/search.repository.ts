@@ -73,6 +73,7 @@ export interface ISearchRepository {
   searchAlbums(query: string, filters: SearchFilter): Promise<SearchResult<AlbumEntity>>;
   searchAssets(query: string, filters: SearchFilter): Promise<SearchResult<AssetEntity>>;
   vectorSearch(query: number[], filters: SearchFilter): Promise<SearchResult<AssetEntity>>;
+  faceSearch(query: number[]): Promise<SearchResult<AssetEntity>>;
 
   explore(userId: string): Promise<SearchExploreItem<AssetEntity>[]>;
 }

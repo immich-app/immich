@@ -4,6 +4,7 @@ import {
   ICommunicationRepository,
   ICryptoRepository,
   IDeviceInfoRepository,
+  IFacialRecognitionRepository,
   IGeocodingRepository,
   IJobRepository,
   IKeyRepository,
@@ -44,6 +45,7 @@ import {
   TypesenseRepository,
   UserRepository,
   UserTokenRepository,
+  FacialRecognitionRepository,
 } from './repositories';
 
 const providers: Provider[] = [
@@ -64,6 +66,7 @@ const providers: Provider[] = [
   { provide: ISystemConfigRepository, useClass: SystemConfigRepository },
   { provide: IUserRepository, useClass: UserRepository },
   { provide: IUserTokenRepository, useClass: UserTokenRepository },
+  { provide: IFacialRecognitionRepository, useClass: FacialRecognitionRepository },
 ];
 
 @Global()

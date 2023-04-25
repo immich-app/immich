@@ -110,22 +110,4 @@ export class SmartInfoService {
       this.logger.error(`Unable to queue recognize faces`, error?.stack);
     }
   }
-
-  async handleRecognizeFaces(data: IAssetJob) {
-    const { asset } = data;
-
-    if (!MACHINE_LEARNING_ENABLED || !asset.resizePath) {
-      return;
-    }
-
-    try {
-      const faces = await this.machineLearning.recognizeFaces({ thumbnailPath: asset.resizePath });
-      console.log('faces detected', faces.length);
-      if (faces.length > 0) {
-        await this.repository.upsert({ assetId: asset.id });
-      }
-    } catch (error: any) {
-      this.logger.error(`Unable run facial recognition pipeline: ${asset.id}`, error?.stack);
-    }
-  }
 }
