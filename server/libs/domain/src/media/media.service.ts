@@ -1,5 +1,5 @@
 import { AssetEntity, AssetType, TranscodePreset } from '@app/infra/entities';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { join } from 'path';
 import sharp from 'sharp';
@@ -9,7 +9,7 @@ import { IAssetJob, IBaseJob, IJobRepository, JobName } from '../job';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { AudioStreamInfo, IMediaRepository, VideoStreamInfo } from './media.repository';
+import { AudioStreamInfo, CropFaceResult, IMediaRepository, VideoStreamInfo } from './media.repository';
 
 @Injectable()
 export class MediaService {
@@ -246,7 +246,7 @@ export class MediaService {
     return options;
   }
 
-  async cropFace(assetId: string, bbox: number[]): Promise<void> {
+  async cropFace(assetId: string, bbox: number[]): Promise<CropFaceResult | undefined> {
     const [asset] = await this.assetRepository.getByIds([assetId]);
 
     if (!asset || !asset.resizePath) {
@@ -261,6 +261,13 @@ export class MediaService {
       this.storageRepository.mkdirSync(outputFolder);
 
       await this.mediaRepository.cropFace(asset.resizePath, output, bbox);
+
+      const result: CropFaceResult = {
+        faceId: faceId,
+        filePath: output,
+      };
+
+      return result;
     } catch (e: any) {
       this.logger.error(`Failed to crop face for asset: ${assetId}`, e.stack);
     }

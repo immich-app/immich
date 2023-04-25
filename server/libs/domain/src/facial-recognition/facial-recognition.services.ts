@@ -10,7 +10,7 @@ export class FacialRecognitionService {
   private logger = new Logger(FacialRecognitionService.name);
 
   constructor(
-    @Inject(IFacialRecognitionRepository) repository: IFacialRecognitionRepository,
+    @Inject(IFacialRecognitionRepository) private repository: IFacialRecognitionRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
     private mediaService: MediaService,
@@ -26,17 +26,22 @@ export class FacialRecognitionService {
     try {
       const faces = await this.machineLearning.recognizeFaces({ thumbnailPath: asset.resizePath });
 
-      console.log('faces detected', faces.length);
+      this.logger.verbose(`${faces.length} faces detected in ${asset.resizePath}`);
       if (faces.length > 0) {
         // typesense magic here
         faces.forEach(async (face) => {
           const faceSearchResult = await this.searchRepository.faceSearch(face.normed_embedding);
 
           if (faceSearchResult.total) {
-            console.log('Found face', faceSearchResult);
+            this.logger.debug('Found face', faceSearchResult);
           } else {
-            this.mediaService.cropFace(asset.id, face.bbox);
-            console.log('No face found - create new face');
+            this.logger.debug('No face found - create new face');
+            const result = await this.mediaService.cropFace(asset.id, face.bbox);
+            if (!result) {
+              throw new Error('Unable to crop face');
+            }
+
+            await this.repository.createPerson(face.normed_embedding, asset, result);
           }
         });
       }

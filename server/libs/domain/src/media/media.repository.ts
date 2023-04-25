@@ -31,6 +31,11 @@ export interface VideoInfo {
   audioStreams: AudioStreamInfo[];
 }
 
+export interface CropFaceResult {
+  faceId: string;
+  filePath: string;
+}
+
 export interface IMediaRepository {
   // image
   extractThumbnailFromExif(input: string, output: string): Promise<void>;

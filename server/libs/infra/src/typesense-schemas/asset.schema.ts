@@ -34,7 +34,7 @@ export const assetSchema: CollectionCreateSchema = {
     { name: 'motion', type: 'bool', facet: true },
 
     // faces
-    { name: 'faces', type: 'string[]', facet: true, optional: true },
+    { name: 'faces', type: 'float[]', facet: false, optional: true, num_dim: 512 },
   ],
   token_separators: ['.'],
   enable_nested_fields: true,
