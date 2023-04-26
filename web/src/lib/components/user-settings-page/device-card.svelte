@@ -35,10 +35,10 @@
 			<AppleSafari size="40" />
 		{:else if device.deviceOS.indexOf('Windows') !== -1}
 			<MicrosoftWindows size="40" />
-		{:else if device.deviceOS === 'Chromium OS' || device.deviceType === 'Chrome' || device.deviceType === 'Chromium'}
-			<GoogleChrome size="40" />
 		{:else if device.deviceOS === 'Linux'}
 			<Linux size="40" />
+		{:else if device.deviceOS === 'Chromium OS' || device.deviceType === 'Chrome' || device.deviceType === 'Chromium'}
+			<GoogleChrome size="40" />
 		{:else}
 			<Help size="40" />
 		{/if}
@@ -47,7 +47,7 @@
 		<div class="flex flex-col gap-1 justify-center dark:text-white">
 			<span class="text-sm">
 				{#if device.deviceType || device.deviceOS}
-					<span>{device.deviceOS || 'Unknown'}, {device.deviceType || 'Unknown'}</span>
+					<span>{device.deviceOS || 'Unknown'} • {device.deviceType || 'Unknown'}</span>
 				{:else}
 					<span>Unknown</span>
 				{/if}
