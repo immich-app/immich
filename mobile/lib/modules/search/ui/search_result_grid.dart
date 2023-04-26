@@ -8,6 +8,8 @@ class SearchResultGrid extends HookConsumerWidget {
 
   final List<Asset> assets;
 
+  Asset _loadAsset(int index) => assets[index];
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return GridView.builder(
@@ -22,7 +24,9 @@ class SearchResultGrid extends HookConsumerWidget {
         final asset = assets[index];
         return ThumbnailImage(
           asset: asset,
-          assetList: assets,
+          index: index,
+          loadAsset: _loadAsset,
+          totalAssets: assets.length,
           useGrayBoxPlaceholder: true,
         );
       },

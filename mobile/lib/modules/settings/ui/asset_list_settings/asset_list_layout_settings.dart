@@ -27,7 +27,10 @@ class LayoutSettings extends HookConsumerWidget {
 
     void changeGroupValue(GroupAssetsBy? value) {
       if (value != null) {
-        appSettingService.setSetting(AppSettingsEnum.groupAssetsBy, value.index);
+        appSettingService.setSetting(
+          AppSettingsEnum.groupAssetsBy,
+          value.index,
+        );
         groupBy.value = value;
         ref.watch(assetProvider.notifier).rebuildAssetGridDataStructure();
       }
@@ -37,8 +40,8 @@ class LayoutSettings extends HookConsumerWidget {
       () {
         useDynamicLayout.value =
             appSettingService.getSetting<bool>(AppSettingsEnum.dynamicLayout);
-        groupBy.value =
-            GroupAssetsBy.values[appSettingService.getSetting<int>(AppSettingsEnum.groupAssetsBy)];
+        groupBy.value = GroupAssetsBy.values[
+            appSettingService.getSetting<int>(AppSettingsEnum.groupAssetsBy)];
 
         return null;
       },
@@ -89,6 +92,19 @@ class LayoutSettings extends HookConsumerWidget {
             ),
           ).tr(),
           value: GroupAssetsBy.month,
+          groupValue: groupBy.value,
+          onChanged: changeGroupValue,
+          controlAffinity: ListTileControlAffinity.trailing,
+        ),
+        RadioListTile(
+          activeColor: Theme.of(context).primaryColor,
+          title: const Text(
+            "asset_list_layout_settings_group_automatically",
+            style: TextStyle(
+              fontSize: 12,
+            ),
+          ).tr(),
+          value: GroupAssetsBy.auto,
           groupValue: groupBy.value,
           onChanged: changeGroupValue,
           controlAffinity: ListTileControlAffinity.trailing,

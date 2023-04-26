@@ -48,17 +48,22 @@ class AlbumViewerPage extends HookConsumerWidget {
 
       ref.watch(assetSelectionProvider.notifier).setIsAlbumExist(true);
 
-      AssetSelectionPageResult? returnPayload = await AutoRouter.of(context)
-          .push<AssetSelectionPageResult?>(const AssetSelectionRoute());
+      AssetSelectionPageResult? returnPayload =
+          await AutoRouter.of(context).push<AssetSelectionPageResult?>(
+        AssetSelectionRoute(
+          existingAssets: albumInfo.assets,
+          isNewAlbum: false,
+        ),
+      );
 
       if (returnPayload != null) {
         // Check if there is new assets add
-        if (returnPayload.selectedAdditionalAsset.isNotEmpty) {
+        if (returnPayload.selectedAssets.isNotEmpty) {
           ImmichLoadingOverlayController.appLoader.show();
 
           var addAssetsResult =
               await ref.watch(albumServiceProvider).addAdditionalAssetToAlbum(
-                    returnPayload.selectedAdditionalAsset,
+                    returnPayload.selectedAssets,
                     albumInfo,
                   );
 
@@ -207,7 +212,7 @@ class AlbumViewerPage extends HookConsumerWidget {
                   showStorageIndicator: showStorageIndicator,
                 );
               },
-              childCount: album.assetCount,
+              childCount: album.sortedAssets.length,
             ),
           ),
         );

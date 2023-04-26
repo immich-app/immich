@@ -20,6 +20,8 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
     this.showStorageIndicator = true,
   }) : super(key: key);
 
+  Asset _loadAsset(int index) => assetList[index];
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedAssetsInAlbumViewer =
@@ -31,8 +33,10 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
     viewAsset() {
       AutoRouter.of(context).push(
         GalleryViewerRoute(
-          asset: asset,
-          assetList: assetList,
+          initialAsset: asset,
+          initialIndex: assetList.indexOf(asset),
+          loadAsset: _loadAsset,
+          totalAssets: assetList.length,
         ),
       );
     }

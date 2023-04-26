@@ -19,8 +19,6 @@ class GroupDividerTitle extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
-
     void handleTitleIconClick() {
       if (selected) {
         onDeselect();
@@ -31,10 +29,8 @@ class GroupDividerTitle extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.only(
-        top: 29.0,
-        bottom: 29.0,
+        top: 20.0,
         left: 12.0,
-        right: 12.0,
       ),
       child: Row(
         children: [

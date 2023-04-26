@@ -67,8 +67,10 @@ class _$AppRouter extends RootStackRouter {
         routeData: routeData,
         child: GalleryViewerPage(
           key: args.key,
-          assetList: args.assetList,
-          asset: args.asset,
+          initialAsset: args.initialAsset,
+          initialIndex: args.initialIndex,
+          loadAsset: args.loadAsset,
+          totalAssets: args.totalAssets,
         ),
       );
     },
@@ -150,9 +152,14 @@ class _$AppRouter extends RootStackRouter {
       );
     },
     AssetSelectionRoute.name: (routeData) {
+      final args = routeData.argsAs<AssetSelectionRouteArgs>();
       return CustomPage<AssetSelectionPageResult?>(
         routeData: routeData,
-        child: const AssetSelectionPage(),
+        child: AssetSelectionPage(
+          key: args.key,
+          existingAssets: args.existingAssets,
+          isNewAlbum: args.isNewAlbum,
+        ),
         transitionsBuilder: TransitionsBuilders.slideBottom,
         opaque: true,
         barrierDismissible: false,
@@ -582,15 +589,19 @@ class TabControllerRoute extends PageRouteInfo<void> {
 class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
   GalleryViewerRoute({
     Key? key,
-    required List<Asset> assetList,
-    required Asset asset,
+    required Asset initialAsset,
+    required int initialIndex,
+    required Asset Function(int) loadAsset,
+    required int totalAssets,
   }) : super(
           GalleryViewerRoute.name,
           path: '/gallery-viewer-page',
           args: GalleryViewerRouteArgs(
             key: key,
-            assetList: assetList,
-            asset: asset,
+            initialAsset: initialAsset,
+            initialIndex: initialIndex,
+            loadAsset: loadAsset,
+            totalAssets: totalAssets,
           ),
         );
 
@@ -600,19 +611,25 @@ class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
 class GalleryViewerRouteArgs {
   const GalleryViewerRouteArgs({
     this.key,
-    required this.assetList,
-    required this.asset,
+    required this.initialAsset,
+    required this.initialIndex,
+    required this.loadAsset,
+    required this.totalAssets,
   });
 
   final Key? key;
 
-  final List<Asset> assetList;
+  final Asset initialAsset;
 
-  final Asset asset;
+  final int initialIndex;
+
+  final Asset Function(int) loadAsset;
+
+  final int totalAssets;
 
   @override
   String toString() {
-    return 'GalleryViewerRouteArgs{key: $key, assetList: $assetList, asset: $asset}';
+    return 'GalleryViewerRouteArgs{key: $key, initialAsset: $initialAsset, initialIndex: $initialIndex, loadAsset: $loadAsset, totalAssets: $totalAssets}';
   }
 }
 
@@ -829,14 +846,41 @@ class RecentlyAddedRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [AssetSelectionPage]
-class AssetSelectionRoute extends PageRouteInfo<void> {
-  const AssetSelectionRoute()
-      : super(
+class AssetSelectionRoute extends PageRouteInfo<AssetSelectionRouteArgs> {
+  AssetSelectionRoute({
+    Key? key,
+    required Set<Asset> existingAssets,
+    bool isNewAlbum = false,
+  }) : super(
           AssetSelectionRoute.name,
           path: '/asset-selection-page',
+          args: AssetSelectionRouteArgs(
+            key: key,
+            existingAssets: existingAssets,
+            isNewAlbum: isNewAlbum,
+          ),
         );
 
   static const String name = 'AssetSelectionRoute';
+}
+
+class AssetSelectionRouteArgs {
+  const AssetSelectionRouteArgs({
+    this.key,
+    required this.existingAssets,
+    this.isNewAlbum = false,
+  });
+
+  final Key? key;
+
+  final Set<Asset> existingAssets;
+
+  final bool isNewAlbum;
+
+  @override
+  String toString() {
+    return 'AssetSelectionRouteArgs{key: $key, existingAssets: $existingAssets, isNewAlbum: $isNewAlbum}';
+  }
 }
 
 /// generated route for

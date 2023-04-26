@@ -172,7 +172,7 @@ class SyncService {
     final idsToDelete = diff.third.map((e) => e.id).toList();
     try {
       await _db.writeTxn(() => _db.assets.deleteAll(idsToDelete));
-      await _upsertAssetsWithExif(diff.first + diff.second);
+      await upsertAssetsWithExif(diff.first + diff.second);
     } on IsarError catch (e) {
       _log.severe("Failed to sync remote assets to db: $e");
     }
@@ -272,7 +272,7 @@ class SyncService {
 
     // for shared album: put missing album assets into local DB
     final resultPair = await _linkWithExistingFromDb(toAdd);
-    await _upsertAssetsWithExif(resultPair.second);
+    await upsertAssetsWithExif(resultPair.second);
     final assetsToLink = resultPair.first + resultPair.second;
     final usersToLink = (await _db.users.getAllById(userIdsToAdd)).cast<User>();
 
@@ -329,7 +329,7 @@ class SyncService {
       // put missing album assets into local DB
       final result = await _linkWithExistingFromDb(dto.getAssets());
       existing.addAll(result.first);
-      await _upsertAssetsWithExif(result.second);
+      await upsertAssetsWithExif(result.second);
 
       final Album a = await Album.remote(dto);
       await _db.writeTxn(() => _db.albums.store(a));
@@ -540,7 +540,7 @@ class SyncService {
     _log.info(
       "${result.first.length} assets already existed in DB, to upsert ${result.second.length}",
     );
-    await _upsertAssetsWithExif(result.second);
+    await upsertAssetsWithExif(result.second);
     existing.addAll(result.first);
     a.assets.addAll(result.first);
     a.assets.addAll(result.second);
@@ -600,7 +600,7 @@ class SyncService {
   }
 
   /// Inserts or updates the assets in the database with their ExifInfo (if any)
-  Future<void> _upsertAssetsWithExif(List<Asset> assets) async {
+  Future<void> upsertAssetsWithExif(List<Asset> assets) async {
     if (assets.isEmpty) {
       return;
     }

@@ -21,6 +21,7 @@
   "asset_list_layout_settings_group_by": "Group assets by",
   "asset_list_layout_settings_group_by_month": "Month",
   "asset_list_layout_settings_group_by_month_day": "Month + day",
+  "asset_list_layout_settings_group_automatically": "Automatic",
   "asset_list_settings_subtitle": "Photo grid layout settings",
   "asset_list_settings_title": "Photo Grid",
   "backup_album_selection_page_albums_device": "Albums on device ({})",

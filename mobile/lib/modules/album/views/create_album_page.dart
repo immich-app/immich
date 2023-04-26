@@ -31,8 +31,7 @@ class CreateAlbumPage extends HookConsumerWidget {
     final albumTitleTextFieldFocusNode = useFocusNode();
     final isAlbumTitleTextFieldFocus = useState(false);
     final isAlbumTitleEmpty = useState(true);
-    final selectedAssets =
-        ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
+    final selectedAssets = useState<Set<Asset>>(const {});
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
     showSelectUserPage() {
@@ -54,11 +53,18 @@ class CreateAlbumPage extends HookConsumerWidget {
     onSelectPhotosButtonPressed() async {
       ref.watch(assetSelectionProvider.notifier).setIsAlbumExist(false);
 
-      AssetSelectionPageResult? selectedAsset = await AutoRouter.of(context)
-          .push<AssetSelectionPageResult?>(const AssetSelectionRoute());
-
+      AssetSelectionPageResult? selectedAsset =
+          await AutoRouter.of(context).push<AssetSelectionPageResult?>(
+        AssetSelectionRoute(
+          existingAssets: selectedAssets.value,
+          isNewAlbum: true,
+        ),
+      );
       if (selectedAsset == null) {
         ref.watch(assetSelectionProvider.notifier).removeAll();
+        selectedAssets.value = const {};
+      } else {
+        selectedAssets.value = selectedAsset.selectedAssets;
       }
     }
 
@@ -78,7 +84,7 @@ class CreateAlbumPage extends HookConsumerWidget {
     }
 
     buildTitle() {
-      if (selectedAssets.isEmpty) {
+      if (selectedAssets.value.isEmpty) {
         return SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.only(top: 200, left: 18),
@@ -97,7 +103,7 @@ class CreateAlbumPage extends HookConsumerWidget {
     }
 
     buildSelectPhotosButton() {
-      if (selectedAssets.isEmpty) {
+      if (selectedAssets.value.isEmpty) {
         return SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.only(top: 16, left: 18, right: 18),
@@ -158,7 +164,7 @@ class CreateAlbumPage extends HookConsumerWidget {
     }
 
     buildSelectedImageGrid() {
-      if (selectedAssets.isNotEmpty) {
+      if (selectedAssets.value.isNotEmpty) {
         return SliverPadding(
           padding: const EdgeInsets.only(top: 16),
           sliver: SliverGrid(
@@ -172,11 +178,11 @@ class CreateAlbumPage extends HookConsumerWidget {
                 return GestureDetector(
                   onTap: onBackgroundTapped,
                   child: SharedAlbumThumbnailImage(
-                    asset: selectedAssets.elementAt(index),
+                    asset: selectedAssets.value.elementAt(index),
                   ),
                 );
               },
-              childCount: selectedAssets.length,
+              childCount: selectedAssets.value.length,
             ),
           ),
         );
@@ -188,7 +194,7 @@ class CreateAlbumPage extends HookConsumerWidget {
     createNonSharedAlbum() async {
       var newAlbum = await ref.watch(albumProvider.notifier).createAlbum(
             ref.watch(albumTitleProvider),
-            ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum,
+            selectedAssets.value,
           );
 
       if (newAlbum != null) {
@@ -237,7 +243,7 @@ class CreateAlbumPage extends HookConsumerWidget {
           if (!isSharedAlbum)
             TextButton(
               onPressed: albumTitleController.text.isNotEmpty &&
-                      selectedAssets.isNotEmpty
+                      selectedAssets.value.isNotEmpty
                   ? createNonSharedAlbum
                   : null,
               child: Text(
@@ -264,7 +270,7 @@ class CreateAlbumPage extends HookConsumerWidget {
                 child: Column(
                   children: [
                     buildTitleInputField(),
-                    if (selectedAssets.isNotEmpty) buildControlButton(),
+                    if (selectedAssets.value.isNotEmpty) buildControlButton(),
                   ],
                 ),
               ),

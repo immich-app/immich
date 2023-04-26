@@ -10,7 +10,9 @@ import 'package:immich_mobile/utils/storage_indicator.dart';
 
 class ThumbnailImage extends HookConsumerWidget {
   final Asset asset;
-  final List<Asset> assetList;
+  final int index;
+  final Asset Function(int index) loadAsset;
+  final int totalAssets;
   final bool showStorageIndicator;
   final bool useGrayBoxPlaceholder;
   final bool isSelected;
@@ -21,7 +23,9 @@ class ThumbnailImage extends HookConsumerWidget {
   const ThumbnailImage({
     Key? key,
     required this.asset,
-    required this.assetList,
+    required this.index,
+    required this.loadAsset,
+    required this.totalAssets,
     this.showStorageIndicator = true,
     this.useGrayBoxPlaceholder = false,
     this.isSelected = false,
@@ -57,8 +61,10 @@ class ThumbnailImage extends HookConsumerWidget {
         } else {
           AutoRouter.of(context).push(
             GalleryViewerRoute(
-              assetList: assetList,
-              asset: asset,
+              initialAsset: asset,
+              initialIndex: index,
+              loadAsset: loadAsset,
+              totalAssets: totalAssets,
             ),
           );
         }
@@ -100,7 +106,9 @@ class ThumbnailImage extends HookConsumerWidget {
               decoration: BoxDecoration(
                 border: multiselectEnabled && isSelected
                     ? Border.all(
-                        color: Theme.of(context).primaryColorLight,
+                        color: onDeselect == null
+                            ? Colors.grey
+                            : Theme.of(context).primaryColorLight,
                         width: 10,
                       )
                     : const Border(),

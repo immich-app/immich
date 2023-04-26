@@ -14,7 +14,6 @@ import 'package:collection/collection.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/utils/db.dart';
-import 'package:intl/intl.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -30,13 +29,11 @@ class AssetsState {
 
   Future<AssetsState> withRenderDataStructure(
     AssetGridLayoutParameters layout,
+    QueryBuilder<Asset, Asset, QAfterSortBy> query,
   ) async {
     return AssetsState(
       allAssets,
-      renderList: await RenderList.fromAssets(
-        allAssets,
-        layout,
-      ),
+      renderList: await RenderList.fromQuery(query, layout.groupBy),
     );
   }
 
@@ -81,7 +78,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     );
 
     state = await AssetsState.fromAssetList(newAssetList)
-        .withRenderDataStructure(layout);
+        .withRenderDataStructure(layout, userAssetQuery());
   }
 
   // Just a little helper to trigger a rebuild of the state object
@@ -146,6 +143,10 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     int userId,
   ) =>
       _db.assets.filter().ownerIdEqualTo(userId).isArchivedEqualTo(false);
+
+  QueryBuilder<Asset, Asset, QAfterSortBy> userAssetQuery() =>
+      _userAssetQuery(Store.get(StoreKey.currentUser).isarId)
+          .sortByFileCreatedAtDesc();
 
   Future<void> clearAllAsset() {
     state = AssetsState.empty();
@@ -220,27 +221,24 @@ class AssetNotifier extends StateNotifier<AssetsState> {
         .map((a) => a.id);
   }
 
-  Future<bool> toggleFavorite(Asset asset, bool status) async {
-    final newAsset = await _assetService.changeFavoriteStatus(asset, status);
+  Future<void> toggleFavorite(List<Asset> assets, bool status) async {
+    final newAssets = await _assetService.changeFavoriteStatus(assets, status);
+    for (Asset? newAsset in newAssets) {
+      if (newAsset == null) {
+        log.severe("Change favorite status failed for asset");
+        continue;
+      }
 
-    if (newAsset == null) {
-      log.severe("Change favorite status failed for asset ${asset.id}");
-      return asset.isFavorite;
+      final index = state.allAssets.indexWhere((a) => newAsset.id == a.id);
+      if (index != -1) {
+        state.allAssets[index] = newAsset;
+      }
     }
-
-    final index = state.allAssets.indexWhere((a) => asset.id == a.id);
-    if (index != -1) {
-      state.allAssets[index] = newAsset;
-      _updateAssetsState(state.allAssets);
-    }
-
-    return newAsset.isFavorite;
+    _updateAssetsState(state.allAssets);
   }
 
-  Future<void> toggleArchive(Iterable<Asset> assets, bool status) async {
-    final newAssets = await Future.wait(
-      assets.map((a) => _assetService.changeArchiveStatus(a, status)),
-    );
+  Future<void> toggleArchive(List<Asset> assets, bool status) async {
+    final newAssets = await _assetService.changeArchiveStatus(assets, status);
     int i = 0;
     bool unArchived = false;
     for (Asset oldAsset in assets) {
@@ -281,19 +279,45 @@ final assetProvider = StateNotifierProvider<AssetNotifier, AssetsState>((ref) {
   );
 });
 
-final assetGroupByMonthYearProvider = StateProvider((ref) {
-  // TODO: remove `where` once temporary workaround is no longer needed (to only
-  // allow remote assets to be added to album). Keep `toList()` as to NOT sort
-  // the original list/state
-  final assets =
-      ref.watch(assetProvider).allAssets.where((e) => e.isRemote).toList();
-
-  assets.sortByCompare<DateTime>(
-    (e) => e.fileCreatedAt,
-    (a, b) => b.compareTo(a),
+final assetsProvider = StreamProvider<RenderList>((ref) async* {
+  final query = ref
+      .watch(dbProvider)
+      .assets
+      .filter()
+      .ownerIdEqualTo(Store.get(StoreKey.currentUser).isarId)
+      .isArchivedEqualTo(false)
+      .sortByFileCreatedAtDesc();
+  final settings = ref.watch(appSettingsServiceProvider);
+  yield await RenderList.fromQuery(
+    query,
+    GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)],
   );
+  await for (final _ in query.watchLazy()) {
+    yield await RenderList.fromQuery(
+      query,
+      GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)],
+    );
+  }
+});
 
-  return assets.groupListsBy(
-    (element) => DateFormat('MMMM, y').format(element.fileCreatedAt.toLocal()),
+final remoteAssetsProvider = StreamProvider<RenderList>((ref) async* {
+  final query = ref
+      .watch(dbProvider)
+      .assets
+      .where()
+      .remoteIdIsNotNull()
+      .filter()
+      .ownerIdEqualTo(Store.get(StoreKey.currentUser).isarId)
+      .sortByFileCreatedAt();
+  final settings = ref.watch(appSettingsServiceProvider);
+  yield await RenderList.fromQuery(
+    query,
+    GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)],
   );
+  await for (final _ in query.watchLazy()) {
+    yield await RenderList.fromQuery(
+      query,
+      GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)],
+    );
+  }
 });
