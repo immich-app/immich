@@ -14,7 +14,7 @@ import { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
 import { DocumentSchema, SearchResponse } from 'typesense/lib/Typesense/Documents';
 import { AlbumEntity, AssetEntity } from '../entities';
 import { typesenseConfig } from '../infra.config';
-import { albumSchema, assetSchema } from '../typesense-schemas';
+import { albumSchema, assetSchema, faceSchema } from '../typesense-schemas';
 
 function removeNil<T extends Dictionary<any>>(item: T): T {
   _.forOwn(item, (value, key) => {
@@ -34,6 +34,7 @@ interface CustomAssetEntity extends AssetEntity {
 const schemaMap: Record<SearchCollection, CollectionCreateSchema> = {
   [SearchCollection.ASSETS]: assetSchema,
   [SearchCollection.ALBUMS]: albumSchema,
+  [SearchCollection.FACES]: faceSchema,
 };
 
 const schemas = Object.entries(schemaMap) as [SearchCollection, CollectionCreateSchema][];
@@ -84,6 +85,7 @@ export class TypesenseRepository implements ISearchRepository {
     const migrationMap: SearchCollectionIndexStatus = {
       [SearchCollection.ASSETS]: false,
       [SearchCollection.ALBUMS]: false,
+      [SearchCollection.FACES]: false,
     };
 
     // check if alias is using the current schema
@@ -108,6 +110,14 @@ export class TypesenseRepository implements ISearchRepository {
 
   async importAssets(items: AssetEntity[], done: boolean): Promise<void> {
     await this.import(SearchCollection.ASSETS, items, done);
+  }
+
+  async importFaces(items: AssetEntity[], done: boolean): Promise<void> {
+    await this.import(SearchCollection.FACES, items, done);
+  }
+
+  async deleteFaces(ids: string[]): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 
   private async import(

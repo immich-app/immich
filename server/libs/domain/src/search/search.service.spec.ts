@@ -115,7 +115,7 @@ describe(SearchService.name, () => {
     });
 
     it('should skip schema migration if not needed', async () => {
-      searchMock.checkMigrationStatus.mockResolvedValue({ assets: false, albums: false });
+      searchMock.checkMigrationStatus.mockResolvedValue({ assets: false, albums: false, faces: false });
       await sut.bootstrap();
 
       expect(searchMock.setup).toHaveBeenCalled();
@@ -123,7 +123,7 @@ describe(SearchService.name, () => {
     });
 
     it('should do schema migration if needed', async () => {
-      searchMock.checkMigrationStatus.mockResolvedValue({ assets: true, albums: true });
+      searchMock.checkMigrationStatus.mockResolvedValue({ assets: true, albums: true, faces: true });
       await sut.bootstrap();
 
       expect(searchMock.setup).toHaveBeenCalled();

@@ -3,6 +3,7 @@ import { AlbumEntity, AssetEntity, AssetType } from '@app/infra/entities';
 export enum SearchCollection {
   ASSETS = 'assets',
   ALBUMS = 'albums',
+  FACES = 'faces',
 }
 
 export enum SearchStrategy {
@@ -66,9 +67,11 @@ export interface ISearchRepository {
 
   importAlbums(items: AlbumEntity[], done: boolean): Promise<void>;
   importAssets(items: AssetEntity[], done: boolean): Promise<void>;
+  importFaces(items: AssetEntity[], done: boolean): Promise<void>;
 
   deleteAlbums(ids: string[]): Promise<void>;
   deleteAssets(ids: string[]): Promise<void>;
+  deleteFaces(ids: string[]): Promise<void>;
 
   searchAlbums(query: string, filters: SearchFilter): Promise<SearchResult<AlbumEntity>>;
   searchAssets(query: string, filters: SearchFilter): Promise<SearchResult<AssetEntity>>;

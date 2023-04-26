@@ -68,10 +68,13 @@ export type JobItem =
   // Search
   | { name: JobName.SEARCH_INDEX_ASSETS }
   | { name: JobName.SEARCH_INDEX_ASSET; data: IBulkEntityJob }
+  | { name: JobName.SEARCH_INDEX_FACES }
+  | { name: JobName.SEARCH_INDEX_FACE; data: IBulkEntityJob }
   | { name: JobName.SEARCH_INDEX_ALBUMS }
   | { name: JobName.SEARCH_INDEX_ALBUM; data: IBulkEntityJob }
   | { name: JobName.SEARCH_REMOVE_ASSET; data: IBulkEntityJob }
-  | { name: JobName.SEARCH_REMOVE_ALBUM; data: IBulkEntityJob };
+  | { name: JobName.SEARCH_REMOVE_ALBUM; data: IBulkEntityJob }
+  | { name: JobName.SEARCH_REMOVE_FACE; data: IBulkEntityJob };
 
 export const IJobRepository = 'IJobRepository';
 

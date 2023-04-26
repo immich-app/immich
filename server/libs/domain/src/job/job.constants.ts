@@ -59,10 +59,13 @@ export enum JobName {
   // search
   SEARCH_INDEX_ASSETS = 'search-index-assets',
   SEARCH_INDEX_ASSET = 'search-index-asset',
+  SEARCH_INDEX_FACE = 'search-index-face',
+  SEARCH_INDEX_FACES = 'search-index-faces',
   SEARCH_INDEX_ALBUMS = 'search-index-albums',
   SEARCH_INDEX_ALBUM = 'search-index-album',
   SEARCH_REMOVE_ALBUM = 'search-remove-album',
   SEARCH_REMOVE_ASSET = 'search-remove-asset',
+  SEARCH_REMOVE_FACE = 'search-remove-face',
 
   // clip
   QUEUE_ENCODE_CLIP = 'queue-clip-encode',

@@ -40,6 +40,11 @@ export class SearchService {
     delete: new Set(),
   };
 
+  private faceQueue: SyncQueue = {
+    upsert: new Set(),
+    delete: new Set(),
+  };
+
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
@@ -87,6 +92,10 @@ export class SearchService {
     if (migrationStatus[SearchCollection.ALBUMS]) {
       this.logger.debug('Queueing job to re-index all albums');
       await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUMS });
+    }
+    if (migrationStatus[SearchCollection.FACES]) {
+      this.logger.debug('Queueing job to re-index all faces');
+      await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACES });
     }
   }
 
@@ -159,6 +168,30 @@ export class SearchService {
     }
   }
 
+  async handleIndexFaces() {
+    if (!this.enabled) {
+      return;
+    }
+
+    try {
+      // TODO: do this in batches based on searchIndexVersion
+      const patchAssets = this.patchAssets(await this.assetRepository.getAll({ isVisible: true }));
+      const assets = patchAssets.filter((asset) => asset.faces.length > 0);
+      this.logger.log(`Indexing ${assets.length} faces`);
+
+      const chunkSize = 1000;
+      for (let i = 0; i < assets.length; i += chunkSize) {
+        await this.searchRepository.importFaces(assets.slice(i, i + chunkSize), false);
+      }
+
+      await this.searchRepository.importFaces([], true);
+
+      this.logger.debug('Finished re-indexing all faces');
+    } catch (error: any) {
+      this.logger.error(`Unable to index all faces`, error?.stack);
+    }
+  }
+
   handleIndexAlbum({ ids }: IBulkEntityJob) {
     if (!this.enabled) {
       return;
@@ -199,6 +232,16 @@ export class SearchService {
     }
   }
 
+  handleRemoveFace({ ids }: IBulkEntityJob) {
+    if (!this.enabled) {
+      return;
+    }
+
+    for (const id of ids) {
+      this.faceQueue.delete.add(id);
+    }
+  }
+
   private async flush() {
     if (this.albumQueue.upsert.size > 0) {
       const ids = [...this.albumQueue.upsert.keys()];
@@ -229,6 +272,21 @@ export class SearchService {
       await this.searchRepository.deleteAssets(ids);
       this.assetQueue.delete.clear();
     }
+
+    if (this.faceQueue.upsert.size > 0) {
+      const ids = [...this.faceQueue.upsert.keys()];
+      const items = await this.idsToAssets(ids); // TODO - change to faces
+      this.logger.debug(`Flushing ${items.length} face upserts`);
+      await this.searchRepository.importFaces(items, false);
+      this.faceQueue.upsert.clear();
+    }
+
+    if (this.faceQueue.delete.size > 0) {
+      const ids = [...this.faceQueue.delete.keys()];
+      this.logger.debug(`Flushing ${ids.length} face deletes`);
+      await this.searchRepository.deleteFaces(ids);
+      this.faceQueue.delete.clear();
+    }
   }
 
   private assertEnabled() {
@@ -247,6 +305,8 @@ export class SearchService {
     return this.patchAssets(entities.filter((entity) => entity.isVisible));
   }
 
+  // !TODO - ids to FACES
+
   private patchAssets(assets: AssetEntity[]): AssetEntity[] {
     return assets;
   }
@@ -254,4 +314,6 @@ export class SearchService {
   private patchAlbums(albums: AlbumEntity[]): AlbumEntity[] {
     return albums.map((entity) => ({ ...entity, assets: [] }));
   }
+
+  // !TODO - patch FACES
 }

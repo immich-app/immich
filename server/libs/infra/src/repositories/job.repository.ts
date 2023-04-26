@@ -127,6 +127,7 @@ export class JobRepository implements IJobRepository {
 
       case JobName.SEARCH_INDEX_ASSETS:
       case JobName.SEARCH_INDEX_ALBUMS:
+      case JobName.SEARCH_INDEX_FACES:
         await this.searchIndex.add(item.name, {});
         break;
 
@@ -134,6 +135,7 @@ export class JobRepository implements IJobRepository {
       case JobName.SEARCH_INDEX_ALBUM:
       case JobName.SEARCH_REMOVE_ALBUM:
       case JobName.SEARCH_REMOVE_ASSET:
+      case JobName.SEARCH_REMOVE_FACE:
         await this.searchIndex.add(item.name, item.data);
         break;
 

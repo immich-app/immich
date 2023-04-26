@@ -114,6 +114,11 @@ export class SearchIndexProcessor {
     await this.searchService.handleIndexAssets();
   }
 
+  @Process(JobName.SEARCH_INDEX_FACES)
+  async onIndexFaces() {
+    await this.searchService.handleIndexFaces();
+  }
+
   @Process(JobName.SEARCH_INDEX_ALBUM)
   onIndexAlbum(job: Job<IBulkEntityJob>) {
     this.searchService.handleIndexAlbum(job.data);
@@ -124,6 +129,8 @@ export class SearchIndexProcessor {
     this.searchService.handleIndexAsset(job.data);
   }
 
+  // TODO - index single face
+
   @Process(JobName.SEARCH_REMOVE_ALBUM)
   onRemoveAlbum(job: Job<IBulkEntityJob>) {
     this.searchService.handleRemoveAlbum(job.data);
@@ -133,6 +140,8 @@ export class SearchIndexProcessor {
   onRemoveAsset(job: Job<IBulkEntityJob>) {
     this.searchService.handleRemoveAsset(job.data);
   }
+
+  // TODO - remove face
 }
 
 @Processor(QueueName.STORAGE_TEMPLATE_MIGRATION)
