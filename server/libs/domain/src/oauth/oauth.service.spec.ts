@@ -154,6 +154,17 @@ describe('OAuthService', () => {
 
       expect(callbackMock).toHaveBeenCalledWith('http://mobile-redirect', { state: 'state' }, { state: 'state' });
     });
+
+    it('should use the mobile redirect override for ios urls with multiple slashes', async () => {
+      sut = create(systemConfigStub.override);
+
+      userMock.getByOAuthId.mockResolvedValue(userEntityStub.user1);
+      userTokenMock.create.mockResolvedValue(userTokenEntityStub.userToken);
+
+      await sut.login({ url: `app.immich:///?code=abc123` }, loginDetails);
+
+      expect(callbackMock).toHaveBeenCalledWith('http://mobile-redirect', { state: 'state' }, { state: 'state' });
+    });
   });
 
   describe('link', () => {
