@@ -1,14 +1,31 @@
-import os
-from flask import Flask, request
 from transformers import pipeline
 from sentence_transformers import SentenceTransformer, util
 from PIL import Image
 from face_processor import FaceProcessor
+from fastapi import FastAPI
+import uvicorn
+import os
+from pydantic import BaseModel
+
+
+class MlRequestBody(BaseModel):
+    thumbnailPath: str
+
+
+class ClipRequestBody(BaseModel):
+    text: str
+
 
 is_dev = os.getenv('NODE_ENV') == 'development'
 server_port = os.getenv('MACHINE_LEARNING_PORT', 3003)
 server_host = os.getenv('MACHINE_LEARNING_HOST', '0.0.0.0')
 
+app = FastAPI()
+
+"""
+Model Initialization
+"""
+face_processor = FaceProcessor()
 classification_model = os.getenv(
     'MACHINE_LEARNING_CLASSIFICATION_MODEL', 'microsoft/resnet-50')
 object_model = os.getenv('MACHINE_LEARNING_OBJECT_MODEL', 'hustvl/yolos-tiny')
@@ -20,74 +37,48 @@ clip_text_model = os.getenv(
 _model_cache = {}
 
 
-def _get_model(model, task=None):
-    global _model_cache
-    key = '|'.join([model, str(task)])
-    if key not in _model_cache:
-        if task:
-            _model_cache[key] = pipeline(model=model, task=task)
-        else:
-            _model_cache[key] = SentenceTransformer(model)
-    return _model_cache[key]
+@app.get("/")
+async def root():
+    return {"message": "Immich ML"}
 
 
-server = Flask(__name__)
-
-
-classifier = pipeline(
-    task="image-classification",
-    model="microsoft/resnet-50"
-)
-
-detector = pipeline(
-    task="object-detection",
-    model="hustvl/yolos-tiny"
-)
-
-face_processor = FaceProcessor()
-
-# Environment resolver
-is_dev = os.getenv('NODE_ENV') == 'development'
-server_port = os.getenv('MACHINE_LEARNING_PORT') or 3003
-
-
-@server.route("/ping")
+@app.get("/ping")
 def ping():
     return "pong"
 
 
-@server.route("/object-detection/detect-object", methods=['POST'])
-def object_detection():
+@app.post("/object-detection/detect-object", status_code=200)
+def object_detection(payload: MlRequestBody):
     model = _get_model(object_model, 'object-detection')
-    assetPath = request.json['thumbnailPath']
-    return run_engine(model, assetPath), 200
+    assetPath = payload.thumbnailPath
+    return run_engine(model, assetPath)
 
 
-@server.route("/image-classifier/tag-image", methods=['POST'])
-def image_classification():
+@app.post("/image-classifier/tag-image", status_code=200)
+def image_classification(payload: MlRequestBody):
     model = _get_model(classification_model, 'image-classification')
-    assetPath = request.json['thumbnailPath']
-    return run_engine(model, assetPath), 200
+    assetPath = payload.thumbnailPath
+    return run_engine(model, assetPath)
 
 
-@server.route("/sentence-transformer/encode-image", methods=['POST'])
-def clip_encode_image():
+@app.post("/sentence-transformer/encode-image", status_code=200)
+def clip_encode_image(payload: MlRequestBody):
     model = _get_model(clip_image_model)
-    assetPath = request.json['thumbnailPath']
-    return model.encode(Image.open(assetPath)).tolist(), 200
+    assetPath = payload.thumbnailPath
+    return model.encode(Image.open(assetPath)).tolist()
 
 
-@server.route("/sentence-transformer/encode-text", methods=['POST'])
-def clip_encode_text():
+@app.post("/facial-recognition/recognize-persons", status_code=201)
+def facial_recognition(payload: MlRequestBody):
+    assetPath = payload.thumbnailPath
+    return face_processor.process_image(assetPath)
+
+
+@app.post("/sentence-transformer/encode-text", status_code=200)
+def clip_encode_text(payload: ClipRequestBody):
     model = _get_model(clip_text_model)
-    text = request.json['text']
-    return model.encode(text).tolist(), 200
-
-
-@server.route("/facial-recognition/recognize-persons", methods=['POST'])
-def facial_recognition():
-    assetPath = request.json['thumbnailPath']
-    return face_processor.process_image(assetPath), 201
+    text = payload.text
+    return model.encode(text).tolist()
 
 
 def run_engine(engine, path):
@@ -105,5 +96,17 @@ def run_engine(engine, path):
     return result
 
 
+def _get_model(model, task=None):
+    global _model_cache
+    key = '|'.join([model, str(task)])
+    if key not in _model_cache:
+        if task:
+            _model_cache[key] = pipeline(model=model, task=task)
+        else:
+            _model_cache[key] = SentenceTransformer(model)
+    return _model_cache[key]
+
+
 if __name__ == "__main__":
-    server.run(debug=is_dev, host=server_host, port=server_port)
+    uvicorn.run("main:app", host=server_host,
+                port=int(server_port), reload=is_dev, workers=1)
