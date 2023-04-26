@@ -3,7 +3,10 @@ export const IMediaRepository = 'IMediaRepository';
 export interface ResizeOptions {
   size: number;
   format: 'webp' | 'jpeg';
-  raw?: boolean;
+}
+
+export interface ResizeRawOptions {
+  size: number;
 }
 
 export interface VideoStreamInfo {
@@ -36,6 +39,7 @@ export interface IMediaRepository {
   // image
   extractThumbnailFromExif(input: string, output: string): Promise<void>;
   resize(input: string, output: string, options: ResizeOptions): Promise<void>;
+  resizeRaw(input: string, output: string, options: ResizeRawOptions): Promise<void>;
 
   // video
   extractVideoThumbnail(input: string, output: string, size: number): Promise<void>;

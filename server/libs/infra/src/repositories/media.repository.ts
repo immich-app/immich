@@ -1,4 +1,4 @@
-import { APP_MEDIA_LOCATION, IMediaRepository, ResizeOptions, VideoInfo } from '@app/domain';
+import { APP_MEDIA_LOCATION, IMediaRepository, ResizeOptions, ResizeRawOptions, VideoInfo } from '@app/domain';
 import { Logger } from '@nestjs/common';
 import { exec as execCallback } from 'child_process';
 import { exiftool } from 'exiftool-vendored';
@@ -28,32 +28,41 @@ export class MediaRepository implements IMediaRepository {
         return;
 
       case 'jpeg':
-        if (!options.raw) {
-          await sharp(input, { failOnError: false })
-            .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
-            .jpeg()
-            .rotate()
-            .toFile(output);
-        } else {
-          try {
-            await stat(output);
-            await unlink(output);
-          } catch {}
-          const command = `darktable-cli '${input}' '${output}' --apply-custom-presets false --width ${options.size} --height ${options.size} --core --library :memory:`;
-          this.logger.verbose(command);
-          let { stdout, stderr } = await exec(command, { env: { HOME: APP_MEDIA_LOCATION } });
-
-          stdout = stdout.trim();
-          if (stdout) {
-            this.logger.debug(stdout);
-          }
-
-          stderr = stderr.trim();
-          if (stderr) {
-            this.logger.debug(stderr);
-          }
-        }
+        await sharp(input, { failOnError: false })
+          .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
+          .jpeg()
+          .rotate()
+          .toFile(output);
         return;
+    }
+  }
+
+  async resizeRaw(input: string, output: string, options: ResizeRawOptions): Promise<void> {
+    try {
+      await stat(output);
+      await unlink(output);
+    } catch {}
+    const command = [
+      `darktable-cli`,
+      `'${input}'`,
+      `'${output}'`,
+      `--apply-custom-presets false`,
+      `--width ${options.size}`,
+      `--height ${options.size}`,
+      `--core`,
+      `--library :memory:`,
+    ].join(' ');
+    this.logger.verbose(command);
+    let { stdout, stderr } = await exec(command, { env: { HOME: APP_MEDIA_LOCATION } });
+
+    stdout = stdout.trim();
+    if (stdout) {
+      this.logger.debug(stdout);
+    }
+
+    stderr = stderr.trim();
+    if (stderr) {
+      this.logger.debug(stderr);
     }
   }
 

@@ -46,9 +46,7 @@ export class MediaService {
     const [asset] = await this.assetRepository.getByIds([data.asset.id]);
 
     if (!asset) {
-      this.logger.warn(
-        `Asset not found: ${data.asset.id} - Original Path: ${data.asset.originalPath} - Resize Path: ${data.asset.resizePath}`,
-      );
+      this.handleError('Asset not found', data.asset);
       return;
     }
 
@@ -60,28 +58,13 @@ export class MediaService {
       const thumbnailDimension = 1440;
       if (asset.type == AssetType.IMAGE) {
         await this.mediaRepository
-          .resize(asset.originalPath, jpegThumbnailPath, {
-            size: thumbnailDimension,
-            format: 'jpeg',
+          .resize(asset.originalPath, jpegThumbnailPath, { size: thumbnailDimension, format: 'jpeg' })
+          .catch((error) => {
+            this.handleError('Thumbnail generation failed (sharp)', asset, error);
+            return this.mediaRepository.resizeRaw(asset.originalPath, jpegThumbnailPath, { size: thumbnailDimension });
           })
           .catch((error) => {
-            this.logger.warn(
-              `Failed to generate jpeg thumbnail using sharp, trying with darktable-cli (asset=${asset.id})`,
-              error?.stack,
-            );
-
-            return this.mediaRepository.resize(asset.originalPath, jpegThumbnailPath, {
-              size: thumbnailDimension,
-              format: 'jpeg',
-              raw: true,
-            });
-          })
-          .catch((error) => {
-            this.logger.warn(
-              `Failed to generate jpeg thumbnail using darktable-cli, trying exiftool-vendored (asset=${asset.id})`,
-              error?.stack,
-            );
-
+            this.handleError('Thumbnail generation failed (darktable-cli)', asset, error);
             return this.mediaRepository.extractThumbnailFromExif(asset.originalPath, jpegThumbnailPath);
           });
       }
@@ -103,7 +86,7 @@ export class MediaService {
 
       this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
     } catch (error: any) {
-      this.logger.error(`Failed to generate thumbnail for asset: ${asset.id}/${asset.type}`, error.stack);
+      this.handleError('Thumbnail generation failed', asset, error);
     }
   }
 
@@ -114,7 +97,7 @@ export class MediaService {
       return;
     }
 
-    const webpPath = asset.resizePath.replace('jpeg', 'webp').replace('jpg', 'webp');
+    const webpPath = asset.resizePath.replace('jpg', 'webp');
 
     try {
       await this.mediaRepository.resize(asset.resizePath, webpPath, { size: 250, format: 'webp' });
@@ -255,5 +238,13 @@ export class MediaService {
     }
 
     return options;
+  }
+
+  private handleError(message: string, asset: AssetEntity, error?: Error) {
+    if (error) {
+      message += `: ${error}`;
+    }
+    const details = `ID: ${asset.id} - Original Path: ${asset.originalPath} - Resize Path: ${asset.resizePath}`;
+    this.logger.warn(`${message}. ${details}`, error?.stack);
   }
 }
