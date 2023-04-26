@@ -391,7 +391,7 @@
 		<div
 			transition:fly={{ duration: 150 }}
 			id="detail-panel"
-			class="bg-immich-bg w-[360px] row-span-full transition-all overflow-y-auto dark:bg-immich-dark-bg dark:border-l dark:border-l-immich-dark-gray"
+			class="bg-immich-bg w-[360px] z-[1002] row-span-full transition-all overflow-y-auto dark:bg-immich-dark-bg dark:border-l dark:border-l-immich-dark-gray"
 			translate="yes"
 		>
 			<DetailPanel
