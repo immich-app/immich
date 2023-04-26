@@ -10,13 +10,15 @@ import 'package:isar/isar.dart';
 
 class FavoriteSelectionNotifier extends StateNotifier<Set<int>> {
   FavoriteSelectionNotifier(this.db, this.assetNotifier) : super({}) {
-    state = db.assets
+    final query = db.assets
         .filter()
         .ownerIdEqualTo(Store.get(StoreKey.currentUser).isarId)
         .isFavoriteEqualTo(true)
-        .idProperty()
-        .findAllSync()
-        .toSet();
+        .idProperty();
+    state = query.findAllSync().toSet();
+    query.watch().listen((event) {
+      state = event.toSet();
+    });
   }
 
   final Isar db;
