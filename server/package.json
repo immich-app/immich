@@ -79,7 +79,8 @@
     "sanitize-filename": "^1.6.3",
     "sharp": "^0.28.0",
     "typeorm": "^0.3.11",
-    "typesense": "^1.5.3"
+    "typesense": "^1.5.3",
+    "ua-parser-js": "^1.0.35"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.1.8",
@@ -101,6 +102,7 @@
     "@types/node": "^16.0.0",
     "@types/sharp": "^0.30.2",
     "@types/supertest": "^2.0.11",
+    "@types/ua-parser-js": "^0.7.36",
     "@typescript-eslint/eslint-plugin": "^5.48.1",
     "@typescript-eslint/parser": "^5.48.1",
     "dotenv": "^14.2.0",
@@ -139,9 +141,9 @@
     "coverageThreshold": {
       "./libs/domain/": {
         "branches": 80,
-        "functions": 85,
-        "lines": 90,
-        "statements": 90
+        "functions": 88,
+        "lines": 94,
+        "statements": 94
       }
     },
     "setupFilesAfterEnv": [

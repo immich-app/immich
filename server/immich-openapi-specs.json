@@ -339,6 +339,70 @@
         ]
       }
     },
+    "/auth/devices": {
+      "get": {
+        "operationId": "getAuthDevices",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuthDeviceResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
+    "/auth/devices/{id}": {
+      "delete": {
+        "operationId": "logoutAuthDevice",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
     "/auth/validateToken": {
       "post": {
         "operationId": "validateAccessToken",
@@ -3986,6 +4050,37 @@
           "createdAt"
         ]
       },
+      "AuthDeviceResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "current": {
+            "type": "boolean"
+          },
+          "deviceType": {
+            "type": "string"
+          },
+          "deviceOS": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "current",
+          "deviceType",
+          "deviceOS"
+        ]
+      },
       "ValidateAccessTokenResponseDto": {
         "type": "object",
         "properties": {
@@ -4018,12 +4113,10 @@
         "type": "object",
         "properties": {
           "successful": {
-            "type": "boolean",
-            "readOnly": true
+            "type": "boolean"
           },
           "redirectUri": {
-            "type": "string",
-            "readOnly": true
+            "type": "string"
           }
         },
         "required": [

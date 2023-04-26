@@ -1,5 +1,6 @@
 import {
   AuthUserDto,
+  LoginDetails,
   LoginResponseDto,
   OAuthCallbackDto,
   OAuthConfigDto,
@@ -10,7 +11,7 @@ import {
 import { Body, Controller, Get, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { GetAuthUser } from '../decorators/auth-user.decorator';
+import { GetAuthUser, GetLoginDetails } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
 import { UseValidation } from '../decorators/use-validation.decorator';
 
@@ -38,9 +39,9 @@ export class OAuthController {
   async callback(
     @Res({ passthrough: true }) res: Response,
     @Body() dto: OAuthCallbackDto,
-    @Req() req: Request,
+    @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<LoginResponseDto> {
-    const { response, cookie } = await this.service.login(dto, req.secure);
+    const { response, cookie } = await this.service.login(dto, loginDetails);
     res.header('Set-Cookie', cookie);
     return response;
   }
