@@ -130,10 +130,10 @@ class FaceProcessor:
             bbox = face.bbox.tolist()
             item = {
                 "boundingBox": {
-                    "x1": bbox[0],
-                    "y1": bbox[1],
-                    "x2": bbox[2],
-                    "y2": bbox[3],
+                    "x1": round(bbox[0]),
+                    "y1": round(bbox[1]),
+                    "x2": round(bbox[2]),
+                    "y2": round(bbox[3]),
                 },
                 "score": face.det_score.item(),
                 "embedding": face.normed_embedding.tolist()
