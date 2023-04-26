@@ -114,7 +114,6 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | 
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
-*DeviceInfoApi* | [**upsertDeviceInfo**](doc//DeviceInfoApi.md#upsertdeviceinfo) | **PUT** /device-info | 
 *JobApi* | [**getAllJobsStatus**](doc//JobApi.md#getalljobsstatus) | **GET** /jobs | 
 *JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{jobId} | 
 *OAuthApi* | [**callback**](doc//OAuthApi.md#callback) | **POST** /oauth/callback | 
@@ -190,8 +189,6 @@ Class | Method | HTTP request | Description
  - [DeleteAssetDto](doc//DeleteAssetDto.md)
  - [DeleteAssetResponseDto](doc//DeleteAssetResponseDto.md)
  - [DeleteAssetStatus](doc//DeleteAssetStatus.md)
- - [DeviceInfoResponseDto](doc//DeviceInfoResponseDto.md)
- - [DeviceTypeEnum](doc//DeviceTypeEnum.md)
  - [DownloadFilesDto](doc//DownloadFilesDto.md)
  - [EditSharedLinkDto](doc//EditSharedLinkDto.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
@@ -241,7 +238,6 @@ Class | Method | HTTP request | Description
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
  - [UpdateTagDto](doc//UpdateTagDto.md)
  - [UpdateUserDto](doc//UpdateUserDto.md)
- - [UpsertDeviceInfoDto](doc//UpsertDeviceInfoDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)
  - [UserCountResponseDto](doc//UserCountResponseDto.md)
  - [UserResponseDto](doc//UserResponseDto.md)
