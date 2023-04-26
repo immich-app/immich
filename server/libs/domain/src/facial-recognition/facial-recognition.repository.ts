@@ -1,5 +1,4 @@
-import { AssetEntity, AssetFaceEntity, PersonEntity } from '@app/infra/entities';
-import { CropFaceResult } from '../media';
+import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 
 export const IFacialRecognitionRepository = 'IFacialRecognitionRepository';
 

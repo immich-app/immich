@@ -1,4 +1,4 @@
-import { CropFaceResult, IFacialRecognitionRepository } from '@app/domain';
+import { IFacialRecognitionRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
@@ -13,10 +13,10 @@ export class FacialRecognitionRepository implements IFacialRecognitionRepository
     private entityManager: EntityManager,
   ) {}
 
-  async save(personEntity: Partial<PersonEntity>, assetFaceEntity: Partial<AssetFaceEntity>): Promise<void> {
-    await this.entityManager.transaction(async (transactionalEntityManager) => {
-      await transactionalEntityManager.save(personEntity);
-      await transactionalEntityManager.save(assetFaceEntity);
+  async save(person: Partial<PersonEntity>, assetFace: Partial<AssetFaceEntity>): Promise<void> {
+    await this.entityManager.transaction(async (em) => {
+      await em.save(person);
+      await em.save(assetFace);
     });
   }
 }

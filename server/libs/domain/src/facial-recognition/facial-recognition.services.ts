@@ -1,24 +1,36 @@
+import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 import { Inject, Logger } from '@nestjs/common';
-import { IAssetJob, IBaseJob, IJobRepository, JobName } from '../job';
-import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
-import { IMachineLearningRepository } from '../smart-info';
-import { ISearchRepository } from '../search';
-import { IFacialRecognitionRepository } from './facial-recognition.repository';
-import { MediaService } from '../media';
+import { join } from 'path';
 import { IAssetRepository, WithoutProperty } from '../asset';
-import { PersonEntity, AssetFaceEntity } from '@app/infra/entities';
+import { ICryptoRepository } from '../crypto';
+import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
+import { IAssetJob, IBaseJob, IJobRepository, JobName } from '../job';
+import { CropOptions, IMediaRepository } from '../media';
+import { ISearchRepository } from '../search';
+import { DetectFaceResult, IMachineLearningRepository } from '../smart-info';
+import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
+import { IFacialRecognitionRepository } from './facial-recognition.repository';
+
+export interface CropFaceResult {
+  faceId: string;
+  filePath: string;
+}
 
 export class FacialRecognitionService {
   private logger = new Logger(FacialRecognitionService.name);
+  private storageCore = new StorageCore();
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IFacialRecognitionRepository) private repository: IFacialRecognitionRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
+    @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
-    private mediaService: MediaService,
+    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {}
+
   async handleQueueRecognizeFaces({ force }: IBaseJob) {
     try {
       const assets = force
@@ -41,7 +53,7 @@ export class FacialRecognitionService {
     }
 
     try {
-      const faces = await this.machineLearning.recognizeFaces({ thumbnailPath: asset.resizePath });
+      const faces = await this.machineLearning.detectFaces({ thumbnailPath: asset.resizePath });
 
       this.logger.verbose(`${faces.length} faces detected in ${asset.resizePath}`);
 
@@ -54,7 +66,7 @@ export class FacialRecognitionService {
             this.logger.debug('Found face', faceSearchResult);
           } else {
             this.logger.debug('No person with associated face found, creating new person');
-            const cropFaceResult = await this.mediaService.cropFace(asset.id, face);
+            const cropFaceResult = await this.cropFace(asset.id, face);
 
             if (!cropFaceResult) return;
 
@@ -77,6 +89,50 @@ export class FacialRecognitionService {
       }
     } catch (error: any) {
       this.logger.error(`Unable run facial recognition pipeline: ${asset.id}`, error?.stack);
+    }
+  }
+
+  async cropFace(assetId: string, face: DetectFaceResult): Promise<CropFaceResult | null> {
+    const [asset] = await this.assetRepository.getByIds([assetId]);
+
+    if (!asset || !asset.resizePath) {
+      this.logger.warn(`Asset not found for facial cropping: ${assetId}`);
+      return null;
+    }
+
+    const faceId = this.cryptoRepository.randomUUID();
+    const outputFolder = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
+    const output = join(outputFolder, `${faceId}.jpeg`);
+    this.storageRepository.mkdirSync(outputFolder);
+
+    const left = Math.round(face.boundingBox.x1);
+    const top = Math.round(face.boundingBox.y1);
+    const width = Math.round(face.boundingBox.x2 - face.boundingBox.x1);
+    const height = Math.round(face.boundingBox.y2 - face.boundingBox.y1);
+
+    if (left < 1 || top < 1 || width < 1 || height < 1) {
+      this.logger.error(`invalid bounding box ${JSON.stringify(face.boundingBox)}`);
+      return null;
+    }
+
+    const cropOptions: CropOptions = {
+      left: left,
+      top: top,
+      width: width,
+      height: height,
+    };
+    try {
+      await this.mediaRepository.crop(asset.resizePath, output, cropOptions);
+
+      const result: CropFaceResult = {
+        faceId: faceId,
+        filePath: output,
+      };
+
+      return result;
+    } catch (error: any) {
+      this.logger.error(`Failed to crop face for asset: ${asset.id}`, error.stack);
+      return null;
     }
   }
 }

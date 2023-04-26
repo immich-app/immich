@@ -68,17 +68,17 @@ def clip_encode_image(payload: MlRequestBody):
     return model.encode(Image.open(assetPath)).tolist()
 
 
-@app.post("/facial-recognition/recognize-persons", status_code=201)
-def facial_recognition(payload: MlRequestBody):
-    assetPath = payload.thumbnailPath
-    return face_processor.process_image(assetPath)
-
-
 @app.post("/sentence-transformer/encode-text", status_code=200)
 def clip_encode_text(payload: ClipRequestBody):
     model = _get_model(clip_text_model)
     text = payload.text
     return model.encode(text).tolist()
+
+
+@app.post("/facial-recognition/detect-faces", status_code=200)
+def facial_recognition(payload: MlRequestBody):
+    assetPath = payload.thumbnailPath
+    return face_processor.process_image(assetPath)
 
 
 def run_engine(engine, path):
