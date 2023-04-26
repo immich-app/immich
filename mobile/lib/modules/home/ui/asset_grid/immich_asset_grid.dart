@@ -15,13 +15,15 @@ class ImmichAssetGrid extends HookConsumerWidget {
   final bool? showStorageIndicator;
   final ImmichAssetGridSelectionListener? listener;
   final bool selectionActive;
-  final List<Asset> assets;
+  final List<Asset>? assets;
   final RenderList? renderList;
   final Future<void> Function()? onRefresh;
+  final Set<Asset>? preselectedAssets;
+  final bool canDeselect;
 
   const ImmichAssetGrid({
     super.key,
-    required this.assets,
+    this.assets,
     this.onRefresh,
     this.renderList,
     this.assetsPerRow,
@@ -29,12 +31,13 @@ class ImmichAssetGrid extends HookConsumerWidget {
     this.listener,
     this.margin = 5.0,
     this.selectionActive = false,
+    this.preselectedAssets,
+    this.canDeselect = true,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var settings = ref.watch(appSettingsServiceProvider);
-    final renderListFuture = ref.watch(renderListProvider(assets));
 
     // Needs to suppress hero animations when navigating to this widget
     final enableHeroAnimations = useState(false);
@@ -70,7 +73,6 @@ class ImmichAssetGrid extends HookConsumerWidget {
         child: HeroMode(
           enabled: enableHeroAnimations.value,
           child: ImmichAssetGridView(
-            allAssets: assets,
             onRefresh: onRefresh,
             assetsPerRow: assetsPerRow ??
                 settings.getSetting(AppSettingsEnum.tilesPerRow),
@@ -80,10 +82,14 @@ class ImmichAssetGrid extends HookConsumerWidget {
             renderList: renderList!,
             margin: margin,
             selectionActive: selectionActive,
+            preselectedAssets: preselectedAssets,
+            canDeselect: canDeselect,
           ),
         ),
       );
     }
+
+    final renderListFuture = ref.watch(renderListProvider(assets!));
 
     return renderListFuture.when(
       data: (renderList) => WillPopScope(
@@ -91,7 +97,6 @@ class ImmichAssetGrid extends HookConsumerWidget {
         child: HeroMode(
           enabled: enableHeroAnimations.value,
           child: ImmichAssetGridView(
-            allAssets: assets,
             onRefresh: onRefresh,
             assetsPerRow: assetsPerRow ??
                 settings.getSetting(AppSettingsEnum.tilesPerRow),
@@ -101,6 +106,8 @@ class ImmichAssetGrid extends HookConsumerWidget {
             renderList: renderList,
             margin: margin,
             selectionActive: selectionActive,
+            preselectedAssets: preselectedAssets,
+            canDeselect: canDeselect,
           ),
         ),
       ),

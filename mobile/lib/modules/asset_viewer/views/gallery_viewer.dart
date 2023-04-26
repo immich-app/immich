@@ -32,16 +32,26 @@ import 'package:openapi/api.dart' as api;
 
 // ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
-  final List<Asset> assetList;
-  final Asset asset;
+  // final List<Asset> assetList;
+  final Asset initialAsset;
+  final int initialIndex;
+  final Asset Function(int index) loadAsset;
+  final int totalAssets;
 
   GalleryViewerPage({
     super.key,
-    required this.assetList,
-    required this.asset,
-  }) : controller = PageController(initialPage: assetList.indexOf(asset));
+    // required this.assetList,
+    required this.initialAsset,
+    required this.initialIndex,
+    required this.loadAsset,
+    required this.totalAssets,
+  })  : controller = PageController(initialPage: initialIndex),
+        currentAsset = initialAsset,
+        currentIndex = initialIndex;
 
   Asset? assetDetail;
+  Asset currentAsset;
+  int currentIndex;
 
   final PageController controller;
 
@@ -52,7 +62,6 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isLoadOriginal = useState(AppSettingsEnum.loadOriginal.defaultValue);
     final isZoomed = useState<bool>(false);
     final showAppBar = useState<bool>(true);
-    final indexOfAsset = useState(assetList.indexOf(asset));
     final isPlayingMotionVideo = useState(false);
     final isPlayingVideo = useState(false);
     late Offset localPosition;
@@ -84,10 +93,9 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     void getAssetExif() async {
-      assetDetail = assetList[indexOfAsset.value];
-      assetDetail = await ref
-          .watch(assetServiceProvider)
-          .loadExif(assetList[indexOfAsset.value]);
+      assetDetail = currentAsset;
+      assetDetail =
+          await ref.watch(assetServiceProvider).loadExif(currentAsset);
     }
 
     /// Thumbnail image of a remote asset. Required asset.isRemote
@@ -137,9 +145,9 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
-    void precacheNextImage(int index) {
-      if (index < assetList.length && index >= 0) {
-        final asset = assetList[index];
+    void precacheNextImage(int index) async {
+      if (index < totalAssets && index >= 0) {
+        final asset = loadAsset(index);
 
         if (asset.isLocal) {
           // Preload the local asset
@@ -211,7 +219,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         builder: (BuildContext _) {
           return DeleteDialog(
             onDelete: () {
-              if (assetList.length == 1) {
+              if (totalAssets == 1) {
                 // Handle only one asset
                 AutoRouter.of(context).pop();
               } else {
@@ -221,7 +229,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                   curve: Curves.fastLinearToSlowEaseIn,
                 );
               }
-              assetList.remove(deleteAsset);
+              // FIXME assetList.remove(deleteAsset);
               ref.watch(assetProvider.notifier).deleteAssets({deleteAsset});
             },
           );
@@ -269,7 +277,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     shareAsset() {
       ref
           .watch(imageViewerStateProvider.notifier)
-          .shareAsset(assetList[indexOfAsset.value], context);
+          .shareAsset(currentAsset, context);
     }
 
     handleArchive(Asset asset) {
@@ -291,30 +299,28 @@ class GalleryViewerPage extends HookConsumerWidget {
           color: Colors.black.withOpacity(0.4),
           child: TopControlAppBar(
             isPlayingMotionVideo: isPlayingMotionVideo.value,
-            asset: assetList[indexOfAsset.value],
+            asset: currentAsset,
             isFavorite: ref.watch(favoriteProvider).contains(
-                  assetList[indexOfAsset.value].id,
+                  currentAsset.id,
                 ),
             onMoreInfoPressed: () {
               showInfo();
             },
             onFavorite: () {
-              toggleFavorite(assetList[indexOfAsset.value]);
+              toggleFavorite(currentAsset);
             },
-            onDownloadPressed: assetList[indexOfAsset.value].storage ==
-                    AssetState.local
+            onDownloadPressed: currentAsset.storage == AssetState.local
                 ? null
                 : () {
                     ref.watch(imageViewerStateProvider.notifier).downloadAsset(
-                          assetList[indexOfAsset.value],
+                          currentAsset,
                           context,
                         );
                   },
             onToggleMotionVideo: (() {
               isPlayingMotionVideo.value = !isPlayingMotionVideo.value;
             }),
-            onAddToAlbumPressed: () =>
-                addToAlbum(assetList[indexOfAsset.value]),
+            onAddToAlbumPressed: () => addToAlbum(currentAsset),
           ),
         ),
       );
@@ -324,8 +330,6 @@ class GalleryViewerPage extends HookConsumerWidget {
       final show = (showAppBar.value || // onTap has the final say
               (showAppBar.value && !isZoomed.value)) &&
           !isPlayingVideo.value;
-      final currentAsset = assetList[indexOfAsset.value];
-
       return AnimatedOpacity(
         duration: const Duration(milliseconds: 100),
         opacity: show ? 1.0 : 0.0,
@@ -366,10 +370,10 @@ class GalleryViewerPage extends HookConsumerWidget {
                 shareAsset();
                 break;
               case 1:
-                handleArchive(assetList[indexOfAsset.value]);
+                handleArchive(currentAsset);
                 break;
               case 2:
-                handleDelete(assetList[indexOfAsset.value]);
+                handleDelete(currentAsset);
                 break;
             }
           },
@@ -399,23 +403,23 @@ class GalleryViewerPage extends HookConsumerWidget {
                       ? const ScrollPhysics() // Use bouncing physics for iOS
                       : const ClampingScrollPhysics() // Use heavy physics for Android
                   ),
-              itemCount: assetList.length,
+              itemCount: totalAssets,
               scrollDirection: Axis.horizontal,
               onPageChanged: (value) {
                 // Precache image
-                if (indexOfAsset.value < value) {
+                if (currentIndex < value) {
                   // Moving forwards, so precache the next asset
                   precacheNextImage(value + 1);
                 } else {
                   // Moving backwards, so precache previous asset
                   precacheNextImage(value - 1);
                 }
-                indexOfAsset.value = value;
+                currentIndex = value;
                 HapticFeedback.selectionClick();
               },
               loadingBuilder: isLoadPreview.value
                   ? (context, event) {
-                      final asset = assetList[indexOfAsset.value];
+                      final asset = currentAsset;
                       if (!asset.isLocal) {
                         // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to achieve
                         // Three-Stage Loading (WEBP -> JPEG -> Original)
@@ -470,22 +474,23 @@ class GalleryViewerPage extends HookConsumerWidget {
                   : null,
               builder: (context, index) {
                 getAssetExif();
-                if (assetList[index].isImage && !isPlayingMotionVideo.value) {
+                final asset = loadAsset(index);
+                if (asset.isImage && !isPlayingMotionVideo.value) {
                   // Show photo
                   final ImageProvider provider;
-                  if (assetList[index].isLocal) {
-                    provider = localImageProvider(assetList[index]);
+                  if (asset.isLocal) {
+                    provider = localImageProvider(asset);
                   } else {
                     if (isLoadOriginal.value) {
-                      provider = originalImageProvider(assetList[index]);
+                      provider = originalImageProvider(asset);
                     } else if (isLoadPreview.value) {
                       provider = remoteThumbnailImageProvider(
-                        assetList[index],
+                        asset,
                         api.ThumbnailFormat.JPEG,
                       );
                     } else {
                       provider = remoteThumbnailImageProvider(
-                        assetList[index],
+                        asset,
                         api.ThumbnailFormat.WEBP,
                       );
                     }
@@ -499,13 +504,13 @@ class GalleryViewerPage extends HookConsumerWidget {
                         showAppBar.value = !showAppBar.value,
                     imageProvider: provider,
                     heroAttributes: PhotoViewHeroAttributes(
-                      tag: assetList[index].id,
+                      tag: asset.id,
                     ),
                     filterQuality: FilterQuality.high,
                     tightMode: true,
                     minScale: PhotoViewComputedScale.contained,
                     errorBuilder: (context, error, stackTrace) => ImmichImage(
-                      assetList[indexOfAsset.value],
+                      asset,
                       fit: BoxFit.contain,
                     ),
                   );
@@ -516,7 +521,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     onDragUpdate: (_, details, __) =>
                         handleSwipeUpDown(details),
                     heroAttributes: PhotoViewHeroAttributes(
-                      tag: assetList[index].id,
+                      tag: asset.id,
                     ),
                     filterQuality: FilterQuality.high,
                     maxScale: 1.0,
@@ -526,7 +531,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                       child: VideoViewerPage(
                         onPlaying: () => isPlayingVideo.value = true,
                         onPaused: () => isPlayingVideo.value = false,
-                        asset: assetList[index],
+                        asset: asset,
                         isMotionVideo: isPlayingMotionVideo.value,
                         onVideoEnded: () {
                           if (isPlayingMotionVideo.value) {

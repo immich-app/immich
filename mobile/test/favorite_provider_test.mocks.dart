@@ -3,16 +3,17 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i5;
+import 'dart:async' as _i6;
 
-import 'package:hooks_riverpod/hooks_riverpod.dart' as _i7;
+import 'package:hooks_riverpod/hooks_riverpod.dart' as _i8;
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart'
-    as _i6;
-import 'package:immich_mobile/shared/models/asset.dart' as _i4;
+    as _i7;
+import 'package:immich_mobile/shared/models/asset.dart' as _i5;
 import 'package:immich_mobile/shared/providers/asset.provider.dart' as _i2;
+import 'package:isar/isar.dart' as _i4;
 import 'package:logging/logging.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:state_notifier/state_notifier.dart' as _i8;
+import 'package:state_notifier/state_notifier.dart' as _i9;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -45,42 +46,64 @@ class _FakeLogger_1 extends _i1.SmartFake implements _i3.Logger {
         );
 }
 
+class _FakeQueryBuilder_2<OBJ, R, S> extends _i1.SmartFake
+    implements _i4.QueryBuilder<OBJ, R, S> {
+  _FakeQueryBuilder_2(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
 /// A class which mocks [AssetsState].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockAssetsState extends _i1.Mock implements _i2.AssetsState {
   @override
-  List<_i4.Asset> get allAssets => (super.noSuchMethod(
+  List<_i5.Asset> get allAssets => (super.noSuchMethod(
         Invocation.getter(#allAssets),
-        returnValue: <_i4.Asset>[],
-        returnValueForMissingStub: <_i4.Asset>[],
-      ) as List<_i4.Asset>);
+        returnValue: <_i5.Asset>[],
+        returnValueForMissingStub: <_i5.Asset>[],
+      ) as List<_i5.Asset>);
   @override
-  _i5.Future<_i2.AssetsState> withRenderDataStructure(
-          _i6.AssetGridLayoutParameters? layout) =>
+  _i6.Future<_i2.AssetsState> withRenderDataStructure(
+    _i7.AssetGridLayoutParameters? layout,
+    _i4.QueryBuilder<_i5.Asset, _i5.Asset, _i4.QAfterSortBy>? query,
+  ) =>
       (super.noSuchMethod(
         Invocation.method(
           #withRenderDataStructure,
-          [layout],
+          [
+            layout,
+            query,
+          ],
         ),
-        returnValue: _i5.Future<_i2.AssetsState>.value(_FakeAssetsState_0(
+        returnValue: _i6.Future<_i2.AssetsState>.value(_FakeAssetsState_0(
           this,
           Invocation.method(
             #withRenderDataStructure,
-            [layout],
+            [
+              layout,
+              query,
+            ],
           ),
         )),
         returnValueForMissingStub:
-            _i5.Future<_i2.AssetsState>.value(_FakeAssetsState_0(
+            _i6.Future<_i2.AssetsState>.value(_FakeAssetsState_0(
           this,
           Invocation.method(
             #withRenderDataStructure,
-            [layout],
+            [
+              layout,
+              query,
+            ],
           ),
         )),
-      ) as _i5.Future<_i2.AssetsState>);
+      ) as _i6.Future<_i2.AssetsState>);
   @override
-  _i2.AssetsState withAdditionalAssets(List<_i4.Asset>? toAdd) =>
+  _i2.AssetsState withAdditionalAssets(List<_i5.Asset>? toAdd) =>
       (super.noSuchMethod(
         Invocation.method(
           #withAdditionalAssets,
@@ -120,7 +143,7 @@ class MockAssetNotifier extends _i1.Mock implements _i2.AssetNotifier {
         ),
       ) as _i3.Logger);
   @override
-  set onError(_i7.ErrorListener? _onError) => super.noSuchMethod(
+  set onError(_i8.ErrorListener? _onError) => super.noSuchMethod(
         Invocation.setter(
           #onError,
           _onError,
@@ -134,11 +157,11 @@ class MockAssetNotifier extends _i1.Mock implements _i2.AssetNotifier {
         returnValueForMissingStub: false,
       ) as bool);
   @override
-  _i5.Stream<_i2.AssetsState> get stream => (super.noSuchMethod(
+  _i6.Stream<_i2.AssetsState> get stream => (super.noSuchMethod(
         Invocation.getter(#stream),
-        returnValue: _i5.Stream<_i2.AssetsState>.empty(),
-        returnValueForMissingStub: _i5.Stream<_i2.AssetsState>.empty(),
-      ) as _i5.Stream<_i2.AssetsState>);
+        returnValue: _i6.Stream<_i2.AssetsState>.empty(),
+        returnValueForMissingStub: _i6.Stream<_i2.AssetsState>.empty(),
+      ) as _i6.Stream<_i2.AssetsState>);
   @override
   _i2.AssetsState get state => (super.noSuchMethod(
         Invocation.getter(#state),
@@ -178,56 +201,80 @@ class MockAssetNotifier extends _i1.Mock implements _i2.AssetNotifier {
         returnValueForMissingStub: false,
       ) as bool);
   @override
-  _i5.Future<void> rebuildAssetGridDataStructure() => (super.noSuchMethod(
+  _i6.Future<void> rebuildAssetGridDataStructure() => (super.noSuchMethod(
         Invocation.method(
           #rebuildAssetGridDataStructure,
           [],
         ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
   @override
-  _i5.Future<void> getAllAsset({bool? clear = false}) => (super.noSuchMethod(
+  _i6.Future<void> getAllAsset({bool? clear = false}) => (super.noSuchMethod(
         Invocation.method(
           #getAllAsset,
           [],
           {#clear: clear},
         ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
   @override
-  _i5.Future<void> clearAllAsset() => (super.noSuchMethod(
+  _i4.QueryBuilder<_i5.Asset, _i5.Asset, _i4.QAfterSortBy> userAssetQuery() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #userAssetQuery,
+          [],
+        ),
+        returnValue:
+            _FakeQueryBuilder_2<_i5.Asset, _i5.Asset, _i4.QAfterSortBy>(
+          this,
+          Invocation.method(
+            #userAssetQuery,
+            [],
+          ),
+        ),
+        returnValueForMissingStub:
+            _FakeQueryBuilder_2<_i5.Asset, _i5.Asset, _i4.QAfterSortBy>(
+          this,
+          Invocation.method(
+            #userAssetQuery,
+            [],
+          ),
+        ),
+      ) as _i4.QueryBuilder<_i5.Asset, _i5.Asset, _i4.QAfterSortBy>);
+  @override
+  _i6.Future<void> clearAllAsset() => (super.noSuchMethod(
         Invocation.method(
           #clearAllAsset,
           [],
         ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
   @override
-  _i5.Future<void> onNewAssetUploaded(_i4.Asset? newAsset) =>
+  _i6.Future<void> onNewAssetUploaded(_i5.Asset? newAsset) =>
       (super.noSuchMethod(
         Invocation.method(
           #onNewAssetUploaded,
           [newAsset],
         ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
   @override
-  _i5.Future<void> deleteAssets(Set<_i4.Asset>? deleteAssets) =>
+  _i6.Future<void> deleteAssets(Set<_i5.Asset>? deleteAssets) =>
       (super.noSuchMethod(
         Invocation.method(
           #deleteAssets,
           [deleteAssets],
         ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
   @override
-  _i5.Future<bool> toggleFavorite(
-    _i4.Asset? asset,
+  _i6.Future<bool> toggleFavorite(
+    _i5.Asset? asset,
     bool? status,
   ) =>
       (super.noSuchMethod(
@@ -238,12 +285,12 @@ class MockAssetNotifier extends _i1.Mock implements _i2.AssetNotifier {
             status,
           ],
         ),
-        returnValue: _i5.Future<bool>.value(false),
-        returnValueForMissingStub: _i5.Future<bool>.value(false),
-      ) as _i5.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
   @override
-  _i5.Future<void> toggleArchive(
-    Iterable<_i4.Asset>? assets,
+  _i6.Future<void> toggleArchive(
+    Iterable<_i5.Asset>? assets,
     bool? status,
   ) =>
       (super.noSuchMethod(
@@ -254,9 +301,9 @@ class MockAssetNotifier extends _i1.Mock implements _i2.AssetNotifier {
             status,
           ],
         ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
   @override
   bool updateShouldNotify(
     _i2.AssetsState? old,
@@ -274,8 +321,8 @@ class MockAssetNotifier extends _i1.Mock implements _i2.AssetNotifier {
         returnValueForMissingStub: false,
       ) as bool);
   @override
-  _i7.RemoveListener addListener(
-    _i8.Listener<_i2.AssetsState>? listener, {
+  _i8.RemoveListener addListener(
+    _i9.Listener<_i2.AssetsState>? listener, {
     bool? fireImmediately = true,
   }) =>
       (super.noSuchMethod(
@@ -286,7 +333,7 @@ class MockAssetNotifier extends _i1.Mock implements _i2.AssetNotifier {
         ),
         returnValue: () {},
         returnValueForMissingStub: () {},
-      ) as _i7.RemoveListener);
+      ) as _i8.RemoveListener);
   @override
   void dispose() => super.noSuchMethod(
         Invocation.method(

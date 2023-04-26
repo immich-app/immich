@@ -5,53 +5,49 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
-import 'package:immich_mobile/modules/album/ui/asset_grid_by_month.dart';
-import 'package:immich_mobile/modules/album/ui/month_group_title.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
 
 class AssetSelectionPage extends HookConsumerWidget {
-  const AssetSelectionPage({Key? key}) : super(key: key);
+  const AssetSelectionPage({
+    Key? key,
+    required this.existingAssets,
+    this.isNewAlbum = false,
+  }) : super(key: key);
+
+  final Set<Asset> existingAssets;
+  final bool isNewAlbum;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ScrollController scrollController = useScrollController();
-    var assetGroupMonthYear = ref.watch(assetGroupByMonthYearProvider);
-    final selectedAssets =
-        ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum;
-    final newAssetsForAlbum =
-        ref.watch(assetSelectionProvider).selectedAdditionalAssetsForAlbum;
-    final isAlbumExist = ref.watch(assetSelectionProvider).isAlbumExist;
-
-    List<Widget> imageGridGroup = [];
+    // ScrollController scrollController = useScrollController();
+    // var assetGroupMonthYear = ref.watch(assetGroupByMonthYearProvider);
+    final renderList = ref.watch(remoteAssetsProvider);
+    final settings = ref.watch(appSettingsServiceProvider);
+    final selected = useState<Set<Asset>>(existingAssets);
+    final selectionEnabledHook = useState(true);
 
     String buildAssetCountText() {
-      if (isAlbumExist) {
-        return (selectedAssets.length + newAssetsForAlbum.length).toString();
-      } else {
-        return selectedAssets.length.toString();
-      }
+      return (selected.value.length + existingAssets.length).toString();
     }
 
-    Widget buildBody() {
-      assetGroupMonthYear.forEach((monthYear, assetGroup) {
-        imageGridGroup
-            .add(MonthGroupTitle(month: monthYear, assetGroup: assetGroup));
-        imageGridGroup.add(AssetGridByMonth(assetGroup: assetGroup));
-      });
-
-      return Stack(
-        children: [
-          DraggableScrollbar.semicircle(
-            backgroundColor: Theme.of(context).hintColor,
-            controller: scrollController,
-            heightScrollThumb: 48.0,
-            child: CustomScrollView(
-              controller: scrollController,
-              slivers: [...imageGridGroup],
-            ),
-          ),
-        ],
+    Widget buildBody2(RenderList renderList) {
+      return ImmichAssetGrid(
+        renderList: renderList,
+        assetsPerRow: settings.getSetting(AppSettingsEnum.tilesPerRow),
+        showStorageIndicator:
+            settings.getSetting(AppSettingsEnum.storageIndicator),
+        listener: (active, assets) {
+          selectionEnabledHook.value = active;
+          selected.value = assets;
+        },
+        selectionActive: true,
+        preselectedAssets: isNewAlbum ? selected.value : existingAssets,
+        canDeselect: isNewAlbum,
       );
     }
 
@@ -62,10 +58,10 @@ class AssetSelectionPage extends HookConsumerWidget {
           icon: const Icon(Icons.close_rounded),
           onPressed: () {
             ref.watch(assetSelectionProvider.notifier).removeAll();
-            AutoRouter.of(context).pop(null);
+            AutoRouter.of(context).popForced(null);
           },
         ),
-        title: selectedAssets.isEmpty
+        title: selected.value.isEmpty
             ? const Text(
                 'share_add_photos',
                 style: TextStyle(fontSize: 18),
@@ -76,16 +72,13 @@ class AssetSelectionPage extends HookConsumerWidget {
               ),
         centerTitle: false,
         actions: [
-          if ((!isAlbumExist && selectedAssets.isNotEmpty) ||
-              (isAlbumExist && newAssetsForAlbum.isNotEmpty))
+          if (selected.value.isNotEmpty)
             TextButton(
               onPressed: () {
-                var payload = AssetSelectionPageResult(
-                  isAlbumExist: isAlbumExist,
-                  selectedAdditionalAsset: newAssetsForAlbum,
-                  selectedNewAsset: selectedAssets,
-                );
-                AutoRouter.of(context).pop(payload);
+                var payload =
+                    AssetSelectionPageResult(selectedAssets: selected.value);
+                AutoRouter.of(context)
+                    .popForced<AssetSelectionPageResult>(payload);
               },
               child: const Text(
                 "share_add",
@@ -94,7 +87,13 @@ class AssetSelectionPage extends HookConsumerWidget {
             ),
         ],
       ),
-      body: buildBody(),
+      body: renderList.when(
+        data: (data) => buildBody2(data),
+        error: (error, stackTrace) => Center(
+          child: Text(error.toString()),
+        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
+      ),
     );
   }
 }

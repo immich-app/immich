@@ -97,7 +97,7 @@ class HomePage extends HookConsumerWidget {
         selectionEnabledHook.value = false;
       }
 
-      Iterable<Asset> remoteOnlySelection({String? localErrorMessage}) {
+      List<Asset> remoteOnlySelection({String? localErrorMessage}) {
         final Set<Asset> assets = selection.value;
         final bool onlyRemote = assets.every((e) => e.isRemote);
         if (!onlyRemote) {
@@ -108,9 +108,9 @@ class HomePage extends HookConsumerWidget {
               gravity: ToastGravity.BOTTOM,
             );
           }
-          return assets.where((a) => a.isRemote);
+          return assets.where((a) => a.isRemote).toList();
         }
-        return assets;
+        return assets.toList();
       }
 
       void onFavoriteAssets() {
@@ -277,12 +277,9 @@ class HomePage extends HookConsumerWidget {
         bottom: false,
         child: Stack(
           children: [
-            ref.watch(assetProvider).renderList == null ||
-                    ref.watch(assetProvider).allAssets.isEmpty
-                ? buildLoadingIndicator()
-                : ImmichAssetGrid(
-                    renderList: ref.watch(assetProvider).renderList!,
-                    assets: ref.read(assetProvider).allAssets,
+            ref.watch(assetsProvider).when(
+                  data: (data) => ImmichAssetGrid(
+                    renderList: data,
                     assetsPerRow: appSettingService
                         .getSetting(AppSettingsEnum.tilesPerRow),
                     showStorageIndicator: appSettingService
@@ -291,6 +288,11 @@ class HomePage extends HookConsumerWidget {
                     selectionActive: selectionEnabledHook.value,
                     onRefresh: refreshAssets,
                   ),
+                  error: (error, stackTrace) => Center(
+                    child: Text(error.toString()),
+                  ),
+                  loading: () => buildLoadingIndicator(),
+                ),
             if (selectionEnabledHook.value)
               ControlBottomAppBar(
                 onShare: onShareAssets,
