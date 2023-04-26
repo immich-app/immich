@@ -262,10 +262,10 @@ export class MediaService {
     const output = join(outputFolder, `${faceId}.jpeg`);
     this.storageRepository.mkdirSync(outputFolder);
 
-    const left = Math.abs(Math.round(face.boundingBox.x1));
-    const top = Math.abs(Math.round(face.boundingBox.y1));
-    const width = Math.abs(Math.round(face.boundingBox.x2 - face.boundingBox.x1));
-    const height = Math.abs(Math.round(face.boundingBox.y2 - face.boundingBox.y1));
+    const left = Math.round(face.boundingBox.x1);
+    const top = Math.round(face.boundingBox.y1);
+    const width = Math.round(face.boundingBox.x2 - face.boundingBox.x1);
+    const height = Math.round(face.boundingBox.y2 - face.boundingBox.y1);
 
     if (left < 1 || top < 1 || width < 1 || height < 1) {
       this.logger.error(`invalid bounding box ${JSON.stringify(face.boundingBox)}`);
@@ -278,14 +278,17 @@ export class MediaService {
       width: width,
       height: height,
     };
+    try {
+      await this.mediaRepository.crop(asset.resizePath, output, cropOptions);
 
-    await this.mediaRepository.crop(asset.resizePath, output, cropOptions);
+      const result: CropFaceResult = {
+        faceId: faceId,
+        filePath: output,
+      };
 
-    const result: CropFaceResult = {
-      faceId: faceId,
-      filePath: output,
-    };
-
-    return result;
+      return result;
+    } catch (error: any) {
+      this.logger.error(`Failed to crop face for asset: ${asset.id}`, error.stack);
+    }
   }
 }

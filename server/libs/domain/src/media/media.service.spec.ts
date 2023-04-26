@@ -4,6 +4,7 @@ import {
   assetEntityStub,
   newAssetRepositoryMock,
   newCommunicationRepositoryMock,
+  newCryptoRepositoryMock,
   newJobRepositoryMock,
   newMediaRepositoryMock,
   newStorageRepositoryMock,
@@ -17,6 +18,7 @@ import { IStorageRepository } from '../storage';
 import { ISystemConfigRepository } from '../system-config';
 import { IMediaRepository } from './media.repository';
 import { MediaService } from './media.service';
+import { ICryptoRepository } from '../crypto';
 
 describe(MediaService.name, () => {
   let sut: MediaService;
@@ -26,7 +28,7 @@ describe(MediaService.name, () => {
   let jobMock: jest.Mocked<IJobRepository>;
   let mediaMock: jest.Mocked<IMediaRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
-
+  let cryptoMock: jest.Mocked<ICryptoRepository>;
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
@@ -34,7 +36,9 @@ describe(MediaService.name, () => {
     jobMock = newJobRepositoryMock();
     mediaMock = newMediaRepositoryMock();
     storageMock = newStorageRepositoryMock();
-    sut = new MediaService(assetMock, communicationMock, jobMock, mediaMock, storageMock, configMock);
+    cryptoMock = newCryptoRepositoryMock();
+
+    sut = new MediaService(assetMock, communicationMock, jobMock, mediaMock, storageMock, configMock, cryptoMock);
   });
 
   it('should be defined', () => {
