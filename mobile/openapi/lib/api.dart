@@ -59,6 +59,7 @@ part 'model/asset_count_by_user_id_response_dto.dart';
 part 'model/asset_file_upload_response_dto.dart';
 part 'model/asset_response_dto.dart';
 part 'model/asset_type_enum.dart';
+part 'model/auth_device_response_dto.dart';
 part 'model/change_password_dto.dart';
 part 'model/check_duplicate_asset_dto.dart';
 part 'model/check_duplicate_asset_response_dto.dart';

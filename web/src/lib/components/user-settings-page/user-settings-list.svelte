@@ -6,6 +6,7 @@
 	import ChangePasswordSettings from './change-password-settings.svelte';
 	import OAuthSettings from './oauth-settings.svelte';
 	import UserAPIKeyList from './user-api-key-list.svelte';
+	import DeviceList from './device-list.svelte';
 	import UserProfileSettings from './user-profile-settings.svelte';
 
 	export let user: UserResponseDto;
@@ -46,3 +47,7 @@
 		<OAuthSettings {user} />
 	</SettingAccordion>
 {/if}
+
+<SettingAccordion title="Authorized Devices" subtitle="View and manage your logged-in devices">
+	<DeviceList />
+</SettingAccordion>

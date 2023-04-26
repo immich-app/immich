@@ -601,6 +601,50 @@ export const AssetTypeEnum = {
 
 export type AssetTypeEnum = (typeof AssetTypeEnum)[keyof typeof AssetTypeEnum];
 
+
+/**
+ * 
+ * @export
+ * @interface AuthDeviceResponseDto
+ */
+export interface AuthDeviceResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof AuthDeviceResponseDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AuthDeviceResponseDto
+     */
+    'createdAt': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AuthDeviceResponseDto
+     */
+    'updatedAt': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AuthDeviceResponseDto
+     */
+    'current': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof AuthDeviceResponseDto
+     */
+    'deviceType': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AuthDeviceResponseDto
+     */
+    'deviceOS': string;
+}
 /**
  *
  * @export

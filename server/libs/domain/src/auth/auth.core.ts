@@ -1,10 +1,17 @@
 import { SystemConfig, UserEntity } from '@app/infra/entities';
+import { ICryptoRepository } from '../crypto/crypto.repository';
 import { ISystemConfigRepository } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE } from './auth.constant';
-import { ICryptoRepository } from '../crypto/crypto.repository';
-import { LoginResponseDto, mapLoginResponse } from './response-dto';
 import { IUserTokenRepository, UserTokenCore } from '../user-token';
+import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE } from './auth.constant';
+import { LoginResponseDto, mapLoginResponse } from './response-dto';
+
+export interface LoginDetails {
+  isSecure: boolean;
+  clientIp: string;
+  deviceType: string;
+  deviceOS: string;
+}
 
 export class AuthCore {
   private userTokenCore: UserTokenCore;
@@ -23,7 +30,7 @@ export class AuthCore {
     return this.config.passwordLogin.enabled;
   }
 
-  public getCookies(loginResponse: LoginResponseDto, authType: AuthType, isSecure: boolean) {
+  getCookies(loginResponse: LoginResponseDto, authType: AuthType, { isSecure }: LoginDetails) {
     const maxAge = 400 * 24 * 3600; // 400 days
 
     let authTypeCookie = '';
@@ -39,10 +46,10 @@ export class AuthCore {
     return [accessTokenCookie, authTypeCookie];
   }
 
-  public async createLoginResponse(user: UserEntity, authType: AuthType, isSecure: boolean) {
-    const accessToken = await this.userTokenCore.createToken(user);
+  async createLoginResponse(user: UserEntity, authType: AuthType, loginDetails: LoginDetails) {
+    const accessToken = await this.userTokenCore.create(user, loginDetails);
     const response = mapLoginResponse(user, accessToken);
-    const cookie = this.getCookies(response, authType, isSecure);
+    const cookie = this.getCookies(response, authType, loginDetails);
     return { response, cookie };
   }
 

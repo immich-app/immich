@@ -9,12 +9,21 @@ export class UserTokenEntity {
   @Column({ select: false })
   token!: string;
 
+  @Column()
+  userId!: string;
+
   @ManyToOne(() => UserEntity)
   user!: UserEntity;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: string;
+  createdAt!: Date;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: string;
+  updatedAt!: Date;
+
+  @Column({ default: '' })
+  deviceType!: string;
+
+  @Column({ default: '' })
+  deviceOS!: string;
 }

@@ -1,5 +1,6 @@
 import {
   AdminSignupResponseDto,
+  AuthDeviceResponseDto,
   AuthService,
   AuthType,
   AuthUserDto,
@@ -7,18 +8,20 @@ import {
   IMMICH_ACCESS_COOKIE,
   IMMICH_AUTH_TYPE_COOKIE,
   LoginCredentialDto,
+  LoginDetails,
   LoginResponseDto,
   LogoutResponseDto,
   SignUpDto,
   UserResponseDto,
   ValidateAccessTokenResponseDto,
 } from '@app/domain';
-import { Body, Controller, Ip, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Req, Res } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { GetAuthUser } from '../decorators/auth-user.decorator';
+import { GetAuthUser, GetLoginDetails } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
 import { UseValidation } from '../decorators/use-validation.decorator';
+import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -29,11 +32,10 @@ export class AuthController {
   @Post('login')
   async login(
     @Body() loginCredential: LoginCredentialDto,
-    @Ip() clientIp: string,
-    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
+    @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<LoginResponseDto> {
-    const { response, cookie } = await this.service.login(loginCredential, clientIp, req.secure);
+    const { response, cookie } = await this.service.login(loginCredential, loginDetails);
     res.header('Set-Cookie', cookie);
     return response;
   }
@@ -42,6 +44,18 @@ export class AuthController {
   @ApiBadRequestResponse({ description: 'The server already has an admin' })
   adminSignUp(@Body() signUpCredential: SignUpDto): Promise<AdminSignupResponseDto> {
     return this.service.adminSignUp(signUpCredential);
+  }
+
+  @Authenticated()
+  @Get('devices')
+  getAuthDevices(@GetAuthUser() authUser: AuthUserDto): Promise<AuthDeviceResponseDto[]> {
+    return this.service.getDevices(authUser);
+  }
+
+  @Authenticated()
+  @Delete('devices/:id')
+  logoutAuthDevice(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
+    return this.service.logoutDevice(authUser, id);
   }
 
   @Authenticated()

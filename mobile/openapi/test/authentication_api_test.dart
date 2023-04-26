@@ -27,6 +27,11 @@ void main() {
       // TODO
     });
 
+    //Future<List<AuthDeviceResponseDto>> getAuthDevices() async
+    test('test getAuthDevices', () async {
+      // TODO
+    });
+
     //Future<LoginResponseDto> login(LoginCredentialDto loginCredentialDto) async
     test('test login', () async {
       // TODO
@@ -34,6 +39,11 @@ void main() {
 
     //Future<LogoutResponseDto> logout() async
     test('test logout', () async {
+      // TODO
+    });
+
+    //Future logoutAuthDevice(String id) async
+    test('test logoutAuthDevice', () async {
       // TODO
     });
 

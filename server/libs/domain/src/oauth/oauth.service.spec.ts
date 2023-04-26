@@ -17,9 +17,16 @@ import { ISystemConfigRepository } from '../system-config';
 import { IUserRepository } from '../user';
 import { IUserTokenRepository } from '../user-token';
 import { newUserTokenRepositoryMock } from '../../test/user-token.repository.mock';
+import { LoginDetails } from '../auth';
 
 const email = 'user@immich.com';
 const sub = 'my-auth-user-sub';
+const loginDetails: LoginDetails = {
+  isSecure: true,
+  clientIp: '127.0.0.1',
+  deviceOS: '',
+  deviceType: '',
+};
 
 describe('OAuthService', () => {
   let sut: OAuthService;
@@ -95,13 +102,13 @@ describe('OAuthService', () => {
 
   describe('login', () => {
     it('should throw an error if OAuth is not enabled', async () => {
-      await expect(sut.login({ url: '' }, true)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.login({ url: '' }, loginDetails)).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should not allow auto registering', async () => {
       sut = create(systemConfigStub.noAutoRegister);
       userMock.getByEmail.mockResolvedValue(null);
-      await expect(sut.login({ url: 'http://immich/auth/login?code=abc123' }, true)).rejects.toBeInstanceOf(
+      await expect(sut.login({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).rejects.toBeInstanceOf(
         BadRequestException,
       );
       expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
@@ -113,7 +120,7 @@ describe('OAuthService', () => {
       userMock.update.mockResolvedValue(userEntityStub.user1);
       userTokenMock.create.mockResolvedValue(userTokenEntityStub.userToken);
 
-      await expect(sut.login({ url: 'http://immich/auth/login?code=abc123' }, true)).resolves.toEqual(
+      await expect(sut.login({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
         loginResponseStub.user1oauth,
       );
 
@@ -129,7 +136,7 @@ describe('OAuthService', () => {
       userMock.create.mockResolvedValue(userEntityStub.user1);
       userTokenMock.create.mockResolvedValue(userTokenEntityStub.userToken);
 
-      await expect(sut.login({ url: 'http://immich/auth/login?code=abc123' }, true)).resolves.toEqual(
+      await expect(sut.login({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
         loginResponseStub.user1oauth,
       );
 
@@ -143,7 +150,7 @@ describe('OAuthService', () => {
       userMock.getByOAuthId.mockResolvedValue(userEntityStub.user1);
       userTokenMock.create.mockResolvedValue(userTokenEntityStub.userToken);
 
-      await sut.login({ url: `app.immich:/?code=abc123` }, true);
+      await sut.login({ url: `app.immich:/?code=abc123` }, loginDetails);
 
       expect(callbackMock).toHaveBeenCalledWith('http://mobile-redirect', { state: 'state' }, { state: 'state' });
     });
