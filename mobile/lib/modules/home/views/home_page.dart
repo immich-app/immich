@@ -45,6 +45,7 @@ class HomePage extends HookConsumerWidget {
 
     final tipOneOpacity = useState(0.0);
     final refreshCount = useState(0);
+    final processing = useState(false);
 
     useEffect(
       () {
@@ -113,108 +114,134 @@ class HomePage extends HookConsumerWidget {
         return assets.toList();
       }
 
-      void onFavoriteAssets() {
-        final remoteAssets = remoteOnlySelection(
-          localErrorMessage: 'home_page_favorite_err_local'.tr(),
-        );
-        if (remoteAssets.isNotEmpty) {
-          ref.watch(favoriteProvider.notifier).addToFavorites(remoteAssets);
-
-          final assetOrAssets = remoteAssets.length > 1 ? 'assets' : 'asset';
-          ImmichToast.show(
-            context: context,
-            msg: 'Added ${remoteAssets.length} $assetOrAssets to favorites',
-            gravity: ToastGravity.BOTTOM,
+      void onFavoriteAssets() async {
+        processing.value = true;
+        try {
+          final remoteAssets = remoteOnlySelection(
+            localErrorMessage: 'home_page_favorite_err_local'.tr(),
           );
-        }
+          if (remoteAssets.isNotEmpty) {
+            await ref
+                .watch(favoriteProvider.notifier)
+                .addToFavorites(remoteAssets);
 
-        selectionEnabledHook.value = false;
+            final assetOrAssets = remoteAssets.length > 1 ? 'assets' : 'asset';
+            ImmichToast.show(
+              context: context,
+              msg: 'Added ${remoteAssets.length} $assetOrAssets to favorites',
+              gravity: ToastGravity.BOTTOM,
+            );
+          }
+        } finally {
+          processing.value = false;
+          selectionEnabledHook.value = false;
+        }
       }
 
-      void onArchiveAsset() {
-        final remoteAssets = remoteOnlySelection(
-          localErrorMessage: 'home_page_archive_err_local'.tr(),
-        );
-        if (remoteAssets.isNotEmpty) {
-          ref.watch(assetProvider.notifier).toggleArchive(remoteAssets, true);
-
-          final assetOrAssets = remoteAssets.length > 1 ? 'assets' : 'asset';
-          ImmichToast.show(
-            context: context,
-            msg: 'Moved ${remoteAssets.length} $assetOrAssets to archive',
-            gravity: ToastGravity.CENTER,
+      void onArchiveAsset() async {
+        processing.value = true;
+        try {
+          final remoteAssets = remoteOnlySelection(
+            localErrorMessage: 'home_page_archive_err_local'.tr(),
           );
-        }
+          if (remoteAssets.isNotEmpty) {
+            await ref
+                .watch(assetProvider.notifier)
+                .toggleArchive(remoteAssets, true);
 
-        selectionEnabledHook.value = false;
+            final assetOrAssets = remoteAssets.length > 1 ? 'assets' : 'asset';
+            ImmichToast.show(
+              context: context,
+              msg: 'Moved ${remoteAssets.length} $assetOrAssets to archive',
+              gravity: ToastGravity.CENTER,
+            );
+          }
+        } finally {
+          processing.value = false;
+          selectionEnabledHook.value = false;
+        }
       }
 
-      void onDelete() {
-        ref.watch(assetProvider.notifier).deleteAssets(selection.value);
-        selectionEnabledHook.value = false;
+      void onDelete() async {
+        processing.value = true;
+        try {
+          await ref.watch(assetProvider.notifier).deleteAssets(selection.value);
+          selectionEnabledHook.value = false;
+        } finally {
+          processing.value = false;
+        }
       }
 
       void onAddToAlbum(Album album) async {
-        final Iterable<Asset> assets = remoteOnlySelection(
-          localErrorMessage: "home_page_add_to_album_err_local".tr(),
-        );
-        if (assets.isEmpty) {
-          return;
-        }
-        final result = await albumService.addAdditionalAssetToAlbum(
-          assets,
-          album,
-        );
-
-        if (result != null) {
-          if (result.alreadyInAlbum.isNotEmpty) {
-            ImmichToast.show(
-              context: context,
-              msg: "home_page_add_to_album_conflicts".tr(
-                namedArgs: {
-                  "album": album.name,
-                  "added": result.successfullyAdded.toString(),
-                  "failed": result.alreadyInAlbum.length.toString()
-                },
-              ),
-            );
-          } else {
-            ImmichToast.show(
-              context: context,
-              msg: "home_page_add_to_album_success".tr(
-                namedArgs: {
-                  "album": album.name,
-                  "added": result.successfullyAdded.toString(),
-                },
-              ),
-              toastType: ToastType.success,
-            );
+        processing.value = true;
+        try {
+          final Iterable<Asset> assets = remoteOnlySelection(
+            localErrorMessage: "home_page_add_to_album_err_local".tr(),
+          );
+          if (assets.isEmpty) {
+            return;
           }
+          final result = await albumService.addAdditionalAssetToAlbum(
+            assets,
+            album,
+          );
 
+          if (result != null) {
+            if (result.alreadyInAlbum.isNotEmpty) {
+              ImmichToast.show(
+                context: context,
+                msg: "home_page_add_to_album_conflicts".tr(
+                  namedArgs: {
+                    "album": album.name,
+                    "added": result.successfullyAdded.toString(),
+                    "failed": result.alreadyInAlbum.length.toString()
+                  },
+                ),
+              );
+            } else {
+              ImmichToast.show(
+                context: context,
+                msg: "home_page_add_to_album_success".tr(
+                  namedArgs: {
+                    "album": album.name,
+                    "added": result.successfullyAdded.toString(),
+                  },
+                ),
+                toastType: ToastType.success,
+              );
+            }
+          }
+        } finally {
+          processing.value = false;
           selectionEnabledHook.value = false;
         }
       }
 
       void onCreateNewAlbum() async {
-        final Iterable<Asset> assets = remoteOnlySelection(
-          localErrorMessage: "home_page_add_to_album_err_local".tr(),
-        );
-        if (assets.isEmpty) {
-          return;
-        }
-        final result = await albumService.createAlbumWithGeneratedName(assets);
+        processing.value = true;
+        try {
+          final Iterable<Asset> assets = remoteOnlySelection(
+            localErrorMessage: "home_page_add_to_album_err_local".tr(),
+          );
+          if (assets.isEmpty) {
+            return;
+          }
+          final result =
+              await albumService.createAlbumWithGeneratedName(assets);
 
-        if (result != null) {
-          ref.watch(albumProvider.notifier).getAllAlbums();
-          ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
-          selectionEnabledHook.value = false;
+          if (result != null) {
+            ref.watch(albumProvider.notifier).getAllAlbums();
+            ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
+            selectionEnabledHook.value = false;
 
-          AutoRouter.of(context).push(AlbumViewerRoute(albumId: result.id));
+            AutoRouter.of(context).push(AlbumViewerRoute(albumId: result.id));
+          }
+        } finally {
+          processing.value = false;
         }
       }
 
       Future<void> refreshAssets() async {
-        debugPrint("refreshCount.value ${refreshCount.value}");
         final fullRefresh = refreshCount.value > 0;
         await ref.read(assetProvider.notifier).getAllAsset(clear: fullRefresh);
         if (fullRefresh) {
@@ -303,7 +330,9 @@ class HomePage extends HookConsumerWidget {
                 albums: albums,
                 sharedAlbums: sharedAlbums,
                 onCreateNewAlbum: onCreateNewAlbum,
+                enabled: !processing.value,
               ),
+            if (processing.value) const Center(child: ImmichLoadingIndicator())
           ],
         ),
       );

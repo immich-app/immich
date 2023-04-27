@@ -21,19 +21,19 @@ class ControlBoxButton extends StatelessWidget {
     Key? key,
     required this.label,
     required this.iconData,
-    required this.onPressed,
+    this.onPressed,
   }) : super(key: key);
 
   final String label;
   final IconData iconData;
-  final Function onPressed;
+  final void Function()? onPressed;
 
   @override
   Widget build(BuildContext context) {
     return MaterialButton(
       padding: const EdgeInsets.all(10),
       shape: const CircleBorder(),
-      onPressed: () => onPressed(),
+      onPressed: onPressed,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
