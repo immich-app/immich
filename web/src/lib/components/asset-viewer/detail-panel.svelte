@@ -109,7 +109,7 @@
 						<ImageThumbnail
 							curve
 							shadow
-							url={api.getFaceThumbnailUrl(person.id)}
+							url={api.getPeopleThumbnailUrl(person.id)}
 							altText={person.name}
 							widthStyle="100px"
 							heightStyle="100px"

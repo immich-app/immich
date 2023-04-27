@@ -1,4 +1,11 @@
-import { AuthUserDto, FacialRecognitionService, ImmichReadStream, mapPerson, PersonResponseDto } from '@app/domain';
+import {
+  AssetResponseDto,
+  AuthUserDto,
+  FacialRecognitionService,
+  ImmichReadStream,
+  mapPerson,
+  PersonResponseDto,
+} from '@app/domain';
 import { Controller, Get, Header, Param, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
@@ -36,7 +43,7 @@ export class PeopleController {
   }
 
   @Get('/:id/assets')
-  async getPersonAssets(@Param() { id }: UUIDParamDto): Promise<PersonResponseDto> {
-    throw new Error('Not implemented');
+  async getPersonAssets(@Param() { id }: UUIDParamDto): Promise<AssetResponseDto[]> {
+    return this.service.getPersonAssets(id);
   }
 }

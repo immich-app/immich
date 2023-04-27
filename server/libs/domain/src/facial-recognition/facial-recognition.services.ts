@@ -1,7 +1,7 @@
 import { PersonEntity } from '@app/infra/entities';
 import { Inject, Logger, NotFoundException } from '@nestjs/common';
 import { join } from 'path';
-import { IAssetRepository, mapPerson, PersonResponseDto, WithoutProperty } from '../asset';
+import { AssetResponseDto, IAssetRepository, mapAsset, mapPerson, PersonResponseDto, WithoutProperty } from '../asset';
 import { ICryptoRepository } from '../crypto';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
 import { IAssetJob, IBaseJob, IFaceThumbnailJob, IJobRepository, JobName } from '../job';
@@ -61,10 +61,10 @@ export class FacialRecognitionService {
         // typesense magic here
         const faceSearchResult = await this.searchRepository.faceSearch(embedding);
 
-        if (faceSearchResult.total) {
-          this.logger.debug('Found face', faceSearchResult);
-          return;
-        }
+        // if (faceSearchResult.total) {
+        //   this.logger.debug('Found face', faceSearchResult);
+        //   return;
+        // }
 
         this.logger.debug('No matches, creating a new person.');
 
@@ -135,6 +135,11 @@ export class FacialRecognitionService {
     }
 
     return this.mapPerson(person);
+  }
+
+  async getPersonAssets(personId: string): Promise<AssetResponseDto[]> {
+    const assets = await this.repository.getPersonAssets(personId);
+    return assets.map(mapAsset);
   }
 
   private mapPerson(person: PersonEntity): PersonResponseDto {

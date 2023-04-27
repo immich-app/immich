@@ -1,4 +1,4 @@
-import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
+import { AssetEntity, AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 
 export const IFacialRecognitionRepository = 'IFacialRecognitionRepository';
 
@@ -8,4 +8,5 @@ export interface IFacialRecognitionRepository {
   savePerson(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   getById(id: string): Promise<PersonEntity | null>;
   getAll(userId: string): Promise<PersonEntity[]>;
+  getPersonAssets(id: string): Promise<AssetEntity[]>;
 }

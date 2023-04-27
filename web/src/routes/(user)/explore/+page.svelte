@@ -2,12 +2,14 @@
 	import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import { AppRoute } from '$lib/constants';
-	import { AssetTypeEnum, PersonResponseDto, SearchExploreItem } from '@api';
+	import { AssetTypeEnum, PersonResponseDto, SearchExploreItem, api } from '@api';
 	import ClockOutline from 'svelte-material-icons/ClockOutline.svelte';
 	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
 	import StarOutline from 'svelte-material-icons/StarOutline.svelte';
 	import type { PageData } from './$types';
+	import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
+	import { onMount } from 'svelte';
 
 	export let data: PageData;
 
@@ -37,7 +39,9 @@
 
 	things = things.slice(0, MAX_ITEMS);
 	places = places.slice(0, MAX_ITEMS);
-	people = data.people;
+	onMount(() => {
+		people = data.people.slice(0, MAX_ITEMS);
+	});
 </script>
 
 <UserPageLayout user={data.user} title={data.meta.title}>
@@ -48,19 +52,20 @@
 					<p class="mb-4 dark:text-immich-dark-fg font-medium">People</p>
 				</div>
 				<div class="flex flex-row flex-wrap gap-4">
-					{#each places as item}
-						<a class="relative" href="/search?{Field.CITY}={item.value}" draggable="false">
-							<div
-								class="filter brightness-75 rounded-xl overflow-hidden w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] flex justify-center"
-							>
-								<Thumbnail thumbnailSize={156} asset={item.data} readonly />
-							</div>
-							<span
-								class="capitalize absolute bottom-2 w-full text-center text-sm font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
-							>
-								{item.value}
-							</span>
-						</a>
+					{#each people as person (person.id)}
+						<div class="text-center">
+							<a href="/search">
+								<ImageThumbnail
+									circle
+									shadow
+									url={api.getPeopleThumbnailUrl(person.id)}
+									altText={person.name}
+									widthStyle="100px"
+									heightStyle="100px"
+								/>
+								<p class="font-medium mt-1 text-sm dark:text-white">{person.name}</p>
+							</a>
+						</div>
 					{/each}
 				</div>
 			</div>
