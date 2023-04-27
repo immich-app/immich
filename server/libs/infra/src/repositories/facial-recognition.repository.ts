@@ -1,7 +1,7 @@
 import { IFacialRecognitionRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { AssetFaceEntity, PersonEntity } from '../entities';
 
 @Injectable()
@@ -13,7 +13,12 @@ export class FacialRecognitionRepository implements IFacialRecognitionRepository
   ) {}
 
   getAll(userId: string): Promise<PersonEntity[]> {
-    return this.personRepository.find({ where: { ownerId: userId } });
+    return this.personRepository
+      .createQueryBuilder('person')
+      .leftJoin('person.assetFaces', 'assetFaces')
+      .where('person.userId = :userId', { userId })
+      .andWhere('assetFaces.id IS NULL')
+      .getMany();
   }
 
   getById(id: string): Promise<PersonEntity | null> {

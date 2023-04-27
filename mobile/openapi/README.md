@@ -117,8 +117,6 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**logoutAuthDevice**](doc//AuthenticationApi.md#logoutauthdevice) | **DELETE** /auth/devices/{id} | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
 *DeviceInfoApi* | [**upsertDeviceInfo**](doc//DeviceInfoApi.md#upsertdeviceinfo) | **PUT** /device-info | 
-*FaceApi* | [**getFaceThumbnail**](doc//FaceApi.md#getfacethumbnail) | **GET** /face/thumbnail/{id} | 
-*FaceApi* | [**getPeople**](doc//FaceApi.md#getpeople) | **GET** /face | 
 *JobApi* | [**getAllJobsStatus**](doc//JobApi.md#getalljobsstatus) | **GET** /jobs | 
 *JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{jobId} | 
 *OAuthApi* | [**callback**](doc//OAuthApi.md#callback) | **POST** /oauth/callback | 
@@ -126,6 +124,10 @@ Class | Method | HTTP request | Description
 *OAuthApi* | [**link**](doc//OAuthApi.md#link) | **POST** /oauth/link | 
 *OAuthApi* | [**mobileRedirect**](doc//OAuthApi.md#mobileredirect) | **GET** /oauth/mobile-redirect | 
 *OAuthApi* | [**unlink**](doc//OAuthApi.md#unlink) | **POST** /oauth/unlink | 
+*PeopleApi* | [**getAllPeople**](doc//PeopleApi.md#getallpeople) | **GET** /people | 
+*PeopleApi* | [**getPerson**](doc//PeopleApi.md#getperson) | **GET** /people/{id} | 
+*PeopleApi* | [**getPersonAssets**](doc//PeopleApi.md#getpersonassets) | **GET** /people/{id}/assets | 
+*PeopleApi* | [**getPersonThumbnail**](doc//PeopleApi.md#getpersonthumbnail) | **GET** /people/{id}/thumbnail | 
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
 *SearchApi* | [**getSearchConfig**](doc//SearchApi.md#getsearchconfig) | **GET** /search/config | 
 *SearchApi* | [**search**](doc//SearchApi.md#search) | **GET** /search | 

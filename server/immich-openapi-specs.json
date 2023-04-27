@@ -1764,9 +1764,80 @@
         ]
       }
     },
-    "/face/thumbnail/{id}": {
+    "/people": {
       "get": {
-        "operationId": "getFaceThumbnail",
+        "operationId": "getAllPeople",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PersonResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "People"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
+    "/people/{id}": {
+      "get": {
+        "operationId": "getPerson",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "People"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ]
+      }
+    },
+    "/people/{id}/thumbnail": {
+      "get": {
+        "operationId": "getPersonThumbnail",
         "parameters": [
           {
             "name": "id",
@@ -1792,7 +1863,7 @@
           }
         },
         "tags": [
-          "Face"
+          "People"
         ],
         "security": [
           {
@@ -1804,27 +1875,34 @@
         ]
       }
     },
-    "/face": {
+    "/people/{id}/assets": {
       "get": {
-        "operationId": "getPeople",
-        "parameters": [],
+        "operationId": "getPersonAssets",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PersonResponseDto"
-                  }
+                  "$ref": "#/components/schemas/PersonResponseDto"
                 }
               }
             }
           }
         },
         "tags": [
-          "Face"
+          "People"
         ],
         "security": [
           {

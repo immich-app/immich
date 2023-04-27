@@ -6,6 +6,7 @@ import {
 	Configuration,
 	ConfigurationParameters,
 	DeviceInfoApi,
+	FaceApi,
 	JobApi,
 	OAuthApi,
 	SearchApi,
@@ -31,6 +32,7 @@ export class ImmichApi {
 	public keyApi: APIKeyApi;
 	public systemConfigApi: SystemConfigApi;
 	public shareApi: ShareApi;
+	public faceApi: FaceApi;
 
 	private config: Configuration;
 
@@ -49,6 +51,7 @@ export class ImmichApi {
 		this.searchApi = new SearchApi(this.config);
 		this.systemConfigApi = new SystemConfigApi(this.config);
 		this.shareApi = new ShareApi(this.config);
+		this.faceApi = new FaceApi(this.config);
 	}
 
 	private createUrl(path: string, params?: Record<string, unknown>) {

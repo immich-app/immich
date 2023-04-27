@@ -11,23 +11,32 @@ function asStreamableFile({ stream, type, length }: ImmichReadStream) {
   return new StreamableFile(stream, { type, length });
 }
 
-@ApiTags('Face')
-@Controller('face')
+@ApiTags('People')
+@Controller('people')
 @Authenticated()
 @UseValidation()
-export class FaceController {
+export class PeopleController {
   constructor(private service: FacialRecognitionService) {}
+  @Get()
+  async getAllPeople(@GetAuthUser() authUser: AuthUserDto): Promise<PersonResponseDto[]> {
+    return this.service.getAllPeople(authUser.id);
+  }
 
-  @Get('/thumbnail/:id')
+  @Get('/:id')
+  async getPerson(@Param() { id }: UUIDParamDto): Promise<PersonResponseDto> {
+    return this.service.getPersonById(id);
+  }
+
+  @Get('/:id/thumbnail')
   @Header('Cache-Control', 'max-age=31536000')
   @Header('Content-Type', 'image/jpeg')
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
-  async getFaceThumbnail(@Param() { id }: UUIDParamDto) {
-    return this.service.getFaceThumbnail(id).then(asStreamableFile);
+  async getPersonThumbnail(@Param() { id }: UUIDParamDto) {
+    return this.service.getPersonThumbnail(id).then(asStreamableFile);
   }
 
-  @Get()
-  async getPeople(@GetAuthUser() authUser: AuthUserDto): Promise<PersonResponseDto[]> {
-    return this.service.getPeople(authUser.id);
+  @Get('/:id/assets')
+  async getPersonAssets(@Param() { id }: UUIDParamDto): Promise<PersonResponseDto> {
+    throw new Error('Not implemented');
   }
 }

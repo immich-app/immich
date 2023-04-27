@@ -11,7 +11,7 @@ import {
   APIKeyController,
   AuthController,
   DeviceInfoController,
-  FaceController,
+  PeopleController,
   JobController,
   OAuthController,
   SearchController,
@@ -45,7 +45,7 @@ import { AppCronJobs } from './app.cron-jobs';
     ShareController,
     SystemConfigController,
     UserController,
-    FaceController,
+    PeopleController,
   ],
   providers: [
     //

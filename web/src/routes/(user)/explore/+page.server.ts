@@ -8,10 +8,11 @@ export const load = (async ({ locals, parent }) => {
 	}
 
 	const { data: items } = await locals.api.searchApi.getExploreData();
-
+	const { data: people } = await locals.api.faceApi.getPeople();
 	return {
 		user,
 		items,
+		people,
 		meta: {
 			title: 'Explore'
 		}

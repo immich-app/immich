@@ -1,3 +1,4 @@
+import { PersonEntity } from '@app/infra/entities';
 import { Inject, Logger, NotFoundException } from '@nestjs/common';
 import { join } from 'path';
 import { IAssetRepository, mapPerson, PersonResponseDto, WithoutProperty } from '../asset';
@@ -113,7 +114,7 @@ export class FacialRecognitionService {
     }
   }
 
-  async getFaceThumbnail(personId: string): Promise<ImmichReadStream> {
+  async getPersonThumbnail(personId: string): Promise<ImmichReadStream> {
     const person = await this.repository.getById(personId);
     if (!person || !person.thumbnailPath) {
       throw new NotFoundException();
@@ -122,15 +123,26 @@ export class FacialRecognitionService {
     return this.storageRepository.createReadStream(person.thumbnailPath, 'image/jpeg');
   }
 
-  async getPeople(userId: string): Promise<PersonResponseDto[]> {
+  async getAllPeople(userId: string): Promise<PersonResponseDto[]> {
     const people = await this.repository.getAll(userId);
-    return people.map((person) => {
-      const response = new PersonResponseDto();
-      response.id = person.id;
-      response.name = person.name;
-      response.thumbnailPath = person.thumbnailPath;
+    return people.map(this.mapPerson);
+  }
 
-      return response;
-    });
+  async getPersonById(personId: string): Promise<PersonResponseDto> {
+    const person = await this.repository.getById(personId);
+    if (!person) {
+      throw new NotFoundException();
+    }
+
+    return this.mapPerson(person);
+  }
+
+  private mapPerson(person: PersonEntity): PersonResponseDto {
+    const personResponseDto = new PersonResponseDto();
+    personResponseDto.id = person.id;
+    personResponseDto.name = person.name;
+    personResponseDto.thumbnailPath = person.thumbnailPath;
+
+    return personResponseDto;
   }
 }

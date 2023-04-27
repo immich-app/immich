@@ -2,7 +2,7 @@
 	import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import { AppRoute } from '$lib/constants';
-	import { AssetTypeEnum, SearchExploreItem } from '@api';
+	import { AssetTypeEnum, PersonResponseDto, SearchExploreItem } from '@api';
 	import ClockOutline from 'svelte-material-icons/ClockOutline.svelte';
 	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
@@ -21,6 +21,7 @@
 
 	let things: SearchExploreItem[] = [];
 	let places: SearchExploreItem[] = [];
+	let people: PersonResponseDto[] = [];
 
 	for (const item of data.items) {
 		switch (item.fieldName) {
@@ -36,10 +37,35 @@
 
 	things = things.slice(0, MAX_ITEMS);
 	places = places.slice(0, MAX_ITEMS);
+	people = data.people;
 </script>
 
 <UserPageLayout user={data.user} title={data.meta.title}>
 	<div class="mx-4 flex flex-col">
+		{#if people.length > 0}
+			<div class="mb-6 mt-2">
+				<div>
+					<p class="mb-4 dark:text-immich-dark-fg font-medium">People</p>
+				</div>
+				<div class="flex flex-row flex-wrap gap-4">
+					{#each places as item}
+						<a class="relative" href="/search?{Field.CITY}={item.value}" draggable="false">
+							<div
+								class="filter brightness-75 rounded-xl overflow-hidden w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] flex justify-center"
+							>
+								<Thumbnail thumbnailSize={156} asset={item.data} readonly />
+							</div>
+							<span
+								class="capitalize absolute bottom-2 w-full text-center text-sm font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
+							>
+								{item.value}
+							</span>
+						</a>
+					{/each}
+				</div>
+			</div>
+		{/if}
+
 		{#if places.length > 0}
 			<div class="mb-6 mt-2">
 				<div>
