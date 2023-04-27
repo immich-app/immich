@@ -15,14 +15,6 @@ enum RenderAssetGridElementType {
   monthTitle;
 }
 
-class RenderAssetGridRow {
-  final List<Asset> assets;
-  final List<double> widthDistribution;
-  final int startIndex;
-
-  RenderAssetGridRow(this.assets, this.widthDistribution, this.startIndex);
-}
-
 class RenderAssetGridElement {
   final RenderAssetGridElementType type;
   final String? title;
@@ -46,28 +38,6 @@ enum GroupAssetsBy {
   month,
   auto,
   ;
-}
-
-class AssetGridLayoutParameters {
-  final int perRow;
-  final bool dynamicLayout;
-  final GroupAssetsBy groupBy;
-
-  AssetGridLayoutParameters(
-    this.perRow,
-    this.dynamicLayout,
-    this.groupBy,
-  );
-}
-
-class _AssetGroupsToRenderListComputeParameters {
-  final List<Asset> assets;
-  final AssetGridLayoutParameters layout;
-
-  _AssetGroupsToRenderListComputeParameters(
-    this.assets,
-    this.layout,
-  );
 }
 
 class RenderList {
@@ -119,129 +89,6 @@ class RenderList {
       return query!.offset(index).findFirstSync()!;
     }
     throw Exception("RenderList has neither assets nor query");
-  }
-
-  static Map<DateTime, List<Asset>> _groupAssets(
-    List<Asset> assets,
-    GroupAssetsBy groupBy,
-  ) {
-    if (groupBy == GroupAssetsBy.day) {
-      return assets.groupListsBy(
-        (element) {
-          final date = element.fileCreatedAt.toLocal();
-          return DateTime(date.year, date.month, date.day);
-        },
-      );
-    } else if (groupBy == GroupAssetsBy.month) {
-      return assets.groupListsBy(
-        (element) {
-          final date = element.fileCreatedAt.toLocal();
-          return DateTime(date.year, date.month);
-        },
-      );
-    }
-
-    return {};
-  }
-
-  static Future<RenderList> _processAssetGroupData(
-    _AssetGroupsToRenderListComputeParameters data,
-  ) async {
-    // TODO: Make DateFormat use the configured locale.
-    final monthFormat = DateFormat.yMMM();
-    final dayFormatSameYear = DateFormat.MMMEd();
-    final dayFormatOtherYear = DateFormat.yMMMEd();
-    final allAssets = data.assets;
-    final perRow = data.layout.perRow;
-    final dynamicLayout = data.layout.dynamicLayout;
-    final groupBy = data.layout.groupBy;
-
-    List<RenderAssetGridElement> elements = [];
-    DateTime? lastDate;
-
-    final groups = _groupAssets(allAssets, groupBy);
-
-    groups.entries.sortedBy((e) => e.key).reversed.forEach((entry) {
-      final date = entry.key;
-      final assets = entry.value;
-
-      try {
-        // Month title
-        if (groupBy == GroupAssetsBy.day &&
-            (lastDate == null || lastDate!.month != date.month)) {
-          elements.add(
-            RenderAssetGridElement(
-              RenderAssetGridElementType.monthTitle,
-              title: monthFormat.format(date),
-              date: date,
-            ),
-          );
-        }
-
-        // Group divider title (day or month)
-        var formatDate = dayFormatOtherYear;
-
-        if (DateTime.now().year == date.year) {
-          formatDate = dayFormatSameYear;
-        }
-
-        if (groupBy == GroupAssetsBy.month) {
-          formatDate = monthFormat;
-        }
-
-        elements.add(
-          RenderAssetGridElement(
-            RenderAssetGridElementType.groupDividerTitle,
-            title: formatDate.format(date),
-            date: date,
-          ),
-        );
-
-        // Add rows
-        int cursor = 0;
-        while (cursor < assets.length) {
-          int rowElements = min(assets.length - cursor, perRow);
-          final rowAssets = assets.sublist(cursor, cursor + rowElements);
-
-          // Default: All assets have the same width
-          var widthDistribution = List.filled(rowElements, 1.0);
-
-          if (dynamicLayout) {
-            final aspectRatios =
-                rowAssets.map((e) => (e.width ?? 1) / (e.height ?? 1)).toList();
-            final meanAspectRatio = aspectRatios.sum / rowElements;
-
-            // 1: mean width
-            // 0.5: width < mean - threshold
-            // 1.5: width > mean + threshold
-            final arConfiguration = aspectRatios.map((e) {
-              if (e - meanAspectRatio > 0.3) return 1.5;
-              if (e - meanAspectRatio < -0.3) return 0.5;
-              return 1.0;
-            });
-
-            // Normalize:
-            final sum = arConfiguration.sum;
-            widthDistribution =
-                arConfiguration.map((e) => (e * rowElements) / sum).toList();
-          }
-
-          final rowElement = RenderAssetGridElement(
-            RenderAssetGridElementType.assetRow,
-            date: date,
-          );
-
-          elements.add(rowElement);
-          cursor += rowElements;
-        }
-
-        lastDate = date;
-      } catch (e, stackTrace) {
-        log.severe(e, stackTrace);
-      }
-    });
-
-    return RenderList(elements, null, data.assets);
   }
 
   static Future<RenderList> fromQuery(
@@ -381,7 +228,7 @@ class RenderList {
 
   static Future<RenderList> fromAssets(
     List<Asset> assets,
-    AssetGridLayoutParameters layout,
+    GroupAssetsBy groupBy,
   ) =>
-      _buildRenderList(assets, null, layout.groupBy);
+      _buildRenderList(assets, null, groupBy);
 }

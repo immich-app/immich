@@ -69,17 +69,8 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
         assets.firstWhereOrNull((e) => !_selectedAssets.contains(e)) == null;
   }
 
-  Widget _buildThumbnailOrPlaceholder(
-    Asset asset,
-    bool placeholder,
-    int index,
-  ) {
+  Widget _buildThumbnailOrPlaceholder(Asset asset, int index) {
     innerRender++;
-    if (placeholder) {
-      return const DecoratedBox(
-        decoration: BoxDecoration(color: Colors.grey),
-      );
-    }
     return ThumbnailImage(
       asset: asset,
       index: index,
@@ -99,36 +90,52 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   }
 
   Widget _buildAssetRow(
+    Key key,
     BuildContext context,
-    RenderAssetGridRow row,
-    bool scrolling,
+    List<Asset> assets,
+    int absoluteOffset,
+    double width,
   ) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final size = constraints.maxWidth / widget.assetsPerRow -
-            widget.margin * (widget.assetsPerRow - 1) / widget.assetsPerRow;
-        return Row(
-          key: Key("asset-row-${row.assets.first.id}"),
-          children: row.assets.mapIndexed((int index, Asset asset) {
-            bool last = asset.id == row.assets.last.id;
+    // Default: All assets have the same width
+    final widthDistribution = List.filled(assets.length, 1.0);
 
-            return Container(
-              key: Key("asset-${asset.id}"),
-              width: size * row.widthDistribution[index],
-              height: size,
-              margin: EdgeInsets.only(
-                top: widget.margin,
-                right: last ? 0.0 : widget.margin,
-              ),
-              child: _buildThumbnailOrPlaceholder(
-                asset,
-                scrolling,
-                row.startIndex + index,
-              ),
-            );
-          }).toList(),
+    if (widget.dynamicLayout) {
+      final aspectRatios =
+          assets.map((e) => (e.width ?? 1) / (e.height ?? 1)).toList();
+      final meanAspectRatio = aspectRatios.sum / assets.length;
+
+      // 1: mean width
+      // 0.5: width < mean - threshold
+      // 1.5: width > mean + threshold
+      final arConfiguration = aspectRatios.map((e) {
+        if (e - meanAspectRatio > 0.3) return 1.5;
+        if (e - meanAspectRatio < -0.3) return 0.5;
+        return 1.0;
+      });
+
+      // Normalize:
+      final sum = arConfiguration.sum;
+      widthDistribution.setRange(
+        0,
+        widthDistribution.length,
+        arConfiguration.map((e) => (e * assets.length) / sum),
+      );
+    }
+    return Row(
+      key: key,
+      children: assets.mapIndexed((int index, Asset asset) {
+        final bool last = index + 1 == widget.assetsPerRow;
+        return Container(
+          key: ValueKey(index),
+          width: width * widthDistribution[index],
+          height: width,
+          margin: EdgeInsets.only(
+            top: widget.margin,
+            right: last ? 0.0 : widget.margin,
+          ),
+          child: _buildThumbnailOrPlaceholder(asset, absoluteOffset + index),
         );
-      },
+      }).toList(),
     );
   }
 
@@ -176,6 +183,9 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
             widget.margin * (widget.assetsPerRow - 1) / widget.assetsPerRow;
         final cols =
             (section.count + widget.assetsPerRow - 1) ~/ widget.assetsPerRow;
+        final List<Asset> assetsToRender = scrolling
+            ? []
+            : widget.renderList.loadAssets(section.offset, section.count);
         return Column(
           key: ValueKey(section.offset),
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,37 +205,22 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
             for (int i = 0; i < cols; i++)
               scrolling
                   ? Container(
+                      key: ValueKey(i),
                       width: constraints.maxWidth,
                       height: width,
                       margin: EdgeInsets.only(top: widget.margin),
                       color: Colors.grey,
                     )
-                  : Row(
-                      key: ValueKey(i),
-                      children: widget.renderList
-                          .loadAssets(section.offset, section.count)
-                          .nestedSlice(
-                            i * widget.assetsPerRow,
-                            min((i + 1) * widget.assetsPerRow, section.count),
-                          )
-                          .mapIndexed((int index, Asset asset) {
-                        final bool last = index + 1 == widget.assetsPerRow;
-                        return Container(
-                          key: ValueKey(index),
-                          width: width,
-                          height: width,
-                          margin: EdgeInsets.only(
-                            top: widget.margin,
-                            right: last ? 0.0 : widget.margin,
-                          ),
-                          child: _buildThumbnailOrPlaceholder(
-                            asset,
-                            scrolling,
-                            section.offset + i * widget.assetsPerRow + index,
-                          ),
-                        );
-                      }).toList(),
-                    )
+                  : _buildAssetRow(
+                      ValueKey(i),
+                      context,
+                      assetsToRender.nestedSlice(
+                        i * widget.assetsPerRow,
+                        min((i + 1) * widget.assetsPerRow, section.count),
+                      ),
+                      section.offset + i * widget.assetsPerRow,
+                      width,
+                    ),
           ],
         );
       },
@@ -369,6 +364,7 @@ class ImmichAssetGridView extends StatefulWidget {
   final Future<void> Function()? onRefresh;
   final Set<Asset>? preselectedAssets;
   final bool canDeselect;
+  final bool dynamicLayout;
 
   const ImmichAssetGridView({
     super.key,
@@ -381,6 +377,7 @@ class ImmichAssetGridView extends StatefulWidget {
     this.onRefresh,
     this.preselectedAssets,
     this.canDeselect = true,
+    this.dynamicLayout = true,
   });
 
   @override

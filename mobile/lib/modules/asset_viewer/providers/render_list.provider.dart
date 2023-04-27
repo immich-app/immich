@@ -3,31 +3,13 @@ import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structu
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:isar/isar.dart';
 
 final renderListProvider =
     FutureProvider.family<RenderList, List<Asset>>((ref, assets) {
-  var settings = ref.watch(appSettingsServiceProvider);
+  final settings = ref.watch(appSettingsServiceProvider);
 
-  final layout = AssetGridLayoutParameters(
-    settings.getSetting(AppSettingsEnum.tilesPerRow),
-    settings.getSetting(AppSettingsEnum.dynamicLayout),
+  return RenderList.fromAssets(
+    assets,
     GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)],
   );
-
-  return RenderList.fromAssets(assets, layout);
-});
-
-final renderListProvider2 =
-    FutureProvider.family<RenderList, QueryBuilder<Asset, Asset, QAfterSortBy>>(
-        (ref, query) {
-  var settings = ref.watch(appSettingsServiceProvider);
-
-  final layout = AssetGridLayoutParameters(
-    settings.getSetting(AppSettingsEnum.tilesPerRow),
-    settings.getSetting(AppSettingsEnum.dynamicLayout),
-    GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)],
-  );
-
-  return RenderList.fromQuery(query, layout.groupBy);
 });

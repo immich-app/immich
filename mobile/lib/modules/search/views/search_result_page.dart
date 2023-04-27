@@ -8,6 +8,8 @@ import 'package:immich_mobile/modules/search/providers/search_page_state.provide
 import 'package:immich_mobile/modules/search/providers/search_result_page.provider.dart';
 import 'package:immich_mobile/modules/search/ui/search_result_grid.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 class SearchType {
@@ -35,6 +37,7 @@ class SearchResultPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(appSettingsServiceProvider);
     final searchTermController = useTextEditingController(text: "");
     final isNewSearch = useState(false);
     final currentSearchTerm = useState(searchTerm);
@@ -166,6 +169,10 @@ class SearchResultPage extends HookConsumerWidget {
         if (isDisplayDateGroup.value) {
           return ImmichAssetGrid(
             assets: allSearchAssets,
+            assetsPerRow: settings.getSetting(AppSettingsEnum.tilesPerRow),
+            dynamicLayout: settings.getSetting(AppSettingsEnum.dynamicLayout),
+            showStorageIndicator:
+                settings.getSetting(AppSettingsEnum.storageIndicator),
           );
         } else {
           return SearchResultGrid(

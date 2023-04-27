@@ -255,6 +255,8 @@ class AlbumViewerPage extends HookConsumerWidget {
                         settings.getSetting(AppSettingsEnum.storageIndicator),
                     assetsPerRow:
                         settings.getSetting(AppSettingsEnum.tilesPerRow),
+                    dynamicLayout:
+                        settings.getSetting(AppSettingsEnum.dynamicLayout),
                     listener: selectionListener,
                     selectionActive: multiSelectEnabled.value,
                   ),

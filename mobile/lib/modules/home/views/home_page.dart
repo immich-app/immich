@@ -311,6 +311,8 @@ class HomePage extends HookConsumerWidget {
                         .getSetting(AppSettingsEnum.tilesPerRow),
                     showStorageIndicator: appSettingService
                         .getSetting(AppSettingsEnum.storageIndicator),
+                    dynamicLayout: appSettingService
+                        .getSetting(AppSettingsEnum.dynamicLayout),
                     listener: selectionListener,
                     selectionActive: selectionEnabledHook.value,
                     onRefresh: refreshAssets,
