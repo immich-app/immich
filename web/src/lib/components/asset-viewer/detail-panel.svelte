@@ -11,6 +11,7 @@
 	import { DateTime } from 'luxon';
 	import type { LatLngTuple } from 'leaflet';
 	import { page } from '$app/stores';
+	import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
 
 	export let asset: AssetResponseDto;
 	export let albums: AlbumResponseDto[] = [];
@@ -81,7 +82,7 @@
 		<p class="text-immich-fg dark:text-immich-dark-fg text-lg">Info</p>
 	</div>
 
-	<div class="mx-4 mt-10">
+	<section class="mx-4 mt-10">
 		<textarea
 			bind:this={textarea}
 			class="max-h-[500px]
@@ -96,13 +97,35 @@
 			bind:value={description}
 			disabled={$page?.data?.user?.id !== asset.ownerId}
 		/>
-	</div>
+	</section>
+
+	{#if asset.people}
+		<section class="px-4 py-4 text-sm">
+			<h2>PEOPLE</h2>
+
+			<div class="flex gap-2 mt-4">
+				{#each asset.people as person (person.id)}
+					<div>
+						<ImageThumbnail
+							curve
+							shadow
+							url={api.getPeopleThumbnailUrl(person.id)}
+							altText={person.name}
+							widthStyle="100px"
+							heightStyle="100px"
+						/>
+						<p class="font-medium mt-1">{person.name}</p>
+					</div>
+				{/each}
+			</div>
+		</section>
+	{/if}
 
 	<div class="px-4 py-4">
 		{#if !asset.exifInfo}
-			<p class="text-sm pb-4">NO EXIF INFO AVAILABLE</p>
+			<p class="text-sm">NO EXIF INFO AVAILABLE</p>
 		{:else}
-			<p class="text-sm pb-4">DETAILS</p>
+			<p class="text-sm">DETAILS</p>
 		{/if}
 
 		{#if asset.exifInfo?.dateTimeOriginal}

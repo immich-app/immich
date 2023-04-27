@@ -11,6 +11,7 @@ import {
   IMachineLearningRepository,
   IMediaRepository,
   immichAppConfig,
+  IPeopleRepository,
   ISearchRepository,
   ISharedLinkRepository,
   ISmartInfoRepository,
@@ -46,6 +47,7 @@ import {
   UserRepository,
   UserTokenRepository,
   FacialRecognitionRepository,
+  PeopleRepository,
 } from './repositories';
 
 const providers: Provider[] = [
@@ -60,6 +62,7 @@ const providers: Provider[] = [
   { provide: IKeyRepository, useClass: APIKeyRepository },
   { provide: IMachineLearningRepository, useClass: MachineLearningRepository },
   { provide: IMediaRepository, useClass: MediaRepository },
+  { provide: IPeopleRepository, useClass: PeopleRepository },
   { provide: ISearchRepository, useClass: TypesenseRepository },
   { provide: ISharedLinkRepository, useClass: SharedLinkRepository },
   { provide: ISmartInfoRepository, useClass: SmartInfoRepository },

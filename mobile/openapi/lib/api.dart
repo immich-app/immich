@@ -35,6 +35,7 @@ part 'api/authentication_api.dart';
 part 'api/device_info_api.dart';
 part 'api/job_api.dart';
 part 'api/o_auth_api.dart';
+part 'api/people_api.dart';
 part 'api/search_api.dart';
 part 'api/server_info_api.dart';
 part 'api/share_api.dart';

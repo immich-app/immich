@@ -62,6 +62,7 @@ doc/OAuthApi.md
 doc/OAuthCallbackDto.md
 doc/OAuthConfigDto.md
 doc/OAuthConfigResponseDto.md
+doc/PeopleApi.md
 doc/PersonResponseDto.md
 doc/QueueStatusDto.md
 doc/RemoveAssetsDto.md
@@ -116,6 +117,7 @@ lib/api/authentication_api.dart
 lib/api/device_info_api.dart
 lib/api/job_api.dart
 lib/api/o_auth_api.dart
+lib/api/people_api.dart
 lib/api/search_api.dart
 lib/api/server_info_api.dart
 lib/api/share_api.dart
@@ -281,6 +283,7 @@ test/o_auth_api_test.dart
 test/o_auth_callback_dto_test.dart
 test/o_auth_config_dto_test.dart
 test/o_auth_config_response_dto_test.dart
+test/people_api_test.dart
 test/person_response_dto_test.dart
 test/queue_status_dto_test.dart
 test/remove_assets_dto_test.dart
