@@ -12,7 +12,7 @@ export class FacialRecognitionRepository implements IFacialRecognitionRepository
     @InjectRepository(AssetFaceEntity) private assetFacesRepository: Repository<AssetFaceEntity>,
   ) {}
 
-  getFaces(userId: string): Promise<PersonEntity[]> {
+  getAll(userId: string): Promise<PersonEntity[]> {
     return this.personRepository.find({ where: { ownerId: userId } });
   }
 

@@ -122,13 +122,13 @@ export class FacialRecognitionService {
     return this.storageRepository.createReadStream(person.thumbnailPath, 'image/jpeg');
   }
 
-  async getFaces(userId: string): Promise<PersonResponseDto[]> {
-    const faces = await this.repository.getFaces(userId);
-    return faces.map((face) => {
+  async getPeople(userId: string): Promise<PersonResponseDto[]> {
+    const people = await this.repository.getAll(userId);
+    return people.map((person) => {
       const response = new PersonResponseDto();
-      response.id = face.id;
-      response.name = face.name;
-      response.thumbnailPath = face.thumbnailPath;
+      response.id = person.id;
+      response.name = person.name;
+      response.thumbnailPath = person.thumbnailPath;
 
       return response;
     });

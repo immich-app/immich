@@ -1806,7 +1806,7 @@
     },
     "/face": {
       "get": {
-        "operationId": "getFaces",
+        "operationId": "getPeople",
         "parameters": [],
         "responses": {
           "200": {

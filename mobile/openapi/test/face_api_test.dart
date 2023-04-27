@@ -22,8 +22,8 @@ void main() {
       // TODO
     });
 
-    //Future<List<PersonResponseDto>> getFaces() async
-    test('test getFaces', () async {
+    //Future<List<PersonResponseDto>> getPeople() async
+    test('test getPeople', () async {
       // TODO
     });
 

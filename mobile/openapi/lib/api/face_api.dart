@@ -65,7 +65,7 @@ class FaceApi {
   }
 
   /// Performs an HTTP 'GET /face' operation and returns the [Response].
-  Future<Response> getFacesWithHttpInfo() async {
+  Future<Response> getPeopleWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/face';
 
@@ -90,8 +90,8 @@ class FaceApi {
     );
   }
 
-  Future<List<PersonResponseDto>?> getFaces() async {
-    final response = await getFacesWithHttpInfo();
+  Future<List<PersonResponseDto>?> getPeople() async {
+    final response = await getPeopleWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

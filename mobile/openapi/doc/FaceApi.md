@@ -10,7 +10,7 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**getFaceThumbnail**](FaceApi.md#getfacethumbnail) | **GET** /face/thumbnail/{id} | 
-[**getFaces**](FaceApi.md#getfaces) | **GET** /face | 
+[**getPeople**](FaceApi.md#getpeople) | **GET** /face | 
 
 
 # **getFaceThumbnail**
@@ -64,8 +64,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getFaces**
-> List<PersonResponseDto> getFaces()
+# **getPeople**
+> List<PersonResponseDto> getPeople()
 
 
 
@@ -86,10 +86,10 @@ import 'package:openapi/api.dart';
 final api_instance = FaceApi();
 
 try {
-    final result = api_instance.getFaces();
+    final result = api_instance.getPeople();
     print(result);
 } catch (e) {
-    print('Exception when calling FaceApi->getFaces: $e\n');
+    print('Exception when calling FaceApi->getPeople: $e\n');
 }
 ```
 

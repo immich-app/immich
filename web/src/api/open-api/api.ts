@@ -6603,7 +6603,7 @@ export const FaceApiAxiosParamCreator = function (configuration?: Configuration)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getFaces: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getPeople: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/face`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -6658,8 +6658,8 @@ export const FaceApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getFaces(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PersonResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getFaces(options);
+        async getPeople(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PersonResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPeople(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -6686,8 +6686,8 @@ export const FaceApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getFaces(options?: any): AxiosPromise<Array<PersonResponseDto>> {
-            return localVarFp.getFaces(options).then((request) => request(axios, basePath));
+        getPeople(options?: any): AxiosPromise<Array<PersonResponseDto>> {
+            return localVarFp.getPeople(options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -6716,8 +6716,8 @@ export class FaceApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof FaceApi
      */
-    public getFaces(options?: AxiosRequestConfig) {
-        return FaceApiFp(this.configuration).getFaces(options).then((request) => request(this.axios, this.basePath));
+    public getPeople(options?: AxiosRequestConfig) {
+        return FaceApiFp(this.configuration).getPeople(options).then((request) => request(this.axios, this.basePath));
     }
 }
 

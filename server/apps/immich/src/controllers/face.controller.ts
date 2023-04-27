@@ -27,7 +27,7 @@ export class FaceController {
   }
 
   @Get()
-  async getFaces(@GetAuthUser() authUser: AuthUserDto): Promise<PersonResponseDto[]> {
-    return this.service.getFaces(authUser.id);
+  async getPeople(@GetAuthUser() authUser: AuthUserDto): Promise<PersonResponseDto[]> {
+    return this.service.getPeople(authUser.id);
   }
 }
