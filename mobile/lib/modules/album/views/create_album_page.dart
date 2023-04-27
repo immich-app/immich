@@ -6,7 +6,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_title.provider.dart';
-import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_action_outlined_button.dart';
 import 'package:immich_mobile/modules/album/ui/album_title_text_field.dart';
 import 'package:immich_mobile/modules/album/ui/shared_album_thumbnail_image.dart';
@@ -34,8 +33,12 @@ class CreateAlbumPage extends HookConsumerWidget {
     final selectedAssets = useState<Set<Asset>>(const {});
     final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
 
-    showSelectUserPage() {
-      AutoRouter.of(context).push(const SelectUserForSharingRoute());
+    showSelectUserPage() async {
+      final bool? ok = await AutoRouter.of(context)
+          .push<bool?>(SelectUserForSharingRoute(assets: selectedAssets.value));
+      if (ok == true) {
+        selectedAssets.value = {};
+      }
     }
 
     void onBackgroundTapped() {
@@ -51,8 +54,6 @@ class CreateAlbumPage extends HookConsumerWidget {
     }
 
     onSelectPhotosButtonPressed() async {
-      ref.watch(assetSelectionProvider.notifier).setIsAlbumExist(false);
-
       AssetSelectionPageResult? selectedAsset =
           await AutoRouter.of(context).push<AssetSelectionPageResult?>(
         AssetSelectionRoute(
@@ -61,7 +62,6 @@ class CreateAlbumPage extends HookConsumerWidget {
         ),
       );
       if (selectedAsset == null) {
-        ref.watch(assetSelectionProvider.notifier).removeAll();
         selectedAssets.value = const {};
       } else {
         selectedAssets.value = selectedAsset.selectedAssets;
@@ -199,7 +199,7 @@ class CreateAlbumPage extends HookConsumerWidget {
 
       if (newAlbum != null) {
         ref.watch(albumProvider.notifier).getAllAlbums();
-        ref.watch(assetSelectionProvider.notifier).removeAll();
+        selectedAssets.value = {};
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
 
         AutoRouter.of(context).replace(AlbumViewerRoute(albumId: newAlbum.id));
@@ -213,7 +213,7 @@ class CreateAlbumPage extends HookConsumerWidget {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         leading: IconButton(
           onPressed: () {
-            ref.watch(assetSelectionProvider.notifier).removeAll();
+            selectedAssets.value = {};
             AutoRouter.of(context).pop();
           },
           icon: const Icon(Icons.close_rounded),

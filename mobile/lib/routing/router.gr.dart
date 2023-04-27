@@ -166,9 +166,13 @@ class _$AppRouter extends RootStackRouter {
       );
     },
     SelectUserForSharingRoute.name: (routeData) {
+      final args = routeData.argsAs<SelectUserForSharingRouteArgs>();
       return CustomPage<List<String>>(
         routeData: routeData,
-        child: const SelectUserForSharingPage(),
+        child: SelectUserForSharingPage(
+          key: args.key,
+          assets: args.assets,
+        ),
         transitionsBuilder: TransitionsBuilders.slideBottom,
         opaque: true,
         barrierDismissible: false,
@@ -885,14 +889,37 @@ class AssetSelectionRouteArgs {
 
 /// generated route for
 /// [SelectUserForSharingPage]
-class SelectUserForSharingRoute extends PageRouteInfo<void> {
-  const SelectUserForSharingRoute()
-      : super(
+class SelectUserForSharingRoute
+    extends PageRouteInfo<SelectUserForSharingRouteArgs> {
+  SelectUserForSharingRoute({
+    Key? key,
+    required Set<Asset> assets,
+  }) : super(
           SelectUserForSharingRoute.name,
           path: '/select-user-for-sharing-page',
+          args: SelectUserForSharingRouteArgs(
+            key: key,
+            assets: assets,
+          ),
         );
 
   static const String name = 'SelectUserForSharingRoute';
+}
+
+class SelectUserForSharingRouteArgs {
+  const SelectUserForSharingRouteArgs({
+    this.key,
+    required this.assets,
+  });
+
+  final Key? key;
+
+  final Set<Asset> assets;
+
+  @override
+  String toString() {
+    return 'SelectUserForSharingRouteArgs{key: $key, assets: $assets}';
+  }
 }
 
 /// generated route for

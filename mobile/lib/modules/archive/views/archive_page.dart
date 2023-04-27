@@ -72,7 +72,9 @@ class ArchivePage extends HookConsumerWidget {
                                 await ref
                                     .watch(assetProvider.notifier)
                                     .toggleArchive(
-                                        selection.value.toList(), false);
+                                      selection.value.toList(),
+                                      false,
+                                    );
 
                                 final assetOrAssets = selection.value.length > 1
                                     ? 'assets'

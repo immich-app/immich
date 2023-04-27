@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
-import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
@@ -55,7 +54,6 @@ class AssetSelectionPage extends HookConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
           onPressed: () {
-            ref.watch(assetSelectionProvider.notifier).removeAll();
             AutoRouter.of(context).popForced(null);
           },
         ),
