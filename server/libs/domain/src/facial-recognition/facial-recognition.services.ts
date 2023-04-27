@@ -1,14 +1,12 @@
-import { PersonEntity } from '@app/infra/entities';
-import { Inject, Logger, NotFoundException } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import { join } from 'path';
-import { AssetResponseDto, IAssetRepository, mapAsset, mapPerson, PersonResponseDto, WithoutProperty } from '../asset';
-import { ICryptoRepository } from '../crypto';
+import { IAssetRepository, WithoutProperty } from '../asset';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
 import { IAssetJob, IBaseJob, IFaceThumbnailJob, IJobRepository, JobName } from '../job';
 import { IMediaRepository } from '../media';
 import { ISearchRepository } from '../search';
 import { IMachineLearningRepository } from '../smart-info';
-import { ImmichReadStream, IStorageRepository, StorageCore, StorageFolder } from '../storage';
+import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { IFacialRecognitionRepository } from './facial-recognition.repository';
 
 export class FacialRecognitionService {
@@ -17,7 +15,6 @@ export class FacialRecognitionService {
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IFacialRecognitionRepository) private repository: IFacialRecognitionRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
@@ -112,42 +109,5 @@ export class FacialRecognitionService {
     } catch (error: any) {
       this.logger.error(`Failed to crop face for asset: ${asset.id}`, error.stack);
     }
-  }
-
-  async getPersonThumbnail(personId: string): Promise<ImmichReadStream> {
-    const person = await this.repository.getById(personId);
-    if (!person || !person.thumbnailPath) {
-      throw new NotFoundException();
-    }
-
-    return this.storageRepository.createReadStream(person.thumbnailPath, 'image/jpeg');
-  }
-
-  async getAllPeople(userId: string): Promise<PersonResponseDto[]> {
-    const people = await this.repository.getAll(userId);
-    return people.map(this.mapPerson);
-  }
-
-  async getPersonById(personId: string): Promise<PersonResponseDto> {
-    const person = await this.repository.getById(personId);
-    if (!person) {
-      throw new NotFoundException();
-    }
-
-    return this.mapPerson(person);
-  }
-
-  async getPersonAssets(personId: string): Promise<AssetResponseDto[]> {
-    const assets = await this.repository.getPersonAssets(personId);
-    return assets.map(mapAsset);
-  }
-
-  private mapPerson(person: PersonEntity): PersonResponseDto {
-    const personResponseDto = new PersonResponseDto();
-    personResponseDto.id = person.id;
-    personResponseDto.name = person.name;
-    personResponseDto.thumbnailPath = person.thumbnailPath;
-
-    return personResponseDto;
   }
 }
