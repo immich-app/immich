@@ -62,7 +62,7 @@ export class FacialRecognitionService {
 
         if (faceSearchResult.total) {
           this.logger.debug('Found face', faceSearchResult);
-          return;
+          continue;
         }
 
         this.logger.debug('No matches, creating a new person.');
