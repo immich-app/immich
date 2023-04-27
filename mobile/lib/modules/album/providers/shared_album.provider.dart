@@ -2,6 +2,9 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/user.dart';
@@ -86,10 +89,16 @@ final sharedAlbumProvider =
 });
 
 final sharedAlbumDetailProvider =
-    FutureProvider.autoDispose.family<Album?, int>((ref, albumId) async {
+    FutureProvider.autoDispose.family<Album, int>((ref, albumId) async {
   final AlbumService sharedAlbumService = ref.watch(albumServiceProvider);
+  final settings = ref.watch(appSettingsServiceProvider);
 
   final Album? a = await sharedAlbumService.getAlbumDetail(albumId);
-  await a?.loadSortedAssets();
+  if (a == null) {
+    throw Exception("Album with ID=$albumId does not exist anymore!");
+  }
+  await a.loadRenderList(
+    GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)],
+  );
   return a;
 });
