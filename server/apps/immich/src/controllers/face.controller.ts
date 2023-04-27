@@ -1,6 +1,7 @@
-import { FacialRecognitionService, ImmichReadStream } from '@app/domain';
+import { AuthUserDto, FacialRecognitionService, ImmichReadStream } from '@app/domain';
 import { Controller, Get, Header, Param, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { GetAuthUser } from '../decorators/auth-user.decorator';
 
 import { Authenticated } from '../decorators/authenticated.decorator';
 import { UseValidation } from '../decorators/use-validation.decorator';
@@ -23,5 +24,10 @@ export class FaceController {
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   async getFaceThumbnail(@Param() { id }: UUIDParamDto) {
     return this.service.getFaceThumbnail(id).then(asStreamableFile);
+  }
+
+  @Get()
+  async getFaces(@GetAuthUser() authUser: AuthUserDto) {
+    return this.service.getFaces(authUser.id);
   }
 }

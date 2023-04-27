@@ -121,4 +121,8 @@ export class FacialRecognitionService {
 
     return this.storageRepository.createReadStream(person.thumbnailPath, 'image/jpeg');
   }
+
+  async getFaces(userId: string) {
+    return this.repository.getFaces(userId);
+  }
 }

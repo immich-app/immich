@@ -110,7 +110,7 @@
 							curve
 							shadow
 							url={api.getFaceThumbnailUrl(person.id)}
-							altText={asset.originalFileName}
+							altText={person.name}
 							widthStyle="100px"
 							heightStyle="100px"
 						/>

@@ -7,4 +7,5 @@ export interface IFacialRecognitionRepository {
   createPerson(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   savePerson(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   getById(id: string): Promise<PersonEntity | null>;
+  getFaces(userId: string): Promise<PersonEntity[]>;
 }
