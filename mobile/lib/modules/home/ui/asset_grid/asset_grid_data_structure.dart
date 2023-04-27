@@ -248,6 +248,13 @@ class RenderList {
   static Future<RenderList> fromQuery(
     QueryBuilder<Asset, Asset, QAfterSortBy> query,
     GroupAssetsBy groupBy,
+  ) =>
+      _buildRenderList(null, query, groupBy);
+
+  static Future<RenderList> _buildRenderList(
+    List<Asset>? assets,
+    QueryBuilder<Asset, Asset, QAfterSortBy>? query,
+    GroupAssetsBy groupBy,
   ) async {
     final List<RenderAssetGridElement> elements = [];
 
@@ -278,7 +285,7 @@ class RenderList {
       if (newMonth &&
           last != null &&
           groupBy == GroupAssetsBy.auto &&
-          monthCount <= 10 &&
+          monthCount <= 30 &&
           elements.length > lastMonthIndex + 1) {
         // merge all days into a single section
         assert(elements[lastMonthIndex].date.month == last.month);
@@ -335,16 +342,19 @@ class RenderList {
       // this iterates all assets (only their createdAt property) in batches
       // memory usage is okay, however runtime is linear with number of assets
       // TODO replace with groupBy once Isar supports such queries
-      final dates = await query
-          .offset(offset)
-          .limit(pageSize)
-          .fileCreatedAtProperty()
-          .findAll();
-      for (int i = 0; i < dates.length; i++) {
+      final dates = assets != null
+          ? assets.map((a) => a.fileCreatedAt)
+          : await query!
+              .offset(offset)
+              .limit(pageSize)
+              .fileCreatedAtProperty()
+              .findAll();
+      int i = 0;
+      for (final date in dates) {
         final d = DateTime(
-          dates[i].year,
-          dates[i].month,
-          groupBy == GroupAssetsBy.month ? 1 : dates[i].day,
+          date.year,
+          date.month,
+          groupBy == GroupAssetsBy.month ? 1 : date.day,
         );
         current ??= d;
         if (current != d) {
@@ -355,16 +365,17 @@ class RenderList {
           count = 0;
         }
         count++;
+        i++;
       }
 
-      if (dates.length != pageSize) break;
+      if (assets != null || dates.length != pageSize) break;
       offset += pageSize;
     }
     if (count > 0 && current != null) {
       addElems(current);
     }
     assert(elements.every((e) => e.count <= sectionSize), "too large section");
-    return RenderList(elements, query, null);
+    return RenderList(elements, query, assets);
   }
 
   static RenderList empty() => RenderList([], null, []);
@@ -372,14 +383,6 @@ class RenderList {
   static Future<RenderList> fromAssets(
     List<Asset> assets,
     AssetGridLayoutParameters layout,
-  ) async {
-    // Compute only allows for one parameter. Therefore we pass all parameters in a map
-    return compute(
-      _processAssetGroupData,
-      _AssetGroupsToRenderListComputeParameters(
-        assets,
-        layout,
-      ),
-    );
-  }
+  ) =>
+      _buildRenderList(assets, null, layout.groupBy);
 }

@@ -31,7 +31,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   int innerRender = 0;
 
   Set<Asset> _getSelectedAssets() {
-    return _selectedAssets;
+    return Set.from(_selectedAssets);
   }
 
   void _callSelectionListener(bool selectionActive) {
@@ -75,7 +75,6 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     int index,
   ) {
     innerRender++;
-    debugPrint("InnerRender $innerRender");
     if (placeholder) {
       return const DecoratedBox(
         decoration: BoxDecoration(color: Colors.grey),
