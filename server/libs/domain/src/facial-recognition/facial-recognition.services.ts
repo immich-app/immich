@@ -58,7 +58,7 @@ export class FacialRecognitionService {
 
       for (const { embedding, boundingBox } of faces) {
         // typesense magic here
-        const faceSearchResult = await this.searchRepository.faceSearch(embedding);
+        const faceSearchResult = await this.searchRepository.searchFaces(embedding);
 
         if (faceSearchResult.total) {
           this.logger.debug('Found face');
@@ -75,6 +75,9 @@ export class FacialRecognitionService {
           data: { assetId: asset.id, personId: person.id, boundingBox },
         });
       }
+
+      // queue all faces for asset
+      await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACE, data: { ids: [asset.id] } });
     } catch (error: any) {
       this.logger.error(`Unable run facial recognition pipeline: ${asset.id}`, error?.stack);
     }

@@ -1,5 +1,6 @@
 import {
   AssetService,
+  IAssetFaceJob,
   IAssetJob,
   IAssetUploadedJob,
   IBaseJob,
@@ -135,7 +136,10 @@ export class SearchIndexProcessor {
     this.searchService.handleIndexAsset(job.data);
   }
 
-  // TODO - index single face
+  @Process(JobName.SEARCH_INDEX_FACE)
+  onIndexFace(job: Job<IAssetFaceJob>) {
+    this.searchService.handleIndexFace(job.data);
+  }
 
   @Process(JobName.SEARCH_REMOVE_ALBUM)
   onRemoveAlbum(job: Job<IBulkEntityJob>) {
@@ -147,7 +151,10 @@ export class SearchIndexProcessor {
     this.searchService.handleRemoveAsset(job.data);
   }
 
-  // TODO - remove face
+  @Process(JobName.SEARCH_REMOVE_FACE)
+  onRemoveFace(job: Job<IAssetFaceJob>) {
+    this.searchService.handleRemoveFace(job.data);
+  }
 }
 
 @Processor(QueueName.STORAGE_TEMPLATE_MIGRATION)

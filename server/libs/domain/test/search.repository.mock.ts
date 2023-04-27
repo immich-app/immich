@@ -14,6 +14,6 @@ export const newSearchRepositoryMock = (): jest.Mocked<ISearchRepository> => {
     searchAlbums: jest.fn(),
     vectorSearch: jest.fn(),
     explore: jest.fn(),
-    faceSearch: jest.fn(),
+    searchFaces: jest.fn(),
   };
 };

@@ -1,5 +1,6 @@
 import {
   ISearchRepository,
+  OwnedFaceEntity,
   SearchCollection,
   SearchCollectionIndexStatus,
   SearchExploreItem,
@@ -112,17 +113,13 @@ export class TypesenseRepository implements ISearchRepository {
     await this.import(SearchCollection.ASSETS, items, done);
   }
 
-  async importFaces(items: AssetEntity[], done: boolean): Promise<void> {
+  async importFaces(items: OwnedFaceEntity[], done: boolean): Promise<void> {
     await this.import(SearchCollection.FACES, items, done);
-  }
-
-  async deleteFaces(ids: string[]): Promise<void> {
-    throw new Error('Method not implemented.');
   }
 
   private async import(
     collection: SearchCollection,
-    items: AlbumEntity[] | AssetEntity[],
+    items: AlbumEntity[] | AssetEntity[] | OwnedFaceEntity[],
     done: boolean,
   ): Promise<void> {
     try {
@@ -208,6 +205,10 @@ export class TypesenseRepository implements ISearchRepository {
     await this.delete(SearchCollection.ASSETS, ids);
   }
 
+  async deleteFaces(ids: string[]): Promise<void> {
+    await this.delete(SearchCollection.FACES, ids);
+  }
+
   async delete(collection: SearchCollection, ids: string[]): Promise<void> {
     await this.client
       .collections(schemaMap[collection].name)
@@ -252,6 +253,21 @@ export class TypesenseRepository implements ISearchRepository {
     return this.asResponse(results, filters.debug);
   }
 
+  async searchFaces(input: number[]): Promise<SearchResult<AssetEntity>> {
+    const { results } = await this.client.multiSearch.perform({
+      searches: [
+        {
+          collection: faceSchema.name,
+          q: '*',
+          vector_query: `embedding:([${input.join(',')}], k:5)`,
+          per_page: 250,
+        } as any,
+      ],
+    });
+
+    return this.asResponse(results[0] as SearchResponse<AssetEntity>);
+  }
+
   async vectorSearch(input: number[], filters: SearchFilter): Promise<SearchResult<AssetEntity>> {
     const { results } = await this.client.multiSearch.perform({
       searches: [
@@ -267,23 +283,6 @@ export class TypesenseRepository implements ISearchRepository {
     });
 
     return this.asResponse(results[0] as SearchResponse<AssetEntity>, filters.debug);
-  }
-
-  async faceSearch(input: number[]): Promise<SearchResult<AssetEntity>> {
-    const alias = await this.client.aliases(SearchCollection.FACES).retrieve();
-
-    const { results } = await this.client.multiSearch.perform({
-      searches: [
-        {
-          collection: alias.collection_name,
-          q: '*',
-          vector_query: `faces:([${input.join(',')}], k:5)`,
-          per_page: 250,
-        } as any,
-      ],
-    });
-
-    return this.asResponse(results[0] as SearchResponse<AssetEntity>);
   }
 
   private asResponse<T extends DocumentSchema>(results: SearchResponse<T>, debug?: boolean): SearchResult<T> {
@@ -333,12 +332,17 @@ export class TypesenseRepository implements ISearchRepository {
     }
   }
 
-  private patch(collection: SearchCollection, items: AssetEntity[] | AlbumEntity[]) {
-    return items.map((item) =>
-      collection === SearchCollection.ASSETS
-        ? this.patchAsset(item as AssetEntity)
-        : this.patchAlbum(item as AlbumEntity),
-    );
+  private patch(collection: SearchCollection, items: AssetEntity[] | AlbumEntity[] | OwnedFaceEntity[]) {
+    return items.map((item) => {
+      switch (collection) {
+        case SearchCollection.ASSETS:
+          return this.patchAsset(item as AssetEntity);
+        case SearchCollection.ALBUMS:
+          return this.patchAlbum(item as AlbumEntity);
+        case SearchCollection.FACES:
+          return this.patchFace(item as OwnedFaceEntity);
+      }
+    });
   }
 
   private patchAlbum(album: AlbumEntity): AlbumEntity {
@@ -355,6 +359,10 @@ export class TypesenseRepository implements ISearchRepository {
     }
 
     return removeNil({ ...custom, motion: !!asset.livePhotoVideoId });
+  }
+
+  private patchFace(face: OwnedFaceEntity): OwnedFaceEntity {
+    return removeNil(face);
   }
 
   private getFacetFieldNames(collection: SearchCollection) {

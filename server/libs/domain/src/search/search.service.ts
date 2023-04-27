@@ -1,4 +1,4 @@
-import { AlbumEntity, AssetEntity } from '@app/infra/entities';
+import { AlbumEntity, AssetEntity, AssetFaceEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { mapAlbum } from '../album';
@@ -7,12 +7,14 @@ import { mapAsset } from '../asset';
 import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
-import { IBulkEntityJob, IJobRepository, JobName } from '../job';
+import { IAssetFaceJob, IBulkEntityJob, IJobRepository, JobName } from '../job';
+import { AssetFaceId, IPeopleRepository } from '../people';
 import { IMachineLearningRepository } from '../smart-info';
 import { SearchDto } from './dto';
 import { SearchConfigResponseDto, SearchResponseDto } from './response-dto';
 import {
   ISearchRepository,
+  OwnedFaceEntity,
   SearchCollection,
   SearchExploreItem,
   SearchResult,
@@ -50,6 +52,7 @@ export class SearchService {
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
+    @Inject(IPeopleRepository) private personRepository: IPeopleRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
     configService: ConfigService,
   ) {
@@ -175,13 +178,12 @@ export class SearchService {
 
     try {
       // TODO: do this in batches based on searchIndexVersion
-      const patchAssets = this.patchAssets(await this.assetRepository.getAll({ isVisible: true }));
-      const assets = patchAssets.filter((asset) => asset.faces.length > 0);
-      this.logger.log(`Indexing ${assets.length} faces`);
+      const faces = this.patchFaces(await this.personRepository.getAllFaces());
+      this.logger.log(`Indexing ${faces.length} faces`);
 
       const chunkSize = 1000;
-      for (let i = 0; i < assets.length; i += chunkSize) {
-        await this.searchRepository.importFaces(assets.slice(i, i + chunkSize), false);
+      for (let i = 0; i < faces.length; i += chunkSize) {
+        await this.searchRepository.importFaces(faces.slice(i, i + chunkSize), false);
       }
 
       await this.searchRepository.importFaces([], true);
@@ -212,6 +214,14 @@ export class SearchService {
     }
   }
 
+  handleIndexFace({ assetId, personId }: IAssetFaceJob) {
+    if (!this.enabled) {
+      return;
+    }
+
+    this.faceQueue.upsert.add(this.asKey({ assetId, personId }));
+  }
+
   handleRemoveAlbum({ ids }: IBulkEntityJob) {
     if (!this.enabled) {
       return;
@@ -232,14 +242,12 @@ export class SearchService {
     }
   }
 
-  handleRemoveFace({ ids }: IBulkEntityJob) {
+  handleRemoveFace({ assetId, personId }: IAssetFaceJob) {
     if (!this.enabled) {
       return;
     }
 
-    for (const id of ids) {
-      this.faceQueue.delete.add(id);
-    }
+    this.faceQueue.delete.add(this.asKey({ assetId, personId }));
   }
 
   private async flush() {
@@ -274,8 +282,8 @@ export class SearchService {
     }
 
     if (this.faceQueue.upsert.size > 0) {
-      const ids = [...this.faceQueue.upsert.keys()];
-      const items = await this.idsToAssets(ids); // TODO - change to faces
+      const ids = [...this.faceQueue.upsert.keys()].map((key) => this.asParts(key));
+      const items = await this.idsToFaces(ids);
       this.logger.debug(`Flushing ${items.length} face upserts`);
       await this.searchRepository.importFaces(items, false);
       this.faceQueue.upsert.clear();
@@ -305,7 +313,9 @@ export class SearchService {
     return this.patchAssets(entities.filter((entity) => entity.isVisible));
   }
 
-  // !TODO - ids to FACES
+  private async idsToFaces(ids: AssetFaceId[]): Promise<OwnedFaceEntity[]> {
+    return this.patchFaces(await this.personRepository.getFaceByIds(ids));
+  }
 
   private patchAssets(assets: AssetEntity[]): AssetEntity[] {
     return assets;
@@ -315,5 +325,22 @@ export class SearchService {
     return albums.map((entity) => ({ ...entity, assets: [] }));
   }
 
-  // !TODO - patch FACES
+  private patchFaces(faces: AssetFaceEntity[]): OwnedFaceEntity[] {
+    return faces.map((face) => ({
+      id: this.asKey(face),
+      ownerId: face.asset.ownerId,
+      assetId: face.assetId,
+      personId: face.personId,
+      embedding: face.embedding,
+    }));
+  }
+
+  private asKey(face: AssetFaceId): string {
+    return `${face.assetId}|${face.personId}`;
+  }
+
+  private asParts(key: string): AssetFaceId {
+    const [assetId, personId] = key.split('|');
+    return { assetId, personId };
+  }
 }
