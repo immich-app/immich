@@ -6,4 +6,5 @@ export interface IFacialRecognitionRepository {
   createAssetFace(entity: Partial<AssetFaceEntity>): Promise<AssetFaceEntity>;
   createPerson(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   savePerson(entity: Partial<PersonEntity>): Promise<PersonEntity>;
+  getById(id: string): Promise<PersonEntity | null>;
 }

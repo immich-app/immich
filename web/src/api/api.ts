@@ -87,6 +87,11 @@ export class ImmichApi {
 		const path = `/asset/thumbnail/${assetId}`;
 		return this.createUrl(path, { format, key });
 	}
+
+	public getFaceThumbnailUrl(personId: string) {
+		const path = `/face/thumbnail/${personId}`;
+		return this.createUrl(path);
+	}
 }
 
 export const api = new ImmichApi({ basePath: '/api' });

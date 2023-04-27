@@ -11,6 +11,9 @@ export class FacialRecognitionRepository implements IFacialRecognitionRepository
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
     @InjectRepository(AssetFaceEntity) private assetFacesRepository: Repository<AssetFaceEntity>,
   ) {}
+  getById(id: string): Promise<PersonEntity | null> {
+    return this.personRepository.findOne({ where: { id } });
+  }
 
   createAssetFace(entity: Partial<AssetFaceEntity>): Promise<AssetFaceEntity> {
     return this.assetFacesRepository.save(entity);

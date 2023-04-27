@@ -9,3 +9,4 @@ export * from './server-info.controller';
 export * from './share.controller';
 export * from './system-config.controller';
 export * from './user.controller';
+export * from './face.controller';

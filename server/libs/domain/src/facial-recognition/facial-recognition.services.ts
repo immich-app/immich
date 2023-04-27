@@ -1,4 +1,4 @@
-import { Inject, Logger } from '@nestjs/common';
+import { Inject, Logger, NotFoundException } from '@nestjs/common';
 import { join } from 'path';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { ICryptoRepository } from '../crypto';
@@ -7,7 +7,7 @@ import { IAssetJob, IBaseJob, IFaceThumbnailJob, IJobRepository, JobName } from 
 import { IMediaRepository } from '../media';
 import { ISearchRepository } from '../search';
 import { IMachineLearningRepository } from '../smart-info';
-import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
+import { ImmichReadStream, IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { IFacialRecognitionRepository } from './facial-recognition.repository';
 
 export class FacialRecognitionService {
@@ -94,10 +94,10 @@ export class FacialRecognitionService {
     const output = join(outputFolder, `${personId}.jpeg`);
     this.storageRepository.mkdirSync(outputFolder);
 
-    const left = x1;
-    const top = y1;
-    const width = x2 - x1;
-    const height = y2 - y1;
+    const left = x1 - 30 > 0 ? x1 - 30 : x1;
+    const top = y1 - 30 > 0 ? y1 - 30 : y1;
+    const width = x2 - x1 + 60;
+    const height = y2 - y1 + 60;
 
     // TODO: move to machine learning code
     // if (left < 1 || top < 1 || width < 1 || height < 1) {
@@ -111,5 +111,14 @@ export class FacialRecognitionService {
     } catch (error: any) {
       this.logger.error(`Failed to crop face for asset: ${asset.id}`, error.stack);
     }
+  }
+
+  async getFaceThumbnail(personId: string): Promise<ImmichReadStream> {
+    const person = await this.repository.getById(personId);
+    if (!person || !person.thumbnailPath) {
+      throw new NotFoundException();
+    }
+
+    return this.storageRepository.createReadStream(person.thumbnailPath, 'image/jpeg');
   }
 }
