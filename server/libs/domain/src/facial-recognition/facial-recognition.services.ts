@@ -58,10 +58,10 @@ export class FacialRecognitionService {
         // typesense magic here
         const faceSearchResult = await this.searchRepository.faceSearch(embedding);
 
-        // if (faceSearchResult.total) {
-        //   this.logger.debug('Found face', faceSearchResult);
-        //   return;
-        // }
+        if (faceSearchResult.total) {
+          this.logger.debug('Found face', faceSearchResult);
+          continue;
+        }
 
         this.logger.debug('No matches, creating a new person.');
 
