@@ -35,7 +35,7 @@ export class FacialRecognitionService {
     try {
       const assets = force
         ? await this.assetRepository.getAll()
-        : await this.assetRepository.getWithout(WithoutProperty.OBJECT_TAGS);
+        : await this.assetRepository.getWithout(WithoutProperty.FACES);
 
       for (const asset of assets) {
         await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: { asset } });
