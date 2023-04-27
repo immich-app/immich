@@ -117,6 +117,8 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**logoutAuthDevice**](doc//AuthenticationApi.md#logoutauthdevice) | **DELETE** /auth/devices/{id} | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
 *DeviceInfoApi* | [**upsertDeviceInfo**](doc//DeviceInfoApi.md#upsertdeviceinfo) | **PUT** /device-info | 
+*FaceApi* | [**getFaceThumbnail**](doc//FaceApi.md#getfacethumbnail) | **GET** /face/thumbnail/{id} | 
+*FaceApi* | [**getFaces**](doc//FaceApi.md#getfaces) | **GET** /face | 
 *JobApi* | [**getAllJobsStatus**](doc//JobApi.md#getalljobsstatus) | **GET** /jobs | 
 *JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{jobId} | 
 *OAuthApi* | [**callback**](doc//OAuthApi.md#callback) | **POST** /oauth/callback | 

@@ -1,4 +1,4 @@
-import { AuthUserDto, FacialRecognitionService, ImmichReadStream } from '@app/domain';
+import { AuthUserDto, FacialRecognitionService, ImmichReadStream, mapPerson, PersonResponseDto } from '@app/domain';
 import { Controller, Get, Header, Param, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
@@ -27,7 +27,7 @@ export class FaceController {
   }
 
   @Get()
-  async getFaces(@GetAuthUser() authUser: AuthUserDto) {
+  async getFaces(@GetAuthUser() authUser: AuthUserDto): Promise<PersonResponseDto[]> {
     return this.service.getFaces(authUser.id);
   }
 }

@@ -1,6 +1,6 @@
 import { Inject, Logger, NotFoundException } from '@nestjs/common';
 import { join } from 'path';
-import { IAssetRepository, WithoutProperty } from '../asset';
+import { IAssetRepository, mapPerson, PersonResponseDto, WithoutProperty } from '../asset';
 import { ICryptoRepository } from '../crypto';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
 import { IAssetJob, IBaseJob, IFaceThumbnailJob, IJobRepository, JobName } from '../job';
@@ -122,7 +122,15 @@ export class FacialRecognitionService {
     return this.storageRepository.createReadStream(person.thumbnailPath, 'image/jpeg');
   }
 
-  async getFaces(userId: string) {
-    return this.repository.getFaces(userId);
+  async getFaces(userId: string): Promise<PersonResponseDto[]> {
+    const faces = await this.repository.getFaces(userId);
+    return faces.map((face) => {
+      const response = new PersonResponseDto();
+      response.id = face.id;
+      response.name = face.name;
+      response.thumbnailPath = face.thumbnailPath;
+
+      return response;
+    });
   }
 }

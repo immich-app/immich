@@ -47,6 +47,7 @@ doc/DeviceTypeEnum.md
 doc/DownloadFilesDto.md
 doc/EditSharedLinkDto.md
 doc/ExifResponseDto.md
+doc/FaceApi.md
 doc/GetAssetByTimeBucketDto.md
 doc/GetAssetCountByTimeBucketDto.md
 doc/JobApi.md
@@ -114,6 +115,7 @@ lib/api/api_key_api.dart
 lib/api/asset_api.dart
 lib/api/authentication_api.dart
 lib/api/device_info_api.dart
+lib/api/face_api.dart
 lib/api/job_api.dart
 lib/api/o_auth_api.dart
 lib/api/search_api.dart
@@ -266,6 +268,7 @@ test/device_type_enum_test.dart
 test/download_files_dto_test.dart
 test/edit_shared_link_dto_test.dart
 test/exif_response_dto_test.dart
+test/face_api_test.dart
 test/get_asset_by_time_bucket_dto_test.dart
 test/get_asset_count_by_time_bucket_dto_test.dart
 test/job_api_test.dart

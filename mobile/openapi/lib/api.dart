@@ -33,6 +33,7 @@ part 'api/album_api.dart';
 part 'api/asset_api.dart';
 part 'api/authentication_api.dart';
 part 'api/device_info_api.dart';
+part 'api/face_api.dart';
 part 'api/job_api.dart';
 part 'api/o_auth_api.dart';
 part 'api/search_api.dart';
