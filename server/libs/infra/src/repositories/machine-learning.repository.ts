@@ -1,9 +1,4 @@
-import {
-  IMachineLearningRepository,
-  MachineLearningInput,
-  MACHINE_LEARNING_URL,
-  RecognizeFacesResult,
-} from '@app/domain';
+import { DetectFaceResult, IMachineLearningRepository, MachineLearningInput, MACHINE_LEARNING_URL } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 
@@ -13,6 +8,10 @@ const client = axios.create({ baseURL: MACHINE_LEARNING_URL });
 export class MachineLearningRepository implements IMachineLearningRepository {
   classifyImage(input: MachineLearningInput): Promise<string[]> {
     return client.post<string[]>('/image-classifier/tag-image', input).then((res) => res.data);
+  }
+
+  detectFaces(input: MachineLearningInput): Promise<DetectFaceResult[]> {
+    return client.post<DetectFaceResult[]>('/facial-recognition/detect-faces', input).then((res) => res.data);
   }
 
   detectObjects(input: MachineLearningInput): Promise<string[]> {
@@ -25,9 +24,5 @@ export class MachineLearningRepository implements IMachineLearningRepository {
 
   encodeText(input: string): Promise<number[]> {
     return client.post<number[]>('/sentence-transformer/encode-text', { text: input }).then((res) => res.data);
-  }
-
-  recognizeFaces(input: MachineLearningInput): Promise<RecognizeFacesResult[]> {
-    return client.post<RecognizeFacesResult[]>('/facial-recognition/recognize-persons', input).then((res) => res.data);
   }
 }

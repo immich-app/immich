@@ -1,5 +1,3 @@
-import { RecognizeFacesResult } from '../smart-info';
-
 export const IMediaRepository = 'IMediaRepository';
 
 export interface ResizeOptions {
@@ -31,11 +29,6 @@ export interface VideoInfo {
   format: VideoFormat;
   videoStreams: VideoStreamInfo[];
   audioStreams: AudioStreamInfo[];
-}
-
-export interface CropFaceResult {
-  faceId: string;
-  filePath: string;
 }
 
 export interface CropOptions {

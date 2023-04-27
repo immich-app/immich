@@ -5,6 +5,7 @@ import {
   IBaseJob,
   IBulkEntityJob,
   IDeleteFilesJob,
+  IFaceThumbnailJob,
   IUserDeletionJob,
   JobName,
   MediaService,
@@ -82,6 +83,11 @@ export class FacialRecognitionProcessor {
   @Process({ name: JobName.RECOGNIZE_FACES, concurrency: 1 })
   async onRecognizeFaces(job: Job<IAssetJob>) {
     await this.facialRecognitionService.handleRecognizeFaces(job.data);
+  }
+
+  @Process({ name: JobName.GENERATE_FACE_THUMBNAIL, concurrency: 1 })
+  async onGenerateFaceThumbnail(job: Job<IFaceThumbnailJob>) {
+    await this.facialRecognitionService.handleGenerateFaceThumbnail(job.data);
   }
 }
 

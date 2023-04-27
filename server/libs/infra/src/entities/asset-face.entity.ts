@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 import { AssetEntity } from './asset.entity';
 import { PersonEntity } from './person.entity';
 
@@ -21,5 +21,5 @@ export class AssetFaceEntity {
   asset!: AssetEntity;
 
   @ManyToOne(() => PersonEntity, (person) => person.faces, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  person!: AssetEntity;
+  person!: PersonEntity;
 }

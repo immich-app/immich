@@ -1,4 +1,4 @@
-import { CropOptions, IMediaRepository, RecognizeFacesResult, ResizeOptions, VideoInfo } from '@app/domain';
+import { CropOptions, IMediaRepository, ResizeOptions, VideoInfo } from '@app/domain';
 import { exiftool } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import sharp from 'sharp';

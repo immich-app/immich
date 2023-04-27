@@ -1,17 +1,14 @@
 import { AssetEntity, AssetType, TranscodePreset } from '@app/infra/entities';
-import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { randomUUID } from 'crypto';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { join } from 'path';
-import sharp from 'sharp';
 import { IAssetRepository, mapAsset, WithoutProperty } from '../asset';
 import { CommunicationEvent, ICommunicationRepository } from '../communication';
 import { ICryptoRepository } from '../crypto';
 import { IAssetJob, IBaseJob, IJobRepository, JobName } from '../job';
-import { RecognizeFacesResult } from '../smart-info';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { AudioStreamInfo, CropFaceResult, CropOptions, IMediaRepository, VideoStreamInfo } from './media.repository';
+import { AudioStreamInfo, IMediaRepository, VideoStreamInfo } from './media.repository';
 
 @Injectable()
 export class MediaService {
@@ -247,48 +244,5 @@ export class MediaService {
     }
 
     return options;
-  }
-
-  async cropFace(assetId: string, face: RecognizeFacesResult): Promise<CropFaceResult | undefined> {
-    const [asset] = await this.assetRepository.getByIds([assetId]);
-
-    if (!asset || !asset.resizePath) {
-      this.logger.warn(`Asset not found for facial cropping: ${assetId}`);
-      return;
-    }
-
-    const faceId = this.cryptoRepository.randomUUID();
-    const outputFolder = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
-    const output = join(outputFolder, `${faceId}.jpeg`);
-    this.storageRepository.mkdirSync(outputFolder);
-
-    const left = Math.round(face.boundingBox.x1);
-    const top = Math.round(face.boundingBox.y1);
-    const width = Math.round(face.boundingBox.x2 - face.boundingBox.x1);
-    const height = Math.round(face.boundingBox.y2 - face.boundingBox.y1);
-
-    if (left < 1 || top < 1 || width < 1 || height < 1) {
-      this.logger.error(`invalid bounding box ${JSON.stringify(face.boundingBox)}`);
-      return;
-    }
-
-    const cropOptions: CropOptions = {
-      left: left,
-      top: top,
-      width: width,
-      height: height,
-    };
-    try {
-      await this.mediaRepository.crop(asset.resizePath, output, cropOptions);
-
-      const result: CropFaceResult = {
-        faceId: faceId,
-        filePath: output,
-      };
-
-      return result;
-    } catch (error: any) {
-      this.logger.error(`Failed to crop face for asset: ${asset.id}`, error.stack);
-    }
   }
 }

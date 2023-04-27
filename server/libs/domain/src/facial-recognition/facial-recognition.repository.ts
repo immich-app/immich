@@ -1,8 +1,9 @@
-import { AssetEntity, AssetFaceEntity, PersonEntity } from '@app/infra/entities';
-import { CropFaceResult } from '../media';
+import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 
 export const IFacialRecognitionRepository = 'IFacialRecognitionRepository';
 
 export interface IFacialRecognitionRepository {
-  save(personEntity: Partial<PersonEntity>, assetFaceEntity: Partial<AssetFaceEntity>): Promise<void>;
+  createAssetFace(entity: Partial<AssetFaceEntity>): Promise<AssetFaceEntity>;
+  createPerson(entity: Partial<PersonEntity>): Promise<PersonEntity>;
+  savePerson(entity: Partial<PersonEntity>): Promise<PersonEntity>;
 }

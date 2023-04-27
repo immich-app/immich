@@ -52,6 +52,7 @@ export enum JobName {
   // facial recognition
   QUEUE_RECOGNIZE_FACES = 'queue-recognize-faces',
   RECOGNIZE_FACES = 'recognize-faces',
+  GENERATE_FACE_THUMBNAIL = 'generate-face-thumbnail',
 
   // cleanup
   DELETE_FILES = 'delete-files',
