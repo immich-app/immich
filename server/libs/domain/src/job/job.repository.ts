@@ -5,6 +5,7 @@ import {
   IBaseJob,
   IBulkEntityJob,
   IDeleteFilesJob,
+  IFaceThumbnailJob,
   IUserDeletionJob,
 } from './job.interface';
 
@@ -57,6 +58,7 @@ export type JobItem =
   // Recognize Faces
   | { name: JobName.QUEUE_RECOGNIZE_FACES; data: IBaseJob }
   | { name: JobName.RECOGNIZE_FACES; data: IAssetJob }
+  | { name: JobName.GENERATE_FACE_THUMBNAIL; data: IFaceThumbnailJob }
 
   // Clip Embedding
   | { name: JobName.QUEUE_ENCODE_CLIP; data: IBaseJob }

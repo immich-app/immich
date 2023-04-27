@@ -3723,6 +3723,25 @@
           "userId"
         ]
       },
+      "PersonResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "thumbnailPath": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "thumbnailPath"
+        ]
+      },
       "AssetResponseDto": {
         "type": "object",
         "properties": {
@@ -3795,6 +3814,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TagResponseDto"
+            }
+          },
+          "people": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PersonResponseDto"
             }
           }
         },
