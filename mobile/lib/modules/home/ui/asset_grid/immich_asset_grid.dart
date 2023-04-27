@@ -20,6 +20,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
   final Future<void> Function()? onRefresh;
   final Set<Asset>? preselectedAssets;
   final bool canDeselect;
+  final bool dynamicLayout;
 
   const ImmichAssetGrid({
     super.key,
@@ -33,6 +34,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
     this.selectionActive = false,
     this.preselectedAssets,
     this.canDeselect = true,
+    this.dynamicLayout = true,
   });
 
   @override
@@ -84,6 +86,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
             selectionActive: selectionActive,
             preselectedAssets: preselectedAssets,
             canDeselect: canDeselect,
+            dynamicLayout: dynamicLayout,
           ),
         ),
       );
@@ -108,6 +111,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
             selectionActive: selectionActive,
             preselectedAssets: preselectedAssets,
             canDeselect: canDeselect,
+            dynamicLayout: dynamicLayout,
           ),
         ),
       ),

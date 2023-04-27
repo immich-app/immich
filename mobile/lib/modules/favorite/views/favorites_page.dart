@@ -6,6 +6,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
@@ -15,6 +17,7 @@ class FavoritesPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(appSettingsServiceProvider);
     final selectionEnabledHook = useState(false);
     final selection = useState(<Asset>{});
     final processing = useState(false);
@@ -109,6 +112,12 @@ class FavoritesPage extends HookConsumerWidget {
                         renderList: data,
                         selectionActive: selectionEnabledHook.value,
                         listener: selectionListener,
+                        assetsPerRow:
+                            settings.getSetting(AppSettingsEnum.tilesPerRow),
+                        dynamicLayout:
+                            settings.getSetting(AppSettingsEnum.dynamicLayout),
+                        showStorageIndicator: settings
+                            .getSetting(AppSettingsEnum.storageIndicator),
                       ),
                       if (selectionEnabledHook.value) buildBottomBar()
                     ],

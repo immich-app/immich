@@ -38,6 +38,7 @@ class AssetSelectionPage extends HookConsumerWidget {
         assetsPerRow: settings.getSetting(AppSettingsEnum.tilesPerRow),
         showStorageIndicator:
             settings.getSetting(AppSettingsEnum.storageIndicator),
+        dynamicLayout: settings.getSetting(AppSettingsEnum.dynamicLayout),
         listener: (active, assets) {
           selectionEnabledHook.value = active;
           selected.value = assets;
