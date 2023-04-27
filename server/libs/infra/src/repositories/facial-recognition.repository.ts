@@ -1,51 +1,14 @@
 import { IFacialRecognitionRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
-import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
+import { Repository } from 'typeorm';
+import { AssetFaceEntity } from '../entities';
 
 @Injectable()
 export class FacialRecognitionRepository implements IFacialRecognitionRepository {
-  constructor(
-    @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
-    @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
-    @InjectRepository(AssetFaceEntity) private assetFacesRepository: Repository<AssetFaceEntity>,
-  ) {}
-  getPersonAssets(id: string): Promise<AssetEntity[]> {
-    return this.assetRepository.find({
-      where: { faces: { personId: id } },
-      relations: {
-        faces: {
-          person: true,
-        },
-        exifInfo: true,
-      },
-    });
-  }
-
-  getAll(userId: string): Promise<PersonEntity[]> {
-    return this.personRepository
-      .createQueryBuilder('person')
-      .leftJoin('person.faces', 'face')
-      .where('person.ownerId = :userId', { userId })
-      .orderBy('COUNT(face.assetId)', 'DESC')
-      .groupBy('person.id')
-      .getMany();
-  }
-
-  getById(id: string): Promise<PersonEntity | null> {
-    return this.personRepository.findOne({ where: { id } });
-  }
+  constructor(@InjectRepository(AssetFaceEntity) private assetFacesRepository: Repository<AssetFaceEntity>) {}
 
   createAssetFace(entity: Partial<AssetFaceEntity>): Promise<AssetFaceEntity> {
     return this.assetFacesRepository.save(entity);
-  }
-
-  createPerson(entity: Partial<PersonEntity>): Promise<PersonEntity> {
-    return this.personRepository.save(entity);
-  }
-
-  savePerson(entity: Partial<PersonEntity>): Promise<PersonEntity> {
-    return this.personRepository.save(entity);
   }
 }

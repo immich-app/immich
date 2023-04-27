@@ -125,9 +125,9 @@ Class | Method | HTTP request | Description
 *OAuthApi* | [**mobileRedirect**](doc//OAuthApi.md#mobileredirect) | **GET** /oauth/mobile-redirect | 
 *OAuthApi* | [**unlink**](doc//OAuthApi.md#unlink) | **POST** /oauth/unlink | 
 *PeopleApi* | [**getAllPeople**](doc//PeopleApi.md#getallpeople) | **GET** /people | 
+*PeopleApi* | [**getFaceThumbnail**](doc//PeopleApi.md#getfacethumbnail) | **GET** /people/{id}/thumbnail | 
 *PeopleApi* | [**getPerson**](doc//PeopleApi.md#getperson) | **GET** /people/{id} | 
 *PeopleApi* | [**getPersonAssets**](doc//PeopleApi.md#getpersonassets) | **GET** /people/{id}/assets | 
-*PeopleApi* | [**getPersonThumbnail**](doc//PeopleApi.md#getpersonthumbnail) | **GET** /people/{id}/thumbnail | 
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
 *SearchApi* | [**getSearchConfig**](doc//SearchApi.md#getsearchconfig) | **GET** /search/config | 
 *SearchApi* | [**search**](doc//SearchApi.md#search) | **GET** /search | 

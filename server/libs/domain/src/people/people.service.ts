@@ -13,7 +13,7 @@ export class PeopleService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {}
 
-  async getPersonThumbnail(userId: string, personId: string): Promise<ImmichReadStream> {
+  async getFaceThumbnail(userId: string, personId: string): Promise<ImmichReadStream> {
     const person = await this.repository.getById(userId, personId);
     if (!person || !person.thumbnailPath) {
       throw new NotFoundException();

@@ -1837,7 +1837,7 @@
     },
     "/people/{id}/thumbnail": {
       "get": {
-        "operationId": "getPersonThumbnail",
+        "operationId": "getFaceThumbnail",
         "parameters": [
           {
             "name": "id",

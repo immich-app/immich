@@ -16,3 +16,4 @@ export * from './typesense.repository';
 export * from './user-token.repository';
 export * from './user.repository';
 export * from './facial-recognition.repository';
+export * from './people.repository';
