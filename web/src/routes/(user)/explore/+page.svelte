@@ -2,12 +2,14 @@
 	import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import { AppRoute } from '$lib/constants';
-	import { AssetTypeEnum, SearchExploreItem } from '@api';
+	import { AssetTypeEnum, PersonResponseDto, SearchExploreItem, api } from '@api';
 	import ClockOutline from 'svelte-material-icons/ClockOutline.svelte';
 	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
 	import StarOutline from 'svelte-material-icons/StarOutline.svelte';
 	import type { PageData } from './$types';
+	import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
+	import { onMount } from 'svelte';
 
 	export let data: PageData;
 
@@ -21,6 +23,7 @@
 
 	let things: SearchExploreItem[] = [];
 	let places: SearchExploreItem[] = [];
+	let people: PersonResponseDto[] = [];
 
 	for (const item of data.items) {
 		switch (item.fieldName) {
@@ -36,10 +39,38 @@
 
 	things = things.slice(0, MAX_ITEMS);
 	places = places.slice(0, MAX_ITEMS);
+	onMount(() => {
+		people = data.people.slice(0, MAX_ITEMS);
+	});
 </script>
 
 <UserPageLayout user={data.user} title={data.meta.title}>
 	<div class="mx-4 flex flex-col">
+		{#if people.length > 0}
+			<div class="mb-6 mt-2">
+				<div>
+					<p class="mb-4 dark:text-immich-dark-fg font-medium">People</p>
+				</div>
+				<div class="flex flex-row flex-wrap gap-4">
+					{#each people as person (person.id)}
+						<div class="text-center">
+							<a href="/search">
+								<ImageThumbnail
+									circle
+									shadow
+									url={api.getPeopleThumbnailUrl(person.id)}
+									altText={person.name}
+									widthStyle="100px"
+									heightStyle="100px"
+								/>
+								<p class="font-medium mt-1 text-sm dark:text-white">{person.name}</p>
+							</a>
+						</div>
+					{/each}
+				</div>
+			</div>
+		{/if}
+
 		{#if places.length > 0}
 			<div class="mb-6 mt-2">
 				<div>

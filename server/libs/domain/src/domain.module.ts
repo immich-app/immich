@@ -16,6 +16,7 @@ import { StorageTemplateService } from './storage-template';
 import { INITIAL_SYSTEM_CONFIG, SystemConfigService } from './system-config';
 import { UserService } from './user';
 import { FacialRecognitionService } from './facial-recognition';
+import { PeopleService } from './people';
 
 const providers: Provider[] = [
   AlbumService,
@@ -35,6 +36,7 @@ const providers: Provider[] = [
   ShareService,
   SearchService,
   FacialRecognitionService,
+  PeopleService,
   {
     provide: INITIAL_SYSTEM_CONFIG,
     inject: [SystemConfigService],

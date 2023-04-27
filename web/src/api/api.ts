@@ -6,6 +6,7 @@ import {
 	Configuration,
 	ConfigurationParameters,
 	DeviceInfoApi,
+	PeopleApi,
 	JobApi,
 	OAuthApi,
 	SearchApi,
@@ -31,6 +32,7 @@ export class ImmichApi {
 	public keyApi: APIKeyApi;
 	public systemConfigApi: SystemConfigApi;
 	public shareApi: ShareApi;
+	public peopleApi: PeopleApi;
 
 	private config: Configuration;
 
@@ -49,6 +51,7 @@ export class ImmichApi {
 		this.searchApi = new SearchApi(this.config);
 		this.systemConfigApi = new SystemConfigApi(this.config);
 		this.shareApi = new ShareApi(this.config);
+		this.peopleApi = new PeopleApi(this.config);
 	}
 
 	private createUrl(path: string, params?: Record<string, unknown>) {
@@ -86,6 +89,12 @@ export class ImmichApi {
 	public getAssetThumbnailUrl(assetId: string, format?: ThumbnailFormat, key?: string) {
 		const path = `/asset/thumbnail/${assetId}`;
 		return this.createUrl(path, { format, key });
+	}
+
+	public getPeopleThumbnailUrl(personId: string) {
+		const path = `/people/${personId}/thumbnail`;
+		console.log('get api', this.createUrl(path));
+		return this.createUrl(path);
 	}
 }
 
