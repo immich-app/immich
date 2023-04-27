@@ -107,7 +107,7 @@ export class FacialRecognitionService {
 
     try {
       await this.mediaRepository.crop(asset.resizePath, output, { left, top, width, height });
-      await this.repository.savePerson({ thumbnailPath: output });
+      await this.repository.savePerson({ id: personId, thumbnailPath: output });
     } catch (error: any) {
       this.logger.error(`Failed to crop face for asset: ${asset.id}`, error.stack);
     }

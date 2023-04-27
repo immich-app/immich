@@ -92,7 +92,7 @@ def facial_recognition(payload: MlRequestBody):
             continue
         x1, y1, x2, y2 = face.bbox.tolist()
         results.append({
-            "boundingBox": {"x1": x1, "y1": y1, "x2": x2, "y2": y2},
+            "boundingBox": {"x1": round(x1), "y1": round(y1), "x2": round(x2), "y2": round(y2)},
             "score": face.det_score.item(),
             "embedding": face.normed_embedding.tolist()
         })
