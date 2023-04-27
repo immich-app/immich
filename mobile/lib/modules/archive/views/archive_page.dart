@@ -8,6 +8,7 @@ import 'package:immich_mobile/modules/archive/providers/archive_asset_provider.d
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 class ArchivePage extends HookConsumerWidget {
@@ -18,6 +19,7 @@ class ArchivePage extends HookConsumerWidget {
     final archivedAssets = ref.watch(archiveProvider);
     final selectionEnabledHook = useState(false);
     final selection = useState(<Asset>{});
+    final processing = useState(false);
 
     void selectionListener(
       bool multiselect,
@@ -61,24 +63,32 @@ class ArchivePage extends HookConsumerWidget {
                       'control_bottom_app_bar_unarchive'.tr(),
                       style: const TextStyle(fontSize: 14),
                     ),
-                    onTap: () {
-                      if (selection.value.isNotEmpty) {
-                        ref
-                            .watch(assetProvider.notifier)
-                            .toggleArchive(selection.value.toList(), false);
+                    onTap: processing.value
+                        ? null
+                        : () async {
+                            processing.value = true;
+                            try {
+                              if (selection.value.isNotEmpty) {
+                                await ref
+                                    .watch(assetProvider.notifier)
+                                    .toggleArchive(
+                                        selection.value.toList(), false);
 
-                        final assetOrAssets =
-                            selection.value.length > 1 ? 'assets' : 'asset';
-                        ImmichToast.show(
-                          context: context,
-                          msg:
-                              'Moved ${selection.value.length} $assetOrAssets to library',
-                          gravity: ToastGravity.CENTER,
-                        );
-                      }
-
-                      selectionEnabledHook.value = false;
-                    },
+                                final assetOrAssets = selection.value.length > 1
+                                    ? 'assets'
+                                    : 'asset';
+                                ImmichToast.show(
+                                  context: context,
+                                  msg:
+                                      'Moved ${selection.value.length} $assetOrAssets to library',
+                                  gravity: ToastGravity.CENTER,
+                                );
+                              }
+                            } finally {
+                              processing.value = false;
+                              selectionEnabledHook.value = false;
+                            }
+                          },
                   )
                 ],
               ),
@@ -110,7 +120,9 @@ class ArchivePage extends HookConsumerWidget {
                     listener: selectionListener,
                     selectionActive: selectionEnabledHook.value,
                   ),
-                  if (selectionEnabledHook.value) buildBottomBar()
+                  if (selectionEnabledHook.value) buildBottomBar(),
+                  if (processing.value)
+                    const Center(child: ImmichLoadingIndicator())
                 ],
               ),
       ),
