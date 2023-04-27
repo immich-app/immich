@@ -94,6 +94,7 @@ part 'model/logout_response_dto.dart';
 part 'model/o_auth_callback_dto.dart';
 part 'model/o_auth_config_dto.dart';
 part 'model/o_auth_config_response_dto.dart';
+part 'model/person_response_dto.dart';
 part 'model/queue_status_dto.dart';
 part 'model/remove_assets_dto.dart';
 part 'model/search_album_response_dto.dart';
