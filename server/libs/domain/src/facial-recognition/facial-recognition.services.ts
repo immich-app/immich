@@ -1,20 +1,14 @@
-import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 import { Inject, Logger } from '@nestjs/common';
 import { join } from 'path';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { ICryptoRepository } from '../crypto';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
-import { IAssetJob, IBaseJob, IJobRepository, JobName } from '../job';
-import { CropOptions, IMediaRepository } from '../media';
+import { IAssetJob, IBaseJob, IFaceThumbnailJob, IJobRepository, JobName } from '../job';
+import { IMediaRepository } from '../media';
 import { ISearchRepository } from '../search';
-import { DetectFaceResult, IMachineLearningRepository } from '../smart-info';
+import { IMachineLearningRepository } from '../smart-info';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { IFacialRecognitionRepository } from './facial-recognition.repository';
-
-export interface CropFaceResult {
-  faceId: string;
-  filePath: string;
-}
 
 export class FacialRecognitionService {
   private logger = new Logger(FacialRecognitionService.name);
@@ -35,7 +29,7 @@ export class FacialRecognitionService {
     try {
       const assets = force
         ? await this.assetRepository.getAll()
-        : await this.assetRepository.getWithout(WithoutProperty.OBJECT_TAGS);
+        : await this.assetRepository.getWithout(WithoutProperty.FACES);
 
       for (const asset of assets) {
         await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: { asset } });
@@ -55,36 +49,30 @@ export class FacialRecognitionService {
     try {
       const faces = await this.machineLearning.detectFaces({ thumbnailPath: asset.resizePath });
 
-      this.logger.verbose(`${faces.length} faces detected in ${asset.resizePath}`);
+      this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);
+      this.logger.verbose(faces.map((face) => ({ ...face, embedding: `float[${face.embedding.length}]` })));
 
       if (faces.length > 0) {
+        // TODO: delete all faces?
+      }
+
+      for (const { embedding, boundingBox } of faces) {
         // typesense magic here
-        faces.forEach(async (face) => {
-          const faceSearchResult = await this.searchRepository.faceSearch(face.embedding);
+        const faceSearchResult = await this.searchRepository.faceSearch(embedding);
 
-          if (faceSearchResult.total) {
-            this.logger.debug('Found face', faceSearchResult);
-          } else {
-            this.logger.debug('No person with associated face found, creating new person');
-            const cropFaceResult = await this.cropFace(asset.id, face);
+        if (faceSearchResult.total) {
+          this.logger.debug('Found face', faceSearchResult);
+          return;
+        }
 
-            if (!cropFaceResult) return;
+        this.logger.debug('No matches, creating a new person.');
 
-            const person = new PersonEntity();
-            person.id = cropFaceResult.faceId;
-            person.owner = asset.owner;
-            person.ownerId = asset.ownerId;
-            person.thumbnailPath = cropFaceResult.filePath;
-            person.name = 'Unknown';
+        const person = await this.repository.createPerson({ ownerId: asset.ownerId });
+        await this.repository.createAssetFace({ embedding, assetId: asset.id, personId: person.id });
 
-            const assetFace = new AssetFaceEntity();
-            assetFace.embedding = face.embedding;
-            assetFace.asset = asset;
-            assetFace.assetId = asset.id;
-            assetFace.personId = cropFaceResult.faceId;
-
-            await this.repository.save(person, assetFace);
-          }
+        await this.jobRepository.queue({
+          name: JobName.GENERATE_FACE_THUMBNAIL,
+          data: { assetId: asset.id, personId: person.id, boundingBox },
         });
       }
     } catch (error: any) {
@@ -92,47 +80,36 @@ export class FacialRecognitionService {
     }
   }
 
-  async cropFace(assetId: string, face: DetectFaceResult): Promise<CropFaceResult | null> {
-    const [asset] = await this.assetRepository.getByIds([assetId]);
+  async handleGenerateFaceThumbnail(data: IFaceThumbnailJob) {
+    const { assetId, personId, boundingBox } = data;
+    const { x1, y1, x2, y2 } = boundingBox;
 
+    const [asset] = await this.assetRepository.getByIds([assetId]);
     if (!asset || !asset.resizePath) {
       this.logger.warn(`Asset not found for facial cropping: ${assetId}`);
       return null;
     }
 
-    const faceId = this.cryptoRepository.randomUUID();
     const outputFolder = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
-    const output = join(outputFolder, `${faceId}.jpeg`);
+    const output = join(outputFolder, `${personId}.jpeg`);
     this.storageRepository.mkdirSync(outputFolder);
 
-    const left = Math.round(face.boundingBox.x1);
-    const top = Math.round(face.boundingBox.y1);
-    const width = Math.round(face.boundingBox.x2 - face.boundingBox.x1);
-    const height = Math.round(face.boundingBox.y2 - face.boundingBox.y1);
+    const left = x1;
+    const top = y1;
+    const width = x2 - x1;
+    const height = y2 - y1;
 
-    if (left < 1 || top < 1 || width < 1 || height < 1) {
-      this.logger.error(`invalid bounding box ${JSON.stringify(face.boundingBox)}`);
-      return null;
-    }
+    // TODO: move to machine learning code
+    // if (left < 1 || top < 1 || width < 1 || height < 1) {
+    //   this.logger.error(`invalid bounding box ${JSON.stringify(face.boundingBox)}`);
+    //   return null;
+    // }
 
-    const cropOptions: CropOptions = {
-      left: left,
-      top: top,
-      width: width,
-      height: height,
-    };
     try {
-      await this.mediaRepository.crop(asset.resizePath, output, cropOptions);
-
-      const result: CropFaceResult = {
-        faceId: faceId,
-        filePath: output,
-      };
-
-      return result;
+      await this.mediaRepository.crop(asset.resizePath, output, { left, top, width, height });
+      await this.repository.savePerson({ id: personId, thumbnailPath: output });
     } catch (error: any) {
       this.logger.error(`Failed to crop face for asset: ${asset.id}`, error.stack);
-      return null;
     }
   }
 }

@@ -1,10 +1,13 @@
+import os
+import numpy as np
+import cv2 as cv
+import uvicorn
+
+from insightface.app import FaceAnalysis
 from transformers import pipeline
 from sentence_transformers import SentenceTransformer, util
 from PIL import Image
-from face_processor import FaceProcessor
 from fastapi import FastAPI
-import uvicorn
-import os
 from pydantic import BaseModel
 
 
@@ -16,16 +19,9 @@ class ClipRequestBody(BaseModel):
     text: str
 
 
-is_dev = os.getenv('NODE_ENV') == 'development'
-server_port = os.getenv('MACHINE_LEARNING_PORT', 3003)
-server_host = os.getenv('MACHINE_LEARNING_HOST', '0.0.0.0')
+CACHE_FOLDER = '/cache'
 
-app = FastAPI()
 
-"""
-Model Initialization
-"""
-face_processor = FaceProcessor()
 classification_model = os.getenv(
     'MACHINE_LEARNING_CLASSIFICATION_MODEL', 'microsoft/resnet-50')
 object_model = os.getenv('MACHINE_LEARNING_OBJECT_MODEL', 'hustvl/yolos-tiny')
@@ -33,8 +29,12 @@ clip_image_model = os.getenv(
     'MACHINE_LEARNING_CLIP_IMAGE_MODEL', 'clip-ViT-B-32')
 clip_text_model = os.getenv(
     'MACHINE_LEARNING_CLIP_TEXT_MODEL', 'clip-ViT-B-32')
+facial_recognition_model = os.getenv(
+    'MACHINE_LEARNING_FACIAL_RECOGNITION_MODEL', 'buffalo_l')
 
 _model_cache = {}
+
+app = FastAPI()
 
 
 @app.get("/")
@@ -77,8 +77,26 @@ def clip_encode_text(payload: ClipRequestBody):
 
 @app.post("/facial-recognition/detect-faces", status_code=200)
 def facial_recognition(payload: MlRequestBody):
+    model = _get_model(facial_recognition_model, 'facial-recognition')
     assetPath = payload.thumbnailPath
-    return face_processor.process_image(assetPath)
+    img = cv.imread(assetPath)
+    height, width, _ = img.shape
+    results = []
+    faces = model.get(img)
+    for face in faces:
+        if face.det_score < 0.7:
+            continue
+        x1, y1, x2, y2 = face.bbox
+        # min face size as percent of original image
+        if (x2 - x1) / width < 0.03 or (y2 - y1) / height < 0.05:
+            continue
+        x1, y1, x2, y2 = face.bbox.tolist()
+        results.append({
+            "boundingBox": {"x1": round(x1), "y1": round(y1), "x2": round(x2), "y2": round(y2)},
+            "score": face.det_score.item(),
+            "embedding": face.normed_embedding.tolist()
+        })
+    return results
 
 
 def run_engine(engine, path):
@@ -101,12 +119,22 @@ def _get_model(model, task=None):
     key = '|'.join([model, str(task)])
     if key not in _model_cache:
         if task:
-            _model_cache[key] = pipeline(model=model, task=task)
+            if task == 'facial-recognition':
+                face_model = FaceAnalysis(
+                    name=model, root=CACHE_FOLDER, allowed_modules=["detection", "recognition"])
+                face_model.prepare(ctx_id=0, det_size=(640, 640))
+                _model_cache[key] = face_model
+            else:
+                _model_cache[key] = pipeline(model=model, task=task)
         else:
-            _model_cache[key] = SentenceTransformer(model)
+            _model_cache[key] = SentenceTransformer(
+                model, cache_folder=CACHE_FOLDER)
     return _model_cache[key]
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host=server_host,
-                port=int(server_port), reload=is_dev, workers=1)
+    host = os.getenv('MACHINE_LEARNING_HOST', '0.0.0.0')
+    port = int(os.getenv('MACHINE_LEARNING_PORT', 3003))
+    is_dev = os.getenv('NODE_ENV') == 'development'
+
+    uvicorn.run("main:app", host=host, port=port, reload=is_dev, workers=1)

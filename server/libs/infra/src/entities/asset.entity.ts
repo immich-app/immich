@@ -14,12 +14,12 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { AlbumEntity } from './album.entity';
+import { AssetFaceEntity } from './asset-face.entity';
 import { ExifEntity } from './exif.entity';
 import { SharedLinkEntity } from './shared-link.entity';
 import { SmartInfoEntity } from './smart-info.entity';
 import { TagEntity } from './tag.entity';
 import { UserEntity } from './user.entity';
-import { AssetFaceEntity } from './asset-face.entity';
 
 @Entity('assets')
 @Unique('UQ_userid_checksum', ['owner', 'checksum'])
