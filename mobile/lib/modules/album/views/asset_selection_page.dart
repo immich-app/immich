@@ -24,18 +24,16 @@ class AssetSelectionPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // ScrollController scrollController = useScrollController();
-    // var assetGroupMonthYear = ref.watch(assetGroupByMonthYearProvider);
     final renderList = ref.watch(remoteAssetsProvider);
     final settings = ref.watch(appSettingsServiceProvider);
     final selected = useState<Set<Asset>>(existingAssets);
     final selectionEnabledHook = useState(true);
 
     String buildAssetCountText() {
-      return (selected.value.length + existingAssets.length).toString();
+      return selected.value.length.toString();
     }
 
-    Widget buildBody2(RenderList renderList) {
+    Widget buildBody(RenderList renderList) {
       return ImmichAssetGrid(
         renderList: renderList,
         assetsPerRow: settings.getSetting(AppSettingsEnum.tilesPerRow),
@@ -88,7 +86,7 @@ class AssetSelectionPage extends HookConsumerWidget {
         ],
       ),
       body: renderList.when(
-        data: (data) => buildBody2(data),
+        data: (data) => buildBody(data),
         error: (error, stackTrace) => Center(
           child: Text(error.toString()),
         ),
