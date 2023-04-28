@@ -77,7 +77,7 @@ export type JobItem =
   | { name: JobName.SEARCH_INDEX_ALBUM; data: IBulkEntityJob }
   | { name: JobName.SEARCH_REMOVE_ASSET; data: IBulkEntityJob }
   | { name: JobName.SEARCH_REMOVE_ALBUM; data: IBulkEntityJob }
-  | { name: JobName.SEARCH_REMOVE_FACE; data: IBulkEntityJob };
+  | { name: JobName.SEARCH_REMOVE_FACE; data: IAssetFaceJob };
 
 export const IJobRepository = 'IJobRepository';
 
