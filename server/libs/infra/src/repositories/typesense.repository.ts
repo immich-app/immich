@@ -306,6 +306,7 @@ export class TypesenseRepository implements ISearchRepository {
       total: results.found,
       count: results.out_of,
       items: (results.hits || []).map((hit) => hit.document),
+      distances: (results.hits || []).map((hit: any) => hit.vector_distance),
       facets: (results.facet_counts || []).map((facet) => ({
         counts: facet.counts.map((item) => ({ count: item.count, value: item.value })),
         fieldName: facet.field_name as string,

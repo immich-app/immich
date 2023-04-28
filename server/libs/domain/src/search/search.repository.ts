@@ -38,6 +38,8 @@ export interface SearchResult<T> {
   page: number;
   /** items for page */
   items: T[];
+  /** score */
+  distances: number[];
   facets: SearchFacet[];
 }
 
