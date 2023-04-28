@@ -57,7 +57,7 @@ export class FacialRecognitionService {
       }
 
       for (const { embedding, ...rest } of faces) {
-        const faceSearchResult = await this.searchRepository.searchFaces(embedding);
+        const faceSearchResult = await this.searchRepository.searchFaces(embedding, { ownerId: asset.ownerId });
 
         let personId: string | null = null;
 
