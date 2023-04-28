@@ -19,6 +19,8 @@ export interface IAssetFaceJob extends IBaseJob {
 }
 
 export interface IFaceThumbnailJob extends IAssetFaceJob {
+  imageWidth: number;
+  imageHeight: number;
   boundingBox: BoundingBox;
   assetId: string;
   personId: string;

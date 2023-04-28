@@ -12,6 +12,8 @@ export interface BoundingBox {
 }
 
 export interface DetectFaceResult {
+  imageWidth: number;
+  imageHeight: number;
   boundingBox: BoundingBox;
   score: number;
   embedding: number[];

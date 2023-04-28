@@ -56,7 +56,7 @@ export class FacialRecognitionService {
         // TODO: delete all faces?
       }
 
-      for (const { embedding, boundingBox } of faces) {
+      for (const { embedding, ...rest } of faces) {
         // typesense magic here
         const faceSearchResult = await this.searchRepository.searchFaces(embedding);
 
@@ -71,7 +71,7 @@ export class FacialRecognitionService {
         const faceId: AssetFaceId = { assetId: asset.id, personId: person.id };
         await this.repository.createAssetFace({ ...faceId, embedding });
         await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACE, data: faceId });
-        await this.jobRepository.queue({ name: JobName.GENERATE_FACE_THUMBNAIL, data: { ...faceId, boundingBox } });
+        await this.jobRepository.queue({ name: JobName.GENERATE_FACE_THUMBNAIL, data: { ...faceId, ...rest } });
       }
 
       // queue all faces for asset
@@ -81,35 +81,50 @@ export class FacialRecognitionService {
   }
 
   async handleGenerateFaceThumbnail(data: IFaceThumbnailJob) {
-    const { assetId, personId, boundingBox } = data;
-    const { x1, y1, x2, y2 } = boundingBox;
-
-    const [asset] = await this.assetRepository.getByIds([assetId]);
-    if (!asset || !asset.resizePath) {
-      this.logger.warn(`Asset not found for facial cropping: ${assetId}`);
-      return null;
-    }
-
-    const outputFolder = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
-    const output = join(outputFolder, `${personId}.jpeg`);
-    this.storageRepository.mkdirSync(outputFolder);
-
-    const left = x1 - 30 > 0 ? x1 - 30 : x1;
-    const top = y1 - 30 > 0 ? y1 - 30 : y1;
-    const width = x2 - x1 + 60;
-    const height = y2 - y1 + 60;
-
-    // TODO: move to machine learning code
-    // if (left < 1 || top < 1 || width < 1 || height < 1) {
-    //   this.logger.error(`invalid bounding box ${JSON.stringify(face.boundingBox)}`);
-    //   return null;
-    // }
+    const { assetId, personId, boundingBox, imageWidth, imageHeight } = data;
 
     try {
-      await this.mediaRepository.crop(asset.resizePath, output, { left, top, width, height });
+      const [asset] = await this.assetRepository.getByIds([assetId]);
+      if (!asset || !asset.resizePath) {
+        this.logger.warn(`Asset not found for facial cropping: ${assetId}`);
+        return null;
+      }
+
+      this.logger.debug(`Cropping face for person: ${personId}`);
+
+      const outputFolder = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
+      const output = join(outputFolder, `${personId}.jpeg`);
+      this.storageRepository.mkdirSync(outputFolder);
+
+      const { x1, y1, x2, y2 } = boundingBox;
+      const imageHalfWidth = (x2 - x1) / 2;
+      const imageHalfHeight = (y2 - y1) / 2;
+      const middleX = x1 + imageHalfWidth;
+      const middleY = y1 + imageHalfHeight;
+      const zoomOutPixels = Math.max(imageHalfWidth, imageHalfHeight) * 1.1;
+
+      // get the longest distance from the center of the image without overflowing
+      const unit = Math.max(
+        middleX - Math.max(0, middleX - zoomOutPixels),
+        middleY - Math.max(0, middleY - zoomOutPixels),
+        Math.min(imageWidth, middleX + zoomOutPixels) - middleX,
+        Math.min(imageHeight, middleY + zoomOutPixels) - middleY,
+      );
+
+      const left = Math.round(middleX - unit);
+      const top = Math.round(middleY - unit);
+      const size = Math.round(unit * 2);
+
+      // TODO: move to machine learning code
+      // if (left < 1 || top < 1 || width < 1 || height < 1) {
+      //   this.logger.error(`invalid bounding box ${JSON.stringify(face.boundingBox)}`);
+      //   return null;
+      // }
+
+      await this.mediaRepository.crop(asset.resizePath, output, { left, top, width: size, height: size });
       await this.personService.save({ id: personId, thumbnailPath: output });
     } catch (error: any) {
-      this.logger.error(`Failed to crop face for asset: ${asset.id}`, error.stack);
+      this.logger.error(`Failed to crop face for asset: ${assetId}, person: ${personId}`, error.stack);
     }
   }
 }
