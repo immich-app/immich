@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -9,47 +8,27 @@ import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:isar/isar.dart';
 
 class AlbumNotifier extends StateNotifier<List<Album>> {
-  AlbumNotifier(this._albumService, this._db) : super([]);
+  AlbumNotifier(this._albumService, Isar db) : super([]) {
+    final query = db.albums
+        .filter()
+        .owner((q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).isarId));
+    query.findAll().then((value) => state = value);
+    query.watch().listen((data) => state = data);
+  }
   final AlbumService _albumService;
-  final Isar _db;
 
-  Future<void> getAllAlbums() async {
-    final User me = Store.get(StoreKey.currentUser);
-    List<Album> albums = await _db.albums
-        .filter()
-        .owner((q) => q.isarIdEqualTo(me.isarId))
-        .findAll();
-    if (!const ListEquality().equals(albums, state)) {
-      state = albums;
-    }
-    await Future.wait([
-      _albumService.refreshDeviceAlbums(),
-      _albumService.refreshRemoteAlbums(isShared: false),
-    ]);
-    albums = await _db.albums
-        .filter()
-        .owner((q) => q.isarIdEqualTo(me.isarId))
-        .findAll();
-    if (!const ListEquality().equals(albums, state)) {
-      state = albums;
-    }
-  }
+  Future<void> getAllAlbums() => Future.wait([
+        _albumService.refreshDeviceAlbums(),
+        _albumService.refreshRemoteAlbums(isShared: false),
+      ]);
 
-  Future<bool> deleteAlbum(Album album) async {
-    state = state.where((a) => a.id != album.id).toList();
-    return _albumService.deleteAlbum(album);
-  }
+  Future<bool> deleteAlbum(Album album) => _albumService.deleteAlbum(album);
 
   Future<Album?> createAlbum(
     String albumTitle,
     Set<Asset> assets,
-  ) async {
-    Album? album = await _albumService.createAlbum(albumTitle, assets, []);
-    if (album != null) {
-      state = [...state, album];
-    }
-    return album;
-  }
+  ) =>
+      _albumService.createAlbum(albumTitle, assets, []);
 }
 
 final albumProvider = StateNotifierProvider<AlbumNotifier, List<Album>>((ref) {
