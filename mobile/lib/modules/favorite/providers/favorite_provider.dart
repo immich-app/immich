@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
@@ -16,17 +18,24 @@ class FavoriteSelectionNotifier extends StateNotifier<Set<int>> {
         .isFavoriteEqualTo(true)
         .idProperty();
     query.findAll().then((value) => state = value.toSet());
-    query.watch().listen((event) {
+    _streamSub = query.watch().listen((event) {
       state = event.toSet();
     });
   }
 
+  @override
+  void dispose() {
+    _streamSub.cancel();
+    super.dispose();
+  }
+
   final AssetNotifier assetNotifier;
+  late final StreamSubscription<List<int>> _streamSub;
 
   Future<void> toggleFavorite(Asset asset) async {
     // TODO support local favorite assets
     if (asset.storage == AssetState.local) return;
-    await assetNotifier.toggleFavorite([asset], state.contains(asset.id));
+    await assetNotifier.toggleFavorite([asset], !state.contains(asset.id));
   }
 
   Future<void> addToFavorites(List<Asset> assets) {
