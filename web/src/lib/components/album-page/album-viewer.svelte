@@ -43,6 +43,7 @@
 	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
 	import ImmichLogo from '../shared-components/immich-logo.svelte';
 	import Button from '../elements/buttons/button.svelte';
+	import { clickOutside } from '$lib/utils/click-outside';
 
 	export let album: AlbumResponseDto;
 	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
@@ -457,11 +458,26 @@
 					{/if}
 
 					{#if !isPublicShared}
-						<CircleIconButton
-							title="Album options"
-							on:click={showAlbumOptionsMenu}
-							logo={DotsVertical}
-						/>
+						<div use:clickOutside on:outclick={() => (isShowAlbumOptions = false)}>
+							<CircleIconButton
+								title="Album options"
+								on:click={showAlbumOptionsMenu}
+								logo={DotsVertical}
+								>{#if isShowAlbumOptions}
+									<ContextMenu {...contextMenuPosition}>
+										{#if isOwned}
+											<MenuOption
+												on:click={() => {
+													isShowThumbnailSelection = true;
+													isShowAlbumOptions = false;
+												}}
+												text="Set album cover"
+											/>
+										{/if}
+									</ContextMenu>
+								{/if}
+							</CircleIconButton>
+						</div>
 					{/if}
 
 					{#if isPublicShared}
@@ -588,20 +604,6 @@
 		{album}
 		on:user-deleted={sharedUserDeletedHandler}
 	/>
-{/if}
-
-{#if isShowAlbumOptions}
-	<ContextMenu {...contextMenuPosition} on:clickoutside={() => (isShowAlbumOptions = false)}>
-		{#if isOwned}
-			<MenuOption
-				on:click={() => {
-					isShowThumbnailSelection = true;
-					isShowAlbumOptions = false;
-				}}
-				text="Set album cover"
-			/>
-		{/if}
-	</ContextMenu>
 {/if}
 
 {#if isShowThumbnailSelection}

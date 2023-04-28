@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -49,6 +50,22 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     }
 
     // Make sign-in request
+    DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+
+    if (Platform.isIOS) {
+      var iosInfo = await deviceInfoPlugin.iosInfo;
+      _apiService.authenticationApi.apiClient
+          .addDefaultHeader('deviceModel', iosInfo.utsname.machine ?? '');
+      _apiService.authenticationApi.apiClient
+          .addDefaultHeader('deviceType', 'iOS');
+    } else {
+      var androidInfo = await deviceInfoPlugin.androidInfo;
+      _apiService.authenticationApi.apiClient
+          .addDefaultHeader('deviceModel', androidInfo.model);
+      _apiService.authenticationApi.apiClient
+          .addDefaultHeader('deviceType', 'Android');
+    }
+
     try {
       var loginResponse = await _apiService.authenticationApi.login(
         LoginCredentialDto(

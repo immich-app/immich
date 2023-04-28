@@ -391,9 +391,22 @@ export const userTokenEntityStub = {
   userToken: Object.freeze<UserTokenEntity>({
     id: 'token-id',
     token: 'auth_token',
+    userId: userEntityStub.user1.id,
     user: userEntityStub.user1,
-    createdAt: '2021-01-01',
-    updatedAt: '2021-01-01',
+    createdAt: new Date('2021-01-01'),
+    updatedAt: new Date(),
+    deviceType: '',
+    deviceOS: '',
+  }),
+  inactiveToken: Object.freeze<UserTokenEntity>({
+    id: 'not_active',
+    token: 'auth_token',
+    userId: userEntityStub.user1.id,
+    user: userEntityStub.user1,
+    createdAt: new Date('2021-01-01'),
+    updatedAt: new Date('2021-01-01'),
+    deviceType: 'Mobile',
+    deviceOS: 'Android',
   }),
 };
 

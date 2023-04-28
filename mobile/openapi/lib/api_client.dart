@@ -215,6 +215,8 @@ class ApiClient {
           return AssetResponseDto.fromJson(value);
         case 'AssetTypeEnum':
           return AssetTypeEnumTypeTransformer().decode(value);
+        case 'AuthDeviceResponseDto':
+          return AuthDeviceResponseDto.fromJson(value);
         case 'ChangePasswordDto':
           return ChangePasswordDto.fromJson(value);
         case 'CheckDuplicateAssetDto':

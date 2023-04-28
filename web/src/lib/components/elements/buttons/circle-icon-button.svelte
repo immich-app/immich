@@ -16,6 +16,7 @@
 	on:click
 >
 	<svelte:component this={logo} {size} />
+	<slot />
 </button>
 
 <style>

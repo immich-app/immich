@@ -32,6 +32,12 @@ import { AuthUserDto, SignUpDto } from './dto';
 
 const email = 'test@immich.com';
 const sub = 'my-auth-user-sub';
+const loginDetails = {
+  isSecure: true,
+  clientIp: '127.0.0.1',
+  deviceOS: '',
+  deviceType: '',
+};
 
 const fixtures = {
   login: {
@@ -39,8 +45,6 @@ const fixtures = {
     password: 'password',
   },
 };
-
-const CLIENT_IP = '127.0.0.1';
 
 describe('AuthService', () => {
   let sut: AuthService;
@@ -96,32 +100,39 @@ describe('AuthService', () => {
     it('should throw an error if password login is disabled', async () => {
       sut = create(systemConfigStub.disabled);
 
-      await expect(sut.login(fixtures.login, CLIENT_IP, true)).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(sut.login(fixtures.login, loginDetails)).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('should check the user exists', async () => {
       userMock.getByEmail.mockResolvedValue(null);
-      await expect(sut.login(fixtures.login, CLIENT_IP, true)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.login(fixtures.login, loginDetails)).rejects.toBeInstanceOf(BadRequestException);
       expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
     });
 
     it('should check the user has a password', async () => {
       userMock.getByEmail.mockResolvedValue({} as UserEntity);
-      await expect(sut.login(fixtures.login, CLIENT_IP, true)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.login(fixtures.login, loginDetails)).rejects.toBeInstanceOf(BadRequestException);
       expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
     });
 
     it('should successfully log the user in', async () => {
       userMock.getByEmail.mockResolvedValue(userEntityStub.user1);
       userTokenMock.create.mockResolvedValue(userTokenEntityStub.userToken);
-      await expect(sut.login(fixtures.login, CLIENT_IP, true)).resolves.toEqual(loginResponseStub.user1password);
+      await expect(sut.login(fixtures.login, loginDetails)).resolves.toEqual(loginResponseStub.user1password);
       expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
     });
 
     it('should generate the cookie headers (insecure)', async () => {
       userMock.getByEmail.mockResolvedValue(userEntityStub.user1);
       userTokenMock.create.mockResolvedValue(userTokenEntityStub.userToken);
-      await expect(sut.login(fixtures.login, CLIENT_IP, false)).resolves.toEqual(loginResponseStub.user1insecure);
+      await expect(
+        sut.login(fixtures.login, {
+          clientIp: '127.0.0.1',
+          isSecure: false,
+          deviceOS: '',
+          deviceType: '',
+        }),
+      ).resolves.toEqual(loginResponseStub.user1insecure);
       expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
     });
   });
@@ -205,7 +216,7 @@ describe('AuthService', () => {
         redirectUri: '/auth/login?autoLaunch=0',
       });
 
-      expect(userTokenMock.delete).toHaveBeenCalledWith('token123');
+      expect(userTokenMock.delete).toHaveBeenCalledWith('123', 'token123');
     });
   });
 
@@ -240,7 +251,7 @@ describe('AuthService', () => {
 
     it('should validate using authorization header', async () => {
       userMock.get.mockResolvedValue(userEntityStub.user1);
-      userTokenMock.get.mockResolvedValue(userTokenEntityStub.userToken);
+      userTokenMock.getByToken.mockResolvedValue(userTokenEntityStub.userToken);
       const client = { request: { headers: { authorization: 'Bearer auth_token' } } };
       await expect(sut.validate((client as Socket).request.headers, {})).resolves.toEqual(userEntityStub.user1);
     });
@@ -276,15 +287,31 @@ describe('AuthService', () => {
 
   describe('validate - user token', () => {
     it('should throw if no token is found', async () => {
-      userTokenMock.get.mockResolvedValue(null);
+      userTokenMock.getByToken.mockResolvedValue(null);
       const headers: IncomingHttpHeaders = { 'x-immich-user-token': 'auth_token' };
       await expect(sut.validate(headers, {})).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('should return an auth dto', async () => {
-      userTokenMock.get.mockResolvedValue(userTokenEntityStub.userToken);
+      userTokenMock.getByToken.mockResolvedValue(userTokenEntityStub.userToken);
       const headers: IncomingHttpHeaders = { cookie: 'immich_access_token=auth_token' };
       await expect(sut.validate(headers, {})).resolves.toEqual(userEntityStub.user1);
+    });
+
+    it('should update when access time exceeds an hour', async () => {
+      userTokenMock.getByToken.mockResolvedValue(userTokenEntityStub.inactiveToken);
+      userTokenMock.save.mockResolvedValue(userTokenEntityStub.userToken);
+      const headers: IncomingHttpHeaders = { cookie: 'immich_access_token=auth_token' };
+      await expect(sut.validate(headers, {})).resolves.toEqual(userEntityStub.user1);
+      expect(userTokenMock.save.mock.calls[0][0]).toMatchObject({
+        id: 'not_active',
+        token: 'auth_token',
+        userId: 'immich_id',
+        createdAt: new Date('2021-01-01'),
+        updatedAt: expect.any(Date),
+        deviceOS: 'Android',
+        deviceType: 'Mobile',
+      });
     });
   });
 
@@ -301,6 +328,40 @@ describe('AuthService', () => {
       const headers: IncomingHttpHeaders = { 'x-api-key': 'auth_token' };
       await expect(sut.validate(headers, {})).resolves.toEqual(authStub.admin);
       expect(keyMock.getKey).toHaveBeenCalledWith('auth_token (hashed)');
+    });
+  });
+
+  describe('getDevices', () => {
+    it('should get the devices', async () => {
+      userTokenMock.getAll.mockResolvedValue([userTokenEntityStub.userToken, userTokenEntityStub.inactiveToken]);
+      await expect(sut.getDevices(authStub.user1)).resolves.toEqual([
+        {
+          createdAt: '2021-01-01T00:00:00.000Z',
+          current: true,
+          deviceOS: '',
+          deviceType: '',
+          id: 'token-id',
+          updatedAt: expect.any(String),
+        },
+        {
+          createdAt: '2021-01-01T00:00:00.000Z',
+          current: false,
+          deviceOS: 'Android',
+          deviceType: 'Mobile',
+          id: 'not_active',
+          updatedAt: expect.any(String),
+        },
+      ]);
+
+      expect(userTokenMock.getAll).toHaveBeenCalledWith(authStub.user1.id);
+    });
+  });
+
+  describe('logoutDevice', () => {
+    it('should logout the device', async () => {
+      await sut.logoutDevice(authStub.user1, 'token-1');
+
+      expect(userTokenMock.delete).toHaveBeenCalledWith(authStub.user1.id, 'token-1');
     });
   });
 });

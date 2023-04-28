@@ -97,7 +97,7 @@ export class OAuthCore {
   }
 
   private normalize(redirectUri: string) {
-    const isMobile = redirectUri === MOBILE_REDIRECT;
+    const isMobile = redirectUri.startsWith(MOBILE_REDIRECT);
     const { mobileRedirectUri, mobileOverrideEnabled } = this.config.oauth;
     if (isMobile && mobileOverrideEnabled && mobileRedirectUri) {
       return mobileRedirectUri;

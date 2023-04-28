@@ -6,6 +6,7 @@
 	import ChangePasswordSettings from './change-password-settings.svelte';
 	import OAuthSettings from './oauth-settings.svelte';
 	import UserAPIKeyList from './user-api-key-list.svelte';
+	import DeviceList from './device-list.svelte';
 	import UserProfileSettings from './user-profile-settings.svelte';
 
 	export let user: UserResponseDto;
@@ -25,24 +26,28 @@
 	});
 </script>
 
-<SettingAccordion title="User Profile" subtitle="View and manage your profile">
+<SettingAccordion title="Account" subtitle="Manage your account">
 	<UserProfileSettings {user} />
 </SettingAccordion>
 
-<SettingAccordion title="Password" subtitle="Change your password">
-	<ChangePasswordSettings />
+<SettingAccordion title="API Keys" subtitle="Manage your API keys">
+	<UserAPIKeyList />
 </SettingAccordion>
 
-<SettingAccordion title="API Keys" subtitle="View and manage your API keys">
-	<UserAPIKeyList />
+<SettingAccordion title="Authorized Devices" subtitle="Manage your logged-in devices">
+	<DeviceList />
 </SettingAccordion>
 
 {#if oauthEnabled}
 	<SettingAccordion
 		title="OAuth"
-		subtitle="Manage your linked account"
+		subtitle="Manage your OAuth connection"
 		isOpen={oauthOpen || $page.url.searchParams.get('open') === 'oauth'}
 	>
 		<OAuthSettings {user} />
 	</SettingAccordion>
 {/if}
+
+<SettingAccordion title="Password" subtitle="Change your password">
+	<ChangePasswordSettings />
+</SettingAccordion>
