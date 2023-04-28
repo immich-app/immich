@@ -146,11 +146,8 @@ class RenderList {
     int monthCount = 0;
     int lastMonthIndex = 0;
 
-    void addElems(DateTime d) {
-      final bool newMonth =
-          last == null || last.year != d.year || last.month != d.month;
-      if (newMonth &&
-          last != null &&
+    void mergeMonth() {
+      if (last != null &&
           groupBy == GroupAssetsBy.auto &&
           monthCount <= 30 &&
           elements.length > lastMonthIndex + 1) {
@@ -175,7 +172,13 @@ class RenderList {
         );
         elements.removeRange(lastMonthIndex + 1, elements.length);
       }
+    }
+
+    void addElems(DateTime d) {
+      final bool newMonth =
+          last == null || last.year != d.year || last.month != d.month;
       if (newMonth) {
+        mergeMonth();
         lastMonthIndex = elements.length;
         monthCount = 0;
       }
@@ -240,6 +243,7 @@ class RenderList {
     }
     if (count > 0 && current != null) {
       addElems(current);
+      mergeMonth();
     }
     assert(elements.every((e) => e.count <= sectionSize), "too large section");
     return RenderList(elements, query, assets);
