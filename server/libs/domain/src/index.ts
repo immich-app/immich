@@ -4,7 +4,6 @@ export * from './asset';
 export * from './auth';
 export * from './communication';
 export * from './crypto';
-export * from './device-info';
 export * from './domain.config';
 export * from './domain.constant';
 export * from './domain.module';

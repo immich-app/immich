@@ -3,7 +3,6 @@ import { AlbumService } from './album';
 import { APIKeyService } from './api-key';
 import { AssetService } from './asset';
 import { AuthService } from './auth';
-import { DeviceInfoService } from './device-info';
 import { JobService } from './job';
 import { MediaService } from './media';
 import { OAuthService } from './oauth';
@@ -21,7 +20,6 @@ const providers: Provider[] = [
   AssetService,
   APIKeyService,
   AuthService,
-  DeviceInfoService,
   JobService,
   MediaService,
   OAuthService,

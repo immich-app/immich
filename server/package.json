@@ -141,9 +141,9 @@
     "coverageThreshold": {
       "./libs/domain/": {
         "branches": 80,
-        "functions": 88,
+        "functions": 87,
         "lines": 94,
-        "statements": 94
+        "statements": 93
       }
     },
     "setupFilesAfterEnv": [

@@ -249,10 +249,6 @@ class ApiClient {
           return DeleteAssetResponseDto.fromJson(value);
         case 'DeleteAssetStatus':
           return DeleteAssetStatusTypeTransformer().decode(value);
-        case 'DeviceInfoResponseDto':
-          return DeviceInfoResponseDto.fromJson(value);
-        case 'DeviceTypeEnum':
-          return DeviceTypeEnumTypeTransformer().decode(value);
         case 'DownloadFilesDto':
           return DownloadFilesDto.fromJson(value);
         case 'EditSharedLinkDto':
@@ -351,8 +347,6 @@ class ApiClient {
           return UpdateTagDto.fromJson(value);
         case 'UpdateUserDto':
           return UpdateUserDto.fromJson(value);
-        case 'UpsertDeviceInfoDto':
-          return UpsertDeviceInfoDto.fromJson(value);
         case 'UsageByUserDto':
           return UsageByUserDto.fromJson(value);
         case 'UserCountResponseDto':
