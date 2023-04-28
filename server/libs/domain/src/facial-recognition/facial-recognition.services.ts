@@ -4,7 +4,7 @@ import { IAssetRepository, WithoutProperty } from '../asset';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
 import { IAssetJob, IBaseJob, IFaceThumbnailJob, IJobRepository, JobName } from '../job';
 import { IMediaRepository } from '../media';
-import { IPeopleRepository } from '../people';
+import { AssetFaceId, IPeopleRepository } from '../people';
 import { ISearchRepository } from '../search';
 import { IMachineLearningRepository } from '../smart-info';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
@@ -68,16 +68,13 @@ export class FacialRecognitionService {
         this.logger.debug('No matches, creating a new person.');
 
         const person = await this.peopleService.create({ ownerId: asset.ownerId });
-        await this.repository.createAssetFace({ embedding, assetId: asset.id, personId: person.id });
-
-        await this.jobRepository.queue({
-          name: JobName.GENERATE_FACE_THUMBNAIL,
-          data: { assetId: asset.id, personId: person.id, boundingBox },
-        });
+        const faceId: AssetFaceId = { assetId: asset.id, personId: person.id };
+        await this.repository.createAssetFace({ ...faceId, embedding });
+        await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACE, data: faceId });
+        await this.jobRepository.queue({ name: JobName.GENERATE_FACE_THUMBNAIL, data: { ...faceId, boundingBox } });
       }
 
       // queue all faces for asset
-      await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACE, data: { ids: [asset.id] } });
     } catch (error: any) {
       this.logger.error(`Unable run facial recognition pipeline: ${asset.id}`, error?.stack);
     }

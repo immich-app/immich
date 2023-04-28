@@ -27,6 +27,11 @@ function removeNil<T extends Dictionary<any>>(item: T): T {
   return item;
 }
 
+interface MultiSearchError {
+  code: number;
+  error: string;
+}
+
 interface CustomAssetEntity extends AssetEntity {
   geo?: [number, number];
   motion?: boolean;
@@ -285,7 +290,17 @@ export class TypesenseRepository implements ISearchRepository {
     return this.asResponse(results[0] as SearchResponse<AssetEntity>, filters.debug);
   }
 
-  private asResponse<T extends DocumentSchema>(results: SearchResponse<T>, debug?: boolean): SearchResult<T> {
+  private asResponse<T extends DocumentSchema>(
+    resultsOrError: SearchResponse<T> | MultiSearchError,
+    debug?: boolean,
+  ): SearchResult<T> {
+    const { error, code } = resultsOrError as MultiSearchError;
+    if (error) {
+      throw new Error(`Typesense multi-search error: ${code} - ${error}`);
+    }
+
+    const results = resultsOrError as SearchResponse<T>;
+
     return {
       page: results.page,
       total: results.found,

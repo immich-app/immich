@@ -1,5 +1,6 @@
 import { JobName, QueueName } from './job.constants';
 import {
+  IAssetFaceJob,
   IAssetJob,
   IAssetUploadedJob,
   IBaseJob,
@@ -71,7 +72,7 @@ export type JobItem =
   | { name: JobName.SEARCH_INDEX_ASSETS }
   | { name: JobName.SEARCH_INDEX_ASSET; data: IBulkEntityJob }
   | { name: JobName.SEARCH_INDEX_FACES }
-  | { name: JobName.SEARCH_INDEX_FACE; data: IBulkEntityJob }
+  | { name: JobName.SEARCH_INDEX_FACE; data: IAssetFaceJob }
   | { name: JobName.SEARCH_INDEX_ALBUMS }
   | { name: JobName.SEARCH_INDEX_ALBUM; data: IBulkEntityJob }
   | { name: JobName.SEARCH_REMOVE_ASSET; data: IBulkEntityJob }

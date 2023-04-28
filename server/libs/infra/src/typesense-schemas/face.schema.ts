@@ -1,6 +1,6 @@
 import { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
 
-export const faceSchemaVersion = 3;
+export const faceSchemaVersion = 1;
 export const faceSchema: CollectionCreateSchema = {
   name: `faces-v${faceSchemaVersion}`,
   fields: [
