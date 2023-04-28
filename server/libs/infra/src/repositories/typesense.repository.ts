@@ -4,6 +4,7 @@ import {
   SearchCollection,
   SearchCollectionIndexStatus,
   SearchExploreItem,
+  SearchFaceFilter,
   SearchFilter,
   SearchResult,
 } from '@app/domain';
@@ -258,7 +259,7 @@ export class TypesenseRepository implements ISearchRepository {
     return this.asResponse(results, filters.debug);
   }
 
-  async searchFaces(input: number[]): Promise<SearchResult<AssetFaceEntity>> {
+  async searchFaces(input: number[], filters: SearchFaceFilter): Promise<SearchResult<AssetFaceEntity>> {
     const { results } = await this.client.multiSearch.perform({
       searches: [
         {
@@ -266,6 +267,7 @@ export class TypesenseRepository implements ISearchRepository {
           q: '*',
           vector_query: `embedding:([${input.join(',')}], k:5)`,
           per_page: 250,
+          filter_by: this.buildFilterBy('ownerId', filters.ownerId, true),
         } as any,
       ],
     });
