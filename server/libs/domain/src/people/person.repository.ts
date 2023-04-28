@@ -1,18 +1,18 @@
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 
-export const IPeopleRepository = 'IPeopleRepository';
+export const IPersonRepository = 'IPersonRepository';
 
 export interface AssetFaceId {
   assetId: string;
   personId: string;
 }
 
-export interface IPeopleRepository {
+export interface IPersonRepository {
   create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   getById(userId: string, personId: string): Promise<PersonEntity | null>;
   getAll(userId: string): Promise<PersonEntity[]>;
   save(entity: Partial<PersonEntity>): Promise<PersonEntity>;
-  getPersonAssets(id: string): Promise<AssetEntity[]>;
+  getAssets(id: string): Promise<AssetEntity[]>;
 
   // faces
   getAllFaces(): Promise<AssetFaceEntity[]>;

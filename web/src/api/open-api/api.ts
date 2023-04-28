@@ -7089,10 +7089,10 @@ export class OAuthApi extends BaseAPI {
 
 
 /**
- * PeopleApi - axios parameter creator
+ * PersonApi - axios parameter creator
  * @export
  */
-export const PeopleApiAxiosParamCreator = function (configuration?: Configuration) {
+export const PersonApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
          * 
@@ -7100,7 +7100,7 @@ export const PeopleApiAxiosParamCreator = function (configuration?: Configuratio
          * @throws {RequiredError}
          */
         getAllPeople: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/people`;
+            const localVarPath = `/person`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -7138,7 +7138,7 @@ export const PeopleApiAxiosParamCreator = function (configuration?: Configuratio
         getFaceThumbnail: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('getFaceThumbnail', 'id', id)
-            const localVarPath = `/people/{id}/thumbnail`
+            const localVarPath = `/person/{id}/thumbnail`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -7177,7 +7177,7 @@ export const PeopleApiAxiosParamCreator = function (configuration?: Configuratio
         getPerson: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('getPerson', 'id', id)
-            const localVarPath = `/people/{id}`
+            const localVarPath = `/person/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -7216,7 +7216,7 @@ export const PeopleApiAxiosParamCreator = function (configuration?: Configuratio
         getPersonAssets: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('getPersonAssets', 'id', id)
-            const localVarPath = `/people/{id}/assets`
+            const localVarPath = `/person/{id}/assets`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -7250,11 +7250,11 @@ export const PeopleApiAxiosParamCreator = function (configuration?: Configuratio
 };
 
 /**
- * PeopleApi - functional programming interface
+ * PersonApi - functional programming interface
  * @export
  */
-export const PeopleApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = PeopleApiAxiosParamCreator(configuration)
+export const PersonApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = PersonApiAxiosParamCreator(configuration)
     return {
         /**
          * 
@@ -7299,11 +7299,11 @@ export const PeopleApiFp = function(configuration?: Configuration) {
 };
 
 /**
- * PeopleApi - factory interface
+ * PersonApi - factory interface
  * @export
  */
-export const PeopleApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = PeopleApiFp(configuration)
+export const PersonApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = PersonApiFp(configuration)
     return {
         /**
          * 
@@ -7344,20 +7344,20 @@ export const PeopleApiFactory = function (configuration?: Configuration, basePat
 };
 
 /**
- * PeopleApi - object-oriented interface
+ * PersonApi - object-oriented interface
  * @export
- * @class PeopleApi
+ * @class PersonApi
  * @extends {BaseAPI}
  */
-export class PeopleApi extends BaseAPI {
+export class PersonApi extends BaseAPI {
     /**
      * 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof PeopleApi
+     * @memberof PersonApi
      */
     public getAllPeople(options?: AxiosRequestConfig) {
-        return PeopleApiFp(this.configuration).getAllPeople(options).then((request) => request(this.axios, this.basePath));
+        return PersonApiFp(this.configuration).getAllPeople(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7365,10 +7365,10 @@ export class PeopleApi extends BaseAPI {
      * @param {string} id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof PeopleApi
+     * @memberof PersonApi
      */
     public getFaceThumbnail(id: string, options?: AxiosRequestConfig) {
-        return PeopleApiFp(this.configuration).getFaceThumbnail(id, options).then((request) => request(this.axios, this.basePath));
+        return PersonApiFp(this.configuration).getFaceThumbnail(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7376,10 +7376,10 @@ export class PeopleApi extends BaseAPI {
      * @param {string} id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof PeopleApi
+     * @memberof PersonApi
      */
     public getPerson(id: string, options?: AxiosRequestConfig) {
-        return PeopleApiFp(this.configuration).getPerson(id, options).then((request) => request(this.axios, this.basePath));
+        return PersonApiFp(this.configuration).getPerson(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7387,10 +7387,10 @@ export class PeopleApi extends BaseAPI {
      * @param {string} id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof PeopleApi
+     * @memberof PersonApi
      */
     public getPersonAssets(id: string, options?: AxiosRequestConfig) {
-        return PeopleApiFp(this.configuration).getPersonAssets(id, options).then((request) => request(this.axios, this.basePath));
+        return PersonApiFp(this.configuration).getPersonAssets(id, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

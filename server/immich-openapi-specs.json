@@ -1764,7 +1764,7 @@
         ]
       }
     },
-    "/people": {
+    "/person": {
       "get": {
         "operationId": "getAllPeople",
         "parameters": [],
@@ -1784,7 +1784,7 @@
           }
         },
         "tags": [
-          "People"
+          "Person"
         ],
         "security": [
           {
@@ -1796,7 +1796,7 @@
         ]
       }
     },
-    "/people/{id}": {
+    "/person/{id}": {
       "get": {
         "operationId": "getPerson",
         "parameters": [
@@ -1823,7 +1823,7 @@
           }
         },
         "tags": [
-          "People"
+          "Person"
         ],
         "security": [
           {
@@ -1835,7 +1835,7 @@
         ]
       }
     },
-    "/people/{id}/thumbnail": {
+    "/person/{id}/thumbnail": {
       "get": {
         "operationId": "getFaceThumbnail",
         "parameters": [
@@ -1863,7 +1863,7 @@
           }
         },
         "tags": [
-          "People"
+          "Person"
         ],
         "security": [
           {
@@ -1875,7 +1875,7 @@
         ]
       }
     },
-    "/people/{id}/assets": {
+    "/person/{id}/assets": {
       "get": {
         "operationId": "getPersonAssets",
         "parameters": [
@@ -1905,7 +1905,7 @@
           }
         },
         "tags": [
-          "People"
+          "Person"
         ],
         "security": [
           {

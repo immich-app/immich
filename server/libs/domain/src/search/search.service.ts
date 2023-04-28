@@ -8,7 +8,7 @@ import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
 import { IAssetFaceJob, IBulkEntityJob, IJobRepository, JobName } from '../job';
-import { AssetFaceId, IPeopleRepository } from '../people';
+import { AssetFaceId, IPersonRepository } from '../people';
 import { IMachineLearningRepository } from '../smart-info';
 import { SearchDto } from './dto';
 import { SearchConfigResponseDto, SearchResponseDto } from './response-dto';
@@ -52,7 +52,7 @@ export class SearchService {
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
-    @Inject(IPeopleRepository) private personRepository: IPeopleRepository,
+    @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
     configService: ConfigService,
   ) {

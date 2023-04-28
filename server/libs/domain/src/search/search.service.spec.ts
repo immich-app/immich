@@ -18,7 +18,7 @@ import { IAlbumRepository } from '../album/album.repository';
 import { IAssetRepository } from '../asset/asset.repository';
 import { JobName } from '../job';
 import { IJobRepository } from '../job/job.repository';
-import { IPeopleRepository } from '../people';
+import { IPersonRepository } from '../people';
 import { IMachineLearningRepository } from '../smart-info';
 import { SearchDto } from './dto';
 import { ISearchRepository } from './search.repository';
@@ -32,7 +32,7 @@ describe(SearchService.name, () => {
   let assetMock: jest.Mocked<IAssetRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let machineMock: jest.Mocked<IMachineLearningRepository>;
-  let peopleMock: jest.Mocked<IPeopleRepository>;
+  let peopleMock: jest.Mocked<IPersonRepository>;
   let searchMock: jest.Mocked<ISearchRepository>;
   let configMock: jest.Mocked<ConfigService>;
 

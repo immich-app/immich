@@ -6,9 +6,9 @@ import {
 	Configuration,
 	ConfigurationParameters,
 	DeviceInfoApi,
-	PeopleApi,
 	JobApi,
 	OAuthApi,
+	PersonApi,
 	SearchApi,
 	ServerInfoApi,
 	ShareApi,
@@ -32,7 +32,7 @@ export class ImmichApi {
 	public keyApi: APIKeyApi;
 	public systemConfigApi: SystemConfigApi;
 	public shareApi: ShareApi;
-	public peopleApi: PeopleApi;
+	public personApi: PersonApi;
 
 	private config: Configuration;
 
@@ -51,7 +51,7 @@ export class ImmichApi {
 		this.searchApi = new SearchApi(this.config);
 		this.systemConfigApi = new SystemConfigApi(this.config);
 		this.shareApi = new ShareApi(this.config);
-		this.peopleApi = new PeopleApi(this.config);
+		this.personApi = new PersonApi(this.config);
 	}
 
 	private createUrl(path: string, params?: Record<string, unknown>) {
@@ -92,7 +92,7 @@ export class ImmichApi {
 	}
 
 	public getPeopleThumbnailUrl(personId: string) {
-		const path = `/people/${personId}/thumbnail`;
+		const path = `/person/${personId}/thumbnail`;
 		console.log('get api', this.createUrl(path));
 		return this.createUrl(path);
 	}

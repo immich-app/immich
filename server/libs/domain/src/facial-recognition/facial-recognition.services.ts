@@ -4,7 +4,7 @@ import { IAssetRepository, WithoutProperty } from '../asset';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
 import { IAssetJob, IBaseJob, IFaceThumbnailJob, IJobRepository, JobName } from '../job';
 import { IMediaRepository } from '../media';
-import { AssetFaceId, IPeopleRepository } from '../people';
+import { AssetFaceId, IPersonRepository } from '../people';
 import { ISearchRepository } from '../search';
 import { IMachineLearningRepository } from '../smart-info';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
@@ -22,7 +22,7 @@ export class FacialRecognitionService {
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(IPeopleRepository) private peopleService: IPeopleRepository,
+    @Inject(IPersonRepository) private personService: IPersonRepository,
   ) {}
 
   async handleQueueRecognizeFaces({ force }: IBaseJob) {
@@ -67,7 +67,7 @@ export class FacialRecognitionService {
 
         this.logger.debug('No matches, creating a new person.');
 
-        const person = await this.peopleService.create({ ownerId: asset.ownerId });
+        const person = await this.personService.create({ ownerId: asset.ownerId });
         const faceId: AssetFaceId = { assetId: asset.id, personId: person.id };
         await this.repository.createAssetFace({ ...faceId, embedding });
         await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACE, data: faceId });
@@ -107,7 +107,7 @@ export class FacialRecognitionService {
 
     try {
       await this.mediaRepository.crop(asset.resizePath, output, { left, top, width, height });
-      await this.peopleService.save({ id: personId, thumbnailPath: output });
+      await this.personService.save({ id: personId, thumbnailPath: output });
     } catch (error: any) {
       this.logger.error(`Failed to crop face for asset: ${asset.id}`, error.stack);
     }
