@@ -16,7 +16,7 @@ docker exec -t immich_postgres pg_dumpall -c -U postgres | gzip > "/path/to/back
 gunzip < /path/to/backup/dump.sql.gz | docker exec -i immich_postgres psql -U postgres -d immich
 ```
 
-The database dumps can also be automated by editing the docker compose file to match the following:
+The database dumps can also be automated (using [this image](https://github.com/prodrigestivill/docker-postgres-backup-local)) by editing the docker compose file to match the following:
 ```
 container_name: immich_postgres
     image: postgres:14
