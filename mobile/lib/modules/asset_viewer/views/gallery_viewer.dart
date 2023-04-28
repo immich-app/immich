@@ -229,7 +229,6 @@ class GalleryViewerPage extends HookConsumerWidget {
                   curve: Curves.fastLinearToSlowEaseIn,
                 );
               }
-              // FIXME assetList.remove(deleteAsset);
               ref.watch(assetProvider.notifier).deleteAssets({deleteAsset});
             },
           );
