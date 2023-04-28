@@ -87,7 +87,11 @@ class RenderList {
     if (allAssets != null) {
       return allAssets![index];
     } else if (query != null) {
-      return query!.offset(index).findFirstSync()!;
+      final asset = query!.offset(index).findFirstSync();
+      if (asset == null) {
+        throw Exception(
+            "Asset at index $index does no longer exist in database");
+      }
     }
     throw Exception("RenderList has neither assets nor query");
   }
@@ -146,6 +150,18 @@ class RenderList {
     int monthCount = 0;
     int lastMonthIndex = 0;
 
+    String formatDateRange(DateTime from, DateTime to) {
+      final startDate = (from.year == currentYear
+              ? formatMergedSameYear
+              : formatMergedOtherYear)
+          .format(from);
+      final endDate = (to.year == currentYear
+              ? formatMergedSameYear
+              : formatMergedOtherYear)
+          .format(to);
+      return "$startDate - $endDate";
+    }
+
     void mergeMonth() {
       if (last != null &&
           groupBy == GroupAssetsBy.auto &&
@@ -154,21 +170,14 @@ class RenderList {
         // merge all days into a single section
         assert(elements[lastMonthIndex].date.month == last.month);
         final e = elements[lastMonthIndex];
-        final startDate = (e.date.year == currentYear
-                ? formatMergedSameYear
-                : formatMergedOtherYear)
-            .format(e.date);
-        final endDate = (e.date.year == currentYear
-                ? formatMergedSameYear
-                : formatMergedOtherYear)
-            .format(elements.last.date);
+
         elements[lastMonthIndex] = RenderAssetGridElement(
           RenderAssetGridElementType.monthTitle,
           date: e.date,
           count: monthCount,
           totalCount: monthCount,
           offset: e.offset,
-          title: "$startDate - $endDate",
+          title: formatDateRange(e.date, elements.last.date),
         );
         elements.removeRange(lastMonthIndex + 1, elements.length);
       }
@@ -187,7 +196,9 @@ class RenderList {
             ? (groupBy != GroupAssetsBy.month && newMonth
                 ? RenderAssetGridElementType.monthTitle
                 : RenderAssetGridElementType.groupDividerTitle)
-            : RenderAssetGridElementType.assets;
+            : (groupBy == GroupAssetsBy.auto
+                ? RenderAssetGridElementType.groupDividerTitle
+                : RenderAssetGridElementType.assets);
         final sectionCount = j + sectionSize > count ? count - j : sectionSize;
         assert(sectionCount > 0 && sectionCount <= sectionSize);
         elements.add(
@@ -201,7 +212,9 @@ class RenderList {
                 ? (d.year == currentYear
                     ? formatSameYear.format(d)
                     : formatOtherYear.format(d))
-                : null,
+                : (groupBy == GroupAssetsBy.auto
+                    ? formatDateRange(d, d) // FIXME two dates
+                    : null),
           ),
         );
       }
