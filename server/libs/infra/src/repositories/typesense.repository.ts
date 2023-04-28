@@ -63,7 +63,7 @@ export class TypesenseRepository implements ISearchRepository {
   async setup(): Promise<void> {
     const collections = await this.client.collections().retrieve();
     for (const collection of collections) {
-      this.logger.debug(`${collection.name} => ${collection.num_documents}`);
+      this.logger.debug(`${collection.name} collection has ${collection.num_documents} documents`);
       // await this.client.collections(collection.name).delete();
     }
 
