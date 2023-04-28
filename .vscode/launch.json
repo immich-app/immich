@@ -9,6 +9,15 @@
       "name": "Immich Server",
       "remoteRoot": "/usr/src/app",
       "localRoot": "${workspaceFolder}/server"
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "restart": true,
+      "port": 9231,
+      "name": "Immich Microservces",
+      "remoteRoot": "/usr/src/app",
+      "localRoot": "${workspaceFolder}/server"
     }
   ]
 }

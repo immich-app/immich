@@ -53,13 +53,15 @@ services:
       context: ../server
       dockerfile: Dockerfile
       target: builder
-    command: npm run start:dev microservices
+    command: npm run start:debug microservices
     volumes:
       - ../server:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /usr/src/app/node_modules
     env_file:
       - .env
+    ports:
+      - 9231:9230
     environment:
       - NODE_ENV=development
     depends_on:
