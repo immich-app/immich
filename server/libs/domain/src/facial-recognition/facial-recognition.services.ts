@@ -78,6 +78,7 @@ export class FacialRecognitionService {
 
         await this.repository.createAssetFace({ ...faceId, embedding });
         await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACE, data: faceId });
+        await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: [asset.id] } });
         await this.jobRepository.queue({ name: JobName.GENERATE_FACE_THUMBNAIL, data: { ...faceId, ...rest } });
       }
 
