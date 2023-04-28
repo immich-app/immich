@@ -214,12 +214,13 @@ export class SearchService {
     }
   }
 
-  handleIndexFace({ assetId, personId }: IAssetFaceJob) {
+  async handleIndexFace({ assetId, personId }: IAssetFaceJob) {
     if (!this.enabled) {
       return;
     }
 
-    this.faceQueue.upsert.add(this.asKey({ assetId, personId }));
+    // immediately push to typesense
+    await this.searchRepository.importFaces(await this.idsToFaces([{ assetId, personId }]), false);
   }
 
   handleRemoveAlbum({ ids }: IBulkEntityJob) {

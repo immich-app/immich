@@ -137,8 +137,8 @@ export class SearchIndexProcessor {
   }
 
   @Process(JobName.SEARCH_INDEX_FACE)
-  onIndexFace(job: Job<IAssetFaceJob>) {
-    this.searchService.handleIndexFace(job.data);
+  async onIndexFace(job: Job<IAssetFaceJob>) {
+    await this.searchService.handleIndexFace(job.data);
   }
 
   @Process(JobName.SEARCH_REMOVE_ALBUM)

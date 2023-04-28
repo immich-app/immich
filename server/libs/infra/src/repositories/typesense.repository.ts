@@ -13,7 +13,7 @@ import { catchError, filter, firstValueFrom, from, map, mergeMap, of, toArray } 
 import { Client } from 'typesense';
 import { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
 import { DocumentSchema, SearchResponse } from 'typesense/lib/Typesense/Documents';
-import { AlbumEntity, AssetEntity } from '../entities';
+import { AlbumEntity, AssetEntity, AssetFaceEntity } from '../entities';
 import { typesenseConfig } from '../infra.config';
 import { albumSchema, assetSchema, faceSchema } from '../typesense-schemas';
 
@@ -258,7 +258,7 @@ export class TypesenseRepository implements ISearchRepository {
     return this.asResponse(results, filters.debug);
   }
 
-  async searchFaces(input: number[]): Promise<SearchResult<AssetEntity>> {
+  async searchFaces(input: number[]): Promise<SearchResult<AssetFaceEntity>> {
     const { results } = await this.client.multiSearch.perform({
       searches: [
         {
@@ -270,7 +270,7 @@ export class TypesenseRepository implements ISearchRepository {
       ],
     });
 
-    return this.asResponse(results[0] as SearchResponse<AssetEntity>);
+    return this.asResponse(results[0] as SearchResponse<AssetFaceEntity>);
   }
 
   async vectorSearch(input: number[], filters: SearchFilter): Promise<SearchResult<AssetEntity>> {

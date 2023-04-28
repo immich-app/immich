@@ -57,18 +57,25 @@ export class FacialRecognitionService {
       }
 
       for (const { embedding, ...rest } of faces) {
-        // typesense magic here
         const faceSearchResult = await this.searchRepository.searchFaces(embedding);
 
+        let personId: string | null = null;
+
+        // try to find a matching face and link to the associated person
         if (faceSearchResult.total) {
           this.logger.debug('Found face');
-          // TODO: update face
+          // TODO
+          personId = faceSearchResult.items[0].personId;
         }
 
-        this.logger.debug('No matches, creating a new person.');
+        if (!personId) {
+          this.logger.debug('No matches, creating a new person.');
+          const person = await this.personService.create({ ownerId: asset.ownerId });
+          personId = person.id;
+        }
 
-        const person = await this.personService.create({ ownerId: asset.ownerId });
-        const faceId: AssetFaceId = { assetId: asset.id, personId: person.id };
+        const faceId: AssetFaceId = { assetId: asset.id, personId };
+
         await this.repository.createAssetFace({ ...faceId, embedding });
         await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACE, data: faceId });
         await this.jobRepository.queue({ name: JobName.GENERATE_FACE_THUMBNAIL, data: { ...faceId, ...rest } });
