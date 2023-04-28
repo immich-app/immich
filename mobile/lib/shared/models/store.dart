@@ -35,6 +35,10 @@ class Store {
     return value;
   }
 
+  /// Watches a specific key for changes
+  static Stream<T?> watch<T>(StoreKey<T> key) =>
+      _db.storeValues.watchObject(key.id).map((e) => e?._extract(key));
+
   /// Returns the stored value for the given key (possibly null)
   static T? tryGet<T>(StoreKey<T> key) => _cache[key.id];
 

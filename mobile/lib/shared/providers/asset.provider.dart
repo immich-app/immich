@@ -36,11 +36,6 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     this._db,
   ) : super(AssetsState());
 
-  // Just a little helper to trigger a rebuild of the state object
-  Future<void> rebuildAssetGridDataStructure() async {
-    // FIXME somehow trigger relayout
-  }
-
   Future<void> getAllAsset({bool clear = false}) async {
     if (_getAllAssetInProgress || _deleteInProgress) {
       // guard against multiple calls to this method while it's still working

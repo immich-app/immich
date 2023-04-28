@@ -20,12 +20,12 @@ class StorageIndicator extends HookConsumerWidget {
     void switchChanged(bool value) {
       appSettingService.setSetting(AppSettingsEnum.storageIndicator, value);
       showStorageIndicator.value = value;
-      ref.watch(assetProvider.notifier).rebuildAssetGridDataStructure();
     }
 
     useEffect(
       () {
-        showStorageIndicator.value = appSettingService.getSetting<bool>(AppSettingsEnum.storageIndicator);
+        showStorageIndicator.value = appSettingService
+            .getSetting<bool>(AppSettingsEnum.storageIndicator);
 
         return null;
       },

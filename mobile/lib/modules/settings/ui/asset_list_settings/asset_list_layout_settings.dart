@@ -5,7 +5,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
 
 class LayoutSettings extends HookConsumerWidget {
   const LayoutSettings({
@@ -22,7 +21,6 @@ class LayoutSettings extends HookConsumerWidget {
     void switchChanged(bool value) {
       appSettingService.setSetting(AppSettingsEnum.dynamicLayout, value);
       useDynamicLayout.value = value;
-      ref.watch(assetProvider.notifier).rebuildAssetGridDataStructure();
     }
 
     void changeGroupValue(GroupAssetsBy? value) {
@@ -32,7 +30,6 @@ class LayoutSettings extends HookConsumerWidget {
           value.index,
         );
         groupBy.value = value;
-        ref.watch(assetProvider.notifier).rebuildAssetGridDataStructure();
       }
     }
 
