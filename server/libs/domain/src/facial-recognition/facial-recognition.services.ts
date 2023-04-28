@@ -4,7 +4,7 @@ import { IAssetRepository, WithoutProperty } from '../asset';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
 import { IAssetJob, IBaseJob, IFaceThumbnailJob, IJobRepository, JobName } from '../job';
 import { IMediaRepository } from '../media';
-import { IPeopleRepository } from '../people';
+import { AssetFaceId, IPersonRepository } from '../people';
 import { ISearchRepository } from '../search';
 import { IMachineLearningRepository } from '../smart-info';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
@@ -22,7 +22,7 @@ export class FacialRecognitionService {
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(IPeopleRepository) private peopleService: IPeopleRepository,
+    @Inject(IPersonRepository) private personService: IPersonRepository,
   ) {}
 
   async handleQueueRecognizeFaces({ force }: IBaseJob) {
@@ -56,59 +56,86 @@ export class FacialRecognitionService {
         // TODO: delete all faces?
       }
 
-      for (const { embedding, boundingBox } of faces) {
-        // typesense magic here
-        const faceSearchResult = await this.searchRepository.faceSearch(embedding);
+      for (const { embedding, ...rest } of faces) {
+        const faceSearchResult = await this.searchRepository.searchFaces(embedding, { ownerId: asset.ownerId });
 
-        if (faceSearchResult.total) {
-          this.logger.debug('Found face');
+        let personId: string | null = null;
+
+        // try to find a matching face and link to the associated person
+        // The closer to 0, the better the match. Range is from 0 to 2
+        if (faceSearchResult.total && faceSearchResult.distances[0] < 0.5) {
+          this.logger.debug(`Match face with distance ${faceSearchResult.distances[0]}`);
+          personId = faceSearchResult.items[0].personId;
         }
 
-        this.logger.debug('No matches, creating a new person.');
+        if (!personId) {
+          this.logger.debug('No matches, creating a new person.');
+          const person = await this.personService.create({ ownerId: asset.ownerId });
+          personId = person.id;
+          await this.jobRepository.queue({
+            name: JobName.GENERATE_FACE_THUMBNAIL,
+            data: { assetId: asset.id, personId, ...rest },
+          });
+        }
 
-        const person = await this.peopleService.create({ ownerId: asset.ownerId });
-        await this.repository.createAssetFace({ embedding, assetId: asset.id, personId: person.id });
+        const faceId: AssetFaceId = { assetId: asset.id, personId };
 
-        await this.jobRepository.queue({
-          name: JobName.GENERATE_FACE_THUMBNAIL,
-          data: { assetId: asset.id, personId: person.id, boundingBox },
-        });
+        await this.repository.createAssetFace({ ...faceId, embedding });
+        await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACE, data: faceId });
+        await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: [asset.id] } });
       }
+
+      // queue all faces for asset
     } catch (error: any) {
       this.logger.error(`Unable run facial recognition pipeline: ${asset.id}`, error?.stack);
     }
   }
 
   async handleGenerateFaceThumbnail(data: IFaceThumbnailJob) {
-    const { assetId, personId, boundingBox } = data;
-    const { x1, y1, x2, y2 } = boundingBox;
-
-    const [asset] = await this.assetRepository.getByIds([assetId]);
-    if (!asset || !asset.resizePath) {
-      this.logger.warn(`Asset not found for facial cropping: ${assetId}`);
-      return null;
-    }
-
-    const outputFolder = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
-    const output = join(outputFolder, `${personId}.jpeg`);
-    this.storageRepository.mkdirSync(outputFolder);
-
-    const left = x1 - 30 > 0 ? x1 - 30 : x1;
-    const top = y1 - 30 > 0 ? y1 - 30 : y1;
-    const width = x2 - x1 + 60;
-    const height = y2 - y1 + 60;
-
-    // TODO: move to machine learning code
-    // if (left < 1 || top < 1 || width < 1 || height < 1) {
-    //   this.logger.error(`invalid bounding box ${JSON.stringify(face.boundingBox)}`);
-    //   return null;
-    // }
+    const { assetId, personId, boundingBox, imageWidth, imageHeight } = data;
 
     try {
-      await this.mediaRepository.crop(asset.resizePath, output, { left, top, width, height });
-      await this.peopleService.save({ id: personId, thumbnailPath: output });
+      const [asset] = await this.assetRepository.getByIds([assetId]);
+      if (!asset || !asset.resizePath) {
+        this.logger.warn(`Asset not found for facial cropping: ${assetId}`);
+        return null;
+      }
+
+      this.logger.debug(`Cropping face for person: ${personId}`);
+
+      const outputFolder = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
+      const output = join(outputFolder, `${personId}.jpeg`);
+      this.storageRepository.mkdirSync(outputFolder);
+
+      const { x1, y1, x2, y2 } = boundingBox;
+      const imageHalfWidth = (x2 - x1) / 2;
+      const imageHalfHeight = (y2 - y1) / 2;
+      const middleX = x1 + imageHalfWidth;
+      const middleY = y1 + imageHalfHeight;
+      const zoomOutPixels = Math.max(imageHalfWidth, imageHalfHeight) * 1.1;
+
+      // get the longest distance from the center of the image without overflowing
+      const unit = Math.max(
+        middleX - Math.max(0, middleX - zoomOutPixels),
+        middleY - Math.max(0, middleY - zoomOutPixels),
+        Math.min(imageWidth, middleX + zoomOutPixels) - middleX,
+        Math.min(imageHeight, middleY + zoomOutPixels) - middleY,
+      );
+
+      const left = Math.round(middleX - unit);
+      const top = Math.round(middleY - unit);
+      const size = Math.round(unit * 2);
+
+      // TODO: move to machine learning code
+      // if (left < 1 || top < 1 || width < 1 || height < 1) {
+      //   this.logger.error(`invalid bounding box ${JSON.stringify(face.boundingBox)}`);
+      //   return null;
+      // }
+
+      await this.mediaRepository.crop(asset.resizePath, output, { left, top, width: size, height: size });
+      await this.personService.save({ id: personId, thumbnailPath: output });
     } catch (error: any) {
-      this.logger.error(`Failed to crop face for asset: ${asset.id}`, error.stack);
+      this.logger.error(`Failed to crop face for asset: ${assetId}, person: ${personId}`, error.stack);
     }
   }
 }

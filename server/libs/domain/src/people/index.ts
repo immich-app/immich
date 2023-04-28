@@ -1,2 +1,2 @@
-export * from './people.repository';
-export * from './people.service';
+export * from './person.repository';
+export * from './person.service';

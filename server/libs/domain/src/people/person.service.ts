@@ -2,14 +2,14 @@ import { PersonEntity } from '@app/infra/entities';
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AssetResponseDto, mapAsset, PersonResponseDto } from '../asset';
 import { ImmichReadStream, IStorageRepository } from '../storage';
-import { IPeopleRepository } from './people.repository';
+import { IPersonRepository } from './person.repository';
 
 @Injectable()
-export class PeopleService {
-  private logger = new Logger(PeopleService.name);
+export class PersonService {
+  private logger = new Logger(PersonService.name);
 
   constructor(
-    @Inject(IPeopleRepository) private repository: IPeopleRepository,
+    @Inject(IPersonRepository) private repository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {}
 
@@ -36,8 +36,8 @@ export class PeopleService {
     return this.mapPerson(person);
   }
 
-  async getPersonAssets(personId: string): Promise<AssetResponseDto[]> {
-    const assets = await this.repository.getPersonAssets(personId);
+  async getAssets(personId: string): Promise<AssetResponseDto[]> {
+    const assets = await this.repository.getAssets(personId);
     return assets.map(mapAsset);
   }
 

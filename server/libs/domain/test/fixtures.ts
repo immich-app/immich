@@ -732,6 +732,7 @@ export const searchStub = {
     page: 1,
     items: [],
     facets: [],
+    distances: [],
   }),
 };
 

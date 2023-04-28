@@ -13,7 +13,14 @@ export interface IAssetJob extends IBaseJob {
   asset: AssetEntity;
 }
 
-export interface IFaceThumbnailJob extends IBaseJob {
+export interface IAssetFaceJob extends IBaseJob {
+  assetId: string;
+  personId: string;
+}
+
+export interface IFaceThumbnailJob extends IAssetFaceJob {
+  imageWidth: number;
+  imageHeight: number;
   boundingBox: BoundingBox;
   assetId: string;
   personId: string;

@@ -8,7 +8,7 @@ export const load = (async ({ locals, parent }) => {
 	}
 
 	const { data: items } = await locals.api.searchApi.getExploreData();
-	const { data: people } = await locals.api.peopleApi.getAllPeople();
+	const { data: people } = await locals.api.personApi.getAllPeople();
 	return {
 		user,
 		items,

@@ -1,15 +1,15 @@
-import { IPeopleRepository } from '@app/domain';
+import { AssetFaceId, IPersonRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PersonEntity, AssetEntity } from '../entities';
+import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 
-export class PeopleRepository implements IPeopleRepository {
+export class PersonRepository implements IPersonRepository {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
+    @InjectRepository(AssetFaceEntity) private faceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
   ) {}
-
-  getPersonAssets(id: string): Promise<AssetEntity[]> {
+  getAssets(id: string): Promise<AssetEntity[]> {
     return this.assetRepository.find({
       where: { faces: { personId: id } },
       relations: {
@@ -41,5 +41,13 @@ export class PeopleRepository implements IPeopleRepository {
 
   save(entity: Partial<PersonEntity>): Promise<PersonEntity> {
     return this.personRepository.save(entity);
+  }
+
+  getAllFaces(): Promise<AssetFaceEntity[]> {
+    return this.faceRepository.find({ relations: { asset: true } });
+  }
+
+  getFaceByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]> {
+    return this.faceRepository.find({ where: ids, relations: { asset: true } });
   }
 }

@@ -1,5 +1,6 @@
 import {
   AssetService,
+  IAssetFaceJob,
   IAssetJob,
   IAssetUploadedJob,
   IBaseJob,
@@ -120,6 +121,11 @@ export class SearchIndexProcessor {
     await this.searchService.handleIndexAssets();
   }
 
+  @Process(JobName.SEARCH_INDEX_FACES)
+  async onIndexFaces() {
+    await this.searchService.handleIndexFaces();
+  }
+
   @Process(JobName.SEARCH_INDEX_ALBUM)
   onIndexAlbum(job: Job<IBulkEntityJob>) {
     this.searchService.handleIndexAlbum(job.data);
@@ -130,6 +136,11 @@ export class SearchIndexProcessor {
     this.searchService.handleIndexAsset(job.data);
   }
 
+  @Process(JobName.SEARCH_INDEX_FACE)
+  async onIndexFace(job: Job<IAssetFaceJob>) {
+    await this.searchService.handleIndexFace(job.data);
+  }
+
   @Process(JobName.SEARCH_REMOVE_ALBUM)
   onRemoveAlbum(job: Job<IBulkEntityJob>) {
     this.searchService.handleRemoveAlbum(job.data);
@@ -138,6 +149,11 @@ export class SearchIndexProcessor {
   @Process(JobName.SEARCH_REMOVE_ASSET)
   onRemoveAsset(job: Job<IBulkEntityJob>) {
     this.searchService.handleRemoveAsset(job.data);
+  }
+
+  @Process(JobName.SEARCH_REMOVE_FACE)
+  onRemoveFace(job: Job<IAssetFaceJob>) {
+    this.searchService.handleRemoveFace(job.data);
   }
 }
 

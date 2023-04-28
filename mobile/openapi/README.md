@@ -124,10 +124,10 @@ Class | Method | HTTP request | Description
 *OAuthApi* | [**link**](doc//OAuthApi.md#link) | **POST** /oauth/link | 
 *OAuthApi* | [**mobileRedirect**](doc//OAuthApi.md#mobileredirect) | **GET** /oauth/mobile-redirect | 
 *OAuthApi* | [**unlink**](doc//OAuthApi.md#unlink) | **POST** /oauth/unlink | 
-*PeopleApi* | [**getAllPeople**](doc//PeopleApi.md#getallpeople) | **GET** /people | 
-*PeopleApi* | [**getFaceThumbnail**](doc//PeopleApi.md#getfacethumbnail) | **GET** /people/{id}/thumbnail | 
-*PeopleApi* | [**getPerson**](doc//PeopleApi.md#getperson) | **GET** /people/{id} | 
-*PeopleApi* | [**getPersonAssets**](doc//PeopleApi.md#getpersonassets) | **GET** /people/{id}/assets | 
+*PersonApi* | [**getAllPeople**](doc//PersonApi.md#getallpeople) | **GET** /person | 
+*PersonApi* | [**getFaceThumbnail**](doc//PersonApi.md#getfacethumbnail) | **GET** /person/{id}/thumbnail | 
+*PersonApi* | [**getPerson**](doc//PersonApi.md#getperson) | **GET** /person/{id} | 
+*PersonApi* | [**getPersonAssets**](doc//PersonApi.md#getpersonassets) | **GET** /person/{id}/assets | 
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | 
 *SearchApi* | [**getSearchConfig**](doc//SearchApi.md#getsearchconfig) | **GET** /search/config | 
 *SearchApi* | [**search**](doc//SearchApi.md#search) | **GET** /search | 

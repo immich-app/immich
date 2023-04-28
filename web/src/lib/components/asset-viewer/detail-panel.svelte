@@ -103,7 +103,7 @@
 		<section class="px-4 py-4 text-sm">
 			<h2>PEOPLE</h2>
 
-			<div class="flex gap-2 mt-4">
+			<div class="flex flex-wrap gap-2 mt-4">
 				{#each asset.people as person (person.id)}
 					<div>
 						<ImageThumbnail
@@ -111,8 +111,8 @@
 							shadow
 							url={api.getPeopleThumbnailUrl(person.id)}
 							altText={person.name}
-							widthStyle="100px"
-							heightStyle="100px"
+							widthStyle="90px"
+							heightStyle="90px"
 						/>
 						<p class="font-medium mt-1">{person.name}</p>
 					</div>
