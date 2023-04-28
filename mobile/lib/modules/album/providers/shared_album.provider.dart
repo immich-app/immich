@@ -91,14 +91,11 @@ final sharedAlbumProvider =
 final sharedAlbumDetailProvider =
     FutureProvider.autoDispose.family<Album, int>((ref, albumId) async {
   final AlbumService sharedAlbumService = ref.watch(albumServiceProvider);
-  final settings = ref.watch(appSettingsServiceProvider);
 
   final Album? a = await sharedAlbumService.getAlbumDetail(albumId);
   if (a == null) {
     throw Exception("Album with ID=$albumId does not exist anymore!");
   }
-  await a.loadRenderList(
-    GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)],
-  );
+  await a.loadRenderList(GroupAssetsBy.none);
   return a;
 });

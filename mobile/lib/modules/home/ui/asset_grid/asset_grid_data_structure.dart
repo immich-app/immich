@@ -37,6 +37,7 @@ enum GroupAssetsBy {
   day,
   month,
   auto,
+  none,
   ;
 }
 
@@ -106,6 +107,26 @@ class RenderList {
 
     const pageSize = 500;
     const sectionSize = 60; // divides evenly by 2,3,4,5,6
+
+    if (groupBy == GroupAssetsBy.none) {
+      final int total = assets?.length ?? query!.countSync();
+      for (int i = 0; i < total; i += sectionSize) {
+        final date = assets != null
+            ? assets[i].fileCreatedAt
+            : await query!.offset(i).fileCreatedAtProperty().findFirst();
+        final int count = i + sectionSize > total ? total - i : sectionSize;
+        if (date == null) break;
+        elements.add(
+          RenderAssetGridElement(
+            RenderAssetGridElementType.assets,
+            date: date,
+            count: count,
+            totalCount: total,
+          ),
+        );
+      }
+      return RenderList(elements, query, assets);
+    }
 
     final formatSameYear = groupBy == GroupAssetsBy.month
         ? DateFormat.MMMM()
