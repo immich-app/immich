@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
@@ -12,10 +14,11 @@ class SharedAlbumNotifier extends StateNotifier<List<Album>> {
   SharedAlbumNotifier(this._albumService, Isar db) : super([]) {
     final query = db.albums.filter().sharedEqualTo(true).sortByCreatedAtDesc();
     query.findAll().then((value) => state = value);
-    query.watch().listen((data) => state = data);
+    _streamSub = query.watch().listen((data) => state = data);
   }
 
   final AlbumService _albumService;
+  late final StreamSubscription<List<Album>> _streamSub;
 
   Future<Album?> createSharedAlbum(
     String albumName,
@@ -52,6 +55,12 @@ class SharedAlbumNotifier extends StateNotifier<List<Album>> {
 
   Future<bool> removeAssetFromAlbum(Album album, Iterable<Asset> assets) {
     return _albumService.removeAssetFromAlbum(album, assets);
+  }
+
+  @override
+  void dispose() {
+    _streamSub.cancel();
+    super.dispose();
   }
 }
 
