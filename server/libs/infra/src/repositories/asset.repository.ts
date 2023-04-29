@@ -38,7 +38,9 @@ export class AssetRepository implements IAssetRepository {
         exifInfo: true,
         smartInfo: true,
         tags: true,
-        faces: true,
+        faces: {
+          person: true,
+        },
       },
     });
   }
