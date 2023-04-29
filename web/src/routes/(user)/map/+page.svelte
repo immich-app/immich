@@ -11,7 +11,7 @@
 
 	</div>
 
-	<div class="h-full w-full">
+	<div class="h-[90%] w-full">
 		<Map latlng={[48, 11]} zoom={6}>
 			<TileLayer
 				urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}

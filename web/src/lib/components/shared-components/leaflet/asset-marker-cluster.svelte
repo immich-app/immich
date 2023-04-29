@@ -40,7 +40,7 @@
 					const icon = new Icon({
 						iconUrl: `/api/asset/thumbnail/${asset.id}?format=WEBP`,
 						iconRetinaUrl: `/api/asset/thumbnail/${asset.id}?format=WEBP`,
-						iconSize: [40, 40],
+						iconSize: [60, 60],
 						iconAnchor: [12, 41],
 						popupAnchor: [1, -34],
 						tooltipAnchor: [16, -28],
