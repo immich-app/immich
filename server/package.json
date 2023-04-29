@@ -37,7 +37,7 @@
     "typeorm:schema:reset": "npm run typeorm:schema:drop && npm run typeorm:migrations:run",
     "api:typescript": "bash ./bin/generate-open-api.sh web",
     "api:dart": "bash ./bin/generate-open-api.sh mobile",
-    "api:generate": "bash ./bin/generate-open-api.sh"
+    "api:generate": "node ./bin/sync-spec-version.js && bash ./bin/generate-open-api.sh"
   },
   "dependencies": {
     "@babel/runtime": "^7.20.13",
