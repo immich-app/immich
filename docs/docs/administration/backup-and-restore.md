@@ -17,6 +17,7 @@ gunzip < /path/to/backup/dump.sql.gz | docker exec -i immich_postgres psql -U po
 ```
 
 The database dumps can also be automated (using [this image](https://github.com/prodrigestivill/docker-postgres-backup-local)) by editing the docker compose file to match the following:
+
 ```
 container_name: immich_postgres
     image: postgres:14
@@ -52,6 +53,7 @@ container_name: immich_postgres
 ```
 
 Then you can restore with the same command but pointed at the latest dump.
+
 ```bash title='Automated Restore'
 gunzip < db_dumps/last/immich-latest.sql.gz | docker exec -i immich_postgres psql -U postgres -d immich
 ```
