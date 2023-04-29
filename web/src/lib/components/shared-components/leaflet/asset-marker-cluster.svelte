@@ -12,7 +12,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import 'leaflet.markercluster';
 	import { getMapContext } from './map.svelte';
-	import { AssetResponseDto } from '@api';
+	import { AssetResponseDto, getFileUrl } from '@api';
 	import { Marker, Icon } from 'leaflet';
 
 	export let assets: AssetResponseDto[];
@@ -28,33 +28,34 @@
 			zoomToBoundsOnClick: true,
 			spiderfyOnMaxZoom: true,
 			maxClusterRadius: 30,
-			spiderLegPolylineOptions: { opacity: 0 }
+			spiderLegPolylineOptions: { opacity: 0 },
+			spiderfyDistanceMultiplier: 3
 		});
 
 		for (let asset of assets) {
-			if (asset.exifInfo) {
-				const lat = asset.exifInfo.latitude;
-				const lon = asset.exifInfo.longitude;
+			if (!asset.exifInfo) continue;
 
-				if (lat && lon) {
-					const icon = new Icon({
-						iconUrl: `/api/asset/thumbnail/${asset.id}?format=WEBP`,
-						iconRetinaUrl: `/api/asset/thumbnail/${asset.id}?format=WEBP`,
-						iconSize: [60, 60],
-						iconAnchor: [12, 41],
-						popupAnchor: [1, -34],
-						tooltipAnchor: [16, -28],
-						shadowSize: [41, 41]
-					});
+			const lat = asset.exifInfo.latitude;
+			const lon = asset.exifInfo.longitude;
 
-					const marker = new Marker([lat, lon], {
-						icon,
-						alt: ''
-					});
+			if (!lat || !lon) continue;
 
-					cluster.addLayer(marker);
-				}
-			}
+			const icon = new Icon({
+				iconUrl: getFileUrl(asset.id, true),
+				iconRetinaUrl: getFileUrl(asset.id, true),
+				iconSize: [60, 60],
+				iconAnchor: [12, 41],
+				popupAnchor: [1, -34],
+				tooltipAnchor: [16, -28],
+				shadowSize: [41, 41]
+			});
+
+			const marker = new Marker([lat, lon], {
+				icon,
+				alt: ''
+			});
+
+			cluster.addLayer(marker);
 		}
 
 		map.addLayer(cluster);
