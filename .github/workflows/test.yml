@@ -123,7 +123,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Run API generation
-        run: cd server && npm ci && npm run api:generate
+        run: npm --prefix server run api:generate
       - name: Find file changes
         uses: tj-actions/verify-changed-files@v13.1
         id: verify-changed-files
@@ -158,18 +158,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install server dependencies
-        run: |
-          cd server
-          npm ci
+        run: npm --prefix server ci
       - name: Run existing migrations
-        run: |
-          cd server
-          npm run typeorm:migrations:run
+        run: npm --prefix server run typeorm:migrations:run
       - name: Generate new migrations
         continue-on-error: true
-        run: |
-          cd server
-          npm run typeorm:migrations:generate ./libs/infra/src/migrations/TestMigration
+        run: npm --prefix server run typeorm:migrations:generate ./libs/infra/src/migrations/TestMigration
       - name: Find file changes
         uses: tj-actions/verify-changed-files@v13.1
         id: verify-changed-files

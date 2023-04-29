@@ -41,9 +41,6 @@ doc/CuratedObjectsResponseDto.md
 doc/DeleteAssetDto.md
 doc/DeleteAssetResponseDto.md
 doc/DeleteAssetStatus.md
-doc/DeviceInfoApi.md
-doc/DeviceInfoResponseDto.md
-doc/DeviceTypeEnum.md
 doc/DownloadFilesDto.md
 doc/EditSharedLinkDto.md
 doc/ExifResponseDto.md
@@ -100,7 +97,6 @@ doc/UpdateAlbumDto.md
 doc/UpdateAssetDto.md
 doc/UpdateTagDto.md
 doc/UpdateUserDto.md
-doc/UpsertDeviceInfoDto.md
 doc/UsageByUserDto.md
 doc/UserApi.md
 doc/UserCountResponseDto.md
@@ -112,7 +108,6 @@ lib/api/album_api.dart
 lib/api/api_key_api.dart
 lib/api/asset_api.dart
 lib/api/authentication_api.dart
-lib/api/device_info_api.dart
 lib/api/job_api.dart
 lib/api/o_auth_api.dart
 lib/api/search_api.dart
@@ -163,8 +158,6 @@ lib/model/curated_objects_response_dto.dart
 lib/model/delete_asset_dto.dart
 lib/model/delete_asset_response_dto.dart
 lib/model/delete_asset_status.dart
-lib/model/device_info_response_dto.dart
-lib/model/device_type_enum.dart
 lib/model/download_files_dto.dart
 lib/model/edit_shared_link_dto.dart
 lib/model/exif_response_dto.dart
@@ -214,7 +207,6 @@ lib/model/update_album_dto.dart
 lib/model/update_asset_dto.dart
 lib/model/update_tag_dto.dart
 lib/model/update_user_dto.dart
-lib/model/upsert_device_info_dto.dart
 lib/model/usage_by_user_dto.dart
 lib/model/user_count_response_dto.dart
 lib/model/user_response_dto.dart
@@ -258,9 +250,6 @@ test/curated_objects_response_dto_test.dart
 test/delete_asset_dto_test.dart
 test/delete_asset_response_dto_test.dart
 test/delete_asset_status_test.dart
-test/device_info_api_test.dart
-test/device_info_response_dto_test.dart
-test/device_type_enum_test.dart
 test/download_files_dto_test.dart
 test/edit_shared_link_dto_test.dart
 test/exif_response_dto_test.dart
@@ -317,7 +306,6 @@ test/update_album_dto_test.dart
 test/update_asset_dto_test.dart
 test/update_tag_dto_test.dart
 test/update_user_dto_test.dart
-test/upsert_device_info_dto_test.dart
 test/usage_by_user_dto_test.dart
 test/user_api_test.dart
 test/user_count_response_dto_test.dart

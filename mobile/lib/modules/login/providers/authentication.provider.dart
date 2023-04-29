@@ -3,24 +3,22 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
-import 'package:immich_mobile/shared/services/device_info.service.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:openapi/api.dart';
 
 class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   AuthenticationNotifier(
-    this._deviceInfoService,
     this._apiService,
   ) : super(
           AuthenticationState(
             deviceId: "",
-            deviceType: DeviceTypeEnum.ANDROID,
             userId: "",
             userEmail: "",
             firstName: '',
@@ -32,7 +30,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
           ),
         );
 
-  final DeviceInfoService _deviceInfoService;
   final ApiService _apiService;
 
   Future<bool> login(
@@ -146,9 +143,9 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     }
 
     if (userResponseDto != null) {
-      var deviceInfo = await _deviceInfoService.getDeviceInfo();
-      Store.put(StoreKey.deviceId, deviceInfo["deviceId"]);
-      Store.put(StoreKey.deviceIdHash, fastHash(deviceInfo["deviceId"]));
+      final deviceId = await FlutterUdid.consistentUdid;
+      Store.put(StoreKey.deviceId, deviceId);
+      Store.put(StoreKey.deviceIdHash, fastHash(deviceId));
       Store.put(StoreKey.currentUser, User.fromDto(userResponseDto));
       Store.put(StoreKey.serverUrl, serverUrl);
       Store.put(StoreKey.accessToken, accessToken);
@@ -162,8 +159,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         profileImagePath: userResponseDto.profileImagePath,
         isAdmin: userResponseDto.isAdmin,
         shouldChangePassword: userResponseDto.shouldChangePassword,
-        deviceId: deviceInfo["deviceId"],
-        deviceType: deviceInfo["deviceType"],
+        deviceId: deviceId,
       );
     }
     return true;
@@ -173,7 +169,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 final authenticationProvider =
     StateNotifierProvider<AuthenticationNotifier, AuthenticationState>((ref) {
   return AuthenticationNotifier(
-    ref.watch(deviceInfoServiceProvider),
     ref.watch(apiServiceProvider),
   );
 });

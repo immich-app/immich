@@ -61,9 +61,6 @@ String parameterToString(dynamic value) {
   if (value is DeleteAssetStatus) {
     return DeleteAssetStatusTypeTransformer().encode(value).toString();
   }
-  if (value is DeviceTypeEnum) {
-    return DeviceTypeEnumTypeTransformer().encode(value).toString();
-  }
   if (value is JobCommand) {
     return JobCommandTypeTransformer().encode(value).toString();
   }
