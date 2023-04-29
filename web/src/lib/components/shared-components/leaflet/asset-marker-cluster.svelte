@@ -14,6 +14,7 @@
 	import { getMapContext } from './map.svelte';
 	import { AssetResponseDto, getFileUrl } from '@api';
 	import { Marker, Icon } from 'leaflet';
+	import { assetInteractionStore } from '$lib/stores/asset-interaction.store';
 
 	export let assets: AssetResponseDto[];
 
@@ -53,6 +54,10 @@
 			const marker = new Marker([lat, lon], {
 				icon,
 				alt: ''
+			});
+
+			marker.on('click', () => {
+				assetInteractionStore.setViewingAsset(asset);
 			});
 
 			cluster.addLayer(marker);

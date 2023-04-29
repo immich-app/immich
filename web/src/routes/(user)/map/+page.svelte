@@ -2,6 +2,13 @@
 	import type { PageData } from '../map/$types';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import { Map, TileLayer, AssetMarkerCluster } from '$lib/components/shared-components/leaflet';
+	import Portal from '$lib/components/shared-components/portal/portal.svelte';
+	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
+	import {
+		assetInteractionStore,
+		isViewingAssetStoreState,
+		viewingAssetStoreState
+	} from '$lib/stores/asset-interaction.store';
 
 	export let data: PageData;
 </script>
@@ -25,4 +32,16 @@
 	</div>
 
 </UserPageLayout>
+
+<Portal target="body">
+	{#if $isViewingAssetStoreState}
+		<AssetViewer
+			asset={$viewingAssetStoreState}
+			showNavigation={false}
+			on:close={() => {
+				assetInteractionStore.setIsViewingAsset(false);
+			}}
+		/>
+	{/if}
+</Portal>
 
