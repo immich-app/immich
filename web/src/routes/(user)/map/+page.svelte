@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from '../map/$types';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-	import { Map, TileLayer, MarkerCluster, AssetClusterMarker } from '$lib/components/shared-components/leaflet';
+	import { Map, TileLayer, AssetMarkerCluster } from '$lib/components/shared-components/leaflet';
 
 	export let data: PageData;
 </script>
@@ -20,14 +20,9 @@
 						'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 				}}
 			/>
-			<MarkerCluster>
-				{#each data.assets as asset}
-					<AssetClusterMarker asset={asset} />
-				{/each}
-			</MarkerCluster>
+			<AssetMarkerCluster assets={data.assets} />
 		</Map>
 	</div>
-
 
 </UserPageLayout>
 
