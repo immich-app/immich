@@ -1,5 +1,6 @@
 import { PersonEntity } from '@app/infra/entities';
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { UpdatePersonDto } from 'apps/immich/src/controllers/dto/update-person.dto';
 import { AssetResponseDto, mapAsset, PersonResponseDto } from '../asset';
 import { ImmichReadStream, IStorageRepository } from '../storage';
 import { IPersonRepository } from './person.repository';
@@ -12,6 +13,18 @@ export class PersonService {
     @Inject(IPersonRepository) private repository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {}
+
+  async update(userId: string, personId: string, dto: UpdatePersonDto): Promise<PersonResponseDto> {
+    const person = await this.repository.getById(userId, personId);
+    if (!person) {
+      throw new NotFoundException();
+    }
+
+    person.name = dto.name;
+    await this.repository.update(person);
+
+    return this.mapPerson(person);
+  }
 
   async getFaceThumbnail(userId: string, personId: string): Promise<ImmichReadStream> {
     const person = await this.repository.getById(userId, personId);

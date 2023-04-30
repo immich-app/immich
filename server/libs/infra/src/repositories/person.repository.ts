@@ -9,6 +9,11 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(AssetFaceEntity) private faceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
   ) {}
+
+  update(entity: Partial<PersonEntity>): Promise<PersonEntity> {
+    return this.personRepository.save(entity);
+  }
+
   getAssets(id: string): Promise<AssetEntity[]> {
     return this.assetRepository.find({
       where: { faces: { personId: id } },

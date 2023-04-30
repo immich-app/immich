@@ -13,6 +13,7 @@ export interface IPersonRepository {
   getAll(userId: string): Promise<PersonEntity[]>;
   save(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   getAssets(id: string): Promise<AssetEntity[]>;
+  update(entity: Partial<PersonEntity>): Promise<PersonEntity>;
 
   // faces
   getAllFaces(): Promise<AssetFaceEntity[]>;

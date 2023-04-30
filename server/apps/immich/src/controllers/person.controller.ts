@@ -1,10 +1,11 @@
 import { AssetResponseDto, AuthUserDto, ImmichReadStream, PersonService, PersonResponseDto } from '@app/domain';
-import { Controller, Get, Header, Param, StreamableFile } from '@nestjs/common';
+import { Controller, Get, Header, Param, Put, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
 
 import { Authenticated } from '../decorators/authenticated.decorator';
 import { UseValidation } from '../decorators/use-validation.decorator';
+import { UpdatePersonDto } from './dto/update-person.dto';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 function asStreamableFile({ stream, type, length }: ImmichReadStream) {
@@ -38,5 +39,14 @@ export class PersonController {
   @Get(':id/assets')
   getPersonAssets(@Param() { id }: UUIDParamDto): Promise<AssetResponseDto[]> {
     return this.service.getAssets(id);
+  }
+
+  @Put(':id')
+  update(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+    dto: UpdatePersonDto,
+  ): Promise<PersonResponseDto> {
+    return this.service.update(authUser.id, id, dto);
   }
 }
