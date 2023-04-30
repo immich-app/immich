@@ -10,10 +10,14 @@
 	import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
 	import { api } from '@api';
 	import { onMount } from 'svelte';
+	import { clickOutside } from '$lib/utils/click-outside';
+
+	import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
 
 	export let data: PageData;
 
 	let personId = '';
+	let isEditName = false;
 
 	onMount(() => {
 		personId = data.person.id;
@@ -64,30 +68,37 @@
 </section>
 
 <!-- Face information block -->
-<section class="mt-24 ml-8 flex place-items-center">
-	<ImageThumbnail
-		circle
-		shadow
-		url={api.getPeopleThumbnailUrl(personId)}
-		altText={data.person.name}
-		widthStyle="50px"
-		heightStyle="50px"
-	/>
-	<div class="ml-4 text-immich-primary dark:text-immich-dark-primary">
-		{#if data.person.name}
-			<p class="font-medium">{data.person.name}</p>
-		{:else}
-			<p
-				class="font-medium hover:cursor-pointer w-fit"
-				on:click={() => console.log('Activate name change')}
-				on:keypress={() => {}}
-			>
-				Add a name
-			</p>
-
-			<p class="text-sm text-gray-500 dark:text-immich-gray">Find them fast by name with search</p>
-		{/if}
-	</div>
+<section class="pt-24 pl-6 flex place-items-center">
+	{#if isEditName}
+		<div use:clickOutside on:outclick={() => (isEditName = false)}>
+			<EditNameInput personName={data.person.name} {personId} />
+		</div>
+	{:else}
+		<ImageThumbnail
+			circle
+			shadow
+			url={api.getPeopleThumbnailUrl(personId)}
+			altText={data.person.name}
+			widthStyle="50px"
+			heightStyle="50px"
+		/>
+		<div
+			class="ml-4 text-immich-primary dark:text-immich-dark-primary"
+			on:click={() => (isEditName = true)}
+			on:keypress={() => {}}
+		>
+			{#if data.person.name}
+				<div class="hover:cursor-pointer">
+					<p class="font-medium">{data.person.name}</p>
+				</div>
+			{:else}
+				<p class="font-medium hover:cursor-pointer w-fit">Add a name</p>
+				<p class="text-sm text-gray-500 dark:text-immich-gray">
+					Find them fast by name with search
+				</p>
+			{/if}
+		</div>
+	{/if}
 </section>
 
 <!-- Gallery Block -->
