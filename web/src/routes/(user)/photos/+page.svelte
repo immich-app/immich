@@ -165,7 +165,7 @@
 	};
 </script>
 
-<UserPageLayout user={data.user} hideNavbar={$isMultiSelectStoreState} showUploadButton>
+<UserPageLayout isTimeline={true} user={data.user} hideNavbar={$isMultiSelectStoreState} showUploadButton>
 	<svelte:fragment slot="header">
 		{#if $isMultiSelectStoreState}
 			<ControlAppBar

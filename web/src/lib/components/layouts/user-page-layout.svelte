@@ -3,11 +3,13 @@
 	import type { UserResponseDto } from '@api';
 	import NavigationBar from '../shared-components/navigation-bar/navigation-bar.svelte';
 	import SideBar from '../shared-components/side-bar/side-bar.svelte';
+	import ConditionalWrapper from '../shared-components/conditional-wrapper.svelte';
 
 	export let user: UserResponseDto;
 	export let hideNavbar = false;
 	export let showUploadButton = false;
 	export let title: string | undefined = undefined;
+	export let isTimeline = false;
 </script>
 
 <header>
@@ -27,21 +29,23 @@
 >
 	<SideBar />
 
-	<slot name="content">
-		<section class="my-8 mx-4 bg-immich-bg dark:bg-immich-dark-bg">
-			{#if title}
-				<div class="flex justify-between place-items-center dark:text-immich-dark-fg px-4 h-10">
-					<p class="font-medium">{title}</p>
+	<ConditionalWrapper condition={!isTimeline} class="overflow-y-auto">
+		<slot name="content">
+			<section class="my-8 mx-4 bg-immich-bg dark:bg-immich-dark-bg">
+				{#if title}
+					<div class="flex justify-between place-items-center dark:text-immich-dark-fg px-4 h-10">
+						<p class="font-medium">{title}</p>
 
-					<slot name="buttons" />
-				</div>
+						<slot name="buttons" />
+					</div>
 
-				<div class="my-4">
-					<hr class="dark:border-immich-dark-gray" />
-				</div>
-			{/if}
+					<div class="my-4">
+						<hr class="dark:border-immich-dark-gray" />
+					</div>
+				{/if}
 
-			<slot />
-		</section>
-	</slot>
+				<slot />
+			</section>
+		</slot>
+	</ConditionalWrapper>
 </main>
