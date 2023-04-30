@@ -12,11 +12,11 @@
 	import { onDestroy, onMount } from 'svelte';
 	import 'leaflet.markercluster';
 	import { getMapContext } from './map.svelte';
-	import { AssetResponseDto, getFileUrl } from '@api';
+	import { MapMarkerResponseDto, getFileUrl } from '@api';
 	import { Marker, Icon } from 'leaflet';
 	import { assetInteractionStore } from '$lib/stores/asset-interaction.store';
 
-	export let assets: AssetResponseDto[];
+	export let markers: MapMarkerResponseDto[];
 
 	const map = getMapContext();
 	let cluster: L.MarkerClusterGroup;
@@ -33,17 +33,11 @@
 			spiderfyDistanceMultiplier: 3
 		});
 
-		for (let asset of assets) {
-			if (!asset.exifInfo) continue;
-
-			const lat = asset.exifInfo.latitude;
-			const lon = asset.exifInfo.longitude;
-
-			if (!lat || !lon) continue;
+		for (let marker of markers) {
 
 			const icon = new Icon({
-				iconUrl: getFileUrl(asset.id, true),
-				iconRetinaUrl: getFileUrl(asset.id, true),
+				iconUrl: getFileUrl(marker.id, true),
+				iconRetinaUrl: getFileUrl(marker.id, true),
 				iconSize: [60, 60],
 				iconAnchor: [12, 41],
 				popupAnchor: [1, -34],
@@ -51,16 +45,16 @@
 				shadowSize: [41, 41]
 			});
 
-			const marker = new Marker([lat, lon], {
+			const leafletMarker = new Marker([marker.lat, marker.lon], {
 				icon,
 				alt: ''
 			});
 
-			marker.on('click', () => {
-				assetInteractionStore.setViewingAsset(asset);
+			leafletMarker.on('click', () => {
+				assetInteractionStore.setViewingAssetId(marker.id);
 			});
 
-			cluster.addLayer(marker);
+			cluster.addLayer(leafletMarker);
 		}
 
 		map.addLayer(cluster);

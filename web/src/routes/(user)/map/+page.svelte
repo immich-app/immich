@@ -23,11 +23,12 @@
 			<TileLayer
 				urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
 				options={{
+					filter: ['bright:101%','contrast:101%','saturate:79%'],
 					attribution:
 						'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 				}}
 			/>
-			<AssetMarkerCluster assets={data.assets} />
+			<AssetMarkerCluster markers={data.mapMarkers} />
 		</Map>
 	</div>
 

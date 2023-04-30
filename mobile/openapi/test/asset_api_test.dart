@@ -117,6 +117,13 @@ void main() {
       // TODO
     });
 
+    // Get all assets that have GPS information embedded
+    //
+    //Future<List<MapMarkerResponseDto>> getMapMarkers({ bool isFavorite, bool isArchived, num skip }) async
+    test('test getMapMarkers', () async {
+      // TODO
+    });
+
     // Get all asset of a device that are in the database, ID only.
     //
     //Future<List<String>> getUserAssetsByDeviceId(String deviceId) async

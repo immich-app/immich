@@ -8,11 +8,11 @@ export const load = (async ({ locals: { api, user } }) => {
 	}
 
 	try {
-		const { data: assets } = await api.assetApi.getAllAssets();
+		const { data: mapMarkers } = await api.assetApi.getMapMarkers();
 
 		return {
 			user,
-			assets,
+			mapMarkers,
 			meta: {
 				title: 'Map'
 			}
