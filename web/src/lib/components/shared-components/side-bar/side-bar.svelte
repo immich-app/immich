@@ -113,7 +113,6 @@
 		<SideBarButton
 			title="Map"
 			logo={Map}
-			flippedLogo={true}
 			isSelected={$page.route.id === '/(user)/map'} />
 	</a>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.SHARING} draggable="false">
