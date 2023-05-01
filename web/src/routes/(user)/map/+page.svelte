@@ -9,6 +9,7 @@
 		isViewingAssetStoreState,
 		viewingAssetStoreState
 	} from '$lib/stores/asset-interaction.store';
+	import { colorTheme } from '$lib/stores/preferences.store';
 
 	export let data: PageData;
 </script>
@@ -20,14 +21,26 @@
 
 	<div class="h-[90%] w-full">
 		<Map latlng={[48, 11]} zoom={6}>
-			<TileLayer
-				urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
-				options={{
-					filter: ['bright:101%','contrast:101%','saturate:79%'],
-					attribution:
-						'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-				}}
-			/>
+			{#if $colorTheme === 'dark'}
+				<TileLayer
+					urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
+					options={{
+						filter: ['invert:100%','bright:127%','saturate:0%'],
+						attribution:
+							'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+					}}
+				/>
+			{:else}
+				<TileLayer
+					urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
+					options={{
+						filter: ['bright:101%','contrast:101%','saturate:79%'],
+						attribution:
+							'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+					}}
+				/>
+			{/if}
+
 			<AssetMarkerCluster markers={data.mapMarkers} />
 		</Map>
 	</div>
