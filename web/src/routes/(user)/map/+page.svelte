@@ -12,6 +12,13 @@
 	import { colorTheme } from '$lib/stores/preferences.store';
 
 	export let data: PageData;
+
+	let initialMapCenter = [48, 11];
+
+	if (data.mapMarkers.length) {
+		let firstMarker = data.mapMarkers[0];
+		initialMapCenter = [firstMarker.lat, firstMarker.lon];
+	}
 </script>
 
 <UserPageLayout user={data.user} title={data.meta.title}>
@@ -20,7 +27,7 @@
 	</div>
 
 	<div class="h-[90%] w-full">
-		<Map latlng={[48, 11]} zoom={6}>
+		<Map latlng={initialMapCenter} zoom={7}>
 			{#if $colorTheme === 'dark'}
 				<TileLayer
 					urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
