@@ -54,7 +54,7 @@
 				<div class="flex flex-row flex-wrap gap-4">
 					{#each people as person (person.id)}
 						<div class="text-center">
-							<a href="/faces/{person.id}">
+							<a href="/people/{person.id}">
 								<ImageThumbnail
 									circle
 									shadow
