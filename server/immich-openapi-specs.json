@@ -1796,7 +1796,7 @@
         ]
       },
       "put": {
-        "operationId": "update",
+        "operationId": "updatePerson",
         "parameters": [
           {
             "name": "id",

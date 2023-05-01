@@ -36,7 +36,11 @@ export class PersonController {
   }
 
   @Put(':id')
-  update(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, dto: UpdateDto): Promise<ResponseDto> {
+  updatePerson(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+    dto: UpdateDto,
+  ): Promise<ResponseDto> {
     return this.service.update(authUser, id, dto);
   }
 
