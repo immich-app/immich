@@ -6,7 +6,7 @@
 
 	export let personName = '';
 	export let personId = '';
-	let dispatch = createEventDispatcher();
+	let dispatch = createEventDispatcher<{ change: string }>();
 	let inputElement: HTMLInputElement;
 
 	onMount(() => {
@@ -15,10 +15,7 @@
 		}
 	});
 
-	const handleNameChange = () => {
-		console.log('name changed', personName);
-		dispatch('name-changed', personName);
-	};
+	const handleNameChange = () => dispatch('change', personName);
 </script>
 
 <div
@@ -32,7 +29,11 @@
 		widthStyle="30px"
 		heightStyle="30px"
 	/>
-	<div class="ml-4 flex justify-between w-full gap-16">
+	<form
+		class="ml-4 flex justify-between w-full gap-16"
+		autocomplete="off"
+		on:submit|preventDefault={handleNameChange}
+	>
 		<input
 			class="gap-2 w-full bg-gray-100 dark:bg-gray-700 dark:text-white"
 			type="text"
@@ -40,6 +41,6 @@
 			bind:value={personName}
 			bind:this={inputElement}
 		/>
-		<Button size="sm" on:click={handleNameChange}>Done</Button>
-	</div>
+		<Button size="sm" type="submit">Done</Button>
+	</form>
 </div>

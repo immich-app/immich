@@ -1,18 +1,16 @@
 <script lang="ts">
-	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
-	import ImageOffOutline from 'svelte-material-icons/ImageOffOutline.svelte';
-	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
-
-	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
-	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-	import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
 	import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
+	import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
+	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
+	import { clickOutside } from '$lib/utils/click-outside';
+	import { handleError } from '$lib/utils/handle-error';
 	import { api } from '@api';
 	import { onMount } from 'svelte';
-	import { clickOutside } from '$lib/utils/click-outside';
-
-	import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
+	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
+	import ImageOffOutline from 'svelte-material-icons/ImageOffOutline.svelte';
+	import type { PageData } from './$types';
 
 	export let data: PageData;
 
@@ -22,6 +20,16 @@
 	onMount(() => {
 		personId = data.person.id;
 	});
+
+	const handleNameChange = async (personId: string, name: string) => {
+		try {
+			isEditName = false;
+			data.person.name = name;
+			await api.personApi.updatePerson(personId, { name });
+		} catch (error) {
+			handleError(error, 'Unable to save name');
+		}
+	};
 </script>
 
 <section>
@@ -71,7 +79,11 @@
 <section class="pt-24 pl-6 flex place-items-center">
 	{#if isEditName}
 		<div use:clickOutside on:outclick={() => (isEditName = false)}>
-			<EditNameInput personName={data.person.name} {personId} />
+			<EditNameInput
+				personName={data.person.name}
+				{personId}
+				on:change={(event) => handleNameChange(personId, event.detail)}
+			/>
 		</div>
 	{:else}
 		<ImageThumbnail
