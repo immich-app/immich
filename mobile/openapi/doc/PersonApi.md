@@ -217,7 +217,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **updatePerson**
-> PersonResponseDto updatePerson(id)
+> PersonResponseDto updatePerson(id, personUpdateDto)
 
 
 
@@ -237,9 +237,10 @@ import 'package:openapi/api.dart';
 
 final api_instance = PersonApi();
 final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final personUpdateDto = PersonUpdateDto(); // PersonUpdateDto | 
 
 try {
-    final result = api_instance.updatePerson(id);
+    final result = api_instance.updatePerson(id, personUpdateDto);
     print(result);
 } catch (e) {
     print('Exception when calling PersonApi->updatePerson: $e\n');
@@ -251,6 +252,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **String**|  | 
+ **personUpdateDto** | [**PersonUpdateDto**](PersonUpdateDto.md)|  | 
 
 ### Return type
 
@@ -262,7 +264,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

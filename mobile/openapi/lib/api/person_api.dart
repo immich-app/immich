@@ -211,19 +211,21 @@ class PersonApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> updatePersonWithHttpInfo(String id,) async {
+  ///
+  /// * [PersonUpdateDto] personUpdateDto (required):
+  Future<Response> updatePersonWithHttpInfo(String id, PersonUpdateDto personUpdateDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/person/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
-    Object? postBody;
+    Object? postBody = personUpdateDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>[];
+    const contentTypes = <String>['application/json'];
 
 
     return apiClient.invokeAPI(
@@ -240,8 +242,10 @@ class PersonApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<PersonResponseDto?> updatePerson(String id,) async {
-    final response = await updatePersonWithHttpInfo(id,);
+  ///
+  /// * [PersonUpdateDto] personUpdateDto (required):
+  Future<PersonResponseDto?> updatePerson(String id, PersonUpdateDto personUpdateDto,) async {
+    final response = await updatePersonWithHttpInfo(id, personUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

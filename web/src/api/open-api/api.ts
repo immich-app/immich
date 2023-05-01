@@ -1542,6 +1542,19 @@ export interface PersonResponseDto {
 /**
  * 
  * @export
+ * @interface PersonUpdateDto
+ */
+export interface PersonUpdateDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof PersonUpdateDto
+     */
+    'name': string;
+}
+/**
+ * 
+ * @export
  * @interface QueueStatusDto
  */
 export interface QueueStatusDto {
@@ -7053,12 +7066,15 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
         /**
          * 
          * @param {string} id 
+         * @param {PersonUpdateDto} personUpdateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updatePerson: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        updatePerson: async (id: string, personUpdateDto: PersonUpdateDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('updatePerson', 'id', id)
+            // verify required parameter 'personUpdateDto' is not null or undefined
+            assertParamExists('updatePerson', 'personUpdateDto', personUpdateDto)
             const localVarPath = `/person/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -7080,9 +7096,12 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
 
 
     
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(personUpdateDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -7141,11 +7160,12 @@ export const PersonApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {string} id 
+         * @param {PersonUpdateDto} personUpdateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updatePerson(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PersonResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updatePerson(id, options);
+        async updatePerson(id: string, personUpdateDto: PersonUpdateDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PersonResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updatePerson(id, personUpdateDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -7196,11 +7216,12 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
         /**
          * 
          * @param {string} id 
+         * @param {PersonUpdateDto} personUpdateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updatePerson(id: string, options?: any): AxiosPromise<PersonResponseDto> {
-            return localVarFp.updatePerson(id, options).then((request) => request(axios, basePath));
+        updatePerson(id: string, personUpdateDto: PersonUpdateDto, options?: any): AxiosPromise<PersonResponseDto> {
+            return localVarFp.updatePerson(id, personUpdateDto, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -7258,12 +7279,13 @@ export class PersonApi extends BaseAPI {
     /**
      * 
      * @param {string} id 
+     * @param {PersonUpdateDto} personUpdateDto 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PersonApi
      */
-    public updatePerson(id: string, options?: AxiosRequestConfig) {
-        return PersonApiFp(this.configuration).updatePerson(id, options).then((request) => request(this.axios, this.basePath));
+    public updatePerson(id: string, personUpdateDto: PersonUpdateDto, options?: AxiosRequestConfig) {
+        return PersonApiFp(this.configuration).updatePerson(id, personUpdateDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

@@ -214,6 +214,7 @@ Class | Method | HTTP request | Description
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
  - [OAuthConfigResponseDto](doc//OAuthConfigResponseDto.md)
  - [PersonResponseDto](doc//PersonResponseDto.md)
+ - [PersonUpdateDto](doc//PersonUpdateDto.md)
  - [QueueStatusDto](doc//QueueStatusDto.md)
  - [RemoveAssetsDto](doc//RemoveAssetsDto.md)
  - [SearchAlbumResponseDto](doc//SearchAlbumResponseDto.md)
