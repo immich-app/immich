@@ -4,7 +4,7 @@ import { IAssetRepository, WithoutProperty } from '../asset';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
 import { IAssetJob, IBaseJob, IFaceThumbnailJob, IJobRepository, JobName } from '../job';
 import { IMediaRepository } from '../media';
-import { AssetFaceId, IPersonRepository } from '../people';
+import { AssetFaceId, IPersonRepository } from '../person';
 import { ISearchRepository } from '../search';
 import { IMachineLearningRepository } from '../smart-info';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
@@ -133,7 +133,7 @@ export class FacialRecognitionService {
       // }
 
       await this.mediaRepository.crop(asset.resizePath, output, { left, top, width: size, height: size });
-      await this.personService.save({ id: personId, thumbnailPath: output });
+      await this.personService.update({ id: personId, thumbnailPath: output });
     } catch (error: any) {
       this.logger.error(`Failed to crop face for asset: ${assetId}, person: ${personId}`, error.stack);
     }

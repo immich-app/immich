@@ -1,12 +1,12 @@
 import { IPersonRepository } from '../src';
 
-export const newPeopleRepositoryMock = (): jest.Mocked<IPersonRepository> => {
+export const newPersonRepositoryMock = (): jest.Mocked<IPersonRepository> => {
   return {
-    create: jest.fn(),
     getById: jest.fn(),
     getAll: jest.fn(),
-    save: jest.fn(),
     getAssets: jest.fn(),
+
+    create: jest.fn(),
     update: jest.fn(),
 
     // faces
