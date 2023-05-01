@@ -200,10 +200,25 @@ class _VideoPlayerState extends State<VideoPlayer> {
         child: Center(
           child: Stack(
             children: [
-              if (widget.placeholder != null)
-                widget.placeholder!,
-              const Center(
-                child: ImmichLoadingIndicator(),
+              if (widget.placeholder != null) widget.placeholder!,
+              FutureBuilder(
+                  future: Future.delayed(const Duration(seconds: 1)),
+                  builder: (context, snapshot) {
+                    // If we have to wait for over 1 second to start the video
+                    // then show the loading indicator
+                    final loading =
+                        (snapshot.connectionState == ConnectionState.done)
+                            ? const Center(
+                                child: ImmichLoadingIndicator(),
+                              )
+                            : Container();
+
+                    // Fade in the loading animation
+                    return AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: loading,
+                    );
+                  },
               ),
             ],
           ),
