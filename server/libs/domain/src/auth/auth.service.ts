@@ -11,7 +11,7 @@ import { IncomingHttpHeaders } from 'http';
 import { OAuthCore } from '../oauth/oauth.core';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
 import { IUserRepository, UserCore } from '../user';
-import { AuthType, IMMICH_ACCESS_COOKIE } from './auth.constant';
+import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_API_KEY_HEADER } from './auth.constant';
 import { AuthCore, LoginDetails } from './auth.core';
 import { ICryptoRepository } from '../crypto/crypto.repository';
 import { AuthUserDto, ChangePasswordDto, LoginCredentialDto, SignUpDto } from './dto';
@@ -137,7 +137,7 @@ export class AuthService {
       params.userToken ||
       this.getBearerToken(headers) ||
       this.getCookieToken(headers)) as string;
-    const apiKey = (headers['x-api-key'] || params.apiKey) as string;
+    const apiKey = (headers[IMMICH_API_KEY_HEADER] || params.apiKey) as string;
 
     if (shareKey) {
       return this.shareCore.validate(shareKey);
