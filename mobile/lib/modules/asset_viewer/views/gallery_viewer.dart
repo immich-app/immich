@@ -495,13 +495,6 @@ class GalleryViewerPage extends HookConsumerWidget {
                         localPosition = details.localPosition,
                     onDragUpdate: (_, details, __) =>
                         handleDragUpdate(assetList[index], details),
-                    onLongPressStart: (_, __, ___) {
-                      // If we are a motion video and we are not playing, start playing
-                      if (asset.livePhotoVideoId != null &&
-                          !isPlayingMotionVideo.value) {
-                        isPlayingMotionVideo.value = true;
-                      }
-                    },
                     onTapDown: (_, __, ___) =>
                         showAppBar.value = !showAppBar.value,
                     imageProvider: provider,
@@ -551,9 +544,16 @@ class GalleryViewerPage extends HookConsumerWidget {
                 }
               },
             ),
-            Listener(
+            GestureDetector(
               behavior: HitTestBehavior.translucent,
-              onPointerUp: (_) {
+              onLongPressStart: (_) {
+                // If we are a motion video and we are not playing, start playing
+                if (assetList[indexOfAsset.value].livePhotoVideoId != null &&
+                    !isPlayingMotionVideo.value) {
+                  isPlayingMotionVideo.value = true;
+                }
+              },
+              onLongPressEnd: (_) {
                 // Stop playing the motion video if this is a video and we are
                 // playing
                 if (assetList[indexOfAsset.value].livePhotoVideoId != null &&
