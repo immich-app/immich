@@ -81,7 +81,6 @@ class PhotoViewGestureDetector extends StatelessWidget {
     }
 
     if (onLongPressStart != null || onLongPressEnd != null) {
-      print('on long press start added');
       gestures[LongPressGestureRecognizer] =
           GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
         () => LongPressGestureRecognizer(debugOwner: this),
