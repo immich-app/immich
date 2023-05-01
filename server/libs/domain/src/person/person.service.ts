@@ -21,7 +21,7 @@ export class PersonService {
   async getById(authUser: AuthUserDto, personId: string): Promise<PersonResponseDto> {
     const person = await this.repository.getById(authUser.id, personId);
     if (!person) {
-      throw new NotFoundException();
+      throw new BadRequestException();
     }
 
     return mapPerson(person);
