@@ -90,7 +90,6 @@ export class ImmichApi {
 
 	public getPeopleThumbnailUrl(personId: string) {
 		const path = `/person/${personId}/thumbnail`;
-		console.log('get api', this.createUrl(path));
 		return this.createUrl(path);
 	}
 }

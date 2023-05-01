@@ -8,7 +8,7 @@ import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
 import { IAssetFaceJob, IBulkEntityJob, IJobRepository, JobName } from '../job';
-import { AssetFaceId, IPersonRepository } from '../people';
+import { AssetFaceId, IPersonRepository } from '../person';
 import { IMachineLearningRepository } from '../smart-info';
 import { SearchDto } from './dto';
 import { SearchConfigResponseDto, SearchResponseDto } from './response-dto';

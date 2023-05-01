@@ -1794,11 +1794,58 @@
             "cookie": []
           }
         ]
+      },
+      "put": {
+        "operationId": "updatePerson",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Person"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          }
+        ]
       }
     },
     "/person/{id}/thumbnail": {
       "get": {
-        "operationId": "getFaceThumbnail",
+        "operationId": "getPersonThumbnail",
         "parameters": [
           {
             "name": "id",
@@ -5110,6 +5157,17 @@
         "required": [
           "userId",
           "profileImagePath"
+        ]
+      },
+      "PersonUpdateDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
         ]
       },
       "CreateAssetDto": {

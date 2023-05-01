@@ -1,16 +1,16 @@
 <script lang="ts">
-	import Close from 'svelte-material-icons/Close.svelte';
-	import Calendar from 'svelte-material-icons/Calendar.svelte';
-	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
-	import CameraIris from 'svelte-material-icons/CameraIris.svelte';
-	import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
-	import { createEventDispatcher } from 'svelte';
-	import { AssetResponseDto, AlbumResponseDto, api } from '@api';
-	import { asByteUnitString } from '../../utils/byte-units';
-	import { locale } from '$lib/stores/preferences.store';
-	import { DateTime } from 'luxon';
-	import type { LatLngTuple } from 'leaflet';
 	import { page } from '$app/stores';
+	import { locale } from '$lib/stores/preferences.store';
+	import { AlbumResponseDto, AssetResponseDto, api } from '@api';
+	import type { LatLngTuple } from 'leaflet';
+	import { DateTime } from 'luxon';
+	import { createEventDispatcher } from 'svelte';
+	import Calendar from 'svelte-material-icons/Calendar.svelte';
+	import CameraIris from 'svelte-material-icons/CameraIris.svelte';
+	import Close from 'svelte-material-icons/Close.svelte';
+	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
+	import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
+	import { asByteUnitString } from '../../utils/byte-units';
 	import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
 
 	export let asset: AssetResponseDto;
@@ -35,6 +35,8 @@
 			return [lat, lng] as LatLngTuple;
 		}
 	})();
+
+	$: people = asset.people || [];
 
 	const dispatch = createEventDispatcher();
 
@@ -99,12 +101,12 @@
 		/>
 	</section>
 
-	{#if asset.people}
+	{#if people.length > 0}
 		<section class="px-4 py-4 text-sm">
 			<h2>PEOPLE</h2>
 
 			<div class="flex flex-wrap gap-2 mt-4">
-				{#each asset.people as person (person.id)}
+				{#each people as person (person.id)}
 					<div>
 						<ImageThumbnail
 							curve

@@ -22,11 +22,6 @@ void main() {
       // TODO
     });
 
-    //Future<MultipartFile> getFaceThumbnail(String id) async
-    test('test getFaceThumbnail', () async {
-      // TODO
-    });
-
     //Future<PersonResponseDto> getPerson(String id) async
     test('test getPerson', () async {
       // TODO
@@ -34,6 +29,16 @@ void main() {
 
     //Future<List<AssetResponseDto>> getPersonAssets(String id) async
     test('test getPersonAssets', () async {
+      // TODO
+    });
+
+    //Future<MultipartFile> getPersonThumbnail(String id) async
+    test('test getPersonThumbnail', () async {
+      // TODO
+    });
+
+    //Future<PersonResponseDto> updatePerson(String id, PersonUpdateDto personUpdateDto) async
+    test('test updatePerson', () async {
       // TODO
     });
 

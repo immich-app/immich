@@ -9,18 +9,6 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(AssetFaceEntity) private faceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
   ) {}
-  getAssets(id: string): Promise<AssetEntity[]> {
-    return this.assetRepository.find({
-      where: { faces: { personId: id } },
-      relations: {
-        faces: {
-          person: true,
-        },
-        exifInfo: true,
-      },
-    });
-  }
-
   getAll(userId: string): Promise<PersonEntity[]> {
     return this.personRepository
       .createQueryBuilder('person')
@@ -31,15 +19,32 @@ export class PersonRepository implements IPersonRepository {
       .getMany();
   }
 
-  getById(userId: string, personId: string): Promise<PersonEntity | null> {
-    return this.personRepository.findOne({ where: { id: personId, ownerId: userId } });
+  getById(ownerId: string, personId: string): Promise<PersonEntity | null> {
+    return this.personRepository.findOne({ where: { id: personId, ownerId } });
+  }
+
+  getAssets(ownerId: string, personId: string): Promise<AssetEntity[]> {
+    return this.assetRepository.find({
+      where: {
+        ownerId,
+        faces: {
+          personId,
+        },
+      },
+      relations: {
+        faces: {
+          person: true,
+        },
+        exifInfo: true,
+      },
+    });
   }
 
   create(entity: Partial<PersonEntity>): Promise<PersonEntity> {
     return this.personRepository.save(entity);
   }
 
-  save(entity: Partial<PersonEntity>): Promise<PersonEntity> {
+  update(entity: Partial<PersonEntity>): Promise<PersonEntity> {
     return this.personRepository.save(entity);
   }
 

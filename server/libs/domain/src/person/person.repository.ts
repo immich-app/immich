@@ -8,11 +8,12 @@ export interface AssetFaceId {
 }
 
 export interface IPersonRepository {
-  create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
-  getById(userId: string, personId: string): Promise<PersonEntity | null>;
   getAll(userId: string): Promise<PersonEntity[]>;
-  save(entity: Partial<PersonEntity>): Promise<PersonEntity>;
-  getAssets(id: string): Promise<AssetEntity[]>;
+  getById(userId: string, personId: string): Promise<PersonEntity | null>;
+  getAssets(userId: string, id: string): Promise<AssetEntity[]>;
+
+  create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
+  update(entity: Partial<PersonEntity>): Promise<PersonEntity>;
 
   // faces
   getAllFaces(): Promise<AssetFaceEntity[]>;

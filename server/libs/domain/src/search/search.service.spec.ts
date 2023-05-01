@@ -10,7 +10,7 @@ import {
   newAssetRepositoryMock,
   newJobRepositoryMock,
   newMachineLearningRepositoryMock,
-  newPeopleRepositoryMock,
+  newPersonRepositoryMock,
   newSearchRepositoryMock,
   searchStub,
 } from '../../test';
@@ -18,7 +18,7 @@ import { IAlbumRepository } from '../album/album.repository';
 import { IAssetRepository } from '../asset/asset.repository';
 import { JobName } from '../job';
 import { IJobRepository } from '../job/job.repository';
-import { IPersonRepository } from '../people';
+import { IPersonRepository } from '../person';
 import { IMachineLearningRepository } from '../smart-info';
 import { SearchDto } from './dto';
 import { ISearchRepository } from './search.repository';
@@ -32,13 +32,13 @@ describe(SearchService.name, () => {
   let assetMock: jest.Mocked<IAssetRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let machineMock: jest.Mocked<IMachineLearningRepository>;
-  let peopleMock: jest.Mocked<IPersonRepository>;
+  let personMock: jest.Mocked<IPersonRepository>;
   let searchMock: jest.Mocked<ISearchRepository>;
   let configMock: jest.Mocked<ConfigService>;
 
   const makeSut = (value: string) => {
     configMock.get.mockReturnValue(value);
-    return new SearchService(albumMock, assetMock, jobMock, machineMock, peopleMock, searchMock, configMock);
+    return new SearchService(albumMock, assetMock, jobMock, machineMock, personMock, searchMock, configMock);
   };
 
   beforeEach(() => {
@@ -46,11 +46,11 @@ describe(SearchService.name, () => {
     assetMock = newAssetRepositoryMock();
     jobMock = newJobRepositoryMock();
     machineMock = newMachineLearningRepositoryMock();
-    peopleMock = newPeopleRepositoryMock();
+    personMock = newPersonRepositoryMock();
     searchMock = newSearchRepositoryMock();
     configMock = { get: jest.fn() } as unknown as jest.Mocked<ConfigService>;
 
-    sut = new SearchService(albumMock, assetMock, jobMock, machineMock, peopleMock, searchMock, configMock);
+    sut = new SearchService(albumMock, assetMock, jobMock, machineMock, personMock, searchMock, configMock);
   });
 
   afterEach(() => {
@@ -136,6 +136,7 @@ describe(SearchService.name, () => {
       expect(jobMock.queue.mock.calls).toEqual([
         [{ name: JobName.SEARCH_INDEX_ASSETS }],
         [{ name: JobName.SEARCH_INDEX_ALBUMS }],
+        [{ name: JobName.SEARCH_INDEX_FACES }],
       ]);
     });
   });
@@ -162,6 +163,7 @@ describe(SearchService.name, () => {
           page: 1,
           items: [],
           facets: [],
+          distances: [],
         },
         assets: {
           total: 0,
@@ -169,6 +171,7 @@ describe(SearchService.name, () => {
           page: 1,
           items: [],
           facets: [],
+          distances: [],
         },
       });
 

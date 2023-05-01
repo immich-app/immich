@@ -7,7 +7,7 @@ import { FacialRecognitionService } from './facial-recognition';
 import { JobService } from './job';
 import { MediaService } from './media';
 import { OAuthService } from './oauth';
-import { PersonService } from './people';
+import { PersonService } from './person';
 import { SearchService } from './search';
 import { ServerInfoService } from './server-info';
 import { ShareService } from './share';
