@@ -2,11 +2,11 @@ import {
   AssetResponseDto,
   AuthUserDto,
   ImmichReadStream,
-  PersonResponseDto as ResponseDto,
+  PersonResponseDto,
   PersonService,
-  PersonUpdateDto as UpdateDto,
+  PersonUpdateDto,
 } from '@app/domain';
-import { Controller, Get, Header, Param, Put, StreamableFile } from '@nestjs/common';
+import { Body, Controller, Get, Header, Param, Put, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
 
@@ -26,12 +26,12 @@ export class PersonController {
   constructor(private service: PersonService) {}
 
   @Get()
-  getAllPeople(@GetAuthUser() authUser: AuthUserDto): Promise<ResponseDto[]> {
+  getAllPeople(@GetAuthUser() authUser: AuthUserDto): Promise<PersonResponseDto[]> {
     return this.service.getAll(authUser);
   }
 
   @Get(':id')
-  getPerson(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<ResponseDto> {
+  getPerson(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<PersonResponseDto> {
     return this.service.getById(authUser, id);
   }
 
@@ -39,8 +39,8 @@ export class PersonController {
   updatePerson(
     @GetAuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,
-    dto: UpdateDto,
-  ): Promise<ResponseDto> {
+    @Body() dto: PersonUpdateDto,
+  ): Promise<PersonResponseDto> {
     return this.service.update(authUser, id, dto);
   }
 
