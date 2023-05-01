@@ -19,9 +19,6 @@ class ClipRequestBody(BaseModel):
     text: str
 
 
-CACHE_FOLDER = '/cache'
-
-
 classification_model = os.getenv(
     'MACHINE_LEARNING_CLASSIFICATION_MODEL', 'microsoft/resnet-50')
 object_model = os.getenv('MACHINE_LEARNING_OBJECT_MODEL', 'hustvl/yolos-tiny')
@@ -31,6 +28,8 @@ clip_text_model = os.getenv(
     'MACHINE_LEARNING_CLIP_TEXT_MODEL', 'clip-ViT-B-32')
 facial_recognition_model = os.getenv(
     'MACHINE_LEARNING_FACIAL_RECOGNITION_MODEL', 'buffalo_l')
+
+cache_folder = os.getenv('MACHINE_LEARNING_CACHE_FOLDER', '/cache')
 
 _model_cache = {}
 
@@ -128,14 +127,14 @@ def _get_model(model, task=None):
         if task:
             if task == 'facial-recognition':
                 face_model = FaceAnalysis(
-                    name=model, root=CACHE_FOLDER, allowed_modules=["detection", "recognition"])
+                    name=model, root=cache_folder, allowed_modules=["detection", "recognition"])
                 face_model.prepare(ctx_id=0, det_size=(640, 640))
                 _model_cache[key] = face_model
             else:
                 _model_cache[key] = pipeline(model=model, task=task)
         else:
             _model_cache[key] = SentenceTransformer(
-                model, cache_folder=CACHE_FOLDER)
+                model, cache_folder=cache_folder)
     return _model_cache[key]
 
 
