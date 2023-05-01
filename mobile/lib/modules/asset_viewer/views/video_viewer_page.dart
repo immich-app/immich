@@ -98,8 +98,8 @@ class VideoPlayer extends StatefulWidget {
   final Function()? onPlaying;
   final Function()? onPaused;
 
-  /// The placeholder to show while the video is loading
-  /// usually, a thumbnail of the video
+  /// The placeholder to show while the video is loading usually, a thumbnail
+  /// of the video
   final Widget? placeholder;
 
   const VideoPlayer({
