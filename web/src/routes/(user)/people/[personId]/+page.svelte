@@ -21,6 +21,10 @@
 		personId = data.person.id;
 	});
 
+	const noop = () => {
+		// noop
+	};
+
 	const handleNameChange = async (personId: string, name: string) => {
 		try {
 			isEditName = false;
@@ -97,7 +101,7 @@
 		<div
 			class="ml-4 text-immich-primary dark:text-immich-dark-primary"
 			on:click={() => (isEditName = true)}
-			on:keypress={() => {}}
+			on:keypress={() => noop()}
 		>
 			{#if data.person.name}
 				<div class="hover:cursor-pointer">
