@@ -253,6 +253,8 @@ class PhotoView extends StatefulWidget {
     this.onTapDown,
     this.onDragStart,
     this.onDragEnd,
+    this.onLongPressStart,
+    this.onLongPressEnd,
     this.onDragUpdate,
     this.onScaleEnd,
     this.customSize,
@@ -293,6 +295,8 @@ class PhotoView extends StatefulWidget {
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
+    this.onLongPressStart,
+    this.onLongPressEnd,
     this.onScaleEnd,
     this.customSize,
     this.gestureDetectorBehavior,
@@ -396,6 +400,12 @@ class PhotoView extends StatefulWidget {
   /// A pointer that might cause a tap has contacted the screen at a particular
   /// location.
   final PhotoViewImageDragUpdateCallback? onDragUpdate;
+
+  /// A long press start event
+  final PhotoViewImageLongPressStartCallback? onLongPressStart;
+
+  /// A long press end event
+  final PhotoViewImageLongPressEndCallback? onLongPressEnd;
 
   /// A pointer that will trigger a scale has stopped contacting the screen at a
   /// particular location.
@@ -534,6 +544,8 @@ class _PhotoViewState extends State<PhotoView>
                 onDragStart: widget.onDragStart,
                 onDragEnd: widget.onDragEnd,
                 onDragUpdate: widget.onDragUpdate,
+                onLongPressStart: widget.onLongPressStart,
+                onLongPressEnd: widget.onLongPressEnd,
                 onScaleEnd: widget.onScaleEnd,
                 outerSize: computedOuterSize,
                 gestureDetectorBehavior: widget.gestureDetectorBehavior,
@@ -563,6 +575,8 @@ class _PhotoViewState extends State<PhotoView>
                 onDragStart: widget.onDragStart,
                 onDragEnd: widget.onDragEnd,
                 onDragUpdate: widget.onDragUpdate,
+                onLongPressStart: widget.onLongPressStart,
+                onLongPressEnd: widget.onLongPressEnd,
                 onScaleEnd: widget.onScaleEnd,
                 outerSize: computedOuterSize,
                 gestureDetectorBehavior: widget.gestureDetectorBehavior,
@@ -625,7 +639,7 @@ typedef PhotoViewImageDragStartCallback = Function(
   PhotoViewControllerValue controllerValue,
 );
 
-/// A type definition for a callback when the user drags 
+/// A type definition for a callback when the user drags
 typedef PhotoViewImageDragUpdateCallback = Function(
   BuildContext context,
   DragUpdateDetails details,
@@ -643,6 +657,20 @@ typedef PhotoViewImageDragEndCallback = Function(
 typedef PhotoViewImageScaleEndCallback = Function(
   BuildContext context,
   ScaleEndDetails details,
+  PhotoViewControllerValue controllerValue,
+);
+
+/// A type definition for a callback when the user starts a long press
+typedef PhotoViewImageLongPressStartCallback = Function(
+  BuildContext context,
+  LongPressStartDetails details,
+  PhotoViewControllerValue controllerValue,
+);
+
+/// A type definition for a callback when the user starts a long press
+typedef PhotoViewImageLongPressEndCallback = Function(
+  BuildContext context,
+  LongPressEndDetails details,
   PhotoViewControllerValue controllerValue,
 );
 

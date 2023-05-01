@@ -16,6 +16,8 @@ class PhotoViewGestureDetector extends StatelessWidget {
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
+    this.onLongPressStart,
+    this.onLongPressEnd,
     this.child,
     this.onTapUp,
     this.onTapDown,
@@ -35,6 +37,9 @@ class PhotoViewGestureDetector extends StatelessWidget {
 
   final GestureTapUpCallback? onTapUp;
   final GestureTapDownCallback? onTapDown;
+
+  final GestureLongPressStartCallback? onLongPressStart;
+  final GestureLongPressEndCallback? onLongPressEnd;
 
   final Widget? child;
 
@@ -63,7 +68,7 @@ class PhotoViewGestureDetector extends StatelessWidget {
     }
 
     if (onDragStart != null || onDragEnd != null || onDragUpdate != null) {
-      gestures[VerticalDragGestureRecognizer] = 
+      gestures[VerticalDragGestureRecognizer] =
           GestureRecognizerFactoryWithHandlers<VerticalDragGestureRecognizer>(
         () => VerticalDragGestureRecognizer(debugOwner: this),
         (VerticalDragGestureRecognizer instance) {
@@ -71,6 +76,19 @@ class PhotoViewGestureDetector extends StatelessWidget {
               ..onStart = onDragStart
               ..onUpdate = onDragUpdate
               ..onEnd = onDragEnd;
+        },
+      );
+    }
+
+    if (onLongPressStart != null || onLongPressEnd != null) {
+      print('on long press start added');
+      gestures[LongPressGestureRecognizer] =
+          GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
+        () => LongPressGestureRecognizer(debugOwner: this),
+        (LongPressGestureRecognizer instance) {
+          instance
+              ..onLongPressStart = onLongPressStart
+              ..onLongPressEnd = onLongPressEnd;
         },
       );
     }
@@ -236,7 +254,7 @@ class PhotoViewGestureRecognizer extends ScaleGestureRecognizer {
 /// ```
 class PhotoViewGestureDetectorScope extends InheritedWidget {
   const PhotoViewGestureDetectorScope({
-    super.key, 
+    super.key,
     this.axis,
     this.touchSlopFactor = .2,
     required Widget child,
@@ -254,7 +272,7 @@ class PhotoViewGestureDetectorScope extends InheritedWidget {
   // 0: most reactive but will not let tap recognizers accept gestures
   // <1: less reactive but gives the most leeway to other recognizers
   // 1: will not be able to compete with a `HorizontalDragGestureRecognizer` up the widget tree
-  final double touchSlopFactor;  
+  final double touchSlopFactor;
 
   @override
   bool updateShouldNotify(PhotoViewGestureDetectorScope oldWidget) {

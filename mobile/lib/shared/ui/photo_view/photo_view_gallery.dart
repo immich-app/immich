@@ -3,16 +3,7 @@ library photo_view_gallery;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/shared/ui/photo_view/photo_view.dart'
-    show
-        LoadingBuilder,
-        PhotoView,
-        PhotoViewImageTapDownCallback,
-        PhotoViewImageTapUpCallback,
-        PhotoViewImageDragStartCallback,
-        PhotoViewImageDragEndCallback,
-        PhotoViewImageDragUpdateCallback,
-        PhotoViewImageScaleEndCallback,
-        ScaleStateCycle;
+    show LoadingBuilder, PhotoView, PhotoViewImageDragEndCallback, PhotoViewImageDragStartCallback, PhotoViewImageDragUpdateCallback, PhotoViewImageLongPressEndCallback, PhotoViewImageLongPressStartCallback, PhotoViewImageScaleEndCallback, PhotoViewImageTapDownCallback, PhotoViewImageTapUpCallback, ScaleStateCycle;
 
 import 'package:immich_mobile/shared/ui/photo_view/src/controller/photo_view_controller.dart';
 import 'package:immich_mobile/shared/ui/photo_view/src/controller/photo_view_scalestate_controller.dart';
@@ -25,7 +16,7 @@ typedef PhotoViewGalleryPageChangedCallback = void Function(int index);
 
 /// A type definition for a [Function] that defines a page in [PhotoViewGallery.build]
 typedef PhotoViewGalleryBuilder = PhotoViewGalleryPageOptions Function(
-  BuildContext context, 
+  BuildContext context,
   int index,
 );
 
@@ -270,6 +261,8 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             onDragStart: pageOption.onDragStart,
             onDragEnd: pageOption.onDragEnd,
             onDragUpdate: pageOption.onDragUpdate,
+            onLongPressStart: pageOption.onLongPressStart,
+            onLongPressEnd: pageOption.onLongPressEnd,
             onScaleEnd: pageOption.onScaleEnd,
             gestureDetectorBehavior: pageOption.gestureDetectorBehavior,
             tightMode: pageOption.tightMode,
@@ -299,6 +292,8 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             onDragStart: pageOption.onDragStart,
             onDragEnd: pageOption.onDragEnd,
             onDragUpdate: pageOption.onDragUpdate,
+            onLongPressStart: pageOption.onLongPressStart,
+            onLongPressEnd: pageOption.onLongPressEnd,
             onScaleEnd: pageOption.onScaleEnd,
             gestureDetectorBehavior: pageOption.gestureDetectorBehavior,
             tightMode: pageOption.tightMode,
@@ -355,6 +350,8 @@ class PhotoViewGalleryPageOptions {
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
+    this.onLongPressStart,
+    this.onLongPressEnd,
     this.onScaleEnd,
     this.gestureDetectorBehavior,
     this.tightMode,
@@ -381,6 +378,8 @@ class PhotoViewGalleryPageOptions {
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
+    this.onLongPressStart,
+    this.onLongPressEnd,
     this.onScaleEnd,
     this.gestureDetectorBehavior,
     this.tightMode,
@@ -431,8 +430,14 @@ class PhotoViewGalleryPageOptions {
   /// Mirror to [PhotoView.onDragDown]
   final PhotoViewImageDragEndCallback? onDragEnd;
 
-  /// Mirror to [PhotoView.onDraUpdate]
+  /// Mirror to [PhotoView.onDragUpdate]
   final PhotoViewImageDragUpdateCallback? onDragUpdate;
+
+  /// Mirror to [PhotoView.onLongPressStart]
+  final PhotoViewImageLongPressStartCallback? onLongPressStart;
+
+  /// Mirror to [PhotoView.onLongPressStart]
+  final PhotoViewImageLongPressEndCallback? onLongPressEnd;
 
   /// Mirror to [PhotoView.onTapDown]
   final PhotoViewImageTapDownCallback? onTapDown;

@@ -27,6 +27,8 @@ class ImageWrapper extends StatefulWidget {
     required this.onDragStart,
     required this.onDragEnd,
     required this.onDragUpdate,
+    required this.onLongPressStart,
+    required this.onLongPressEnd,
     required this.onScaleEnd,
     required this.outerSize,
     required this.gestureDetectorBehavior,
@@ -57,6 +59,8 @@ class ImageWrapper extends StatefulWidget {
   final PhotoViewImageDragStartCallback? onDragStart;
   final PhotoViewImageDragEndCallback? onDragEnd;
   final PhotoViewImageDragUpdateCallback? onDragUpdate;
+  final PhotoViewImageLongPressStartCallback? onLongPressStart;
+  final PhotoViewImageLongPressEndCallback? onLongPressEnd;
   final PhotoViewImageScaleEndCallback? onScaleEnd;
   final Size outerSize;
   final HitTestBehavior? gestureDetectorBehavior;
@@ -201,6 +205,8 @@ class _ImageWrapperState extends State<ImageWrapper> {
       onDragStart: widget.onDragStart,
       onDragEnd: widget.onDragEnd,
       onDragUpdate: widget.onDragUpdate,
+      onLongPressStart: widget.onLongPressStart,
+      onLongPressEnd: widget.onLongPressEnd,
       onScaleEnd: widget.onScaleEnd,
       gestureDetectorBehavior: widget.gestureDetectorBehavior,
       tightMode: widget.tightMode ?? false,
@@ -253,6 +259,8 @@ class CustomChildWrapper extends StatelessWidget {
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
+    this.onLongPressStart,
+    this.onLongPressEnd,
     this.onScaleEnd,
     required this.outerSize,
     this.gestureDetectorBehavior,
@@ -283,6 +291,8 @@ class CustomChildWrapper extends StatelessWidget {
   final PhotoViewImageDragStartCallback? onDragStart;
   final PhotoViewImageDragEndCallback? onDragEnd;
   final PhotoViewImageDragUpdateCallback? onDragUpdate;
+  final PhotoViewImageLongPressStartCallback? onLongPressStart;
+  final PhotoViewImageLongPressEndCallback? onLongPressEnd;
   final PhotoViewImageScaleEndCallback? onScaleEnd;
   final Size outerSize;
   final HitTestBehavior? gestureDetectorBehavior;
@@ -316,6 +326,8 @@ class CustomChildWrapper extends StatelessWidget {
       onDragStart: onDragStart,
       onDragEnd: onDragEnd,
       onDragUpdate: onDragUpdate,
+      onLongPressEnd: onLongPressEnd,
+      onLongPressStart: onLongPressStart,
       onScaleEnd: onScaleEnd,
       gestureDetectorBehavior: gestureDetectorBehavior,
       tightMode: tightMode ?? false,

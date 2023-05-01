@@ -1,15 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/shared/ui/photo_view/photo_view.dart'
-    show
-        PhotoViewScaleState,
-        PhotoViewHeroAttributes,
-        PhotoViewImageTapDownCallback,
-        PhotoViewImageTapUpCallback,
-        PhotoViewImageScaleEndCallback,
-        PhotoViewImageDragEndCallback,
-        PhotoViewImageDragStartCallback,
-        PhotoViewImageDragUpdateCallback,
-        ScaleStateCycle;
+    show PhotoViewHeroAttributes, PhotoViewImageDragEndCallback, PhotoViewImageDragStartCallback, PhotoViewImageDragUpdateCallback, PhotoViewImageLongPressEndCallback, PhotoViewImageLongPressStartCallback, PhotoViewImageScaleEndCallback, PhotoViewImageTapDownCallback, PhotoViewImageTapUpCallback, PhotoViewScaleState, ScaleStateCycle;
 import 'package:immich_mobile/shared/ui/photo_view/src/controller/photo_view_controller.dart';
 import 'package:immich_mobile/shared/ui/photo_view/src/controller/photo_view_controller_delegate.dart';
 import 'package:immich_mobile/shared/ui/photo_view/src/controller/photo_view_scalestate_controller.dart';
@@ -36,6 +27,8 @@ class PhotoViewCore extends StatefulWidget {
     required this.onDragStart,
     required this.onDragEnd,
     required this.onDragUpdate,
+    required this.onLongPressStart,
+    required this.onLongPressEnd,
     required this.onScaleEnd,
     required this.gestureDetectorBehavior,
     required this.controller,
@@ -61,6 +54,8 @@ class PhotoViewCore extends StatefulWidget {
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
+    this.onLongPressStart,
+    this.onLongPressEnd,
     this.onScaleEnd,
     this.gestureDetectorBehavior,
     required this.controller,
@@ -96,6 +91,9 @@ class PhotoViewCore extends StatefulWidget {
   final PhotoViewImageDragStartCallback? onDragStart;
   final PhotoViewImageDragEndCallback? onDragEnd;
   final PhotoViewImageDragUpdateCallback? onDragUpdate;
+
+  final PhotoViewImageLongPressStartCallback? onLongPressStart;
+  final PhotoViewImageLongPressEndCallback? onLongPressEnd;
 
   final HitTestBehavior? gestureDetectorBehavior;
   final bool tightMode;
@@ -359,13 +357,13 @@ class PhotoViewCoreState extends State<PhotoViewCore>
             onScaleStart: onScaleStart,
             onScaleUpdate: onScaleUpdate,
             onScaleEnd: onScaleEnd,
-            onDragStart:  widget.onDragStart != null 
+            onDragStart:  widget.onDragStart != null
                ? (details) => widget.onDragStart!(context, details, value)
                : null,
-            onDragEnd:  widget.onDragEnd != null 
+            onDragEnd:  widget.onDragEnd != null
                ? (details) => widget.onDragEnd!(context, details, value)
                : null,
-            onDragUpdate: widget.onDragUpdate != null 
+            onDragUpdate: widget.onDragUpdate != null
                ? (details) => widget.onDragUpdate!(context, details, value)
                : null,
             hitDetector: this,
@@ -374,6 +372,12 @@ class PhotoViewCoreState extends State<PhotoViewCore>
                 : null,
             onTapDown: widget.onTapDown != null
                 ? (details) => widget.onTapDown!(context, details, value)
+                : null,
+            onLongPressStart: widget.onLongPressStart != null
+                ? (details) => widget.onLongPressStart!(context, details, value)
+                : null,
+            onLongPressEnd: widget.onLongPressEnd != null
+                ? (details) => widget.onLongPressEnd!(context, details, value)
                 : null,
             child: child,
           );
