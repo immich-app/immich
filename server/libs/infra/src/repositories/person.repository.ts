@@ -1,4 +1,4 @@
-import { AssetFaceId, IPersonRepository } from '@app/domain';
+import { IPersonRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
@@ -46,13 +46,5 @@ export class PersonRepository implements IPersonRepository {
 
   update(entity: Partial<PersonEntity>): Promise<PersonEntity> {
     return this.personRepository.save(entity);
-  }
-
-  getAllFaces(): Promise<AssetFaceEntity[]> {
-    return this.faceRepository.find({ relations: { asset: true } });
-  }
-
-  getFaceByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]> {
-    return this.faceRepository.find({ where: ids, relations: { asset: true } });
   }
 }

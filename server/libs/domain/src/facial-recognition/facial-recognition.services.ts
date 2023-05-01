@@ -4,11 +4,11 @@ import { IAssetRepository, WithoutProperty } from '../asset';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
 import { IAssetJob, IBaseJob, IFaceThumbnailJob, IJobRepository, JobName } from '../job';
 import { IMediaRepository } from '../media';
-import { AssetFaceId, IPersonRepository } from '../person';
-import { ISearchRepository } from '../search';
+import { IPersonRepository } from '../person/person.repository';
+import { ISearchRepository } from '../search/search.repository';
 import { IMachineLearningRepository } from '../smart-info';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
-import { IFacialRecognitionRepository } from './facial-recognition.repository';
+import { AssetFaceId, IFaceRepository } from './face.repository';
 
 export class FacialRecognitionService {
   private logger = new Logger(FacialRecognitionService.name);
@@ -16,13 +16,13 @@ export class FacialRecognitionService {
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IFaceRepository) private faceRepository: IFaceRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(IFacialRecognitionRepository) private repository: IFacialRecognitionRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
+    @Inject(IPersonRepository) private personService: IPersonRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(IPersonRepository) private personService: IPersonRepository,
   ) {}
 
   async handleQueueRecognizeFaces({ force }: IBaseJob) {
@@ -80,7 +80,7 @@ export class FacialRecognitionService {
 
         const faceId: AssetFaceId = { assetId: asset.id, personId };
 
-        await this.repository.createAssetFace({ ...faceId, embedding });
+        await this.faceRepository.create({ ...faceId, embedding });
         await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACE, data: faceId });
         await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: [asset.id] } });
       }

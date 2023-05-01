@@ -7,8 +7,8 @@ import { mapAsset } from '../asset';
 import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
+import { AssetFaceId, IFaceRepository } from '../facial-recognition';
 import { IAssetFaceJob, IBulkEntityJob, IJobRepository, JobName } from '../job';
-import { AssetFaceId, IPersonRepository } from '../person';
 import { IMachineLearningRepository } from '../smart-info';
 import { SearchDto } from './dto';
 import { SearchConfigResponseDto, SearchResponseDto } from './response-dto';
@@ -50,9 +50,9 @@ export class SearchService {
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IFaceRepository) private faceRepository: IFaceRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
-    @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
     configService: ConfigService,
   ) {
@@ -178,7 +178,7 @@ export class SearchService {
 
     try {
       // TODO: do this in batches based on searchIndexVersion
-      const faces = this.patchFaces(await this.personRepository.getAllFaces());
+      const faces = this.patchFaces(await this.faceRepository.getAll());
       this.logger.log(`Indexing ${faces.length} faces`);
 
       const chunkSize = 1000;
@@ -315,7 +315,7 @@ export class SearchService {
   }
 
   private async idsToFaces(ids: AssetFaceId[]): Promise<OwnedFaceEntity[]> {
-    return this.patchFaces(await this.personRepository.getFaceByIds(ids));
+    return this.patchFaces(await this.faceRepository.getByIds(ids));
   }
 
   private patchAssets(assets: AssetEntity[]): AssetEntity[] {

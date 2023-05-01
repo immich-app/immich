@@ -3,6 +3,7 @@ import {
   APIKeyEntity,
   AssetEntity,
   AssetType,
+  PersonEntity,
   SharedLinkEntity,
   SharedLinkType,
   SystemConfig,
@@ -828,5 +829,38 @@ export const probeStub = {
       formatLongName: 'Matroska / WebM',
       duration: 0,
     },
+  }),
+};
+
+export const personStub = {
+  noName: Object.freeze<PersonEntity>({
+    id: 'person-1',
+    createdAt: '2021-01-01',
+    updatedAt: '2021-01-01',
+    ownerId: userEntityStub.admin.id,
+    owner: userEntityStub.admin,
+    name: '',
+    thumbnailPath: '/path/to/thumbnail',
+    faces: [],
+  }),
+  withName: Object.freeze<PersonEntity>({
+    id: 'person-1',
+    createdAt: '2021-01-01',
+    updatedAt: '2021-01-01',
+    ownerId: userEntityStub.admin.id,
+    owner: userEntityStub.admin,
+    name: 'Person 1',
+    thumbnailPath: '/path/to/thumbnail',
+    faces: [],
+  }),
+  noThumbnail: Object.freeze<PersonEntity>({
+    id: 'person-1',
+    createdAt: '2021-01-01',
+    updatedAt: '2021-01-01',
+    ownerId: userEntityStub.admin.id,
+    owner: userEntityStub.admin,
+    name: '',
+    thumbnailPath: '',
+    faces: [],
   }),
 };

@@ -8,17 +8,17 @@ import {
   authStub,
   newAlbumRepositoryMock,
   newAssetRepositoryMock,
+  newFaceRepositoryMock,
   newJobRepositoryMock,
   newMachineLearningRepositoryMock,
-  newPersonRepositoryMock,
   newSearchRepositoryMock,
   searchStub,
 } from '../../test';
 import { IAlbumRepository } from '../album/album.repository';
 import { IAssetRepository } from '../asset/asset.repository';
+import { IFaceRepository } from '../facial-recognition';
 import { JobName } from '../job';
 import { IJobRepository } from '../job/job.repository';
-import { IPersonRepository } from '../person';
 import { IMachineLearningRepository } from '../smart-info';
 import { SearchDto } from './dto';
 import { ISearchRepository } from './search.repository';
@@ -30,27 +30,29 @@ describe(SearchService.name, () => {
   let sut: SearchService;
   let albumMock: jest.Mocked<IAlbumRepository>;
   let assetMock: jest.Mocked<IAssetRepository>;
+  let faceMock: jest.Mocked<IFaceRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let machineMock: jest.Mocked<IMachineLearningRepository>;
-  let personMock: jest.Mocked<IPersonRepository>;
   let searchMock: jest.Mocked<ISearchRepository>;
   let configMock: jest.Mocked<ConfigService>;
 
-  const makeSut = (value: string) => {
-    configMock.get.mockReturnValue(value);
-    return new SearchService(albumMock, assetMock, jobMock, machineMock, personMock, searchMock, configMock);
+  const makeSut = (value?: string) => {
+    if (value) {
+      configMock.get.mockReturnValue(value);
+    }
+    return new SearchService(albumMock, assetMock, faceMock, jobMock, machineMock, searchMock, configMock);
   };
 
   beforeEach(() => {
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
+    faceMock = newFaceRepositoryMock();
     jobMock = newJobRepositoryMock();
     machineMock = newMachineLearningRepositoryMock();
-    personMock = newPersonRepositoryMock();
     searchMock = newSearchRepositoryMock();
     configMock = { get: jest.fn() } as unknown as jest.Mocked<ConfigService>;
 
-    sut = new SearchService(albumMock, assetMock, jobMock, machineMock, personMock, searchMock, configMock);
+    sut = makeSut();
   });
 
   afterEach(() => {

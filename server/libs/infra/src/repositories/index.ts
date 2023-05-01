@@ -3,7 +3,7 @@ export * from './api-key.repository';
 export * from './asset.repository';
 export * from './communication.repository';
 export * from './crypto.repository';
-export * from './facial-recognition.repository';
+export * from './face.repository';
 export * from './filesystem.provider';
 export * from './geocoding.repository';
 export * from './job.repository';
