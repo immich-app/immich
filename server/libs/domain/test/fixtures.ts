@@ -374,6 +374,7 @@ const assetResponse: AssetResponseDto = {
   exifInfo: assetInfo,
   livePhotoVideoId: null,
   tags: [],
+  people: [],
 };
 
 const albumResponse: AlbumResponseDto = {

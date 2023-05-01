@@ -136,6 +136,7 @@ describe(SearchService.name, () => {
       expect(jobMock.queue.mock.calls).toEqual([
         [{ name: JobName.SEARCH_INDEX_ASSETS }],
         [{ name: JobName.SEARCH_INDEX_ALBUMS }],
+        [{ name: JobName.SEARCH_INDEX_FACES }],
       ]);
     });
   });
@@ -162,6 +163,7 @@ describe(SearchService.name, () => {
           page: 1,
           items: [],
           facets: [],
+          distances: [],
         },
         assets: {
           total: 0,
@@ -169,6 +171,7 @@ describe(SearchService.name, () => {
           page: 1,
           items: [],
           facets: [],
+          distances: [],
         },
       });
 
