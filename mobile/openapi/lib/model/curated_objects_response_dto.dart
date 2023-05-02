@@ -89,7 +89,7 @@ class CuratedObjectsResponseDto {
     return null;
   }
 
-  static List<CuratedObjectsResponseDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<CuratedObjectsResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <CuratedObjectsResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -120,12 +120,10 @@ class CuratedObjectsResponseDto {
   static Map<String, List<CuratedObjectsResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<CuratedObjectsResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = CuratedObjectsResponseDto.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = CuratedObjectsResponseDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

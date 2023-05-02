@@ -76,13 +76,13 @@ class ServerStatsResponseDto {
         photos: mapValueOfType<int>(json, r'photos')!,
         videos: mapValueOfType<int>(json, r'videos')!,
         usage: mapValueOfType<int>(json, r'usage')!,
-        usageByUser: UsageByUserDto.listFromJson(json[r'usageByUser'])!,
+        usageByUser: UsageByUserDto.listFromJson(json[r'usageByUser']),
       );
     }
     return null;
   }
 
-  static List<ServerStatsResponseDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<ServerStatsResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <ServerStatsResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -113,12 +113,10 @@ class ServerStatsResponseDto {
   static Map<String, List<ServerStatsResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<ServerStatsResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = ServerStatsResponseDto.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = ServerStatsResponseDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

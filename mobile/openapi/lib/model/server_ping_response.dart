@@ -61,7 +61,7 @@ class ServerPingResponse {
     return null;
   }
 
-  static List<ServerPingResponse>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<ServerPingResponse> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <ServerPingResponse>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -92,12 +92,10 @@ class ServerPingResponse {
   static Map<String, List<ServerPingResponse>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<ServerPingResponse>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = ServerPingResponse.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = ServerPingResponse.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

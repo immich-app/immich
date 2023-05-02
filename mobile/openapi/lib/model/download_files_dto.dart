@@ -63,7 +63,7 @@ class DownloadFilesDto {
     return null;
   }
 
-  static List<DownloadFilesDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<DownloadFilesDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <DownloadFilesDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -94,12 +94,10 @@ class DownloadFilesDto {
   static Map<String, List<DownloadFilesDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<DownloadFilesDto>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = DownloadFilesDto.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = DownloadFilesDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

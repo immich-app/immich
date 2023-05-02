@@ -152,7 +152,7 @@ class SharedLinkResponseDto {
         key: mapValueOfType<String>(json, r'key')!,
         createdAt: mapValueOfType<String>(json, r'createdAt')!,
         expiresAt: mapValueOfType<String>(json, r'expiresAt'),
-        assets: AssetResponseDto.listFromJson(json[r'assets'])!,
+        assets: AssetResponseDto.listFromJson(json[r'assets']),
         album: AlbumResponseDto.fromJson(json[r'album']),
         allowUpload: mapValueOfType<bool>(json, r'allowUpload')!,
         allowDownload: mapValueOfType<bool>(json, r'allowDownload')!,
@@ -162,7 +162,7 @@ class SharedLinkResponseDto {
     return null;
   }
 
-  static List<SharedLinkResponseDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SharedLinkResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <SharedLinkResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -193,12 +193,10 @@ class SharedLinkResponseDto {
   static Map<String, List<SharedLinkResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<SharedLinkResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = SharedLinkResponseDto.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = SharedLinkResponseDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

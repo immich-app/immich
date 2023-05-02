@@ -68,7 +68,7 @@ class DeleteAssetResponseDto {
     return null;
   }
 
-  static List<DeleteAssetResponseDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<DeleteAssetResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <DeleteAssetResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -99,12 +99,10 @@ class DeleteAssetResponseDto {
   static Map<String, List<DeleteAssetResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<DeleteAssetResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = DeleteAssetResponseDto.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = DeleteAssetResponseDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;
