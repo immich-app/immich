@@ -60,7 +60,7 @@ function createAssetInteractionStore() {
 		const { data } = await api.assetApi.getAssetById(id);
 		viewingAssetStoreState.set(data);
 		isViewingAssetStoreState.set(true);
-	}
+	};
 
 	const setIsViewingAsset = (isViewing: boolean) => {
 		isViewingAssetStoreState.set(isViewing);

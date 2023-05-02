@@ -7,8 +7,7 @@
 	import {
 		assetInteractionStore,
 		isViewingAssetStoreState,
-		viewingAssetStoreState,
-		
+		viewingAssetStoreState
 	} from '$lib/stores/asset-interaction.store';
 	import { colorTheme } from '$lib/stores/preferences.store';
 
@@ -44,9 +43,7 @@
 </script>
 
 <UserPageLayout user={data.user} title={data.meta.title}>
-	<div slot="buttons">
-
-	</div>
+	<div slot="buttons" />
 
 	<div class="h-[90%] w-full">
 		<Map latlng={initialMapCenter} zoom={7}>
@@ -54,7 +51,7 @@
 				<TileLayer
 					urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
 					options={{
-						filter: ['invert:100%','bright:127%','saturate:0%'],
+						filter: ['invert:100%', 'bright:127%', 'saturate:0%'],
 						attribution:
 							'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 					}}
@@ -63,17 +60,19 @@
 				<TileLayer
 					urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
 					options={{
-						filter: ['bright:101%','contrast:101%','saturate:79%'],
+						filter: ['bright:101%', 'contrast:101%', 'saturate:79%'],
 						attribution:
 							'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 					}}
 				/>
 			{/if}
 
-			<AssetMarkerCluster markers={data.mapMarkers} on:view={event => onViewAssets(event.detail.assets)} />
+			<AssetMarkerCluster
+				markers={data.mapMarkers}
+				on:view={(event) => onViewAssets(event.detail.assets)}
+			/>
 		</Map>
 	</div>
-
 </UserPageLayout>
 
 <Portal target="body">
@@ -89,4 +88,3 @@
 		/>
 	{/if}
 </Portal>
-

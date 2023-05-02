@@ -29,7 +29,7 @@
 					popupAnchor: [1, -34],
 					tooltipAnchor: [16, -28],
 					shadowSize: [41, 41]
-				}),
+				})
 			});
 
 			this.marker = marker;
@@ -61,7 +61,9 @@
 		});
 
 		cluster.on('clusterclick', (event: L.LeafletEvent) => {
-			const ids = event.sourceTarget.getAllChildMarkers().map((marker: AssetMarker) => marker.getAssetId());
+			const ids = event.sourceTarget
+				.getAllChildMarkers()
+				.map((marker: AssetMarker) => marker.getAssetId());
 			dispatch('view', { assets: ids });
 		});
 
@@ -86,4 +88,3 @@
 {#if cluster}
 	<slot />
 {/if}
-

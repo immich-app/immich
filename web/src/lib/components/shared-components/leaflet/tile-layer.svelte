@@ -1,6 +1,6 @@
 <script lang="ts" context="module">
 	type TileLayerFilterOptions = TileLayerOptions & {
-		filter?: string[],
+		filter?: string[];
 	};
 </script>
 
