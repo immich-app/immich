@@ -13,7 +13,7 @@
 	import 'leaflet.markercluster';
 	import { onDestroy, onMount } from 'svelte';
 	import { getMapContext } from './map.svelte';
-	import { MapMarkerResponseDto, getFileUrl } from '@api';
+	import { MapMarkerResponseDto, api } from '@api';
 	import { createEventDispatcher } from 'svelte';
 
 	class AssetMarker extends L.Marker {
@@ -22,8 +22,8 @@
 		constructor(marker: MapMarkerResponseDto) {
 			super([marker.lat, marker.lon], {
 				icon: new L.Icon({
-					iconUrl: getFileUrl(marker.id, true),
-					iconRetinaUrl: getFileUrl(marker.id, true),
+					iconUrl: api.getAssetThumbnailUrl(marker.id),
+					iconRetinaUrl: api.getAssetThumbnailUrl(marker.id),
 					iconSize: [60, 60],
 					iconAnchor: [12, 41],
 					popupAnchor: [1, -34],
