@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { PageData } from '../map/$types';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-	import { Map, TileLayer, AssetMarkerCluster } from '$lib/components/shared-components/leaflet';
 	import Portal from '$lib/components/shared-components/portal/portal.svelte';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import {
@@ -47,19 +46,22 @@
 	<div slot="buttons" />
 
 	<div class="h-[90%] w-full">
-		<Map latlng={initialMapCenter} zoom={7}>
-			<TileLayer
-				allowDarkMode={true}
-				urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
-				options={{
-					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-				}}
-			/>
-			<AssetMarkerCluster
-				markers={data.mapMarkers}
-				on:view={(event) => onViewAssets(event.detail.assets)}
-			/>
-		</Map>
+		{#await import('$lib/components/shared-components/leaflet') then { Map, TileLayer, AssetMarkerCluster }}
+			<Map latlng={initialMapCenter} zoom={7}>
+				<TileLayer
+					allowDarkMode={true}
+					urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
+					options={{
+						attribution:
+							'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+					}}
+				/>
+				<AssetMarkerCluster
+					markers={data.mapMarkers}
+					on:view={(event) => onViewAssets(event.detail.assets)}
+				/>
+			</Map>
+		{/await}
 	</div>
 </UserPageLayout>
 
