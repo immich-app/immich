@@ -7,17 +7,39 @@
 	import {
 		assetInteractionStore,
 		isViewingAssetStoreState,
-		viewingAssetStoreState
+		viewingAssetStoreState,
+		
 	} from '$lib/stores/asset-interaction.store';
 	import { colorTheme } from '$lib/stores/preferences.store';
 
 	export let data: PageData;
 
-	let initialMapCenter = [48, 11];
+	let initialMapCenter: [number, number] = [48, 11];
 
 	if (data.mapMarkers.length) {
 		let firstMarker = data.mapMarkers[0];
 		initialMapCenter = [firstMarker.lat, firstMarker.lon];
+	}
+
+	let viewingAssets: string[] = [];
+	let viewingAssetCursor = 0;
+
+	function onViewAssets(assets: string[]) {
+		assetInteractionStore.setViewingAssetId(assets[0]);
+		viewingAssets = assets;
+		viewingAssetCursor = 0;
+	}
+
+	function navigateNext() {
+		if (viewingAssetCursor < viewingAssets.length - 1) {
+			assetInteractionStore.setViewingAssetId(viewingAssets[++viewingAssetCursor]);
+		}
+	}
+
+	function navigatePrevious() {
+		if (viewingAssetCursor > 0) {
+			assetInteractionStore.setViewingAssetId(viewingAssets[--viewingAssetCursor]);
+		}
 	}
 </script>
 
@@ -48,7 +70,7 @@
 				/>
 			{/if}
 
-			<AssetMarkerCluster markers={data.mapMarkers} />
+			<AssetMarkerCluster markers={data.mapMarkers} on:view={event => onViewAssets(event.detail.assets)} />
 		</Map>
 	</div>
 
@@ -58,7 +80,9 @@
 	{#if $isViewingAssetStoreState}
 		<AssetViewer
 			asset={$viewingAssetStoreState}
-			showNavigation={false}
+			showNavigation={viewingAssets.length > 1}
+			on:navigate-next={navigateNext}
+			on:navigate-previous={navigatePrevious}
 			on:close={() => {
 				assetInteractionStore.setIsViewingAsset(false);
 			}}

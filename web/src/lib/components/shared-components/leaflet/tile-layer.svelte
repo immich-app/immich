@@ -11,6 +11,7 @@
 	const map = getMapContext();
 
 	onMount(() => {
+		// @ts-ignore
 		tileLayer = new L.tileLayer.colorFilter(urlTemplate, options).addTo(map);
 	});
 
