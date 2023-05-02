@@ -5,7 +5,7 @@
 
 	export let urlTemplate: string;
 	export let options: TileLayerOptions | undefined = undefined;
-	export let allowDarkMode: boolean = false;
+	export let allowDarkMode = false;
 
 	let tileLayer: TileLayer;
 
