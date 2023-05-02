@@ -1,5 +1,8 @@
 <script lang="ts" context="module">
-	type TileLayerFilterOptions = TileLayerOptions & { filter: string[] };
+	type TileLayerFilterOptions = TileLayerOptions & {
+		filter: string[],
+		attribution: string
+	};
 </script>
 
 <script lang="ts">

@@ -1,8 +1,8 @@
 <script lang="ts" context="module">
 	import { createContext } from '$lib/utils/context';
-	import { MarkerClusterGroup, MarkerClusterSpiderfyEvent } from 'leaflet.markercluster';
+	import L from 'leaflet';
 
-	const { get: getContext, set: setClusterContext } = createContext<() => MarkerClusterGroup>();
+	const { get: getContext, set: setClusterContext } = createContext<() => L.MarkerClusterGroup>();
 
 	export const getClusterContext = () => {
 		return getContext()();
@@ -10,10 +10,10 @@
 </script>
 
 <script lang="ts">
+	import 'leaflet.markercluster';
 	import { onDestroy, onMount } from 'svelte';
 	import { getMapContext } from './map.svelte';
 	import { MapMarkerResponseDto, getFileUrl } from '@api';
-	import L from 'leaflet';
 	import { createEventDispatcher } from 'svelte';
 
 	class AssetMarker extends L.Marker {
@@ -46,12 +46,12 @@
 
 	const map = getMapContext();
 
-	let cluster: MarkerClusterGroup;
+	let cluster: L.MarkerClusterGroup;
 
 	setClusterContext(() => cluster);
 
 	onMount(() => {
-		cluster = new MarkerClusterGroup({
+		cluster = new L.MarkerClusterGroup({
 			showCoverageOnHover: false,
 			zoomToBoundsOnClick: false,
 			spiderfyOnMaxZoom: false,
@@ -60,8 +60,8 @@
 			spiderfyDistanceMultiplier: 3
 		});
 
-		cluster.on('clusterclick', (event: MarkerClusterSpiderfyEvent) => {
-			const ids = event.layer.getAllChildMarkers().map((marker: AssetMarker) => marker.getAssetId());
+		cluster.on('clusterclick', (event: L.LeafletEvent) => {
+			const ids = event.sourceTarget.getAllChildMarkers().map((marker: AssetMarker) => marker.getAssetId());
 			dispatch('view', { assets: ids });
 		});
 
