@@ -88,3 +88,32 @@
 {#if cluster}
 	<slot />
 {/if}
+
+<style>
+	:global(.leaflet-marker-icon) {
+		border-radius: 25%;
+	}
+
+	:global(.marker-cluster) {
+		background-clip: padding-box;
+		border-radius: 20px;
+	}
+
+	:global(.marker-cluster div) {
+		width: 40px;
+		height: 40px;
+		margin-left: 5px;
+		margin-top: 5px;
+
+		text-align: center;
+		border-radius: 20px;
+		font-weight: bold;
+
+		background-color: rgb(236, 237, 246);
+		color: rgb(69, 80, 169);
+	}
+
+	:global(.marker-cluster span) {
+		line-height: 40px;
+	}
+</style>

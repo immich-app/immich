@@ -1,29 +1,34 @@
-<script lang="ts" context="module">
-	type TileLayerFilterOptions = TileLayerOptions & {
-		filter?: string[];
-	};
-</script>
-
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import 'leaflet.tilelayer.colorfilter';
-	import { TileLayer, type TileLayerOptions } from 'leaflet';
+	import L, { TileLayer, type TileLayerOptions } from 'leaflet';
 	import { getMapContext } from './map.svelte';
-	import L from 'leaflet';
 
 	export let urlTemplate: string;
-	export let options: TileLayerFilterOptions | undefined = undefined;
+	export let options: TileLayerOptions | undefined = undefined;
+	export let allowDarkMode: boolean = false;
+
 	let tileLayer: TileLayer;
 
 	const map = getMapContext();
 
 	onMount(() => {
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-		// @ts-ignore
-		tileLayer = new L.tileLayer.colorFilter(urlTemplate, options).addTo(map);
+		tileLayer = new L.TileLayer(urlTemplate, {
+			className: allowDarkMode ? 'leaflet-layer-dynamic' : 'leaflet-layer',
+			...options
+		}).addTo(map);
 	});
 
 	onDestroy(() => {
 		if (tileLayer) tileLayer.remove();
 	});
 </script>
+
+<style>
+	:global(.leaflet-layer-dynamic) {
+		filter: brightness(100%) contrast(100%) saturate(80%);
+	}
+
+	:global(.dark .leaflet-layer-dynamic) {
+		filter: invert(100%) brightness(130%) saturate(0%);
+	}
+</style>

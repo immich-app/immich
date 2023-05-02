@@ -63,7 +63,6 @@
 		"justified-layout": "^4.1.0",
 		"leaflet": "^1.9.3",
 		"leaflet.markercluster": "^1.5.3",
-		"leaflet.tilelayer.colorfilter": "^1.2.5",
 		"lodash-es": "^4.17.21",
 		"luxon": "^3.2.1",
 		"rxjs": "^7.8.0",

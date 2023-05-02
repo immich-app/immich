@@ -9,15 +9,16 @@
 		isViewingAssetStoreState,
 		viewingAssetStoreState
 	} from '$lib/stores/asset-interaction.store';
-	import { colorTheme } from '$lib/stores/preferences.store';
 
 	export let data: PageData;
 
 	let initialMapCenter: [number, number] = [48, 11];
 
-	if (data.mapMarkers.length) {
-		let firstMarker = data.mapMarkers[0];
-		initialMapCenter = [firstMarker.lat, firstMarker.lon];
+	$: {
+		if (data.mapMarkers.length) {
+			let firstMarker = data.mapMarkers[0];
+			initialMapCenter = [firstMarker.lat, firstMarker.lon];
+		}
 	}
 
 	let viewingAssets: string[] = [];
@@ -47,26 +48,13 @@
 
 	<div class="h-[90%] w-full">
 		<Map latlng={initialMapCenter} zoom={7}>
-			{#if $colorTheme === 'dark'}
-				<TileLayer
-					urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
-					options={{
-						filter: ['invert:100%', 'bright:127%', 'saturate:0%'],
-						attribution:
-							'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-					}}
-				/>
-			{:else}
-				<TileLayer
-					urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
-					options={{
-						filter: ['bright:101%', 'contrast:101%', 'saturate:79%'],
-						attribution:
-							'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-					}}
-				/>
-			{/if}
-
+			<TileLayer
+				allowDarkMode={true}
+				urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
+				options={{
+					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+				}}
+			/>
 			<AssetMarkerCluster
 				markers={data.mapMarkers}
 				on:view={(event) => onViewAssets(event.detail.assets)}
