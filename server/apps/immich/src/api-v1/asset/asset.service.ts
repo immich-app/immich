@@ -147,9 +147,7 @@ export class AssetService {
   public async getMapMarkers(authUser: AuthUserDto, dto: AssetSearchDto): Promise<MapMarkerResponseDto[]> {
     const assets = await this._assetRepository.getAllByUserId(authUser.id, dto);
 
-    return assets
-      .map((asset) => mapAssetMapMarker(asset))
-      .filter((marker) => marker != null) as MapMarkerResponseDto[];
+    return assets.map((asset) => mapAssetMapMarker(asset)).filter((marker) => marker != null) as MapMarkerResponseDto[];
   }
 
   public async getAssetByTimeBucket(
