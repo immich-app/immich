@@ -1,7 +1,7 @@
 import { IAssetRepository } from './asset-repository';
 import { AssetService } from './asset.service';
 import { QueryFailedError, Repository } from 'typeorm';
-import { AssetEntity, AssetType } from '@app/infra/entities';
+import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
@@ -57,6 +57,9 @@ const _getAsset_1 = () => {
   asset_1.webpPath = '';
   asset_1.encodedVideoPath = '';
   asset_1.duration = '0:00:00.000000';
+  asset_1.exifInfo = new ExifEntity();
+  asset_1.exifInfo.latitude = 49.533547;
+  asset_1.exifInfo.longitude = 10.703075;
   return asset_1;
 };
 
@@ -490,6 +493,19 @@ describe('AssetService', () => {
       await sut.downloadFile(authStub.admin, 'id_1');
 
       expect(storageMock.createReadStream).toHaveBeenCalledWith('fake_path/asset_1.jpeg', 'image/jpeg');
+    });
+  });
+
+  describe('get map markers', () => {
+    it('should get geo information of assets', async () => {
+      assetRepositoryMock.getAllByUserId.mockResolvedValue(_getAssets());
+
+      const markers = await sut.getMapMarkers(authStub.admin, {});
+
+      expect(markers).toHaveLength(1);
+      expect(markers[0].lat).toBe(_getAsset_1().exifInfo?.latitude);
+      expect(markers[0].lon).toBe(_getAsset_1().exifInfo?.longitude);
+      expect(markers[0].id).toBe(_getAsset_1().id);
     });
   });
 });
