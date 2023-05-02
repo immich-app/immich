@@ -1,9 +1,16 @@
 import { AssetEntity, AssetType } from '@app/infra/entities';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class MapMarkerResponseDto {
   id!: string;
+
+  @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type!: AssetType;
+
+  @ApiProperty({ type: 'number', format: 'double' })
   lat!: number;
+
+  @ApiProperty({ type: 'number', format: 'double' })
   lon!: number;
 }
 

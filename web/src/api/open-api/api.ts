@@ -1446,16 +1446,10 @@ export interface LogoutResponseDto {
 export interface MapMarkerResponseDto {
     /**
      * 
-     * @type {string}
+     * @type {AssetTypeEnum}
      * @memberof MapMarkerResponseDto
      */
-    'id': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof MapMarkerResponseDto
-     */
-    'type': MapMarkerResponseDtoTypeEnum;
+    'type': AssetTypeEnum;
     /**
      * 
      * @type {number}
@@ -1468,16 +1462,14 @@ export interface MapMarkerResponseDto {
      * @memberof MapMarkerResponseDto
      */
     'lon': number;
+    /**
+     * 
+     * @type {string}
+     * @memberof MapMarkerResponseDto
+     */
+    'id': string;
 }
 
-export const MapMarkerResponseDtoTypeEnum = {
-    Image: 'IMAGE',
-    Video: 'VIDEO',
-    Audio: 'AUDIO',
-    Other: 'OTHER'
-} as const;
-
-export type MapMarkerResponseDtoTypeEnum = typeof MapMarkerResponseDtoTypeEnum[keyof typeof MapMarkerResponseDtoTypeEnum];
 
 /**
  * 

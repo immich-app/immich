@@ -13,44 +13,44 @@ part of openapi.api;
 class MapMarkerResponseDto {
   /// Returns a new [MapMarkerResponseDto] instance.
   MapMarkerResponseDto({
-    required this.id,
     required this.type,
     required this.lat,
     required this.lon,
+    required this.id,
   });
+
+  AssetTypeEnum type;
+
+  double lat;
+
+  double lon;
 
   String id;
 
-  MapMarkerResponseDtoTypeEnum type;
-
-  num lat;
-
-  num lon;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is MapMarkerResponseDto &&
-     other.id == id &&
      other.type == type &&
      other.lat == lat &&
-     other.lon == lon;
+     other.lon == lon &&
+     other.id == id;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id.hashCode) +
     (type.hashCode) +
     (lat.hashCode) +
-    (lon.hashCode);
+    (lon.hashCode) +
+    (id.hashCode);
 
   @override
-  String toString() => 'MapMarkerResponseDto[id=$id, type=$type, lat=$lat, lon=$lon]';
+  String toString() => 'MapMarkerResponseDto[type=$type, lat=$lat, lon=$lon, id=$id]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'id'] = this.id;
       json[r'type'] = this.type;
       json[r'lat'] = this.lat;
       json[r'lon'] = this.lon;
+      json[r'id'] = this.id;
     return json;
   }
 
@@ -73,14 +73,10 @@ class MapMarkerResponseDto {
       }());
 
       return MapMarkerResponseDto(
+        type: AssetTypeEnum.fromJson(json[r'type'])!,
+        lat: mapValueOfType<double>(json, r'lat')!,
+        lon: mapValueOfType<double>(json, r'lon')!,
         id: mapValueOfType<String>(json, r'id')!,
-        type: MapMarkerResponseDtoTypeEnum.fromJson(json[r'type'])!,
-        lat: json[r'lat'] == null
-            ? null
-            : num.parse(json[r'lat'].toString()),
-        lon: json[r'lon'] == null
-            ? null
-            : num.parse(json[r'lon'].toString()),
       );
     }
     return null;
@@ -130,90 +126,10 @@ class MapMarkerResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'id',
     'type',
     'lat',
     'lon',
+    'id',
   };
 }
-
-
-class MapMarkerResponseDtoTypeEnum {
-  /// Instantiate a new enum with the provided [value].
-  const MapMarkerResponseDtoTypeEnum._(this.value);
-
-  /// The underlying value of this enum member.
-  final String value;
-
-  @override
-  String toString() => value;
-
-  String toJson() => value;
-
-  static const IMAGE = MapMarkerResponseDtoTypeEnum._(r'IMAGE');
-  static const VIDEO = MapMarkerResponseDtoTypeEnum._(r'VIDEO');
-  static const AUDIO = MapMarkerResponseDtoTypeEnum._(r'AUDIO');
-  static const OTHER = MapMarkerResponseDtoTypeEnum._(r'OTHER');
-
-  /// List of all possible values in this [enum][MapMarkerResponseDtoTypeEnum].
-  static const values = <MapMarkerResponseDtoTypeEnum>[
-    IMAGE,
-    VIDEO,
-    AUDIO,
-    OTHER,
-  ];
-
-  static MapMarkerResponseDtoTypeEnum? fromJson(dynamic value) => MapMarkerResponseDtoTypeEnumTypeTransformer().decode(value);
-
-  static List<MapMarkerResponseDtoTypeEnum>? listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <MapMarkerResponseDtoTypeEnum>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = MapMarkerResponseDtoTypeEnum.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
-  }
-}
-
-/// Transformation class that can [encode] an instance of [MapMarkerResponseDtoTypeEnum] to String,
-/// and [decode] dynamic data back to [MapMarkerResponseDtoTypeEnum].
-class MapMarkerResponseDtoTypeEnumTypeTransformer {
-  factory MapMarkerResponseDtoTypeEnumTypeTransformer() => _instance ??= const MapMarkerResponseDtoTypeEnumTypeTransformer._();
-
-  const MapMarkerResponseDtoTypeEnumTypeTransformer._();
-
-  String encode(MapMarkerResponseDtoTypeEnum data) => data.value;
-
-  /// Decodes a [dynamic value][data] to a MapMarkerResponseDtoTypeEnum.
-  ///
-  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
-  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
-  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
-  ///
-  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
-  /// and users are still using an old app with the old code.
-  MapMarkerResponseDtoTypeEnum? decode(dynamic data, {bool allowNull = true}) {
-    if (data != null) {
-      switch (data) {
-        case r'IMAGE': return MapMarkerResponseDtoTypeEnum.IMAGE;
-        case r'VIDEO': return MapMarkerResponseDtoTypeEnum.VIDEO;
-        case r'AUDIO': return MapMarkerResponseDtoTypeEnum.AUDIO;
-        case r'OTHER': return MapMarkerResponseDtoTypeEnum.OTHER;
-        default:
-          if (!allowNull) {
-            throw ArgumentError('Unknown enum value to decode: $data');
-          }
-      }
-    }
-    return null;
-  }
-
-  /// Singleton [MapMarkerResponseDtoTypeEnumTypeTransformer] instance.
-  static MapMarkerResponseDtoTypeEnumTypeTransformer? _instance;
-}
-
 

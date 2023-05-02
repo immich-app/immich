@@ -16,23 +16,23 @@ void main() {
   // final instance = MapMarkerResponseDto();
 
   group('test MapMarkerResponseDto', () {
-    // String id
-    test('to test the property `id`', () async {
-      // TODO
-    });
-
-    // String type
+    // AssetTypeEnum type
     test('to test the property `type`', () async {
       // TODO
     });
 
-    // num lat
+    // double lat
     test('to test the property `lat`', () async {
       // TODO
     });
 
-    // num lon
+    // double lon
     test('to test the property `lon`', () async {
+      // TODO
+    });
+
+    // String id
+    test('to test the property `id`', () async {
       // TODO
     });
 

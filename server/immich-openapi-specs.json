@@ -5248,30 +5248,26 @@
       "MapMarkerResponseDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string"
-          },
           "type": {
-            "type": "string",
-            "enum": [
-              "IMAGE",
-              "VIDEO",
-              "AUDIO",
-              "OTHER"
-            ]
+            "$ref": "#/components/schemas/AssetTypeEnum"
           },
           "lat": {
-            "type": "number"
+            "type": "number",
+            "format": "double"
           },
           "lon": {
-            "type": "number"
+            "type": "number",
+            "format": "double"
+          },
+          "id": {
+            "type": "string"
           }
         },
         "required": [
-          "id",
           "type",
           "lat",
-          "lon"
+          "lon",
+          "id"
         ]
       },
       "UpdateAssetDto": {
