@@ -68,7 +68,7 @@ class CreateProfileImageResponseDto {
     return null;
   }
 
-  static List<CreateProfileImageResponseDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<CreateProfileImageResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <CreateProfileImageResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -99,12 +99,10 @@ class CreateProfileImageResponseDto {
   static Map<String, List<CreateProfileImageResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<CreateProfileImageResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = CreateProfileImageResponseDto.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = CreateProfileImageResponseDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

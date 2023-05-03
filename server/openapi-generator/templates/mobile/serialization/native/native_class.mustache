@@ -141,7 +141,7 @@ class {{{classname}}} {
         {{{name}}}: json[r'{{{baseName}}}'] is List
           ? (json[r'{{{baseName}}}'] as List).map((e) =>
               {{#items.complexType}}
-              {{items.complexType}}.listFromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{#uniqueItems}}.toSet(){{/uniqueItems}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}
+              {{items.complexType}}.listFromJson(json[r'{{{baseName}}}']){{#uniqueItems}}.toSet(){{/uniqueItems}}
               {{/items.complexType}}
               {{^items.complexType}}
               e == null ? {{#items.isNullable}}null{{/items.isNullable}}{{^items.isNullable}}const  <{{items.items.dataType}}>[]{{/items.isNullable}} : (e as List).cast<{{items.items.dataType}}>()
@@ -150,7 +150,7 @@ class {{{classname}}} {
           :  {{#isNullable}}null{{/isNullable}}{{^isNullable}}const []{{/isNullable}},
             {{/items.isArray}}
             {{^items.isArray}}
-        {{{name}}}: {{{complexType}}}.listFromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{#uniqueItems}}.toSet(){{/uniqueItems}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
+        {{{name}}}: {{{complexType}}}.listFromJson(json[r'{{{baseName}}}']){{#uniqueItems}}.toSet(){{/uniqueItems}},
             {{/items.isArray}}
           {{/isArray}}
           {{^isArray}}
@@ -168,7 +168,7 @@ class {{{classname}}} {
               {{^items.isArray}}
                 {{#items.isMap}}
                   {{#items.complexType}}
-        {{{name}}}: {{items.complexType}}.mapFromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
+        {{{name}}}: {{items.complexType}}.mapFromJson(json[r'{{{baseName}}}']),
                   {{/items.complexType}}
                   {{^items.complexType}}
         {{{name}}}: mapCastOfType<String, dynamic>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
@@ -176,7 +176,7 @@ class {{{classname}}} {
                 {{/items.isMap}}
                 {{^items.isMap}}
                   {{#items.complexType}}
-        {{{name}}}: {{{items.complexType}}}.mapFromJson(json[r'{{{baseName}}}'{{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}}]) ?? {{{.}}}{{/defaultValue}}{{/required}},
+        {{{name}}}: {{{items.complexType}}}.mapFromJson(json[r'{{{baseName}}}']),
                   {{/items.complexType}}
                   {{^items.complexType}}
         {{{name}}}: mapCastOfType<String, {{items.dataType}}>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
@@ -197,7 +197,7 @@ class {{{classname}}} {
         {{^complexType}}
           {{#isArray}}
             {{#isEnum}}
-        {{{name}}}: {{{items.datatypeWithEnum}}}.listFromJson(json[r'{{{baseName}}}']){{#required}}{{^isNullable}}!{{/isNullable}}{{#uniqueItems}}.toSet(){{/uniqueItems}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}},
+        {{{name}}}: {{{items.datatypeWithEnum}}}.listFromJson(json[r'{{{baseName}}}']){{#uniqueItems}}.toSet(){{/uniqueItems}},
             {{/isEnum}}
             {{^isEnum}}
         {{{name}}}: json[r'{{{baseName}}}'] is {{#uniqueItems}}Set{{/uniqueItems}}{{^uniqueItems}}List{{/uniqueItems}}
@@ -234,7 +234,7 @@ class {{{classname}}} {
     return null;
   }
 
-  static List<{{{classname}}}>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<{{{classname}}}> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <{{{classname}}}>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -265,12 +265,10 @@ class {{{classname}}} {
   static Map<String, List<{{{classname}}}>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<{{{classname}}}>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = {{{classname}}}.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = {{{classname}}}.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

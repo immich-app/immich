@@ -68,7 +68,7 @@ class CreateTagDto {
     return null;
   }
 
-  static List<CreateTagDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<CreateTagDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <CreateTagDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -99,12 +99,10 @@ class CreateTagDto {
   static Map<String, List<CreateTagDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<CreateTagDto>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = CreateTagDto.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = CreateTagDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

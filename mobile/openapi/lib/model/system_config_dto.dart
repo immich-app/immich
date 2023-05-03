@@ -82,7 +82,7 @@ class SystemConfigDto {
     return null;
   }
 
-  static List<SystemConfigDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SystemConfigDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <SystemConfigDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -113,12 +113,10 @@ class SystemConfigDto {
   static Map<String, List<SystemConfigDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<SystemConfigDto>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = SystemConfigDto.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = SystemConfigDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

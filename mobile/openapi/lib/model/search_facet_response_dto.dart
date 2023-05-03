@@ -62,13 +62,13 @@ class SearchFacetResponseDto {
 
       return SearchFacetResponseDto(
         fieldName: mapValueOfType<String>(json, r'fieldName')!,
-        counts: SearchFacetCountResponseDto.listFromJson(json[r'counts'])!,
+        counts: SearchFacetCountResponseDto.listFromJson(json[r'counts']),
       );
     }
     return null;
   }
 
-  static List<SearchFacetResponseDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SearchFacetResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <SearchFacetResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -99,12 +99,10 @@ class SearchFacetResponseDto {
   static Map<String, List<SearchFacetResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<SearchFacetResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = SearchFacetResponseDto.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = SearchFacetResponseDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

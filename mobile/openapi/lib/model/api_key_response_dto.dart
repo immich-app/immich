@@ -82,7 +82,7 @@ class APIKeyResponseDto {
     return null;
   }
 
-  static List<APIKeyResponseDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<APIKeyResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <APIKeyResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -113,12 +113,10 @@ class APIKeyResponseDto {
   static Map<String, List<APIKeyResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<APIKeyResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = APIKeyResponseDto.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = APIKeyResponseDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;
