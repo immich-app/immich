@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Inject, Injectable, Logger } f
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { EditSharedLinkDto } from './dto';
+import { IPartnerRepository, mapPartner, PartnerCore, PartnerResponseDto } from '../partner';
 import { mapSharedLink, mapSharedLinkWithNoExif, SharedLinkResponseDto } from './response-dto';
 import { ShareCore } from './share.core';
 import { ISharedLinkRepository } from './shared-link.repository';
@@ -10,12 +11,15 @@ import { ISharedLinkRepository } from './shared-link.repository';
 export class ShareService {
   readonly logger = new Logger(ShareService.name);
   private shareCore: ShareCore;
+  private partnerCore: PartnerCore;
 
   constructor(
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
+    @Inject(IPartnerRepository) partnerRepository: IPartnerRepository,
   ) {
     this.shareCore = new ShareCore(sharedLinkRepository, cryptoRepository);
+    this.partnerCore = new PartnerCore(partnerRepository);
   }
 
   async getAll(authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {
@@ -56,5 +60,10 @@ export class ShareService {
   async edit(authUser: AuthUserDto, id: string, dto: EditSharedLinkDto) {
     const link = await this.shareCore.save(authUser.id, id, dto);
     return mapSharedLink(link);
+  }
+
+  async getAllPartners(authUser: AuthUserDto): Promise<PartnerResponseDto[]> {
+    const partners = await this.partnerCore.getAll(authUser.id, 'shared-with');
+    return partners.map(mapPartner);
   }
 }

@@ -2,24 +2,28 @@ import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import {
   authStub,
   newCryptoRepositoryMock,
+  newPartnerRepositoryMock,
   newSharedLinkRepositoryMock,
   sharedLinkResponseStub,
   sharedLinkStub,
 } from '../../test';
 import { ICryptoRepository } from '../crypto';
+import { IPartnerRepository } from '../partner';
 import { ShareService } from './share.service';
 import { ISharedLinkRepository } from './shared-link.repository';
 
 describe(ShareService.name, () => {
   let sut: ShareService;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
+  let partnerMock: jest.Mocked<IPartnerRepository>;
   let shareMock: jest.Mocked<ISharedLinkRepository>;
 
   beforeEach(async () => {
     cryptoMock = newCryptoRepositoryMock();
     shareMock = newSharedLinkRepositoryMock();
+    partnerMock = newPartnerRepositoryMock();
 
-    sut = new ShareService(cryptoMock, shareMock);
+    sut = new ShareService(cryptoMock, shareMock, partnerMock);
   });
 
   it('should work', () => {

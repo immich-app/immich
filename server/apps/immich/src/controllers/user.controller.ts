@@ -22,13 +22,14 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { profileImageUploadOption } from '../config/profile-image-upload.config';
 import { Response as Res } from 'express';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { UserResponseDto } from '@app/domain';
+import { PartnerResponseDto, UserResponseDto } from '@app/domain';
 import { UserCountResponseDto } from '@app/domain';
 import { CreateProfileImageDto } from '@app/domain';
 import { CreateProfileImageResponseDto } from '@app/domain';
 import { UserCountDto } from '@app/domain';
 import { UseValidation } from '../decorators/use-validation.decorator';
 import { UserIdDto } from '@app/domain/user/dto/user-id.dto';
+import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('User')
 @Controller('user')
@@ -105,5 +106,23 @@ export class UserController {
     const readableStream = await this.service.getUserProfileImage(userId);
     res.header('Content-Type', 'image/jpeg');
     return new StreamableFile(readableStream);
+  }
+
+  @Authenticated()
+  @Get('partner')
+  getAllPartners(@GetAuthUser() authUser: AuthUserDto): Promise<PartnerResponseDto[]> {
+    return this.service.getAllPartners(authUser);
+  }
+
+  @Authenticated()
+  @Post('partner/:id')
+  addPartner(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
+    return this.service.addPartner(authUser, id);
+  }
+
+  @Authenticated()
+  @Delete('partner/:id')
+  removePartner(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
+    return this.service.removePartner(authUser, id);
   }
 }

@@ -27,6 +27,7 @@
 	import { browser } from '$app/environment';
 
 	export let asset: AssetResponseDto;
+	export let disableNavBarActions = false;
 	export let publicSharedKey = '';
 	export let showNavigation = true;
 	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
@@ -77,7 +78,9 @@
 				closeViewer();
 				return;
 			case 'Delete':
-				deleteAsset();
+				if (!disableNavBarActions) {
+					deleteAsset();
+				}
 				return;
 			case 'i':
 				isShowDetail = !isShowDetail;
@@ -301,6 +304,7 @@
 	<div class="col-start-1 col-span-4 row-start-1 row-span-1 z-[1000] transition-transform">
 		<AssetViewerNavBar
 			{asset}
+			hideNavBarActions={disableNavBarActions}
 			isMotionPhotoPlaying={shouldPlayMotionPhoto}
 			showCopyButton={canCopyImagesToClipboard && asset.type === AssetTypeEnum.Image}
 			showMotionPlayButton={!!asset.livePhotoVideoId}

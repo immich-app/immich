@@ -5,6 +5,7 @@ import { GetAuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
 import { UseValidation } from '../decorators/use-validation.decorator';
 import { UUIDParamDto } from './dto/uuid-param.dto';
+import { PartnerResponseDto } from '@app/domain';
 
 @ApiTags('share')
 @Controller('share')
@@ -22,6 +23,12 @@ export class ShareController {
   @Get('me')
   getMySharedLink(@GetAuthUser() authUser: AuthUserDto): Promise<SharedLinkResponseDto> {
     return this.service.getMine(authUser);
+  }
+
+  @Authenticated()
+  @Get('partner')
+  getPartners(@GetAuthUser() authUser: AuthUserDto): Promise<PartnerResponseDto[]> {
+    return this.service.getAllPartners(authUser);
   }
 
   @Authenticated()

@@ -32,6 +32,7 @@ import {
   mapAssetWithoutExif,
   MapMarkerResponseDto,
   mapAssetMapMarker,
+  PartnerCore,
 } from '@app/domain';
 import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
@@ -56,6 +57,7 @@ import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
 import { IAlbumRepository } from '../album/album-repository';
 import { ShareCore } from '@app/domain';
+import { IPartnerRepository } from '@app/domain';
 import { ISharedLinkRepository } from '@app/domain';
 import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
@@ -76,6 +78,7 @@ export class AssetService {
   readonly logger = new Logger(AssetService.name);
   private shareCore: ShareCore;
   private assetCore: AssetCore;
+  private partnerCore: PartnerCore;
 
   constructor(
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
@@ -87,9 +90,11 @@ export class AssetService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+    @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
     this.shareCore = new ShareCore(sharedLinkRepository, cryptoRepository);
+    this.partnerCore = new PartnerCore(partnerRepository);
   }
 
   public async uploadFile(
@@ -148,6 +153,12 @@ export class AssetService {
     const assets = await this._assetRepository.getAllByUserId(authUser.id, dto);
 
     return assets.map((asset) => mapAssetMapMarker(asset)).filter((marker) => marker != null) as MapMarkerResponseDto[];
+  }
+
+  public async getUserAssets(authUser: AuthUserDto, userId: string): Promise<AssetResponseDto[]> {
+    const assets = await this._assetRepository.getAllByUserId(userId, {});
+
+    return assets.map((asset) => mapAsset(asset));
   }
 
   public async getAssetByTimeBucket(
@@ -489,6 +500,20 @@ export class AssetService {
       } else {
         // Step 2: Check if user owns asset
         if ((await this._assetRepository.countByIdAndUser(assetId, authUser.id)) == 1) {
+          continue;
+        }
+
+        // Step 3: Check if any partner owns the asset
+        const partners = (await this.partnerCore.getAll(authUser.id, 'shared-with')).map((item) => item.sharedBy);
+        let owner = false;
+        for (const partnerId of partners) {
+          if ((await this._assetRepository.countByIdAndUser(assetId, partnerId)) == 1) {
+            owner = true;
+            break;
+          }
+        }
+
+        if (owner) {
           continue;
         }
 

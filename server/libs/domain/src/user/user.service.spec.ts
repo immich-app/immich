@@ -7,6 +7,7 @@ import {
   newCryptoRepositoryMock,
   newJobRepositoryMock,
   newKeyRepositoryMock,
+  newPartnerRepositoryMock,
   newStorageRepositoryMock,
   newUserRepositoryMock,
   newUserTokenRepositoryMock,
@@ -22,6 +23,7 @@ import { IUserTokenRepository } from '../user-token';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { IUserRepository } from './user.repository';
 import { UserService } from './user.service';
+import { IPartnerRepository } from '../partner';
 
 const makeDeletedAt = (daysAgo: number) => {
   const deletedAt = new Date();
@@ -55,6 +57,8 @@ const adminUser: UserEntity = Object.freeze({
   updatedAt: '2021-01-01',
   tags: [],
   assets: [],
+  sharedBy: [],
+  sharedWith: [],
 });
 
 const immichUser: UserEntity = Object.freeze({
@@ -71,6 +75,8 @@ const immichUser: UserEntity = Object.freeze({
   updatedAt: '2021-01-01',
   tags: [],
   assets: [],
+  sharedBy: [],
+  sharedWith: [],
 });
 
 const updatedImmichUser: UserEntity = Object.freeze({
@@ -87,6 +93,8 @@ const updatedImmichUser: UserEntity = Object.freeze({
   updatedAt: '2021-01-01',
   tags: [],
   assets: [],
+  sharedBy: [],
+  sharedWith: [],
 });
 
 const adminUserResponse = Object.freeze({
@@ -114,6 +122,7 @@ describe(UserService.name, () => {
   let keyMock: jest.Mocked<IKeyRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
   let tokenMock: jest.Mocked<IUserTokenRepository>;
+  let partnerMock: jest.Mocked<IPartnerRepository>;
 
   beforeEach(async () => {
     userRepositoryMock = newUserRepositoryMock();
@@ -126,6 +135,7 @@ describe(UserService.name, () => {
     storageMock = newStorageRepositoryMock();
     tokenMock = newUserTokenRepositoryMock();
     userRepositoryMock = newUserRepositoryMock();
+    partnerMock = newPartnerRepositoryMock();
 
     sut = new UserService(
       userRepositoryMock,
@@ -136,6 +146,7 @@ describe(UserService.name, () => {
       keyMock,
       storageMock,
       tokenMock,
+      partnerMock,
     );
 
     when(userRepositoryMock.get).calledWith(adminUser.id).mockResolvedValue(adminUser);

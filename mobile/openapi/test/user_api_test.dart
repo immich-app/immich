@@ -17,6 +17,11 @@ void main() {
   // final instance = UserApi();
 
   group('tests for UserApi', () {
+    //Future addPartner(String id) async
+    test('test addPartner', () async {
+      // TODO
+    });
+
     //Future<CreateProfileImageResponseDto> createProfileImage(MultipartFile file) async
     test('test createProfileImage', () async {
       // TODO
@@ -29,6 +34,11 @@ void main() {
 
     //Future<UserResponseDto> deleteUser(String userId) async
     test('test deleteUser', () async {
+      // TODO
+    });
+
+    //Future<List<PartnerResponseDto>> getAllPartners() async
+    test('test getAllPartners', () async {
       // TODO
     });
 
@@ -54,6 +64,11 @@ void main() {
 
     //Future<UserCountResponseDto> getUserCount({ bool admin }) async
     test('test getUserCount', () async {
+      // TODO
+    });
+
+    //Future removePartner(String id) async
+    test('test removePartner', () async {
       // TODO
     });
 

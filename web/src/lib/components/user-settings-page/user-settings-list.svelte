@@ -7,6 +7,7 @@
 	import OAuthSettings from './oauth-settings.svelte';
 	import UserAPIKeyList from './user-api-key-list.svelte';
 	import DeviceList from './device-list.svelte';
+	import PartnerSettings from './partner-settings.svelte';
 	import UserProfileSettings from './user-profile-settings.svelte';
 
 	export let user: UserResponseDto;
@@ -28,6 +29,10 @@
 
 <SettingAccordion title="Account" subtitle="Manage your account">
 	<UserProfileSettings {user} />
+</SettingAccordion>
+
+<SettingAccordion title="Sharing" subtitle="Manage sharing with partners">
+	<PartnerSettings />
 </SettingAccordion>
 
 <SettingAccordion title="API Keys" subtitle="Manage your API keys">
