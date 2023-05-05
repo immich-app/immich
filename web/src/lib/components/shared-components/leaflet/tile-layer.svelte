@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import L, { TileLayer, type TileLayerOptions } from 'leaflet';
+	import { TileLayer, type TileLayerOptions } from 'leaflet';
 	import { getMapContext } from './map.svelte';
 
 	export let urlTemplate: string;
@@ -12,7 +12,7 @@
 	const map = getMapContext();
 
 	onMount(() => {
-		tileLayer = new L.TileLayer(urlTemplate, {
+		tileLayer = new TileLayer(urlTemplate, {
 			className: allowDarkMode ? 'leaflet-layer-dynamic' : 'leaflet-layer',
 			...options
 		}).addTo(map);
