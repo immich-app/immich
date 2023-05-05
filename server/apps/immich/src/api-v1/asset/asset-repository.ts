@@ -36,6 +36,7 @@ export interface IAssetRepository {
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
   getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum): Promise<AssetCountByTimeBucket[]>;
   getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
+  getMapMarkerByUserId(ownerId: string): Promise<AssetEntity[]>;
   getArchivedAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getAssetByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity>;
@@ -232,6 +233,30 @@ export class AssetRepository implements IAssetRepository {
         tags: true,
       },
       skip: dto.skip || 0,
+      order: {
+        fileCreatedAt: 'DESC',
+      },
+    });
+  }
+
+  /**
+   * Get all assets belong to the user on the database and that contain exif location information
+   * @param ownerId
+   */
+  async getMapMarkerByUserId(ownerId: string): Promise<AssetEntity[]> {
+    return this.assetRepository.find({
+      where: {
+        ownerId,
+        resizePath: Not(IsNull()),
+        isVisible: true,
+        exifInfo: {
+          latitude: Not(IsNull()),
+          longitude: Not(IsNull()),
+        }
+      },
+      relations: {
+        exifInfo: true,
+      },
       order: {
         fileCreatedAt: 'DESC',
       },

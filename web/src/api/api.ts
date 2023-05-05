@@ -12,7 +12,8 @@ import {
 	ShareApi,
 	SystemConfigApi,
 	ThumbnailFormat,
-	UserApi
+	UserApi,
+	MapMarkerResponseDto
 } from './open-api';
 import { BASE_PATH } from './open-api/base';
 import { DUMMY_BASE_URL, toPathString } from './open-api/common';
@@ -83,6 +84,14 @@ export class ImmichApi {
 	public getAssetThumbnailUrl(assetId: string, format?: ThumbnailFormat, key?: string) {
 		const path = `/asset/thumbnail/${assetId}`;
 		return this.createUrl(path, { format, key });
+	}
+
+	public getMarkerAssetId(dto: MapMarkerResponseDto): string {
+		return dto[0];
+	}
+
+	public getMarkerLatLon(dto: MapMarkerResponseDto): [number, number] {
+		return [dto[1], dto[2]];
 	}
 }
 

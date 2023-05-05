@@ -20,10 +20,12 @@
 		marker: MapMarkerResponseDto;
 
 		constructor(marker: MapMarkerResponseDto) {
-			super([marker.lat, marker.lon], {
+			const markerAssetId = api.getMarkerAssetId(marker);
+
+			super(api.getMarkerLatLon(marker), {
 				icon: new Icon({
-					iconUrl: api.getAssetThumbnailUrl(marker.id),
-					iconRetinaUrl: api.getAssetThumbnailUrl(marker.id),
+					iconUrl: api.getAssetThumbnailUrl(markerAssetId),
+					iconRetinaUrl: api.getAssetThumbnailUrl(markerAssetId),
 					iconSize: [60, 60],
 					iconAnchor: [12, 41],
 					popupAnchor: [1, -34],
@@ -36,7 +38,7 @@
 		}
 
 		getAssetId(): string {
-			return this.marker.id;
+			return api.getMarkerAssetId(this.marker);
 		}
 	}
 
@@ -71,7 +73,7 @@
 			const leafletMarker = new AssetMarker(marker);
 
 			leafletMarker.on('click', () => {
-				dispatch('view', { assets: [marker.id] });
+				dispatch('view', { assets: [leafletMarker.getAssetId()] });
 			});
 
 			cluster.addLayer(leafletMarker);

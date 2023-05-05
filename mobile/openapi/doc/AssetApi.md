@@ -969,7 +969,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getMapMarkers**
-> List<MapMarkerResponseDto> getMapMarkers(isFavorite, isArchived, skip)
+> List<Object> getMapMarkers()
 
 
 
@@ -990,12 +990,9 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
-final isFavorite = true; // bool | 
-final isArchived = true; // bool | 
-final skip = 8.14; // num | 
 
 try {
-    final result = api_instance.getMapMarkers(isFavorite, isArchived, skip);
+    final result = api_instance.getMapMarkers();
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getMapMarkers: $e\n');
@@ -1003,16 +1000,11 @@ try {
 ```
 
 ### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **isFavorite** | **bool**|  | [optional] 
- **isArchived** | **bool**|  | [optional] 
- **skip** | **num**|  | [optional] 
+This endpoint does not need any parameter.
 
 ### Return type
 
-[**List<MapMarkerResponseDto>**](MapMarkerResponseDto.md)
+[**List<Object>**](Object.md)
 
 ### Authorization
 

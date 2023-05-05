@@ -8,15 +8,18 @@
 		isViewingAssetStoreState,
 		viewingAssetStoreState
 	} from '$lib/stores/asset-interaction.store';
+	import { api } from '@api';
 
 	export let data: PageData;
 
 	let initialMapCenter: [number, number] = [48, 11];
 
+	console.log(data);
+
 	$: {
 		if (data.mapMarkers.length) {
 			let firstMarker = data.mapMarkers[0];
-			initialMapCenter = [firstMarker.lat, firstMarker.lon];
+			initialMapCenter = api.getMarkerLatLon(firstMarker);
 		}
 	}
 

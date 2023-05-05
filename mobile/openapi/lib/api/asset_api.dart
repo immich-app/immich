@@ -982,15 +982,7 @@ class AssetApi {
   /// Get all assets that have GPS information embedded
   ///
   /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [bool] isFavorite:
-  ///
-  /// * [bool] isArchived:
-  ///
-  /// * [num] skip:
-  Future<Response> getMapMarkersWithHttpInfo({ bool? isFavorite, bool? isArchived, num? skip, }) async {
+  Future<Response> getMapMarkersWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/asset/map-marker';
 
@@ -1000,16 +992,6 @@ class AssetApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
-
-    if (isFavorite != null) {
-      queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
-    }
-    if (isArchived != null) {
-      queryParams.addAll(_queryParams('', 'isArchived', isArchived));
-    }
-    if (skip != null) {
-      queryParams.addAll(_queryParams('', 'skip', skip));
-    }
 
     const contentTypes = <String>[];
 
@@ -1026,16 +1008,8 @@ class AssetApi {
   }
 
   /// Get all assets that have GPS information embedded
-  ///
-  /// Parameters:
-  ///
-  /// * [bool] isFavorite:
-  ///
-  /// * [bool] isArchived:
-  ///
-  /// * [num] skip:
-  Future<List<MapMarkerResponseDto>?> getMapMarkers({ bool? isFavorite, bool? isArchived, num? skip, }) async {
-    final response = await getMapMarkersWithHttpInfo( isFavorite: isFavorite, isArchived: isArchived, skip: skip, );
+  Future<List<Object>?> getMapMarkers() async {
+    final response = await getMapMarkersWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -1044,8 +1018,8 @@ class AssetApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<MapMarkerResponseDto>') as List)
-        .cast<MapMarkerResponseDto>()
+      return (await apiClient.deserializeAsync(responseBody, 'List<Object>') as List)
+        .cast<Object>()
         .toList();
 
     }

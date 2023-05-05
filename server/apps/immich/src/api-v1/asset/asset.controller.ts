@@ -267,9 +267,8 @@ export class AssetController {
   @Get('/map-marker')
   getMapMarkers(
     @GetAuthUser() authUser: AuthUserDto,
-    @Query(new ValidationPipe({ transform: true })) dto: AssetSearchDto,
   ): Promise<MapMarkerResponseDto[]> {
-    return this.assetService.getMapMarkers(authUser, dto);
+    return this.assetService.getMapMarkers(authUser);
   }
 
   /**

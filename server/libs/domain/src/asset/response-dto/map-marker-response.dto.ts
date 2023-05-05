@@ -1,35 +1,18 @@
-import { AssetEntity, AssetType } from '@app/infra/entities';
-import { ApiProperty } from '@nestjs/swagger';
+import { AssetEntity } from "@app/infra/entities";
 
-export class MapMarkerResponseDto {
-  id!: string;
+export type MapMarkerResponseDto = [
+  // assetId
+  string,
+  // latitude
+  number,
+  // longitude
+  number
+];
 
-  @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
-  type!: AssetType;
-
-  @ApiProperty({ type: 'number', format: 'double' })
-  lat!: number;
-
-  @ApiProperty({ type: 'number', format: 'double' })
-  lon!: number;
-}
-
-export function mapAssetMapMarker(entity: AssetEntity): MapMarkerResponseDto | null {
-  if (!entity.exifInfo) {
-    return null;
-  }
-
-  const lat = entity.exifInfo.latitude;
-  const lon = entity.exifInfo.longitude;
-
-  if (!lat || !lon) {
-    return null;
-  }
-
-  return {
-    id: entity.id,
-    type: entity.type,
-    lon,
-    lat,
-  };
+export function mapAssetMapMarker(asset: AssetEntity): MapMarkerResponseDto {
+  return [
+    asset.id,
+    asset.exifInfo?.latitude || 0,
+    asset.exifInfo?.longitude || 0,
+  ];
 }

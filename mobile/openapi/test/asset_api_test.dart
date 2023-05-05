@@ -119,7 +119,7 @@ void main() {
 
     // Get all assets that have GPS information embedded
     //
-    //Future<List<MapMarkerResponseDto>> getMapMarkers({ bool isFavorite, bool isArchived, num skip }) async
+    //Future<List<Object>> getMapMarkers() async
     test('test getMapMarkers', () async {
       // TODO
     });
