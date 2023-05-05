@@ -12,6 +12,7 @@ Method | HTTP request | Description
 [**editSharedLink**](ShareApi.md#editsharedlink) | **PATCH** /share/{id} | 
 [**getAllSharedLinks**](ShareApi.md#getallsharedlinks) | **GET** /share | 
 [**getMySharedLink**](ShareApi.md#getmysharedlink) | **GET** /share/me | 
+[**getPartners**](ShareApi.md#getpartners) | **GET** /share/partner | 
 [**getSharedLinkById**](ShareApi.md#getsharedlinkbyid) | **GET** /share/{id} | 
 [**removeSharedLink**](ShareApi.md#removesharedlink) | **DELETE** /share/{id} | 
 
@@ -171,6 +172,53 @@ Name | Type | Description  | Notes
 ### Authorization
 
 [cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getPartners**
+> List<PartnerResponseDto> getPartners()
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = ShareApi();
+
+try {
+    final result = api_instance.getPartners();
+    print(result);
+} catch (e) {
+    print('Exception when calling ShareApi->getPartners: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**List<PartnerResponseDto>**](PartnerResponseDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [bearer](../README.md#bearer)
 
 ### HTTP request headers
 

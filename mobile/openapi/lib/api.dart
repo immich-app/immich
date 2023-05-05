@@ -92,6 +92,7 @@ part 'model/map_marker_response_dto.dart';
 part 'model/o_auth_callback_dto.dart';
 part 'model/o_auth_config_dto.dart';
 part 'model/o_auth_config_response_dto.dart';
+part 'model/partner_response_dto.dart';
 part 'model/queue_status_dto.dart';
 part 'model/remove_assets_dto.dart';
 part 'model/search_album_response_dto.dart';
