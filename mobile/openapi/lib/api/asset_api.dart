@@ -992,7 +992,7 @@ class AssetApi {
   /// * [num] skip:
   Future<Response> getMapMarkersWithHttpInfo({ bool? isFavorite, bool? isArchived, num? skip, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/asset/mapMarker';
+    final path = r'/asset/map-marker';
 
     // ignore: prefer_final_locals
     Object? postBody;

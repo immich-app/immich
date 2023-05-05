@@ -2436,7 +2436,7 @@
         ]
       }
     },
-    "/asset/mapMarker": {
+    "/asset/map-marker": {
       "get": {
         "operationId": "getMapMarkers",
         "description": "Get all assets that have GPS information embedded",

@@ -4698,7 +4698,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @throws {RequiredError}
          */
         getMapMarkers: async (isFavorite?: boolean, isArchived?: boolean, skip?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/asset/mapMarker`;
+            const localVarPath = `/asset/map-marker`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;

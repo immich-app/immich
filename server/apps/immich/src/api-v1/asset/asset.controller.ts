@@ -264,7 +264,7 @@ export class AssetController {
    * Get all assets that have GPS information embedded
    */
   @Authenticated()
-  @Get('/mapMarker')
+  @Get('/map-marker')
   getMapMarkers(
     @GetAuthUser() authUser: AuthUserDto,
     @Query(new ValidationPipe({ transform: true })) dto: AssetSearchDto,
