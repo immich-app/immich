@@ -55,6 +55,7 @@ doc/JobStatusDto.md
 doc/LoginCredentialDto.md
 doc/LoginResponseDto.md
 doc/LogoutResponseDto.md
+doc/MapMarkerResponseDto.md
 doc/OAuthApi.md
 doc/OAuthCallbackDto.md
 doc/OAuthConfigDto.md
@@ -171,6 +172,7 @@ lib/model/job_status_dto.dart
 lib/model/login_credential_dto.dart
 lib/model/login_response_dto.dart
 lib/model/logout_response_dto.dart
+lib/model/map_marker_response_dto.dart
 lib/model/o_auth_callback_dto.dart
 lib/model/o_auth_config_dto.dart
 lib/model/o_auth_config_response_dto.dart
@@ -264,6 +266,7 @@ test/job_status_dto_test.dart
 test/login_credential_dto_test.dart
 test/login_response_dto_test.dart
 test/logout_response_dto_test.dart
+test/map_marker_response_dto_test.dart
 test/o_auth_api_test.dart
 test/o_auth_callback_dto_test.dart
 test/o_auth_config_dto_test.dart

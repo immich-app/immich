@@ -14,6 +14,7 @@ export enum AppRoute {
 	EXPLORE = '/explore',
 	SHARING = '/sharing',
 	SEARCH = '/search',
+	MAP = '/map',
 
 	AUTH_LOGIN = '/auth/login',
 	AUTH_LOGOUT = '/auth/logout',
