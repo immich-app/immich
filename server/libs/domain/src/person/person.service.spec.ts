@@ -1,4 +1,5 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { IJobRepository } from '..';
 import { assetEntityStub, authStub, newPersonRepositoryMock, newStorageRepositoryMock, personStub } from '../../test';
 import { IStorageRepository } from '../storage';
 import { IPersonRepository } from './person.repository';

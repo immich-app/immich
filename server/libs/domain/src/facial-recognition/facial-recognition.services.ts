@@ -63,7 +63,7 @@ export class FacialRecognitionService {
 
         // try to find a matching face and link to the associated person
         // The closer to 0, the better the match. Range is from 0 to 2
-        if (faceSearchResult.total && faceSearchResult.distances[0] < 0.5) {
+        if (faceSearchResult.total && faceSearchResult.distances[0] < 0.6) {
           this.logger.debug(`Match face with distance ${faceSearchResult.distances[0]}`);
           personId = faceSearchResult.items[0].personId;
         }

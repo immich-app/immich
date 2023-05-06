@@ -239,7 +239,14 @@ export class AssetRepository implements IAssetRepository {
   }
 
   get(id: string): Promise<AssetEntity | null> {
-    return this.assetRepository.findOne({ where: { id } });
+    return this.assetRepository.findOne({
+      where: { id },
+      relations: {
+        faces: {
+          person: true,
+        },
+      },
+    });
   }
 
   async create(

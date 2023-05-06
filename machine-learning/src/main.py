@@ -87,8 +87,8 @@ def facial_recognition(payload: MlRequestBody):
             continue
         x1, y1, x2, y2 = face.bbox
         # min face size as percent of original image
-        if (x2 - x1) / width < 0.03 or (y2 - y1) / height < 0.05:
-            continue
+        # if (x2 - x1) / width < 0.03 or (y2 - y1) / height < 0.05:
+        #     continue
         x1, y1, x2, y2 = face.bbox.tolist()
         results.append({
             "imageWidth": width,
