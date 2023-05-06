@@ -10,6 +10,7 @@
 	} from '$lib/stores/asset-interaction.store';
 	import { api, MapMarkerResponseDto } from '@api';
   import { onMount } from 'svelte';
+  import { browser } from '$app/environment';
 
 	export let data: PageData;
 	let mapMarkers: MapMarkerResponseDto = [];
@@ -53,22 +54,24 @@
 	<div slot="buttons" />
 
 	<div class="h-[90%] w-full">
-		{#await import('$lib/components/shared-components/leaflet') then { Map, TileLayer, AssetMarkerCluster }}
-			<Map latlng={initialMapCenter} zoom={7}>
-				<TileLayer
-					allowDarkMode={true}
-					urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
-					options={{
-						attribution:
-							'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-					}}
-				/>
-				<AssetMarkerCluster
-					markers={mapMarkers}
-					on:view={(event) => onViewAssets(event.detail.assets)}
-				/>
-			</Map>
-		{/await}
+		{#if browser}
+			{#await import('$lib/components/shared-components/leaflet') then { Map, TileLayer, AssetMarkerCluster }}
+				<Map latlng={initialMapCenter} zoom={7}>
+					<TileLayer
+						allowDarkMode={true}
+						urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
+						options={{
+							attribution:
+								'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+						}}
+					/>
+					<AssetMarkerCluster
+						markers={mapMarkers}
+						on:view={(event) => onViewAssets(event.detail.assets)}
+					/>
+				</Map>
+			{/await}
+		{/if}
 	</div>
 </UserPageLayout>
 
