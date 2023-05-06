@@ -1,6 +1,13 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { IJobRepository } from '..';
-import { assetEntityStub, authStub, newPersonRepositoryMock, newStorageRepositoryMock, personStub } from '../../test';
+import {
+  assetEntityStub,
+  authStub,
+  newJobRepositoryMock,
+  newPersonRepositoryMock,
+  newStorageRepositoryMock,
+  personStub,
+} from '../../test';
 import { IStorageRepository } from '../storage';
 import { IPersonRepository } from './person.repository';
 import { PersonService } from './person.service';
@@ -16,11 +23,13 @@ describe(PersonService.name, () => {
   let sut: PersonService;
   let personMock: jest.Mocked<IPersonRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let jobMock: jest.Mocked<IJobRepository>;
 
   beforeEach(async () => {
     personMock = newPersonRepositoryMock();
     storageMock = newStorageRepositoryMock();
-    sut = new PersonService(personMock, storageMock);
+    jobMock = newJobRepositoryMock();
+    sut = new PersonService(personMock, storageMock, jobMock);
   });
 
   it('should be defined', () => {

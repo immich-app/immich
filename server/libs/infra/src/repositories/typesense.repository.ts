@@ -36,6 +36,7 @@ interface MultiSearchError {
 interface CustomAssetEntity extends AssetEntity {
   geo?: [number, number];
   motion?: boolean;
+  people?: string[];
 }
 
 const schemaMap: Record<SearchCollection, CollectionCreateSchema> = {
@@ -249,6 +250,7 @@ export class TypesenseRepository implements ISearchRepository {
           'exifInfo.description',
           'smartInfo.tags',
           'smartInfo.objects',
+          'people',
         ].join(','),
         per_page: 250,
         facet_by: this.getFacetFieldNames(SearchCollection.ASSETS),
@@ -376,6 +378,10 @@ export class TypesenseRepository implements ISearchRepository {
       custom = { ...custom, geo: [lat, lng] };
     }
 
+    const people = asset.faces?.map((face) => face.person.name).filter((name) => name) || [];
+    if (people.length) {
+      custom = { ...custom, people };
+    }
     return removeNil({ ...custom, motion: !!asset.livePhotoVideoId });
   }
 

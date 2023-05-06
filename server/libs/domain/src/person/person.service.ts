@@ -1,6 +1,7 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { AssetResponseDto, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
+import { IJobRepository, JobName } from '../job';
 import { ImmichReadStream, IStorageRepository } from '../storage';
 import { PersonUpdateDto } from './dto';
 import { IPersonRepository } from './person.repository';
@@ -11,6 +12,7 @@ export class PersonService {
   constructor(
     @Inject(IPersonRepository) private repository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {}
 
   async getAll(authUser: AuthUserDto): Promise<PersonResponseDto[]> {
@@ -48,6 +50,11 @@ export class PersonService {
     }
 
     const updatedPerson = await this.repository.update({ ...person, name: dto.name });
+
+    const relatedAsset = await this.getAssets(authUser, personId);
+    const assetIds = relatedAsset.map((asset) => asset.id);
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: assetIds } });
+
     return mapPerson(updatedPerson);
   }
 }
