@@ -242,7 +242,7 @@ class AssetResponseDto {
         smartInfo: SmartInfoResponseDto.fromJson(json[r'smartInfo']),
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
         tags: TagResponseDto.listFromJson(json[r'tags']),
-        people: PersonResponseDto.listFromJson(json[r'people']) ?? const [],
+        people: PersonResponseDto.listFromJson(json[r'people']),
       );
     }
     return null;
