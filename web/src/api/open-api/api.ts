@@ -4868,6 +4868,9 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
 
             // authentication cookie required
 
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
             // authentication bearer required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
@@ -7200,6 +7203,9 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
 
             // authentication cookie required
 
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
             // authentication bearer required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
@@ -7238,6 +7244,9 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
             const localVarQueryParameter = {} as any;
 
             // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
 
             // authentication bearer required
             // http bearer authentication required
@@ -7278,6 +7287,9 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
 
             // authentication cookie required
 
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
             // authentication bearer required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
@@ -7316,6 +7328,9 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
             const localVarQueryParameter = {} as any;
 
             // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
 
             // authentication bearer required
             // http bearer authentication required
@@ -7358,6 +7373,9 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
             const localVarQueryParameter = {} as any;
 
             // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
 
             // authentication bearer required
             // http bearer authentication required
