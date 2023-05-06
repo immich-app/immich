@@ -2605,7 +2605,16 @@
       "get": {
         "operationId": "getMapMarkers",
         "description": "Get all assets that have GPS information embedded",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "preload",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",

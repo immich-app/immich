@@ -119,7 +119,7 @@ void main() {
 
     // Get all assets that have GPS information embedded
     //
-    //Future<List<Object>> getMapMarkers() async
+    //Future<List<Object>> getMapMarkers({ bool preload }) async
     test('test getMapMarkers', () async {
       // TODO
     });

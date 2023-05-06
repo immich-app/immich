@@ -31,7 +31,7 @@ import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
-import { AssetResponseDto, ImmichReadStream, MapMarkerResponseDto } from '@app/domain';
+import { AssetResponseDto, ImmichReadStream, MapMarkerResponseDto, GetMapMarkerDto } from '@app/domain';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { CreateAssetDto, mapToUploadFile } from './dto/create-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
@@ -267,8 +267,9 @@ export class AssetController {
   @Get('/map-marker')
   getMapMarkers(
     @GetAuthUser() authUser: AuthUserDto,
+    @Query(new ValidationPipe({ transform: true })) query: GetMapMarkerDto,
   ): Promise<MapMarkerResponseDto[]> {
-    return this.assetService.getMapMarkers(authUser);
+    return this.assetService.getMapMarkers(authUser, query.preload === true);
   }
 
   /**

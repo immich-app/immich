@@ -8,18 +8,24 @@
 		isViewingAssetStoreState,
 		viewingAssetStoreState
 	} from '$lib/stores/asset-interaction.store';
-	import { api } from '@api';
+	import { api, MapMarkerResponseDto } from '@api';
+  import { onMount } from 'svelte';
 
 	export let data: PageData;
+	let mapMarkers: MapMarkerResponseDto = [];
 
 	let initialMapCenter: [number, number] = [48, 11];
 
-	$: {
-		if (data.mapMarkers.length) {
-			let firstMarker = data.mapMarkers[0];
+	onMount(async () => {
+		mapMarkers = data.mapMarkers;
+
+		if (mapMarkers.length) {
+			let firstMarker = mapMarkers[0];
 			initialMapCenter = api.getMarkerLatLon(firstMarker);
 		}
-	}
+
+		mapMarkers = (await api.assetApi.getMapMarkers()).data;
+	});
 
 	let viewingAssets: string[] = [];
 	let viewingAssetCursor = 0;
@@ -58,7 +64,7 @@
 					}}
 				/>
 				<AssetMarkerCluster
-					markers={data.mapMarkers}
+					markers={mapMarkers}
 					on:view={(event) => onViewAssets(event.detail.assets)}
 				/>
 			</Map>

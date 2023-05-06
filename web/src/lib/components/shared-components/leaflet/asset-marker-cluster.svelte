@@ -1,16 +1,6 @@
-<script lang="ts" context="module">
-	import { createContext } from '$lib/utils/context';
-	import { MarkerClusterGroup, Marker, Icon, LeafletEvent } from 'leaflet';
-
-	const { get: getContext, set: setClusterContext } = createContext<() => MarkerClusterGroup>();
-
-	export const getClusterContext = () => {
-		return getContext()();
-	};
-</script>
-
 <script lang="ts">
 	import 'leaflet.markercluster';
+	import { MarkerClusterGroup, Marker, Icon, LeafletEvent } from 'leaflet';
 	import { onDestroy, onMount } from 'svelte';
 	import { getMapContext } from './map.svelte';
 	import { MapMarkerResponseDto, api } from '@api';
@@ -23,7 +13,9 @@
 			const markerAssetId = api.getMarkerAssetId(marker);
 
 			super(api.getMarkerLatLon(marker), {
+				alt: 'Loading...',
 				icon: new Icon({
+					className: 'marker-cluster-asset-marker',
 					iconUrl: api.getAssetThumbnailUrl(markerAssetId),
 					iconRetinaUrl: api.getAssetThumbnailUrl(markerAssetId),
 					iconSize: [60, 60],
@@ -44,15 +36,11 @@
 
 	const dispatch = createEventDispatcher<{ view: { assets: string[] } }>();
 
-	export let markers: MapMarkerResponseDto[];
+	let cluster: MarkerClusterGroup;
 
 	const map = getMapContext();
 
-	let cluster: MarkerClusterGroup;
-
-	setClusterContext(() => cluster);
-
-	onMount(() => {
+	function setUpCluster(markers: MapMarkerResponseDto[]) {
 		cluster = new MarkerClusterGroup({
 			showCoverageOnHover: false,
 			zoomToBoundsOnClick: false,
@@ -65,35 +53,52 @@
 		cluster.on('clusterclick', (event: LeafletEvent) => {
 			const ids = event.sourceTarget
 				.getAllChildMarkers()
-				.map((marker: AssetMarker) => marker.getAssetId());
-			dispatch('view', { assets: ids });
+				.map((marker: AssetMarker) => marker.getAssetId())
+				.filter((id: string) => id.length > 0);
+			
+			if (ids.length > 0) {
+				dispatch('view', { assets: ids });
+			}
 		});
 
 		for (let marker of markers) {
 			const leafletMarker = new AssetMarker(marker);
 
 			leafletMarker.on('click', () => {
-				dispatch('view', { assets: [leafletMarker.getAssetId()] });
+				const id = leafletMarker.getAssetId();
+
+				if (id.length > 0) {
+					dispatch('view', { assets: [id] });
+				}
 			});
 
 			cluster.addLayer(leafletMarker);
 		}
 
 		map.addLayer(cluster);
-	});
+	}
+
+	onMount(() => setUpCluster(markers));
+
+	export let markers: MapMarkerResponseDto[];
+	$: {
+		if (cluster) {
+			cluster.remove();
+			setUpCluster(markers);
+		}
+	}
 
 	onDestroy(() => {
 		if (cluster) cluster.remove();
 	});
 </script>
 
-{#if cluster}
-	<slot />
-{/if}
-
 <style>
-	:global(.leaflet-marker-icon) {
+	:global(.marker-cluster-asset-marker) {
 		border-radius: 25%;
+		background-color: rgba(236, 237, 246, .8);
+		line-height: 60px;
+		text-align: center;
 	}
 
 	:global(.marker-cluster) {

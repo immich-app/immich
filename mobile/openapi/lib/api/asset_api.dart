@@ -982,7 +982,11 @@ class AssetApi {
   /// Get all assets that have GPS information embedded
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getMapMarkersWithHttpInfo() async {
+  ///
+  /// Parameters:
+  ///
+  /// * [bool] preload:
+  Future<Response> getMapMarkersWithHttpInfo({ bool? preload, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/map-marker';
 
@@ -992,6 +996,10 @@ class AssetApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (preload != null) {
+      queryParams.addAll(_queryParams('', 'preload', preload));
+    }
 
     const contentTypes = <String>[];
 
@@ -1008,8 +1016,12 @@ class AssetApi {
   }
 
   /// Get all assets that have GPS information embedded
-  Future<List<Object>?> getMapMarkers() async {
-    final response = await getMapMarkersWithHttpInfo();
+  ///
+  /// Parameters:
+  ///
+  /// * [bool] preload:
+  Future<List<Object>?> getMapMarkers({ bool? preload, }) async {
+    final response = await getMapMarkersWithHttpInfo( preload: preload, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
