@@ -26,4 +26,4 @@ WORKDIR /usr/src/app
 
 COPY . .
 ENV PYTHONPATH=`pwd`
-CMD ["python", "main.py"]
+CMD ["python", "src/main.py"]

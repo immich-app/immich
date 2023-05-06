@@ -61,7 +61,7 @@ class APIKeyUpdateDto {
     return null;
   }
 
-  static List<APIKeyUpdateDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<APIKeyUpdateDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <APIKeyUpdateDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -92,12 +92,10 @@ class APIKeyUpdateDto {
   static Map<String, List<APIKeyUpdateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<APIKeyUpdateDto>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = APIKeyUpdateDto.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = APIKeyUpdateDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

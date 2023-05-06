@@ -61,7 +61,7 @@ class UserCountResponseDto {
     return null;
   }
 
-  static List<UserCountResponseDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<UserCountResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <UserCountResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -92,12 +92,10 @@ class UserCountResponseDto {
   static Map<String, List<UserCountResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<UserCountResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = UserCountResponseDto.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = UserCountResponseDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;
