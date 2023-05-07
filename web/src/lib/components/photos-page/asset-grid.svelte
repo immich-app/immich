@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
+	import { UserResponseDto } from '@api';
 	import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
 	import { assetGridState, assetStore, loadingBucketState } from '$lib/stores/assets.store';
 	import { api, AssetCountByTimeBucketResponseDto, AssetResponseDto, TimeGroupEnum } from '@api';
@@ -18,6 +19,7 @@
 	} from '../shared-components/scrollbar/scrollbar.svelte';
 
 	export let isAlbumSelectionMode = false;
+	export let user: UserResponseDto;
 
 	let viewportHeight = 0;
 	let viewportWidth = 0;

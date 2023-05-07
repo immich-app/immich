@@ -165,7 +165,10 @@ export class AssetService {
     authUser: AuthUserDto,
     getAssetByTimeBucketDto: GetAssetByTimeBucketDto,
   ): Promise<AssetResponseDto[]> {
-    const assets = await this._assetRepository.getAssetByTimeBucket(authUser.id, getAssetByTimeBucketDto);
+    const assets = await this._assetRepository.getAssetByTimeBucket(
+      getAssetByTimeBucketDto.userId ?? authUser.id,
+      getAssetByTimeBucketDto,
+    );
 
     return assets.map((asset) => mapAsset(asset));
   }
@@ -470,7 +473,7 @@ export class AssetService {
     getAssetCountByTimeBucketDto: GetAssetCountByTimeBucketDto,
   ): Promise<AssetCountByTimeBucketResponseDto> {
     const result = await this._assetRepository.getAssetCountByTimeBucket(
-      authUser.id,
+      getAssetCountByTimeBucketDto.userId ?? authUser.id,
       getAssetCountByTimeBucketDto.timeGroup,
     );
 

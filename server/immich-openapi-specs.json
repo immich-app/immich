@@ -5636,6 +5636,10 @@
         "properties": {
           "timeGroup": {
             "$ref": "#/components/schemas/TimeGroupEnum"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
           }
         },
         "required": [
@@ -5721,6 +5725,10 @@
             "items": {
               "type": "string"
             }
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
           }
         },
         "required": [

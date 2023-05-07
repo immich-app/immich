@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { api, AssetResponseDto } from '@api';
-	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
+	import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import { handleError } from '$lib/utils/handle-error';
 	import { onMount } from 'svelte';
@@ -20,5 +20,5 @@
 </script>
 
 <UserPageLayout user={data.user} title="{data.partner.firstName} {data.partner.lastName}">
-	<GalleryViewer assets={partnerAssets} disableAssetSelect viewFrom="partner-sharing-page" />
+	<AssetGrid user={data.user} />
 </UserPageLayout>

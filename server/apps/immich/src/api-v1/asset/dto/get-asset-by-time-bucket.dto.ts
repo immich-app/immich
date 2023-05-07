@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
 
 export class GetAssetByTimeBucketDto {
   @IsNotEmpty()
@@ -10,4 +10,9 @@ export class GetAssetByTimeBucketDto {
     example: ['2015-06-01T00:00:00.000Z', '2016-02-01T00:00:00.000Z', '2016-03-01T00:00:00.000Z'],
   })
   timeBucket!: string[];
+
+  @IsOptional()
+  @IsUUID('4')
+  @ApiProperty({ format: 'uuid' })
+  userId?: string;
 }

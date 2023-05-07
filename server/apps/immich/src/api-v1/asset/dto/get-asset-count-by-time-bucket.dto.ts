@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
 
 export enum TimeGroupEnum {
   Day = 'day',
@@ -14,4 +14,9 @@ export class GetAssetCountByTimeBucketDto {
     enumName: 'TimeGroupEnum',
   })
   timeGroup!: TimeGroupEnum;
+
+  @IsOptional()
+  @IsUUID('4')
+  @ApiProperty({ format: 'uuid' })
+  userId?: string;
 }
