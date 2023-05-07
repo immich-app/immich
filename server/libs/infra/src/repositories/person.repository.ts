@@ -9,6 +9,7 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(AssetFaceEntity) private faceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
   ) {}
+
   getAll(userId: string): Promise<PersonEntity[]> {
     return this.personRepository
       .createQueryBuilder('person')
@@ -30,6 +31,7 @@ export class PersonRepository implements IPersonRepository {
         faces: {
           personId,
         },
+        isVisible: true,
       },
       relations: {
         faces: {
