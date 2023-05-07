@@ -96,24 +96,27 @@ export type MapMarkerResponseDto = [
 ];
 
 export class MapMarkerResponseDtoDecorator {
-	private dto: MapMarkerResponseDto;
+	constructor(private assetId: string, private lat: number, private lon: number) {}
 
-	constructor(dto: MapMarkerResponseDto) {
-		this.dto = dto;
-	}
-
-	static map(response: object[]): MapMarkerResponseDtoDecorator[] {
-		return response.map(
-			(marker) => new MapMarkerResponseDtoDecorator(marker as unknown as MapMarkerResponseDto)
+	static from(response: object): MapMarkerResponseDtoDecorator {
+		const responseArray = response as MapMarkerResponseDto;
+		return new MapMarkerResponseDtoDecorator(
+			responseArray[0] as string,
+			responseArray[1] as number,
+			responseArray[2] as number
 		);
 	}
 
+	static fromMany(responses: object[]): MapMarkerResponseDtoDecorator[] {
+		return responses.map(MapMarkerResponseDtoDecorator.from);
+	}
+
 	public getAssetId(): string {
-		return this.dto[0];
+		return this.assetId;
 	}
 
 	public getLatLon(): [number, number] {
-		return [this.dto[1], this.dto[2]];
+		return [this.lat, this.lon];
 	}
 }
 

@@ -18,14 +18,14 @@
 	let initialMapCenter: [number, number] = [48, 11];
 
 	onMount(async () => {
-		mapMarkers = MapMarkerResponseDtoDecorator.map(data.mapMarkers);
+		mapMarkers = MapMarkerResponseDtoDecorator.fromMany(data.mapMarkers);
 
 		if (mapMarkers.length) {
 			initialMapCenter = mapMarkers[0].getLatLon();
 		}
 
 		const markersResponse = (await api.assetApi.getMapMarkers()).data;
-		mapMarkers = MapMarkerResponseDtoDecorator.map(markersResponse);
+		mapMarkers = MapMarkerResponseDtoDecorator.fromMany(markersResponse);
 	});
 
 	let viewingAssets: string[] = [];
