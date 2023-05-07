@@ -16,8 +16,8 @@
 				alt: 'Loading...',
 				icon: new Icon({
 					className: 'marker-cluster-asset-marker',
-					iconUrl: api.getAssetThumbnailUrl(markerAssetId),
-					iconRetinaUrl: api.getAssetThumbnailUrl(markerAssetId),
+					iconUrl: markerAssetId ? api.getAssetThumbnailUrl(markerAssetId) : '',
+					iconRetinaUrl: markerAssetId ? api.getAssetThumbnailUrl(markerAssetId) : '',
 					iconSize: [60, 60],
 					iconAnchor: [12, 41],
 					popupAnchor: [1, -34],
@@ -29,7 +29,7 @@
 			this.marker = marker;
 		}
 
-		getAssetId(): string {
+		getAssetId(): string | null {
 			return this.marker.getAssetId();
 		}
 	}
@@ -54,7 +54,7 @@
 			const ids = event.sourceTarget
 				.getAllChildMarkers()
 				.map((marker: AssetMarker) => marker.getAssetId())
-				.filter((id: string) => id.length > 0);
+				.filter((id: string | null) => id);
 
 			if (ids.length > 0) {
 				dispatch('view', { assets: ids });
@@ -67,7 +67,7 @@
 			leafletMarker.on('click', () => {
 				const id = leafletMarker.getAssetId();
 
-				if (id.length > 0) {
+				if (id) {
 					dispatch('view', { assets: [id] });
 				}
 			});

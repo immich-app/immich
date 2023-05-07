@@ -87,23 +87,26 @@ export class ImmichApi {
 }
 
 export type MapMarkerResponseDto = [
-	// assetId
-	string,
 	// latitude
 	number,
 	// longitude
-	number
+	number,
+	// assetId
+	string
 ];
 
 export class MapMarkerResponseDtoDecorator {
-	constructor(private assetId: string, private lat: number, private lon: number) {}
+	constructor(private lat: number, private lon: number, private assetId: string | null) {}
 
 	static from(response: object): MapMarkerResponseDtoDecorator {
 		const responseArray = response as MapMarkerResponseDto;
+
+		let assetId = responseArray.length === 3 ? responseArray[2] : null;
+
 		return new MapMarkerResponseDtoDecorator(
-			responseArray[0] as string,
+			responseArray[0] as number,
 			responseArray[1] as number,
-			responseArray[2] as number
+			assetId
 		);
 	}
 
@@ -111,7 +114,7 @@ export class MapMarkerResponseDtoDecorator {
 		return responses.map(MapMarkerResponseDtoDecorator.from);
 	}
 
-	public getAssetId(): string {
+	public getAssetId(): string | null {
 		return this.assetId;
 	}
 

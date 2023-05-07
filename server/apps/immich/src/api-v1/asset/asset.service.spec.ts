@@ -507,9 +507,9 @@ describe('AssetService', () => {
 
       expect(markers).toHaveLength(1);
       expect(markers[0]).toHaveLength(3);
-      expect(markers[0][0]).toBe(_getAsset_1().id);
-      expect(markers[0][1]).toBeCloseTo(_getAsset_1().exifInfo?.latitude || 0, 4);
-      expect(markers[0][2]).toBeCloseTo(_getAsset_1().exifInfo?.longitude || 0, 4);
+      expect(markers[0][0]).toBeCloseTo(_getAsset_1().exifInfo?.latitude || 0, 4);
+      expect(markers[0][1]).toBeCloseTo(_getAsset_1().exifInfo?.longitude || 0, 4);
+      expect(markers[0][2]).toBe(_getAsset_1().id);
     });
 
     it('should preload assets', async () => {
@@ -520,10 +520,9 @@ describe('AssetService', () => {
       const markers = await sut.getMapMarkers(authStub.admin, true);
 
       expect(markers).toHaveLength(1);
-      expect(markers[0]).toHaveLength(3);
-      expect(markers[0][0]).toBe('');
-      expect(markers[0][1]).toBeCloseTo(_getAsset_1().exifInfo?.latitude || 0, 4);
-      expect(markers[0][2]).toBeCloseTo(_getAsset_1().exifInfo?.longitude || 0, 4);
+      expect(markers[0]).toHaveLength(2);
+      expect(markers[0][0]).toBeCloseTo(_getAsset_1().exifInfo?.latitude || 0, 4);
+      expect(markers[0][1]).toBeCloseTo(_getAsset_1().exifInfo?.longitude || 0, 4);
     });
   });
 });
