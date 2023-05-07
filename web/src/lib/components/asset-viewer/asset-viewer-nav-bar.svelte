@@ -22,7 +22,6 @@
 	import { AssetResponseDto } from '../../../api';
 
 	export let asset: AssetResponseDto;
-	export let hideNavBarActions = false;
 	export let showCopyButton: boolean;
 	export let showMotionPlayButton: boolean;
 	export let isMotionPhotoPlaying = false;
@@ -52,97 +51,95 @@
 	<div class="text-white">
 		<CircleIconButton isOpacity={true} logo={ArrowLeft} on:click={() => dispatch('goBack')} />
 	</div>
-	{#if !hideNavBarActions}
-		<div class="text-white flex gap-2 justify-end w-[calc(100%-3rem)] overflow-hidden">
-			{#if isOwner}
-				<CircleIconButton
-					isOpacity={true}
-					logo={asset.isArchived ? ArchiveArrowUpOutline : ArchiveArrowDownOutline}
-					title={asset.isArchived ? 'Unarchive' : 'Archive'}
-					on:click={() => dispatch('toggleArchive')}
-				/>
-			{/if}
-
-			{#if showMotionPlayButton}
-				{#if isMotionPhotoPlaying}
-					<CircleIconButton
-						isOpacity={true}
-						logo={MotionPauseOutline}
-						title="Stop Motion Photo"
-						on:click={() => dispatch('stopMotionPhoto')}
-					/>
-				{:else}
-					<CircleIconButton
-						isOpacity={true}
-						logo={MotionPlayOutline}
-						title="Play Motion Photo"
-						on:click={() => dispatch('playMotionPhoto')}
-					/>
-				{/if}
-			{/if}
-			{#if showCopyButton}
-				<CircleIconButton
-					isOpacity={true}
-					logo={ContentCopy}
-					title="Copy Image"
-					on:click={() => {
-						const copyEvent = new CustomEvent('copyImage');
-						window.dispatchEvent(copyEvent);
-					}}
-				/>
-			{/if}
-
-			{#if showDownloadButton}
-				<CircleIconButton
-					isOpacity={true}
-					logo={CloudDownloadOutline}
-					on:click={() => dispatch('download')}
-					title="Download"
-				/>
-			{/if}
+	<div class="text-white flex gap-2 justify-end w-[calc(100%-3rem)] overflow-hidden">
+		{#if isOwner}
 			<CircleIconButton
 				isOpacity={true}
-				logo={InformationOutline}
-				on:click={() => dispatch('showDetail')}
-				title="Info"
+				logo={asset.isArchived ? ArchiveArrowUpOutline : ArchiveArrowDownOutline}
+				title={asset.isArchived ? 'Unarchive' : 'Archive'}
+				on:click={() => dispatch('toggleArchive')}
 			/>
-			{#if isOwner}
-				<CircleIconButton
-					isOpacity={true}
-					logo={asset.isFavorite ? Heart : HeartOutline}
-					on:click={() => dispatch('favorite')}
-					title="Favorite"
-				/>
-			{/if}
+		{/if}
 
-			{#if isOwner}
+		{#if showMotionPlayButton}
+			{#if isMotionPhotoPlaying}
 				<CircleIconButton
 					isOpacity={true}
-					logo={DeleteOutline}
-					on:click={() => dispatch('delete')}
-					title="Delete"
+					logo={MotionPauseOutline}
+					title="Stop Motion Photo"
+					on:click={() => dispatch('stopMotionPhoto')}
 				/>
-				<div use:clickOutside on:outclick={() => (isShowAssetOptions = false)}>
-					<CircleIconButton
-						isOpacity={true}
-						logo={DotsVertical}
-						on:click={showOptionsMenu}
-						title="More"
-					>
-						{#if isShowAssetOptions}
-							<ContextMenu {...contextMenuPosition}>
-								<div class="flex flex-col rounded-lg text-black bg-immich-bg">
-									<MenuOption on:click={() => onMenuClick('addToAlbum')} text="Add to Album" />
-									<MenuOption
-										on:click={() => onMenuClick('addToSharedAlbum')}
-										text="Add to Shared Album"
-									/>
-								</div>
-							</ContextMenu>
-						{/if}
-					</CircleIconButton>
-				</div>
+			{:else}
+				<CircleIconButton
+					isOpacity={true}
+					logo={MotionPlayOutline}
+					title="Play Motion Photo"
+					on:click={() => dispatch('playMotionPhoto')}
+				/>
 			{/if}
-		</div>
-	{/if}
+		{/if}
+		{#if showCopyButton}
+			<CircleIconButton
+				isOpacity={true}
+				logo={ContentCopy}
+				title="Copy Image"
+				on:click={() => {
+					const copyEvent = new CustomEvent('copyImage');
+					window.dispatchEvent(copyEvent);
+				}}
+			/>
+		{/if}
+
+		{#if showDownloadButton}
+			<CircleIconButton
+				isOpacity={true}
+				logo={CloudDownloadOutline}
+				on:click={() => dispatch('download')}
+				title="Download"
+			/>
+		{/if}
+		<CircleIconButton
+			isOpacity={true}
+			logo={InformationOutline}
+			on:click={() => dispatch('showDetail')}
+			title="Info"
+		/>
+		{#if isOwner}
+			<CircleIconButton
+				isOpacity={true}
+				logo={asset.isFavorite ? Heart : HeartOutline}
+				on:click={() => dispatch('favorite')}
+				title="Favorite"
+			/>
+		{/if}
+
+		{#if isOwner}
+			<CircleIconButton
+				isOpacity={true}
+				logo={DeleteOutline}
+				on:click={() => dispatch('delete')}
+				title="Delete"
+			/>
+			<div use:clickOutside on:outclick={() => (isShowAssetOptions = false)}>
+				<CircleIconButton
+					isOpacity={true}
+					logo={DotsVertical}
+					on:click={showOptionsMenu}
+					title="More"
+				>
+					{#if isShowAssetOptions}
+						<ContextMenu {...contextMenuPosition}>
+							<div class="flex flex-col rounded-lg text-black bg-immich-bg">
+								<MenuOption on:click={() => onMenuClick('addToAlbum')} text="Add to Album" />
+								<MenuOption
+									on:click={() => onMenuClick('addToSharedAlbum')}
+									text="Add to Shared Album"
+								/>
+							</div>
+						</ContextMenu>
+					{/if}
+				</CircleIconButton>
+			</div>
+		{/if}
+	</div>
 </div>

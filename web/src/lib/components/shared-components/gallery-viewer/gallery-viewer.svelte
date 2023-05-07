@@ -3,7 +3,6 @@
 		| 'archive-page'
 		| 'album-page'
 		| 'favorites-page'
-		| 'partner-sharing-page'
 		| 'search-page'
 		| 'shared-link-page';
 </script>
@@ -163,6 +162,5 @@
 		on:navigate-next={navigateAssetForward}
 		on:close={closeViewer}
 		on:unarchived={handleUnarchivedSuccess}
-		disableNavBarActions={viewFrom === 'partner-sharing-page'}
 	/>
 {/if}
