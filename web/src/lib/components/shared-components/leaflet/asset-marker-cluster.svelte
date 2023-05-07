@@ -3,16 +3,16 @@
 	import { MarkerClusterGroup, Marker, Icon, LeafletEvent } from 'leaflet';
 	import { onDestroy, onMount } from 'svelte';
 	import { getMapContext } from './map.svelte';
-	import { MapMarkerResponseDto, api } from '@api';
+	import { MapMarkerResponseDtoDecorator, api } from '@api';
 	import { createEventDispatcher } from 'svelte';
 
 	class AssetMarker extends Marker {
-		marker: MapMarkerResponseDto;
+		marker: MapMarkerResponseDtoDecorator;
 
-		constructor(marker: MapMarkerResponseDto) {
-			const markerAssetId = api.getMarkerAssetId(marker);
+		constructor(marker: MapMarkerResponseDtoDecorator) {
+			const markerAssetId = marker.getAssetId();
 
-			super(api.getMarkerLatLon(marker), {
+			super(marker.getLatLon(), {
 				alt: 'Loading...',
 				icon: new Icon({
 					className: 'marker-cluster-asset-marker',
@@ -30,7 +30,7 @@
 		}
 
 		getAssetId(): string {
-			return api.getMarkerAssetId(this.marker);
+			return this.marker.getAssetId();
 		}
 	}
 
@@ -40,7 +40,7 @@
 
 	const map = getMapContext();
 
-	function setUpCluster(markers: MapMarkerResponseDto[]) {
+	function setUpCluster(markers: MapMarkerResponseDtoDecorator[]) {
 		cluster = new MarkerClusterGroup({
 			showCoverageOnHover: false,
 			zoomToBoundsOnClick: false,
@@ -80,7 +80,7 @@
 
 	onMount(() => setUpCluster(markers));
 
-	export let markers: MapMarkerResponseDto[];
+	export let markers: MapMarkerResponseDtoDecorator[];
 	$: {
 		if (cluster) {
 			cluster.remove();
