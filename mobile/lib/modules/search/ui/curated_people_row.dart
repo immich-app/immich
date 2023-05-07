@@ -59,14 +59,18 @@ class CuratedPeopleRow extends StatelessWidget {
                 child: SizedBox(
                   height: imageSize,
                   width: imageSize,
-                  child: CircleAvatar(
-                    maxRadius: imageSize / 2,
-                    backgroundImage: NetworkImage(
-                      faceThumbnailRequestUrl,
-                      headers: {
-                        "Authorization":
-                            "Bearer ${Store.get(StoreKey.accessToken)}"
-                      },
+                  child: Material(
+                    shape: const CircleBorder(side: BorderSide.none),
+                    elevation: 3,
+                    child: CircleAvatar(
+                      maxRadius: imageSize / 2,
+                      backgroundImage: NetworkImage(
+                        faceThumbnailRequestUrl,
+                        headers: {
+                          "Authorization":
+                              "Bearer ${Store.get(StoreKey.accessToken)}"
+                        },
+                      ),
                     ),
                   ),
                 ),

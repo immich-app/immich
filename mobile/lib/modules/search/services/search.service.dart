@@ -78,4 +78,13 @@ class SearchService {
       return [];
     }
   }
+
+  Future<List<AssetResponseDto>?> getPersonAssets(String id) async {
+    try {
+      return await _apiService.personApi.getPersonAssets(id);
+    } catch (e) {
+      debugPrint("Error [getPersonAssets] ${e.toString()}");
+      return [];
+    }
+  }
 }

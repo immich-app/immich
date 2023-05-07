@@ -71,8 +71,9 @@ class SearchPage extends HookConsumerWidget {
                 .toList(),
             onTap: (content, index) {
               AutoRouter.of(context).push(
-                SearchResultRoute(
-                  searchTerm: 'm:${content.label}',
+                PersonResultRoute(
+                  personId: content.id,
+                  personName: content.label,
                 ),
               );
             },
