@@ -101,7 +101,7 @@ export class MapMarkerResponseDtoDecorator {
 	static from(response: object): MapMarkerResponseDtoDecorator {
 		const responseArray = response as MapMarkerResponseDto;
 
-		let assetId = responseArray.length === 3 ? responseArray[2] : null;
+		const assetId = responseArray.length === 3 ? responseArray[2] : null;
 
 		return new MapMarkerResponseDtoDecorator(
 			responseArray[0] as number,
