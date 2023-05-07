@@ -72,3 +72,12 @@ final getCuratedObjectProvider =
 
   return curatedObject ?? [];
 });
+
+final getCuratedPeopleProvider =
+    FutureProvider.autoDispose<List<PersonResponseDto>>((ref) async {
+  final SearchService searchService = ref.watch(searchServiceProvider);
+
+  var curatedPeople = await searchService.getCuratedPeople();
+
+  return curatedPeople ?? [];
+});
