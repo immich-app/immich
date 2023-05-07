@@ -8,11 +8,13 @@ class CuratedPeopleRow extends StatelessWidget {
 
   /// Callback with the content and the index when tapped
   final Function(CuratedContent, int)? onTap;
+  final Function(CuratedContent, int)? onNameTap;
 
   const CuratedPeopleRow({
     super.key,
     required this.content,
     this.onTap,
+    required this.onNameTap,
   });
 
   @override
@@ -52,28 +54,45 @@ class CuratedPeopleRow extends StatelessWidget {
           padding: const EdgeInsets.only(right: 8.0),
           child: Column(
             children: [
-              SizedBox(
-                height: imageSize,
-                width: imageSize,
-                child: CircleAvatar(
-                  maxRadius: imageSize / 2,
-                  backgroundImage: NetworkImage(
-                    faceThumbnailRequestUrl,
-                    headers: {
-                      "Authorization":
-                          "Bearer ${Store.get(StoreKey.accessToken)}"
-                    },
+              GestureDetector(
+                onTap: () => onTap?.call(object, index),
+                child: SizedBox(
+                  height: imageSize,
+                  width: imageSize,
+                  child: CircleAvatar(
+                    maxRadius: imageSize / 2,
+                    backgroundImage: NetworkImage(
+                      faceThumbnailRequestUrl,
+                      headers: {
+                        "Authorization":
+                            "Bearer ${Store.get(StoreKey.accessToken)}"
+                      },
+                    ),
                   ),
-                  // onTap: () => onTap?.call(object, index),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text(
-                  object.label,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              )
+              if (object.label == "")
+                GestureDetector(
+                  onTap: () => onNameTap?.call(object, index),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      "Add name",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  ),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    object.label,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                )
             ],
           ),
         );

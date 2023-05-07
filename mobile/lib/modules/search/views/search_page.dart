@@ -76,6 +76,7 @@ class SearchPage extends HookConsumerWidget {
                 ),
               );
             },
+            onNameTap: (person, index) => {print("Change name for $person")},
           ),
         ),
       );
