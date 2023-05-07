@@ -165,6 +165,10 @@ export class AssetService {
     authUser: AuthUserDto,
     getAssetByTimeBucketDto: GetAssetByTimeBucketDto,
   ): Promise<AssetResponseDto[]> {
+    if (getAssetByTimeBucketDto.userId !== undefined) {
+      await this.checkUserAccess(authUser, getAssetByTimeBucketDto.userId);
+    }
+
     const assets = await this._assetRepository.getAssetByTimeBucket(
       getAssetByTimeBucketDto.userId ?? authUser.id,
       getAssetByTimeBucketDto,
@@ -472,6 +476,10 @@ export class AssetService {
     authUser: AuthUserDto,
     getAssetCountByTimeBucketDto: GetAssetCountByTimeBucketDto,
   ): Promise<AssetCountByTimeBucketResponseDto> {
+    if (getAssetCountByTimeBucketDto.userId !== undefined) {
+      await this.checkUserAccess(authUser, getAssetCountByTimeBucketDto.userId);
+    }
+
     const result = await this._assetRepository.getAssetCountByTimeBucket(
       getAssetCountByTimeBucketDto.userId ?? authUser.id,
       getAssetCountByTimeBucketDto.timeGroup,
@@ -529,6 +537,16 @@ export class AssetService {
         }
       }
 
+      throw new ForbiddenException();
+    }
+  }
+
+  private async checkUserAccess(authUser: AuthUserDto, userId: string) {
+    // Check if userId shares assets with authUser
+    const hasAccess = (await this.partnerCore.getAll(authUser.id, 'shared-with')).some(
+      (item) => item.sharedBy == userId,
+    );
+    if (!hasAccess) {
       throw new ForbiddenException();
     }
   }
