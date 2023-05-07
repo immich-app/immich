@@ -9,8 +9,8 @@
 		viewingAssetStoreState
 	} from '$lib/stores/asset-interaction.store';
 	import { api, MapMarkerResponseDto } from '@api';
-  import { onMount } from 'svelte';
-  import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 
 	export let data: PageData;
 	let mapMarkers: MapMarkerResponseDto = [];

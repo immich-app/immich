@@ -142,6 +142,7 @@ describe('AssetService', () => {
       getAll: jest.fn(),
       getAllVideos: jest.fn(),
       getAllByUserId: jest.fn(),
+      getMapMarkerByUserId: jest.fn(),
       getAllByDeviceId: jest.fn(),
       getAssetCountByTimeBucket: jest.fn(),
       getById: jest.fn(),
@@ -498,14 +499,31 @@ describe('AssetService', () => {
 
   describe('get map markers', () => {
     it('should get geo information of assets', async () => {
-      assetRepositoryMock.getAllByUserId.mockResolvedValue(_getAssets());
+      assetRepositoryMock.getMapMarkerByUserId.mockResolvedValue(
+        _getAssets().filter((asset) => asset.exifInfo?.latitude != null),
+      );
 
-      const markers = await sut.getMapMarkers(authStub.admin, {});
+      const markers = await sut.getMapMarkers(authStub.admin, false);
 
       expect(markers).toHaveLength(1);
-      expect(markers[0].lat).toBe(_getAsset_1().exifInfo?.latitude);
-      expect(markers[0].lon).toBe(_getAsset_1().exifInfo?.longitude);
-      expect(markers[0].id).toBe(_getAsset_1().id);
+      expect(markers[0]).toHaveLength(3);
+      expect(markers[0][0]).toBe(_getAsset_1().id);
+      expect(markers[0][1]).toBeCloseTo(_getAsset_1().exifInfo?.latitude || 0, 4);
+      expect(markers[0][2]).toBeCloseTo(_getAsset_1().exifInfo?.longitude || 0, 4);
+    });
+
+    it('should preload assets', async () => {
+      assetRepositoryMock.getMapMarkerByUserId.mockResolvedValue(
+        _getAssets().filter((asset) => asset.exifInfo?.latitude != null),
+      );
+
+      const markers = await sut.getMapMarkers(authStub.admin, true);
+
+      expect(markers).toHaveLength(1);
+      expect(markers[0]).toHaveLength(3);
+      expect(markers[0][0]).toBe('');
+      expect(markers[0][1]).toBeCloseTo(_getAsset_1().exifInfo?.latitude || 0, 4);
+      expect(markers[0][2]).toBeCloseTo(_getAsset_1().exifInfo?.longitude || 0, 4);
     });
   });
 });

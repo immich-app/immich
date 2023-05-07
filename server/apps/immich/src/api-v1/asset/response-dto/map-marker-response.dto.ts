@@ -1,5 +1,5 @@
-import { AssetEntity } from "@app/infra/entities";
-import { roundToDecimals } from 'apps/immich/src/utils/coordinate.util';
+import { AssetEntity } from '@app/infra/entities';
+import { roundToDecimals } from '../../../utils/coordinate.util';
 
 export type MapMarkerResponseDto = [
   // assetId
@@ -7,7 +7,7 @@ export type MapMarkerResponseDto = [
   // latitude
   number,
   // longitude
-  number
+  number,
 ];
 
 export function mapAssetMapMarker(asset: AssetEntity, preload: boolean): MapMarkerResponseDto {
@@ -15,10 +15,6 @@ export function mapAssetMapMarker(asset: AssetEntity, preload: boolean): MapMark
   const lon = asset.exifInfo?.longitude || 0;
 
   const assetId = preload ? '' : asset.id;
-  
-  return  [
-    assetId,
-    roundToDecimals(lat, 5),
-    roundToDecimals(lon, 5)
-  ];
+
+  return [assetId, roundToDecimals(lat, 5), roundToDecimals(lon, 5)];
 }

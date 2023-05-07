@@ -55,7 +55,7 @@
 				.getAllChildMarkers()
 				.map((marker: AssetMarker) => marker.getAssetId())
 				.filter((id: string) => id.length > 0);
-			
+
 			if (ids.length > 0) {
 				dispatch('view', { assets: ids });
 			}
@@ -96,7 +96,7 @@
 <style>
 	:global(.marker-cluster-asset-marker) {
 		border-radius: 25%;
-		background-color: rgba(236, 237, 246, .8);
+		background-color: rgba(236, 237, 246, 0.8);
 		line-height: 60px;
 		text-align: center;
 	}

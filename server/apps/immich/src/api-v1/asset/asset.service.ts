@@ -30,10 +30,9 @@ import {
   JobName,
   mapAsset,
   mapAssetWithoutExif,
-  MapMarkerResponseDto,
-  mapAssetMapMarker,
 } from '@app/domain';
 import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
+import { MapMarkerResponseDto, mapAssetMapMarker } from './response-dto/map-marker-response.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
@@ -147,7 +146,9 @@ export class AssetService {
   public async getMapMarkers(authUser: AuthUserDto, preload: boolean): Promise<MapMarkerResponseDto[]> {
     const assets = await this._assetRepository.getMapMarkerByUserId(authUser.id);
 
-    return assets.map((asset) => mapAssetMapMarker(asset, preload)).filter((marker) => marker != null) as MapMarkerResponseDto[];
+    return assets
+      .map((asset) => mapAssetMapMarker(asset, preload))
+      .filter((marker) => marker != null) as MapMarkerResponseDto[];
   }
 
   public async getAssetByTimeBucket(

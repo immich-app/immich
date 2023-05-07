@@ -252,7 +252,7 @@ export class AssetRepository implements IAssetRepository {
         exifInfo: {
           latitude: Not(IsNull()),
           longitude: Not(IsNull()),
-        }
+        },
       },
       relations: {
         exifInfo: true,
