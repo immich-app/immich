@@ -20,5 +20,5 @@
 </script>
 
 <UserPageLayout user={data.user} title="{data.partner.firstName} {data.partner.lastName}">
-	<AssetGrid user={data.user} />
+	<AssetGrid user={data.partner} />
 </UserPageLayout>
