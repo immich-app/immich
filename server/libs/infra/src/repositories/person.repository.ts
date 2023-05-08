@@ -43,6 +43,9 @@ export class PersonRepository implements IPersonRepository {
         },
         exifInfo: true,
       },
+      order: {
+        createdAt: 'ASC',
+      },
     });
   }
 
