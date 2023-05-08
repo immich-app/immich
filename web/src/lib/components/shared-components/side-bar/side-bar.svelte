@@ -2,8 +2,10 @@
 	import { page } from '$app/stores';
 	import { api } from '@api';
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
+	import AccountMultiple from 'svelte-material-icons/AccountMultiple.svelte';
 	import ImageAlbum from 'svelte-material-icons/ImageAlbum.svelte';
-	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
+	import ImageMultipleOutline from 'svelte-material-icons/ImageMultipleOutline.svelte';
+	import ImageMultiple from 'svelte-material-icons/ImageMultiple.svelte';
 	import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
 	import Magnify from 'svelte-material-icons/Magnify.svelte';
 	import Map from 'svelte-material-icons/Map.svelte';
@@ -74,6 +76,8 @@
 	};
 
   const isFavoritesSelected = $page.route.id === '/(user)/favorites';
+  const isPhotosSelected = $page.route.id === '/(user)/photos';
+  const isSharingSelected = $page.route.id === '/(user)/sharing'
 
 </script>
 
@@ -86,8 +90,8 @@
 	>
 		<SideBarButton
 			title="Photos"
-			logo={ImageOutline}
-			isSelected={$page.route.id === '/(user)/photos'}
+			logo={isPhotosSelected ? ImageMultiple :  ImageMultipleOutline}
+			isSelected={isPhotosSelected}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getAssetCount()}
@@ -119,8 +123,8 @@
 	<a data-sveltekit-preload-data="hover" href={AppRoute.SHARING} draggable="false">
 		<SideBarButton
 			title="Sharing"
-			logo={AccountMultipleOutline}
-			isSelected={$page.route.id === '/(user)/sharing'}
+			logo={isSharingSelected ? AccountMultiple : AccountMultipleOutline}
+			isSelected={isSharingSelected}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getAlbumCount()}
