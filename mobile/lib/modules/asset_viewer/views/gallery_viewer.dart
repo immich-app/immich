@@ -373,24 +373,31 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
+    /// The image provider to use for the given asset
     ImageProvider imageProvider(Asset asset) {
+      // Local assets
       if (asset.isLocal) {
         return localImageProvider(asset);
-      } else {
-        if (isLoadOriginal.value) {
-          return originalImageProvider(asset);
-        } else if (isLoadPreview.value) {
-          return remoteThumbnailImageProvider(
-            asset,
-            api.ThumbnailFormat.JPEG,
-          );
-        } else {
-          return remoteThumbnailImageProvider(
-            asset,
-            api.ThumbnailFormat.WEBP,
-          );
-        }
       }
+
+      // Original assets
+      if (isLoadOriginal.value) {
+        return originalImageProvider(asset);
+      }
+
+      // Preview uses remote JPEG
+      if (isLoadPreview.value) {
+        return remoteThumbnailImageProvider(
+          asset,
+          api.ThumbnailFormat.JPEG,
+        );
+      }
+
+      // Otherwise, use the thumbnail preview
+      return remoteThumbnailImageProvider(
+        asset,
+        api.ThumbnailFormat.WEBP,
+      );
     }
 
     return Scaffold(
