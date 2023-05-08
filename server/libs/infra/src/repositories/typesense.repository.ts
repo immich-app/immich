@@ -216,6 +216,12 @@ export class TypesenseRepository implements ISearchRepository {
     await this.delete(SearchCollection.FACES, ids);
   }
 
+  async deleteAllFaces(): Promise<void> {
+    const faceCollection = schemaMap[SearchCollection.FACES].name;
+    const records = await this.client.collections(faceCollection).documents().delete({ filter_by: 'ownerId:!=null' });
+    this.logger.log(`Deleted ${records.num_deleted} documents in ${faceCollection} collection`);
+  }
+
   async delete(collection: SearchCollection, ids: string[]): Promise<void> {
     await this.client
       .collections(schemaMap[collection].name)

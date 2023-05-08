@@ -10,6 +10,7 @@ export const newSearchRepositoryMock = (): jest.Mocked<ISearchRepository> => {
     deleteAlbums: jest.fn(),
     deleteAssets: jest.fn(),
     deleteFaces: jest.fn(),
+    deleteAllFaces: jest.fn(),
     searchAssets: jest.fn(),
     searchAlbums: jest.fn(),
     vectorSearch: jest.fn(),

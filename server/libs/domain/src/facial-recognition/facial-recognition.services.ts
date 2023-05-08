@@ -20,7 +20,7 @@ export class FacialRecognitionService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
-    @Inject(IPersonRepository) private personService: IPersonRepository,
+    @Inject(IPersonRepository) private personRepository: IPersonRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {}
@@ -31,6 +31,11 @@ export class FacialRecognitionService {
         ? await this.assetRepository.getAll()
         : await this.assetRepository.getWithout(WithoutProperty.FACES);
 
+      if (force) {
+        const records = await this.personRepository.deleteAll();
+        await this.searchRepository.deleteAllFaces();
+        this.logger.debug(`Deleted ${records.length} persons`);
+      }
       for (const asset of assets) {
         await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: { asset } });
       }
@@ -70,11 +75,11 @@ export class FacialRecognitionService {
 
         if (!personId) {
           this.logger.debug('No matches, creating a new person.');
-          const person = await this.personService.create({ ownerId: asset.ownerId });
+          const person = await this.personRepository.create({ ownerId: asset.ownerId });
           personId = person.id;
           await this.jobRepository.queue({
             name: JobName.GENERATE_FACE_THUMBNAIL,
-            data: { assetId: asset.id, personId, ...rest },
+            data: { assetId: asset.id, personId, zoomOut: true, ...rest },
           });
         }
 
@@ -92,7 +97,7 @@ export class FacialRecognitionService {
   }
 
   async handleGenerateFaceThumbnail(data: IFaceThumbnailJob) {
-    const { assetId, personId, boundingBox, imageWidth, imageHeight } = data;
+    const { assetId, personId, boundingBox, imageWidth, imageHeight, zoomOut } = data;
 
     try {
       const [asset] = await this.assetRepository.getByIds([assetId]);
@@ -107,12 +112,13 @@ export class FacialRecognitionService {
       const output = join(outputFolder, `${personId}.jpeg`);
       this.storageRepository.mkdirSync(outputFolder);
 
+      const zoomFraction = zoomOut ? 1.1 : 1.0;
       const { x1, y1, x2, y2 } = boundingBox;
       const imageHalfWidth = (x2 - x1) / 2;
       const imageHalfHeight = (y2 - y1) / 2;
       const middleX = x1 + imageHalfWidth;
       const middleY = y1 + imageHalfHeight;
-      const zoomOutPixels = Math.max(imageHalfWidth, imageHalfHeight) * 1.1;
+      const zoomOutPixels = Math.max(imageHalfWidth, imageHalfHeight) * zoomFraction;
 
       // get the longest distance from the center of the image without overflowing
       const unit = Math.max(
@@ -122,9 +128,9 @@ export class FacialRecognitionService {
         Math.min(imageHeight, middleY + zoomOutPixels) - middleY,
       );
 
-      const left = Math.round(middleX - unit);
-      const top = Math.round(middleY - unit);
-      const size = Math.round(unit * 2);
+      const left = Math.abs(Math.round(middleX - unit));
+      const top = Math.abs(Math.round(middleY - unit));
+      const size = Math.abs(Math.round(unit * 2));
 
       // TODO: move to machine learning code
       // if (left < 1 || top < 1 || width < 1 || height < 1) {
@@ -133,9 +139,16 @@ export class FacialRecognitionService {
       // }
 
       await this.mediaRepository.crop(asset.resizePath, output, { left, top, width: size, height: size });
-      await this.personService.update({ id: personId, thumbnailPath: output });
+      await this.personRepository.update({ id: personId, thumbnailPath: output });
     } catch (error: any) {
-      this.logger.error(`Failed to crop face for asset: ${assetId}, person: ${personId}`, error.stack);
+      this.logger.error(
+        `Failed to crop face for asset: ${assetId}, person: ${personId} - regenerating with zooming out disabled`,
+        error.stack,
+      );
+      await this.jobRepository.queue({
+        name: JobName.GENERATE_FACE_THUMBNAIL,
+        data: { ...data, zoomOut: false },
+      });
     }
   }
 }
