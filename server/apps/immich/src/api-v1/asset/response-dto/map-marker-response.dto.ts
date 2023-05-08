@@ -1,5 +1,5 @@
 import { AssetEntity } from '@app/infra/entities';
-import { roundToDecimals } from '../../../utils/coordinate.util';
+import { round } from 'lodash';
 
 export type MapMarkerResponseDto = [
   // latitude
@@ -14,7 +14,7 @@ export function mapAssetMapMarker(asset: AssetEntity, preload: boolean): MapMark
   const lat = asset.exifInfo?.latitude || 0;
   const lon = asset.exifInfo?.longitude || 0;
 
-  const response = [roundToDecimals(lat, 5), roundToDecimals(lon, 5)] as MapMarkerResponseDto;
+  const response: MapMarkerResponseDto = [round(lat, 5), round(lon, 5)];
 
   if (!preload) {
     response.push(asset.id);
