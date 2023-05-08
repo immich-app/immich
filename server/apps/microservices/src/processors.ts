@@ -139,17 +139,17 @@ export class ThumbnailGeneratorProcessor {
   constructor(private mediaService: MediaService) {}
 
   @Process({ name: JobName.QUEUE_GENERATE_THUMBNAILS, concurrency: 1 })
-  async handleQueueGenerateThumbnails(job: Job<IBaseJob>) {
+  async onQueueGenerateThumbnails(job: Job<IBaseJob>) {
     await this.mediaService.handleQueueGenerateThumbnails(job.data);
   }
 
   @Process({ name: JobName.GENERATE_JPEG_THUMBNAIL, concurrency: 3 })
-  async handleGenerateJpegThumbnail(job: Job<IAssetJob>) {
+  async onGenerateJpegThumbnail(job: Job<IAssetJob>) {
     await this.mediaService.handleGenerateJpegThumbnail(job.data);
   }
 
   @Process({ name: JobName.GENERATE_WEBP_THUMBNAIL, concurrency: 3 })
-  async handleGenerateWepbThumbnail(job: Job<IAssetJob>) {
+  async onGenerateWepbThumbnail(job: Job<IAssetJob>) {
     await this.mediaService.handleGenerateWepbThumbnail(job.data);
   }
 }

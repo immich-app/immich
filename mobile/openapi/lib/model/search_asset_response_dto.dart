@@ -75,14 +75,14 @@ class SearchAssetResponseDto {
       return SearchAssetResponseDto(
         total: mapValueOfType<int>(json, r'total')!,
         count: mapValueOfType<int>(json, r'count')!,
-        items: AssetResponseDto.listFromJson(json[r'items'])!,
-        facets: SearchFacetResponseDto.listFromJson(json[r'facets'])!,
+        items: AssetResponseDto.listFromJson(json[r'items']),
+        facets: SearchFacetResponseDto.listFromJson(json[r'facets']),
       );
     }
     return null;
   }
 
-  static List<SearchAssetResponseDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SearchAssetResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <SearchAssetResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -113,12 +113,10 @@ class SearchAssetResponseDto {
   static Map<String, List<SearchAssetResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<SearchAssetResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = SearchAssetResponseDto.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = SearchAssetResponseDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

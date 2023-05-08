@@ -6,6 +6,7 @@
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
 	import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
 	import Magnify from 'svelte-material-icons/Magnify.svelte';
+	import Map from 'svelte-material-icons/Map.svelte';
 	import StarOutline from 'svelte-material-icons/StarOutline.svelte';
 	import { AppRoute } from '../../../constants';
 	import LoadingSpinner from '../loading-spinner.svelte';
@@ -107,6 +108,9 @@
 			logo={Magnify}
 			isSelected={$page.route.id === '/(user)/explore'}
 		/>
+	</a>
+	<a data-sveltekit-preload-data="hover" href={AppRoute.MAP} draggable="false">
+		<SideBarButton title="Map" logo={Map} isSelected={$page.route.id === '/(user)/map'} />
 	</a>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.SHARING} draggable="false">
 		<SideBarButton

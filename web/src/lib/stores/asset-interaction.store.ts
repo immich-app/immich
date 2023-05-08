@@ -53,7 +53,11 @@ function createAssetInteractionStore() {
 	 * Asset Viewer
 	 */
 	const setViewingAsset = async (asset: AssetResponseDto) => {
-		const { data } = await api.assetApi.getAssetById(asset.id);
+		setViewingAssetId(asset.id);
+	};
+
+	const setViewingAssetId = async (id: string) => {
+		const { data } = await api.assetApi.getAssetById(id);
 		viewingAssetStoreState.set(data);
 		isViewingAssetStoreState.set(true);
 	};
@@ -140,6 +144,7 @@ function createAssetInteractionStore() {
 
 	return {
 		setViewingAsset,
+		setViewingAssetId,
 		setIsViewingAsset,
 		navigateAsset,
 		addAssetToMultiselectGroup,

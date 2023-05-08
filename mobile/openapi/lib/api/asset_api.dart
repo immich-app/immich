@@ -979,6 +979,79 @@ class AssetApi {
     return null;
   }
 
+  /// Get all assets that have GPS information embedded
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [bool] isFavorite:
+  ///
+  /// * [bool] isArchived:
+  ///
+  /// * [num] skip:
+  Future<Response> getMapMarkersWithHttpInfo({ bool? isFavorite, bool? isArchived, num? skip, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset/map-marker';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (isFavorite != null) {
+      queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
+    }
+    if (isArchived != null) {
+      queryParams.addAll(_queryParams('', 'isArchived', isArchived));
+    }
+    if (skip != null) {
+      queryParams.addAll(_queryParams('', 'skip', skip));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Get all assets that have GPS information embedded
+  ///
+  /// Parameters:
+  ///
+  /// * [bool] isFavorite:
+  ///
+  /// * [bool] isArchived:
+  ///
+  /// * [num] skip:
+  Future<List<MapMarkerResponseDto>?> getMapMarkers({ bool? isFavorite, bool? isArchived, num? skip, }) async {
+    final response = await getMapMarkersWithHttpInfo( isFavorite: isFavorite, isArchived: isArchived, skip: skip, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<MapMarkerResponseDto>') as List)
+        .cast<MapMarkerResponseDto>()
+        .toList();
+
+    }
+    return null;
+  }
+
   /// Get all asset of a device that are in the database, ID only.
   ///
   /// Note: This method returns the HTTP [Response].
