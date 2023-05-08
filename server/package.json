@@ -67,7 +67,7 @@
     "i18n-iso-countries": "^7.5.0",
     "ioredis": "^5.3.1",
     "joi": "^17.5.0",
-    "local-reverse-geocoder": "0.12.5",
+    "local-reverse-geocoder": "^0.15.2",
     "lodash": "^4.17.21",
     "luxon": "^3.0.3",
     "mv": "^2.1.1",
