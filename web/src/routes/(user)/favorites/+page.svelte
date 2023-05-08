@@ -8,7 +8,7 @@
 	import { onMount } from 'svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
-	import StarMinusOutline from 'svelte-material-icons/StarMinusOutline.svelte';
+	import HeartMinusOutline from 'svelte-material-icons/HeartMinusOutline.svelte';
 	import Error from '../../+error.svelte';
 	import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
@@ -80,7 +80,7 @@
 			/>
 			<CircleIconButton
 				title="Remove Favorite"
-				logo={StarMinusOutline}
+				logo={HeartMinusOutline}
 				on:click={handleRemoveFavorite}
 			/>
 		</svelte:fragment>

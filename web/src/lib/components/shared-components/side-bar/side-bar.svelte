@@ -7,7 +7,8 @@
 	import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
 	import Magnify from 'svelte-material-icons/Magnify.svelte';
 	import Map from 'svelte-material-icons/Map.svelte';
-	import StarOutline from 'svelte-material-icons/StarOutline.svelte';
+	import HeartMultipleOutline from 'svelte-material-icons/HeartMultipleOutline.svelte';
+	import HeartMultiple from 'svelte-material-icons/HeartMultiple.svelte';
 	import { AppRoute } from '../../../constants';
 	import LoadingSpinner from '../loading-spinner.svelte';
 	import StatusBox from '../status-box.svelte';
@@ -71,6 +72,9 @@
 			};
 		}
 	};
+
+  const isFavoritesSelected = $page.route.id === '/(user)/favorites';
+
 </script>
 
 <SideBarSection>
@@ -137,8 +141,8 @@
 	<a data-sveltekit-preload-data="hover" href={AppRoute.FAVORITES} draggable="false">
 		<SideBarButton
 			title="Favorites"
-			logo={StarOutline}
-			isSelected={$page.route.id == '/(user)/favorites'}
+			logo={isFavoritesSelected ? HeartMultiple :  HeartMultipleOutline}
+			isSelected={isFavoritesSelected}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getFavoriteCount()}

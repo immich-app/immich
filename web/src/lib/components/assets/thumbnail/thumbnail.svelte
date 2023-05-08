@@ -6,7 +6,7 @@
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
 	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
-	import Star from 'svelte-material-icons/Star.svelte';
+	import Heart from 'svelte-material-icons/Heart.svelte';
 	import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
 	import ImageThumbnail from './image-thumbnail.svelte';
 	import VideoThumbnail from './video-thumbnail.svelte';
@@ -112,7 +112,7 @@
 				<!-- Favorite asset star -->
 				{#if asset.isFavorite && !publicSharedKey}
 					<div class="absolute bottom-2 left-2 z-10">
-						<Star size="24" class="text-white" />
+						<Heart size="24" class="text-white" />
 					</div>
 				{/if}
 

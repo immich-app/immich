@@ -35,7 +35,7 @@ class TopControlAppBar extends HookConsumerWidget {
           onFavorite();
         },
         icon: Icon(
-          isFavorite ? Icons.star : Icons.star_border,
+          isFavorite ? Icons.favorite : Icons.favorite_border,
           color: Colors.grey[200],
         ),
       );
