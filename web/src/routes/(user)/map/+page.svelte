@@ -8,24 +8,24 @@
 		isViewingAssetStoreState,
 		viewingAssetStoreState
 	} from '$lib/stores/asset-interaction.store';
-	import { api, MapMarkerResponseDtoDecorator } from '@api';
+	import { api, MapMarkerResponse } from '@api';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 
 	export let data: PageData;
-	let mapMarkers: MapMarkerResponseDtoDecorator[] = [];
+	let mapMarkers: MapMarkerResponse[] = [];
 
 	let initialMapCenter: [number, number] = [48, 11];
 
 	onMount(async () => {
-		mapMarkers = MapMarkerResponseDtoDecorator.fromMany(data.mapMarkers);
+		mapMarkers = MapMarkerResponse.fromMany(data.mapMarkers);
 
 		if (mapMarkers.length) {
 			initialMapCenter = mapMarkers[0].getLatLon();
 		}
 
 		const markersResponse = (await api.assetApi.getMapMarkers()).data;
-		mapMarkers = MapMarkerResponseDtoDecorator.fromMany(markersResponse);
+		mapMarkers = MapMarkerResponse.fromMany(markersResponse);
 	});
 
 	let viewingAssets: string[] = [];

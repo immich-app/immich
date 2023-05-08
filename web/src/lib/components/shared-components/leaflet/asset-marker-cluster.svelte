@@ -3,13 +3,13 @@
 	import { MarkerClusterGroup, Marker, Icon, LeafletEvent } from 'leaflet';
 	import { onDestroy, onMount } from 'svelte';
 	import { getMapContext } from './map.svelte';
-	import { MapMarkerResponseDtoDecorator, api } from '@api';
+	import { MapMarkerResponse, api } from '@api';
 	import { createEventDispatcher } from 'svelte';
 
 	class AssetMarker extends Marker {
-		marker: MapMarkerResponseDtoDecorator;
+		marker: MapMarkerResponse;
 
-		constructor(marker: MapMarkerResponseDtoDecorator) {
+		constructor(marker: MapMarkerResponse) {
 			const markerAssetId = marker.getAssetId();
 
 			super(marker.getLatLon(), {
@@ -40,7 +40,7 @@
 
 	const map = getMapContext();
 
-	function setUpCluster(markers: MapMarkerResponseDtoDecorator[]) {
+	function setUpCluster(markers: MapMarkerResponse[]) {
 		cluster = new MarkerClusterGroup({
 			showCoverageOnHover: false,
 			zoomToBoundsOnClick: false,
@@ -80,7 +80,7 @@
 
 	onMount(() => setUpCluster(markers));
 
-	export let markers: MapMarkerResponseDtoDecorator[];
+	export let markers: MapMarkerResponse[];
 	$: {
 		if (cluster) {
 			cluster.remove();

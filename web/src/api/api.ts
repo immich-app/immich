@@ -95,23 +95,19 @@ export type MapMarkerResponseDto = [
 	string
 ];
 
-export class MapMarkerResponseDtoDecorator {
+export class MapMarkerResponse {
 	constructor(private lat: number, private lon: number, private assetId: string | null) {}
 
-	static from(response: object): MapMarkerResponseDtoDecorator {
+	static from(response: object): MapMarkerResponse {
 		const responseArray = response as MapMarkerResponseDto;
 
 		const assetId = responseArray.length === 3 ? responseArray[2] : null;
 
-		return new MapMarkerResponseDtoDecorator(
-			responseArray[0] as number,
-			responseArray[1] as number,
-			assetId
-		);
+		return new MapMarkerResponse(responseArray[0] as number, responseArray[1] as number, assetId);
 	}
 
-	static fromMany(responses: object[]): MapMarkerResponseDtoDecorator[] {
-		return responses.map(MapMarkerResponseDtoDecorator.from);
+	static fromMany(responses: object[]): MapMarkerResponse[] {
+		return responses.map(MapMarkerResponse.from);
 	}
 
 	public getAssetId(): string | null {
