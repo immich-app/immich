@@ -75,10 +75,9 @@
 		}
 	};
 
-  const isFavoritesSelected = $page.route.id === '/(user)/favorites';
-  const isPhotosSelected = $page.route.id === '/(user)/photos';
-  const isSharingSelected = $page.route.id === '/(user)/sharing'
-
+	const isFavoritesSelected = $page.route.id === '/(user)/favorites';
+	const isPhotosSelected = $page.route.id === '/(user)/photos';
+	const isSharingSelected = $page.route.id === '/(user)/sharing';
 </script>
 
 <SideBarSection>
@@ -90,7 +89,7 @@
 	>
 		<SideBarButton
 			title="Photos"
-			logo={isPhotosSelected ? ImageMultiple :  ImageMultipleOutline}
+			logo={isPhotosSelected ? ImageMultiple : ImageMultipleOutline}
 			isSelected={isPhotosSelected}
 		>
 			<svelte:fragment slot="moreInformation">
@@ -145,7 +144,7 @@
 	<a data-sveltekit-preload-data="hover" href={AppRoute.FAVORITES} draggable="false">
 		<SideBarButton
 			title="Favorites"
-			logo={isFavoritesSelected ? HeartMultiple :  HeartMultipleOutline}
+			logo={isFavoritesSelected ? HeartMultiple : HeartMultipleOutline}
 			isSelected={isFavoritesSelected}
 		>
 			<svelte:fragment slot="moreInformation">
