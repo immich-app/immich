@@ -40,8 +40,8 @@ class TabControllerPage extends ConsumerWidget {
               right: 4,
               bottom: 4,
             ),
-            icon: const Icon(Icons.photo_outlined),
-            selectedIcon: const Icon(Icons.photo),
+            icon: const Icon(Icons.photo_library_outlined),
+            selectedIcon: const Icon(Icons.photo_library),
             label: const Text('tab_controller_nav_photos').tr(),
           ),
           NavigationRailDestination(
@@ -81,10 +81,10 @@ class TabControllerPage extends ConsumerWidget {
           NavigationDestination(
             label: 'tab_controller_nav_photos'.tr(),
             icon: const Icon(
-              Icons.photo_outlined,
+              Icons.photo_library_outlined,
             ),
             selectedIcon: Icon(
-              Icons.photo,
+              Icons.photo_library,
               color: Theme.of(context).primaryColor,
             ),
           ),

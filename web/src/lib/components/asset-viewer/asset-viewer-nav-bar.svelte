@@ -10,8 +10,8 @@
 	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
-	import Star from 'svelte-material-icons/Star.svelte';
-	import StarOutline from 'svelte-material-icons/StarOutline.svelte';
+	import Heart from 'svelte-material-icons/Heart.svelte';
+	import HeartOutline from 'svelte-material-icons/HeartOutline.svelte';
 	import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
 	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
 	import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
@@ -100,7 +100,7 @@
 		/>
 		{#if isOwner}
 			<CircleIconButton
-				logo={asset.isFavorite ? Star : StarOutline}
+				logo={asset.isFavorite ? Heart : HeartOutline}
 				on:click={() => dispatch('favorite')}
 				title="Favorite"
 			/>
