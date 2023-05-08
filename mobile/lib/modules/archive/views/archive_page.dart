@@ -112,8 +112,8 @@ class ArchivePage extends HookConsumerWidget {
     return Scaffold(
       appBar: buildAppBar(),
       body: archivedAssets.value.isEmpty
-          ? Center(
-              child: Text('No archived assets found.'),
+          ? const Center(
+              child: const Text('No archived assets found.'),
             )
           : Stack(
               children: [
