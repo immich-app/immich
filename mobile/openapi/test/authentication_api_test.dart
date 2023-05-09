@@ -47,6 +47,11 @@ void main() {
       // TODO
     });
 
+    //Future logoutAuthDevices() async
+    test('test logoutAuthDevices', () async {
+      // TODO
+    });
+
     //Future<ValidateAccessTokenResponseDto> validateAccessToken() async
     test('test validateAccessToken', () async {
       // TODO
