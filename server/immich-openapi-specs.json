@@ -792,6 +792,109 @@
         ]
       }
     },
+    "/partner": {
+      "get": {
+        "operationId": "getAllPartners",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PartnerResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Partner"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/partner/{id}": {
+      "post": {
+        "operationId": "addPartner",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Partner"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "removePartner",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Partner"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/search": {
       "get": {
         "operationId": "search",
@@ -1882,109 +1985,6 @@
                 }
               }
             }
-          }
-        },
-        "tags": [
-          "User"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
-    "/user/partner": {
-      "get": {
-        "operationId": "getAllPartners",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PartnerResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "User"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
-    "/user/partner/{id}": {
-      "post": {
-        "operationId": "addPartner",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "User"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      },
-      "delete": {
-        "operationId": "removePartner",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
           }
         },
         "tags": [
@@ -4783,6 +4783,31 @@
           "url"
         ]
       },
+      "PartnerResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sharedBy": {
+            "type": "string"
+          },
+          "sharedWith": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "sharedBy",
+          "sharedWith"
+        ]
+      },
       "SearchFacetCountResponseDto": {
         "type": "object",
         "properties": {
@@ -5137,31 +5162,6 @@
           "allowUpload",
           "allowDownload",
           "showExif"
-        ]
-      },
-      "PartnerResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "sharedBy": {
-            "type": "string"
-          },
-          "sharedWith": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "sharedBy",
-          "sharedWith"
         ]
       },
       "EditSharedLinkDto": {

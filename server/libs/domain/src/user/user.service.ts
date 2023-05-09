@@ -8,13 +8,11 @@ import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto/crypto.repository';
 import { IJobRepository, IUserDeletionJob, JobName } from '../job';
-import { IPartnerRepository, PartnerCore } from '../partner';
 import { StorageCore, StorageFolder } from '../storage';
 import { IStorageRepository } from '../storage/storage.repository';
 import { IUserTokenRepository } from '../user-token/user-token.repository';
 import { IUserRepository } from '../user/user.repository';
 import { CreateUserDto, UpdateUserDto, UserCountDto } from './dto';
-import { mapPartner, PartnerResponseDto } from '../partner';
 import {
   CreateProfileImageResponseDto,
   mapCreateProfileImageResponse,
@@ -30,7 +28,6 @@ export class UserService {
   private logger = new Logger(UserService.name);
   private userCore: UserCore;
   private storageCore = new StorageCore();
-  private partnerCore: PartnerCore;
 
   constructor(
     @Inject(IUserRepository) private userRepository: IUserRepository,
@@ -42,10 +39,8 @@ export class UserService {
     @Inject(IKeyRepository) private keyRepository: IKeyRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(IUserTokenRepository) private tokenRepository: IUserTokenRepository,
-    @Inject(IPartnerRepository) partnerRepository: IPartnerRepository,
   ) {
     this.userCore = new UserCore(userRepository, cryptoRepository);
-    this.partnerCore = new PartnerCore(partnerRepository);
   }
 
   async getAllUsers(authUser: AuthUserDto, isAll: boolean): Promise<UserResponseDto[]> {
@@ -192,19 +187,6 @@ export class UserService {
     } catch (error: any) {
       this.logger.error(`Failed to remove user`, error, { id: user.id });
     }
-  }
-
-  async addPartner(authUser: AuthUserDto, sharedWith: string): Promise<void> {
-    await this.partnerCore.create(authUser.id, sharedWith);
-  }
-
-  async removePartner(authUser: AuthUserDto, sharedWith: string): Promise<void> {
-    await this.partnerCore.remove(authUser.id, sharedWith);
-  }
-
-  async getAllPartners(authUser: AuthUserDto): Promise<PartnerResponseDto[]> {
-    const partners = await this.partnerCore.getAll(authUser.id, 'shared-by');
-    return partners.map(mapPartner);
   }
 
   private isReadyForDeletion(user: UserEntity): boolean {

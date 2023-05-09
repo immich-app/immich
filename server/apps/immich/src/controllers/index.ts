@@ -3,6 +3,7 @@ export * from './api-key.controller';
 export * from './auth.controller';
 export * from './job.controller';
 export * from './oauth.controller';
+export * from './partner.controller';
 export * from './search.controller';
 export * from './server-info.controller';
 export * from './share.controller';
