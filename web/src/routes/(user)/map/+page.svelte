@@ -45,7 +45,7 @@
 <UserPageLayout user={data.user} title={data.meta.title}>
 	<div slot="buttons" />
 
-	<div class="h-[90%] w-full">
+	<div class="h-[90%] w-full relative z-0">
 		{#await import('$lib/components/shared-components/leaflet') then { Map, TileLayer, AssetMarkerCluster }}
 			<Map latlng={initialMapCenter} zoom={7}>
 				<TileLayer
