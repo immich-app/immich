@@ -44,7 +44,7 @@ class ControlBottomAppBar extends ConsumerWidget {
             },
           ),
           ControlBoxButton(
-            iconData: Icons.star_rounded,
+            iconData: Icons.favorite_border_rounded,
             label: "control_bottom_app_bar_favorite".tr(),
             onPressed: () {
               onFavorite();

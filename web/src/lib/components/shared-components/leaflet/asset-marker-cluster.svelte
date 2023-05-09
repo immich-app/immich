@@ -28,7 +28,8 @@
 					iconAnchor: [12, 41],
 					popupAnchor: [1, -34],
 					tooltipAnchor: [16, -28],
-					shadowSize: [41, 41]
+					shadowSize: [41, 41],
+					className: 'asset-marker-icon'
 				})
 			});
 
@@ -67,6 +68,16 @@
 			dispatch('view', { assets: ids });
 		});
 
+		cluster.on('clustermouseover', (event: LeafletEvent) => {
+			if (event.sourceTarget.getChildCount() <= 10) {
+				event.sourceTarget.spiderfy();
+			}
+		});
+
+		cluster.on('clustermouseout', (event: LeafletEvent) => {
+			event.sourceTarget.unspiderfy();
+		});
+
 		for (let marker of markers) {
 			const leafletMarker = new AssetMarker(marker);
 
@@ -91,12 +102,21 @@
 
 <style>
 	:global(.leaflet-marker-icon) {
-		border-radius: 25%;
+		border-radius: 50%;
 	}
 
 	:global(.marker-cluster) {
 		background-clip: padding-box;
 		border-radius: 20px;
+	}
+
+	:global(.asset-marker-icon) {
+		border-radius: 50%;
+		object-fit: cover;
+		border: 1px solid rgb(69, 80, 169);
+		box-shadow: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px,
+			rgba(0, 0, 0, 0.07) 0px 4px 8px, rgba(0, 0, 0, 0.07) 0px 8px 16px,
+			rgba(0, 0, 0, 0.07) 0px 16px 32px, rgba(0, 0, 0, 0.07) 0px 32px 64px;
 	}
 
 	:global(.marker-cluster div) {
@@ -110,7 +130,16 @@
 		font-weight: bold;
 
 		background-color: rgb(236, 237, 246);
+		border: 1px solid rgb(69, 80, 169);
+
 		color: rgb(69, 80, 169);
+		box-shadow: rgba(5, 5, 122, 0.12) 0px 2px 4px 0px, rgba(4, 4, 230, 0.32) 0px 2px 16px 0px;
+	}
+
+	:global(.dark .marker-cluster div) {
+		background-color: #adcbfa;
+		border: 1px solid black;
+		color: black;
 	}
 
 	:global(.marker-cluster span) {

@@ -98,7 +98,7 @@ class AlbumViewerThumbnail extends HookConsumerWidget {
         left: 10,
         bottom: 5,
         child: Icon(
-          Icons.star,
+          Icons.favorite,
           color: Colors.white,
           size: 18,
         ),

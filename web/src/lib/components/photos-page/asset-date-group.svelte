@@ -108,17 +108,12 @@
 		// Show multi select icon on hover on date group
 		hoveredDateGroup = dateGroupTitle;
 	};
-
-	let clientWidth = 0;
 </script>
-
-<!-- <svelte:window bind:innerWidth={clientWidth} /> -->
 
 <section
 	id="asset-group-by-date"
 	class="flex flex-wrap gap-12 mt-5"
 	bind:clientHeight={actualBucketHeight}
-	bind:clientWidth
 >
 	{#each assetsGroupByDate as assetsInDateGroup, groupIndex (assetsInDateGroup[0].id)}
 		{@const dateGroupTitle = new Date(assetsInDateGroup[0].fileCreatedAt).toLocaleDateString(
@@ -165,8 +160,6 @@
 				{#each assetsInDateGroup as asset (asset.id)}
 					<div animate:flip={{ duration: 300 }}>
 						<Thumbnail
-							thumbnailWidth={clientWidth <= 768 ? clientWidth / 4 - 4 : undefined}
-							thumbnailHeight={clientWidth <= 768 ? clientWidth / 4 - 4 : undefined}
 							{asset}
 							{groupIndex}
 							on:click={() => assetClickHandler(asset, assetsInDateGroup, dateGroupTitle)}

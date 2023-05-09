@@ -6,7 +6,7 @@
 	import ClockOutline from 'svelte-material-icons/ClockOutline.svelte';
 	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
-	import StarOutline from 'svelte-material-icons/StarOutline.svelte';
+	import HeartMultipleOutline from 'svelte-material-icons/HeartMultipleOutline.svelte';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -101,7 +101,7 @@
 						class="w-full flex text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary content-center gap-2"
 						draggable="false"
 					>
-						<StarOutline size={24} />
+						<HeartMultipleOutline size={24} />
 						<span>Favorites</span>
 					</a>
 					<a

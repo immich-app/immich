@@ -2655,6 +2655,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -3731,7 +3734,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.54.1",
+    "version": "1.55.0",
     "contact": {}
   },
   "tags": [],
