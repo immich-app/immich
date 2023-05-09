@@ -34,6 +34,7 @@ part 'api/asset_api.dart';
 part 'api/authentication_api.dart';
 part 'api/job_api.dart';
 part 'api/o_auth_api.dart';
+part 'api/partner_api.dart';
 part 'api/search_api.dart';
 part 'api/server_info_api.dart';
 part 'api/share_api.dart';
