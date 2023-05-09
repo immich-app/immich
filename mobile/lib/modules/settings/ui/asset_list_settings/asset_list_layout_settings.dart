@@ -21,6 +21,7 @@ class LayoutSettings extends HookConsumerWidget {
     void switchChanged(bool value) {
       appSettingService.setSetting(AppSettingsEnum.dynamicLayout, value);
       useDynamicLayout.value = value;
+      ref.invalidate(appSettingsServiceProvider);
     }
 
     void changeGroupValue(GroupAssetsBy? value) {
@@ -30,6 +31,7 @@ class LayoutSettings extends HookConsumerWidget {
           value.index,
         );
         groupBy.value = value;
+        ref.invalidate(appSettingsServiceProvider);
       }
     }
 

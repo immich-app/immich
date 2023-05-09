@@ -19,6 +19,7 @@ class StorageIndicator extends HookConsumerWidget {
     void switchChanged(bool value) {
       appSettingService.setSetting(AppSettingsEnum.storageIndicator, value);
       showStorageIndicator.value = value;
+      ref.invalidate(appSettingsServiceProvider);
     }
 
     useEffect(

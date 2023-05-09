@@ -19,6 +19,7 @@ class TilesPerRow extends HookConsumerWidget {
     void sliderChanged(double value) {
       appSettingService.setSetting(AppSettingsEnum.tilesPerRow, value.toInt());
       itemsValue.value = value;
+      ref.invalidate(appSettingsServiceProvider);
     }
 
     useEffect(
