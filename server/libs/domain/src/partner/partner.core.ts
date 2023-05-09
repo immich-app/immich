@@ -1,4 +1,4 @@
-import { BadRequestException, InternalServerErrorException, Logger } from '@nestjs/common';
+import { BadRequestException, Logger } from '@nestjs/common';
 import { IPartnerRepository, PartnerDirection } from './partner.repository';
 import { PartnerEntity } from '@app/infra/entities';
 
@@ -16,15 +16,10 @@ export class PartnerCore {
   }
 
   create(sharedBy: string, sharedWith: string): Promise<PartnerEntity> {
-    try {
-      return this.repository.create({
-        sharedBy: sharedBy,
-        sharedWith: sharedWith,
-      });
-    } catch (error: any) {
-      this.logger.error(error, error.stack);
-      throw new InternalServerErrorException('failed to create partner');
-    }
+    return this.repository.create({
+      sharedBy: sharedBy,
+      sharedWith: sharedWith,
+    });
   }
 
   async remove(sharedBy: string, sharedWith: string): Promise<PartnerEntity> {
