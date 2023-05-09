@@ -112,6 +112,7 @@
   "control_bottom_app_bar_delete": "Delete",
   "control_bottom_app_bar_favorite": "Favorite",
   "control_bottom_app_bar_archive": "Archive",
+  "control_bottom_app_bar_unarchive": "Unarchive",
   "control_bottom_app_bar_share": "Share",
   "create_album_page_untitled": "Untitled",
   "create_shared_album_page_create": "Create",
@@ -135,6 +136,7 @@
   "experimental_settings_subtitle": "Use at your own risk!",
   "experimental_settings_title": "Experimental",
   "favorites_page_title": "Favorites",
+  "favorites_page_no_favorites": "No favorite assets found",
   "home_page_add_to_album_conflicts": "Added {added} assets to album {album}. {failed} assets are already in the album.",
   "home_page_add_to_album_err_local": "Can not add local assets to albums yet, skipping",
   "home_page_add_to_album_success": "Added {added} assets to album {album}.",
@@ -272,5 +274,6 @@
   "advanced_settings_troubleshooting_subtitle": "Enable additional features for troubleshooting",
   "description_input_submit_error": "Error updating description, check the log for more details",
   "description_input_hint_text": "Add description...",
-  "archive_page_title": "Archive ({})"
+  "archive_page_title": "Archive ({})",
+  "archive_page_no_archived_assets": "No archived assets found"
 }
