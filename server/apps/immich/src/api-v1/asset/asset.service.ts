@@ -165,12 +165,12 @@ export class AssetService {
     authUser: AuthUserDto,
     getAssetByTimeBucketDto: GetAssetByTimeBucketDto,
   ): Promise<AssetResponseDto[]> {
-    if (getAssetByTimeBucketDto.userId !== undefined) {
+    if (getAssetByTimeBucketDto.userId) {
       await this.checkUserAccess(authUser, getAssetByTimeBucketDto.userId);
     }
 
     const assets = await this._assetRepository.getAssetByTimeBucket(
-      getAssetByTimeBucketDto.userId ?? authUser.id,
+      getAssetByTimeBucketDto.userId || authUser.id,
       getAssetByTimeBucketDto,
     );
 
