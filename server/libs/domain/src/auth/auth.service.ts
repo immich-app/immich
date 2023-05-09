@@ -163,6 +163,16 @@ export class AuthService {
     await this.userTokenCore.delete(authUser.id, deviceId);
   }
 
+  async logoutDevices(authUser: AuthUserDto): Promise<void> {
+    const devices = await this.userTokenCore.getAll(authUser.id);
+    for (const device of devices) {
+      if (device.id === authUser.accessTokenId) {
+        continue;
+      }
+      await this.userTokenCore.delete(authUser.id, device.id);
+    }
+  }
+
   private getBearerToken(headers: IncomingHttpHeaders): string | null {
     const [type, token] = (headers.authorization || '').split(' ');
     if (type.toLowerCase() === 'bearer') {

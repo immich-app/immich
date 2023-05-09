@@ -357,6 +357,18 @@ describe('AuthService', () => {
     });
   });
 
+  describe('logoutDevices', () => {
+    it('should logout all devices', async () => {
+      userTokenMock.getAll.mockResolvedValue([userTokenEntityStub.inactiveToken, userTokenEntityStub.userToken]);
+
+      await sut.logoutDevices(authStub.user1);
+
+      expect(userTokenMock.getAll).toHaveBeenCalledWith(authStub.user1.id);
+      expect(userTokenMock.delete).toHaveBeenCalledWith(authStub.user1.id, 'not_active');
+      expect(userTokenMock.delete).not.toHaveBeenCalledWith(authStub.user1.id, 'token-id');
+    });
+  });
+
   describe('logoutDevice', () => {
     it('should logout the device', async () => {
       await sut.logoutDevice(authStub.user1, 'token-1');
