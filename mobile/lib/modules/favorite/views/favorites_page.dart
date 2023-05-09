@@ -27,8 +27,8 @@ class FavoritesPage extends HookConsumerWidget {
     return Scaffold(
       appBar: buildAppBar(),
       body: ref.watch(favoriteAssetProvider).isEmpty
-          ? const Center(
-              child: Text('No favorite assets found.'),
+          ? Center(
+              child: Text('favorites_page_no_favorites'.tr()),
             )
           : ImmichAssetGrid(
               assets: ref.watch(favoriteAssetProvider),

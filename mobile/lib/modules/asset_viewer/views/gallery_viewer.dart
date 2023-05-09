@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'package:easy_localization/easy_localization.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -338,22 +338,26 @@ class GalleryViewerPage extends HookConsumerWidget {
           showSelectedLabels: false,
           showUnselectedLabels: false,
           items: [
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.ios_share_rounded),
-              label: 'Share',
-              tooltip: 'Share',
-            ),
             BottomNavigationBarItem(
-              icon: currentAsset.isArchived
-                  ? const Icon(Icons.unarchive_rounded)
-                  : const Icon(Icons.archive_outlined),
-              label: 'Archive',
-              tooltip: 'Archive',
+              icon: const Icon(Icons.ios_share_rounded),
+              label: 'control_bottom_app_bar_share'.tr(),
+              tooltip: 'control_bottom_app_bar_share'.tr(),
             ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.delete_outline),
-              label: 'Delete',
-              tooltip: 'Delete',
+            currentAsset.isArchived
+                ? BottomNavigationBarItem(
+                    icon: const Icon(Icons.unarchive_rounded),
+                    label: 'control_bottom_app_bar_unarchive'.tr(),
+                    tooltip: 'control_bottom_app_bar_unarchive'.tr(),
+                  )
+                : BottomNavigationBarItem(
+                    icon: const Icon(Icons.archive_outlined),
+                    label: 'control_bottom_app_bar_archive'.tr(),
+                    tooltip: 'control_bottom_app_bar_archive'.tr(),
+                  ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.delete_outline),
+              label: 'control_bottom_app_bar_delete'.tr(),
+              tooltip: 'control_bottom_app_bar_delete'.tr(),
             ),
           ],
           onTap: (index) {
