@@ -69,7 +69,7 @@
 		});
 
 		cluster.on('clustermouseover', (event: LeafletEvent) => {
-			if (event.sourceTarget.getChildCount() < 10) {
+			if (event.sourceTarget.getChildCount() <= 10) {
 				event.sourceTarget.spiderfy();
 			}
 		});
