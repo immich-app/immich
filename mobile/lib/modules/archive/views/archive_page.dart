@@ -116,7 +116,7 @@ class ArchivePage extends HookConsumerWidget {
         appBar: buildAppBar(data.totalAssets.toString()),
         body: data.isEmpty
             ? Center(
-                child: Text('archive_page_no_archived_assets'.tr(),
+                child: Text('archive_page_no_archived_assets'.tr()),
               )
             : Stack(
                 children: [
