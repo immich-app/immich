@@ -111,16 +111,20 @@ class ArchivePage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: buildAppBar(),
-      body: Stack(
-        children: [
-          ImmichAssetGrid(
-            assets: archivedAssets.value,
-            listener: selectionListener,
-            selectionActive: selectionEnabledHook.value,
-          ),
-          if (selectionEnabledHook.value) buildBottomBar()
-        ],
-      ),
+      body: archivedAssets.value.isEmpty
+          ? const Center(
+              child: Text('No archived assets found.'),
+            )
+          : Stack(
+              children: [
+                ImmichAssetGrid(
+                  assets: archivedAssets.value,
+                  listener: selectionListener,
+                  selectionActive: selectionEnabledHook.value,
+                ),
+                if (selectionEnabledHook.value) buildBottomBar()
+              ],
+            ),
     );
   }
 }
