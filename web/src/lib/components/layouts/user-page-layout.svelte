@@ -9,7 +9,6 @@
 	export let hideNavbar = false;
 	export let showUploadButton = false;
 	export let title: string | undefined = undefined;
-	export let isTimeline = false;
 </script>
 
 <header>
