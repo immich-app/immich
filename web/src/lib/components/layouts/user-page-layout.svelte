@@ -28,24 +28,21 @@
 	class="grid md:grid-cols-[250px_auto] grid-cols-[70px_auto] relative pt-[4.25rem] h-screen bg-immich-bg dark:bg-immich-dark-bg immich-scrollbar"
 >
 	<SideBar />
+	<slot name="content">
+		<section class="overflow-y-auto my-8 mx-4 bg-immich-bg dark:bg-immich-dark-bg">
+			{#if title}
+				<div class="flex justify-between place-items-center dark:text-immich-dark-fg px-4 h-10">
+					<p class="font-medium">{title}</p>
 
-	<ConditionalWrapper condition={!isTimeline} class="overflow-y-auto">
-		<slot name="content">
-			<section class="my-8 mx-4 bg-immich-bg dark:bg-immich-dark-bg">
-				{#if title}
-					<div class="flex justify-between place-items-center dark:text-immich-dark-fg px-4 h-10">
-						<p class="font-medium">{title}</p>
+					<slot name="buttons" />
+				</div>
 
-						<slot name="buttons" />
-					</div>
+				<div class="my-4">
+					<hr class="dark:border-immich-dark-gray" />
+				</div>
+			{/if}
 
-					<div class="my-4">
-						<hr class="dark:border-immich-dark-gray" />
-					</div>
-				{/if}
-
-				<slot />
-			</section>
-		</slot>
-	</ConditionalWrapper>
+			<slot />
+		</section>
+	</slot>
 </main>
