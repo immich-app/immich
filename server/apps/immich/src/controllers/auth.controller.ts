@@ -53,6 +53,12 @@ export class AuthController {
   }
 
   @Authenticated()
+  @Delete('devices')
+  logoutAuthDevices(@GetAuthUser() authUser: AuthUserDto): Promise<void> {
+    return this.service.logoutDevices(authUser);
+  }
+
+  @Authenticated()
   @Delete('devices/:id')
   logoutAuthDevice(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.logoutDevice(authUser, id);

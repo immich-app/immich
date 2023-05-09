@@ -393,6 +393,29 @@
             "api_key": []
           }
         ]
+      },
+      "delete": {
+        "operationId": "logoutAuthDevices",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
       }
     },
     "/auth/devices/{id}": {
