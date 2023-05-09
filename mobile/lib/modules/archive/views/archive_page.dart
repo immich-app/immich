@@ -80,8 +80,10 @@ class ArchivePage extends HookConsumerWidget {
                     leading: const Icon(
                       Icons.unarchive_rounded,
                     ),
-                    title:
-                        const Text("Unarchive", style: TextStyle(fontSize: 14)),
+                    title: Text(
+                      'control_bottom_app_bar_unarchive'.tr(),
+                      style: const TextStyle(fontSize: 14),
+                    ),
                     onTap: () {
                       if (selection.value.isNotEmpty) {
                         ref
@@ -112,8 +114,8 @@ class ArchivePage extends HookConsumerWidget {
     return Scaffold(
       appBar: buildAppBar(),
       body: archivedAssets.value.isEmpty
-          ? const Center(
-              child: Text('No archived assets found.'),
+          ? Center(
+              child: Text('archive_page_no_archived_assets'.tr()),
             )
           : Stack(
               children: [

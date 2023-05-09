@@ -85,15 +85,15 @@ class SharingPage extends HookConsumerWidget {
                     ),
               ),
               subtitle: isOwner
-                  ? const Text(
-                      'Owned',
-                      style: TextStyle(
+                  ? Text(
+                      'album_thumbnail_owned'.tr(),
+                      style: const TextStyle(
                         fontSize: 12.0,
                       ),
                     )
                   : album.ownerName != null
                       ? Text(
-                          'Shared by ${album.ownerName!}',
+                          'album_thumbnail_shared_by'.tr(args: [album.ownerName!]),
                           style: const TextStyle(
                             fontSize: 12.0,
                           ),

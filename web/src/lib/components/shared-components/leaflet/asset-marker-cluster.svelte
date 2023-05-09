@@ -100,18 +100,13 @@
 	<slot />
 {/if}
 
-<style>
-	:global(.leaflet-marker-icon) {
-		border-radius: 50%;
-	}
-
+<style lang="postcss">
 	:global(.marker-cluster) {
 		background-clip: padding-box;
-		border-radius: 20px;
 	}
 
 	:global(.asset-marker-icon) {
-		border-radius: 50%;
+		@apply rounded-full;
 		object-fit: cover;
 		border: 1px solid rgb(69, 80, 169);
 		box-shadow: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px,
@@ -126,7 +121,7 @@
 		margin-top: 5px;
 
 		text-align: center;
-		border-radius: 20px;
+		@apply rounded-full;
 		font-weight: bold;
 
 		background-color: rgb(236, 237, 246);
