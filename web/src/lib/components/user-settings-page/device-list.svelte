@@ -32,7 +32,7 @@
 			await api.authenticationApi.logoutAuthDevice(deleteDevice.id);
 			notificationController.show({ message: `Logged out device`, type: NotificationType.Info });
 		} catch (error) {
-			handleError(error, 'Unable to logout device');
+			handleError(error, 'Unable to log out device');
 		} finally {
 			await refresh();
 			deleteDevice = null;
@@ -47,7 +47,7 @@
 				type: NotificationType.Info
 			});
 		} catch (error) {
-			handleError(error, 'Unable to logout all devices');
+			handleError(error, 'Unable to log out all devices');
 		} finally {
 			await refresh();
 			deleteAll = false;
@@ -57,7 +57,7 @@
 
 {#if deleteDevice}
 	<ConfirmDialogue
-		prompt="Are you sure you want to logout this device?"
+		prompt="Are you sure you want to log out this device?"
 		on:confirm={() => handleDelete()}
 		on:cancel={() => (deleteDevice = null)}
 	/>
@@ -65,7 +65,7 @@
 
 {#if deleteAll}
 	<ConfirmDialogue
-		prompt="Are you sure you want to logout all devices?"
+		prompt="Are you sure you want to log out all devices?"
 		on:confirm={() => handleDeleteAll()}
 		on:cancel={() => (deleteAll = false)}
 	/>
@@ -93,7 +93,7 @@
 			{/each}
 		</div>
 		<h3 class="font-medium text-xs mb-2 text-immich-primary dark:text-immich-dark-primary">
-			LOG OUT OF ALL DEVICES
+			LOG OUT ALL DEVICES
 		</h3>
 		<div class="flex justify-end">
 			<Button color="red" size="sm" on:click={() => (deleteAll = true)}>Log Out All Devices</Button>
