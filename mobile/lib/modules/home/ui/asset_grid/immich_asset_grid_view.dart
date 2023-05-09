@@ -27,8 +27,6 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   bool _scrolling = false;
   final Set<Asset> _selectedAssets =
       HashSet(equals: (a, b) => a.id == b.id, hashCode: (a) => a.id);
-  int outerRender = 0;
-  int innerRender = 0;
 
   Set<Asset> _getSelectedAssets() {
     return Set.from(_selectedAssets);
@@ -70,7 +68,6 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   }
 
   Widget _buildThumbnailOrPlaceholder(Asset asset, int index) {
-    innerRender++;
     return ThumbnailImage(
       asset: asset,
       index: index,
@@ -229,10 +226,6 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
 
   Widget _itemBuilder(BuildContext c, int position) {
     final item = widget.renderList.elements[position];
-
-    outerRender++;
-    debugPrint("Outer render $outerRender");
-
     return _buildSection(c, item, _scrolling);
   }
 
