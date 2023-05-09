@@ -39,7 +39,7 @@
 	};
 </script>
 
-<section id="dashboard-navbar" class="fixed h-[4.25rem] w-screen z-[900] text-sm">
+<section id="dashboard-navbar" class="fixed h-[4.25rem] w-screen z-[1002] text-sm">
 	<div
 		class="grid md:grid-cols-[250px_auto] grid-cols-[70px_auto] border-b dark:border-b-immich-dark-gray items-center py-2 bg-immich-bg dark:bg-immich-dark-bg"
 	>
