@@ -129,7 +129,7 @@
 				>
 					{#if isShowAssetOptions}
 						<ContextMenu {...contextMenuPosition}>
-							<div class="flex flex-col rounded-lg text-black bg-immich-bg" title="">
+							<div class="flex flex-col rounded-lg text-black bg-immich-bg">
 								<MenuOption on:click={() => onMenuClick('addToAlbum')} text="Add to Album" />
 								<MenuOption
 									on:click={() => onMenuClick('addToSharedAlbum')}
