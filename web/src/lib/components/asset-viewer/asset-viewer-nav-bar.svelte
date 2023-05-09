@@ -46,14 +46,15 @@
 </script>
 
 <div
-	class="h-16 flex justify-between place-items-center px-3 transition-transform duration-200 z-[1001]"
+	class="h-16 flex justify-between place-items-center px-3 transition-transform duration-200 z-[1001] bg-gradient-to-b from-black/40"
 >
-	<div>
-		<CircleIconButton logo={ArrowLeft} on:click={() => dispatch('goBack')} />
+	<div class="text-white">
+		<CircleIconButton isOpacity={true} logo={ArrowLeft} on:click={() => dispatch('goBack')} />
 	</div>
 	<div class="text-white flex gap-2 justify-end w-[calc(100%-3rem)] overflow-hidden">
 		{#if isOwner}
 			<CircleIconButton
+				isOpacity={true}
 				logo={asset.isArchived ? ArchiveArrowUpOutline : ArchiveArrowDownOutline}
 				title={asset.isArchived ? 'Unarchive' : 'Archive'}
 				on:click={() => dispatch('toggleArchive')}
@@ -63,12 +64,14 @@
 		{#if showMotionPlayButton}
 			{#if isMotionPhotoPlaying}
 				<CircleIconButton
+					isOpacity={true}
 					logo={MotionPauseOutline}
 					title="Stop Motion Photo"
 					on:click={() => dispatch('stopMotionPhoto')}
 				/>
 			{:else}
 				<CircleIconButton
+					isOpacity={true}
 					logo={MotionPlayOutline}
 					title="Play Motion Photo"
 					on:click={() => dispatch('playMotionPhoto')}
@@ -77,6 +80,7 @@
 		{/if}
 		{#if showCopyButton}
 			<CircleIconButton
+				isOpacity={true}
 				logo={ContentCopy}
 				title="Copy Image"
 				on:click={() => {
@@ -88,18 +92,21 @@
 
 		{#if showDownloadButton}
 			<CircleIconButton
+				isOpacity={true}
 				logo={CloudDownloadOutline}
 				on:click={() => dispatch('download')}
 				title="Download"
 			/>
 		{/if}
 		<CircleIconButton
+			isOpacity={true}
 			logo={InformationOutline}
 			on:click={() => dispatch('showDetail')}
 			title="Info"
 		/>
 		{#if isOwner}
 			<CircleIconButton
+				isOpacity={true}
 				logo={asset.isFavorite ? Heart : HeartOutline}
 				on:click={() => dispatch('favorite')}
 				title="Favorite"
@@ -107,12 +114,22 @@
 		{/if}
 
 		{#if isOwner}
-			<CircleIconButton logo={DeleteOutline} on:click={() => dispatch('delete')} title="Delete" />
+			<CircleIconButton
+				isOpacity={true}
+				logo={DeleteOutline}
+				on:click={() => dispatch('delete')}
+				title="Delete"
+			/>
 			<div use:clickOutside on:outclick={() => (isShowAssetOptions = false)}>
-				<CircleIconButton logo={DotsVertical} on:click={showOptionsMenu} title="More">
+				<CircleIconButton
+					isOpacity={true}
+					logo={DotsVertical}
+					on:click={showOptionsMenu}
+					title="More"
+				>
 					{#if isShowAssetOptions}
 						<ContextMenu {...contextMenuPosition}>
-							<div class="flex flex-col rounded-lg ">
+							<div class="flex flex-col rounded-lg text-black bg-immich-bg">
 								<MenuOption on:click={() => onMenuClick('addToAlbum')} text="Add to Album" />
 								<MenuOption
 									on:click={() => onMenuClick('addToSharedAlbum')}
