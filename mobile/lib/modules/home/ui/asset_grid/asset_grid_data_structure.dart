@@ -90,8 +90,10 @@ class RenderList {
       final asset = query!.offset(index).findFirstSync();
       if (asset == null) {
         throw Exception(
-            "Asset at index $index does no longer exist in database");
+          "Asset at index $index does no longer exist in database",
+        );
       }
+      return asset;
     }
     throw Exception("RenderList has neither assets nor query");
   }
@@ -159,6 +161,13 @@ class RenderList {
               ? formatMergedSameYear
               : formatMergedOtherYear)
           .format(to);
+      if (DateTime(from.year, from.month, from.day) ==
+          DateTime(to.year, to.month, to.day)) {
+        // format range with time when both dates are on the same day
+        final startTime = DateFormat.Hm().format(from);
+        final endTime = DateFormat.Hm().format(to);
+        return "$startDate $startTime - $endTime";
+      }
       return "$startDate - $endDate";
     }
 
@@ -183,7 +192,7 @@ class RenderList {
       }
     }
 
-    void addElems(DateTime d) {
+    void addElems(DateTime d, DateTime? prevDate) {
       final bool newMonth =
           last == null || last.year != d.year || last.month != d.month;
       if (newMonth) {
@@ -206,14 +215,14 @@ class RenderList {
             type,
             date: d,
             count: sectionCount,
-            totalCount: count,
+            totalCount: groupBy == GroupAssetsBy.auto ? sectionCount : count,
             offset: lastOffset + j,
             title: j == 0
                 ? (d.year == currentYear
                     ? formatSameYear.format(d)
                     : formatOtherYear.format(d))
                 : (groupBy == GroupAssetsBy.auto
-                    ? formatDateRange(d, d) // FIXME two dates
+                    ? formatDateRange(d, prevDate ?? d)
                     : null),
           ),
         );
@@ -221,6 +230,7 @@ class RenderList {
       monthCount += count;
     }
 
+    DateTime? prevDate;
     while (true) {
       // this iterates all assets (only their createdAt property) in batches
       // memory usage is okay, however runtime is linear with number of assets
@@ -241,12 +251,13 @@ class RenderList {
         );
         current ??= d;
         if (current != d) {
-          addElems(current);
+          addElems(current, prevDate);
           last = current;
           current = d;
           lastOffset = offset + i;
           count = 0;
         }
+        prevDate = date;
         count++;
         i++;
       }
@@ -255,7 +266,7 @@ class RenderList {
       offset += pageSize;
     }
     if (count > 0 && current != null) {
-      addElems(current);
+      addElems(current, prevDate);
       mergeMonth();
     }
     assert(elements.every((e) => e.count <= sectionSize), "too large section");

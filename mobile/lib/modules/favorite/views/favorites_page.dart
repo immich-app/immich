@@ -9,7 +9,6 @@ import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart'
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 class FavoritesPage extends HookConsumerWidget {
