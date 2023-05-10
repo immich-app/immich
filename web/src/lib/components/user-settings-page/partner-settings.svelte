@@ -31,7 +31,7 @@
 
 	const handleRemovePartner = async (sharedWith: UserResponseDto) => {
 		try {
-			await api.userApi.removePartner(sharedWith.id);
+			await api.partnerApi.removePartner(sharedWith.id);
 			partners = await loadPartners();
 		} catch (error) {
 			handleError(error, 'Unable to remove partner');
@@ -43,7 +43,7 @@
 
 		try {
 			for (const partner of selectedUsers) {
-				await api.userApi.addPartner(partner.id);
+				await api.partnerApi.addPartner(partner.id);
 			}
 
 			partners = await loadPartners();
@@ -54,7 +54,7 @@
 	};
 
 	const loadPartners = async () => {
-		const { data: sharedWith } = await api.userApi.getAllPartners();
+		const { data: sharedWith } = await api.partnerApi.getAllPartners();
 
 		const partners: UserResponseDto[] = [];
 		for (const partner of sharedWith) {

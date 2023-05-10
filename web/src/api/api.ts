@@ -7,6 +7,7 @@ import {
 	ConfigurationParameters,
 	JobApi,
 	OAuthApi,
+	PartnerApi,
 	SearchApi,
 	ServerInfoApi,
 	ShareApi,
@@ -18,34 +19,36 @@ import { BASE_PATH } from './open-api/base';
 import { DUMMY_BASE_URL, toPathString } from './open-api/common';
 
 export class ImmichApi {
-	public userApi: UserApi;
 	public albumApi: AlbumApi;
 	public assetApi: AssetApi;
 	public authenticationApi: AuthenticationApi;
-	public oauthApi: OAuthApi;
-	public searchApi: SearchApi;
-	public serverInfoApi: ServerInfoApi;
 	public jobApi: JobApi;
 	public keyApi: APIKeyApi;
-	public systemConfigApi: SystemConfigApi;
+	public oauthApi: OAuthApi;
+	public partnerApi: PartnerApi;
+	public searchApi: SearchApi;
+	public serverInfoApi: ServerInfoApi;
 	public shareApi: ShareApi;
+	public systemConfigApi: SystemConfigApi;
+	public userApi: UserApi;
 
 	private config: Configuration;
 
 	constructor(params: ConfigurationParameters) {
 		this.config = new Configuration(params);
 
-		this.userApi = new UserApi(this.config);
 		this.albumApi = new AlbumApi(this.config);
 		this.assetApi = new AssetApi(this.config);
 		this.authenticationApi = new AuthenticationApi(this.config);
-		this.oauthApi = new OAuthApi(this.config);
-		this.serverInfoApi = new ServerInfoApi(this.config);
 		this.jobApi = new JobApi(this.config);
 		this.keyApi = new APIKeyApi(this.config);
+		this.oauthApi = new OAuthApi(this.config);
+		this.partnerApi = new PartnerApi(this.config);
 		this.searchApi = new SearchApi(this.config);
-		this.systemConfigApi = new SystemConfigApi(this.config);
+		this.serverInfoApi = new ServerInfoApi(this.config);
 		this.shareApi = new ShareApi(this.config);
+		this.systemConfigApi = new SystemConfigApi(this.config);
+		this.userApi = new UserApi(this.config);
 	}
 
 	private createUrl(path: string, params?: Record<string, unknown>) {
