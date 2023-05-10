@@ -169,6 +169,25 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     );
   }
 
+  Widget _buildPlaceHolderRow(Key key, int num, double width, double height) {
+    return Row(
+      key: key,
+      children: [
+        for (int i = 0; i < num; i++)
+          Container(
+            key: ValueKey(i),
+            width: width,
+            height: height,
+            margin: EdgeInsets.only(
+              top: widget.margin,
+              right: i + 1 == num ? 0.0 : widget.margin,
+            ),
+            color: Colors.grey,
+          )
+      ],
+    );
+  }
+
   Widget _buildSection(
     BuildContext context,
     RenderAssetGridElement section,
@@ -178,7 +197,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       builder: (context, constraints) {
         final width = constraints.maxWidth / widget.assetsPerRow -
             widget.margin * (widget.assetsPerRow - 1) / widget.assetsPerRow;
-        final cols =
+        final rows =
             (section.count + widget.assetsPerRow - 1) ~/ widget.assetsPerRow;
         final List<Asset> assetsToRender = scrolling
             ? []
@@ -199,14 +218,15 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
                     : widget.renderList
                         .loadAssets(section.offset, section.totalCount),
               ),
-            for (int i = 0; i < cols; i++)
+            for (int i = 0; i < rows; i++)
               scrolling
-                  ? Container(
-                      key: ValueKey(i),
-                      width: constraints.maxWidth,
-                      height: width,
-                      margin: EdgeInsets.only(top: widget.margin),
-                      color: Colors.grey,
+                  ? _buildPlaceHolderRow(
+                      ValueKey(i),
+                      i + 1 == rows
+                          ? section.count - i * widget.assetsPerRow
+                          : widget.assetsPerRow,
+                      width,
+                      width,
                     )
                   : _buildAssetRow(
                       ValueKey(i),
