@@ -83,8 +83,7 @@ void main() {
       () {
         assetNotifier = MockAssetNotifier();
         container = ProviderContainer();
-        db.writeTxnSync(() => db.clearSync());
-
+        db.writeTxnSync(() => db.assets.clearSync());
         testFavoritesProvider =
             StateNotifierProvider<FavoriteSelectionNotifier, Set<int>>((ref) {
           return FavoriteSelectionNotifier(
@@ -96,7 +95,6 @@ void main() {
     );
 
     test("Empty favorites provider", () {
-      // when(assetsState.allAssets).thenReturn([]);
       expect(<int>{}, container.read(testFavoritesProvider));
     });
 
