@@ -55,9 +55,9 @@ export class UserEntity {
   @OneToMany(() => AssetEntity, (asset) => asset.owner)
   assets!: AssetEntity[];
 
-  @OneToMany(() => PartnerEntity, (partner) => partner.sharedBy)
+  @OneToMany(() => PartnerEntity, (partner) => partner.sharedWith)
   sharedWith!: PartnerEntity[];
 
-  @OneToMany(() => PartnerEntity, (partner) => partner.sharedWith)
+  @OneToMany(() => PartnerEntity, (partner) => partner.sharedBy)
   sharedBy!: PartnerEntity[];
 }

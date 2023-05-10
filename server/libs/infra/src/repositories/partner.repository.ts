@@ -2,7 +2,8 @@ import { IPartnerRepository, PartnerDirection } from '@app/domain';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PartnerEntity } from '../entities';
+import { PartnerEntity, UserEntity } from '../entities';
+import { CreatePartnerDto } from '@app/domain/partner/dto';
 
 @Injectable()
 export class PartnerRepository implements IPartnerRepository {
@@ -15,46 +16,59 @@ export class PartnerRepository implements IPartnerRepository {
 
   getAll(userId: string, direction: PartnerDirection): Promise<PartnerEntity[]> {
     if (direction === 'shared-by') {
-      return this.repository
-        .createQueryBuilder('partners')
-        .select('partners.sharedBy', 'sharedBy')
-        .addSelect('partners.sharedWith', 'sharedWith')
-        .addSelect('partners.createdAt', 'createdAt')
-        .addSelect('partners.updatedAt', 'updatedAt')
-        .addSelect('partners.id', 'id')
-        .where('"sharedById" = :sharedBy', { sharedBy: userId })
-        .getRawMany();
-    } else {
-      return this.repository
-        .createQueryBuilder('partners')
-        .select('partners.sharedBy', 'sharedBy')
-        .addSelect('partners.sharedWith', 'sharedWith')
-        .addSelect('partners.createdAt', 'createdAt')
-        .addSelect('partners.updatedAt', 'updatedAt')
-        .addSelect('partners.id', 'id')
-        .where('"sharedWithId" = :sharedWith', { sharedWith: userId })
-        .getRawMany();
+      return this.repository.find({
+        where: {
+          sharedBy: {
+            id: userId,
+          },
+        },
+        relations: {
+          sharedBy: true,
+          sharedWith: true,
+        },
+      });
     }
+
+    return this.repository.find({
+      where: {
+        sharedWith: {
+          id: userId,
+        },
+      },
+      relations: {
+        sharedBy: true,
+        sharedWith: true,
+      },
+    });
   }
 
   async get(sharedBy: string, sharedWith: string): Promise<PartnerEntity | null> {
-    const entity =
-      (await this.repository
-        .createQueryBuilder('partners')
-        .select('partners.sharedBy', 'sharedBy')
-        .addSelect('partners.sharedWith', 'sharedWith')
-        .addSelect('partners.createdAt', 'createdAt')
-        .addSelect('partners.updatedAt', 'updatedAt')
-        .addSelect('partners.id', 'id')
-        .where('"sharedById" = :sharedBy', { sharedBy: sharedBy })
-        .andWhere('"sharedWithId" = :sharedWith', { sharedWith: sharedWith })
-        .getRawOne<PartnerEntity>()) ?? null;
-
-    return entity;
+    return this.repository.findOne({
+      where: {
+        sharedWith: {
+          id: sharedWith,
+        },
+        sharedBy: {
+          id: sharedBy,
+        },
+      },
+      relations: {
+        sharedBy: true,
+        sharedWith: true,
+      },
+    });
   }
 
-  create(entity: Omit<PartnerEntity, 'id'>): Promise<PartnerEntity> {
-    return this.repository.save(entity);
+  create(createPartnerDto: CreatePartnerDto): Promise<PartnerEntity> {
+    const partner = new PartnerEntity();
+
+    partner.sharedWith = new UserEntity();
+    partner.sharedWith.id = createPartnerDto.sharedWith;
+
+    partner.sharedBy = new UserEntity();
+    partner.sharedBy.id = createPartnerDto.sharedBy;
+
+    return this.repository.save(partner);
   }
 
   remove(entity: PartnerEntity): Promise<PartnerEntity> {

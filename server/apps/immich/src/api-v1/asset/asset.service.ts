@@ -515,7 +515,7 @@ export class AssetService {
         }
 
         // Step 3: Check if any partner owns the asset
-        const partners = (await this.partnerCore.getAll(authUser.id, 'shared-with')).map((item) => item.sharedBy);
+        const partners = (await this.partnerCore.getAll(authUser.id, 'shared-with')).map((item) => item.sharedBy.id);
         let owner = false;
         for (const partnerId of partners) {
           if ((await this._assetRepository.countByIdAndUser(assetId, partnerId)) == 1) {

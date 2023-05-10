@@ -17,8 +17,8 @@ export class PartnerCore {
 
   create(sharedBy: string, sharedWith: string): Promise<PartnerEntity> {
     return this.repository.create({
-      sharedBy: sharedBy,
-      sharedWith: sharedWith,
+      sharedBy,
+      sharedWith,
     });
   }
 

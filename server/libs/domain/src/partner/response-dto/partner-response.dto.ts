@@ -11,7 +11,7 @@ export function mapPartner(entity: PartnerEntity): PartnerResponseDto {
   return {
     createdAt: entity.createdAt,
     updatedAt: entity.updatedAt,
-    sharedBy: entity.sharedBy,
-    sharedWith: entity.sharedWith,
+    sharedBy: entity.sharedBy.id,
+    sharedWith: entity.sharedWith.id,
   };
 }

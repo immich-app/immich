@@ -7,11 +7,11 @@ export class PartnerEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
-  sharedBy!: string;
+  @ManyToOne(() => UserEntity, (user) => user.sharedBy, { onDelete: 'CASCADE' })
+  sharedBy!: UserEntity;
 
-  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
-  sharedWith!: string;
+  @ManyToOne(() => UserEntity, (user) => user.sharedWith, { onDelete: 'CASCADE' })
+  sharedWith!: UserEntity;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt?: string;
