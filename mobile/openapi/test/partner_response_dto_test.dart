@@ -16,11 +16,6 @@ void main() {
   // final instance = PartnerResponseDto();
 
   group('test PartnerResponseDto', () {
-    // String id
-    test('to test the property `id`', () async {
-      // TODO
-    });
-
     // String sharedBy
     test('to test the property `sharedBy`', () async {
       // TODO

@@ -8,7 +8,6 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **String** |  | 
 **sharedBy** | **String** |  | 
 **sharedWith** | **String** |  | 
 **createdAt** | **String** |  | [optional] 

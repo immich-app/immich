@@ -13,14 +13,11 @@ part of openapi.api;
 class PartnerResponseDto {
   /// Returns a new [PartnerResponseDto] instance.
   PartnerResponseDto({
-    required this.id,
     required this.sharedBy,
     required this.sharedWith,
     this.createdAt,
     this.updatedAt,
   });
-
-  String id;
 
   String sharedBy;
 
@@ -44,7 +41,6 @@ class PartnerResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PartnerResponseDto &&
-     other.id == id &&
      other.sharedBy == sharedBy &&
      other.sharedWith == sharedWith &&
      other.createdAt == createdAt &&
@@ -53,18 +49,16 @@ class PartnerResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id.hashCode) +
     (sharedBy.hashCode) +
     (sharedWith.hashCode) +
     (createdAt == null ? 0 : createdAt!.hashCode) +
     (updatedAt == null ? 0 : updatedAt!.hashCode);
 
   @override
-  String toString() => 'PartnerResponseDto[id=$id, sharedBy=$sharedBy, sharedWith=$sharedWith, createdAt=$createdAt, updatedAt=$updatedAt]';
+  String toString() => 'PartnerResponseDto[sharedBy=$sharedBy, sharedWith=$sharedWith, createdAt=$createdAt, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'id'] = this.id;
       json[r'sharedBy'] = this.sharedBy;
       json[r'sharedWith'] = this.sharedWith;
     if (this.createdAt != null) {
@@ -99,7 +93,6 @@ class PartnerResponseDto {
       }());
 
       return PartnerResponseDto(
-        id: mapValueOfType<String>(json, r'id')!,
         sharedBy: mapValueOfType<String>(json, r'sharedBy')!,
         sharedWith: mapValueOfType<String>(json, r'sharedWith')!,
         createdAt: mapValueOfType<String>(json, r'createdAt'),
@@ -151,7 +144,6 @@ class PartnerResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'id',
     'sharedBy',
     'sharedWith',
   };

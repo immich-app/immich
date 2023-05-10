@@ -4786,9 +4786,6 @@
       "PartnerResponseDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string"
-          },
           "sharedBy": {
             "type": "string"
           },
@@ -4803,7 +4800,6 @@
           }
         },
         "required": [
-          "id",
           "sharedBy",
           "sharedWith"
         ]
