@@ -46,7 +46,11 @@ class RenderList {
   final List<Asset>? allAssets;
   final QueryBuilder<Asset, Asset, QAfterSortBy>? query;
   final int totalAssets;
+
+  /// reference to batch of assets loaded from DB with offset [_bufOffset]
   List<Asset> _buf = [];
+
+  /// global offset of assets in [_buf]
   int _bufOffset = 0;
 
   RenderList(this.elements, this.query, this.allAssets)
@@ -54,39 +58,66 @@ class RenderList {
 
   bool get isEmpty => totalAssets == 0;
 
+  /// Loads the requested assets from the database to an internal buffer if not cached
+  /// and returns a slice of that buffer
   List<Asset> loadAssets(int offset, int count) {
     assert(offset >= 0);
     assert(count > 0);
     assert(offset + count <= totalAssets);
     if (allAssets != null) {
+      // if we already loaded all assets (e.g. from search result)
+      // simply return the requested slice of that array
       return allAssets!.slice(offset, offset + count);
     } else if (query != null) {
+      // general case: we have the query to load assets via offset from the DB on demand
       if (offset < _bufOffset || offset + count > _bufOffset + _buf.length) {
+        // the requested slice (offset:offset+count) is not contained in the cache buffer `_buf`
+        // thus, fill the buffer with a new batch of assets that at least contains the requested
+        // assets and some more
+
         final bool forward = _bufOffset < offset;
+        // if the requested offset is greater than the cached offset, the user scrolls forward "down"
         const batchSize = 128;
         const oppositeSize = 32;
+
+        // make sure to load a meaningful amount of data (and not only the requested slice)
+        // otherwise, each call to [loadAssets] would result in DB call trashing performance
+        // fills small requests to [batchSize], adds some legroom into the opposite scroll direction for large requests
         final len = max(batchSize, count + oppositeSize);
+        // when scrolling forward, start shortly before the requested offset...
+        // when scrolling backward, end shortly after the requested offset...
+        // ... to guard against the user scrolling in the other direction
+        // a tiny bit resulting in a another required load from the DB
         final start = max(
           0,
           forward
               ? offset - oppositeSize
               : (len > batchSize ? offset : offset + count - len),
         );
+        // load the calculated batch (start:start+len) from the DB and put it into the buffer
         _buf = query!.offset(start).limit(len).findAllSync();
         _bufOffset = start;
       }
       assert(_bufOffset <= offset);
       assert(_bufOffset + _buf.length >= offset + count);
-      final arr = _buf.slice(offset - _bufOffset, offset - _bufOffset + count);
-      return arr;
+      // return the requested slice from the buffer (we made sure before that the assets are loaded!)
+      return _buf.slice(offset - _bufOffset, offset - _bufOffset + count);
     }
     throw Exception("RenderList has neither assets nor query");
   }
 
+  /// Returns the requested asset either from cached buffer or directly from the database
   Asset loadAsset(int index) {
     if (allAssets != null) {
+      // all assets are already loaded (e.g. from search result)
       return allAssets![index];
     } else if (query != null) {
+      // general case: we have the DB query to load asset(s) on demand
+      if (index >= _bufOffset && index < _bufOffset + _buf.length) {
+        // lucky case: the requested asset is already cached in the buffer!
+        return _buf[index - _bufOffset];
+      }
+      // request the asset from the database (not changing the buffer!)
       final asset = query!.offset(index).findFirstSync();
       if (asset == null) {
         throw Exception(

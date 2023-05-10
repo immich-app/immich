@@ -145,7 +145,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
-    void precacheNextImage(int index) async {
+    void precacheNextImage(int index) {
       if (index < totalAssets && index >= 0) {
         final asset = loadAsset(index);
 
