@@ -17,7 +17,7 @@
 		// remove soft deleted users
 		users = users.filter((user) => !user.deletedAt);
 
-		// filter partners
+		// exclude partners from the list of users available for selection
 		const { data: partners } = await api.partnerApi.getAllPartners();
 		const ids = partners.map((partner) => partner.sharedWith);
 		availableUsers = users.filter((user) => !ids.includes(user.id));
