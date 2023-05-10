@@ -63,6 +63,7 @@ void main() {
 
     setUpAll(() async {
       WidgetsFlutterBinding.ensureInitialized();
+      await Isar.initializeIsarCore(download: true);
       db = loadDb();
       Store.init(db);
       await Store.put(
