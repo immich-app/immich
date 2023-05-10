@@ -30,4 +30,8 @@ export class PartnerCore {
 
     return this.repository.remove(partner);
   }
+
+  async hasAssetAccess(assetId: string, userId: string): Promise<boolean> {
+    return this.repository.hasAssetAccess(assetId, userId);
+  }
 }
