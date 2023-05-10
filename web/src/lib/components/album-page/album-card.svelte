@@ -21,6 +21,8 @@
 
 	export let album: AlbumResponseDto;
 
+	let imageOverlayElement: HTMLDivElement;
+
 	let imageData = `/api/asset/thumbnail/${album.albumThumbnailAssetId}?format=${ThumbnailFormat.Webp}`;
 	if (!album.albumThumbnailAssetId) {
 		imageData = noThumbnailUrl;
@@ -61,22 +63,24 @@
 </script>
 
 <div
-	class="hover:cursor-pointer mt-4 relative"
+	class="hover:cursor-pointer mt-4 border-2 border-transparent dark:hover:border-gray-300 hover:border-black rounded-xl p-5"
 	on:click={() => dispatchClick('click', album)}
 	on:keydown={() => dispatchClick('click', album)}
 	data-testid="album-card"
+	on:mouseenter={() => (imageOverlayElement.style.background = 'rgba(66,80,175,0.25)')}
+	on:mouseleave={() => (imageOverlayElement.style.background = 'transparent')}
 >
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<div
 		id={`icon-${album.id}`}
-		class="absolute top-2 right-2"
+		class="absolute top-6 right-6"
 		on:click|stopPropagation|preventDefault={showAlbumContextMenu}
 		data-testid="context-button-parent"
 	>
-		<CircleIconButton logo={DotsVertical} size={'20'} hoverColor={'rgba(95,99,104, 0.5)'} />
+		<CircleIconButton logo={DotsVertical} size={'20'} hoverColor={'rgb(95,99,104)'} />
 	</div>
 
-	<div class={`aspect-square z-[-1]`}>
+	<div class={`aspect-square relative`}>
 		<img
 			src={imageData}
 			alt={album.id}
@@ -84,12 +88,14 @@
 			data-testid="album-image"
 			draggable="false"
 		/>
+		<div class="w-full h-full absolute top-0 rounded-xl" bind:this={imageOverlayElement} />
 	</div>
 
 	<div class="mt-4">
 		<p
-			class="text-sm font-medium text-gray-800 dark:text-immich-dark-primary"
+			class="text-2xl font-bold dark:text-immich-dark-primary text-immich-primary w-full truncate"
 			data-testid="album-name"
+			title={album.albumName}
 		>
 			{album.albumName}
 		</p>
