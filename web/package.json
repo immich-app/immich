@@ -23,7 +23,7 @@
 		"@babel/preset-typescript": "^7.18.6",
 		"@faker-js/faker": "^7.6.0",
 		"@sveltejs/adapter-node": "^1.2.0",
-		"@sveltejs/kit": "^1.8.5",
+		"@sveltejs/kit": "^1.15.2",
 		"@testing-library/jest-dom": "^5.16.5",
 		"@testing-library/svelte": "^3.2.2",
 		"@types/cookie": "^0.5.1",
