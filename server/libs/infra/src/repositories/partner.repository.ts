@@ -15,10 +15,10 @@ export class PartnerRepository implements IPartnerRepository {
   ) {}
 
   getAll(userId: string, direction: PartnerDirection): Promise<PartnerEntity[]> {
-    const key = direction === 'shared-with' ? 'sharedWith' : 'sharedBy';
+    const key = direction === 'shared-with' ? 'sharedWithId' : 'sharedById';
     return this.repository.find({
       where: {
-        [key]: { id: userId },
+        [key]: userId,
       },
       relations: {
         sharedBy: true,
