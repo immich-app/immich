@@ -61,7 +61,7 @@
 </script>
 
 <div
-	class="group hover:cursor-pointer mt-4 border-2 border-transparent dark:hover:border-gray-300 hover:border-black rounded-3xl p-5"
+	class="group hover:cursor-pointer mt-4 border-2 border-transparent dark:hover:border-gray-300 hover:border-black rounded-3xl p-5 relative"
 	on:click={() => dispatchClick('click', album)}
 	on:keydown={() => dispatchClick('click', album)}
 	data-testid="album-card"
@@ -69,11 +69,11 @@
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<div
 		id={`icon-${album.id}`}
-		class="absolute top-6 right-6"
+		class="absolute top-6 right-6 z-10"
 		on:click|stopPropagation|preventDefault={showAlbumContextMenu}
 		data-testid="context-button-parent"
 	>
-		<CircleIconButton logo={DotsVertical} size={'20'} hoverColor={'rgb(95,99,104)'} />
+		<CircleIconButton logo={DotsVertical} size={'20'} />
 	</div>
 
 	<div class={`aspect-square relative`}>
@@ -84,19 +84,19 @@
 			data-testid="album-image"
 			draggable="false"
 		/>
-		<div class="w-full h-full absolute top-0 rounded-3xl group-hover:bg-indigo-800/20" />
+		<div class="w-full h-full absolute top-0 rounded-3xl group-hover:bg-indigo-800/40" />
 	</div>
 
 	<div class="mt-4">
 		<p
-			class="text-2xl font-semibold dark:text-immich-dark-primary text-immich-primary w-full truncate"
+			class="text-xl font-semibold dark:text-immich-dark-primary text-immich-primary w-full truncate"
 			data-testid="album-name"
 			title={album.albumName}
 		>
 			{album.albumName}
 		</p>
 
-		<span class="text-xs flex gap-2 dark:text-immich-dark-fg" data-testid="album-details">
+		<span class="text-sm flex gap-2 dark:text-immich-dark-fg" data-testid="album-details">
 			<p>
 				{album.assetCount.toLocaleString($locale)}
 				{album.assetCount == 1 ? `item` : `items`}
