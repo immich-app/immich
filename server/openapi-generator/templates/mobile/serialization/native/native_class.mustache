@@ -86,7 +86,7 @@ class {{{classname}}} {
     {{/isDate}}
     {{^isDateTime}}
       {{^isDate}}
-      json[r'{{{baseName}}}'] = this.{{{name}}};
+      json[r'{{{baseName}}}'] = this.{{{name}}}{{#isArray}}{{#uniqueItems}}{{#isNullable}}!{{/isNullable}}.toList(growable: false){{/uniqueItems}}{{/isArray}};
       {{/isDate}}
     {{/isDateTime}}
     {{#isNullable}}
@@ -200,8 +200,8 @@ class {{{classname}}} {
         {{{name}}}: {{{items.datatypeWithEnum}}}.listFromJson(json[r'{{{baseName}}}']){{#uniqueItems}}.toSet(){{/uniqueItems}},
             {{/isEnum}}
             {{^isEnum}}
-        {{{name}}}: json[r'{{{baseName}}}'] is {{#uniqueItems}}Set{{/uniqueItems}}{{^uniqueItems}}List{{/uniqueItems}}
-            ? (json[r'{{{baseName}}}'] as {{#uniqueItems}}Set{{/uniqueItems}}{{^uniqueItems}}List{{/uniqueItems}}).cast<{{{items.datatype}}}>()
+        {{{name}}}: json[r'{{{baseName}}}'] is Iterable
+            ? (json[r'{{{baseName}}}'] as Iterable).cast<{{{items.datatype}}}>().{{#uniqueItems}}toSet(){{/uniqueItems}}{{^uniqueItems}}toList(growable: false){{/uniqueItems}}
             : {{#defaultValue}}{{{.}}}{{/defaultValue}}{{^defaultValue}}null{{/defaultValue}},
             {{/isEnum}}
           {{/isArray}}

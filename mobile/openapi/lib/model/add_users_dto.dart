@@ -55,8 +55,8 @@ class AddUsersDto {
       }());
 
       return AddUsersDto(
-        sharedUserIds: json[r'sharedUserIds'] is List
-            ? (json[r'sharedUserIds'] as List).cast<String>()
+        sharedUserIds: json[r'sharedUserIds'] is Iterable
+            ? (json[r'sharedUserIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
       );
     }
