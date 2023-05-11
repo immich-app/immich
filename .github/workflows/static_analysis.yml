@@ -22,8 +22,8 @@ jobs:
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
-          flutter-version: '3.7.3'
+          channel: "stable"
+          flutter-version: "3.10.0"
 
       - name: Install dependencies
         run: dart pub get
@@ -32,4 +32,3 @@ jobs:
       - name: Run dart analyze
         run: dart analyze --fatal-infos
         working-directory: ./mobile
-
