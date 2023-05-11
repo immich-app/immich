@@ -16,12 +16,12 @@ void main() {
   // final instance = PartnerResponseDto();
 
   group('test PartnerResponseDto', () {
-    // String sharedBy
+    // UserResponseDto sharedBy
     test('to test the property `sharedBy`', () async {
       // TODO
     });
 
-    // String sharedWith
+    // UserResponseDto sharedWith
     test('to test the property `sharedWith`', () async {
       // TODO
     });

@@ -8,8 +8,8 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**sharedBy** | **String** |  | 
-**sharedWith** | **String** |  | 
+**sharedBy** | [**UserResponseDto**](UserResponseDto.md) |  | 
+**sharedWith** | [**UserResponseDto**](UserResponseDto.md) |  | 
 **createdAt** | **String** |  | [optional] 
 **updatedAt** | **String** |  | [optional] 
 

@@ -19,8 +19,8 @@
 
 		// exclude partners from the list of users available for selection
 		const { data: partners } = await api.partnerApi.getAllPartners();
-		const ids = partners.map((partner) => partner.sharedWith);
-		availableUsers = users.filter((user) => !ids.includes(user.id));
+		const partnerIds = partners.map((partner) => partner.sharedWith.id);
+		availableUsers = users.filter((user) => !partnerIds.includes(user.id));
 	});
 
 	const selectUser = (user: UserResponseDto) => {

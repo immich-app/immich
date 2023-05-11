@@ -19,9 +19,9 @@ class PartnerResponseDto {
     this.updatedAt,
   });
 
-  String sharedBy;
+  UserResponseDto sharedBy;
 
-  String sharedWith;
+  UserResponseDto sharedWith;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -93,8 +93,8 @@ class PartnerResponseDto {
       }());
 
       return PartnerResponseDto(
-        sharedBy: mapValueOfType<String>(json, r'sharedBy')!,
-        sharedWith: mapValueOfType<String>(json, r'sharedWith')!,
+        sharedBy: UserResponseDto.fromJson(json[r'sharedBy'])!,
+        sharedWith: UserResponseDto.fromJson(json[r'sharedWith'])!,
         createdAt: mapValueOfType<String>(json, r'createdAt'),
         updatedAt: mapValueOfType<String>(json, r'updatedAt'),
       );

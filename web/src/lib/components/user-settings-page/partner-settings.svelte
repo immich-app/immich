@@ -54,16 +54,8 @@
 	};
 
 	const loadPartners = async () => {
-		const { data: sharedWith } = await api.partnerApi.getAllPartners();
-
-		const partners: UserResponseDto[] = [];
-		for (const partner of sharedWith) {
-			const { data: user } = await api.userApi.getUserById(partner.sharedWith);
-			if (user) {
-				partners.push(user);
-			}
-		}
-		return partners;
+		const { data: partners } = await api.partnerApi.getAllPartners();
+		return partners.map((partner) => partner.sharedWith);
 	};
 
 	onMount(async () => {

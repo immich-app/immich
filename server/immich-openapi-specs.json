@@ -4733,10 +4733,10 @@
         "type": "object",
         "properties": {
           "sharedBy": {
-            "type": "string"
+            "$ref": "#/components/schemas/UserResponseDto"
           },
           "sharedWith": {
-            "type": "string"
+            "$ref": "#/components/schemas/UserResponseDto"
           },
           "createdAt": {
             "type": "string"

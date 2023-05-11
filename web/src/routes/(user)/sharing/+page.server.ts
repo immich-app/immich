@@ -12,18 +12,10 @@ export const load = (async ({ locals: { api, user } }) => {
 		const { data: sharedAlbums } = await api.albumApi.getAllAlbums(true);
 		const { data: partners } = await api.shareApi.getPartners();
 
-		const allPartners: UserResponseDto[] = [];
-		for (const partner of partners) {
-			const { data: user } = await api.userApi.getUserById(partner.sharedBy);
-			if (user) {
-				allPartners.push(user);
-			}
-		}
-
 		return {
 			user,
 			sharedAlbums,
-			partners: allPartners,
+			partners: partners.map((partner) => partner.sharedBy),
 			meta: {
 				title: 'Sharing'
 			}
