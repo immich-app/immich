@@ -251,21 +251,6 @@ export class AssetController {
     return this.assetService.getAllAssets(authUser, dto);
   }
 
-  /**
-   * Get all AssetEntity by userId
-   */
-  @Authenticated()
-  @Get('/partner/:id')
-  @ApiHeader({
-    name: 'if-none-match',
-    description: 'ETag of data already cached on the client',
-    required: false,
-    schema: { type: 'string' },
-  })
-  getUserAssets(@GetAuthUser() authUser: AuthUserDto, @Param('id') id: string): Promise<AssetResponseDto[]> {
-    return this.assetService.getUserAssets(authUser, id);
-  }
-
   @Authenticated()
   @Post('/time-bucket')
   async getAssetByTimeBucket(
