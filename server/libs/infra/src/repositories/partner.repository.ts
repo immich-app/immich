@@ -2,7 +2,7 @@ import { IPartnerRepository, PartnerDirection } from '@app/domain';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PartnerEntity, UserEntity } from '../entities';
+import { PartnerEntity } from '../entities';
 import { CreatePartnerDto } from '@app/domain/partner/dto';
 
 @Injectable()
@@ -44,16 +44,8 @@ export class PartnerRepository implements IPartnerRepository {
     });
   }
 
-  create(createPartnerDto: CreatePartnerDto): Promise<PartnerEntity> {
-    const partner = new PartnerEntity();
-
-    partner.sharedWith = new UserEntity();
-    partner.sharedWith.id = createPartnerDto.sharedWith;
-
-    partner.sharedBy = new UserEntity();
-    partner.sharedBy.id = createPartnerDto.sharedBy;
-
-    return this.repository.save(partner);
+  create(dto: CreatePartnerDto): Promise<PartnerEntity> {
+    return this.repository.save({ sharedWithId: dto.sharedWith, sharedById: dto.sharedBy });
   }
 
   remove(entity: PartnerEntity): Promise<PartnerEntity> {
