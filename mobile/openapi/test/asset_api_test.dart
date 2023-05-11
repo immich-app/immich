@@ -124,13 +124,6 @@ void main() {
       // TODO
     });
 
-    // Get all AssetEntity by userId
-    //
-    //Future<List<AssetResponseDto>> getUserAssets(String id, { String ifNoneMatch }) async
-    test('test getUserAssets', () async {
-      // TODO
-    });
-
     // Get all asset of a device that are in the database, ID only.
     //
     //Future<List<String>> getUserAssetsByDeviceId(String deviceId) async
