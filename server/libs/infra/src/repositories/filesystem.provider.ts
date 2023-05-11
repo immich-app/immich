@@ -1,9 +1,8 @@
 import { DiskUsage, ImmichReadStream, IStorageRepository } from '@app/domain';
-import { constants, createReadStream, existsSync, mkdirSync } from 'fs';
+import { constants, createReadStream, existsSync, mkdirSync, statfs } from 'fs';
 import fs from 'fs/promises';
 import mv from 'mv';
 import { promisify } from 'node:util';
-import diskUsage from 'diskusage';
 import path from 'path';
 
 const moveFile = promisify<string, string, mv.Options>(mv);
@@ -69,6 +68,21 @@ export class FilesystemProvider implements IStorageRepository {
   }
 
   checkDiskUsage(folder: string): Promise<DiskUsage> {
-    return diskUsage.check(folder);
+    return new Promise((resolve, reject) => {
+      statfs(folder, (err: Error | null, stats: { bsize: number; bavail: number; bfree: number; blocks: number }) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        const diskUsage: DiskUsage = {
+          available: stats.bavail * stats.bsize,
+          free: stats.bfree * stats.bsize,
+          total: stats.blocks * stats.bsize,
+        };
+
+        resolve(diskUsage);
+      });
+    });
   }
 }
