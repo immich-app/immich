@@ -529,7 +529,7 @@ export class AssetService {
 
   private async checkUserAccess(authUser: AuthUserDto, userId: string) {
     // Check if userId shares assets with authUser
-    if (!(await this.partnerCore.get(userId, authUser.id))) {
+    if (!(await this.partnerCore.get({ sharedBy: userId, sharedWith: authUser.id }))) {
       throw new ForbiddenException();
     }
   }

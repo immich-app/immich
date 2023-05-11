@@ -11,11 +11,11 @@ export class PartnerService {
   }
 
   async addPartner(authUser: AuthUserDto, sharedWith: string): Promise<void> {
-    await this.partnerCore.create(authUser.id, sharedWith);
+    await this.partnerCore.create({ sharedBy: authUser.id, sharedWith });
   }
 
   async removePartner(authUser: AuthUserDto, sharedWith: string): Promise<void> {
-    await this.partnerCore.remove(authUser.id, sharedWith);
+    await this.partnerCore.remove({ sharedBy: authUser.id, sharedWith });
   }
 
   async getAllPartners(authUser: AuthUserDto): Promise<PartnerResponseDto[]> {
