@@ -61,7 +61,7 @@
 </script>
 
 <div
-	class="group hover:cursor-pointer mt-4 border-2 border-transparent dark:hover:border-gray-300 hover:border-black rounded-3xl p-5 relative"
+	class="group hover:cursor-pointer mt-4 border-[3px] border-transparent dark:hover:border-immich-dark-primary/75 hover:border-immich-primary/75 rounded-3xl p-5 relative"
 	on:click={() => dispatchClick('click', album)}
 	on:keydown={() => dispatchClick('click', album)}
 	data-testid="album-card"
@@ -84,7 +84,7 @@
 			data-testid="album-image"
 			draggable="false"
 		/>
-		<div class="w-full h-full absolute top-0 rounded-3xl group-hover:bg-indigo-800/40" />
+		<div class="w-full h-full absolute top-0 rounded-3xl group-hover:bg-indigo-800/25" />
 	</div>
 
 	<div class="mt-4">
