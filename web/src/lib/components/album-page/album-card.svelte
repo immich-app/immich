@@ -21,8 +21,6 @@
 
 	export let album: AlbumResponseDto;
 
-	let imageOverlayElement: HTMLDivElement;
-
 	let imageData = `/api/asset/thumbnail/${album.albumThumbnailAssetId}?format=${ThumbnailFormat.Webp}`;
 	if (!album.albumThumbnailAssetId) {
 		imageData = noThumbnailUrl;
@@ -63,12 +61,10 @@
 </script>
 
 <div
-	class="hover:cursor-pointer mt-4 border-2 border-transparent dark:hover:border-gray-300 hover:border-black rounded-xl p-5"
+	class="group hover:cursor-pointer mt-4 border-2 border-transparent dark:hover:border-gray-300 hover:border-black rounded-3xl p-5"
 	on:click={() => dispatchClick('click', album)}
 	on:keydown={() => dispatchClick('click', album)}
 	data-testid="album-card"
-	on:mouseenter={() => (imageOverlayElement.style.background = 'rgba(66,80,175,0.25)')}
-	on:mouseleave={() => (imageOverlayElement.style.background = 'transparent')}
 >
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<div
@@ -84,16 +80,16 @@
 		<img
 			src={imageData}
 			alt={album.id}
-			class={`object-cover h-full w-full transition-all z-0 rounded-xl duration-300 hover:shadow-lg`}
+			class={`object-cover h-full w-full transition-all z-0 rounded-3xl duration-300 hover:shadow-lg`}
 			data-testid="album-image"
 			draggable="false"
 		/>
-		<div class="w-full h-full absolute top-0 rounded-xl" bind:this={imageOverlayElement} />
+		<div class="w-full h-full absolute top-0 rounded-3xl group-hover:bg-indigo-800/20" />
 	</div>
 
 	<div class="mt-4">
 		<p
-			class="text-2xl font-bold dark:text-immich-dark-primary text-immich-primary w-full truncate"
+			class="text-2xl font-semibold dark:text-immich-dark-primary text-immich-primary w-full truncate"
 			data-testid="album-name"
 			title={album.albumName}
 		>
