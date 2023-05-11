@@ -4,8 +4,9 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 
-class SearchBar extends HookConsumerWidget with PreferredSizeWidget {
-  SearchBar({
+class ImmichSearchBar extends HookConsumerWidget
+    implements PreferredSizeWidget {
+  const ImmichSearchBar({
     Key? key,
     required this.searchFocusNode,
     required this.onSubmitted,

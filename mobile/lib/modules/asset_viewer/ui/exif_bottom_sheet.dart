@@ -7,6 +7,7 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ExifBottomSheet extends HookConsumerWidget {
   final Asset asset;
@@ -42,19 +43,25 @@ class ExifBottomSheet extends HookConsumerWidget {
                   ),
                   zoom: 16.0,
                 ),
-                layers: [
-                  TileLayerOptions(
+                nonRotatedChildren: [
+                  RichAttributionWidget(
+                    attributions: [
+                      TextSourceAttribution(
+                        'OpenStreetMap contributors',
+                        onTap: () => launchUrl(
+                          Uri.parse('https://openstreetmap.org/copyright'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                children: [
+                  TileLayer(
                     urlTemplate:
                         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    subdomains: ['a', 'b', 'c'],
-                    attributionBuilder: (_) {
-                      return const Text(
-                        "© OpenStreetMap",
-                        style: TextStyle(fontSize: 10),
-                      );
-                    },
+                    subdomains: const ['a', 'b', 'c'],
                   ),
-                  MarkerLayerOptions(
+                  MarkerLayer(
                     markers: [
                       Marker(
                         anchorPos: AnchorPos.align(AnchorAlign.top),
@@ -88,9 +95,9 @@ class ExifBottomSheet extends HookConsumerWidget {
     }
 
     buildDragHeader() {
-      return Column(
+      return const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           SizedBox(height: 12),
           Align(
             alignment: Alignment.center,
