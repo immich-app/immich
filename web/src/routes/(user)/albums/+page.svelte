@@ -62,7 +62,7 @@
 	</div>
 
 	<!-- Album Card -->
-	<div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-8">
+	<div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
 		{#each $albums as album (album.id)}
 			<a
 				data-sveltekit-preload-data="hover"
