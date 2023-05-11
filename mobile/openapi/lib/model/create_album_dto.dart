@@ -68,11 +68,11 @@ class CreateAlbumDto {
 
       return CreateAlbumDto(
         albumName: mapValueOfType<String>(json, r'albumName')!,
-        sharedWithUserIds: json[r'sharedWithUserIds'] is List
-            ? (json[r'sharedWithUserIds'] as List).cast<String>()
+        sharedWithUserIds: json[r'sharedWithUserIds'] is Iterable
+            ? (json[r'sharedWithUserIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        assetIds: json[r'assetIds'] is List
-            ? (json[r'assetIds'] as List).cast<String>()
+        assetIds: json[r'assetIds'] is Iterable
+            ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
       );
     }

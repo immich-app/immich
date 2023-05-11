@@ -78,8 +78,8 @@ class AddAssetsResponseDto {
 
       return AddAssetsResponseDto(
         successfullyAdded: mapValueOfType<int>(json, r'successfullyAdded')!,
-        alreadyInAlbum: json[r'alreadyInAlbum'] is List
-            ? (json[r'alreadyInAlbum'] as List).cast<String>()
+        alreadyInAlbum: json[r'alreadyInAlbum'] is Iterable
+            ? (json[r'alreadyInAlbum'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         album: AlbumResponseDto.fromJson(json[r'album']),
       );

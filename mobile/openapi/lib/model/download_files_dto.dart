@@ -55,8 +55,8 @@ class DownloadFilesDto {
       }());
 
       return DownloadFilesDto(
-        assetIds: json[r'assetIds'] is List
-            ? (json[r'assetIds'] as List).cast<String>()
+        assetIds: json[r'assetIds'] is Iterable
+            ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
       );
     }
