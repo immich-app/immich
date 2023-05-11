@@ -31,7 +31,7 @@ function HomepageHeader() {
           </Link>
         </div>
 
-        <img src="/img/immich-screenshots.webp" alt="logo" />
+        <img src="/img/immich-screenshots.png" alt="logo" />
       </section>
     </header>
   );
