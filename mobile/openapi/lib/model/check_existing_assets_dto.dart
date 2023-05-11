@@ -61,8 +61,8 @@ class CheckExistingAssetsDto {
       }());
 
       return CheckExistingAssetsDto(
-        deviceAssetIds: json[r'deviceAssetIds'] is List
-            ? (json[r'deviceAssetIds'] as List).cast<String>()
+        deviceAssetIds: json[r'deviceAssetIds'] is Iterable
+            ? (json[r'deviceAssetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
       );

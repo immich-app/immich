@@ -55,8 +55,8 @@ class CheckExistingAssetsResponseDto {
       }());
 
       return CheckExistingAssetsResponseDto(
-        existingIds: json[r'existingIds'] is List
-            ? (json[r'existingIds'] as List).cast<String>()
+        existingIds: json[r'existingIds'] is Iterable
+            ? (json[r'existingIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
       );
     }

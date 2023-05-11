@@ -55,8 +55,8 @@ class GetAssetByTimeBucketDto {
       }());
 
       return GetAssetByTimeBucketDto(
-        timeBucket: json[r'timeBucket'] is List
-            ? (json[r'timeBucket'] as List).cast<String>()
+        timeBucket: json[r'timeBucket'] is Iterable
+            ? (json[r'timeBucket'] as Iterable).cast<String>().toList(growable: false)
             : const [],
       );
     }
