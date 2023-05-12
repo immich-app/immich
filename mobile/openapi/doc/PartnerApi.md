@@ -9,13 +9,13 @@ All URIs are relative to */api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**addPartner**](PartnerApi.md#addpartner) | **POST** /partner/{id} | 
+[**createPartner**](PartnerApi.md#createpartner) | **POST** /partner/{id} | 
 [**getPartners**](PartnerApi.md#getpartners) | **GET** /partner | 
 [**removePartner**](PartnerApi.md#removepartner) | **DELETE** /partner/{id} | 
 
 
-# **addPartner**
-> UserResponseDto addPartner(id)
+# **createPartner**
+> UserResponseDto createPartner(id)
 
 
 
@@ -41,10 +41,10 @@ final api_instance = PartnerApi();
 final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    final result = api_instance.addPartner(id);
+    final result = api_instance.createPartner(id);
     print(result);
 } catch (e) {
-    print('Exception when calling PartnerApi->addPartner: $e\n');
+    print('Exception when calling PartnerApi->createPartner: $e\n');
 }
 ```
 

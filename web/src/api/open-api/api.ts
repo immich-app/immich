@@ -7215,9 +7215,9 @@ export const PartnerApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addPartner: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        createPartner: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('addPartner', 'id', id)
+            assertParamExists('createPartner', 'id', id)
             const localVarPath = `/partner/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -7354,8 +7354,8 @@ export const PartnerApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async addPartner(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.addPartner(id, options);
+        async createPartner(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.createPartner(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -7394,8 +7394,8 @@ export const PartnerApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addPartner(id: string, options?: any): AxiosPromise<UserResponseDto> {
-            return localVarFp.addPartner(id, options).then((request) => request(axios, basePath));
+        createPartner(id: string, options?: any): AxiosPromise<UserResponseDto> {
+            return localVarFp.createPartner(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7432,8 +7432,8 @@ export class PartnerApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof PartnerApi
      */
-    public addPartner(id: string, options?: AxiosRequestConfig) {
-        return PartnerApiFp(this.configuration).addPartner(id, options).then((request) => request(this.axios, this.basePath));
+    public createPartner(id: string, options?: AxiosRequestConfig) {
+        return PartnerApiFp(this.configuration).createPartner(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

@@ -17,8 +17,8 @@ void main() {
   // final instance = PartnerApi();
 
   group('tests for PartnerApi', () {
-    //Future<UserResponseDto> addPartner(String id) async
-    test('test addPartner', () async {
+    //Future<UserResponseDto> createPartner(String id) async
+    test('test createPartner', () async {
       // TODO
     });
 

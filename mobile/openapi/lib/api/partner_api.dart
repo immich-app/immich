@@ -20,7 +20,7 @@ class PartnerApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> addPartnerWithHttpInfo(String id,) async {
+  Future<Response> createPartnerWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final path = r'/partner/{id}'
       .replaceAll('{id}', id);
@@ -49,8 +49,8 @@ class PartnerApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<UserResponseDto?> addPartner(String id,) async {
-    final response = await addPartnerWithHttpInfo(id,);
+  Future<UserResponseDto?> createPartner(String id,) async {
+    final response = await createPartnerWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
