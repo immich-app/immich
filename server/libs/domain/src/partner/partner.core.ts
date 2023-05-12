@@ -1,42 +1,32 @@
-import { BadRequestException, Logger } from '@nestjs/common';
-import { IPartnerRepository, PartnerDirection } from './partner.repository';
 import { PartnerEntity } from '@app/infra/entities';
-
-export interface PartnerIds {
-  sharedBy: string;
-  sharedWith: string;
-}
+import { BadRequestException } from '@nestjs/common';
+import { IPartnerRepository, PartnerDirection, PartnerIds } from './partner.repository';
 
 export class PartnerCore {
-  readonly logger = new Logger(PartnerCore.name);
-
   constructor(private repository: IPartnerRepository) {}
 
   getAll(userId: string, direction: PartnerDirection): Promise<PartnerEntity[]> {
     return this.repository.getAll(userId, direction);
   }
 
-  get({ sharedBy, sharedWith }: PartnerIds): Promise<PartnerEntity | null> {
-    return this.repository.get(sharedBy, sharedWith);
+  get(ids: PartnerIds): Promise<PartnerEntity | null> {
+    return this.repository.get(ids);
   }
 
-  create({ sharedBy, sharedWith }: PartnerIds): Promise<PartnerEntity> {
-    return this.repository.create({
-      sharedBy,
-      sharedWith,
-    });
+  create(ids: PartnerIds): Promise<PartnerEntity> {
+    return this.repository.create(ids);
   }
 
-  async remove({ sharedBy, sharedWith }: PartnerIds): Promise<PartnerEntity> {
-    const partner = await this.get({ sharedBy, sharedWith });
+  async remove(ids: PartnerIds): Promise<void> {
+    const partner = await this.get(ids);
     if (!partner) {
       throw new BadRequestException('Partner not found');
     }
 
-    return this.repository.remove(partner);
+    await this.repository.remove(partner);
   }
 
-  async hasAssetAccess(assetId: string, userId: string): Promise<boolean> {
+  hasAssetAccess(assetId: string, userId: string): Promise<boolean> {
     return this.repository.hasAssetAccess(assetId, userId);
   }
 }

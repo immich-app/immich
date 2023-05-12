@@ -817,7 +817,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/PartnerResponseDto"
+                    "$ref": "#/components/schemas/UserResponseDto"
                   }
                 }
               }
@@ -856,7 +856,14 @@
         ],
         "responses": {
           "201": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -4705,27 +4712,6 @@
         },
         "required": [
           "url"
-        ]
-      },
-      "PartnerResponseDto": {
-        "type": "object",
-        "properties": {
-          "sharedBy": {
-            "$ref": "#/components/schemas/UserResponseDto"
-          },
-          "sharedWith": {
-            "$ref": "#/components/schemas/UserResponseDto"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "sharedBy",
-          "sharedWith"
         ]
       },
       "SearchFacetCountResponseDto": {

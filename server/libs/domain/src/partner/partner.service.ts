@@ -1,6 +1,8 @@
+import { PartnerEntity } from '@app/infra/entities';
 import { Inject, Injectable } from '@nestjs/common';
 import { AuthUserDto } from '../auth';
-import { IPartnerRepository, mapPartner, PartnerCore, PartnerDirection, PartnerResponseDto } from '../partner';
+import { IPartnerRepository, PartnerCore, PartnerDirection } from '../partner';
+import { UserResponseDto } from '../user';
 
 @Injectable()
 export class PartnerService {
@@ -10,16 +12,21 @@ export class PartnerService {
     this.partnerCore = new PartnerCore(partnerRepository);
   }
 
-  async addPartner(authUser: AuthUserDto, sharedWith: string): Promise<void> {
-    await this.partnerCore.create({ sharedBy: authUser.id, sharedWith });
+  async addPartner(authUser: AuthUserDto, sharedWith: string): Promise<UserResponseDto> {
+    const partner = await this.partnerCore.create({ sharedBy: authUser.id, sharedWith });
+    return this.map(partner, PartnerDirection.SharedWith);
   }
 
   async removePartner(authUser: AuthUserDto, sharedWith: string): Promise<void> {
     await this.partnerCore.remove({ sharedBy: authUser.id, sharedWith });
   }
 
-  async getPartners(authUser: AuthUserDto, direction: PartnerDirection): Promise<PartnerResponseDto[]> {
+  async getPartners(authUser: AuthUserDto, direction: PartnerDirection): Promise<UserResponseDto[]> {
     const partners = await this.partnerCore.getAll(authUser.id, direction);
-    return partners.map(mapPartner);
+    return partners.map((partner) => this.map(partner, direction));
+  }
+
+  private map(partner: PartnerEntity, direction: PartnerDirection): UserResponseDto {
+    return direction === PartnerDirection.SharedBy ? partner.sharedBy : partner.sharedWith;
   }
 }

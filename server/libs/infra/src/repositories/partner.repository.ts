@@ -1,9 +1,8 @@
-import { IPartnerRepository, PartnerDirection } from '@app/domain';
+import { IPartnerRepository, PartnerDirection, PartnerIds } from '@app/domain';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PartnerEntity } from '../entities';
-import { CreatePartnerDto } from '@app/domain/partner/dto';
 
 @Injectable()
 export class PartnerRepository implements IPartnerRepository {
@@ -27,7 +26,7 @@ export class PartnerRepository implements IPartnerRepository {
     });
   }
 
-  async get(sharedBy: string, sharedWith: string): Promise<PartnerEntity | null> {
+  async get({ sharedWith, sharedBy }: PartnerIds): Promise<PartnerEntity | null> {
     return this.repository.findOne({
       where: {
         sharedWith: {
@@ -44,12 +43,12 @@ export class PartnerRepository implements IPartnerRepository {
     });
   }
 
-  create(dto: CreatePartnerDto): Promise<PartnerEntity> {
-    return this.repository.save({ sharedWithId: dto.sharedWith, sharedById: dto.sharedBy });
+  create({ sharedBy, sharedWith }: PartnerIds): Promise<PartnerEntity> {
+    return this.repository.save({ sharedWithId: sharedWith, sharedById: sharedBy });
   }
 
-  remove(entity: PartnerEntity): Promise<PartnerEntity> {
-    return this.repository.remove(entity);
+  async remove(entity: PartnerEntity): Promise<void> {
+    await this.repository.remove(entity);
   }
 
   async hasAssetAccess(assetId: string, userId: string): Promise<boolean> {
