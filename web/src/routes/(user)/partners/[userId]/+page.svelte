@@ -6,6 +6,6 @@
 	export let data: PageData;
 </script>
 
-<UserPageLayout user={data.user} title="{data.partner.firstName} {data.partner.lastName}">
+<UserPageLayout user={data.user} title="{data.partner.firstName} {data.partner.lastName}'s Photos">
 	<AssetGrid user={data.partner} />
 </UserPageLayout>
