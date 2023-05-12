@@ -23,7 +23,7 @@ ENV NODE_ENV=production
 
 WORKDIR /usr/src/app
 
-RUN apk add --no-cache libheif vips ffmpeg perl
+RUN apk add --no-cache libheif vips-dev ffmpeg perl
 
 COPY --from=prod /usr/src/app/node_modules ./node_modules
 COPY --from=prod /usr/src/app/dist ./dist
