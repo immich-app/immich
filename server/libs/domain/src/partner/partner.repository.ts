@@ -5,15 +5,10 @@ export interface PartnerIds {
   sharedWith: string;
 }
 
-export enum PartnerDirection {
-  SharedBy = 'shared-by',
-  SharedWith = 'shared-with',
-}
-
 export const IPartnerRepository = 'IPartnerRepository';
 
 export interface IPartnerRepository {
-  getAll(userId: string, direction: PartnerDirection): Promise<PartnerEntity[]>;
+  getAll(userId: string): Promise<PartnerEntity[]>;
   get(partner: PartnerIds): Promise<PartnerEntity | null>;
   create(partner: PartnerIds): Promise<PartnerEntity>;
   remove(entity: PartnerEntity): Promise<void>;

@@ -14,7 +14,7 @@ export class PartnerService {
 
   async addPartner(authUser: AuthUserDto, sharedWith: string): Promise<UserResponseDto> {
     const partner = await this.partnerCore.create({ sharedBy: authUser.id, sharedWith });
-    return this.map(partner, PartnerDirection.SharedWith);
+    return this.map(partner, PartnerDirection.SharedBy);
   }
 
   async removePartner(authUser: AuthUserDto, sharedWith: string): Promise<void> {
@@ -27,6 +27,7 @@ export class PartnerService {
   }
 
   private map(partner: PartnerEntity, direction: PartnerDirection): UserResponseDto {
-    return direction === PartnerDirection.SharedBy ? partner.sharedBy : partner.sharedWith;
+    // this is opposite to return the non-me user of the "partner"
+    return direction === PartnerDirection.SharedBy ? partner.sharedWith : partner.sharedBy;
   }
 }

@@ -1,4 +1,4 @@
-import { IPartnerRepository, PartnerDirection, PartnerIds } from '@app/domain';
+import { IPartnerRepository, PartnerIds } from '@app/domain';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -13,12 +13,9 @@ export class PartnerRepository implements IPartnerRepository {
     private readonly repository: Repository<PartnerEntity>,
   ) {}
 
-  getAll(userId: string, direction: PartnerDirection): Promise<PartnerEntity[]> {
-    const key = direction === PartnerDirection.SharedWith ? 'sharedWithId' : 'sharedById';
+  getAll(userId: string): Promise<PartnerEntity[]> {
     return this.repository.find({
-      where: {
-        [key]: userId,
-      },
+      where: [{ sharedWithId: userId }, { sharedById: userId }],
       relations: {
         sharedBy: true,
         sharedWith: true,

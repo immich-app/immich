@@ -1,12 +1,19 @@
 import { PartnerEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
-import { IPartnerRepository, PartnerDirection, PartnerIds } from './partner.repository';
+import { IPartnerRepository, PartnerIds } from './partner.repository';
+
+export enum PartnerDirection {
+  SharedBy = 'shared-by',
+  SharedWith = 'shared-with',
+}
 
 export class PartnerCore {
   constructor(private repository: IPartnerRepository) {}
 
-  getAll(userId: string, direction: PartnerDirection): Promise<PartnerEntity[]> {
-    return this.repository.getAll(userId, direction);
+  async getAll(userId: string, direction: PartnerDirection): Promise<PartnerEntity[]> {
+    const partners = await this.repository.getAll(userId);
+    const key = direction === PartnerDirection.SharedBy ? 'sharedById' : 'sharedWithId';
+    return partners.filter((partner) => partner[key] === userId);
   }
 
   get(ids: PartnerIds): Promise<PartnerEntity | null> {
