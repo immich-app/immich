@@ -261,6 +261,13 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
     }
 
     PreferredSizeWidget buildControlButton(Album album) {
+      if (!album.isRemote) {
+        return PreferredSize(
+          preferredSize: Size.zero,
+          child: Container(),
+        );
+      }
+
       return PreferredSize(
         preferredSize: const Size(0, 56),
         child: Container(
