@@ -1,8 +1,8 @@
 import { PartnerEntity } from '@app/infra/entities';
 
 export interface PartnerIds {
-  sharedBy: string;
-  sharedWith: string;
+  sharedById: string;
+  sharedWithId: string;
 }
 
 export const IPartnerRepository = 'IPartnerRepository';

@@ -842,7 +842,7 @@
     },
     "/partner/{id}": {
       "post": {
-        "operationId": "addPartner",
+        "operationId": "createPartner",
         "parameters": [
           {
             "name": "id",

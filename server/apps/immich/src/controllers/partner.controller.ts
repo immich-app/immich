@@ -24,8 +24,8 @@ export class PartnerController {
 
   @Authenticated()
   @Post(':id')
-  addPartner(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
-    return this.service.add(authUser, id);
+  createPartner(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
+    return this.service.create(authUser, id);
   }
 
   @Authenticated()

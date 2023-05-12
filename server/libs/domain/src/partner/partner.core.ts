@@ -20,17 +20,12 @@ export class PartnerCore {
     return this.repository.get(ids);
   }
 
-  create(ids: PartnerIds): Promise<PartnerEntity> {
+  async create(ids: PartnerIds): Promise<PartnerEntity> {
     return this.repository.create(ids);
   }
 
   async remove(ids: PartnerIds): Promise<void> {
-    const partner = await this.get(ids);
-    if (!partner) {
-      throw new BadRequestException('Partner not found');
-    }
-
-    await this.repository.remove(partner);
+    await this.repository.remove(ids as PartnerEntity);
   }
 
   hasAssetAccess(assetId: string, userId: string): Promise<boolean> {

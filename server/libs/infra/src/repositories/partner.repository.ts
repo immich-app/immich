@@ -23,15 +23,11 @@ export class PartnerRepository implements IPartnerRepository {
     });
   }
 
-  async get({ sharedWith, sharedBy }: PartnerIds): Promise<PartnerEntity | null> {
+  get({ sharedWithId, sharedById }: PartnerIds): Promise<PartnerEntity | null> {
     return this.repository.findOne({
       where: {
-        sharedWith: {
-          id: sharedWith,
-        },
-        sharedBy: {
-          id: sharedBy,
-        },
+        sharedById,
+        sharedWithId,
       },
       relations: {
         sharedBy: true,
@@ -40,8 +36,8 @@ export class PartnerRepository implements IPartnerRepository {
     });
   }
 
-  create({ sharedBy, sharedWith }: PartnerIds): Promise<PartnerEntity> {
-    return this.repository.save({ sharedWithId: sharedWith, sharedById: sharedBy });
+  create({ sharedById, sharedWithId }: PartnerIds): Promise<PartnerEntity> {
+    return this.repository.save({ sharedWithId, sharedById });
   }
 
   async remove(entity: PartnerEntity): Promise<void> {

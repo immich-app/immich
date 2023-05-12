@@ -1,8 +1,8 @@
 import { PartnerEntity } from '@app/infra/entities';
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AuthUserDto } from '../auth';
-import { IPartnerRepository, PartnerCore, PartnerDirection } from '../partner';
-import { UserResponseDto } from '../user';
+import { IPartnerRepository, PartnerCore, PartnerDirection, PartnerIds } from '../partner';
+import { mapUser, UserResponseDto } from '../user';
 
 @Injectable()
 export class PartnerService {
@@ -12,13 +12,25 @@ export class PartnerService {
     this.partnerCore = new PartnerCore(partnerRepository);
   }
 
-  async add(authUser: AuthUserDto, sharedWith: string): Promise<UserResponseDto> {
-    const partner = await this.partnerCore.create({ sharedBy: authUser.id, sharedWith });
+  async create(authUser: AuthUserDto, sharedWithId: string): Promise<UserResponseDto> {
+    const partnerId: PartnerIds = { sharedById: authUser.id, sharedWithId };
+    const exists = await this.partnerCore.get(partnerId);
+    if (exists) {
+      throw new BadRequestException(`Partner already exists`);
+    }
+
+    const partner = await this.partnerCore.create(partnerId);
     return this.map(partner, PartnerDirection.SharedBy);
   }
 
-  async remove(authUser: AuthUserDto, sharedWith: string): Promise<void> {
-    await this.partnerCore.remove({ sharedBy: authUser.id, sharedWith });
+  async remove(authUser: AuthUserDto, sharedWithId: string): Promise<void> {
+    const partnerId: PartnerIds = { sharedById: authUser.id, sharedWithId };
+    const partner = await this.partnerCore.get(partnerId);
+    if (!partner) {
+      throw new BadRequestException('Partner not found');
+    }
+
+    await this.partnerCore.remove(partner);
   }
 
   async getAll(authUser: AuthUserDto, direction: PartnerDirection): Promise<UserResponseDto[]> {
@@ -28,6 +40,6 @@ export class PartnerService {
 
   private map(partner: PartnerEntity, direction: PartnerDirection): UserResponseDto {
     // this is opposite to return the non-me user of the "partner"
-    return direction === PartnerDirection.SharedBy ? partner.sharedWith : partner.sharedBy;
+    return mapUser(direction === PartnerDirection.SharedBy ? partner.sharedWith : partner.sharedBy);
   }
 }
