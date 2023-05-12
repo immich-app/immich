@@ -26,14 +26,6 @@
 		partners = data;
 	};
 
-	const handleAddPartner = async () => {
-		try {
-			showAddUserModal = true;
-		} catch (error) {
-			handleError(error, 'Unable to add partner');
-		}
-	};
-
 	const handleRemovePartner = async (user: UserResponseDto) => {
 		try {
 			await api.partnerApi.removePartner(user.id);
@@ -43,7 +35,7 @@
 		}
 	};
 
-	const handleAddUsers = async (users: UserResponseDto[]) => {
+	const handleAddPartners = async (users: UserResponseDto[]) => {
 		try {
 			for (const user of users) {
 				await api.partnerApi.addPartner(user.id);
@@ -88,13 +80,13 @@
 		</div>
 	{/if}
 	<div class="flex justify-end">
-		<Button size="sm" on:click={() => handleAddPartner()}>Add partner</Button>
+		<Button size="sm" on:click={() => (showAddUserModal = true)}>Add partner</Button>
 	</div>
 </section>
 
 {#if showAddUserModal}
 	<PartnerSelectionModal
 		on:close={() => (showAddUserModal = false)}
-		on:add-users={(event) => handleAddUsers(event.detail)}
+		on:add-users={(event) => handleAddPartners(event.detail)}
 	/>
 {/if}
