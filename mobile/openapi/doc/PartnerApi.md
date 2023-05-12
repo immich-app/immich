@@ -15,7 +15,7 @@ Method | HTTP request | Description
 
 
 # **addPartner**
-> addPartner(id)
+> UserResponseDto addPartner(id)
 
 
 
@@ -41,7 +41,8 @@ final api_instance = PartnerApi();
 final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    api_instance.addPartner(id);
+    final result = api_instance.addPartner(id);
+    print(result);
 } catch (e) {
     print('Exception when calling PartnerApi->addPartner: $e\n');
 }
@@ -55,7 +56,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-void (empty response body)
+[**UserResponseDto**](UserResponseDto.md)
 
 ### Authorization
 
@@ -64,12 +65,12 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getPartners**
-> List<PartnerResponseDto> getPartners(direction)
+> List<UserResponseDto> getPartners(direction)
 
 
 
@@ -110,7 +111,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**List<PartnerResponseDto>**](PartnerResponseDto.md)
+[**List<UserResponseDto>**](UserResponseDto.md)
 
 ### Authorization
 

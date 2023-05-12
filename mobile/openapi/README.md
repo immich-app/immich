@@ -218,7 +218,6 @@ Class | Method | HTTP request | Description
  - [OAuthCallbackDto](doc//OAuthCallbackDto.md)
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
  - [OAuthConfigResponseDto](doc//OAuthConfigResponseDto.md)
- - [PartnerResponseDto](doc//PartnerResponseDto.md)
  - [QueueStatusDto](doc//QueueStatusDto.md)
  - [RemoveAssetsDto](doc//RemoveAssetsDto.md)
  - [SearchAlbumResponseDto](doc//SearchAlbumResponseDto.md)

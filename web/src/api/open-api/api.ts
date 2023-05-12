@@ -1549,37 +1549,6 @@ export interface OAuthConfigResponseDto {
 /**
  * 
  * @export
- * @interface PartnerResponseDto
- */
-export interface PartnerResponseDto {
-    /**
-     * 
-     * @type {UserResponseDto}
-     * @memberof PartnerResponseDto
-     */
-    'sharedBy': UserResponseDto;
-    /**
-     * 
-     * @type {UserResponseDto}
-     * @memberof PartnerResponseDto
-     */
-    'sharedWith': UserResponseDto;
-    /**
-     * 
-     * @type {string}
-     * @memberof PartnerResponseDto
-     */
-    'createdAt'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof PartnerResponseDto
-     */
-    'updatedAt'?: string;
-}
-/**
- * 
- * @export
  * @interface QueueStatusDto
  */
 export interface QueueStatusDto {
@@ -7385,7 +7354,7 @@ export const PartnerApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async addPartner(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async addPartner(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.addPartner(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -7395,7 +7364,7 @@ export const PartnerApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getPartners(direction: 'shared-by' | 'shared-with', options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<PartnerResponseDto>>> {
+        async getPartners(direction: 'shared-by' | 'shared-with', options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<UserResponseDto>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getPartners(direction, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -7425,7 +7394,7 @@ export const PartnerApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addPartner(id: string, options?: any): AxiosPromise<void> {
+        addPartner(id: string, options?: any): AxiosPromise<UserResponseDto> {
             return localVarFp.addPartner(id, options).then((request) => request(axios, basePath));
         },
         /**
@@ -7434,7 +7403,7 @@ export const PartnerApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPartners(direction: 'shared-by' | 'shared-with', options?: any): AxiosPromise<Array<PartnerResponseDto>> {
+        getPartners(direction: 'shared-by' | 'shared-with', options?: any): AxiosPromise<Array<UserResponseDto>> {
             return localVarFp.getPartners(direction, options).then((request) => request(axios, basePath));
         },
         /**

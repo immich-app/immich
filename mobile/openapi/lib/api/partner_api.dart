@@ -49,11 +49,19 @@ class PartnerApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> addPartner(String id,) async {
+  Future<UserResponseDto?> addPartner(String id,) async {
     final response = await addPartnerWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserResponseDto',) as UserResponseDto;
+    
+    }
+    return null;
   }
 
   /// Performs an HTTP 'GET /partner' operation and returns the [Response].
@@ -90,7 +98,7 @@ class PartnerApi {
   /// Parameters:
   ///
   /// * [String] direction (required):
-  Future<List<PartnerResponseDto>?> getPartners(String direction,) async {
+  Future<List<UserResponseDto>?> getPartners(String direction,) async {
     final response = await getPartnersWithHttpInfo(direction,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -100,8 +108,8 @@ class PartnerApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<PartnerResponseDto>') as List)
-        .cast<PartnerResponseDto>()
+      return (await apiClient.deserializeAsync(responseBody, 'List<UserResponseDto>') as List)
+        .cast<UserResponseDto>()
         .toList();
 
     }

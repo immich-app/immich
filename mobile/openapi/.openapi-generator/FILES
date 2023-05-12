@@ -61,7 +61,6 @@ doc/OAuthCallbackDto.md
 doc/OAuthConfigDto.md
 doc/OAuthConfigResponseDto.md
 doc/PartnerApi.md
-doc/PartnerResponseDto.md
 doc/QueueStatusDto.md
 doc/RemoveAssetsDto.md
 doc/SearchAlbumResponseDto.md
@@ -179,7 +178,6 @@ lib/model/map_marker_response_dto.dart
 lib/model/o_auth_callback_dto.dart
 lib/model/o_auth_config_dto.dart
 lib/model/o_auth_config_response_dto.dart
-lib/model/partner_response_dto.dart
 lib/model/queue_status_dto.dart
 lib/model/remove_assets_dto.dart
 lib/model/search_album_response_dto.dart
@@ -276,7 +274,6 @@ test/o_auth_callback_dto_test.dart
 test/o_auth_config_dto_test.dart
 test/o_auth_config_response_dto_test.dart
 test/partner_api_test.dart
-test/partner_response_dto_test.dart
 test/queue_status_dto_test.dart
 test/remove_assets_dto_test.dart
 test/search_album_response_dto_test.dart

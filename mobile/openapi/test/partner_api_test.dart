@@ -17,12 +17,12 @@ void main() {
   // final instance = PartnerApi();
 
   group('tests for PartnerApi', () {
-    //Future addPartner(String id) async
+    //Future<UserResponseDto> addPartner(String id) async
     test('test addPartner', () async {
       // TODO
     });
 
-    //Future<List<PartnerResponseDto>> getPartners(String direction) async
+    //Future<List<UserResponseDto>> getPartners(String direction) async
     test('test getPartners', () async {
       // TODO
     });
