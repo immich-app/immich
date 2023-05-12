@@ -14,7 +14,7 @@ export const load = (async ({ locals: { api, user } }) => {
 		return {
 			user,
 			sharedAlbums,
-			partners: partners.map((partner) => partner.sharedBy),
+			partners,
 			meta: {
 				title: 'Sharing'
 			}

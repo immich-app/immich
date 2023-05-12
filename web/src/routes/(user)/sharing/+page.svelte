@@ -14,6 +14,7 @@
 	import { flip } from 'svelte/animate';
 	import AlbumCard from '$lib/components/album-page/album-card.svelte';
 	import CircleAvatar from '$lib/components/shared-components/circle-avatar.svelte';
+	import { AppRoute } from '$lib/constants';
 
 	export let data: PageData;
 
@@ -44,7 +45,7 @@
 			</div>
 		</LinkButton>
 
-		<LinkButton on:click={() => goto('/sharing/sharedlinks')}>
+		<LinkButton on:click={() => goto(AppRoute.SHARED_LINKS)}>
 			<div class="flex place-items-center gap-x-1 text-sm flex-wrap justify-center">
 				<Link size="18" class="shrink-0" />
 				<span class="max-sm:text-xs leading-none">Shared links</span>
@@ -62,7 +63,7 @@
 				<div class="flex flex-row flex-wrap gap-4">
 					{#each data.partners as partner}
 						<button
-							on:click={() => goto(`/sharing/${partner.id}`)}
+							on:click={() => goto(`/partners/${partner.id}`)}
 							class="flex rounded-lg gap-4 py-4 px-5 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
 						>
 							<CircleAvatar user={partner} />
