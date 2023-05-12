@@ -6,7 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/ui/curated_row.dart';
-import 'package:immich_mobile/modules/search/ui/search_bar.dart';
+import 'package:immich_mobile/modules/search/ui/immich_search_bar.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
@@ -117,7 +117,7 @@ class SearchPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: SearchBar(
+      appBar: ImmichSearchBar(
         searchFocusNode: searchFocusNode,
         onSubmitted: onSearchSubmitted,
       ),
