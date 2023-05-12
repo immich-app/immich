@@ -43,13 +43,13 @@ export class ShareCore {
     return this.repository.save({ ...entity, userId, id });
   }
 
-  async remove(userId: string, id: string): Promise<SharedLinkEntity> {
+  async remove(userId: string, id: string): Promise<void> {
     const link = await this.get(userId, id);
     if (!link) {
       throw new BadRequestException('Shared link not found');
     }
 
-    return this.repository.remove(link);
+    await this.repository.remove(link);
   }
 
   async addAssets(userId: string, id: string, assets: AssetEntity[]) {
