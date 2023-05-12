@@ -9,9 +9,10 @@
 	let availableUsers: UserResponseDto[] = [];
 	let selectedUsers: UserResponseDto[] = [];
 
-	const dispatch = createEventDispatcher();
+	const dispatch = createEventDispatcher<{ close: void; 'add-users': UserResponseDto[] }>();
 
 	onMount(async () => {
+		// TODO: update endpoint to have a query param for deleted users
 		let { data: users } = await api.userApi.getAllUsers(false);
 
 		// remove soft deleted users
@@ -19,7 +20,7 @@
 
 		// exclude partners from the list of users available for selection
 		const { data: partners } = await api.partnerApi.getPartners('shared-by');
-		const partnerIds = partners.map((partner) => partner.sharedWith.id);
+		const partnerIds = partners.map((partner) => partner.id);
 		availableUsers = users.filter((user) => !partnerIds.includes(user.id));
 	});
 
@@ -75,7 +76,7 @@
 
 		{#if selectedUsers.length > 0}
 			<div class="flex place-content-end p-5 ">
-				<Button size="sm" rounded="lg" on:click={() => dispatch('add-user', { selectedUsers })}>
+				<Button size="sm" rounded="lg" on:click={() => dispatch('add-users', selectedUsers)}>
 					Add
 				</Button>
 			</div>

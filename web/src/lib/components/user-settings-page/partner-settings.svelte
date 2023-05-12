@@ -21,6 +21,11 @@
 		}
 	}
 
+	const refreshPartners = async () => {
+		const { data } = await api.partnerApi.getPartners('shared-by');
+		partners = data;
+	};
+
 	const handleAddPartner = async () => {
 		try {
 			showAddUserModal = true;
@@ -32,34 +37,27 @@
 	const handleRemovePartner = async (user: UserResponseDto) => {
 		try {
 			await api.partnerApi.removePartner(user.id);
-			partners = await loadPartners();
+			await refreshPartners();
 		} catch (error) {
 			handleError(error, 'Unable to remove partner');
 		}
 	};
 
-	const addUserHandler = async (event: CustomEvent) => {
-		const { selectedUsers }: { selectedUsers: UserResponseDto[] } = event.detail;
-
+	const handleAddUsers = async (users: UserResponseDto[]) => {
 		try {
-			for (const user of selectedUsers) {
+			for (const user of users) {
 				await api.partnerApi.addPartner(user.id);
 			}
 
-			partners = await loadPartners();
+			await refreshPartners();
 			showAddUserModal = false;
 		} catch (error) {
 			handleError(error, 'Unable to add partners');
 		}
 	};
 
-	const loadPartners = async () => {
-		const { data: partners } = await api.partnerApi.getPartners('shared-by');
-		return partners.map((partner) => partner.sharedWith);
-	};
-
 	onMount(async () => {
-		partners = await loadPartners();
+		await refreshPartners();
 	});
 </script>
 
@@ -95,5 +93,8 @@
 </section>
 
 {#if showAddUserModal}
-	<PartnerSelectionModal on:close={() => (showAddUserModal = false)} on:add-user={addUserHandler} />
+	<PartnerSelectionModal
+		on:close={() => (showAddUserModal = false)}
+		on:add-users={(event) => handleAddUsers(event.detail)}
+	/>
 {/if}
