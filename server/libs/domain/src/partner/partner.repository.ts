@@ -1,7 +1,10 @@
 import { PartnerEntity } from '@app/infra/entities';
 import { CreatePartnerDto } from './dto';
 
-export type PartnerDirection = 'shared-by' | 'shared-with';
+export enum PartnerDirection {
+  SharedBy = 'shared-by',
+  SharedWith = 'shared-with',
+}
 
 export const IPartnerRepository = 'IPartnerRepository';
 

@@ -22,8 +22,8 @@ void main() {
       // TODO
     });
 
-    //Future<List<PartnerResponseDto>> getAllPartners() async
-    test('test getAllPartners', () async {
+    //Future<List<PartnerResponseDto>> getPartners(String direction) async
+    test('test getPartners', () async {
       // TODO
     });
 

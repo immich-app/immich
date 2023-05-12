@@ -57,7 +57,10 @@ class PartnerApi {
   }
 
   /// Performs an HTTP 'GET /partner' operation and returns the [Response].
-  Future<Response> getAllPartnersWithHttpInfo() async {
+  /// Parameters:
+  ///
+  /// * [String] direction (required):
+  Future<Response> getPartnersWithHttpInfo(String direction,) async {
     // ignore: prefer_const_declarations
     final path = r'/partner';
 
@@ -67,6 +70,8 @@ class PartnerApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+      queryParams.addAll(_queryParams('', 'direction', direction));
 
     const contentTypes = <String>[];
 
@@ -82,8 +87,11 @@ class PartnerApi {
     );
   }
 
-  Future<List<PartnerResponseDto>?> getAllPartners() async {
-    final response = await getAllPartnersWithHttpInfo();
+  /// Parameters:
+  ///
+  /// * [String] direction (required):
+  Future<List<PartnerResponseDto>?> getPartners(String direction,) async {
+    final response = await getPartnersWithHttpInfo(direction,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

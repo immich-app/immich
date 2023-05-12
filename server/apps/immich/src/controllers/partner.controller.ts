@@ -1,11 +1,12 @@
-import { Controller, Get, Post, Delete, Param } from '@nestjs/common';
-import { PartnerService } from '@app/domain';
+import { Controller, Get, Post, Delete, Param, Query } from '@nestjs/common';
+import { PartnerDirection, PartnerService } from '@app/domain';
 import { Authenticated } from '../decorators/authenticated.decorator';
 import { AuthUserDto, GetAuthUser } from '../decorators/auth-user.decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { PartnerResponseDto } from '@app/domain';
 import { UseValidation } from '../decorators/use-validation.decorator';
 import { UUIDParamDto } from './dto/uuid-param.dto';
+import { ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('Partner')
 @Controller('partner')
@@ -15,8 +16,12 @@ export class PartnerController {
 
   @Authenticated()
   @Get()
-  getAllPartners(@GetAuthUser() authUser: AuthUserDto): Promise<PartnerResponseDto[]> {
-    return this.service.getAllPartners(authUser);
+  @ApiQuery({ name: 'direction', type: 'string', enum: PartnerDirection, required: true })
+  getPartners(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Query('direction') direction: PartnerDirection,
+  ): Promise<PartnerResponseDto[]> {
+    return this.service.getPartners(authUser, direction);
   }
 
   @Authenticated()

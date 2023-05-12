@@ -15,7 +15,7 @@ export class PartnerRepository implements IPartnerRepository {
   ) {}
 
   getAll(userId: string, direction: PartnerDirection): Promise<PartnerEntity[]> {
-    const key = direction === 'shared-with' ? 'sharedWithId' : 'sharedById';
+    const key = direction === PartnerDirection.SharedWith ? 'sharedWithId' : 'sharedById';
     return this.repository.find({
       where: {
         [key]: userId,

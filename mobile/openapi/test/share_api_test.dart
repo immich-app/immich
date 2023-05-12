@@ -32,11 +32,6 @@ void main() {
       // TODO
     });
 
-    //Future<List<PartnerResponseDto>> getPartners() async
-    test('test getPartners', () async {
-      // TODO
-    });
-
     //Future<SharedLinkResponseDto> getSharedLinkById(String id) async
     test('test getSharedLinkById', () async {
       // TODO

@@ -54,7 +54,7 @@
 	};
 
 	const loadPartners = async () => {
-		const { data: partners } = await api.partnerApi.getAllPartners();
+		const { data: partners } = await api.partnerApi.getPartners('shared-by');
 		return partners.map((partner) => partner.sharedWith);
 	};
 

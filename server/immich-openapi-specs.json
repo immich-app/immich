@@ -794,8 +794,21 @@
     },
     "/partner": {
       "get": {
-        "operationId": "getAllPartners",
-        "parameters": [],
+        "operationId": "getPartners",
+        "parameters": [
+          {
+            "name": "direction",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "shared-by",
+                "shared-with"
+              ],
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -1288,41 +1301,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SharedLinkResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "share"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
-    "/share/partner": {
-      "get": {
-        "operationId": "getPartners",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PartnerResponseDto"
-                  }
                 }
               }
             }

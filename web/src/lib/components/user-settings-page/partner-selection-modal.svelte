@@ -18,7 +18,7 @@
 		users = users.filter((user) => !user.deletedAt);
 
 		// exclude partners from the list of users available for selection
-		const { data: partners } = await api.partnerApi.getAllPartners();
+		const { data: partners } = await api.partnerApi.getPartners('shared-by');
 		const partnerIds = partners.map((partner) => partner.sharedWith.id);
 		availableUsers = users.filter((user) => !partnerIds.includes(user.id));
 	});

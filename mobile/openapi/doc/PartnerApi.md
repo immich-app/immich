@@ -10,7 +10,7 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**addPartner**](PartnerApi.md#addpartner) | **POST** /partner/{id} | 
-[**getAllPartners**](PartnerApi.md#getallpartners) | **GET** /partner | 
+[**getPartners**](PartnerApi.md#getpartners) | **GET** /partner | 
 [**removePartner**](PartnerApi.md#removepartner) | **DELETE** /partner/{id} | 
 
 
@@ -68,8 +68,8 @@ void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getAllPartners**
-> List<PartnerResponseDto> getAllPartners()
+# **getPartners**
+> List<PartnerResponseDto> getPartners(direction)
 
 
 
@@ -92,17 +92,21 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = PartnerApi();
+final direction = direction_example; // String | 
 
 try {
-    final result = api_instance.getAllPartners();
+    final result = api_instance.getPartners(direction);
     print(result);
 } catch (e) {
-    print('Exception when calling PartnerApi->getAllPartners: $e\n');
+    print('Exception when calling PartnerApi->getPartners: $e\n');
 }
 ```
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **direction** | **String**|  | 
 
 ### Return type
 

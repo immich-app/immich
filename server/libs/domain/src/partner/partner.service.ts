@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AuthUserDto } from '../auth';
-import { IPartnerRepository, mapPartner, PartnerCore, PartnerResponseDto } from '../partner';
+import { IPartnerRepository, mapPartner, PartnerCore, PartnerDirection, PartnerResponseDto } from '../partner';
 
 @Injectable()
 export class PartnerService {
@@ -18,8 +18,8 @@ export class PartnerService {
     await this.partnerCore.remove({ sharedBy: authUser.id, sharedWith });
   }
 
-  async getAllPartners(authUser: AuthUserDto): Promise<PartnerResponseDto[]> {
-    const partners = await this.partnerCore.getAll(authUser.id, 'shared-by');
+  async getPartners(authUser: AuthUserDto, direction: PartnerDirection): Promise<PartnerResponseDto[]> {
+    const partners = await this.partnerCore.getAll(authUser.id, direction);
     return partners.map(mapPartner);
   }
 }
