@@ -31,10 +31,6 @@
 	<UserProfileSettings {user} />
 </SettingAccordion>
 
-<SettingAccordion title="Sharing" subtitle="Manage sharing with partners">
-	<PartnerSettings />
-</SettingAccordion>
-
 <SettingAccordion title="API Keys" subtitle="Manage your API keys">
 	<UserAPIKeyList />
 </SettingAccordion>
@@ -55,4 +51,8 @@
 
 <SettingAccordion title="Password" subtitle="Change your password">
 	<ChangePasswordSettings />
+</SettingAccordion>
+
+<SettingAccordion title="Sharing" subtitle="Manage sharing with partners">
+	<PartnerSettings />
 </SettingAccordion>
