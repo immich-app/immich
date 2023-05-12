@@ -19,18 +19,18 @@ export class PartnerController {
     @GetAuthUser() authUser: AuthUserDto,
     @Query('direction') direction: PartnerDirection,
   ): Promise<UserResponseDto[]> {
-    return this.service.getPartners(authUser, direction);
+    return this.service.getAll(authUser, direction);
   }
 
   @Authenticated()
   @Post(':id')
   addPartner(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
-    return this.service.addPartner(authUser, id);
+    return this.service.add(authUser, id);
   }
 
   @Authenticated()
   @Delete(':id')
   removePartner(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
-    return this.service.removePartner(authUser, id);
+    return this.service.remove(authUser, id);
   }
 }

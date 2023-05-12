@@ -12,16 +12,16 @@ export class PartnerService {
     this.partnerCore = new PartnerCore(partnerRepository);
   }
 
-  async addPartner(authUser: AuthUserDto, sharedWith: string): Promise<UserResponseDto> {
+  async add(authUser: AuthUserDto, sharedWith: string): Promise<UserResponseDto> {
     const partner = await this.partnerCore.create({ sharedBy: authUser.id, sharedWith });
     return this.map(partner, PartnerDirection.SharedBy);
   }
 
-  async removePartner(authUser: AuthUserDto, sharedWith: string): Promise<void> {
+  async remove(authUser: AuthUserDto, sharedWith: string): Promise<void> {
     await this.partnerCore.remove({ sharedBy: authUser.id, sharedWith });
   }
 
-  async getPartners(authUser: AuthUserDto, direction: PartnerDirection): Promise<UserResponseDto[]> {
+  async getAll(authUser: AuthUserDto, direction: PartnerDirection): Promise<UserResponseDto[]> {
     const partners = await this.partnerCore.getAll(authUser.id, direction);
     return partners.map((partner) => this.map(partner, direction));
   }
