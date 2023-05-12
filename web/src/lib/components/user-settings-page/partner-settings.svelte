@@ -5,30 +5,26 @@
 	import Button from '../elements/buttons/button.svelte';
 	import PartnerSelectionModal from './partner-selection-modal.svelte';
 	import { handleError } from '../../utils/handle-error';
-	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
+	import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
 
 	let partners: UserResponseDto[] = [];
-	let showAddUserModal = false;
-
-	$: {
-		if (browser) {
-			if (showAddUserModal) {
-				document.body.style.overflow = 'hidden';
-			} else {
-				document.body.style.overflow = 'auto';
-			}
-		}
-	}
+	let createPartner = false;
+	let removePartner: UserResponseDto | null = null;
 
 	const refreshPartners = async () => {
 		const { data } = await api.partnerApi.getPartners('shared-by');
 		partners = data;
 	};
 
-	const handleRemovePartner = async (user: UserResponseDto) => {
+	const handleRemovePartner = async () => {
+		if (!removePartner) {
+			return;
+		}
+
 		try {
-			await api.partnerApi.removePartner(user.id);
+			await api.partnerApi.removePartner(removePartner.id);
+			removePartner = null;
 			await refreshPartners();
 		} catch (error) {
 			handleError(error, 'Unable to remove partner');
@@ -42,7 +38,7 @@
 			}
 
 			await refreshPartners();
-			showAddUserModal = false;
+			createPartner = false;
 		} catch (error) {
 			handleError(error, 'Unable to add partners');
 		}
@@ -70,7 +66,7 @@
 						</p>
 					</div>
 					<button
-						on:click={() => handleRemovePartner(partner)}
+						on:click={() => (removePartner = partner)}
 						class="immich-circle-icon-button hover:bg-immich-primary/10 dark:text-immich-dark-fg hover:dark:bg-immich-dark-primary/20  rounded-full p-3 flex place-items-center place-content-center transition-all"
 					>
 						<Close size="16" />
@@ -80,13 +76,22 @@
 		</div>
 	{/if}
 	<div class="flex justify-end">
-		<Button size="sm" on:click={() => (showAddUserModal = true)}>Add partner</Button>
+		<Button size="sm" on:click={() => (createPartner = true)}>Add partner</Button>
 	</div>
 </section>
 
-{#if showAddUserModal}
+{#if createPartner}
 	<PartnerSelectionModal
-		on:close={() => (showAddUserModal = false)}
+		on:close={() => (createPartner = false)}
 		on:add-users={(event) => handleCreatePartners(event.detail)}
+	/>
+{/if}
+
+{#if removePartner}
+	<ConfirmDialogue
+		title="Stop sharing your photos?"
+		prompt="{removePartner.firstName} will no longer be able to access your photos."
+		on:cancel={() => (removePartner = null)}
+		on:confirm={() => handleRemovePartner()}
 	/>
 {/if}
