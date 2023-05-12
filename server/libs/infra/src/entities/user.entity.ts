@@ -8,7 +8,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { AssetEntity } from './asset.entity';
-import { PartnerEntity } from './partner.entity';
 import { TagEntity } from './tag.entity';
 
 @Entity('users')
@@ -54,10 +53,4 @@ export class UserEntity {
 
   @OneToMany(() => AssetEntity, (asset) => asset.owner)
   assets!: AssetEntity[];
-
-  @OneToMany(() => PartnerEntity, (partner) => partner.sharedWith)
-  sharedWith!: PartnerEntity[];
-
-  @OneToMany(() => PartnerEntity, (partner) => partner.sharedBy)
-  sharedBy!: PartnerEntity[];
 }

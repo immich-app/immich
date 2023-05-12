@@ -1,43 +1,26 @@
 import { IPartnerRepository, PartnerIds } from '@app/domain';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PartnerEntity } from '../entities';
 
 @Injectable()
 export class PartnerRepository implements IPartnerRepository {
-  readonly logger = new Logger(PartnerRepository.name);
-
-  constructor(
-    @InjectRepository(PartnerEntity)
-    private readonly repository: Repository<PartnerEntity>,
-  ) {}
+  constructor(@InjectRepository(PartnerEntity) private readonly repository: Repository<PartnerEntity>) {}
 
   getAll(userId: string): Promise<PartnerEntity[]> {
-    return this.repository.find({
-      where: [{ sharedWithId: userId }, { sharedById: userId }],
-      relations: {
-        sharedBy: true,
-        sharedWith: true,
-      },
-    });
+    return this.repository.find({ where: [{ sharedWithId: userId }, { sharedById: userId }] });
   }
 
   get({ sharedWithId, sharedById }: PartnerIds): Promise<PartnerEntity | null> {
-    return this.repository.findOne({
-      where: {
-        sharedById,
-        sharedWithId,
-      },
-      relations: {
-        sharedBy: true,
-        sharedWith: true,
-      },
-    });
+    return this.repository.findOne({ where: { sharedById, sharedWithId } });
   }
 
   create({ sharedById, sharedWithId }: PartnerIds): Promise<PartnerEntity> {
-    return this.repository.save({ sharedWithId, sharedById });
+    return this.repository.save({
+      sharedBy: { id: sharedById },
+      sharedWith: { id: sharedWithId },
+    });
   }
 
   async remove(entity: PartnerEntity): Promise<void> {

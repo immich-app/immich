@@ -26,8 +26,6 @@ describe('TagService', () => {
     updatedAt: '2022-12-02T19:29:23.603Z',
     tags: [],
     assets: [],
-    sharedBy: [],
-    sharedWith: [],
     oauthId: 'oauth-id-1',
   });
 

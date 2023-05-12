@@ -10,11 +10,11 @@ export class PartnerEntity {
   @PrimaryColumn('uuid')
   sharedWithId!: string;
 
-  @ManyToOne(() => UserEntity, (user) => user.sharedBy, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', eager: true })
   @JoinColumn({ name: 'sharedById' })
   sharedBy!: UserEntity;
 
-  @ManyToOne(() => UserEntity, (user) => user.sharedWith, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', eager: true })
   @JoinColumn({ name: 'sharedWithId' })
   sharedWith!: UserEntity;
 

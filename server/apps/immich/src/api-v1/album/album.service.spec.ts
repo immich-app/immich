@@ -39,8 +39,6 @@ describe('Album service', () => {
     oauthId: '',
     tags: [],
     assets: [],
-    sharedBy: [],
-    sharedWith: [],
   });
   const albumId = 'f19ab956-4761-41ea-a5d6-bae948308d58';
   const sharedAlbumOwnerId = '2222';

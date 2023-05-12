@@ -55,8 +55,6 @@ const adminUser: UserEntity = Object.freeze({
   updatedAt: '2021-01-01',
   tags: [],
   assets: [],
-  sharedBy: [],
-  sharedWith: [],
 });
 
 const immichUser: UserEntity = Object.freeze({
@@ -73,8 +71,6 @@ const immichUser: UserEntity = Object.freeze({
   updatedAt: '2021-01-01',
   tags: [],
   assets: [],
-  sharedBy: [],
-  sharedWith: [],
 });
 
 const updatedImmichUser: UserEntity = Object.freeze({
@@ -91,8 +87,6 @@ const updatedImmichUser: UserEntity = Object.freeze({
   updatedAt: '2021-01-01',
   tags: [],
   assets: [],
-  sharedBy: [],
-  sharedWith: [],
 });
 
 const adminUserResponse = Object.freeze({
