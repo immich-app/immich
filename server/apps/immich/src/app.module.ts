@@ -15,7 +15,7 @@ import {
   PartnerController,
   SearchController,
   ServerInfoController,
-  ShareController,
+  SharedLinkController,
   SystemConfigController,
   UserController,
 } from './controllers';
@@ -41,7 +41,7 @@ import { AppCronJobs } from './app.cron-jobs';
     PartnerController,
     SearchController,
     ServerInfoController,
-    ShareController,
+    SharedLinkController,
     SystemConfigController,
     UserController,
   ],

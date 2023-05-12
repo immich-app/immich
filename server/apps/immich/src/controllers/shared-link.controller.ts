@@ -9,7 +9,7 @@ import { UUIDParamDto } from './dto/uuid-param.dto';
 @ApiTags('share')
 @Controller('share')
 @UseValidation()
-export class ShareController {
+export class SharedLinkController {
   constructor(private readonly service: ShareService) {}
 
   @Authenticated()
