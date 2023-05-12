@@ -32,9 +32,9 @@ export class FacialRecognitionService {
         : await this.assetRepository.getWithout(WithoutProperty.FACES);
 
       if (force) {
-        const records = await this.personRepository.deleteAll();
-        await this.searchRepository.deleteAllFaces();
-        this.logger.debug(`Deleted ${records.length} persons`);
+        const people = await this.personRepository.deleteAll();
+        const faces = await this.searchRepository.deleteAllFaces();
+        this.logger.debug(`Deleted ${people.length} people and ${faces} faces`);
       }
       for (const asset of assets) {
         await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: { asset } });

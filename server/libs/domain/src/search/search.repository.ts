@@ -85,7 +85,7 @@ export interface ISearchRepository {
   deleteAlbums(ids: string[]): Promise<void>;
   deleteAssets(ids: string[]): Promise<void>;
   deleteFaces(ids: string[]): Promise<void>;
-  deleteAllFaces(): Promise<void>;
+  deleteAllFaces(): Promise<number>;
 
   searchAlbums(query: string, filters: SearchFilter): Promise<SearchResult<AlbumEntity>>;
   searchAssets(query: string, filters: SearchFilter): Promise<SearchResult<AssetEntity>>;
