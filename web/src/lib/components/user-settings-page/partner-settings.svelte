@@ -35,10 +35,10 @@
 		}
 	};
 
-	const handleAddPartners = async (users: UserResponseDto[]) => {
+	const handleCreatePartners = async (users: UserResponseDto[]) => {
 		try {
 			for (const user of users) {
-				await api.partnerApi.addPartner(user.id);
+				await api.partnerApi.createPartner(user.id);
 			}
 
 			await refreshPartners();
@@ -87,6 +87,6 @@
 {#if showAddUserModal}
 	<PartnerSelectionModal
 		on:close={() => (showAddUserModal = false)}
-		on:add-users={(event) => handleAddPartners(event.detail)}
+		on:add-users={(event) => handleCreatePartners(event.detail)}
 	/>
 {/if}
