@@ -2,7 +2,6 @@ import { BadRequestException, ForbiddenException, Inject, Injectable, Logger } f
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { EditSharedLinkDto } from './dto';
-import { IPartnerRepository, PartnerCore } from '../partner';
 import { mapSharedLink, mapSharedLinkWithNoExif, SharedLinkResponseDto } from './response-dto';
 import { ShareCore } from './share.core';
 import { ISharedLinkRepository } from './shared-link.repository';
@@ -11,15 +10,12 @@ import { ISharedLinkRepository } from './shared-link.repository';
 export class ShareService {
   readonly logger = new Logger(ShareService.name);
   private shareCore: ShareCore;
-  private partnerCore: PartnerCore;
 
   constructor(
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
-    @Inject(IPartnerRepository) partnerRepository: IPartnerRepository,
   ) {
     this.shareCore = new ShareCore(sharedLinkRepository, cryptoRepository);
-    this.partnerCore = new PartnerCore(partnerRepository);
   }
 
   async getAll(authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {
