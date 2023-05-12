@@ -38,7 +38,7 @@ class AlbumViewerPage extends HookConsumerWidget {
 
     void selectionListener(bool active, Set<Asset> selected) {
       selection.value = selected;
-      multiSelectEnabled.value = true;
+      multiSelectEnabled.value = selected.isNotEmpty;
     }
 
     void disableSelection() {
