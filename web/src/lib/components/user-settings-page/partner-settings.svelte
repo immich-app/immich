@@ -7,6 +7,7 @@
 	import { handleError } from '../../utils/handle-error';
 	import { onMount } from 'svelte';
 	import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
+	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 
 	let partners: UserResponseDto[] = [];
 	let createPartner = false;
@@ -65,12 +66,12 @@
 							{partner.email}
 						</p>
 					</div>
-					<button
+					<CircleIconButton
 						on:click={() => (removePartner = partner)}
-						class="immich-circle-icon-button hover:bg-immich-primary/10 dark:text-immich-dark-fg hover:dark:bg-immich-dark-primary/20  rounded-full p-3 flex place-items-center place-content-center transition-all"
-					>
-						<Close size="16" />
-					</button>
+						logo={Close}
+						size={'16'}
+						title="Remove partner"
+					/>
 				</div>
 			{/each}
 		</div>
