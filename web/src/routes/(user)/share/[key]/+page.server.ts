@@ -1,6 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { getThumbnailUrl } from '$lib/utils/asset-utils';
-import { ThumbnailFormat } from '@api';
+import { ThumbnailFormat, api as clientApi } from '@api';
 import type { PageServerLoad } from './$types';
 import featurePanelUrl from '$lib/assets/feature-panel.png';
 
@@ -19,7 +18,7 @@ export const load = (async ({ params, locals: { api } }) => {
 				title: sharedLink.album ? sharedLink.album.albumName : 'Public Share',
 				description: sharedLink.description || `${assetCount} shared photos & videos.`,
 				imageUrl: assetId
-					? getThumbnailUrl(assetId, ThumbnailFormat.Webp, sharedLink.key)
+					? clientApi.getAssetThumbnailUrl(assetId, ThumbnailFormat.Webp, sharedLink.key)
 					: featurePanelUrl
 			}
 		};
