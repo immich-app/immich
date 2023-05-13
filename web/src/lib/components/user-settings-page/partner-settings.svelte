@@ -61,7 +61,7 @@
 							{partner.firstName}
 							{partner.lastName}
 						</p>
-						<p class="text-xs ">
+						<p class="text-xs text-immich-fg/75 dark:text-immich-dark-fg/75">
 							{partner.email}
 						</p>
 					</div>
