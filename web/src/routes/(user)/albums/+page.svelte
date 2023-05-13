@@ -69,7 +69,11 @@
 				href={`albums/${album.id}`}
 				animate:flip={{ duration: 200 }}
 			>
-				<AlbumCard {album} on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)} />
+				<AlbumCard
+					{album}
+					on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)}
+					user={data.user}
+				/>
 			</a>
 		{/each}
 	</div>
