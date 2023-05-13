@@ -1,7 +1,6 @@
 <script lang="ts">
 	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
 	import Link from 'svelte-material-icons/Link.svelte';
-	import SharedAlbumListTile from '$lib/components/sharing-page/shared-album-list-tile.svelte';
 	import { goto } from '$app/navigation';
 	import { api } from '@api';
 	import type { PageData } from './$types';
