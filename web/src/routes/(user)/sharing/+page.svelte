@@ -1,7 +1,6 @@
 <script lang="ts">
 	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
 	import Link from 'svelte-material-icons/Link.svelte';
-	import SharedAlbumListTile from '$lib/components/sharing-page/shared-album-list-tile.svelte';
 	import { goto } from '$app/navigation';
 	import { api } from '@api';
 	import type { PageData } from './$types';
@@ -12,6 +11,8 @@
 	import empty2Url from '$lib/assets/empty-2.svg';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+	import { flip } from 'svelte/animate';
+	import AlbumCard from '$lib/components/album-page/album-card.svelte';
 
 	export let data: PageData;
 
@@ -51,11 +52,14 @@
 	</div>
 
 	<section>
-		<!-- Share Album List -->
-		<div class="md:w-full flex flex-col place-items-center">
-			{#each data.sharedAlbums as album}
-				<a class="max-md:w-full" data-sveltekit-preload-data="hover" href={`albums/${album.id}`}>
-					<SharedAlbumListTile {album} user={data.user} />
+		<div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
+			{#each data.sharedAlbums as album (album.id)}
+				<a
+					data-sveltekit-preload-data="hover"
+					href={`albums/${album.id}`}
+					animate:flip={{ duration: 200 }}
+				>
+					<AlbumCard {album} user={data.user} isSharingView />
 				</a>
 			{/each}
 		</div>

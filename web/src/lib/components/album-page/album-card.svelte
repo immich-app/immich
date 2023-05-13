@@ -12,7 +12,7 @@
 </script>
 
 <script lang="ts">
-	import { AlbumResponseDto, api, ThumbnailFormat } from '@api';
+	import { AlbumResponseDto, api, ThumbnailFormat, UserResponseDto } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
@@ -20,6 +20,8 @@
 	import { locale } from '$lib/stores/preferences.store';
 
 	export let album: AlbumResponseDto;
+	export let isSharingView = false;
+	export let user: UserResponseDto;
 
 	let imageData = `/api/asset/thumbnail/${album.albumThumbnailAssetId}?format=${ThumbnailFormat.Webp}`;
 	if (!album.albumThumbnailAssetId) {
@@ -58,6 +60,12 @@
 	onMount(async () => {
 		imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || noThumbnailUrl;
 	});
+
+	const getAlbumOwnerInfo = async (): Promise<UserResponseDto> => {
+		const { data } = await api.userApi.getUserById(album.ownerId);
+
+		return data;
+	};
 </script>
 
 <div
@@ -67,14 +75,16 @@
 	data-testid="album-card"
 >
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<div
-		id={`icon-${album.id}`}
-		class="absolute top-6 right-6 z-10"
-		on:click|stopPropagation|preventDefault={showAlbumContextMenu}
-		data-testid="context-button-parent"
-	>
-		<CircleIconButton logo={DotsVertical} size={'20'} />
-	</div>
+	{#if !isSharingView}
+		<div
+			id={`icon-${album.id}`}
+			class="absolute top-6 right-6 z-10"
+			on:click|stopPropagation|preventDefault={showAlbumContextMenu}
+			data-testid="context-button-parent"
+		>
+			<CircleIconButton logo={DotsVertical} size={'20'} />
+		</div>
+	{/if}
 
 	<div class={`aspect-square relative`}>
 		<img
@@ -84,7 +94,11 @@
 			data-testid="album-image"
 			draggable="false"
 		/>
-		<div class="w-full h-full absolute top-0 rounded-3xl group-hover:bg-indigo-800/25" />
+		<div
+			class="w-full h-full absolute top-0 rounded-3xl {isSharingView
+				? 'group-hover:bg-yellow-800/25'
+				: 'group-hover:bg-indigo-800/25'} "
+		/>
 	</div>
 
 	<div class="mt-4">
@@ -101,9 +115,20 @@
 				{album.assetCount.toLocaleString($locale)}
 				{album.assetCount == 1 ? `item` : `items`}
 			</p>
+			<p>·</p>
 
-			{#if album.shared}
-				<p>·</p>
+			{#if isSharingView}
+				{#await getAlbumOwnerInfo() then albumOwner}
+					{#if user.email == albumOwner.email}
+						<p>Owned</p>
+					{:else}
+						<p>
+							Shared by {albumOwner.firstName}
+							{albumOwner.lastName}
+						</p>
+					{/if}
+				{/await}
+			{:else if album.shared}
 				<p>Shared</p>
 			{/if}
 		</span>

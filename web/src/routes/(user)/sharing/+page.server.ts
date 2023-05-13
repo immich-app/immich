@@ -14,7 +14,7 @@ export const load = (async ({ locals: { api, user } }) => {
 			user,
 			sharedAlbums,
 			meta: {
-				title: 'Albums'
+				title: 'Sharing'
 			}
 		};
 	} catch (e) {
