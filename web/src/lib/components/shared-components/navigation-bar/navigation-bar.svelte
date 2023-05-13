@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { clickOutside } from '$lib/utils/click-outside';
+	import { imageLoad } from '$lib/utils/image-load';
 	import { createEventDispatcher } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
@@ -124,13 +125,13 @@
 					>
 						{#if user.profileImagePath}
 							<img
-								transition:fade={{ duration: 100 }}
 								class:hidden={showProfilePictureFallback}
 								src={`${$page.url.origin}/api/user/profile-image/${user.id}`}
 								alt="profile-img"
 								class="inline rounded-full h-12 w-12 object-cover shadow-md border-2 border-immich-primary hover:border-immich-dark-primary dark:hover:border-immich-primary dark:border-immich-dark-primary transition-all"
 								draggable="false"
-								on:load={() => (showProfilePictureFallback = false)}
+								use:imageLoad
+								on:image-load={() => (showProfilePictureFallback = false)}
 							/>
 						{/if}
 						{#if showProfilePictureFallback}
