@@ -19,8 +19,8 @@ export class PartnerEntity {
   sharedWith!: UserEntity;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt?: string;
+  createdAt!: Date;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt?: string;
+  updatedAt!: Date;
 }
