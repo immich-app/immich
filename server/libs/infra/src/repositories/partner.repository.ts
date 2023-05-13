@@ -16,11 +16,9 @@ export class PartnerRepository implements IPartnerRepository {
     return this.repository.findOne({ where: { sharedById, sharedWithId } });
   }
 
-  create({ sharedById, sharedWithId }: PartnerIds): Promise<PartnerEntity> {
-    return this.repository.save({
-      sharedBy: { id: sharedById },
-      sharedWith: { id: sharedWithId },
-    });
+  async create({ sharedById, sharedWithId }: PartnerIds): Promise<PartnerEntity> {
+    await this.repository.save({ sharedBy: { id: sharedById }, sharedWith: { id: sharedWithId } });
+    return this.repository.findOneOrFail({ where: { sharedById, sharedWithId } });
   }
 
   async remove(entity: PartnerEntity): Promise<void> {
