@@ -1,5 +1,4 @@
 import { PartnerEntity } from '@app/infra/entities';
-import { BadRequestException } from '@nestjs/common';
 import { IPartnerRepository, PartnerIds } from './partner.repository';
 
 export enum PartnerDirection {
