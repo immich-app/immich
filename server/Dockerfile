@@ -2,7 +2,7 @@ FROM node:18-alpine3.17 as builder
 
 WORKDIR /usr/src/app
 
-RUN apk add --update-cache build-base python3 libheif vips-dev ffmpeg perl
+RUN apk add --update-cache build-base python3 vips-heif vips-dev ffmpeg perl
 
 COPY package.json package-lock.json ./
 
@@ -23,7 +23,7 @@ ENV NODE_ENV=production
 
 WORKDIR /usr/src/app
 
-RUN apk add --no-cache libheif vips-dev ffmpeg perl
+RUN apk add --no-cache vips-heif vips-dev ffmpeg perl
 
 COPY --from=prod /usr/src/app/node_modules ./node_modules
 COPY --from=prod /usr/src/app/dist ./dist
