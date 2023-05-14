@@ -8,6 +8,7 @@ import 'package:immich_mobile/modules/settings/providers/app_settings.provider.d
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class ImmichAssetGrid extends HookConsumerWidget {
   final int? assetsPerRow;
@@ -21,6 +22,8 @@ class ImmichAssetGrid extends HookConsumerWidget {
   final Set<Asset>? preselectedAssets;
   final bool canDeselect;
   final bool dynamicLayout;
+  final void Function(ItemPosition start, ItemPosition end)?
+      visibleItemsListener;
 
   const ImmichAssetGrid({
     super.key,
@@ -35,6 +38,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
     this.preselectedAssets,
     this.canDeselect = true,
     this.dynamicLayout = true,
+    this.visibleItemsListener,
   });
 
   @override
@@ -87,6 +91,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
             preselectedAssets: preselectedAssets,
             canDeselect: canDeselect,
             dynamicLayout: dynamicLayout,
+            visibleItemsListener: visibleItemsListener,
           ),
         ),
       );
@@ -112,6 +117,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
             preselectedAssets: preselectedAssets,
             canDeselect: canDeselect,
             dynamicLayout: dynamicLayout,
+            visibleItemsListener: visibleItemsListener,
           ),
         ),
       ),

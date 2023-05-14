@@ -25,6 +25,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     final userId = ref.watch(authenticationProvider).userId;
     final selection = useState<Set<Asset>>({});
     final multiSelectEnabled = useState(false);
+    bool? isTop;
 
     Future<bool> onWillPop() async {
       if (multiSelectEnabled.value) {
@@ -46,6 +47,8 @@ class AlbumViewerPage extends HookConsumerWidget {
       multiSelectEnabled.value = false;
     }
 
+    final scroll = ScrollController();
+
     return Scaffold(
       body: album.when(
         data: (data) => WillPopScope(
@@ -55,6 +58,7 @@ class AlbumViewerPage extends HookConsumerWidget {
               titleFocusNode.unfocus();
             },
             child: NestedScrollView(
+              controller: scroll,
               floatHeaderSlivers: true,
               headerSliverBuilder: (context, innerBoxIsScrolled) => [
                 AlbumViewerAppbar(
@@ -74,9 +78,20 @@ class AlbumViewerPage extends HookConsumerWidget {
                     settings.getSetting(AppSettingsEnum.dynamicLayout),
                 listener: selectionListener,
                 selectionActive: multiSelectEnabled.value,
+                visibleItemsListener: (start, end) {
+                  final top = start.index == 0 && start.itemLeadingEdge == 0.0;
+                  if (top != isTop) {
+                    isTop = top;
+                    scroll.animateTo(
+                      top
+                          ? scroll.position.minScrollExtent
+                          : scroll.position.maxScrollExtent,
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.decelerate,
+                    );
+                  }
+                },
               ),
-
-              //body: ScrollablePositionedList.builder(itemCount: 100, itemBuilder: (_, i) => Text('$i'),),
             ),
           ),
         ),

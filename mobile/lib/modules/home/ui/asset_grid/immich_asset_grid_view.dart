@@ -333,12 +333,31 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   void initState() {
     super.initState();
     scrollToTopNotifierProvider.addListener(_scrollToTop);
+    if (widget.visibleItemsListener != null) {
+      _itemPositionsListener.itemPositions.addListener(_positionListener);
+    }
   }
 
   @override
   void dispose() {
     scrollToTopNotifierProvider.removeListener(_scrollToTop);
+    if (widget.visibleItemsListener != null) {
+      _itemPositionsListener.itemPositions.removeListener(_positionListener);
+    }
     super.dispose();
+  }
+
+  void _positionListener() {
+    final values = _itemPositionsListener.itemPositions.value;
+    final start = values.firstOrNull;
+    final end = values.lastOrNull;
+    if (start != null && end != null) {
+      if (start.index <= end.index) {
+        widget.visibleItemsListener!(start, end);
+      } else {
+        widget.visibleItemsListener!(end, start);
+      }
+    }
   }
 
   void _scrollToTop() {
@@ -378,6 +397,8 @@ class ImmichAssetGridView extends StatefulWidget {
   final Set<Asset>? preselectedAssets;
   final bool canDeselect;
   final bool dynamicLayout;
+  final void Function(ItemPosition start, ItemPosition end)?
+      visibleItemsListener;
 
   const ImmichAssetGridView({
     super.key,
@@ -391,6 +412,7 @@ class ImmichAssetGridView extends StatefulWidget {
     this.preselectedAssets,
     this.canDeselect = true,
     this.dynamicLayout = true,
+    this.visibleItemsListener,
   });
 
   @override
