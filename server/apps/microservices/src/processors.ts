@@ -10,6 +10,7 @@ import {
   IUserDeletionJob,
   JobName,
   MediaService,
+  PersonService,
   QueueName,
   SearchService,
   SmartInfoService,
@@ -29,6 +30,7 @@ export class BackgroundTaskProcessor {
     private storageService: StorageService,
     private systemConfigService: SystemConfigService,
     private userService: UserService,
+    private personService: PersonService,
   ) {}
 
   @Process(JobName.ASSET_UPLOADED)
@@ -49,6 +51,11 @@ export class BackgroundTaskProcessor {
   @Process(JobName.USER_DELETION)
   async onUserDelete(job: Job<IUserDeletionJob>) {
     await this.userService.handleUserDelete(job.data);
+  }
+
+  @Process(JobName.ASSET_DELETE_CHECK)
+  async onAssetDelete(job: Job<IAssetJob>) {
+    await this.personService.removePersonWithNoFaceData(job.data.asset);
   }
 }
 

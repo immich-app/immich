@@ -68,6 +68,10 @@ export class JobRepository implements IJobRepository {
 
   async queue(item: JobItem): Promise<void> {
     switch (item.name) {
+      case JobName.ASSET_DELETE_CHECK:
+        await this.backgroundTask.add(item.name, item.data, { jobId: item.data.asset.id });
+        break;
+
       case JobName.ASSET_UPLOADED:
         await this.backgroundTask.add(item.name, item.data, { jobId: item.data.asset.id });
         break;

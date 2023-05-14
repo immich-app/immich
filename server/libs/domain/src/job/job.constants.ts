@@ -18,6 +18,9 @@ export enum JobCommand {
 }
 
 export enum JobName {
+  // asset deletion
+  ASSET_DELETE_CHECK = 'asset-delete-check',
+
   // upload
   ASSET_UPLOADED = 'asset-uploaded',
 
