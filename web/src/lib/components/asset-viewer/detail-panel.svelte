@@ -5,7 +5,7 @@
 	import CameraIris from 'svelte-material-icons/CameraIris.svelte';
 	import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
 	import { createEventDispatcher } from 'svelte';
-	import { AssetResponseDto, AlbumResponseDto, api } from '@api';
+	import { AssetResponseDto, AlbumResponseDto, api, ThumbnailFormat } from '@api';
 	import { asByteUnitString } from '../../utils/byte-units';
 	import { locale } from '$lib/stores/preferences.store';
 	import { DateTime } from 'luxon';
@@ -241,7 +241,8 @@
 						<img
 							alt={album.albumName}
 							class="w-[50px] h-[50px] object-cover rounded"
-							src={`/api/asset/thumbnail/${album.albumThumbnailAssetId}?format=JPEG`}
+							src={album.albumThumbnailAssetId &&
+								api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Jpeg)}
 							draggable="false"
 						/>
 					</div>

@@ -2,6 +2,7 @@ import {
 	AlbumApi,
 	APIKeyApi,
 	AssetApi,
+	AssetApiFp,
 	AuthenticationApi,
 	Configuration,
 	ConfigurationParameters,
@@ -11,11 +12,12 @@ import {
 	ServerInfoApi,
 	ShareApi,
 	SystemConfigApi,
-	ThumbnailFormat,
-	UserApi
+	UserApi,
+	UserApiFp
 } from './open-api';
 import { BASE_PATH } from './open-api/base';
 import { DUMMY_BASE_URL, toPathString } from './open-api/common';
+import type { ApiParams } from './types';
 
 export class ImmichApi {
 	public userApi: UserApi;
@@ -75,14 +77,23 @@ export class ImmichApi {
 		this.config.basePath = baseUrl;
 	}
 
-	public getAssetFileUrl(assetId: string, isThumb?: boolean, isWeb?: boolean, key?: string) {
+	public getAssetFileUrl(
+		...[assetId, isThumb, isWeb, key]: ApiParams<typeof AssetApiFp, 'serveFile'>
+	) {
 		const path = `/asset/file/${assetId}`;
 		return this.createUrl(path, { isThumb, isWeb, key });
 	}
 
-	public getAssetThumbnailUrl(assetId: string, format?: ThumbnailFormat, key?: string) {
+	public getAssetThumbnailUrl(
+		...[assetId, format, key]: ApiParams<typeof AssetApiFp, 'getAssetThumbnail'>
+	) {
 		const path = `/asset/thumbnail/${assetId}`;
 		return this.createUrl(path, { format, key });
+	}
+
+	public getProfileImageUrl(...[userId]: ApiParams<typeof UserApiFp, 'getProfileImage'>) {
+		const path = `/user/profile-image/${userId}`;
+		return this.createUrl(path);
 	}
 }
 

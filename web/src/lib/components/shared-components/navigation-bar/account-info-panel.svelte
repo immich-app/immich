@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { UserResponseDto } from '@api';
+	import { UserResponseDto, api } from '@api';
 	import { createEventDispatcher } from 'svelte';
-	import { page } from '$app/stores';
 	import { fade } from 'svelte/transition';
 	import Cog from 'svelte-material-icons/Cog.svelte';
 	import Logout from 'svelte-material-icons/Logout.svelte';
@@ -35,7 +34,7 @@
 					<img
 						transition:fade={{ duration: 100 }}
 						class:hidden={showProfilePictureFallback}
-						src={`${$page.url.origin}/api/user/profile-image/${user.id}`}
+						src={api.getProfileImageUrl(user.id)}
 						alt="profile-img"
 						class="inline rounded-full h-20 w-20 object-cover shadow-md border-2 border-immich-primary dark:border-immich-dark-primary"
 						draggable="false"

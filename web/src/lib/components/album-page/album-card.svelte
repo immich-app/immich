@@ -23,10 +23,9 @@
 	export let isSharingView = false;
 	export let user: UserResponseDto;
 
-	let imageData = `/api/asset/thumbnail/${album.albumThumbnailAssetId}?format=${ThumbnailFormat.Webp}`;
-	if (!album.albumThumbnailAssetId) {
-		imageData = noThumbnailUrl;
-	}
+	$: imageData = album.albumThumbnailAssetId
+		? api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Webp)
+		: noThumbnailUrl;
 
 	const dispatchClick = createEventDispatcher<OnClick>();
 	const dispatchShowContextMenu = createEventDispatcher<OnShowContextMenu>();

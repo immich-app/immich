@@ -126,7 +126,7 @@
 						{#if user.profileImagePath}
 							<img
 								class:hidden={showProfilePictureFallback}
-								src={`${$page.url.origin}/api/user/profile-image/${user.id}`}
+								src={api.getProfileImageUrl(user.id)}
 								alt="profile-img"
 								class="inline rounded-full h-12 w-12 object-cover shadow-md border-2 border-immich-primary hover:border-immich-dark-primary dark:hover:border-immich-primary dark:border-immich-dark-primary transition-all"
 								draggable="false"
