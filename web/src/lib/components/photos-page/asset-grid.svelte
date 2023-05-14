@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 
 	import { UserResponseDto } from '@api';
 	import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
@@ -51,6 +51,10 @@
 		bucketsToFetchInitially.forEach((bucketDate) => {
 			assetStore.getAssetsByBucket(bucketDate);
 		});
+	});
+
+	onDestroy(() => {
+		assetStore.setInitialState(0, 0, { totalCount: 0, buckets: [] }, undefined);
 	});
 
 	function intersectedHandler(event: CustomEvent) {
