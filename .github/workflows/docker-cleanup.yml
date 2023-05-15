@@ -38,11 +38,12 @@ jobs:
       -
         name: Clean temporary images
         if: "${{ env.TOKEN != '' }}"
-        uses: stumpylog/image-cleaner-action/ephemeral@develop
+        uses: stumpylog/image-cleaner-action/ephemeral@v0.1.0
         with:
           token: "${{ env.TOKEN }}"
           owner: "immich-app"
           is_org: "true"
+          do_delete: "true"
           package_name: "${{ matrix.primary-name }}"
           scheme: "pull_request"
           repo_name: "immich"
@@ -69,9 +70,10 @@ jobs:
       -
         name: Clean untagged images
         if: "${{ env.TOKEN != '' }}"
-        uses: stumpylog/image-cleaner-action/untagged@develop
+        uses: stumpylog/image-cleaner-action/untagged@v0.1.0
         with:
           token: "${{ env.TOKEN }}"
           owner: "immich-app"
+          do_delete: "true"
           is_org: "true"
           package_name: "${{ matrix.primary-name }}"
