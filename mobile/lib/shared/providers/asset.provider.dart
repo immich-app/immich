@@ -150,6 +150,15 @@ final assetProvider = StateNotifierProvider<AssetNotifier, AssetsState>((ref) {
   );
 });
 
+final assetDetailProvider =
+    StreamProvider.family<Asset, Asset>((ref, asset) async* {
+  yield await ref.watch(assetServiceProvider).loadExif(asset);
+  final db = ref.watch(dbProvider);
+  await for (final a in db.assets.watchObject(asset.id)) {
+    if (a != null) yield await ref.watch(assetServiceProvider).loadExif(a);
+  }
+});
+
 final assetsProvider = StreamProvider<RenderList>((ref) async* {
   final query = ref
       .watch(dbProvider)

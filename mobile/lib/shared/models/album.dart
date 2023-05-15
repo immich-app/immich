@@ -70,11 +70,14 @@ class Album {
     return name.join(' ');
   }
 
-  Future<void> loadRenderList(GroupAssetsBy groupAssetsBy) async {
-    _renderList = await RenderList.fromQuery(
-      assets.filter().sortByFileCreatedAt(),
-      groupAssetsBy,
-    );
+  Stream<void> watchRenderList(GroupAssetsBy groupAssetsBy) async* {
+    final query = assets.filter().sortByFileCreatedAt();
+    _renderList = await RenderList.fromQuery(query, groupAssetsBy);
+    yield _renderList;
+    await for (final _ in query.watchLazy()) {
+      _renderList = await RenderList.fromQuery(query, groupAssetsBy);
+      yield _renderList;
+    }
   }
 
   @override

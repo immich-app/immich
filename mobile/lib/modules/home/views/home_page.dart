@@ -10,7 +10,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
-import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
@@ -119,8 +118,8 @@ class HomePage extends HookConsumerWidget {
           );
           if (remoteAssets.isNotEmpty) {
             await ref
-                .watch(favoriteProvider.notifier)
-                .addToFavorites(remoteAssets);
+                .watch(assetProvider.notifier)
+                .toggleFavorite(remoteAssets, true);
 
             final assetOrAssets = remoteAssets.length > 1 ? 'assets' : 'asset';
             ImmichToast.show(

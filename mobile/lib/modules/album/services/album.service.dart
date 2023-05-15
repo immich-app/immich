@@ -214,8 +214,9 @@ class AlbumService {
     );
   }
 
-  Future<Album?> getAlbumDetail(int albumId) {
-    return _db.albums.get(albumId);
+  Stream<Album?> watchAlbum(int albumId) async* {
+    yield await _db.albums.get(albumId);
+    yield* _db.albums.watchObject(albumId);
   }
 
   Future<AddAssetsResponseDto?> addAdditionalAssetToAlbum(

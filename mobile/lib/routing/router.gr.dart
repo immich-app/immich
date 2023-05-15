@@ -67,7 +67,6 @@ class _$AppRouter extends RootStackRouter {
         routeData: routeData,
         child: GalleryViewerPage(
           key: args.key,
-          initialAsset: args.initialAsset,
           initialIndex: args.initialIndex,
           loadAsset: args.loadAsset,
           totalAssets: args.totalAssets,
@@ -593,7 +592,6 @@ class TabControllerRoute extends PageRouteInfo<void> {
 class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
   GalleryViewerRoute({
     Key? key,
-    required Asset initialAsset,
     required int initialIndex,
     required Asset Function(int) loadAsset,
     required int totalAssets,
@@ -602,7 +600,6 @@ class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
           path: '/gallery-viewer-page',
           args: GalleryViewerRouteArgs(
             key: key,
-            initialAsset: initialAsset,
             initialIndex: initialIndex,
             loadAsset: loadAsset,
             totalAssets: totalAssets,
@@ -615,15 +612,12 @@ class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
 class GalleryViewerRouteArgs {
   const GalleryViewerRouteArgs({
     this.key,
-    required this.initialAsset,
     required this.initialIndex,
     required this.loadAsset,
     required this.totalAssets,
   });
 
   final Key? key;
-
-  final Asset initialAsset;
 
   final int initialIndex;
 
@@ -633,7 +627,7 @@ class GalleryViewerRouteArgs {
 
   @override
   String toString() {
-    return 'GalleryViewerRouteArgs{key: $key, initialAsset: $initialAsset, initialIndex: $initialIndex, loadAsset: $loadAsset, totalAssets: $totalAssets}';
+    return 'GalleryViewerRouteArgs{key: $key, initialIndex: $initialIndex, loadAsset: $loadAsset, totalAssets: $totalAssets}';
   }
 }
 
@@ -644,9 +638,9 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
     Key? key,
     required Asset asset,
     required bool isMotionVideo,
-    required void Function() onVideoEnded,
-    void Function()? onPlaying,
-    void Function()? onPaused,
+    required dynamic onVideoEnded,
+    dynamic onPlaying,
+    dynamic onPaused,
   }) : super(
           VideoViewerRoute.name,
           path: '/video-viewer-page',
@@ -679,11 +673,11 @@ class VideoViewerRouteArgs {
 
   final bool isMotionVideo;
 
-  final void Function() onVideoEnded;
+  final dynamic onVideoEnded;
 
-  final void Function()? onPlaying;
+  final dynamic onPlaying;
 
-  final void Function()? onPaused;
+  final dynamic onPaused;
 
   @override
   String toString() {

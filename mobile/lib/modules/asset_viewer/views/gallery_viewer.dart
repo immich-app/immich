@@ -12,9 +12,7 @@ import 'package:immich_mobile/modules/asset_viewer/ui/advanced_bottom_sheet.dart
 import 'package:immich_mobile/modules/asset_viewer/ui/exif_bottom_sheet.dart';
 import 'package:immich_mobile/modules/asset_viewer/ui/top_control_app_bar.dart';
 import 'package:immich_mobile/modules/asset_viewer/views/video_viewer_page.dart';
-import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
 import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/shared/services/asset.service.dart';
 import 'package:immich_mobile/modules/home/ui/delete_dialog.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
@@ -32,26 +30,16 @@ import 'package:openapi/api.dart' as api;
 
 // ignore: must_be_immutable
 class GalleryViewerPage extends HookConsumerWidget {
-  // final List<Asset> assetList;
-  final Asset initialAsset;
-  final int initialIndex;
   final Asset Function(int index) loadAsset;
   final int totalAssets;
+  final int initialIndex;
 
   GalleryViewerPage({
     super.key,
-    // required this.assetList,
-    required this.initialAsset,
     required this.initialIndex,
     required this.loadAsset,
     required this.totalAssets,
-  })  : controller = PageController(initialPage: initialIndex),
-        currentAsset = initialAsset,
-        currentIndex = initialIndex;
-
-  Asset? assetDetail;
-  Asset currentAsset;
-  int currentIndex;
+  }) : controller = PageController(initialPage: initialIndex);
 
   final PageController controller;
 
@@ -66,6 +54,11 @@ class GalleryViewerPage extends HookConsumerWidget {
     final isPlayingVideo = useState(false);
     late Offset localPosition;
     final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
+    final currentIndex = useState(initialIndex);
+    final currentAsset = loadAsset(currentIndex.value);
+    final watchedAsset = ref.watch(assetDetailProvider(currentAsset));
+
+    Asset asset() => watchedAsset.value ?? currentAsset;
 
     showAppBar.addListener(() {
       // Change to and from immersive mode, hiding navigation and app bar
@@ -88,15 +81,9 @@ class GalleryViewerPage extends HookConsumerWidget {
       [],
     );
 
-    void toggleFavorite(Asset asset) {
-      ref.watch(favoriteProvider.notifier).toggleFavorite(asset);
-    }
-
-    void getAssetExif() async {
-      assetDetail = currentAsset;
-      assetDetail =
-          await ref.watch(assetServiceProvider).loadExif(currentAsset);
-    }
+    void toggleFavorite(Asset asset) => ref
+        .watch(assetProvider.notifier)
+        .toggleFavorite([asset], !asset.isFavorite);
 
     /// Thumbnail image of a remote asset. Required asset.isRemote
     ImageProvider remoteThumbnailImageProvider(
@@ -201,13 +188,13 @@ class GalleryViewerPage extends HookConsumerWidget {
           if (ref
               .watch(appSettingsServiceProvider)
               .getSetting<bool>(AppSettingsEnum.advancedTroubleshooting)) {
-            return AdvancedBottomSheet(assetDetail: assetDetail!);
+            return AdvancedBottomSheet(assetDetail: asset());
           }
           return Padding(
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom,
             ),
-            child: ExifBottomSheet(asset: assetDetail!),
+            child: ExifBottomSheet(asset: asset()),
           );
         },
       );
@@ -274,9 +261,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     shareAsset() {
-      ref
-          .watch(imageViewerStateProvider.notifier)
-          .shareAsset(currentAsset, context);
+      ref.watch(imageViewerStateProvider.notifier).shareAsset(asset(), context);
     }
 
     handleArchive(Asset asset) {
@@ -298,28 +283,21 @@ class GalleryViewerPage extends HookConsumerWidget {
           color: Colors.black.withOpacity(0.4),
           child: TopControlAppBar(
             isPlayingMotionVideo: isPlayingMotionVideo.value,
-            asset: currentAsset,
-            isFavorite: ref.watch(favoriteProvider).contains(
-                  currentAsset.id,
-                ),
-            onMoreInfoPressed: () {
-              showInfo();
-            },
-            onFavorite: () {
-              toggleFavorite(currentAsset);
-            },
-            onDownloadPressed: currentAsset.storage == AssetState.local
+            asset: asset(),
+            isFavorite: asset().isFavorite,
+            onMoreInfoPressed: showInfo,
+            onFavorite: asset().isRemote ? () => toggleFavorite(asset()) : null,
+            onDownloadPressed: asset().storage == AssetState.local
                 ? null
-                : () {
+                : () =>
                     ref.watch(imageViewerStateProvider.notifier).downloadAsset(
-                          currentAsset,
+                          asset(),
                           context,
-                        );
-                  },
+                        ),
             onToggleMotionVideo: (() {
               isPlayingMotionVideo.value = !isPlayingMotionVideo.value;
             }),
-            onAddToAlbumPressed: () => addToAlbum(currentAsset),
+            onAddToAlbumPressed: () => addToAlbum(asset()),
           ),
         ),
       );
@@ -346,7 +324,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               label: 'control_bottom_app_bar_share'.tr(),
               tooltip: 'control_bottom_app_bar_share'.tr(),
             ),
-            currentAsset.isArchived
+            asset().isArchived
                 ? BottomNavigationBarItem(
                     icon: const Icon(Icons.unarchive_rounded),
                     label: 'control_bottom_app_bar_unarchive'.tr(),
@@ -369,10 +347,10 @@ class GalleryViewerPage extends HookConsumerWidget {
                 shareAsset();
                 break;
               case 1:
-                handleArchive(currentAsset);
+                handleArchive(asset());
                 break;
               case 2:
-                handleDelete(currentAsset);
+                handleDelete(asset());
                 break;
             }
           },
@@ -406,29 +384,29 @@ class GalleryViewerPage extends HookConsumerWidget {
               scrollDirection: Axis.horizontal,
               onPageChanged: (value) {
                 // Precache image
-                if (currentIndex < value) {
+                if (currentIndex.value < value) {
                   // Moving forwards, so precache the next asset
                   precacheNextImage(value + 1);
                 } else {
                   // Moving backwards, so precache previous asset
                   precacheNextImage(value - 1);
                 }
-                currentIndex = value;
+                currentIndex.value = value;
                 HapticFeedback.selectionClick();
               },
               loadingBuilder: isLoadPreview.value
                   ? (context, event) {
-                      final asset = currentAsset;
-                      if (!asset.isLocal) {
+                      final a = asset();
+                      if (!a.isLocal) {
                         // Use the WEBP Thumbnail as a placeholder for the JPEG thumbnail to achieve
                         // Three-Stage Loading (WEBP -> JPEG -> Original)
                         final webPThumbnail = CachedNetworkImage(
                           imageUrl: getThumbnailUrl(
-                            asset,
+                            a,
                             type: api.ThumbnailFormat.WEBP,
                           ),
                           cacheKey: getThumbnailCacheKey(
-                            asset,
+                            a,
                             type: api.ThumbnailFormat.WEBP,
                           ),
                           httpHeaders: {'Authorization': authToken},
@@ -447,11 +425,11 @@ class GalleryViewerPage extends HookConsumerWidget {
                           // makes sense if the original is loaded in the builder
                           return CachedNetworkImage(
                             imageUrl: getThumbnailUrl(
-                              asset,
+                              a,
                               type: api.ThumbnailFormat.JPEG,
                             ),
                             cacheKey: getThumbnailCacheKey(
-                              asset,
+                              a,
                               type: api.ThumbnailFormat.JPEG,
                             ),
                             httpHeaders: {'Authorization': authToken},
@@ -465,14 +443,13 @@ class GalleryViewerPage extends HookConsumerWidget {
                         }
                       } else {
                         return Image(
-                          image: localThumbnailImageProvider(asset),
+                          image: localThumbnailImageProvider(a),
                           fit: BoxFit.contain,
                         );
                       }
                     }
                   : null,
               builder: (context, index) {
-                getAssetExif();
                 final asset = loadAsset(index);
                 if (asset.isImage && !isPlayingMotionVideo.value) {
                   // Show photo

@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 
 class FavoritesPage extends HookConsumerWidget {
@@ -40,6 +41,27 @@ class FavoritesPage extends HookConsumerWidget {
       );
     }
 
+    void unfavorite() async {
+      try {
+        if (selection.value.isNotEmpty) {
+          await ref.watch(assetProvider.notifier).toggleFavorite(
+                selection.value.toList(),
+                false,
+              );
+          final assetOrAssets = selection.value.length > 1 ? 'assets' : 'asset';
+          ImmichToast.show(
+            context: context,
+            msg:
+                'Removed ${selection.value.length} $assetOrAssets from favorites',
+            gravity: ToastGravity.CENTER,
+          );
+        }
+      } finally {
+        processing.value = false;
+        selectionEnabledHook.value = false;
+      }
+    }
+
     Widget buildBottomBar() {
       return SafeArea(
         child: Align(
@@ -60,30 +82,7 @@ class FavoritesPage extends HookConsumerWidget {
                       "Unfavorite",
                       style: TextStyle(fontSize: 14),
                     ),
-                    onTap: processing.value
-                        ? null
-                        : () async {
-                            try {
-                              if (selection.value.isNotEmpty) {
-                                await ref
-                                    .watch(favoriteProvider.notifier)
-                                    .removeFavorites(selection.value.toList());
-
-                                final assetOrAssets = selection.value.length > 1
-                                    ? 'assets'
-                                    : 'asset';
-                                ImmichToast.show(
-                                  context: context,
-                                  msg:
-                                      'Removed ${selection.value.length} $assetOrAssets from favorites',
-                                  gravity: ToastGravity.CENTER,
-                                );
-                              }
-                            } finally {
-                              processing.value = false;
-                              selectionEnabledHook.value = false;
-                            }
-                          },
+                    onTap: processing.value ? null : unfavorite,
                   )
                 ],
               ),

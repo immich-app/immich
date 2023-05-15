@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
@@ -61,7 +60,6 @@ class ThumbnailImage extends HookConsumerWidget {
         } else {
           AutoRouter.of(context).push(
             GalleryViewerRoute(
-              initialAsset: asset,
               initialIndex: index,
               loadAsset: loadAsset,
               totalAssets: totalAssets,
@@ -138,7 +136,7 @@ class ThumbnailImage extends HookConsumerWidget {
                   size: 18,
                 ),
               ),
-            if (ref.watch(favoriteProvider).contains(asset.id))
+            if (asset.isFavorite)
               const Positioned(
                 left: 10,
                 bottom: 5,
