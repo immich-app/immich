@@ -11,6 +11,7 @@ import {
   TranscodePreset,
   UserEntity,
   UserTokenEntity,
+  AssetFaceEntity,
 } from '@app/infra/entities';
 import {
   AlbumResponseDto,
@@ -882,5 +883,15 @@ export const partnerStub = {
     sharedById: userEntityStub.user1.id,
     sharedWithId: userEntityStub.admin.id,
     sharedWith: userEntityStub.admin,
+  }),
+};
+
+export const faceStub = {
+  face1: Object.freeze<AssetFaceEntity>({
+    assetId: assetEntityStub.image.id,
+    asset: assetEntityStub.image,
+    personId: personStub.withName.id,
+    person: personStub.withName,
+    embedding: [1, 2, 3, 4],
   }),
 };

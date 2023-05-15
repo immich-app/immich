@@ -6,6 +6,7 @@ import {
   assetEntityStub,
   asyncTick,
   authStub,
+  faceStub,
   newAlbumRepositoryMock,
   newAssetRepositoryMock,
   newFaceRepositoryMock,
@@ -286,6 +287,84 @@ describe(SearchService.name, () => {
 
     it('should remove the asset', () => {
       sut.handleRemoveAsset({ ids: ['asset1'] });
+    });
+  });
+
+  describe('handleIndexFaces', () => {
+    it('should call done, even when there are no faces', async () => {
+      faceMock.getAll.mockResolvedValue([]);
+
+      await sut.handleIndexFaces();
+
+      expect(searchMock.importFaces).toHaveBeenCalledWith([], true);
+    });
+
+    it('should index all the faces', async () => {
+      faceMock.getAll.mockResolvedValue([faceStub.face1]);
+
+      await sut.handleIndexFaces();
+
+      expect(searchMock.importFaces.mock.calls).toEqual([
+        [
+          [
+            {
+              id: 'asset-id|person-1',
+              ownerId: 'user-id',
+              assetId: 'asset-id',
+              personId: 'person-1',
+              embedding: [1, 2, 3, 4],
+            },
+          ],
+          false,
+        ],
+        [[], true],
+      ]);
+    });
+
+    it('should log an error', async () => {
+      faceMock.getAll.mockResolvedValue([faceStub.face1]);
+      searchMock.importFaces.mockRejectedValue(new Error('import failed'));
+
+      await sut.handleIndexFaces();
+
+      expect(searchMock.importFaces).toHaveBeenCalled();
+    });
+
+    it('should skip if search is disabled', async () => {
+      const sut = makeSut('false');
+
+      await sut.handleIndexFaces();
+
+      expect(searchMock.importFaces).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('handleIndexAsset', () => {
+    it('should skip if search is disabled', () => {
+      const sut = makeSut('false');
+      sut.handleIndexFace({ assetId: 'asset-1', personId: 'person-1' });
+
+      expect(searchMock.importFaces).not.toHaveBeenCalled();
+      expect(faceMock.getByIds).not.toHaveBeenCalled();
+    });
+
+    it('should index the face', () => {
+      faceMock.getByIds.mockResolvedValue([faceStub.face1]);
+
+      sut.handleIndexFace({ assetId: 'asset-1', personId: 'person-1' });
+
+      expect(faceMock.getByIds).toHaveBeenCalledWith([{ assetId: 'asset-1', personId: 'person-1' }]);
+    });
+  });
+
+  describe('handleRemoveFace', () => {
+    it('should skip if search is disabled', () => {
+      const sut = makeSut('false');
+      sut.handleRemoveFace({ assetId: 'asset-1', personId: 'person-1' });
+    });
+
+    it('should remove the face', () => {
+      sut.handleRemoveFace({ assetId: 'asset-1', personId: 'person-1' });
     });
   });
 
