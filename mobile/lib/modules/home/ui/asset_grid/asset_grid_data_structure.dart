@@ -77,8 +77,8 @@ class RenderList {
 
         final bool forward = _bufOffset < offset;
         // if the requested offset is greater than the cached offset, the user scrolls forward "down"
-        const batchSize = 128;
-        const oppositeSize = 32;
+        const batchSize = 256;
+        const oppositeSize = 64;
 
         // make sure to load a meaningful amount of data (and not only the requested slice)
         // otherwise, each call to [loadAssets] would result in DB call trashing performance
@@ -159,6 +159,7 @@ class RenderList {
             date: date,
             count: count,
             totalCount: total,
+            offset: i,
           ),
         );
       }
