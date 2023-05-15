@@ -62,7 +62,7 @@
 							{user.firstName}
 							{user.lastName}
 						</p>
-						<p class="text-xs ">
+						<p class="text-xs">
 							{user.email}
 						</p>
 					</div>
