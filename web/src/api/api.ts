@@ -98,6 +98,11 @@ export class ImmichApi {
 		const path = `/user/profile-image/${userId}`;
 		return this.createUrl(path);
 	}
+
+	public getPeopleThumbnailUrl(personId: string) {
+		const path = `/person/${personId}/thumbnail`;
+		return this.createUrl(path);
+	}
 }
 
 export const api = new ImmichApi({ basePath: '/api' });
