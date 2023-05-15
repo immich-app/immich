@@ -22,7 +22,7 @@
 		if (!menuEl) return;
 
 		const rect = menuEl.getBoundingClientRect();
-		x = Math.min(window.innerWidth - rect.width, x);
+		x = Math.min(window.innerWidth - rect.width, x - rect.width);
 		if (y > window.innerHeight - rect.height) {
 			y -= rect.height;
 		}
