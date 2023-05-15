@@ -35,7 +35,7 @@
 	</div>
 
 	<div
-		class="transition-[height] group-hover:sm:overflow-visible md:overflow-visible overflow-hidden duration-100 delay-1000  sm:group-hover:h-auto md:h-auto h-0"
+		class="transition-[height] group-hover:sm:overflow-visible md:overflow-visible overflow-hidden duration-100 delay-1000 sm:group-hover:h-auto md:h-auto h-0"
 	>
 		{#if $$slots.moreInformation}
 			<div

@@ -6,7 +6,7 @@
 
 <section class="h-screen w-screen flex place-items-center place-content-center">
 	<div class="flex flex-col place-items-center gap-8 text-center max-w-[350px]">
-		<div class="flex place-items-center place-content-center ">
+		<div class="flex place-items-center place-content-center">
 			<ImmichLogo class="text-center" height="200" width="200" />
 		</div>
 		<h1

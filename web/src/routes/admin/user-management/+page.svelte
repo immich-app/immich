@@ -191,13 +191,13 @@
 							{#if !isDeleted(user)}
 								<button
 									on:click={() => editUserHandler(user)}
-									class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700  rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
+									class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
 								>
 									<PencilOutline size="16" />
 								</button>
 								<button
 									on:click={() => deleteUserHandler(user)}
-									class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700  rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
+									class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
 								>
 									<TrashCanOutline size="16" />
 								</button>
@@ -205,7 +205,7 @@
 							{#if isDeleted(user)}
 								<button
 									on:click={() => restoreUserHandler(user)}
-									class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700  rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
+									class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
 									title={`scheduled removal on ${getDeleteDate(user)}`}
 								>
 									<DeleteRestore size="16" />
@@ -252,13 +252,13 @@
 							{#if !isDeleted(user)}
 								<button
 									on:click={() => editUserHandler(user)}
-									class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700  rounded-full sm:p-3 p-2 max-sm:mb-1 transition-all duration-150 hover:bg-immich-primary/75"
+									class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full sm:p-3 p-2 max-sm:mb-1 transition-all duration-150 hover:bg-immich-primary/75"
 								>
 									<PencilOutline size="16" />
 								</button>
 								<button
 									on:click={() => deleteUserHandler(user)}
-									class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700  rounded-full sm:p-3 p-2 transition-all duration-150 hover:bg-immich-primary/75"
+									class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full sm:p-3 p-2 transition-all duration-150 hover:bg-immich-primary/75"
 								>
 									<TrashCanOutline size="16" />
 								</button>
@@ -266,7 +266,7 @@
 							{#if isDeleted(user)}
 								<button
 									on:click={() => restoreUserHandler(user)}
-									class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700  rounded-full sm:p-3 p-2 transition-all duration-150 hover:bg-immich-primary/75"
+									class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full sm:p-3 p-2 transition-all duration-150 hover:bg-immich-primary/75"
 									title={`scheduled removal on ${getDeleteDate(user)}`}
 								>
 									<DeleteRestore size="16" />

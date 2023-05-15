@@ -56,7 +56,7 @@
 						selected = option;
 						isOpen = false;
 					}}
-					class="bg-gray-200 dark:bg-gray-500 dark:hover:bg-gray-700 w-full flex p-2 hover:bg-gray-300 transition-all "
+					class="bg-gray-200 dark:bg-gray-500 dark:hover:bg-gray-700 w-full flex p-2 hover:bg-gray-300 transition-all"
 				>
 					{option}
 				</button>

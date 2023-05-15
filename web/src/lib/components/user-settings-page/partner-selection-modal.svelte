@@ -62,7 +62,7 @@
 							{user.firstName}
 							{user.lastName}
 						</p>
-						<p class="text-xs ">
+						<p class="text-xs">
 							{user.email}
 						</p>
 					</div>
@@ -75,7 +75,7 @@
 		{/if}
 
 		{#if selectedUsers.length > 0}
-			<div class="flex place-content-end p-5 ">
+			<div class="flex place-content-end p-5">
 				<Button size="sm" rounded="lg" on:click={() => dispatch('add-users', selectedUsers)}>
 					Add
 				</Button>

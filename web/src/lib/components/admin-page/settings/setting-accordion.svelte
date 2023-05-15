@@ -20,7 +20,7 @@
 		<button
 			on:click={toggle}
 			aria-expanded={isOpen}
-			class="immich-circle-icon-button hover:bg-immich-primary/10 dark:text-immich-dark-fg hover:dark:bg-immich-dark-primary/20  rounded-full p-3 flex place-items-center place-content-center transition-all"
+			class="immich-circle-icon-button hover:bg-immich-primary/10 dark:text-immich-dark-fg hover:dark:bg-immich-dark-primary/20 rounded-full p-3 flex place-items-center place-content-center transition-all"
 		>
 			<svg
 				style="tran"
