@@ -18,21 +18,9 @@ gunzip < /path/to/backup/dump.sql.gz | docker exec -i immich_postgres psql -U po
 
 The database dumps can also be automated (using [this image](https://github.com/prodrigestivill/docker-postgres-backup-local)) by editing the docker compose file to match the following:
 
-```
-container_name: immich_postgres
-    image: postgres:14
-    env_file:
-      - .env
-    environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_DB: ${DB_DATABASE_NAME}
-      PGDATA: /var/lib/postgresql/data
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./db_dumps:/db_dumps
-    restart: always
-
+```yaml
+services:
+  ...
   backup:
     container_name: immich_db_dumper
     image: prodrigestivill/postgres-backup-local

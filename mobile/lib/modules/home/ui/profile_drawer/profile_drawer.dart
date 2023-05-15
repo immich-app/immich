@@ -17,7 +17,6 @@ class ProfileDrawer extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     buildSignOutButton() {
       return ListTile(
-        horizontalTitleGap: 0,
         leading: SizedBox(
           height: double.infinity,
           child: Icon(
@@ -48,7 +47,6 @@ class ProfileDrawer extends HookConsumerWidget {
 
     buildSettingButton() {
       return ListTile(
-        horizontalTitleGap: 0,
         leading: SizedBox(
           height: double.infinity,
           child: Icon(
@@ -72,7 +70,6 @@ class ProfileDrawer extends HookConsumerWidget {
 
     buildAppLogButton() {
       return ListTile(
-        horizontalTitleGap: 0,
         leading: SizedBox(
           height: double.infinity,
           child: Icon(

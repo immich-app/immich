@@ -3,7 +3,6 @@
 	import type { UserResponseDto } from '@api';
 	import NavigationBar from '../shared-components/navigation-bar/navigation-bar.svelte';
 	import SideBar from '../shared-components/side-bar/side-bar.svelte';
-
 	export let user: UserResponseDto;
 	export let hideNavbar = false;
 	export let showUploadButton = false;
@@ -26,9 +25,8 @@
 	class="grid md:grid-cols-[250px_auto] grid-cols-[70px_auto] relative pt-[4.25rem] h-screen bg-immich-bg dark:bg-immich-dark-bg immich-scrollbar"
 >
 	<SideBar />
-
 	<slot name="content">
-		<section class="my-8 mx-4 bg-immich-bg dark:bg-immich-dark-bg">
+		<section class="overflow-y-auto my-8 mx-4 bg-immich-bg dark:bg-immich-dark-bg">
 			{#if title}
 				<div class="flex justify-between place-items-center dark:text-immich-dark-fg px-4 h-10">
 					<p class="font-medium">{title}</p>

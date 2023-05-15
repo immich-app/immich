@@ -12,7 +12,8 @@ import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
-class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
+class AlbumViewerAppbar extends HookConsumerWidget
+    implements PreferredSizeWidget {
   const AlbumViewerAppbar({
     Key? key,
     required this.album,

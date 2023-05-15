@@ -282,6 +282,39 @@ class AuthenticationApi {
     }
   }
 
+  /// Performs an HTTP 'DELETE /auth/devices' operation and returns the [Response].
+  Future<Response> logoutAuthDevicesWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/auth/devices';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<void> logoutAuthDevices() async {
+    final response = await logoutAuthDevicesWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'POST /auth/validateToken' operation and returns the [Response].
   Future<Response> validateAccessTokenWithHttpInfo() async {
     // ignore: prefer_const_declarations

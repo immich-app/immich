@@ -6,13 +6,17 @@
 	export let hoverColor = '#e2e7e9';
 	export let size = '24';
 	export let title = '';
+	export let isOpacity = false;
 </script>
 
 <button
 	{title}
 	style:backgroundColor
 	style:--immich-icon-button-hover-color={hoverColor}
-	class="immich-circle-icon-button dark:text-immich-dark-fg hover:dark:text-immich-dark-gray rounded-full p-3 flex place-items-center place-content-center transition-all"
+	class="dark:text-immich-dark-fg rounded-full p-3 flex place-items-center place-content-center transition-all
+	{isOpacity
+		? 'hover:bg-immich-bg/30'
+		: 'immich-circle-icon-button hover:dark:text-immich-dark-gray'}"
 	on:click
 >
 	<svelte:component this={logo} {size} />

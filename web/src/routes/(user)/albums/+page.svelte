@@ -62,14 +62,18 @@
 	</div>
 
 	<!-- Album Card -->
-	<div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-8">
+	<div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
 		{#each $albums as album (album.id)}
 			<a
 				data-sveltekit-preload-data="hover"
 				href={`albums/${album.id}`}
 				animate:flip={{ duration: 200 }}
 			>
-				<AlbumCard {album} on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)} />
+				<AlbumCard
+					{album}
+					on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)}
+					user={data.user}
+				/>
 			</a>
 		{/each}
 	</div>

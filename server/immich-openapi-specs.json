@@ -393,6 +393,29 @@
             "api_key": []
           }
         ]
+      },
+      "delete": {
+        "operationId": "logoutAuthDevices",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
       }
     },
     "/auth/devices/{id}": {
@@ -3949,7 +3972,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.54.1",
+    "version": "1.55.1",
     "contact": {}
   },
   "tags": [],

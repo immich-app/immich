@@ -91,26 +91,26 @@ class SystemConfigTemplateStorageOptionDto {
       }());
 
       return SystemConfigTemplateStorageOptionDto(
-        yearOptions: json[r'yearOptions'] is List
-            ? (json[r'yearOptions'] as List).cast<String>()
+        yearOptions: json[r'yearOptions'] is Iterable
+            ? (json[r'yearOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        monthOptions: json[r'monthOptions'] is List
-            ? (json[r'monthOptions'] as List).cast<String>()
+        monthOptions: json[r'monthOptions'] is Iterable
+            ? (json[r'monthOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        dayOptions: json[r'dayOptions'] is List
-            ? (json[r'dayOptions'] as List).cast<String>()
+        dayOptions: json[r'dayOptions'] is Iterable
+            ? (json[r'dayOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        hourOptions: json[r'hourOptions'] is List
-            ? (json[r'hourOptions'] as List).cast<String>()
+        hourOptions: json[r'hourOptions'] is Iterable
+            ? (json[r'hourOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        minuteOptions: json[r'minuteOptions'] is List
-            ? (json[r'minuteOptions'] as List).cast<String>()
+        minuteOptions: json[r'minuteOptions'] is Iterable
+            ? (json[r'minuteOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        secondOptions: json[r'secondOptions'] is List
-            ? (json[r'secondOptions'] as List).cast<String>()
+        secondOptions: json[r'secondOptions'] is Iterable
+            ? (json[r'secondOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        presetOptions: json[r'presetOptions'] is List
-            ? (json[r'presetOptions'] as List).cast<String>()
+        presetOptions: json[r'presetOptions'] is Iterable
+            ? (json[r'presetOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
       );
     }

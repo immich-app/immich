@@ -1,17 +1,9 @@
-import { api, AddAssetsResponseDto, AssetResponseDto, ThumbnailFormat } from '@api';
+import { api, AddAssetsResponseDto, AssetResponseDto } from '@api';
 import {
 	notificationController,
 	NotificationType
 } from '$lib/components/shared-components/notification/notification';
 import { downloadAssets } from '$lib/stores/download';
-
-export const getThumbnailUrl = (assetId: string, format: ThumbnailFormat, key?: string) => {
-	let url = `/api/asset/thumbnail/${assetId}?format=${format}`;
-	if (key) {
-		url += `&key=${key}`;
-	}
-	return url;
-};
 
 export const addAssetsToAlbum = async (
 	albumId: string,

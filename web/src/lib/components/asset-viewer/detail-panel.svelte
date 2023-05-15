@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { locale } from '$lib/stores/preferences.store';
-	import { AlbumResponseDto, AssetResponseDto, api } from '@api';
 	import type { LatLngTuple } from 'leaflet';
 	import { DateTime } from 'luxon';
-	import { createEventDispatcher } from 'svelte';
 	import Calendar from 'svelte-material-icons/Calendar.svelte';
 	import CameraIris from 'svelte-material-icons/CameraIris.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
 	import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
+	import { createEventDispatcher } from 'svelte';
+	import { AssetResponseDto, AlbumResponseDto, api, ThumbnailFormat } from '@api';
 	import { asByteUnitString } from '../../utils/byte-units';
 	import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
 
@@ -267,7 +267,8 @@
 						<img
 							alt={album.albumName}
 							class="w-[50px] h-[50px] object-cover rounded"
-							src={`/api/asset/thumbnail/${album.albumThumbnailAssetId}?format=JPEG`}
+							src={album.albumThumbnailAssetId &&
+								api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Jpeg)}
 							draggable="false"
 						/>
 					</div>
