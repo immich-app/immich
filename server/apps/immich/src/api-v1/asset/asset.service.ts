@@ -364,7 +364,6 @@ export class AssetService {
         }
 
         await this._assetRepository.remove(asset);
-        await this.jobRepository.queue({ name: JobName.ASSET_DELETE_CHECK, data: { asset } });
         await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [id] } });
 
         result.push({ id, status: DeleteAssetStatusEnum.SUCCESS });

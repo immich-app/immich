@@ -18,9 +18,6 @@ export enum JobCommand {
 }
 
 export enum JobName {
-  // asset deletion
-  ASSET_DELETE_CHECK = 'asset-delete-check',
-
   // upload
   ASSET_UPLOADED = 'asset-uploaded',
 
@@ -56,6 +53,7 @@ export enum JobName {
   QUEUE_RECOGNIZE_FACES = 'queue-recognize-faces',
   RECOGNIZE_FACES = 'recognize-faces',
   GENERATE_FACE_THUMBNAIL = 'generate-face-thumbnail',
+  PERSON_CLEANUP = 'person-cleanup',
 
   // cleanup
   DELETE_FILES = 'delete-files',

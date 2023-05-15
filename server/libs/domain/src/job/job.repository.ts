@@ -69,7 +69,7 @@ export type JobItem =
   | { name: JobName.DELETE_FILES; data: IDeleteFilesJob }
 
   // Asset Deletion
-  | { name: JobName.ASSET_DELETE_CHECK; data: IAssetJob }
+  | { name: JobName.PERSON_CLEANUP }
 
   // Search
   | { name: JobName.SEARCH_INDEX_ASSETS }

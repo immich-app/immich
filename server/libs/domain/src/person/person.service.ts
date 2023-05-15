@@ -1,4 +1,3 @@
-import { AssetEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AssetResponseDto, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
@@ -63,25 +62,16 @@ export class PersonService {
     return mapPerson(updatedPerson);
   }
 
-  async removePersonWithNoFaceData(asset: AssetEntity): Promise<void> {
-    if (!asset.faces.length) {
-      return;
-    }
-
-    asset.faces.forEach(async (assetFaces) => {
-      const facesCount = await this.repository.getFacesCountById(assetFaces.personId);
-
-      if (facesCount === 0) {
-        const person = await this.repository.getById(asset.ownerId, assetFaces.personId);
-        if (!person) {
-          return;
-        }
-
-        this.logger.debug(
-          `Removing person ${assetFaces.personId} ${assetFaces.person.name} because it has no faces associated`,
-        );
+  async handlePersonCleanup(): Promise<void> {
+    const people = await this.repository.getAllWithoutFaces();
+    for (const person of people) {
+      this.logger.debug(`Person ${person.name || person.id} no longer has any faces, deleting.`);
+      try {
         await this.repository.delete(person);
+        await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [person.thumbnailPath] } });
+      } catch (error: Error | any) {
+        this.logger.error(`Unable to delete person: ${error}`, error?.stack);
       }
-    });
+    }
   }
 }

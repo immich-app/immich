@@ -8,9 +8,9 @@ export interface PersonSearchOptions {
 
 export interface IPersonRepository {
   getAll(userId: string, options: PersonSearchOptions): Promise<PersonEntity[]>;
+  getAllWithoutFaces(): Promise<PersonEntity[]>;
   getById(userId: string, personId: string): Promise<PersonEntity | null>;
   getAssets(userId: string, id: string): Promise<AssetEntity[]>;
-  getFacesCountById(id: string): Promise<number>;
 
   create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   update(entity: Partial<PersonEntity>): Promise<PersonEntity>;

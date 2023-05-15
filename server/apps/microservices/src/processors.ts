@@ -48,14 +48,19 @@ export class BackgroundTaskProcessor {
     await this.systemConfigService.refreshConfig();
   }
 
+  @Process(JobName.USER_DELETE_CHECK)
+  async onUserDeleteCheck() {
+    await this.userService.handleUserDeleteCheck();
+  }
+
   @Process(JobName.USER_DELETION)
   async onUserDelete(job: Job<IUserDeletionJob>) {
     await this.userService.handleUserDelete(job.data);
   }
 
-  @Process(JobName.ASSET_DELETE_CHECK)
-  async onAssetDelete(job: Job<IAssetJob>) {
-    await this.personService.removePersonWithNoFaceData(job.data.asset);
+  @Process(JobName.PERSON_CLEANUP)
+  async onPersonCleanup() {
+    await this.personService.handlePersonCleanup();
   }
 }
 

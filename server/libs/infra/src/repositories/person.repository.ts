@@ -10,10 +10,6 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
   ) {}
 
-  getFacesCountById(id: string): Promise<number> {
-    return this.assetFaceRepository.count({ where: { personId: id } });
-  }
-
   delete(entity: PersonEntity): Promise<PersonEntity | null> {
     return this.personRepository.remove(entity);
   }
@@ -30,6 +26,15 @@ export class PersonRepository implements IPersonRepository {
       .where('person.ownerId = :userId', { userId })
       .orderBy('COUNT(face.assetId)', 'DESC')
       .having('COUNT(face.assetId) >= :faces', { faces: options?.minimumFaceCount || 1 })
+      .groupBy('person.id')
+      .getMany();
+  }
+
+  getAllWithoutFaces(): Promise<PersonEntity[]> {
+    return this.personRepository
+      .createQueryBuilder('person')
+      .leftJoin('person.faces', 'face')
+      .having('COUNT(face.assetId) = 0')
       .groupBy('person.id')
       .getMany();
   }

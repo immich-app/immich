@@ -68,10 +68,6 @@ export class JobRepository implements IJobRepository {
 
   async queue(item: JobItem): Promise<void> {
     switch (item.name) {
-      case JobName.ASSET_DELETE_CHECK:
-        await this.backgroundTask.add(item.name, item.data, { jobId: item.data.asset.id });
-        break;
-
       case JobName.ASSET_UPLOADED:
         await this.backgroundTask.add(item.name, item.data, { jobId: item.data.asset.id });
         break;
@@ -101,6 +97,10 @@ export class JobRepository implements IJobRepository {
       case JobName.RECOGNIZE_FACES:
       case JobName.GENERATE_FACE_THUMBNAIL:
         await this.recognizeFaces.add(item.name, item.data);
+        break;
+
+      case JobName.PERSON_CLEANUP:
+        await this.backgroundTask.add(item.name);
         break;
 
       case JobName.QUEUE_GENERATE_THUMBNAILS:
