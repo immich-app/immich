@@ -51,10 +51,17 @@ If you only want to do web development connected to an existing, remote backend,
 2. Install web dependencies - `npm i`
 3. Start the web development server
 
-```
+
+MacOS/Linux:
+
+```bash
 PUBLIC_IMMICH_SERVER_URL=https://demo.immich.app/api npm run dev
 ```
 
+Windows:
+```powershell
+$env:PUBLIC_IMMICH_SERVER_URL="https://demo.immich.app/api"; npm run dev
+```
 ## IDE setup
 
 ### Lint / format extensions
