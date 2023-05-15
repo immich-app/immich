@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/search/providers/all_video_assets.provider.dart';
-import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 class AllVideosPage extends HookConsumerWidget {
@@ -13,7 +11,6 @@ class AllVideosPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(appSettingsServiceProvider);
     final videos = ref.watch(allVideoAssetsProvider);
 
     return Scaffold(
@@ -27,10 +24,6 @@ class AllVideosPage extends HookConsumerWidget {
       body: videos.when(
         data: (assets) => ImmichAssetGrid(
           assets: assets,
-          assetsPerRow: settings.getSetting(AppSettingsEnum.tilesPerRow),
-          dynamicLayout: settings.getSetting(AppSettingsEnum.dynamicLayout),
-          showStorageIndicator:
-              settings.getSetting(AppSettingsEnum.storageIndicator),
         ),
         error: (e, s) => Text(e.toString()),
         loading: () => const Center(

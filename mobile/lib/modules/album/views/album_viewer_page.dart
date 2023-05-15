@@ -14,8 +14,6 @@ import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart'
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_viewer_appbar.dart';
-import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -32,7 +30,6 @@ class AlbumViewerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     FocusNode titleFocusNode = useFocusNode();
     final album = ref.watch(sharedAlbumDetailProvider(albumId));
-    final settings = ref.watch(appSettingsServiceProvider);
     final userId = ref.watch(authenticationProvider).userId;
     final selection = useState<Set<Asset>>({});
     final multiSelectEnabled = useState(false);
@@ -262,11 +259,6 @@ class AlbumViewerPage extends HookConsumerWidget {
               ],
               body: ImmichAssetGrid(
                 renderList: data.renderList,
-                showStorageIndicator:
-                    settings.getSetting(AppSettingsEnum.storageIndicator),
-                assetsPerRow: settings.getSetting(AppSettingsEnum.tilesPerRow),
-                dynamicLayout:
-                    settings.getSetting(AppSettingsEnum.dynamicLayout),
                 listener: selectionListener,
                 selectionActive: multiSelectEnabled.value,
                 showMultiSelectIndicator: false,

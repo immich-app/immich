@@ -16,8 +16,6 @@ import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart'
 import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
 import 'package:immich_mobile/modules/home/ui/home_page_app_bar.dart';
 import 'package:immich_mobile/modules/home/ui/profile_drawer/profile_drawer.dart';
-import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -34,7 +32,6 @@ class HomePage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final appSettingService = ref.watch(appSettingsServiceProvider);
     final multiselectEnabled = ref.watch(multiselectProvider.notifier);
     final selectionEnabledHook = useState(false);
 
@@ -307,12 +304,6 @@ class HomePage extends HookConsumerWidget {
             ref.watch(assetsProvider).when(
                   data: (data) => ImmichAssetGrid(
                     renderList: data,
-                    assetsPerRow: appSettingService
-                        .getSetting(AppSettingsEnum.tilesPerRow),
-                    showStorageIndicator: appSettingService
-                        .getSetting(AppSettingsEnum.storageIndicator),
-                    dynamicLayout: appSettingService
-                        .getSetting(AppSettingsEnum.dynamicLayout),
                     listener: selectionListener,
                     selectionActive: selectionEnabledHook.value,
                     onRefresh: refreshAssets,

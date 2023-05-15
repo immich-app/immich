@@ -6,8 +6,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/models/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
-import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 
@@ -24,7 +22,6 @@ class AssetSelectionPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final renderList = ref.watch(remoteAssetsProvider);
-    final settings = ref.watch(appSettingsServiceProvider);
     final selected = useState<Set<Asset>>(existingAssets);
     final selectionEnabledHook = useState(true);
 
@@ -35,10 +32,6 @@ class AssetSelectionPage extends HookConsumerWidget {
     Widget buildBody(RenderList renderList) {
       return ImmichAssetGrid(
         renderList: renderList,
-        assetsPerRow: settings.getSetting(AppSettingsEnum.tilesPerRow),
-        showStorageIndicator:
-            settings.getSetting(AppSettingsEnum.storageIndicator),
-        dynamicLayout: settings.getSetting(AppSettingsEnum.dynamicLayout),
         listener: (active, assets) {
           selectionEnabledHook.value = active;
           selected.value = assets;

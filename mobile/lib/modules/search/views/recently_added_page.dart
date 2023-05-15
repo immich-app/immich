@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/search/providers/recently_added.provider.dart';
-import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 class RecentlyAddedPage extends HookConsumerWidget {
@@ -13,7 +11,6 @@ class RecentlyAddedPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(appSettingsServiceProvider);
     final recents = ref.watch(recentlyAddedProvider);
 
     return Scaffold(
@@ -27,10 +24,6 @@ class RecentlyAddedPage extends HookConsumerWidget {
       body: recents.when(
         data: (searchResponse) => ImmichAssetGrid(
           assets: searchResponse,
-          assetsPerRow: settings.getSetting(AppSettingsEnum.tilesPerRow),
-          dynamicLayout: settings.getSetting(AppSettingsEnum.dynamicLayout),
-          showStorageIndicator:
-              settings.getSetting(AppSettingsEnum.storageIndicator),
         ),
         error: (e, s) => Text(e.toString()),
         loading: () => const Center(

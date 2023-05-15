@@ -21,7 +21,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
   final Future<void> Function()? onRefresh;
   final Set<Asset>? preselectedAssets;
   final bool canDeselect;
-  final bool dynamicLayout;
+  final bool? dynamicLayout;
   final bool showMultiSelectIndicator;
   final void Function(ItemPosition start, ItemPosition end)?
       visibleItemsListener;
@@ -38,7 +38,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
     this.selectionActive = false,
     this.preselectedAssets,
     this.canDeselect = true,
-    this.dynamicLayout = true,
+    this.dynamicLayout,
     this.showMultiSelectIndicator = true,
     this.visibleItemsListener,
   });
@@ -75,35 +75,8 @@ class ImmichAssetGrid extends HookConsumerWidget {
       return true;
     }
 
-    if (renderList != null) {
+    Widget buildAssetGridView(RenderList renderList) {
       return WillPopScope(
-        onWillPop: onWillPop,
-        child: HeroMode(
-          enabled: enableHeroAnimations.value,
-          child: ImmichAssetGridView(
-            onRefresh: onRefresh,
-            assetsPerRow: assetsPerRow ??
-                settings.getSetting(AppSettingsEnum.tilesPerRow),
-            listener: listener,
-            showStorageIndicator: showStorageIndicator ??
-                settings.getSetting(AppSettingsEnum.storageIndicator),
-            renderList: renderList!,
-            margin: margin,
-            selectionActive: selectionActive,
-            preselectedAssets: preselectedAssets,
-            canDeselect: canDeselect,
-            dynamicLayout: dynamicLayout,
-            showMultiSelectIndicator: showMultiSelectIndicator,
-            visibleItemsListener: visibleItemsListener,
-          ),
-        ),
-      );
-    }
-
-    final renderListFuture = ref.watch(renderListProvider(assets!));
-
-    return renderListFuture.when(
-      data: (renderList) => WillPopScope(
         onWillPop: onWillPop,
         child: HeroMode(
           enabled: enableHeroAnimations.value,
@@ -119,12 +92,20 @@ class ImmichAssetGrid extends HookConsumerWidget {
             selectionActive: selectionActive,
             preselectedAssets: preselectedAssets,
             canDeselect: canDeselect,
-            dynamicLayout: dynamicLayout,
+            dynamicLayout: dynamicLayout ??
+                settings.getSetting(AppSettingsEnum.dynamicLayout),
             showMultiSelectIndicator: showMultiSelectIndicator,
             visibleItemsListener: visibleItemsListener,
           ),
         ),
-      ),
+      );
+    }
+
+    if (renderList != null) return buildAssetGridView(renderList!);
+
+    final renderListFuture = ref.watch(renderListProvider(assets!));
+    return renderListFuture.when(
+      data: (renderList) => buildAssetGridView(renderList),
       error: (err, stack) => Center(child: Text("$err")),
       loading: () => const Center(
         child: ImmichLoadingIndicator(),

@@ -6,8 +6,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/archive/providers/archive_asset_provider.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
-import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
-import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
@@ -18,7 +16,6 @@ class ArchivePage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(appSettingsServiceProvider);
     final archivedAssets = ref.watch(archiveProvider);
     final selectionEnabledHook = useState(false);
     final selection = useState(<Asset>{});
@@ -121,12 +118,6 @@ class ArchivePage extends HookConsumerWidget {
             : Stack(
                 children: [
                   ImmichAssetGrid(
-                    assetsPerRow:
-                        settings.getSetting(AppSettingsEnum.tilesPerRow),
-                    dynamicLayout:
-                        settings.getSetting(AppSettingsEnum.dynamicLayout),
-                    showStorageIndicator:
-                        settings.getSetting(AppSettingsEnum.storageIndicator),
                     renderList: data,
                     listener: selectionListener,
                     selectionActive: selectionEnabledHook.value,
