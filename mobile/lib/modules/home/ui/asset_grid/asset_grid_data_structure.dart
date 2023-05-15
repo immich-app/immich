@@ -166,12 +166,11 @@ class RenderList {
       return RenderList(elements, query, assets);
     }
 
-    final formatSameYear = groupBy == GroupAssetsBy.month
-        ? DateFormat.MMMM()
-        : DateFormat.MMMMEEEEd();
+    final formatSameYear =
+        groupBy == GroupAssetsBy.month ? DateFormat.MMMM() : DateFormat.MMMEd();
     final formatOtherYear = groupBy == GroupAssetsBy.month
         ? DateFormat.yMMMM()
-        : DateFormat.yMMMMEEEEd();
+        : DateFormat.yMMMEd();
     final currentYear = DateTime.now().year;
     final formatMergedSameYear = DateFormat.MMMd();
     final formatMergedOtherYear = DateFormat.yMMMd();
