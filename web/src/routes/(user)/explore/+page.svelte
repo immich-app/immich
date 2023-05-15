@@ -45,7 +45,7 @@
 </script>
 
 <UserPageLayout user={data.user} title={data.meta.title}>
-	<div class="mx-4 flex flex-col">
+	<div class="mx-4">
 		{#if people.length > 0}
 			<div class="mb-6 mt-2">
 				<div>
@@ -53,19 +53,17 @@
 				</div>
 				<div class="flex flex-row flex-wrap gap-4">
 					{#each people as person (person.id)}
-						<div class="text-center">
-							<a href="/people/{person.id}">
-								<ImageThumbnail
-									circle
-									shadow
-									url={api.getPeopleThumbnailUrl(person.id)}
-									altText={person.name}
-									widthStyle="100px"
-									heightStyle="100px"
-								/>
-								<p class="font-medium mt-1 text-sm dark:text-white">{person.name}</p>
-							</a>
-						</div>
+						<a href="/people/{person.id}" class="w-[100px] text-center">
+							<ImageThumbnail
+								circle
+								shadow
+								url={api.getPeopleThumbnailUrl(person.id)}
+								altText={person.name}
+								widthStyle="100px"
+								heightStyle="100px"
+							/>
+							<p class="font-medium mt-2 text-ellipsis text-sm dark:text-white">{person.name}</p>
+						</a>
 					{/each}
 				</div>
 			</div>
