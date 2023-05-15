@@ -7,7 +7,7 @@
 	export let showResetToDefault = true;
 </script>
 
-<div class="flex justify-between gap-2  mt-8">
+<div class="flex justify-between gap-2 mt-8">
 	<div class="left">
 		{#if showResetToDefault}
 			<button

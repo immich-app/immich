@@ -7,6 +7,7 @@ import { FacialRecognitionService } from './facial-recognition';
 import { JobService } from './job';
 import { MediaService } from './media';
 import { OAuthService } from './oauth';
+import { PartnerService } from './partner';
 import { PersonService } from './person';
 import { SearchService } from './search';
 import { ServerInfoService } from './server-info';
@@ -19,22 +20,23 @@ import { UserService } from './user';
 
 const providers: Provider[] = [
   AlbumService,
-  AssetService,
   APIKeyService,
+  AssetService,
   AuthService,
   FacialRecognitionService,
   JobService,
   MediaService,
   OAuthService,
   PersonService,
+  PartnerService,
+  SearchService,
   ServerInfoService,
+  ShareService,
   SmartInfoService,
   StorageService,
   StorageTemplateService,
   SystemConfigService,
   UserService,
-  ShareService,
-  SearchService,
   {
     provide: INITIAL_SYSTEM_CONFIG,
     inject: [SystemConfigService],

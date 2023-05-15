@@ -16,6 +16,7 @@ export * from './oauth';
 export * from './person';
 export * from './search';
 export * from './server-info';
+export * from './partner';
 export * from './share';
 export * from './smart-info';
 export * from './storage';

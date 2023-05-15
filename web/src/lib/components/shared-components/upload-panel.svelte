@@ -38,7 +38,7 @@
 		{#if showDetail}
 			<div
 				in:scale={{ duration: 250, easing: quartInOut }}
-				class="bg-gray-200 p-4 text-sm w-[300px] rounded-lg shadow-sm border "
+				class="bg-gray-200 p-4 text-sm w-[300px] rounded-lg shadow-sm border"
 			>
 				<div class="flex justify-between place-item-center mb-4">
 					<p class="text-xs text-gray-500">UPLOADING {$uploadAssetsStore.length}</p>
@@ -70,7 +70,7 @@
 				<button
 					in:scale={{ duration: 250, easing: quartInOut }}
 					on:click={() => (showDetail = true)}
-					class="bg-gray-300 p-5 rounded-full w-16 h-16 flex place-items-center place-content-center text-sm shadow-lg "
+					class="bg-gray-300 p-5 rounded-full w-16 h-16 flex place-items-center place-content-center text-sm shadow-lg"
 				>
 					<div class="animate-pulse">
 						<CloudUploadOutline size="30" color="#4250af" />

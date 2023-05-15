@@ -9,6 +9,7 @@ export * from './geocoding.repository';
 export * from './job.repository';
 export * from './machine-learning.repository';
 export * from './media.repository';
+export * from './partner.repository';
 export * from './person.repository';
 export * from './shared-link.repository';
 export * from './smart-info.repository';

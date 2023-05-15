@@ -59,7 +59,7 @@
 				class="bg-immich-primary h-[15px] rounded-md transition-all"
 				style={`width: ${uploadAsset.progress}%`}
 			/>
-			<p class="absolute h-full w-full text-center top-0 text-[10px] ">
+			<p class="absolute h-full w-full text-center top-0 text-[10px]">
 				{uploadAsset.progress}/100
 			</p>
 		</div>

@@ -71,7 +71,7 @@
 	<svelte:fragment slot="leading">Shared links</svelte:fragment>
 </ControlAppBar>
 
-<section class="flex flex-col  pb-[120px] mt-[120px]">
+<section class="flex flex-col pb-[120px] mt-[120px]">
 	<div class="w-[50%] m-auto mb-4 dark:text-immich-gray">
 		<p>Manage shared links</p>
 	</div>

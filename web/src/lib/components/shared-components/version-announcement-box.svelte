@@ -43,7 +43,7 @@
 {#if showModal}
 	<FullScreenModal on:clickOutside={() => (showModal = false)}>
 		<div
-			class="border bg-immich-bg dark:bg-immich-dark-gray dark:border-immich-dark-gray shadow-sm max-w-lg rounded-3xl py-10 px-8 dark:text-immich-dark-fg "
+			class="border bg-immich-bg dark:bg-immich-dark-gray dark:border-immich-dark-gray shadow-sm max-w-lg rounded-3xl py-10 px-8 dark:text-immich-dark-fg"
 		>
 			<p class="text-2xl mb-4">🎉 NEW VERSION AVAILABLE 🎉</p>
 

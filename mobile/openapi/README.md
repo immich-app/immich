@@ -129,6 +129,9 @@ Class | Method | HTTP request | Description
 *OAuthApi* | [**link**](doc//OAuthApi.md#link) | **POST** /oauth/link | 
 *OAuthApi* | [**mobileRedirect**](doc//OAuthApi.md#mobileredirect) | **GET** /oauth/mobile-redirect | 
 *OAuthApi* | [**unlink**](doc//OAuthApi.md#unlink) | **POST** /oauth/unlink | 
+*PartnerApi* | [**createPartner**](doc//PartnerApi.md#createpartner) | **POST** /partner/{id} | 
+*PartnerApi* | [**getPartners**](doc//PartnerApi.md#getpartners) | **GET** /partner | 
+*PartnerApi* | [**removePartner**](doc//PartnerApi.md#removepartner) | **DELETE** /partner/{id} | 
 *PersonApi* | [**getAllPeople**](doc//PersonApi.md#getallpeople) | **GET** /person | 
 *PersonApi* | [**getPerson**](doc//PersonApi.md#getperson) | **GET** /person/{id} | 
 *PersonApi* | [**getPersonAssets**](doc//PersonApi.md#getpersonassets) | **GET** /person/{id}/assets | 

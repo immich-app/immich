@@ -4,6 +4,7 @@ import {
   AssetEntity,
   AssetType,
   PersonEntity,
+  PartnerEntity,
   SharedLinkEntity,
   SharedLinkType,
   SystemConfig,
@@ -862,5 +863,24 @@ export const personStub = {
     name: '',
     thumbnailPath: '',
     faces: [],
+  }),
+};
+
+export const partnerStub = {
+  adminToUser1: Object.freeze<PartnerEntity>({
+    createdAt: new Date('2023-02-23T05:06:29.716Z'),
+    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    sharedById: userEntityStub.admin.id,
+    sharedBy: userEntityStub.admin,
+    sharedWith: userEntityStub.user1,
+    sharedWithId: userEntityStub.user1.id,
+  }),
+  user1ToAdmin1: Object.freeze<PartnerEntity>({
+    createdAt: new Date('2023-02-23T05:06:29.716Z'),
+    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    sharedBy: userEntityStub.user1,
+    sharedById: userEntityStub.user1.id,
+    sharedWithId: userEntityStub.admin.id,
+    sharedWith: userEntityStub.admin,
   }),
 };
