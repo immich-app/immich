@@ -71,14 +71,18 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Scrubbable/draggable scrollbar              | Yes    | Yes |
 | Support RAW (HEIC, HEIF, DNG, Apple ProRaw) | Yes    | Yes |
 | Metadata view (EXIF, map)                   | Yes    | Yes |
-| Search by metadata, objects and CLIP        | Yes    | Yes |
-| Administrative functions (user management)  | N/A    | Yes |
+| Search by metadata, objects, and CLIP       | Yes    | Yes |
+| Administrative functions (user management)  | No     | Yes |
 | Background backup                           | Yes    | N/A |
 | Virtual scroll                              | Yes    | Yes |
 | OAuth support                               | Yes    | Yes |
+| API Keys                                    | N/A    | Yes |
 | LivePhoto backup and playback               | iOS    | Yes |
 | User-defined storage structure              | Yes    | Yes |
-| Public Sharing                              | N/A    | Yes |
+| Public Sharing                              | No     | Yes |
+| Archive and Favorites                       | Yes    | Yes |
+| Global Map                                  | No     | Yes |
+| Partner Sharing                             | No     | Yes |
 
 # Support the project
 
