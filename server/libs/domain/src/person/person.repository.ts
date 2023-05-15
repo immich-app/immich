@@ -15,5 +15,5 @@ export interface IPersonRepository {
   create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   update(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   delete(entity: PersonEntity): Promise<PersonEntity | null>;
-  deleteAll(): Promise<PersonEntity[]>;
+  deleteAll(): Promise<number>;
 }

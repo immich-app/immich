@@ -34,7 +34,7 @@ export class FacialRecognitionService {
       if (force) {
         const people = await this.personRepository.deleteAll();
         const faces = await this.searchRepository.deleteAllFaces();
-        this.logger.debug(`Deleted ${people.length} people and ${faces} faces`);
+        this.logger.debug(`Deleted ${people} people and ${faces} faces`);
       }
       for (const asset of assets) {
         await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: { asset } });

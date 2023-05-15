@@ -14,9 +14,10 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.remove(entity);
   }
 
-  async deleteAll(): Promise<PersonEntity[]> {
+  async deleteAll(): Promise<number> {
     const people = await this.personRepository.find();
-    return this.personRepository.remove(people);
+    await this.personRepository.remove(people);
+    return people.length;
   }
 
   getAll(userId: string, options?: PersonSearchOptions): Promise<PersonEntity[]> {

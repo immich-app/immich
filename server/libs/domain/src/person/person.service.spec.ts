@@ -1,5 +1,5 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { IJobRepository } from '..';
+import { IJobRepository, JobName } from '..';
 import {
   assetEntityStub,
   authStub,
@@ -97,11 +97,16 @@ describe(PersonService.name, () => {
     it("should update a person's name", async () => {
       personMock.getById.mockResolvedValue(personStub.noName);
       personMock.update.mockResolvedValue(personStub.withName);
+      personMock.getAssets.mockResolvedValue([assetEntityStub.image]);
 
       await expect(sut.update(authStub.admin, 'person-1', { name: 'Person 1' })).resolves.toEqual(responseDto);
 
       expect(personMock.getById).toHaveBeenCalledWith('admin_id', 'person-1');
-      expect(personMock.update).toHaveBeenCalledWith(personStub.withName);
+      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', name: 'Person 1' });
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.SEARCH_INDEX_ASSET,
+        data: { ids: [assetEntityStub.image.id] },
+      });
     });
   });
 });

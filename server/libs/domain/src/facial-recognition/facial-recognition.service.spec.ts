@@ -70,6 +70,9 @@ describe(FacialRecognitionService.name, () => {
 
     it('should queue all assets', async () => {
       assetMock.getAll.mockResolvedValue([assetEntityStub.image]);
+      personMock.deleteAll.mockResolvedValue(5);
+      searchMock.deleteAllFaces.mockResolvedValue(100);
+
       await sut.handleQueueRecognizeFaces({ force: true });
 
       expect(assetMock.getAll).toHaveBeenCalled();
