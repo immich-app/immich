@@ -78,7 +78,7 @@ export class PersonService {
         this.logger.debug(
           `Removing person ${assetFaces.personId} ${assetFaces.person.name} because it has no faces associated`,
         );
-        await this.repository.delete(assetFaces.person);
+        await this.repository.delete(person);
       }
     });
   }
