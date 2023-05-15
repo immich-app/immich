@@ -20,7 +20,9 @@ export class PersonService {
 
   async getAll(authUser: AuthUserDto): Promise<PersonResponseDto[]> {
     const people = await this.repository.getAll(authUser.id);
-    return people.map((person) => mapPerson(person));
+    const named = people.filter((person) => !!person.name);
+    const unnamed = people.filter((person) => !person.name);
+    return [...named, ...unnamed].map((person) => mapPerson(person));
   }
 
   async getById(authUser: AuthUserDto, personId: string): Promise<PersonResponseDto> {
