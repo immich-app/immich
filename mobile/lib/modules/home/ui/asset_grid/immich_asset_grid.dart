@@ -22,6 +22,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
   final Set<Asset>? preselectedAssets;
   final bool canDeselect;
   final bool dynamicLayout;
+  final bool showMultiSelectIndicator;
   final void Function(ItemPosition start, ItemPosition end)?
       visibleItemsListener;
 
@@ -38,6 +39,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
     this.preselectedAssets,
     this.canDeselect = true,
     this.dynamicLayout = true,
+    this.showMultiSelectIndicator = true,
     this.visibleItemsListener,
   });
 
@@ -91,6 +93,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
             preselectedAssets: preselectedAssets,
             canDeselect: canDeselect,
             dynamicLayout: dynamicLayout,
+            showMultiSelectIndicator: showMultiSelectIndicator,
             visibleItemsListener: visibleItemsListener,
           ),
         ),
@@ -117,6 +120,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
             preselectedAssets: preselectedAssets,
             canDeselect: canDeselect,
             dynamicLayout: dynamicLayout,
+            showMultiSelectIndicator: showMultiSelectIndicator,
             visibleItemsListener: visibleItemsListener,
           ),
         ),

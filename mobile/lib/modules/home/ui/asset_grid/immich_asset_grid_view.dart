@@ -379,7 +379,8 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       child: Stack(
         children: [
           _buildAssetGrid(),
-          if (widget.selectionActive) _buildMultiSelectIndicator(),
+          if (widget.showMultiSelectIndicator && widget.selectionActive)
+            _buildMultiSelectIndicator(),
         ],
       ),
     );
@@ -397,6 +398,7 @@ class ImmichAssetGridView extends StatefulWidget {
   final Set<Asset>? preselectedAssets;
   final bool canDeselect;
   final bool dynamicLayout;
+  final bool showMultiSelectIndicator;
   final void Function(ItemPosition start, ItemPosition end)?
       visibleItemsListener;
 
@@ -412,6 +414,7 @@ class ImmichAssetGridView extends StatefulWidget {
     this.preselectedAssets,
     this.canDeselect = true,
     this.dynamicLayout = true,
+    this.showMultiSelectIndicator = true,
     this.visibleItemsListener,
   });
 
