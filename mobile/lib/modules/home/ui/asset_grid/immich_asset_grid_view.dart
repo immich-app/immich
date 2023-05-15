@@ -353,9 +353,9 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     final end = values.lastOrNull;
     if (start != null && end != null) {
       if (start.index <= end.index) {
-        widget.visibleItemsListener!(start, end);
+        widget.visibleItemsListener?.call(start, end);
       } else {
-        widget.visibleItemsListener!(end, start);
+        widget.visibleItemsListener?.call(end, start);
       }
     }
   }
