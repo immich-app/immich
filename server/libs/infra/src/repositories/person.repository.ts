@@ -6,9 +6,21 @@ import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 export class PersonRepository implements IPersonRepository {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
-    @InjectRepository(AssetFaceEntity) private faceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
+    @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
   ) {}
+  getFacesCountById(id: string): Promise<number> {
+    return this.assetFaceRepository.count({ where: { personId: id } });
+  }
+
+  delete(entity: PersonEntity): Promise<PersonEntity | null> {
+    return this.personRepository.remove(entity);
+  }
+
+  async deleteAll(): Promise<PersonEntity[]> {
+    const people = await this.personRepository.find();
+    return this.personRepository.remove(people);
+  }
 
   getAll(userId: string): Promise<PersonEntity[]> {
     return this.personRepository
@@ -38,6 +50,9 @@ export class PersonRepository implements IPersonRepository {
           person: true,
         },
         exifInfo: true,
+      },
+      order: {
+        createdAt: 'ASC',
       },
     });
   }

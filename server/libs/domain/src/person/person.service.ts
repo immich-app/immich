@@ -1,4 +1,5 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { AssetEntity } from '@app/infra/entities';
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AssetResponseDto, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
 import { IJobRepository, JobName } from '../job';
@@ -9,6 +10,8 @@ import { mapPerson, PersonResponseDto } from './response-dto';
 
 @Injectable()
 export class PersonService {
+  readonly logger = new Logger(PersonService.name);
+
   constructor(
     @Inject(IPersonRepository) private repository: IPersonRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
@@ -56,5 +59,27 @@ export class PersonService {
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: assetIds } });
 
     return mapPerson(updatedPerson);
+  }
+
+  async removePersonWithNoFaceData(asset: AssetEntity): Promise<void> {
+    if (!asset.faces.length) {
+      return;
+    }
+
+    asset.faces.forEach(async (assetFaces) => {
+      const facesCount = await this.repository.getFacesCountById(assetFaces.personId);
+
+      if (facesCount === 0) {
+        const person = await this.repository.getById(asset.ownerId, assetFaces.personId);
+        if (!person) {
+          return;
+        }
+
+        this.logger.debug(
+          `Removing person ${assetFaces.personId} ${assetFaces.person.name} because it has no faces associated`,
+        );
+        await this.repository.delete(person);
+      }
+    });
   }
 }

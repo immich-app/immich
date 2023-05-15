@@ -21,9 +21,10 @@
 	$: {
 		// Get latest description from server
 		if (asset.id) {
-			api.assetApi
-				.getAssetById(asset.id)
-				.then((res) => (textarea.value = res.data?.exifInfo?.description || ''));
+			api.assetApi.getAssetById(asset.id).then((res) => {
+				people = res.data?.people || [];
+				textarea.value = res.data?.exifInfo?.description || '';
+			});
 		}
 	}
 
