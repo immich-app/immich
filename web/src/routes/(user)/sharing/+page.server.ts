@@ -9,15 +9,18 @@ export const load = (async ({ locals: { api, user } }) => {
 
 	try {
 		const { data: sharedAlbums } = await api.albumApi.getAllAlbums(true);
+		const { data: partners } = await api.partnerApi.getPartners('shared-with');
 
 		return {
 			user,
 			sharedAlbums,
+			partners,
 			meta: {
 				title: 'Sharing'
 			}
 		};
 	} catch (e) {
+		console.log(e);
 		throw redirect(302, AppRoute.AUTH_LOGIN);
 	}
 }) satisfies PageServerLoad;

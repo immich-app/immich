@@ -29,7 +29,8 @@ function createAssetStore() {
 	const setInitialState = (
 		viewportHeight: number,
 		viewportWidth: number,
-		data: AssetCountByTimeBucketResponseDto
+		data: AssetCountByTimeBucketResponseDto,
+		userId: string | undefined
 	) => {
 		assetGridState.set({
 			viewportHeight,
@@ -41,7 +42,8 @@ function createAssetStore() {
 				assets: [],
 				cancelToken: new AbortController()
 			})),
-			assets: []
+			assets: [],
+			userId
 		});
 
 		// Update timeline height based on calculated bucket height
@@ -64,7 +66,8 @@ function createAssetStore() {
 			});
 			const { data: assets } = await api.assetApi.getAssetByTimeBucket(
 				{
-					timeBucket: [bucket]
+					timeBucket: [bucket],
+					userId: _assetGridState.userId
 				},
 				{ signal: currentBucketData?.cancelToken.signal }
 			);
