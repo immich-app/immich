@@ -40,7 +40,7 @@ describe(PersonService.name, () => {
     it('should get all people', async () => {
       personMock.getAll.mockResolvedValue([personStub.withName]);
       await expect(sut.getAll(authStub.admin)).resolves.toEqual([responseDto]);
-      expect(personMock.getAll).toHaveBeenCalledWith(authStub.admin.id);
+      expect(personMock.getAll).toHaveBeenCalledWith(authStub.admin.id, { minimumFaceCount: 3 });
     });
   });
 

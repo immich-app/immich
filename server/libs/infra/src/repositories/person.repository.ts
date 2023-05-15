@@ -1,4 +1,4 @@
-import { IPersonRepository } from '@app/domain';
+import { IPersonRepository, PersonSearchOptions } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
@@ -9,6 +9,7 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
   ) {}
+
   getFacesCountById(id: string): Promise<number> {
     return this.assetFaceRepository.count({ where: { personId: id } });
   }
@@ -22,12 +23,13 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.remove(people);
   }
 
-  getAll(userId: string): Promise<PersonEntity[]> {
+  getAll(userId: string, options?: PersonSearchOptions): Promise<PersonEntity[]> {
     return this.personRepository
       .createQueryBuilder('person')
       .leftJoin('person.faces', 'face')
       .where('person.ownerId = :userId', { userId })
       .orderBy('COUNT(face.assetId)', 'DESC')
+      .having('COUNT(face.assetId) >= :faces', { faces: options?.minimumFaceCount || 1 })
       .groupBy('person.id')
       .getMany();
   }
