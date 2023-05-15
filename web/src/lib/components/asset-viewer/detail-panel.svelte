@@ -108,7 +108,7 @@
 
 			<div class="flex flex-wrap gap-2 mt-4">
 				{#each people as person (person.id)}
-					<div>
+					<a href="/people/{person.id}" class="w-[90px]">
 						<ImageThumbnail
 							curve
 							shadow
@@ -117,8 +117,8 @@
 							widthStyle="90px"
 							heightStyle="90px"
 						/>
-						<p class="font-medium mt-1">{person.name}</p>
-					</div>
+						<p class="font-medium mt-1 truncate">{person.name}</p>
+					</a>
 				{/each}
 			</div>
 		</section>
