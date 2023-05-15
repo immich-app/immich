@@ -61,7 +61,7 @@
 			<div class="text-sm flex flex-col justify-center">
 				<button
 					on:click={() => dispatcher('delete')}
-					class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700  rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
+					class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
 					title="Log out"
 				>
 					<TrashCanOutline size="16" />

@@ -274,7 +274,7 @@
 
 	{#if isShowAddMenu}
 		<ContextMenu {...contextMenuPosition} on:clickoutside={() => (isShowAddMenu = false)}>
-			<div class="flex flex-col rounded-lg ">
+			<div class="flex flex-col rounded-lg">
 				<MenuOption
 					on:click={toggleFavorite}
 					text={isAllFavorite ? 'Remove from favorites' : 'Add to favorites'}

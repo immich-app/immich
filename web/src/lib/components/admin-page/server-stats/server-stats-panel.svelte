@@ -91,7 +91,7 @@
 		<p class="text-sm dark:text-immich-dark-fg">USER USAGE DETAIL</p>
 		<table class="text-left w-full mt-5">
 			<thead
-				class="border rounded-md mb-4 bg-gray-50 dark:bg-immich-dark-gray dark:border-immich-dark-gray flex text-immich-primary dark:text-immich-dark-primary  w-full h-12"
+				class="border rounded-md mb-4 bg-gray-50 dark:bg-immich-dark-gray dark:border-immich-dark-gray flex text-immich-primary dark:text-immich-dark-primary w-full h-12"
 			>
 				<tr class="flex w-full place-items-center">
 					<th class="text-center w-1/4 font-medium text-sm">User</th>

@@ -42,7 +42,7 @@
 		</svelte:fragment>
 	</ControlAppBar>
 
-	<section class="flex flex-wrap gap-14  px-20 overflow-y-auto">
+	<section class="flex flex-wrap gap-14 px-20 overflow-y-auto">
 		<!-- Image grid -->
 		<div class="flex flex-wrap gap-[2px]">
 			{#each album.assets as asset}
