@@ -6,31 +6,33 @@ import { AuthService } from './auth';
 import { JobService } from './job';
 import { MediaService } from './media';
 import { OAuthService } from './oauth';
+import { PartnerService } from './partner';
 import { SearchService } from './search';
 import { ServerInfoService } from './server-info';
 import { ShareService } from './share';
 import { SmartInfoService } from './smart-info';
 import { StorageService } from './storage';
 import { StorageTemplateService } from './storage-template';
-import { INITIAL_SYSTEM_CONFIG, SystemConfigService } from './system-config';
 import { UserService } from './user';
+import { INITIAL_SYSTEM_CONFIG, SystemConfigService } from './system-config';
 
 const providers: Provider[] = [
   AlbumService,
-  AssetService,
   APIKeyService,
+  AssetService,
   AuthService,
   JobService,
   MediaService,
   OAuthService,
+  PartnerService,
+  SearchService,
   ServerInfoService,
+  ShareService,
   SmartInfoService,
   StorageService,
   StorageTemplateService,
   SystemConfigService,
   UserService,
-  ShareService,
-  SearchService,
   {
     provide: INITIAL_SYSTEM_CONFIG,
     inject: [SystemConfigService],

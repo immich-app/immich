@@ -7,7 +7,7 @@ export interface ISharedLinkRepository {
   get(userId: string, id: string): Promise<SharedLinkEntity | null>;
   getByKey(key: string): Promise<SharedLinkEntity | null>;
   create(entity: Omit<SharedLinkEntity, 'id' | 'user'>): Promise<SharedLinkEntity>;
-  remove(entity: SharedLinkEntity): Promise<SharedLinkEntity>;
+  remove(entity: SharedLinkEntity): Promise<void>;
   save(entity: Partial<SharedLinkEntity>): Promise<SharedLinkEntity>;
   hasAssetAccess(id: string, assetId: string): Promise<boolean>;
 }

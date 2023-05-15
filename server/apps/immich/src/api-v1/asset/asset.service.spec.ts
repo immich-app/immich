@@ -8,7 +8,14 @@ import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { DownloadService } from '../../modules/download/download.service';
 import { AlbumRepository, IAlbumRepository } from '../album/album-repository';
-import { ICryptoRepository, IJobRepository, ISharedLinkRepository, IStorageRepository, JobName } from '@app/domain';
+import {
+  ICryptoRepository,
+  IJobRepository,
+  IPartnerRepository,
+  ISharedLinkRepository,
+  IStorageRepository,
+  JobName,
+} from '@app/domain';
 import {
   assetEntityStub,
   authStub,
@@ -126,6 +133,7 @@ describe('AssetService', () => {
   let assetRepositoryMock: jest.Mocked<IAssetRepository>;
   let albumRepositoryMock: jest.Mocked<IAlbumRepository>;
   let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
+  let partnerRepositoryMock: jest.Mocked<IPartnerRepository>;
   let sharedLinkRepositoryMock: jest.Mocked<ISharedLinkRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
@@ -178,6 +186,7 @@ describe('AssetService', () => {
       jobMock,
       cryptoMock,
       storageMock,
+      partnerRepositoryMock,
     );
 
     when(assetRepositoryMock.get)

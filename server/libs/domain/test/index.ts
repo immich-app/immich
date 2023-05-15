@@ -7,6 +7,7 @@ export * from './fixtures';
 export * from './job.repository.mock';
 export * from './machine-learning.repository.mock';
 export * from './media.repository.mock';
+export * from './partner.repository.mock';
 export * from './search.repository.mock';
 export * from './shared-link.repository.mock';
 export * from './smart-info.repository.mock';

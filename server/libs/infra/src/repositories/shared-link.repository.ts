@@ -82,8 +82,8 @@ export class SharedLinkRepository implements ISharedLinkRepository {
     return this.repository.save(entity);
   }
 
-  remove(entity: SharedLinkEntity): Promise<SharedLinkEntity> {
-    return this.repository.remove(entity);
+  async remove(entity: SharedLinkEntity): Promise<void> {
+    await this.repository.remove(entity);
   }
 
   async save(entity: SharedLinkEntity): Promise<SharedLinkEntity> {

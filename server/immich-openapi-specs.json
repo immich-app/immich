@@ -792,6 +792,129 @@
         ]
       }
     },
+    "/partner": {
+      "get": {
+        "operationId": "getPartners",
+        "parameters": [
+          {
+            "name": "direction",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "shared-by",
+                "shared-with"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Partner"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/partner/{id}": {
+      "post": {
+        "operationId": "createPartner",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Partner"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "removePartner",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Partner"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/search": {
       "get": {
         "operationId": "search",
@@ -5419,6 +5542,10 @@
         "properties": {
           "timeGroup": {
             "$ref": "#/components/schemas/TimeGroupEnum"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
           }
         },
         "required": [
@@ -5504,6 +5631,10 @@
             "items": {
               "type": "string"
             }
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
           }
         },
         "required": [

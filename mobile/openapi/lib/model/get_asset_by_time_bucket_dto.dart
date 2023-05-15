@@ -14,25 +14,41 @@ class GetAssetByTimeBucketDto {
   /// Returns a new [GetAssetByTimeBucketDto] instance.
   GetAssetByTimeBucketDto({
     this.timeBucket = const [],
+    this.userId,
   });
 
   List<String> timeBucket;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? userId;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is GetAssetByTimeBucketDto &&
-     other.timeBucket == timeBucket;
+     other.timeBucket == timeBucket &&
+     other.userId == userId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (timeBucket.hashCode);
+    (timeBucket.hashCode) +
+    (userId == null ? 0 : userId!.hashCode);
 
   @override
-  String toString() => 'GetAssetByTimeBucketDto[timeBucket=$timeBucket]';
+  String toString() => 'GetAssetByTimeBucketDto[timeBucket=$timeBucket, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'timeBucket'] = this.timeBucket;
+    if (this.userId != null) {
+      json[r'userId'] = this.userId;
+    } else {
+      // json[r'userId'] = null;
+    }
     return json;
   }
 
@@ -58,6 +74,7 @@ class GetAssetByTimeBucketDto {
         timeBucket: json[r'timeBucket'] is Iterable
             ? (json[r'timeBucket'] as Iterable).cast<String>().toList(growable: false)
             : const [],
+        userId: mapValueOfType<String>(json, r'userId'),
       );
     }
     return null;

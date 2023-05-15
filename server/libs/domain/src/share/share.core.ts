@@ -1,11 +1,5 @@
 import { AssetEntity, SharedLinkEntity } from '@app/infra/entities';
-import {
-  BadRequestException,
-  ForbiddenException,
-  InternalServerErrorException,
-  Logger,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Logger, UnauthorizedException } from '@nestjs/common';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { CreateSharedLinkDto } from './dto';
@@ -25,24 +19,19 @@ export class ShareCore {
   }
 
   create(userId: string, dto: CreateSharedLinkDto): Promise<SharedLinkEntity> {
-    try {
-      return this.repository.create({
-        key: Buffer.from(this.cryptoRepository.randomBytes(50)),
-        description: dto.description,
-        userId,
-        createdAt: new Date().toISOString(),
-        expiresAt: dto.expiresAt ?? null,
-        type: dto.type,
-        assets: dto.assets,
-        album: dto.album,
-        allowUpload: dto.allowUpload ?? false,
-        allowDownload: dto.allowDownload ?? true,
-        showExif: dto.showExif ?? true,
-      });
-    } catch (error: any) {
-      this.logger.error(error, error.stack);
-      throw new InternalServerErrorException('failed to create shared link');
-    }
+    return this.repository.create({
+      key: Buffer.from(this.cryptoRepository.randomBytes(50)),
+      description: dto.description,
+      userId,
+      createdAt: new Date().toISOString(),
+      expiresAt: dto.expiresAt ?? null,
+      type: dto.type,
+      assets: dto.assets,
+      album: dto.album,
+      allowUpload: dto.allowUpload ?? false,
+      allowDownload: dto.allowDownload ?? true,
+      showExif: dto.showExif ?? true,
+    });
   }
 
   async save(userId: string, id: string, entity: Partial<SharedLinkEntity>): Promise<SharedLinkEntity> {
@@ -54,13 +43,13 @@ export class ShareCore {
     return this.repository.save({ ...entity, userId, id });
   }
 
-  async remove(userId: string, id: string): Promise<SharedLinkEntity> {
+  async remove(userId: string, id: string): Promise<void> {
     const link = await this.get(userId, id);
     if (!link) {
       throw new BadRequestException('Shared link not found');
     }
 
-    return this.repository.remove(link);
+    await this.repository.remove(link);
   }
 
   async addAssets(userId: string, id: string, assets: AssetEntity[]) {
