@@ -110,11 +110,6 @@ const config = {
             label: 'GitHub',
             position: 'right',
           },
-          {
-            href: 'https://github.com/orgs/immich-app/projects/1',
-            label: 'Roadmap',
-            position: 'right',
-          },
         ],
       },
       footer: {
@@ -152,10 +147,6 @@ const config = {
               {
                 label: 'GitHub',
                 href: 'https://github.com/immich-app/immich',
-              },
-              {
-                label: 'Roadmap',
-                href: 'https://github.com/orgs/immich-app/projects/1',
               },
             ],
           },
