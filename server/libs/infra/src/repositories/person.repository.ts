@@ -68,7 +68,8 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.save(entity);
   }
 
-  update(entity: Partial<PersonEntity>): Promise<PersonEntity> {
-    return this.personRepository.save(entity);
+  async update(entity: Partial<PersonEntity>): Promise<PersonEntity> {
+    const { id } = await this.personRepository.save(entity);
+    return this.personRepository.findOneByOrFail({ id });
   }
 }

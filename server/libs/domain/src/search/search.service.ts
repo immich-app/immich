@@ -9,7 +9,6 @@ import { AuthUserDto } from '../auth';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
 import { AssetFaceId, IFaceRepository } from '../facial-recognition';
 import { IAssetFaceJob, IBulkEntityJob, IJobRepository, JobName } from '../job';
-import { PersonService } from '../person';
 import { IMachineLearningRepository } from '../smart-info';
 import { SearchDto } from './dto';
 import { SearchConfigResponseDto, SearchResponseDto } from './response-dto';

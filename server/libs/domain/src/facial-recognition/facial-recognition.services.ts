@@ -145,10 +145,7 @@ export class FacialRecognitionService {
         `Failed to crop face for asset: ${assetId}, person: ${personId} - regenerating with zooming out disabled`,
         error.stack,
       );
-      await this.jobRepository.queue({
-        name: JobName.GENERATE_FACE_THUMBNAIL,
-        data: { ...data, zoomOut: false },
-      });
+      await this.jobRepository.queue({ name: JobName.GENERATE_FACE_THUMBNAIL, data: { ...data, zoomOut: false } });
     }
   }
 }

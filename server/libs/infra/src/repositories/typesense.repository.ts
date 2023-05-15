@@ -217,8 +217,7 @@ export class TypesenseRepository implements ISearchRepository {
   }
 
   async deleteAllFaces(): Promise<number> {
-    const faceCollection = schemaMap[SearchCollection.FACES].name;
-    const records = await this.client.collections(faceCollection).documents().delete({ filter_by: 'ownerId:!=null' });
+    const records = await this.client.collections(faceSchema.name).documents().delete({ filter_by: 'ownerId:!=null' });
     return records.num_deleted;
   }
 

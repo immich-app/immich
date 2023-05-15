@@ -48,18 +48,18 @@ export class PersonService {
   }
 
   async update(authUser: AuthUserDto, personId: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
-    const person = await this.repository.getById(authUser.id, personId);
-    if (!person) {
+    const exists = await this.repository.getById(authUser.id, personId);
+    if (!exists) {
       throw new BadRequestException();
     }
 
-    const updatedPerson = await this.repository.update({ ...person, name: dto.name });
+    const person = await this.repository.update({ id: personId, name: dto.name });
 
     const relatedAsset = await this.getAssets(authUser, personId);
     const assetIds = relatedAsset.map((asset) => asset.id);
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: assetIds } });
 
-    return mapPerson(updatedPerson);
+    return mapPerson(person);
   }
 
   async handlePersonCleanup(): Promise<void> {

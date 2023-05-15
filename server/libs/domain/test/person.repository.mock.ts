@@ -5,7 +5,7 @@ export const newPersonRepositoryMock = (): jest.Mocked<IPersonRepository> => {
     getById: jest.fn(),
     getAll: jest.fn(),
     getAssets: jest.fn(),
-    getFacesCountById: jest.fn(),
+    getAllWithoutFaces: jest.fn(),
 
     create: jest.fn(),
     update: jest.fn(),
