@@ -159,15 +159,11 @@ final assetsProvider = StreamProvider<RenderList>((ref) async* {
       .isArchivedEqualTo(false)
       .sortByFileCreatedAtDesc();
   final settings = ref.watch(appSettingsServiceProvider);
-  yield await RenderList.fromQuery(
-    query,
-    GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)],
-  );
+  final groupBy =
+      GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)];
+  yield await RenderList.fromQuery(query, groupBy);
   await for (final _ in query.watchLazy()) {
-    yield await RenderList.fromQuery(
-      query,
-      GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)],
-    );
+    yield await RenderList.fromQuery(query, groupBy);
   }
 });
 
@@ -181,14 +177,10 @@ final remoteAssetsProvider = StreamProvider<RenderList>((ref) async* {
       .ownerIdEqualTo(Store.get(StoreKey.currentUser).isarId)
       .sortByFileCreatedAt();
   final settings = ref.watch(appSettingsServiceProvider);
-  yield await RenderList.fromQuery(
-    query,
-    GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)],
-  );
+  final groupBy =
+      GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)];
+  yield await RenderList.fromQuery(query, groupBy);
   await for (final _ in query.watchLazy()) {
-    yield await RenderList.fromQuery(
-      query,
-      GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)],
-    );
+    yield await RenderList.fromQuery(query, groupBy);
   }
 });

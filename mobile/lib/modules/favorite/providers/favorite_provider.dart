@@ -64,14 +64,10 @@ final favoriteAssetsProvider = StreamProvider<RenderList>((ref) async* {
       .isFavoriteEqualTo(true)
       .sortByFileCreatedAt();
   final settings = ref.watch(appSettingsServiceProvider);
-  yield await RenderList.fromQuery(
-    query,
-    GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)],
-  );
+  final groupBy =
+      GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)];
+  yield await RenderList.fromQuery(query, groupBy);
   await for (final _ in query.watchLazy()) {
-    yield await RenderList.fromQuery(
-      query,
-      GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)],
-    );
+    yield await RenderList.fromQuery(query, groupBy);
   }
 });
