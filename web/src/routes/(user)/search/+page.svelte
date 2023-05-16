@@ -43,7 +43,7 @@
 	$: searchResultAssets = data.results.assets.items;
 
 	const onAssetDelete = (assetId: string) => {
-		searchResultAssets = searchResultAssets.filter((a) => a.id !== assetId);
+		searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => a.id !== assetId);
 	};
 </script>
 
