@@ -1,6 +1,6 @@
 # Facial Recognition
 
-Immich recognizes faces in your photos and videos and groups them together. You can then assign names to the faces and search for them. 
+Immich recognizes faces in your photos and videos and groups them together. You can then assign names to the faces and search for them.
 
 The list of people is shown in the Explore page.
 
