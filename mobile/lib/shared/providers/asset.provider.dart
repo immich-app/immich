@@ -62,6 +62,8 @@ class AssetNotifier extends StateNotifier<AssetsState> {
   }
 
   Future<void> onNewAssetUploaded(Asset newAsset) async {
+    // eTag on device is not valid after partially modifying the assets
+    Store.delete(StoreKey.assetETag);
     await _syncService.syncNewAssetToDb(newAsset);
   }
 
@@ -151,7 +153,7 @@ final assetProvider = StateNotifierProvider<AssetNotifier, AssetsState>((ref) {
 });
 
 final assetDetailProvider =
-    StreamProvider.family<Asset, Asset>((ref, asset) async* {
+    StreamProvider.autoDispose.family<Asset, Asset>((ref, asset) async* {
   yield await ref.watch(assetServiceProvider).loadExif(asset);
   final db = ref.watch(dbProvider);
   await for (final a in db.assets.watchObject(asset.id)) {
@@ -159,7 +161,7 @@ final assetDetailProvider =
   }
 });
 
-final assetsProvider = StreamProvider<RenderList>((ref) async* {
+final assetsProvider = StreamProvider.autoDispose<RenderList>((ref) async* {
   final query = ref
       .watch(dbProvider)
       .assets
@@ -176,7 +178,8 @@ final assetsProvider = StreamProvider<RenderList>((ref) async* {
   }
 });
 
-final remoteAssetsProvider = StreamProvider<RenderList>((ref) async* {
+final remoteAssetsProvider =
+    StreamProvider.autoDispose<RenderList>((ref) async* {
   final query = ref
       .watch(dbProvider)
       .assets

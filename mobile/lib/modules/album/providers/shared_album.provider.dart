@@ -65,7 +65,7 @@ class SharedAlbumNotifier extends StateNotifier<List<Album>> {
 }
 
 final sharedAlbumProvider =
-    StateNotifierProvider<SharedAlbumNotifier, List<Album>>((ref) {
+    StateNotifierProvider.autoDispose<SharedAlbumNotifier, List<Album>>((ref) {
   return SharedAlbumNotifier(
     ref.watch(albumServiceProvider),
     ref.watch(dbProvider),

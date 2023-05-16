@@ -40,7 +40,8 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
   }
 }
 
-final albumProvider = StateNotifierProvider<AlbumNotifier, List<Album>>((ref) {
+final albumProvider =
+    StateNotifierProvider.autoDispose<AlbumNotifier, List<Album>>((ref) {
   return AlbumNotifier(
     ref.watch(albumServiceProvider),
     ref.watch(dbProvider),
