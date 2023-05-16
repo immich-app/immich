@@ -108,7 +108,7 @@
 
 			<div class="flex flex-wrap gap-2 mt-4">
 				{#each people as person (person.id)}
-					<a href="/people/{person.id}" class="w-[90px]">
+					<a href="/people/{person.id}" class="w-[90px]" on:click={() => dispatch('close-viewer')}>
 						<ImageThumbnail
 							curve
 							shadow

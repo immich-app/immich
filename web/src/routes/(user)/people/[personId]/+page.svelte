@@ -14,12 +14,9 @@
 
 	export let data: PageData;
 
-	let personId = '';
 	let isEditName = false;
 
-	onMount(() => {
-		personId = data.person.id;
-	});
+	$: personId = data.person.id;
 
 	const noop = () => {
 		// noop
