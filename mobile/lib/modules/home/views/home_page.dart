@@ -301,16 +301,16 @@ class HomePage extends HookConsumerWidget {
         child: Stack(
           children: [
             ref.watch(assetsProvider).when(
-                  data: (data) => ImmichAssetGrid(
-                    renderList: data,
-                    listener: selectionListener,
-                    selectionActive: selectionEnabledHook.value,
-                    onRefresh: refreshAssets,
-                  ),
-                  error: (error, stackTrace) => Center(
-                    child: Text(error.toString()),
-                  ),
-                  loading: () => buildLoadingIndicator(),
+                  data: (data) => data.isEmpty
+                      ? buildLoadingIndicator()
+                      : ImmichAssetGrid(
+                          renderList: data,
+                          listener: selectionListener,
+                          selectionActive: selectionEnabledHook.value,
+                          onRefresh: refreshAssets,
+                        ),
+                  error: (error, _) => Center(child: Text(error.toString())),
+                  loading: buildLoadingIndicator,
                 ),
             if (selectionEnabledHook.value)
               ControlBottomAppBar(
