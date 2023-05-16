@@ -6,7 +6,7 @@ import {
   PersonService,
   PersonUpdateDto,
 } from '@app/domain';
-import { Body, Controller, Get, Header, Param, Put, StreamableFile } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
 
