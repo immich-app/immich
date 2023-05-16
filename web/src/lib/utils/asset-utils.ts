@@ -25,7 +25,7 @@ export const addAssetsToAlbum = async (
 export async function bulkDownload(
 	fileName: string,
 	assets: AssetResponseDto[],
-	onDone: () => void,
+	onDone?: () => void,
 	key?: string
 ) {
 	const assetIds = assets.map((asset) => asset.id);
@@ -63,7 +63,7 @@ export async function bulkDownload(
 			if (isNotComplete && fileCount > 0) {
 				// skip += fileCount;
 			} else {
-				onDone();
+				onDone?.();
 				done = true;
 			}
 

@@ -1,52 +1,34 @@
 <script lang="ts">
-	import type { PageData } from './$types';
-	import { AppRoute } from '$lib/constants';
-	import { locale } from '$lib/stores/preferences.store';
 	import { goto } from '$app/navigation';
-	import { bulkDownload } from '$lib/utils/asset-utils';
-	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
-	import Close from 'svelte-material-icons/Close.svelte';
-	import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
-	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+	import DownloadFiles from '$lib/components/photos-page/actions/download-files.svelte';
 	import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
+	import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+	import { AppRoute } from '$lib/constants';
 	import {
 		assetInteractionStore,
 		isMultiSelectStoreState,
 		selectedAssets
 	} from '$lib/stores/asset-interaction.store';
+	import { onDestroy } from 'svelte';
+	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
+	import type { PageData } from './$types';
 
 	export let data: PageData;
 
-	const handleDownloadFiles = async () => {
-		await bulkDownload('immich', Array.from($selectedAssets), () => {
-			assetInteractionStore.clearMultiselect();
-		});
-	};
+	onDestroy(() => {
+		assetInteractionStore.clearMultiselect();
+	});
 </script>
 
 <main class="grid h-screen pt-[4.25rem] bg-immich-bg dark:bg-immich-dark-bg">
 	{#if $isMultiSelectStoreState}
-		<ControlAppBar
-			showBackButton
-			backIcon={Close}
-			on:close-button-click={() => assetInteractionStore.clearMultiselect()}
-			tailwindClasses={'bg-white shadow-md'}
+		<AssetSelectControlBar
+			assets={$selectedAssets}
+			clearSelect={assetInteractionStore.clearMultiselect}
 		>
-			<svelte:fragment slot="leading">
-				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
-					Selected {$selectedAssets.size.toLocaleString($locale)}
-				</p>
-			</svelte:fragment>
-
-			<svelte:fragment slot="trailing">
-				<CircleIconButton
-					title="Download"
-					logo={CloudDownloadOutline}
-					on:click={handleDownloadFiles}
-				/>
-			</svelte:fragment>
-		</ControlAppBar>
+			<DownloadFiles />
+		</AssetSelectControlBar>
 	{:else}
 		<ControlAppBar
 			showBackButton

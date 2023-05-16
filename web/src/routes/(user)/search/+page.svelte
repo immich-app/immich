@@ -1,31 +1,25 @@
 <script lang="ts">
+	import { afterNavigate, goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
+	import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
+	import DownloadFiles from '$lib/components/photos-page/actions/download-files.svelte';
+	import MoveToArchive from '$lib/components/photos-page/actions/move-to-archive.svelte';
+	import RemoveFromArchive from '$lib/components/photos-page/actions/remove-from-archive.svelte';
+	import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
+	import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+	import OptionAddToAlbum from '$lib/components/photos-page/menu-options/option-add-to-album.svelte';
+	import OptionAddToFavorites from '$lib/components/photos-page/menu-options/option-add-to-favorites.svelte';
+	import OptionRemoveFromFavorites from '$lib/components/photos-page/menu-options/option-remove-from-favorites.svelte';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
-	import type { PageData } from './$types';
+	import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
+	import { AssetResponseDto } from '@api';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import ImageOffOutline from 'svelte-material-icons/ImageOffOutline.svelte';
-	import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
-	import { afterNavigate, goto } from '$app/navigation';
-	import AlbumSelectionModal from '$lib/components/shared-components/album-selection-modal.svelte';
-	import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-	import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
-	import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-	import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
-	import {
-		notificationController,
-		NotificationType
-	} from '$lib/components/shared-components/notification/notification';
-	import { addAssetsToAlbum, bulkDownload } from '$lib/utils/asset-utils';
-	import { AlbumResponseDto, api, AssetResponseDto, SharedLinkType } from '@api';
-	import Close from 'svelte-material-icons/Close.svelte';
-	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
-	import ArchiveArrowUpOutline from 'svelte-material-icons/ArchiveArrowUpOutline.svelte';
-	import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
-	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 	import Plus from 'svelte-material-icons/Plus.svelte';
-	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
-	import { locale } from '$lib/stores/preferences.store';
+	import type { PageData } from './$types';
+
 	export let data: PageData;
 
 	// The GalleryViewer pushes it's own history state, which causes weird
@@ -46,197 +40,34 @@
 	$: isMultiSelectionMode = selectedAssets.size > 0;
 	$: isAllArchived = Array.from(selectedAssets).every((asset) => asset.isArchived);
 	$: isAllFavorite = Array.from(selectedAssets).every((asset) => asset.isFavorite);
-
-	let contextMenuPosition = { x: 0, y: 0 };
-	let isShowCreateSharedLinkModal = false;
-	let isShowAddMenu = false;
-	let isShowAlbumPicker = false;
-	let addToSharedAlbum = false;
 	$: searchResultAssets = data.results.assets.items;
 
-	const handleShowMenu = ({ x, y }: MouseEvent) => {
-		contextMenuPosition = { x, y };
-		isShowAddMenu = !isShowAddMenu;
-	};
-
-	const handleShowAlbumPicker = (shared: boolean) => {
-		isShowAddMenu = false;
-		isShowAlbumPicker = true;
-		addToSharedAlbum = shared;
-	};
-
-	const handleAddToNewAlbum = (event: CustomEvent) => {
-		isShowAlbumPicker = false;
-
-		const { albumName }: { albumName: string } = event.detail;
-		const assetIds = Array.from(selectedAssets).map((asset) => asset.id);
-		api.albumApi.createAlbum({ albumName, assetIds }).then((response) => {
-			const { id, albumName } = response.data;
-
-			notificationController.show({
-				message: `Added ${assetIds.length} to ${albumName}`,
-				type: NotificationType.Info
-			});
-
-			clearMultiSelectAssetAssetHandler();
-
-			goto('/albums/' + id);
-		});
-	};
-
-	const handleAddToAlbum = async (event: CustomEvent<{ album: AlbumResponseDto }>) => {
-		isShowAlbumPicker = false;
-		const album = event.detail.album;
-
-		const assetIds = Array.from(selectedAssets).map((asset) => asset.id);
-
-		addAssetsToAlbum(album.id, assetIds).then(() => {
-			clearMultiSelectAssetAssetHandler();
-		});
-	};
-
-	const handleDownloadFiles = async () => {
-		await bulkDownload('immich', Array.from(selectedAssets), () => {
-			clearMultiSelectAssetAssetHandler();
-		});
-	};
-
-	const toggleArchive = async () => {
-		let cnt = 0;
-		for (const asset of selectedAssets) {
-			api.assetApi.updateAsset(asset.id, {
-				isArchived: !isAllArchived
-			});
-			cnt = cnt + 1;
-
-			asset.isArchived = !isAllArchived;
-
-			searchResultAssets = searchResultAssets.map((a: AssetResponseDto) => {
-				if (a.id === asset.id) {
-					a = asset;
-				}
-
-				return a;
-			});
-		}
-
-		notificationController.show({
-			message: `${isAllArchived ? `Remove ${cnt} from` : `Add ${cnt} to`} archive`,
-			type: NotificationType.Info
-		});
-
-		clearMultiSelectAssetAssetHandler();
-	};
-
-	const toggleFavorite = () => {
-		isShowAddMenu = false;
-
-		let cnt = 0;
-		for (const asset of selectedAssets) {
-			api.assetApi.updateAsset(asset.id, {
-				isFavorite: !isAllFavorite
-			});
-			cnt = cnt + 1;
-
-			asset.isFavorite = !isAllFavorite;
-
-			searchResultAssets = searchResultAssets.map((a: AssetResponseDto) => {
-				if (a.id === asset.id) {
-					a = asset;
-				}
-				return a;
-			});
-		}
-
-		notificationController.show({
-			message: `${isAllFavorite ? `Remove ${cnt} from` : `Add ${cnt} to`} favorites`,
-			type: NotificationType.Info
-		});
-
-		clearMultiSelectAssetAssetHandler();
-	};
-
-	const clearMultiSelectAssetAssetHandler = () => {
-		selectedAssets = new Set();
-	};
-
-	const deleteSelectedAssetHandler = async () => {
-		try {
-			if (
-				window.confirm(
-					`Caution! Are you sure you want to delete ${selectedAssets.size} assets? This step also deletes assets in the album(s) to which they belong. You can not undo this action!`
-				)
-			) {
-				const { data: deletedAssets } = await api.assetApi.deleteAsset({
-					ids: Array.from(selectedAssets).map((a) => a.id)
-				});
-
-				for (const asset of deletedAssets) {
-					if (asset.status == 'SUCCESS') {
-						searchResultAssets = searchResultAssets.filter(
-							(a: AssetResponseDto) => a.id != asset.id
-						);
-					}
-				}
-
-				clearMultiSelectAssetAssetHandler();
-			}
-		} catch (e) {
-			notificationController.show({
-				type: NotificationType.Error,
-				message: 'Error deleting assets, check console for more details'
-			});
-			console.error('Error deleteSelectedAssetHandler', e);
-		}
-	};
-	const handleCreateSharedLink = async () => {
-		isShowCreateSharedLinkModal = true;
-	};
-
-	const handleCloseSharedLinkModal = () => {
-		clearMultiSelectAssetAssetHandler();
-		isShowCreateSharedLinkModal = false;
+	const onAssetDelete = (assetId: string) => {
+		searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => a.id !== assetId);
 	};
 </script>
 
 <section>
 	{#if isMultiSelectionMode}
-		<ControlAppBar
-			on:close-button-click={clearMultiSelectAssetAssetHandler}
-			backIcon={Close}
-			tailwindClasses={'bg-white shadow-md'}
-		>
-			<svelte:fragment slot="leading">
-				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
-					Selected {selectedAssets.size.toLocaleString($locale)}
-				</p>
-			</svelte:fragment>
-			<svelte:fragment slot="trailing">
-				<CircleIconButton
-					title="Share"
-					logo={ShareVariantOutline}
-					on:click={handleCreateSharedLink}
-				/>
-
-				<CircleIconButton
-					title={isAllArchived ? 'Unarchive' : 'Archive'}
-					logo={isAllArchived ? ArchiveArrowUpOutline : ArchiveArrowDownOutline}
-					on:click={toggleArchive}
-				/>
-
-				<CircleIconButton
-					title="Download"
-					logo={CloudDownloadOutline}
-					on:click={handleDownloadFiles}
-				/>
-				<CircleIconButton title="Add" logo={Plus} on:click={handleShowMenu} />
-				<CircleIconButton
-					title="Delete"
-					logo={DeleteOutline}
-					on:click={deleteSelectedAssetHandler}
-				/>
-			</svelte:fragment>
-		</ControlAppBar>
+		<AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
+			<CreateSharedLink />
+			{#if isAllArchived}
+				<RemoveFromArchive />
+			{:else}
+				<MoveToArchive />
+			{/if}
+			<DownloadFiles />
+			<AssetSelectContextMenu icon={Plus} title="Add">
+				{#if isAllFavorite}
+					<OptionRemoveFromFavorites />
+				{:else}
+					<OptionAddToFavorites />
+				{/if}
+				<OptionAddToAlbum />
+				<OptionAddToAlbum shared />
+			</AssetSelectContextMenu>
+			<DeleteAssets {onAssetDelete} />
+		</AssetSelectControlBar>
 	{:else}
 		<ControlAppBar on:close-button-click={() => goto(previousRoute)} backIcon={ArrowLeft}>
 			<div class="w-full max-w-2xl flex-1 pl-4">
@@ -271,35 +102,4 @@
 			{/if}
 		</section>
 	</section>
-
-	{#if isShowAddMenu}
-		<ContextMenu {...contextMenuPosition} on:clickoutside={() => (isShowAddMenu = false)}>
-			<div class="flex flex-col rounded-lg">
-				<MenuOption
-					on:click={toggleFavorite}
-					text={isAllFavorite ? 'Remove from favorites' : 'Add to favorites'}
-				/>
-				<MenuOption on:click={() => handleShowAlbumPicker(false)} text="Add to Album" />
-				<MenuOption on:click={() => handleShowAlbumPicker(true)} text="Add to Shared Album" />
-			</div>
-		</ContextMenu>
-	{/if}
-
-	{#if isShowAlbumPicker}
-		<AlbumSelectionModal
-			shared={addToSharedAlbum}
-			on:newAlbum={handleAddToNewAlbum}
-			on:newSharedAlbum={handleAddToNewAlbum}
-			on:album={handleAddToAlbum}
-			on:close={() => (isShowAlbumPicker = false)}
-		/>
-	{/if}
-
-	{#if isShowCreateSharedLinkModal}
-		<CreateSharedLinkModal
-			sharedAssets={Array.from(selectedAssets)}
-			shareType={SharedLinkType.Individual}
-			on:close={handleCloseSharedLinkModal}
-		/>
-	{/if}
 </section>
