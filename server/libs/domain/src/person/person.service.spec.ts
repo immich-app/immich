@@ -109,4 +109,27 @@ describe(PersonService.name, () => {
       });
     });
   });
+
+  describe('handlePersonCleanup', () => {
+    it('should delete people without faces', async () => {
+      personMock.getAllWithoutFaces.mockResolvedValue([personStub.noName]);
+
+      await sut.handlePersonCleanup();
+
+      expect(personMock.delete).toHaveBeenCalledWith(personStub.noName);
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.DELETE_FILES,
+        data: { files: ['/path/to/thumbnail'] },
+      });
+    });
+
+    it('should log an error', async () => {
+      personMock.getAllWithoutFaces.mockResolvedValue([personStub.noName]);
+      personMock.delete.mockRejectedValue(new Error('database unavailable'));
+
+      await sut.handlePersonCleanup();
+
+      expect(jobMock.queue).not.toHaveBeenCalled();
+    });
+  });
 });
