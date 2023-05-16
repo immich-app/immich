@@ -4,10 +4,13 @@
 	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
 	import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
-	const { assets, clearSelect } = getAssetControlContext();
+	export let filename = 'immich';
+	export let sharedLinkKey: string | undefined = undefined;
+
+	const { getAssets, clearSelect } = getAssetControlContext();
 
 	const handleDownloadFiles = async () => {
-		await bulkDownload('immich', Array.from(assets), clearSelect);
+		await bulkDownload(filename, Array.from(getAssets()), clearSelect, sharedLinkKey);
 	};
 </script>
 

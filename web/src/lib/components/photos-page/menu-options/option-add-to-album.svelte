@@ -8,14 +8,14 @@
 	} from '$lib/components/shared-components/notification/notification';
 	import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 	import { AlbumResponseDto, api } from '@api';
+	import { getMenuContext } from '../asset-select-context-menu.svelte';
 	import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
 	export let shared = false;
-	export let closeMenu: () => void;
-
 	let showAlbumPicker = false;
 
-	const { assets, clearSelect } = getAssetControlContext();
+	const { getAssets, clearSelect } = getAssetControlContext();
+	const closeMenu = getMenuContext();
 
 	const handleHideAlbumPicker = () => {
 		showAlbumPicker = false;
@@ -26,7 +26,7 @@
 		showAlbumPicker = false;
 
 		const { albumName }: { albumName: string } = event.detail;
-		const assetIds = Array.from(assets).map((asset) => asset.id);
+		const assetIds = Array.from(getAssets()).map((asset) => asset.id);
 		api.albumApi.createAlbum({ albumName, assetIds }).then((response) => {
 			const { id, albumName } = response.data;
 
@@ -45,7 +45,7 @@
 		showAlbumPicker = false;
 		const album = event.detail.album;
 
-		const assetIds = Array.from(assets).map((asset) => asset.id);
+		const assetIds = Array.from(getAssets()).map((asset) => asset.id);
 
 		addAssetsToAlbum(album.id, assetIds).then(clearSelect);
 	};

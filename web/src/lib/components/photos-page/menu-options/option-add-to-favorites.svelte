@@ -5,22 +5,26 @@
 		notificationController
 	} from '$lib/components/shared-components/notification/notification';
 	import { api } from '@api';
-	import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+	import { getMenuContext } from '../asset-select-context-menu.svelte';
+	import { OnAssetFavorite, getAssetControlContext } from '../asset-select-control-bar.svelte';
 
-	export let closeMenu: () => void;
+	export let onAssetFavorite: OnAssetFavorite = (asset, favorite) => {
+		asset.isFavorite = favorite;
+	};
 
-	const { assets, clearSelect } = getAssetControlContext();
+	const { getAssets, clearSelect } = getAssetControlContext();
+	const closeMenu = getMenuContext();
 
 	const handleAddToFavorites = () => {
 		closeMenu();
 
 		let cnt = 0;
-		for (const asset of assets) {
+		for (const asset of getAssets()) {
 			if (!asset.isFavorite) {
 				api.assetApi.updateAsset(asset.id, {
 					isFavorite: true
 				});
-				asset.isFavorite = true;
+				onAssetFavorite(asset, true);
 				cnt = cnt + 1;
 			}
 		}

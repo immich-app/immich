@@ -26,21 +26,17 @@
 			handleError(Error, 'Unable to load favorites');
 		}
 	});
+
+	const onAssetDelete = (assetId: string) => {
+		favorites = favorites.filter((a) => a.id !== assetId);
+	};
 </script>
 
 <!-- Multiselection mode app bar -->
 {#if isMultiSelectionMode}
-	<AssetSelectControlBar
-		options={{
-			assets: selectedAssets,
-			clearSelect: () => (selectedAssets = new Set()),
-			removeAsset: (assetId) => {
-				favorites = favorites.filter((a) => a.id !== assetId);
-			}
-		}}
-	>
+	<AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
 		<CreateSharedLink />
-		<RemoveFavorite />
+		<RemoveFavorite onAssetFavorite={(asset) => onAssetDelete(asset.id)} />
 	</AssetSelectControlBar>
 {/if}
 

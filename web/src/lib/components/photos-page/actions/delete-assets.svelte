@@ -6,24 +6,27 @@
 	} from '$lib/components/shared-components/notification/notification';
 	import { api } from '@api';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
-	import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+	import { OnAssetDelete, getAssetControlContext } from '../asset-select-control-bar.svelte';
 
-	const { assets, clearSelect, removeAsset } = getAssetControlContext();
+	export let onAssetDelete: OnAssetDelete;
+	const { getAssets, clearSelect } = getAssetControlContext();
 
 	const deleteSelectedAssetHandler = async () => {
 		try {
 			if (
 				window.confirm(
-					`Caution! Are you sure you want to delete ${assets.size} assets? This step also deletes assets in the album(s) to which they belong. You can not undo this action!`
+					`Caution! Are you sure you want to delete ${
+						getAssets().size
+					} assets? This step also deletes assets in the album(s) to which they belong. You can not undo this action!`
 				)
 			) {
 				const { data: deletedAssets } = await api.assetApi.deleteAsset({
-					ids: Array.from(assets).map((a) => a.id)
+					ids: Array.from(getAssets()).map((a) => a.id)
 				});
 
 				for (const asset of deletedAssets) {
 					if (asset.status === 'SUCCESS') {
-						removeAsset?.(asset.id);
+						onAssetDelete(asset.id);
 					}
 				}
 

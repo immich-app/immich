@@ -3,18 +3,21 @@
 	import { handleError } from '$lib/utils/handle-error';
 	import { api } from '@api';
 	import HeartMinusOutline from 'svelte-material-icons/HeartMinusOutline.svelte';
-	import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+	import { getAssetControlContext, OnAssetFavorite } from '../asset-select-control-bar.svelte';
 
-	const { assets, clearSelect, removeAsset } = getAssetControlContext();
+	export let onAssetFavorite: OnAssetFavorite = (asset, favorite) => {
+		asset.isFavorite = favorite;
+	};
+
+	const { getAssets, clearSelect } = getAssetControlContext();
 
 	const handleRemoveFavorite = async () => {
-		for (const asset of assets) {
+		for (const asset of getAssets()) {
 			try {
 				await api.assetApi.updateAsset(asset.id, {
 					isFavorite: false
 				});
-				removeAsset?.(asset.id);
-				// favorites = favorites.filter((a) => a.id != asset.id);
+				onAssetFavorite(asset, false);
 			} catch {
 				handleError(Error, 'Error updating asset favorite state');
 			}
@@ -24,8 +27,10 @@
 	};
 </script>
 
-<CircleIconButton
-	title="Remove Favorite"
-	logo={HeartMinusOutline}
-	on:click={handleRemoveFavorite}
-/>
+<slot {handleRemoveFavorite}>
+	<CircleIconButton
+		title="Remove Favorite"
+		logo={HeartMinusOutline}
+		on:click={handleRemoveFavorite}
+	/>
+</slot>

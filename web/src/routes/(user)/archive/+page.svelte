@@ -4,7 +4,7 @@
 	import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
 	import DownloadFiles from '$lib/components/photos-page/actions/download-files.svelte';
 	import RemoveFromArchive from '$lib/components/photos-page/actions/remove-from-archive.svelte';
-	import ShowContextMenu from '$lib/components/photos-page/actions/show-context-menu.svelte';
+	import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
 	import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
 	import OptionAddToAlbum from '$lib/components/photos-page/menu-options/option-add-to-album.svelte';
 	import OptionAddToFavorites from '$lib/components/photos-page/menu-options/option-add-to-favorites.svelte';
@@ -31,8 +31,8 @@
 		}
 	});
 
-	const clearMultiSelectAssetAssetHandler = () => {
-		selectedAssets = new Set();
+	const onAssetDelete = (assetId: string) => {
+		$archivedAsset = $archivedAsset.filter((a) => a.id !== assetId);
 	};
 </script>
 
@@ -48,22 +48,18 @@
 	<svelte:fragment slot="header">
 		{#if isMultiSelectionMode}
 			<AssetSelectControlBar
-				options={{
-					assets: selectedAssets,
-					clearSelect: clearMultiSelectAssetAssetHandler,
-					removeAsset: (assetId) =>
-						($archivedAsset = $archivedAsset.filter((a) => a.id !== assetId))
-				}}
+				assets={selectedAssets}
+				clearSelect={() => (selectedAssets = new Set())}
 			>
 				<CreateSharedLink />
-				<RemoveFromArchive />
+				<RemoveFromArchive onAssetArchive={(asset) => onAssetDelete(asset.id)} />
 				<DownloadFiles />
-				<ShowContextMenu icon={Plus} title="Add" let:closeMenu>
-					<OptionAddToFavorites {closeMenu} />
-					<OptionAddToAlbum {closeMenu} />
-					<OptionAddToAlbum {closeMenu} shared />
-				</ShowContextMenu>
-				<DeleteAssets />
+				<AssetSelectContextMenu icon={Plus} title="Add">
+					<OptionAddToFavorites />
+					<OptionAddToAlbum />
+					<OptionAddToAlbum shared />
+				</AssetSelectContextMenu>
+				<DeleteAssets {onAssetDelete} />
 			</AssetSelectControlBar>
 		{/if}
 	</svelte:fragment>

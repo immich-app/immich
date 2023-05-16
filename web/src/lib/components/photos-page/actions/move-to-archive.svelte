@@ -6,19 +6,24 @@
 	} from '$lib/components/shared-components/notification/notification';
 	import { api } from '@api';
 	import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
-	import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+	import { OnAssetArchive, getAssetControlContext } from '../asset-select-control-bar.svelte';
 
-	const { assets, clearSelect, removeAsset } = getAssetControlContext();
+	export let onAssetArchive: OnAssetArchive = (asset, archive) => {
+		asset.isArchived = archive;
+	};
+
+	const { getAssets, clearSelect } = getAssetControlContext();
 
 	const handleArchive = async () => {
 		let cnt = 0;
-		for (const asset of assets) {
+
+		for (const asset of getAssets()) {
 			if (!asset.isArchived) {
 				api.assetApi.updateAsset(asset.id, {
 					isArchived: true
 				});
 
-				removeAsset?.(asset.id);
+				onAssetArchive(asset, true);
 				cnt = cnt + 1;
 			}
 		}
