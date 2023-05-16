@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { imageLoad } from '$lib/utils/image-load';
+
 	export let url: string;
 	export let altText: string;
 	export let heightStyle: string;
@@ -19,5 +21,6 @@
 		: ''} {circle ? 'rounded-full' : ''}"
 	class:opacity-0={loading}
 	draggable="false"
-	on:load|once={() => (loading = false)}
+	use:imageLoad
+	on:image-load|once={() => (loading = false)}
 />
