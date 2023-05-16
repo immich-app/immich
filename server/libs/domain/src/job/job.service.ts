@@ -11,6 +11,11 @@ export class JobService {
 
   constructor(@Inject(IJobRepository) private jobRepository: IJobRepository) {}
 
+  async handleNightlyJobs() {
+    await this.jobRepository.queue({ name: JobName.USER_DELETE_CHECK });
+    await this.jobRepository.queue({ name: JobName.PERSON_CLEANUP });
+  }
+
   handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<void> {
     this.logger.debug(`Handling command: queue=${queueName},force=${dto.force}`);
 

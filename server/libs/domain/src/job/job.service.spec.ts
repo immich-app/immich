@@ -15,6 +15,17 @@ describe(JobService.name, () => {
     expect(sut).toBeDefined();
   });
 
+  describe('handleNightlyJobs', () => {
+    it('should run the scheduled jobs', async () => {
+      await sut.handleNightlyJobs();
+
+      expect(jobMock.queue.mock.calls).toEqual([
+        [{ name: JobName.USER_DELETE_CHECK }],
+        [{ name: JobName.PERSON_CLEANUP }],
+      ]);
+    });
+  });
+
   describe('getAllJobStatus', () => {
     it('should get all job statuses', async () => {
       jobMock.getJobCounts.mockResolvedValue({
