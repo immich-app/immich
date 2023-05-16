@@ -1,49 +1,48 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import { afterNavigate, goto } from '$app/navigation';
+	import { albumAssetSelectionStore } from '$lib/stores/album-asset-selection.store';
+	import { downloadAssets } from '$lib/stores/download';
+	import { locale } from '$lib/stores/preferences.store';
+	import { clickOutside } from '$lib/utils/click-outside';
+	import { openFileUploadDialog } from '$lib/utils/file-uploader';
 	import {
 		AlbumResponseDto,
-		api,
 		AssetResponseDto,
 		SharedLinkResponseDto,
 		SharedLinkType,
-		UserResponseDto
+		UserResponseDto,
+		api
 	} from '@api';
 	import { onMount } from 'svelte';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
-	import Plus from 'svelte-material-icons/Plus.svelte';
-	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
-	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
-	import CircleAvatar from '../shared-components/circle-avatar.svelte';
-	import AssetSelection from './asset-selection.svelte';
-	import UserSelectionModal from './user-selection-modal.svelte';
-	import ShareInfoModal from './share-info-modal.svelte';
-	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-	import Close from 'svelte-material-icons/Close.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
-	import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
-	import { downloadAssets } from '$lib/stores/download';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
+	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
+	import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
+	import Plus from 'svelte-material-icons/Plus.svelte';
+	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
+	import Button from '../elements/buttons/button.svelte';
+	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+	import DownloadFiles from '../photos-page/actions/download-files.svelte';
+	import RemoveFromAlbum from '../photos-page/actions/remove-from-album.svelte';
+	import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
+	import CircleAvatar from '../shared-components/circle-avatar.svelte';
 	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
-	import ThumbnailSelection from './thumbnail-selection.svelte';
 	import ControlAppBar from '../shared-components/control-app-bar.svelte';
-	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
-
-	import {
-		notificationController,
-		NotificationType
-	} from '../shared-components/notification/notification';
-	import { browser } from '$app/environment';
-	import { albumAssetSelectionStore } from '$lib/stores/album-asset-selection.store';
 	import CreateSharedLinkModal from '../shared-components/create-share-link-modal/create-shared-link-modal.svelte';
-	import ThemeButton from '../shared-components/theme-button.svelte';
-	import { openFileUploadDialog } from '$lib/utils/file-uploader';
-	import { bulkDownload } from '$lib/utils/asset-utils';
-	import { locale } from '$lib/stores/preferences.store';
 	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
 	import ImmichLogo from '../shared-components/immich-logo.svelte';
-	import Button from '../elements/buttons/button.svelte';
-	import { clickOutside } from '$lib/utils/click-outside';
+	import {
+		NotificationType,
+		notificationController
+	} from '../shared-components/notification/notification';
+	import ThemeButton from '../shared-components/theme-button.svelte';
+	import AssetSelection from './asset-selection.svelte';
+	import ShareInfoModal from './share-info-modal.svelte';
+	import ThumbnailSelection from './thumbnail-selection.svelte';
+	import UserSelectionModal from './user-selection-modal.svelte';
 
 	export let album: AlbumResponseDto;
 	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
@@ -123,25 +122,6 @@
 
 	const clearMultiSelectAssetAssetHandler = () => {
 		multiSelectAsset = new Set();
-	};
-
-	const removeSelectedAssetFromAlbum = async () => {
-		if (window.confirm('Do you want to remove selected assets from the album?')) {
-			try {
-				const { data } = await api.albumApi.removeAssetFromAlbum(album.id, {
-					assetIds: Array.from(multiSelectAsset).map((a) => a.id)
-				});
-
-				album = data;
-				multiSelectAsset = new Set();
-			} catch (e) {
-				console.error('Error [album-viewer] [removeAssetFromAlbum]', e);
-				notificationController.show({
-					type: NotificationType.Error,
-					message: 'Error removing assets from album, check console for more details'
-				});
-			}
-		}
 	};
 
 	// Update Album Name
@@ -353,48 +333,20 @@
 		isShowShareUserSelection = false;
 		isShowShareLinkModal = true;
 	};
-
-	const handleDownloadSelectedAssets = async () => {
-		await bulkDownload(
-			album.albumName,
-			Array.from(multiSelectAsset),
-			() => {
-				isMultiSelectionMode = false;
-				clearMultiSelectAssetAssetHandler();
-			},
-			sharedLink?.key
-		);
-	};
 </script>
 
 <section class="bg-immich-bg dark:bg-immich-dark-bg" class:hidden={isShowThumbnailSelection}>
 	<!-- Multiselection mode app bar -->
 	{#if isMultiSelectionMode}
-		<ControlAppBar
-			on:close-button-click={clearMultiSelectAssetAssetHandler}
-			backIcon={Close}
-			tailwindClasses={'bg-white shadow-md'}
+		<AssetSelectControlBar
+			assets={multiSelectAsset}
+			clearSelect={clearMultiSelectAssetAssetHandler}
 		>
-			<svelte:fragment slot="leading">
-				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
-					Selected {multiSelectAsset.size.toLocaleString($locale)}
-				</p>
-			</svelte:fragment>
-			<svelte:fragment slot="trailing">
-				<CircleIconButton
-					title="Download"
-					on:click={handleDownloadSelectedAssets}
-					logo={CloudDownloadOutline}
-				/>
-				{#if isOwned}
-					<CircleIconButton
-						title="Remove from album"
-						on:click={removeSelectedAssetFromAlbum}
-						logo={DeleteOutline}
-					/>
-				{/if}
-			</svelte:fragment>
-		</ControlAppBar>
+			<DownloadFiles filename={album.albumName} sharedLinkKey={sharedLink?.key} />
+			{#if isOwned}
+				<RemoveFromAlbum bind:album />
+			{/if}
+		</AssetSelectControlBar>
 	{/if}
 
 	<!-- Default app bar -->
