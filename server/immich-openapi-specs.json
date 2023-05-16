@@ -5389,6 +5389,10 @@
             "type": "string",
             "format": "binary"
           },
+          "sidecarData": {
+            "type": "string",
+            "format": "binary"
+          },
           "deviceAssetId": {
             "type": "string"
           },

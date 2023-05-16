@@ -91,7 +91,7 @@ export class MetadataExtractionProcessor {
     let asset = job.data.asset;
 
     try {
-      const exifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((error: any) => {
+      const exifData = await exiftool.read<ImmichTags>(asset.sidecarPath || asset.originalPath).catch((error: any) => {
         this.logger.warn(
           `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
           error?.stack,
@@ -140,7 +140,9 @@ export class MetadataExtractionProcessor {
       newExif.lensModel = exifData?.LensModel || null;
       newExif.fNumber = exifData?.FNumber || null;
       newExif.focalLength = exifData?.FocalLength ? parseFloat(exifData.FocalLength) : null;
-      newExif.iso = exifData?.ISO || null;
+      // This is unusual - exifData.ISO should return a number, but experienced that sidecar XMP
+      // files MAY return an array of numbers instead.
+      newExif.iso = Array.isArray(exifData?.ISO) ? exifData?.ISO[0] : exifData?.ISO || null;
       newExif.latitude = exifData?.GPSLatitude || null;
       newExif.longitude = exifData?.GPSLongitude || null;
       newExif.livePhotoCID = exifData?.MediaGroupUUID || null;
@@ -213,7 +215,7 @@ export class MetadataExtractionProcessor {
         }
       }
 
-      const exifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((error: any) => {
+      const exifData = await exiftool.read<ImmichTags>(asset.sidecarPath || asset.originalPath).catch((error: any) => {
         this.logger.warn(
           `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
           error?.stack,
