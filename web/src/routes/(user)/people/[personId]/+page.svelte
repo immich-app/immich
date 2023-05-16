@@ -43,7 +43,7 @@
 	};
 
 	const handleUnselectAsset = (assetId: string) => {
-		const asset = data.assets.find((asset) => asset.id === assetId);
+		const asset = data.assets.find((asset: AssetResponseDto) => asset.id === assetId);
 		if (asset && multiSelectAsset.has(asset)) {
 			multiSelectAsset.delete(asset);
 		}
