@@ -45,8 +45,6 @@ export class PersonController {
   }
 
   @Get(':id/thumbnail')
-  @Header('Cache-Control', 'max-age=31536000')
-  @Header('Content-Type', 'image/jpeg')
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   getPersonThumbnail(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
     return this.service.getThumbnail(authUser, id).then(asStreamableFile);
