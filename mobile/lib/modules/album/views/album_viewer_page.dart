@@ -271,7 +271,7 @@ class AlbumViewerPage extends HookConsumerWidget {
                           ? scroll.position.minScrollExtent
                           : scroll.position.maxScrollExtent,
                       duration: const Duration(milliseconds: 500),
-                      curve: Curves.decelerate,
+                      curve: top ? Curves.easeOut : Curves.easeIn,
                     );
                   }
                 },
