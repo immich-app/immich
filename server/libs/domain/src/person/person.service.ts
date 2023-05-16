@@ -21,7 +21,12 @@ export class PersonService {
     const people = await this.repository.getAll(authUser.id, { minimumFaceCount: 3 });
     const named = people.filter((person) => !!person.name);
     const unnamed = people.filter((person) => !person.name);
-    return [...named, ...unnamed].map((person) => mapPerson(person));
+    return (
+      [...named, ...unnamed]
+        // with thumbnails
+        .filter((person) => !!person.thumbnailPath)
+        .map((person) => mapPerson(person))
+    );
   }
 
   async getById(authUser: AuthUserDto, personId: string): Promise<PersonResponseDto> {
