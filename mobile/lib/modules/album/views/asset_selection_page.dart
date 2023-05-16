@@ -39,6 +39,7 @@ class AssetSelectionPage extends HookConsumerWidget {
         selectionActive: true,
         preselectedAssets: isNewAlbum ? selected.value : existingAssets,
         canDeselect: isNewAlbum,
+        showMultiSelectIndicator: false,
       );
     }
 
