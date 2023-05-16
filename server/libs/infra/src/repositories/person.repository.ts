@@ -62,6 +62,8 @@ export class PersonRepository implements IPersonRepository {
       order: {
         createdAt: 'ASC',
       },
+      // TODO: remove after either (1) pagination or (2) time bucket is implemented for this query
+      take: 3000,
     });
   }
 
