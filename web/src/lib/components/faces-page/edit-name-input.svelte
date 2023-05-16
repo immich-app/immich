@@ -1,21 +1,23 @@
 <script lang="ts">
-	import { api } from '@api';
+	import { PersonResponseDto, api } from '@api';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
 	import Button from '../elements/buttons/button.svelte';
-	import { createEventDispatcher, onMount } from 'svelte';
 
-	export let personName = '';
-	export let personId = '';
+	export let person: PersonResponseDto;
 	let dispatch = createEventDispatcher<{ change: string }>();
 	let inputElement: HTMLInputElement;
+	let name = '';
 
 	onMount(() => {
 		if (inputElement) {
 			inputElement.focus();
 		}
+
+		name = person.name;
 	});
 
-	const handleNameChange = () => dispatch('change', personName);
+	const handleNameChange = () => dispatch('change', name);
 </script>
 
 <div
@@ -24,8 +26,8 @@
 	<ImageThumbnail
 		circle
 		shadow
-		url={api.getPeopleThumbnailUrl(personId)}
-		altText={personName}
+		url={api.getPeopleThumbnailUrl(person.id)}
+		altText={person.name}
 		widthStyle="30px"
 		heightStyle="30px"
 	/>
@@ -38,7 +40,7 @@
 			class="gap-2 w-full bg-gray-100 dark:bg-gray-700 dark:text-white"
 			type="text"
 			placeholder="New name or nickname"
-			bind:value={personName}
+			bind:value={name}
 			bind:this={inputElement}
 		/>
 		<Button size="sm" type="submit">Done</Button>

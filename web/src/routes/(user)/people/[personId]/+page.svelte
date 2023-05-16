@@ -2,95 +2,88 @@
 	import { goto } from '$app/navigation';
 	import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
 	import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
+	import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
+	import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
+	import DownloadFiles from '$lib/components/photos-page/actions/download-files.svelte';
+	import MoveToArchive from '$lib/components/photos-page/actions/move-to-archive.svelte';
+	import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
+	import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+	import OptionAddToAlbum from '$lib/components/photos-page/menu-options/option-add-to-album.svelte';
+	import OptionAddToFavorites from '$lib/components/photos-page/menu-options/option-add-to-favorites.svelte';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
+	import { AppRoute } from '$lib/constants';
 	import { clickOutside } from '$lib/utils/click-outside';
 	import { handleError } from '$lib/utils/handle-error';
-	import { api } from '@api';
-	import { onMount } from 'svelte';
+	import { AssetResponseDto, api } from '@api';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import ImageOffOutline from 'svelte-material-icons/ImageOffOutline.svelte';
+	import Plus from 'svelte-material-icons/Plus.svelte';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 
 	let isEditName = false;
 
-	$: personId = data.person.id;
+	let multiSelectAsset: Set<AssetResponseDto> = new Set();
+	$: isMultiSelectionMode = multiSelectAsset.size > 0;
 
 	const noop = () => {
 		// noop
 	};
 
-	const handleNameChange = async (personId: string, name: string) => {
+	const handleNameChange = async (name: string) => {
 		try {
 			isEditName = false;
 			data.person.name = name;
-			await api.personApi.updatePerson(personId, { name });
+			await api.personApi.updatePerson(data.person.id, { name });
 		} catch (error) {
 			handleError(error, 'Unable to save name');
 		}
 	};
+
+	const handleUnselectAsset = (assetId: string) => {
+		const asset = data.assets.find((asset) => asset.id === assetId);
+		if (asset && multiSelectAsset.has(asset)) {
+			multiSelectAsset.delete(asset);
+		}
+	};
 </script>
 
-<section>
-	<!-- {#if isMultiSelectionMode}
-		<ControlAppBar
-			on:close-button-click={clearMultiSelectAssetAssetHandler}
-			backIcon={Close}
-			tailwindClasses={'bg-white shadow-md'}
-		>
-			<svelte:fragment slot="leading">
-				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
-					Selected {selectedAssets.size.toLocaleString($locale)}
-				</p>
-			</svelte:fragment>
-			<svelte:fragment slot="trailing">
-				<CircleIconButton
-					title="Share"
-					logo={ShareVariantOutline}
-					on:click={handleCreateSharedLink}
-				/>
-
-				<CircleIconButton
-					title={isAllArchived ? 'Unarchive' : 'Archive'}
-					logo={isAllArchived ? ArchiveArrowUpOutline : ArchiveArrowDownOutline}
-					on:click={toggleArchive}
-				/>
-
-				<CircleIconButton
-					title="Download"
-					logo={CloudDownloadOutline}
-					on:click={handleDownloadFiles}
-				/>
-				<CircleIconButton title="Add" logo={Plus} on:click={handleShowMenu} />
-				<CircleIconButton
-					title="Delete"
-					logo={DeleteOutline}
-					on:click={deleteSelectedAssetHandler}
-				/>
-			</svelte:fragment>
-		</ControlAppBar>
-	{:else} -->
-	<ControlAppBar on:close-button-click={() => goto('/explore')} backIcon={ArrowLeft} />
-	<!-- {/if} -->
-</section>
+{#if isMultiSelectionMode}
+	<AssetSelectControlBar
+		assets={multiSelectAsset}
+		clearSelect={() => (multiSelectAsset = new Set())}
+	>
+		<CreateSharedLink />
+		<MoveToArchive onAssetArchive={(asset) => handleUnselectAsset(asset.id)} />
+		<DownloadFiles filename={data.person.name} />
+		<AssetSelectContextMenu icon={Plus} title="Add">
+			<OptionAddToFavorites />
+			<OptionAddToAlbum />
+			<OptionAddToAlbum shared />
+		</AssetSelectContextMenu>
+		<DeleteAssets onAssetDelete={handleUnselectAsset} />
+	</AssetSelectControlBar>
+{:else}
+	<ControlAppBar
+		showBackButton
+		backIcon={ArrowLeft}
+		on:close-button-click={() => goto(AppRoute.EXPLORE)}
+	/>
+{/if}
 
 <!-- Face information block -->
 <section class="pt-24 pl-6 flex place-items-center">
 	{#if isEditName}
 		<div use:clickOutside on:outclick={() => (isEditName = false)}>
-			<EditNameInput
-				personName={data.person.name}
-				{personId}
-				on:change={(event) => handleNameChange(personId, event.detail)}
-			/>
+			<EditNameInput person={data.person} on:change={(event) => handleNameChange(event.detail)} />
 		</div>
 	{:else}
 		<ImageThumbnail
 			circle
 			shadow
-			url={api.getPeopleThumbnailUrl(personId)}
+			url={api.getPeopleThumbnailUrl(data.person.id)}
 			altText={data.person.name}
 			widthStyle="50px"
 			heightStyle="50px"
@@ -120,7 +113,12 @@
 		<section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
 			{#if data.assets.length > 0}
 				<div class="pl-4">
-					<GalleryViewer assets={data.assets} viewFrom="search-page" showArchiveIcon={true} />
+					<GalleryViewer
+						assets={data.assets}
+						viewFrom="search-page"
+						showArchiveIcon={true}
+						bind:selectedAssets={multiSelectAsset}
+					/>
 				</div>
 			{:else}
 				<div
