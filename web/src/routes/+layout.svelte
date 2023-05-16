@@ -8,12 +8,12 @@
 	import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
 	import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
 	import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
-	import faviconUrl from '$lib/assets/favicon.png';
 	import type { LayoutData } from './$types';
 	import { fileUploadHandler } from '$lib/utils/file-uploader';
 	import UploadCover from '$lib/components/shared-components/drag-and-drop-upload-overlay.svelte';
 	import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
 	import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
+	import FaviconHeader from '$lib/components/shared-components/favicon-header.svelte';
 
 	let showNavigationLoadingBar = false;
 	export let data: LayoutData;
@@ -42,9 +42,9 @@
 
 <svelte:head>
 	<title>{$page.data.meta?.title || 'Web'} - Immich</title>
-	<link rel="icon" href={faviconUrl} />
 	<link rel="manifest" href="/manifest.json" />
 	<meta name="theme-color" content="currentColor" />
+	<FaviconHeader />
 	<AppleHeader />
 
 	{#if $page.data.meta}
