@@ -57,10 +57,6 @@ export class FacialRecognitionService {
       this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);
       this.logger.verbose(faces.map((face) => ({ ...face, embedding: `float[${face.embedding.length}]` })));
 
-      if (faces.length > 0) {
-        // TODO: delete all faces?
-      }
-
       for (const { embedding, ...rest } of faces) {
         const faceSearchResult = await this.searchRepository.searchFaces(embedding, { ownerId: asset.ownerId });
 
@@ -69,7 +65,7 @@ export class FacialRecognitionService {
         // try to find a matching face and link to the associated person
         // The closer to 0, the better the match. Range is from 0 to 2
         if (faceSearchResult.total && faceSearchResult.distances[0] < 0.6) {
-          this.logger.debug(`Match face with distance ${faceSearchResult.distances[0]}`);
+          this.logger.verbose(`Match face with distance ${faceSearchResult.distances[0]}`);
           personId = faceSearchResult.items[0].personId;
         }
 
@@ -79,7 +75,7 @@ export class FacialRecognitionService {
           personId = person.id;
           await this.jobRepository.queue({
             name: JobName.GENERATE_FACE_THUMBNAIL,
-            data: { assetId: asset.id, personId, zoomOut: true, ...rest },
+            data: { assetId: asset.id, personId, ...rest },
           });
         }
 
@@ -97,7 +93,7 @@ export class FacialRecognitionService {
   }
 
   async handleGenerateFaceThumbnail(data: IFaceThumbnailJob) {
-    const { assetId, personId, boundingBox, imageWidth, imageHeight, zoomOut } = data;
+    const { assetId, personId, boundingBox, imageWidth, imageHeight } = data;
 
     try {
       const [asset] = await this.assetRepository.getByIds([assetId]);
@@ -106,46 +102,39 @@ export class FacialRecognitionService {
         return null;
       }
 
-      this.logger.debug(`Cropping face for person: ${personId}`);
+      this.logger.verbose(`Cropping face for person: ${personId}`);
 
       const outputFolder = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
       const output = join(outputFolder, `${personId}.jpeg`);
       this.storageRepository.mkdirSync(outputFolder);
 
-      const zoomFraction = zoomOut ? 1.1 : 1.0;
       const { x1, y1, x2, y2 } = boundingBox;
-      const imageHalfWidth = (x2 - x1) / 2;
-      const imageHalfHeight = (y2 - y1) / 2;
-      const middleX = x1 + imageHalfWidth;
-      const middleY = y1 + imageHalfHeight;
-      const zoomOutPixels = Math.max(imageHalfWidth, imageHalfHeight) * zoomFraction;
+
+      const halfWidth = (x2 - x1) / 2;
+      const halfHeight = (y2 - y1) / 2;
+
+      const middleX = Math.round(x1 + halfWidth);
+      const middleY = Math.round(y1 + halfHeight);
+
+      // zoom out 10%
+      const targetHalfSize = Math.floor(Math.max(halfWidth, halfHeight) * 1.1);
 
       // get the longest distance from the center of the image without overflowing
-      const unit = Math.max(
-        middleX - Math.max(0, middleX - zoomOutPixels),
-        middleY - Math.max(0, middleY - zoomOutPixels),
-        Math.min(imageWidth, middleX + zoomOutPixels) - middleX,
-        Math.min(imageHeight, middleY + zoomOutPixels) - middleY,
+      const newHalfSize = Math.min(
+        middleX - Math.max(0, middleX - targetHalfSize),
+        middleY - Math.max(0, middleY - targetHalfSize),
+        Math.min(imageWidth - 1, middleX + targetHalfSize) - middleX,
+        Math.min(imageHeight - 1, middleY + targetHalfSize) - middleY,
       );
 
-      const left = Math.abs(Math.round(middleX - unit));
-      const top = Math.abs(Math.round(middleY - unit));
-      const size = Math.abs(Math.round(unit * 2));
-
-      // TODO: move to machine learning code
-      // if (left < 1 || top < 1 || width < 1 || height < 1) {
-      //   this.logger.error(`invalid bounding box ${JSON.stringify(face.boundingBox)}`);
-      //   return null;
-      // }
+      const left = middleX - newHalfSize;
+      const top = middleY - newHalfSize;
+      const size = newHalfSize * 2;
 
       await this.mediaRepository.crop(asset.resizePath, output, { left, top, width: size, height: size });
       await this.personRepository.update({ id: personId, thumbnailPath: output });
-    } catch (error: any) {
-      this.logger.error(
-        `Failed to crop face for asset: ${assetId}, person: ${personId} - regenerating with zooming out disabled`,
-        error.stack,
-      );
-      await this.jobRepository.queue({ name: JobName.GENERATE_FACE_THUMBNAIL, data: { ...data, zoomOut: false } });
+    } catch (error: Error | any) {
+      this.logger.error(`Failed to crop face for asset: ${assetId}, person: ${personId} - ${error}`, error.stack);
     }
   }
 }

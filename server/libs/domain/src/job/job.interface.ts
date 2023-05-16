@@ -24,7 +24,6 @@ export interface IFaceThumbnailJob extends IAssetFaceJob {
   boundingBox: BoundingBox;
   assetId: string;
   personId: string;
-  zoomOut: boolean;
 }
 
 export interface IBulkEntityJob extends IBaseJob {
