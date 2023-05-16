@@ -27,10 +27,10 @@ import { Job } from 'bull';
 export class BackgroundTaskProcessor {
   constructor(
     private assetService: AssetService,
+    private personService: PersonService,
     private storageService: StorageService,
     private systemConfigService: SystemConfigService,
     private userService: UserService,
-    private personService: PersonService,
   ) {}
 
   @Process(JobName.ASSET_UPLOADED)

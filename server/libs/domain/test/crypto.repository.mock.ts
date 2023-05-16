@@ -6,6 +6,5 @@ export const newCryptoRepositoryMock = (): jest.Mocked<ICryptoRepository> => {
     compareBcrypt: jest.fn().mockReturnValue(true),
     hashBcrypt: jest.fn().mockImplementation((input) => Promise.resolve(`${input} (hashed)`)),
     hashSha256: jest.fn().mockImplementation((input) => `${input} (hashed)`),
-    randomUUID: jest.fn().mockReturnValue('ad43b70e-e3ad-11ed-b5ea-0242ac120002'),
   };
 };
