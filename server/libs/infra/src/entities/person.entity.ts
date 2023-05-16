@@ -16,10 +16,10 @@ export class PersonEntity {
   id!: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: string;
+  createdAt!: Date;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: string;
+  updatedAt!: Date;
 
   @Column()
   ownerId!: string;

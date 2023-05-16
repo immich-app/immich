@@ -19,8 +19,4 @@ export class FaceRepository implements IFaceRepository {
   create(entity: Partial<AssetFaceEntity>): Promise<AssetFaceEntity> {
     return this.repository.save(entity);
   }
-
-  update(entity: Partial<AssetFaceEntity>): Promise<AssetFaceEntity> {
-    return this.repository.save(entity);
-  }
 }

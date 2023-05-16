@@ -837,8 +837,8 @@ export const probeStub = {
 export const personStub = {
   noName: Object.freeze<PersonEntity>({
     id: 'person-1',
-    createdAt: '2021-01-01',
-    updatedAt: '2021-01-01',
+    createdAt: new Date('2021-01-01'),
+    updatedAt: new Date('2021-01-01'),
     ownerId: userEntityStub.admin.id,
     owner: userEntityStub.admin,
     name: '',
@@ -847,8 +847,8 @@ export const personStub = {
   }),
   withName: Object.freeze<PersonEntity>({
     id: 'person-1',
-    createdAt: '2021-01-01',
-    updatedAt: '2021-01-01',
+    createdAt: new Date('2021-01-01'),
+    updatedAt: new Date('2021-01-01'),
     ownerId: userEntityStub.admin.id,
     owner: userEntityStub.admin,
     name: 'Person 1',
@@ -857,8 +857,8 @@ export const personStub = {
   }),
   noThumbnail: Object.freeze<PersonEntity>({
     id: 'person-1',
-    createdAt: '2021-01-01',
-    updatedAt: '2021-01-01',
+    createdAt: new Date('2021-01-01'),
+    updatedAt: new Date('2021-01-01'),
     ownerId: userEntityStub.admin.id,
     owner: userEntityStub.admin,
     name: '',

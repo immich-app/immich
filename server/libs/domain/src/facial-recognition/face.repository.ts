@@ -10,7 +10,5 @@ export interface AssetFaceId {
 export interface IFaceRepository {
   getAll(): Promise<AssetFaceEntity[]>;
   getByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]>;
-
   create(entity: Partial<AssetFaceEntity>): Promise<AssetFaceEntity>;
-  update(entity: Partial<AssetFaceEntity>): Promise<AssetFaceEntity>;
 }

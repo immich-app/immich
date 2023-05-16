@@ -5,6 +5,5 @@ export const newFaceRepositoryMock = (): jest.Mocked<IFaceRepository> => {
     getAll: jest.fn(),
     getByIds: jest.fn(),
     create: jest.fn(),
-    update: jest.fn(),
   };
 };
