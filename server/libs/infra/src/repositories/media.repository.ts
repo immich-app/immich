@@ -7,22 +7,22 @@ import { promisify } from 'util';
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 
 export class MediaRepository implements IMediaRepository {
-  async crop(input: string, output: string, options: CropOptions): Promise<void> {
-    await sharp(input, { failOnError: false })
+  crop(input: string, options: CropOptions): Promise<Buffer> {
+    return sharp(input, { failOnError: false })
       .extract({
         left: options.left,
         top: options.top,
         width: options.width,
         height: options.height,
       })
-      .toFile(output);
+      .toBuffer();
   }
 
   extractThumbnailFromExif(input: string, output: string): Promise<void> {
     return exiftool.extractThumbnail(input, output);
   }
 
-  async resize(input: string, output: string, options: ResizeOptions): Promise<void> {
+  async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
     switch (options.format) {
       case 'webp':
         await sharp(input, { failOnError: false })

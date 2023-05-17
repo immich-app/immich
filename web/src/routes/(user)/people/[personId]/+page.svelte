@@ -38,7 +38,7 @@
 	};
 
 	const handleAssetDelete = (assetId: string) => {
-		data.assets = data.assets.filter((asset) => asset.id !== assetId);
+		data.assets = data.assets.filter((asset: AssetResponseDto) => asset.id !== assetId);
 	};
 </script>
 

@@ -3,7 +3,7 @@ import { join } from 'path';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
 import { IAssetJob, IBaseJob, IFaceThumbnailJob, IJobRepository, JobName } from '../job';
-import { IMediaRepository } from '../media';
+import { CropOptions, FACE_THUMBNAIL_SIZE, IMediaRepository } from '../media';
 import { IPersonRepository } from '../person/person.repository';
 import { ISearchRepository } from '../search/search.repository';
 import { IMachineLearningRepository } from '../smart-info';
@@ -127,11 +127,15 @@ export class FacialRecognitionService {
         Math.min(imageHeight - 1, middleY + targetHalfSize) - middleY,
       );
 
-      const left = middleX - newHalfSize;
-      const top = middleY - newHalfSize;
-      const size = newHalfSize * 2;
+      const cropOptions: CropOptions = {
+        left: middleX - newHalfSize,
+        top: middleY - newHalfSize,
+        width: newHalfSize * 2,
+        height: newHalfSize * 2,
+      };
 
-      await this.mediaRepository.crop(asset.resizePath, output, { left, top, width: size, height: size });
+      const croppedOutput = await this.mediaRepository.crop(asset.resizePath, cropOptions);
+      await this.mediaRepository.resize(croppedOutput, output, { size: FACE_THUMBNAIL_SIZE, format: 'jpeg' });
       await this.personRepository.update({ id: personId, thumbnailPath: output });
     } catch (error: Error | any) {
       this.logger.error(`Failed to crop face for asset: ${assetId}, person: ${personId} - ${error}`, error.stack);
