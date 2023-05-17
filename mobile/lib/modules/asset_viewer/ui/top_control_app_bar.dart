@@ -21,7 +21,7 @@ class TopControlAppBar extends HookConsumerWidget {
   final VoidCallback? onDownloadPressed;
   final VoidCallback onToggleMotionVideo;
   final VoidCallback onAddToAlbumPressed;
-  final VoidCallback onFavorite;
+  final VoidCallback? onFavorite;
   final bool isPlayingMotionVideo;
   final bool isFavorite;
 
@@ -31,9 +31,7 @@ class TopControlAppBar extends HookConsumerWidget {
 
     Widget buildFavoriteButton() {
       return IconButton(
-        onPressed: () {
-          onFavorite();
-        },
+        onPressed: onFavorite,
         icon: Icon(
           isFavorite ? Icons.favorite : Icons.favorite_border,
           color: Colors.grey[200],

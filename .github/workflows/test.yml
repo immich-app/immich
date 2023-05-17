@@ -115,7 +115,7 @@ jobs:
           flutter-version: "3.10.0"
       - name: Run tests
         working-directory: ./mobile
-        run: flutter test
+        run: flutter test -j 1
 
   generated-api-up-to-date:
     name: Check generated files are up-to-date

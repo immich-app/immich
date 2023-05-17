@@ -7,15 +7,16 @@ import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 
 class ControlBottomAppBar extends ConsumerWidget {
-  final Function onShare;
-  final Function onFavorite;
-  final Function onArchive;
-  final Function onDelete;
+  final void Function() onShare;
+  final void Function() onFavorite;
+  final void Function() onArchive;
+  final void Function() onDelete;
   final Function(Album album) onAddToAlbum;
   final void Function() onCreateNewAlbum;
 
   final List<Album> albums;
   final List<Album> sharedAlbums;
+  final bool enabled;
 
   const ControlBottomAppBar({
     Key? key,
@@ -27,6 +28,7 @@ class ControlBottomAppBar extends ConsumerWidget {
     required this.albums,
     required this.onAddToAlbum,
     required this.onCreateNewAlbum,
+    this.enabled = true,
   }) : super(key: key);
 
   @override
@@ -39,35 +41,31 @@ class ControlBottomAppBar extends ConsumerWidget {
           ControlBoxButton(
             iconData: Icons.ios_share_rounded,
             label: "control_bottom_app_bar_share".tr(),
-            onPressed: () {
-              onShare();
-            },
+            onPressed: enabled ? onShare : null,
           ),
           ControlBoxButton(
             iconData: Icons.favorite_border_rounded,
             label: "control_bottom_app_bar_favorite".tr(),
-            onPressed: () {
-              onFavorite();
-            },
+            onPressed: enabled ? onFavorite : null,
           ),
           ControlBoxButton(
             iconData: Icons.delete_outline_rounded,
             label: "control_bottom_app_bar_delete".tr(),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return DeleteDialog(
-                    onDelete: onDelete,
-                  );
-                },
-              );
-            },
+            onPressed: enabled
+                ? () => showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return DeleteDialog(
+                          onDelete: onDelete,
+                        );
+                      },
+                    )
+                : null,
           ),
           ControlBoxButton(
             iconData: Icons.archive,
             label: "control_bottom_app_bar_archive".tr(),
-            onPressed: () => onArchive(),
+            onPressed: enabled ? onArchive : null,
           ),
         ],
       );
@@ -108,7 +106,9 @@ class ControlBottomAppBar extends ConsumerWidget {
                       endIndent: 16,
                       thickness: 1,
                     ),
-                    AddToAlbumTitleRow(onCreateNewAlbum: onCreateNewAlbum),
+                    AddToAlbumTitleRow(
+                      onCreateNewAlbum: enabled ? onCreateNewAlbum : null,
+                    ),
                   ],
                 ),
               ),
@@ -118,6 +118,7 @@ class ControlBottomAppBar extends ConsumerWidget {
                   albums: albums,
                   sharedAlbums: sharedAlbums,
                   onAddToAlbum: onAddToAlbum,
+                  enabled: enabled,
                 ),
               ),
               const SliverToBoxAdapter(
@@ -137,7 +138,7 @@ class AddToAlbumTitleRow extends StatelessWidget {
     required this.onCreateNewAlbum,
   });
 
-  final VoidCallback onCreateNewAlbum;
+  final VoidCallback? onCreateNewAlbum;
 
   @override
   Widget build(BuildContext context) {

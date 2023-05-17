@@ -1,7 +1,9 @@
-import 'package:collection/collection.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/user.dart';
@@ -9,10 +11,14 @@ import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:isar/isar.dart';
 
 class SharedAlbumNotifier extends StateNotifier<List<Album>> {
-  SharedAlbumNotifier(this._albumService, this._db) : super([]);
+  SharedAlbumNotifier(this._albumService, Isar db) : super([]) {
+    final query = db.albums.filter().sharedEqualTo(true).sortByCreatedAtDesc();
+    query.findAll().then((value) => state = value);
+    _streamSub = query.watch().listen((data) => state = data);
+  }
 
   final AlbumService _albumService;
-  final Isar _db;
+  late final StreamSubscription<List<Album>> _streamSub;
 
   Future<Album?> createSharedAlbum(
     String albumName,
@@ -20,46 +26,21 @@ class SharedAlbumNotifier extends StateNotifier<List<Album>> {
     Iterable<User> sharedUsers,
   ) async {
     try {
-      final Album? newAlbum = await _albumService.createAlbum(
+      return await _albumService.createAlbum(
         albumName,
         assets,
         sharedUsers,
       );
-
-      if (newAlbum != null) {
-        state = [...state, newAlbum];
-        return newAlbum;
-      }
     } catch (e) {
       debugPrint("Error createSharedAlbum  ${e.toString()}");
     }
     return null;
   }
 
-  Future<void> getAllSharedAlbums() async {
-    var albums = await _db.albums
-        .filter()
-        .sharedEqualTo(true)
-        .sortByCreatedAtDesc()
-        .findAll();
-    if (!const ListEquality().equals(albums, state)) {
-      state = albums;
-    }
-    await _albumService.refreshRemoteAlbums(isShared: true);
-    albums = await _db.albums
-        .filter()
-        .sharedEqualTo(true)
-        .sortByCreatedAtDesc()
-        .findAll();
-    if (!const ListEquality().equals(albums, state)) {
-      state = albums;
-    }
-  }
+  Future<void> getAllSharedAlbums() =>
+      _albumService.refreshRemoteAlbums(isShared: true);
 
-  Future<bool> deleteAlbum(Album album) {
-    state = state.where((a) => a.id != album.id).toList();
-    return _albumService.deleteAlbum(album);
-  }
+  Future<bool> deleteAlbum(Album album) => _albumService.deleteAlbum(album);
 
   Future<bool> leaveAlbum(Album album) async {
     var res = await _albumService.leaveAlbum(album);
@@ -75,10 +56,16 @@ class SharedAlbumNotifier extends StateNotifier<List<Album>> {
   Future<bool> removeAssetFromAlbum(Album album, Iterable<Asset> assets) {
     return _albumService.removeAssetFromAlbum(album, assets);
   }
+
+  @override
+  void dispose() {
+    _streamSub.cancel();
+    super.dispose();
+  }
 }
 
 final sharedAlbumProvider =
-    StateNotifierProvider<SharedAlbumNotifier, List<Album>>((ref) {
+    StateNotifierProvider.autoDispose<SharedAlbumNotifier, List<Album>>((ref) {
   return SharedAlbumNotifier(
     ref.watch(albumServiceProvider),
     ref.watch(dbProvider),
@@ -86,10 +73,15 @@ final sharedAlbumProvider =
 });
 
 final sharedAlbumDetailProvider =
-    FutureProvider.autoDispose.family<Album?, int>((ref, albumId) async {
+    StreamProvider.autoDispose.family<Album, int>((ref, albumId) async* {
   final AlbumService sharedAlbumService = ref.watch(albumServiceProvider);
 
-  final Album? a = await sharedAlbumService.getAlbumDetail(albumId);
-  await a?.loadSortedAssets();
-  return a;
+  await for (final a in sharedAlbumService.watchAlbum(albumId)) {
+    if (a == null) {
+      throw Exception("Album with ID=$albumId does not exist anymore!");
+    }
+    await for (final _ in a.watchRenderList(GroupAssetsBy.none)) {
+      yield a;
+    }
+  }
 });

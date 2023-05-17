@@ -5,7 +5,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
 
 class LayoutSettings extends HookConsumerWidget {
   const LayoutSettings({
@@ -22,14 +21,17 @@ class LayoutSettings extends HookConsumerWidget {
     void switchChanged(bool value) {
       appSettingService.setSetting(AppSettingsEnum.dynamicLayout, value);
       useDynamicLayout.value = value;
-      ref.watch(assetProvider.notifier).rebuildAssetGridDataStructure();
+      ref.invalidate(appSettingsServiceProvider);
     }
 
     void changeGroupValue(GroupAssetsBy? value) {
       if (value != null) {
-        appSettingService.setSetting(AppSettingsEnum.groupAssetsBy, value.index);
+        appSettingService.setSetting(
+          AppSettingsEnum.groupAssetsBy,
+          value.index,
+        );
         groupBy.value = value;
-        ref.watch(assetProvider.notifier).rebuildAssetGridDataStructure();
+        ref.invalidate(appSettingsServiceProvider);
       }
     }
 
@@ -37,8 +39,8 @@ class LayoutSettings extends HookConsumerWidget {
       () {
         useDynamicLayout.value =
             appSettingService.getSetting<bool>(AppSettingsEnum.dynamicLayout);
-        groupBy.value =
-            GroupAssetsBy.values[appSettingService.getSetting<int>(AppSettingsEnum.groupAssetsBy)];
+        groupBy.value = GroupAssetsBy.values[
+            appSettingService.getSetting<int>(AppSettingsEnum.groupAssetsBy)];
 
         return null;
       },
@@ -89,6 +91,19 @@ class LayoutSettings extends HookConsumerWidget {
             ),
           ).tr(),
           value: GroupAssetsBy.month,
+          groupValue: groupBy.value,
+          onChanged: changeGroupValue,
+          controlAffinity: ListTileControlAffinity.trailing,
+        ),
+        RadioListTile(
+          activeColor: Theme.of(context).primaryColor,
+          title: const Text(
+            "asset_list_layout_settings_group_automatically",
+            style: TextStyle(
+              fontSize: 12,
+            ),
+          ).tr(),
+          value: GroupAssetsBy.auto,
           groupValue: groupBy.value,
           onChanged: changeGroupValue,
           controlAffinity: ListTileControlAffinity.trailing,

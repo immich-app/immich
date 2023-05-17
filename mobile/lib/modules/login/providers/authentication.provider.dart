@@ -9,13 +9,17 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/modules/login/models/authentication_state.model.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
+import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:immich_mobile/utils/db.dart';
 import 'package:immich_mobile/utils/hash.dart';
+import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
 
 class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   AuthenticationNotifier(
     this._apiService,
+    this._db,
   ) : super(
           AuthenticationState(
             deviceId: "",
@@ -31,6 +35,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         );
 
   final ApiService _apiService;
+  final Isar _db;
 
   Future<bool> login(
     String email,
@@ -91,7 +96,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     try {
       await Future.wait([
         _apiService.authenticationApi.logout(),
-        Store.delete(StoreKey.assetETag),
+        clearAssetsAndAlbums(_db),
         Store.delete(StoreKey.currentUser),
         Store.delete(StoreKey.accessToken),
       ]);
@@ -170,5 +175,6 @@ final authenticationProvider =
     StateNotifierProvider<AuthenticationNotifier, AuthenticationState>((ref) {
   return AuthenticationNotifier(
     ref.watch(apiServiceProvider),
+    ref.watch(dbProvider),
   );
 });

@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/modules/favorite/providers/favorite_provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
@@ -10,7 +9,9 @@ import 'package:immich_mobile/utils/storage_indicator.dart';
 
 class ThumbnailImage extends HookConsumerWidget {
   final Asset asset;
-  final List<Asset> assetList;
+  final int index;
+  final Asset Function(int index) loadAsset;
+  final int totalAssets;
   final bool showStorageIndicator;
   final bool useGrayBoxPlaceholder;
   final bool isSelected;
@@ -21,7 +22,9 @@ class ThumbnailImage extends HookConsumerWidget {
   const ThumbnailImage({
     Key? key,
     required this.asset,
-    required this.assetList,
+    required this.index,
+    required this.loadAsset,
+    required this.totalAssets,
     this.showStorageIndicator = true,
     this.useGrayBoxPlaceholder = false,
     this.isSelected = false,
@@ -57,8 +60,9 @@ class ThumbnailImage extends HookConsumerWidget {
         } else {
           AutoRouter.of(context).push(
             GalleryViewerRoute(
-              assetList: assetList,
-              asset: asset,
+              initialIndex: index,
+              loadAsset: loadAsset,
+              totalAssets: totalAssets,
             ),
           );
         }
@@ -100,7 +104,9 @@ class ThumbnailImage extends HookConsumerWidget {
               decoration: BoxDecoration(
                 border: multiselectEnabled && isSelected
                     ? Border.all(
-                        color: Theme.of(context).primaryColorLight,
+                        color: onDeselect == null
+                            ? Colors.grey
+                            : Theme.of(context).primaryColorLight,
                         width: 10,
                       )
                     : const Border(),
@@ -130,7 +136,7 @@ class ThumbnailImage extends HookConsumerWidget {
                   size: 18,
                 ),
               ),
-            if (ref.watch(favoriteProvider).contains(asset.id))
+            if (asset.isFavorite)
               const Positioned(
                 left: 10,
                 bottom: 5,
