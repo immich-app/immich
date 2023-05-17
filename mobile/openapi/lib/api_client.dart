@@ -283,6 +283,10 @@ class ApiClient {
           return OAuthConfigDto.fromJson(value);
         case 'OAuthConfigResponseDto':
           return OAuthConfigResponseDto.fromJson(value);
+        case 'PersonResponseDto':
+          return PersonResponseDto.fromJson(value);
+        case 'PersonUpdateDto':
+          return PersonUpdateDto.fromJson(value);
         case 'QueueStatusDto':
           return QueueStatusDto.fromJson(value);
         case 'RemoveAssetsDto':

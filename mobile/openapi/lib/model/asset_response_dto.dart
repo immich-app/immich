@@ -34,6 +34,7 @@ class AssetResponseDto {
     this.smartInfo,
     this.livePhotoVideoId,
     this.tags = const [],
+    this.people = const [],
   });
 
   AssetTypeEnum type;
@@ -90,6 +91,8 @@ class AssetResponseDto {
 
   List<TagResponseDto> tags;
 
+  List<PersonResponseDto> people;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
      other.type == type &&
@@ -112,7 +115,8 @@ class AssetResponseDto {
      other.exifInfo == exifInfo &&
      other.smartInfo == smartInfo &&
      other.livePhotoVideoId == livePhotoVideoId &&
-     other.tags == tags;
+     other.tags == tags &&
+     other.people == people;
 
   @override
   int get hashCode =>
@@ -137,10 +141,11 @@ class AssetResponseDto {
     (exifInfo == null ? 0 : exifInfo!.hashCode) +
     (smartInfo == null ? 0 : smartInfo!.hashCode) +
     (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
-    (tags.hashCode);
+    (tags.hashCode) +
+    (people.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, originalFileName=$originalFileName, resizePath=$resizePath, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, updatedAt=$updatedAt, isFavorite=$isFavorite, isArchived=$isArchived, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags]';
+  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, originalFileName=$originalFileName, resizePath=$resizePath, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, updatedAt=$updatedAt, isFavorite=$isFavorite, isArchived=$isArchived, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags, people=$people]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -193,6 +198,7 @@ class AssetResponseDto {
       // json[r'livePhotoVideoId'] = null;
     }
       json[r'tags'] = this.tags;
+      json[r'people'] = this.people;
     return json;
   }
 
@@ -236,6 +242,7 @@ class AssetResponseDto {
         smartInfo: SmartInfoResponseDto.fromJson(json[r'smartInfo']),
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
         tags: TagResponseDto.listFromJson(json[r'tags']),
+        people: PersonResponseDto.listFromJson(json[r'people']),
       );
     }
     return null;

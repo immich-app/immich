@@ -7,6 +7,7 @@ import { IAssetJob, IBaseJob, IJobRepository, JobName } from '../job';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
+import { JPEG_THUMBNAIL_SIZE, WEBP_THUMBNAIL_SIZE } from './media.constant';
 import { AudioStreamInfo, IMediaRepository, VideoStreamInfo } from './media.repository';
 
 @Injectable()
@@ -57,11 +58,10 @@ export class MediaService {
       this.storageRepository.mkdirSync(resizePath);
       const jpegThumbnailPath = join(resizePath, `${asset.id}.jpeg`);
 
-      const thumbnailDimension = 1440;
       if (asset.type == AssetType.IMAGE) {
         try {
           await this.mediaRepository.resize(asset.originalPath, jpegThumbnailPath, {
-            size: thumbnailDimension,
+            size: JPEG_THUMBNAIL_SIZE,
             format: 'jpeg',
           });
         } catch (error) {
@@ -74,7 +74,7 @@ export class MediaService {
 
       if (asset.type == AssetType.VIDEO) {
         this.logger.log('Start Generating Video Thumbnail');
-        await this.mediaRepository.extractVideoThumbnail(asset.originalPath, jpegThumbnailPath, thumbnailDimension);
+        await this.mediaRepository.extractVideoThumbnail(asset.originalPath, jpegThumbnailPath, JPEG_THUMBNAIL_SIZE);
         this.logger.log(`Generating Video Thumbnail Success ${asset.id}`);
       }
 
@@ -86,6 +86,7 @@ export class MediaService {
       await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: { asset } });
       await this.jobRepository.queue({ name: JobName.DETECT_OBJECTS, data: { asset } });
       await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: { asset } });
+      await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: { asset } });
 
       this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
     } catch (error: any) {
@@ -103,7 +104,7 @@ export class MediaService {
     const webpPath = asset.resizePath.replace('jpeg', 'webp');
 
     try {
-      await this.mediaRepository.resize(asset.resizePath, webpPath, { size: 250, format: 'webp' });
+      await this.mediaRepository.resize(asset.resizePath, webpPath, { size: WEBP_THUMBNAIL_SIZE, format: 'webp' });
       await this.assetRepository.save({ id: asset.id, webpPath: webpPath });
     } catch (error: any) {
       this.logger.error(`Failed to generate webp thumbnail for asset: ${asset.id}`, error.stack);

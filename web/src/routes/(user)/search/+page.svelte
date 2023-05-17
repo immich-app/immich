@@ -91,7 +91,7 @@
 				</div>
 			{:else}
 				<div
-					class="flex items-center place-content-center w-full min-h-[calc(100vh_-_11rem)] dark:text-white"
+					class="flex items-center place-content-center w-full min-h-[calc(66vh_-_11rem)] dark:text-white"
 				>
 					<div class="flex flex-col content-center items-center text-center">
 						<ImageOffOutline size="3.5em" />

@@ -120,10 +120,6 @@
 		}
 	});
 
-	const clearMultiSelectAssetAssetHandler = () => {
-		multiSelectAsset = new Set();
-	};
-
 	// Update Album Name
 	$: {
 		if (!isEditingTitle && currentAlbumName != album.albumName && isOwned) {
@@ -340,7 +336,7 @@
 	{#if isMultiSelectionMode}
 		<AssetSelectControlBar
 			assets={multiSelectAsset}
-			clearSelect={clearMultiSelectAssetAssetHandler}
+			clearSelect={() => (multiSelectAsset = new Set())}
 		>
 			<DownloadFiles filename={album.albumName} sharedLinkKey={sharedLink?.key} />
 			{#if isOwned}

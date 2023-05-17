@@ -16,6 +16,7 @@ Name | Type | Description | Notes
 **storageTemplateMigrationQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **backgroundTaskQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **searchQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**recognizeFacesQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

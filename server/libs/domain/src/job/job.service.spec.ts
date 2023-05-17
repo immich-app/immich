@@ -15,6 +15,17 @@ describe(JobService.name, () => {
     expect(sut).toBeDefined();
   });
 
+  describe('handleNightlyJobs', () => {
+    it('should run the scheduled jobs', async () => {
+      await sut.handleNightlyJobs();
+
+      expect(jobMock.queue.mock.calls).toEqual([
+        [{ name: JobName.USER_DELETE_CHECK }],
+        [{ name: JobName.PERSON_CLEANUP }],
+      ]);
+    });
+  });
+
   describe('getAllJobStatus', () => {
     it('should get all job statuses', async () => {
       jobMock.getJobCounts.mockResolvedValue({
@@ -54,6 +65,7 @@ describe(JobService.name, () => {
         'storage-template-migration-queue': expectedJobStatus,
         'thumbnail-generation-queue': expectedJobStatus,
         'video-conversion-queue': expectedJobStatus,
+        'recognize-faces-queue': expectedJobStatus,
       });
     });
   });

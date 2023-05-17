@@ -435,7 +435,7 @@ describe(UserService.name, () => {
         { deletedAt: makeDeletedAt(5) },
       ] as UserEntity[]);
 
-      await sut.handleQueueUserDelete();
+      await sut.handleUserDeleteCheck();
 
       expect(userRepositoryMock.getDeletedUsers).toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
@@ -445,7 +445,7 @@ describe(UserService.name, () => {
       const user = { deletedAt: makeDeletedAt(10) };
       userRepositoryMock.getDeletedUsers.mockResolvedValue([user] as UserEntity[]);
 
-      await sut.handleQueueUserDelete();
+      await sut.handleUserDeleteCheck();
 
       expect(userRepositoryMock.getDeletedUsers).toHaveBeenCalled();
       expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.USER_DELETION, data: { user } });
