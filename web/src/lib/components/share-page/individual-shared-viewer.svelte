@@ -1,47 +1,37 @@
 <script lang="ts">
-	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
-
-	import { api, AssetResponseDto, SharedLinkResponseDto } from '@api';
-	import ControlAppBar from '../shared-components/control-app-bar.svelte';
 	import { goto } from '$app/navigation';
-	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+	import { bulkDownload } from '$lib/utils/asset-utils';
+	import { openFileUploadDialog } from '$lib/utils/file-uploader';
+	import { api, AssetResponseDto, SharedLinkResponseDto } from '@api';
+	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
 	import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
-	import { openFileUploadDialog } from '$lib/utils/file-uploader';
-	import { bulkDownload } from '$lib/utils/asset-utils';
-	import Close from 'svelte-material-icons/Close.svelte';
-	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
+	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+	import DownloadFiles from '../photos-page/actions/download-files.svelte';
+	import RemoveFromSharedLink from '../photos-page/actions/remove-from-shared-link.svelte';
+	import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
+	import ControlAppBar from '../shared-components/control-app-bar.svelte';
 	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
-	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 	import ImmichLogo from '../shared-components/immich-logo.svelte';
 	import {
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
-	import { locale } from '$lib/stores/preferences.store';
 
 	export let sharedLink: SharedLinkResponseDto;
 	export let isOwned: boolean;
 
-	let assets = sharedLink.assets;
 	let selectedAssets: Set<AssetResponseDto> = new Set();
 
+	$: assets = sharedLink.assets;
 	$: isMultiSelectionMode = selectedAssets.size > 0;
 
 	const clearMultiSelectAssetAssetHandler = () => {
 		selectedAssets = new Set();
 	};
 
-	const downloadAssets = async (isAll: boolean) => {
-		await bulkDownload(
-			'immich-shared',
-			isAll ? assets : Array.from(selectedAssets),
-			() => {
-				isMultiSelectionMode = false;
-				clearMultiSelectAssetAssetHandler();
-			},
-			sharedLink?.key
-		);
+	const downloadAssets = async () => {
+		await bulkDownload('immich-shared', assets, undefined, sharedLink?.key);
 	};
 
 	const handleUploadAssets = async () => {
@@ -65,49 +55,16 @@
 			console.error('handleUploadAssets', e);
 		}
 	};
-
-	const handleRemoveAssetsFromSharedLink = async () => {
-		if (window.confirm('Do you want to remove selected assets from the shared link?')) {
-			await api.assetApi.removeAssetsFromSharedLink(
-				{
-					assetIds: assets.filter((a) => !selectedAssets.has(a)).map((a) => a.id)
-				},
-				sharedLink?.key
-			);
-
-			assets = assets.filter((a) => !selectedAssets.has(a));
-			clearMultiSelectAssetAssetHandler();
-		}
-	};
 </script>
 
 <section class="bg-immich-bg dark:bg-immich-dark-bg">
 	{#if isMultiSelectionMode}
-		<ControlAppBar
-			on:close-button-click={clearMultiSelectAssetAssetHandler}
-			backIcon={Close}
-			tailwindClasses={'bg-white shadow-md'}
-		>
-			<svelte:fragment slot="leading">
-				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
-					Selected {selectedAssets.size.toLocaleString($locale)}
-				</p>
-			</svelte:fragment>
-			<svelte:fragment slot="trailing">
-				<CircleIconButton
-					title="Download"
-					on:click={() => downloadAssets(false)}
-					logo={CloudDownloadOutline}
-				/>
-				{#if isOwned}
-					<CircleIconButton
-						title="Remove from album"
-						on:click={handleRemoveAssetsFromSharedLink}
-						logo={DeleteOutline}
-					/>
-				{/if}
-			</svelte:fragment>
-		</ControlAppBar>
+		<AssetSelectControlBar assets={selectedAssets} clearSelect={clearMultiSelectAssetAssetHandler}>
+			<DownloadFiles filename="immich-shared" sharedLinkKey={sharedLink.key} />
+			{#if isOwned}
+				<RemoveFromSharedLink bind:sharedLink allAssets={assets} />
+			{/if}
+		</AssetSelectControlBar>
 	{:else}
 		<ControlAppBar
 			on:close-button-click={() => goto('/photos')}
@@ -139,7 +96,7 @@
 				{#if sharedLink?.allowDownload}
 					<CircleIconButton
 						title="Download"
-						on:click={() => downloadAssets(true)}
+						on:click={downloadAssets}
 						logo={FolderDownloadOutline}
 					/>
 				{/if}

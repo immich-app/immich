@@ -41,7 +41,9 @@
 <NavigationBar user={data.user} />
 
 <main>
-	<section class="grid md:grid-cols-[250px_auto] grid-cols-[70px_auto] pt-[72px] h-screen">
+	<section
+		class="grid md:grid-cols-[theme(spacing.64)_auto] grid-cols-[theme(spacing.18)_auto] pt-[var(--navbar-height)] h-screen"
+	>
 		<SideBarSection>
 			<SideBarButton
 				title="Users"
@@ -72,7 +74,7 @@
 			</div>
 		</SideBarSection>
 
-		<section class="overflow-y-auto immich-scrollbar ">
+		<section class="overflow-y-auto immich-scrollbar">
 			<div id="setting-title" class="pt-10 w-full bg-immich-bg dark:bg-immich-dark-bg">
 				<h1 class="text-lg ml-8 mb-4 text-immich-primary dark:text-immich-dark-primary font-medium">
 					{getPageTitle(data.routeId)}

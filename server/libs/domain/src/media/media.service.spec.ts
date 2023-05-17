@@ -34,6 +34,7 @@ describe(MediaService.name, () => {
     jobMock = newJobRepositoryMock();
     mediaMock = newMediaRepositoryMock();
     storageMock = newStorageRepositoryMock();
+
     sut = new MediaService(assetMock, communicationMock, jobMock, mediaMock, storageMock, configMock);
   });
 

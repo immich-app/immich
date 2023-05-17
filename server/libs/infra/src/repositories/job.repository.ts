@@ -20,6 +20,7 @@ export class JobRepository implements IJobRepository {
     [QueueName.THUMBNAIL_GENERATION]: this.generateThumbnail,
     [QueueName.METADATA_EXTRACTION]: this.metadataExtraction,
     [QueueName.OBJECT_TAGGING]: this.objectTagging,
+    [QueueName.RECOGNIZE_FACES]: this.recognizeFaces,
     [QueueName.CLIP_ENCODING]: this.clipEmbedding,
     [QueueName.VIDEO_CONVERSION]: this.videoTranscode,
     [QueueName.BACKGROUND_TASK]: this.backgroundTask,
@@ -31,6 +32,7 @@ export class JobRepository implements IJobRepository {
     @InjectQueue(QueueName.OBJECT_TAGGING) private objectTagging: Queue<IAssetJob | IBaseJob>,
     @InjectQueue(QueueName.CLIP_ENCODING) private clipEmbedding: Queue<IAssetJob | IBaseJob>,
     @InjectQueue(QueueName.METADATA_EXTRACTION) private metadataExtraction: Queue<IAssetUploadedJob | IBaseJob>,
+    @InjectQueue(QueueName.RECOGNIZE_FACES) private recognizeFaces: Queue<IAssetJob | IBaseJob>,
     @InjectQueue(QueueName.STORAGE_TEMPLATE_MIGRATION) private storageTemplateMigration: Queue,
     @InjectQueue(QueueName.THUMBNAIL_GENERATION) private generateThumbnail: Queue,
     @InjectQueue(QueueName.VIDEO_CONVERSION) private videoTranscode: Queue<IAssetJob | IBaseJob>,
@@ -91,6 +93,19 @@ export class JobRepository implements IJobRepository {
         await this.metadataExtraction.add(item.name, item.data);
         break;
 
+      case JobName.QUEUE_RECOGNIZE_FACES:
+      case JobName.RECOGNIZE_FACES:
+        await this.recognizeFaces.add(item.name, item.data);
+        break;
+
+      case JobName.GENERATE_FACE_THUMBNAIL:
+        await this.recognizeFaces.add(item.name, item.data, { priority: 1 });
+        break;
+
+      case JobName.PERSON_CLEANUP:
+        await this.backgroundTask.add(item.name);
+        break;
+
       case JobName.QUEUE_GENERATE_THUMBNAILS:
       case JobName.GENERATE_JPEG_THUMBNAIL:
       case JobName.GENERATE_WEBP_THUMBNAIL:
@@ -120,13 +135,19 @@ export class JobRepository implements IJobRepository {
 
       case JobName.SEARCH_INDEX_ASSETS:
       case JobName.SEARCH_INDEX_ALBUMS:
+      case JobName.SEARCH_INDEX_FACES:
         await this.searchIndex.add(item.name, {});
         break;
 
       case JobName.SEARCH_INDEX_ASSET:
       case JobName.SEARCH_INDEX_ALBUM:
+      case JobName.SEARCH_INDEX_FACE:
+        await this.searchIndex.add(item.name, item.data);
+        break;
+
       case JobName.SEARCH_REMOVE_ALBUM:
       case JobName.SEARCH_REMOVE_ASSET:
+      case JobName.SEARCH_REMOVE_FACE:
         await this.searchIndex.add(item.name, item.data);
         break;
 

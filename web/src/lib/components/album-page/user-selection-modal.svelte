@@ -8,6 +8,7 @@
 	import { goto } from '$app/navigation';
 	import ImmichLogo from '../shared-components/immich-logo.svelte';
 	import Button from '../elements/buttons/button.svelte';
+	import { AppRoute } from '$lib/constants';
 
 	export let album: AlbumResponseDto;
 	export let sharedUsersInAlbum: Set<UserResponseDto>;
@@ -102,7 +103,7 @@
 								{user.firstName}
 								{user.lastName}
 							</p>
-							<p class="text-xs ">
+							<p class="text-xs">
 								{user.email}
 							</p>
 						</div>
@@ -117,7 +118,7 @@
 		{/if}
 
 		{#if selectedUsers.length > 0}
-			<div class="flex place-content-end p-5 ">
+			<div class="flex place-content-end p-5">
 				<Button size="sm" rounded="lg" on:click={() => dispatch('add-user', { selectedUsers })}>
 					Add
 				</Button>
@@ -138,7 +139,7 @@
 		{#if sharedLinks.length}
 			<button
 				class="flex flex-col gap-2 place-items-center place-content-center hover:cursor-pointer"
-				on:click={() => goto('/sharing/sharedlinks')}
+				on:click={() => goto(AppRoute.SHARED_LINKS)}
 			>
 				<ShareCircle size={24} />
 				<p class="text-sm">View links</p>

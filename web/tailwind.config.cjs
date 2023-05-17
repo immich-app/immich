@@ -1,3 +1,4 @@
+/** @type {import('tailwindcss').Config} */
 module.exports = {
 	content: ['./src/**/*.{html,js,svelte,ts}'],
 	darkMode: 'class',
@@ -18,6 +19,9 @@ module.exports = {
 			},
 			fontFamily: {
 				'immich-title': ['Snowburst One', 'cursive']
+			},
+			spacing: {
+				18: '4.5rem'
 			}
 		}
 	},

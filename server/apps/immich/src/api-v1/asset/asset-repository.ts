@@ -210,7 +210,15 @@ export class AssetRepository implements IAssetRepository {
       where: {
         id: assetId,
       },
-      relations: ['exifInfo', 'tags', 'sharedLinks', 'smartInfo'],
+      relations: {
+        exifInfo: true,
+        tags: true,
+        sharedLinks: true,
+        smartInfo: true,
+        faces: {
+          person: true,
+        },
+      },
     });
   }
 
@@ -239,7 +247,14 @@ export class AssetRepository implements IAssetRepository {
   }
 
   get(id: string): Promise<AssetEntity | null> {
-    return this.assetRepository.findOne({ where: { id } });
+    return this.assetRepository.findOne({
+      where: { id },
+      relations: {
+        faces: {
+          person: true,
+        },
+      },
+    });
   }
 
   async create(
@@ -264,11 +279,6 @@ export class AssetRepository implements IAssetRepository {
     asset.isFavorite = dto.isFavorite ?? asset.isFavorite;
     asset.isArchived = dto.isArchived ?? asset.isArchived;
 
-    if (dto.tagIds) {
-      const tags = await this._tagRepository.getByIds(userId, dto.tagIds);
-      asset.tags = tags;
-    }
-
     if (asset.exifInfo != null) {
       asset.exifInfo.description = dto.description || '';
       await this.exifRepository.save(asset.exifInfo);
@@ -280,7 +290,12 @@ export class AssetRepository implements IAssetRepository {
       asset.exifInfo = exifInfo;
     }
 
-    return await this.assetRepository.save(asset);
+    await this.assetRepository.update(asset.id, {
+      isFavorite: asset.isFavorite,
+      isArchived: asset.isArchived,
+    });
+
+    return asset;
   }
 
   /**

@@ -91,6 +91,11 @@
 		}
 	};
 
+	const handleCloseViewer = () => {
+		isShowDetail = false;
+		closeViewer();
+	};
+
 	const closeViewer = () => {
 		dispatch('close');
 	};
@@ -334,7 +339,7 @@
 			on:keydown={navigateAssetBackward}
 		>
 			<button
-				class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 z-[1000]  text-gray-500 mx-4"
+				class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 z-[1000] text-gray-500 mx-4"
 				class:navigation-button-hover={halfLeftHover}
 				on:click={navigateAssetBackward}
 			>
@@ -398,6 +403,7 @@
 				{asset}
 				albums={appearsInAlbums}
 				on:close={() => (isShowDetail = false)}
+				on:close-viewer={handleCloseViewer}
 				on:description-focus-in={disableKeyDownEvent}
 				on:description-focus-out={enableKeyDownEvent}
 			/>

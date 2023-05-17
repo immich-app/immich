@@ -1,5 +1,4 @@
 <script lang="ts">
-	import appleIcon180 from '$lib/assets/apple/apple-icon-180.png';
 	import appleSplash20482732 from '$lib/assets/apple/apple-splash-2048-2732.png';
 	import appleSplash27322048 from '$lib/assets/apple/apple-splash-2732-2048.png';
 	import appleSplash16682388 from '$lib/assets/apple/apple-splash-1668-2388.png';
@@ -32,7 +31,6 @@
 	import appleSplash1136640 from '$lib/assets/apple/apple-splash-1136-640.png';
 </script>
 
-<link rel="apple-touch-icon" href={appleIcon180} />
 <link
 	rel="apple-touch-startup-image"
 	href={appleSplash20482732}
