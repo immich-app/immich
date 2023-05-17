@@ -13,8 +13,8 @@
 		<div class="pl-4">
 			<div class="flex flex-row flex-wrap gap-2">
 				{#each data.people as person (person.id)}
-					<div>
-						<a href="/people/{person.id}" class="relative text-center" draggable="false">
+					<div class="relative">
+						<a href="/people/{person.id}"  draggable="false">
 							<div class="filter brightness-75 rounded-xl w-48">
 								<ImageThumbnail
 									shadow
@@ -24,11 +24,11 @@
 								/>
 							</div>
 							{#if person.name}
-								<span
+								<a
 									class="absolute bottom-2 w-full text-center font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
 								>
 									{person.name}
-								</span>
+								</a>
 							{/if}
 						</a>
 					</div>
