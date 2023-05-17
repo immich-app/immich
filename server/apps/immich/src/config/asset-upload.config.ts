@@ -96,6 +96,11 @@ function filename(req: Request, file: Express.Multer.File, cb: any) {
     return cb(null, sanitize(livePhotoFileName));
   }
 
+  if (file.fieldname === 'sidecarData') {
+    const sidecarFileName = `${fileNameUUID}.xmp`;
+    return cb(null, sanitize(sidecarFileName));
+  }
+
   const fileName = `${fileNameUUID}${req.body['fileExtension']}`;
   return cb(null, sanitize(fileName));
 }

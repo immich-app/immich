@@ -74,13 +74,14 @@ export class MetadataExtractionProcessor {
       const { force } = job.data;
       const assets = force
         ? await this.assetRepository.getAll()
-        : await this.assetRepository.getWithout(WithoutProperty.EXIF);
+        : (await this.assetRepository.getWithout(WithoutProperty.EXIF)).concat(await this.assetRepository.getWithout(WithoutProperty.SIDECAR));
 
       for (const asset of assets) {
         const fileName = asset.originalFileName;
         const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
         await this.jobRepository.queue({ name, data: { asset, fileName } });
       }
+
     } catch (error: any) {
       this.logger.error(`Unable to queue metadata extraction`, error?.stack);
     }
@@ -91,7 +92,8 @@ export class MetadataExtractionProcessor {
     let asset = job.data.asset;
 
     try {
-      const exifData = await exiftool.read<ImmichTags>(asset.sidecarPath || asset.originalPath).catch((error: any) => {
+      const sidecarPath = asset.sidecarPath || (fs.existsSync(`${asset.originalPath}.xmp`) ? `${asset.originalPath}.xmp` : null)
+      const exifData = await exiftool.read<ImmichTags>(sidecarPath || asset.originalPath).catch((error: any) => {
         this.logger.warn(
           `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
           error?.stack,
@@ -183,7 +185,11 @@ export class MetadataExtractionProcessor {
       }
 
       await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
-      asset = await this.assetCore.save({ id: asset.id, fileCreatedAt: fileCreatedAt?.toISOString() });
+      asset = await this.assetCore.save({
+        id: asset.id,
+        fileCreatedAt: fileCreatedAt?.toISOString(),
+        ...(!asset.sidecarPath && sidecarPath && { sidecarPath }),
+    });
       await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { asset } });
     } catch (error: any) {
       this.logger.error(
@@ -215,7 +221,8 @@ export class MetadataExtractionProcessor {
         }
       }
 
-      const exifData = await exiftool.read<ImmichTags>(asset.sidecarPath || asset.originalPath).catch((error: any) => {
+      const sidecarPath = asset.sidecarPath || (fs.existsSync(`${asset.originalPath}.xmp`) ? `${asset.originalPath}.xmp` : null)
+      const exifData = await exiftool.read<ImmichTags>(sidecarPath || asset.originalPath).catch((error: any) => {
         this.logger.warn(
           `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
           error?.stack,
@@ -304,7 +311,11 @@ export class MetadataExtractionProcessor {
       }
 
       await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
-      asset = await this.assetCore.save({ id: asset.id, duration: durationString, fileCreatedAt });
+      asset = await this.assetCore.save({
+        id: asset.id, duration: durationString,
+        fileCreatedAt,
+        ...(!asset.sidecarPath && sidecarPath && { sidecarPath }),
+      });
       await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { asset } });
     } catch (error: any) {
       this.logger.error(

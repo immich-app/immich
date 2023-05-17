@@ -129,6 +129,13 @@ export class AssetRepository implements IAssetRepository {
         };
         break;
 
+        case WithoutProperty.SIDECAR:
+          where = [
+            { sidecarPath: IsNull(), isVisible: true },
+            { sidecarPath: '', isVisible: true },
+          ];
+          break;
+
       default:
         throw new Error(`Invalid getWithout property: ${property}`);
     }
