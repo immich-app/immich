@@ -15,7 +15,7 @@
 <div
 	class="flex place-items-center max-w-lg rounded-lg border dark:border-transparent p-2 bg-gray-100 dark:bg-gray-700"
 	use:clickOutside
-	on:outclick={() => dispatch('outclick')}
+	on:outclick={() => dispatch('cancel')}
 >
 	<ImageThumbnail
 		circle
