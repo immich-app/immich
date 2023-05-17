@@ -91,6 +91,11 @@
 		}
 	};
 
+	const handleCloseViewer = () => {
+		isShowDetail = false;
+		closeViewer();
+	};
+
 	const closeViewer = () => {
 		dispatch('close');
 	};
@@ -398,6 +403,7 @@
 				{asset}
 				albums={appearsInAlbums}
 				on:close={() => (isShowDetail = false)}
+				on:close-viewer={handleCloseViewer}
 				on:description-focus-in={disableKeyDownEvent}
 				on:description-focus-out={enableKeyDownEvent}
 			/>

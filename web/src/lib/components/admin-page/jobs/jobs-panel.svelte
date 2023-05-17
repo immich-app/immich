@@ -36,6 +36,10 @@
 			title: 'Encode Clip',
 			subtitle: 'Run machine learning to generate clip embeddings'
 		},
+		[JobName.RecognizeFacesQueue]: {
+			title: 'Recognize Faces',
+			subtitle: 'Run machine learning to recognize faces'
+		},
 		[JobName.VideoConversionQueue]: {
 			title: 'Transcode Videos',
 			subtitle: 'Transcode videos not in the desired format'

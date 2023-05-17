@@ -1,12 +1,13 @@
 <script lang="ts">
+	import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
 	import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import { AppRoute } from '$lib/constants';
-	import { AssetTypeEnum, SearchExploreItem } from '@api';
+	import { AssetTypeEnum, SearchExploreResponseDto, api } from '@api';
 	import ClockOutline from 'svelte-material-icons/ClockOutline.svelte';
+	import HeartMultipleOutline from 'svelte-material-icons/HeartMultipleOutline.svelte';
 	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
-	import HeartMultipleOutline from 'svelte-material-icons/HeartMultipleOutline.svelte';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -19,27 +20,47 @@
 
 	const MAX_ITEMS = 12;
 
-	let things: SearchExploreItem[] = [];
-	let places: SearchExploreItem[] = [];
+	const getFieldItems = (items: SearchExploreResponseDto[], field: Field) => {
+		const targetField = items.find((item) => item.fieldName === field);
+		return targetField?.items || [];
+	};
 
-	for (const item of data.items) {
-		switch (item.fieldName) {
-			case Field.OBJECTS:
-				things = item.items;
-				break;
-
-			case Field.CITY:
-				places = item.items;
-				break;
-		}
-	}
-
-	things = things.slice(0, MAX_ITEMS);
-	places = places.slice(0, MAX_ITEMS);
+	$: things = getFieldItems(data.items, Field.OBJECTS);
+	$: places = getFieldItems(data.items, Field.CITY);
+	$: people = data.people.slice(0, MAX_ITEMS);
 </script>
 
 <UserPageLayout user={data.user} title={data.meta.title}>
-	<div class="mx-4 flex flex-col">
+	<div class="mx-4">
+		{#if people.length > 0}
+			<div class="mb-6 mt-2">
+				<div class="flex justify-between">
+					<p class="mb-4 dark:text-immich-dark-fg font-medium">People</p>
+					{#if data.people.length > MAX_ITEMS}
+						<a
+							href={AppRoute.PEOPLE}
+							class="font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary dark:text-immich-dark-fg"
+							draggable="false">View All</a
+						>
+					{/if}
+				</div>
+				<div class="flex flex-row flex-wrap gap-4">
+					{#each people as person (person.id)}
+						<a href="/people/{person.id}" class="w-24 text-center">
+							<ImageThumbnail
+								circle
+								shadow
+								url={api.getPeopleThumbnailUrl(person.id)}
+								altText={person.name}
+								widthStyle="100%"
+							/>
+							<p class="font-medium mt-2 text-ellipsis text-sm dark:text-white">{person.name}</p>
+						</a>
+					{/each}
+				</div>
+			</div>
+		{/if}
+
 		{#if places.length > 0}
 			<div class="mb-6 mt-2">
 				<div>

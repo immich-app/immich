@@ -56,6 +56,11 @@ void main() {
       // TODO
     });
 
+    // JobStatusDto recognizeFacesQueue
+    test('to test the property `recognizeFacesQueue`', () async {
+      // TODO
+    });
+
 
   });
 

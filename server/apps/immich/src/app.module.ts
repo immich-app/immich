@@ -10,6 +10,7 @@ import {
   AlbumController,
   APIKeyController,
   AuthController,
+  PersonController,
   JobController,
   OAuthController,
   PartnerController,
@@ -44,6 +45,7 @@ import { AppCronJobs } from './app.cron-jobs';
     SharedLinkController,
     SystemConfigController,
     UserController,
+    PersonController,
   ],
   providers: [
     //

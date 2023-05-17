@@ -3,27 +3,31 @@ import { AlbumService } from './album';
 import { APIKeyService } from './api-key';
 import { AssetService } from './asset';
 import { AuthService } from './auth';
+import { FacialRecognitionService } from './facial-recognition';
 import { JobService } from './job';
 import { MediaService } from './media';
 import { OAuthService } from './oauth';
 import { PartnerService } from './partner';
+import { PersonService } from './person';
 import { SearchService } from './search';
 import { ServerInfoService } from './server-info';
 import { ShareService } from './share';
 import { SmartInfoService } from './smart-info';
 import { StorageService } from './storage';
 import { StorageTemplateService } from './storage-template';
-import { UserService } from './user';
 import { INITIAL_SYSTEM_CONFIG, SystemConfigService } from './system-config';
+import { UserService } from './user';
 
 const providers: Provider[] = [
   AlbumService,
   APIKeyService,
   AssetService,
   AuthService,
+  FacialRecognitionService,
   JobService,
   MediaService,
   OAuthService,
+  PersonService,
   PartnerService,
   SearchService,
   ServerInfoService,

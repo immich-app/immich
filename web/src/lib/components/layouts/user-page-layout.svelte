@@ -22,7 +22,7 @@
 </header>
 
 <main
-	class="grid md:grid-cols-[250px_auto] grid-cols-[70px_auto] relative pt-[4.25rem] h-screen bg-immich-bg dark:bg-immich-dark-bg immich-scrollbar"
+	class="grid md:grid-cols-[theme(spacing.64)_auto] grid-cols-[theme(spacing.18)_auto] relative pt-[var(--navbar-height)] h-screen bg-immich-bg dark:bg-immich-dark-bg immich-scrollbar"
 >
 	<SideBar />
 	<slot name="content">
