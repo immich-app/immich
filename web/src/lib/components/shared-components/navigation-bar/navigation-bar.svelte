@@ -40,9 +40,9 @@
 	};
 </script>
 
-<section id="dashboard-navbar" class="fixed h-[4.25rem] w-screen z-[900] text-sm">
+<section id="dashboard-navbar" class="fixed h-[var(--navbar-height)] w-screen z-[900] text-sm">
 	<div
-		class="grid md:grid-cols-[250px_auto] grid-cols-[70px_auto] border-b dark:border-b-immich-dark-gray items-center py-2 bg-immich-bg dark:bg-immich-dark-bg"
+		class="grid h-full md:grid-cols-[theme(spacing.64)_auto] grid-cols-[theme(spacing.18)_auto] border-b dark:border-b-immich-dark-gray items-center py-2 bg-immich-bg dark:bg-immich-dark-bg"
 	>
 		<a
 			data-sveltekit-preload-data="hover"
@@ -76,7 +76,7 @@
 					<div in:fly={{ x: 50, duration: 250 }}>
 						<LinkButton on:click={() => dispatch('uploadClicked')}>
 							<div class="flex gap-2">
-								<TrayArrowUp size="20" />
+								<TrayArrowUp size="1.5em" />
 								<span class="md:block hidden">Upload</span>
 							</div>
 						</LinkButton>
@@ -158,3 +158,10 @@
 		</div>
 	</div>
 </section>
+
+<style>
+	:root {
+		/* Used by layouts to ensure proper spacing between navbar and content */
+		--navbar-height: calc(theme(spacing.18) + 4px);
+	}
+</style>
