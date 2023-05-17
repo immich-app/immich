@@ -312,9 +312,10 @@ export class MetadataExtractionProcessor {
 
       await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
       asset = await this.assetCore.save({
-        id: asset.id, duration: durationString,
+        id: asset.id,
+        duration: durationString,
         fileCreatedAt,
-        ...(!asset.sidecarPath && sidecarPath && { sidecarPath }),
+         ...(!asset.sidecarPath && sidecarPath && { sidecarPath }),
       });
       await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { asset } });
     } catch (error: any) {
