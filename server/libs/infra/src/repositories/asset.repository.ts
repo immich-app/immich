@@ -148,6 +148,7 @@ export class AssetRepository implements IAssetRepository {
             personId: IsNull(),
           },
         };
+        break;
 
       default:
         throw new Error(`Invalid getWithout property: ${property}`);
