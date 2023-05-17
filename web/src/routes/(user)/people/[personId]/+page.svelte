@@ -16,7 +16,6 @@
 	import { handleError } from '$lib/utils/handle-error';
 	import { AssetResponseDto, api } from '@api';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
-	import ImageOffOutline from 'svelte-material-icons/ImageOffOutline.svelte';
 	import Plus from 'svelte-material-icons/Plus.svelte';
 	import type { PageData } from './$types';
 

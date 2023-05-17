@@ -11,7 +11,7 @@
 <UserPageLayout user={data.user} showUploadButton title="People">
 	{#if data.people.length > 0}
 		<div class="pl-4">
-			<div class="flex flex-row flex-wrap gap-2">
+			<div class="flex flex-row flex-wrap gap-1">
 				{#each data.people as person (person.id)}
 					<div class="relative">
 						<a href="/people/{person.id}"  draggable="false">

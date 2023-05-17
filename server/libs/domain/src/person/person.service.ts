@@ -18,7 +18,7 @@ export class PersonService {
   ) {}
 
   async getAll(authUser: AuthUserDto): Promise<PersonResponseDto[]> {
-    const people = await this.repository.getAll(authUser.id, { minimumFaceCount: 3 });
+    const people = await this.repository.getAll(authUser.id, { minimumFaceCount: 1 });
     const named = people.filter((person) => !!person.name);
     const unnamed = people.filter((person) => !person.name);
     return (

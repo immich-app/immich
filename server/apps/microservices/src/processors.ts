@@ -1,5 +1,6 @@
 import {
   AssetService,
+  FacialRecognitionService,
   IAssetFaceJob,
   IAssetJob,
   IAssetUploadedJob,
@@ -19,7 +20,6 @@ import {
   SystemConfigService,
   UserService,
 } from '@app/domain';
-import { FacialRecognitionService } from '@app/domain/facial-recognition';
 import { Process, Processor } from '@nestjs/bull';
 import { Job } from 'bull';
 
