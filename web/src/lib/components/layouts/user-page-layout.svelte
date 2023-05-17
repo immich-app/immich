@@ -26,7 +26,7 @@
 >
 	<SideBar />
 	<slot name="content">
-		<section class="overflow-y-auto my-8 mx-4 bg-immich-bg dark:bg-immich-dark-bg">
+		<section class="overflow-y-auto my-8 ml-4 bg-immich-bg dark:bg-immich-dark-bg">
 			{#if title}
 				<div class="flex justify-between place-items-center dark:text-immich-dark-fg px-4 h-10">
 					<p class="font-medium">{title}</p>
