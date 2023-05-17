@@ -24,11 +24,11 @@
 								/>
 							</div>
 							{#if person.name}
-								<a
+								<span
 									class="absolute bottom-2 w-full text-center font-medium text-white text-ellipsis w-100 px-1 hover:cursor-pointer backdrop-blur-[1px]"
 								>
 									{person.name}
-								</a>
+								</span>
 							{/if}
 						</a>
 					</div>
