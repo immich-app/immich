@@ -230,8 +230,8 @@ class AlbumViewerPage extends HookConsumerWidget {
           selected: selection.value,
           selectionDisabled: disableSelection,
         ),
-        error: (error, stackTrace) => null,
-        loading: () => null,
+        error: (error, stackTrace) => AppBar(title: const Text("Error")),
+        loading: () => AppBar(),
       ),
       body: album.when(
         data: (data) => WillPopScope(
@@ -279,7 +279,7 @@ class AlbumViewerPage extends HookConsumerWidget {
             ),
           ),
         ),
-        error: (e, _) => Center(child: Text("Error loading album info $e")),
+        error: (e, _) => Center(child: Text("Error loading album info!\n$e")),
         loading: () => const Center(
           child: ImmichLoadingIndicator(),
         ),
