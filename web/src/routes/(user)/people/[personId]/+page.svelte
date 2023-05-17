@@ -42,11 +42,8 @@
 		}
 	};
 
-	const handleUnselectAsset = (assetId: string) => {
-		const asset = data.assets.find((asset: AssetResponseDto) => asset.id === assetId);
-		if (asset && multiSelectAsset.has(asset)) {
-			multiSelectAsset.delete(asset);
-		}
+	const handleAssetDelete = (assetId: string) => {
+		data.assets = data.assets.filter((asset) => asset.id !== assetId);
 	};
 </script>
 
@@ -56,14 +53,14 @@
 		clearSelect={() => (multiSelectAsset = new Set())}
 	>
 		<CreateSharedLink />
-		<MoveToArchive onAssetArchive={(asset) => handleUnselectAsset(asset.id)} />
+		<MoveToArchive />
 		<DownloadFiles filename={data.person.name} />
 		<AssetSelectContextMenu icon={Plus} title="Add">
 			<OptionAddToFavorites />
 			<OptionAddToAlbum />
 			<OptionAddToAlbum shared />
 		</AssetSelectContextMenu>
-		<DeleteAssets onAssetDelete={handleUnselectAsset} />
+		<DeleteAssets onAssetDelete={handleAssetDelete} />
 	</AssetSelectControlBar>
 {:else}
 	<ControlAppBar
