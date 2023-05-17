@@ -131,9 +131,11 @@ class AssetService {
     for (int i = 0; i < assets.length; i++) {
       final dto = dtos[i], old = assets[i];
       if (dto != null) {
-        final updated = old.updatedCopy(Asset.remote(dto));
-        assets[i] = updated;
-        allInDb &= updated.isInDb;
+        final remote = Asset.remote(dto);
+        if (old.canUpdate(remote)) {
+          assets[i] = old.updatedCopy(remote);
+        }
+        allInDb &= assets[i].isInDb;
       }
     }
     final toUpdate = allInDb ? assets : assets.where((e) => e.isInDb).toList();
