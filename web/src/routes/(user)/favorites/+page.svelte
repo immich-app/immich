@@ -40,7 +40,7 @@
 	</AssetSelectControlBar>
 {/if}
 
-<UserPageLayout user={data.user} hideNavbar={isMultiSelectionMode}>
+<UserPageLayout user={data.user} hideNavbar={isMultiSelectionMode} title={data.meta.title}>
 	<section>
 		<!-- Empty Message -->
 		{#if favorites.length === 0}
