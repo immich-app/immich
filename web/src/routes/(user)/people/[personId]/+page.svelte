@@ -103,24 +103,12 @@
 <section class="relative pt-8 sm:px-4 mb-12 bg-immich-bg dark:bg-immich-dark-bg">
 	<section class="overflow-y-auto relative immich-scrollbar">
 		<section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
-			{#if data.assets.length > 0}
-				<GalleryViewer
-					assets={data.assets}
-					viewFrom="search-page"
-					showArchiveIcon={true}
-					bind:selectedAssets={multiSelectAsset}
-				/>
-			{:else}
-				<div
-					class="flex items-center place-content-center w-full min-h-[calc(100vh_-_11rem)] dark:text-white"
-				>
-					<div class="flex flex-col content-center items-center text-center">
-						<ImageOffOutline size="3.5em" />
-						<p class="font-medium text-3xl mt-5">No results</p>
-						<p class="text-base font-normal">Try a synonym or more general keyword</p>
-					</div>
-				</div>
-			{/if}
+			<GalleryViewer
+				assets={data.assets}
+				viewFrom="search-page"
+				showArchiveIcon={true}
+				bind:selectedAssets={multiSelectAsset}
+			/>
 		</section>
 	</section>
 </section>

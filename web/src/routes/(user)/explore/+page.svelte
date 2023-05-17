@@ -48,8 +48,15 @@
 	<div class="mx-4">
 		{#if people.length > 0}
 			<div class="mb-6 mt-2">
-				<div>
+				<div class="flex justify-between">
 					<p class="mb-4 dark:text-immich-dark-fg font-medium">People</p>
+					{#if data.people.length > MAX_ITEMS}
+						<a
+							href={AppRoute.PEOPLE}
+							class="font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary dark:text-immich-dark-fg"
+							draggable="false">View All</a
+						>
+					{/if}
 				</div>
 				<div class="flex flex-row flex-wrap gap-4">
 					{#each people as person (person.id)}
