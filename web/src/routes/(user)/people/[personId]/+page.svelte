@@ -13,7 +13,6 @@
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
 	import { AppRoute } from '$lib/constants';
-	import { clickOutside } from '$lib/utils/click-outside';
 	import { handleError } from '$lib/utils/handle-error';
 	import { AssetResponseDto, api } from '@api';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
@@ -27,10 +26,6 @@
 
 	let multiSelectAsset: Set<AssetResponseDto> = new Set();
 	$: isMultiSelectionMode = multiSelectAsset.size > 0;
-
-	const noop = () => {
-		// noop
-	};
 
 	const handleNameChange = async (name: string) => {
 		try {
@@ -71,52 +66,50 @@
 {/if}
 
 <!-- Face information block -->
-<section class="pt-24 pl-6 flex place-items-center">
+<section class="pt-24 px-4 sm:px-6 flex place-items-center">
 	{#if isEditName}
-		<div use:clickOutside on:outclick={() => (isEditName = false)}>
-			<EditNameInput person={data.person} on:change={(event) => handleNameChange(event.detail)} />
-		</div>
+		<EditNameInput
+			person={data.person}
+			on:change={(event) => handleNameChange(event.detail)}
+			on:blur={() => (isEditName = false)}
+		/>
 	{:else}
 		<ImageThumbnail
 			circle
 			shadow
 			url={api.getPeopleThumbnailUrl(data.person.id)}
 			altText={data.person.name}
-			widthStyle="50px"
-			heightStyle="50px"
+			widthStyle="3.375rem"
+			heightStyle="3.375rem"
 		/>
-		<div
-			class="ml-4 text-immich-primary dark:text-immich-dark-primary"
+		<button
+			title="Edit name"
+			class="px-4 text-immich-primary dark:text-immich-dark-primary"
 			on:click={() => (isEditName = true)}
-			on:keypress={() => noop()}
 		>
 			{#if data.person.name}
-				<div class="hover:cursor-pointer">
-					<p class="font-medium">{data.person.name}</p>
-				</div>
+				<p class="font-medium py-2">{data.person.name}</p>
 			{:else}
-				<p class="font-medium hover:cursor-pointer w-fit">Add a name</p>
+				<p class="font-medium w-fit">Add a name</p>
 				<p class="text-sm text-gray-500 dark:text-immich-gray">
 					Find them fast by name with search
 				</p>
 			{/if}
-		</div>
+		</button>
 	{/if}
 </section>
 
 <!-- Gallery Block -->
-<section class="relative pt-8 mb-12 bg-immich-bg dark:bg-immich-dark-bg">
+<section class="relative pt-8 sm:px-4 mb-12 bg-immich-bg dark:bg-immich-dark-bg">
 	<section class="overflow-y-auto relative immich-scrollbar">
 		<section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
 			{#if data.assets.length > 0}
-				<div class="pl-4">
-					<GalleryViewer
-						assets={data.assets}
-						viewFrom="search-page"
-						showArchiveIcon={true}
-						bind:selectedAssets={multiSelectAsset}
-					/>
-				</div>
+				<GalleryViewer
+					assets={data.assets}
+					viewFrom="search-page"
+					showArchiveIcon={true}
+					bind:selectedAssets={multiSelectAsset}
+				/>
 			{:else}
 				<div
 					class="flex items-center place-content-center w-full min-h-[calc(100vh_-_11rem)] dark:text-white"
