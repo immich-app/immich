@@ -295,7 +295,11 @@ export class AssetRepository implements IAssetRepository {
       isArchived: asset.isArchived,
     });
 
-    return asset;
+    return this.assetRepository.findOneOrFail({
+      where: {
+        id: asset.id,
+      },
+    });
   }
 
   /**
