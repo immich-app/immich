@@ -8,8 +8,10 @@
 	export let person: PersonResponseDto;
 	let name = person.name;
 
-	const dispatch = createEventDispatcher();
-	const handleNameChange = () => dispatch('change', name);
+	const dispatch = createEventDispatcher<{
+		change: string;
+		cancel: void;
+	}>();
 </script>
 
 <div
@@ -28,7 +30,7 @@
 	<form
 		class="ml-4 flex justify-between w-full gap-16"
 		autocomplete="off"
-		on:submit|preventDefault={handleNameChange}
+		on:submit|preventDefault={() => dispatch('change', name)}
 	>
 		<!-- svelte-ignore a11y-autofocus -->
 		<input
