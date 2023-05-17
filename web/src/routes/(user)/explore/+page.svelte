@@ -53,14 +53,13 @@
 				</div>
 				<div class="flex flex-row flex-wrap gap-4">
 					{#each people as person (person.id)}
-						<a href="/people/{person.id}" class="w-[100px] text-center">
+						<a href="/people/{person.id}" class="w-24 text-center">
 							<ImageThumbnail
 								circle
 								shadow
 								url={api.getPeopleThumbnailUrl(person.id)}
 								altText={person.name}
-								widthStyle="100px"
-								heightStyle="100px"
+								widthStyle="100%"
 							/>
 							<p class="font-medium mt-2 text-ellipsis text-sm dark:text-white">{person.name}</p>
 						</a>
