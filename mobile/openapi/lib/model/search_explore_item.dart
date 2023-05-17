@@ -68,7 +68,7 @@ class SearchExploreItem {
     return null;
   }
 
-  static List<SearchExploreItem>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SearchExploreItem> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <SearchExploreItem>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -99,12 +99,10 @@ class SearchExploreItem {
   static Map<String, List<SearchExploreItem>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<SearchExploreItem>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = SearchExploreItem.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = SearchExploreItem.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

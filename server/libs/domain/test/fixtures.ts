@@ -3,6 +3,7 @@ import {
   APIKeyEntity,
   AssetEntity,
   AssetType,
+  PartnerEntity,
   SharedLinkEntity,
   SharedLinkType,
   SystemConfig,
@@ -135,6 +136,7 @@ export const assetEntityStub = {
     updatedAt: '2023-02-23T05:06:29.716Z',
     mimeType: null,
     isFavorite: true,
+    isArchived: false,
     duration: null,
     isVisible: true,
     livePhotoVideo: null,
@@ -160,6 +162,7 @@ export const assetEntityStub = {
     updatedAt: '2023-02-23T05:06:29.716Z',
     mimeType: null,
     isFavorite: true,
+    isArchived: false,
     duration: null,
     isVisible: true,
     livePhotoVideo: null,
@@ -187,6 +190,7 @@ export const assetEntityStub = {
     updatedAt: '2023-02-23T05:06:29.716Z',
     mimeType: null,
     isFavorite: true,
+    isArchived: false,
     duration: null,
     isVisible: true,
     livePhotoVideo: null,
@@ -343,6 +347,7 @@ const assetInfo: ExifResponseDto = {
   city: 'city',
   state: 'state',
   country: 'country',
+  description: 'description',
 };
 
 const assetResponse: AssetResponseDto = {
@@ -358,6 +363,7 @@ const assetResponse: AssetResponseDto = {
   fileCreatedAt: today.toISOString(),
   updatedAt: today.toISOString(),
   isFavorite: false,
+  isArchived: false,
   mimeType: 'image/jpeg',
   smartInfo: {
     tags: [],
@@ -389,9 +395,22 @@ export const userTokenEntityStub = {
   userToken: Object.freeze<UserTokenEntity>({
     id: 'token-id',
     token: 'auth_token',
+    userId: userEntityStub.user1.id,
     user: userEntityStub.user1,
-    createdAt: '2021-01-01',
-    updatedAt: '2021-01-01',
+    createdAt: new Date('2021-01-01'),
+    updatedAt: new Date(),
+    deviceType: '',
+    deviceOS: '',
+  }),
+  inactiveToken: Object.freeze<UserTokenEntity>({
+    id: 'not_active',
+    token: 'auth_token',
+    userId: userEntityStub.user1.id,
+    user: userEntityStub.user1,
+    createdAt: new Date('2021-01-01'),
+    updatedAt: new Date('2021-01-01'),
+    deviceType: 'Mobile',
+    deviceOS: 'Android',
   }),
 };
 
@@ -595,6 +614,7 @@ export const sharedLinkStub = {
           createdAt: today.toISOString(),
           updatedAt: today.toISOString(),
           isFavorite: false,
+          isArchived: false,
           mimeType: 'image/jpeg',
           smartInfo: {
             assetId: 'id_1',
@@ -807,5 +827,24 @@ export const probeStub = {
       formatLongName: 'Matroska / WebM',
       duration: 0,
     },
+  }),
+};
+
+export const partnerStub = {
+  adminToUser1: Object.freeze<PartnerEntity>({
+    createdAt: new Date('2023-02-23T05:06:29.716Z'),
+    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    sharedById: userEntityStub.admin.id,
+    sharedBy: userEntityStub.admin,
+    sharedWith: userEntityStub.user1,
+    sharedWithId: userEntityStub.user1.id,
+  }),
+  user1ToAdmin1: Object.freeze<PartnerEntity>({
+    createdAt: new Date('2023-02-23T05:06:29.716Z'),
+    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    sharedBy: userEntityStub.user1,
+    sharedById: userEntityStub.user1.id,
+    sharedWithId: userEntityStub.admin.id,
+    sharedWith: userEntityStub.admin,
   }),
 };

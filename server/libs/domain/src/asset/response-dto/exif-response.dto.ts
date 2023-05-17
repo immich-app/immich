@@ -23,6 +23,7 @@ export class ExifResponseDto {
   city?: string | null = null;
   state?: string | null = null;
   country?: string | null = null;
+  description?: string | null = null;
 }
 
 export function mapExif(entity: ExifEntity): ExifResponseDto {
@@ -46,5 +47,6 @@ export function mapExif(entity: ExifEntity): ExifResponseDto {
     city: entity.city,
     state: entity.state,
     country: entity.country,
+    description: entity.description,
   };
 }

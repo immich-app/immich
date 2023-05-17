@@ -16,10 +16,7 @@ class AssetApi {
 
   final ApiClient apiClient;
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'PATCH /asset/shared-link/add' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [AddAssetsDto] addAssetsDto (required):
@@ -54,8 +51,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [AddAssetsDto] addAssetsDto (required):
@@ -240,10 +235,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /asset/shared-link' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [CreateAssetsShareLinkDto] createAssetsShareLinkDto (required):
@@ -272,8 +264,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [CreateAssetsShareLinkDto] createAssetsShareLinkDto (required):
@@ -292,10 +282,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'DELETE /asset' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [DeleteAssetDto] deleteAssetDto (required):
@@ -324,8 +311,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [DeleteAssetDto] deleteAssetDto (required):
@@ -347,10 +332,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'GET /asset/download/{assetId}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] assetId (required):
@@ -386,8 +368,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [String] assetId (required):
@@ -408,10 +388,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /asset/download-files' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [DownloadFilesDto] downloadFilesDto (required):
@@ -446,8 +423,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [DownloadFilesDto] downloadFilesDto (required):
@@ -546,11 +521,13 @@ class AssetApi {
   ///
   /// * [bool] isFavorite:
   ///
+  /// * [bool] isArchived:
+  ///
   /// * [num] skip:
   ///
   /// * [String] ifNoneMatch:
   ///   ETag of data already cached on the client
-  Future<Response> getAllAssetsWithHttpInfo({ bool? isFavorite, num? skip, String? ifNoneMatch, }) async {
+  Future<Response> getAllAssetsWithHttpInfo({ bool? isFavorite, bool? isArchived, num? skip, String? ifNoneMatch, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset';
 
@@ -563,6 +540,9 @@ class AssetApi {
 
     if (isFavorite != null) {
       queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
+    }
+    if (isArchived != null) {
+      queryParams.addAll(_queryParams('', 'isArchived', isArchived));
     }
     if (skip != null) {
       queryParams.addAll(_queryParams('', 'skip', skip));
@@ -592,12 +572,14 @@ class AssetApi {
   ///
   /// * [bool] isFavorite:
   ///
+  /// * [bool] isArchived:
+  ///
   /// * [num] skip:
   ///
   /// * [String] ifNoneMatch:
   ///   ETag of data already cached on the client
-  Future<List<AssetResponseDto>?> getAllAssets({ bool? isFavorite, num? skip, String? ifNoneMatch, }) async {
-    final response = await getAllAssetsWithHttpInfo( isFavorite: isFavorite, skip: skip, ifNoneMatch: ifNoneMatch, );
+  Future<List<AssetResponseDto>?> getAllAssets({ bool? isFavorite, bool? isArchived, num? skip, String? ifNoneMatch, }) async {
+    final response = await getAllAssetsWithHttpInfo( isFavorite: isFavorite, isArchived: isArchived, skip: skip, ifNoneMatch: ifNoneMatch, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -610,6 +592,47 @@ class AssetApi {
         .cast<AssetResponseDto>()
         .toList();
 
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'GET /asset/stat/archive' operation and returns the [Response].
+  Future<Response> getArchivedAssetCountByUserIdWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset/stat/archive';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<AssetCountByUserIdResponseDto?> getArchivedAssetCountByUserId() async {
+    final response = await getArchivedAssetCountByUserIdWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetCountByUserIdResponseDto',) as AssetCountByUserIdResponseDto;
+    
     }
     return null;
   }
@@ -675,10 +698,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /asset/time-bucket' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [GetAssetByTimeBucketDto] getAssetByTimeBucketDto (required):
@@ -707,8 +727,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [GetAssetByTimeBucketDto] getAssetByTimeBucketDto (required):
@@ -730,10 +748,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /asset/count-by-time-bucket' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [GetAssetCountByTimeBucketDto] getAssetCountByTimeBucketDto (required):
@@ -762,8 +777,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [GetAssetCountByTimeBucketDto] getAssetCountByTimeBucketDto (required):
@@ -782,9 +795,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
+  /// Performs an HTTP 'GET /asset/count-by-user-id' operation and returns the [Response].
   Future<Response> getAssetCountByUserIdWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/asset/count-by-user-id';
@@ -810,7 +821,6 @@ class AssetApi {
     );
   }
 
-  /// 
   Future<AssetCountByUserIdResponseDto?> getAssetCountByUserId() async {
     final response = await getAssetCountByUserIdWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -826,9 +836,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
+  /// Performs an HTTP 'GET /asset/search-terms' operation and returns the [Response].
   Future<Response> getAssetSearchTermsWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/asset/search-terms';
@@ -854,7 +862,6 @@ class AssetApi {
     );
   }
 
-  /// 
   Future<List<String>?> getAssetSearchTerms() async {
     final response = await getAssetSearchTermsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -873,10 +880,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'GET /asset/thumbnail/{assetId}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] assetId (required):
@@ -917,8 +921,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [String] assetId (required):
@@ -941,9 +943,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
+  /// Performs an HTTP 'GET /asset/curated-locations' operation and returns the [Response].
   Future<Response> getCuratedLocationsWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/asset/curated-locations';
@@ -969,7 +969,6 @@ class AssetApi {
     );
   }
 
-  /// 
   Future<List<CuratedLocationsResponseDto>?> getCuratedLocations() async {
     final response = await getCuratedLocationsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -988,9 +987,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
+  /// Performs an HTTP 'GET /asset/curated-objects' operation and returns the [Response].
   Future<Response> getCuratedObjectsWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/asset/curated-objects';
@@ -1016,7 +1013,6 @@ class AssetApi {
     );
   }
 
-  /// 
   Future<List<CuratedObjectsResponseDto>?> getCuratedObjects() async {
     final response = await getCuratedObjectsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -1029,6 +1025,79 @@ class AssetApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<CuratedObjectsResponseDto>') as List)
         .cast<CuratedObjectsResponseDto>()
+        .toList();
+
+    }
+    return null;
+  }
+
+  /// Get all assets that have GPS information embedded
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [bool] isFavorite:
+  ///
+  /// * [bool] isArchived:
+  ///
+  /// * [num] skip:
+  Future<Response> getMapMarkersWithHttpInfo({ bool? isFavorite, bool? isArchived, num? skip, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset/map-marker';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (isFavorite != null) {
+      queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
+    }
+    if (isArchived != null) {
+      queryParams.addAll(_queryParams('', 'isArchived', isArchived));
+    }
+    if (skip != null) {
+      queryParams.addAll(_queryParams('', 'skip', skip));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Get all assets that have GPS information embedded
+  ///
+  /// Parameters:
+  ///
+  /// * [bool] isFavorite:
+  ///
+  /// * [bool] isArchived:
+  ///
+  /// * [num] skip:
+  Future<List<MapMarkerResponseDto>?> getMapMarkers({ bool? isFavorite, bool? isArchived, num? skip, }) async {
+    final response = await getMapMarkersWithHttpInfo( isFavorite: isFavorite, isArchived: isArchived, skip: skip, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<MapMarkerResponseDto>') as List)
+        .cast<MapMarkerResponseDto>()
         .toList();
 
     }
@@ -1091,10 +1160,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'PATCH /asset/shared-link/remove' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [RemoveAssetsDto] removeAssetsDto (required):
@@ -1129,8 +1195,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [RemoveAssetsDto] removeAssetsDto (required):
@@ -1151,10 +1215,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /asset/search' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [SearchAssetDto] searchAssetDto (required):
@@ -1183,8 +1244,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [SearchAssetDto] searchAssetDto (required):
@@ -1206,10 +1265,7 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'GET /asset/file/{assetId}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] assetId (required):
@@ -1255,8 +1311,6 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [String] assetId (required):
@@ -1338,15 +1392,16 @@ class AssetApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /asset/upload' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [AssetTypeEnum] assetType (required):
   ///
   /// * [MultipartFile] assetData (required):
+  ///
+  /// * [String] deviceAssetId (required):
+  ///
+  /// * [String] deviceId (required):
   ///
   /// * [String] fileCreatedAt (required):
   ///
@@ -1360,14 +1415,12 @@ class AssetApi {
   ///
   /// * [MultipartFile] livePhotoData:
   ///
-  /// * [String] deviceAssetId:
-  ///
-  /// * [String] deviceId:
+  /// * [bool] isArchived:
   ///
   /// * [bool] isVisible:
   ///
   /// * [String] duration:
-  Future<Response> uploadFileWithHttpInfo(AssetTypeEnum assetType, MultipartFile assetData, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { String? key, MultipartFile? livePhotoData, String? deviceAssetId, String? deviceId, bool? isVisible, String? duration, }) async {
+  Future<Response> uploadFileWithHttpInfo(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { String? key, MultipartFile? livePhotoData, bool? isArchived, bool? isVisible, String? duration, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/upload';
 
@@ -1420,6 +1473,10 @@ class AssetApi {
       hasFields = true;
       mp.fields[r'isFavorite'] = parameterToString(isFavorite);
     }
+    if (isArchived != null) {
+      hasFields = true;
+      mp.fields[r'isArchived'] = parameterToString(isArchived);
+    }
     if (isVisible != null) {
       hasFields = true;
       mp.fields[r'isVisible'] = parameterToString(isVisible);
@@ -1447,13 +1504,15 @@ class AssetApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [AssetTypeEnum] assetType (required):
   ///
   /// * [MultipartFile] assetData (required):
+  ///
+  /// * [String] deviceAssetId (required):
+  ///
+  /// * [String] deviceId (required):
   ///
   /// * [String] fileCreatedAt (required):
   ///
@@ -1467,15 +1526,13 @@ class AssetApi {
   ///
   /// * [MultipartFile] livePhotoData:
   ///
-  /// * [String] deviceAssetId:
-  ///
-  /// * [String] deviceId:
+  /// * [bool] isArchived:
   ///
   /// * [bool] isVisible:
   ///
   /// * [String] duration:
-  Future<AssetFileUploadResponseDto?> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { String? key, MultipartFile? livePhotoData, String? deviceAssetId, String? deviceId, bool? isVisible, String? duration, }) async {
-    final response = await uploadFileWithHttpInfo(assetType, assetData, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension,  key: key, livePhotoData: livePhotoData, deviceAssetId: deviceAssetId, deviceId: deviceId, isVisible: isVisible, duration: duration, );
+  Future<AssetFileUploadResponseDto?> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { String? key, MultipartFile? livePhotoData, bool? isArchived, bool? isVisible, String? duration, }) async {
+    final response = await uploadFileWithHttpInfo(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension,  key: key, livePhotoData: livePhotoData, isArchived: isArchived, isVisible: isVisible, duration: duration, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

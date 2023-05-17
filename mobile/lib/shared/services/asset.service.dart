@@ -101,7 +101,7 @@ class AssetService {
       if (a.isRemote) {
         final dto = await _apiService.assetApi.getAssetById(a.remoteId!);
         if (dto != null && dto.exifInfo != null) {
-          a = a.withUpdatesFromDto(dto);
+          a.exifInfo = Asset.remote(dto).exifInfo!.copyWith(id: a.id);
           if (a.isInDb) {
             _db.writeTxn(() => a.put(_db));
           } else {
@@ -121,10 +121,21 @@ class AssetService {
   ) async {
     final dto =
         await _apiService.assetApi.updateAsset(asset.remoteId!, updateAssetDto);
-    return dto == null ? null : Asset.remote(dto);
+    if (dto != null) {
+      final updated = asset.updatedCopy(Asset.remote(dto));
+      if (updated.isInDb) {
+        await _db.writeTxn(() => updated.put(_db));
+      }
+      return updated;
+    }
+    return null;
   }
 
   Future<Asset?> changeFavoriteStatus(Asset asset, bool isFavorite) {
     return updateAsset(asset, UpdateAssetDto(isFavorite: isFavorite));
+  }
+
+  Future<Asset?> changeArchiveStatus(Asset asset, bool isArchive) {
+    return updateAsset(asset, UpdateAssetDto(isArchived: isArchive));
   }
 }

@@ -135,8 +135,8 @@ class CreateAssetsShareLinkDto {
       }());
 
       return CreateAssetsShareLinkDto(
-        assetIds: json[r'assetIds'] is List
-            ? (json[r'assetIds'] as List).cast<String>()
+        assetIds: json[r'assetIds'] is Iterable
+            ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         expiresAt: mapValueOfType<String>(json, r'expiresAt'),
         allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
@@ -148,7 +148,7 @@ class CreateAssetsShareLinkDto {
     return null;
   }
 
-  static List<CreateAssetsShareLinkDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<CreateAssetsShareLinkDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <CreateAssetsShareLinkDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -179,12 +179,10 @@ class CreateAssetsShareLinkDto {
   static Map<String, List<CreateAssetsShareLinkDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<CreateAssetsShareLinkDto>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = CreateAssetsShareLinkDto.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = CreateAssetsShareLinkDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

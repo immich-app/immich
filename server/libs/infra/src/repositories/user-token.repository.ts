@@ -6,24 +6,40 @@ import { IUserTokenRepository } from '@app/domain/user-token';
 
 @Injectable()
 export class UserTokenRepository implements IUserTokenRepository {
-  constructor(
-    @InjectRepository(UserTokenEntity)
-    private userTokenRepository: Repository<UserTokenEntity>,
-  ) {}
+  constructor(@InjectRepository(UserTokenEntity) private repository: Repository<UserTokenEntity>) {}
 
-  async get(userToken: string): Promise<UserTokenEntity | null> {
-    return this.userTokenRepository.findOne({ where: { token: userToken }, relations: { user: true } });
+  getByToken(token: string): Promise<UserTokenEntity | null> {
+    return this.repository.findOne({ where: { token }, relations: { user: true } });
   }
 
-  async create(userToken: Partial<UserTokenEntity>): Promise<UserTokenEntity> {
-    return this.userTokenRepository.save(userToken);
+  getAll(userId: string): Promise<UserTokenEntity[]> {
+    return this.repository.find({
+      where: {
+        userId,
+      },
+      relations: {
+        user: true,
+      },
+      order: {
+        updatedAt: 'desc',
+        createdAt: 'desc',
+      },
+    });
   }
 
-  async delete(id: string): Promise<void> {
-    await this.userTokenRepository.delete(id);
+  create(userToken: Partial<UserTokenEntity>): Promise<UserTokenEntity> {
+    return this.repository.save(userToken);
+  }
+
+  save(userToken: Partial<UserTokenEntity>): Promise<UserTokenEntity> {
+    return this.repository.save(userToken);
+  }
+
+  async delete(userId: string, id: string): Promise<void> {
+    await this.repository.delete({ userId, id });
   }
 
   async deleteAll(userId: string): Promise<void> {
-    await this.userTokenRepository.delete({ user: { id: userId } });
+    await this.repository.delete({ userId });
   }
 }

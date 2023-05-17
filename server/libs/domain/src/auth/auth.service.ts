@@ -11,8 +11,8 @@ import { IncomingHttpHeaders } from 'http';
 import { OAuthCore } from '../oauth/oauth.core';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
 import { IUserRepository, UserCore } from '../user';
-import { AuthType, IMMICH_ACCESS_COOKIE } from './auth.constant';
-import { AuthCore } from './auth.core';
+import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_API_KEY_HEADER } from './auth.constant';
+import { AuthCore, LoginDetails } from './auth.core';
 import { ICryptoRepository } from '../crypto/crypto.repository';
 import { AuthUserDto, ChangePasswordDto, LoginCredentialDto, SignUpDto } from './dto';
 import { AdminSignupResponseDto, LoginResponseDto, LogoutResponseDto, mapAdminSignupResponse } from './response-dto';
@@ -21,6 +21,7 @@ import cookieParser from 'cookie';
 import { ISharedLinkRepository, ShareCore } from '../share';
 import { APIKeyCore } from '../api-key/api-key.core';
 import { IKeyRepository } from '../api-key';
+import { AuthDeviceResponseDto, mapUserToken } from './response-dto';
 
 @Injectable()
 export class AuthService {
@@ -53,8 +54,7 @@ export class AuthService {
 
   public async login(
     loginCredential: LoginCredentialDto,
-    clientIp: string,
-    isSecure: boolean,
+    loginDetails: LoginDetails,
   ): Promise<{ response: LoginResponseDto; cookie: string[] }> {
     if (!this.authCore.isPasswordLoginEnabled()) {
       throw new UnauthorizedException('Password login has been disabled');
@@ -69,16 +69,18 @@ export class AuthService {
     }
 
     if (!user) {
-      this.logger.warn(`Failed login attempt for user ${loginCredential.email} from ip address ${clientIp}`);
+      this.logger.warn(
+        `Failed login attempt for user ${loginCredential.email} from ip address ${loginDetails.clientIp}`,
+      );
       throw new BadRequestException('Incorrect email or password');
     }
 
-    return this.authCore.createLoginResponse(user, AuthType.PASSWORD, isSecure);
+    return this.authCore.createLoginResponse(user, AuthType.PASSWORD, loginDetails);
   }
 
   public async logout(authUser: AuthUserDto, authType: AuthType): Promise<LogoutResponseDto> {
     if (authUser.accessTokenId) {
-      await this.userTokenCore.deleteToken(authUser.accessTokenId);
+      await this.userTokenCore.delete(authUser.id, authUser.accessTokenId);
     }
 
     if (authType === AuthType.OAUTH) {
@@ -135,7 +137,7 @@ export class AuthService {
       params.userToken ||
       this.getBearerToken(headers) ||
       this.getCookieToken(headers)) as string;
-    const apiKey = (headers['x-api-key'] || params.apiKey) as string;
+    const apiKey = (headers[IMMICH_API_KEY_HEADER] || params.apiKey) as string;
 
     if (shareKey) {
       return this.shareCore.validate(shareKey);
@@ -150,6 +152,25 @@ export class AuthService {
     }
 
     throw new UnauthorizedException('Authentication required');
+  }
+
+  async getDevices(authUser: AuthUserDto): Promise<AuthDeviceResponseDto[]> {
+    const userTokens = await this.userTokenCore.getAll(authUser.id);
+    return userTokens.map((userToken) => mapUserToken(userToken, authUser.accessTokenId));
+  }
+
+  async logoutDevice(authUser: AuthUserDto, deviceId: string): Promise<void> {
+    await this.userTokenCore.delete(authUser.id, deviceId);
+  }
+
+  async logoutDevices(authUser: AuthUserDto): Promise<void> {
+    const devices = await this.userTokenCore.getAll(authUser.id);
+    for (const device of devices) {
+      if (device.id === authUser.accessTokenId) {
+        continue;
+      }
+      await this.userTokenCore.delete(authUser.id, device.id);
+    }
   }
 
   private getBearerToken(headers: IncomingHttpHeaders): string | null {

@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'package:easy_localization/easy_localization.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -195,7 +195,12 @@ class GalleryViewerPage extends HookConsumerWidget {
               .getSetting<bool>(AppSettingsEnum.advancedTroubleshooting)) {
             return AdvancedBottomSheet(assetDetail: assetDetail!);
           }
-          return ExifBottomSheet(assetDetail: assetDetail!);
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: ExifBottomSheet(asset: assetDetail!),
+          );
         },
       );
     }
@@ -226,11 +231,10 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     void addToAlbum(Asset addToAlbumAsset) {
       showModalBottomSheet(
+        elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15.0),
         ),
-        barrierColor: Colors.transparent,
-        backgroundColor: Colors.transparent,
         context: context,
         builder: (BuildContext _) {
           return AddToAlbumBottomSheet(
@@ -262,6 +266,19 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
     }
 
+    shareAsset() {
+      ref
+          .watch(imageViewerStateProvider.notifier)
+          .shareAsset(assetList[indexOfAsset.value], context);
+    }
+
+    handleArchive(Asset asset) {
+      ref
+          .watch(assetProvider.notifier)
+          .toggleArchive([asset], !asset.isArchived);
+      AutoRouter.of(context).pop();
+    }
+
     buildAppBar() {
       final show = (showAppBar.value || // onTap has the final say
               (showAppBar.value && !isZoomed.value)) &&
@@ -284,7 +301,8 @@ class GalleryViewerPage extends HookConsumerWidget {
             onFavorite: () {
               toggleFavorite(assetList[indexOfAsset.value]);
             },
-            onDownloadPressed: assetList[indexOfAsset.value].isLocal
+            onDownloadPressed: assetList[indexOfAsset.value].storage ==
+                    AssetState.local
                 ? null
                 : () {
                     ref.watch(imageViewerStateProvider.notifier).downloadAsset(
@@ -292,19 +310,69 @@ class GalleryViewerPage extends HookConsumerWidget {
                           context,
                         );
                   },
-            onSharePressed: () {
-              ref
-                  .watch(imageViewerStateProvider.notifier)
-                  .shareAsset(assetList[indexOfAsset.value], context);
-            },
             onToggleMotionVideo: (() {
               isPlayingMotionVideo.value = !isPlayingMotionVideo.value;
             }),
-            onDeletePressed: () =>
-                handleDelete((assetList[indexOfAsset.value])),
             onAddToAlbumPressed: () =>
                 addToAlbum(assetList[indexOfAsset.value]),
           ),
+        ),
+      );
+    }
+
+    buildBottomBar() {
+      final show = (showAppBar.value || // onTap has the final say
+              (showAppBar.value && !isZoomed.value)) &&
+          !isPlayingVideo.value;
+      final currentAsset = assetList[indexOfAsset.value];
+
+      return AnimatedOpacity(
+        duration: const Duration(milliseconds: 100),
+        opacity: show ? 1.0 : 0.0,
+        child: BottomNavigationBar(
+          backgroundColor: Colors.black.withOpacity(0.4),
+          unselectedIconTheme: const IconThemeData(color: Colors.white),
+          selectedIconTheme: const IconThemeData(color: Colors.white),
+          unselectedLabelStyle: const TextStyle(color: Colors.black),
+          selectedLabelStyle: const TextStyle(color: Colors.black),
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+          items: [
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.ios_share_rounded),
+              label: 'control_bottom_app_bar_share'.tr(),
+              tooltip: 'control_bottom_app_bar_share'.tr(),
+            ),
+            currentAsset.isArchived
+                ? BottomNavigationBarItem(
+                    icon: const Icon(Icons.unarchive_rounded),
+                    label: 'control_bottom_app_bar_unarchive'.tr(),
+                    tooltip: 'control_bottom_app_bar_unarchive'.tr(),
+                  )
+                : BottomNavigationBarItem(
+                    icon: const Icon(Icons.archive_outlined),
+                    label: 'control_bottom_app_bar_archive'.tr(),
+                    tooltip: 'control_bottom_app_bar_archive'.tr(),
+                  ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.delete_outline),
+              label: 'control_bottom_app_bar_delete'.tr(),
+              tooltip: 'control_bottom_app_bar_delete'.tr(),
+            ),
+          ],
+          onTap: (index) {
+            switch (index) {
+              case 0:
+                shareAsset();
+                break;
+              case 1:
+                handleArchive(assetList[indexOfAsset.value]);
+                break;
+              case 2:
+                handleDelete(assetList[indexOfAsset.value]);
+                break;
+            }
+          },
         ),
       );
     }
@@ -328,7 +396,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               scrollPhysics: isZoomed.value
                   ? const NeverScrollableScrollPhysics() // Don't allow paging while scrolled in
                   : (Platform.isIOS
-                      ? const BouncingScrollPhysics() // Use bouncing physics for iOS
+                      ? const ScrollPhysics() // Use bouncing physics for iOS
                       : const ClampingScrollPhysics() // Use heavy physics for Android
                   ),
               itemCount: assetList.length,
@@ -453,6 +521,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     filterQuality: FilterQuality.high,
                     maxScale: 1.0,
                     minScale: 1.0,
+                    basePosition: Alignment.bottomCenter,
                     child: SafeArea(
                       child: VideoViewerPage(
                         onPlaying: () => isPlayingVideo.value = true,
@@ -475,6 +544,12 @@ class GalleryViewerPage extends HookConsumerWidget {
               left: 0,
               right: 0,
               child: buildAppBar(),
+            ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: buildBottomBar(),
             ),
           ],
         ),

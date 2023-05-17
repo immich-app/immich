@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
     "start": "docusaurus start",
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",
@@ -12,7 +14,7 @@
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
-    "typecheck": "tsc"
+    "check": "tsc"
   },
   "dependencies": {
     "@docusaurus/core": "2.1.0",
@@ -32,6 +34,7 @@
   "devDependencies": {
     "@docusaurus/module-type-aliases": "2.1.0",
     "@tsconfig/docusaurus": "^1.0.5",
+    "prettier": "^2.8.8",
     "typescript": "^4.7.4"
   },
   "browserslist": {

@@ -68,7 +68,7 @@ class JobCommandDto {
     return null;
   }
 
-  static List<JobCommandDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<JobCommandDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <JobCommandDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -99,12 +99,10 @@ class JobCommandDto {
   static Map<String, List<JobCommandDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<JobCommandDto>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = JobCommandDto.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = JobCommandDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

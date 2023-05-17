@@ -7,8 +7,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Immich',
-  tagline:
-    'High performance self-hosted photo and video backup solution directly from your mobile phone',
+  tagline: 'High performance self-hosted photo and video backup solution directly from your mobile phone',
   url: 'https://documentation.immich.app',
   baseUrl: '/',
   onBrokenLinks: 'throw',
@@ -111,11 +110,6 @@ const config = {
             label: 'GitHub',
             position: 'right',
           },
-          {
-            href: 'https://github.com/orgs/immich-app/projects/1',
-            label: 'Roadmap',
-            position: 'right',
-          },
         ],
       },
       footer: {
@@ -153,10 +147,6 @@ const config = {
               {
                 label: 'GitHub',
                 href: 'https://github.com/immich-app/immich',
-              },
-              {
-                label: 'Roadmap',
-                href: 'https://github.com/orgs/immich-app/projects/1',
               },
             ],
           },

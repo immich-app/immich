@@ -1,5 +1,6 @@
+import { IMMICH_API_KEY_NAME } from '@app/domain';
 import { applyDecorators, SetMetadata } from '@nestjs/common';
-import { ApiBearerAuth, ApiCookieAuth, ApiQuery } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCookieAuth, ApiQuery, ApiSecurity } from '@nestjs/swagger';
 
 interface AuthenticatedOptions {
   admin?: boolean;
@@ -12,10 +13,13 @@ export enum Metadata {
   SHARED_ROUTE = 'shared_route',
 }
 
-export const Authenticated = (options?: AuthenticatedOptions) => {
-  const decorators: MethodDecorator[] = [ApiBearerAuth(), ApiCookieAuth(), SetMetadata(Metadata.AUTH_ROUTE, true)];
-
-  options = options || {};
+export const Authenticated = (options: AuthenticatedOptions = {}) => {
+  const decorators: MethodDecorator[] = [
+    ApiBearerAuth(),
+    ApiCookieAuth(),
+    ApiSecurity(IMMICH_API_KEY_NAME),
+    SetMetadata(Metadata.AUTH_ROUTE, true),
+  ];
 
   if (options.admin) {
     decorators.push(SetMetadata(Metadata.ADMIN_ROUTE, true));

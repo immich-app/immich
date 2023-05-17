@@ -55,15 +55,15 @@ class CheckExistingAssetsResponseDto {
       }());
 
       return CheckExistingAssetsResponseDto(
-        existingIds: json[r'existingIds'] is List
-            ? (json[r'existingIds'] as List).cast<String>()
+        existingIds: json[r'existingIds'] is Iterable
+            ? (json[r'existingIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
       );
     }
     return null;
   }
 
-  static List<CheckExistingAssetsResponseDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<CheckExistingAssetsResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <CheckExistingAssetsResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -94,12 +94,10 @@ class CheckExistingAssetsResponseDto {
   static Map<String, List<CheckExistingAssetsResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<CheckExistingAssetsResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = CheckExistingAssetsResponseDto.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = CheckExistingAssetsResponseDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

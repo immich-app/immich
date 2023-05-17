@@ -21,6 +21,7 @@ class ExifInfo {
   String? city;
   String? state;
   String? country;
+  String? description;
 
   @ignore
   String get exposureTime {
@@ -58,9 +59,11 @@ class ExifInfo {
         long = dto.longitude?.toDouble(),
         city = dto.city,
         state = dto.state,
-        country = dto.country;
+        country = dto.country,
+        description = dto.description;
 
   ExifInfo({
+    this.id,
     this.fileSize,
     this.make,
     this.model,
@@ -74,7 +77,43 @@ class ExifInfo {
     this.city,
     this.state,
     this.country,
+    this.description,
   });
+
+  ExifInfo copyWith({
+    Id? id,
+    int? fileSize,
+    String? make,
+    String? model,
+    String? lens,
+    float? f,
+    float? mm,
+    short? iso,
+    float? exposureSeconds,
+    float? lat,
+    float? long,
+    String? city,
+    String? state,
+    String? country,
+    String? description,
+  }) =>
+      ExifInfo(
+        id: id ?? this.id,
+        fileSize: fileSize ?? this.fileSize,
+        make: make ?? this.make,
+        model: model ?? this.model,
+        lens: lens ?? this.lens,
+        f: f ?? this.f,
+        mm: mm ?? this.mm,
+        iso: iso ?? this.iso,
+        exposureSeconds: exposureSeconds ?? this.exposureSeconds,
+        lat: lat ?? this.lat,
+        long: long ?? this.long,
+        city: city ?? this.city,
+        state: state ?? this.state,
+        country: country ?? this.country,
+        description: description ?? this.description,
+      );
 }
 
 double? _exposureTimeToSeconds(String? s) {

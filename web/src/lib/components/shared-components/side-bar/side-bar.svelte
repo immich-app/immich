@@ -2,44 +2,85 @@
 	import { page } from '$app/stores';
 	import { api } from '@api';
 	import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
+	import AccountMultiple from 'svelte-material-icons/AccountMultiple.svelte';
 	import ImageAlbum from 'svelte-material-icons/ImageAlbum.svelte';
-	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
+	import ImageMultipleOutline from 'svelte-material-icons/ImageMultipleOutline.svelte';
+	import ImageMultiple from 'svelte-material-icons/ImageMultiple.svelte';
+	import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
 	import Magnify from 'svelte-material-icons/Magnify.svelte';
-	import StarOutline from 'svelte-material-icons/StarOutline.svelte';
+	import Map from 'svelte-material-icons/Map.svelte';
+	import HeartMultipleOutline from 'svelte-material-icons/HeartMultipleOutline.svelte';
+	import HeartMultiple from 'svelte-material-icons/HeartMultiple.svelte';
 	import { AppRoute } from '../../../constants';
 	import LoadingSpinner from '../loading-spinner.svelte';
 	import StatusBox from '../status-box.svelte';
 	import SideBarButton from './side-bar-button.svelte';
 	import { locale } from '$lib/stores/preferences.store';
+	import SideBarSection from './side-bar-section.svelte';
 
 	const getAssetCount = async () => {
-		const { data: assetCount } = await api.assetApi.getAssetCountByUserId();
+		const { data: allAssetCount } = await api.assetApi.getAssetCountByUserId();
+		const { data: archivedCount } = await api.assetApi.getArchivedAssetCountByUserId();
 
 		return {
-			videos: assetCount.videos,
-			photos: assetCount.photos
+			videos: allAssetCount.videos - archivedCount.videos,
+			photos: allAssetCount.photos - archivedCount.photos
 		};
 	};
 
 	const getFavoriteCount = async () => {
-		const { data: assets } = await api.assetApi.getAllAssets(true);
+		try {
+			const { data: assets } = await api.assetApi.getAllAssets(true, undefined);
 
-		return {
-			favorites: assets.length
-		};
+			return {
+				favorites: assets.length
+			};
+		} catch {
+			return {
+				favorites: 0
+			};
+		}
 	};
 
 	const getAlbumCount = async () => {
-		const { data: albumCount } = await api.albumApi.getAlbumCountByUserId();
-		return {
-			shared: albumCount.shared,
-			sharing: albumCount.sharing,
-			owned: albumCount.owned
-		};
+		try {
+			const { data: albumCount } = await api.albumApi.getAlbumCountByUserId();
+			return {
+				shared: albumCount.shared,
+				sharing: albumCount.sharing,
+				owned: albumCount.owned
+			};
+		} catch {
+			return {
+				shared: 0,
+				sharing: 0,
+				owned: 0
+			};
+		}
 	};
+
+	const getArchivedAssetsCount = async () => {
+		try {
+			const { data: assetCount } = await api.assetApi.getArchivedAssetCountByUserId();
+
+			return {
+				videos: assetCount.videos,
+				photos: assetCount.photos
+			};
+		} catch {
+			return {
+				videos: 0,
+				photos: 0
+			};
+		}
+	};
+
+	const isFavoritesSelected = $page.route.id === '/(user)/favorites';
+	const isPhotosSelected = $page.route.id === '/(user)/photos';
+	const isSharingSelected = $page.route.id === '/(user)/sharing';
 </script>
 
-<section id="sidebar" class="flex flex-col gap-1 pt-8 pr-6 bg-immich-bg dark:bg-immich-dark-bg">
+<SideBarSection>
 	<a
 		data-sveltekit-preload-data="hover"
 		data-sveltekit-noscroll
@@ -48,8 +89,8 @@
 	>
 		<SideBarButton
 			title="Photos"
-			logo={ImageOutline}
-			isSelected={$page.route.id === '/(user)/photos'}
+			logo={isPhotosSelected ? ImageMultiple : ImageMultipleOutline}
+			isSelected={isPhotosSelected}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getAssetCount()}
@@ -75,11 +116,14 @@
 			isSelected={$page.route.id === '/(user)/explore'}
 		/>
 	</a>
+	<a data-sveltekit-preload-data="hover" href={AppRoute.MAP} draggable="false">
+		<SideBarButton title="Map" logo={Map} isSelected={$page.route.id === '/(user)/map'} />
+	</a>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.SHARING} draggable="false">
 		<SideBarButton
 			title="Sharing"
-			logo={AccountMultipleOutline}
-			isSelected={$page.route.id === '/(user)/sharing'}
+			logo={isSharingSelected ? AccountMultiple : AccountMultipleOutline}
+			isSelected={isSharingSelected}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getAlbumCount()}
@@ -93,14 +137,15 @@
 		</SideBarButton>
 	</a>
 
-	<div class="text-xs p-5 pb-2 dark:text-immich-dark-fg">
-		<p>LIBRARY</p>
+	<div class="text-xs dark:text-immich-dark-fg transition-all duration-200">
+		<p class="p-6 hidden md:block group-hover:sm:block">LIBRARY</p>
+		<hr class="mt-8 mb-[31px] mx-4 block md:hidden group-hover:sm:hidden" />
 	</div>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.FAVORITES} draggable="false">
 		<SideBarButton
 			title="Favorites"
-			logo={StarOutline}
-			isSelected={$page.route.id == '/(user)/favorites'}
+			logo={isFavoritesSelected ? HeartMultiple : HeartMultipleOutline}
+			isSelected={isFavoritesSelected}
 		>
 			<svelte:fragment slot="moreInformation">
 				{#await getFavoriteCount()}
@@ -117,6 +162,7 @@
 		<SideBarButton
 			title="Albums"
 			logo={ImageAlbum}
+			flippedLogo={true}
 			isSelected={$page.route.id === '/(user)/albums'}
 		>
 			<svelte:fragment slot="moreInformation">
@@ -130,9 +176,27 @@
 			</svelte:fragment>
 		</SideBarButton>
 	</a>
+	<a data-sveltekit-preload-data="hover" href={AppRoute.ARCHIVE} draggable="false">
+		<SideBarButton
+			title="Archive"
+			logo={ArchiveArrowDownOutline}
+			isSelected={$page.route.id === '/(user)/archive'}
+		>
+			<svelte:fragment slot="moreInformation">
+				{#await getArchivedAssetsCount()}
+					<LoadingSpinner />
+				{:then data}
+					<div>
+						<p>{data.videos.toLocaleString($locale)} Videos</p>
+						<p>{data.photos.toLocaleString($locale)} Photos</p>
+					</div>
+				{/await}
+			</svelte:fragment>
+		</SideBarButton>
+	</a>
 
 	<!-- Status Box -->
 	<div class="mb-6 mt-auto">
 		<StatusBox />
 	</div>
-</section>
+</SideBarSection>

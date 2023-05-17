@@ -1,5 +1,11 @@
 <script lang="ts">
-	import { api, AssetResponseDto, SharedLinkResponseDto, SharedLinkType } from '@api';
+	import {
+		api,
+		AssetResponseDto,
+		SharedLinkResponseDto,
+		SharedLinkType,
+		ThumbnailFormat
+	} from '@api';
 	import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 	import OpenInNew from 'svelte-material-icons/OpenInNew.svelte';
 	import Delete from 'svelte-material-icons/TrashCanOutline.svelte';
@@ -69,7 +75,7 @@
 		{:then asset}
 			<img
 				id={asset.id}
-				src={`/api/asset/thumbnail/${asset.id}?format=WEBP`}
+				src={api.getAssetThumbnailUrl(asset.id, ThumbnailFormat.Webp)}
 				alt={asset.id}
 				class="object-cover w-[100px] h-[100px] rounded-lg"
 				loading="lazy"

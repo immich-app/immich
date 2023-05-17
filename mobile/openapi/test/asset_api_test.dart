@@ -17,8 +17,6 @@ void main() {
   // final instance = AssetApi();
 
   group('tests for AssetApi', () {
-    // 
-    //
     //Future<SharedLinkResponseDto> addAssetsToSharedLink(AddAssetsDto addAssetsDto, { String key }) async
     test('test addAssetsToSharedLink', () async {
       // TODO
@@ -45,29 +43,21 @@ void main() {
       // TODO
     });
 
-    // 
-    //
     //Future<SharedLinkResponseDto> createAssetsSharedLink(CreateAssetsShareLinkDto createAssetsShareLinkDto) async
     test('test createAssetsSharedLink', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<List<DeleteAssetResponseDto>> deleteAsset(DeleteAssetDto deleteAssetDto) async
     test('test deleteAsset', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<MultipartFile> downloadFile(String assetId, { String key }) async
     test('test downloadFile', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<MultipartFile> downloadFiles(DownloadFilesDto downloadFilesDto, { String key }) async
     test('test downloadFiles', () async {
       // TODO
@@ -82,8 +72,13 @@ void main() {
 
     // Get all AssetEntity belong to the user
     //
-    //Future<List<AssetResponseDto>> getAllAssets({ bool isFavorite, num skip, String ifNoneMatch }) async
+    //Future<List<AssetResponseDto>> getAllAssets({ bool isFavorite, bool isArchived, num skip, String ifNoneMatch }) async
     test('test getAllAssets', () async {
+      // TODO
+    });
+
+    //Future<AssetCountByUserIdResponseDto> getArchivedAssetCountByUserId() async
+    test('test getArchivedAssetCountByUserId', () async {
       // TODO
     });
 
@@ -94,52 +89,45 @@ void main() {
       // TODO
     });
 
-    // 
-    //
     //Future<List<AssetResponseDto>> getAssetByTimeBucket(GetAssetByTimeBucketDto getAssetByTimeBucketDto) async
     test('test getAssetByTimeBucket', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<AssetCountByTimeBucketResponseDto> getAssetCountByTimeBucket(GetAssetCountByTimeBucketDto getAssetCountByTimeBucketDto) async
     test('test getAssetCountByTimeBucket', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<AssetCountByUserIdResponseDto> getAssetCountByUserId() async
     test('test getAssetCountByUserId', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<List<String>> getAssetSearchTerms() async
     test('test getAssetSearchTerms', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<MultipartFile> getAssetThumbnail(String assetId, { ThumbnailFormat format, String key }) async
     test('test getAssetThumbnail', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<List<CuratedLocationsResponseDto>> getCuratedLocations() async
     test('test getCuratedLocations', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<List<CuratedObjectsResponseDto>> getCuratedObjects() async
     test('test getCuratedObjects', () async {
+      // TODO
+    });
+
+    // Get all assets that have GPS information embedded
+    //
+    //Future<List<MapMarkerResponseDto>> getMapMarkers({ bool isFavorite, bool isArchived, num skip }) async
+    test('test getMapMarkers', () async {
       // TODO
     });
 
@@ -150,22 +138,16 @@ void main() {
       // TODO
     });
 
-    // 
-    //
     //Future<SharedLinkResponseDto> removeAssetsFromSharedLink(RemoveAssetsDto removeAssetsDto, { String key }) async
     test('test removeAssetsFromSharedLink', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<List<AssetResponseDto>> searchAsset(SearchAssetDto searchAssetDto) async
     test('test searchAsset', () async {
       // TODO
     });
 
-    // 
-    //
     //Future<MultipartFile> serveFile(String assetId, { bool isThumb, bool isWeb, String key }) async
     test('test serveFile', () async {
       // TODO
@@ -178,9 +160,7 @@ void main() {
       // TODO
     });
 
-    // 
-    //
-    //Future<AssetFileUploadResponseDto> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { String key, MultipartFile livePhotoData, String deviceAssetId, String deviceId, bool isVisible, String duration }) async
+    //Future<AssetFileUploadResponseDto> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { String key, MultipartFile livePhotoData, bool isArchived, bool isVisible, String duration }) async
     test('test uploadFile', () async {
       // TODO
     });

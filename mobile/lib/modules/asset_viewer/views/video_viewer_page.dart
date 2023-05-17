@@ -30,10 +30,10 @@ class VideoViewerPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (asset.isLocal) {
+    if (asset.storage == AssetState.local && asset.livePhotoVideoId == null) {
       final AsyncValue<File> videoFile = ref.watch(_fileFamily(asset.local!));
       return videoFile.when(
-        data: (data) => VideoThumbnailPlayer(
+        data: (data) => VideoPlayer(
           file: data,
           isMotionVideo: false,
           onVideoEnded: () {},
@@ -59,7 +59,7 @@ class VideoViewerPage extends HookConsumerWidget {
 
     return Stack(
       children: [
-        VideoThumbnailPlayer(
+        VideoPlayer(
           url: videoUrl,
           jwtToken: Store.get(StoreKey.accessToken),
           isMotionVideo: isMotionVideo,
@@ -85,7 +85,7 @@ final _fileFamily =
   return file;
 });
 
-class VideoThumbnailPlayer extends StatefulWidget {
+class VideoPlayer extends StatefulWidget {
   final String? url;
   final String? jwtToken;
   final File? file;
@@ -95,7 +95,7 @@ class VideoThumbnailPlayer extends StatefulWidget {
   final Function()? onPlaying;
   final Function()? onPaused;
 
-  const VideoThumbnailPlayer({
+  const VideoPlayer({
     Key? key,
     this.url,
     this.jwtToken,
@@ -107,10 +107,10 @@ class VideoThumbnailPlayer extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<VideoThumbnailPlayer> createState() => _VideoThumbnailPlayerState();
+  State<VideoPlayer> createState() => _VideoPlayerState();
 }
 
-class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
+class _VideoPlayerState extends State<VideoPlayer> {
   late VideoPlayerController videoPlayerController;
   ChewieController? chewieController;
 
@@ -120,14 +120,17 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
     initializePlayer();
 
     videoPlayerController.addListener(() {
-      if (videoPlayerController.value.isPlaying) {
-        widget.onPlaying?.call();
-      } else if (!videoPlayerController.value.isPlaying) {
-        widget.onPaused?.call();
-      }
-      if (videoPlayerController.value.position ==
-          videoPlayerController.value.duration) {
-        widget.onVideoEnded();
+      if (videoPlayerController.value.isInitialized) {
+        if (videoPlayerController.value.isPlaying) {
+          widget.onPlaying?.call();
+        } else if (!videoPlayerController.value.isPlaying) {
+          widget.onPaused?.call();
+        }
+
+        if (videoPlayerController.value.position ==
+            videoPlayerController.value.duration) {
+          widget.onVideoEnded();
+        }
       }
     });
   }
@@ -145,14 +148,14 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
       _createChewieController();
       setState(() {});
     } catch (e) {
-      debugPrint("ERROR initialize video player");
+      debugPrint("ERROR initialize video player $e");
     }
   }
 
   _createChewieController() {
     chewieController = ChewieController(
       controlsSafeAreaMinimum: const EdgeInsets.only(
-        bottom: 156,
+        bottom: 100,
       ),
       showOptions: true,
       showControlsOnInitialize: false,
@@ -160,6 +163,7 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
       autoPlay: true,
       autoInitialize: true,
       allowFullScreen: true,
+      allowedScreenSleep: false,
       showControls: !widget.isMotionVideo,
       hideControlsTimer: const Duration(seconds: 5),
     );
@@ -175,20 +179,22 @@ class _VideoThumbnailPlayerState extends State<VideoThumbnailPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return chewieController?.videoPlayerController.value.isInitialized == true
-        ? SizedBox(
-            child: Chewie(
-              controller: chewieController!,
-            ),
-          )
-        : const Center(
-            child: SizedBox(
-              width: 75,
-              height: 75,
-              child: CircularProgressIndicator.adaptive(
-                strokeWidth: 2,
-              ),
-            ),
-          );
+    if (chewieController?.videoPlayerController.value.isInitialized == true) {
+      return SizedBox(
+        child: Chewie(
+          controller: chewieController!,
+        ),
+      );
+    } else {
+      return const Center(
+        child: SizedBox(
+          width: 75,
+          height: 75,
+          child: CircularProgressIndicator.adaptive(
+            strokeWidth: 2,
+          ),
+        ),
+      );
+    }
   }
 }

@@ -25,6 +25,7 @@ class AssetResponseDto {
     required this.fileModifiedAt,
     required this.updatedAt,
     required this.isFavorite,
+    required this.isArchived,
     required this.mimeType,
     required this.duration,
     required this.webpPath,
@@ -58,6 +59,8 @@ class AssetResponseDto {
   String updatedAt;
 
   bool isFavorite;
+
+  bool isArchived;
 
   String? mimeType;
 
@@ -101,6 +104,7 @@ class AssetResponseDto {
      other.fileModifiedAt == fileModifiedAt &&
      other.updatedAt == updatedAt &&
      other.isFavorite == isFavorite &&
+     other.isArchived == isArchived &&
      other.mimeType == mimeType &&
      other.duration == duration &&
      other.webpPath == webpPath &&
@@ -125,6 +129,7 @@ class AssetResponseDto {
     (fileModifiedAt.hashCode) +
     (updatedAt.hashCode) +
     (isFavorite.hashCode) +
+    (isArchived.hashCode) +
     (mimeType == null ? 0 : mimeType!.hashCode) +
     (duration.hashCode) +
     (webpPath == null ? 0 : webpPath!.hashCode) +
@@ -135,7 +140,7 @@ class AssetResponseDto {
     (tags.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, originalFileName=$originalFileName, resizePath=$resizePath, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, updatedAt=$updatedAt, isFavorite=$isFavorite, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags]';
+  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, originalFileName=$originalFileName, resizePath=$resizePath, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, updatedAt=$updatedAt, isFavorite=$isFavorite, isArchived=$isArchived, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -163,6 +168,7 @@ class AssetResponseDto {
       json[r'fileModifiedAt'] = this.fileModifiedAt;
       json[r'updatedAt'] = this.updatedAt;
       json[r'isFavorite'] = this.isFavorite;
+      json[r'isArchived'] = this.isArchived;
     if (this.mimeType != null) {
       json[r'mimeType'] = this.mimeType;
     } else {
@@ -229,6 +235,7 @@ class AssetResponseDto {
         fileModifiedAt: mapValueOfType<String>(json, r'fileModifiedAt')!,
         updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
+        isArchived: mapValueOfType<bool>(json, r'isArchived')!,
         mimeType: mapValueOfType<String>(json, r'mimeType'),
         duration: mapValueOfType<String>(json, r'duration')!,
         webpPath: mapValueOfType<String>(json, r'webpPath'),
@@ -236,13 +243,13 @@ class AssetResponseDto {
         exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
         smartInfo: SmartInfoResponseDto.fromJson(json[r'smartInfo']),
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
-        tags: TagResponseDto.listFromJson(json[r'tags']) ?? const [],
+        tags: TagResponseDto.listFromJson(json[r'tags']),
       );
     }
     return null;
   }
 
-  static List<AssetResponseDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <AssetResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -273,12 +280,10 @@ class AssetResponseDto {
   static Map<String, List<AssetResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<AssetResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = AssetResponseDto.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = AssetResponseDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;
@@ -298,6 +303,7 @@ class AssetResponseDto {
     'fileModifiedAt',
     'updatedAt',
     'isFavorite',
+    'isArchived',
     'mimeType',
     'duration',
     'webpPath',

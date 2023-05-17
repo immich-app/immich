@@ -1,8 +1,5 @@
-import 'package:openapi/api.dart';
-
 class AuthenticationState {
   final String deviceId;
-  final DeviceTypeEnum deviceType;
   final String userId;
   final String userEmail;
   final bool isAuthenticated;
@@ -13,7 +10,6 @@ class AuthenticationState {
   final String profileImagePath;
   AuthenticationState({
     required this.deviceId,
-    required this.deviceType,
     required this.userId,
     required this.userEmail,
     required this.isAuthenticated,
@@ -26,7 +22,6 @@ class AuthenticationState {
 
   AuthenticationState copyWith({
     String? deviceId,
-    DeviceTypeEnum? deviceType,
     String? userId,
     String? userEmail,
     bool? isAuthenticated,
@@ -38,7 +33,6 @@ class AuthenticationState {
   }) {
     return AuthenticationState(
       deviceId: deviceId ?? this.deviceId,
-      deviceType: deviceType ?? this.deviceType,
       userId: userId ?? this.userId,
       userEmail: userEmail ?? this.userEmail,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
@@ -52,7 +46,7 @@ class AuthenticationState {
 
   @override
   String toString() {
-    return 'AuthenticationState(deviceId: $deviceId, deviceType: $deviceType, userId: $userId, userEmail: $userEmail, isAuthenticated: $isAuthenticated, firstName: $firstName, lastName: $lastName, isAdmin: $isAdmin, shouldChangePassword: $shouldChangePassword, profileImagePath: $profileImagePath)';
+    return 'AuthenticationState(deviceId: $deviceId, userId: $userId, userEmail: $userEmail, isAuthenticated: $isAuthenticated, firstName: $firstName, lastName: $lastName, isAdmin: $isAdmin, shouldChangePassword: $shouldChangePassword, profileImagePath: $profileImagePath)';
   }
 
   @override
@@ -61,7 +55,6 @@ class AuthenticationState {
 
     return other is AuthenticationState &&
         other.deviceId == deviceId &&
-        other.deviceType == deviceType &&
         other.userId == userId &&
         other.userEmail == userEmail &&
         other.isAuthenticated == isAuthenticated &&
@@ -75,7 +68,6 @@ class AuthenticationState {
   @override
   int get hashCode {
     return deviceId.hashCode ^
-        deviceType.hashCode ^
         userId.hashCode ^
         userEmail.hashCode ^
         isAuthenticated.hashCode ^

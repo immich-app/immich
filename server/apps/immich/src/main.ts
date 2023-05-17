@@ -9,8 +9,15 @@ import { AppModule } from './app.module';
 import { RedisIoAdapter } from '@app/infra';
 import { json } from 'body-parser';
 import { patchOpenAPI } from './utils/patch-open-api.util';
-import { getLogLevels, MACHINE_LEARNING_ENABLED } from '@app/domain';
-import { SERVER_VERSION, IMMICH_ACCESS_COOKIE, SearchService } from '@app/domain';
+import {
+  getLogLevels,
+  MACHINE_LEARNING_ENABLED,
+  SERVER_VERSION,
+  IMMICH_ACCESS_COOKIE,
+  SearchService,
+  IMMICH_API_KEY_HEADER,
+  IMMICH_API_KEY_NAME,
+} from '@app/domain';
 
 const logger = new Logger('ImmichServer');
 
@@ -41,6 +48,14 @@ async function bootstrap() {
       in: 'header',
     })
     .addCookieAuth(IMMICH_ACCESS_COOKIE)
+    .addApiKey(
+      {
+        type: 'apiKey',
+        in: 'header',
+        name: IMMICH_API_KEY_HEADER,
+      },
+      IMMICH_API_KEY_NAME,
+    )
     .addServer('/api')
     .build();
 

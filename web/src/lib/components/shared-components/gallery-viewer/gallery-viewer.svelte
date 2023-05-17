@@ -1,3 +1,12 @@
+<script lang="ts" context="module">
+	export type ViewFrom =
+		| 'archive-page'
+		| 'album-page'
+		| 'favorites-page'
+		| 'search-page'
+		| 'shared-link-page';
+</script>
+
 <script lang="ts">
 	import { page } from '$app/stores';
 	import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
@@ -6,11 +15,14 @@
 	import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
 	import justifiedLayout from 'justified-layout';
 	import { flip } from 'svelte/animate';
+	import { archivedAsset } from '$lib/stores/archived-asset.store';
 
 	export let assets: AssetResponseDto[];
 	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
 	export let selectedAssets: Set<AssetResponseDto> = new Set();
 	export let disableAssetSelect = false;
+	export let viewFrom: ViewFrom;
+	export let showArchiveIcon = false;
 
 	let isShowAssetViewer = false;
 
@@ -20,25 +32,24 @@
 	let viewWidth: number;
 
 	$: isMultiSelectionMode = selectedAssets.size > 0;
+	$: geometry = justifiedLayout(assets.map(getAssetRatio), {
+		boxSpacing: 5,
+		containerWidth: Math.floor(viewWidth),
+		targetRowHeight: 235
+	});
 
-	function getAssetRatio(asset: AssetResponseDto): number {
-		const height = asset.exifInfo?.exifImageHeight;
-		const width = asset.exifInfo?.exifImageWidth;
+	function getAssetRatio(asset: AssetResponseDto) {
+		let height = asset.exifInfo?.exifImageHeight || 235;
+		let width = asset.exifInfo?.exifImageWidth || 235;
+
 		const orientation = Number(asset.exifInfo?.orientation);
-
-		if (height && width) {
-			if (orientation) {
-				if (orientation == 6 || orientation == -90) {
-					return height / width;
-				} else {
-					return width / height;
-				}
+		if (orientation) {
+			if (orientation == 6 || orientation == -90) {
+				[width, height] = [height, width];
 			}
-
-			return width / height;
 		}
 
-		return 1;
+		return { width, height };
 	}
 
 	const viewAssetHandler = (event: CustomEvent) => {
@@ -97,29 +108,43 @@
 		isShowAssetViewer = false;
 		history.pushState(null, '', `${$page.url.pathname}`);
 	};
+
+	const handleUnarchivedSuccess = (event: CustomEvent) => {
+		const asset = event.detail as AssetResponseDto;
+		switch (viewFrom) {
+			case 'archive-page':
+				$archivedAsset = $archivedAsset.filter((a) => a.id != asset.id);
+				navigateAssetForward();
+				break;
+		}
+	};
 </script>
 
 {#if assets.length > 0}
-	<div class="flex flex-wrap gap-1 w-full pb-20" bind:clientWidth={viewWidth}>
+	<div
+		class="relative w-full mb-20"
+		bind:clientWidth={viewWidth}
+		style="height: {geometry.containerHeight}px"
+	>
 		{#if viewWidth}
-			{@const geoArray = assets.map(getAssetRatio)}
-			{@const justifiedLayoutResult = justifiedLayout(geoArray, {
-				targetRowHeight: 235,
-				containerWidth: Math.floor(viewWidth)
-			})}
-
 			{#each assets as asset, index (asset.id)}
-				<div animate:flip={{ duration: 500 }}>
+				{@const box = geometry.boxes[index]}
+				<div
+					class="absolute"
+					style="width: {box.width}px; height: {box.height}px; top: {box.top}px; left: {box.left}px"
+					animate:flip={{ duration: 500 }}
+				>
 					<Thumbnail
 						{asset}
-						thumbnailWidth={justifiedLayoutResult.boxes[index].width || 235}
-						thumbnailHeight={justifiedLayoutResult.boxes[index].height || 235}
+						thumbnailWidth={box.width}
+						thumbnailHeight={box.height}
 						readonly={disableAssetSelect}
 						publicSharedKey={sharedLink?.key}
 						format={assets.length < 7 ? ThumbnailFormat.Jpeg : ThumbnailFormat.Webp}
 						on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
 						on:select={selectAssetHandler}
 						selected={selectedAssets.has(asset)}
+						{showArchiveIcon}
 					/>
 				</div>
 			{/each}
@@ -136,5 +161,6 @@
 		on:navigate-previous={navigateAssetBackward}
 		on:navigate-next={navigateAssetForward}
 		on:close={closeViewer}
+		on:unarchived={handleUnarchivedSuccess}
 	/>
 {/if}

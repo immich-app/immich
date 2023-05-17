@@ -28,6 +28,11 @@ export class SearchDto {
   @Transform(toBoolean)
   isFavorite?: boolean;
 
+  @IsBoolean()
+  @IsOptional()
+  @Transform(toBoolean)
+  isArchived?: boolean;
+
   @IsString()
   @IsNotEmpty()
   @IsOptional()

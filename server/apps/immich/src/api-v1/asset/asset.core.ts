@@ -28,6 +28,7 @@ export class AssetCore {
 
       type: dto.assetType,
       isFavorite: dto.isFavorite,
+      isArchived: dto.isArchived ?? false,
       duration: dto.duration || null,
       isVisible: dto.isVisible ?? true,
       livePhotoVideo: livePhotoAssetId != null ? ({ id: livePhotoAssetId } as AssetEntity) : null,

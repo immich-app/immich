@@ -26,9 +26,13 @@ class FavoritesPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: buildAppBar(),
-      body: ImmichAssetGrid(
-        assets: ref.watch(favoriteAssetProvider),
-      ),
+      body: ref.watch(favoriteAssetProvider).isEmpty
+          ? Center(
+              child: Text('favorites_page_no_favorites'.tr()),
+            )
+          : ImmichAssetGrid(
+              assets: ref.watch(favoriteAssetProvider),
+            ),
     );
   }
 }

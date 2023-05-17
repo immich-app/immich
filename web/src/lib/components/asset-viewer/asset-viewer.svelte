@@ -251,11 +251,52 @@
 			}
 		});
 	};
+
+	const disableKeyDownEvent = () => {
+		if (browser) {
+			document.removeEventListener('keydown', onKeyboardPress);
+		}
+	};
+
+	const enableKeyDownEvent = () => {
+		if (browser) {
+			document.addEventListener('keydown', onKeyboardPress);
+		}
+	};
+
+	const toggleArchive = async () => {
+		try {
+			const { data } = await api.assetApi.updateAsset(asset.id, {
+				isArchived: !asset.isArchived
+			});
+
+			asset.isArchived = data.isArchived;
+
+			if (data.isArchived) {
+				dispatch('archived', data);
+			} else {
+				dispatch('unarchived', data);
+			}
+
+			notificationController.show({
+				type: NotificationType.Info,
+				message: asset.isArchived ? `Added to archive` : `Removed from archive`
+			});
+		} catch (error) {
+			console.error(error);
+			notificationController.show({
+				type: NotificationType.Error,
+				message: `Error ${
+					asset.isArchived ? 'archiving' : 'unarchiving'
+				} asset, check console for more details`
+			});
+		}
+	};
 </script>
 
 <section
 	id="immich-asset-viewer"
-	class="fixed h-screen w-screen left-0 top-0 overflow-y-hidden bg-black z-[999] grid grid-rows-[64px_1fr] grid-cols-4"
+	class="fixed h-screen w-screen left-0 top-0 overflow-y-hidden bg-black z-[1001] grid grid-rows-[64px_1fr] grid-cols-4"
 >
 	<div class="col-start-1 col-span-4 row-start-1 row-span-1 z-[1000] transition-transform">
 		<AssetViewerNavBar
@@ -273,6 +314,7 @@
 			on:addToSharedAlbum={() => openAlbumPicker(true)}
 			on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
 			on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
+			on:toggleArchive={toggleArchive}
 		/>
 	</div>
 
@@ -292,7 +334,7 @@
 			on:keydown={navigateAssetBackward}
 		>
 			<button
-				class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 z-[1000]  text-gray-500 mx-4"
+				class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 z-[1000] text-gray-500 mx-4"
 				class:navigation-button-hover={halfLeftHover}
 				on:click={navigateAssetBackward}
 			>
@@ -336,7 +378,7 @@
 			}}
 		>
 			<button
-				class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 text-gray-500 mx-4"
+				class="rounded-full p-3 hover:bg-gray-500 hover:text-white text-gray-500 mx-4"
 				class:navigation-button-hover={halfRightHover}
 				on:click={navigateAssetForward}
 			>
@@ -349,10 +391,16 @@
 		<div
 			transition:fly={{ duration: 150 }}
 			id="detail-panel"
-			class="bg-immich-bg w-[360px] row-span-full transition-all overflow-y-auto dark:bg-immich-dark-bg dark:border-l dark:border-l-immich-dark-gray"
+			class="bg-immich-bg w-[360px] z-[1002] row-span-full transition-all overflow-y-auto dark:bg-immich-dark-bg dark:border-l dark:border-l-immich-dark-gray"
 			translate="yes"
 		>
-			<DetailPanel {asset} albums={appearsInAlbums} on:close={() => (isShowDetail = false)} />
+			<DetailPanel
+				{asset}
+				albums={appearsInAlbums}
+				on:close={() => (isShowDetail = false)}
+				on:description-focus-in={disableKeyDownEvent}
+				on:description-focus-out={enableKeyDownEvent}
+			/>
 		</div>
 	{/if}
 
@@ -374,7 +422,7 @@
 
 	.navigation-button-hover {
 		background-color: rgb(107 114 128 / var(--tw-bg-opacity));
-		color: rgb(55 65 81 / var(--tw-text-opacity));
+		color: rgb(255 255 255 / var(--tw-text-opacity));
 		transition: all 150ms;
 	}
 </style>

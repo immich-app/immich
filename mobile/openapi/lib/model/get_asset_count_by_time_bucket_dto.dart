@@ -14,25 +14,41 @@ class GetAssetCountByTimeBucketDto {
   /// Returns a new [GetAssetCountByTimeBucketDto] instance.
   GetAssetCountByTimeBucketDto({
     required this.timeGroup,
+    this.userId,
   });
 
   TimeGroupEnum timeGroup;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? userId;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is GetAssetCountByTimeBucketDto &&
-     other.timeGroup == timeGroup;
+     other.timeGroup == timeGroup &&
+     other.userId == userId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (timeGroup.hashCode);
+    (timeGroup.hashCode) +
+    (userId == null ? 0 : userId!.hashCode);
 
   @override
-  String toString() => 'GetAssetCountByTimeBucketDto[timeGroup=$timeGroup]';
+  String toString() => 'GetAssetCountByTimeBucketDto[timeGroup=$timeGroup, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'timeGroup'] = this.timeGroup;
+    if (this.userId != null) {
+      json[r'userId'] = this.userId;
+    } else {
+      // json[r'userId'] = null;
+    }
     return json;
   }
 
@@ -56,12 +72,13 @@ class GetAssetCountByTimeBucketDto {
 
       return GetAssetCountByTimeBucketDto(
         timeGroup: TimeGroupEnum.fromJson(json[r'timeGroup'])!,
+        userId: mapValueOfType<String>(json, r'userId'),
       );
     }
     return null;
   }
 
-  static List<GetAssetCountByTimeBucketDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<GetAssetCountByTimeBucketDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <GetAssetCountByTimeBucketDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -92,12 +109,10 @@ class GetAssetCountByTimeBucketDto {
   static Map<String, List<GetAssetCountByTimeBucketDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<GetAssetCountByTimeBucketDto>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = GetAssetCountByTimeBucketDto.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = GetAssetCountByTimeBucketDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

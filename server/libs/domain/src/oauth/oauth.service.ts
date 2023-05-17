@@ -1,7 +1,7 @@
 import { SystemConfig } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { AuthType, AuthUserDto, LoginResponseDto } from '../auth';
-import { AuthCore } from '../auth/auth.core';
+import { AuthCore, LoginDetails } from '../auth/auth.core';
 import { ICryptoRepository } from '../crypto';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
 import { IUserRepository, UserCore, UserResponseDto } from '../user';
@@ -39,7 +39,10 @@ export class OAuthService {
     return this.oauthCore.generateConfig(dto);
   }
 
-  async login(dto: OAuthCallbackDto, isSecure: boolean): Promise<{ response: LoginResponseDto; cookie: string[] }> {
+  async login(
+    dto: OAuthCallbackDto,
+    loginDetails: LoginDetails,
+  ): Promise<{ response: LoginResponseDto; cookie: string[] }> {
     const profile = await this.oauthCore.callback(dto.url);
 
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
@@ -66,7 +69,7 @@ export class OAuthService {
       user = await this.userCore.createUser(this.oauthCore.asUser(profile));
     }
 
-    return this.authCore.createLoginResponse(user, AuthType.OAUTH, isSecure);
+    return this.authCore.createLoginResponse(user, AuthType.OAUTH, loginDetails);
   }
 
   public async link(user: AuthUserDto, dto: OAuthCallbackDto): Promise<UserResponseDto> {

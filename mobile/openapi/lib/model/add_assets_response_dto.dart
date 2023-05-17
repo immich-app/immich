@@ -78,8 +78,8 @@ class AddAssetsResponseDto {
 
       return AddAssetsResponseDto(
         successfullyAdded: mapValueOfType<int>(json, r'successfullyAdded')!,
-        alreadyInAlbum: json[r'alreadyInAlbum'] is List
-            ? (json[r'alreadyInAlbum'] as List).cast<String>()
+        alreadyInAlbum: json[r'alreadyInAlbum'] is Iterable
+            ? (json[r'alreadyInAlbum'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         album: AlbumResponseDto.fromJson(json[r'album']),
       );
@@ -87,7 +87,7 @@ class AddAssetsResponseDto {
     return null;
   }
 
-  static List<AddAssetsResponseDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AddAssetsResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <AddAssetsResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -118,12 +118,10 @@ class AddAssetsResponseDto {
   static Map<String, List<AddAssetsResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<AddAssetsResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = AddAssetsResponseDto.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = AddAssetsResponseDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

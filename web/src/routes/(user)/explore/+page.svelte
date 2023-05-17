@@ -6,7 +6,7 @@
 	import ClockOutline from 'svelte-material-icons/ClockOutline.svelte';
 	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
-	import StarOutline from 'svelte-material-icons/StarOutline.svelte';
+	import HeartMultipleOutline from 'svelte-material-icons/HeartMultipleOutline.svelte';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -48,7 +48,9 @@
 				<div class="flex flex-row flex-wrap gap-4">
 					{#each places as item}
 						<a class="relative" href="/search?{Field.CITY}={item.value}" draggable="false">
-							<div class="filter brightness-75 rounded-xl overflow-hidden">
+							<div
+								class="filter brightness-75 rounded-xl overflow-hidden w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] flex justify-center"
+							>
 								<Thumbnail thumbnailSize={156} asset={item.data} readonly />
 							</div>
 							<span
@@ -70,7 +72,9 @@
 				<div class="flex flex-row flex-wrap gap-4">
 					{#each things as item}
 						<a class="relative" href="/search?{Field.OBJECTS}={item.value}" draggable="false">
-							<div class="filter brightness-75 rounded-xl overflow-hidden">
+							<div
+								class="filter brightness-75 rounded-xl overflow-hidden w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] justify-center flex"
+							>
 								<Thumbnail thumbnailSize={156} asset={item.data} readonly />
 							</div>
 							<span
@@ -97,7 +101,7 @@
 						class="w-full flex text-sm font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary content-center gap-2"
 						draggable="false"
 					>
-						<StarOutline size={24} />
+						<HeartMultipleOutline size={24} />
 						<span>Favorites</span>
 					</a>
 					<a

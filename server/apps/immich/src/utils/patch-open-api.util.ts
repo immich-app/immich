@@ -21,6 +21,10 @@ export function patchOpenAPI(document: OpenAPIObject) {
       if (operation.summary === '') {
         delete operation.summary;
       }
+
+      if (operation.description === '') {
+        delete operation.description;
+      }
     }
   }
 

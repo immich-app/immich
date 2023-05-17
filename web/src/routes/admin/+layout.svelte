@@ -16,6 +16,7 @@
 	import { goto } from '$app/navigation';
 	import { AppRoute } from '../../lib/constants';
 	import type { LayoutData } from './$types';
+	import SideBarSection from '$lib/components/shared-components/side-bar/side-bar-section.svelte';
 
 	export let data: LayoutData;
 
@@ -40,8 +41,8 @@
 <NavigationBar user={data.user} />
 
 <main>
-	<section class="grid grid-cols-[250px_auto] pt-[72px] h-screen">
-		<section id="admin-sidebar" class="pt-8 pr-6 flex flex-col gap-1">
+	<section class="grid md:grid-cols-[250px_auto] grid-cols-[70px_auto] pt-[72px] h-screen">
+		<SideBarSection>
 			<SideBarButton
 				title="Users"
 				logo={AccountMultipleOutline}
@@ -69,9 +70,9 @@
 			<div class="mb-6 mt-auto">
 				<StatusBox />
 			</div>
-		</section>
+		</SideBarSection>
 
-		<section class="overflow-y-auto immich-scrollbar ">
+		<section class="overflow-y-auto immich-scrollbar">
 			<div id="setting-title" class="pt-10 w-full bg-immich-bg dark:bg-immich-dark-bg">
 				<h1 class="text-lg ml-8 mb-4 text-immich-primary dark:text-immich-dark-primary font-medium">
 					{getPageTitle(data.routeId)}
@@ -79,8 +80,8 @@
 				<hr class="dark:border-immich-dark-gray" />
 			</div>
 
-			<section id="setting-content" class="flex place-content-center">
-				<section class="w-[800px] pt-5 pb-28">
+			<section id="setting-content" class="flex place-content-center mx-4">
+				<section class="w-full sm:w-5/6 md:w-[800px] pt-5 pb-28">
 					<slot />
 				</section>
 			</section>

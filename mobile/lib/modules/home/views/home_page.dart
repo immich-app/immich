@@ -94,7 +94,6 @@ class HomePage extends HookConsumerWidget {
           barrierDismissible: false,
         );
 
-        // ref.watch(shareServiceProvider).shareAssets(selection.value.toList());
         selectionEnabledHook.value = false;
       }
 
@@ -126,6 +125,24 @@ class HomePage extends HookConsumerWidget {
             context: context,
             msg: 'Added ${remoteAssets.length} $assetOrAssets to favorites',
             gravity: ToastGravity.BOTTOM,
+          );
+        }
+
+        selectionEnabledHook.value = false;
+      }
+
+      void onArchiveAsset() {
+        final remoteAssets = remoteOnlySelection(
+          localErrorMessage: 'home_page_archive_err_local'.tr(),
+        );
+        if (remoteAssets.isNotEmpty) {
+          ref.watch(assetProvider.notifier).toggleArchive(remoteAssets, true);
+
+          final assetOrAssets = remoteAssets.length > 1 ? 'assets' : 'asset';
+          ImmichToast.show(
+            context: context,
+            msg: 'Moved ${remoteAssets.length} $assetOrAssets to archive',
+            gravity: ToastGravity.CENTER,
           );
         }
 
@@ -265,7 +282,7 @@ class HomePage extends HookConsumerWidget {
                 ? buildLoadingIndicator()
                 : ImmichAssetGrid(
                     renderList: ref.watch(assetProvider).renderList!,
-                    assets: ref.watch(assetProvider).allAssets,
+                    assets: ref.read(assetProvider).allAssets,
                     assetsPerRow: appSettingService
                         .getSetting(AppSettingsEnum.tilesPerRow),
                     showStorageIndicator: appSettingService
@@ -278,6 +295,7 @@ class HomePage extends HookConsumerWidget {
               ControlBottomAppBar(
                 onShare: onShareAssets,
                 onFavorite: onFavoriteAssets,
+                onArchive: onArchiveAsset,
                 onDelete: onDelete,
                 onAddToAlbum: onAddToAlbum,
                 albums: albums,
@@ -291,9 +309,7 @@ class HomePage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: !selectionEnabledHook.value
-          ? HomePageAppBar(
-              onPopBack: reloadAllAsset,
-            )
+          ? HomePageAppBar(onPopBack: reloadAllAsset)
           : null,
       drawer: const ProfileDrawer(),
       body: buildBody(),

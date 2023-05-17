@@ -6,7 +6,8 @@
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
 	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
-	import Star from 'svelte-material-icons/Star.svelte';
+	import Heart from 'svelte-material-icons/Heart.svelte';
+	import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
 	import ImageThumbnail from './image-thumbnail.svelte';
 	import VideoThumbnail from './video-thumbnail.svelte';
 
@@ -22,6 +23,7 @@
 	export let disabled = false;
 	export let readonly = false;
 	export let publicSharedKey: string | undefined = undefined;
+	export let showArchiveIcon = false;
 
 	let mouseOver = false;
 
@@ -110,10 +112,15 @@
 				<!-- Favorite asset star -->
 				{#if asset.isFavorite && !publicSharedKey}
 					<div class="absolute bottom-2 left-2 z-10">
-						<Star size="24" class="text-white" />
+						<Heart size="24" class="text-white" />
 					</div>
 				{/if}
 
+				{#if showArchiveIcon && asset.isArchived}
+					<div class="absolute {asset.isFavorite ? 'bottom-10' : 'bottom-2'} left-2 z-10">
+						<ArchiveArrowDownOutline size="24" class="text-white" />
+					</div>
+				{/if}
 				<ImageThumbnail
 					url={api.getAssetThumbnailUrl(asset.id, format, publicSharedKey)}
 					altText={asset.originalFileName}

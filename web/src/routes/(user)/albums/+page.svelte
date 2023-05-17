@@ -7,9 +7,11 @@
 	import type { PageData } from './$types';
 	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
 	import { useAlbums } from './albums.bloc';
-	import empty1Url from '$lib/assets/empty-1.svg';
+	import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+	import { onMount } from 'svelte';
+	import { flip } from 'svelte/animate';
 
 	export let data: PageData;
 
@@ -18,6 +20,7 @@
 		isShowContextMenu,
 		contextMenuPosition,
 		createAlbum,
+		deleteAlbum,
 		deleteSelectedContextAlbum,
 		showAlbumContextMenu,
 		closeAlbumContextMenu
@@ -27,6 +30,23 @@
 		const newAlbum = await createAlbum();
 		if (newAlbum) {
 			goto('/albums/' + newAlbum.id);
+		}
+	};
+
+	onMount(() => {
+		removeAlbumsIfEmpty();
+	});
+
+	const removeAlbumsIfEmpty = async () => {
+		try {
+			for (const album of $albums) {
+				if (album.assetCount == 0 && album.albumName == 'Untitled') {
+					await deleteAlbum(album);
+					$albums = $albums.filter((a) => a.id !== album.id);
+				}
+			}
+		} catch (error) {
+			console.log(error);
 		}
 	};
 </script>
@@ -42,32 +62,29 @@
 	</div>
 
 	<!-- Album Card -->
-	<div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-8">
-		{#each $albums as album}
-			{#key album.id}
-				<a data-sveltekit-preload-data="hover" href={`albums/${album.id}`}>
-					<AlbumCard
-						{album}
-						on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)}
-					/>
-				</a>
-			{/key}
+	<div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
+		{#each $albums as album (album.id)}
+			<a
+				data-sveltekit-preload-data="hover"
+				href={`albums/${album.id}`}
+				animate:flip={{ duration: 200 }}
+			>
+				<AlbumCard
+					{album}
+					on:showalbumcontextmenu={(e) => showAlbumContextMenu(e.detail, album)}
+					user={data.user}
+				/>
+			</a>
 		{/each}
 	</div>
 
 	<!-- Empty Message -->
 	{#if $albums.length === 0}
-		<div
-			on:click={handleCreateAlbum}
-			on:keydown={handleCreateAlbum}
-			class="border dark:border-immich-dark-gray hover:bg-immich-primary/5 dark:hover:bg-immich-dark-primary/25 hover:cursor-pointer p-5 w-[50%] m-auto mt-10 bg-gray-50 dark:bg-immich-dark-gray rounded-3xl flex flex-col place-content-center place-items-center"
-		>
-			<img src={empty1Url} alt="Empty shared album" width="500" draggable="false" />
-
-			<p class="text-center text-immich-text-gray-500 dark:text-immich-dark-fg">
-				Create an album to organize your photos and videos
-			</p>
-		</div>
+		<EmptyPlaceholder
+			text="Create an album to organize your photos and videos"
+			actionHandler={handleCreateAlbum}
+			alt="Empty albums"
+		/>
 	{/if}
 </UserPageLayout>
 

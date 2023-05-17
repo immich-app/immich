@@ -18,7 +18,6 @@ If you feel like this is the right cause and the app is something you see yourse
 - [buymeacoffee](https://www.buymeacoffee.com/altran1502)
 - Bitcoin: 1FvEp6P6NM8EZEkpGUFAN2LqJ1gxusNxZX
 
-
 ## Contributing
 
 There are lots of non-monetary ways to contribute to Immich as well.

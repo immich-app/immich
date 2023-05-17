@@ -1,8 +1,6 @@
 <script lang="ts">
-	import { clickOutside } from '$lib/utils/click-outside';
-	import { UserResponseDto } from '@api';
+	import { UserResponseDto, api } from '@api';
 	import { createEventDispatcher } from 'svelte';
-	import { page } from '$app/stores';
 	import { fade } from 'svelte/transition';
 	import Cog from 'svelte-material-icons/Cog.svelte';
 	import Logout from 'svelte-material-icons/Logout.svelte';
@@ -26,8 +24,6 @@
 	out:fade={{ duration: 100 }}
 	id="account-info-panel"
 	class="absolute right-[25px] top-[75px] bg-gray-200 dark:bg-immich-dark-gray dark:border dark:border-immich-dark-gray shadow-lg rounded-3xl w-[360px] text-center z-[100]"
-	use:clickOutside
-	on:outclick={() => dispatch('close')}
 >
 	<div class="bg-white dark:bg-immich-dark-primary/10 rounded-3xl mx-4 mt-4 pb-4">
 		<div class="flex place-items-center place-content-center">
@@ -38,7 +34,7 @@
 					<img
 						transition:fade={{ duration: 100 }}
 						class:hidden={showProfilePictureFallback}
-						src={`${$page.url.origin}/api/user/profile-image/${user.id}`}
+						src={api.getProfileImageUrl(user.id)}
 						alt="profile-img"
 						class="inline rounded-full h-20 w-20 object-cover shadow-md border-2 border-immich-primary dark:border-immich-dark-primary"
 						draggable="false"

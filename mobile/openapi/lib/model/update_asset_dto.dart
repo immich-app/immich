@@ -15,6 +15,8 @@ class UpdateAssetDto {
   UpdateAssetDto({
     this.tagIds = const [],
     this.isFavorite,
+    this.isArchived,
+    this.description,
   });
 
   List<String> tagIds;
@@ -27,19 +29,39 @@ class UpdateAssetDto {
   ///
   bool? isFavorite;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isArchived;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? description;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAssetDto &&
      other.tagIds == tagIds &&
-     other.isFavorite == isFavorite;
+     other.isFavorite == isFavorite &&
+     other.isArchived == isArchived &&
+     other.description == description;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (tagIds.hashCode) +
-    (isFavorite == null ? 0 : isFavorite!.hashCode);
+    (isFavorite == null ? 0 : isFavorite!.hashCode) +
+    (isArchived == null ? 0 : isArchived!.hashCode) +
+    (description == null ? 0 : description!.hashCode);
 
   @override
-  String toString() => 'UpdateAssetDto[tagIds=$tagIds, isFavorite=$isFavorite]';
+  String toString() => 'UpdateAssetDto[tagIds=$tagIds, isFavorite=$isFavorite, isArchived=$isArchived, description=$description]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -48,6 +70,16 @@ class UpdateAssetDto {
       json[r'isFavorite'] = this.isFavorite;
     } else {
       // json[r'isFavorite'] = null;
+    }
+    if (this.isArchived != null) {
+      json[r'isArchived'] = this.isArchived;
+    } else {
+      // json[r'isArchived'] = null;
+    }
+    if (this.description != null) {
+      json[r'description'] = this.description;
+    } else {
+      // json[r'description'] = null;
     }
     return json;
   }
@@ -71,16 +103,18 @@ class UpdateAssetDto {
       }());
 
       return UpdateAssetDto(
-        tagIds: json[r'tagIds'] is List
-            ? (json[r'tagIds'] as List).cast<String>()
+        tagIds: json[r'tagIds'] is Iterable
+            ? (json[r'tagIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
+        isArchived: mapValueOfType<bool>(json, r'isArchived'),
+        description: mapValueOfType<String>(json, r'description'),
       );
     }
     return null;
   }
 
-  static List<UpdateAssetDto>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<UpdateAssetDto> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <UpdateAssetDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -111,12 +145,10 @@ class UpdateAssetDto {
   static Map<String, List<UpdateAssetDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
     final map = <String, List<UpdateAssetDto>>{};
     if (json is Map && json.isNotEmpty) {
-      json = json.cast<String, dynamic>(); // ignore: parameter_assignments
+      // ignore: parameter_assignments
+      json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        final value = UpdateAssetDto.listFromJson(entry.value, growable: growable,);
-        if (value != null) {
-          map[entry.key] = value;
-        }
+        map[entry.key] = UpdateAssetDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

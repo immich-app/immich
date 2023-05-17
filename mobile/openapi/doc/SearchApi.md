@@ -19,8 +19,6 @@ Method | HTTP request | Description
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -28,6 +26,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
 // uncomment below to setup prefix (e.g. Bearer) for API key, if needed
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
 // TODO Configure HTTP Bearer authorization: bearer
 // Case 1. Use String Token
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
@@ -54,7 +56,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-[cookie](../README.md#cookie), [bearer](../README.md#bearer)
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
 
 ### HTTP request headers
 
@@ -68,8 +70,6 @@ This endpoint does not need any parameter.
 
 
 
-
-
 ### Example
 ```dart
 import 'package:openapi/api.dart';
@@ -77,6 +77,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
 // uncomment below to setup prefix (e.g. Bearer) for API key, if needed
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
 // TODO Configure HTTP Bearer authorization: bearer
 // Case 1. Use String Token
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
@@ -103,7 +107,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-[cookie](../README.md#cookie), [bearer](../README.md#bearer)
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
 
 ### HTTP request headers
 
@@ -113,9 +117,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **search**
-> SearchResponseDto search(q, query, clip, type, isFavorite, exifInfoPeriodCity, exifInfoPeriodState, exifInfoPeriodCountry, exifInfoPeriodMake, exifInfoPeriodModel, smartInfoPeriodObjects, smartInfoPeriodTags, recent, motion)
-
-
+> SearchResponseDto search(q, query, clip, type, isFavorite, isArchived, exifInfoPeriodCity, exifInfoPeriodState, exifInfoPeriodCountry, exifInfoPeriodMake, exifInfoPeriodModel, smartInfoPeriodObjects, smartInfoPeriodTags, recent, motion)
 
 
 
@@ -126,6 +128,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
 // uncomment below to setup prefix (e.g. Bearer) for API key, if needed
 //defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
 // TODO Configure HTTP Bearer authorization: bearer
 // Case 1. Use String Token
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
@@ -139,6 +145,7 @@ final query = query_example; // String |
 final clip = true; // bool | 
 final type = type_example; // String | 
 final isFavorite = true; // bool | 
+final isArchived = true; // bool | 
 final exifInfoPeriodCity = exifInfoPeriodCity_example; // String | 
 final exifInfoPeriodState = exifInfoPeriodState_example; // String | 
 final exifInfoPeriodCountry = exifInfoPeriodCountry_example; // String | 
@@ -150,7 +157,7 @@ final recent = true; // bool |
 final motion = true; // bool | 
 
 try {
-    final result = api_instance.search(q, query, clip, type, isFavorite, exifInfoPeriodCity, exifInfoPeriodState, exifInfoPeriodCountry, exifInfoPeriodMake, exifInfoPeriodModel, smartInfoPeriodObjects, smartInfoPeriodTags, recent, motion);
+    final result = api_instance.search(q, query, clip, type, isFavorite, isArchived, exifInfoPeriodCity, exifInfoPeriodState, exifInfoPeriodCountry, exifInfoPeriodMake, exifInfoPeriodModel, smartInfoPeriodObjects, smartInfoPeriodTags, recent, motion);
     print(result);
 } catch (e) {
     print('Exception when calling SearchApi->search: $e\n');
@@ -166,6 +173,7 @@ Name | Type | Description  | Notes
  **clip** | **bool**|  | [optional] 
  **type** | **String**|  | [optional] 
  **isFavorite** | **bool**|  | [optional] 
+ **isArchived** | **bool**|  | [optional] 
  **exifInfoPeriodCity** | **String**|  | [optional] 
  **exifInfoPeriodState** | **String**|  | [optional] 
  **exifInfoPeriodCountry** | **String**|  | [optional] 
@@ -182,7 +190,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-[cookie](../README.md#cookie), [bearer](../README.md#bearer)
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
 
 ### HTTP request headers
 

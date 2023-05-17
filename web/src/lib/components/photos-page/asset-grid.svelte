@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 
+	import { UserResponseDto } from '@api';
 	import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
 	import { assetGridState, assetStore, loadingBucketState } from '$lib/stores/assets.store';
-	import { api, AssetCountByTimeBucketResponseDto, TimeGroupEnum } from '@api';
+	import { api, AssetCountByTimeBucketResponseDto, AssetResponseDto, TimeGroupEnum } from '@api';
 	import AssetDateGroup from './asset-date-group.svelte';
 	import Portal from '../shared-components/portal/portal.svelte';
 	import AssetViewer from '../asset-viewer/asset-viewer.svelte';
@@ -17,6 +18,7 @@
 		OnScrollbarDragDetail
 	} from '../shared-components/scrollbar/scrollbar.svelte';
 
+	export let user: UserResponseDto | undefined = undefined;
 	export let isAlbumSelectionMode = false;
 
 	let viewportHeight = 0;
@@ -26,11 +28,12 @@
 
 	onMount(async () => {
 		const { data: assetCountByTimebucket } = await api.assetApi.getAssetCountByTimeBucket({
-			timeGroup: TimeGroupEnum.Month
+			timeGroup: TimeGroupEnum.Month,
+			userId: user?.id
 		});
 		bucketInfo = assetCountByTimebucket;
 
-		assetStore.setInitialState(viewportHeight, viewportWidth, assetCountByTimebucket);
+		assetStore.setInitialState(viewportHeight, viewportWidth, assetCountByTimebucket, user?.id);
 
 		// Get asset bucket if bucket height is smaller than viewport height
 		let bucketsToFetchInitially: string[] = [];
@@ -48,6 +51,10 @@
 		bucketsToFetchInitially.forEach((bucketDate) => {
 			assetStore.getAssetsByBucket(bucketDate);
 		});
+	});
+
+	onDestroy(() => {
+		assetStore.setInitialState(0, 0, { totalCount: 0, buckets: [] }, undefined);
 	});
 
 	function intersectedHandler(event: CustomEvent) {
@@ -88,6 +95,12 @@
 
 	const handleScrollbarDrag = (e: OnScrollbarDragDetail) => {
 		assetGridElement.scrollTop = e.scrollTo;
+	};
+
+	const handleArchiveSuccess = (e: CustomEvent) => {
+		const asset = e.detail as AssetResponseDto;
+		navigateToNextAsset();
+		assetStore.removeAsset(asset.id);
 	};
 </script>
 
@@ -149,6 +162,7 @@
 			on:close={() => {
 				assetInteractionStore.setIsViewingAsset(false);
 			}}
+			on:archived={handleArchiveSuccess}
 		/>
 	{/if}
 </Portal>

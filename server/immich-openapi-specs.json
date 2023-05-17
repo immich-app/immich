@@ -4,7 +4,6 @@
     "/album": {
       "get": {
         "operationId": "getAllAlbums",
-        "description": "",
         "parameters": [
           {
             "name": "shared",
@@ -49,12 +48,14 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       },
       "post": {
         "operationId": "createAlbum",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -87,6 +88,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -94,7 +98,6 @@
     "/api-key": {
       "post": {
         "operationId": "createKey",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -127,12 +130,14 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       },
       "get": {
         "operationId": "getKeys",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -158,6 +163,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -165,7 +173,6 @@
     "/api-key/{id}": {
       "get": {
         "operationId": "getKey",
-        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -198,12 +205,14 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       },
       "put": {
         "operationId": "updateKey",
-        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -246,12 +255,14 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       },
       "delete": {
         "operationId": "deleteKey",
-        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -277,6 +288,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -284,7 +298,6 @@
     "/auth/login": {
       "post": {
         "operationId": "login",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -316,7 +329,6 @@
     "/auth/admin-sign-up": {
       "post": {
         "operationId": "adminSignUp",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -348,10 +360,102 @@
         ]
       }
     },
+    "/auth/devices": {
+      "get": {
+        "operationId": "getAuthDevices",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuthDeviceResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "logoutAuthDevices",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/auth/devices/{id}": {
+      "delete": {
+        "operationId": "logoutAuthDevice",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/auth/validateToken": {
       "post": {
         "operationId": "validateAccessToken",
-        "description": "",
         "parameters": [],
         "responses": {
           "201": {
@@ -374,6 +478,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -381,7 +488,6 @@
     "/auth/change-password": {
       "post": {
         "operationId": "changePassword",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -414,6 +520,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -421,7 +530,6 @@
     "/auth/logout": {
       "post": {
         "operationId": "logout",
-        "description": "",
         "parameters": [],
         "responses": {
           "201": {
@@ -444,46 +552,9 @@
           },
           {
             "cookie": []
-          }
-        ]
-      }
-    },
-    "/device-info": {
-      "put": {
-        "operationId": "upsertDeviceInfo",
-        "description": "",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpsertDeviceInfoDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeviceInfoResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Device Info"
-        ],
-        "security": [
-          {
-            "bearer": []
           },
           {
-            "cookie": []
+            "api_key": []
           }
         ]
       }
@@ -491,7 +562,6 @@
     "/jobs": {
       "get": {
         "operationId": "getAllJobsStatus",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -514,6 +584,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -521,7 +594,6 @@
     "/jobs/{jobId}": {
       "put": {
         "operationId": "sendJobCommand",
-        "description": "",
         "parameters": [
           {
             "name": "jobId",
@@ -563,6 +635,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -570,7 +645,6 @@
     "/oauth/mobile-redirect": {
       "get": {
         "operationId": "mobileRedirect",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -585,7 +659,6 @@
     "/oauth/config": {
       "post": {
         "operationId": "generateConfig",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -617,7 +690,6 @@
     "/oauth/callback": {
       "post": {
         "operationId": "callback",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -649,7 +721,6 @@
     "/oauth/link": {
       "post": {
         "operationId": "link",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -682,6 +753,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -689,7 +763,6 @@
     "/oauth/unlink": {
       "post": {
         "operationId": "unlink",
-        "description": "",
         "parameters": [],
         "responses": {
           "201": {
@@ -712,6 +785,132 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/partner": {
+      "get": {
+        "operationId": "getPartners",
+        "parameters": [
+          {
+            "name": "direction",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "shared-by",
+                "shared-with"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Partner"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/partner/{id}": {
+      "post": {
+        "operationId": "createPartner",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Partner"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "removePartner",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Partner"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -719,7 +918,6 @@
     "/search": {
       "get": {
         "operationId": "search",
-        "description": "",
         "parameters": [
           {
             "name": "q",
@@ -761,6 +959,14 @@
           },
           {
             "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isArchived",
             "required": false,
             "in": "query",
             "schema": {
@@ -867,6 +1073,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -874,7 +1083,6 @@
     "/search/config": {
       "get": {
         "operationId": "getSearchConfig",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -897,6 +1105,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -904,7 +1115,6 @@
     "/search/explore": {
       "get": {
         "operationId": "getExploreData",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -930,6 +1140,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -937,7 +1150,6 @@
     "/server-info": {
       "get": {
         "operationId": "getServerInfo",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -960,6 +1172,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -967,7 +1182,6 @@
     "/server-info/ping": {
       "get": {
         "operationId": "pingServer",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -989,7 +1203,6 @@
     "/server-info/version": {
       "get": {
         "operationId": "getServerVersion",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -1011,7 +1224,6 @@
     "/server-info/stats": {
       "get": {
         "operationId": "getStats",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -1034,6 +1246,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -1041,7 +1256,6 @@
     "/share": {
       "get": {
         "operationId": "getAllSharedLinks",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -1067,6 +1281,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -1074,7 +1291,6 @@
     "/share/me": {
       "get": {
         "operationId": "getMySharedLink",
-        "description": "",
         "parameters": [
           {
             "name": "key",
@@ -1106,6 +1322,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -1113,7 +1332,6 @@
     "/share/{id}": {
       "get": {
         "operationId": "getSharedLinkById",
-        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -1146,12 +1364,14 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       },
       "delete": {
         "operationId": "removeSharedLink",
-        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -1177,12 +1397,14 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       },
       "patch": {
         "operationId": "editSharedLink",
-        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -1225,6 +1447,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -1232,7 +1457,6 @@
     "/system-config": {
       "get": {
         "operationId": "getConfig",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -1255,12 +1479,14 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       },
       "put": {
         "operationId": "updateConfig",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1293,6 +1519,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -1300,7 +1529,6 @@
     "/system-config/defaults": {
       "get": {
         "operationId": "getDefaults",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -1323,6 +1551,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -1330,7 +1561,6 @@
     "/system-config/storage-template-options": {
       "get": {
         "operationId": "getStorageTemplateOptions",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -1353,6 +1583,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -1360,7 +1593,6 @@
     "/user": {
       "get": {
         "operationId": "getAllUsers",
-        "description": "",
         "parameters": [
           {
             "name": "isAll",
@@ -1395,12 +1627,14 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       },
       "post": {
         "operationId": "createUser",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1433,12 +1667,14 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       },
       "put": {
         "operationId": "updateUser",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1471,6 +1707,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -1478,7 +1717,6 @@
     "/user/info/{userId}": {
       "get": {
         "operationId": "getUserById",
-        "description": "",
         "parameters": [
           {
             "name": "userId",
@@ -1511,6 +1749,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -1518,7 +1759,6 @@
     "/user/me": {
       "get": {
         "operationId": "getMyUserInfo",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -1541,6 +1781,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -1548,7 +1791,6 @@
     "/user/count": {
       "get": {
         "operationId": "getUserCount",
-        "description": "",
         "parameters": [
           {
             "name": "admin",
@@ -1580,7 +1822,6 @@
     "/user/{userId}": {
       "delete": {
         "operationId": "deleteUser",
-        "description": "",
         "parameters": [
           {
             "name": "userId",
@@ -1613,6 +1854,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -1620,7 +1864,6 @@
     "/user/{userId}/restore": {
       "post": {
         "operationId": "restoreUser",
-        "description": "",
         "parameters": [
           {
             "name": "userId",
@@ -1653,6 +1896,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -1660,7 +1906,6 @@
     "/user/profile-image": {
       "post": {
         "operationId": "createProfileImage",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1694,6 +1939,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -1701,7 +1949,6 @@
     "/user/profile-image/{userId}": {
       "get": {
         "operationId": "getProfileImage",
-        "description": "",
         "parameters": [
           {
             "name": "userId",
@@ -1734,6 +1981,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -1741,7 +1991,6 @@
     "/asset/upload": {
       "post": {
         "operationId": "uploadFile",
-        "description": "",
         "parameters": [
           {
             "name": "key",
@@ -1784,6 +2033,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -1791,7 +2043,6 @@
     "/asset/download/{assetId}": {
       "get": {
         "operationId": "downloadFile",
-        "description": "",
         "parameters": [
           {
             "name": "assetId",
@@ -1833,6 +2084,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -1840,7 +2094,6 @@
     "/asset/download-files": {
       "post": {
         "operationId": "downloadFiles",
-        "description": "",
         "parameters": [
           {
             "name": "key",
@@ -1886,6 +2139,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -1942,6 +2198,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -1949,7 +2208,6 @@
     "/asset/file/{assetId}": {
       "get": {
         "operationId": "serveFile",
-        "description": "",
         "parameters": [
           {
             "name": "isThumb",
@@ -2009,6 +2267,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -2016,7 +2277,6 @@
     "/asset/thumbnail/{assetId}": {
       "get": {
         "operationId": "getAssetThumbnail",
-        "description": "",
         "parameters": [
           {
             "name": "assetId",
@@ -2066,6 +2326,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -2073,7 +2336,6 @@
     "/asset/curated-objects": {
       "get": {
         "operationId": "getCuratedObjects",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -2099,6 +2361,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -2106,7 +2371,6 @@
     "/asset/curated-locations": {
       "get": {
         "operationId": "getCuratedLocations",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -2132,6 +2396,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -2139,7 +2406,6 @@
     "/asset/search-terms": {
       "get": {
         "operationId": "getAssetSearchTerms",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -2165,6 +2431,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -2172,7 +2441,6 @@
     "/asset/search": {
       "post": {
         "operationId": "searchAsset",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2208,6 +2476,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -2215,7 +2486,6 @@
     "/asset/count-by-time-bucket": {
       "post": {
         "operationId": "getAssetCountByTimeBucket",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2248,6 +2518,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -2255,7 +2528,6 @@
     "/asset/count-by-user-id": {
       "get": {
         "operationId": "getAssetCountByUserId",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -2278,6 +2550,41 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/asset/stat/archive": {
+      "get": {
+        "operationId": "getArchivedAssetCountByUserId",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetCountByUserIdResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -2289,6 +2596,14 @@
         "parameters": [
           {
             "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isArchived",
             "required": false,
             "in": "query",
             "schema": {
@@ -2337,12 +2652,14 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       },
       "delete": {
         "operationId": "deleteAsset",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2378,6 +2695,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -2385,7 +2705,6 @@
     "/asset/time-bucket": {
       "post": {
         "operationId": "getAssetByTimeBucket",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2421,6 +2740,70 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/asset/map-marker": {
+      "get": {
+        "operationId": "getMapMarkers",
+        "description": "Get all assets that have GPS information embedded",
+        "parameters": [
+          {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isArchived",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MapMarkerResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -2464,6 +2847,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -2512,6 +2898,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -2562,6 +2951,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -2611,6 +3003,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -2651,6 +3046,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -2698,7 +3096,6 @@
     "/asset/shared-link": {
       "post": {
         "operationId": "createAssetsSharedLink",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2731,6 +3128,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -2738,7 +3138,6 @@
     "/asset/shared-link/add": {
       "patch": {
         "operationId": "addAssetsToSharedLink",
-        "description": "",
         "parameters": [
           {
             "name": "key",
@@ -2780,6 +3179,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -2787,7 +3189,6 @@
     "/asset/shared-link/remove": {
       "patch": {
         "operationId": "removeAssetsFromSharedLink",
-        "description": "",
         "parameters": [
           {
             "name": "key",
@@ -2829,6 +3230,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -2836,7 +3240,6 @@
     "/tag": {
       "post": {
         "operationId": "create",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2869,12 +3272,14 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       },
       "get": {
         "operationId": "findAll",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -2900,6 +3305,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -2907,7 +3315,6 @@
     "/tag/{id}": {
       "get": {
         "operationId": "findOne",
-        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -2940,12 +3347,14 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       },
       "patch": {
         "operationId": "update",
-        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -2988,12 +3397,14 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       },
       "delete": {
         "operationId": "delete",
-        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -3019,6 +3430,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -3026,7 +3440,6 @@
     "/album/count-by-user-id": {
       "get": {
         "operationId": "getAlbumCountByUserId",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -3049,6 +3462,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -3056,7 +3472,6 @@
     "/album/{albumId}/users": {
       "put": {
         "operationId": "addUsersToAlbum",
-        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -3099,6 +3514,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -3106,7 +3524,6 @@
     "/album/{albumId}/assets": {
       "put": {
         "operationId": "addAssetsToAlbum",
-        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -3157,12 +3574,14 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       },
       "delete": {
         "operationId": "removeAssetFromAlbum",
-        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -3205,6 +3624,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -3212,7 +3634,6 @@
     "/album/{albumId}": {
       "get": {
         "operationId": "getAlbumInfo",
-        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -3253,12 +3674,14 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       },
       "delete": {
         "operationId": "deleteAlbum",
-        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -3284,12 +3707,14 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       },
       "patch": {
         "operationId": "updateAlbumInfo",
-        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -3332,6 +3757,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -3339,7 +3767,6 @@
     "/album/{albumId}/user/{userId}": {
       "delete": {
         "operationId": "removeUserFromAlbum",
-        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -3373,6 +3800,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -3380,7 +3810,6 @@
     "/album/{albumId}/download": {
       "get": {
         "operationId": "downloadArchive",
-        "description": "",
         "parameters": [
           {
             "name": "albumId",
@@ -3438,6 +3867,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -3445,7 +3877,6 @@
     "/album/create-shared-link": {
       "post": {
         "operationId": "createAlbumSharedLink",
-        "description": "",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -3478,6 +3909,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -3486,7 +3920,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.53.0",
+    "version": "1.55.1",
     "contact": {}
   },
   "tags": [],
@@ -3507,6 +3941,11 @@
         "type": "apiKey",
         "in": "cookie",
         "name": "immich_access_token"
+      },
+      "api_key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
       }
     },
     "schemas": {
@@ -3669,6 +4108,11 @@
             "type": "string",
             "nullable": true,
             "default": null
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "default": null
           }
         }
       },
@@ -3768,6 +4212,9 @@
           "isFavorite": {
             "type": "boolean"
           },
+          "isArchived": {
+            "type": "boolean"
+          },
           "mimeType": {
             "type": "string",
             "nullable": true
@@ -3813,6 +4260,7 @@
           "fileModifiedAt",
           "updatedAt",
           "isFavorite",
+          "isArchived",
           "mimeType",
           "duration",
           "webpPath"
@@ -4051,6 +4499,37 @@
           "createdAt"
         ]
       },
+      "AuthDeviceResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "current": {
+            "type": "boolean"
+          },
+          "deviceType": {
+            "type": "string"
+          },
+          "deviceOS": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "current",
+          "deviceType",
+          "deviceOS"
+        ]
+      },
       "ValidateAccessTokenResponseDto": {
         "type": "object",
         "properties": {
@@ -4083,74 +4562,15 @@
         "type": "object",
         "properties": {
           "successful": {
-            "type": "boolean",
-            "readOnly": true
+            "type": "boolean"
           },
           "redirectUri": {
-            "type": "string",
-            "readOnly": true
+            "type": "string"
           }
         },
         "required": [
           "successful",
           "redirectUri"
-        ]
-      },
-      "DeviceTypeEnum": {
-        "type": "string",
-        "enum": [
-          "IOS",
-          "ANDROID",
-          "WEB"
-        ]
-      },
-      "UpsertDeviceInfoDto": {
-        "type": "object",
-        "properties": {
-          "deviceType": {
-            "$ref": "#/components/schemas/DeviceTypeEnum"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "isAutoBackup": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "deviceType",
-          "deviceId"
-        ]
-      },
-      "DeviceInfoResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "deviceType": {
-            "$ref": "#/components/schemas/DeviceTypeEnum"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "isAutoBackup": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "deviceType",
-          "userId",
-          "deviceId",
-          "createdAt",
-          "isAutoBackup"
         ]
       },
       "JobCountsDto": {
@@ -5026,6 +5446,9 @@
           "isFavorite": {
             "type": "boolean"
           },
+          "isArchived": {
+            "type": "boolean"
+          },
           "isVisible": {
             "type": "boolean"
           },
@@ -5161,6 +5584,10 @@
         "properties": {
           "timeGroup": {
             "$ref": "#/components/schemas/TimeGroupEnum"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
           }
         },
         "required": [
@@ -5246,10 +5673,39 @@
             "items": {
               "type": "string"
             }
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
           }
         },
         "required": [
           "timeBucket"
+        ]
+      },
+      "MapMarkerResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/AssetTypeEnum"
+          },
+          "lat": {
+            "type": "number",
+            "format": "double"
+          },
+          "lon": {
+            "type": "number",
+            "format": "double"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "lat",
+          "lon",
+          "id"
         ]
       },
       "UpdateAssetDto": {
@@ -5269,6 +5725,12 @@
           },
           "isFavorite": {
             "type": "boolean"
+          },
+          "isArchived": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string"
           }
         }
       },

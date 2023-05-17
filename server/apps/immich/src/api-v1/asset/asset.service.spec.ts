@@ -1,14 +1,21 @@
 import { IAssetRepository } from './asset-repository';
 import { AssetService } from './asset.service';
 import { QueryFailedError, Repository } from 'typeorm';
-import { AssetEntity, AssetType } from '@app/infra/entities';
+import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { DownloadService } from '../../modules/download/download.service';
 import { AlbumRepository, IAlbumRepository } from '../album/album-repository';
-import { ICryptoRepository, IJobRepository, ISharedLinkRepository, IStorageRepository, JobName } from '@app/domain';
+import {
+  ICryptoRepository,
+  IJobRepository,
+  IPartnerRepository,
+  ISharedLinkRepository,
+  IStorageRepository,
+  JobName,
+} from '@app/domain';
 import {
   assetEntityStub,
   authStub,
@@ -32,6 +39,7 @@ const _getCreateAssetDto = (): CreateAssetDto => {
   createAssetDto.fileCreatedAt = '2022-06-19T23:41:36.910Z';
   createAssetDto.fileModifiedAt = '2022-06-19T23:41:36.910Z';
   createAssetDto.isFavorite = false;
+  createAssetDto.isArchived = false;
   createAssetDto.duration = '0:00:00.000000';
 
   return createAssetDto;
@@ -51,10 +59,14 @@ const _getAsset_1 = () => {
   asset_1.fileCreatedAt = '2022-06-19T23:41:36.910Z';
   asset_1.updatedAt = '2022-06-19T23:41:36.910Z';
   asset_1.isFavorite = false;
+  asset_1.isArchived = false;
   asset_1.mimeType = 'image/jpeg';
   asset_1.webpPath = '';
   asset_1.encodedVideoPath = '';
   asset_1.duration = '0:00:00.000000';
+  asset_1.exifInfo = new ExifEntity();
+  asset_1.exifInfo.latitude = 49.533547;
+  asset_1.exifInfo.longitude = 10.703075;
   return asset_1;
 };
 
@@ -72,6 +84,7 @@ const _getAsset_2 = () => {
   asset_2.fileCreatedAt = '2022-06-19T23:41:36.910Z';
   asset_2.updatedAt = '2022-06-19T23:41:36.910Z';
   asset_2.isFavorite = false;
+  asset_2.isArchived = false;
   asset_2.mimeType = 'image/jpeg';
   asset_2.webpPath = '';
   asset_2.encodedVideoPath = '';
@@ -105,12 +118,22 @@ const _getAssetCountByUserId = (): AssetCountByUserIdResponseDto => {
   return result;
 };
 
+const _getArchivedAssetsCountByUserId = (): AssetCountByUserIdResponseDto => {
+  const result = new AssetCountByUserIdResponseDto();
+
+  result.videos = 1;
+  result.photos = 2;
+
+  return result;
+};
+
 describe('AssetService', () => {
   let sut: AssetService;
   let a: Repository<AssetEntity>; // TO BE DELETED AFTER FINISHED REFACTORING
   let assetRepositoryMock: jest.Mocked<IAssetRepository>;
   let albumRepositoryMock: jest.Mocked<IAlbumRepository>;
   let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
+  let partnerRepositoryMock: jest.Mocked<IPartnerRepository>;
   let sharedLinkRepositoryMock: jest.Mocked<ISharedLinkRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
@@ -136,6 +159,7 @@ describe('AssetService', () => {
       getAssetByTimeBucket: jest.fn(),
       getAssetsByChecksums: jest.fn(),
       getAssetCountByUserId: jest.fn(),
+      getArchivedAssetCountByUserId: jest.fn(),
       getExistingAssets: jest.fn(),
       countByIdAndUser: jest.fn(),
     };
@@ -162,6 +186,7 @@ describe('AssetService', () => {
       jobMock,
       cryptoMock,
       storageMock,
+      partnerRepositoryMock,
     );
 
     when(assetRepositoryMock.get)
@@ -347,14 +372,16 @@ describe('AssetService', () => {
 
   it('get asset count by user id', async () => {
     const assetCount = _getAssetCountByUserId();
+    assetRepositoryMock.getAssetCountByUserId.mockResolvedValue(assetCount);
 
-    assetRepositoryMock.getAssetCountByUserId.mockImplementation(() =>
-      Promise.resolve<AssetCountByUserIdResponseDto>(assetCount),
-    );
+    await expect(sut.getAssetCountByUserId(authStub.user1)).resolves.toEqual(assetCount);
+  });
 
-    const result = await sut.getAssetCountByUserId(authStub.user1);
+  it('get archived asset count by user id', async () => {
+    const assetCount = _getArchivedAssetsCountByUserId();
+    assetRepositoryMock.getArchivedAssetCountByUserId.mockResolvedValue(assetCount);
 
-    expect(result).toEqual(assetCount);
+    await expect(sut.getArchivedAssetCountByUserId(authStub.user1)).resolves.toEqual(assetCount);
   });
 
   describe('deleteAll', () => {
@@ -472,6 +499,19 @@ describe('AssetService', () => {
       await sut.downloadFile(authStub.admin, 'id_1');
 
       expect(storageMock.createReadStream).toHaveBeenCalledWith('fake_path/asset_1.jpeg', 'image/jpeg');
+    });
+  });
+
+  describe('get map markers', () => {
+    it('should get geo information of assets', async () => {
+      assetRepositoryMock.getAllByUserId.mockResolvedValue(_getAssets());
+
+      const markers = await sut.getMapMarkers(authStub.admin, {});
+
+      expect(markers).toHaveLength(1);
+      expect(markers[0].lat).toBe(_getAsset_1().exifInfo?.latitude);
+      expect(markers[0].lon).toBe(_getAsset_1().exifInfo?.longitude);
+      expect(markers[0].id).toBe(_getAsset_1().id);
     });
   });
 });

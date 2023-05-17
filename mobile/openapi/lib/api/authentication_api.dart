@@ -16,10 +16,7 @@ class AuthenticationApi {
 
   final ApiClient apiClient;
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /auth/admin-sign-up' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [SignUpDto] signUpDto (required):
@@ -48,8 +45,6 @@ class AuthenticationApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [SignUpDto] signUpDto (required):
@@ -68,10 +63,7 @@ class AuthenticationApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'POST /auth/change-password' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [ChangePasswordDto] changePasswordDto (required):
@@ -100,8 +92,6 @@ class AuthenticationApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [ChangePasswordDto] changePasswordDto (required):
@@ -120,10 +110,51 @@ class AuthenticationApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'GET /auth/devices' operation and returns the [Response].
+  Future<Response> getAuthDevicesWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/auth/devices';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<List<AuthDeviceResponseDto>?> getAuthDevices() async {
+    final response = await getAuthDevicesWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AuthDeviceResponseDto>') as List)
+        .cast<AuthDeviceResponseDto>()
+        .toList();
+
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'POST /auth/login' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [LoginCredentialDto] loginCredentialDto (required):
@@ -152,8 +183,6 @@ class AuthenticationApi {
     );
   }
 
-  /// 
-  ///
   /// Parameters:
   ///
   /// * [LoginCredentialDto] loginCredentialDto (required):
@@ -172,9 +201,7 @@ class AuthenticationApi {
     return null;
   }
 
-  /// 
-  ///
-  /// Note: This method returns the HTTP [Response].
+  /// Performs an HTTP 'POST /auth/logout' operation and returns the [Response].
   Future<Response> logoutWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/auth/logout';
@@ -200,7 +227,6 @@ class AuthenticationApi {
     );
   }
 
-  /// 
   Future<LogoutResponseDto?> logout() async {
     final response = await logoutWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -216,9 +242,80 @@ class AuthenticationApi {
     return null;
   }
 
-  /// 
+  /// Performs an HTTP 'DELETE /auth/devices/{id}' operation and returns the [Response].
+  /// Parameters:
   ///
-  /// Note: This method returns the HTTP [Response].
+  /// * [String] id (required):
+  Future<Response> logoutAuthDeviceWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/auth/devices/{id}'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<void> logoutAuthDevice(String id,) async {
+    final response = await logoutAuthDeviceWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Performs an HTTP 'DELETE /auth/devices' operation and returns the [Response].
+  Future<Response> logoutAuthDevicesWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/auth/devices';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<void> logoutAuthDevices() async {
+    final response = await logoutAuthDevicesWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Performs an HTTP 'POST /auth/validateToken' operation and returns the [Response].
   Future<Response> validateAccessTokenWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/auth/validateToken';
@@ -244,7 +341,6 @@ class AuthenticationApi {
     );
   }
 
-  /// 
   Future<ValidateAccessTokenResponseDto?> validateAccessToken() async {
     final response = await validateAccessTokenWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {

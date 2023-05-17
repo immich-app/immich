@@ -12,6 +12,8 @@
 	import type { LayoutData } from './$types';
 	import { fileUploadHandler } from '$lib/utils/file-uploader';
 	import UploadCover from '$lib/components/shared-components/drag-and-drop-upload-overlay.svelte';
+	import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
+	import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
 
 	let showNavigationLoadingBar = false;
 	export let data: LayoutData;
@@ -41,6 +43,9 @@
 <svelte:head>
 	<title>{$page.data.meta?.title || 'Web'} - Immich</title>
 	<link rel="icon" href={faviconUrl} />
+	<link rel="manifest" href="/manifest.json" />
+	<meta name="theme-color" content="currentColor" />
+	<AppleHeader />
 
 	{#if $page.data.meta}
 		<meta name="description" content={$page.data.meta.description} />
@@ -58,6 +63,14 @@
 		<meta name="twitter:image" content={$page.data.meta.imageUrl} />
 	{/if}
 </svelte:head>
+
+<noscript
+	class="h-screen w-screen absolute z-[1000] flex place-items-center place-content-center bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg"
+>
+	<FullscreenContainer title="Welcome to Immich">
+		To use Immich, you must enable JavaScript or use a JavaScript compatible browser.
+	</FullscreenContainer>
+</noscript>
 
 {#if showNavigationLoadingBar}
 	<NavigationLoadingBar />

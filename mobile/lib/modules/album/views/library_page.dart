@@ -43,7 +43,8 @@ class LibraryPage extends HookConsumerWidget {
       );
     }
 
-    final selectedAlbumSortOrder = useState(settings.getSetting(AppSettingsEnum.selectedAlbumSortOrder));
+    final selectedAlbumSortOrder =
+        useState(settings.getSetting(AppSettingsEnum.selectedAlbumSortOrder));
 
     List<Album> sortedAlbums() {
       if (selectedAlbumSortOrder.value == 0) {
@@ -179,13 +180,13 @@ class LibraryPage extends HookConsumerWidget {
               label,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 12.0,
-                color: isDarkMode ? Colors.white : Colors.black,
+                fontSize: 13.0,
+                color: isDarkMode ? Colors.white : Colors.grey[800],
               ),
             ),
           ),
           style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             backgroundColor: isDarkMode ? Colors.grey[900] : Colors.grey[50],
             side: BorderSide(
               color: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
@@ -220,13 +221,13 @@ class LibraryPage extends HookConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   buildLibraryNavButton(
-                      "library_page_favorites".tr(), Icons.star_border, () {
+                      "library_page_favorites".tr(), Icons.favorite_border, () {
                     AutoRouter.of(context).navigate(const FavoritesRoute());
                   }),
                   const SizedBox(width: 12.0),
                   buildLibraryNavButton(
-                      "library_page_sharing".tr(), Icons.group_outlined, () {
-                    AutoRouter.of(context).navigate(const SharingRoute());
+                      "library_page_archive".tr(), Icons.archive_outlined, () {
+                    AutoRouter.of(context).navigate(const ArchiveRoute());
                   }),
                 ],
               ),

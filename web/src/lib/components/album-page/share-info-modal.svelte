@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { AlbumResponseDto, api, UserResponseDto } from '@api';
+	import { clickOutside } from '$lib/utils/click-outside';
 	import BaseModal from '../shared-components/base-modal.svelte';
 	import CircleAvatar from '../shared-components/circle-avatar.svelte';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
@@ -84,13 +85,21 @@
 
 				<div id={`icon-${user.id}`} class="flex place-items-center">
 					{#if isOwned}
-						<CircleIconButton
-							on:click={() => showContextMenu(user.id)}
-							logo={DotsVertical}
-							backgroundColor={'transparent'}
-							hoverColor={'#e2e7e9'}
-							size={'20'}
-						/>
+						<div use:clickOutside on:outclick={() => (isShowMenu = false)}>
+							<CircleIconButton
+								on:click={() => showContextMenu(user.id)}
+								logo={DotsVertical}
+								backgroundColor={'transparent'}
+								hoverColor={'#e2e7e9'}
+								size={'20'}
+							>
+								{#if isShowMenu}
+									<ContextMenu {...position}>
+										<MenuOption on:click={() => removeUser(targetUserId)} text="Remove" />
+									</ContextMenu>
+								{/if}
+							</CircleIconButton>
+						</div>
 					{:else if user.id == currentUser?.id}
 						<button
 							on:click={() => removeUser('me')}
@@ -102,10 +111,4 @@
 			</div>
 		{/each}
 	</section>
-
-	{#if isShowMenu}
-		<ContextMenu {...position} on:clickoutside={() => (isShowMenu = false)}>
-			<MenuOption on:click={() => removeUser(targetUserId)} text="Remove" />
-		</ContextMenu>
-	{/if}
 </BaseModal>

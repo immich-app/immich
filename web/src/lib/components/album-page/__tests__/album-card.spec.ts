@@ -79,11 +79,6 @@ describe('AlbumCard component', () => {
 		const albumImgElement = sut.getByTestId('album-image');
 		const albumNameElement = sut.getByTestId('album-name');
 		const albumDetailsElement = sut.getByTestId('album-details');
-		// TODO: is this expected?
-		expect(albumImgElement).toHaveAttribute(
-			'src',
-			'/api/asset/thumbnail/thumbnailIdOne?format=WEBP'
-		);
 		expect(albumImgElement).toHaveAttribute('alt', album.id);
 
 		await waitFor(() => expect(albumImgElement).toHaveAttribute('src', thumbnailUrl));
