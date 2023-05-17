@@ -4,15 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album_title.provider.dart';
-import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/suggested_shared_users.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 
 class SelectUserForSharingPage extends HookConsumerWidget {
-  const SelectUserForSharingPage({Key? key}) : super(key: key);
+  const SelectUserForSharingPage({Key? key, required this.assets})
+      : super(key: key);
+
+  final Set<Asset> assets;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,15 +27,15 @@ class SelectUserForSharingPage extends HookConsumerWidget {
       var newAlbum =
           await ref.watch(sharedAlbumProvider.notifier).createSharedAlbum(
                 ref.watch(albumTitleProvider),
-                ref.watch(assetSelectionProvider).selectedNewAssetsForAlbum,
+                assets,
                 sharedUsersList.value,
               );
 
       if (newAlbum != null) {
         await ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
-        ref.watch(assetSelectionProvider.notifier).removeAll();
+        // ref.watch(assetSelectionProvider.notifier).removeAll();
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
-
+        AutoRouter.of(context).pop(true);
         AutoRouter.of(context)
             .navigate(const TabControllerRoute(children: [SharingRoute()]));
       }

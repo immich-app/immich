@@ -15,6 +15,9 @@ export class AssetRepository implements IAssetRepository {
         exifInfo: true,
         smartInfo: true,
         tags: true,
+        faces: {
+          person: true,
+        },
       },
     });
   }
@@ -35,6 +38,9 @@ export class AssetRepository implements IAssetRepository {
         exifInfo: true,
         smartInfo: true,
         tags: true,
+        faces: {
+          person: true,
+        },
       },
     });
   }
@@ -48,6 +54,7 @@ export class AssetRepository implements IAssetRepository {
         owner: true,
         smartInfo: true,
         tags: true,
+        faces: true,
       },
     });
   }
@@ -129,7 +136,21 @@ export class AssetRepository implements IAssetRepository {
         };
         break;
 
-        case WithoutProperty.SIDECAR:
+      case WithoutProperty.FACES:
+        relations = {
+          faces: true,
+        };
+        where = {
+          resizePath: IsNull(),
+          isVisible: true,
+          faces: {
+            assetId: IsNull(),
+            personId: IsNull(),
+          },
+        };
+        break;
+
+      case WithoutProperty.SIDECAR:
           where = [
             { sidecarPath: IsNull(), isVisible: true },
             { sidecarPath: '', isVisible: true },

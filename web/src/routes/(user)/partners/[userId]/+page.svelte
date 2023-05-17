@@ -21,7 +21,7 @@
 	});
 </script>
 
-<main class="grid h-screen pt-[4.25rem] bg-immich-bg dark:bg-immich-dark-bg">
+<main class="grid h-screen pt-18 bg-immich-bg dark:bg-immich-dark-bg">
 	{#if $isMultiSelectStoreState}
 		<AssetSelectControlBar
 			assets={$selectedAssets}

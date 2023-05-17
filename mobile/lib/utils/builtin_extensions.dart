@@ -1,3 +1,5 @@
+import 'package:collection/collection.dart';
+
 extension DurationExtension on String {
   Duration? toDuration() {
     try {
@@ -33,5 +35,13 @@ extension ListExtension<E> on List<E> {
     }
     length = length == 0 ? 0 : j;
     return this;
+  }
+
+  ListSlice<E> nestedSlice(int start, int end) {
+    if (this is ListSlice) {
+      final ListSlice<E> self = this as ListSlice<E>;
+      return ListSlice<E>(self.source, self.start + start, self.start + end);
+    }
+    return ListSlice<E>(this, start, end);
   }
 }

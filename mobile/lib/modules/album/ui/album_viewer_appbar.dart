@@ -5,10 +5,10 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
 import 'package:immich_mobile/modules/album/providers/album_viewer.provider.dart';
-import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
@@ -18,17 +18,19 @@ class AlbumViewerAppbar extends HookConsumerWidget
     Key? key,
     required this.album,
     required this.userId,
+    required this.selected,
+    required this.selectionDisabled,
+    required this.titleFocusNode,
   }) : super(key: key);
 
   final Album album;
   final String userId;
+  final Set<Asset> selected;
+  final void Function() selectionDisabled;
+  final FocusNode titleFocusNode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isMultiSelectionEnable =
-        ref.watch(assetSelectionProvider).isMultiselectEnable;
-    final selectedAssetsInAlbum =
-        ref.watch(assetSelectionProvider).selectedAssetsInAlbumViewer;
     final newAlbumTitle = ref.watch(albumViewerProvider).editTitleText;
     final isEditAlbum = ref.watch(albumViewerProvider).isEditAlbum;
 
@@ -86,12 +88,12 @@ class AlbumViewerAppbar extends HookConsumerWidget
       bool isSuccess =
           await ref.watch(sharedAlbumProvider.notifier).removeAssetFromAlbum(
                 album,
-                selectedAssetsInAlbum,
+                selected,
               );
 
       if (isSuccess) {
         Navigator.pop(context);
-        ref.watch(assetSelectionProvider.notifier).disableMultiselection();
+        selectionDisabled();
         ref.watch(albumProvider.notifier).getAllAlbums();
         ref.invalidate(sharedAlbumDetailProvider(album.id));
       } else {
@@ -108,7 +110,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
     }
 
     buildBottomSheetActionButton() {
-      if (isMultiSelectionEnable) {
+      if (selected.isNotEmpty) {
         if (album.ownerId == userId) {
           return ListTile(
             leading: const Icon(Icons.delete_sweep_rounded),
@@ -163,11 +165,9 @@ class AlbumViewerAppbar extends HookConsumerWidget
     }
 
     buildLeadingButton() {
-      if (isMultiSelectionEnable) {
+      if (selected.isNotEmpty) {
         return IconButton(
-          onPressed: () => ref
-              .watch(assetSelectionProvider.notifier)
-              .disableMultiselection(),
+          onPressed: selectionDisabled,
           icon: const Icon(Icons.close_rounded),
           splashRadius: 25,
         );
@@ -202,9 +202,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
     return AppBar(
       elevation: 0,
       leading: buildLeadingButton(),
-      title: isMultiSelectionEnable
-          ? Text('${selectedAssetsInAlbum.length}')
-          : null,
+      title: selected.isNotEmpty ? Text('${selected.length}') : null,
       centerTitle: false,
       actions: [
         if (album.isRemote)

@@ -39,6 +39,7 @@ export class AssetCore {
       tags: [],
       sharedLinks: [],
       originalFileName: parse(file.originalName).name,
+      faces: [],
       sidecarPath: sidecarFile != null ? sidecarFile.originalPath : null,
     });
 

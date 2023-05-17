@@ -3,6 +3,7 @@ import {
   APIKeyEntity,
   AssetEntity,
   AssetType,
+  PersonEntity,
   PartnerEntity,
   SharedLinkEntity,
   SharedLinkType,
@@ -10,6 +11,7 @@ import {
   TranscodePreset,
   UserEntity,
   UserTokenEntity,
+  AssetFaceEntity,
 } from '@app/infra/entities';
 import {
   AlbumResponseDto,
@@ -142,6 +144,7 @@ export const assetEntityStub = {
     livePhotoVideoId: null,
     tags: [],
     sharedLinks: [],
+    faces: [],
     sidecarPath: null,
   }),
   image: Object.freeze<AssetEntity>({
@@ -169,6 +172,7 @@ export const assetEntityStub = {
     tags: [],
     sharedLinks: [],
     originalFileName: 'asset-id.ext',
+    faces: [],
     sidecarPath: null,
   }),
   video: Object.freeze<AssetEntity>({
@@ -196,6 +200,7 @@ export const assetEntityStub = {
     livePhotoVideoId: null,
     tags: [],
     sharedLinks: [],
+    faces: [],
     sidecarPath: null,
   }),
   livePhotoMotionAsset: Object.freeze({
@@ -375,6 +380,7 @@ const assetResponse: AssetResponseDto = {
   exifInfo: assetInfo,
   livePhotoVideoId: null,
   tags: [],
+  people: [],
 };
 
 const albumResponse: AlbumResponseDto = {
@@ -658,6 +664,7 @@ export const sharedLinkStub = {
           },
           tags: [],
           sharedLinks: [],
+          faces: [],
           sidecarPath: null,
         },
       ],
@@ -733,6 +740,7 @@ export const searchStub = {
     page: 1,
     items: [],
     facets: [],
+    distances: [],
   }),
 };
 
@@ -830,6 +838,39 @@ export const probeStub = {
   }),
 };
 
+export const personStub = {
+  noName: Object.freeze<PersonEntity>({
+    id: 'person-1',
+    createdAt: new Date('2021-01-01'),
+    updatedAt: new Date('2021-01-01'),
+    ownerId: userEntityStub.admin.id,
+    owner: userEntityStub.admin,
+    name: '',
+    thumbnailPath: '/path/to/thumbnail',
+    faces: [],
+  }),
+  withName: Object.freeze<PersonEntity>({
+    id: 'person-1',
+    createdAt: new Date('2021-01-01'),
+    updatedAt: new Date('2021-01-01'),
+    ownerId: userEntityStub.admin.id,
+    owner: userEntityStub.admin,
+    name: 'Person 1',
+    thumbnailPath: '/path/to/thumbnail',
+    faces: [],
+  }),
+  noThumbnail: Object.freeze<PersonEntity>({
+    id: 'person-1',
+    createdAt: new Date('2021-01-01'),
+    updatedAt: new Date('2021-01-01'),
+    ownerId: userEntityStub.admin.id,
+    owner: userEntityStub.admin,
+    name: '',
+    thumbnailPath: '',
+    faces: [],
+  }),
+};
+
 export const partnerStub = {
   adminToUser1: Object.freeze<PartnerEntity>({
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -846,5 +887,15 @@ export const partnerStub = {
     sharedById: userEntityStub.user1.id,
     sharedWithId: userEntityStub.admin.id,
     sharedWith: userEntityStub.admin,
+  }),
+};
+
+export const faceStub = {
+  face1: Object.freeze<AssetFaceEntity>({
+    assetId: assetEntityStub.image.id,
+    asset: assetEntityStub.image,
+    personId: personStub.withName.id,
+    person: personStub.withName,
+    embedding: [1, 2, 3, 4],
   }),
 };

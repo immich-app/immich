@@ -114,6 +114,45 @@ class ExifInfo {
         country: country ?? this.country,
         description: description ?? this.description,
       );
+
+  @override
+  bool operator ==(other) {
+    if (other is! ExifInfo) return false;
+    return id == other.id &&
+        fileSize == other.fileSize &&
+        make == other.make &&
+        model == other.model &&
+        lens == other.lens &&
+        f == other.f &&
+        mm == other.mm &&
+        iso == other.iso &&
+        exposureSeconds == other.exposureSeconds &&
+        lat == other.lat &&
+        long == other.long &&
+        city == other.city &&
+        state == other.state &&
+        country == other.country &&
+        description == other.description;
+  }
+
+  @override
+  @ignore
+  int get hashCode =>
+      id.hashCode ^
+      fileSize.hashCode ^
+      make.hashCode ^
+      model.hashCode ^
+      lens.hashCode ^
+      f.hashCode ^
+      mm.hashCode ^
+      iso.hashCode ^
+      exposureSeconds.hashCode ^
+      lat.hashCode ^
+      long.hashCode ^
+      city.hashCode ^
+      state.hashCode ^
+      country.hashCode ^
+      description.hashCode;
 }
 
 double? _exposureTimeToSeconds(String? s) {

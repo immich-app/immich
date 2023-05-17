@@ -4,7 +4,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
 
 class TilesPerRow extends HookConsumerWidget {
   const TilesPerRow({
@@ -20,10 +19,7 @@ class TilesPerRow extends HookConsumerWidget {
     void sliderChanged(double value) {
       appSettingService.setSetting(AppSettingsEnum.tilesPerRow, value.toInt());
       itemsValue.value = value;
-    }
-
-    void sliderChangedEnd(double _) {
-      ref.watch(assetProvider.notifier).rebuildAssetGridDataStructure();
+      ref.invalidate(appSettingsServiceProvider);
     }
 
     useEffect(
@@ -49,7 +45,6 @@ class TilesPerRow extends HookConsumerWidget {
           ).tr(args: ["${itemsValue.value.toInt()}"]),
         ),
         Slider(
-          onChangeEnd: sliderChangedEnd,
           onChanged: sliderChanged,
           value: itemsValue.value,
           min: 2,

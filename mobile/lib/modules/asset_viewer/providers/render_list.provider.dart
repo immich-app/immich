@@ -4,14 +4,12 @@ import 'package:immich_mobile/modules/settings/providers/app_settings.provider.d
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 
-final renderListProvider = FutureProvider.family<RenderList, List<Asset>>((ref, assets) {
-  var settings = ref.watch(appSettingsServiceProvider);
+final renderListProvider =
+    FutureProvider.family<RenderList, List<Asset>>((ref, assets) {
+  final settings = ref.watch(appSettingsServiceProvider);
 
-  final layout = AssetGridLayoutParameters(
-    settings.getSetting(AppSettingsEnum.tilesPerRow),
-    settings.getSetting(AppSettingsEnum.dynamicLayout),
+  return RenderList.fromAssets(
+    assets,
     GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)],
   );
-
-  return RenderList.fromAssets(assets, layout);
 });

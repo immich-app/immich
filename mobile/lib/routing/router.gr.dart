@@ -67,8 +67,9 @@ class _$AppRouter extends RootStackRouter {
         routeData: routeData,
         child: GalleryViewerPage(
           key: args.key,
-          assetList: args.assetList,
-          asset: args.asset,
+          initialIndex: args.initialIndex,
+          loadAsset: args.loadAsset,
+          totalAssets: args.totalAssets,
         ),
       );
     },
@@ -150,18 +151,27 @@ class _$AppRouter extends RootStackRouter {
       );
     },
     AssetSelectionRoute.name: (routeData) {
+      final args = routeData.argsAs<AssetSelectionRouteArgs>();
       return CustomPage<AssetSelectionPageResult?>(
         routeData: routeData,
-        child: const AssetSelectionPage(),
+        child: AssetSelectionPage(
+          key: args.key,
+          existingAssets: args.existingAssets,
+          isNewAlbum: args.isNewAlbum,
+        ),
         transitionsBuilder: TransitionsBuilders.slideBottom,
         opaque: true,
         barrierDismissible: false,
       );
     },
     SelectUserForSharingRoute.name: (routeData) {
+      final args = routeData.argsAs<SelectUserForSharingRouteArgs>();
       return CustomPage<List<String>>(
         routeData: routeData,
-        child: const SelectUserForSharingPage(),
+        child: SelectUserForSharingPage(
+          key: args.key,
+          assets: args.assets,
+        ),
         transitionsBuilder: TransitionsBuilders.slideBottom,
         opaque: true,
         barrierDismissible: false,
@@ -582,15 +592,17 @@ class TabControllerRoute extends PageRouteInfo<void> {
 class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
   GalleryViewerRoute({
     Key? key,
-    required List<Asset> assetList,
-    required Asset asset,
+    required int initialIndex,
+    required Asset Function(int) loadAsset,
+    required int totalAssets,
   }) : super(
           GalleryViewerRoute.name,
           path: '/gallery-viewer-page',
           args: GalleryViewerRouteArgs(
             key: key,
-            assetList: assetList,
-            asset: asset,
+            initialIndex: initialIndex,
+            loadAsset: loadAsset,
+            totalAssets: totalAssets,
           ),
         );
 
@@ -600,19 +612,22 @@ class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
 class GalleryViewerRouteArgs {
   const GalleryViewerRouteArgs({
     this.key,
-    required this.assetList,
-    required this.asset,
+    required this.initialIndex,
+    required this.loadAsset,
+    required this.totalAssets,
   });
 
   final Key? key;
 
-  final List<Asset> assetList;
+  final int initialIndex;
 
-  final Asset asset;
+  final Asset Function(int) loadAsset;
+
+  final int totalAssets;
 
   @override
   String toString() {
-    return 'GalleryViewerRouteArgs{key: $key, assetList: $assetList, asset: $asset}';
+    return 'GalleryViewerRouteArgs{key: $key, initialIndex: $initialIndex, loadAsset: $loadAsset, totalAssets: $totalAssets}';
   }
 }
 
@@ -623,9 +638,9 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
     Key? key,
     required Asset asset,
     required bool isMotionVideo,
-    required void Function() onVideoEnded,
-    void Function()? onPlaying,
-    void Function()? onPaused,
+    required dynamic onVideoEnded,
+    dynamic onPlaying,
+    dynamic onPaused,
   }) : super(
           VideoViewerRoute.name,
           path: '/video-viewer-page',
@@ -658,11 +673,11 @@ class VideoViewerRouteArgs {
 
   final bool isMotionVideo;
 
-  final void Function() onVideoEnded;
+  final dynamic onVideoEnded;
 
-  final void Function()? onPlaying;
+  final dynamic onPlaying;
 
-  final void Function()? onPaused;
+  final dynamic onPaused;
 
   @override
   String toString() {
@@ -829,26 +844,76 @@ class RecentlyAddedRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [AssetSelectionPage]
-class AssetSelectionRoute extends PageRouteInfo<void> {
-  const AssetSelectionRoute()
-      : super(
+class AssetSelectionRoute extends PageRouteInfo<AssetSelectionRouteArgs> {
+  AssetSelectionRoute({
+    Key? key,
+    required Set<Asset> existingAssets,
+    bool isNewAlbum = false,
+  }) : super(
           AssetSelectionRoute.name,
           path: '/asset-selection-page',
+          args: AssetSelectionRouteArgs(
+            key: key,
+            existingAssets: existingAssets,
+            isNewAlbum: isNewAlbum,
+          ),
         );
 
   static const String name = 'AssetSelectionRoute';
 }
 
+class AssetSelectionRouteArgs {
+  const AssetSelectionRouteArgs({
+    this.key,
+    required this.existingAssets,
+    this.isNewAlbum = false,
+  });
+
+  final Key? key;
+
+  final Set<Asset> existingAssets;
+
+  final bool isNewAlbum;
+
+  @override
+  String toString() {
+    return 'AssetSelectionRouteArgs{key: $key, existingAssets: $existingAssets, isNewAlbum: $isNewAlbum}';
+  }
+}
+
 /// generated route for
 /// [SelectUserForSharingPage]
-class SelectUserForSharingRoute extends PageRouteInfo<void> {
-  const SelectUserForSharingRoute()
-      : super(
+class SelectUserForSharingRoute
+    extends PageRouteInfo<SelectUserForSharingRouteArgs> {
+  SelectUserForSharingRoute({
+    Key? key,
+    required Set<Asset> assets,
+  }) : super(
           SelectUserForSharingRoute.name,
           path: '/select-user-for-sharing-page',
+          args: SelectUserForSharingRouteArgs(
+            key: key,
+            assets: assets,
+          ),
         );
 
   static const String name = 'SelectUserForSharingRoute';
+}
+
+class SelectUserForSharingRouteArgs {
+  const SelectUserForSharingRouteArgs({
+    this.key,
+    required this.assets,
+  });
+
+  final Key? key;
+
+  final Set<Asset> assets;
+
+  @override
+  String toString() {
+    return 'SelectUserForSharingRouteArgs{key: $key, assets: $assets}';
+  }
 }
 
 /// generated route for

@@ -8,7 +8,8 @@ RUN python -m venv /opt/venv
 RUN /opt/venv/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu
 RUN /opt/venv/bin/pip install transformers tqdm numpy scikit-learn scipy nltk sentencepiece fastapi Pillow uvicorn[standard]
 RUN /opt/venv/bin/pip install --no-deps sentence-transformers
-
+# Facial Recognition Stuff
+RUN /opt/venv/bin/pip install insightface onnxruntime
 
 FROM python:3.10-slim
 

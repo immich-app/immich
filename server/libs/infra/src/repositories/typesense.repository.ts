@@ -1,8 +1,10 @@
 import {
   ISearchRepository,
+  OwnedFaceEntity,
   SearchCollection,
   SearchCollectionIndexStatus,
   SearchExploreItem,
+  SearchFaceFilter,
   SearchFilter,
   SearchResult,
 } from '@app/domain';
@@ -12,9 +14,9 @@ import { catchError, filter, firstValueFrom, from, map, mergeMap, of, toArray } 
 import { Client } from 'typesense';
 import { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
 import { DocumentSchema, SearchResponse } from 'typesense/lib/Typesense/Documents';
-import { AlbumEntity, AssetEntity } from '../entities';
+import { AlbumEntity, AssetEntity, AssetFaceEntity } from '../entities';
 import { typesenseConfig } from '../infra.config';
-import { albumSchema, assetSchema } from '../typesense-schemas';
+import { albumSchema, assetSchema, faceSchema } from '../typesense-schemas';
 
 function removeNil<T extends Dictionary<any>>(item: T): T {
   _.forOwn(item, (value, key) => {
@@ -26,14 +28,21 @@ function removeNil<T extends Dictionary<any>>(item: T): T {
   return item;
 }
 
+interface MultiSearchError {
+  code: number;
+  error: string;
+}
+
 interface CustomAssetEntity extends AssetEntity {
   geo?: [number, number];
   motion?: boolean;
+  people?: string[];
 }
 
 const schemaMap: Record<SearchCollection, CollectionCreateSchema> = {
   [SearchCollection.ASSETS]: assetSchema,
   [SearchCollection.ALBUMS]: albumSchema,
+  [SearchCollection.FACES]: faceSchema,
 };
 
 const schemas = Object.entries(schemaMap) as [SearchCollection, CollectionCreateSchema][];
@@ -61,7 +70,7 @@ export class TypesenseRepository implements ISearchRepository {
   async setup(): Promise<void> {
     const collections = await this.client.collections().retrieve();
     for (const collection of collections) {
-      this.logger.debug(`${collection.name} => ${collection.num_documents}`);
+      this.logger.debug(`${collection.name} collection has ${collection.num_documents} documents`);
       // await this.client.collections(collection.name).delete();
     }
 
@@ -84,6 +93,7 @@ export class TypesenseRepository implements ISearchRepository {
     const migrationMap: SearchCollectionIndexStatus = {
       [SearchCollection.ASSETS]: false,
       [SearchCollection.ALBUMS]: false,
+      [SearchCollection.FACES]: false,
     };
 
     // check if alias is using the current schema
@@ -110,9 +120,13 @@ export class TypesenseRepository implements ISearchRepository {
     await this.import(SearchCollection.ASSETS, items, done);
   }
 
+  async importFaces(items: OwnedFaceEntity[], done: boolean): Promise<void> {
+    await this.import(SearchCollection.FACES, items, done);
+  }
+
   private async import(
     collection: SearchCollection,
-    items: AlbumEntity[] | AssetEntity[],
+    items: AlbumEntity[] | AssetEntity[] | OwnedFaceEntity[],
     done: boolean,
   ): Promise<void> {
     try {
@@ -198,6 +212,15 @@ export class TypesenseRepository implements ISearchRepository {
     await this.delete(SearchCollection.ASSETS, ids);
   }
 
+  async deleteFaces(ids: string[]): Promise<void> {
+    await this.delete(SearchCollection.FACES, ids);
+  }
+
+  async deleteAllFaces(): Promise<number> {
+    const records = await this.client.collections(faceSchema.name).documents().delete({ filter_by: 'ownerId:!=null' });
+    return records.num_deleted;
+  }
+
   async delete(collection: SearchCollection, ids: string[]): Promise<void> {
     await this.client
       .collections(schemaMap[collection].name)
@@ -232,6 +255,7 @@ export class TypesenseRepository implements ISearchRepository {
           'exifInfo.description',
           'smartInfo.tags',
           'smartInfo.objects',
+          'people',
         ].join(','),
         per_page: 250,
         facet_by: this.getFacetFieldNames(SearchCollection.ASSETS),
@@ -240,6 +264,22 @@ export class TypesenseRepository implements ISearchRepository {
       });
 
     return this.asResponse(results, filters.debug);
+  }
+
+  async searchFaces(input: number[], filters: SearchFaceFilter): Promise<SearchResult<AssetFaceEntity>> {
+    const { results } = await this.client.multiSearch.perform({
+      searches: [
+        {
+          collection: faceSchema.name,
+          q: '*',
+          vector_query: `embedding:([${input.join(',')}], k:5)`,
+          per_page: 250,
+          filter_by: this.buildFilterBy('ownerId', filters.ownerId, true),
+        } as any,
+      ],
+    });
+
+    return this.asResponse(results[0] as SearchResponse<AssetFaceEntity>);
   }
 
   async vectorSearch(input: number[], filters: SearchFilter): Promise<SearchResult<AssetEntity>> {
@@ -259,12 +299,23 @@ export class TypesenseRepository implements ISearchRepository {
     return this.asResponse(results[0] as SearchResponse<AssetEntity>, filters.debug);
   }
 
-  private asResponse<T extends DocumentSchema>(results: SearchResponse<T>, debug?: boolean): SearchResult<T> {
+  private asResponse<T extends DocumentSchema>(
+    resultsOrError: SearchResponse<T> | MultiSearchError,
+    debug?: boolean,
+  ): SearchResult<T> {
+    const { error, code } = resultsOrError as MultiSearchError;
+    if (error) {
+      throw new Error(`Typesense multi-search error: ${code} - ${error}`);
+    }
+
+    const results = resultsOrError as SearchResponse<T>;
+
     return {
       page: results.page,
       total: results.found,
       count: results.out_of,
       items: (results.hits || []).map((hit) => hit.document),
+      distances: (results.hits || []).map((hit: any) => hit.vector_distance),
       facets: (results.facet_counts || []).map((facet) => ({
         counts: facet.counts.map((item) => ({ count: item.count, value: item.value })),
         fieldName: facet.field_name as string,
@@ -306,12 +357,17 @@ export class TypesenseRepository implements ISearchRepository {
     }
   }
 
-  private patch(collection: SearchCollection, items: AssetEntity[] | AlbumEntity[]) {
-    return items.map((item) =>
-      collection === SearchCollection.ASSETS
-        ? this.patchAsset(item as AssetEntity)
-        : this.patchAlbum(item as AlbumEntity),
-    );
+  private patch(collection: SearchCollection, items: AssetEntity[] | AlbumEntity[] | OwnedFaceEntity[]) {
+    return items.map((item) => {
+      switch (collection) {
+        case SearchCollection.ASSETS:
+          return this.patchAsset(item as AssetEntity);
+        case SearchCollection.ALBUMS:
+          return this.patchAlbum(item as AlbumEntity);
+        case SearchCollection.FACES:
+          return this.patchFace(item as OwnedFaceEntity);
+      }
+    });
   }
 
   private patchAlbum(album: AlbumEntity): AlbumEntity {
@@ -327,7 +383,15 @@ export class TypesenseRepository implements ISearchRepository {
       custom = { ...custom, geo: [lat, lng] };
     }
 
+    const people = asset.faces?.map((face) => face.person.name).filter((name) => name) || [];
+    if (people.length) {
+      custom = { ...custom, people };
+    }
     return removeNil({ ...custom, motion: !!asset.livePhotoVideoId });
+  }
+
+  private patchFace(face: OwnedFaceEntity): OwnedFaceEntity {
+    return removeNil(face);
   }
 
   private getFacetFieldNames(collection: SearchCollection) {

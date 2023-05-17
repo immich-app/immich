@@ -9,12 +9,14 @@ class AddToAlbumSliverList extends HookConsumerWidget {
   final List<Album> albums;
   final List<Album> sharedAlbums;
   final void Function(Album) onAddToAlbum;
+  final bool enabled;
 
   const AddToAlbumSliverList({
     Key? key,
     required this.onAddToAlbum,
     required this.albums,
     required this.sharedAlbums,
+    this.enabled = true,
   }) : super(key: key);
 
   @override
@@ -28,14 +30,14 @@ class AddToAlbumSliverList extends HookConsumerWidget {
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: ExpansionTile(
-              title:  Text('common_shared'.tr()),
+              title: Text('common_shared'.tr()),
               tilePadding: const EdgeInsets.symmetric(horizontal: 10.0),
               leading: const Icon(Icons.group),
               children: sharedAlbums
                   .map(
                     (album) => AlbumThumbnailListTile(
                       album: album,
-                      onTap: () => onAddToAlbum(album),
+                      onTap: enabled ? () => onAddToAlbum(album) : () {},
                     ),
                   )
                   .toList(),
@@ -48,7 +50,7 @@ class AddToAlbumSliverList extends HookConsumerWidget {
         final album = albums[offset];
         return AlbumThumbnailListTile(
           album: album,
-          onTap: () => onAddToAlbum(album),
+          onTap: enabled ? () => onAddToAlbum(album) : () {},
         );
       }),
     );

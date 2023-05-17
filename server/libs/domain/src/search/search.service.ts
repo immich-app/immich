@@ -1,4 +1,4 @@
-import { AlbumEntity, AssetEntity } from '@app/infra/entities';
+import { AlbumEntity, AssetEntity, AssetFaceEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { mapAlbum } from '../album';
@@ -7,12 +7,14 @@ import { mapAsset } from '../asset';
 import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
-import { IBulkEntityJob, IJobRepository, JobName } from '../job';
+import { AssetFaceId, IFaceRepository } from '../facial-recognition';
+import { IAssetFaceJob, IBulkEntityJob, IJobRepository, JobName } from '../job';
 import { IMachineLearningRepository } from '../smart-info';
 import { SearchDto } from './dto';
 import { SearchConfigResponseDto, SearchResponseDto } from './response-dto';
 import {
   ISearchRepository,
+  OwnedFaceEntity,
   SearchCollection,
   SearchExploreItem,
   SearchResult,
@@ -40,9 +42,15 @@ export class SearchService {
     delete: new Set(),
   };
 
+  private faceQueue: SyncQueue = {
+    upsert: new Set(),
+    delete: new Set(),
+  };
+
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IFaceRepository) private faceRepository: IFaceRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
     @Inject(ISearchRepository) private searchRepository: ISearchRepository,
@@ -87,6 +95,10 @@ export class SearchService {
     if (migrationStatus[SearchCollection.ALBUMS]) {
       this.logger.debug('Queueing job to re-index all albums');
       await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUMS });
+    }
+    if (migrationStatus[SearchCollection.FACES]) {
+      this.logger.debug('Queueing job to re-index all faces');
+      await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACES });
     }
   }
 
@@ -159,6 +171,29 @@ export class SearchService {
     }
   }
 
+  async handleIndexFaces() {
+    if (!this.enabled) {
+      return;
+    }
+
+    try {
+      // TODO: do this in batches based on searchIndexVersion
+      const faces = this.patchFaces(await this.faceRepository.getAll());
+      this.logger.log(`Indexing ${faces.length} faces`);
+
+      const chunkSize = 1000;
+      for (let i = 0; i < faces.length; i += chunkSize) {
+        await this.searchRepository.importFaces(faces.slice(i, i + chunkSize), false);
+      }
+
+      await this.searchRepository.importFaces([], true);
+
+      this.logger.debug('Finished re-indexing all faces');
+    } catch (error: any) {
+      this.logger.error(`Unable to index all faces`, error?.stack);
+    }
+  }
+
   handleIndexAlbum({ ids }: IBulkEntityJob) {
     if (!this.enabled) {
       return;
@@ -179,6 +214,15 @@ export class SearchService {
     }
   }
 
+  async handleIndexFace({ assetId, personId }: IAssetFaceJob) {
+    if (!this.enabled) {
+      return;
+    }
+
+    // immediately push to typesense
+    await this.searchRepository.importFaces(await this.idsToFaces([{ assetId, personId }]), false);
+  }
+
   handleRemoveAlbum({ ids }: IBulkEntityJob) {
     if (!this.enabled) {
       return;
@@ -197,6 +241,14 @@ export class SearchService {
     for (const id of ids) {
       this.assetQueue.delete.add(id);
     }
+  }
+
+  handleRemoveFace({ assetId, personId }: IAssetFaceJob) {
+    if (!this.enabled) {
+      return;
+    }
+
+    this.faceQueue.delete.add(this.asKey({ assetId, personId }));
   }
 
   private async flush() {
@@ -229,6 +281,21 @@ export class SearchService {
       await this.searchRepository.deleteAssets(ids);
       this.assetQueue.delete.clear();
     }
+
+    if (this.faceQueue.upsert.size > 0) {
+      const ids = [...this.faceQueue.upsert.keys()].map((key) => this.asParts(key));
+      const items = await this.idsToFaces(ids);
+      this.logger.debug(`Flushing ${items.length} face upserts`);
+      await this.searchRepository.importFaces(items, false);
+      this.faceQueue.upsert.clear();
+    }
+
+    if (this.faceQueue.delete.size > 0) {
+      const ids = [...this.faceQueue.delete.keys()];
+      this.logger.debug(`Flushing ${ids.length} face deletes`);
+      await this.searchRepository.deleteFaces(ids);
+      this.faceQueue.delete.clear();
+    }
   }
 
   private assertEnabled() {
@@ -247,11 +314,34 @@ export class SearchService {
     return this.patchAssets(entities.filter((entity) => entity.isVisible));
   }
 
+  private async idsToFaces(ids: AssetFaceId[]): Promise<OwnedFaceEntity[]> {
+    return this.patchFaces(await this.faceRepository.getByIds(ids));
+  }
+
   private patchAssets(assets: AssetEntity[]): AssetEntity[] {
     return assets;
   }
 
   private patchAlbums(albums: AlbumEntity[]): AlbumEntity[] {
     return albums.map((entity) => ({ ...entity, assets: [] }));
+  }
+
+  private patchFaces(faces: AssetFaceEntity[]): OwnedFaceEntity[] {
+    return faces.map((face) => ({
+      id: this.asKey(face),
+      ownerId: face.asset.ownerId,
+      assetId: face.assetId,
+      personId: face.personId,
+      embedding: face.embedding,
+    }));
+  }
+
+  private asKey(face: AssetFaceId): string {
+    return `${face.assetId}|${face.personId}`;
+  }
+
+  private asParts(key: string): AssetFaceId {
+    const [assetId, personId] = key.split('|');
+    return { assetId, personId };
   }
 }
