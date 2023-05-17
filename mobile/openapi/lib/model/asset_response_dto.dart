@@ -40,11 +40,11 @@ class AssetResponseDto {
 
   String id;
 
-  String? deviceAssetId;
+  String deviceAssetId;
 
   String ownerId;
 
-  String? deviceId;
+  String deviceId;
 
   String originalPath;
 
@@ -119,9 +119,9 @@ class AssetResponseDto {
     // ignore: unnecessary_parenthesis
     (type.hashCode) +
     (id.hashCode) +
-    (deviceAssetId == null ? 0 : deviceAssetId!.hashCode) +
+    (deviceAssetId.hashCode) +
     (ownerId.hashCode) +
-    (deviceId == null ? 0 : deviceId!.hashCode) +
+    (deviceId.hashCode) +
     (originalPath.hashCode) +
     (originalFileName.hashCode) +
     (resizePath == null ? 0 : resizePath!.hashCode) +
@@ -146,17 +146,9 @@ class AssetResponseDto {
     final json = <String, dynamic>{};
       json[r'type'] = this.type;
       json[r'id'] = this.id;
-    if (this.deviceAssetId != null) {
       json[r'deviceAssetId'] = this.deviceAssetId;
-    } else {
-      // json[r'deviceAssetId'] = null;
-    }
       json[r'ownerId'] = this.ownerId;
-    if (this.deviceId != null) {
       json[r'deviceId'] = this.deviceId;
-    } else {
-      // json[r'deviceId'] = null;
-    }
       json[r'originalPath'] = this.originalPath;
       json[r'originalFileName'] = this.originalFileName;
     if (this.resizePath != null) {
@@ -225,9 +217,9 @@ class AssetResponseDto {
       return AssetResponseDto(
         type: AssetTypeEnum.fromJson(json[r'type'])!,
         id: mapValueOfType<String>(json, r'id')!,
-        deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId'),
+        deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        deviceId: mapValueOfType<String>(json, r'deviceId'),
+        deviceId: mapValueOfType<String>(json, r'deviceId')!,
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
         originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
         resizePath: mapValueOfType<String>(json, r'resizePath'),

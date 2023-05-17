@@ -547,7 +547,7 @@ export interface AssetResponseDto {
      * @type {string}
      * @memberof AssetResponseDto
      */
-    'deviceAssetId': string | null;
+    'deviceAssetId': string;
     /**
      * 
      * @type {string}
@@ -559,7 +559,7 @@ export interface AssetResponseDto {
      * @type {string}
      * @memberof AssetResponseDto
      */
-    'deviceId': string | null;
+    'deviceId': string;
     /**
      * 
      * @type {string}
@@ -4153,6 +4153,9 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             const localVarQueryParameter = {} as any;
 
             // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
 
             // authentication bearer required
             // http bearer authentication required
