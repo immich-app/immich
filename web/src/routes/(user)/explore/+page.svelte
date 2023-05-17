@@ -3,7 +3,7 @@
 	import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import { AppRoute } from '$lib/constants';
-	import { AssetTypeEnum, PersonResponseDto, SearchExploreItem, api } from '@api';
+	import { AssetTypeEnum, SearchExploreResponseDto, api } from '@api';
 	import ClockOutline from 'svelte-material-icons/ClockOutline.svelte';
 	import HeartMultipleOutline from 'svelte-material-icons/HeartMultipleOutline.svelte';
 	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
@@ -20,25 +20,14 @@
 
 	const MAX_ITEMS = 12;
 
-	let things: SearchExploreItem[] = [];
-	let places: SearchExploreItem[] = [];
-	let people: PersonResponseDto[] = [];
+	const getFieldItems = (items: SearchExploreResponseDto[], field: Field) => {
+		const targetField = items.find((item) => item.fieldName === field);
+		return targetField?.items || [];
+	};
 
-	for (const item of data.items) {
-		switch (item.fieldName) {
-			case Field.OBJECTS:
-				things = item.items;
-				break;
-
-			case Field.CITY:
-				places = item.items;
-				break;
-		}
-	}
-
-	things = things.slice(0, MAX_ITEMS);
-	places = places.slice(0, MAX_ITEMS);
-	people = data.people.slice(0, MAX_ITEMS);
+	$: things = getFieldItems(data.items, Field.OBJECTS);
+	$: places = getFieldItems(data.items, Field.CITY);
+	$: people = data.people.slice(0, MAX_ITEMS);
 </script>
 
 <UserPageLayout user={data.user} title={data.meta.title}>
