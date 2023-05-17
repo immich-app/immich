@@ -1,15 +1,14 @@
 <script lang="ts">
+	import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
 	import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
 	import { AppRoute } from '$lib/constants';
 	import { AssetTypeEnum, PersonResponseDto, SearchExploreItem, api } from '@api';
 	import ClockOutline from 'svelte-material-icons/ClockOutline.svelte';
+	import HeartMultipleOutline from 'svelte-material-icons/HeartMultipleOutline.svelte';
 	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
 	import PlayCircleOutline from 'svelte-material-icons/PlayCircleOutline.svelte';
-	import HeartMultipleOutline from 'svelte-material-icons/HeartMultipleOutline.svelte';
 	import type { PageData } from './$types';
-	import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
-	import { onMount } from 'svelte';
 
 	export let data: PageData;
 
@@ -39,9 +38,7 @@
 
 	things = things.slice(0, MAX_ITEMS);
 	places = places.slice(0, MAX_ITEMS);
-	onMount(() => {
-		people = data.people.slice(0, MAX_ITEMS);
-	});
+	people = data.people.slice(0, MAX_ITEMS);
 </script>
 
 <UserPageLayout user={data.user} title={data.meta.title}>
