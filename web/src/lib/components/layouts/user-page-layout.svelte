@@ -22,24 +22,25 @@
 </header>
 
 <main
-	class="grid md:grid-cols-[theme(spacing.64)_auto] grid-cols-[theme(spacing.18)_auto] relative pt-[var(--navbar-height)] h-screen bg-immich-bg dark:bg-immich-dark-bg immich-scrollbar"
+	class="grid md:grid-cols-[theme(spacing.64)_auto] grid-cols-[theme(spacing.18)_auto] relative pt-[var(--navbar-height)] h-screen overflow-hidden bg-immich-bg dark:bg-immich-dark-bg"
 >
 	<SideBar />
 	<slot name="content">
-		<section class="overflow-y-auto my-8 mx-4 bg-immich-bg dark:bg-immich-dark-bg">
-			{#if title}
-				<div class="flex justify-between place-items-center dark:text-immich-dark-fg px-4 h-10">
+		{#if title}
+			<section class="relative">
+				<div
+					class="absolute border-b dark:border-immich-dark-gray flex justify-between place-items-center dark:text-immich-dark-fg w-full p-4 h-16"
+				>
 					<p class="font-medium">{title}</p>
-
 					<slot name="buttons" />
 				</div>
 
-				<div class="my-4">
-					<hr class="dark:border-immich-dark-gray" />
+				<div
+					class="absolute overflow-y-auto top-16 h-[calc(100%-theme(spacing.16))] w-full immich-scrollbar p-4 pb-8"
+				>
+					<slot />
 				</div>
-			{/if}
-
-			<slot />
-		</section>
+			</section>
+		{/if}
 	</slot>
 </main>

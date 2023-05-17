@@ -53,7 +53,7 @@
 		</LinkButton>
 	</div>
 
-	<div class="mx-4 flex flex-col">
+	<div class="flex flex-col">
 		{#if data.partners.length > 0}
 			<div class="mb-6 mt-2">
 				<div>
