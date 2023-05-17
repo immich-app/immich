@@ -3089,6 +3089,9 @@
           },
           {
             "cookie": []
+          },
+          {
+            "api_key": []
           }
         ]
       }
@@ -4180,15 +4183,13 @@
             "type": "string"
           },
           "deviceAssetId": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "ownerId": {
             "type": "string"
           },
           "deviceId": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "originalPath": {
             "type": "string"
