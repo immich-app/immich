@@ -62,7 +62,7 @@ function fileFilter(req: Request, file: any, cb: any) {
     cb(null, true);
   } else {
     // Additionally support XML but only for sidecar files
-    if (file.fieldname == "sidecarData" && file.mimetype.match(/\/(xml)$/)) {
+    if (file.fieldname == "sidecarData" && file.mimetype.match(/\/xml$/)) {
       return cb(null, true);
     }
 
