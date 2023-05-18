@@ -56,11 +56,16 @@ function fileFilter(req: Request, file: any, cb: any) {
   }
   if (
     file.mimetype.match(
-      /\/(jpg|jpeg|png|gif|avi|mov|mp4|webm|x-msvideo|quicktime|heic|heif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef|x-fuji-raf|x-samsung-srw|mpeg|x-flv|x-ms-wmv|x-matroska|octet-stream)$/,
+      /\/(jpg|jpeg|png|gif|avi|mov|mp4|webm|x-msvideo|quicktime|heic|heif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef|x-fuji-raf|x-samsung-srw|mpeg|x-flv|x-ms-wmv|x-matroska)$/,
     )
   ) {
     cb(null, true);
   } else {
+    // Additionally support XML but only for sidecar files
+    if (file.fieldname == "sidecarData" && file.mimetype.match(/\/(xml)$/)) {
+      return cb(null, true);
+    }
+
     logger.error(`Unsupported file type ${extname(file.originalname)} file MIME type ${file.mimetype}`);
     cb(new BadRequestException(`Unsupported file type ${extname(file.originalname)}`), false);
   }
