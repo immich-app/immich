@@ -54,5 +54,5 @@
 </SettingAccordion>
 
 <SettingAccordion title="Sharing" subtitle="Manage sharing with partners">
-	<PartnerSettings />
+	<PartnerSettings {user} />
 </SettingAccordion>

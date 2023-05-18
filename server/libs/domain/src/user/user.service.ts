@@ -44,13 +44,8 @@ export class UserService {
   }
 
   async getAllUsers(authUser: AuthUserDto, isAll: boolean): Promise<UserResponseDto[]> {
-    if (isAll) {
-      const allUsers = await this.userCore.getList();
-      return allUsers.map(mapUser);
-    }
-
-    const allUserExceptRequestedUser = await this.userCore.getList({ excludeId: authUser.id });
-    return allUserExceptRequestedUser.map(mapUser);
+    const users = await this.userCore.getList({ withDeleted: !isAll });
+    return users.map(mapUser);
   }
 
   async getUserById(userId: string, withDeleted = false): Promise<UserResponseDto> {

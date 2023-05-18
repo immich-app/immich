@@ -9,6 +9,7 @@
 	import Button from '../elements/buttons/button.svelte';
 
 	export let user: UserResponseDto;
+	export let canResetPassword = true;
 
 	let error: string;
 	let success: string;
@@ -17,8 +18,14 @@
 
 	const editUser = async () => {
 		try {
-			const { id, email, firstName, lastName } = user;
-			const { status } = await api.userApi.updateUser({ id, email, firstName, lastName });
+			const { id, email, firstName, lastName, storageLabel } = user;
+			const { status } = await api.userApi.updateUser({
+				id,
+				email,
+				firstName,
+				lastName,
+				storageLabel: storageLabel || ''
+			});
 
 			if (status === 200) {
 				dispatch('edit-success');
@@ -105,6 +112,17 @@
 			/>
 		</div>
 
+		<div class="m-4 flex flex-col gap-2">
+			<label class="immich-form-label" for="storage-label">Storage Label</label>
+			<input
+				class="immich-form-input"
+				id="storage-label"
+				name="storage-label"
+				type="text"
+				bind:value={user.storageLabel}
+			/>
+		</div>
+
 		{#if error}
 			<p class="text-red-400 ml-4 text-sm">{error}</p>
 		{/if}
@@ -113,7 +131,9 @@
 			<p class="text-immich-primary ml-4 text-sm">{success}</p>
 		{/if}
 		<div class="flex w-full px-4 gap-4 mt-8">
-			<Button color="light-red" fullwidth on:click={resetPassword}>Reset password</Button>
+			{#if canResetPassword}
+				<Button color="light-red" fullwidth on:click={resetPassword}>Reset password</Button>
+			{/if}
 			<Button type="submit" fullwidth>Confirm</Button>
 		</div>
 	</form>

@@ -1,24 +1,28 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsEmail } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import sanitize from 'sanitize-filename';
 
 export class CreateUserDto {
   @IsEmail()
   @Transform(({ value }) => value?.toLowerCase())
-  @ApiProperty({ example: 'testuser@email.com' })
   email!: string;
 
   @IsNotEmpty()
-  @ApiProperty({ example: 'password' })
+  @IsString()
   password!: string;
 
   @IsNotEmpty()
-  @ApiProperty({ example: 'John' })
+  @IsString()
   firstName!: string;
 
   @IsNotEmpty()
-  @ApiProperty({ example: 'Doe' })
+  @IsString()
   lastName!: string;
+
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => sanitize(value || ''))
+  storageLabel?: string | null;
 }
 
 export class CreateAdminDto {

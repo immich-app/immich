@@ -1,7 +1,7 @@
 import { UserEntity } from '@app/infra/entities';
 
 export interface UserListFilter {
-  excludeId?: string;
+  withDeleted?: boolean;
 }
 
 export interface UserStatsQueryResponse {

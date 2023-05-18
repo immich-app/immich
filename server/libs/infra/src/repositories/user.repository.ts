@@ -6,10 +6,7 @@ import { UserEntity } from '../entities';
 
 @Injectable()
 export class UserRepository implements IUserRepository {
-  constructor(
-    @InjectRepository(UserEntity)
-    private userRepository: Repository<UserEntity>,
-  ) {}
+  constructor(@InjectRepository(UserEntity) private userRepository: Repository<UserEntity>) {}
 
   async get(userId: string, withDeleted?: boolean): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: { id: userId }, withDeleted: withDeleted });
@@ -37,13 +34,9 @@ export class UserRepository implements IUserRepository {
     return this.userRepository.find({ withDeleted: true, where: { deletedAt: Not(IsNull()) } });
   }
 
-  async getList({ excludeId }: UserListFilter = {}): Promise<UserEntity[]> {
-    if (!excludeId) {
-      return this.userRepository.find(); // TODO: this should also be ordered the same as below
-    }
+  async getList({ withDeleted }: UserListFilter = {}): Promise<UserEntity[]> {
     return this.userRepository.find({
-      where: { id: Not(excludeId) },
-      withDeleted: true,
+      withDeleted,
       order: {
         createdAt: 'DESC',
       },

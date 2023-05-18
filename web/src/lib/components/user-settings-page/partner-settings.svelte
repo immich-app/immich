@@ -9,6 +9,8 @@
 	import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
 	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 
+	export let user: UserResponseDto;
+
 	let partners: UserResponseDto[] = [];
 	let createPartner = false;
 	let removePartner: UserResponseDto | null = null;
@@ -83,6 +85,7 @@
 
 {#if createPartner}
 	<PartnerSelectionModal
+		{user}
 		on:close={() => (createPartner = false)}
 		on:add-users={(event) => handleCreatePartners(event.detail)}
 	/>
