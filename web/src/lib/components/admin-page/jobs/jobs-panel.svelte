@@ -27,6 +27,12 @@
 			title: 'Extract Metadata',
 			subtitle: 'Extract metadata information i.e. GPS, resolution...etc'
 		},
+		[JobName.SidecarQueue]: {
+			title: 'Sidecar Metadata',
+			subtitle: 'Discover or synchronize sidecar metadata from the filesystem',
+			allText: 'SYNC',
+			missingText: 'DISCOVER'
+		},
 		[JobName.ObjectTaggingQueue]: {
 			title: 'Tag Objects',
 			subtitle:
@@ -48,7 +54,7 @@
 			title: 'Storage Template Migration',
 			allowForceCommand: false,
 			component: StorageMigrationDescription
-		}
+		},
 	};
 
 	const jobDetailsArray = Object.entries(jobDetails) as [JobName, JobDetails][];
@@ -75,11 +81,13 @@
 </script>
 
 <div class="flex flex-col gap-7">
-	{#each jobDetailsArray as [jobName, { title, subtitle, allowForceCommand, component }]}
+	{#each jobDetailsArray as [jobName, { title, subtitle, allowForceCommand, component, allText, missingText }]}
 		{@const { jobCounts, queueStatus } = jobs[jobName]}
 		<JobTile
 			{title}
 			{subtitle}
+			allText={allText || 'ALL'}
+			missingText={missingText || 'MISSING'}
 			{allowForceCommand}
 			{jobCounts}
 			{queueStatus}

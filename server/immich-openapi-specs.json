@@ -4861,6 +4861,9 @@
           },
           "recognize-faces-queue": {
             "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "sidecar-queue": {
+            "$ref": "#/components/schemas/JobStatusDto"
           }
         },
         "required": [
@@ -4872,7 +4875,8 @@
           "storage-template-migration-queue",
           "background-task-queue",
           "search-queue",
-          "recognize-faces-queue"
+          "recognize-faces-queue",
+          "sidecar-queue"
         ]
       },
       "JobName": {
@@ -4886,7 +4890,8 @@
           "clip-encoding-queue",
           "background-task-queue",
           "storage-template-migration-queue",
-          "search-queue"
+          "search-queue",
+          "sidecar-queue"
         ]
       },
       "JobCommand": {

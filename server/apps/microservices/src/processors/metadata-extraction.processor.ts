@@ -8,6 +8,7 @@ import {
   JobName,
   QueueName,
   WithoutProperty,
+  WithProperty,
 } from '@app/domain';
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { Process, Processor } from '@nestjs/bull';
@@ -74,7 +75,7 @@ export class MetadataExtractionProcessor {
       const { force } = job.data;
       const assets = force
         ? await this.assetRepository.getAll()
-        : (await this.assetRepository.getWithout(WithoutProperty.EXIF)).concat(await this.assetRepository.getWithout(WithoutProperty.SIDECAR));
+        : await this.assetRepository.getWithout(WithoutProperty.EXIF);
 
       for (const asset of assets) {
         const fileName = asset.originalFileName;
@@ -92,8 +93,7 @@ export class MetadataExtractionProcessor {
     let asset = job.data.asset;
 
     try {
-      const sidecarPath = await this.getSidecarPath(asset)
-      const exifData = await exiftool.read<ImmichTags>(sidecarPath || asset.originalPath).catch((error: any) => {
+      const exifData = await exiftool.read<ImmichTags>(asset.sidecarPath || asset.originalPath).catch((error: any) => {
         this.logger.warn(
           `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
           error?.stack,
@@ -185,11 +185,7 @@ export class MetadataExtractionProcessor {
       }
 
       await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
-      asset = await this.assetCore.save({
-        id: asset.id,
-        fileCreatedAt: fileCreatedAt?.toISOString(),
-        sidecarPath,
-    });
+      asset = await this.assetCore.save({ id: asset.id, fileCreatedAt: fileCreatedAt?.toISOString() });
       await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { asset } });
     } catch (error: any) {
       this.logger.error(
@@ -221,8 +217,7 @@ export class MetadataExtractionProcessor {
         }
       }
 
-      const sidecarPath = await this.getSidecarPath(asset)
-      const exifData = await exiftool.read<ImmichTags>(sidecarPath || asset.originalPath).catch((error: any) => {
+      const exifData = await exiftool.read<ImmichTags>(asset.sidecarPath || asset.originalPath).catch((error: any) => {
         this.logger.warn(
           `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
           error?.stack,
@@ -311,12 +306,7 @@ export class MetadataExtractionProcessor {
       }
 
       await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
-      asset = await this.assetCore.save({
-        id: asset.id,
-        duration: durationString,
-        fileCreatedAt,
-        sidecarPath,
-      });
+      asset = await this.assetCore.save({ id: asset.id, duration: durationString, fileCreatedAt });
       await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { asset } });
     } catch (error: any) {
       this.logger.error(
@@ -351,8 +341,87 @@ export class MetadataExtractionProcessor {
 
     return Duration.fromObject({ seconds: videoDurationInSecond }).toFormat('hh:mm:ss.SSS');
   }
+}
 
-  private async getSidecarPath(asset: AssetEntity) {
-    return asset.sidecarPath || ((await fs.exists(`${asset.originalPath}.xmp`)) ? `${asset.originalPath}.xmp` : null)
+@Processor(QueueName.SIDECAR)
+export class SidecarProcessor {
+  private logger = new Logger(SidecarProcessor.name);
+  private assetCore: AssetCore;
+
+  constructor(
+    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
+  ) {
+    this.assetCore = new AssetCore(assetRepository, jobRepository);
+    this.init();
+  }
+
+  private async init() {
+  }
+
+  @Process(JobName.QUEUE_SIDECAR)
+  async handleQueueSidecar(job: Job<IBaseJob>) {
+    try {
+      const { force } = job.data;
+
+      if (force) {
+        return this.jobRepository.queue({ name: JobName.SIDECAR_SYNC, data: { force } });
+      }
+
+      return this.jobRepository.queue({ name: JobName.SIDECAR_DISCOVERY, data: { force } });
+    } catch (error: any) {
+      this.logger.error(`Unable to queue sidecar scanning`, error?.stack);
+    }
+  }
+
+  @Process(JobName.SIDECAR_DISCOVERY)
+  async handleQueueSidecarDiscovery(job: Job<IBaseJob>) {
+    try {
+      const assets = await this.assetRepository.getWithout(WithoutProperty.SIDECAR);
+
+      for (let asset of assets) {
+        const sidecarPath = await this.getSidecarPath(asset);
+        if (sidecarPath) {
+          asset = await this.assetCore.save({ id: asset.id, sidecarPath });
+          const fileName = asset.originalFileName;
+          const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
+          await this.jobRepository.queue({ name, data: { asset, fileName } });
+        }
+      }
+    } catch (error: any) {
+      this.logger.error(`Unable to queue metadata extraction`, error?.stack);
+    }
+  }
+
+  @Process(JobName.SIDECAR_SYNC)
+  async handleQueueSidecarSync(job: Job<IBaseJob>) {
+    try {
+      const { force } = job.data;
+      const assets = await this.assetRepository.getWith(WithProperty.SIDECAR);
+
+      for (const asset of assets) {
+        const fileName = asset.originalFileName;
+        const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
+        await this.jobRepository.queue({ name, data: { asset, fileName } });
+      }
+    } catch (error: any) {
+      this.logger.error(`Unable to queue metadata extraction`, error?.stack);
+    }
+  }
+
+  private async getSidecarPath(asset: AssetEntity): Promise<string|null> {
+    if (asset.sidecarPath) {
+      return asset.sidecarPath
+    }
+
+    return await new Promise((resolve) => {
+      fs.stat(`${asset.originalPath}.xmp`, (err: any) => {
+        if (err) {
+          return resolve(null)
+        }
+
+        return resolve(`${asset.originalPath}.xmp`)
+      })
+    })
   }
 }

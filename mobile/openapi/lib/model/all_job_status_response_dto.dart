@@ -81,6 +81,7 @@ class AllJobStatusResponseDto {
       json[r'background-task-queue'] = this.backgroundTaskQueue;
       json[r'search-queue'] = this.searchQueue;
       json[r'recognize-faces-queue'] = this.recognizeFacesQueue;
+      json[r'sidecar-queue'] = this.sidecarQueue;
     return json;
   }
 
@@ -112,6 +113,7 @@ class AllJobStatusResponseDto {
         backgroundTaskQueue: JobStatusDto.fromJson(json[r'background-task-queue'])!,
         searchQueue: JobStatusDto.fromJson(json[r'search-queue'])!,
         recognizeFacesQueue: JobStatusDto.fromJson(json[r'recognize-faces-queue'])!,
+        sidecarQueue: JobStatusDto.fromJson(json[r'sidecar-queue'])!,
       );
     }
     return null;
@@ -168,6 +170,6 @@ class AllJobStatusResponseDto {
     'background-task-queue',
     'search-queue',
     'recognize-faces-queue',
+    'sidecar-queue',
   };
 }
-

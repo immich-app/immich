@@ -13,7 +13,7 @@ import {
   ThumbnailGeneratorProcessor,
   VideoTranscodeProcessor,
 } from './processors';
-import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
+import { MetadataExtractionProcessor, SidecarProcessor } from './processors/metadata-extraction.processor';
 
 @Module({
   imports: [
@@ -31,6 +31,7 @@ import { MetadataExtractionProcessor } from './processors/metadata-extraction.pr
     BackgroundTaskProcessor,
     SearchIndexProcessor,
     FacialRecognitionProcessor,
+    SidecarProcessor,
   ],
 })
 export class MicroservicesModule {}

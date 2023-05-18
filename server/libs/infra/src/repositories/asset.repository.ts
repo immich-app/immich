@@ -1,4 +1,4 @@
-import { AssetSearchOptions, IAssetRepository, LivePhotoSearchOptions, WithoutProperty } from '@app/domain';
+import { AssetSearchOptions, IAssetRepository, LivePhotoSearchOptions, WithoutProperty, WithProperty } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
@@ -163,6 +163,25 @@ export class AssetRepository implements IAssetRepository {
 
     return this.repository.find({
       relations,
+      where,
+    });
+  }
+
+  getWith(property: WithProperty): Promise<AssetEntity[]> {
+    let where: FindOptionsWhere<AssetEntity> | FindOptionsWhere<AssetEntity>[] = {};
+
+    switch (property) {
+      case WithProperty.SIDECAR:
+        where = [
+          { sidecarPath: Not(IsNull()), isVisible: true },
+        ];
+        break;
+
+      default:
+        throw new Error(`Invalid getWith property: ${property}`);
+    }
+
+    return this.repository.find({
       where,
     });
   }

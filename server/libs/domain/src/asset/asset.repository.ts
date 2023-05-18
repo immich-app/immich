@@ -22,11 +22,16 @@ export enum WithoutProperty {
   SIDECAR = 'sidecar',
 }
 
+export enum WithProperty {
+  SIDECAR = 'sidecar',
+}
+
 export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
   getByIds(ids: string[]): Promise<AssetEntity[]>;
   getWithout(property: WithoutProperty): Promise<AssetEntity[]>;
+  getWith(property: WithProperty): Promise<AssetEntity[]>;
   getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   deleteAll(ownerId: string): Promise<void>;
   getAll(options?: AssetSearchOptions): Promise<AssetEntity[]>;
