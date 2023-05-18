@@ -365,6 +365,7 @@ export class SidecarProcessor {
       const assets = force ? await this.assetRepository.getWith(WithProperty.SIDECAR) : await this.assetRepository.getWithout(WithoutProperty.SIDECAR);
 
       for (const asset of assets) {
+        const fileName = asset.originalFileName
         const name = force ? JobName.SIDECAR_SYNC : JobName.SIDECAR_DISCOVERY;
         await this.jobRepository.queue({ name, data: { asset, fileName } });
       }

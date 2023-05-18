@@ -53,8 +53,8 @@ export type JobItem =
 
   // Sidecar Scanning
   | { name: JobName.QUEUE_SIDECAR; data: IBaseJob }
-  | { name: JobName.SIDECAR_DISCOVERY; data: IBaseJob }
-  | { name: JobName.SIDECAR_SYNC; data: IBaseJob }
+  | { name: JobName.SIDECAR_DISCOVERY; data: IAssetUploadedJob }
+  | { name: JobName.SIDECAR_SYNC; data: IAssetUploadedJob }
 
   // Object Tagging
   | { name: JobName.QUEUE_OBJECT_TAGGING; data: IBaseJob }
