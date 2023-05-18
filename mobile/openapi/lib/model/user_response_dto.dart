@@ -17,6 +17,7 @@ class UserResponseDto {
     required this.email,
     required this.firstName,
     required this.lastName,
+    required this.storageLabel,
     required this.createdAt,
     required this.profileImagePath,
     required this.shouldChangePassword,
@@ -33,6 +34,8 @@ class UserResponseDto {
   String firstName;
 
   String lastName;
+
+  String? storageLabel;
 
   String createdAt;
 
@@ -66,6 +69,7 @@ class UserResponseDto {
      other.email == email &&
      other.firstName == firstName &&
      other.lastName == lastName &&
+     other.storageLabel == storageLabel &&
      other.createdAt == createdAt &&
      other.profileImagePath == profileImagePath &&
      other.shouldChangePassword == shouldChangePassword &&
@@ -81,6 +85,7 @@ class UserResponseDto {
     (email.hashCode) +
     (firstName.hashCode) +
     (lastName.hashCode) +
+    (storageLabel == null ? 0 : storageLabel!.hashCode) +
     (createdAt.hashCode) +
     (profileImagePath.hashCode) +
     (shouldChangePassword.hashCode) +
@@ -90,7 +95,7 @@ class UserResponseDto {
     (oauthId.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, createdAt=$createdAt, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin, deletedAt=$deletedAt, updatedAt=$updatedAt, oauthId=$oauthId]';
+  String toString() => 'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, storageLabel=$storageLabel, createdAt=$createdAt, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin, deletedAt=$deletedAt, updatedAt=$updatedAt, oauthId=$oauthId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -98,6 +103,11 @@ class UserResponseDto {
       json[r'email'] = this.email;
       json[r'firstName'] = this.firstName;
       json[r'lastName'] = this.lastName;
+    if (this.storageLabel != null) {
+      json[r'storageLabel'] = this.storageLabel;
+    } else {
+      // json[r'storageLabel'] = null;
+    }
       json[r'createdAt'] = this.createdAt;
       json[r'profileImagePath'] = this.profileImagePath;
       json[r'shouldChangePassword'] = this.shouldChangePassword;
@@ -139,6 +149,7 @@ class UserResponseDto {
         email: mapValueOfType<String>(json, r'email')!,
         firstName: mapValueOfType<String>(json, r'firstName')!,
         lastName: mapValueOfType<String>(json, r'lastName')!,
+        storageLabel: mapValueOfType<String>(json, r'storageLabel'),
         createdAt: mapValueOfType<String>(json, r'createdAt')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
@@ -197,6 +208,7 @@ class UserResponseDto {
     'email',
     'firstName',
     'lastName',
+    'storageLabel',
     'createdAt',
     'profileImagePath',
     'shouldChangePassword',

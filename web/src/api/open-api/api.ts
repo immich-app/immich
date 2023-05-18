@@ -910,6 +910,12 @@ export interface CreateUserDto {
      * @memberof CreateUserDto
      */
     'lastName': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof CreateUserDto
+     */
+    'storageLabel'?: string | null;
 }
 /**
  * 
@@ -2463,6 +2469,24 @@ export interface UpdateUserDto {
      * @type {string}
      * @memberof UpdateUserDto
      */
+    'id': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UpdateUserDto
+     */
+    'isAdmin'?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UpdateUserDto
+     */
+    'shouldChangePassword'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateUserDto
+     */
     'email'?: string;
     /**
      * 
@@ -2487,19 +2511,7 @@ export interface UpdateUserDto {
      * @type {string}
      * @memberof UpdateUserDto
      */
-    'id': string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof UpdateUserDto
-     */
-    'isAdmin'?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof UpdateUserDto
-     */
-    'shouldChangePassword'?: boolean;
+    'storageLabel'?: string | null;
 }
 /**
  * 
@@ -2587,6 +2599,12 @@ export interface UserResponseDto {
      * @memberof UserResponseDto
      */
     'lastName': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserResponseDto
+     */
+    'storageLabel': string | null;
     /**
      * 
      * @type {string}
