@@ -1,0 +1,2 @@
+* Upgrade to Flutter 3.10
+* Lazy loading of timeline
