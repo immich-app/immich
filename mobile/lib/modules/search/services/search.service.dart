@@ -69,4 +69,22 @@ class SearchService {
       return [];
     }
   }
+
+  Future<List<PersonResponseDto>?> getCuratedPeople() async {
+    try {
+      return await _apiService.personApi.getAllPeople();
+    } catch (e) {
+      debugPrint("Error [getCuratedPeople] ${e.toString()}");
+      return null;
+    }
+  }
+
+  Future<List<AssetResponseDto>?> getPersonAssets(String id) async {
+    try {
+      return await _apiService.personApi.getPersonAssets(id);
+    } catch (e) {
+      debugPrint("Error [getPersonAssets] ${e.toString()}");
+      return null;
+    }
+  }
 }
