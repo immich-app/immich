@@ -376,7 +376,7 @@ export class SidecarProcessor {
 
   @Process(JobName.SIDECAR_DISCOVERY)
   async handleQueueSidecarDiscovery(job: Job<IAssetUploadedJob>) {
-    let asset = job.data.asset
+    let { asset, fileName } = job.data
     if (!asset.isVisible) {
       return;
     }
@@ -385,7 +385,6 @@ export class SidecarProcessor {
       const sidecarPath = await this.getSidecarPath(asset);
       if (sidecarPath) {
         asset = await this.assetCore.save({ id: asset.id, sidecarPath });
-        const fileName = asset.originalFileName;
         const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
         await this.jobRepository.queue({ name, data: { asset, fileName } });
       }
@@ -396,13 +395,12 @@ export class SidecarProcessor {
 
   @Process(JobName.SIDECAR_SYNC)
   async handleQueueSidecarSync(job: Job<IAssetUploadedJob>) {
-    let asset = job.data.asset
+    const { asset, fileName } = job.data
     if (!asset.isVisible) {
       return;
     }
 
     try {
-      const fileName = asset.originalFileName;
       const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
       await this.jobRepository.queue({ name, data: { asset, fileName } });
     } catch (error: any) {
