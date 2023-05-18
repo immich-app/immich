@@ -78,18 +78,13 @@ export class StorageTemplateService {
       try {
         await this.storageRepository.moveFile(asset.originalPath, destination);
 
-        let sidecarDestination;
-        if (asset.sidecarPath != null) {
-          try {
+        try {
+          let sidecarDestination;
+          if (asset.sidecarPath != null) {
             sidecarDestination = `${destination}.xmp`
             await this.storageRepository.moveFile(asset.sidecarPath, sidecarDestination);
-          } catch (error: any) {
-            this.logger.warn('Unable to move sidecar, undoing move', error?.stack);
-            await this.storageRepository.moveFile(destination, source);
           }
-        }
 
-        try {
           await this.assetRepository.save({ id: asset.id, originalPath: destination, sidecarPath: sidecarDestination });
           asset.originalPath = destination;
           asset.sidecarPath = sidecarDestination || null;
