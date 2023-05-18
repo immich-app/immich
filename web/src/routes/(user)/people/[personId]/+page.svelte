@@ -70,7 +70,7 @@
 		<EditNameInput
 			person={data.person}
 			on:change={(event) => handleNameChange(event.detail)}
-			on:blur={() => (isEditName = false)}
+			on:cancel={() => (isEditName = false)}
 		/>
 	{:else}
 		<ImageThumbnail
