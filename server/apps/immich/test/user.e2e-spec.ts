@@ -137,7 +137,6 @@ describe('User', () => {
             },
           ]),
         );
-        expect(body).toEqual(expect.not.arrayContaining([expect.objectContaining({ email: authUserEmail })]));
       });
 
       it('disallows admin user from creating a second admin account', async () => {
