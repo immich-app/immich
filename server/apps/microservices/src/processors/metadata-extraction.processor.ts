@@ -92,7 +92,7 @@ export class MetadataExtractionProcessor {
     let asset = job.data.asset;
 
     try {
-      const sidecarPath = asset.sidecarPath || (fs.existsSync(`${asset.originalPath}.xmp`) ? `${asset.originalPath}.xmp` : null)
+      const sidecarPath = await this.getSidecarPath(asset)
       const exifData = await exiftool.read<ImmichTags>(sidecarPath || asset.originalPath).catch((error: any) => {
         this.logger.warn(
           `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
@@ -188,7 +188,7 @@ export class MetadataExtractionProcessor {
       asset = await this.assetCore.save({
         id: asset.id,
         fileCreatedAt: fileCreatedAt?.toISOString(),
-        ...(!asset.sidecarPath && sidecarPath && { sidecarPath }),
+        sidecarPath,
     });
       await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { asset } });
     } catch (error: any) {
@@ -221,7 +221,7 @@ export class MetadataExtractionProcessor {
         }
       }
 
-      const sidecarPath = asset.sidecarPath || (fs.existsSync(`${asset.originalPath}.xmp`) ? `${asset.originalPath}.xmp` : null)
+      const sidecarPath = await this.getSidecarPath(asset)
       const exifData = await exiftool.read<ImmichTags>(sidecarPath || asset.originalPath).catch((error: any) => {
         this.logger.warn(
           `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
@@ -315,7 +315,7 @@ export class MetadataExtractionProcessor {
         id: asset.id,
         duration: durationString,
         fileCreatedAt,
-         ...(!asset.sidecarPath && sidecarPath && { sidecarPath }),
+        sidecarPath,
       });
       await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { asset } });
     } catch (error: any) {
@@ -350,5 +350,9 @@ export class MetadataExtractionProcessor {
     }
 
     return Duration.fromObject({ seconds: videoDurationInSecond }).toFormat('hh:mm:ss.SSS');
+  }
+
+  private async getSidecarPath(asset: AssetEntity) {
+    return asset.sidecarPath || ((await fs.exists(`${asset.originalPath}.xmp`)) ? `${asset.originalPath}.xmp` : null)
   }
 }
