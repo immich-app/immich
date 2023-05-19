@@ -3,6 +3,7 @@ import { exiftool } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import sharp from 'sharp';
 import { promisify } from 'util';
+import * as fs from 'fs/promises'
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 
@@ -86,13 +87,39 @@ export class MediaRepository implements IMediaRepository {
   }
 
   transcode(input: string, output: string, options: string[]): Promise<void> {
+    if (!(process.env.ENABLE_TWO_PASS?.toLowerCase() === "true")) {
+      return new Promise((resolve, reject) => {
+        ffmpeg(input, { niceness: 10 })
+          .outputOptions(options)
+          .output(output)
+          .on('error', reject)
+          .on('end', resolve)
+          .run();
+      })
+    }
+
+    // two-pass allows for precise control of bitrate at the cost of running twice
+    // recommended for vp9 for better quality and compression
     return new Promise((resolve, reject) => {
       ffmpeg(input, { niceness: 10 })
-        //
         .outputOptions(options)
-        .output(output)
+        .addOptions('-pass', '1')
+        .addOptions('-passlogfile', output)
+        .addOptions('-f null')
+        .output('/dev/null') // first pass output is not saved as only the .log file is needed
         .on('error', reject)
-        .on('end', resolve)
+        .on("end", () => {
+          // second pass
+          ffmpeg(input, { niceness: 10 })
+            .outputOptions(options)
+            .addOptions('-pass', '2')
+            .addOptions('-passlogfile', output)
+            .output(output)
+            .on('error', reject)
+            .on('end', () => fs.unlink(`${output}-0.log`))
+            .on('end', resolve)
+            .run();
+        })
         .run();
     });
   }
