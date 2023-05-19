@@ -6,6 +6,7 @@ import 'package:immich_mobile/modules/album/views/album_viewer_page.dart';
 import 'package:immich_mobile/modules/album/views/asset_selection_page.dart';
 import 'package:immich_mobile/modules/album/views/create_album_page.dart';
 import 'package:immich_mobile/modules/album/views/library_page.dart';
+import 'package:immich_mobile/modules/partner/views/partner_page.dart';
 import 'package:immich_mobile/modules/album/views/select_additional_user_for_sharing_page.dart';
 import 'package:immich_mobile/modules/album/views/select_user_for_sharing_page.dart';
 import 'package:immich_mobile/modules/album/views/sharing_page.dart';
@@ -136,6 +137,7 @@ part 'router.gr.dart';
         DuplicateGuard,
       ],
     ),
+    AutoRoute(page: PartnerPage, guards: [AuthGuard, DuplicateGuard])
   ],
 )
 class AppRouter extends _$AppRouter {

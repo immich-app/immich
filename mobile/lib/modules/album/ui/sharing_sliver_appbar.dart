@@ -60,7 +60,8 @@ class SharingSliverAppBar extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.only(left: 4.0),
                   child: ElevatedButton.icon(
-                    onPressed: null,
+                    onPressed: () =>
+                        AutoRouter.of(context).push(const PartnerRoute()),
                     icon: const Icon(
                       Icons.swap_horizontal_circle_outlined,
                       size: 20,

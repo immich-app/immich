@@ -256,6 +256,12 @@ class _$AppRouter extends RootStackRouter {
         child: const ArchivePage(),
       );
     },
+    PartnerRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const PartnerPage(),
+      );
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
         routeData: routeData,
@@ -518,6 +524,14 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           ArchiveRoute.name,
           path: '/archive-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          PartnerRoute.name,
+          path: '/partner-page',
           guards: [
             authGuard,
             duplicateGuard,
@@ -1111,6 +1125,18 @@ class ArchiveRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'ArchiveRoute';
+}
+
+/// generated route for
+/// [PartnerPage]
+class PartnerRoute extends PageRouteInfo<void> {
+  const PartnerRoute()
+      : super(
+          PartnerRoute.name,
+          path: '/partner-page',
+        );
+
+  static const String name = 'PartnerRoute';
 }
 
 /// generated route for

@@ -44,7 +44,7 @@ class User {
   bool operator ==(other) {
     if (other is! User) return false;
     return id == other.id &&
-        updatedAt == other.updatedAt &&
+        updatedAt.isAtSameMomentAs(other.updatedAt) &&
         email == other.email &&
         firstName == other.firstName &&
         lastName == other.lastName &&
