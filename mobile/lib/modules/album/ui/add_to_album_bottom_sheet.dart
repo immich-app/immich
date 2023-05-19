@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
-import 'package:immich_mobile/modules/album/providers/asset_selection.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/album/ui/add_to_album_sliverlist.dart';
@@ -110,12 +109,6 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
                               TextStyle(color: Theme.of(context).primaryColor),
                         ),
                         onPressed: () {
-                          ref
-                              .watch(assetSelectionProvider.notifier)
-                              .removeAll();
-                          ref
-                              .watch(assetSelectionProvider.notifier)
-                              .addNewAssets(assets);
                           AutoRouter.of(context).push(
                             CreateAlbumRoute(
                               isSharedAlbum: false,

@@ -21,6 +21,7 @@ class AllJobStatusResponseDto {
     required this.storageTemplateMigrationQueue,
     required this.backgroundTaskQueue,
     required this.searchQueue,
+    required this.recognizeFacesQueue,
   });
 
   JobStatusDto thumbnailGenerationQueue;
@@ -39,6 +40,8 @@ class AllJobStatusResponseDto {
 
   JobStatusDto searchQueue;
 
+  JobStatusDto recognizeFacesQueue;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AllJobStatusResponseDto &&
      other.thumbnailGenerationQueue == thumbnailGenerationQueue &&
@@ -48,7 +51,8 @@ class AllJobStatusResponseDto {
      other.clipEncodingQueue == clipEncodingQueue &&
      other.storageTemplateMigrationQueue == storageTemplateMigrationQueue &&
      other.backgroundTaskQueue == backgroundTaskQueue &&
-     other.searchQueue == searchQueue;
+     other.searchQueue == searchQueue &&
+     other.recognizeFacesQueue == recognizeFacesQueue;
 
   @override
   int get hashCode =>
@@ -60,10 +64,11 @@ class AllJobStatusResponseDto {
     (clipEncodingQueue.hashCode) +
     (storageTemplateMigrationQueue.hashCode) +
     (backgroundTaskQueue.hashCode) +
-    (searchQueue.hashCode);
+    (searchQueue.hashCode) +
+    (recognizeFacesQueue.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[thumbnailGenerationQueue=$thumbnailGenerationQueue, metadataExtractionQueue=$metadataExtractionQueue, videoConversionQueue=$videoConversionQueue, objectTaggingQueue=$objectTaggingQueue, clipEncodingQueue=$clipEncodingQueue, storageTemplateMigrationQueue=$storageTemplateMigrationQueue, backgroundTaskQueue=$backgroundTaskQueue, searchQueue=$searchQueue]';
+  String toString() => 'AllJobStatusResponseDto[thumbnailGenerationQueue=$thumbnailGenerationQueue, metadataExtractionQueue=$metadataExtractionQueue, videoConversionQueue=$videoConversionQueue, objectTaggingQueue=$objectTaggingQueue, clipEncodingQueue=$clipEncodingQueue, storageTemplateMigrationQueue=$storageTemplateMigrationQueue, backgroundTaskQueue=$backgroundTaskQueue, searchQueue=$searchQueue, recognizeFacesQueue=$recognizeFacesQueue]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -75,6 +80,7 @@ class AllJobStatusResponseDto {
       json[r'storage-template-migration-queue'] = this.storageTemplateMigrationQueue;
       json[r'background-task-queue'] = this.backgroundTaskQueue;
       json[r'search-queue'] = this.searchQueue;
+      json[r'recognize-faces-queue'] = this.recognizeFacesQueue;
     return json;
   }
 
@@ -105,6 +111,7 @@ class AllJobStatusResponseDto {
         storageTemplateMigrationQueue: JobStatusDto.fromJson(json[r'storage-template-migration-queue'])!,
         backgroundTaskQueue: JobStatusDto.fromJson(json[r'background-task-queue'])!,
         searchQueue: JobStatusDto.fromJson(json[r'search-queue'])!,
+        recognizeFacesQueue: JobStatusDto.fromJson(json[r'recognize-faces-queue'])!,
       );
     }
     return null;
@@ -160,6 +167,7 @@ class AllJobStatusResponseDto {
     'storage-template-migration-queue',
     'background-task-queue',
     'search-queue',
+    'recognize-faces-queue',
   };
 }
 

@@ -8,6 +8,7 @@ import 'package:immich_mobile/modules/settings/providers/app_settings.provider.d
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class ImmichAssetGrid extends HookConsumerWidget {
   final int? assetsPerRow;
@@ -15,13 +16,19 @@ class ImmichAssetGrid extends HookConsumerWidget {
   final bool? showStorageIndicator;
   final ImmichAssetGridSelectionListener? listener;
   final bool selectionActive;
-  final List<Asset> assets;
+  final List<Asset>? assets;
   final RenderList? renderList;
   final Future<void> Function()? onRefresh;
+  final Set<Asset>? preselectedAssets;
+  final bool canDeselect;
+  final bool? dynamicLayout;
+  final bool showMultiSelectIndicator;
+  final void Function(ItemPosition start, ItemPosition end)?
+      visibleItemsListener;
 
   const ImmichAssetGrid({
     super.key,
-    required this.assets,
+    this.assets,
     this.onRefresh,
     this.renderList,
     this.assetsPerRow,
@@ -29,12 +36,16 @@ class ImmichAssetGrid extends HookConsumerWidget {
     this.listener,
     this.margin = 5.0,
     this.selectionActive = false,
+    this.preselectedAssets,
+    this.canDeselect = true,
+    this.dynamicLayout,
+    this.showMultiSelectIndicator = true,
+    this.visibleItemsListener,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var settings = ref.watch(appSettingsServiceProvider);
-    final renderListFuture = ref.watch(renderListProvider(assets));
 
     // Needs to suppress hero animations when navigating to this widget
     final enableHeroAnimations = useState(false);
@@ -64,34 +75,12 @@ class ImmichAssetGrid extends HookConsumerWidget {
       return true;
     }
 
-    if (renderList != null) {
+    Widget buildAssetGridView(RenderList renderList) {
       return WillPopScope(
         onWillPop: onWillPop,
         child: HeroMode(
           enabled: enableHeroAnimations.value,
           child: ImmichAssetGridView(
-            allAssets: assets,
-            onRefresh: onRefresh,
-            assetsPerRow: assetsPerRow ??
-                settings.getSetting(AppSettingsEnum.tilesPerRow),
-            listener: listener,
-            showStorageIndicator: showStorageIndicator ??
-                settings.getSetting(AppSettingsEnum.storageIndicator),
-            renderList: renderList!,
-            margin: margin,
-            selectionActive: selectionActive,
-          ),
-        ),
-      );
-    }
-
-    return renderListFuture.when(
-      data: (renderList) => WillPopScope(
-        onWillPop: onWillPop,
-        child: HeroMode(
-          enabled: enableHeroAnimations.value,
-          child: ImmichAssetGridView(
-            allAssets: assets,
             onRefresh: onRefresh,
             assetsPerRow: assetsPerRow ??
                 settings.getSetting(AppSettingsEnum.tilesPerRow),
@@ -101,9 +90,22 @@ class ImmichAssetGrid extends HookConsumerWidget {
             renderList: renderList,
             margin: margin,
             selectionActive: selectionActive,
+            preselectedAssets: preselectedAssets,
+            canDeselect: canDeselect,
+            dynamicLayout: dynamicLayout ??
+                settings.getSetting(AppSettingsEnum.dynamicLayout),
+            showMultiSelectIndicator: showMultiSelectIndicator,
+            visibleItemsListener: visibleItemsListener,
           ),
         ),
-      ),
+      );
+    }
+
+    if (renderList != null) return buildAssetGridView(renderList!);
+
+    final renderListFuture = ref.watch(renderListProvider(assets!));
+    return renderListFuture.when(
+      data: (renderList) => buildAssetGridView(renderList),
       error: (err, stack) => Center(child: Text("$err")),
       loading: () => const Center(
         child: ImmichLoadingIndicator(),

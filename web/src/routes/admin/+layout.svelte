@@ -41,7 +41,9 @@
 <NavigationBar user={data.user} />
 
 <main>
-	<section class="grid md:grid-cols-[250px_auto] grid-cols-[70px_auto] pt-[72px] h-screen">
+	<section
+		class="grid md:grid-cols-[theme(spacing.64)_auto] grid-cols-[theme(spacing.18)_auto] pt-[var(--navbar-height)] h-screen"
+	>
 		<SideBarSection>
 			<SideBarButton
 				title="Users"

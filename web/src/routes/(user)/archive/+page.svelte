@@ -36,7 +36,7 @@
 	};
 </script>
 
-<UserPageLayout user={data.user} hideNavbar={isMultiSelectionMode}>
+<UserPageLayout user={data.user} hideNavbar={isMultiSelectionMode} title={data.meta.title}>
 	<!-- Empty Message -->
 	{#if $archivedAsset.length === 0}
 		<EmptyPlaceholder

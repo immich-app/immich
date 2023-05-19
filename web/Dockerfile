@@ -1,5 +1,5 @@
 # Our Node base image
-FROM node:16-alpine3.14 as base
+FROM node:18-alpine3.17 as base
 
 WORKDIR /usr/src/app
 EXPOSE 3000

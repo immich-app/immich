@@ -1,16 +1,17 @@
 <script lang="ts">
-	import Close from 'svelte-material-icons/Close.svelte';
+	import { page } from '$app/stores';
+	import { locale } from '$lib/stores/preferences.store';
+	import type { LatLngTuple } from 'leaflet';
+	import { DateTime } from 'luxon';
 	import Calendar from 'svelte-material-icons/Calendar.svelte';
-	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
 	import CameraIris from 'svelte-material-icons/CameraIris.svelte';
+	import Close from 'svelte-material-icons/Close.svelte';
+	import ImageOutline from 'svelte-material-icons/ImageOutline.svelte';
 	import MapMarkerOutline from 'svelte-material-icons/MapMarkerOutline.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { AssetResponseDto, AlbumResponseDto, api, ThumbnailFormat } from '@api';
 	import { asByteUnitString } from '../../utils/byte-units';
-	import { locale } from '$lib/stores/preferences.store';
-	import { DateTime } from 'luxon';
-	import type { LatLngTuple } from 'leaflet';
-	import { page } from '$app/stores';
+	import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
 
 	export let asset: AssetResponseDto;
 	export let albums: AlbumResponseDto[] = [];
@@ -20,9 +21,10 @@
 	$: {
 		// Get latest description from server
 		if (asset.id) {
-			api.assetApi
-				.getAssetById(asset.id)
-				.then((res) => (textarea.value = res.data?.exifInfo?.description || ''));
+			api.assetApi.getAssetById(asset.id).then((res) => {
+				people = res.data?.people || [];
+				textarea.value = res.data?.exifInfo?.description || '';
+			});
 		}
 	}
 
@@ -34,6 +36,8 @@
 			return [lat, lng] as LatLngTuple;
 		}
 	})();
+
+	$: people = asset.people || [];
 
 	const dispatch = createEventDispatcher();
 
@@ -81,7 +85,7 @@
 		<p class="text-immich-fg dark:text-immich-dark-fg text-lg">Info</p>
 	</div>
 
-	<div class="mx-4 mt-10">
+	<section class="mx-4 mt-10">
 		<textarea
 			bind:this={textarea}
 			class="max-h-[500px]
@@ -96,13 +100,35 @@
 			bind:value={description}
 			disabled={$page?.data?.user?.id !== asset.ownerId}
 		/>
-	</div>
+	</section>
+
+	{#if people.length > 0}
+		<section class="px-4 py-4 text-sm">
+			<h2>PEOPLE</h2>
+
+			<div class="flex flex-wrap gap-2 mt-4">
+				{#each people as person (person.id)}
+					<a href="/people/{person.id}" class="w-[90px]" on:click={() => dispatch('close-viewer')}>
+						<ImageThumbnail
+							curve
+							shadow
+							url={api.getPeopleThumbnailUrl(person.id)}
+							altText={person.name}
+							widthStyle="90px"
+							heightStyle="90px"
+						/>
+						<p class="font-medium mt-1 truncate">{person.name}</p>
+					</a>
+				{/each}
+			</div>
+		</section>
+	{/if}
 
 	<div class="px-4 py-4">
 		{#if !asset.exifInfo}
-			<p class="text-sm pb-4">NO EXIF INFO AVAILABLE</p>
+			<p class="text-sm">NO EXIF INFO AVAILABLE</p>
 		{:else}
-			<p class="text-sm pb-4">DETAILS</p>
+			<p class="text-sm">DETAILS</p>
 		{/if}
 
 		{#if asset.exifInfo?.dateTimeOriginal}

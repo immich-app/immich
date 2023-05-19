@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   BackgroundTaskProcessor,
   ClipEncodingProcessor,
+  FacialRecognitionProcessor,
   ObjectTaggingProcessor,
   SearchIndexProcessor,
   StorageTemplateMigrationProcessor,
@@ -29,6 +30,7 @@ import { MetadataExtractionProcessor } from './processors/metadata-extraction.pr
     StorageTemplateMigrationProcessor,
     BackgroundTaskProcessor,
     SearchIndexProcessor,
+    FacialRecognitionProcessor,
   ],
 })
 export class MicroservicesModule {}

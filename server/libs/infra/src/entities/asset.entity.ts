@@ -7,12 +7,14 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { AlbumEntity } from './album.entity';
+import { AssetFaceEntity } from './asset-face.entity';
 import { ExifEntity } from './exif.entity';
 import { SharedLinkEntity } from './shared-link.entity';
 import { SmartInfoEntity } from './smart-info.entity';
@@ -109,6 +111,9 @@ export class AssetEntity {
 
   @ManyToMany(() => AlbumEntity, (album) => album.assets, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   albums?: AlbumEntity[];
+
+  @OneToMany(() => AssetFaceEntity, (assetFace) => assetFace.asset)
+  faces!: AssetFaceEntity[];
 }
 
 export enum AssetType {

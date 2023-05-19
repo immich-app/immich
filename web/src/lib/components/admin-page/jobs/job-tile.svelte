@@ -91,12 +91,11 @@
 				</JobTileButton>
 			{/if}
 			{#if queueStatus.isPaused}
+				{@const size = waitingCount > 0 ? '24' : '48'}
 				<JobTileButton
 					color="light-gray"
 					on:click={() => dispatch('command', { command: JobCommand.Resume, force: false })}
 				>
-					{@const size = waitingCount > 0 ? '24' : '48'}
-
 					<!-- size property is not reactive, so have to use width and height -->
 					<FastForward width={size} height={size} /> RESUME
 				</JobTileButton>

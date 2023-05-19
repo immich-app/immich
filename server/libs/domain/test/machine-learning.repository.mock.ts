@@ -6,5 +6,6 @@ export const newMachineLearningRepositoryMock = (): jest.Mocked<IMachineLearning
     detectObjects: jest.fn(),
     encodeImage: jest.fn(),
     encodeText: jest.fn(),
+    detectFaces: jest.fn(),
   };
 };

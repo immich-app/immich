@@ -97,15 +97,18 @@ class AssetService {
   /// the exif info from the server (remote assets only)
   Future<Asset> loadExif(Asset a) async {
     a.exifInfo ??= await _db.exifInfos.get(a.id);
-    if (a.exifInfo?.iso == null) {
+    // fileSize is always filled on the server but not set on client
+    if (a.exifInfo?.fileSize == null) {
       if (a.isRemote) {
         final dto = await _apiService.assetApi.getAssetById(a.remoteId!);
         if (dto != null && dto.exifInfo != null) {
-          a.exifInfo = Asset.remote(dto).exifInfo!.copyWith(id: a.id);
-          if (a.isInDb) {
-            _db.writeTxn(() => a.put(_db));
-          } else {
-            debugPrint("[loadExif] parameter Asset is not from DB!");
+          final newExif = Asset.remote(dto).exifInfo!.copyWith(id: a.id);
+          if (newExif != a.exifInfo) {
+            if (a.isInDb) {
+              _db.writeTxn(() => a.put(_db));
+            } else {
+              debugPrint("[loadExif] parameter Asset is not from DB!");
+            }
           }
         }
       } else {
@@ -115,27 +118,39 @@ class AssetService {
     return a;
   }
 
-  Future<Asset?> updateAsset(
-    Asset asset,
+  Future<List<Asset?>> updateAssets(
+    List<Asset> assets,
     UpdateAssetDto updateAssetDto,
   ) async {
-    final dto =
-        await _apiService.assetApi.updateAsset(asset.remoteId!, updateAssetDto);
-    if (dto != null) {
-      final updated = asset.updatedCopy(Asset.remote(dto));
-      if (updated.isInDb) {
-        await _db.writeTxn(() => updated.put(_db));
+    final List<AssetResponseDto?> dtos = await Future.wait(
+      assets.map(
+        (a) => _apiService.assetApi.updateAsset(a.remoteId!, updateAssetDto),
+      ),
+    );
+    bool allInDb = true;
+    for (int i = 0; i < assets.length; i++) {
+      final dto = dtos[i], old = assets[i];
+      if (dto != null) {
+        final remote = Asset.remote(dto);
+        if (old.canUpdate(remote)) {
+          assets[i] = old.updatedCopy(remote);
+        }
+        allInDb &= assets[i].isInDb;
       }
-      return updated;
     }
-    return null;
+    final toUpdate = allInDb ? assets : assets.where((e) => e.isInDb).toList();
+    await _syncService.upsertAssetsWithExif(toUpdate);
+    return assets;
   }
 
-  Future<Asset?> changeFavoriteStatus(Asset asset, bool isFavorite) {
-    return updateAsset(asset, UpdateAssetDto(isFavorite: isFavorite));
+  Future<List<Asset?>> changeFavoriteStatus(
+    List<Asset> assets,
+    bool isFavorite,
+  ) {
+    return updateAssets(assets, UpdateAssetDto(isFavorite: isFavorite));
   }
 
-  Future<Asset?> changeArchiveStatus(Asset asset, bool isArchive) {
-    return updateAsset(asset, UpdateAssetDto(isArchived: isArchive));
+  Future<List<Asset?>> changeArchiveStatus(List<Asset> assets, bool isArchive) {
+    return updateAssets(assets, UpdateAssetDto(isArchived: isArchive));
   }
 }

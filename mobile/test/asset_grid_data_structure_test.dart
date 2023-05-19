@@ -60,11 +60,7 @@ void main() {
     test('test grouped check months', () async {
       final renderList = await RenderList.fromAssets(
         assets,
-        AssetGridLayoutParameters(
-          3,
-          false,
-          GroupAssetsBy.day,
-        ),
+        GroupAssetsBy.day,
       );
 
       // Oct
@@ -78,32 +74,33 @@ void main() {
       // 5 Assets => 2 Rows
       // Day 1
       // 5 Assets => 2 Rows
-      expect(renderList.elements.length, 18);
+      expect(renderList.elements.length, 4);
       expect(
         renderList.elements[0].type,
         RenderAssetGridElementType.monthTitle,
       );
-      expect(renderList.elements[0].date.month, 10);
+      expect(renderList.elements[0].date.month, 1);
       expect(
-        renderList.elements[7].type,
+        renderList.elements[1].type,
+        RenderAssetGridElementType.groupDividerTitle,
+      );
+      expect(renderList.elements[1].date.month, 1);
+      expect(
+        renderList.elements[2].type,
         RenderAssetGridElementType.monthTitle,
       );
-      expect(renderList.elements[7].date.month, 2);
+      expect(renderList.elements[2].date.month, 2);
       expect(
-        renderList.elements[11].type,
+        renderList.elements[3].type,
         RenderAssetGridElementType.monthTitle,
       );
-      expect(renderList.elements[11].date.month, 1);
+      expect(renderList.elements[3].date.month, 10);
     });
 
     test('test grouped check types', () async {
       final renderList = await RenderList.fromAssets(
         assets,
-        AssetGridLayoutParameters(
-          5,
-          false,
-          GroupAssetsBy.day,
-        ),
+        GroupAssetsBy.day,
       );
 
       // Oct
@@ -120,17 +117,8 @@ void main() {
       final types = [
         RenderAssetGridElementType.monthTitle,
         RenderAssetGridElementType.groupDividerTitle,
-        RenderAssetGridElementType.assetRow,
-        RenderAssetGridElementType.assetRow,
-        RenderAssetGridElementType.assetRow,
         RenderAssetGridElementType.monthTitle,
-        RenderAssetGridElementType.groupDividerTitle,
-        RenderAssetGridElementType.assetRow,
         RenderAssetGridElementType.monthTitle,
-        RenderAssetGridElementType.groupDividerTitle,
-        RenderAssetGridElementType.assetRow,
-        RenderAssetGridElementType.groupDividerTitle,
-        RenderAssetGridElementType.assetRow,
       ];
 
       expect(renderList.elements.length, types.length);

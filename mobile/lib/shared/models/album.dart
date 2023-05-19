@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
@@ -34,10 +35,10 @@ class Album {
   final IsarLinks<User> sharedUsers = IsarLinks<User>();
   final IsarLinks<Asset> assets = IsarLinks<Asset>();
 
-  List<Asset> _sortedAssets = [];
+  RenderList _renderList = RenderList.empty();
 
   @ignore
-  List<Asset> get sortedAssets => _sortedAssets;
+  RenderList get renderList => _renderList;
 
   @ignore
   bool get isRemote => remoteId != null;
@@ -69,8 +70,14 @@ class Album {
     return name.join(' ');
   }
 
-  Future<void> loadSortedAssets() async {
-    _sortedAssets = await assets.filter().sortByFileCreatedAt().findAll();
+  Stream<void> watchRenderList(GroupAssetsBy groupAssetsBy) async* {
+    final query = assets.filter().sortByFileCreatedAt();
+    _renderList = await RenderList.fromQuery(query, groupAssetsBy);
+    yield _renderList;
+    await for (final _ in query.watchLazy()) {
+      _renderList = await RenderList.fromQuery(query, groupAssetsBy);
+      yield _renderList;
+    }
   }
 
   @override

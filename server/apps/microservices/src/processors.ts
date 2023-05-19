@@ -1,13 +1,17 @@
 import {
   AssetService,
+  FacialRecognitionService,
+  IAssetFaceJob,
   IAssetJob,
   IAssetUploadedJob,
   IBaseJob,
   IBulkEntityJob,
   IDeleteFilesJob,
+  IFaceThumbnailJob,
   IUserDeletionJob,
   JobName,
   MediaService,
+  PersonService,
   QueueName,
   SearchService,
   SmartInfoService,
@@ -23,6 +27,7 @@ import { Job } from 'bull';
 export class BackgroundTaskProcessor {
   constructor(
     private assetService: AssetService,
+    private personService: PersonService,
     private storageService: StorageService,
     private systemConfigService: SystemConfigService,
     private userService: UserService,
@@ -43,9 +48,19 @@ export class BackgroundTaskProcessor {
     await this.systemConfigService.refreshConfig();
   }
 
+  @Process(JobName.USER_DELETE_CHECK)
+  async onUserDeleteCheck() {
+    await this.userService.handleUserDeleteCheck();
+  }
+
   @Process(JobName.USER_DELETION)
   async onUserDelete(job: Job<IUserDeletionJob>) {
     await this.userService.handleUserDelete(job.data);
+  }
+
+  @Process(JobName.PERSON_CLEANUP)
+  async onPersonCleanup() {
+    await this.personService.handlePersonCleanup();
   }
 }
 
@@ -66,6 +81,26 @@ export class ObjectTaggingProcessor {
   @Process({ name: JobName.CLASSIFY_IMAGE, concurrency: 1 })
   async onClassifyImage(job: Job<IAssetJob>) {
     await this.smartInfoService.handleClassifyImage(job.data);
+  }
+}
+
+@Processor(QueueName.RECOGNIZE_FACES)
+export class FacialRecognitionProcessor {
+  constructor(private facialRecognitionService: FacialRecognitionService) {}
+
+  @Process({ name: JobName.QUEUE_RECOGNIZE_FACES, concurrency: 1 })
+  async onQueueRecognizeFaces(job: Job<IBaseJob>) {
+    await this.facialRecognitionService.handleQueueRecognizeFaces(job.data);
+  }
+
+  @Process({ name: JobName.RECOGNIZE_FACES, concurrency: 1 })
+  async onRecognizeFaces(job: Job<IAssetJob>) {
+    await this.facialRecognitionService.handleRecognizeFaces(job.data);
+  }
+
+  @Process({ name: JobName.GENERATE_FACE_THUMBNAIL, concurrency: 1 })
+  async onGenerateFaceThumbnail(job: Job<IFaceThumbnailJob>) {
+    await this.facialRecognitionService.handleGenerateFaceThumbnail(job.data);
   }
 }
 
@@ -98,6 +133,11 @@ export class SearchIndexProcessor {
     await this.searchService.handleIndexAssets();
   }
 
+  @Process(JobName.SEARCH_INDEX_FACES)
+  async onIndexFaces() {
+    await this.searchService.handleIndexFaces();
+  }
+
   @Process(JobName.SEARCH_INDEX_ALBUM)
   onIndexAlbum(job: Job<IBulkEntityJob>) {
     this.searchService.handleIndexAlbum(job.data);
@@ -108,6 +148,11 @@ export class SearchIndexProcessor {
     this.searchService.handleIndexAsset(job.data);
   }
 
+  @Process(JobName.SEARCH_INDEX_FACE)
+  async onIndexFace(job: Job<IAssetFaceJob>) {
+    await this.searchService.handleIndexFace(job.data);
+  }
+
   @Process(JobName.SEARCH_REMOVE_ALBUM)
   onRemoveAlbum(job: Job<IBulkEntityJob>) {
     this.searchService.handleRemoveAlbum(job.data);
@@ -116,6 +161,11 @@ export class SearchIndexProcessor {
   @Process(JobName.SEARCH_REMOVE_ASSET)
   onRemoveAsset(job: Job<IBulkEntityJob>) {
     this.searchService.handleRemoveAsset(job.data);
+  }
+
+  @Process(JobName.SEARCH_REMOVE_FACE)
+  onRemoveFace(job: Job<IAssetFaceJob>) {
+    this.searchService.handleRemoveFace(job.data);
   }
 }
 

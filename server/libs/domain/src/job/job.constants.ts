@@ -3,6 +3,7 @@ export enum QueueName {
   METADATA_EXTRACTION = 'metadata-extraction-queue',
   VIDEO_CONVERSION = 'video-conversion-queue',
   OBJECT_TAGGING = 'object-tagging-queue',
+  RECOGNIZE_FACES = 'recognize-faces-queue',
   CLIP_ENCODING = 'clip-encoding-queue',
   BACKGROUND_TASK = 'background-task-queue',
   STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration-queue',
@@ -48,16 +49,25 @@ export enum JobName {
   DETECT_OBJECTS = 'detect-objects',
   CLASSIFY_IMAGE = 'classify-image',
 
+  // facial recognition
+  QUEUE_RECOGNIZE_FACES = 'queue-recognize-faces',
+  RECOGNIZE_FACES = 'recognize-faces',
+  GENERATE_FACE_THUMBNAIL = 'generate-face-thumbnail',
+  PERSON_CLEANUP = 'person-cleanup',
+
   // cleanup
   DELETE_FILES = 'delete-files',
 
   // search
   SEARCH_INDEX_ASSETS = 'search-index-assets',
   SEARCH_INDEX_ASSET = 'search-index-asset',
+  SEARCH_INDEX_FACE = 'search-index-face',
+  SEARCH_INDEX_FACES = 'search-index-faces',
   SEARCH_INDEX_ALBUMS = 'search-index-albums',
   SEARCH_INDEX_ALBUM = 'search-index-album',
   SEARCH_REMOVE_ALBUM = 'search-remove-album',
   SEARCH_REMOVE_ASSET = 'search-remove-asset',
+  SEARCH_REMOVE_FACE = 'search-remove-face',
 
   // clip
   QUEUE_ENCODE_CLIP = 'queue-clip-encode',

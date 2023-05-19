@@ -4,6 +4,7 @@ export * from './auth.controller';
 export * from './job.controller';
 export * from './oauth.controller';
 export * from './partner.controller';
+export * from './person.controller';
 export * from './search.controller';
 export * from './server-info.controller';
 export * from './shared-link.controller';

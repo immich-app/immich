@@ -38,6 +38,7 @@ export class AssetCore {
       tags: [],
       sharedLinks: [],
       originalFileName: parse(file.originalName).name,
+      faces: [],
     });
 
     await this.jobRepository.queue({ name: JobName.ASSET_UPLOADED, data: { asset, fileName: file.originalName } });
