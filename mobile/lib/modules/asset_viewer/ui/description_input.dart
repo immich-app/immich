@@ -4,9 +4,9 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/asset_description.provider.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:logging/logging.dart';
-import 'package:immich_mobile/shared/models/store.dart' as store;
 
 class DescriptionInput extends HookConsumerWidget {
   DescriptionInput({
@@ -25,9 +25,10 @@ class DescriptionInput extends HookConsumerWidget {
     final focusNode = useFocusNode();
     final isFocus = useState(false);
     final isTextEmpty = useState(controller.text.isEmpty);
-    final descriptionProvider = ref.watch(assetDescriptionProvider(asset).notifier);
+    final descriptionProvider =
+        ref.watch(assetDescriptionProvider(asset).notifier);
     final description = ref.watch(assetDescriptionProvider(asset));
-    final owner = store.Store.get(store.StoreKey.currentUser);
+    final owner = ref.watch(currentUserProvider);
     final hasError = useState(false);
 
     controller.text = description;
@@ -67,7 +68,7 @@ class DescriptionInput extends HookConsumerWidget {
     }
 
     return TextField(
-      enabled: owner.isarId == asset.ownerId,
+      enabled: owner?.isarId == asset.ownerId,
       focusNode: focusNode,
       onTap: () => isFocus.value = true,
       onChanged: (value) {

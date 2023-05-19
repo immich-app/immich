@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/shared/providers/db.provider.dart';
+import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:isar/isar.dart';
 
 final partnerServiceProvider = Provider(
   (ref) => PartnerService(
-    ref.watch(apiServiceProvider).partnerApi,
+    ref.watch(apiServiceProvider),
+    ref.watch(dbProvider),
   ),
 );
 
@@ -22,25 +25,29 @@ enum PartnerDirection {
 }
 
 class PartnerService {
-  final PartnerApi _api;
+  final ApiService _apiService;
+  final Isar _db;
 
-  PartnerService(this._api);
+  PartnerService(this._apiService, this._db);
 
-  Future<List<User>> getPartners(PartnerDirection direction) async {
+  Future<List<User>?> getPartners(PartnerDirection direction) async {
     try {
-      final userDtos = await _api.getPartners(direction._value);
+      final userDtos =
+          await _apiService.partnerApi.getPartners(direction._value);
       if (userDtos != null) {
         return userDtos.map((u) => User.fromDto(u)).toList();
       }
     } catch (e) {
       debugPrint("");
     }
-    return [];
+    return null;
   }
 
   Future<bool> removePartner(User partner) async {
     try {
-      await _api.removePartner(partner.id);
+      await _apiService.partnerApi.removePartner(partner.id);
+      partner.isPartnerSharedBy = false;
+      await _db.writeTxn(() => _db.users.put(partner));
     } catch (e) {
       return false;
     }
@@ -49,9 +56,15 @@ class PartnerService {
 
   Future<bool> addPartner(User partner) async {
     try {
-      return null != await _api.createPartner(partner.id);
+      final dto = await _apiService.partnerApi.createPartner(partner.id);
+      if (dto != null) {
+        partner.isPartnerSharedBy = true;
+        await _db.writeTxn(() => _db.users.put(partner));
+        return true;
+      }
     } catch (e) {
-      return false;
+      debugPrint("Failed to add partner");
     }
+    return false;
   }
 }

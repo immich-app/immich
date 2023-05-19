@@ -4452,6 +4452,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * Get all AssetEntity belong to the user
+         * @param {string} [userId] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isArchived] 
          * @param {number} [skip] 
@@ -4459,7 +4460,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllAssets: async (isFavorite?: boolean, isArchived?: boolean, skip?: number, ifNoneMatch?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAllAssets: async (userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, ifNoneMatch?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/asset`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -4480,6 +4481,10 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             // authentication bearer required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (userId !== undefined) {
+                localVarQueryParameter['userId'] = userId;
+            }
 
             if (isFavorite !== undefined) {
                 localVarQueryParameter['isFavorite'] = isFavorite;
@@ -5389,6 +5394,7 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * Get all AssetEntity belong to the user
+         * @param {string} [userId] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isArchived] 
          * @param {number} [skip] 
@@ -5396,8 +5402,8 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllAssets(isFavorite?: boolean, isArchived?: boolean, skip?: number, ifNoneMatch?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(isFavorite, isArchived, skip, ifNoneMatch, options);
+        async getAllAssets(userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, ifNoneMatch?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(userId, isFavorite, isArchived, skip, ifNoneMatch, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -5665,6 +5671,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * Get all AssetEntity belong to the user
+         * @param {string} [userId] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isArchived] 
          * @param {number} [skip] 
@@ -5672,8 +5679,8 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllAssets(isFavorite?: boolean, isArchived?: boolean, skip?: number, ifNoneMatch?: string, options?: any): AxiosPromise<Array<AssetResponseDto>> {
-            return localVarFp.getAllAssets(isFavorite, isArchived, skip, ifNoneMatch, options).then((request) => request(axios, basePath));
+        getAllAssets(userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, ifNoneMatch?: string, options?: any): AxiosPromise<Array<AssetResponseDto>> {
+            return localVarFp.getAllAssets(userId, isFavorite, isArchived, skip, ifNoneMatch, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5940,6 +5947,7 @@ export class AssetApi extends BaseAPI {
 
     /**
      * Get all AssetEntity belong to the user
+     * @param {string} [userId] 
      * @param {boolean} [isFavorite] 
      * @param {boolean} [isArchived] 
      * @param {number} [skip] 
@@ -5948,8 +5956,8 @@ export class AssetApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public getAllAssets(isFavorite?: boolean, isArchived?: boolean, skip?: number, ifNoneMatch?: string, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getAllAssets(isFavorite, isArchived, skip, ifNoneMatch, options).then((request) => request(this.axios, this.basePath));
+    public getAllAssets(userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, ifNoneMatch?: string, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).getAllAssets(userId, isFavorite, isArchived, skip, ifNoneMatch, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

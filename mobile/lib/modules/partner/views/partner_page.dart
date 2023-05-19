@@ -5,26 +5,16 @@ import 'package:immich_mobile/modules/partner/providers/partner.provider.dart';
 import 'package:immich_mobile/modules/partner/services/partner.service.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
-import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
+import 'package:immich_mobile/shared/ui/user_avatar.dart';
 
 class PartnerPage extends HookConsumerWidget {
   const PartnerPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<List<User>> sharedWith =
-        ref.watch(partnerSharedByProvider);
+    final List<User> partners = ref.watch(partnerSharedByProvider);
     final availableUsers = ref.watch(partnerAvailableProvider);
-
-    buildTileIcon(User user) {
-      final text =
-          user.firstName[0].toUpperCase() + user.lastName[0].toUpperCase();
-      return CircleAvatar(
-        backgroundColor: Theme.of(context).primaryColor.withAlpha(50),
-        child: Text(text),
-      );
-    }
 
     addNewUsersHandler() async {
       final users = availableUsers.value;
@@ -46,7 +36,7 @@ class PartnerPage extends HookConsumerWidget {
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
-                        child: buildTileIcon(u),
+                        child: userAvatar(context, u),
                       ),
                       Text("${u.firstName} ${u.lastName}"),
                     ],
@@ -92,7 +82,7 @@ class PartnerPage extends HookConsumerWidget {
               itemCount: users.length,
               itemBuilder: ((context, index) {
                 return ListTile(
-                  leading: buildTileIcon(users[index]),
+                  leading: userAvatar(context, users[index]),
                   title: Text(
                     users[index].email,
                     style: const TextStyle(
@@ -151,11 +141,7 @@ class PartnerPage extends HookConsumerWidget {
           )
         ],
       ),
-      body: sharedWith.when(
-        data: (users) => buildUserList(users),
-        error: (e, _) => Text("Error loading partners:\n$e"),
-        loading: () => const Center(child: ImmichLoadingIndicator()),
-      ),
+      body: buildUserList(partners),
     );
   }
 }

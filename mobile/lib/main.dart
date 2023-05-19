@@ -20,6 +20,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/etag.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/logger_message.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
@@ -89,6 +90,7 @@ Future<Isar> loadDb() async {
       BackupAlbumSchema,
       DuplicatedAssetSchema,
       LoggerMessageSchema,
+      ETagSchema,
     ],
     directory: dir.path,
     maxSizeMiB: 256,

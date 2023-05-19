@@ -37,13 +37,23 @@ const UserSchema = CollectionSchema(
       name: r'isAdmin',
       type: IsarType.bool,
     ),
-    r'lastName': PropertySchema(
+    r'isPartnerSharedBy': PropertySchema(
       id: 4,
+      name: r'isPartnerSharedBy',
+      type: IsarType.bool,
+    ),
+    r'isPartnerSharedWith': PropertySchema(
+      id: 5,
+      name: r'isPartnerSharedWith',
+      type: IsarType.bool,
+    ),
+    r'lastName': PropertySchema(
+      id: 6,
       name: r'lastName',
       type: IsarType.string,
     ),
     r'updatedAt': PropertySchema(
-      id: 5,
+      id: 7,
       name: r'updatedAt',
       type: IsarType.dateTime,
     )
@@ -114,8 +124,10 @@ void _userSerialize(
   writer.writeString(offsets[1], object.firstName);
   writer.writeString(offsets[2], object.id);
   writer.writeBool(offsets[3], object.isAdmin);
-  writer.writeString(offsets[4], object.lastName);
-  writer.writeDateTime(offsets[5], object.updatedAt);
+  writer.writeBool(offsets[4], object.isPartnerSharedBy);
+  writer.writeBool(offsets[5], object.isPartnerSharedWith);
+  writer.writeString(offsets[6], object.lastName);
+  writer.writeDateTime(offsets[7], object.updatedAt);
 }
 
 User _userDeserialize(
@@ -129,8 +141,10 @@ User _userDeserialize(
     firstName: reader.readString(offsets[1]),
     id: reader.readString(offsets[2]),
     isAdmin: reader.readBool(offsets[3]),
-    lastName: reader.readString(offsets[4]),
-    updatedAt: reader.readDateTime(offsets[5]),
+    isPartnerSharedBy: reader.readBoolOrNull(offsets[4]) ?? false,
+    isPartnerSharedWith: reader.readBoolOrNull(offsets[5]) ?? false,
+    lastName: reader.readString(offsets[6]),
+    updatedAt: reader.readDateTime(offsets[7]),
   );
   return object;
 }
@@ -151,8 +165,12 @@ P _userDeserializeProp<P>(
     case 3:
       return (reader.readBool(offset)) as P;
     case 4:
-      return (reader.readString(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? false) as P;
     case 5:
+      return (reader.readBoolOrNull(offset) ?? false) as P;
+    case 6:
+      return (reader.readString(offset)) as P;
+    case 7:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -741,6 +759,26 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
+  QueryBuilder<User, User, QAfterFilterCondition> isPartnerSharedByEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isPartnerSharedBy',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> isPartnerSharedWithEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isPartnerSharedWith',
+        value: value,
+      ));
+    });
+  }
+
   QueryBuilder<User, User, QAfterFilterCondition> isarIdEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -1140,6 +1178,30 @@ extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
     });
   }
 
+  QueryBuilder<User, User, QAfterSortBy> sortByIsPartnerSharedBy() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isPartnerSharedBy', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> sortByIsPartnerSharedByDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isPartnerSharedBy', Sort.desc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> sortByIsPartnerSharedWith() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isPartnerSharedWith', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> sortByIsPartnerSharedWithDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isPartnerSharedWith', Sort.desc);
+    });
+  }
+
   QueryBuilder<User, User, QAfterSortBy> sortByLastName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastName', Sort.asc);
@@ -1214,6 +1276,30 @@ extension UserQuerySortThenBy on QueryBuilder<User, User, QSortThenBy> {
     });
   }
 
+  QueryBuilder<User, User, QAfterSortBy> thenByIsPartnerSharedBy() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isPartnerSharedBy', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByIsPartnerSharedByDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isPartnerSharedBy', Sort.desc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByIsPartnerSharedWith() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isPartnerSharedWith', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByIsPartnerSharedWithDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isPartnerSharedWith', Sort.desc);
+    });
+  }
+
   QueryBuilder<User, User, QAfterSortBy> thenByIsarId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isarId', Sort.asc);
@@ -1279,6 +1365,18 @@ extension UserQueryWhereDistinct on QueryBuilder<User, User, QDistinct> {
     });
   }
 
+  QueryBuilder<User, User, QDistinct> distinctByIsPartnerSharedBy() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isPartnerSharedBy');
+    });
+  }
+
+  QueryBuilder<User, User, QDistinct> distinctByIsPartnerSharedWith() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isPartnerSharedWith');
+    });
+  }
+
   QueryBuilder<User, User, QDistinct> distinctByLastName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1321,6 +1419,18 @@ extension UserQueryProperty on QueryBuilder<User, User, QQueryProperty> {
   QueryBuilder<User, bool, QQueryOperations> isAdminProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isAdmin');
+    });
+  }
+
+  QueryBuilder<User, bool, QQueryOperations> isPartnerSharedByProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isPartnerSharedBy');
+    });
+  }
+
+  QueryBuilder<User, bool, QQueryOperations> isPartnerSharedWithProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isPartnerSharedWith');
     });
   }
 

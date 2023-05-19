@@ -8,6 +8,7 @@ import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structu
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
+import 'package:immich_mobile/shared/providers/user.provider.dart';
 
 class AssetSelectionPage extends HookConsumerWidget {
   const AssetSelectionPage({
@@ -21,7 +22,8 @@ class AssetSelectionPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final renderList = ref.watch(remoteAssetsProvider);
+    final currentUser = ref.watch(currentUserProvider);
+    final renderList = ref.watch(remoteAssetsProvider(currentUser?.isarId));
     final selected = useState<Set<Asset>>(existingAssets);
     final selectionEnabledHook = useState(true);
 
