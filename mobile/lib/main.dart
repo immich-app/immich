@@ -6,17 +6,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/modules/backup/models/backup_album.model.dart';
 import 'package:immich_mobile/modules/backup/models/duplicated_asset.model.dart';
-import 'package:immich_mobile/modules/backup/models/hive_backup_albums.model.dart';
-import 'package:immich_mobile/modules/backup/models/hive_duplicated_assets.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/ios_background_settings.provider.dart';
-import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/modules/settings/providers/notification_permission.provider.dart';
@@ -25,7 +21,6 @@ import 'package:immich_mobile/routing/tab_navigation_observer.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
-import 'package:immich_mobile/shared/models/immich_logger_message.model.dart';
 import 'package:immich_mobile/shared/models/logger_message.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
@@ -50,18 +45,11 @@ void main() async {
 
   final db = await loadDb();
   await initApp();
-  await migrateHiveToStoreIfNecessary();
-  await migrateJsonCacheIfNecessary();
   await migrateDatabaseIfNeeded(db);
   runApp(getMainWidget(db));
 }
 
 Future<void> initApp() async {
-  await Hive.initFlutter();
-  Hive.registerAdapter(HiveSavedLoginInfoAdapter());
-  Hive.registerAdapter(HiveBackupAlbumsAdapter());
-  Hive.registerAdapter(HiveDuplicatedAssetsAdapter());
-  Hive.registerAdapter(ImmichLoggerMessageAdapter());
   await EasyLocalization.ensureInitialized();
 
   if (kReleaseMode && Platform.isAndroid) {
