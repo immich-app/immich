@@ -221,10 +221,9 @@ export class MediaService {
 
   private getFfmpegOptions(stream: VideoStreamInfo, ffmpeg: SystemConfigFFmpegDto) {
     const options = [
-      `-crf ${ffmpeg.crf}`,
-      `-preset ${ffmpeg.preset}`,
       `-vcodec ${ffmpeg.targetVideoCodec}`,
       `-acodec ${ffmpeg.targetAudioCodec}`,
+      `-threads ${ffmpeg.threads}`,
       // Makes a second pass moving the moov atom to the beginning of
       // the file for improved playback speed.
       `-movflags faststart`,
@@ -239,6 +238,47 @@ export class MediaService {
     const shouldScale = Math.min(stream.height, stream.width) > targetResolution;
     if (shouldScale) {
       options.push(`-vf scale=${scaling}`);
+    }
+
+    const isVP9 = ffmpeg.targetVideoCodec === 'vp9';
+    const isH264 = ffmpeg.targetVideoCodec === 'h264';
+    const isH265 = ffmpeg.targetVideoCodec === 'hevc';
+
+    if (isH264 || isH265) {
+      options.push(`-preset ${ffmpeg.preset}`);
+
+      // x264 and x265 handle threads differently than one might expect
+      // https://x265.readthedocs.io/en/latest/cli.html#cmdoption-pools
+      options.push(`-${isH265 ? 'x265' : 'x264'}-params "pools=none"`);
+      options.push(`-${isH265 ? 'x265' : 'x264'}-params "frame-threads=${ffmpeg.threads}"`);
+    }
+
+    if (isVP9) {
+      // vp9 doesn't have presets, but does have a similar setting -cpu-used, from 0-5, 0 being the slowest
+      const presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
+      const speed = Math.min(presets.indexOf(ffmpeg.preset), 5); // values over 5 require realtime mode, which is its own can of worms since it overrides -crf and -threads
+      if (speed >= 0) {
+        options.push(`-cpu-used ${speed}`);
+      }
+      options.push('-row-mt 1'); // better multithreading
+    }
+
+    const twoPass = process.env.ENABLE_TWO_PASS?.toLowerCase() === 'true';
+
+    const maxBitrateValue = Number.parseInt(ffmpeg.maxBitrate);
+    const validMaxRate = maxBitrateValue && maxBitrateValue > 0;
+    const bitrateUnit = ffmpeg.maxBitrate.substring(maxBitrateValue.toString().length) || 'k'; // use inputted unit if provided, else default to kbps
+
+    if (validMaxRate && twoPass) {
+      const targetBitrateValue = maxBitrateValue / 1.45; // recommended by https://developers.google.com/media/vp9/settings/vod
+      const minBitrateValue = targetBitrateValue / 2;
+
+      options.push(`-b:v ${targetBitrateValue}${bitrateUnit}`);
+      options.push(`-minrate ${minBitrateValue}${bitrateUnit}`);
+      options.push(`-maxrate ${maxBitrateValue}${bitrateUnit}`);
+    } else if (validMaxRate) {
+      options.push(`-crf ${ffmpeg.crf}`);
+      options.push(`${isVP9 ? '-b:v' : '-maxrate'} ${maxBitrateValue}${bitrateUnit}`);
     }
 
     return options;

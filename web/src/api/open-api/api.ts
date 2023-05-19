@@ -2123,6 +2123,12 @@ export interface SystemConfigFFmpegDto {
      * @type {string}
      * @memberof SystemConfigFFmpegDto
      */
+    'threads': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigFFmpegDto
+     */
     'preset': string;
     /**
      * 
@@ -2142,6 +2148,12 @@ export interface SystemConfigFFmpegDto {
      * @memberof SystemConfigFFmpegDto
      */
     'targetResolution': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigFFmpegDto
+     */
+    'maxBitrate': string;
     /**
      * 
      * @type {string}

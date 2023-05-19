@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // String threads
+    test('to test the property `threads`', () async {
+      // TODO
+    });
+
     // String preset
     test('to test the property `preset`', () async {
       // TODO
@@ -38,6 +43,11 @@ void main() {
 
     // String targetResolution
     test('to test the property `targetResolution`', () async {
+      // TODO
+    });
+
+    // String maxBitrate
+    test('to test the property `maxBitrate`', () async {
       // TODO
     });
 

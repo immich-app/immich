@@ -6,6 +6,9 @@ export class SystemConfigFFmpegDto {
   crf!: string;
 
   @IsString()
+  threads!: string;
+
+  @IsString()
   preset!: string;
 
   @IsString()
@@ -16,6 +19,9 @@ export class SystemConfigFFmpegDto {
 
   @IsString()
   targetResolution!: string;
+
+  @IsString()
+  maxBitrate!: string;
 
   @IsEnum(TranscodePreset)
   transcode!: TranscodePreset;

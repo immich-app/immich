@@ -14,10 +14,12 @@ const updates: SystemConfigEntity[] = [
 const updatedConfig = Object.freeze({
   ffmpeg: {
     crf: 'a new value',
+    threads: '2',
     preset: 'ultrafast',
     targetAudioCodec: 'aac',
     targetResolution: '720',
     targetVideoCodec: 'h264',
+    maxBitrate: '4500k',
     transcode: TranscodePreset.REQUIRED,
   },
   oauth: {

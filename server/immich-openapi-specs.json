@@ -5342,6 +5342,9 @@
           "crf": {
             "type": "string"
           },
+          "threads": {
+            "type": "string"
+          },
           "preset": {
             "type": "string"
           },
@@ -5352,6 +5355,9 @@
             "type": "string"
           },
           "targetResolution": {
+            "type": "string"
+          },
+          "maxBitrate": {
             "type": "string"
           },
           "transcode": {
@@ -5366,10 +5372,12 @@
         },
         "required": [
           "crf",
+          "threads",
           "preset",
           "targetVideoCodec",
           "targetAudioCodec",
           "targetResolution",
+          "maxBitrate",
           "transcode"
         ]
       },
