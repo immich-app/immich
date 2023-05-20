@@ -141,7 +141,6 @@ export class MetadataExtractionProcessor {
       const newExif = new ExifEntity();
       newExif.assetId = asset.id;
       newExif.fileSizeInByte = fileSizeInBytes;
-      // newExif.make = getExifProperty('Make') as ImmichTags["Make"];
       newExif.make = getExifProperty('Make');
       newExif.model = getExifProperty('Model');
       newExif.exifImageHeight = getExifProperty('ExifImageHeight') || getExifProperty('ImageHeight');
