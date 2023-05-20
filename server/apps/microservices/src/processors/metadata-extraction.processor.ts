@@ -3,6 +3,7 @@ import {
   IAssetRepository,
   IAssetUploadedJob,
   IBaseJob,
+  IAssetJob,
   IGeocodingRepository,
   IJobRepository,
   JobName,
@@ -352,10 +353,6 @@ export class SidecarProcessor {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     this.assetCore = new AssetCore(assetRepository, jobRepository);
-    this.init();
-  }
-
-  private async init() {
   }
 
   @Process(JobName.QUEUE_SIDECAR)
@@ -365,42 +362,23 @@ export class SidecarProcessor {
       const assets = force ? await this.assetRepository.getWith(WithProperty.SIDECAR) : await this.assetRepository.getWithout(WithoutProperty.SIDECAR);
 
       for (const asset of assets) {
-        const fileName = asset.originalFileName
         const name = force ? JobName.SIDECAR_SYNC : JobName.SIDECAR_DISCOVERY;
-        await this.jobRepository.queue({ name, data: { asset, fileName } });
+        await this.jobRepository.queue({ name, data: { asset } });
       }
     } catch (error: any) {
       this.logger.error(`Unable to queue sidecar scanning`, error?.stack);
     }
   }
 
-  @Process(JobName.SIDECAR_DISCOVERY)
-  async handleQueueSidecarDiscovery(job: Job<IAssetUploadedJob>) {
-    let { asset, fileName } = job.data
-    if (!asset.isVisible) {
-      return;
-    }
-
-    try {
-      const sidecarPath = await this.getSidecarPath(asset);
-      if (sidecarPath) {
-        asset = await this.assetCore.save({ id: asset.id, sidecarPath });
-        const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
-        await this.jobRepository.queue({ name, data: { asset, fileName } });
-      }
-    } catch (error: any) {
-      this.logger.error(`Unable to queue metadata extraction`, error?.stack);
-    }
-  }
-
   @Process(JobName.SIDECAR_SYNC)
-  async handleQueueSidecarSync(job: Job<IAssetUploadedJob>) {
-    const { asset, fileName } = job.data
+  async handleSidecarSync(job: Job<IAssetJob>) {
+    const { asset } = job.data
     if (!asset.isVisible) {
       return;
     }
 
     try {
+      const fileName = asset.originalFileName;
       const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
       await this.jobRepository.queue({ name, data: { asset, fileName } });
     } catch (error: any) {
@@ -408,19 +386,35 @@ export class SidecarProcessor {
     }
   }
 
-  private async getSidecarPath(asset: AssetEntity): Promise<string|null> {
-    if (asset.sidecarPath) {
-      return asset.sidecarPath
+  @Process(JobName.SIDECAR_DISCOVERY)
+  async handleSidecarDiscovery(job: Job<IAssetJob>) {
+    let { asset } = job.data
+    if (!asset.isVisible) {
+      return;
     }
 
-    return await new Promise((resolve) => {
-      fs.stat(`${asset.originalPath}.xmp`, (err: any) => {
-        if (err) {
-          return resolve(null)
-        }
+    if (asset.sidecarPath) {
+      return;
+    }
 
-        return resolve(`${asset.originalPath}.xmp`)
-      })
-    })
+    try {
+      const stat = await fs.promises.access(`${asset.originalPath}.xmp`, fs.constants.W_OK)
+
+      try{
+        asset = await this.assetCore.save({ id: asset.id, sidecarPath: `${asset.originalPath}.xmp` });
+        const fileName = asset.originalFileName;
+        // TODO: optimize to only queue assets with recent xmp changes
+        const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
+        await this.jobRepository.queue({ name, data: { asset, fileName } });
+      } catch (error: any) {
+        this.logger.error(`Unable to sync sidecar`, error?.stack);
+      }
+    } catch (error: any) {
+      if (error.code == 'EACCES') {
+        this.logger.error(`Unable to queue metadata extraction, file is not writable`, error?.stack);
+      }
+
+      return;
+    }
   }
 }
