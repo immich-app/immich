@@ -93,13 +93,20 @@ export class MetadataExtractionProcessor {
     let asset = job.data.asset;
 
     try {
-      const exifData = await exiftool.read<ImmichTags>(asset.sidecarPath || asset.originalPath).catch((error: any) => {
+      const mediaExifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((error: any) => {
         this.logger.warn(
           `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
           error?.stack,
         );
         return null;
       });
+      const sidcarExifData = asset.sidecarPath ? await exiftool.read<ImmichTags>(asset.sidecarPath).catch((error: any) => {
+        this.logger.warn(
+          `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
+          error?.stack,
+        );
+        return null;
+      }) : {}
 
       const exifToDate = (exifDate: string | ExifDateTime | undefined) => {
         if (!exifDate) return null;
@@ -121,33 +128,40 @@ export class MetadataExtractionProcessor {
         return exifDate.zone ?? null;
       };
 
-      const timeZone = exifTimeZone(exifData?.DateTimeOriginal ?? exifData?.CreateDate ?? asset.fileCreatedAt);
-      const fileCreatedAt = exifToDate(exifData?.DateTimeOriginal ?? exifData?.CreateDate ?? asset.fileCreatedAt);
-      const fileModifiedAt = exifToDate(exifData?.ModifyDate ?? asset.fileModifiedAt);
+      const getExifProperty = (property: keyof ImmichTags): any | null => {
+        return sidcarExifData ? sidcarExifData[property] : mediaExifData ? mediaExifData[property] : null
+      };
+
+      const timeZone = exifTimeZone(getExifProperty('DateTimeOriginal') ?? getExifProperty('CreateDate') ?? asset.fileCreatedAt);
+      const fileCreatedAt = exifToDate(getExifProperty('DateTimeOriginal') ?? getExifProperty('CreateDate') ?? asset.fileCreatedAt);
+      const fileModifiedAt = exifToDate(getExifProperty('ModifyDate') ?? asset.fileModifiedAt);
       const fileStats = fs.statSync(asset.originalPath);
       const fileSizeInBytes = fileStats.size;
 
       const newExif = new ExifEntity();
       newExif.assetId = asset.id;
       newExif.fileSizeInByte = fileSizeInBytes;
-      newExif.make = exifData?.Make || null;
-      newExif.model = exifData?.Model || null;
-      newExif.exifImageHeight = exifData?.ExifImageHeight || exifData?.ImageHeight || null;
-      newExif.exifImageWidth = exifData?.ExifImageWidth || exifData?.ImageWidth || null;
-      newExif.exposureTime = exifData?.ExposureTime || null;
-      newExif.orientation = exifData?.Orientation?.toString() || null;
+      // newExif.make = getExifProperty('Make') as ImmichTags["Make"];
+      newExif.make = getExifProperty('Make');
+      newExif.model = getExifProperty('Model');
+      newExif.exifImageHeight = getExifProperty('ExifImageHeight') || getExifProperty('ImageHeight');
+      newExif.exifImageWidth = getExifProperty('ExifImageWidth') || getExifProperty('ImageWidth');
+      newExif.exposureTime = getExifProperty('ExposureTime');
+      newExif.orientation = getExifProperty('Orientation')?.toString();
       newExif.dateTimeOriginal = fileCreatedAt;
       newExif.modifyDate = fileModifiedAt;
       newExif.timeZone = timeZone;
-      newExif.lensModel = exifData?.LensModel || null;
-      newExif.fNumber = exifData?.FNumber || null;
-      newExif.focalLength = exifData?.FocalLength ? parseFloat(exifData.FocalLength) : null;
+      newExif.lensModel = getExifProperty('LensModel');
+      newExif.fNumber = getExifProperty('FNumber');
+      const focalLength = getExifProperty('FocalLength');
+      newExif.focalLength = focalLength ? parseFloat(focalLength) : null;
       // This is unusual - exifData.ISO should return a number, but experienced that sidecar XMP
       // files MAY return an array of numbers instead.
-      newExif.iso = Array.isArray(exifData?.ISO) ? exifData?.ISO[0] : exifData?.ISO || null;
-      newExif.latitude = exifData?.GPSLatitude || null;
-      newExif.longitude = exifData?.GPSLongitude || null;
-      newExif.livePhotoCID = exifData?.MediaGroupUUID || null;
+      const iso = getExifProperty('ISO');
+      newExif.iso = Array.isArray(iso) ? iso[0] : (iso || null);
+      newExif.latitude = getExifProperty('GPSLatitude');
+      newExif.longitude = getExifProperty('GPSLongitude');
+      newExif.livePhotoCID = getExifProperty('MediaGroupUUID');
 
       if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
         const motionAsset = await this.assetCore.findLivePhotoMatch({
