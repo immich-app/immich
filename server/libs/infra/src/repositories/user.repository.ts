@@ -26,6 +26,10 @@ export class UserRepository implements IUserRepository {
     return builder.getOne();
   }
 
+  async getByStorageLabel(storageLabel: string): Promise<UserEntity | null> {
+    return this.userRepository.findOne({ where: { storageLabel } });
+  }
+
   async getByOAuthId(oauthId: string): Promise<UserEntity | null> {
     return this.userRepository.findOne({ where: { oauthId } });
   }

@@ -7,6 +7,7 @@
 		NotificationType
 	} from '../shared-components/notification/notification';
 	import Button from '../elements/buttons/button.svelte';
+	import { handleError } from '../../utils/handle-error';
 
 	export let user: UserResponseDto;
 	export let canResetPassword = true;
@@ -24,18 +25,14 @@
 				email,
 				firstName,
 				lastName,
-				storageLabel: storageLabel || ''
+				storageLabel
 			});
 
 			if (status === 200) {
 				dispatch('edit-success');
 			}
-		} catch (e) {
-			console.error('Error updating user ', e);
-			notificationController.show({
-				message: 'Error updating user, check console for more details',
-				type: NotificationType.Error
-			});
+		} catch (error) {
+			handleError(error, 'Unable to update user');
 		}
 	};
 
@@ -121,6 +118,13 @@
 				type="text"
 				bind:value={user.storageLabel}
 			/>
+
+			<p>
+				Note: To apply the Storage Label to previously uploaded assets, run the <a
+					href="/admin/jobs-status"
+					class="text-immich-primary dark:text-immich-dark-primary">Storage Migration Job</a
+				>
+			</p>
 		</div>
 
 		{#if error}

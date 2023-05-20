@@ -1,4 +1,8 @@
-export const toBoolean = ({ value }: { value: string }) => {
+interface IValue {
+  value?: string;
+}
+
+export const toBoolean = ({ value }: IValue) => {
   if (value == 'true') {
     return true;
   } else if (value == 'false') {
@@ -6,3 +10,5 @@ export const toBoolean = ({ value }: { value: string }) => {
   }
   return value;
 };
+
+export const toEmail = ({ value }: IValue) => value?.toLowerCase();

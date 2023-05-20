@@ -5571,12 +5571,6 @@
             "type": "string",
             "format": "uuid"
           },
-          "isAdmin": {
-            "type": "boolean"
-          },
-          "shouldChangePassword": {
-            "type": "boolean"
-          },
           "email": {
             "type": "string"
           },
@@ -5590,8 +5584,13 @@
             "type": "string"
           },
           "storageLabel": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
+          },
+          "isAdmin": {
+            "type": "boolean"
+          },
+          "shouldChangePassword": {
+            "type": "boolean"
           }
         },
         "required": [

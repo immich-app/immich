@@ -292,6 +292,17 @@ describe(UserService.name, () => {
       expect(userRepositoryMock.update).not.toHaveBeenCalled();
     });
 
+    it('should not let the admin change the storage label to one already in use', async () => {
+      const dto = { id: immichUser.id, storageLabel: 'admin' };
+
+      userRepositoryMock.get.mockResolvedValue(immichUser);
+      userRepositoryMock.getByStorageLabel.mockResolvedValue(adminUser);
+
+      await expect(sut.updateUser(adminUser, dto)).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(userRepositoryMock.update).not.toHaveBeenCalled();
+    });
+
     it('admin can update any user information', async () => {
       const update: UpdateUserDto = {
         id: immichUser.id,

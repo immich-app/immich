@@ -6,7 +6,7 @@ import { getLivePhotoMotionFilename } from '../domain.util';
 import { IAssetJob } from '../job';
 import { IStorageRepository } from '../storage/storage.repository';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
-import { IUserRepository } from '../user';
+import { IUserRepository } from '../user/user.repository';
 import { StorageTemplateCore } from './storage-template.core';
 
 export interface MoveAssetMetadata {

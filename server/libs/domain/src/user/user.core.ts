@@ -36,7 +36,14 @@ export class UserCore {
     if (dto.email) {
       const duplicate = await this.userRepository.getByEmail(dto.email);
       if (duplicate && duplicate.id !== id) {
-        throw new BadRequestException('Email already in user by another account');
+        throw new BadRequestException('Email already in use by another account');
+      }
+    }
+
+    if (dto.storageLabel) {
+      const duplicate = await this.userRepository.getByStorageLabel(dto.storageLabel);
+      if (duplicate && duplicate.id !== id) {
+        throw new BadRequestException('Storage label already in use by another account');
       }
     }
 
