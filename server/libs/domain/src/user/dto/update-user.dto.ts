@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
-import { toBoolean } from '../../../../../apps/immich/src/utils/transform.util';
+import { toEmail, toSanitized } from '../../../../../apps/immich/src/utils/transform.util';
 
 export class UpdateUserDto {
   @IsOptional()
   @IsEmail()
-  @Transform(toBoolean)
+  @Transform(toEmail)
   email?: string;
 
   @IsOptional()
@@ -26,7 +26,7 @@ export class UpdateUserDto {
 
   @IsOptional()
   @IsString()
-  @IsNotEmpty()
+  @Transform(toSanitized)
   storageLabel?: string;
 
   @IsNotEmpty()

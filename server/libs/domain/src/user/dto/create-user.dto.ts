@@ -1,10 +1,10 @@
 import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import sanitize from 'sanitize-filename';
+import { toEmail, toSanitized } from '../../../../../apps/immich/src/utils/transform.util';
 
 export class CreateUserDto {
   @IsEmail()
-  @Transform(({ value }) => value?.toLowerCase())
+  @Transform(toEmail)
   email!: string;
 
   @IsNotEmpty()
@@ -21,7 +21,7 @@ export class CreateUserDto {
 
   @IsOptional()
   @IsString()
-  @Transform(({ value }) => sanitize(value || ''))
+  @Transform(toSanitized)
   storageLabel?: string | null;
 }
 

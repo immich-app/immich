@@ -1,3 +1,5 @@
+import sanitize from 'sanitize-filename';
+
 interface IValue {
   value?: string;
 }
@@ -12,3 +14,5 @@ export const toBoolean = ({ value }: IValue) => {
 };
 
 export const toEmail = ({ value }: IValue) => value?.toLowerCase();
+
+export const toSanitized = ({ value }: IValue) => sanitize((value || '').replace(/\./g, ''));
