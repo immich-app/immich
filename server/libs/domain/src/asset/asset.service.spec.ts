@@ -1,5 +1,5 @@
 import { AssetEntity, AssetType } from '@app/infra/entities';
-import { assetEntityStub, newAssetRepositoryMock, newJobRepositoryMock } from '../../test';
+import { assetEntityStub, authStub, newAssetRepositoryMock, newJobRepositoryMock } from '../../test';
 import { AssetService, IAssetRepository } from '../asset';
 import { IJobRepository, JobName } from '../job';
 
@@ -55,6 +55,31 @@ describe(AssetService.name, () => {
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.SEARCH_INDEX_ASSET,
         data: { ids: [assetEntityStub.image.id] },
+      });
+    });
+  });
+
+  describe('get map markers', () => {
+    it('should get geo information of assets', async () => {
+      assetMock.getMapMarkers.mockResolvedValue(
+        [assetEntityStub.withLocation].map((asset) => ({
+          id: asset.id,
+
+          /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
+          lat: asset.exifInfo!.latitude!,
+
+          /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
+          lon: asset.exifInfo!.longitude!,
+        })),
+      );
+
+      const markers = await sut.getMapMarkers(authStub.user1, {});
+
+      expect(markers).toHaveLength(1);
+      expect(markers[0]).toEqual({
+        id: assetEntityStub.withLocation.id,
+        lat: 100,
+        lon: 100,
       });
     });
   });

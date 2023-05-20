@@ -9,6 +9,7 @@ import { InfraModule } from '@app/infra';
 import {
   AlbumController,
   APIKeyController,
+  AssetController,
   AuthController,
   PersonController,
   JobController,
@@ -36,6 +37,7 @@ import { AppCronJobs } from './app.cron-jobs';
     AppController,
     AlbumController,
     APIKeyController,
+    AssetController,
     AuthController,
     JobController,
     OAuthController,

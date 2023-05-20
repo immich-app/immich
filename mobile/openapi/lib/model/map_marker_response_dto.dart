@@ -13,44 +13,38 @@ part of openapi.api;
 class MapMarkerResponseDto {
   /// Returns a new [MapMarkerResponseDto] instance.
   MapMarkerResponseDto({
-    required this.type,
+    required this.id,
     required this.lat,
     required this.lon,
-    required this.id,
   });
-
-  AssetTypeEnum type;
-
-  double lat;
-
-  double lon;
 
   String id;
 
+  num lat;
+
+  num lon;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is MapMarkerResponseDto &&
-     other.type == type &&
+     other.id == id &&
      other.lat == lat &&
-     other.lon == lon &&
-     other.id == id;
+     other.lon == lon;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (type.hashCode) +
+    (id.hashCode) +
     (lat.hashCode) +
-    (lon.hashCode) +
-    (id.hashCode);
+    (lon.hashCode);
 
   @override
-  String toString() => 'MapMarkerResponseDto[type=$type, lat=$lat, lon=$lon, id=$id]';
+  String toString() => 'MapMarkerResponseDto[id=$id, lat=$lat, lon=$lon]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'type'] = this.type;
+      json[r'id'] = this.id;
       json[r'lat'] = this.lat;
       json[r'lon'] = this.lon;
-      json[r'id'] = this.id;
     return json;
   }
 
@@ -73,10 +67,13 @@ class MapMarkerResponseDto {
       }());
 
       return MapMarkerResponseDto(
-        type: AssetTypeEnum.fromJson(json[r'type'])!,
-        lat: mapValueOfType<double>(json, r'lat')!,
-        lon: mapValueOfType<double>(json, r'lon')!,
         id: mapValueOfType<String>(json, r'id')!,
+        lat: json[r'lat'] == null
+            ? null
+            : num.parse(json[r'lat'].toString()),
+        lon: json[r'lon'] == null
+            ? null
+            : num.parse(json[r'lon'].toString()),
       );
     }
     return null;
@@ -124,10 +121,9 @@ class MapMarkerResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'type',
+    'id',
     'lat',
     'lon',
-    'id',
   };
 }
 
