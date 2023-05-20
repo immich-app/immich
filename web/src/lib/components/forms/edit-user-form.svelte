@@ -25,7 +25,7 @@
 				email,
 				firstName,
 				lastName,
-				storageLabel
+				storageLabel: storageLabel || ''
 			});
 
 			if (status === 200) {
