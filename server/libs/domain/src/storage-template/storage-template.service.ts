@@ -75,14 +75,16 @@ export class StorageTemplateService {
     if (asset.originalPath !== destination) {
       const source = asset.originalPath;
 
+      let sidecarMoved = false
       try {
         await this.storageRepository.moveFile(asset.originalPath, destination);
 
+        let sidecarDestination;
         try {
-          let sidecarDestination;
           if (asset.sidecarPath) {
             sidecarDestination = `${destination}.xmp`;
             await this.storageRepository.moveFile(asset.sidecarPath, sidecarDestination);
+            sidecarMoved = true;
           }
 
           await this.assetRepository.save({ id: asset.id, originalPath: destination, sidecarPath: sidecarDestination });
@@ -90,7 +92,15 @@ export class StorageTemplateService {
           asset.sidecarPath = sidecarDestination || null;
         } catch (error: any) {
           this.logger.warn('Unable to save new originalPath to database, undoing move', error?.stack);
+
+          // Either sidecar move failed or the save failed. Eithr way, move media back
           await this.storageRepository.moveFile(destination, source);
+
+          if (asset.sidecarPath && sidecarDestination && sidecarMoved) {
+            // If the sidecar was moved, that means the saved failed. So move both the sidecar and the
+            // media back into their original positions
+            await this.storageRepository.moveFile(sidecarDestination, asset.sidecarPath);
+          }
         }
       } catch (error: any) {
         this.logger.error(`Problem applying storage template`, error?.stack, { id: asset.id, source, destination });
