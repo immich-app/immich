@@ -1,4 +1,10 @@
-import { AssetSearchOptions, IAssetRepository, LivePhotoSearchOptions, WithoutProperty, WithProperty } from '@app/domain';
+import {
+  AssetSearchOptions,
+  IAssetRepository,
+  LivePhotoSearchOptions,
+  WithoutProperty,
+  WithProperty,
+} from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
@@ -151,11 +157,11 @@ export class AssetRepository implements IAssetRepository {
         break;
 
       case WithoutProperty.SIDECAR:
-          where = [
-            { sidecarPath: IsNull(), isVisible: true },
-            { sidecarPath: '', isVisible: true },
-          ];
-          break;
+        where = [
+          { sidecarPath: IsNull(), isVisible: true },
+          { sidecarPath: '', isVisible: true },
+        ];
+        break;
 
       default:
         throw new Error(`Invalid getWithout property: ${property}`);
@@ -172,9 +178,7 @@ export class AssetRepository implements IAssetRepository {
 
     switch (property) {
       case WithProperty.SIDECAR:
-        where = [
-          { sidecarPath: Not(IsNull()), isVisible: true },
-        ];
+        where = [{ sidecarPath: Not(IsNull()), isVisible: true }];
         break;
 
       default:

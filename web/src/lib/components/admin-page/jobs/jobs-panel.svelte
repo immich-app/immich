@@ -14,6 +14,8 @@
 	type JobDetails = {
 		title: string;
 		subtitle?: string;
+		allText?: string;
+		missingText?: string;
 		allowForceCommand?: boolean;
 		component?: ComponentType;
 	};
@@ -54,7 +56,7 @@
 			title: 'Storage Template Migration',
 			allowForceCommand: false,
 			component: StorageMigrationDescription
-		},
+		}
 	};
 
 	const jobDetailsArray = Object.entries(jobDetails) as [JobName, JobDetails][];

@@ -81,7 +81,7 @@ export class StorageTemplateService {
         try {
           let sidecarDestination;
           if (asset.sidecarPath != null) {
-            sidecarDestination = `${destination}.xmp`
+            sidecarDestination = `${destination}.xmp`;
             await this.storageRepository.moveFile(asset.sidecarPath, sidecarDestination);
           }
 

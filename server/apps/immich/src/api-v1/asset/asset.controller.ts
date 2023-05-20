@@ -89,7 +89,7 @@ export class AssetController {
   async uploadFile(
     @GetAuthUser() authUser: AuthUserDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] }))
-    files: { assetData: ImmichFile[]; livePhotoData?: ImmichFile[], sidecarData: ImmichFile[] },
+    files: { assetData: ImmichFile[]; livePhotoData?: ImmichFile[]; sidecarData: ImmichFile[] },
     @Body(new ValidationPipe()) dto: CreateAssetDto,
     @Response({ passthrough: true }) res: Res,
   ): Promise<AssetFileUploadResponseDto> {

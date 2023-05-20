@@ -368,7 +368,13 @@ export class AssetService {
         await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [id] } });
 
         result.push({ id, status: DeleteAssetStatusEnum.SUCCESS });
-        deleteQueue.push(asset.originalPath, asset.webpPath, asset.resizePath, asset.encodedVideoPath, asset.sidecarPath);
+        deleteQueue.push(
+          asset.originalPath,
+          asset.webpPath,
+          asset.resizePath,
+          asset.encodedVideoPath,
+          asset.sidecarPath,
+        );
 
         // TODO refactor this to use cascades
         if (asset.livePhotoVideoId && !ids.includes(asset.livePhotoVideoId)) {

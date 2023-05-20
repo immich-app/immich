@@ -100,13 +100,15 @@ export class MetadataExtractionProcessor {
         );
         return null;
       });
-      const sidcarExifData = asset.sidecarPath ? await exiftool.read<ImmichTags>(asset.sidecarPath).catch((error: any) => {
-        this.logger.warn(
-          `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
-          error?.stack,
-        );
-        return null;
-      }) : {}
+      const sidcarExifData = asset.sidecarPath
+        ? await exiftool.read<ImmichTags>(asset.sidecarPath).catch((error: any) => {
+            this.logger.warn(
+              `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
+              error?.stack,
+            );
+            return null;
+          })
+        : {};
 
       const exifToDate = (exifDate: string | ExifDateTime | undefined) => {
         if (!exifDate) return null;
@@ -129,11 +131,15 @@ export class MetadataExtractionProcessor {
       };
 
       const getExifProperty = (property: keyof ImmichTags): any | null => {
-        return sidcarExifData ? sidcarExifData[property] : mediaExifData ? mediaExifData[property] : null
+        return sidcarExifData ? sidcarExifData[property] : mediaExifData ? mediaExifData[property] : null;
       };
 
-      const timeZone = exifTimeZone(getExifProperty('DateTimeOriginal') ?? getExifProperty('CreateDate') ?? asset.fileCreatedAt);
-      const fileCreatedAt = exifToDate(getExifProperty('DateTimeOriginal') ?? getExifProperty('CreateDate') ?? asset.fileCreatedAt);
+      const timeZone = exifTimeZone(
+        getExifProperty('DateTimeOriginal') ?? getExifProperty('CreateDate') ?? asset.fileCreatedAt,
+      );
+      const fileCreatedAt = exifToDate(
+        getExifProperty('DateTimeOriginal') ?? getExifProperty('CreateDate') ?? asset.fileCreatedAt,
+      );
       const fileModifiedAt = exifToDate(getExifProperty('ModifyDate') ?? asset.fileModifiedAt);
       const fileStats = fs.statSync(asset.originalPath);
       const fileSizeInBytes = fileStats.size;
@@ -157,7 +163,7 @@ export class MetadataExtractionProcessor {
       // This is unusual - exifData.ISO should return a number, but experienced that sidecar XMP
       // files MAY return an array of numbers instead.
       const iso = getExifProperty('ISO');
-      newExif.iso = Array.isArray(iso) ? iso[0] : (iso || null);
+      newExif.iso = Array.isArray(iso) ? iso[0] : iso || null;
       newExif.latitude = getExifProperty('GPSLatitude');
       newExif.longitude = getExifProperty('GPSLongitude');
       newExif.livePhotoCID = getExifProperty('MediaGroupUUID');
@@ -372,7 +378,9 @@ export class SidecarProcessor {
   async handleQueueSidecar(job: Job<IBaseJob>) {
     try {
       const { force } = job.data;
-      const assets = force ? await this.assetRepository.getWith(WithProperty.SIDECAR) : await this.assetRepository.getWithout(WithoutProperty.SIDECAR);
+      const assets = force
+        ? await this.assetRepository.getWith(WithProperty.SIDECAR)
+        : await this.assetRepository.getWithout(WithoutProperty.SIDECAR);
 
       for (const asset of assets) {
         const name = force ? JobName.SIDECAR_SYNC : JobName.SIDECAR_DISCOVERY;
@@ -385,7 +393,7 @@ export class SidecarProcessor {
 
   @Process(JobName.SIDECAR_SYNC)
   async handleSidecarSync(job: Job<IAssetJob>) {
-    const { asset } = job.data
+    const { asset } = job.data;
     if (!asset.isVisible) {
       return;
     }
@@ -401,7 +409,7 @@ export class SidecarProcessor {
 
   @Process(JobName.SIDECAR_DISCOVERY)
   async handleSidecarDiscovery(job: Job<IAssetJob>) {
-    let { asset } = job.data
+    let { asset } = job.data;
     if (!asset.isVisible) {
       return;
     }
@@ -411,9 +419,9 @@ export class SidecarProcessor {
     }
 
     try {
-      await fs.promises.access(`${asset.originalPath}.xmp`, fs.constants.W_OK)
+      await fs.promises.access(`${asset.originalPath}.xmp`, fs.constants.W_OK);
 
-      try{
+      try {
         asset = await this.assetCore.save({ id: asset.id, sidecarPath: `${asset.originalPath}.xmp` });
         const fileName = asset.originalFileName;
         // TODO: optimize to only queue assets with recent xmp changes

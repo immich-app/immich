@@ -116,13 +116,15 @@
 				color="gray"
 				on:click={() => dispatch('command', { command: JobCommand.Start, force: true })}
 			>
-				<AllInclusive size="24" /> { allText }
+				<AllInclusive size="24" />
+				{allText}
 			</JobTileButton>
 			<JobTileButton
 				color="light-gray"
 				on:click={() => dispatch('command', { command: JobCommand.Start, force: false })}
 			>
-				<SelectionSearch size="24" /> { missingText }
+				<SelectionSearch size="24" />
+				{missingText}
 			</JobTileButton>
 		{:else}
 			<JobTileButton
