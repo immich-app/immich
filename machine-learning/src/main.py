@@ -5,7 +5,7 @@ import uvicorn
 
 from insightface.app import FaceAnalysis
 from transformers import pipeline
-from sentence_transformers import SentenceTransformer, util
+from sentence_transformers import SentenceTransformer
 from PIL import Image
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -42,7 +42,7 @@ async def startup_event():
     _get_model(object_model, "object-detection")
     _get_model(classification_model, "image-classification")
     _get_model(clip_image_model)
-    _get_model(clip_image_model)
+    _get_model(clip_text_model)
     _get_model(facial_recognition_model, "facial-recognition")
 
 
