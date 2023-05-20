@@ -11,6 +11,7 @@
 
 <FullscreenContainer title={data.meta.title} showMessage={!!loginPageMessage}>
 	<p slot="message">
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html loginPageMessage}
 	</p>
 

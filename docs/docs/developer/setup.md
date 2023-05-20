@@ -111,7 +111,7 @@ After making any changes in the `server/libs/database/src/entities`, a database 
 2. Run
 
 ```bash
-npm run typeorm -- migration:generate ./libs/infra/src/db/<migration-name> -d ./libs/infra/src/db/config/database.config.ts
+npm run typeorm:migrations:generate ./libs/infra/src/<migration-name>
 ```
 
 3. Check if the migration file makes sense.

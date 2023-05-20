@@ -3,7 +3,6 @@ import { constants, createReadStream, existsSync, mkdirSync } from 'fs';
 import fs from 'fs/promises';
 import mv from 'mv';
 import { promisify } from 'node:util';
-import diskUsage from 'diskusage';
 import path from 'path';
 
 const moveFile = promisify<string, string, mv.Options>(mv);
@@ -68,7 +67,12 @@ export class FilesystemProvider implements IStorageRepository {
     }
   }
 
-  checkDiskUsage(folder: string): Promise<DiskUsage> {
-    return diskUsage.check(folder);
+  async checkDiskUsage(folder: string): Promise<DiskUsage> {
+    const stats = await fs.statfs(folder);
+    return {
+      available: stats.bavail * stats.bsize,
+      free: stats.bfree * stats.bsize,
+      total: stats.blocks * stats.bsize,
+    };
   }
 }

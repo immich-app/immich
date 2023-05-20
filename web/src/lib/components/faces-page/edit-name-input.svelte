@@ -3,16 +3,21 @@
 	import { createEventDispatcher } from 'svelte';
 	import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
 	import Button from '../elements/buttons/button.svelte';
+	import { clickOutside } from '$lib/utils/click-outside';
 
 	export let person: PersonResponseDto;
 	let name = person.name;
 
-	const dispatch = createEventDispatcher<{ change: string }>();
-	const handleNameChange = () => dispatch('change', name);
+	const dispatch = createEventDispatcher<{
+		change: string;
+		cancel: void;
+	}>();
 </script>
 
 <div
 	class="flex place-items-center max-w-lg rounded-lg border dark:border-transparent p-2 bg-gray-100 dark:bg-gray-700"
+	use:clickOutside
+	on:outclick={() => dispatch('cancel')}
 >
 	<ImageThumbnail
 		circle
@@ -25,7 +30,7 @@
 	<form
 		class="ml-4 flex justify-between w-full gap-16"
 		autocomplete="off"
-		on:submit|preventDefault={handleNameChange}
+		on:submit|preventDefault={() => dispatch('change', name)}
 	>
 		<!-- svelte-ignore a11y-autofocus -->
 		<input
@@ -35,7 +40,6 @@
 			placeholder="New name or nickname"
 			required
 			bind:value={name}
-			on:blur
 		/>
 		<Button size="sm" type="submit">Done</Button>
 	</form>

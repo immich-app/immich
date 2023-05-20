@@ -11,7 +11,7 @@
 
 <button
 	{title}
-	style:backgroundColor
+	style:background-color={backgroundColor}
 	style:--immich-icon-button-hover-color={hoverColor}
 	class="dark:text-immich-dark-fg rounded-full p-3 flex place-items-center place-content-center transition-all
 	{isOpacity
