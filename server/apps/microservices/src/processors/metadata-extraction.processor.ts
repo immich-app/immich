@@ -100,7 +100,7 @@ export class MetadataExtractionProcessor {
         );
         return null;
       });
-      const sidcarExifData = asset.sidecarPath
+      const sidecarExifData = asset.sidecarPath
         ? await exiftool.read<ImmichTags>(asset.sidecarPath).catch((error: any) => {
             this.logger.warn(
               `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
@@ -130,15 +130,22 @@ export class MetadataExtractionProcessor {
         return exifDate.zone ?? null;
       };
 
-      const getExifProperty = (property: keyof ImmichTags): any | null => {
-        return sidcarExifData ? sidcarExifData[property] : mediaExifData ? mediaExifData[property] : null;
+      const getExifProperty = <T extends keyof ImmichTags>(...properties: T[]): any | null => {
+        for (const property of properties) {
+          const value = sidecarExifData?.[property] ?? mediaExifData?.[property];
+          if (value !== null && value !== undefined) {
+            return value;
+          }
+        }
+
+        return null;
       };
 
       const timeZone = exifTimeZone(
-        getExifProperty('DateTimeOriginal') ?? getExifProperty('CreateDate') ?? asset.fileCreatedAt,
+        getExifProperty('DateTimeOriginal', 'CreateDate') ?? asset.fileCreatedAt,
       );
       const fileCreatedAt = exifToDate(
-        getExifProperty('DateTimeOriginal') ?? getExifProperty('CreateDate') ?? asset.fileCreatedAt,
+        getExifProperty('DateTimeOriginal', 'CreateDate') ?? asset.fileCreatedAt,
       );
       const fileModifiedAt = exifToDate(getExifProperty('ModifyDate') ?? asset.fileModifiedAt);
       const fileStats = fs.statSync(asset.originalPath);
@@ -149,8 +156,8 @@ export class MetadataExtractionProcessor {
       newExif.fileSizeInByte = fileSizeInBytes;
       newExif.make = getExifProperty('Make');
       newExif.model = getExifProperty('Model');
-      newExif.exifImageHeight = getExifProperty('ExifImageHeight') || getExifProperty('ImageHeight');
-      newExif.exifImageWidth = getExifProperty('ExifImageWidth') || getExifProperty('ImageWidth');
+      newExif.exifImageHeight = getExifProperty('ExifImageHeight', 'ImageHeight');
+      newExif.exifImageWidth = getExifProperty('ExifImageWidth', 'ImageWidth');
       newExif.exposureTime = getExifProperty('ExposureTime');
       newExif.orientation = getExifProperty('Orientation')?.toString();
       newExif.dateTimeOriginal = fileCreatedAt;
