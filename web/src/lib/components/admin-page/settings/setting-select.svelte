@@ -5,6 +5,7 @@
 	export let value: string;
 	export let options: { value: string; text: string }[];
 	export let label = '';
+	export let desc = '';
 	export let name = '';
 	export let isEdited = false;
 
@@ -26,8 +27,14 @@
 			</div>
 		{/if}
 	</div>
+
+	<div class={`flex place-items-center gap-1`}>
+		<label class={`immich-form-label text-xs`} for="{name}-desc">{desc}</label>
+	</div>
+
 	<select
-		class="immich-form-input w-full"
+		style="position:relative;top:10px"
+		class="immich-form-input gap-2 w-full"
 		{name}
 		id="{name}-select"
 		bind:value

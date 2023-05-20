@@ -14,6 +14,7 @@
 	export let inputType: SettingInputFieldType;
 	export let value: string;
 	export let label = '';
+	export let desc = '';
 	export let required = false;
 	export let disabled = false;
 	export let isEdited = false;
@@ -39,8 +40,14 @@
 			</div>
 		{/if}
 	</div>
+
+	<div class={`flex place-items-center gap-1`}>
+		<label class={`immich-form-label text-xs`} for="{label}-desc">{desc}</label>
+	</div>
+
 	<input
-		class="immich-form-input w-full"
+		style="position:relative;top:10px"
+		class="immich-form-input gap-2 w-full"
 		id={label}
 		name={label}
 		type={inputType}
