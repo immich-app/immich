@@ -4,7 +4,7 @@ import handlebar from 'handlebars';
 import * as luxon from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
-import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
+import { IStorageRepository, StorageCore } from '../storage';
 import {
   ISystemConfigRepository,
   supportedDayTokens,
@@ -41,7 +41,7 @@ export class StorageTemplateCore {
       const source = asset.originalPath;
       const ext = path.extname(source).split('.').pop() as string;
       const sanitized = sanitize(path.basename(filename, `.${ext}`));
-      const rootPath = this.storageCore.getFolderLocation(StorageFolder.LIBRARY, storageLabel || asset.ownerId);
+      const rootPath = this.storageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
       const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
       const fullPath = path.normalize(path.join(rootPath, storagePath));
       let destination = `${fullPath}.${ext}`;

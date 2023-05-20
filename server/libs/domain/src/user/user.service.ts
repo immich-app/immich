@@ -160,7 +160,7 @@ export class UserService {
 
     try {
       const folders = [
-        this.storageCore.getFolderLocation(StorageFolder.LIBRARY, user.id),
+        this.storageCore.getLibraryFolder(user),
         this.storageCore.getFolderLocation(StorageFolder.UPLOAD, user.id),
         this.storageCore.getFolderLocation(StorageFolder.PROFILE, user.id),
         this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, user.id),

@@ -513,6 +513,16 @@ describe(UserService.name, () => {
       expect(userRepositoryMock.delete).toHaveBeenCalledWith(user, true);
     });
 
+    it('should delete the library path for a storage label', async () => {
+      const user = { id: 'deleted-user', deletedAt: makeDeletedAt(10), storageLabel: 'admin' } as UserEntity;
+
+      await sut.handleUserDelete({ user });
+
+      const options = { force: true, recursive: true };
+
+      expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/library/admin', options);
+    });
+
     it('should handle an error', async () => {
       const user = { id: 'deleted-user', deletedAt: makeDeletedAt(10) } as UserEntity;
 
