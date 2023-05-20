@@ -41,9 +41,11 @@
 		{/if}
 	</div>
 
-	<div class={`flex place-items-center gap-1`}>
-		<label class={`immich-form-label text-xs`} for="{label}-desc">{desc}</label>
-	</div>
+	{#if desc}
+		<p class="immich-form-label text-xs pb-2" id="{name}-desc">
+			{desc}
+		</p>
+	{/if}
 
 	<input
 		class="immich-form-input w-full"
