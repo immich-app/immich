@@ -21,16 +21,6 @@ void main() {
       // TODO
     });
 
-    // bool isAdmin
-    test('to test the property `isAdmin`', () async {
-      // TODO
-    });
-
-    // bool shouldChangePassword
-    test('to test the property `shouldChangePassword`', () async {
-      // TODO
-    });
-
     // String email
     test('to test the property `email`', () async {
       // TODO
@@ -53,6 +43,16 @@ void main() {
 
     // String storageLabel
     test('to test the property `storageLabel`', () async {
+      // TODO
+    });
+
+    // bool isAdmin
+    test('to test the property `isAdmin`', () async {
+      // TODO
+    });
+
+    // bool shouldChangePassword
+    test('to test the property `shouldChangePassword`', () async {
       // TODO
     });
 

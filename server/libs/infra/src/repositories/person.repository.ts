@@ -52,6 +52,7 @@ export class PersonRepository implements IPersonRepository {
           personId,
         },
         isVisible: true,
+        isArchived: false,
       },
       relations: {
         faces: {
@@ -63,7 +64,7 @@ export class PersonRepository implements IPersonRepository {
         createdAt: 'ASC',
       },
       // TODO: remove after either (1) pagination or (2) time bucket is implemented for this query
-      take: 3000,
+      take: 1000,
     });
   }
 
