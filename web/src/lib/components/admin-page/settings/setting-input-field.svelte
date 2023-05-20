@@ -46,8 +46,8 @@
 	</div>
 
 	<input
-		style="position:relative;top:10px"
-		class="immich-form-input gap-2 w-full"
+		class="immich-form-input w-full"
+		aria-describedby={desc ? `${label}-desc` : undefined}
 		id={label}
 		name={label}
 		type={inputType}
