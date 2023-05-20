@@ -133,7 +133,7 @@ describe('User', () => {
               deletedAt: null,
               updatedAt: expect.anything(),
               oauthId: '',
-              storageLabel: null,
+              storageLabel: 'admin',
             },
           ]),
         );
