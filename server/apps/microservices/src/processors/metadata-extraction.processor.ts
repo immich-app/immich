@@ -398,7 +398,7 @@ export class SidecarProcessor {
     }
 
     try {
-      const stat = await fs.promises.access(`${asset.originalPath}.xmp`, fs.constants.W_OK)
+      await fs.promises.access(`${asset.originalPath}.xmp`, fs.constants.W_OK)
 
       try{
         asset = await this.assetCore.save({ id: asset.id, sidecarPath: `${asset.originalPath}.xmp` });
