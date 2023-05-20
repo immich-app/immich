@@ -4569,10 +4569,12 @@
             "type": "string"
           },
           "lat": {
-            "type": "number"
+            "type": "number",
+            "format": "double"
           },
           "lon": {
-            "type": "number"
+            "type": "number",
+            "format": "double"
           }
         },
         "required": [

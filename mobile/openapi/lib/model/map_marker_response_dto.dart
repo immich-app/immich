@@ -20,9 +20,9 @@ class MapMarkerResponseDto {
 
   String id;
 
-  num lat;
+  double lat;
 
-  num lon;
+  double lon;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MapMarkerResponseDto &&
@@ -68,12 +68,8 @@ class MapMarkerResponseDto {
 
       return MapMarkerResponseDto(
         id: mapValueOfType<String>(json, r'id')!,
-        lat: json[r'lat'] == null
-            ? null
-            : num.parse(json[r'lat'].toString()),
-        lon: json[r'lon'] == null
-            ? null
-            : num.parse(json[r'lon'].toString()),
+        lat: mapValueOfType<double>(json, r'lat')!,
+        lon: mapValueOfType<double>(json, r'lon')!,
       );
     }
     return null;

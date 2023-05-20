@@ -4,9 +4,9 @@ export class MapMarkerResponseDto {
   @ApiProperty()
   id!: string;
 
-  @ApiProperty()
+  @ApiProperty({ format: 'double' })
   lat!: number;
 
-  @ApiProperty()
+  @ApiProperty({ format: 'double' })
   lon!: number;
 }

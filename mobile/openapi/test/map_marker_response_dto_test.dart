@@ -21,12 +21,12 @@ void main() {
       // TODO
     });
 
-    // num lat
+    // double lat
     test('to test the property `lat`', () async {
       // TODO
     });
 
-    // num lon
+    // double lon
     test('to test the property `lon`', () async {
       // TODO
     });
