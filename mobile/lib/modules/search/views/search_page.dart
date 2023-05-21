@@ -69,7 +69,8 @@ class SearchPage extends HookConsumerWidget {
                     label: o.name,
                   ),
                 )
-                .toList(),
+                .toList()
+                .sublist(0, 12),
             onTap: (content, index) {
               // AutoRouter.of(context).push(
               //   PersonResultRoute(
@@ -78,7 +79,8 @@ class SearchPage extends HookConsumerWidget {
               //   ),
               // );
             },
-            onNameTap: (person, index) => {print("Change name for $person")},
+            onNameTap: (person, index) =>
+                {print("Change name for ${person.id} - ${person.label}")},
           ),
         ),
       );
@@ -170,6 +172,7 @@ class SearchPage extends HookConsumerWidget {
                   onViewAllPressed: () => AutoRouter.of(context).push(
                     const CuratedLocationRoute(),
                   ),
+                  top: 0,
                 ),
                 buildPlaces(),
                 SearchRowTitle(

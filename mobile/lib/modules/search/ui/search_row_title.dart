@@ -4,20 +4,22 @@ import 'package:flutter/material.dart';
 class SearchRowTitle extends StatelessWidget {
   final VoidCallback onViewAllPressed;
   final String title;
+  final double top;
 
   const SearchRowTitle({
     super.key,
     required this.onViewAllPressed,
     required this.title,
+    this.top = 12,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(
+      padding: EdgeInsets.only(
         left: 16.0,
         right: 16.0,
-        top: 12.0,
+        top: top,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

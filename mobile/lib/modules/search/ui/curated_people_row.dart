@@ -19,7 +19,7 @@ class CuratedPeopleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const imageSize = 100.0;
+    const imageSize = 85.0;
 
     // Guard empty [content]
     if (content.isEmpty) {
@@ -42,8 +42,9 @@ class CuratedPeopleRow extends StatelessWidget {
 
     return ListView.builder(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
+      padding: const EdgeInsets.only(
+        left: 16,
+        top: 8,
       ),
       itemBuilder: (context, index) {
         final object = content[index];
@@ -51,53 +52,61 @@ class CuratedPeopleRow extends StatelessWidget {
             '${Store.get(StoreKey.serverEndpoint)}/person/${object.id}/thumbnail';
 
         return Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: () => onTap?.call(object, index),
-                child: SizedBox(
-                  height: imageSize,
-                  width: imageSize,
-                  child: Material(
-                    shape: const CircleBorder(side: BorderSide.none),
-                    elevation: 3,
-                    child: CircleAvatar(
-                      maxRadius: imageSize / 2,
-                      backgroundImage: NetworkImage(
-                        faceThumbnailRequestUrl,
-                        headers: {
-                          "Authorization":
-                              "Bearer ${Store.get(StoreKey.accessToken)}"
-                        },
+          padding: const EdgeInsets.only(right: 18.0),
+          child: SizedBox(
+            width: imageSize,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                GestureDetector(
+                  onTap: () => onTap?.call(object, index),
+                  child: SizedBox(
+                    height: imageSize,
+                    child: Material(
+                      shape: const CircleBorder(side: BorderSide.none),
+                      elevation: 3,
+                      child: CircleAvatar(
+                        maxRadius: imageSize / 2,
+                        backgroundImage: NetworkImage(
+                          faceThumbnailRequestUrl,
+                          headers: {
+                            "Authorization":
+                                "Bearer ${Store.get(StoreKey.accessToken)}"
+                          },
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              if (object.label == "")
-                GestureDetector(
-                  onTap: () => onNameTap?.call(object, index),
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      "Add name",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).primaryColor,
+                if (object.label == "")
+                  GestureDetector(
+                    onTap: () => onNameTap?.call(object, index),
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        "Add name",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
+                        ),
                       ),
                     ),
-                  ),
-                )
-              else
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    object.label,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                )
-            ],
+                  )
+                else
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      object.label,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13.0,
+                      ),
+                    ),
+                  )
+              ],
+            ),
           ),
         );
       },
