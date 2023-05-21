@@ -1,5 +1,6 @@
 import { Request } from 'express';
 import * as fs from 'fs';
+import { AuthRequest } from '../decorators/auth-user.decorator';
 import { multerUtils } from './asset-upload.config';
 
 const { fileFilter, destination, filename } = multerUtils;
@@ -14,7 +15,7 @@ const mock = {
       deviceId: 'test-device',
       fileExtension: '.jpg',
     },
-  } as Request,
+  } as AuthRequest,
   file: { originalname: 'test.jpg' } as Express.Multer.File,
 };
 

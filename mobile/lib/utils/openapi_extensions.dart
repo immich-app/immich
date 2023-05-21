@@ -4,8 +4,6 @@ import 'dart:io';
 import 'package:http/http.dart';
 import 'package:openapi/api.dart';
 
-import 'tuple.dart';
-
 /// Extension methods to retrieve ETag together with the API call
 extension WithETag on AssetApi {
   /// Get all AssetEntity belong to the user
@@ -14,7 +12,7 @@ extension WithETag on AssetApi {
   ///
   /// * [String] eTag:
   ///   ETag of data already cached on the client
-  Future<Pair<List<AssetResponseDto>, String?>?> getAllAssetsWithETag({
+  Future<(List<AssetResponseDto>? assets, String? eTag)> getAllAssetsWithETag({
     String? eTag,
   }) async {
     final response = await getAllAssetsWithHttpInfo(
@@ -36,9 +34,9 @@ extension WithETag on AssetApi {
       ) as List)
           .cast<AssetResponseDto>()
           .toList();
-      return Pair(data, etag);
+      return (data, etag);
     }
-    return null;
+    return (null, null);
   }
 }
 

@@ -8,17 +8,35 @@
 	import type { ComponentType } from 'svelte';
 	import JobTile from './job-tile.svelte';
 	import StorageMigrationDescription from './storage-migration-description.svelte';
+	import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
 
 	export let jobs: AllJobStatusResponseDto;
 
-	type JobDetails = {
+	interface JobDetails {
 		title: string;
 		subtitle?: string;
 		allowForceCommand?: boolean;
 		component?: ComponentType;
+		handleCommand?: (jobId: JobName, jobCommand: JobCommandDto) => Promise<void>;
+	}
+
+	let faceConfirm = false;
+
+	const handleFaceCommand = async (jobId: JobName, dto: JobCommandDto) => {
+		if (dto.force) {
+			faceConfirm = true;
+			return;
+		}
+
+		await handleCommand(jobId, dto);
 	};
 
-	const jobDetails: { [Key in JobName]?: JobDetails } = {
+	const onFaceConfirm = () => {
+		faceConfirm = false;
+		handleCommand(JobName.RecognizeFacesQueue, { command: JobCommand.Start, force: true });
+	};
+
+	const jobDetails: Partial<Record<JobName, JobDetails>> = {
 		[JobName.ThumbnailGenerationQueue]: {
 			title: 'Generate Thumbnails',
 			subtitle: 'Regenerate JPEG and WebP thumbnails'
@@ -38,7 +56,8 @@
 		},
 		[JobName.RecognizeFacesQueue]: {
 			title: 'Recognize Faces',
-			subtitle: 'Run machine learning to recognize faces'
+			subtitle: 'Run machine learning to recognize faces',
+			handleCommand: handleFaceCommand
 		},
 		[JobName.VideoConversionQueue]: {
 			title: 'Transcode Videos',
@@ -53,7 +72,7 @@
 
 	const jobDetailsArray = Object.entries(jobDetails) as [JobName, JobDetails][];
 
-	async function runJob(jobId: JobName, jobCommand: JobCommandDto) {
+	async function handleCommand(jobId: JobName, jobCommand: JobCommandDto) {
 		const title = jobDetails[jobId]?.title;
 
 		try {
@@ -74,8 +93,16 @@
 	}
 </script>
 
+{#if faceConfirm}
+	<ConfirmDialogue
+		prompt="Are you sure you want to reprocess all faces? This will also clear named people."
+		on:confirm={onFaceConfirm}
+		on:cancel={() => (faceConfirm = false)}
+	/>
+{/if}
+
 <div class="flex flex-col gap-7">
-	{#each jobDetailsArray as [jobName, { title, subtitle, allowForceCommand, component }]}
+	{#each jobDetailsArray as [jobName, { title, subtitle, allowForceCommand, component, handleCommand: handleCommandOverride }]}
 		{@const { jobCounts, queueStatus } = jobs[jobName]}
 		<JobTile
 			{title}
@@ -83,7 +110,7 @@
 			{allowForceCommand}
 			{jobCounts}
 			{queueStatus}
-			on:command={({ detail }) => runJob(jobName, detail)}
+			on:command={({ detail }) => (handleCommandOverride || handleCommand)(jobName, detail)}
 		>
 			<svelte:component this={component} />
 		</JobTile>

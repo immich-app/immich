@@ -2,12 +2,11 @@ import { StorageCore, StorageFolder } from '@app/domain/storage';
 import { BadRequestException, Logger, UnauthorizedException } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import { createHash, randomUUID } from 'crypto';
-import { Request } from 'express';
 import { existsSync, mkdirSync } from 'fs';
 import { diskStorage, StorageEngine } from 'multer';
 import { extname } from 'path';
 import sanitize from 'sanitize-filename';
-import { AuthUserDto } from '../decorators/auth-user.decorator';
+import { AuthRequest, AuthUserDto } from '../decorators/auth-user.decorator';
 import { patchFormData } from '../utils/path-form-data.util';
 
 export interface ImmichFile extends Express.Multer.File {
@@ -50,7 +49,7 @@ export const multerUtils = { fileFilter, filename, destination };
 
 const logger = new Logger('AssetUploadConfig');
 
-function fileFilter(req: Request, file: any, cb: any) {
+function fileFilter(req: AuthRequest, file: any, cb: any) {
   if (!req.user || (req.user.isPublicUser && !req.user.isAllowUpload)) {
     return cb(new UnauthorizedException());
   }
@@ -66,7 +65,7 @@ function fileFilter(req: Request, file: any, cb: any) {
   }
 }
 
-function destination(req: Request, file: Express.Multer.File, cb: any) {
+function destination(req: AuthRequest, file: Express.Multer.File, cb: any) {
   if (!req.user || (req.user.isPublicUser && !req.user.isAllowUpload)) {
     return cb(new UnauthorizedException());
   }
@@ -82,7 +81,7 @@ function destination(req: Request, file: Express.Multer.File, cb: any) {
   cb(null, uploadFolder);
 }
 
-function filename(req: Request, file: Express.Multer.File, cb: any) {
+function filename(req: AuthRequest, file: Express.Multer.File, cb: any) {
   if (!req.user || (req.user.isPublicUser && !req.user.isAllowUpload)) {
     return cb(new UnauthorizedException());
   }
