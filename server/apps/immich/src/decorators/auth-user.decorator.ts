@@ -1,7 +1,12 @@
 export { AuthUserDto } from '@app/domain';
 import { AuthUserDto, LoginDetails } from '@app/domain';
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { Request } from 'express';
 import { UAParser } from 'ua-parser-js';
+
+export interface AuthRequest extends Request {
+  user?: AuthUserDto;
+}
 
 export const GetAuthUser = createParamDecorator((data, ctx: ExecutionContext): AuthUserDto => {
   return ctx.switchToHttp().getRequest<{ user: AuthUserDto }>().user;

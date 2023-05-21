@@ -504,17 +504,4 @@ describe('AssetService', () => {
       expect(storageMock.createReadStream).toHaveBeenCalledWith('fake_path/asset_1.jpeg', 'image/jpeg');
     });
   });
-
-  describe('get map markers', () => {
-    it('should get geo information of assets', async () => {
-      assetRepositoryMock.getAllByUserId.mockResolvedValue(_getAssets());
-
-      const markers = await sut.getMapMarkers(authStub.admin, {});
-
-      expect(markers).toHaveLength(1);
-      expect(markers[0].lat).toBe(_getAsset_1().exifInfo?.latitude);
-      expect(markers[0].lon).toBe(_getAsset_1().exifInfo?.longitude);
-      expect(markers[0].id).toBe(_getAsset_1().id);
-    });
-  });
 });

@@ -30,8 +30,6 @@ import {
   JobName,
   mapAsset,
   mapAssetWithoutExif,
-  MapMarkerResponseDto,
-  mapAssetMapMarker,
   PartnerCore,
 } from '@app/domain';
 import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
@@ -147,12 +145,6 @@ export class AssetService {
     const assets = await this._assetRepository.getAllByUserId(authUser.id, dto);
 
     return assets.map((asset) => mapAsset(asset));
-  }
-
-  public async getMapMarkers(authUser: AuthUserDto, dto: AssetSearchDto): Promise<MapMarkerResponseDto[]> {
-    const assets = await this._assetRepository.getAllByUserId(authUser.id, dto);
-
-    return assets.map((asset) => mapAssetMapMarker(asset)).filter((marker) => marker != null) as MapMarkerResponseDto[];
   }
 
   public async getAssetByTimeBucket(

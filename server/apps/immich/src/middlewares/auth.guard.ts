@@ -1,7 +1,7 @@
 import { AuthService } from '@app/domain';
 import { CanActivate, ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Request } from 'express';
+import { AuthRequest } from '../decorators/auth-user.decorator';
 import { Metadata } from '../decorators/authenticated.decorator';
 
 @Injectable()
@@ -21,7 +21,7 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    const req = context.switchToHttp().getRequest<Request>();
+    const req = context.switchToHttp().getRequest<AuthRequest>();
 
     const authDto = await this.authService.validate(req.headers, req.query as Record<string, string>);
     if (!authDto) {

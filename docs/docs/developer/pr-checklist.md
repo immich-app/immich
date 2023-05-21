@@ -1,16 +1,8 @@
----
-sidebar_position: 3
----
-
-# Contributing
-
-Contributions are welcome!
-
-## PR Checklist
+# PR Checklist
 
 When contributing code through a pull request, please check the following:
 
-### Web Checks
+## Web Checks
 
 - [ ] `npm run lint` (linting via ESLint)
 - [ ] `npm run format` (formatting via Prettier)
@@ -21,7 +13,7 @@ When contributing code through a pull request, please check the following:
 Run all web checks with `npm run check:all`
 :::
 
-### Server Checks
+## Server Checks
 
 - [ ] `npm run lint` (linting via ESLint)
 - [ ] `npm run format` (formatting via Prettier)
@@ -32,12 +24,10 @@ Run all web checks with `npm run check:all`
 Run all server checks with `npm run check:all`
 :::
 
-### Open API
+## Open API
 
-The Open API client libraries need to be regenerated whenever there are changes to the `immich-openapi-specs.json` file.
+The Open API client libraries need to be regenerated whenever there are changes to the `immich-openapi-specs.json` file. See [Open API](/docs/developer/open-api.md) for more details.
 
-- [ ] `npm run api:generate`
+## Database Migrations
 
-:::tip
-This can also be run via `make api` from the project root directory (not in the `server` folder)
-:::
+A database migration needs to be generated whenever there are changes to `server/libs/infra/src/entities`. See [Database Migration](/docs/developer/database-migrations.md) for more details.

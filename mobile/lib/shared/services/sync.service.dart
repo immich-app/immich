@@ -11,7 +11,6 @@ import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/utils/builtin_extensions.dart';
 import 'package:immich_mobile/utils/diff.dart';
-import 'package:immich_mobile/utils/tuple.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -94,7 +93,7 @@ class SyncService {
     deleteCandidates.sort(Asset.compareById);
     existing.sort(Asset.compareById);
     return _diffAssets(existing, deleteCandidates, compare: Asset.compareById)
-        .third
+        .$3
         .map((e) => e.id)
         .toList();
   }
@@ -165,14 +164,14 @@ class SyncService {
         .thenByFileModifiedAt()
         .findAll();
     remote.sort(Asset.compareByOwnerDeviceLocalIdModified);
-    final diff = _diffAssets(remote, inDb, remote: true);
-    if (diff.first.isEmpty && diff.second.isEmpty && diff.third.isEmpty) {
+    final (toAdd, toUpdate, toRemove) = _diffAssets(remote, inDb, remote: true);
+    if (toAdd.isEmpty && toUpdate.isEmpty && toRemove.isEmpty) {
       return false;
     }
-    final idsToDelete = diff.third.map((e) => e.id).toList();
+    final idsToDelete = toRemove.map((e) => e.id).toList();
     try {
       await _db.writeTxn(() => _db.assets.deleteAll(idsToDelete));
-      await upsertAssetsWithExif(diff.first + diff.second);
+      await upsertAssetsWithExif(toAdd + toUpdate);
     } on IsarError catch (e) {
       _log.severe("Failed to sync remote assets to db: $e");
     }
@@ -252,8 +251,7 @@ class SyncService {
         .findAll();
     final List<Asset> assetsOnRemote = dto.getAssets();
     assetsOnRemote.sort(Asset.compareByOwnerDeviceLocalIdModified);
-    final d = _diffAssets(assetsOnRemote, assetsInDb);
-    final List<Asset> toAdd = d.first, toUpdate = d.second, toUnlink = d.third;
+    final (toAdd, toUpdate, toUnlink) = _diffAssets(assetsOnRemote, assetsInDb);
 
     // update shared users
     final List<User> sharedUsers = album.sharedUsers.toList(growable: false);
@@ -271,9 +269,9 @@ class SyncService {
     );
 
     // for shared album: put missing album assets into local DB
-    final resultPair = await _linkWithExistingFromDb(toAdd);
-    await upsertAssetsWithExif(resultPair.second);
-    final assetsToLink = resultPair.first + resultPair.second;
+    final (existingInDb, updated) = await _linkWithExistingFromDb(toAdd);
+    await upsertAssetsWithExif(updated);
+    final assetsToLink = existingInDb + updated;
     final usersToLink = (await _db.users.getAllById(userIdsToAdd)).cast<User>();
 
     album.name = dto.albumName;
@@ -327,9 +325,10 @@ class SyncService {
     if (dto.assetCount == dto.assets.length) {
       // in case an album contains assets not yet present in local DB:
       // put missing album assets into local DB
-      final result = await _linkWithExistingFromDb(dto.getAssets());
-      existing.addAll(result.first);
-      await upsertAssetsWithExif(result.second);
+      final (existingInDb, updated) =
+          await _linkWithExistingFromDb(dto.getAssets());
+      existing.addAll(existingInDb);
+      await upsertAssetsWithExif(updated);
 
       final Album a = await Album.remote(dto);
       await _db.writeTxn(() => _db.albums.store(a));
@@ -393,18 +392,19 @@ class SyncService {
     _log.fine(
       "Syncing all local albums almost done. Collected ${deleteCandidates.length} asset candidates to delete",
     );
-    final pair = _handleAssetRemoval(deleteCandidates, existing, remote: false);
+    final (toDelete, toUpdate) =
+        _handleAssetRemoval(deleteCandidates, existing, remote: false);
     _log.fine(
-      "${pair.first.length} assets to delete, ${pair.second.length} to update",
+      "${toDelete.length} assets to delete, ${toUpdate.length} to update",
     );
-    if (pair.first.isNotEmpty || pair.second.isNotEmpty) {
+    if (toDelete.isNotEmpty || toUpdate.isNotEmpty) {
       await _db.writeTxn(() async {
-        await _db.assets.deleteAll(pair.first);
-        await _db.exifInfos.deleteAll(pair.first);
-        await _db.assets.putAll(pair.second);
+        await _db.assets.deleteAll(toDelete);
+        await _db.exifInfos.deleteAll(toDelete);
+        await _db.assets.putAll(toUpdate);
       });
       _log.info(
-        "Removed ${pair.first.length} and updated ${pair.second.length} local assets from DB",
+        "Removed ${toDelete.length} and updated ${toUpdate.length} local assets from DB",
       );
     }
     return anyChanges;
@@ -441,8 +441,8 @@ class SyncService {
     final List<Asset> onDevice =
         await ape.getAssets(excludedAssets: excludedAssets);
     onDevice.sort(Asset.compareByLocalId);
-    final d = _diffAssets(onDevice, inDb, compare: Asset.compareByLocalId);
-    final List<Asset> toAdd = d.first, toUpdate = d.second, toDelete = d.third;
+    final (toAdd, toUpdate, toDelete) =
+        _diffAssets(onDevice, inDb, compare: Asset.compareByLocalId);
     if (toAdd.isEmpty &&
         toUpdate.isEmpty &&
         toDelete.isEmpty &&
@@ -458,12 +458,12 @@ class SyncService {
     _log.fine(
       "Syncing local album ${ape.name}. ${toAdd.length} assets to add, ${toUpdate.length} to update, ${toDelete.length} to delete",
     );
-    final result = await _linkWithExistingFromDb(toAdd);
+    final (existingInDb, updated) = await _linkWithExistingFromDb(toAdd);
     _log.fine(
-      "Linking assets to add with existing from db. ${result.first.length} existing, ${result.second.length} to update",
+      "Linking assets to add with existing from db. ${existingInDb.length} existing, ${updated.length} to update",
     );
     deleteCandidates.addAll(toDelete);
-    existing.addAll(result.first);
+    existing.addAll(existingInDb);
     album.name = ape.name;
     album.modifiedAt = ape.lastModified ?? DateTime.now();
     if (album.thumbnail.value != null &&
@@ -472,10 +472,10 @@ class SyncService {
     }
     try {
       await _db.writeTxn(() async {
-        await _db.assets.putAll(result.second);
+        await _db.assets.putAll(updated);
         await _db.assets.putAll(toUpdate);
         await album.assets
-            .update(link: result.first + result.second, unlink: toDelete);
+            .update(link: existingInDb + updated, unlink: toDelete);
         await _db.albums.put(album);
         album.thumbnail.value ??= await album.assets.filter().findFirst();
         await album.thumbnail.save();
@@ -510,11 +510,11 @@ class SyncService {
       return false;
     }
     album.modifiedAt = ape.lastModified ?? DateTime.now();
-    final result = await _linkWithExistingFromDb(newAssets);
+    final (existingInDb, updated) = await _linkWithExistingFromDb(newAssets);
     try {
       await _db.writeTxn(() async {
-        await _db.assets.putAll(result.second);
-        await album.assets.update(link: result.first + result.second);
+        await _db.assets.putAll(updated);
+        await album.assets.update(link: existingInDb + updated);
         await _db.albums.put(album);
       });
       _log.info("Fast synced local album ${ape.name} to DB");
@@ -536,15 +536,15 @@ class SyncService {
     _log.info("Syncing a new local album to DB: ${ape.name}");
     final Album a = Album.local(ape);
     final assets = await ape.getAssets(excludedAssets: excludedAssets);
-    final result = await _linkWithExistingFromDb(assets);
+    final (existingInDb, updated) = await _linkWithExistingFromDb(assets);
     _log.info(
-      "${result.first.length} assets already existed in DB, to upsert ${result.second.length}",
+      "${existingInDb.length} assets already existed in DB, to upsert ${updated.length}",
     );
-    await upsertAssetsWithExif(result.second);
-    existing.addAll(result.first);
-    a.assets.addAll(result.first);
-    a.assets.addAll(result.second);
-    final thumb = result.first.firstOrNull ?? result.second.firstOrNull;
+    await upsertAssetsWithExif(updated);
+    existing.addAll(existingInDb);
+    a.assets.addAll(existingInDb);
+    a.assets.addAll(updated);
+    final thumb = existingInDb.firstOrNull ?? updated.firstOrNull;
     a.thumbnail.value = thumb;
     try {
       await _db.writeTxn(() => _db.albums.store(a));
@@ -555,11 +555,11 @@ class SyncService {
   }
 
   /// Returns a tuple (existing, updated)
-  Future<Pair<List<Asset>, List<Asset>>> _linkWithExistingFromDb(
+  Future<(List<Asset> existing, List<Asset> updated)> _linkWithExistingFromDb(
     List<Asset> assets,
   ) async {
     if (assets.isEmpty) {
-      return const Pair([], []);
+      return ([].cast<Asset>(), [].cast<Asset>());
     }
     final List<Asset> inDb = await _db.assets
         .where()
@@ -596,7 +596,7 @@ class SyncService {
       ),
       onlySecond: (Asset b) => toUpsert.add(b),
     );
-    return Pair(existing, toUpsert);
+    return (existing, toUpsert);
   }
 
   /// Inserts or updates the assets in the database with their ExifInfo (if any)
@@ -623,7 +623,7 @@ class SyncService {
 }
 
 /// Returns a triple(toAdd, toUpdate, toRemove)
-Triple<List<Asset>, List<Asset>, List<Asset>> _diffAssets(
+(List<Asset> toAdd, List<Asset> toUpdate, List<Asset> toRemove) _diffAssets(
   List<Asset> assets,
   List<Asset> inDb, {
   bool? remote,
@@ -660,30 +660,30 @@ Triple<List<Asset>, List<Asset>, List<Asset>> _diffAssets(
     },
     onlySecond: (Asset b) => toAdd.add(b),
   );
-  return Triple(toAdd, toUpdate, toRemove);
+  return (toAdd, toUpdate, toRemove);
 }
 
 /// returns a tuple (toDelete toUpdate) when assets are to be deleted
-Pair<List<int>, List<Asset>> _handleAssetRemoval(
+(List<int> toDelete, List<Asset> toUpdate) _handleAssetRemoval(
   List<Asset> deleteCandidates,
   List<Asset> existing, {
   bool? remote,
 }) {
   if (deleteCandidates.isEmpty) {
-    return const Pair([], []);
+    return const ([], []);
   }
   deleteCandidates.sort(Asset.compareById);
   deleteCandidates.uniqueConsecutive((a) => a.id);
   existing.sort(Asset.compareById);
   existing.uniqueConsecutive((a) => a.id);
-  final triple = _diffAssets(
+  final (tooAdd, toUpdate, toRemove) = _diffAssets(
     existing,
     deleteCandidates,
     compare: Asset.compareById,
     remote: remote,
   );
-  assert(triple.first.isEmpty, "toAdd should be empty in _handleAssetRemoval");
-  return Pair(triple.third.map((e) => e.id).toList(), triple.second);
+  assert(tooAdd.isEmpty, "toAdd should be empty in _handleAssetRemoval");
+  return (toRemove.map((e) => e.id).toList(), toUpdate);
 }
 
 /// returns `true` if the albums differ on the surface

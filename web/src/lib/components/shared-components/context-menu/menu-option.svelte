@@ -1,22 +1,11 @@
 <script>
-	import { createEventDispatcher } from 'svelte';
-
-	export let isDisabled = false;
 	export let text = '';
-
-	const dispatch = createEventDispatcher();
-
-	const handleClick = () => {
-		if (isDisabled) return;
-
-		dispatch('click');
-	};
 </script>
 
 <button
-	class:disabled={isDisabled}
-	on:click={handleClick}
-	class="bg-slate-100 hover:bg-gray-200 dark:text-immich-dark-bg transition-all p-4 w-full text-left text-sm font-medium"
+	on:click
+	class="bg-slate-100 hover:bg-gray-200 dark:text-immich-dark-bg p-4 w-full text-left text-sm font-medium focus:outline-none focus:ring-inset focus:ring-2"
+	role="menuitem"
 >
 	{#if text}
 		{text}

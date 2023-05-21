@@ -12,6 +12,7 @@ import {
   UserEntity,
   UserTokenEntity,
   AssetFaceEntity,
+  ExifEntity,
 } from '@app/infra/entities';
 import {
   AlbumResponseDto,
@@ -220,6 +221,38 @@ export const assetEntityStub = {
     fileModifiedAt: '2022-06-19T23:41:36.910Z',
     fileCreatedAt: '2022-06-19T23:41:36.910Z',
   } as AssetEntity),
+
+  withLocation: Object.freeze<AssetEntity>({
+    id: 'asset-with-favorite-id',
+    deviceAssetId: 'device-asset-id',
+    fileModifiedAt: '2023-02-23T05:06:29.716Z',
+    fileCreatedAt: '2023-02-23T05:06:29.716Z',
+    owner: userEntityStub.user1,
+    ownerId: 'user-id',
+    deviceId: 'device-id',
+    originalPath: '/original/path.ext',
+    resizePath: '/uploads/user-id/thumbs/path.ext',
+    type: AssetType.IMAGE,
+    webpPath: null,
+    encodedVideoPath: null,
+    createdAt: '2023-02-23T05:06:29.716Z',
+    updatedAt: '2023-02-23T05:06:29.716Z',
+    mimeType: null,
+    isFavorite: false,
+    isArchived: false,
+    duration: null,
+    isVisible: true,
+    livePhotoVideo: null,
+    livePhotoVideoId: null,
+    tags: [],
+    sharedLinks: [],
+    originalFileName: 'asset-id.ext',
+    faces: [],
+    exifInfo: {
+      latitude: 100,
+      longitude: 100,
+    } as ExifEntity,
+  }),
 };
 
 export const albumStub = {
