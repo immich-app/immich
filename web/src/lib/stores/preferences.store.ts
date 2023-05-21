@@ -1,4 +1,5 @@
 import { browser } from '$app/environment';
+import { MapSettings } from '$lib/components/map-page/map-settings-modal.svelte';
 import { persisted } from 'svelte-local-storage-store';
 
 const initialTheme =
@@ -18,4 +19,9 @@ export const locale = persisted<string | undefined>('locale', undefined, {
 		parse: (text) => text,
 		stringify: (obj) => obj ?? ''
 	}
+});
+
+export const mapSettings = persisted<MapSettings>('map-settings', {
+	allowDarkMode: true,
+	onlyFavorites: false
 });

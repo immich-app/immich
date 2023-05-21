@@ -12,11 +12,13 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
-	import { Map, type LatLngExpression } from 'leaflet';
+	import { Map, type LatLngExpression, type MapOptions } from 'leaflet';
 	import 'leaflet/dist/leaflet.css';
 
-	export let latlng: LatLngExpression;
+	export let center: LatLngExpression;
 	export let zoom: number;
+	export let options: MapOptions | undefined = undefined;
+	export let allowDarkMode = false;
 	let container: HTMLDivElement;
 	let map: Map;
 
@@ -24,7 +26,7 @@
 
 	onMount(() => {
 		if (browser) {
-			map = new Map(container);
+			map = new Map(container, options);
 		}
 	});
 
@@ -32,11 +34,17 @@
 		if (map) map.remove();
 	});
 
-	$: if (map) map.setView(latlng, zoom);
+	$: if (map) map.setView(center, zoom);
 </script>
 
-<div bind:this={container} class="w-full h-full">
+<div bind:this={container} class="w-full h-full" class:map-dark={allowDarkMode}>
 	{#if map}
 		<slot />
 	{/if}
 </div>
+
+<style>
+	:global(.dark) .map-dark :global(.leaflet-layer) {
+		filter: invert(100%) brightness(130%) saturate(0%);
+	}
+</style>

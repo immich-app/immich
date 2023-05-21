@@ -1041,11 +1041,9 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getMapMarkers**
-> List<MapMarkerResponseDto> getMapMarkers(isFavorite, isArchived, skip)
+> List<MapMarkerResponseDto> getMapMarkers(isFavorite)
 
 
-
-Get all assets that have GPS information embedded
 
 ### Example
 ```dart
@@ -1067,11 +1065,9 @@ import 'package:openapi/api.dart';
 
 final api_instance = AssetApi();
 final isFavorite = true; // bool | 
-final isArchived = true; // bool | 
-final skip = 8.14; // num | 
 
 try {
-    final result = api_instance.getMapMarkers(isFavorite, isArchived, skip);
+    final result = api_instance.getMapMarkers(isFavorite);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getMapMarkers: $e\n');
@@ -1083,8 +1079,6 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **isFavorite** | **bool**|  | [optional] 
- **isArchived** | **bool**|  | [optional] 
- **skip** | **num**|  | [optional] 
 
 ### Return type
 
