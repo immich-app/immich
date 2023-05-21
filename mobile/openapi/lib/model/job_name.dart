@@ -45,6 +45,7 @@ class JobName {
     backgroundTaskQueue,
     storageTemplateMigrationQueue,
     searchQueue,
+    sidecarQueue,
   ];
 
   static JobName? fromJson(dynamic value) => JobNameTypeTransformer().decode(value);
@@ -105,3 +106,4 @@ class JobNameTypeTransformer {
   /// Singleton [JobNameTypeTransformer] instance.
   static JobNameTypeTransformer? _instance;
 }
+
