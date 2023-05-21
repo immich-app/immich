@@ -143,12 +143,8 @@ export class MetadataExtractionProcessor {
         return null;
       };
 
-      const timeZone = exifTimeZone(
-        getExifProperty('DateTimeOriginal', 'CreateDate') ?? asset.fileCreatedAt,
-      );
-      const fileCreatedAt = exifToDate(
-        getExifProperty('DateTimeOriginal', 'CreateDate') ?? asset.fileCreatedAt,
-      );
+      const timeZone = exifTimeZone(getExifProperty('DateTimeOriginal', 'CreateDate') ?? asset.fileCreatedAt);
+      const fileCreatedAt = exifToDate(getExifProperty('DateTimeOriginal', 'CreateDate') ?? asset.fileCreatedAt);
       const fileModifiedAt = exifToDate(getExifProperty('ModifyDate') ?? asset.fileModifiedAt);
       const fileStats = fs.statSync(asset.originalPath);
       const fileSizeInBytes = fileStats.size;

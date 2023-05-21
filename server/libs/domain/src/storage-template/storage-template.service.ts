@@ -75,7 +75,7 @@ export class StorageTemplateService {
     if (asset.originalPath !== destination) {
       const source = asset.originalPath;
 
-      let sidecarMoved = false
+      let sidecarMoved = false;
       try {
         await this.storageRepository.moveFile(asset.originalPath, destination);
 
