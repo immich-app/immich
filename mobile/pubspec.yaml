@@ -16,8 +16,6 @@ dependencies:
   photo_manager: ^2.5.0
   flutter_hooks: ^0.18.6
   hooks_riverpod: ^2.2.0
-  hive: ^2.2.1
-  hive_flutter: ^1.1.0
   cached_network_image: ^3.2.2
   intl: ^0.18.0
   auto_route: ^5.0.1
@@ -59,7 +57,6 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.1
-  hive_generator: ^2.0.0
   build_runner: ^2.2.1
   auto_route_generator: ^5.0.2
   flutter_launcher_icons: "^0.9.2"
