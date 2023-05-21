@@ -241,7 +241,18 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
-        ['-crf 23', '-preset ultrafast', '-vcodec h264', '-acodec aac', '-movflags faststart'],
+        [
+          '-vcodec h264',
+          '-acodec aac',
+          '-movflags faststart',
+          '-preset ultrafast',
+          '-threads 2',
+          '-x264-params "pools=none"',
+          '-x264-params "frame-threads=2"',
+          '-crf 23',
+          '-maxrate 4500k',
+        ],
+        false,
       );
     });
 
@@ -264,7 +275,18 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
-        ['-crf 23', '-preset ultrafast', '-vcodec h264', '-acodec aac', '-movflags faststart'],
+        [
+          '-vcodec h264',
+          '-acodec aac',
+          '-movflags faststart',
+          '-preset ultrafast',
+          '-threads 2',
+          '-x264-params "pools=none"',
+          '-x264-params "frame-threads=2"',
+          '-crf 23',
+          '-maxrate 4500k',
+        ],
+        false,
       );
     });
 
@@ -275,7 +297,19 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
-        ['-crf 23', '-preset ultrafast', '-vcodec h264', '-acodec aac', '-movflags faststart', '-vf scale=-2:720'],
+        [
+          '-vcodec h264',
+          '-acodec aac',
+          '-movflags faststart',
+          '-vf scale=-2:720',
+          '-preset ultrafast',
+          '-threads 2',
+          '-x264-params "pools=none"',
+          '-x264-params "frame-threads=2"',
+          '-crf 23',
+          '-maxrate 4500k',
+        ],
+        false,
       );
     });
 
@@ -286,7 +320,19 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
-        ['-crf 23', '-preset ultrafast', '-vcodec h264', '-acodec aac', '-movflags faststart', '-vf scale=720:-2'],
+        [
+          '-vcodec h264',
+          '-acodec aac',
+          '-movflags faststart',
+          '-vf scale=720:-2',
+          '-preset ultrafast',
+          '-threads 2',
+          '-x264-params "pools=none"',
+          '-x264-params "frame-threads=2"',
+          '-crf 23',
+          '-maxrate 4500k',
+        ],
+        false,
       );
     });
 
@@ -297,7 +343,19 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
-        ['-crf 23', '-preset ultrafast', '-vcodec h264', '-acodec aac', '-movflags faststart', '-vf scale=-2:720'],
+        [
+          '-vcodec h264',
+          '-acodec aac',
+          '-movflags faststart',
+          '-vf scale=-2:720',
+          '-preset ultrafast',
+          '-threads 2',
+          '-x264-params "pools=none"',
+          '-x264-params "frame-threads=2"',
+          '-crf 23',
+          '-maxrate 4500k',
+        ],
+        false,
       );
     });
 
@@ -308,7 +366,19 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
-        ['-crf 23', '-preset ultrafast', '-vcodec h264', '-acodec aac', '-movflags faststart', '-vf scale=-2:720'],
+        [
+          '-vcodec h264',
+          '-acodec aac',
+          '-movflags faststart',
+          '-vf scale=-2:720',
+          '-preset ultrafast',
+          '-threads 2',
+          '-x264-params "pools=none"',
+          '-x264-params "frame-threads=2"',
+          '-crf 23',
+          '-maxrate 4500k',
+        ],
+        false,
       );
     });
 
@@ -317,6 +387,72 @@ describe(MediaService.name, () => {
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: 'invalid' }]);
       await sut.handleVideoConversion({ asset: assetEntityStub.video });
       expect(mediaMock.transcode).not.toHaveBeenCalled();
+    });
+
+    it('should transcode in two passes when enabled', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TWO_PASS, value: true }]);
+      await sut.handleVideoConversion({ asset: assetEntityStub.video });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        [
+          '-vcodec h264',
+          '-acodec aac',
+          '-movflags faststart',
+          '-vf scale=-2:720',
+          '-preset ultrafast',
+          '-threads 2',
+          '-x264-params "pools=none"',
+          '-x264-params "frame-threads=2"',
+          '-b:v 3104k',
+          '-minrate 1552k',
+          '-maxrate 4500k',
+        ],
+        true,
+      );
+    });
+
+    it('should not set a max bitrate if 0', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '0' }]);
+      await sut.handleVideoConversion({ asset: assetEntityStub.video });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        [
+          '-vcodec h264',
+          '-acodec aac',
+          '-movflags faststart',
+          '-vf scale=-2:720',
+          '-preset ultrafast',
+          '-threads 2',
+          '-x264-params "pools=none"',
+          '-x264-params "frame-threads=2"',
+          '-crf 23',
+        ],
+        false,
+      );
+    });
+
+    it('should not configure threads if set to 0', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_THREADS, value: 0 }]);
+      await sut.handleVideoConversion({ asset: assetEntityStub.video });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        [
+          '-vcodec h264',
+          '-acodec aac',
+          '-movflags faststart',
+          '-vf scale=-2:720',
+          '-preset ultrafast',
+          '-crf 23',
+          '-maxrate 4500k',
+        ],
+        false,
+      );
     });
   });
 });
