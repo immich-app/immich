@@ -431,12 +431,12 @@ export const systemConfigStub = {
   defaults: Object.freeze({
     ffmpeg: {
       crf: 23,
-      threads: 2,
+      threads: 0,
       preset: 'ultrafast',
       targetAudioCodec: 'aac',
       targetResolution: '720',
       targetVideoCodec: 'h264',
-      maxBitrate: '4500k',
+      maxBitrate: '0',
       twoPass: false,
       transcode: TranscodePreset.REQUIRED,
     },

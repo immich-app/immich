@@ -150,7 +150,7 @@
 					<SettingInputField
 						inputType={SettingInputFieldType.TEXT}
 						label="MAX BITRATE"
-						desc="Setting a max bitrate can make filesizes more predictable at a minor cost to quality. At 720p, typical values are 2600k for VP9 or HEVC, or 4500k for H.264."
+						desc="Setting a max bitrate can make filesizes more predictable at a minor cost to quality. At 720p, typical values are 2600k for VP9 or HEVC, or 4500k for H.264. Disabled if set to 0."
 						bind:value={ffmpegConfig.maxBitrate}
 						isEdited={!(ffmpegConfig.maxBitrate == savedConfig.maxBitrate)}
 					/>
@@ -158,7 +158,7 @@
 					<SettingInputField
 						inputType={SettingInputFieldType.NUMBER}
 						label="THREADS"
-						desc="Higher values lead to faster encoding, but leave less room for the server to process other tasks while active. This value should not be more than the number of CPU cores."
+						desc="Higher values lead to faster encoding, but leave less room for the server to process other tasks while active. This value should not be more than the number of CPU cores. Maximizes utilization if set to 0."
 						bind:value={ffmpegConfig.threads}
 						isEdited={!(ffmpegConfig.threads == savedConfig.threads)}
 					/>
