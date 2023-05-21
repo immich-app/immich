@@ -345,7 +345,7 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should transcode in two passes when enabled and max bitrate is above 0', async () => {
+    it('should transcode in two passes for h264/h265 when enabled and max bitrate is above 0', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       configMock.load.mockResolvedValue([
         { key: SystemConfigKey.FFMPEG_MAX_BITRATE, value: '4500k' },
@@ -369,7 +369,7 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should fallback to one pass if two-pass is enabled but no max bitrate is set', async () => {
+    it('should fallback to one pass for h264/h265 if two-pass is enabled but no max bitrate is set', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TWO_PASS, value: true }]);
       await sut.handleVideoConversion({ asset: assetEntityStub.video });
@@ -400,6 +400,7 @@ describe(MediaService.name, () => {
           '-row-mt 1',
           '-threads 2',
           '-crf 23',
+          '-b:v 0',
         ],
         false,
       );
@@ -424,6 +425,7 @@ describe(MediaService.name, () => {
           '-row-mt 1',
           '-threads 2',
           '-crf 23',
+          '-b:v 0',
         ],
         false,
       );

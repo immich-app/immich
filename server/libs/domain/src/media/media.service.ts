@@ -242,9 +242,9 @@ export class MediaService {
 
     // transcode efficiency
     const limitThreads = ffmpeg.threads > 0;
-    const maxBitrateValue = Number.parseInt(ffmpeg.maxBitrate);
-    const constrainMaximumBitrate = maxBitrateValue && maxBitrateValue > 0;
-    const bitrateUnit = ffmpeg.maxBitrate.substring(maxBitrateValue.toString().length) || 'k'; // use inputted unit if provided, else default to kbps
+    const maxBitrateValue = Number.parseInt(ffmpeg.maxBitrate) || 0;
+    const constrainMaximumBitrate = maxBitrateValue > 0;
+    const bitrateUnit = ffmpeg.maxBitrate.trim().substring(maxBitrateValue.toString().length); // use inputted unit if provided
 
     if (shouldScale) {
       options.push(`-vf scale=${scaling}`);
@@ -275,7 +275,7 @@ export class MediaService {
       }
     }
 
-    // two-pass mode uses bitrate ranges, so it requires a max bitrate from which to derive a target and min bitrate
+    // two-pass mode for x264/x265 uses bitrate ranges, so it requires a max bitrate from which to derive a target and min bitrate
     if (constrainMaximumBitrate && ffmpeg.twoPass) {
       const targetBitrateValue = Math.ceil(maxBitrateValue / 1.45); // recommended by https://developers.google.com/media/vp9/settings/vod
       const minBitrateValue = targetBitrateValue / 2;
@@ -283,7 +283,8 @@ export class MediaService {
       options.push(`-b:v ${targetBitrateValue}${bitrateUnit}`);
       options.push(`-minrate ${minBitrateValue}${bitrateUnit}`);
       options.push(`-maxrate ${maxBitrateValue}${bitrateUnit}`);
-    } else if (constrainMaximumBitrate) {
+    } else if (constrainMaximumBitrate || isVP9) {
+      // for vp9, these flags work for both one-pass and two-pass
       options.push(`-crf ${ffmpeg.crf}`);
       options.push(`${isVP9 ? '-b:v' : '-maxrate'} ${maxBitrateValue}${bitrateUnit}`);
     } else {

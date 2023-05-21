@@ -81,7 +81,7 @@
 					<SettingInputField
 						inputType={SettingInputFieldType.NUMBER}
 						label="CONSTANT RATE FACTOR (-crf)"
-						desc="Video quality level. Typical values are 23 for H.264, 28 for HEVC, and 31 for VP9. Lower is better, but takes longer to encode and produces larger filesizes."
+						desc="Video quality level. Typical values are 23 for H.264, 28 for HEVC, and 31 for VP9. Lower is better, but takes longer to encode and produces larger files."
 						bind:value={ffmpegConfig.crf}
 						required={true}
 						isEdited={!(ffmpegConfig.crf == savedConfig.crf)}
@@ -89,7 +89,7 @@
 
 					<SettingSelect
 						label="PRESET (-preset)"
-						desc="Compression speed. Slower presets produce smaller filesizes, and increase quality when targeting a certain bitrate. VP9 ignores speeds above `faster`."
+						desc="Compression speed. Slower presets produce smaller files, and increase quality when targeting a certain bitrate. VP9 ignores speeds above `faster`."
 						bind:value={ffmpegConfig.preset}
 						name="preset"
 						options={[
@@ -121,7 +121,7 @@
 
 					<SettingSelect
 						label="VIDEO CODEC"
-						desc="VP9 has high efficiency and web compatibility, but takes longer to transcode. HEVC performs similarly, but has lower web compatibility. H.264 is widely compatible and quick to transcode, but produces much larger filesizes."
+						desc="VP9 has high efficiency and web compatibility, but takes longer to transcode. HEVC performs similarly, but has lower web compatibility. H.264 is widely compatible and quick to transcode, but produces much larger files."
 						bind:value={ffmpegConfig.targetVideoCodec}
 						options={[
 							{ value: 'h264', text: 'h264' },
@@ -134,7 +134,7 @@
 
 					<SettingSelect
 						label="TARGET RESOLUTION"
-						desc="Higher resolutions can preserve more detail but take longer to encode, have larger filesizes, and can reduce app responsiveness."
+						desc="Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness."
 						bind:value={ffmpegConfig.targetResolution}
 						options={[
 							{ value: '2160', text: '4k' },
@@ -150,7 +150,7 @@
 					<SettingInputField
 						inputType={SettingInputFieldType.TEXT}
 						label="MAX BITRATE"
-						desc="Setting a max bitrate can make filesizes more predictable at a minor cost to quality. At 720p, typical values are 2600k for VP9 or HEVC, or 4500k for H.264. Disabled if set to 0."
+						desc="Setting a max bitrate can make file sizes more predictable at a minor cost to quality. At 720p, typical values are 2600k for VP9 or HEVC, or 4500k for H.264. Disabled if set to 0."
 						bind:value={ffmpegConfig.maxBitrate}
 						isEdited={!(ffmpegConfig.maxBitrate == savedConfig.maxBitrate)}
 					/>
@@ -188,7 +188,7 @@
 
 					<SettingSwitch
 						title="TWO-PASS ENCODING"
-						subtitle="Transcode in two passes to produce better encoded videos. This mode uses a bitrate range based on the max bitrate and ignores CRF."
+						subtitle="Transcode in two passes to produce better encoded videos. When max bitrate is enabled (required for it to work with H.264 and HEVC), this mode uses a bitrate range based on the max bitrate and ignores CRF. For VP9, CRF can be used if max bitrate is disabled."
 						bind:checked={ffmpegConfig.twoPass}
 						isEdited={!(ffmpegConfig.twoPass === savedConfig.twoPass)}
 					/>
