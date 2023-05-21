@@ -14,4 +14,5 @@ export interface ReverseGeocodeResult {
 export interface IGeocodingRepository {
   init(): Promise<void>;
   reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult>;
+  deleteCache(): Promise<void>;
 }
