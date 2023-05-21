@@ -27,7 +27,7 @@
 <CircleIconButton {title} logo={icon} on:click={handleShowMenu} />
 
 {#if showContextMenu}
-	<ContextMenu {...contextMenuPosition} on:clickoutside={() => (showContextMenu = false)}>
+	<ContextMenu {...contextMenuPosition} on:outclick={() => (showContextMenu = false)}>
 		<div class="flex flex-col rounded-lg">
 			<slot />
 		</div>
