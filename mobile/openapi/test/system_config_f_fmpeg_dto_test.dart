@@ -16,12 +16,12 @@ void main() {
   // final instance = SystemConfigFFmpegDto();
 
   group('test SystemConfigFFmpegDto', () {
-    // num crf
+    // int crf
     test('to test the property `crf`', () async {
       // TODO
     });
 
-    // num threads
+    // int threads
     test('to test the property `threads`', () async {
       // TODO
     });

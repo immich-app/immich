@@ -8,8 +8,8 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**crf** | **num** |  | 
-**threads** | **num** |  | 
+**crf** | **int** |  | 
+**threads** | **int** |  | 
 **preset** | **String** |  | 
 **targetVideoCodec** | **String** |  | 
 **targetAudioCodec** | **String** |  | 

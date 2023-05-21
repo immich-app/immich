@@ -24,9 +24,9 @@ class SystemConfigFFmpegDto {
     required this.transcode,
   });
 
-  num crf;
+  int crf;
 
-  num threads;
+  int threads;
 
   String preset;
 
@@ -103,12 +103,8 @@ class SystemConfigFFmpegDto {
       }());
 
       return SystemConfigFFmpegDto(
-        crf: json[r'crf'] == null
-            ? null
-            : num.parse(json[r'crf'].toString()),
-        threads: json[r'threads'] == null
-            ? null
-            : num.parse(json[r'threads'].toString()),
+        crf: mapValueOfType<int>(json, r'crf')!,
+        threads: mapValueOfType<int>(json, r'threads')!,
         preset: mapValueOfType<String>(json, r'preset')!,
         targetVideoCodec: mapValueOfType<String>(json, r'targetVideoCodec')!,
         targetAudioCodec: mapValueOfType<String>(json, r'targetAudioCodec')!,

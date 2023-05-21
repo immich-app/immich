@@ -5344,10 +5344,10 @@
         "type": "object",
         "properties": {
           "crf": {
-            "type": "number"
+            "type": "integer"
           },
           "threads": {
-            "type": "number"
+            "type": "integer"
           },
           "preset": {
             "type": "string"
