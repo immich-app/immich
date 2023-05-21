@@ -28,7 +28,7 @@ server {
   client_max_body_size 50000M;
 
   # Compression
-  gzip off;
+  gzip on;
   gzip_comp_level 2;
   gzip_min_length 1000;
   gzip_proxied any;

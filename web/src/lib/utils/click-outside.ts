@@ -1,5 +1,11 @@
-export function clickOutside(node: Node) {
-	const handleClick = (event: Event) => {
+import type { ActionReturn } from 'svelte/action';
+
+interface Attributes {
+	'on:outclick'?: (e: CustomEvent) => void;
+}
+
+export function clickOutside(node: HTMLElement): ActionReturn<void, Attributes> {
+	const handleClick = (event: MouseEvent) => {
 		const targetNode = event.target as Node | null;
 		if (!node.contains(targetNode)) {
 			node.dispatchEvent(new CustomEvent('outclick'));
@@ -7,7 +13,7 @@ export function clickOutside(node: Node) {
 	};
 
 	const handleKey = (event: KeyboardEvent) => {
-		if (event.key == 'Escape') {
+		if (event.key === 'Escape') {
 			node.dispatchEvent(new CustomEvent('outclick'));
 		}
 	};

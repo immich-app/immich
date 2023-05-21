@@ -128,14 +128,12 @@
 					title="More"
 				>
 					{#if isShowAssetOptions}
-						<ContextMenu {...contextMenuPosition}>
-							<div class="flex flex-col rounded-lg text-black bg-immich-bg">
-								<MenuOption on:click={() => onMenuClick('addToAlbum')} text="Add to Album" />
-								<MenuOption
-									on:click={() => onMenuClick('addToSharedAlbum')}
-									text="Add to Shared Album"
-								/>
-							</div>
+						<ContextMenu {...contextMenuPosition} direction="left">
+							<MenuOption on:click={() => onMenuClick('addToAlbum')} text="Add to Album" />
+							<MenuOption
+								on:click={() => onMenuClick('addToSharedAlbum')}
+								text="Add to Shared Album"
+							/>
 						</ContextMenu>
 					{/if}
 				</CircleIconButton>

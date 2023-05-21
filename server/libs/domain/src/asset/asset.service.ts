@@ -1,14 +1,17 @@
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import { Inject } from '@nestjs/common';
+import { AuthUserDto } from '../auth';
 import { IAssetUploadedJob, IJobRepository, JobName } from '../job';
 import { AssetCore } from './asset.core';
 import { IAssetRepository } from './asset.repository';
+import { MapMarkerDto } from './dto/map-marker.dto';
+import { MapMarkerResponseDto } from './response-dto';
 
 export class AssetService {
   private assetCore: AssetCore;
 
   constructor(
-    @Inject(IAssetRepository) assetRepository: IAssetRepository,
+    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     this.assetCore = new AssetCore(assetRepository, jobRepository);
@@ -27,5 +30,9 @@ export class AssetService {
 
   save(asset: Partial<AssetEntity>) {
     return this.assetCore.save(asset);
+  }
+
+  getMapMarkers(authUser: AuthUserDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
+    return this.assetRepository.getMapMarkers(authUser.id, options);
   }
 }
