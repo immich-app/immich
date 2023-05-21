@@ -10,7 +10,6 @@ import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
 import 'package:immich_mobile/utils/openapi_extensions.dart';
-import 'package:immich_mobile/utils/tuple.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -60,15 +59,14 @@ class AssetService {
   }) async {
     try {
       final etag = hasCache ? Store.tryGet(StoreKey.assetETag) : null;
-      final Pair<List<AssetResponseDto>, String?>? remote =
+      final (List<AssetResponseDto>? assets, String? newETag) =
           await _apiService.assetApi.getAllAssetsWithETag(eTag: etag);
-      if (remote == null) {
+      if (assets == null) {
         return null;
+      } else if (newETag != etag) {
+        Store.put(StoreKey.assetETag, newETag);
       }
-      if (remote.second != null && remote.second != etag) {
-        Store.put(StoreKey.assetETag, remote.second);
-      }
-      return remote.first;
+      return assets;
     } catch (e, stack) {
       log.severe('Error while getting remote assets', e, stack);
       return null;

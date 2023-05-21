@@ -6,7 +6,7 @@ version: 1.56.2+79
 isar_version: &isar_version 3.0.5
 
 environment:
-  sdk: ">=2.17.0 <3.0.0"
+  sdk: ">=3.0.0-0 <4.0.0"
 
 dependencies:
   flutter:
