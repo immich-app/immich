@@ -1471,10 +1471,10 @@ export interface LogoutResponseDto {
 export interface MapMarkerResponseDto {
     /**
      * 
-     * @type {AssetTypeEnum}
+     * @type {string}
      * @memberof MapMarkerResponseDto
      */
-    'type': AssetTypeEnum;
+    'id': string;
     /**
      * 
      * @type {number}
@@ -1487,15 +1487,7 @@ export interface MapMarkerResponseDto {
      * @memberof MapMarkerResponseDto
      */
     'lon': number;
-    /**
-     * 
-     * @type {string}
-     * @memberof MapMarkerResponseDto
-     */
-    'id': string;
 }
-
-
 /**
  * 
  * @export
@@ -4858,14 +4850,12 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
-         * Get all assets that have GPS information embedded
+         * 
          * @param {boolean} [isFavorite] 
-         * @param {boolean} [isArchived] 
-         * @param {number} [skip] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getMapMarkers: async (isFavorite?: boolean, isArchived?: boolean, skip?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getMapMarkers: async (isFavorite?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/asset/map-marker`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -4889,14 +4879,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
 
             if (isFavorite !== undefined) {
                 localVarQueryParameter['isFavorite'] = isFavorite;
-            }
-
-            if (isArchived !== undefined) {
-                localVarQueryParameter['isArchived'] = isArchived;
-            }
-
-            if (skip !== undefined) {
-                localVarQueryParameter['skip'] = skip;
             }
 
 
@@ -5471,15 +5453,13 @@ export const AssetApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         * Get all assets that have GPS information embedded
+         * 
          * @param {boolean} [isFavorite] 
-         * @param {boolean} [isArchived] 
-         * @param {number} [skip] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getMapMarkers(isFavorite?: boolean, isArchived?: boolean, skip?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<MapMarkerResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getMapMarkers(isFavorite, isArchived, skip, options);
+        async getMapMarkers(isFavorite?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<MapMarkerResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getMapMarkers(isFavorite, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -5739,15 +5719,13 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
             return localVarFp.getCuratedObjects(options).then((request) => request(axios, basePath));
         },
         /**
-         * Get all assets that have GPS information embedded
+         * 
          * @param {boolean} [isFavorite] 
-         * @param {boolean} [isArchived] 
-         * @param {number} [skip] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getMapMarkers(isFavorite?: boolean, isArchived?: boolean, skip?: number, options?: any): AxiosPromise<Array<MapMarkerResponseDto>> {
-            return localVarFp.getMapMarkers(isFavorite, isArchived, skip, options).then((request) => request(axios, basePath));
+        getMapMarkers(isFavorite?: boolean, options?: any): AxiosPromise<Array<MapMarkerResponseDto>> {
+            return localVarFp.getMapMarkers(isFavorite, options).then((request) => request(axios, basePath));
         },
         /**
          * Get all asset of a device that are in the database, ID only.
@@ -6036,16 +6014,14 @@ export class AssetApi extends BaseAPI {
     }
 
     /**
-     * Get all assets that have GPS information embedded
+     * 
      * @param {boolean} [isFavorite] 
-     * @param {boolean} [isArchived] 
-     * @param {number} [skip] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public getMapMarkers(isFavorite?: boolean, isArchived?: boolean, skip?: number, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getMapMarkers(isFavorite, isArchived, skip, options).then((request) => request(this.axios, this.basePath));
+    public getMapMarkers(isFavorite?: boolean, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).getMapMarkers(isFavorite, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

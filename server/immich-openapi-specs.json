@@ -295,6 +295,50 @@
         ]
       }
     },
+    "/asset/map-marker": {
+      "get": {
+        "operationId": "getMapMarkers",
+        "parameters": [
+          {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MapMarkerResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/auth/login": {
       "post": {
         "operationId": "login",
@@ -2962,67 +3006,6 @@
         ]
       }
     },
-    "/asset/map-marker": {
-      "get": {
-        "operationId": "getMapMarkers",
-        "description": "Get all assets that have GPS information embedded",
-        "parameters": [
-          {
-            "name": "isFavorite",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "skip",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/MapMarkerResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Asset"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
     "/asset/{deviceId}": {
       "get": {
         "operationId": "getUserAssetsByDeviceId",
@@ -4579,6 +4562,27 @@
           "name"
         ]
       },
+      "MapMarkerResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "lat": {
+            "type": "number",
+            "format": "double"
+          },
+          "lon": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "required": [
+          "id",
+          "lat",
+          "lon"
+        ]
+      },
       "LoginCredentialDto": {
         "type": "object",
         "properties": {
@@ -5895,31 +5899,6 @@
         },
         "required": [
           "timeBucket"
-        ]
-      },
-      "MapMarkerResponseDto": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
-          },
-          "lat": {
-            "type": "number",
-            "format": "double"
-          },
-          "lon": {
-            "type": "number",
-            "format": "double"
-          },
-          "id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "type",
-          "lat",
-          "lon",
-          "id"
         ]
       },
       "UpdateAssetDto": {

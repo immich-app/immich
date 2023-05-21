@@ -31,7 +31,7 @@ import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
-import { AssetResponseDto, ImmichReadStream, MapMarkerResponseDto } from '@app/domain';
+import { AssetResponseDto, ImmichReadStream } from '@app/domain';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
 import { CreateAssetDto, mapToUploadFile } from './dto/create-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
@@ -258,18 +258,6 @@ export class AssetController {
     @Body(ValidationPipe) getAssetByTimeBucketDto: GetAssetByTimeBucketDto,
   ): Promise<AssetResponseDto[]> {
     return await this.assetService.getAssetByTimeBucket(authUser, getAssetByTimeBucketDto);
-  }
-
-  /**
-   * Get all assets that have GPS information embedded
-   */
-  @Authenticated()
-  @Get('/map-marker')
-  getMapMarkers(
-    @GetAuthUser() authUser: AuthUserDto,
-    @Query(new ValidationPipe({ transform: true })) dto: AssetSearchDto,
-  ): Promise<MapMarkerResponseDto[]> {
-    return this.assetService.getMapMarkers(authUser, dto);
   }
 
   /**

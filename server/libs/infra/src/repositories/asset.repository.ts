@@ -1,4 +1,11 @@
-import { AssetSearchOptions, IAssetRepository, LivePhotoSearchOptions, WithoutProperty } from '@app/domain';
+import {
+  AssetSearchOptions,
+  IAssetRepository,
+  LivePhotoSearchOptions,
+  MapMarker,
+  MapMarkerSearchOptions,
+  WithoutProperty,
+} from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
@@ -21,7 +28,6 @@ export class AssetRepository implements IAssetRepository {
       },
     });
   }
-
   async deleteAll(ownerId: string): Promise<void> {
     await this.repository.delete({ ownerId });
   }
@@ -165,5 +171,45 @@ export class AssetRepository implements IAssetRepository {
       where: { albums: { id: albumId } },
       order: { fileCreatedAt: 'DESC' },
     });
+  }
+
+  async getMapMarkers(ownerId: string, options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
+    const { isFavorite } = options;
+
+    const assets = await this.repository.find({
+      select: {
+        id: true,
+        exifInfo: {
+          latitude: true,
+          longitude: true,
+        },
+      },
+      where: {
+        ownerId,
+        isVisible: true,
+        isArchived: false,
+        exifInfo: {
+          latitude: Not(IsNull()),
+          longitude: Not(IsNull()),
+        },
+        isFavorite,
+      },
+      relations: {
+        exifInfo: true,
+      },
+      order: {
+        fileCreatedAt: 'DESC',
+      },
+    });
+
+    return assets.map((asset) => ({
+      id: asset.id,
+
+      /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
+      lat: asset.exifInfo!.latitude!,
+
+      /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
+      lon: asset.exifInfo!.longitude!,
+    }));
   }
 }

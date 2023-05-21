@@ -237,7 +237,7 @@
 {#if latlng}
 	<div class="h-[360px]">
 		{#await import('../shared-components/leaflet') then { Map, TileLayer, Marker }}
-			<Map {latlng} zoom={14}>
+			<Map center={latlng} zoom={14}>
 				<TileLayer
 					urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
 					options={{
