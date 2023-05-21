@@ -223,34 +223,35 @@ export class MediaService {
     const options = [
       `-vcodec ${ffmpeg.targetVideoCodec}`,
       `-acodec ${ffmpeg.targetAudioCodec}`,
-      `-threads ${ffmpeg.threads}`,
       // Makes a second pass moving the moov atom to the beginning of
       // the file for improved playback speed.
       `-movflags faststart`,
     ];
 
+    // video dimensions
     const videoIsRotated = Math.abs(stream.rotation) === 90;
     const targetResolution = Number.parseInt(ffmpeg.targetResolution);
-
     const isVideoVertical = stream.height > stream.width || videoIsRotated;
     const scaling = isVideoVertical ? `${targetResolution}:-2` : `-2:${targetResolution}`;
-
     const shouldScale = Math.min(stream.height, stream.width) > targetResolution;
-    if (shouldScale) {
-      options.push(`-vf scale=${scaling}`);
-    }
 
+    // video codec
     const isVP9 = ffmpeg.targetVideoCodec === 'vp9';
     const isH264 = ffmpeg.targetVideoCodec === 'h264';
     const isH265 = ffmpeg.targetVideoCodec === 'hevc';
 
+    // transcode efficiency
+    const limitThreads = ffmpeg.threads > 0;
+    const maxBitrateValue = Number.parseInt(ffmpeg.maxBitrate);
+    const constrainMaximumBitrate = maxBitrateValue && maxBitrateValue > 0;
+    const bitrateUnit = ffmpeg.maxBitrate.substring(maxBitrateValue.toString().length) || 'k'; // use inputted unit if provided, else default to kbps
+
+    if (shouldScale) {
+      options.push(`-vf scale=${scaling}`);
+    }
+
     if (isH264 || isH265) {
       options.push(`-preset ${ffmpeg.preset}`);
-
-      // x264 and x265 handle threads differently than one might expect
-      // https://x265.readthedocs.io/en/latest/cli.html#cmdoption-pools
-      options.push(`-${isH265 ? 'x265' : 'x264'}-params "pools=none"`);
-      options.push(`-${isH265 ? 'x265' : 'x264'}-params "frame-threads=${ffmpeg.threads}"`);
     }
 
     if (isVP9) {
@@ -263,12 +264,20 @@ export class MediaService {
       options.push('-row-mt 1'); // better multithreading
     }
 
-    const maxBitrateValue = Number.parseInt(ffmpeg.maxBitrate);
-    const constrainMaximumBitrate = maxBitrateValue && maxBitrateValue > 0;
-    const bitrateUnit = ffmpeg.maxBitrate.substring(maxBitrateValue.toString().length) || 'k'; // use inputted unit if provided, else default to kbps
+    if (limitThreads) {
+      options.push(`-threads ${ffmpeg.threads}`);
 
+      // x264 and x265 handle threads differently than one might expect
+      // https://x265.readthedocs.io/en/latest/cli.html#cmdoption-pools
+      if (isH264 || isH265) {
+        options.push(`-${isH265 ? 'x265' : 'x264'}-params "pools=none"`);
+        options.push(`-${isH265 ? 'x265' : 'x264'}-params "frame-threads=${ffmpeg.threads}"`);
+      }
+    }
+
+    // two-pass mode uses bitrate ranges, so it requires a max bitrate from which to derive a target and min bitrate
     if (constrainMaximumBitrate && ffmpeg.twoPass) {
-      const targetBitrateValue = maxBitrateValue / 1.45; // recommended by https://developers.google.com/media/vp9/settings/vod
+      const targetBitrateValue = Math.ceil(maxBitrateValue / 1.45); // recommended by https://developers.google.com/media/vp9/settings/vod
       const minBitrateValue = targetBitrateValue / 2;
 
       options.push(`-b:v ${targetBitrateValue}${bitrateUnit}`);
