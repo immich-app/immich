@@ -86,8 +86,8 @@ export class MediaRepository implements IMediaRepository {
     };
   }
 
-  transcode(input: string, output: string, options: string[]): Promise<void> {
-    if (!(process.env.ENABLE_TWO_PASS?.toLowerCase() === 'true')) {
+  transcode(input: string, output: string, options: string[], twoPass: boolean): Promise<void> {
+    if (!twoPass) {
       return new Promise((resolve, reject) => {
         ffmpeg(input, { niceness: 10 })
           .outputOptions(options)

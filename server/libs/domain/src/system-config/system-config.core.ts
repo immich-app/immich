@@ -9,13 +9,14 @@ export type SystemConfigValidator = (config: SystemConfig) => void | Promise<voi
 
 const defaults: SystemConfig = Object.freeze({
   ffmpeg: {
-    crf: '23',
-    threads: '2',
+    crf: 23,
+    threads: 2,
     preset: 'ultrafast',
     targetVideoCodec: 'h264',
     targetAudioCodec: 'aac',
     targetResolution: '720',
     maxBitrate: '4500k',
+    twoPass: false,
     transcode: TranscodePreset.REQUIRED,
   },
   oauth: {

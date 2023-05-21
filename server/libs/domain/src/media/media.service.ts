@@ -158,7 +158,7 @@ export class MediaService {
       const options = this.getFfmpegOptions(mainVideoStream, config);
 
       this.logger.log(`Start encoding video ${asset.id} ${options}`);
-      await this.mediaRepository.transcode(input, output, options);
+      await this.mediaRepository.transcode(input, output, options, config.twoPass);
 
       this.logger.log(`Encoding success ${asset.id}`);
 
@@ -263,22 +263,22 @@ export class MediaService {
       options.push('-row-mt 1'); // better multithreading
     }
 
-    const twoPass = process.env.ENABLE_TWO_PASS?.toLowerCase() === 'true';
-
     const maxBitrateValue = Number.parseInt(ffmpeg.maxBitrate);
-    const validMaxRate = maxBitrateValue && maxBitrateValue > 0;
+    const constrainMaximumBitrate = maxBitrateValue && maxBitrateValue > 0;
     const bitrateUnit = ffmpeg.maxBitrate.substring(maxBitrateValue.toString().length) || 'k'; // use inputted unit if provided, else default to kbps
 
-    if (validMaxRate && twoPass) {
+    if (constrainMaximumBitrate && ffmpeg.twoPass) {
       const targetBitrateValue = maxBitrateValue / 1.45; // recommended by https://developers.google.com/media/vp9/settings/vod
       const minBitrateValue = targetBitrateValue / 2;
 
       options.push(`-b:v ${targetBitrateValue}${bitrateUnit}`);
       options.push(`-minrate ${minBitrateValue}${bitrateUnit}`);
       options.push(`-maxrate ${maxBitrateValue}${bitrateUnit}`);
-    } else if (validMaxRate) {
+    } else if (constrainMaximumBitrate) {
       options.push(`-crf ${ffmpeg.crf}`);
       options.push(`${isVP9 ? '-b:v' : '-maxrate'} ${maxBitrateValue}${bitrateUnit}`);
+    } else {
+      options.push(`-crf ${ffmpeg.crf}`);
     }
 
     return options;

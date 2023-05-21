@@ -12,7 +12,7 @@
 	import { fly } from 'svelte/transition';
 
 	export let inputType: SettingInputFieldType;
-	export let value: string;
+	export let value: string | number;
 	export let label = '';
 	export let desc = '';
 	export let required = false;
@@ -48,7 +48,7 @@
 	{/if}
 
 	<input
-		class="immich-form-input w-full"
+		class="immich-form-input pb-2 w-full"
 		aria-describedby={desc ? `${label}-desc` : undefined}
 		id={label}
 		name={label}

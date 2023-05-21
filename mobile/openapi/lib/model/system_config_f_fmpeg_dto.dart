@@ -20,12 +20,13 @@ class SystemConfigFFmpegDto {
     required this.targetAudioCodec,
     required this.targetResolution,
     required this.maxBitrate,
+    required this.twoPass,
     required this.transcode,
   });
 
-  String crf;
+  num crf;
 
-  String threads;
+  num threads;
 
   String preset;
 
@@ -36,6 +37,8 @@ class SystemConfigFFmpegDto {
   String targetResolution;
 
   String maxBitrate;
+
+  bool twoPass;
 
   SystemConfigFFmpegDtoTranscodeEnum transcode;
 
@@ -48,6 +51,7 @@ class SystemConfigFFmpegDto {
      other.targetAudioCodec == targetAudioCodec &&
      other.targetResolution == targetResolution &&
      other.maxBitrate == maxBitrate &&
+     other.twoPass == twoPass &&
      other.transcode == transcode;
 
   @override
@@ -60,10 +64,11 @@ class SystemConfigFFmpegDto {
     (targetAudioCodec.hashCode) +
     (targetResolution.hashCode) +
     (maxBitrate.hashCode) +
+    (twoPass.hashCode) +
     (transcode.hashCode);
 
   @override
-  String toString() => 'SystemConfigFFmpegDto[crf=$crf, threads=$threads, preset=$preset, targetVideoCodec=$targetVideoCodec, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, maxBitrate=$maxBitrate, transcode=$transcode]';
+  String toString() => 'SystemConfigFFmpegDto[crf=$crf, threads=$threads, preset=$preset, targetVideoCodec=$targetVideoCodec, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, maxBitrate=$maxBitrate, twoPass=$twoPass, transcode=$transcode]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -74,6 +79,7 @@ class SystemConfigFFmpegDto {
       json[r'targetAudioCodec'] = this.targetAudioCodec;
       json[r'targetResolution'] = this.targetResolution;
       json[r'maxBitrate'] = this.maxBitrate;
+      json[r'twoPass'] = this.twoPass;
       json[r'transcode'] = this.transcode;
     return json;
   }
@@ -97,13 +103,18 @@ class SystemConfigFFmpegDto {
       }());
 
       return SystemConfigFFmpegDto(
-        crf: mapValueOfType<String>(json, r'crf')!,
-        threads: mapValueOfType<String>(json, r'threads')!,
+        crf: json[r'crf'] == null
+            ? null
+            : num.parse(json[r'crf'].toString()),
+        threads: json[r'threads'] == null
+            ? null
+            : num.parse(json[r'threads'].toString()),
         preset: mapValueOfType<String>(json, r'preset')!,
         targetVideoCodec: mapValueOfType<String>(json, r'targetVideoCodec')!,
         targetAudioCodec: mapValueOfType<String>(json, r'targetAudioCodec')!,
         targetResolution: mapValueOfType<String>(json, r'targetResolution')!,
         maxBitrate: mapValueOfType<String>(json, r'maxBitrate')!,
+        twoPass: mapValueOfType<bool>(json, r'twoPass')!,
         transcode: SystemConfigFFmpegDtoTranscodeEnum.fromJson(json[r'transcode'])!,
       );
     }
@@ -159,6 +170,7 @@ class SystemConfigFFmpegDto {
     'targetAudioCodec',
     'targetResolution',
     'maxBitrate',
+    'twoPass',
     'transcode',
   };
 }

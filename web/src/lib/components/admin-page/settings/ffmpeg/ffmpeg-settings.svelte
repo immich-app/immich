@@ -7,6 +7,7 @@
 	import SettingButtonsRow from '../setting-buttons-row.svelte';
 	import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
 	import SettingSelect from '../setting-select.svelte';
+	import SettingSwitch from '../setting-switch.svelte';
 	import { isEqual } from 'lodash-es';
 	import { fade } from 'svelte/transition';
 
@@ -159,7 +160,6 @@
 						label="THREADS"
 						desc="Higher values lead to faster encoding, but leave less room for the server to process other tasks while active. This value should not be more than the number of CPU cores."
 						bind:value={ffmpegConfig.threads}
-						required={true}
 						isEdited={!(ffmpegConfig.threads == savedConfig.threads)}
 					/>
 
@@ -184,6 +184,13 @@
 							}
 						]}
 						isEdited={!(ffmpegConfig.transcode == savedConfig.transcode)}
+					/>
+
+					<SettingSwitch
+						title="TWO-PASS ENCODING"
+						subtitle="Transcode in two passes to produce better encoded videos. This mode uses a bitrate range based on the max bitrate and ignores CRF."
+						bind:checked={ffmpegConfig.twoPass}
+						isEdited={!(ffmpegConfig.twoPass === savedConfig.twoPass)}
 					/>
 				</div>
 

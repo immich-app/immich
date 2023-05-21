@@ -1,12 +1,18 @@
-import { IsEnum, IsString } from 'class-validator';
+import { IsEnum, IsString, IsInt, IsBoolean, Min, Max } from 'class-validator';
 import { TranscodePreset } from '@app/infra/entities';
+import { Type } from 'class-transformer';
 
 export class SystemConfigFFmpegDto {
-  @IsString()
-  crf!: string;
+  @IsInt()
+  @Min(0)
+  @Max(51)
+  @Type(() => Number)
+  crf!: number;
 
-  @IsString()
-  threads!: string;
+  @IsInt()
+  @Min(0)
+  @Type(() => Number)
+  threads!: number;
 
   @IsString()
   preset!: string;
@@ -22,6 +28,9 @@ export class SystemConfigFFmpegDto {
 
   @IsString()
   maxBitrate!: string;
+
+  @IsBoolean()
+  twoPass!: boolean;
 
   @IsEnum(TranscodePreset)
   transcode!: TranscodePreset;

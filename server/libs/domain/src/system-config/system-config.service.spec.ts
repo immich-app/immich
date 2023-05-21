@@ -7,19 +7,20 @@ import { ISystemConfigRepository } from './system-config.repository';
 import { SystemConfigService } from './system-config.service';
 
 const updates: SystemConfigEntity[] = [
-  { key: SystemConfigKey.FFMPEG_CRF, value: 'a new value' },
+  { key: SystemConfigKey.FFMPEG_CRF, value: 30 },
   { key: SystemConfigKey.OAUTH_AUTO_LAUNCH, value: true },
 ];
 
 const updatedConfig = Object.freeze({
   ffmpeg: {
-    crf: 'a new value',
-    threads: '2',
+    crf: 30,
+    threads: 2,
     preset: 'ultrafast',
     targetAudioCodec: 'aac',
     targetResolution: '720',
     targetVideoCodec: 'h264',
     maxBitrate: '4500k',
+    twoPass: false,
     transcode: TranscodePreset.REQUIRED,
   },
   oauth: {
@@ -87,7 +88,7 @@ describe(SystemConfigService.name, () => {
 
     it('should merge the overrides', async () => {
       configMock.load.mockResolvedValue([
-        { key: SystemConfigKey.FFMPEG_CRF, value: 'a new value' },
+        { key: SystemConfigKey.FFMPEG_CRF, value: 30 },
         { key: SystemConfigKey.OAUTH_AUTO_LAUNCH, value: true },
       ]);
 

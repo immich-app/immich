@@ -430,13 +430,14 @@ export const keyStub = {
 export const systemConfigStub = {
   defaults: Object.freeze({
     ffmpeg: {
-      crf: '23',
-      threads: '2',
+      crf: 23,
+      threads: 2,
       preset: 'ultrafast',
       targetAudioCodec: 'aac',
       targetResolution: '720',
       targetVideoCodec: 'h264',
       maxBitrate: '4500k',
+      twoPass: false,
       transcode: TranscodePreset.REQUIRED,
     },
     oauth: {

@@ -16,12 +16,12 @@ void main() {
   // final instance = SystemConfigFFmpegDto();
 
   group('test SystemConfigFFmpegDto', () {
-    // String crf
+    // num crf
     test('to test the property `crf`', () async {
       // TODO
     });
 
-    // String threads
+    // num threads
     test('to test the property `threads`', () async {
       // TODO
     });
@@ -48,6 +48,11 @@ void main() {
 
     // String maxBitrate
     test('to test the property `maxBitrate`', () async {
+      // TODO
+    });
+
+    // bool twoPass
+    test('to test the property `twoPass`', () async {
       // TODO
     });
 

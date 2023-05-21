@@ -5340,10 +5340,10 @@
         "type": "object",
         "properties": {
           "crf": {
-            "type": "string"
+            "type": "number"
           },
           "threads": {
-            "type": "string"
+            "type": "number"
           },
           "preset": {
             "type": "string"
@@ -5359,6 +5359,9 @@
           },
           "maxBitrate": {
             "type": "string"
+          },
+          "twoPass": {
+            "type": "boolean"
           },
           "transcode": {
             "type": "string",
@@ -5378,6 +5381,7 @@
           "targetAudioCodec",
           "targetResolution",
           "maxBitrate",
+          "twoPass",
           "transcode"
         ]
       },

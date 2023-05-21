@@ -47,5 +47,5 @@ export interface IMediaRepository {
   // video
   extractVideoThumbnail(input: string, output: string, size: number): Promise<void>;
   probe(input: string): Promise<VideoInfo>;
-  transcode(input: string, output: string, options: any): Promise<void>;
+  transcode(input: string, output: string, options: any, twoPass: boolean): Promise<void>;
 }
