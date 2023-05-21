@@ -1,12 +1,11 @@
 import { StorageCore, StorageFolder } from '@app/domain/storage';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
-import { Request } from 'express';
 import { existsSync, mkdirSync } from 'fs';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import sanitize from 'sanitize-filename';
-import { AuthUserDto } from '../decorators/auth-user.decorator';
+import { AuthRequest, AuthUserDto } from '../decorators/auth-user.decorator';
 import { patchFormData } from '../utils/path-form-data.util';
 
 export const profileImageUploadOption: MulterOptions = {
@@ -21,7 +20,7 @@ export const multerUtils = { fileFilter, filename, destination };
 
 const storageCore = new StorageCore();
 
-function fileFilter(req: Request, file: any, cb: any) {
+function fileFilter(req: AuthRequest, file: any, cb: any) {
   if (!req.user) {
     return cb(new UnauthorizedException());
   }
@@ -33,7 +32,7 @@ function fileFilter(req: Request, file: any, cb: any) {
   }
 }
 
-function destination(req: Request, file: Express.Multer.File, cb: any) {
+function destination(req: AuthRequest, file: Express.Multer.File, cb: any) {
   if (!req.user) {
     return cb(new UnauthorizedException());
   }
@@ -48,7 +47,7 @@ function destination(req: Request, file: Express.Multer.File, cb: any) {
   cb(null, profileImageLocation);
 }
 
-function filename(req: Request, file: Express.Multer.File, cb: any) {
+function filename(req: AuthRequest, file: Express.Multer.File, cb: any) {
   if (!req.user) {
     return cb(new UnauthorizedException());
   }
