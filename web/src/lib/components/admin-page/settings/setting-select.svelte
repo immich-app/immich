@@ -28,12 +28,15 @@
 		{/if}
 	</div>
 
-	<div class={`flex place-items-center pb-2 gap-1`}>
-		<label class={`immich-form-label text-xs`} for="{name}-desc">{desc}</label>
-	</div>
+	{#if desc}
+		<p class="immich-form-label text-xs pb-2" id="{name}-desc">
+			{desc}
+		</p>
+	{/if}
 
 	<select
 		class="immich-form-input pb-2 w-full"
+		aria-describedby={desc ? `${name}-desc` : undefined}
 		{name}
 		id="{name}-select"
 		bind:value

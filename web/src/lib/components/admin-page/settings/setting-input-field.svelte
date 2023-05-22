@@ -42,7 +42,7 @@
 	</div>
 
 	{#if desc}
-		<p class="immich-form-label text-xs pb-2" id="{name}-desc">
+		<p class="immich-form-label text-xs pb-2" id="{label}-desc">
 			{desc}
 		</p>
 	{/if}
