@@ -1,17 +1,17 @@
 dev:
-	rm -rf ./server/dist && docker-compose -f ./docker/docker-compose.dev.yml up --remove-orphans
+	docker-compose -f ./docker/docker-compose.dev.yml up --remove-orphans
 
 dev-new:
-	rm -rf ./server/dist && docker compose -f ./docker/docker-compose.dev.yml up --remove-orphans
+	docker compose -f ./docker/docker-compose.dev.yml up --remove-orphans
 
 dev-new-update:
-	rm -rf ./server/dist && docker compose -f ./docker/docker-compose.dev.yml up --build -V --remove-orphans
+	docker compose -f ./docker/docker-compose.dev.yml up --build -V --remove-orphans
 
 dev-update:
-	rm -rf ./server/dist && docker-compose -f ./docker/docker-compose.dev.yml up --build -V --remove-orphans
+	docker-compose -f ./docker/docker-compose.dev.yml up --build -V --remove-orphans
 
 dev-scale:
-	rm -rf ./server/dist && docker-compose -f ./docker/docker-compose.dev.yml up --build -V  --scale immich-server=3 --remove-orphans
+	docker-compose -f ./docker/docker-compose.dev.yml up --build -V  --scale immich-server=3 --remove-orphans
 
 stage:
 	docker-compose -f ./docker/docker-compose.staging.yml up --build -V --remove-orphans
