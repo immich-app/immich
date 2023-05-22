@@ -161,7 +161,7 @@ export class SearchService {
       );
 
       for await (const assets of assetPagination) {
-        this.logger.log(`Indexing ${assets.length} assets`);
+        this.logger.debug(`Indexing ${assets.length} assets`);
 
         const patchedAssets = this.patchAssets(assets);
         await this.searchRepository.importAssets(patchedAssets, false);
