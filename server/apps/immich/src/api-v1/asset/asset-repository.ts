@@ -321,7 +321,7 @@ export class AssetRepository implements IAssetRepository {
       },
     });
 
-    return items.map((asset) => asset.deviceAssetId) as string[];
+    return items.map((asset) => asset.deviceAssetId);
   }
 
   /**
