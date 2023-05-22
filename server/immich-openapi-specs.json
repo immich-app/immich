@@ -5349,7 +5349,10 @@
         "type": "object",
         "properties": {
           "crf": {
-            "type": "string"
+            "type": "integer"
+          },
+          "threads": {
+            "type": "integer"
           },
           "preset": {
             "type": "string"
@@ -5363,6 +5366,12 @@
           "targetResolution": {
             "type": "string"
           },
+          "maxBitrate": {
+            "type": "string"
+          },
+          "twoPass": {
+            "type": "boolean"
+          },
           "transcode": {
             "type": "string",
             "enum": [
@@ -5375,10 +5384,13 @@
         },
         "required": [
           "crf",
+          "threads",
           "preset",
           "targetVideoCodec",
           "targetAudioCodec",
           "targetResolution",
+          "maxBitrate",
+          "twoPass",
           "transcode"
         ]
       },
