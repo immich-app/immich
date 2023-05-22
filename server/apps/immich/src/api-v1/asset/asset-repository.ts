@@ -175,7 +175,7 @@ export class AssetRepository implements IAssetRepository {
   async getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]> {
     return await this.assetRepository.query(
       `
-        SELECT DISTINCT ON (unnest(si.objects)) a.id, unnest(si.objects) as "object", a."resizePath", a."checksum", a."deviceId"
+        SELECT DISTINCT ON (unnest(si.objects)) a.id, unnest(si.objects) as "object", a."resizePath", a."deviceAssetId", a."deviceId"
         FROM assets a
         LEFT JOIN smart_info si ON a.id = si."assetId"
         WHERE a."ownerId" = $1
@@ -189,7 +189,7 @@ export class AssetRepository implements IAssetRepository {
   async getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]> {
     return await this.assetRepository.query(
       `
-        SELECT DISTINCT ON (e.city) a.id, e.city, a."resizePath", a."checksum", a."deviceId"
+        SELECT DISTINCT ON (e.city) a.id, e.city, a."resizePath", a."deviceAssetId", a."deviceId"
         FROM assets a
         LEFT JOIN exif e ON a.id = e."assetId"
         WHERE a."ownerId" = $1
