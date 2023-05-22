@@ -1,5 +1,3 @@
-import 'reflect-metadata';
-
 jest.mock('@nestjs/common', () => ({
   ...jest.requireActual('@nestjs/common'),
   Logger: jest.fn().mockReturnValue({
