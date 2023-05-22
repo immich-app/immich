@@ -197,10 +197,6 @@ describe(StorageTemplateService.name, () => {
   });
 
   it('should handle an error', async () => {
-    assetMock.getAll.mockResolvedValue({
-      items: [],
-      hasNextPage: false,
-    });
     storageMock.removeEmptyDirs.mockRejectedValue(new Error('Read only filesystem'));
     userMock.getList.mockResolvedValue([]);
 

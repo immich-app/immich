@@ -185,11 +185,6 @@ describe(SearchService.name, () => {
 
   describe('handleIndexAssets', () => {
     it('should call done, even when there are no assets', async () => {
-      assetMock.getAll.mockResolvedValue({
-        items: [],
-        hasNextPage: false,
-      });
-
       await sut.handleIndexAssets();
 
       expect(searchMock.importAssets).toHaveBeenCalledWith([], true);
