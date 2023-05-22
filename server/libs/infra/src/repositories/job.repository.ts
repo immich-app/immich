@@ -1,14 +1,4 @@
-import {
-  IAssetJob,
-  IAssetUploadedJob,
-  IBaseJob,
-  IJobRepository,
-  JobCounts,
-  JobItem,
-  JobName,
-  QueueName,
-  QueueStatus,
-} from '@app/domain';
+import { IAssetJob, IBaseJob, IJobRepository, JobCounts, JobItem, JobName, QueueName, QueueStatus } from '@app/domain';
 import { InjectQueue } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { Queue, type JobCounts as BullJobCounts } from 'bull';
@@ -31,7 +21,7 @@ export class JobRepository implements IJobRepository {
     @InjectQueue(QueueName.BACKGROUND_TASK) private backgroundTask: Queue,
     @InjectQueue(QueueName.OBJECT_TAGGING) private objectTagging: Queue<IAssetJob | IBaseJob>,
     @InjectQueue(QueueName.CLIP_ENCODING) private clipEmbedding: Queue<IAssetJob | IBaseJob>,
-    @InjectQueue(QueueName.METADATA_EXTRACTION) private metadataExtraction: Queue<IAssetUploadedJob | IBaseJob>,
+    @InjectQueue(QueueName.METADATA_EXTRACTION) private metadataExtraction: Queue<IAssetJob | IBaseJob>,
     @InjectQueue(QueueName.RECOGNIZE_FACES) private recognizeFaces: Queue<IAssetJob | IBaseJob>,
     @InjectQueue(QueueName.STORAGE_TEMPLATE_MIGRATION) private storageTemplateMigration: Queue,
     @InjectQueue(QueueName.THUMBNAIL_GENERATION) private generateThumbnail: Queue,
