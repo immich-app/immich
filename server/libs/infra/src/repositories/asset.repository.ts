@@ -10,6 +10,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetType } from '../entities';
+import { paginate, Paginated, PaginationOptions } from '../utils/pagination.util';
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
@@ -32,10 +33,8 @@ export class AssetRepository implements IAssetRepository {
     await this.repository.delete({ ownerId });
   }
 
-  getAll(options?: AssetSearchOptions | undefined): Promise<AssetEntity[]> {
-    options = options || {};
-
-    return this.repository.find({
+  getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
+    return paginate(this.repository, pagination, {
       where: {
         isVisible: options.isVisible,
         type: options.type,
@@ -83,7 +82,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getWithout(property: WithoutProperty): Promise<AssetEntity[]> {
+  getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity> {
     let relations: FindOptionsRelations<AssetEntity> = {};
     let where: FindOptionsWhere<AssetEntity> | FindOptionsWhere<AssetEntity>[] = {};
 
@@ -160,7 +159,7 @@ export class AssetRepository implements IAssetRepository {
         throw new Error(`Invalid getWithout property: ${property}`);
     }
 
-    return this.repository.find({
+    return paginate(this.repository, pagination, {
       relations,
       where,
     });

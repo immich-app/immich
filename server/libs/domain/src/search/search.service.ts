@@ -1,4 +1,5 @@
 import { AlbumEntity, AssetEntity, AssetFaceEntity } from '@app/infra/entities';
+import { usePagination } from '@app/infra/utils/pagination.util';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { mapAlbum } from '../album';
@@ -8,7 +9,7 @@ import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
 import { AssetFaceId, IFaceRepository } from '../facial-recognition';
-import { IAssetFaceJob, IBulkEntityJob, IJobRepository, JobName } from '../job';
+import { IAssetFaceJob, IBulkEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import { IMachineLearningRepository } from '../smart-info';
 import { SearchDto } from './dto';
 import { SearchConfigResponseDto, SearchResponseDto } from './response-dto';
@@ -155,12 +156,15 @@ export class SearchService {
 
     try {
       // TODO: do this in batches based on searchIndexVersion
-      const assets = this.patchAssets(await this.assetRepository.getAll({ isVisible: true }));
-      this.logger.log(`Indexing ${assets.length} assets`);
+      const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+        this.assetRepository.getAll(pagination, { isVisible: true }),
+      );
 
-      const chunkSize = 1000;
-      for (let i = 0; i < assets.length; i += chunkSize) {
-        await this.searchRepository.importAssets(assets.slice(i, i + chunkSize), false);
+      for await (const assets of assetPagination) {
+        this.logger.log(`Indexing ${assets.length} assets`);
+
+        const patchedAssets = this.patchAssets(assets);
+        await this.searchRepository.importAssets(patchedAssets, false);
       }
 
       await this.searchRepository.importAssets([], true);

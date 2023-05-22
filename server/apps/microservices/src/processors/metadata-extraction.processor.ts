@@ -6,10 +6,12 @@ import {
   IGeocodingRepository,
   IJobRepository,
   JobName,
+  JOBS_ASSET_PAGINATION_SIZE,
   QueueName,
   WithoutProperty,
 } from '@app/domain';
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
+import { usePagination } from '@app/infra/utils/pagination.util';
 import { Process, Processor } from '@nestjs/bull';
 import { Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -74,14 +76,18 @@ export class MetadataExtractionProcessor {
   async handleQueueMetadataExtraction(job: Job<IBaseJob>) {
     try {
       const { force } = job.data;
-      const assets = force
-        ? await this.assetRepository.getAll()
-        : await this.assetRepository.getWithout(WithoutProperty.EXIF);
+      const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
+        return force
+          ? this.assetRepository.getAll(pagination)
+          : this.assetRepository.getWithout(pagination, WithoutProperty.EXIF);
+      });
 
-      for (const asset of assets) {
-        const fileName = asset.originalFileName;
-        const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
-        await this.jobRepository.queue({ name, data: { asset, fileName } });
+      for await (const assets of assetPagination) {
+        for (const asset of assets) {
+          const fileName = asset.originalFileName;
+          const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
+          await this.jobRepository.queue({ name, data: { asset, fileName } });
+        }
       }
     } catch (error: any) {
       this.logger.error(`Unable to queue metadata extraction`, error?.stack);
