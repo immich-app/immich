@@ -317,7 +317,6 @@ export class AssetRepository implements IAssetRepository {
         ownerId,
         deviceId,
         isVisible: true,
-        deviceAssetId: Not(IsNull()),
       },
     });
 
