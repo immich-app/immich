@@ -156,9 +156,10 @@ export class MediaService {
       }
 
       const options = this.getFfmpegOptions(mainVideoStream, config);
+      const twoPass = this.eligibleForTwoPass(config);
 
       this.logger.log(`Start encoding video ${asset.id} ${options}`);
-      await this.mediaRepository.transcode(input, output, options, config.twoPass);
+      await this.mediaRepository.transcode(input, output, options, twoPass);
 
       this.logger.log(`Encoding success ${asset.id}`);
 
@@ -292,5 +293,17 @@ export class MediaService {
     }
 
     return options;
+  }
+
+  private eligibleForTwoPass(ffmpeg: SystemConfigFFmpegDto) {
+    if (!ffmpeg.twoPass) {
+      return false;
+    }
+
+    const isVP9 = ffmpeg.targetVideoCodec === 'vp9';
+    const maxBitrateValue = Number.parseInt(ffmpeg.maxBitrate) || 0;
+    const constrainMaximumBitrate = maxBitrateValue > 0;
+
+    return constrainMaximumBitrate || isVP9;
   }
 }
