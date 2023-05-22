@@ -27,6 +27,7 @@ describe('TagService', () => {
     tags: [],
     assets: [],
     oauthId: 'oauth-id-1',
+    storageLabel: null,
   });
 
   // const user2: UserEntity = Object.freeze({

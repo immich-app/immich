@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **email** | **String** |  | 
 **firstName** | **String** |  | 
 **lastName** | **String** |  | 
+**storageLabel** | **String** |  | 
 **createdAt** | **String** |  | 
 **profileImagePath** | **String** |  | 
 **shouldChangePassword** | **bool** |  | 

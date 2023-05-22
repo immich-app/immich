@@ -21,8 +21,8 @@
 		await getSharedLinks();
 		const { data } = await api.userApi.getAllUsers(false);
 
-		// remove soft deleted users
-		users = data.filter((user) => !user.deletedAt);
+		// remove invalid users
+		users = data.filter((user) => !(user.deletedAt || user.id === album.ownerId));
 
 		// Remove the existed shared users from the album
 		sharedUsersInAlbum.forEach((sharedUser) => {

@@ -17,19 +17,21 @@ const responseDto = {
     profileImagePath: '',
     shouldChangePassword: false,
     updatedAt: '2021-01-01',
+    storageLabel: 'admin',
   },
   user1: {
     createdAt: '2021-01-01',
     deletedAt: undefined,
     email: 'immich@test.com',
     firstName: 'immich_first_name',
-    id: 'immich_id',
+    id: 'user-id',
     isAdmin: false,
     lastName: 'immich_last_name',
     oauthId: '',
     profileImagePath: '',
     shouldChangePassword: false,
     updatedAt: '2021-01-01',
+    storageLabel: null,
   },
 };
 

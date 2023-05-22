@@ -36,7 +36,7 @@ const adminUserAuth: AuthUserDto = Object.freeze({
 });
 
 const immichUserAuth: AuthUserDto = Object.freeze({
-  id: 'immich_id',
+  id: 'user-id',
   email: 'immich@test.com',
   isAdmin: false,
 });
@@ -55,6 +55,7 @@ const adminUser: UserEntity = Object.freeze({
   updatedAt: '2021-01-01',
   tags: [],
   assets: [],
+  storageLabel: 'admin',
 });
 
 const immichUser: UserEntity = Object.freeze({
@@ -71,6 +72,7 @@ const immichUser: UserEntity = Object.freeze({
   updatedAt: '2021-01-01',
   tags: [],
   assets: [],
+  storageLabel: null,
 });
 
 const updatedImmichUser: UserEntity = Object.freeze({
@@ -87,6 +89,7 @@ const updatedImmichUser: UserEntity = Object.freeze({
   updatedAt: '2021-01-01',
   tags: [],
   assets: [],
+  storageLabel: null,
 });
 
 const adminUserResponse = Object.freeze({
@@ -101,6 +104,7 @@ const adminUserResponse = Object.freeze({
   profileImagePath: '',
   createdAt: '2021-01-01',
   updatedAt: '2021-01-01',
+  storageLabel: 'admin',
 });
 
 describe(UserService.name, () => {
@@ -150,7 +154,7 @@ describe(UserService.name, () => {
 
       const response = await sut.getAllUsers(adminUserAuth, false);
 
-      expect(userRepositoryMock.getList).toHaveBeenCalledWith({ excludeId: adminUser.id });
+      expect(userRepositoryMock.getList).toHaveBeenCalledWith({ withDeleted: true });
       expect(response).toEqual([
         {
           id: adminUserAuth.id,
@@ -164,6 +168,7 @@ describe(UserService.name, () => {
           profileImagePath: '',
           createdAt: '2021-01-01',
           updatedAt: '2021-01-01',
+          storageLabel: 'admin',
         },
       ]);
     });
@@ -231,6 +236,22 @@ describe(UserService.name, () => {
       expect(updatedUser.shouldChangePassword).toEqual(true);
     });
 
+    it('should not set an empty string for storage label', async () => {
+      userRepositoryMock.update.mockResolvedValue(updatedImmichUser);
+
+      await sut.updateUser(adminUserAuth, { id: immichUser.id, storageLabel: '' });
+
+      expect(userRepositoryMock.update).toHaveBeenCalledWith(immichUser.id, { id: immichUser.id, storageLabel: null });
+    });
+
+    it('should omit a storage label set by non-admin users', async () => {
+      userRepositoryMock.update.mockResolvedValue(updatedImmichUser);
+
+      await sut.updateUser(immichUserAuth, { id: immichUser.id, storageLabel: 'admin' });
+
+      expect(userRepositoryMock.update).toHaveBeenCalledWith(immichUser.id, { id: immichUser.id });
+    });
+
     it('user can only update its information', async () => {
       when(userRepositoryMock.get)
         .calledWith('not_immich_auth_user_id', undefined)
@@ -255,7 +276,7 @@ describe(UserService.name, () => {
       await sut.updateUser(immichUser, dto);
 
       expect(userRepositoryMock.update).toHaveBeenCalledWith(immichUser.id, {
-        id: 'immich_id',
+        id: 'user-id',
         email: 'updated@test.com',
       });
     });
@@ -267,6 +288,17 @@ describe(UserService.name, () => {
       userRepositoryMock.getByEmail.mockResolvedValue(adminUser);
 
       await expect(sut.updateUser(immichUser, dto)).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(userRepositoryMock.update).not.toHaveBeenCalled();
+    });
+
+    it('should not let the admin change the storage label to one already in use', async () => {
+      const dto = { id: immichUser.id, storageLabel: 'admin' };
+
+      userRepositoryMock.get.mockResolvedValue(immichUser);
+      userRepositoryMock.getByStorageLabel.mockResolvedValue(adminUser);
+
+      await expect(sut.updateUser(adminUser, dto)).rejects.toBeInstanceOf(BadRequestException);
 
       expect(userRepositoryMock.update).not.toHaveBeenCalled();
     });
@@ -479,6 +511,16 @@ describe(UserService.name, () => {
       expect(albumMock.deleteAll).toHaveBeenCalledWith(user.id);
       expect(assetMock.deleteAll).toHaveBeenCalledWith(user.id);
       expect(userRepositoryMock.delete).toHaveBeenCalledWith(user, true);
+    });
+
+    it('should delete the library path for a storage label', async () => {
+      const user = { id: 'deleted-user', deletedAt: makeDeletedAt(10), storageLabel: 'admin' } as UserEntity;
+
+      await sut.handleUserDelete({ user });
+
+      const options = { force: true, recursive: true };
+
+      expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/library/admin', options);
     });
 
     it('should handle an error', async () => {

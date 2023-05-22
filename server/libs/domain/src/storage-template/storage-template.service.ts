@@ -6,7 +6,13 @@ import { getLivePhotoMotionFilename } from '../domain.util';
 import { IAssetJob } from '../job';
 import { IStorageRepository } from '../storage/storage.repository';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
+import { IUserRepository } from '../user/user.repository';
 import { StorageTemplateCore } from './storage-template.core';
+
+export interface MoveAssetMetadata {
+  storageLabel: string | null;
+  filename: string;
+}
 
 @Injectable()
 export class StorageTemplateService {
@@ -18,6 +24,7 @@ export class StorageTemplateService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(INITIAL_SYSTEM_CONFIG) config: SystemConfig,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+    @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
     this.core = new StorageTemplateCore(configRepository, config, storageRepository);
   }
@@ -26,14 +33,16 @@ export class StorageTemplateService {
     const { asset } = data;
 
     try {
+      const user = await this.userRepository.get(asset.ownerId);
+      const storageLabel = user?.storageLabel || null;
       const filename = asset.originalFileName || asset.id;
-      await this.moveAsset(asset, filename);
+      await this.moveAsset(asset, { storageLabel, filename });
 
       // move motion part of live photo
       if (asset.livePhotoVideoId) {
         const [livePhotoVideo] = await this.assetRepository.getByIds([asset.livePhotoVideoId]);
         const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
-        await this.moveAsset(livePhotoVideo, motionFilename);
+        await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
       }
     } catch (error: any) {
       this.logger.error('Error running single template migration', error);
@@ -44,6 +53,7 @@ export class StorageTemplateService {
     try {
       console.time('migrating-time');
       const assets = await this.assetRepository.getAll();
+      const users = await this.userRepository.getList();
 
       const livePhotoMap: Record<string, AssetEntity> = {};
 
@@ -56,8 +66,10 @@ export class StorageTemplateService {
       for (const asset of assets) {
         const livePhotoParentAsset = livePhotoMap[asset.id];
         // TODO: remove livePhoto specific stuff once upload is fixed
+        const user = users.find((user) => user.id === asset.ownerId);
+        const storageLabel = user?.storageLabel || null;
         const filename = asset.originalFileName || livePhotoParentAsset?.originalFileName || asset.id;
-        await this.moveAsset(asset, filename);
+        await this.moveAsset(asset, { storageLabel, filename });
       }
 
       this.logger.debug('Cleaning up empty directories...');
@@ -70,8 +82,8 @@ export class StorageTemplateService {
   }
 
   // TODO: use asset core (once in domain)
-  async moveAsset(asset: AssetEntity, originalName: string) {
-    const destination = await this.core.getTemplatePath(asset, originalName);
+  async moveAsset(asset: AssetEntity, metadata: MoveAssetMetadata) {
+    const destination = await this.core.getTemplatePath(asset, metadata);
     if (asset.originalPath !== destination) {
       const source = asset.originalPath;
 

@@ -4122,6 +4122,10 @@
           "lastName": {
             "type": "string"
           },
+          "storageLabel": {
+            "type": "string",
+            "nullable": true
+          },
           "createdAt": {
             "type": "string"
           },
@@ -4150,6 +4154,7 @@
           "email",
           "firstName",
           "lastName",
+          "storageLabel",
           "createdAt",
           "profileImagePath",
           "shouldChangePassword",
@@ -5529,20 +5534,20 @@
         "type": "object",
         "properties": {
           "email": {
-            "type": "string",
-            "example": "testuser@email.com"
+            "type": "string"
           },
           "password": {
-            "type": "string",
-            "example": "password"
+            "type": "string"
           },
           "firstName": {
-            "type": "string",
-            "example": "John"
+            "type": "string"
           },
           "lastName": {
+            "type": "string"
+          },
+          "storageLabel": {
             "type": "string",
-            "example": "Doe"
+            "nullable": true
           }
         },
         "required": [
@@ -5566,25 +5571,24 @@
       "UpdateUserDto": {
         "type": "object",
         "properties": {
-          "email": {
-            "type": "string",
-            "example": "testuser@email.com"
-          },
-          "password": {
-            "type": "string",
-            "example": "password"
-          },
-          "firstName": {
-            "type": "string",
-            "example": "John"
-          },
-          "lastName": {
-            "type": "string",
-            "example": "Doe"
-          },
           "id": {
             "type": "string",
             "format": "uuid"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "storageLabel": {
+            "type": "string"
           },
           "isAdmin": {
             "type": "boolean"

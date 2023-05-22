@@ -5,7 +5,6 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { hash } from 'bcrypt';
 import { constants, createReadStream, ReadStream } from 'fs';
@@ -28,6 +27,7 @@ export class UserCore {
     if (!authUser.isAdmin) {
       // Users can never update the isAdmin property.
       delete dto.isAdmin;
+      delete dto.storageLabel;
     } else if (dto.isAdmin && authUser.id !== id) {
       // Admin cannot create another admin.
       throw new BadRequestException('The server already has an admin');
@@ -36,13 +36,24 @@ export class UserCore {
     if (dto.email) {
       const duplicate = await this.userRepository.getByEmail(dto.email);
       if (duplicate && duplicate.id !== id) {
-        throw new BadRequestException('Email already in user by another account');
+        throw new BadRequestException('Email already in use by another account');
+      }
+    }
+
+    if (dto.storageLabel) {
+      const duplicate = await this.userRepository.getByStorageLabel(dto.storageLabel);
+      if (duplicate && duplicate.id !== id) {
+        throw new BadRequestException('Storage label already in use by another account');
       }
     }
 
     try {
       if (dto.password) {
         dto.password = await this.cryptoRepository.hashBcrypt(dto.password, SALT_ROUNDS);
+      }
+
+      if (dto.storageLabel === '') {
+        dto.storageLabel = null;
       }
 
       return this.userRepository.update(id, dto);
@@ -106,14 +117,8 @@ export class UserCore {
   }
 
   async createProfileImage(authUser: AuthUserDto, filePath: string): Promise<UserEntity> {
-    // TODO: do we need to do this? Maybe we can trust the authUser
-    const user = await this.userRepository.get(authUser.id);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
     try {
-      return this.userRepository.update(user.id, { profileImagePath: filePath });
+      return this.userRepository.update(authUser.id, { profileImagePath: filePath });
     } catch (e) {
       Logger.error(e, 'Create User Profile Image');
       throw new InternalServerErrorException('Failed to create new user profile image');
@@ -121,12 +126,7 @@ export class UserCore {
   }
 
   async restoreUser(authUser: AuthUserDto, userToRestore: UserEntity): Promise<UserEntity> {
-    // TODO: do we need to do this? Maybe we can trust the authUser
-    const requestor = await this.userRepository.get(authUser.id);
-    if (!requestor) {
-      throw new UnauthorizedException('Requestor not found');
-    }
-    if (!requestor.isAdmin) {
+    if (!authUser.isAdmin) {
       throw new ForbiddenException('Unauthorized');
     }
     try {
@@ -138,12 +138,7 @@ export class UserCore {
   }
 
   async deleteUser(authUser: AuthUserDto, userToDelete: UserEntity): Promise<UserEntity> {
-    // TODO: do we need to do this? Maybe we can trust the authUser
-    const requestor = await this.userRepository.get(authUser.id);
-    if (!requestor) {
-      throw new UnauthorizedException('Requestor not found');
-    }
-    if (!requestor.isAdmin) {
+    if (!authUser.isAdmin) {
       throw new ForbiddenException('Unauthorized');
     }
 
