@@ -60,20 +60,10 @@ export class StorageTemplateService {
       const users = await this.userRepository.getList();
 
       for await (const assets of assetPagination) {
-        const livePhotoMap: Record<string, AssetEntity> = {};
-
         for (const asset of assets) {
-          if (asset.livePhotoVideoId) {
-            livePhotoMap[asset.livePhotoVideoId] = asset;
-          }
-        }
-
-        for (const asset of assets) {
-          const livePhotoParentAsset = livePhotoMap[asset.id];
-          // TODO: remove livePhoto specific stuff once upload is fixed
           const user = users.find((user) => user.id === asset.ownerId);
           const storageLabel = user?.storageLabel || null;
-          const filename = asset.originalFileName || livePhotoParentAsset?.originalFileName || asset.id;
+          const filename = asset.originalFileName || asset.id;
           await this.moveAsset(asset, { storageLabel, filename });
         }
       }
