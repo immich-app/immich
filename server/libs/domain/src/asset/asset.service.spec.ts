@@ -20,7 +20,7 @@ describe(AssetService.name, () => {
 
   describe(`handle asset upload`, () => {
     it('should process an uploaded video', async () => {
-      const data = { asset: { type: AssetType.VIDEO } as AssetEntity, fileName: 'video.mp4' };
+      const data = { asset: { type: AssetType.VIDEO } as AssetEntity };
 
       await expect(sut.handleAssetUpload(data)).resolves.toBeUndefined();
 
@@ -33,7 +33,7 @@ describe(AssetService.name, () => {
     });
 
     it('should process an uploaded image', async () => {
-      const data = { asset: { type: AssetType.IMAGE } as AssetEntity, fileName: 'image.jpg' };
+      const data = { asset: { type: AssetType.IMAGE } as AssetEntity };
 
       await sut.handleAssetUpload(data);
 

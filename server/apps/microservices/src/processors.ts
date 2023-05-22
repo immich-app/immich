@@ -3,7 +3,6 @@ import {
   FacialRecognitionService,
   IAssetFaceJob,
   IAssetJob,
-  IAssetUploadedJob,
   IBaseJob,
   IBulkEntityJob,
   IDeleteFilesJob,
@@ -34,7 +33,7 @@ export class BackgroundTaskProcessor {
   ) {}
 
   @Process(JobName.ASSET_UPLOADED)
-  async onAssetUpload(job: Job<IAssetUploadedJob>) {
+  async onAssetUpload(job: Job<IAssetJob>) {
     await this.assetService.handleAssetUpload(job.data);
   }
 

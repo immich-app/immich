@@ -1,7 +1,7 @@
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import { Inject } from '@nestjs/common';
 import { AuthUserDto } from '../auth';
-import { IAssetUploadedJob, IJobRepository, JobName } from '../job';
+import { IAssetJob, IJobRepository, JobName } from '../job';
 import { AssetCore } from './asset.core';
 import { IAssetRepository } from './asset.repository';
 import { MapMarkerDto } from './dto/map-marker.dto';
@@ -17,7 +17,7 @@ export class AssetService {
     this.assetCore = new AssetCore(assetRepository, jobRepository);
   }
 
-  async handleAssetUpload(data: IAssetUploadedJob) {
+  async handleAssetUpload(data: IAssetJob) {
     await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data });
 
     if (data.asset.type == AssetType.VIDEO) {
