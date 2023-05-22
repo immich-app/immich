@@ -47,6 +47,10 @@ export class AssetRepository implements IAssetRepository {
           person: true,
         },
       },
+      order: {
+        // Ensures correct order when paginating
+        createdAt: 'ASC',
+      },
     });
   }
 
@@ -162,6 +166,10 @@ export class AssetRepository implements IAssetRepository {
     return paginate(this.repository, pagination, {
       relations,
       where,
+      order: {
+        // Ensures correct order when paginating
+        createdAt: 'ASC',
+      },
     });
   }
 
