@@ -351,7 +351,7 @@ export class AssetController {
    */
   @Authenticated()
   @Post('/bulk-upload-check')
-  @HttpCode(207)
+  @HttpCode(200)
   bulkUploadCheck(
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: AssetBulkUploadCheckDto,
