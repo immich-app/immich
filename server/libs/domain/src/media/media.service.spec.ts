@@ -377,7 +377,7 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
         ['-vcodec h264', '-acodec aac', '-movflags faststart', '-vf scale=-2:720', '-preset ultrafast', '-crf 23'],
-        true,
+        false,
       );
     });
 
