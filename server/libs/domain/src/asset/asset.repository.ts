@@ -1,5 +1,5 @@
 import { AssetEntity, AssetType } from '@app/infra/entities';
-import { Paginated, PaginationOptions } from '@app/infra/utils/pagination.util';
+import { Paginated, PaginationOptions } from '../domain.util';
 
 export interface AssetSearchOptions {
   isVisible?: boolean;

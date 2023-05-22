@@ -1,8 +1,8 @@
-import { usePagination } from '@app/infra/utils/pagination.util';
 import { Inject, Logger } from '@nestjs/common';
 import { join } from 'path';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
+import { usePagination } from '../domain.util';
 import { IAssetJob, IBaseJob, IFaceThumbnailJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import { CropOptions, FACE_THUMBNAIL_SIZE, IMediaRepository } from '../media';
 import { IPersonRepository } from '../person/person.repository';

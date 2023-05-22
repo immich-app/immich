@@ -1,9 +1,9 @@
 import { AssetEntity, AssetType, TranscodePreset } from '@app/infra/entities';
-import { usePagination } from '@app/infra/utils/pagination.util';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { join } from 'path';
 import { IAssetRepository, mapAsset, WithoutProperty } from '../asset';
 import { CommunicationEvent, ICommunicationRepository } from '../communication';
+import { usePagination } from '../domain.util';
 import { IAssetJob, IBaseJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config';

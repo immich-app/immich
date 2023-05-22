@@ -8,10 +8,10 @@ import {
   JobName,
   JOBS_ASSET_PAGINATION_SIZE,
   QueueName,
+  usePagination,
   WithoutProperty,
 } from '@app/domain';
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
-import { usePagination } from '@app/infra/utils/pagination.util';
 import { Process, Processor } from '@nestjs/bull';
 import { Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';

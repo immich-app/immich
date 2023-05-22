@@ -1,9 +1,8 @@
 import { AssetEntity, SystemConfig } from '@app/infra/entities';
-import { usePagination } from '@app/infra/utils/pagination.util';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IAssetRepository } from '../asset/asset.repository';
 import { APP_MEDIA_LOCATION } from '../domain.constant';
-import { getLivePhotoMotionFilename } from '../domain.util';
+import { getLivePhotoMotionFilename, usePagination } from '../domain.util';
 import { IAssetJob, JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import { IStorageRepository } from '../storage/storage.repository';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';

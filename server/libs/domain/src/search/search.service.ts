@@ -1,5 +1,4 @@
 import { AlbumEntity, AssetEntity, AssetFaceEntity } from '@app/infra/entities';
-import { usePagination } from '@app/infra/utils/pagination.util';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { mapAlbum } from '../album';
@@ -8,6 +7,7 @@ import { mapAsset } from '../asset';
 import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
+import { usePagination } from '../domain.util';
 import { AssetFaceId, IFaceRepository } from '../facial-recognition';
 import { IAssetFaceJob, IBulkEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import { IMachineLearningRepository } from '../smart-info';

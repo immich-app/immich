@@ -4,13 +4,15 @@ import {
   LivePhotoSearchOptions,
   MapMarker,
   MapMarkerSearchOptions,
+  Paginated,
+  PaginationOptions,
   WithoutProperty,
 } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetType } from '../entities';
-import { paginate, Paginated, PaginationOptions } from '../utils/pagination.util';
+import { paginate } from '../utils/pagination.util';
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
