@@ -1,7 +1,7 @@
 import {
   AssetCore,
+  IAssetJob,
   IAssetRepository,
-  IAssetUploadedJob,
   IBaseJob,
   IGeocodingRepository,
   IJobRepository,
@@ -84,9 +84,8 @@ export class MetadataExtractionProcessor {
 
       for await (const assets of assetPagination) {
         for (const asset of assets) {
-          const fileName = asset.originalFileName;
           const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
-          await this.jobRepository.queue({ name, data: { asset, fileName } });
+          await this.jobRepository.queue({ name, data: { asset } });
         }
       }
     } catch (error: any) {
@@ -95,7 +94,7 @@ export class MetadataExtractionProcessor {
   }
 
   @Process(JobName.EXIF_EXTRACTION)
-  async extractExifInfo(job: Job<IAssetUploadedJob>) {
+  async extractExifInfo(job: Job<IAssetJob>) {
     let asset = job.data.asset;
 
     try {
@@ -200,7 +199,7 @@ export class MetadataExtractionProcessor {
   }
 
   @Process({ name: JobName.EXTRACT_VIDEO_METADATA, concurrency: 2 })
-  async extractVideoMetadata(job: Job<IAssetUploadedJob>) {
+  async extractVideoMetadata(job: Job<IAssetJob>) {
     let asset = job.data.asset;
 
     if (!asset.isVisible) {
