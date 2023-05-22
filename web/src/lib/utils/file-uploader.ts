@@ -4,7 +4,7 @@ import {
 } from './../components/shared-components/notification/notification';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import type { UploadAsset } from '../models/upload-asset';
-import { api, AssetBulkUploadCheckResultReasonEnum, AssetFileUploadResponseDto } from '@api';
+import { AssetFileUploadResponseDto } from '@api';
 import { addAssetsToAlbum, getFileMimeType, getFilenameExtension } from '$lib/utils/asset-utils';
 import { mergeMap, filter, firstValueFrom, from, of, combineLatestAll } from 'rxjs';
 import axios from 'axios';
