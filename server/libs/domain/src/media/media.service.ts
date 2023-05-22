@@ -155,11 +155,11 @@ export class MediaService {
         return;
       }
 
-      const options = this.getFfmpegOptions(mainVideoStream, config);
+      const outputOptions = this.getFfmpegOptions(mainVideoStream, config);
       const twoPass = this.eligibleForTwoPass(config);
 
-      this.logger.log(`Start encoding video ${asset.id} ${options}`);
-      await this.mediaRepository.transcode(input, output, options, twoPass);
+      this.logger.log(`Start encoding video ${asset.id} ${outputOptions}`);
+      await this.mediaRepository.transcode(input, output, { outputOptions, twoPass });
 
       this.logger.log(`Encoding success ${asset.id}`);
 

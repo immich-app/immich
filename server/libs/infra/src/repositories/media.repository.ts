@@ -1,9 +1,9 @@
-import { CropOptions, IMediaRepository, ResizeOptions, VideoInfo } from '@app/domain';
+import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
 import { exiftool } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import sharp from 'sharp';
 import { promisify } from 'util';
-import * as fs from 'fs/promises';
+import fs from 'fs/promises';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 
@@ -86,11 +86,11 @@ export class MediaRepository implements IMediaRepository {
     };
   }
 
-  transcode(input: string, output: string, options: string[], twoPass: boolean): Promise<void> {
-    if (!twoPass) {
+  transcode(input: string, output: string, options: TranscodeOptions): Promise<void> {
+    if (!options.twoPass) {
       return new Promise((resolve, reject) => {
         ffmpeg(input, { niceness: 10 })
-          .outputOptions(options)
+          .outputOptions(options.outputOptions)
           .output(output)
           .on('error', reject)
           .on('end', resolve)
@@ -102,7 +102,7 @@ export class MediaRepository implements IMediaRepository {
     // recommended for vp9 for better quality and compression
     return new Promise((resolve, reject) => {
       ffmpeg(input, { niceness: 10 })
-        .outputOptions(options)
+        .outputOptions(options.outputOptions)
         .addOptions('-pass', '1')
         .addOptions('-passlogfile', output)
         .addOptions('-f null')
@@ -111,7 +111,7 @@ export class MediaRepository implements IMediaRepository {
         .on('end', () => {
           // second pass
           ffmpeg(input, { niceness: 10 })
-            .outputOptions(options)
+            .outputOptions(options.outputOptions)
             .addOptions('-pass', '2')
             .addOptions('-passlogfile', output)
             .output(output)

@@ -50,6 +50,7 @@
 	<input
 		class="immich-form-input pb-2 w-full"
 		aria-describedby={desc ? `${label}-desc` : undefined}
+		aria-labelledby="{label}-label"
 		id={label}
 		name={label}
 		type={inputType}

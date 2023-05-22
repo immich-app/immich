@@ -241,8 +241,10 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
-        ['-vcodec h264', '-acodec aac', '-movflags faststart', '-preset ultrafast', '-crf 23'],
-        false,
+        {
+          outputOptions: ['-vcodec h264', '-acodec aac', '-movflags faststart', '-preset ultrafast', '-crf 23'],
+          twoPass: false,
+        },
       );
     });
 
@@ -265,8 +267,10 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
-        ['-vcodec h264', '-acodec aac', '-movflags faststart', '-preset ultrafast', '-crf 23'],
-        false,
+        {
+          outputOptions: ['-vcodec h264', '-acodec aac', '-movflags faststart', '-preset ultrafast', '-crf 23'],
+          twoPass: false,
+        },
       );
     });
 
@@ -277,8 +281,17 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
-        ['-vcodec h264', '-acodec aac', '-movflags faststart', '-vf scale=-2:720', '-preset ultrafast', '-crf 23'],
-        false,
+        {
+          outputOptions: [
+            '-vcodec h264',
+            '-acodec aac',
+            '-movflags faststart',
+            '-vf scale=-2:720',
+            '-preset ultrafast',
+            '-crf 23',
+          ],
+          twoPass: false,
+        },
       );
     });
 
@@ -289,8 +302,17 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
-        ['-vcodec h264', '-acodec aac', '-movflags faststart', '-vf scale=720:-2', '-preset ultrafast', '-crf 23'],
-        false,
+        {
+          outputOptions: [
+            '-vcodec h264',
+            '-acodec aac',
+            '-movflags faststart',
+            '-vf scale=720:-2',
+            '-preset ultrafast',
+            '-crf 23',
+          ],
+          twoPass: false,
+        },
       );
     });
 
@@ -301,8 +323,17 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
-        ['-vcodec h264', '-acodec aac', '-movflags faststart', '-vf scale=-2:720', '-preset ultrafast', '-crf 23'],
-        false,
+        {
+          outputOptions: [
+            '-vcodec h264',
+            '-acodec aac',
+            '-movflags faststart',
+            '-vf scale=-2:720',
+            '-preset ultrafast',
+            '-crf 23',
+          ],
+          twoPass: false,
+        },
       );
     });
 
@@ -313,8 +344,17 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
-        ['-vcodec h264', '-acodec aac', '-movflags faststart', '-vf scale=-2:720', '-preset ultrafast', '-crf 23'],
-        false,
+        {
+          outputOptions: [
+            '-vcodec h264',
+            '-acodec aac',
+            '-movflags faststart',
+            '-vf scale=-2:720',
+            '-preset ultrafast',
+            '-crf 23',
+          ],
+          twoPass: false,
+        },
       );
     });
 
@@ -332,16 +372,18 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
-        [
-          '-vcodec h264',
-          '-acodec aac',
-          '-movflags faststart',
-          '-vf scale=-2:720',
-          '-preset ultrafast',
-          '-crf 23',
-          '-maxrate 4500k',
-        ],
-        false,
+        {
+          outputOptions: [
+            '-vcodec h264',
+            '-acodec aac',
+            '-movflags faststart',
+            '-vf scale=-2:720',
+            '-preset ultrafast',
+            '-crf 23',
+            '-maxrate 4500k',
+          ],
+          twoPass: false,
+        },
       );
     });
 
@@ -355,17 +397,19 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
-        [
-          '-vcodec h264',
-          '-acodec aac',
-          '-movflags faststart',
-          '-vf scale=-2:720',
-          '-preset ultrafast',
-          '-b:v 3104k',
-          '-minrate 1552k',
-          '-maxrate 4500k',
-        ],
-        true,
+        {
+          outputOptions: [
+            '-vcodec h264',
+            '-acodec aac',
+            '-movflags faststart',
+            '-vf scale=-2:720',
+            '-preset ultrafast',
+            '-b:v 3104k',
+            '-minrate 1552k',
+            '-maxrate 4500k',
+          ],
+          twoPass: true,
+        },
       );
     });
 
@@ -376,8 +420,17 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
-        ['-vcodec h264', '-acodec aac', '-movflags faststart', '-vf scale=-2:720', '-preset ultrafast', '-crf 23'],
-        false,
+        {
+          outputOptions: [
+            '-vcodec h264',
+            '-acodec aac',
+            '-movflags faststart',
+            '-vf scale=-2:720',
+            '-preset ultrafast',
+            '-crf 23',
+          ],
+          twoPass: false,
+        },
       );
     });
 
@@ -391,18 +444,20 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
-        [
-          '-vcodec vp9',
-          '-acodec aac',
-          '-movflags faststart',
-          '-vf scale=-2:720',
-          '-cpu-used 5',
-          '-row-mt 1',
-          '-threads 2',
-          '-crf 23',
-          '-b:v 0',
-        ],
-        false,
+        {
+          outputOptions: [
+            '-vcodec vp9',
+            '-acodec aac',
+            '-movflags faststart',
+            '-vf scale=-2:720',
+            '-cpu-used 5',
+            '-row-mt 1',
+            '-threads 2',
+            '-crf 23',
+            '-b:v 0',
+          ],
+          twoPass: false,
+        },
       );
     });
 
@@ -416,18 +471,20 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
-        [
-          '-vcodec vp9',
-          '-acodec aac',
-          '-movflags faststart',
-          '-vf scale=-2:720',
-          '-cpu-used 5',
-          '-row-mt 1',
-          '-threads 2',
-          '-crf 23',
-          '-b:v 0',
-        ],
-        false,
+        {
+          outputOptions: [
+            '-vcodec vp9',
+            '-acodec aac',
+            '-movflags faststart',
+            '-vf scale=-2:720',
+            '-cpu-used 5',
+            '-row-mt 1',
+            '-threads 2',
+            '-crf 23',
+            '-b:v 0',
+          ],
+          twoPass: false,
+        },
       );
     });
 
@@ -438,18 +495,20 @@ describe(MediaService.name, () => {
       expect(mediaMock.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         'upload/encoded-video/user-id/asset-id.mp4',
-        [
-          '-vcodec h264',
-          '-acodec aac',
-          '-movflags faststart',
-          '-vf scale=-2:720',
-          '-preset ultrafast',
-          '-threads 2',
-          '-x264-params "pools=none"',
-          '-x264-params "frame-threads=2"',
-          '-crf 23',
-        ],
-        false,
+        {
+          outputOptions: [
+            '-vcodec h264',
+            '-acodec aac',
+            '-movflags faststart',
+            '-vf scale=-2:720',
+            '-preset ultrafast',
+            '-threads 2',
+            '-x264-params "pools=none"',
+            '-x264-params "frame-threads=2"',
+            '-crf 23',
+          ],
+          twoPass: false,
+        },
       );
     });
   });
