@@ -352,7 +352,7 @@ export class AssetRepository implements IAssetRepository {
         ownerId,
       },
     });
-    return assets.map((asset) => asset.deviceAssetId) as string[];
+    return assets.map((asset) => asset.deviceAssetId);
   }
 
   async countByIdAndUser(assetId: string, ownerId: string): Promise<number> {
