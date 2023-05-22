@@ -136,7 +136,7 @@ export class AssetService {
 
       // handle duplicates with a success response
       if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_userid_checksum') {
-        const checksums = [file.checksum, livePhotoFile?.checksum].filter((checksum) => !!checksum) as Buffer[];
+        const checksums = [file.checksum, livePhotoFile?.checksum].filter((checksum): checksum is Buffer => !!checksum);
         const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, checksums);
         return { id: duplicate.id, duplicate: true };
       }
