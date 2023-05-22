@@ -44,7 +44,10 @@ describe(MediaService.name, () => {
 
   describe('handleQueueGenerateThumbnails', () => {
     it('should queue all assets', async () => {
-      assetMock.getAll.mockResolvedValue([assetEntityStub.image]);
+      assetMock.getAll.mockResolvedValue({
+        items: [assetEntityStub.image],
+        hasNextPage: false,
+      });
 
       await sut.handleQueueGenerateThumbnails({ force: true });
 
@@ -57,12 +60,15 @@ describe(MediaService.name, () => {
     });
 
     it('should queue all assets with missing thumbnails', async () => {
-      assetMock.getWithout.mockResolvedValue([assetEntityStub.image]);
+      assetMock.getWithout.mockResolvedValue({
+        items: [assetEntityStub.image],
+        hasNextPage: false,
+      });
 
       await sut.handleQueueGenerateThumbnails({ force: false });
 
       expect(assetMock.getAll).not.toHaveBeenCalled();
-      expect(assetMock.getWithout).toHaveBeenCalledWith(WithoutProperty.THUMBNAIL);
+      expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.GENERATE_JPEG_THUMBNAIL,
         data: { asset: assetEntityStub.image },
@@ -183,11 +189,14 @@ describe(MediaService.name, () => {
 
   describe('handleQueueVideoConversion', () => {
     it('should queue all video assets', async () => {
-      assetMock.getAll.mockResolvedValue([assetEntityStub.video]);
+      assetMock.getAll.mockResolvedValue({
+        items: [assetEntityStub.video],
+        hasNextPage: false,
+      });
 
       await sut.handleQueueVideoConversion({ force: true });
 
-      expect(assetMock.getAll).toHaveBeenCalledWith({ type: AssetType.VIDEO });
+      expect(assetMock.getAll).toHaveBeenCalledWith({ skip: 0, take: 1000 }, { type: AssetType.VIDEO });
       expect(assetMock.getWithout).not.toHaveBeenCalled();
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.VIDEO_CONVERSION,
@@ -196,12 +205,15 @@ describe(MediaService.name, () => {
     });
 
     it('should queue all video assets without encoded videos', async () => {
-      assetMock.getWithout.mockResolvedValue([assetEntityStub.video]);
+      assetMock.getWithout.mockResolvedValue({
+        items: [assetEntityStub.video],
+        hasNextPage: false,
+      });
 
       await sut.handleQueueVideoConversion({});
 
       expect(assetMock.getAll).not.toHaveBeenCalled();
-      expect(assetMock.getWithout).toHaveBeenCalledWith(WithoutProperty.ENCODED_VIDEO);
+      expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.ENCODED_VIDEO);
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.VIDEO_CONVERSION,
         data: { asset: assetEntityStub.video },

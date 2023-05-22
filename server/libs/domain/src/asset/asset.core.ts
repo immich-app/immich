@@ -1,13 +1,9 @@
 import { AssetEntity } from '@app/infra/entities';
 import { IJobRepository, JobName } from '../job';
-import { AssetSearchOptions, IAssetRepository, LivePhotoSearchOptions } from './asset.repository';
+import { IAssetRepository, LivePhotoSearchOptions } from './asset.repository';
 
 export class AssetCore {
   constructor(private assetRepository: IAssetRepository, private jobRepository: IJobRepository) {}
-
-  getAll(options: AssetSearchOptions) {
-    return this.assetRepository.getAll(options);
-  }
 
   async save(asset: Partial<AssetEntity>) {
     const _asset = await this.assetRepository.save(asset);

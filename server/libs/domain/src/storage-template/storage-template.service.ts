@@ -2,8 +2,8 @@ import { AssetEntity, SystemConfig } from '@app/infra/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IAssetRepository } from '../asset/asset.repository';
 import { APP_MEDIA_LOCATION } from '../domain.constant';
-import { getLivePhotoMotionFilename } from '../domain.util';
-import { IAssetJob } from '../job';
+import { getLivePhotoMotionFilename, usePagination } from '../domain.util';
+import { IAssetJob, JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import { IStorageRepository } from '../storage/storage.repository';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
 import { IUserRepository } from '../user/user.repository';
@@ -52,24 +52,19 @@ export class StorageTemplateService {
   async handleTemplateMigration() {
     try {
       console.time('migrating-time');
-      const assets = await this.assetRepository.getAll();
+
+      const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+        this.assetRepository.getAll(pagination),
+      );
       const users = await this.userRepository.getList();
 
-      const livePhotoMap: Record<string, AssetEntity> = {};
-
-      for (const asset of assets) {
-        if (asset.livePhotoVideoId) {
-          livePhotoMap[asset.livePhotoVideoId] = asset;
+      for await (const assets of assetPagination) {
+        for (const asset of assets) {
+          const user = users.find((user) => user.id === asset.ownerId);
+          const storageLabel = user?.storageLabel || null;
+          const filename = asset.originalFileName || asset.id;
+          await this.moveAsset(asset, { storageLabel, filename });
         }
-      }
-
-      for (const asset of assets) {
-        const livePhotoParentAsset = livePhotoMap[asset.id];
-        // TODO: remove livePhoto specific stuff once upload is fixed
-        const user = users.find((user) => user.id === asset.ownerId);
-        const storageLabel = user?.storageLabel || null;
-        const filename = asset.originalFileName || livePhotoParentAsset?.originalFileName || asset.id;
-        await this.moveAsset(asset, { storageLabel, filename });
       }
 
       this.logger.debug('Cleaning up empty directories...');

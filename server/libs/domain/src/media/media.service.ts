@@ -3,7 +3,8 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { join } from 'path';
 import { IAssetRepository, mapAsset, WithoutProperty } from '../asset';
 import { CommunicationEvent, ICommunicationRepository } from '../communication';
-import { IAssetJob, IBaseJob, IJobRepository, JobName } from '../job';
+import { usePagination } from '../domain.util';
+import { IAssetJob, IBaseJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
@@ -31,12 +32,16 @@ export class MediaService {
     try {
       const { force } = job;
 
-      const assets = force
-        ? await this.assetRepository.getAll()
-        : await this.assetRepository.getWithout(WithoutProperty.THUMBNAIL);
+      const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
+        return force
+          ? this.assetRepository.getAll(pagination)
+          : this.assetRepository.getWithout(pagination, WithoutProperty.THUMBNAIL);
+      });
 
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { asset } });
+      for await (const assets of assetPagination) {
+        for (const asset of assets) {
+          await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { asset } });
+        }
       }
     } catch (error: any) {
       this.logger.error('Failed to queue generate thumbnail jobs', error.stack);
@@ -115,11 +120,16 @@ export class MediaService {
     const { force } = job;
 
     try {
-      const assets = force
-        ? await this.assetRepository.getAll({ type: AssetType.VIDEO })
-        : await this.assetRepository.getWithout(WithoutProperty.ENCODED_VIDEO);
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { asset } });
+      const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
+        return force
+          ? this.assetRepository.getAll(pagination, { type: AssetType.VIDEO })
+          : this.assetRepository.getWithout(pagination, WithoutProperty.ENCODED_VIDEO);
+      });
+
+      for await (const assets of assetPagination) {
+        for (const asset of assets) {
+          await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { asset } });
+        }
       }
     } catch (error: any) {
       this.logger.error('Failed to queue video conversions', error.stack);

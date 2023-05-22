@@ -73,3 +73,5 @@ export enum JobName {
   QUEUE_ENCODE_CLIP = 'queue-clip-encode',
   ENCODE_CLIP = 'clip-encode',
 }
+
+export const JOBS_ASSET_PAGINATION_SIZE = 1000;
