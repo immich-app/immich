@@ -335,15 +335,19 @@ describe('AssetService', () => {
   });
 
   it('get assets by device id', async () => {
-    assetRepositoryMock.getAllByDeviceId.mockResolvedValue(['device_asset_id_1', 'device_asset_id_2']);
+    const assets = _getAssets();
 
-    await expect(sut.getUserAssetsByDeviceId(authStub.user1, 'device_id_1')).resolves.toEqual([
-      'device_asset_id_1',
-      'device_asset_id_2',
-    ]);
+    assetRepositoryMock.getAllByDeviceId.mockImplementation(() =>
+      Promise.resolve<string[]>(Array.from(assets.map((asset) => asset.deviceAssetId))),
+    );
 
-    expect(assetRepositoryMock.getAllByDeviceId).toHaveBeenCalledWith('immich_id', 'device_id_1');
+    const deviceId = 'device_id_1';
+    const result = await sut.getUserAssetsByDeviceId(authStub.user1, deviceId);
+
+    expect(result.length).toEqual(2);
+    expect(result).toEqual(assets.map((asset) => asset.deviceAssetId));
   });
+
 
   it('get assets count by time bucket', async () => {
     const assetCountByTimeBucket = _getAssetCountByTimeBucket();
