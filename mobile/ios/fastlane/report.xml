@@ -5,29 +5,32 @@
     
     
       
-      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.000282">
+      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.000407">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="1: increment_version_number" time="2.815995">
+      <testcase classname="fastlane.lanes" name="1: increment_version_number" time="2.988375">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="2: latest_testflight_build_number" time="30.927419">
+      <testcase classname="fastlane.lanes" name="2: latest_testflight_build_number" time="45.42439">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="3: increment_build_number" time="1.464698">
+      <testcase classname="fastlane.lanes" name="3: increment_build_number" time="2.381359">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="4: build_app" time="66.988561">
+      <testcase classname="fastlane.lanes" name="4: build_app" time="94.653021">
         
-          <failure message="/usr/local/Cellar/fastlane/2.212.1/libexec/gems/fastlane-2.212.1/fastlane/lib/fastlane/actions/actions_helper.rb:67:in `execute_action&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/fastlane-2.212.1/fastlane/lib/fastlane/runner.rb:255:in `block in execute_action&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/fastlane-2.212.1/fastlane/lib/fastlane/runner.rb:229:in `chdir&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/fastlane-2.212.1/fastlane/lib/fastlane/runner.rb:229:in `execute_action&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/fastlane-2.212.1/fastlane/lib/fastlane/runner.rb:157:in `trigger_action_by_name&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/fastlane-2.212.1/fastlane/lib/fastlane/fast_file.rb:159:in `method_missing&apos;&#10;Fastfile:27:in `block (2 levels) in parsing_binding&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/fastlane-2.212.1/fastlane/lib/fastlane/lane.rb:33:in `call&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/fastlane-2.212.1/fastlane/lib/fastlane/runner.rb:49:in `block in execute&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/fastlane-2.212.1/fastlane/lib/fastlane/runner.rb:45:in `chdir&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/fastlane-2.212.1/fastlane/lib/fastlane/runner.rb:45:in `execute&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/fastlane-2.212.1/fastlane/lib/fastlane/lane_manager.rb:47:in `cruise_lane&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/fastlane-2.212.1/fastlane/lib/fastlane/command_line_handler.rb:36:in `handle&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/fastlane-2.212.1/fastlane/lib/fastlane/commands_generator.rb:110:in `block (2 levels) in run&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/commander-4.6.0/lib/commander/command.rb:187:in `call&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/commander-4.6.0/lib/commander/command.rb:157:in `run&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/commander-4.6.0/lib/commander/runner.rb:444:in `run_active_command&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/fastlane-2.212.1/fastlane_core/lib/fastlane_core/ui/fastlane_runner.rb:124:in `run!&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/commander-4.6.0/lib/commander/delegates.rb:18:in `run!&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/fastlane-2.212.1/fastlane/lib/fastlane/commands_generator.rb:354:in `run&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/fastlane-2.212.1/fastlane/lib/fastlane/commands_generator.rb:43:in `start&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/fastlane-2.212.1/fastlane/lib/fastlane/cli_tools_distributor.rb:123:in `take_off&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/gems/fastlane-2.212.1/bin/fastlane:23:in `&lt;top (required)&gt;&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/bin/fastlane:25:in `load&apos;&#10;/usr/local/Cellar/fastlane/2.212.1/libexec/bin/fastlane:25:in `&lt;main&gt;&apos;&#10;&#10;Error packaging up the application" />
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="5: upload_to_testflight" time="58.237354">
         
       </testcase>
     
