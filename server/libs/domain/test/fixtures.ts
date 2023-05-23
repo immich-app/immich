@@ -249,6 +249,7 @@ export const assetEntityStub = {
     owner: userEntityStub.user1,
     ownerId: 'user-id',
     deviceId: 'device-id',
+    checksum: Buffer.from('file hash', 'utf8'),
     originalPath: '/original/path.ext',
     resizePath: '/uploads/user-id/thumbs/path.ext',
     type: AssetType.IMAGE,
