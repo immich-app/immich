@@ -12,6 +12,7 @@
 	import { AssetResponseDto, AlbumResponseDto, api, ThumbnailFormat } from '@api';
 	import { asByteUnitString } from '../../utils/byte-units';
 	import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
+	import { getAssetFilename } from '$lib/utils/asset-utils';
 
 	export let asset: AssetResponseDto;
 	export let albums: AlbumResponseDto[] = [];
@@ -172,7 +173,7 @@
 				<div><ImageOutline size="24" /></div>
 
 				<div>
-					<p>{`${asset.originalFileName}.${asset.originalPath.split('.')[1]}` || ''}</p>
+					<p>{getAssetFilename(asset)}</p>
 					<div class="flex text-sm gap-2">
 						{#if asset.exifInfo.exifImageHeight && asset.exifInfo.exifImageWidth}
 							{#if getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}
