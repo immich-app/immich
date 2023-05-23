@@ -26,6 +26,7 @@ import 'package:immich_mobile/modules/search/views/all_motion_videos_page.dart';
 import 'package:immich_mobile/modules/search/views/all_videos_page.dart';
 import 'package:immich_mobile/modules/search/views/curated_location_page.dart';
 import 'package:immich_mobile/modules/search/views/curated_object_page.dart';
+import 'package:immich_mobile/modules/search/views/person_result_page.dart';
 import 'package:immich_mobile/modules/search/views/recently_added_page.dart';
 import 'package:immich_mobile/modules/search/views/search_page.dart';
 import 'package:immich_mobile/modules/search/views/search_result_page.dart';
@@ -136,6 +137,13 @@ part 'router.gr.dart';
         DuplicateGuard,
       ],
     ),
+    AutoRoute(
+      page: PersonResultPage,
+      guards: [
+        AuthGuard,
+        DuplicateGuard,
+      ],
+    )
   ],
 )
 class AppRouter extends _$AppRouter {

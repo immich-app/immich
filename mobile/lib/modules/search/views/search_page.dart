@@ -69,15 +69,15 @@ class SearchPage extends HookConsumerWidget {
                     label: o.name,
                   ),
                 )
-                .toList()
-                .sublist(0, 12),
+                .take(12)
+                .toList(),
             onTap: (content, index) {
-              // AutoRouter.of(context).push(
-              //   PersonResultRoute(
-              //     personId: content.id,
-              //     personName: content.label,
-              //   ),
-              // );
+              AutoRouter.of(context).push(
+                PersonResultRoute(
+                  personId: content.id,
+                  personName: content.label,
+                ),
+              );
             },
             onNameTap: (person, index) =>
                 {print("Change name for ${person.id} - ${person.label}")},
