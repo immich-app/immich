@@ -1,6 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
+import 'package:immich_mobile/modules/search/providers/people.provider.dart';
 
 class PersonResultPage extends HookConsumerWidget {
   final String personId;
@@ -27,9 +29,21 @@ class PersonResultPage extends HookConsumerWidget {
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
       ),
-      body: const Center(
-        child: Text('Person Result Page'),
-      ),
+      body: ref.watch(personAssetsProvider(personId)).when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stackTrace) => Center(child: Text(error.toString())),
+            data: (data) => data.isEmpty
+                ? const Center(
+                    child: Text('Opps'),
+                  )
+                : Stack(
+                    children: [
+                      ImmichAssetGrid(
+                        renderList: data,
+                      ),
+                    ],
+                  ),
+          ),
     );
   }
 }
