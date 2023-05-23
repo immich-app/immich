@@ -12,7 +12,7 @@ export class UserTokenEntity {
   @Column()
   userId!: string;
 
-  @ManyToOne(() => UserEntity)
+  @ManyToOne(() => UserEntity, { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   user!: UserEntity;
 
   @CreateDateColumn({ type: 'timestamptz' })
