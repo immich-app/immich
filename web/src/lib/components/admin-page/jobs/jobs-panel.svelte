@@ -6,15 +6,24 @@
 	import { handleError } from '$lib/utils/handle-error';
 	import { AllJobStatusResponseDto, api, JobCommand, JobCommandDto, JobName } from '@api';
 	import type { ComponentType } from 'svelte';
+	import Icon from 'svelte-material-icons/DotsVertical.svelte';
+	import FaceRecognition from 'svelte-material-icons/FaceRecognition.svelte';
+	import FileJpgBox from 'svelte-material-icons/FileJpgBox.svelte';
+	import FolderMove from 'svelte-material-icons/FolderMove.svelte';
+	import Table from 'svelte-material-icons/Table.svelte';
+	import TagMultiple from 'svelte-material-icons/TagMultiple.svelte';
+	import VectorCircle from 'svelte-material-icons/VectorCircle.svelte';
+	import Video from 'svelte-material-icons/Video.svelte';
+	import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
 	import JobTile from './job-tile.svelte';
 	import StorageMigrationDescription from './storage-migration-description.svelte';
-	import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
 
 	export let jobs: AllJobStatusResponseDto;
 
 	interface JobDetails {
 		title: string;
 		subtitle?: string;
+		icon: typeof Icon;
 		allowForceCommand?: boolean;
 		component?: ComponentType;
 		handleCommand?: (jobId: JobName, jobCommand: JobCommandDto) => Promise<void>;
@@ -38,32 +47,39 @@
 
 	const jobDetails: Partial<Record<JobName, JobDetails>> = {
 		[JobName.ThumbnailGenerationQueue]: {
+			icon: FileJpgBox,
 			title: 'Generate Thumbnails',
 			subtitle: 'Regenerate JPEG and WebP thumbnails'
 		},
 		[JobName.MetadataExtractionQueue]: {
+			icon: Table,
 			title: 'Extract Metadata',
 			subtitle: 'Extract metadata information i.e. GPS, resolution...etc'
 		},
 		[JobName.ObjectTaggingQueue]: {
+			icon: TagMultiple,
 			title: 'Tag Objects',
 			subtitle:
 				'Run machine learning to tag objects\nNote that some assets may not have any objects detected'
 		},
 		[JobName.ClipEncodingQueue]: {
+			icon: VectorCircle,
 			title: 'Encode Clip',
 			subtitle: 'Run machine learning to generate clip embeddings'
 		},
 		[JobName.RecognizeFacesQueue]: {
+			icon: FaceRecognition,
 			title: 'Recognize Faces',
 			subtitle: 'Run machine learning to recognize faces',
 			handleCommand: handleFaceCommand
 		},
 		[JobName.VideoConversionQueue]: {
+			icon: Video,
 			title: 'Transcode Videos',
 			subtitle: 'Transcode videos not in the desired format'
 		},
 		[JobName.StorageTemplateMigrationQueue]: {
+			icon: FolderMove,
 			title: 'Storage Template Migration',
 			allowForceCommand: false,
 			component: StorageMigrationDescription
@@ -102,9 +118,10 @@
 {/if}
 
 <div class="flex flex-col gap-7">
-	{#each jobDetailsArray as [jobName, { title, subtitle, allowForceCommand, component, handleCommand: handleCommandOverride }]}
+	{#each jobDetailsArray as [jobName, { title, subtitle, allowForceCommand, icon, component, handleCommand: handleCommandOverride }]}
 		{@const { jobCounts, queueStatus } = jobs[jobName]}
 		<JobTile
+			{icon}
 			{title}
 			{subtitle}
 			{allowForceCommand}
