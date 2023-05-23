@@ -126,11 +126,7 @@
 {/if}
 
 <div class="flex flex-col gap-7">
-<<<<<<< HEAD
-	{#each jobDetailsArray as [jobName, { title, subtitle, allText, missingText, allowForceCommand, component, handleCommand: handleCommandOverride }]}
-=======
-	{#each jobDetailsArray as [jobName, { title, subtitle, allowForceCommand, icon, component, handleCommand: handleCommandOverride }]}
->>>>>>> upstream/main
+	{#each jobDetailsArray as [jobName, { title, subtitle, allText, missingText, allowForceCommand, icon, component, handleCommand: handleCommandOverride }]}
 		{@const { jobCounts, queueStatus } = jobs[jobName]}
 		<JobTile
 			{icon}
