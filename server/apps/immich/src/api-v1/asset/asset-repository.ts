@@ -329,7 +329,7 @@ export class AssetRepository implements IAssetRepository {
    * @param checksums
    *
    */
-  async getAssetsByChecksums(ownerId: string, checksums: Buffer[]): Promise<AssetEntity[]> {
+  async getAssetsByChecksums(ownerId: string, checksums: Buffer[]): Promise<AssetCheck[]> {
     return this.assetRepository.find({
       select: {
         id: true,
