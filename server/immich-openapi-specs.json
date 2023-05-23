@@ -4510,6 +4510,31 @@
           "owner"
         ]
       },
+      "CreateAlbumDto": {
+        "type": "object",
+        "properties": {
+          "albumName": {
+            "type": "string"
+          },
+          "sharedWithUserIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "assetIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "albumName"
+        ]
+      },
       "APIKeyCreateDto": {
         "type": "object",
         "properties": {
@@ -6154,31 +6179,6 @@
           "owned",
           "shared",
           "sharing"
-        ]
-      },
-      "CreateAlbumDto": {
-        "type": "object",
-        "properties": {
-          "albumName": {
-            "type": "string"
-          },
-          "sharedWithUserIds": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          "assetIds": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        },
-        "required": [
-          "albumName"
         ]
       },
       "AddUsersDto": {
