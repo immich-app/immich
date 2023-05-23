@@ -113,8 +113,6 @@ class SharingPage extends HookConsumerWidget {
     }
 
     buildTopBottons() {
-      // child: Padding(
-      //   padding: const EdgeInsets.only(left: 4.0),
       return Padding(
         padding: const EdgeInsets.only(
           left: 12.0,
@@ -196,7 +194,6 @@ class SharingPage extends HookConsumerWidget {
                 width: 0.5,
               ),
             ),
-            // color: Colors.transparent,
             child: Padding(
               padding: const EdgeInsets.all(18.0),
               child: Column(
