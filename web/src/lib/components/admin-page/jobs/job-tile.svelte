@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type Icon from 'svelte-material-icons/AbTesting.svelte';
 	import SelectionSearch from 'svelte-material-icons/SelectionSearch.svelte';
 	import Play from 'svelte-material-icons/Play.svelte';
 	import Pause from 'svelte-material-icons/Pause.svelte';
@@ -17,6 +18,7 @@
 	export let jobCounts: JobCountsDto;
 	export let queueStatus: QueueStatusDto;
 	export let allowForceCommand = true;
+	export let icon: typeof Icon;
 
 	$: waitingCount = jobCounts.waiting + jobCounts.paused + jobCounts.delayed;
 	$: isIdle = !queueStatus.isActive && !queueStatus.isPaused;
@@ -37,7 +39,10 @@
 			<div
 				class="flex items-center gap-4 text-xl font-semibold text-immich-primary dark:text-immich-dark-primary"
 			>
-				<span>{title.toUpperCase()}</span>
+				<span class="flex gap-2 items-center">
+					<svelte:component this={icon} size="1.25em" class="shrink-0 hidden sm:block" />
+					{title.toUpperCase()}
+				</span>
 				<div class="flex gap-2">
 					{#if jobCounts.failed > 0}
 						<Badge color="primary">
