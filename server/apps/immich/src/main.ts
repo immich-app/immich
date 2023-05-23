@@ -1,23 +1,23 @@
+import {
+  getLogLevels,
+  IMMICH_ACCESS_COOKIE,
+  IMMICH_API_KEY_HEADER,
+  IMMICH_API_KEY_NAME,
+  MACHINE_LEARNING_ENABLED,
+  SearchService,
+  SERVER_VERSION,
+} from '@app/domain';
+import { RedisIoAdapter } from '@app/infra';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerDocumentOptions, SwaggerModule } from '@nestjs/swagger';
+import { json } from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { writeFileSync } from 'fs';
 import path from 'path';
 import { AppModule } from './app.module';
-import { RedisIoAdapter } from '@app/infra';
-import { json } from 'body-parser';
 import { patchOpenAPI } from './utils/patch-open-api.util';
-import {
-  getLogLevels,
-  MACHINE_LEARNING_ENABLED,
-  SERVER_VERSION,
-  IMMICH_ACCESS_COOKIE,
-  SearchService,
-  IMMICH_API_KEY_HEADER,
-  IMMICH_API_KEY_NAME,
-} from '@app/domain';
 
 const logger = new Logger('ImmichServer');
 

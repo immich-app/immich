@@ -124,9 +124,7 @@ void main() {
       // TODO
     });
 
-    // Get all assets that have GPS information embedded
-    //
-    //Future<List<MapMarkerResponseDto>> getMapMarkers({ bool isFavorite, bool isArchived, num skip }) async
+    //Future<List<MapMarkerResponseDto>> getMapMarkers({ bool isFavorite }) async
     test('test getMapMarkers', () async {
       // TODO
     });

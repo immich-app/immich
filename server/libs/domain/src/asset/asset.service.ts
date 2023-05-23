@@ -1,20 +1,23 @@
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import { Inject } from '@nestjs/common';
-import { IAssetUploadedJob, IJobRepository, JobName } from '../job';
+import { AuthUserDto } from '../auth';
+import { IAssetJob, IJobRepository, JobName } from '../job';
 import { AssetCore } from './asset.core';
 import { IAssetRepository } from './asset.repository';
+import { MapMarkerDto } from './dto/map-marker.dto';
+import { MapMarkerResponseDto } from './response-dto';
 
 export class AssetService {
   private assetCore: AssetCore;
 
   constructor(
-    @Inject(IAssetRepository) assetRepository: IAssetRepository,
+    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     this.assetCore = new AssetCore(assetRepository, jobRepository);
   }
 
-  async handleAssetUpload(data: IAssetUploadedJob) {
+  async handleAssetUpload(data: IAssetJob) {
     await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data });
 
     if (data.asset.type == AssetType.VIDEO) {
@@ -27,5 +30,9 @@ export class AssetService {
 
   save(asset: Partial<AssetEntity>) {
     return this.assetCore.save(asset);
+  }
+
+  getMapMarkers(authUser: AuthUserDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
+    return this.assetRepository.getMapMarkers(authUser.id, options);
   }
 }

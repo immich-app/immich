@@ -295,6 +295,50 @@
         ]
       }
     },
+    "/asset/map-marker": {
+      "get": {
+        "operationId": "getMapMarkers",
+        "parameters": [
+          {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MapMarkerResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/auth/login": {
       "post": {
         "operationId": "login",
@@ -2962,67 +3006,6 @@
         ]
       }
     },
-    "/asset/map-marker": {
-      "get": {
-        "operationId": "getMapMarkers",
-        "description": "Get all assets that have GPS information embedded",
-        "parameters": [
-          {
-            "name": "isFavorite",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "isArchived",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "skip",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/MapMarkerResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Asset"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
     "/asset/{deviceId}": {
       "get": {
         "operationId": "getUserAssetsByDeviceId",
@@ -4138,7 +4121,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.56.1",
+    "version": "1.57.0",
     "contact": {}
   },
   "tags": [],
@@ -4182,6 +4165,10 @@
           "lastName": {
             "type": "string"
           },
+          "storageLabel": {
+            "type": "string",
+            "nullable": true
+          },
           "createdAt": {
             "type": "string"
           },
@@ -4210,6 +4197,7 @@
           "email",
           "firstName",
           "lastName",
+          "storageLabel",
           "createdAt",
           "profileImagePath",
           "shouldChangePassword",
@@ -4620,6 +4608,27 @@
         },
         "required": [
           "name"
+        ]
+      },
+      "MapMarkerResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "lat": {
+            "type": "number",
+            "format": "double"
+          },
+          "lon": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "required": [
+          "id",
+          "lat",
+          "lon"
         ]
       },
       "LoginCredentialDto": {
@@ -5383,7 +5392,10 @@
         "type": "object",
         "properties": {
           "crf": {
-            "type": "string"
+            "type": "integer"
+          },
+          "threads": {
+            "type": "integer"
           },
           "preset": {
             "type": "string"
@@ -5397,6 +5409,12 @@
           "targetResolution": {
             "type": "string"
           },
+          "maxBitrate": {
+            "type": "string"
+          },
+          "twoPass": {
+            "type": "boolean"
+          },
           "transcode": {
             "type": "string",
             "enum": [
@@ -5409,10 +5427,13 @@
         },
         "required": [
           "crf",
+          "threads",
           "preset",
           "targetVideoCodec",
           "targetAudioCodec",
           "targetResolution",
+          "maxBitrate",
+          "twoPass",
           "transcode"
         ]
       },
@@ -5568,20 +5589,20 @@
         "type": "object",
         "properties": {
           "email": {
-            "type": "string",
-            "example": "testuser@email.com"
+            "type": "string"
           },
           "password": {
-            "type": "string",
-            "example": "password"
+            "type": "string"
           },
           "firstName": {
-            "type": "string",
-            "example": "John"
+            "type": "string"
           },
           "lastName": {
+            "type": "string"
+          },
+          "storageLabel": {
             "type": "string",
-            "example": "Doe"
+            "nullable": true
           }
         },
         "required": [
@@ -5605,25 +5626,24 @@
       "UpdateUserDto": {
         "type": "object",
         "properties": {
-          "email": {
-            "type": "string",
-            "example": "testuser@email.com"
-          },
-          "password": {
-            "type": "string",
-            "example": "password"
-          },
-          "firstName": {
-            "type": "string",
-            "example": "John"
-          },
-          "lastName": {
-            "type": "string",
-            "example": "Doe"
-          },
           "id": {
             "type": "string",
             "format": "uuid"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "storageLabel": {
+            "type": "string"
           },
           "isAdmin": {
             "type": "boolean"
@@ -5938,31 +5958,6 @@
         },
         "required": [
           "timeBucket"
-        ]
-      },
-      "MapMarkerResponseDto": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
-          },
-          "lat": {
-            "type": "number",
-            "format": "double"
-          },
-          "lon": {
-            "type": "number",
-            "format": "double"
-          },
-          "id": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "type",
-          "lat",
-          "lon",
-          "id"
         ]
       },
       "UpdateAssetDto": {

@@ -1,8 +1,34 @@
-import { IsBoolean, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
-import { CreateUserDto } from './create-user.dto';
-import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { toEmail, toSanitized } from '../../../../../apps/immich/src/utils/transform.util';
 
-export class UpdateUserDto extends PartialType(CreateUserDto) {
+export class UpdateUserDto {
+  @IsOptional()
+  @IsEmail()
+  @Transform(toEmail)
+  email?: string;
+
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  password?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  firstName?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  lastName?: string;
+
+  @IsOptional()
+  @IsString()
+  @Transform(toSanitized)
+  storageLabel?: string;
+
   @IsNotEmpty()
   @IsUUID('4')
   @ApiProperty({ format: 'uuid' })

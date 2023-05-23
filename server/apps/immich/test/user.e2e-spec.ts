@@ -87,10 +87,10 @@ describe('User', () => {
         ]);
       });
 
-      it('fetches the user collection excluding the auth user', async () => {
+      it('fetches the user collection including the auth user', async () => {
         const { status, body } = await request(app.getHttpServer()).get('/user?isAll=false');
         expect(status).toEqual(200);
-        expect(body).toHaveLength(2);
+        expect(body).toHaveLength(3);
         expect(body).toEqual(
           expect.arrayContaining([
             {
@@ -105,6 +105,7 @@ describe('User', () => {
               deletedAt: null,
               updatedAt: expect.anything(),
               oauthId: '',
+              storageLabel: null,
             },
             {
               email: userTwoEmail,
@@ -118,10 +119,24 @@ describe('User', () => {
               deletedAt: null,
               updatedAt: expect.anything(),
               oauthId: '',
+              storageLabel: null,
+            },
+            {
+              email: authUserEmail,
+              firstName: 'auth-user',
+              lastName: 'test',
+              id: expect.anything(),
+              createdAt: expect.anything(),
+              isAdmin: true,
+              shouldChangePassword: true,
+              profileImagePath: '',
+              deletedAt: null,
+              updatedAt: expect.anything(),
+              oauthId: '',
+              storageLabel: 'admin',
             },
           ]),
         );
-        expect(body).toEqual(expect.not.arrayContaining([expect.objectContaining({ email: authUserEmail })]));
       });
 
       it('disallows admin user from creating a second admin account', async () => {

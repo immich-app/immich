@@ -14,6 +14,7 @@ export class JobService {
   async handleNightlyJobs() {
     await this.jobRepository.queue({ name: JobName.USER_DELETE_CHECK });
     await this.jobRepository.queue({ name: JobName.PERSON_CLEANUP });
+    await this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } });
   }
 
   handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<void> {

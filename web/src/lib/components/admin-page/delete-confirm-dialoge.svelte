@@ -2,15 +2,24 @@
 	import { api, UserResponseDto } from '@api';
 	import { createEventDispatcher } from 'svelte';
 	import Button from '../elements/buttons/button.svelte';
+	import { handleError } from '../../utils/handle-error';
 
 	export let user: UserResponseDto;
 
 	const dispatch = createEventDispatcher();
 
 	const deleteUser = async () => {
-		const deletedUser = await api.userApi.deleteUser(user.id);
-		if (deletedUser.data.deletedAt != null) dispatch('user-delete-success');
-		else dispatch('user-delete-fail');
+		try {
+			const deletedUser = await api.userApi.deleteUser(user.id);
+			if (deletedUser.data.deletedAt != null) {
+				dispatch('user-delete-success');
+			} else {
+				dispatch('user-delete-fail');
+			}
+		} catch (error) {
+			handleError(error, 'Unable to delete user');
+			dispatch('user-delete-fail');
+		}
 	};
 </script>
 

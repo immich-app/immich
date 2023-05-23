@@ -30,11 +30,6 @@ export interface IBulkEntityJob extends IBaseJob {
   ids: string[];
 }
 
-export interface IAssetUploadedJob extends IBaseJob {
-  asset: AssetEntity;
-  fileName: string;
-}
-
 export interface IDeleteFilesJob extends IBaseJob {
   files: Array<string | null | undefined>;
 }

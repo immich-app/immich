@@ -364,7 +364,7 @@ class BackupControllerPage extends HookConsumerWidget {
                   .read(backgroundServiceProvider)
                   .getIOSBackgroundAppRefreshEnabled(),
               builder: (context, snapshot) {
-                final enabled = snapshot.data as bool?;
+                final enabled = snapshot.data;
                 // If it's not enabled, show them some kind of alert that says
                 // background refresh is not enabled
                 if (enabled != null && !enabled) {}

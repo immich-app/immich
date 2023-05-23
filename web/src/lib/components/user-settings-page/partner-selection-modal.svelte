@@ -6,6 +6,8 @@
 	import Button from '../elements/buttons/button.svelte';
 	import { createEventDispatcher, onMount } from 'svelte';
 
+	export let user: UserResponseDto;
+
 	let availableUsers: UserResponseDto[] = [];
 	let selectedUsers: UserResponseDto[] = [];
 
@@ -15,8 +17,8 @@
 		// TODO: update endpoint to have a query param for deleted users
 		let { data: users } = await api.userApi.getAllUsers(false);
 
-		// remove soft deleted users
-		users = users.filter((user) => !user.deletedAt);
+		// remove invalid users
+		users = users.filter((_user) => !(_user.deletedAt || _user.id === user.id));
 
 		// exclude partners from the list of users available for selection
 		const { data: partners } = await api.partnerApi.getPartners('shared-by');

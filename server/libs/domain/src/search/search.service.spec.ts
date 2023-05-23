@@ -185,15 +185,16 @@ describe(SearchService.name, () => {
 
   describe('handleIndexAssets', () => {
     it('should call done, even when there are no assets', async () => {
-      assetMock.getAll.mockResolvedValue([]);
-
       await sut.handleIndexAssets();
 
       expect(searchMock.importAssets).toHaveBeenCalledWith([], true);
     });
 
     it('should index all the assets', async () => {
-      assetMock.getAll.mockResolvedValue([assetEntityStub.image]);
+      assetMock.getAll.mockResolvedValue({
+        items: [assetEntityStub.image],
+        hasNextPage: false,
+      });
 
       await sut.handleIndexAssets();
 
@@ -204,7 +205,10 @@ describe(SearchService.name, () => {
     });
 
     it('should log an error', async () => {
-      assetMock.getAll.mockResolvedValue([assetEntityStub.image]);
+      assetMock.getAll.mockResolvedValue({
+        items: [assetEntityStub.image],
+        hasNextPage: false,
+      });
       searchMock.importAssets.mockRejectedValue(new Error('import failed'));
 
       await sut.handleIndexAssets();

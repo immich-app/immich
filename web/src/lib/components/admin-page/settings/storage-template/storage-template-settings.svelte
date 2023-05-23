@@ -171,14 +171,14 @@
 				</p>
 
 				<p class="text-xs">
-					{user.id} is the user's ID
+					<code>{user.storageLabel || user.id}</code> is the user's Storage Label
 				</p>
 
 				<p
 					class="text-xs p-4 bg-gray-200 dark:bg-gray-700 dark:text-immich-dark-fg py-2 rounded-lg mt-2"
 				>
 					<span class="text-immich-fg/25 dark:text-immich-dark-fg/50"
-						>UPLOAD_LOCATION/{user.id}</span
+						>UPLOAD_LOCATION/{user.storageLabel || user.id}</span
 					>/{parsedTemplate()}.jpg
 				</p>
 

@@ -1031,18 +1031,11 @@ class AssetApi {
     return null;
   }
 
-  /// Get all assets that have GPS information embedded
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
+  /// Performs an HTTP 'GET /asset/map-marker' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [bool] isFavorite:
-  ///
-  /// * [bool] isArchived:
-  ///
-  /// * [num] skip:
-  Future<Response> getMapMarkersWithHttpInfo({ bool? isFavorite, bool? isArchived, num? skip, }) async {
+  Future<Response> getMapMarkersWithHttpInfo({ bool? isFavorite, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/map-marker';
 
@@ -1055,12 +1048,6 @@ class AssetApi {
 
     if (isFavorite != null) {
       queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
-    }
-    if (isArchived != null) {
-      queryParams.addAll(_queryParams('', 'isArchived', isArchived));
-    }
-    if (skip != null) {
-      queryParams.addAll(_queryParams('', 'skip', skip));
     }
 
     const contentTypes = <String>[];
@@ -1077,17 +1064,11 @@ class AssetApi {
     );
   }
 
-  /// Get all assets that have GPS information embedded
-  ///
   /// Parameters:
   ///
   /// * [bool] isFavorite:
-  ///
-  /// * [bool] isArchived:
-  ///
-  /// * [num] skip:
-  Future<List<MapMarkerResponseDto>?> getMapMarkers({ bool? isFavorite, bool? isArchived, num? skip, }) async {
-    final response = await getMapMarkersWithHttpInfo( isFavorite: isFavorite, isArchived: isArchived, skip: skip, );
+  Future<List<MapMarkerResponseDto>?> getMapMarkers({ bool? isFavorite, }) async {
+    final response = await getMapMarkersWithHttpInfo( isFavorite: isFavorite, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

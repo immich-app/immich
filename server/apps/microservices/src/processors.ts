@@ -3,7 +3,6 @@ import {
   FacialRecognitionService,
   IAssetFaceJob,
   IAssetJob,
-  IAssetUploadedJob,
   IBaseJob,
   IBulkEntityJob,
   IDeleteFilesJob,
@@ -34,7 +33,7 @@ export class BackgroundTaskProcessor {
   ) {}
 
   @Process(JobName.ASSET_UPLOADED)
-  async onAssetUpload(job: Job<IAssetUploadedJob>) {
+  async onAssetUpload(job: Job<IAssetJob>) {
     await this.assetService.handleAssetUpload(job.data);
   }
 
@@ -68,7 +67,7 @@ export class BackgroundTaskProcessor {
 export class ObjectTaggingProcessor {
   constructor(private smartInfoService: SmartInfoService) {}
 
-  @Process({ name: JobName.QUEUE_OBJECT_TAGGING, concurrency: 1 })
+  @Process({ name: JobName.QUEUE_OBJECT_TAGGING, concurrency: 0 })
   async onQueueObjectTagging(job: Job<IBaseJob>) {
     await this.smartInfoService.handleQueueObjectTagging(job.data);
   }
@@ -88,7 +87,7 @@ export class ObjectTaggingProcessor {
 export class FacialRecognitionProcessor {
   constructor(private facialRecognitionService: FacialRecognitionService) {}
 
-  @Process({ name: JobName.QUEUE_RECOGNIZE_FACES, concurrency: 1 })
+  @Process({ name: JobName.QUEUE_RECOGNIZE_FACES, concurrency: 0 })
   async onQueueRecognizeFaces(job: Job<IBaseJob>) {
     await this.facialRecognitionService.handleQueueRecognizeFaces(job.data);
   }
@@ -108,7 +107,7 @@ export class FacialRecognitionProcessor {
 export class ClipEncodingProcessor {
   constructor(private smartInfoService: SmartInfoService) {}
 
-  @Process({ name: JobName.QUEUE_ENCODE_CLIP, concurrency: 1 })
+  @Process({ name: JobName.QUEUE_ENCODE_CLIP, concurrency: 0 })
   async onQueueClipEncoding(job: Job<IBaseJob>) {
     await this.smartInfoService.handleQueueEncodeClip(job.data);
   }
@@ -188,7 +187,7 @@ export class StorageTemplateMigrationProcessor {
 export class ThumbnailGeneratorProcessor {
   constructor(private mediaService: MediaService) {}
 
-  @Process({ name: JobName.QUEUE_GENERATE_THUMBNAILS, concurrency: 1 })
+  @Process({ name: JobName.QUEUE_GENERATE_THUMBNAILS, concurrency: 0 })
   async onQueueGenerateThumbnails(job: Job<IBaseJob>) {
     await this.mediaService.handleQueueGenerateThumbnails(job.data);
   }
@@ -208,7 +207,7 @@ export class ThumbnailGeneratorProcessor {
 export class VideoTranscodeProcessor {
   constructor(private mediaService: MediaService) {}
 
-  @Process({ name: JobName.QUEUE_VIDEO_CONVERSION, concurrency: 1 })
+  @Process({ name: JobName.QUEUE_VIDEO_CONVERSION, concurrency: 0 })
   async onQueueVideoConversion(job: Job<IBaseJob>): Promise<void> {
     await this.mediaService.handleQueueVideoConversion(job.data);
   }

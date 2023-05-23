@@ -2,7 +2,6 @@ import { JobName, QueueName } from './job.constants';
 import {
   IAssetFaceJob,
   IAssetJob,
-  IAssetUploadedJob,
   IBaseJob,
   IBulkEntityJob,
   IDeleteFilesJob,
@@ -26,7 +25,7 @@ export interface QueueStatus {
 
 export type JobItem =
   // Asset Upload
-  | { name: JobName.ASSET_UPLOADED; data: IAssetUploadedJob }
+  | { name: JobName.ASSET_UPLOADED; data: IAssetJob }
 
   // Transcoding
   | { name: JobName.QUEUE_VIDEO_CONVERSION; data: IBaseJob }
@@ -48,8 +47,8 @@ export type JobItem =
 
   // Metadata Extraction
   | { name: JobName.QUEUE_METADATA_EXTRACTION; data: IBaseJob }
-  | { name: JobName.EXIF_EXTRACTION; data: IAssetUploadedJob }
-  | { name: JobName.EXTRACT_VIDEO_METADATA; data: IAssetUploadedJob }
+  | { name: JobName.EXIF_EXTRACTION; data: IAssetJob }
+  | { name: JobName.EXTRACT_VIDEO_METADATA; data: IAssetJob }
 
   // Object Tagging
   | { name: JobName.QUEUE_OBJECT_TAGGING; data: IBaseJob }

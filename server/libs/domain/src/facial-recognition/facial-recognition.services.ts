@@ -2,7 +2,8 @@ import { Inject, Logger } from '@nestjs/common';
 import { join } from 'path';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
-import { IAssetJob, IBaseJob, IFaceThumbnailJob, IJobRepository, JobName } from '../job';
+import { usePagination } from '../domain.util';
+import { IAssetJob, IBaseJob, IFaceThumbnailJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import { CropOptions, FACE_THUMBNAIL_SIZE, IMediaRepository } from '../media';
 import { IPersonRepository } from '../person/person.repository';
 import { ISearchRepository } from '../search/search.repository';
@@ -27,17 +28,21 @@ export class FacialRecognitionService {
 
   async handleQueueRecognizeFaces({ force }: IBaseJob) {
     try {
-      const assets = force
-        ? await this.assetRepository.getAll()
-        : await this.assetRepository.getWithout(WithoutProperty.FACES);
+      const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
+        return force
+          ? this.assetRepository.getAll(pagination)
+          : this.assetRepository.getWithout(pagination, WithoutProperty.FACES);
+      });
 
       if (force) {
         const people = await this.personRepository.deleteAll();
         const faces = await this.searchRepository.deleteAllFaces();
         this.logger.debug(`Deleted ${people} people and ${faces} faces`);
       }
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: { asset } });
+      for await (const assets of assetPagination) {
+        for (const asset of assets) {
+          await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: { asset } });
+        }
       }
     } catch (error: any) {
       this.logger.error(`Unable to queue recognize faces`, error?.stack);

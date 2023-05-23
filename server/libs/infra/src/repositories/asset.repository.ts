@@ -1,8 +1,18 @@
-import { AssetSearchOptions, IAssetRepository, LivePhotoSearchOptions, WithoutProperty } from '@app/domain';
+import {
+  AssetSearchOptions,
+  IAssetRepository,
+  LivePhotoSearchOptions,
+  MapMarker,
+  MapMarkerSearchOptions,
+  Paginated,
+  PaginationOptions,
+  WithoutProperty,
+} from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetType } from '../entities';
+import { paginate } from '../utils/pagination.util';
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
@@ -21,15 +31,12 @@ export class AssetRepository implements IAssetRepository {
       },
     });
   }
-
   async deleteAll(ownerId: string): Promise<void> {
     await this.repository.delete({ ownerId });
   }
 
-  getAll(options?: AssetSearchOptions | undefined): Promise<AssetEntity[]> {
-    options = options || {};
-
-    return this.repository.find({
+  getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
+    return paginate(this.repository, pagination, {
       where: {
         isVisible: options.isVisible,
         type: options.type,
@@ -41,6 +48,10 @@ export class AssetRepository implements IAssetRepository {
         faces: {
           person: true,
         },
+      },
+      order: {
+        // Ensures correct order when paginating
+        createdAt: 'ASC',
       },
     });
   }
@@ -77,7 +88,7 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  getWithout(property: WithoutProperty): Promise<AssetEntity[]> {
+  getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity> {
     let relations: FindOptionsRelations<AssetEntity> = {};
     let where: FindOptionsWhere<AssetEntity> | FindOptionsWhere<AssetEntity>[] = {};
 
@@ -154,9 +165,13 @@ export class AssetRepository implements IAssetRepository {
         throw new Error(`Invalid getWithout property: ${property}`);
     }
 
-    return this.repository.find({
+    return paginate(this.repository, pagination, {
       relations,
       where,
+      order: {
+        // Ensures correct order when paginating
+        createdAt: 'ASC',
+      },
     });
   }
 
@@ -165,5 +180,45 @@ export class AssetRepository implements IAssetRepository {
       where: { albums: { id: albumId } },
       order: { fileCreatedAt: 'DESC' },
     });
+  }
+
+  async getMapMarkers(ownerId: string, options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
+    const { isFavorite } = options;
+
+    const assets = await this.repository.find({
+      select: {
+        id: true,
+        exifInfo: {
+          latitude: true,
+          longitude: true,
+        },
+      },
+      where: {
+        ownerId,
+        isVisible: true,
+        isArchived: false,
+        exifInfo: {
+          latitude: Not(IsNull()),
+          longitude: Not(IsNull()),
+        },
+        isFavorite,
+      },
+      relations: {
+        exifInfo: true,
+      },
+      order: {
+        fileCreatedAt: 'DESC',
+      },
+    });
+
+    return assets.map((asset) => ({
+      id: asset.id,
+
+      /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
+      lat: asset.exifInfo!.latitude!,
+
+      /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
+      lon: asset.exifInfo!.longitude!,
+    }));
   }
 }

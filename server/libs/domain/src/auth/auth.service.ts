@@ -122,6 +122,7 @@ export class AuthService {
         firstName: dto.firstName,
         lastName: dto.lastName,
         password: dto.password,
+        storageLabel: 'admin',
       });
 
       return mapAdminSignupResponse(admin);

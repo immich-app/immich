@@ -12,6 +12,7 @@ import {
   UserEntity,
   UserTokenEntity,
   AssetFaceEntity,
+  ExifEntity,
 } from '@app/infra/entities';
 import {
   AlbumResponseDto,
@@ -42,7 +43,7 @@ export const authStub = {
     isAllowUpload: true,
   }),
   user1: Object.freeze<AuthUserDto>({
-    id: 'immich_id',
+    id: 'user-id',
     email: 'immich@test.com',
     isAdmin: false,
     isPublicUser: false,
@@ -80,6 +81,7 @@ export const userEntityStub = {
     password: 'admin_password',
     firstName: 'admin_first_name',
     lastName: 'admin_last_name',
+    storageLabel: 'admin',
     oauthId: '',
     shouldChangePassword: false,
     profileImagePath: '',
@@ -93,6 +95,21 @@ export const userEntityStub = {
     password: 'immich_password',
     firstName: 'immich_first_name',
     lastName: 'immich_last_name',
+    storageLabel: null,
+    oauthId: '',
+    shouldChangePassword: false,
+    profileImagePath: '',
+    createdAt: '2021-01-01',
+    updatedAt: '2021-01-01',
+    tags: [],
+    assets: [],
+  }),
+  storageLabel: Object.freeze<UserEntity>({
+    ...authStub.user1,
+    password: 'immich_password',
+    firstName: 'immich_first_name',
+    lastName: 'immich_last_name',
+    storageLabel: 'label-1',
     oauthId: '',
     shouldChangePassword: false,
     profileImagePath: '',
@@ -223,6 +240,38 @@ export const assetEntityStub = {
     fileModifiedAt: '2022-06-19T23:41:36.910Z',
     fileCreatedAt: '2022-06-19T23:41:36.910Z',
   } as AssetEntity),
+
+  withLocation: Object.freeze<AssetEntity>({
+    id: 'asset-with-favorite-id',
+    deviceAssetId: 'device-asset-id',
+    fileModifiedAt: '2023-02-23T05:06:29.716Z',
+    fileCreatedAt: '2023-02-23T05:06:29.716Z',
+    owner: userEntityStub.user1,
+    ownerId: 'user-id',
+    deviceId: 'device-id',
+    originalPath: '/original/path.ext',
+    resizePath: '/uploads/user-id/thumbs/path.ext',
+    type: AssetType.IMAGE,
+    webpPath: null,
+    encodedVideoPath: null,
+    createdAt: '2023-02-23T05:06:29.716Z',
+    updatedAt: '2023-02-23T05:06:29.716Z',
+    mimeType: null,
+    isFavorite: false,
+    isArchived: false,
+    duration: null,
+    isVisible: true,
+    livePhotoVideo: null,
+    livePhotoVideoId: null,
+    tags: [],
+    sharedLinks: [],
+    originalFileName: 'asset-id.ext',
+    faces: [],
+    exifInfo: {
+      latitude: 100,
+      longitude: 100,
+    } as ExifEntity,
+  }),
 };
 
 export const albumStub = {
@@ -433,11 +482,14 @@ export const keyStub = {
 export const systemConfigStub = {
   defaults: Object.freeze({
     ffmpeg: {
-      crf: '23',
+      crf: 23,
+      threads: 0,
       preset: 'ultrafast',
       targetAudioCodec: 'aac',
       targetResolution: '720',
       targetVideoCodec: 'h264',
+      maxBitrate: '0',
+      twoPass: false,
       transcode: TranscodePreset.REQUIRED,
     },
     oauth: {
@@ -506,7 +558,7 @@ export const loginResponseStub = {
   user1oauth: {
     response: {
       accessToken: 'cmFuZG9tLWJ5dGVz',
-      userId: 'immich_id',
+      userId: 'user-id',
       userEmail: 'immich@test.com',
       firstName: 'immich_first_name',
       lastName: 'immich_last_name',
@@ -522,7 +574,7 @@ export const loginResponseStub = {
   user1password: {
     response: {
       accessToken: 'cmFuZG9tLWJ5dGVz',
-      userId: 'immich_id',
+      userId: 'user-id',
       userEmail: 'immich@test.com',
       firstName: 'immich_first_name',
       lastName: 'immich_last_name',
@@ -538,7 +590,7 @@ export const loginResponseStub = {
   user1insecure: {
     response: {
       accessToken: 'cmFuZG9tLWJ5dGVz',
-      userId: 'immich_id',
+      userId: 'user-id',
       userEmail: 'immich@test.com',
       firstName: 'immich_first_name',
       lastName: 'immich_last_name',

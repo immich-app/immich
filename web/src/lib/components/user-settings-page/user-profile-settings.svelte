@@ -65,6 +65,14 @@
 					required={true}
 				/>
 
+				<SettingInputField
+					inputType={SettingInputFieldType.TEXT}
+					label="STORAGE LABEL"
+					disabled={true}
+					value={user.storageLabel || ''}
+					required={false}
+				/>
+
 				<div class="flex justify-end">
 					<Button type="submit" size="sm" on:click={() => handleSaveProfile()}>Save</Button>
 				</div>
