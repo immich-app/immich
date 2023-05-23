@@ -55,6 +55,50 @@ class SearchPage extends HookConsumerWidget {
       );
     }
 
+    showNameEditModel(
+      String personId,
+      String currentName,
+    ) {
+      return showDialog(
+        context: context,
+        builder: (BuildContext thisContext) {
+          return AlertDialog(
+            title: const Text("Edit name"),
+            content: SingleChildScrollView(
+              child: Text(personId),
+            ),
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                },
+                child: Text(
+                  "Cancel",
+                  style: TextStyle(
+                    color: Colors.red[400],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                },
+                child: Text(
+                  "Save",
+                  style: TextStyle(
+                    color: Theme.of(context).primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
     buildPeople() {
       return SizedBox(
         height: MediaQuery.of(context).size.width / 3,
@@ -79,8 +123,9 @@ class SearchPage extends HookConsumerWidget {
                 ),
               );
             },
-            onNameTap: (person, index) =>
-                {print("Change name for ${person.id} - ${person.label}")},
+            onNameTap: (person, index) => {
+              showNameEditModel(person.id, person.label),
+            },
           ),
         ),
       );

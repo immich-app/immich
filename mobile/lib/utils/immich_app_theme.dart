@@ -119,6 +119,9 @@ ThemeData immichLightTheme = ThemeData(
       ),
     ),
   ),
+  dialogTheme: const DialogTheme(
+    surfaceTintColor: Colors.transparent,
+  ),
 );
 
 ThemeData immichDarkTheme = ThemeData(
