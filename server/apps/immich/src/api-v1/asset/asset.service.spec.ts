@@ -348,7 +348,6 @@ describe('AssetService', () => {
     expect(result).toEqual(assets.map((asset) => asset.deviceAssetId));
   });
 
-
   it('get assets count by time bucket', async () => {
     const assetCountByTimeBucket = _getAssetCountByTimeBucket();
 
