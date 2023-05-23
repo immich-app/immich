@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/search/providers/people.provider.dart';
 
 class PersonNameEditForm extends HookConsumerWidget {
   final String personId;
@@ -17,18 +18,14 @@ class PersonNameEditForm extends HookConsumerWidget {
     final controller = useTextEditingController(text: personName);
 
     return AlertDialog(
-      title: const Text("Edit name"),
+      title: const Text("Add a name"),
       content: SingleChildScrollView(
         child: TextFormField(
           controller: controller,
           autofocus: true,
-          // decoration: const InputDecoration(
-          //   hintText: 'Enter person name',
-          //   hintStyle: TextStyle(
-          //     fontWeight: FontWeight.normal,
-          //     fontSize: 14,
-          //   ),
-          // ),
+          decoration: const InputDecoration(
+            hintText: 'Name',
+          ),
         ),
       ),
       actions: [
@@ -47,8 +44,12 @@ class PersonNameEditForm extends HookConsumerWidget {
         ),
         TextButton(
           onPressed: () {
-            print(controller.text);
-            // Navigator.of(context, rootNavigator: true).pop('dialog');
+            ref.watch(
+              updatePersonNameProvider(
+                UpdatePersonNameDto(personId, controller.text),
+              ),
+            );
+            Navigator.of(context, rootNavigator: true).pop('dialog');
           },
           child: Text(
             "Save",

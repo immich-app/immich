@@ -133,6 +133,10 @@ ThemeData immichLightTheme = ThemeData(
     labelStyle: TextStyle(
       color: Colors.indigo,
     ),
+    hintStyle: TextStyle(
+      fontSize: 14.0,
+      fontWeight: FontWeight.normal,
+    ),
   ),
   textSelectionTheme: const TextSelectionThemeData(
     cursorColor: Colors.indigo,
@@ -246,6 +250,10 @@ ThemeData immichDarkTheme = ThemeData(
     ),
     labelStyle: TextStyle(
       color: immichDarkThemePrimaryColor,
+    ),
+    hintStyle: const TextStyle(
+      fontSize: 14.0,
+      fontWeight: FontWeight.normal,
     ),
   ),
   textSelectionTheme: TextSelectionThemeData(
