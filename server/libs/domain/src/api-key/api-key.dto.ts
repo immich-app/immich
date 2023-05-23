@@ -6,3 +6,9 @@ export class APIKeyCreateDto {
   @IsOptional()
   name?: string;
 }
+
+export class APIKeyUpdateDto {
+  @IsString()
+  @IsNotEmpty()
+  name!: string;
+}

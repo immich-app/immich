@@ -3,14 +3,12 @@ import { BadRequestException, Inject, Injectable, Logger, NotFoundException } fr
 import { randomBytes } from 'crypto';
 import { ReadStream } from 'fs';
 import { IAlbumRepository } from '../album/album.repository';
-import { IKeyRepository } from '../api-key/api-key.repository';
 import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto/crypto.repository';
 import { IJobRepository, IUserDeletionJob, JobName } from '../job';
 import { StorageCore, StorageFolder } from '../storage';
 import { IStorageRepository } from '../storage/storage.repository';
-import { IUserTokenRepository } from '../user-token/user-token.repository';
 import { IUserRepository } from '../user/user.repository';
 import { CreateUserDto, UpdateUserDto, UserCountDto } from './dto';
 import {
@@ -36,9 +34,7 @@ export class UserService {
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(IKeyRepository) private keyRepository: IKeyRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(IUserTokenRepository) private tokenRepository: IUserTokenRepository,
   ) {
     this.userCore = new UserCore(userRepository, cryptoRepository);
   }
@@ -174,8 +170,6 @@ export class UserService {
 
       this.logger.warn(`Removing user from database: ${user.id}`);
 
-      await this.tokenRepository.deleteAll(user.id);
-      await this.keyRepository.deleteAll(user.id);
       await this.albumRepository.deleteAll(user.id);
       await this.assetRepository.deleteAll(user.id);
       await this.userRepository.delete(user, true);

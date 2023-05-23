@@ -12,7 +12,7 @@ export class APIKeyEntity {
   @Column({ select: false })
   key?: string;
 
-  @ManyToOne(() => UserEntity)
+  @ManyToOne(() => UserEntity, { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   user?: UserEntity;
 
   @Column()

@@ -1,5 +1,10 @@
 import { APIKeyEntity } from '@app/infra/entities';
 
+export class APIKeyCreateResponseDto {
+  secret!: string;
+  apiKey!: APIKeyResponseDto;
+}
+
 export class APIKeyResponseDto {
   id!: string;
   name!: string;
