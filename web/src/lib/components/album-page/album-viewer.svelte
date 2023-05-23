@@ -405,7 +405,7 @@
 						/>
 					{/if}
 
-					{#if !isPublicShared}
+					{#if !isPublicShared && isOwned}
 						<div use:clickOutside on:outclick={() => (isShowAlbumOptions = false)}>
 							<CircleIconButton
 								title="Album options"
@@ -413,15 +413,13 @@
 								logo={DotsVertical}
 								>{#if isShowAlbumOptions}
 									<ContextMenu {...contextMenuPosition}>
-										{#if isOwned}
-											<MenuOption
-												on:click={() => {
-													isShowThumbnailSelection = true;
-													isShowAlbumOptions = false;
-												}}
-												text="Set album cover"
-											/>
-										{/if}
+										<MenuOption
+											on:click={() => {
+												isShowThumbnailSelection = true;
+												isShowAlbumOptions = false;
+											}}
+											text="Set album cover"
+										/>
 									</ContextMenu>
 								{/if}
 							</CircleIconButton>
