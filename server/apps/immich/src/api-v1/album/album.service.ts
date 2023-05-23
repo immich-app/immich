@@ -3,7 +3,6 @@ import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AlbumEntity, SharedLinkType } from '@app/infra/entities';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
-import { UpdateAlbumDto } from './dto/update-album.dto';
 import { AlbumResponseDto, IJobRepository, JobName, mapAlbum } from '@app/domain';
 import { IAlbumRepository } from './album-repository';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
@@ -114,20 +113,6 @@ export class AlbumService {
       ...result,
       album: mapAlbum(newAlbum),
     };
-  }
-
-  async update(authUser: AuthUserDto, albumId: string, dto: UpdateAlbumDto): Promise<AlbumResponseDto> {
-    const album = await this._getAlbum({ authUser, albumId });
-
-    if (authUser.id != album.ownerId) {
-      throw new BadRequestException('Unauthorized to change album info');
-    }
-
-    const updatedAlbum = await this.albumRepository.updateAlbum(album, dto);
-
-    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [updatedAlbum.id] } });
-
-    return mapAlbum(updatedAlbum);
   }
 
   async getCountByUserId(authUser: AuthUserDto): Promise<AlbumCountResponseDto> {

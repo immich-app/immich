@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ValidateUUID } from 'apps/immich/src/decorators/validate-uuid.decorator';
 import { IsOptional } from 'class-validator';
+import { ValidateUUID } from '../../../../../apps/immich/src/decorators/validate-uuid.decorator';
 
 export class UpdateAlbumDto {
   @IsOptional()
