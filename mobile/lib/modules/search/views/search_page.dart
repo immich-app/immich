@@ -9,6 +9,7 @@ import 'package:immich_mobile/modules/search/providers/search_page_state.provide
 import 'package:immich_mobile/modules/search/ui/curated_people_row.dart';
 import 'package:immich_mobile/modules/search/ui/curated_row.dart';
 import 'package:immich_mobile/modules/search/ui/immich_search_bar.dart';
+import 'package:immich_mobile/modules/search/ui/person_name_edit_form.dart';
 import 'package:immich_mobile/modules/search/ui/search_row_title.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -57,44 +58,12 @@ class SearchPage extends HookConsumerWidget {
 
     showNameEditModel(
       String personId,
-      String currentName,
+      String personName,
     ) {
       return showDialog(
         context: context,
-        builder: (BuildContext thisContext) {
-          return AlertDialog(
-            title: const Text("Edit name"),
-            content: SingleChildScrollView(
-              child: Text(personId),
-            ),
-            actions: [
-              TextButton(
-                style: TextButton.styleFrom(),
-                onPressed: () {
-                  Navigator.of(context, rootNavigator: true).pop('dialog');
-                },
-                child: Text(
-                  "Cancel",
-                  style: TextStyle(
-                    color: Colors.red[400],
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context, rootNavigator: true).pop('dialog');
-                },
-                child: Text(
-                  "Save",
-                  style: TextStyle(
-                    color: Theme.of(context).primaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          );
+        builder: (BuildContext context) {
+          return PersonNameEditForm(personId: personId, personName: personName);
         },
       );
     }
