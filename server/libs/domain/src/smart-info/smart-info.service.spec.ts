@@ -38,7 +38,10 @@ describe(SmartInfoService.name, () => {
 
   describe('handleQueueObjectTagging', () => {
     it('should queue the assets without tags', async () => {
-      assetMock.getWithout.mockResolvedValue([assetEntityStub.image]);
+      assetMock.getWithout.mockResolvedValue({
+        items: [assetEntityStub.image],
+        hasNextPage: false,
+      });
 
       await sut.handleQueueObjectTagging({ force: false });
 
@@ -46,11 +49,14 @@ describe(SmartInfoService.name, () => {
         [{ name: JobName.CLASSIFY_IMAGE, data: { asset: assetEntityStub.image } }],
         [{ name: JobName.DETECT_OBJECTS, data: { asset: assetEntityStub.image } }],
       ]);
-      expect(assetMock.getWithout).toHaveBeenCalledWith(WithoutProperty.OBJECT_TAGS);
+      expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.OBJECT_TAGS);
     });
 
     it('should queue all the assets', async () => {
-      assetMock.getAll.mockResolvedValue([assetEntityStub.image]);
+      assetMock.getAll.mockResolvedValue({
+        items: [assetEntityStub.image],
+        hasNextPage: false,
+      });
 
       await sut.handleQueueObjectTagging({ force: true });
 
@@ -140,16 +146,22 @@ describe(SmartInfoService.name, () => {
 
   describe('handleQueueEncodeClip', () => {
     it('should queue the assets without clip embeddings', async () => {
-      assetMock.getWithout.mockResolvedValue([assetEntityStub.image]);
+      assetMock.getWithout.mockResolvedValue({
+        items: [assetEntityStub.image],
+        hasNextPage: false,
+      });
 
       await sut.handleQueueEncodeClip({ force: false });
 
       expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.ENCODE_CLIP, data: { asset: assetEntityStub.image } });
-      expect(assetMock.getWithout).toHaveBeenCalledWith(WithoutProperty.CLIP_ENCODING);
+      expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.CLIP_ENCODING);
     });
 
     it('should queue all the assets', async () => {
-      assetMock.getAll.mockResolvedValue([assetEntityStub.image]);
+      assetMock.getAll.mockResolvedValue({
+        items: [assetEntityStub.image],
+        hasNextPage: false,
+      });
 
       await sut.handleQueueEncodeClip({ force: true });
 

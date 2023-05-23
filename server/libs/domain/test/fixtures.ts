@@ -43,7 +43,7 @@ export const authStub = {
     isAllowUpload: true,
   }),
   user1: Object.freeze<AuthUserDto>({
-    id: 'immich_id',
+    id: 'user-id',
     email: 'immich@test.com',
     isAdmin: false,
     isPublicUser: false,
@@ -81,6 +81,7 @@ export const userEntityStub = {
     password: 'admin_password',
     firstName: 'admin_first_name',
     lastName: 'admin_last_name',
+    storageLabel: 'admin',
     oauthId: '',
     shouldChangePassword: false,
     profileImagePath: '',
@@ -94,6 +95,21 @@ export const userEntityStub = {
     password: 'immich_password',
     firstName: 'immich_first_name',
     lastName: 'immich_last_name',
+    storageLabel: null,
+    oauthId: '',
+    shouldChangePassword: false,
+    profileImagePath: '',
+    createdAt: '2021-01-01',
+    updatedAt: '2021-01-01',
+    tags: [],
+    assets: [],
+  }),
+  storageLabel: Object.freeze<UserEntity>({
+    ...authStub.user1,
+    password: 'immich_password',
+    firstName: 'immich_first_name',
+    lastName: 'immich_last_name',
+    storageLabel: 'label-1',
     oauthId: '',
     shouldChangePassword: false,
     profileImagePath: '',
@@ -466,11 +482,14 @@ export const keyStub = {
 export const systemConfigStub = {
   defaults: Object.freeze({
     ffmpeg: {
-      crf: '23',
+      crf: 23,
+      threads: 0,
       preset: 'ultrafast',
       targetAudioCodec: 'aac',
       targetResolution: '720',
       targetVideoCodec: 'h264',
+      maxBitrate: '0',
+      twoPass: false,
       transcode: TranscodePreset.REQUIRED,
     },
     oauth: {
@@ -539,7 +558,7 @@ export const loginResponseStub = {
   user1oauth: {
     response: {
       accessToken: 'cmFuZG9tLWJ5dGVz',
-      userId: 'immich_id',
+      userId: 'user-id',
       userEmail: 'immich@test.com',
       firstName: 'immich_first_name',
       lastName: 'immich_last_name',
@@ -555,7 +574,7 @@ export const loginResponseStub = {
   user1password: {
     response: {
       accessToken: 'cmFuZG9tLWJ5dGVz',
-      userId: 'immich_id',
+      userId: 'user-id',
       userEmail: 'immich@test.com',
       firstName: 'immich_first_name',
       lastName: 'immich_last_name',
@@ -571,7 +590,7 @@ export const loginResponseStub = {
   user1insecure: {
     response: {
       accessToken: 'cmFuZG9tLWJ5dGVz',
-      userId: 'immich_id',
+      userId: 'user-id',
       userEmail: 'immich@test.com',
       firstName: 'immich_first_name',
       lastName: 'immich_last_name',

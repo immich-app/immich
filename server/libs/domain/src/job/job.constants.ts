@@ -79,3 +79,5 @@ export enum JobName {
   SIDECAR_DISCOVERY = 'sidecar-discovery',
   SIDECAR_SYNC = 'sidecar-sync',
 }
+
+export const JOBS_ASSET_PAGINATION_SIZE = 1000;

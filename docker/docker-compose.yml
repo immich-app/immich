@@ -4,7 +4,7 @@ services:
   immich-server:
     container_name: immich_server
     image: ghcr.io/immich-app/immich-server:release
-    entrypoint: ["/bin/sh", "./start-server.sh"]
+    command: ["start-server.sh"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
     env_file:
@@ -18,7 +18,7 @@ services:
   immich-microservices:
     container_name: immich_microservices
     image: ghcr.io/immich-app/immich-server:release
-    entrypoint: ["/bin/sh", "./start-microservices.sh"]
+    command: ["start-microservices.sh"]
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
     env_file:
@@ -42,7 +42,6 @@ services:
   immich-web:
     container_name: immich_web
     image: ghcr.io/immich-app/immich-web:release
-    entrypoint: ["/bin/sh", "./entrypoint.sh"]
     env_file:
       - .env
     restart: always

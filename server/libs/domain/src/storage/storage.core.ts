@@ -10,7 +10,14 @@ export enum StorageFolder {
 }
 
 export class StorageCore {
-  getFolderLocation(folder: StorageFolder, userId: string) {
+  getFolderLocation(
+    folder: StorageFolder.ENCODED_VIDEO | StorageFolder.UPLOAD | StorageFolder.PROFILE | StorageFolder.THUMBNAILS,
+    userId: string,
+  ) {
     return join(APP_MEDIA_LOCATION, folder, userId);
+  }
+
+  getLibraryFolder(user: { storageLabel: string | null; id: string }) {
+    return join(APP_MEDIA_LOCATION, StorageFolder.LIBRARY, user.storageLabel || user.id);
   }
 }

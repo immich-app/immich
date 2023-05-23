@@ -4078,7 +4078,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.56.2",
+    "version": "1.57.1",
     "contact": {}
   },
   "tags": [],
@@ -4122,6 +4122,10 @@
           "lastName": {
             "type": "string"
           },
+          "storageLabel": {
+            "type": "string",
+            "nullable": true
+          },
           "createdAt": {
             "type": "string"
           },
@@ -4150,6 +4154,7 @@
           "email",
           "firstName",
           "lastName",
+          "storageLabel",
           "createdAt",
           "profileImagePath",
           "shouldChangePassword",
@@ -5349,7 +5354,10 @@
         "type": "object",
         "properties": {
           "crf": {
-            "type": "string"
+            "type": "integer"
+          },
+          "threads": {
+            "type": "integer"
           },
           "preset": {
             "type": "string"
@@ -5363,6 +5371,12 @@
           "targetResolution": {
             "type": "string"
           },
+          "maxBitrate": {
+            "type": "string"
+          },
+          "twoPass": {
+            "type": "boolean"
+          },
           "transcode": {
             "type": "string",
             "enum": [
@@ -5375,10 +5389,13 @@
         },
         "required": [
           "crf",
+          "threads",
           "preset",
           "targetVideoCodec",
           "targetAudioCodec",
           "targetResolution",
+          "maxBitrate",
+          "twoPass",
           "transcode"
         ]
       },
@@ -5534,20 +5551,20 @@
         "type": "object",
         "properties": {
           "email": {
-            "type": "string",
-            "example": "testuser@email.com"
+            "type": "string"
           },
           "password": {
-            "type": "string",
-            "example": "password"
+            "type": "string"
           },
           "firstName": {
-            "type": "string",
-            "example": "John"
+            "type": "string"
           },
           "lastName": {
+            "type": "string"
+          },
+          "storageLabel": {
             "type": "string",
-            "example": "Doe"
+            "nullable": true
           }
         },
         "required": [
@@ -5571,25 +5588,24 @@
       "UpdateUserDto": {
         "type": "object",
         "properties": {
-          "email": {
-            "type": "string",
-            "example": "testuser@email.com"
-          },
-          "password": {
-            "type": "string",
-            "example": "password"
-          },
-          "firstName": {
-            "type": "string",
-            "example": "John"
-          },
-          "lastName": {
-            "type": "string",
-            "example": "Doe"
-          },
           "id": {
             "type": "string",
             "format": "uuid"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "storageLabel": {
+            "type": "string"
           },
           "isAdmin": {
             "type": "boolean"

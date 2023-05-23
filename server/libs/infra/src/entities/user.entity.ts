@@ -27,6 +27,9 @@ export class UserEntity {
   @Column({ unique: true })
   email!: string;
 
+  @Column({ type: 'varchar', unique: true, default: null })
+  storageLabel!: string | null;
+
   @Column({ default: '', select: false })
   password?: string;
 

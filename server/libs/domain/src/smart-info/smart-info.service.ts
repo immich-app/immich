@@ -1,7 +1,8 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IAssetRepository, WithoutProperty } from '../asset';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
-import { IAssetJob, IBaseJob, IJobRepository, JobName } from '../job';
+import { usePagination } from '../domain.util';
+import { IAssetJob, IBaseJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import { IMachineLearningRepository } from './machine-learning.interface';
 import { ISmartInfoRepository } from './smart-info.repository';
 
@@ -18,13 +19,17 @@ export class SmartInfoService {
 
   async handleQueueObjectTagging({ force }: IBaseJob) {
     try {
-      const assets = force
-        ? await this.assetRepository.getAll()
-        : await this.assetRepository.getWithout(WithoutProperty.OBJECT_TAGS);
+      const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
+        return force
+          ? this.assetRepository.getAll(pagination)
+          : this.assetRepository.getWithout(pagination, WithoutProperty.OBJECT_TAGS);
+      });
 
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: { asset } });
-        await this.jobRepository.queue({ name: JobName.DETECT_OBJECTS, data: { asset } });
+      for await (const assets of assetPagination) {
+        for (const asset of assets) {
+          await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: { asset } });
+          await this.jobRepository.queue({ name: JobName.DETECT_OBJECTS, data: { asset } });
+        }
       }
     } catch (error: any) {
       this.logger.error(`Unable to queue object tagging`, error?.stack);
@@ -69,12 +74,16 @@ export class SmartInfoService {
 
   async handleQueueEncodeClip({ force }: IBaseJob) {
     try {
-      const assets = force
-        ? await this.assetRepository.getAll()
-        : await this.assetRepository.getWithout(WithoutProperty.CLIP_ENCODING);
+      const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
+        return force
+          ? this.assetRepository.getAll(pagination)
+          : this.assetRepository.getWithout(pagination, WithoutProperty.CLIP_ENCODING);
+      });
 
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: { asset } });
+      for await (const assets of assetPagination) {
+        for (const asset of assets) {
+          await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: { asset } });
+        }
       }
     } catch (error: any) {
       this.logger.error(`Unable to queue clip encoding`, error?.stack);

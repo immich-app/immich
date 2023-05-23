@@ -1,13 +1,15 @@
 import {
   AssetCore,
+  IAssetJob,
   IAssetRepository,
-  IAssetUploadedJob,
   IBaseJob,
   IAssetJob,
   IGeocodingRepository,
   IJobRepository,
   JobName,
+  JOBS_ASSET_PAGINATION_SIZE,
   QueueName,
+  usePagination,
   WithoutProperty,
   WithProperty,
 } from '@app/domain';
@@ -76,14 +78,17 @@ export class MetadataExtractionProcessor {
   async handleQueueMetadataExtraction(job: Job<IBaseJob>) {
     try {
       const { force } = job.data;
-      const assets = force
-        ? await this.assetRepository.getAll()
-        : await this.assetRepository.getWithout(WithoutProperty.EXIF);
+      const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
+        return force
+          ? this.assetRepository.getAll(pagination)
+          : this.assetRepository.getWithout(pagination, WithoutProperty.EXIF);
+      });
 
-      for (const asset of assets) {
-        const fileName = asset.originalFileName;
-        const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
-        await this.jobRepository.queue({ name, data: { asset, fileName } });
+      for await (const assets of assetPagination) {
+        for (const asset of assets) {
+          const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
+          await this.jobRepository.queue({ name, data: { asset } });
+        }
       }
     } catch (error: any) {
       this.logger.error(`Unable to queue metadata extraction`, error?.stack);
@@ -91,7 +96,7 @@ export class MetadataExtractionProcessor {
   }
 
   @Process(JobName.EXIF_EXTRACTION)
-  async extractExifInfo(job: Job<IAssetUploadedJob>) {
+  async extractExifInfo(job: Job<IAssetJob>) {
     let asset = job.data.asset;
 
     try {
@@ -220,7 +225,7 @@ export class MetadataExtractionProcessor {
   }
 
   @Process({ name: JobName.EXTRACT_VIDEO_METADATA, concurrency: 2 })
-  async extractVideoMetadata(job: Job<IAssetUploadedJob>) {
+  async extractVideoMetadata(job: Job<IAssetJob>) {
     let asset = job.data.asset;
 
     if (!asset.isVisible) {
@@ -383,13 +388,17 @@ export class SidecarProcessor {
   async handleQueueSidecar(job: Job<IBaseJob>) {
     try {
       const { force } = job.data;
-      const assets = force
-        ? await this.assetRepository.getWith(WithProperty.SIDECAR)
-        : await this.assetRepository.getWithout(WithoutProperty.SIDECAR);
+      const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
+        return force
+          ? this.assetRepository.getWith(pagination, WithProperty.SIDECAR)
+          : this.assetRepository.getWithout(pagination, WithoutProperty.SIDECAR);
+      });
 
-      for (const asset of assets) {
-        const name = force ? JobName.SIDECAR_SYNC : JobName.SIDECAR_DISCOVERY;
-        await this.jobRepository.queue({ name, data: { asset } });
+      for await (const assets of assetPagination) {
+        for (const asset of assets) {
+          const name = force ? JobName.SIDECAR_SYNC : JobName.SIDECAR_DISCOVERY;
+          await this.jobRepository.queue({ name, data: { asset } });
+        }
       }
     } catch (error: any) {
       this.logger.error(`Unable to queue sidecar scanning`, error?.stack);

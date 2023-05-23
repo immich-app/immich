@@ -28,7 +28,7 @@
 		<p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
 	</div>
 
-	<label class="relative inline-block w-[36px] h-[10px]">
+	<label class="relative inline-block flex-none w-[36px] h-[10px]">
 		<input
 			class="opacity-0 w-0 h-0 disabled::cursor-not-allowed"
 			type="checkbox"

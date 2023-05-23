@@ -4,7 +4,7 @@ import handlebar from 'handlebars';
 import * as luxon from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
-import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
+import { IStorageRepository, StorageCore } from '../storage';
 import {
   ISystemConfigRepository,
   supportedDayTokens,
@@ -15,6 +15,7 @@ import {
   supportedYearTokens,
 } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
+import { MoveAssetMetadata } from './storage-template.service';
 
 export class StorageTemplateCore {
   private logger = new Logger(StorageTemplateCore.name);
@@ -33,12 +34,14 @@ export class StorageTemplateCore {
     this.configCore.config$.subscribe((config) => this.onConfig(config));
   }
 
-  public async getTemplatePath(asset: AssetEntity, filename: string): Promise<string> {
+  public async getTemplatePath(asset: AssetEntity, metadata: MoveAssetMetadata): Promise<string> {
+    const { storageLabel, filename } = metadata;
+
     try {
       const source = asset.originalPath;
       const ext = path.extname(source).split('.').pop() as string;
       const sanitized = sanitize(path.basename(filename, `.${ext}`));
-      const rootPath = this.storageCore.getFolderLocation(StorageFolder.LIBRARY, asset.ownerId);
+      const rootPath = this.storageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
       const storagePath = this.render(this.storageTemplate, asset, sanitized, ext);
       const fullPath = path.normalize(path.join(rootPath, storagePath));
       let destination = `${fullPath}.${ext}`;

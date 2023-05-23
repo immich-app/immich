@@ -132,10 +132,13 @@ describe(FacialRecognitionService.name, () => {
 
   describe('handleQueueRecognizeFaces', () => {
     it('should queue missing assets', async () => {
-      assetMock.getWithout.mockResolvedValue([assetEntityStub.image]);
+      assetMock.getWithout.mockResolvedValue({
+        items: [assetEntityStub.image],
+        hasNextPage: false,
+      });
       await sut.handleQueueRecognizeFaces({});
 
-      expect(assetMock.getWithout).toHaveBeenCalledWith(WithoutProperty.FACES);
+      expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.FACES);
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.RECOGNIZE_FACES,
         data: { asset: assetEntityStub.image },
@@ -143,7 +146,10 @@ describe(FacialRecognitionService.name, () => {
     });
 
     it('should queue all assets', async () => {
-      assetMock.getAll.mockResolvedValue([assetEntityStub.image]);
+      assetMock.getAll.mockResolvedValue({
+        items: [assetEntityStub.image],
+        hasNextPage: false,
+      });
       personMock.deleteAll.mockResolvedValue(5);
       searchMock.deleteAllFaces.mockResolvedValue(100);
 

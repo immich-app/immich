@@ -43,7 +43,7 @@ export class AssetCore {
       sidecarPath: sidecarFile?.originalPath || null,
     });
 
-    await this.jobRepository.queue({ name: JobName.ASSET_UPLOADED, data: { asset, fileName: file.originalName } });
+    await this.jobRepository.queue({ name: JobName.ASSET_UPLOADED, data: { asset } });
 
     return asset;
   }

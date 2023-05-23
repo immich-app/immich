@@ -22,6 +22,7 @@ describe(JobService.name, () => {
       expect(jobMock.queue.mock.calls).toEqual([
         [{ name: JobName.USER_DELETE_CHECK }],
         [{ name: JobName.PERSON_CLEANUP }],
+        [{ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } }],
       ]);
     });
   });

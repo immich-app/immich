@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('system_config')
-export class SystemConfigEntity<T = string | boolean> {
+export class SystemConfigEntity<T = string | boolean | number> {
   @PrimaryColumn()
   key!: SystemConfigKey;
 
@@ -14,10 +14,13 @@ export type SystemConfigValue = any;
 // dot notation matches path in `SystemConfig`
 export enum SystemConfigKey {
   FFMPEG_CRF = 'ffmpeg.crf',
+  FFMPEG_THREADS = 'ffmpeg.threads',
   FFMPEG_PRESET = 'ffmpeg.preset',
   FFMPEG_TARGET_VIDEO_CODEC = 'ffmpeg.targetVideoCodec',
   FFMPEG_TARGET_AUDIO_CODEC = 'ffmpeg.targetAudioCodec',
   FFMPEG_TARGET_RESOLUTION = 'ffmpeg.targetResolution',
+  FFMPEG_MAX_BITRATE = 'ffmpeg.maxBitrate',
+  FFMPEG_TWO_PASS = 'ffmpeg.twoPass',
   FFMPEG_TRANSCODE = 'ffmpeg.transcode',
   OAUTH_ENABLED = 'oauth.enabled',
   OAUTH_ISSUER_URL = 'oauth.issuerUrl',
@@ -42,11 +45,14 @@ export enum TranscodePreset {
 
 export interface SystemConfig {
   ffmpeg: {
-    crf: string;
+    crf: number;
+    threads: number;
     preset: string;
     targetVideoCodec: string;
     targetAudioCodec: string;
     targetResolution: string;
+    maxBitrate: string;
+    twoPass: boolean;
     transcode: TranscodePreset;
   };
   oauth: {

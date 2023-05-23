@@ -7,6 +7,7 @@
 	import SettingButtonsRow from '../setting-buttons-row.svelte';
 	import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
 	import SettingSelect from '../setting-select.svelte';
+	import SettingSwitch from '../setting-switch.svelte';
 	import { isEqual } from 'lodash-es';
 	import { fade } from 'svelte/transition';
 
@@ -80,21 +81,34 @@
 					<SettingInputField
 						inputType={SettingInputFieldType.NUMBER}
 						label="CONSTANT RATE FACTOR (-crf)"
+						desc="Video quality level. Typical values are 23 for H.264, 28 for HEVC, and 31 for VP9. Lower is better, but takes longer to encode and produces larger files."
 						bind:value={ffmpegConfig.crf}
 						required={true}
 						isEdited={!(ffmpegConfig.crf == savedConfig.crf)}
 					/>
 
-					<SettingInputField
-						inputType={SettingInputFieldType.TEXT}
+					<SettingSelect
 						label="PRESET (-preset)"
+						desc="Compression speed. Slower presets produce smaller files, and increase quality when targeting a certain bitrate. VP9 ignores speeds above `faster`."
 						bind:value={ffmpegConfig.preset}
-						required={true}
+						name="preset"
+						options={[
+							{ value: 'ultrafast', text: 'ultrafast' },
+							{ value: 'superfast', text: 'superfast' },
+							{ value: 'veryfast', text: 'veryfast' },
+							{ value: 'faster', text: 'faster' },
+							{ value: 'fast', text: 'fast' },
+							{ value: 'medium', text: 'medium' },
+							{ value: 'slow', text: 'slow' },
+							{ value: 'slower', text: 'slower' },
+							{ value: 'veryslow', text: 'veryslow' }
+						]}
 						isEdited={!(ffmpegConfig.preset == savedConfig.preset)}
 					/>
 
 					<SettingSelect
 						label="AUDIO CODEC"
+						desc="Opus is the highest quality option, but has lower compatibility with old devices or software."
 						bind:value={ffmpegConfig.targetAudioCodec}
 						options={[
 							{ value: 'aac', text: 'aac' },
@@ -107,6 +121,7 @@
 
 					<SettingSelect
 						label="VIDEO CODEC"
+						desc="VP9 has high efficiency and web compatibility, but takes longer to transcode. HEVC performs similarly, but has lower web compatibility. H.264 is widely compatible and quick to transcode, but produces much larger files."
 						bind:value={ffmpegConfig.targetVideoCodec}
 						options={[
 							{ value: 'h264', text: 'h264' },
@@ -119,6 +134,7 @@
 
 					<SettingSelect
 						label="TARGET RESOLUTION"
+						desc="Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness."
 						bind:value={ffmpegConfig.targetResolution}
 						options={[
 							{ value: '2160', text: '4k' },
@@ -131,8 +147,25 @@
 						isEdited={!(ffmpegConfig.targetResolution == savedConfig.targetResolution)}
 					/>
 
+					<SettingInputField
+						inputType={SettingInputFieldType.TEXT}
+						label="MAX BITRATE"
+						desc="Setting a max bitrate can make file sizes more predictable at a minor cost to quality. At 720p, typical values are 2600k for VP9 or HEVC, or 4500k for H.264. Disabled if set to 0."
+						bind:value={ffmpegConfig.maxBitrate}
+						isEdited={!(ffmpegConfig.maxBitrate == savedConfig.maxBitrate)}
+					/>
+
+					<SettingInputField
+						inputType={SettingInputFieldType.NUMBER}
+						label="THREADS"
+						desc="Higher values lead to faster encoding, but leave less room for the server to process other tasks while active. This value should not be more than the number of CPU cores. Maximizes utilization if set to 0."
+						bind:value={ffmpegConfig.threads}
+						isEdited={!(ffmpegConfig.threads == savedConfig.threads)}
+					/>
+
 					<SettingSelect
 						label="TRANSCODE"
+						desc="Policy for when a video should be transcoded."
 						bind:value={ffmpegConfig.transcode}
 						name="transcode"
 						options={[
@@ -151,6 +184,13 @@
 							}
 						]}
 						isEdited={!(ffmpegConfig.transcode == savedConfig.transcode)}
+					/>
+
+					<SettingSwitch
+						title="TWO-PASS ENCODING"
+						subtitle="Transcode in two passes to produce better encoded videos. When max bitrate is enabled (required for it to work with H.264 and HEVC), this mode uses a bitrate range based on the max bitrate and ignores CRF. For VP9, CRF can be used if max bitrate is disabled."
+						bind:checked={ffmpegConfig.twoPass}
+						isEdited={!(ffmpegConfig.twoPass === savedConfig.twoPass)}
 					/>
 				</div>
 

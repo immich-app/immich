@@ -90,7 +90,7 @@
 
 <!-- Context Menu -->
 {#if $isShowContextMenu}
-	<ContextMenu {...$contextMenuPosition} on:clickoutside={closeAlbumContextMenu}>
+	<ContextMenu {...$contextMenuPosition} on:outclick={closeAlbumContextMenu}>
 		<MenuOption on:click={deleteSelectedContextAlbum}>
 			<span class="flex place-items-center place-content-center gap-2">
 				<DeleteOutline size="18" />

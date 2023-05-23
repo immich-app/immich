@@ -16,6 +16,11 @@ void main() {
   // final instance = UpdateUserDto();
 
   group('test UpdateUserDto', () {
+    // String id
+    test('to test the property `id`', () async {
+      // TODO
+    });
+
     // String email
     test('to test the property `email`', () async {
       // TODO
@@ -36,8 +41,8 @@ void main() {
       // TODO
     });
 
-    // String id
-    test('to test the property `id`', () async {
+    // String storageLabel
+    test('to test the property `storageLabel`', () async {
       // TODO
     });
 

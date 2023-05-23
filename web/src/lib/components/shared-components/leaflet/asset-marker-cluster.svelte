@@ -17,9 +17,7 @@
 	import { getMapContext } from './map.svelte';
 
 	class AssetMarker extends Marker {
-		marker: MapMarkerResponseDto;
-
-		constructor(marker: MapMarkerResponseDto) {
+		constructor(private marker: MapMarkerResponseDto) {
 			super([marker.lat, marker.lon], {
 				icon: new Icon({
 					iconUrl: api.getAssetThumbnailUrl(marker.id),
@@ -33,7 +31,11 @@
 				})
 			});
 
-			this.marker = marker;
+			this.on('click', this.onClick);
+		}
+
+		onClick() {
+			dispatch('view', { assets: [this.marker.id] });
 		}
 
 		getAssetId(): string {
@@ -77,19 +79,15 @@
 		cluster.on('clustermouseout', (event: LeafletEvent) => {
 			event.sourceTarget.unspiderfy();
 		});
-
-		for (let marker of markers) {
-			const leafletMarker = new AssetMarker(marker);
-
-			leafletMarker.on('click', () => {
-				dispatch('view', { assets: [marker.id] });
-			});
-
-			cluster.addLayer(leafletMarker);
-		}
-
 		map.addLayer(cluster);
 	});
+
+	$: if (cluster) {
+		const leafletMarkers = markers.map((marker) => new AssetMarker(marker));
+
+		cluster.clearLayers();
+		cluster.addLayers(leafletMarkers);
+	}
 
 	onDestroy(() => {
 		if (cluster) cluster.remove();

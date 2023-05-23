@@ -38,6 +38,11 @@ export interface CropOptions {
   height: number;
 }
 
+export interface TranscodeOptions {
+  outputOptions: string[];
+  twoPass: boolean;
+}
+
 export interface IMediaRepository {
   // image
   extractThumbnailFromExif(input: string, output: string): Promise<void>;
@@ -47,5 +52,5 @@ export interface IMediaRepository {
   // video
   extractVideoThumbnail(input: string, output: string, size: number): Promise<void>;
   probe(input: string): Promise<VideoInfo>;
-  transcode(input: string, output: string, options: any): Promise<void>;
+  transcode(input: string, output: string, options: TranscodeOptions): Promise<void>;
 }

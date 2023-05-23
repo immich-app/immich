@@ -1,4 +1,5 @@
 import { AssetEntity, AssetType } from '@app/infra/entities';
+import { Paginated, PaginationOptions } from '../domain.util';
 
 export interface AssetSearchOptions {
   isVisible?: boolean;
@@ -40,11 +41,11 @@ export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
   getByIds(ids: string[]): Promise<AssetEntity[]>;
-  getWithout(property: WithoutProperty): Promise<AssetEntity[]>;
-  getWith(property: WithProperty): Promise<AssetEntity[]>;
+  getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity>;
+  getWith(pagination: PaginationOptions, property: WithProperty): Paginated<AssetEntity>;
   getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   deleteAll(ownerId: string): Promise<void>;
-  getAll(options?: AssetSearchOptions): Promise<AssetEntity[]>;
+  getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
   save(asset: Partial<AssetEntity>): Promise<AssetEntity>;
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
   getMapMarkers(ownerId: string, options?: MapMarkerSearchOptions): Promise<MapMarker[]>;

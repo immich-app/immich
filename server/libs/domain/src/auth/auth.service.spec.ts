@@ -306,7 +306,7 @@ describe('AuthService', () => {
       expect(userTokenMock.save.mock.calls[0][0]).toMatchObject({
         id: 'not_active',
         token: 'auth_token',
-        userId: 'immich_id',
+        userId: 'user-id',
         createdAt: new Date('2021-01-01'),
         updatedAt: expect.any(Date),
         deviceOS: 'Android',
