@@ -39,3 +39,5 @@ RUN npm link && npm cache clean --force
 VOLUME /usr/src/app/upload
 
 EXPOSE 3001
+
+ENTRYPOINT ["/bin/sh"]
