@@ -23,6 +23,7 @@ class PartnerDetailPage extends HookConsumerWidget {
       body: assets.when(
         data: (renderList) => ImmichAssetGrid(
           renderList: renderList,
+          onRefresh: () => ref.read(assetProvider.notifier).getAllAsset(),
         ),
         error: (e, _) => Text("Error loading partners:\n$e"),
         loading: () => const Center(child: ImmichLoadingIndicator()),

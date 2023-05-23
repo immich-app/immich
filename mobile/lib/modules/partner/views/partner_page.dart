@@ -19,15 +19,18 @@ class PartnerPage extends HookConsumerWidget {
     addNewUsersHandler() async {
       final users = availableUsers.value;
       if (users == null || users.isEmpty) {
-        ImmichToast.show(context: context, msg: "No more users to add");
+        ImmichToast.show(
+          context: context,
+          msg: "partner_page_no_more_users".tr(),
+        );
         return;
       }
-      ;
+
       final selectedUser = await showDialog<User>(
         context: context,
         builder: (context) {
           return SimpleDialog(
-            title: const Text("Select partner"),
+            title: const Text("partner_page_select_partner").tr(),
             children: [
               for (User u in users)
                 SimpleDialogOption(
@@ -54,11 +57,25 @@ class PartnerPage extends HookConsumerWidget {
         } else {
           ImmichToast.show(
             context: context,
-            msg: "Failed to add partner",
+            msg: "partner_page_partner_add_failed".tr(),
             toastType: ToastType.error,
           );
         }
       }
+    }
+
+    onDeleteUser(User u) {
+      return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return ConfirmDialog(
+            title: "partner_page_stop_sharing_title",
+            content:
+                "partner_page_stop_sharing_content".tr(args: [u.firstName]),
+            onOk: () => ref.read(partnerServiceProvider).removePartner(u),
+          );
+        },
+      );
     }
 
     buildUserList(List<User> users) {
@@ -66,15 +83,15 @@ class PartnerPage extends HookConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              "Shared to",
-              style: const TextStyle(
+            padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+            child: const Text(
+              "partner_page_shared_to_title",
+              style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
                 fontWeight: FontWeight.bold,
               ),
-            ),
+            ).tr(),
           ),
           if (users.isNotEmpty)
             ListView.builder(
@@ -91,22 +108,8 @@ class PartnerPage extends HookConsumerWidget {
                     ),
                   ),
                   trailing: IconButton(
-                    icon: const Icon(Icons.cancel_outlined),
-                    onPressed: () => showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return ConfirmDialog(
-                            title: "Stop sharing your photos?",
-                            content:
-                                "${users[index].firstName} will no longer be able to access your photos.",
-                            onOk: () async {
-                              await ref
-                                  .read(partnerServiceProvider)
-                                  .removePartner(users[index]);
-                              ref.invalidate(partnerSharedByProvider);
-                            });
-                      },
-                    ),
+                    icon: const Icon(Icons.person_remove),
+                    onPressed: () => onDeleteUser(users[index]),
                   ),
                 );
               }),
@@ -114,11 +117,23 @@ class PartnerPage extends HookConsumerWidget {
           if (users.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                "Your photos are not yet shared with any partner. Tap 'Add' to grant a partner access to your photos.",
-                style: const TextStyle(
-                  fontSize: 14,
-                ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: const Text(
+                      "partner_page_empty_message",
+                      style: TextStyle(fontSize: 14),
+                    ).tr(),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: availableUsers.whenOrNull(
+                      data: (data) => addNewUsersHandler,
+                    ),
+                    icon: const Icon(Icons.person_add),
+                    label: const Text("partner_page_add_partner").tr(),
+                  ),
+                ],
               ),
             ),
         ],
@@ -127,17 +142,15 @@ class PartnerPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Partners'),
+        title: const Text("partner_page_title").tr(),
         elevation: 0,
         centerTitle: false,
         actions: [
-          TextButton(
+          IconButton(
             onPressed:
                 availableUsers.whenOrNull(data: (data) => addNewUsersHandler),
-            child: const Text(
-              "share_add",
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            ).tr(),
+            icon: const Icon(Icons.person_add),
+            tooltip: "partner_page_add_partner".tr(),
           )
         ],
       ),

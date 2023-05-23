@@ -6,20 +6,20 @@ import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/ui/user_avatar.dart';
 
 class PartnerList extends HookConsumerWidget {
-  const PartnerList({Key? key, required this.partners}) : super(key: key);
+  const PartnerList({Key? key, required this.partner}) : super(key: key);
 
-  final List<User> partners;
+  final List<User> partner;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SliverList(
       delegate:
-          SliverChildBuilderDelegate(listEntry, childCount: partners.length),
+          SliverChildBuilderDelegate(listEntry, childCount: partner.length),
     );
   }
 
   Widget listEntry(BuildContext context, int index) {
-    final User p = partners[index];
+    final User p = partner[index];
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 12.0),
       leading: userAvatar(context, p, radius: 30),

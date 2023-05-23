@@ -19,7 +19,7 @@ class SharingPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final List<Album> sharedAlbums = ref.watch(sharedAlbumProvider);
     final userId = ref.watch(currentUserProvider)?.id;
-    final partners = ref.watch(partnerSharedWithProvider);
+    final partner = ref.watch(partnerSharedWithProvider);
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     useEffect(
@@ -237,21 +237,23 @@ class SharingPage extends HookConsumerWidget {
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(child: buildTopBottons()),
-          if (partners.isNotEmpty)
+          if (partner.isNotEmpty)
             SliverPadding(
-              padding: const EdgeInsets.only(left: 12, right: 12, top: 12),
+              padding: const EdgeInsets.only(left: 12, right: 12, bottom: 4),
               sliver: SliverToBoxAdapter(
                 child: const Text(
-                  "Partner",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  "partner_page_title",
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ).tr(),
               ),
             ),
-          if (partners.isNotEmpty) PartnerList(partners: partners),
+          if (partner.isNotEmpty) PartnerList(partner: partner),
           SliverPadding(
-            padding: const EdgeInsets.only(left: 12, right: 12, top: 12),
+            padding: EdgeInsets.only(
+              left: 12,
+              right: 12,
+              top: partner.isEmpty ? 0 : 16,
+            ),
             sliver: SliverToBoxAdapter(
               child: const Text(
                 "sharing_page_album",
