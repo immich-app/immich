@@ -16,18 +16,10 @@
 	export let shared: boolean;
 
 	onMount(async () => {
-		loading = true;
-
-		const { data } = await api.albumApi.getAllAlbums();
-
-		if (shared) {
-			albums = data.filter((album) => album.shared === shared);
-		} else {
-			albums = data;
-		}
+		const { data } = await api.albumApi.getAllAlbums(shared || undefined);
+		albums = data;
 
 		recentAlbums = albums
-			.filter((album) => album.shared === shared)
 			.sort((a, b) => (new Date(a.createdAt) > new Date(b.createdAt) ? -1 : 1))
 			.slice(0, 3);
 
@@ -61,7 +53,7 @@
 	<svelte:fragment slot="title">
 		<span class="flex gap-2 place-items-center">
 			<p class="font-medium">
-				Add to {#if shared}shared {/if}
+				Add to {#if shared}Shared {/if} Album
 			</p>
 		</span>
 	</svelte:fragment>
