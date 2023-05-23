@@ -20,124 +20,112 @@ import {
 } from '../../constants/download.constant';
 import { DownloadDto } from '../asset/dto/download-library.dto';
 import { CreateAlbumShareLinkDto as CreateAlbumSharedLinkDto } from './dto/create-album-shared-link.dto';
-import { AlbumIdDto } from './dto/album-id.dto';
 import { UseValidation } from '../../decorators/use-validation.decorator';
+import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
+import { DownloadArchive } from '../../modules/download/download.service';
+
+const handleDownload = (download: DownloadArchive, res: Res) => {
+  res.attachment(download.fileName);
+  res.setHeader(IMMICH_CONTENT_LENGTH_HINT, download.fileSize);
+  res.setHeader(IMMICH_ARCHIVE_FILE_COUNT, download.fileCount);
+  res.setHeader(IMMICH_ARCHIVE_COMPLETE, `${download.complete}`);
+  return download.stream;
+};
 
 @ApiTags('Album')
 @Controller('album')
 @UseValidation()
 export class AlbumController {
-  constructor(private readonly albumService: AlbumService) {}
+  constructor(private readonly service: AlbumService) {}
 
   @Authenticated()
   @Get('count-by-user-id')
-  async getAlbumCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
-    return this.albumService.getAlbumCountByUserId(authUser);
+  getAlbumCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
+    return this.service.getCountByUserId(authUser);
   }
 
   @Authenticated()
   @Post()
-  async createAlbum(@GetAuthUser() authUser: AuthUserDto, @Body() createAlbumDto: CreateAlbumDto) {
+  createAlbum(@GetAuthUser() authUser: AuthUserDto, @Body() dto: CreateAlbumDto) {
     // TODO: Handle nonexistent sharedWithUserIds and assetIds.
-    return this.albumService.create(authUser, createAlbumDto);
+    return this.service.create(authUser, dto);
   }
 
   @Authenticated()
-  @Put('/:albumId/users')
-  async addUsersToAlbum(
-    @GetAuthUser() authUser: AuthUserDto,
-    @Body() addUsersDto: AddUsersDto,
-    @Param() { albumId }: AlbumIdDto,
-  ) {
+  @Put(':id/users')
+  addUsersToAlbum(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: AddUsersDto) {
     // TODO: Handle nonexistent sharedUserIds.
-    return this.albumService.addUsersToAlbum(authUser, addUsersDto, albumId);
+    return this.service.addUsers(authUser, id, dto);
   }
 
   @Authenticated({ isShared: true })
-  @Put('/:albumId/assets')
-  async addAssetsToAlbum(
+  @Put(':id/assets')
+  addAssetsToAlbum(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body() addAssetsDto: AddAssetsDto,
-    @Param() { albumId }: AlbumIdDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: AddAssetsDto,
   ): Promise<AddAssetsResponseDto> {
     // TODO: Handle nonexistent assetIds.
     // TODO: Disallow adding assets of another user to an album.
-    return this.albumService.addAssetsToAlbum(authUser, addAssetsDto, albumId);
+    return this.service.addAssets(authUser, id, dto);
   }
 
   @Authenticated({ isShared: true })
-  @Get('/:albumId')
-  async getAlbumInfo(@GetAuthUser() authUser: AuthUserDto, @Param() { albumId }: AlbumIdDto) {
-    return this.albumService.getAlbumInfo(authUser, albumId);
+  @Get(':id')
+  getAlbumInfo(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
+    return this.service.get(authUser, id);
   }
 
   @Authenticated()
-  @Delete('/:albumId/assets')
-  async removeAssetFromAlbum(
+  @Delete(':id/assets')
+  removeAssetFromAlbum(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body() removeAssetsDto: RemoveAssetsDto,
-    @Param() { albumId }: AlbumIdDto,
+    @Body() dto: RemoveAssetsDto,
+    @Param() { id }: UUIDParamDto,
   ): Promise<AlbumResponseDto> {
-    return this.albumService.removeAssetsFromAlbum(authUser, removeAssetsDto, albumId);
+    return this.service.removeAssets(authUser, id, dto);
   }
 
   @Authenticated()
-  @Delete('/:albumId')
-  async deleteAlbum(@GetAuthUser() authUser: AuthUserDto, @Param() { albumId }: AlbumIdDto) {
-    return this.albumService.deleteAlbum(authUser, albumId);
+  @Delete(':id')
+  deleteAlbum(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
+    return this.service.delete(authUser, id);
   }
 
   @Authenticated()
-  @Delete('/:albumId/user/:userId')
-  async removeUserFromAlbum(
+  @Delete(':id/user/:userId')
+  removeUserFromAlbum(
     @GetAuthUser() authUser: AuthUserDto,
-    @Param() { albumId }: AlbumIdDto,
+    @Param() { id }: UUIDParamDto,
     @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
   ) {
-    return this.albumService.removeUserFromAlbum(authUser, albumId, userId);
+    return this.service.removeUser(authUser, id, userId);
   }
 
   @Authenticated()
-  @Patch('/:albumId')
-  async updateAlbumInfo(
-    @GetAuthUser() authUser: AuthUserDto,
-    @Body() updateAlbumInfoDto: UpdateAlbumDto,
-    @Param() { albumId }: AlbumIdDto,
-  ) {
+  @Patch(':id')
+  updateAlbumInfo(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: UpdateAlbumDto) {
     // TODO: Handle nonexistent albumThumbnailAssetId.
     // TODO: Disallow setting asset from other user as albumThumbnailAssetId.
-    return this.albumService.updateAlbumInfo(authUser, updateAlbumInfoDto, albumId);
+    return this.service.update(authUser, id, dto);
   }
 
   @Authenticated({ isShared: true })
-  @Get('/:albumId/download')
+  @Get(':id/download')
   @ApiOkResponse({ content: { 'application/zip': { schema: { type: 'string', format: 'binary' } } } })
-  async downloadArchive(
+  downloadArchive(
     @GetAuthUser() authUser: AuthUserDto,
-    @Param() { albumId }: AlbumIdDto,
+    @Param() { id }: UUIDParamDto,
     @Query() dto: DownloadDto,
     @Response({ passthrough: true }) res: Res,
   ) {
-    this.albumService.checkDownloadAccess(authUser);
-
-    const { stream, fileName, fileSize, fileCount, complete } = await this.albumService.downloadArchive(
-      authUser,
-      albumId,
-      dto,
-    );
-    res.attachment(fileName);
-    res.setHeader(IMMICH_CONTENT_LENGTH_HINT, fileSize);
-    res.setHeader(IMMICH_ARCHIVE_FILE_COUNT, fileCount);
-    res.setHeader(IMMICH_ARCHIVE_COMPLETE, `${complete}`);
-    return stream;
+    this.service.checkDownloadAccess(authUser);
+    return this.service.downloadArchive(authUser, id, dto).then((download) => handleDownload(download, res));
   }
 
   @Authenticated()
-  @Post('/create-shared-link')
-  async createAlbumSharedLink(
-    @GetAuthUser() authUser: AuthUserDto,
-    @Body() createAlbumShareLinkDto: CreateAlbumSharedLinkDto,
-  ) {
-    return this.albumService.createAlbumSharedLink(authUser, createAlbumShareLinkDto);
+  @Post('create-shared-link')
+  createAlbumSharedLink(@GetAuthUser() authUser: AuthUserDto, @Body() dto: CreateAlbumSharedLinkDto) {
+    return this.service.createSharedLink(authUser, dto);
   }
 }
