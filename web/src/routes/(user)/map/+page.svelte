@@ -16,14 +16,16 @@
 
 	export let data: PageData;
 
-	let mapMarkersPromise: Promise<MapMarkerResponseDto[]>;
+	let leaflet: typeof import('$lib/components/shared-components/leaflet');
+	let mapMarkers: MapMarkerResponseDto[];
 	let abortController = new AbortController();
 	let viewingAssets: string[] = [];
 	let viewingAssetCursor = 0;
 	let showSettingsModal = false;
 
 	onMount(() => {
-		mapMarkersPromise = loadMapMarkers();
+		loadMapMarkers().then((data) => (mapMarkers = data));
+		import('$lib/components/shared-components/leaflet').then((data) => (leaflet = data));
 	});
 
 	onDestroy(() => {
@@ -69,43 +71,42 @@
 
 <UserPageLayout user={data.user} title={data.meta.title}>
 	<div class="h-full w-full isolate">
-		{#await import('$lib/components/shared-components/leaflet') then { Map, TileLayer, AssetMarkerCluster, Control }}
-			{#await mapMarkersPromise then mapMarkers}
-				<Map
-					center={getMapCenter(mapMarkers)}
-					zoom={7}
-					allowDarkMode={$mapSettings.allowDarkMode}
+		{#if leaflet && mapMarkers}
+			{@const { Map, TileLayer, AssetMarkerCluster, Control } = leaflet}
+			<Map
+				center={getMapCenter(mapMarkers)}
+				zoom={7}
+				allowDarkMode={$mapSettings.allowDarkMode}
+				options={{
+					maxBounds: [
+						[-90, -180],
+						[90, 180]
+					],
+					minZoom: 3
+				}}
+			>
+				<TileLayer
+					urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
 					options={{
-						maxBounds: [
-							[-90, -180],
-							[90, 180]
-						],
-						minZoom: 3
+						attribution:
+							'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 					}}
-				>
-					<TileLayer
-						urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
-						options={{
-							attribution:
-								'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-						}}
-					/>
-					<AssetMarkerCluster
-						markers={mapMarkers}
-						on:view={(event) => onViewAssets(event.detail.assets)}
-					/>
-					<Control>
-						<button
-							class="flex justify-center items-center bg-white text-black/70 w-8 h-8 font-bold rounded-sm border-2 border-black/20 hover:bg-gray-50 focus:bg-gray-50"
-							title="Open map settings"
-							on:click={() => (showSettingsModal = true)}
-						>
-							<Cog size="100%" class="p-1" />
-						</button>
-					</Control>
-				</Map>
-			{/await}
-		{/await}
+				/>
+				<AssetMarkerCluster
+					markers={mapMarkers}
+					on:view={(event) => onViewAssets(event.detail.assets)}
+				/>
+				<Control>
+					<button
+						class="flex justify-center items-center bg-white text-black/70 w-8 h-8 font-bold rounded-sm border-2 border-black/20 hover:bg-gray-50 focus:bg-gray-50"
+						title="Open map settings"
+						on:click={() => (showSettingsModal = true)}
+					>
+						<Cog size="100%" class="p-1" />
+					</button>
+				</Control>
+			</Map>
+		{/if}
 	</div>
 </UserPageLayout>
 
@@ -133,8 +134,7 @@
 			$mapSettings = detail;
 
 			if (shouldUpdate) {
-				const markers = await loadMapMarkers();
-				mapMarkersPromise = Promise.resolve(markers);
+				mapMarkers = await loadMapMarkers();
 			}
 		}}
 	/>
