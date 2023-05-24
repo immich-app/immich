@@ -21,10 +21,17 @@ class PartnerDetailPage extends HookConsumerWidget {
         centerTitle: false,
       ),
       body: assets.when(
-        data: (renderList) => ImmichAssetGrid(
-          renderList: renderList,
-          onRefresh: () => ref.read(assetProvider.notifier).getAllAsset(),
-        ),
+        data: (renderList) => renderList.isEmpty
+            ? Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                    "It seems ${partner.firstName} does not have any photos...\n"
+                    "Or your server version does not match the app version."),
+              )
+            : ImmichAssetGrid(
+                renderList: renderList,
+                onRefresh: () => ref.read(assetProvider.notifier).getAllAsset(),
+              ),
         error: (e, _) => Text("Error loading partners:\n$e"),
         loading: () => const Center(child: ImmichLoadingIndicator()),
       ),

@@ -70,6 +70,11 @@ class AssetService {
               .getAllAssetsWithETag(eTag: etag, userId: user.id);
       if (assets == null) {
         return null;
+      } else if (assets.isNotEmpty && assets.first.ownerId != user.id) {
+        log.warning("Make sure that server and app versions match!"
+            " The server returned assets for user ${assets.first.ownerId}"
+            " while requesting assets of user ${user.id}");
+        return null;
       } else if (newETag != etag) {
         _db.writeTxn(() => _db.eTags.put(ETag(id: user.id, value: newETag)));
       }
