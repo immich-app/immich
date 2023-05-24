@@ -11,6 +11,7 @@
 	import FileJpgBox from 'svelte-material-icons/FileJpgBox.svelte';
 	import FolderMove from 'svelte-material-icons/FolderMove.svelte';
 	import Table from 'svelte-material-icons/Table.svelte';
+	import FileXmlBox from 'svelte-material-icons/FileXmlBox.svelte';
 	import TagMultiple from 'svelte-material-icons/TagMultiple.svelte';
 	import VectorCircle from 'svelte-material-icons/VectorCircle.svelte';
 	import Video from 'svelte-material-icons/Video.svelte';
@@ -60,7 +61,7 @@
 		},
 		[JobName.SidecarQueue]: {
 			title: 'Sidecar Metadata',
-			icon: '',
+			icon: FileXmlBox,
 			subtitle: 'Discover or synchronize sidecar metadata from the filesystem',
 			allText: 'SYNC',
 			missingText: 'DISCOVER'
