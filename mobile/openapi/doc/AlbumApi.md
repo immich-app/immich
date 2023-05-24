@@ -9,22 +9,22 @@ All URIs are relative to */api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**addAssetsToAlbum**](AlbumApi.md#addassetstoalbum) | **PUT** /album/{albumId}/assets | 
-[**addUsersToAlbum**](AlbumApi.md#adduserstoalbum) | **PUT** /album/{albumId}/users | 
+[**addAssetsToAlbum**](AlbumApi.md#addassetstoalbum) | **PUT** /album/{id}/assets | 
+[**addUsersToAlbum**](AlbumApi.md#adduserstoalbum) | **PUT** /album/{id}/users | 
 [**createAlbum**](AlbumApi.md#createalbum) | **POST** /album | 
 [**createAlbumSharedLink**](AlbumApi.md#createalbumsharedlink) | **POST** /album/create-shared-link | 
-[**deleteAlbum**](AlbumApi.md#deletealbum) | **DELETE** /album/{albumId} | 
-[**downloadArchive**](AlbumApi.md#downloadarchive) | **GET** /album/{albumId}/download | 
+[**deleteAlbum**](AlbumApi.md#deletealbum) | **DELETE** /album/{id} | 
+[**downloadArchive**](AlbumApi.md#downloadarchive) | **GET** /album/{id}/download | 
 [**getAlbumCountByUserId**](AlbumApi.md#getalbumcountbyuserid) | **GET** /album/count-by-user-id | 
-[**getAlbumInfo**](AlbumApi.md#getalbuminfo) | **GET** /album/{albumId} | 
+[**getAlbumInfo**](AlbumApi.md#getalbuminfo) | **GET** /album/{id} | 
 [**getAllAlbums**](AlbumApi.md#getallalbums) | **GET** /album | 
-[**removeAssetFromAlbum**](AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{albumId}/assets | 
-[**removeUserFromAlbum**](AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{albumId}/user/{userId} | 
-[**updateAlbumInfo**](AlbumApi.md#updatealbuminfo) | **PATCH** /album/{albumId} | 
+[**removeAssetFromAlbum**](AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{id}/assets | 
+[**removeUserFromAlbum**](AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{id}/user/{userId} | 
+[**updateAlbumInfo**](AlbumApi.md#updatealbuminfo) | **PATCH** /album/{id} | 
 
 
 # **addAssetsToAlbum**
-> AddAssetsResponseDto addAssetsToAlbum(albumId, addAssetsDto, key)
+> AddAssetsResponseDto addAssetsToAlbum(id, addAssetsDto, key)
 
 
 
@@ -47,12 +47,12 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AlbumApi();
-final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final addAssetsDto = AddAssetsDto(); // AddAssetsDto | 
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.addAssetsToAlbum(albumId, addAssetsDto, key);
+    final result = api_instance.addAssetsToAlbum(id, addAssetsDto, key);
     print(result);
 } catch (e) {
     print('Exception when calling AlbumApi->addAssetsToAlbum: $e\n');
@@ -63,7 +63,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **albumId** | **String**|  | 
+ **id** | **String**|  | 
  **addAssetsDto** | [**AddAssetsDto**](AddAssetsDto.md)|  | 
  **key** | **String**|  | [optional] 
 
@@ -83,7 +83,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **addUsersToAlbum**
-> AlbumResponseDto addUsersToAlbum(albumId, addUsersDto)
+> AlbumResponseDto addUsersToAlbum(id, addUsersDto)
 
 
 
@@ -106,11 +106,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AlbumApi();
-final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final addUsersDto = AddUsersDto(); // AddUsersDto | 
 
 try {
-    final result = api_instance.addUsersToAlbum(albumId, addUsersDto);
+    final result = api_instance.addUsersToAlbum(id, addUsersDto);
     print(result);
 } catch (e) {
     print('Exception when calling AlbumApi->addUsersToAlbum: $e\n');
@@ -121,7 +121,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **albumId** | **String**|  | 
+ **id** | **String**|  | 
  **addUsersDto** | [**AddUsersDto**](AddUsersDto.md)|  | 
 
 ### Return type
@@ -250,7 +250,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **deleteAlbum**
-> deleteAlbum(albumId)
+> deleteAlbum(id)
 
 
 
@@ -273,10 +273,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AlbumApi();
-final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    api_instance.deleteAlbum(albumId);
+    api_instance.deleteAlbum(id);
 } catch (e) {
     print('Exception when calling AlbumApi->deleteAlbum: $e\n');
 }
@@ -286,7 +286,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **albumId** | **String**|  | 
+ **id** | **String**|  | 
 
 ### Return type
 
@@ -304,7 +304,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **downloadArchive**
-> MultipartFile downloadArchive(albumId, name, skip, key)
+> MultipartFile downloadArchive(id, name, skip, key)
 
 
 
@@ -327,13 +327,13 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AlbumApi();
-final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final name = name_example; // String | 
 final skip = 8.14; // num | 
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.downloadArchive(albumId, name, skip, key);
+    final result = api_instance.downloadArchive(id, name, skip, key);
     print(result);
 } catch (e) {
     print('Exception when calling AlbumApi->downloadArchive: $e\n');
@@ -344,7 +344,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **albumId** | **String**|  | 
+ **id** | **String**|  | 
  **name** | **String**|  | [optional] 
  **skip** | **num**|  | [optional] 
  **key** | **String**|  | [optional] 
@@ -416,7 +416,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAlbumInfo**
-> AlbumResponseDto getAlbumInfo(albumId, key)
+> AlbumResponseDto getAlbumInfo(id, key)
 
 
 
@@ -439,11 +439,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AlbumApi();
-final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.getAlbumInfo(albumId, key);
+    final result = api_instance.getAlbumInfo(id, key);
     print(result);
 } catch (e) {
     print('Exception when calling AlbumApi->getAlbumInfo: $e\n');
@@ -454,7 +454,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **albumId** | **String**|  | 
+ **id** | **String**|  | 
  **key** | **String**|  | [optional] 
 
 ### Return type
@@ -530,7 +530,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **removeAssetFromAlbum**
-> AlbumResponseDto removeAssetFromAlbum(albumId, removeAssetsDto)
+> AlbumResponseDto removeAssetFromAlbum(id, removeAssetsDto)
 
 
 
@@ -553,11 +553,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AlbumApi();
-final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final removeAssetsDto = RemoveAssetsDto(); // RemoveAssetsDto | 
 
 try {
-    final result = api_instance.removeAssetFromAlbum(albumId, removeAssetsDto);
+    final result = api_instance.removeAssetFromAlbum(id, removeAssetsDto);
     print(result);
 } catch (e) {
     print('Exception when calling AlbumApi->removeAssetFromAlbum: $e\n');
@@ -568,7 +568,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **albumId** | **String**|  | 
+ **id** | **String**|  | 
  **removeAssetsDto** | [**RemoveAssetsDto**](RemoveAssetsDto.md)|  | 
 
 ### Return type
@@ -587,7 +587,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **removeUserFromAlbum**
-> removeUserFromAlbum(albumId, userId)
+> removeUserFromAlbum(id, userId)
 
 
 
@@ -610,11 +610,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AlbumApi();
-final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final userId = userId_example; // String | 
 
 try {
-    api_instance.removeUserFromAlbum(albumId, userId);
+    api_instance.removeUserFromAlbum(id, userId);
 } catch (e) {
     print('Exception when calling AlbumApi->removeUserFromAlbum: $e\n');
 }
@@ -624,7 +624,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **albumId** | **String**|  | 
+ **id** | **String**|  | 
  **userId** | **String**|  | 
 
 ### Return type
@@ -643,7 +643,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **updateAlbumInfo**
-> AlbumResponseDto updateAlbumInfo(albumId, updateAlbumDto)
+> AlbumResponseDto updateAlbumInfo(id, updateAlbumDto)
 
 
 
@@ -666,11 +666,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AlbumApi();
-final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final updateAlbumDto = UpdateAlbumDto(); // UpdateAlbumDto | 
 
 try {
-    final result = api_instance.updateAlbumInfo(albumId, updateAlbumDto);
+    final result = api_instance.updateAlbumInfo(id, updateAlbumDto);
     print(result);
 } catch (e) {
     print('Exception when calling AlbumApi->updateAlbumInfo: $e\n');
@@ -681,7 +681,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **albumId** | **String**|  | 
+ **id** | **String**|  | 
  **updateAlbumDto** | [**UpdateAlbumDto**](UpdateAlbumDto.md)|  | 
 
 ### Return type
