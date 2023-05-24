@@ -17,7 +17,7 @@ export class AssetCore {
       owner: { id: authUser.id } as UserEntity,
 
       mimeType: file.mimeType,
-      checksum: file.checksum || null,
+      checksum: file.checksum,
       originalPath: file.originalPath,
 
       deviceAssetId: dto.deviceAssetId,

@@ -57,6 +57,8 @@ import { AssetSearchDto } from './dto/asset-search.dto';
 import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
+import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
+import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-response.dto';
 import { AssetIdDto } from './dto/asset-id.dto';
 import { DeviceIdDto } from './dto/device-id.dto';
 
@@ -330,6 +332,19 @@ export class AssetController {
     @Body(ValidationPipe) checkExistingAssetsDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
     return await this.assetService.checkExistingAssets(authUser, checkExistingAssetsDto);
+  }
+
+  /**
+   * Checks if assets exist by checksums
+   */
+  @Authenticated()
+  @Post('/bulk-upload-check')
+  @HttpCode(200)
+  bulkUploadCheck(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) dto: AssetBulkUploadCheckDto,
+  ): Promise<AssetBulkUploadCheckResponseDto> {
+    return this.assetService.bulkUploadCheck(authUser, dto);
   }
 
   @Authenticated()

@@ -157,7 +157,7 @@ describe('AssetService', () => {
       getLocationsByUserId: jest.fn(),
       getSearchPropertiesByUserId: jest.fn(),
       getAssetByTimeBucket: jest.fn(),
-      getAssetByChecksum: jest.fn(),
+      getAssetsByChecksums: jest.fn(),
       getAssetCountByUserId: jest.fn(),
       getArchivedAssetCountByUserId: jest.fn(),
       getExistingAssets: jest.fn(),
@@ -299,7 +299,7 @@ describe('AssetService', () => {
       (error as any).constraint = 'UQ_userid_checksum';
 
       assetRepositoryMock.create.mockRejectedValue(error);
-      assetRepositoryMock.getAssetByChecksum.mockResolvedValue(_getAsset_1());
+      assetRepositoryMock.getAssetsByChecksums.mockResolvedValue([_getAsset_1()]);
 
       await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({ duplicate: true, id: 'id_1' });
 

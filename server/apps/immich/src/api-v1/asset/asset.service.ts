@@ -63,6 +63,12 @@ import { mapSharedLink, SharedLinkResponseDto } from '@app/domain';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { AddAssetsDto } from '../album/dto/add-assets.dto';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
+import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
+import {
+  AssetUploadAction,
+  AssetRejectReason,
+  AssetBulkUploadCheckResponseDto,
+} from './response-dto/asset-check-response.dto';
 
 const fileInfo = promisify(stat);
 
@@ -128,7 +134,8 @@ export class AssetService {
 
       // handle duplicates with a success response
       if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_userid_checksum') {
-        const duplicate = await this.getAssetByChecksum(authUser.id, file.checksum);
+        const checksums = [file.checksum, livePhotoFile?.checksum].filter((checksum): checksum is Buffer => !!checksum);
+        const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, checksums);
         return { id: duplicate.id, duplicate: true };
       }
 
@@ -463,7 +470,40 @@ export class AssetService {
     authUser: AuthUserDto,
     checkExistingAssetsDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
-    return this._assetRepository.getExistingAssets(authUser.id, checkExistingAssetsDto);
+    return {
+      existingIds: await this._assetRepository.getExistingAssets(authUser.id, checkExistingAssetsDto),
+    };
+  }
+
+  async bulkUploadCheck(authUser: AuthUserDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
+    const checksums: Buffer[] = dto.assets.map((asset) => Buffer.from(asset.checksum, 'hex'));
+    const results = await this._assetRepository.getAssetsByChecksums(authUser.id, checksums);
+    const resultsMap: Record<string, string> = {};
+
+    for (const { id, checksum } of results) {
+      resultsMap[checksum.toString('hex')] = id;
+    }
+
+    return {
+      results: dto.assets.map(({ id, checksum }) => {
+        const duplicate = resultsMap[checksum];
+        if (duplicate) {
+          return {
+            id,
+            assetId: duplicate,
+            action: AssetUploadAction.REJECT,
+            reason: AssetRejectReason.DUPLICATE,
+          };
+        }
+
+        // TODO mime-check
+
+        return {
+          id,
+          action: AssetUploadAction.ACCEPT,
+        };
+      }),
+    };
   }
 
   async getAssetCountByTimeBucket(
@@ -480,10 +520,6 @@ export class AssetService {
     );
 
     return mapAssetCountByTimeBucket(result);
-  }
-
-  getAssetByChecksum(userId: string, checksum: Buffer) {
-    return this._assetRepository.getAssetByChecksum(userId, checksum);
   }
 
   getAssetCountByUserId(authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {

@@ -17,6 +17,10 @@ doc/AlbumCountResponseDto.md
 doc/AlbumResponseDto.md
 doc/AllJobStatusResponseDto.md
 doc/AssetApi.md
+doc/AssetBulkUploadCheckDto.md
+doc/AssetBulkUploadCheckItem.md
+doc/AssetBulkUploadCheckResponseDto.md
+doc/AssetBulkUploadCheckResult.md
 doc/AssetCountByTimeBucket.md
 doc/AssetCountByTimeBucketResponseDto.md
 doc/AssetCountByUserIdResponseDto.md
@@ -142,6 +146,10 @@ lib/model/api_key_create_dto.dart
 lib/model/api_key_create_response_dto.dart
 lib/model/api_key_response_dto.dart
 lib/model/api_key_update_dto.dart
+lib/model/asset_bulk_upload_check_dto.dart
+lib/model/asset_bulk_upload_check_item.dart
+lib/model/asset_bulk_upload_check_response_dto.dart
+lib/model/asset_bulk_upload_check_result.dart
 lib/model/asset_count_by_time_bucket.dart
 lib/model/asset_count_by_time_bucket_response_dto.dart
 lib/model/asset_count_by_user_id_response_dto.dart
@@ -236,6 +244,10 @@ test/api_key_create_response_dto_test.dart
 test/api_key_response_dto_test.dart
 test/api_key_update_dto_test.dart
 test/asset_api_test.dart
+test/asset_bulk_upload_check_dto_test.dart
+test/asset_bulk_upload_check_item_test.dart
+test/asset_bulk_upload_check_response_dto_test.dart
+test/asset_bulk_upload_check_result_test.dart
 test/asset_count_by_time_bucket_response_dto_test.dart
 test/asset_count_by_time_bucket_test.dart
 test/asset_count_by_user_id_response_dto_test.dart

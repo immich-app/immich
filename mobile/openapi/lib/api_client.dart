@@ -203,6 +203,14 @@ class ApiClient {
           return AlbumResponseDto.fromJson(value);
         case 'AllJobStatusResponseDto':
           return AllJobStatusResponseDto.fromJson(value);
+        case 'AssetBulkUploadCheckDto':
+          return AssetBulkUploadCheckDto.fromJson(value);
+        case 'AssetBulkUploadCheckItem':
+          return AssetBulkUploadCheckItem.fromJson(value);
+        case 'AssetBulkUploadCheckResponseDto':
+          return AssetBulkUploadCheckResponseDto.fromJson(value);
+        case 'AssetBulkUploadCheckResult':
+          return AssetBulkUploadCheckResult.fromJson(value);
         case 'AssetCountByTimeBucket':
           return AssetCountByTimeBucket.fromJson(value);
         case 'AssetCountByTimeBucketResponseDto':

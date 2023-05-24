@@ -10,12 +10,16 @@ import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { In } from 'typeorm/find-options/operator/In';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { ITagRepository } from '../tag/tag.repository';
 import { IsNull, Not } from 'typeorm';
 import { AssetSearchDto } from './dto/asset-search.dto';
+
+export interface AssetCheck {
+  id: string;
+  checksum: Buffer;
+}
 
 export interface IAssetRepository {
   get(id: string): Promise<AssetEntity | null>;
@@ -38,11 +42,8 @@ export interface IAssetRepository {
   getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getArchivedAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
-  getAssetByChecksum(userId: string, checksum: Buffer): Promise<AssetEntity>;
-  getExistingAssets(
-    userId: string,
-    checkDuplicateAssetDto: CheckExistingAssetsDto,
-  ): Promise<CheckExistingAssetsResponseDto>;
+  getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetCheck[]>;
+  getExistingAssets(userId: string, checkDuplicateAssetDto: CheckExistingAssetsDto): Promise<string[]>;
   countByIdAndUser(assetId: string, userId: string): Promise<number>;
 }
 
@@ -310,41 +311,39 @@ export class AssetRepository implements IAssetRepository {
    * @returns Promise<string[]> - Array of assetIds belong to the device
    */
   async getAllByDeviceId(ownerId: string, deviceId: string): Promise<string[]> {
-    const rows = await this.assetRepository.find({
+    const items = await this.assetRepository.find({
+      select: { deviceAssetId: true },
       where: {
         ownerId,
         deviceId,
         isVisible: true,
       },
-      select: ['deviceAssetId'],
     });
-    const res: string[] = [];
-    rows.forEach((v) => res.push(v.deviceAssetId));
 
-    return res;
+    return items.map((asset) => asset.deviceAssetId);
   }
 
   /**
-   * Get asset by checksum on the database
+   * Get assets by checksums on the database
    * @param ownerId
-   * @param checksum
+   * @param checksums
    *
    */
-  getAssetByChecksum(ownerId: string, checksum: Buffer): Promise<AssetEntity> {
-    return this.assetRepository.findOneOrFail({
+  async getAssetsByChecksums(ownerId: string, checksums: Buffer[]): Promise<AssetCheck[]> {
+    return this.assetRepository.find({
+      select: {
+        id: true,
+        checksum: true,
+      },
       where: {
         ownerId,
-        checksum,
+        checksum: In(checksums),
       },
-      relations: ['exifInfo'],
     });
   }
 
-  async getExistingAssets(
-    ownerId: string,
-    checkDuplicateAssetDto: CheckExistingAssetsDto,
-  ): Promise<CheckExistingAssetsResponseDto> {
-    const existingAssets = await this.assetRepository.find({
+  async getExistingAssets(ownerId: string, checkDuplicateAssetDto: CheckExistingAssetsDto): Promise<string[]> {
+    const assets = await this.assetRepository.find({
       select: { deviceAssetId: true },
       where: {
         deviceAssetId: In(checkDuplicateAssetDto.deviceAssetIds),
@@ -352,7 +351,7 @@ export class AssetRepository implements IAssetRepository {
         ownerId,
       },
     });
-    return new CheckExistingAssetsResponseDto(existingAssets.map((a) => a.deviceAssetId));
+    return assets.map((asset) => asset.deviceAssetId);
   }
 
   async countByIdAndUser(assetId: string, ownerId: string): Promise<number> {

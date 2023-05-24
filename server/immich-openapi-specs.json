@@ -3251,6 +3251,49 @@
         ]
       }
     },
+    "/asset/bulk-upload-check": {
+      "post": {
+        "operationId": "bulkUploadCheck",
+        "description": "Checks if assets exist by checksums",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetBulkUploadCheckDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetBulkUploadCheckResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/asset/shared-link": {
       "post": {
         "operationId": "createAssetsSharedLink",
@@ -6044,6 +6087,78 @@
         },
         "required": [
           "existingIds"
+        ]
+      },
+      "AssetBulkUploadCheckItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "checksum": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "checksum"
+        ]
+      },
+      "AssetBulkUploadCheckDto": {
+        "type": "object",
+        "properties": {
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetBulkUploadCheckItem"
+            }
+          }
+        },
+        "required": [
+          "assets"
+        ]
+      },
+      "AssetBulkUploadCheckResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "accept",
+              "reject"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "duplicate",
+              "unsupported-format"
+            ]
+          },
+          "assetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "action"
+        ]
+      },
+      "AssetBulkUploadCheckResponseDto": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetBulkUploadCheckResult"
+            }
+          }
+        },
+        "required": [
+          "results"
         ]
       },
       "CreateAssetsShareLinkDto": {

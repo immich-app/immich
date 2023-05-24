@@ -90,6 +90,7 @@ Class | Method | HTTP request | Description
 *AlbumApi* | [**removeUserFromAlbum**](doc//AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{id}/user/{userId} | 
 *AlbumApi* | [**updateAlbumInfo**](doc//AlbumApi.md#updatealbuminfo) | **PATCH** /album/{id} | 
 *AssetApi* | [**addAssetsToSharedLink**](doc//AssetApi.md#addassetstosharedlink) | **PATCH** /asset/shared-link/add | 
+*AssetApi* | [**bulkUploadCheck**](doc//AssetApi.md#bulkuploadcheck) | **POST** /asset/bulk-upload-check | 
 *AssetApi* | [**checkDuplicateAsset**](doc//AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 *AssetApi* | [**createAssetsSharedLink**](doc//AssetApi.md#createassetssharedlink) | **POST** /asset/shared-link | 
@@ -183,6 +184,10 @@ Class | Method | HTTP request | Description
  - [AlbumCountResponseDto](doc//AlbumCountResponseDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
  - [AllJobStatusResponseDto](doc//AllJobStatusResponseDto.md)
+ - [AssetBulkUploadCheckDto](doc//AssetBulkUploadCheckDto.md)
+ - [AssetBulkUploadCheckItem](doc//AssetBulkUploadCheckItem.md)
+ - [AssetBulkUploadCheckResponseDto](doc//AssetBulkUploadCheckResponseDto.md)
+ - [AssetBulkUploadCheckResult](doc//AssetBulkUploadCheckResult.md)
  - [AssetCountByTimeBucket](doc//AssetCountByTimeBucket.md)
  - [AssetCountByTimeBucketResponseDto](doc//AssetCountByTimeBucketResponseDto.md)
  - [AssetCountByUserIdResponseDto](doc//AssetCountByUserIdResponseDto.md)
