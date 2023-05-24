@@ -14,6 +14,7 @@ export const load = (async ({ locals: { user, api } }) => {
 
 		return {
 			jobs,
+			user,
 			meta: {
 				title: 'Job Status'
 			}

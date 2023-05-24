@@ -3,6 +3,7 @@
 	import { api } from '@api';
 	import ServerStatsPanel from '$lib/components/admin-page/server-stats/server-stats-panel.svelte';
 	import type { PageData } from './$types';
+	import AdminPageLayout from '$lib/components/layouts/admin-page-layout.svelte';
 
 	export let data: PageData;
 	let setIntervalHandler: NodeJS.Timer;
@@ -19,4 +20,6 @@
 	});
 </script>
 
-<ServerStatsPanel stats={data.stats} />
+<AdminPageLayout user={data.user} title={data.meta.title}>
+	<ServerStatsPanel stats={data.stats} />
+</AdminPageLayout>

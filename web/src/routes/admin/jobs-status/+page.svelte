@@ -1,5 +1,6 @@
 <script lang="ts">
 	import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
+	import AdminPageLayout from '$lib/components/layouts/admin-page-layout.svelte';
 	import { api } from '@api';
 	import { onDestroy, onMount } from 'svelte';
 	import type { PageData } from './$types';
@@ -24,4 +25,6 @@
 	});
 </script>
 
-<JobsPanel {jobs} />
+<AdminPageLayout user={data.user} title={data.meta.title}>
+	<JobsPanel {jobs} />
+</AdminPageLayout>

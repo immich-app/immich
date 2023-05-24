@@ -8,6 +8,7 @@
 	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 	import { api } from '@api';
 	import type { PageData } from './$types';
+	import AdminPageLayout from '$lib/components/layouts/admin-page-layout.svelte';
 
 	export let data: PageData;
 
@@ -17,34 +18,39 @@
 	};
 </script>
 
-<section class="">
-	{#await getConfig()}
-		<LoadingSpinner />
-	{:then configs}
-		<SettingAccordion
-			title="FFmpeg Settings"
-			subtitle="Manage the resolution and encoding information of the video files"
-		>
-			<FFmpegSettings ffmpegConfig={configs.ffmpeg} />
-		</SettingAccordion>
+<AdminPageLayout user={data.user} title={data.meta.title}>
+	<section class="">
+		{#await getConfig()}
+			<LoadingSpinner />
+		{:then configs}
+			<SettingAccordion
+				title="FFmpeg Settings"
+				subtitle="Manage the resolution and encoding information of the video files"
+			>
+				<FFmpegSettings ffmpegConfig={configs.ffmpeg} />
+			</SettingAccordion>
 
-		<SettingAccordion
-			title="Password Authentication"
-			subtitle="Manage login with password settings"
-		>
-			<PasswordLoginSettings passwordLoginConfig={configs.passwordLogin} />
-		</SettingAccordion>
+			<SettingAccordion
+				title="Password Authentication"
+				subtitle="Manage login with password settings"
+			>
+				<PasswordLoginSettings passwordLoginConfig={configs.passwordLogin} />
+			</SettingAccordion>
 
-		<SettingAccordion title="OAuth Authentication" subtitle="Manage the login with OAuth settings">
-			<OAuthSettings oauthConfig={configs.oauth} />
-		</SettingAccordion>
+			<SettingAccordion
+				title="OAuth Authentication"
+				subtitle="Manage the login with OAuth settings"
+			>
+				<OAuthSettings oauthConfig={configs.oauth} />
+			</SettingAccordion>
 
-		<SettingAccordion
-			title="Storage Template"
-			subtitle="Manage the folder structure and file name of the upload asset"
-			isOpen={$page.url.searchParams.get('open') === 'storage-template'}
-		>
-			<StorageTemplateSettings storageConfig={configs.storageTemplate} user={data.user} />
-		</SettingAccordion>
-	{/await}
-</section>
+			<SettingAccordion
+				title="Storage Template"
+				subtitle="Manage the folder structure and file name of the upload asset"
+				isOpen={$page.url.searchParams.get('open') === 'storage-template'}
+			>
+				<StorageTemplateSettings storageConfig={configs.storageTemplate} user={data.user} />
+			</SettingAccordion>
+		{/await}
+	</section>
+</AdminPageLayout>

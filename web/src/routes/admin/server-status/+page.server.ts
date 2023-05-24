@@ -14,6 +14,7 @@ export const load = (async ({ parent, locals: { api } }) => {
 
 	return {
 		stats,
+		user,
 		meta: {
 			title: 'Server Stats'
 		}
