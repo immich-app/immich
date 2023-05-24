@@ -28,7 +28,7 @@ export class JobRepository implements IJobRepository {
     @InjectQueue(QueueName.THUMBNAIL_GENERATION) private generateThumbnail: Queue,
     @InjectQueue(QueueName.VIDEO_CONVERSION) private videoTranscode: Queue<IAssetJob | IBaseJob>,
     @InjectQueue(QueueName.SEARCH) private searchIndex: Queue,
-    @InjectQueue(QueueName.SIDECAR) private sidecar: Queue<IAssetUploadedJob | IBaseJob>,
+    @InjectQueue(QueueName.SIDECAR) private sidecar: Queue<IBaseJob>,
   ) {}
 
   async getQueueStatus(name: QueueName): Promise<QueueStatus> {

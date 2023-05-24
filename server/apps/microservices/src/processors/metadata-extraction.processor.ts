@@ -3,7 +3,6 @@ import {
   IAssetJob,
   IAssetRepository,
   IBaseJob,
-  IAssetJob,
   IGeocodingRepository,
   IJobRepository,
   JobName,
@@ -413,9 +412,8 @@ export class SidecarProcessor {
     }
 
     try {
-      const fileName = asset.originalFileName;
       const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
-      await this.jobRepository.queue({ name, data: { asset, fileName } });
+      await this.jobRepository.queue({ name, data: { asset } });
     } catch (error: any) {
       this.logger.error(`Unable to queue metadata extraction`, error?.stack);
     }
@@ -437,10 +435,9 @@ export class SidecarProcessor {
 
       try {
         asset = await this.assetCore.save({ id: asset.id, sidecarPath: `${asset.originalPath}.xmp` });
-        const fileName = asset.originalFileName;
         // TODO: optimize to only queue assets with recent xmp changes
         const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
-        await this.jobRepository.queue({ name, data: { asset, fileName } });
+        await this.jobRepository.queue({ name, data: { asset } });
       } catch (error: any) {
         this.logger.error(`Unable to sync sidecar`, error?.stack);
       }

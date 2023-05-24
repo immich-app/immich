@@ -60,6 +60,7 @@
 		},
 		[JobName.SidecarQueue]: {
 			title: 'Sidecar Metadata',
+			icon: '',
 			subtitle: 'Discover or synchronize sidecar metadata from the filesystem',
 			allText: 'SYNC',
 			missingText: 'DISCOVER'
