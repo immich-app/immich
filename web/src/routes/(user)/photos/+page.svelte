@@ -43,11 +43,11 @@
 				</AssetSelectContextMenu>
 				<DeleteAssets onAssetDelete={assetStore.removeAsset} />
 				<AssetSelectContextMenu icon={DotsVertical} title="Menu">
-					<FavoriteAction menuItem isAll={isAllFavorite} />
+					<FavoriteAction menuItem removeFavorite={isAllFavorite} />
 					<DownloadAction menuItem />
 					<ArchiveAction
 						menuItem
-						isAll={true}
+						unarchive={true}
 						onAssetArchive={(asset) => assetStore.removeAsset(asset.id)}
 					/>
 				</AssetSelectContextMenu>

@@ -51,8 +51,12 @@
 		<DeleteAssets {onAssetDelete} />
 		<AssetSelectContextMenu icon={DotsVertical} title="Menu">
 			<DownloadAction menuItem />
-			<FavoriteAction menuItem isAll={true} onAssetFavorite={(asset) => onAssetDelete(asset.id)} />
-			<ArchiveAction menuItem isAll={isAllArchive} />
+			<FavoriteAction
+				menuItem
+				removeFavorite
+				onAssetFavorite={(asset) => onAssetDelete(asset.id)}
+			/>
+			<ArchiveAction menuItem unarchive={isAllArchive} />
 		</AssetSelectContextMenu>
 	</AssetSelectControlBar>
 {/if}

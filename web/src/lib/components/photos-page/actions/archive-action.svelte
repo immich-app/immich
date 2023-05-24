@@ -15,11 +15,15 @@
 	};
 
 	export let menuItem = false;
-	export let isAll: boolean;
+	export let unarchive = false;
+
+	$: text = unarchive ? 'Unarchive' : 'Archive';
+	$: logo = unarchive ? ArchiveArrowUpOutline : ArchiveArrowDownOutline;
 
 	const { getAssets, clearSelect } = getAssetControlContext();
 
-	const handleArchive = async (isArchived: boolean) => {
+	const handleArchive = async () => {
+		const isArchived = !unarchive;
 		let cnt = 0;
 
 		for (const asset of getAssets()) {
@@ -41,21 +45,7 @@
 </script>
 
 {#if menuItem}
-	{#if isAll}
-		<MenuOption text="Unarchive" on:click={() => handleArchive(false)} />
-	{:else}
-		<MenuOption text="Archive" on:click={() => handleArchive(true)} />
-	{/if}
-{:else if isAll}
-	<CircleIconButton
-		title="Archive"
-		logo={ArchiveArrowDownOutline}
-		on:click={() => handleArchive(true)}
-	/>
+	<MenuOption {text} on:click={handleArchive} />
 {:else}
-	<CircleIconButton
-		title="Unarchive"
-		logo={ArchiveArrowUpOutline}
-		on:click={() => handleArchive(true)}
-	/>
+	<CircleIconButton title={text} {logo} on:click={handleArchive} />
 {/if}

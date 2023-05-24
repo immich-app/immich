@@ -1,10 +1,13 @@
 <script lang="ts">
+	import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 	import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
 	import {
 		NotificationType,
 		notificationController
 	} from '$lib/components/shared-components/notification/notification';
 	import { api } from '@api';
+	import HeartMinusOutline from 'svelte-material-icons/HeartMinusOutline.svelte';
+	import HeartOutline from 'svelte-material-icons/HeartOutline.svelte';
 	import { getMenuContext } from '../asset-select-context-menu.svelte';
 	import { OnAssetFavorite, getAssetControlContext } from '../asset-select-control-bar.svelte';
 
@@ -13,12 +16,16 @@
 	};
 
 	export let menuItem = false;
-	export let isAll: boolean;
+	export let removeFavorite: boolean;
+
+	$: text = removeFavorite ? 'Remove from Favorites' : 'Favorite';
+	$: logo = removeFavorite ? HeartMinusOutline : HeartOutline;
 
 	const { getAssets, clearSelect } = getAssetControlContext();
 	const closeMenu = getMenuContext();
 
-	const handleFavorite = (isFavorite: boolean) => {
+	const handleFavorite = () => {
+		const isFavorite = !removeFavorite;
 		closeMenu();
 
 		let cnt = 0;
@@ -40,15 +47,7 @@
 </script>
 
 {#if menuItem}
-	{#if isAll}
-		<MenuOption text="Remove from Favorites" on:click={() => handleFavorite(false)} />
-	{:else}
-		<MenuOption text="Favorite" on:click={() => handleFavorite(true)} />
-	{/if}
+	<MenuOption {text} on:click={handleFavorite} />
 {:else}
-	<!-- <CircleIconButton
-		title="Remove Favorite"
-		logo={HeartMinusOutline}
-		on:click={() => handleFavorite(false)}
-	/> -->
+	<CircleIconButton title={text} {logo} on:click={handleFavorite} />
 {/if}

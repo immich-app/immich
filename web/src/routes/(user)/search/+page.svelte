@@ -58,8 +58,8 @@
 
 			<AssetSelectContextMenu icon={DotsVertical} title="Add">
 				<DownloadAction menuItem />
-				<FavoriteAction menuItem isAll={isAllFavorite} />
-				<ArchiveAction menuItem isAll={isAllArchived} />
+				<FavoriteAction menuItem removeFavorite={isAllFavorite} />
+				<ArchiveAction menuItem unarchive={isAllArchived} />
 			</AssetSelectContextMenu>
 		</AssetSelectControlBar>
 	{:else}
