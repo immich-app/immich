@@ -284,17 +284,6 @@ describe(UserService.name, () => {
       expect(userMock.update).not.toHaveBeenCalled();
     });
 
-    it('should not let the admin change the storage label to one already in use', async () => {
-      const dto = { id: immichUser.id, storageLabel: 'admin' };
-
-      userRepositoryMock.get.mockResolvedValue(immichUser);
-      userRepositoryMock.getByStorageLabel.mockResolvedValue(adminUser);
-
-      await expect(sut.updateUser(adminUser, dto)).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(userRepositoryMock.update).not.toHaveBeenCalled();
-    });
-
     it('admin can update any user information', async () => {
       const update: UpdateUserDto = {
         id: immichUser.id,
@@ -501,16 +490,6 @@ describe(UserService.name, () => {
       expect(albumMock.deleteAll).toHaveBeenCalledWith(user.id);
       expect(assetMock.deleteAll).toHaveBeenCalledWith(user.id);
       expect(userMock.delete).toHaveBeenCalledWith(user, true);
-    });
-
-    it('should delete the library path for a storage label', async () => {
-      const user = { id: 'deleted-user', deletedAt: makeDeletedAt(10), storageLabel: 'admin' } as UserEntity;
-
-      await sut.handleUserDelete({ user });
-
-      const options = { force: true, recursive: true };
-
-      expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/library/admin', options);
     });
 
     it('should delete the library path for a storage label', async () => {

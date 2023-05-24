@@ -251,6 +251,7 @@ export const assetEntityStub = {
     deviceId: 'device-id',
     originalPath: '/original/path.ext',
     resizePath: '/uploads/user-id/thumbs/path.ext',
+    sidecarPath: null,
     type: AssetType.IMAGE,
     webpPath: null,
     encodedVideoPath: null,
