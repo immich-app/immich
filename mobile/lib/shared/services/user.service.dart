@@ -1,5 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:http_parser/http_parser.dart';
@@ -14,6 +13,7 @@ import 'package:immich_mobile/shared/services/sync.service.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/files_helper.dart';
 import 'package:isar/isar.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 final userServiceProvider = Provider(
@@ -30,6 +30,7 @@ class UserService {
   final Isar _db;
   final SyncService _syncService;
   final PartnerService _partnerService;
+  final Logger _log = Logger("UserService");
 
   UserService(
     this._apiService,
@@ -43,7 +44,7 @@ class UserService {
       final dto = await _apiService.userApi.getAllUsers(isAll);
       return dto?.map(User.fromDto).toList();
     } catch (e) {
-      debugPrint("Error [getAllUsersInfo]  ${e.toString()}");
+      _log.warning("Failed get all users:\n$e");
       return null;
     }
   }
@@ -72,7 +73,7 @@ class UserService {
         ),
       );
     } catch (e) {
-      debugPrint("Error [uploadProfileImage] ${e.toString()}");
+      _log.warning("Failed to upload profile image:\n$e");
       return null;
     }
   }
@@ -85,6 +86,7 @@ class UserService {
         await _partnerService.getPartners(PartnerDirection.sharedWith);
 
     if (users == null || sharedBy == null || sharedWith == null) {
+      _log.warning("Failed to refresh users");
       return false;
     }
 

@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:isar/isar.dart';
+import 'package:logging/logging.dart';
 
 final partnerServiceProvider = Provider(
   (ref) => PartnerService(
@@ -27,6 +27,7 @@ enum PartnerDirection {
 class PartnerService {
   final ApiService _apiService;
   final Isar _db;
+  final Logger _log = Logger("PartnerService");
 
   PartnerService(this._apiService, this._db);
 
@@ -38,7 +39,7 @@ class PartnerService {
         return userDtos.map((u) => User.fromDto(u)).toList();
       }
     } catch (e) {
-      debugPrint("");
+      _log.warning("failed to get partners for direction $direction:\n$e");
     }
     return null;
   }
@@ -49,6 +50,7 @@ class PartnerService {
       partner.isPartnerSharedBy = false;
       await _db.writeTxn(() => _db.users.put(partner));
     } catch (e) {
+      _log.warning("failed to remove partner ${partner.id}:\n$e");
       return false;
     }
     return true;
@@ -63,7 +65,7 @@ class PartnerService {
         return true;
       }
     } catch (e) {
-      debugPrint("Failed to add partner");
+      _log.warning("failed to add partner ${partner.id}:\n$e");
     }
     return false;
   }
