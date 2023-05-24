@@ -45,6 +45,8 @@
 	<ConfirmDialogue
 		prompt="Are you sure you want to delete {getAssets()
 			.size} assets? This step also deletes assets in the album(s) to which they belong. You can not undo this action!"
+		title="Delete assets?"
+		confirmText="Delete"
 		on:confirm={handleDelete}
 		on:cancel={() => (confirm = false)}
 	/>
