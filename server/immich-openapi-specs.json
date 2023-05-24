@@ -3627,12 +3627,12 @@
         ]
       }
     },
-    "/album/{albumId}/users": {
+    "/album/{id}/users": {
       "put": {
         "operationId": "addUsersToAlbum",
         "parameters": [
           {
-            "name": "albumId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -3679,12 +3679,12 @@
         ]
       }
     },
-    "/album/{albumId}/assets": {
+    "/album/{id}/assets": {
       "put": {
         "operationId": "addAssetsToAlbum",
         "parameters": [
           {
-            "name": "albumId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -3742,7 +3742,7 @@
         "operationId": "removeAssetFromAlbum",
         "parameters": [
           {
-            "name": "albumId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -3789,12 +3789,12 @@
         ]
       }
     },
-    "/album/{albumId}": {
+    "/album/{id}": {
       "get": {
         "operationId": "getAlbumInfo",
         "parameters": [
           {
-            "name": "albumId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -3842,7 +3842,7 @@
         "operationId": "deleteAlbum",
         "parameters": [
           {
-            "name": "albumId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -3875,7 +3875,7 @@
         "operationId": "updateAlbumInfo",
         "parameters": [
           {
-            "name": "albumId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -3922,12 +3922,12 @@
         ]
       }
     },
-    "/album/{albumId}/user/{userId}": {
+    "/album/{id}/user/{userId}": {
       "delete": {
         "operationId": "removeUserFromAlbum",
         "parameters": [
           {
-            "name": "albumId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -3965,12 +3965,12 @@
         ]
       }
     },
-    "/album/{albumId}/download": {
+    "/album/{id}/download": {
       "get": {
         "operationId": "downloadArchive",
         "parameters": [
           {
-            "name": "albumId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {

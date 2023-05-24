@@ -17,12 +17,12 @@ void main() {
   // final instance = AlbumApi();
 
   group('tests for AlbumApi', () {
-    //Future<AddAssetsResponseDto> addAssetsToAlbum(String albumId, AddAssetsDto addAssetsDto, { String key }) async
+    //Future<AddAssetsResponseDto> addAssetsToAlbum(String id, AddAssetsDto addAssetsDto, { String key }) async
     test('test addAssetsToAlbum', () async {
       // TODO
     });
 
-    //Future<AlbumResponseDto> addUsersToAlbum(String albumId, AddUsersDto addUsersDto) async
+    //Future<AlbumResponseDto> addUsersToAlbum(String id, AddUsersDto addUsersDto) async
     test('test addUsersToAlbum', () async {
       // TODO
     });
@@ -37,12 +37,12 @@ void main() {
       // TODO
     });
 
-    //Future deleteAlbum(String albumId) async
+    //Future deleteAlbum(String id) async
     test('test deleteAlbum', () async {
       // TODO
     });
 
-    //Future<MultipartFile> downloadArchive(String albumId, { String name, num skip, String key }) async
+    //Future<MultipartFile> downloadArchive(String id, { String name, num skip, String key }) async
     test('test downloadArchive', () async {
       // TODO
     });
@@ -52,7 +52,7 @@ void main() {
       // TODO
     });
 
-    //Future<AlbumResponseDto> getAlbumInfo(String albumId, { String key }) async
+    //Future<AlbumResponseDto> getAlbumInfo(String id, { String key }) async
     test('test getAlbumInfo', () async {
       // TODO
     });
@@ -62,17 +62,17 @@ void main() {
       // TODO
     });
 
-    //Future<AlbumResponseDto> removeAssetFromAlbum(String albumId, RemoveAssetsDto removeAssetsDto) async
+    //Future<AlbumResponseDto> removeAssetFromAlbum(String id, RemoveAssetsDto removeAssetsDto) async
     test('test removeAssetFromAlbum', () async {
       // TODO
     });
 
-    //Future removeUserFromAlbum(String albumId, String userId) async
+    //Future removeUserFromAlbum(String id, String userId) async
     test('test removeUserFromAlbum', () async {
       // TODO
     });
 
-    //Future<AlbumResponseDto> updateAlbumInfo(String albumId, UpdateAlbumDto updateAlbumDto) async
+    //Future<AlbumResponseDto> updateAlbumInfo(String id, UpdateAlbumDto updateAlbumDto) async
     test('test updateAlbumInfo', () async {
       // TODO
     });
