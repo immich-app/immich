@@ -35,6 +35,11 @@ _model_cache = {}
 
 app = FastAPI()
 
+cuda_acceleration = os.getenv("CUDA_ACCELERATION") == "true"
+providers = ["CUDAExecutionProvider"] if cuda_acceleration else ["CPUExecutionProvider"]
+device_pipeline = 0 if cuda_acceleration else -1
+device_sentence_transformer = "cuda" if cuda_acceleration else "cpu"
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -134,19 +139,19 @@ def _get_model(model, task=None):
     global _model_cache
     key = "|".join([model, str(task)])
     if key not in _model_cache:
-        if task:
-            if task == "facial-recognition":
-                face_model = FaceAnalysis(
-                    name=model,
-                    root=cache_folder,
-                    allowed_modules=["detection", "recognition"],
-                )
-                face_model.prepare(ctx_id=0, det_size=(640, 640))
-                _model_cache[key] = face_model
-            else:
-                _model_cache[key] = pipeline(model=model, task=task)
+        if task == "facial-recognition":
+            face_model = FaceAnalysis(
+                name=model,
+                root=cache_folder,
+                allowed_modules=["detection", "recognition"],
+                providers=providers,
+            )
+            face_model.prepare(ctx_id=0, det_size=(640, 640))
+            _model_cache[key] = face_model
+        elif task:
+            _model_cache[key] = pipeline(model=model, task=task, device=device_pipeline)
         else:
-            _model_cache[key] = SentenceTransformer(model, cache_folder=cache_folder)
+            _model_cache[key] = SentenceTransformer(model, cache_folder=cache_folder, device=device_sentence_transformer)
     return _model_cache[key]
 
 

@@ -1,0 +1,60 @@
+FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        g++ \
+        make \
+        nvidia-cuda-toolkit \
+        python3-dev \
+        python3-venv && \
+    echo "**** build machine-learning ****" && \
+    python3 -m venv /opt/venv && \
+    /opt/venv/bin/pip install -U --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cu117 \
+        torch==1.13.1 \
+        torchvision==0.14.1 && \
+    /opt/venv/bin/pip install -U --no-cache-dir \
+        fastapi \
+        insightface \
+        nltk \
+        numpy \
+        onnxruntime-gpu \
+        packaging \
+        Pillow \
+        scikit-learn \
+        scipy \
+        sentencepiece \
+        sentence-transformers \
+        tqdm \
+        transformers \
+        uvicorn[standard] && \
+    echo "**** cleanup ****" && \
+    for cleanfiles in *.pyc *.pyo; do \
+        find /usr/local/lib/python3.* /usr/lib/python3.* -name "${cleanfiles}" -delete; \
+    done && \
+    apt-get remove -y --purge \
+        g++ \
+        make \
+        python3-dev && \
+    apt-get autoremove -y --purge && \
+    apt-get clean && \
+    rm -rf \
+        /tmp/* \
+        /var/tmp/* \
+        /var/lib/apt/lists/* \
+        /root/.cache
+
+WORKDIR /usr/src/app
+
+COPY . .
+
+ENV NODE_ENV=production \
+    TRANSFORMERS_CACHE=/cache \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    CUDA_ACCELERATION=true \
+    PATH="/opt/venv/bin:$PATH" \
+    PYTHONPATH=`pwd`
+
+CMD ["python3", "src/main.py"]
