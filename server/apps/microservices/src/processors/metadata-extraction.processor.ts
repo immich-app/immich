@@ -50,14 +50,14 @@ export class MetadataExtractionProcessor {
     this.reverseGeocodingEnabled = !configService.get('DISABLE_REVERSE_GEOCODING');
   }
 
-  async init(skipCache = false) {
+  async init(deleteCache = false) {
     this.logger.warn(`Reverse geocoding is ${this.reverseGeocodingEnabled ? 'enabled' : 'disabled'}`);
     if (!this.reverseGeocodingEnabled) {
       return;
     }
 
     try {
-      if (!skipCache) {
+      if (deleteCache) {
         await this.geocodingRepository.deleteCache();
       }
       this.logger.log('Initializing Reverse Geocoding');

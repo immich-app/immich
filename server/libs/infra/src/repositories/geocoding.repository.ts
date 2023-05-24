@@ -1,9 +1,10 @@
 import { GeoPoint, IGeocodingRepository, ReverseGeocodeResult } from '@app/domain';
 import { localGeocodingConfig } from '@app/infra';
 import { Injectable, Logger } from '@nestjs/common';
-import { rm } from 'fs/promises';
+import { readdir, rm } from 'fs/promises';
 import { getName } from 'i18n-iso-countries';
 import geocoder, { AddressObject } from 'local-reverse-geocoder';
+import path from 'path';
 import { promisify } from 'util';
 
 export interface AdminCode {
@@ -31,7 +32,12 @@ export class GeocodingRepository implements IGeocodingRepository {
   async deleteCache() {
     const dumpDirectory = localGeocodingConfig.dumpDirectory;
     if (dumpDirectory) {
-      await rm(dumpDirectory, { recursive: true, force: true });
+      // delete contents
+      const items = await readdir(dumpDirectory, { withFileTypes: true });
+      const folders = items.filter((item) => item.isDirectory());
+      for (const { name } of folders) {
+        await rm(path.join(dumpDirectory, name), { recursive: true, force: true });
+      }
     }
   }
 
