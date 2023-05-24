@@ -17,7 +17,7 @@
 	import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
 	import Cog from 'svelte-material-icons/Cog.svelte';
 	export let user: UserResponseDto;
-	export let shouldShowUploadButton = true;
+	export let showUploadButton = true;
 
 	let shouldShowAccountInfo = false;
 	let shouldShowAccountInfoPanel = false;
@@ -72,7 +72,7 @@
 
 				<ThemeButton />
 
-				{#if !$page.url.pathname.includes('/admin') && shouldShowUploadButton}
+				{#if !$page.url.pathname.includes('/admin') && showUploadButton}
 					<div in:fly={{ x: 50, duration: 250 }}>
 						<LinkButton on:click={() => dispatch('uploadClicked')}>
 							<div class="flex gap-2">
