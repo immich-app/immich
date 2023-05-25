@@ -8,7 +8,6 @@
 	import { api } from '@api';
 	import HeartMinusOutline from 'svelte-material-icons/HeartMinusOutline.svelte';
 	import HeartOutline from 'svelte-material-icons/HeartOutline.svelte';
-	import { getMenuContext } from '../asset-select-context-menu.svelte';
 	import { OnAssetFavorite, getAssetControlContext } from '../asset-select-control-bar.svelte';
 
 	export let onAssetFavorite: OnAssetFavorite = (asset, isFavorite) => {
@@ -22,11 +21,9 @@
 	$: logo = removeFavorite ? HeartMinusOutline : HeartOutline;
 
 	const { getAssets, clearSelect } = getAssetControlContext();
-	const closeMenu = getMenuContext();
 
 	const handleFavorite = () => {
 		const isFavorite = !removeFavorite;
-		closeMenu();
 
 		let cnt = 0;
 		for (const asset of getAssets()) {
@@ -38,7 +35,7 @@
 		}
 
 		notificationController.show({
-			message: `${isFavorite ? 'Added' : 'Removed'} ${cnt} to favorites`,
+			message: isFavorite ? `Added ${cnt} to favorites` : `Removed ${cnt} from favorites`,
 			type: NotificationType.Info
 		});
 
