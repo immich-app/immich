@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Query, Response } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, Query, Response } from '@nestjs/common';
 import { ParseMeUUIDPipe } from '../validation/parse-me-uuid-pipe';
 import { AlbumService } from './album.service';
 import { Authenticated } from '../../decorators/authenticated.decorator';
@@ -6,7 +6,6 @@ import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
-import { UpdateAlbumDto } from './dto/update-album.dto';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AlbumResponseDto } from '@app/domain';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
@@ -92,14 +91,6 @@ export class AlbumController {
     @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
   ) {
     return this.service.removeUser(authUser, id, userId);
-  }
-
-  @Authenticated()
-  @Patch(':id')
-  updateAlbumInfo(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: UpdateAlbumDto) {
-    // TODO: Handle nonexistent albumThumbnailAssetId.
-    // TODO: Disallow setting asset from other user as albumThumbnailAssetId.
-    return this.service.update(authUser, id, dto);
   }
 
   @Authenticated({ isShared: true })

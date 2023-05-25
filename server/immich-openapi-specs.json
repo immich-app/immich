@@ -95,6 +95,148 @@
         ]
       }
     },
+    "/album/{id}": {
+      "patch": {
+        "operationId": "updateAlbumInfo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAlbumDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlbumResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Album"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          },
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "getAlbumInfo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlbumResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Album"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deleteAlbum",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Album"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/api-key": {
       "post": {
         "operationId": "createKey",
@@ -3859,139 +4001,6 @@
         ]
       }
     },
-    "/album/{id}": {
-      "get": {
-        "operationId": "getAlbumInfo",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AlbumResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Album"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      },
-      "delete": {
-        "operationId": "deleteAlbum",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Album"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      },
-      "patch": {
-        "operationId": "updateAlbumInfo",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateAlbumDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AlbumResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Album"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
     "/album/{id}/user/{userId}": {
       "delete": {
         "operationId": "removeUserFromAlbum",
@@ -4604,6 +4613,18 @@
         "required": [
           "albumName"
         ]
+      },
+      "UpdateAlbumDto": {
+        "type": "object",
+        "properties": {
+          "albumName": {
+            "type": "string"
+          },
+          "albumThumbnailAssetId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
       },
       "APIKeyCreateDto": {
         "type": "object",
@@ -6371,18 +6392,6 @@
           "successfullyAdded",
           "alreadyInAlbum"
         ]
-      },
-      "UpdateAlbumDto": {
-        "type": "object",
-        "properties": {
-          "albumName": {
-            "type": "string"
-          },
-          "albumThumbnailAssetId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        }
       },
       "CreateAlbumShareLinkDto": {
         "type": "object",

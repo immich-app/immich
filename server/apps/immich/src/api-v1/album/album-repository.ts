@@ -6,7 +6,7 @@ import { Repository } from 'typeorm';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
-import { UpdateAlbumDto } from './dto/update-album.dto';
+import { UpdateAlbumDto } from '@app/domain';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 

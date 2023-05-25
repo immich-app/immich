@@ -1,11 +1,10 @@
 import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra/entities';
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';
 import { IJobRepository, JobName } from '../job';
 import { IAlbumRepository } from './album.repository';
-import { CreateAlbumDto } from './dto/album-create.dto';
-import { GetAlbumsDto } from './dto/get-albums.dto';
+import { CreateAlbumDto, GetAlbumsDto, UpdateAlbumDto } from './dto';
 import { AlbumResponseDto, mapAlbum } from './response-dto';
 
 @Injectable()
@@ -53,7 +52,7 @@ export class AlbumService {
 
     for (const albumId of invalidAlbumIds) {
       const newThumbnail = await this.assetRepository.getFirstAssetForAlbumId(albumId);
-      await this.albumRepository.save({ id: albumId, albumThumbnailAsset: newThumbnail });
+      await this.albumRepository.update({ id: albumId, albumThumbnailAsset: newThumbnail });
     }
 
     return invalidAlbumIds.length;
@@ -70,5 +69,33 @@ export class AlbumService {
     });
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [album.id] } });
     return mapAlbum(album);
+  }
+
+  async update(authUser: AuthUserDto, id: string, dto: UpdateAlbumDto): Promise<AlbumResponseDto> {
+    const [album] = await this.albumRepository.getByIds([id]);
+    if (!album) {
+      throw new BadRequestException('Album not found');
+    }
+
+    if (album.ownerId !== authUser.id) {
+      throw new ForbiddenException('Album not owned by user');
+    }
+
+    if (dto.albumThumbnailAssetId) {
+      const valid = await this.albumRepository.hasAsset(id, dto.albumThumbnailAssetId);
+      if (!valid) {
+        throw new BadRequestException('Invalid album thumbnail');
+      }
+    }
+
+    const updatedAlbum = await this.albumRepository.update({
+      id: album.id,
+      albumName: dto.albumName,
+      albumThumbnailAssetId: dto.albumThumbnailAssetId,
+    });
+
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [updatedAlbum.id] } });
+
+    return mapAlbum(updatedAlbum);
   }
 }
