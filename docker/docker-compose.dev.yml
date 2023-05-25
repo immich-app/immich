@@ -46,6 +46,37 @@ services:
       - database
     restart: always
 
+  ## Uncomment `immich-machine-learning-cuda` block to enable gpu acceleration
+  ## and comment `immich-machine-learning` block
+  #
+  # immich-machine-learning-cuda:
+  #   container_name: immich_machine_learning_cuda
+  #   image: immich-machine-learning-cuda-dev:latest
+  #   build:
+  #     context: ../machine-learning
+  #     dockerfile: Dockerfile.cuda
+  #   command: python main.py
+  #   ports:
+  #     - 3003:3003
+  #   volumes:
+  #     - ../machine-learning/src:/usr/src/app
+  #     - ${UPLOAD_LOCATION}:/usr/src/app/upload
+  #     - model-cache:/cache
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     - NODE_ENV=development
+  #   depends_on:
+  #     - database
+  #   restart: always
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+
   immich-microservices:
     container_name: immich_microservices
     image: immich-microservices:latest
