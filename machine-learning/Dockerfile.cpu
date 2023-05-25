@@ -1,0 +1,15 @@
+FROM mambaorg/micromamba:1-jammy as builder
+USER root
+RUN apt-get update && apt-get install build-essential -yq && apt-get clean && rm -rf /var/cache/apt/lists
+COPY --chown=$MAMBA_USER:$MAMBA_USER env-cpu.yaml /tmp/env.yaml
+RUN --mount=type=cache,target=/opt/conda/pkgs \
+  micromamba create --yes --file /tmp/env.yaml --prefix /opt/conda/envs/base
+RUN --mount=type=cache,target=/root/.cache /opt/conda/envs/base/bin/pip install optimum==1.* opencv-python-headless==4.* onnxruntime==1.* onnxsim==0.* insightface==0.*
+
+FROM mambaorg/micromamba:1-jammy
+WORKDIR /usr/src/app
+ENV PYTHONPATH=`pwd`
+
+COPY --from=builder --chown=$MAMBA_USER:$MAMBA_USER /opt/conda/envs/base /opt/conda/envs/base
+COPY --chown=$MAMBA_USER:$MAMBA_USER src .
+ENTRYPOINT ["/opt/conda/envs/base/bin/python", "main.py"]

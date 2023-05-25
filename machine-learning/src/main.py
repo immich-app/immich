@@ -1,14 +1,19 @@
+# import onnxruntime as ort
 import os
-import numpy as np
 import cv2 as cv
 import uvicorn
 
-from insightface.app import FaceAnalysis
-from transformers import pipeline
-from sentence_transformers import SentenceTransformer
 from PIL import Image
+import numpy as np
 from fastapi import FastAPI
 from pydantic import BaseModel
+from .models import (
+    init_clip_text,
+    init_clip_vision,
+    init_facial_recognition,
+    init_image_classifier,
+)
+from transformers import CLIPTokenizerFast, AutoImageProcessor
 
 
 class MlRequestBody(BaseModel):
@@ -20,17 +25,14 @@ class ClipRequestBody(BaseModel):
 
 
 classification_model = os.getenv(
-    "MACHINE_LEARNING_CLASSIFICATION_MODEL", "microsoft/resnet-50"
+    "MACHINE_LEARNING_CLASSIFICATION_MODEL", "microsoft/beit-base-patch16-224"
 )
-object_model = os.getenv("MACHINE_LEARNING_OBJECT_MODEL", "hustvl/yolos-tiny")
-clip_image_model = os.getenv("MACHINE_LEARNING_CLIP_IMAGE_MODEL", "clip-ViT-B-32")
-clip_text_model = os.getenv("MACHINE_LEARNING_CLIP_TEXT_MODEL", "clip-ViT-B-32")
+clip_model = os.getenv("MACHINE_LEARNING_CLIP_MODEL", "openai/clip-vit-base-patch32")
 facial_recognition_model = os.getenv(
     "MACHINE_LEARNING_FACIAL_RECOGNITION_MODEL", "buffalo_l"
 )
-
-cache_folder = os.getenv("MACHINE_LEARNING_CACHE_FOLDER", "/cache")
-
+MIN_FACIAL_RECOGNITION_SCORE = float(os.getenv("MIN_FACIAL_RECOGNITION_SCORE", 0.7))
+MIN_IMAGE_CLASSIFICATION_SCORE = float(os.getenv("MIN_IMAGE_CLASSIFICATION_SCORE", 0.1))
 _model_cache = {}
 
 app = FastAPI()
@@ -39,10 +41,9 @@ app = FastAPI()
 @app.on_event("startup")
 async def startup_event():
     # Get all models
-    _get_model(object_model, "object-detection")
     _get_model(classification_model, "image-classification")
-    _get_model(clip_image_model)
-    _get_model(clip_text_model)
+    _get_model(clip_model, "clip-text")
+    _get_model(clip_model, "clip-vision")
     _get_model(facial_recognition_model, "facial-recognition")
 
 
@@ -56,32 +57,47 @@ def ping():
     return "pong"
 
 
-@app.post("/object-detection/detect-object", status_code=200)
-def object_detection(payload: MlRequestBody):
-    model = _get_model(object_model, "object-detection")
-    assetPath = payload.thumbnailPath
-    return run_engine(model, assetPath)
-
-
 @app.post("/image-classifier/tag-image", status_code=200)
 def image_classification(payload: MlRequestBody):
     model = _get_model(classification_model, "image-classification")
     assetPath = payload.thumbnailPath
-    return run_engine(model, assetPath)
+    outputs = model(assetPath)
+    labels = [
+        output["label"]
+        for output in outputs
+        if output["score"] >= MIN_IMAGE_CLASSIFICATION_SCORE
+    ]
+
+    return labels
 
 
 @app.post("/sentence-transformer/encode-image", status_code=200)
 def clip_encode_image(payload: MlRequestBody):
-    model = _get_model(clip_image_model)
-    assetPath = payload.thumbnailPath
-    return model.encode(Image.open(assetPath)).tolist()
+    model = _get_model(clip_model, "clip-vision")
+    processor = _get_model(clip_model, "clip-processor")
+    image = Image.open(payload.thumbnailPath)
+    inputs = processor(image, return_tensors="np")
+    embeddings = model.run(
+        input_feed=dict(inputs),
+        output_names=["image_embeds"],
+    )
+    return embeddings[0].squeeze().tolist()
 
 
 @app.post("/sentence-transformer/encode-text", status_code=200)
 def clip_encode_text(payload: ClipRequestBody):
-    model = _get_model(clip_text_model)
-    text = payload.text
-    return model.encode(text).tolist()
+    model = _get_model(clip_model, "clip-text")
+    tokenizer = _get_model(clip_model, "clip-tokenizer")
+
+    tokens = tokenizer(payload.text, return_tensors="np")
+    embeddings = model.run(
+        input_feed={
+            "input_ids": tokens.input_ids,
+            "attention_mask": tokens.attention_mask,
+        },
+        output_names=["text_embeds"],
+    )
+    return embeddings[0].squeeze().tolist()
 
 
 @app.post("/facial-recognition/detect-faces", status_code=200)
@@ -90,69 +106,67 @@ def facial_recognition(payload: MlRequestBody):
     assetPath = payload.thumbnailPath
     img = cv.imread(assetPath)
     height, width, _ = img.shape
-    results = []
     faces = model.get(img)
 
-    for face in faces:
-        if face.det_score < 0.7:
-            continue
-        x1, y1, x2, y2 = face.bbox
+    results = [
+        {
+            "imageWidth": width,
+            "imageHeight": height,
+            "boundingBox": {
+                "x1": round(face.bbox[0]),
+                "y1": round(face.bbox[1]),
+                "x2": round(face.bbox[2]),
+                "y2": round(face.bbox[3]),
+            },
+            "score": face.det_score.item(),
+            "embedding": face.normed_embedding.tolist(),
+        }
+        for face in faces
+        if face.det_score >= MIN_FACIAL_RECOGNITION_SCORE
+    ]
 
-        results.append(
-            {
-                "imageWidth": width,
-                "imageHeight": height,
-                "boundingBox": {
-                    "x1": round(x1),
-                    "y1": round(y1),
-                    "x2": round(x2),
-                    "y2": round(y2),
-                },
-                "score": face.det_score.item(),
-                "embedding": face.normed_embedding.tolist(),
-            }
-        )
     return results
 
 
-def run_engine(engine, path):
-    result = []
-    predictions = engine(path)
-
-    for index, pred in enumerate(predictions):
-        tags = pred["label"].split(", ")
-        if pred["score"] > 0.9:
-            result = [*result, *tags]
-
-    if len(result) > 1:
-        result = list(set(result))
-
-    return result
-
-
-def _get_model(model, task=None):
+def _get_model(model_name, task):
     global _model_cache
-    key = "|".join([model, str(task)])
-    if key not in _model_cache:
-        if task:
-            if task == "facial-recognition":
-                face_model = FaceAnalysis(
-                    name=model,
-                    root=cache_folder,
-                    allowed_modules=["detection", "recognition"],
-                )
-                face_model.prepare(ctx_id=0, det_size=(640, 640))
-                _model_cache[key] = face_model
-            else:
-                _model_cache[key] = pipeline(model=model, task=task)
+    if task not in _model_cache:
+        if task == "image-classification":
+            _model_cache[task] = init_image_classifier(model_name)
+        elif task == "clip-vision" or task == "clip-processor":
+            _model_cache["clip-processor"] = AutoImageProcessor.from_pretrained(
+                model_name
+            )
+            _model_cache[task] = init_clip_vision(model_name)
+        elif task == "clip-text" or task == "clip-tokenizer":
+            _model_cache[task] = init_clip_text(model_name)
+            _model_cache["clip-tokenizer"] = CLIPTokenizerFast.from_pretrained(
+                model_name
+            )
+        elif task == "facial-recognition":
+            _model_cache[task] = init_facial_recognition(model_name)
         else:
-            _model_cache[key] = SentenceTransformer(model, cache_folder=cache_folder)
-    return _model_cache[key]
+            raise ValueError(f"Invalid task specified: {task}")
+        # match task:
+        #     case "image-classification":
+        #         _model_cache[task] = init_image_classifier(model_name)
+        #     case "clip-vision":
+        #         _model_cache[task] = init_clip_vision(model_name)
+        #     case "clip-text" | "clip-tokenizer":
+        #         _model_cache[task] = init_clip_text(model_name)
+        #         _model_cache["clip-tokenizer"] = CLIPTokenizerFast.from_pretrained(
+        #             model_name
+        #         )
+        #     case "facial-recognition":
+        #         _model_cache[task] = init_facial_recognition(model_name)
+        #     case _:
+        #         raise ValueError(f"Invalid task specified: {task}")
+
+    return _model_cache[task]
 
 
 if __name__ == "__main__":
     host = os.getenv("MACHINE_LEARNING_HOST", "0.0.0.0")
     port = int(os.getenv("MACHINE_LEARNING_PORT", 3003))
     is_dev = os.getenv("NODE_ENV") == "development"
-
     uvicorn.run("main:app", host=host, port=port, reload=is_dev, workers=1)
