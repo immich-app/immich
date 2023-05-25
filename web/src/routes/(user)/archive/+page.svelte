@@ -53,6 +53,7 @@
 				assets={selectedAssets}
 				clearSelect={() => (selectedAssets = new Set())}
 			>
+				<ArchiveAction unarchive onAssetArchive={(asset) => onAssetDelete(asset.id)} />
 				<CreateSharedLink />
 				<AssetSelectContextMenu icon={Plus} title="Add">
 					<AddToAlbum />
@@ -62,7 +63,6 @@
 				<AssetSelectContextMenu icon={DotsVertical} title="Add">
 					<DownloadAction menuItem />
 					<FavoriteAction menuItem removeFavorite={isAllFavorite} />
-					<ArchiveAction menuItem unarchive onAssetArchive={(asset) => onAssetDelete(asset.id)} />
 				</AssetSelectContextMenu>
 			</AssetSelectControlBar>
 		{/if}

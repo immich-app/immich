@@ -43,6 +43,7 @@
 <!-- Multiselection mode app bar -->
 {#if isMultiSelectionMode}
 	<AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
+		<FavoriteAction removeFavorite onAssetFavorite={(asset) => onAssetDelete(asset.id)} />
 		<CreateSharedLink />
 		<AssetSelectContextMenu icon={Plus} title="Add">
 			<AddToAlbum />
@@ -51,11 +52,6 @@
 		<DeleteAssets {onAssetDelete} />
 		<AssetSelectContextMenu icon={DotsVertical} title="Menu">
 			<DownloadAction menuItem />
-			<FavoriteAction
-				menuItem
-				removeFavorite
-				onAssetFavorite={(asset) => onAssetDelete(asset.id)}
-			/>
 			<ArchiveAction menuItem unarchive={isAllArchive} />
 		</AssetSelectContextMenu>
 	</AssetSelectControlBar>
