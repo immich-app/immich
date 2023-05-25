@@ -1330,6 +1330,12 @@ export interface GetAssetByTimeBucketDto {
      * @memberof GetAssetByTimeBucketDto
      */
     'userId'?: string;
+    /**
+     * Include assets without thumbnails
+     * @type {boolean}
+     * @memberof GetAssetByTimeBucketDto
+     */
+    'withoutThumbs'?: boolean;
 }
 /**
  * 

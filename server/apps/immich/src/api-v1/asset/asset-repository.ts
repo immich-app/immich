@@ -104,19 +104,23 @@ export class AssetRepository implements IAssetRepository {
     return this.getAssetCount(items);
   }
 
-  async getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]> {
+  async getAssetByTimeBucket(userId: string, dto: GetAssetByTimeBucketDto): Promise<AssetEntity[]> {
     // Get asset entity from a list of time buckets
-    return await this.assetRepository
+    let builder = this.assetRepository
       .createQueryBuilder('asset')
       .where('asset.ownerId = :userId', { userId: userId })
       .andWhere(`date_trunc('month', "fileCreatedAt") IN (:...buckets)`, {
-        buckets: [...getAssetByTimeBucketDto.timeBucket],
+        buckets: [...dto.timeBucket],
       })
-      .andWhere('asset.resizePath is not NULL')
       .andWhere('asset.isVisible = true')
       .andWhere('asset.isArchived = false')
-      .orderBy('asset.fileCreatedAt', 'DESC')
-      .getMany();
+      .orderBy('asset.fileCreatedAt', 'DESC');
+
+    if (!dto.withoutThumbs) {
+      builder = builder.andWhere('asset.resizePath is not NULL');
+    }
+
+    return builder.getMany();
   }
 
   async getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum) {

@@ -11,6 +11,7 @@
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
 	import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
+	import ImageBrokenVariant from 'svelte-material-icons/ImageBrokenVariant.svelte';
 	import { fly } from 'svelte/transition';
 	import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
 	import {
@@ -350,7 +351,15 @@
 
 	<div class="row-start-1 row-span-full col-start-1 col-span-4">
 		{#key asset.id}
-			{#if asset.type === AssetTypeEnum.Image}
+			{#if !asset.resizePath}
+				<div class="h-full w-full flex justify-center">
+					<div
+						class="h-full bg-gray-100 dark:bg-immich-dark-gray flex items-center justify-center aspect-square px-auto"
+					>
+						<ImageBrokenVariant size="25%" />
+					</div>
+				</div>
+			{:else if asset.type === AssetTypeEnum.Image}
 				{#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
 					<VideoViewer
 						{publicSharedKey}

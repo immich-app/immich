@@ -5988,6 +5988,10 @@
           "userId": {
             "type": "string",
             "format": "uuid"
+          },
+          "withoutThumbs": {
+            "type": "boolean",
+            "description": "Include assets without thumbnails"
           }
         },
         "required": [
