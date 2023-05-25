@@ -23,5 +23,8 @@ export const locale = persisted<string | undefined>('locale', undefined, {
 
 export const mapSettings = persisted<MapSettings>('map-settings', {
 	allowDarkMode: true,
-	onlyFavorites: false
+	onlyFavorites: false,
+	relativeDate: '',
+	dateAfter: '',
+	dateBefore: ''
 });
