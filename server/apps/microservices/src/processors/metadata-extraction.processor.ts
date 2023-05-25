@@ -10,15 +10,12 @@ import {
   QueueName,
   usePagination,
   WithoutProperty,
-  WithProperty,
 } from '@app/domain';
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
-import { Process, Processor } from '@nestjs/bull';
 import { Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import tz_lookup from '@photostructure/tz-lookup';
-import { Job } from 'bull';
 import { ExifDateTime, exiftool, Tags } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { Duration } from 'luxon';
@@ -33,7 +30,6 @@ interface ImmichTags extends Tags {
   ContentIdentifier?: string;
 }
 
-@Processor(QueueName.METADATA_EXTRACTION)
 export class MetadataExtractionProcessor {
   private logger = new Logger(MetadataExtractionProcessor.name);
   private assetCore: AssetCore;
@@ -73,10 +69,9 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process(JobName.QUEUE_METADATA_EXTRACTION)
-  async handleQueueMetadataExtraction(job: Job<IBaseJob>) {
+  async handleQueueMetadataExtraction(job: IBaseJob) {
     try {
-      const { force } = job.data;
+      const { force } = job;
       const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
         return force
           ? this.assetRepository.getAll(pagination)
@@ -94,9 +89,8 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process(JobName.EXIF_EXTRACTION)
-  async extractExifInfo(job: Job<IAssetJob>) {
-    let asset = job.data.asset;
+  async extractExifInfo(job: IAssetJob) {
+    let asset = job.asset;
 
     try {
       const mediaExifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((error: any) => {
@@ -223,9 +217,8 @@ export class MetadataExtractionProcessor {
     }
   }
 
-  @Process({ name: JobName.EXTRACT_VIDEO_METADATA, concurrency: 2 })
-  async extractVideoMetadata(job: Job<IAssetJob>) {
-    let asset = job.data.asset;
+  async extractVideoMetadata(job: IAssetJob) {
+    let asset = job.asset;
 
     if (!asset.isVisible) {
       return;
@@ -368,85 +361,5 @@ export class MetadataExtractionProcessor {
     }
 
     return Duration.fromObject({ seconds: videoDurationInSecond }).toFormat('hh:mm:ss.SSS');
-  }
-}
-
-@Processor(QueueName.SIDECAR)
-export class SidecarProcessor {
-  private logger = new Logger(SidecarProcessor.name);
-  private assetCore: AssetCore;
-
-  constructor(
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-  ) {
-    this.assetCore = new AssetCore(assetRepository, jobRepository);
-  }
-
-  @Process(JobName.QUEUE_SIDECAR)
-  async handleQueueSidecar(job: Job<IBaseJob>) {
-    try {
-      const { force } = job.data;
-      const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-        return force
-          ? this.assetRepository.getWith(pagination, WithProperty.SIDECAR)
-          : this.assetRepository.getWithout(pagination, WithoutProperty.SIDECAR);
-      });
-
-      for await (const assets of assetPagination) {
-        for (const asset of assets) {
-          const name = force ? JobName.SIDECAR_SYNC : JobName.SIDECAR_DISCOVERY;
-          await this.jobRepository.queue({ name, data: { asset } });
-        }
-      }
-    } catch (error: any) {
-      this.logger.error(`Unable to queue sidecar scanning`, error?.stack);
-    }
-  }
-
-  @Process(JobName.SIDECAR_SYNC)
-  async handleSidecarSync(job: Job<IAssetJob>) {
-    const { asset } = job.data;
-    if (!asset.isVisible) {
-      return;
-    }
-
-    try {
-      const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
-      await this.jobRepository.queue({ name, data: { asset } });
-    } catch (error: any) {
-      this.logger.error(`Unable to queue metadata extraction`, error?.stack);
-    }
-  }
-
-  @Process(JobName.SIDECAR_DISCOVERY)
-  async handleSidecarDiscovery(job: Job<IAssetJob>) {
-    let { asset } = job.data;
-    if (!asset.isVisible) {
-      return;
-    }
-
-    if (asset.sidecarPath) {
-      return;
-    }
-
-    try {
-      await fs.promises.access(`${asset.originalPath}.xmp`, fs.constants.W_OK);
-
-      try {
-        asset = await this.assetCore.save({ id: asset.id, sidecarPath: `${asset.originalPath}.xmp` });
-        // TODO: optimize to only queue assets with recent xmp changes
-        const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
-        await this.jobRepository.queue({ name, data: { asset } });
-      } catch (error: any) {
-        this.logger.error(`Unable to sync sidecar`, error?.stack);
-      }
-    } catch (error: any) {
-      if (error.code == 'EACCES') {
-        this.logger.error(`Unable to queue metadata extraction, file is not writable`, error?.stack);
-      }
-
-      return;
-    }
   }
 }

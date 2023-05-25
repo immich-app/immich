@@ -29,7 +29,7 @@ export class StorageTemplateService {
     this.core = new StorageTemplateCore(configRepository, config, storageRepository);
   }
 
-  async handleTemplateMigrationSingle(data: IAssetJob) {
+  async handleMigrationSingle(data: IAssetJob) {
     const { asset } = data;
 
     try {
@@ -49,7 +49,7 @@ export class StorageTemplateService {
     }
   }
 
-  async handleTemplateMigration() {
+  async handleMigration() {
     try {
       console.time('migrating-time');
 

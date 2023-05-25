@@ -20,7 +20,7 @@ export interface IStorageRepository {
   unlinkDir(folder: string, options?: { recursive?: boolean; force?: boolean }): Promise<void>;
   removeEmptyDirs(folder: string): Promise<void>;
   moveFile(source: string, target: string): Promise<void>;
-  checkFileExists(filepath: string): Promise<boolean>;
+  checkFileExists(filepath: string, mode?: number): Promise<boolean>;
   mkdirSync(filepath: string): void;
   checkDiskUsage(folder: string): Promise<DiskUsage>;
 }
