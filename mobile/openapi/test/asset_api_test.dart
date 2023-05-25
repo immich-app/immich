@@ -158,7 +158,7 @@ void main() {
       // TODO
     });
 
-    //Future<AssetFileUploadResponseDto> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { String key, MultipartFile livePhotoData, bool isArchived, bool isVisible, String duration }) async
+    //Future<AssetFileUploadResponseDto> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { String key, MultipartFile livePhotoData, MultipartFile sidecarData, bool isArchived, bool isVisible, String duration }) async
     test('test uploadFile', () async {
       // TODO
     });

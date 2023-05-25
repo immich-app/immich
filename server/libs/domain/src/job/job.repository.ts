@@ -50,6 +50,11 @@ export type JobItem =
   | { name: JobName.EXIF_EXTRACTION; data: IAssetJob }
   | { name: JobName.EXTRACT_VIDEO_METADATA; data: IAssetJob }
 
+  // Sidecar Scanning
+  | { name: JobName.QUEUE_SIDECAR; data: IBaseJob }
+  | { name: JobName.SIDECAR_DISCOVERY; data: IAssetJob }
+  | { name: JobName.SIDECAR_SYNC; data: IAssetJob }
+
   // Object Tagging
   | { name: JobName.QUEUE_OBJECT_TAGGING; data: IBaseJob }
   | { name: JobName.DETECT_OBJECTS; data: IAssetJob }

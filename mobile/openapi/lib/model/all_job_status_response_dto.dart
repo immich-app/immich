@@ -22,6 +22,7 @@ class AllJobStatusResponseDto {
     required this.backgroundTaskQueue,
     required this.searchQueue,
     required this.recognizeFacesQueue,
+    required this.sidecarQueue,
   });
 
   JobStatusDto thumbnailGenerationQueue;
@@ -42,6 +43,8 @@ class AllJobStatusResponseDto {
 
   JobStatusDto recognizeFacesQueue;
 
+  JobStatusDto sidecarQueue;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AllJobStatusResponseDto &&
      other.thumbnailGenerationQueue == thumbnailGenerationQueue &&
@@ -52,7 +55,8 @@ class AllJobStatusResponseDto {
      other.storageTemplateMigrationQueue == storageTemplateMigrationQueue &&
      other.backgroundTaskQueue == backgroundTaskQueue &&
      other.searchQueue == searchQueue &&
-     other.recognizeFacesQueue == recognizeFacesQueue;
+     other.recognizeFacesQueue == recognizeFacesQueue &&
+     other.sidecarQueue == sidecarQueue;
 
   @override
   int get hashCode =>
@@ -65,10 +69,11 @@ class AllJobStatusResponseDto {
     (storageTemplateMigrationQueue.hashCode) +
     (backgroundTaskQueue.hashCode) +
     (searchQueue.hashCode) +
-    (recognizeFacesQueue.hashCode);
+    (recognizeFacesQueue.hashCode) +
+    (sidecarQueue.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[thumbnailGenerationQueue=$thumbnailGenerationQueue, metadataExtractionQueue=$metadataExtractionQueue, videoConversionQueue=$videoConversionQueue, objectTaggingQueue=$objectTaggingQueue, clipEncodingQueue=$clipEncodingQueue, storageTemplateMigrationQueue=$storageTemplateMigrationQueue, backgroundTaskQueue=$backgroundTaskQueue, searchQueue=$searchQueue, recognizeFacesQueue=$recognizeFacesQueue]';
+  String toString() => 'AllJobStatusResponseDto[thumbnailGenerationQueue=$thumbnailGenerationQueue, metadataExtractionQueue=$metadataExtractionQueue, videoConversionQueue=$videoConversionQueue, objectTaggingQueue=$objectTaggingQueue, clipEncodingQueue=$clipEncodingQueue, storageTemplateMigrationQueue=$storageTemplateMigrationQueue, backgroundTaskQueue=$backgroundTaskQueue, searchQueue=$searchQueue, recognizeFacesQueue=$recognizeFacesQueue, sidecarQueue=$sidecarQueue]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -81,6 +86,7 @@ class AllJobStatusResponseDto {
       json[r'background-task-queue'] = this.backgroundTaskQueue;
       json[r'search-queue'] = this.searchQueue;
       json[r'recognize-faces-queue'] = this.recognizeFacesQueue;
+      json[r'sidecar-queue'] = this.sidecarQueue;
     return json;
   }
 
@@ -112,6 +118,7 @@ class AllJobStatusResponseDto {
         backgroundTaskQueue: JobStatusDto.fromJson(json[r'background-task-queue'])!,
         searchQueue: JobStatusDto.fromJson(json[r'search-queue'])!,
         recognizeFacesQueue: JobStatusDto.fromJson(json[r'recognize-faces-queue'])!,
+        sidecarQueue: JobStatusDto.fromJson(json[r'sidecar-queue'])!,
       );
     }
     return null;
@@ -168,6 +175,7 @@ class AllJobStatusResponseDto {
     'background-task-queue',
     'search-queue',
     'recognize-faces-queue',
+    'sidecar-queue',
   };
 }
 

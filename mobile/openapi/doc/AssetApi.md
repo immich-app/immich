@@ -1443,7 +1443,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadFile**
-> AssetFileUploadResponseDto uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, isArchived, isVisible, duration)
+> AssetFileUploadResponseDto uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, sidecarData, isArchived, isVisible, duration)
 
 
 
@@ -1476,12 +1476,13 @@ final isFavorite = true; // bool |
 final fileExtension = fileExtension_example; // String | 
 final key = key_example; // String | 
 final livePhotoData = BINARY_DATA_HERE; // MultipartFile | 
+final sidecarData = BINARY_DATA_HERE; // MultipartFile | 
 final isArchived = true; // bool | 
 final isVisible = true; // bool | 
 final duration = duration_example; // String | 
 
 try {
-    final result = api_instance.uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, isArchived, isVisible, duration);
+    final result = api_instance.uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, sidecarData, isArchived, isVisible, duration);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->uploadFile: $e\n');
@@ -1502,6 +1503,7 @@ Name | Type | Description  | Notes
  **fileExtension** | **String**|  | 
  **key** | **String**|  | [optional] 
  **livePhotoData** | **MultipartFile**|  | [optional] 
+ **sidecarData** | **MultipartFile**|  | [optional] 
  **isArchived** | **bool**|  | [optional] 
  **isVisible** | **bool**|  | [optional] 
  **duration** | **String**|  | [optional] 

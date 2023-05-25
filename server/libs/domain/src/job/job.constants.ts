@@ -8,6 +8,7 @@ export enum QueueName {
   BACKGROUND_TASK = 'background-task-queue',
   STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration-queue',
   SEARCH = 'search-queue',
+  SIDECAR = 'sidecar-queue',
 }
 
 export enum JobCommand {
@@ -72,6 +73,11 @@ export enum JobName {
   // clip
   QUEUE_ENCODE_CLIP = 'queue-clip-encode',
   ENCODE_CLIP = 'clip-encode',
+
+  // XMP sidecars
+  QUEUE_SIDECAR = 'queue-sidecar',
+  SIDECAR_DISCOVERY = 'sidecar-discovery',
+  SIDECAR_SYNC = 'sidecar-sync',
 }
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;

@@ -305,7 +305,7 @@ describe('AssetService', () => {
 
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.DELETE_FILES,
-        data: { files: ['fake_path/asset_1.jpeg', undefined] },
+        data: { files: ['fake_path/asset_1.jpeg', undefined, undefined] },
       });
       expect(storageMock.moveFile).not.toHaveBeenCalled();
     });
@@ -413,7 +413,9 @@ describe('AssetService', () => {
             undefined,
             undefined,
             undefined,
+            undefined,
             'fake_path/asset_1.mp4',
+            undefined,
             undefined,
             undefined,
             undefined,
@@ -462,10 +464,12 @@ describe('AssetService', () => {
                 'web-path-1',
                 'resize-path-1',
                 undefined,
+                undefined,
                 'original-path-2',
                 'web-path-2',
                 'resize-path-2',
                 'encoded-video-path-2',
+                undefined,
               ],
             },
           },

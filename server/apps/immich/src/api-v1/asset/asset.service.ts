@@ -106,6 +106,7 @@ export class AssetService {
     dto: CreateAssetDto,
     file: UploadFile,
     livePhotoFile?: UploadFile,
+    sidecarFile?: UploadFile,
   ): Promise<AssetFileUploadResponseDto> {
     if (livePhotoFile) {
       livePhotoFile = {
@@ -122,14 +123,14 @@ export class AssetService {
         livePhotoAsset = await this.assetCore.create(authUser, livePhotoDto, livePhotoFile);
       }
 
-      const asset = await this.assetCore.create(authUser, dto, file, livePhotoAsset?.id);
+      const asset = await this.assetCore.create(authUser, dto, file, livePhotoAsset?.id, sidecarFile);
 
       return { id: asset.id, duplicate: false };
     } catch (error: any) {
       // clean up files
       await this.jobRepository.queue({
         name: JobName.DELETE_FILES,
-        data: { files: [file.originalPath, livePhotoFile?.originalPath] },
+        data: { files: [file.originalPath, livePhotoFile?.originalPath, sidecarFile?.originalPath] },
       });
 
       // handle duplicates with a success response
@@ -366,7 +367,13 @@ export class AssetService {
         await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [id] } });
 
         result.push({ id, status: DeleteAssetStatusEnum.SUCCESS });
-        deleteQueue.push(asset.originalPath, asset.webpPath, asset.resizePath, asset.encodedVideoPath);
+        deleteQueue.push(
+          asset.originalPath,
+          asset.webpPath,
+          asset.resizePath,
+          asset.encodedVideoPath,
+          asset.sidecarPath,
+        );
 
         // TODO refactor this to use cascades
         if (asset.livePhotoVideoId && !ids.includes(asset.livePhotoVideoId)) {

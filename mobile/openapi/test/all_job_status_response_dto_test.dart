@@ -61,6 +61,11 @@ void main() {
       // TODO
     });
 
+    // JobStatusDto sidecarQueue
+    test('to test the property `sidecarQueue`', () async {
+      // TODO
+    });
+
 
   });
 

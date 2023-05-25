@@ -95,6 +95,9 @@ export class AssetEntity {
   @Column({ type: 'varchar' })
   originalFileName!: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  sidecarPath!: string | null;
+
   @OneToOne(() => ExifEntity, (exifEntity) => exifEntity.asset)
   exifInfo?: ExifEntity;
 

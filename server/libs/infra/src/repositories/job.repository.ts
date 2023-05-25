@@ -15,6 +15,7 @@ export class JobRepository implements IJobRepository {
     [QueueName.VIDEO_CONVERSION]: this.videoTranscode,
     [QueueName.BACKGROUND_TASK]: this.backgroundTask,
     [QueueName.SEARCH]: this.searchIndex,
+    [QueueName.SIDECAR]: this.sidecar,
   };
 
   constructor(
@@ -27,6 +28,7 @@ export class JobRepository implements IJobRepository {
     @InjectQueue(QueueName.THUMBNAIL_GENERATION) private generateThumbnail: Queue,
     @InjectQueue(QueueName.VIDEO_CONVERSION) private videoTranscode: Queue<IAssetJob | IBaseJob>,
     @InjectQueue(QueueName.SEARCH) private searchIndex: Queue,
+    @InjectQueue(QueueName.SIDECAR) private sidecar: Queue<IBaseJob>,
   ) {}
 
   async getQueueStatus(name: QueueName): Promise<QueueStatus> {
@@ -81,6 +83,12 @@ export class JobRepository implements IJobRepository {
       case JobName.EXIF_EXTRACTION:
       case JobName.EXTRACT_VIDEO_METADATA:
         await this.metadataExtraction.add(item.name, item.data);
+        break;
+
+      case JobName.QUEUE_SIDECAR:
+      case JobName.SIDECAR_DISCOVERY:
+      case JobName.SIDECAR_SYNC:
+        await this.sidecar.add(item.name, item.data);
         break;
 
       case JobName.QUEUE_RECOGNIZE_FACES:

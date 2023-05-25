@@ -20,6 +20,9 @@
 	export let allowForceCommand = true;
 	export let icon: typeof Icon;
 
+	export let allText: string;
+	export let missingText: string;
+
 	$: waitingCount = jobCounts.waiting + jobCounts.paused + jobCounts.delayed;
 	$: isIdle = !queueStatus.isActive && !queueStatus.isPaused;
 
@@ -117,13 +120,15 @@
 				color="gray"
 				on:click={() => dispatch('command', { command: JobCommand.Start, force: true })}
 			>
-				<AllInclusive size="24" /> ALL
+				<AllInclusive size="24" />
+				{allText}
 			</JobTileButton>
 			<JobTileButton
 				color="light-gray"
 				on:click={() => dispatch('command', { command: JobCommand.Start, force: false })}
 			>
-				<SelectionSearch size="24" /> MISSING
+				<SelectionSearch size="24" />
+				{missingText}
 			</JobTileButton>
 		{:else}
 			<JobTileButton

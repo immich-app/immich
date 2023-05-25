@@ -30,6 +30,11 @@ export enum WithoutProperty {
   CLIP_ENCODING = 'clip-embedding',
   OBJECT_TAGS = 'object-tags',
   FACES = 'faces',
+  SIDECAR = 'sidecar',
+}
+
+export enum WithProperty {
+  SIDECAR = 'sidecar',
 }
 
 export const IAssetRepository = 'IAssetRepository';
@@ -37,6 +42,7 @@ export const IAssetRepository = 'IAssetRepository';
 export interface IAssetRepository {
   getByIds(ids: string[]): Promise<AssetEntity[]>;
   getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity>;
+  getWith(pagination: PaginationOptions, property: WithProperty): Paginated<AssetEntity>;
   getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;

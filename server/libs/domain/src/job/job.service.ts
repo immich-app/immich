@@ -76,6 +76,9 @@ export class JobService {
       case QueueName.METADATA_EXTRACTION:
         return this.jobRepository.queue({ name: JobName.QUEUE_METADATA_EXTRACTION, data: { force } });
 
+      case QueueName.SIDECAR:
+        return this.jobRepository.queue({ name: JobName.QUEUE_SIDECAR, data: { force } });
+
       case QueueName.THUMBNAIL_GENERATION:
         return this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force } });
 
