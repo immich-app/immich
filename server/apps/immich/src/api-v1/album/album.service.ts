@@ -1,6 +1,5 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { CreateAlbumDto } from './dto/create-album.dto';
 import { AlbumEntity, SharedLinkType } from '@app/infra/entities';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
@@ -53,12 +52,6 @@ export class AlbumService {
       throw new ForbiddenException('Unauthorized Album Access');
     }
     return album;
-  }
-
-  async create(authUser: AuthUserDto, createAlbumDto: CreateAlbumDto): Promise<AlbumResponseDto> {
-    const albumEntity = await this.albumRepository.create(authUser.id, createAlbumDto);
-    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [albumEntity.id] } });
-    return mapAlbum(albumEntity);
   }
 
   async get(authUser: AuthUserDto, albumId: string): Promise<AlbumResponseDto> {

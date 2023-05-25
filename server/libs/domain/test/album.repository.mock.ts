@@ -11,6 +11,7 @@ export const newAlbumRepositoryMock = (): jest.Mocked<IAlbumRepository> => {
     getNotShared: jest.fn(),
     deleteAll: jest.fn(),
     getAll: jest.fn(),
+    create: jest.fn(),
     save: jest.fn(),
   };
 };

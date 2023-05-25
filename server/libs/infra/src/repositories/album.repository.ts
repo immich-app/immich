@@ -123,8 +123,12 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
+  create(album: Partial<AlbumEntity>): Promise<AlbumEntity> {
+    return this.save(album);
+  }
+
   async save(album: Partial<AlbumEntity>) {
     const { id } = await this.repository.save(album);
-    return this.repository.findOneOrFail({ where: { id } });
+    return this.repository.findOneOrFail({ where: { id }, relations: { owner: true } });
   }
 }

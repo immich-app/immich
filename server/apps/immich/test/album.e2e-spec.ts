@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { clearDb, getAuthUser, authCustom } from './test-utils';
-import { CreateAlbumDto } from '../src/api-v1/album/dto/create-album.dto';
+import { CreateAlbumDto } from '@app/domain';
 import { CreateAlbumShareLinkDto } from '../src/api-v1/album/dto/create-album-shared-link.dto';
 import { AuthUserDto } from '../src/decorators/auth-user.decorator';
 import { AlbumResponseDto, AuthService, SharedLinkResponseDto, UserService } from '@app/domain';

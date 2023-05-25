@@ -121,7 +121,6 @@ describe('Album service', () => {
     albumRepositoryMock = {
       addAssets: jest.fn(),
       addSharedUsers: jest.fn(),
-      create: jest.fn(),
       delete: jest.fn(),
       get: jest.fn(),
       removeAssets: jest.fn(),
@@ -148,19 +147,6 @@ describe('Album service', () => {
       cryptoMock,
       jobMock,
     );
-  });
-
-  it('creates album', async () => {
-    const albumEntity = _getOwnedAlbum();
-    albumRepositoryMock.create.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-
-    const result = await sut.create(authUser, {
-      albumName: albumEntity.albumName,
-    });
-
-    expect(result.id).toEqual(albumEntity.id);
-    expect(result.albumName).toEqual(albumEntity.albumName);
-    expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [albumEntity.id] } });
   });
 
   it('gets an owned album', async () => {

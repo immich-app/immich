@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Query, Response } from '@nestjs/common';
 import { ParseMeUUIDPipe } from '../validation/parse-me-uuid-pipe';
 import { AlbumService } from './album.service';
-import { CreateAlbumDto } from './dto/create-album.dto';
 import { Authenticated } from '../../decorators/authenticated.decorator';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { AddAssetsDto } from './dto/add-assets.dto';
@@ -42,13 +41,6 @@ export class AlbumController {
   @Get('count-by-user-id')
   getAlbumCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
     return this.service.getCountByUserId(authUser);
-  }
-
-  @Authenticated()
-  @Post()
-  createAlbum(@GetAuthUser() authUser: AuthUserDto, @Body() dto: CreateAlbumDto) {
-    // TODO: Handle nonexistent sharedWithUserIds and assetIds.
-    return this.service.create(authUser, dto);
   }
 
   @Authenticated()

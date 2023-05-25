@@ -5,14 +5,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';
-import { CreateAlbumDto } from './dto/create-album.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 
 export interface IAlbumRepository {
-  create(ownerId: string, createAlbumDto: CreateAlbumDto): Promise<AlbumEntity>;
   get(albumId: string): Promise<AlbumEntity | null>;
   delete(album: AlbumEntity): Promise<void>;
   addSharedUsers(album: AlbumEntity, addUsersDto: AddUsersDto): Promise<AlbumEntity>;
@@ -43,19 +41,6 @@ export class AlbumRepository implements IAlbumRepository {
     const sharedAlbumCount = ownedAlbums.filter((album) => album.sharedUsers?.length > 0).length;
 
     return new AlbumCountResponseDto(ownedAlbums.length, sharedAlbums, sharedAlbumCount);
-  }
-
-  async create(ownerId: string, dto: CreateAlbumDto): Promise<AlbumEntity> {
-    const album = await this.albumRepository.save({
-      ownerId,
-      albumName: dto.albumName,
-      sharedUsers: dto.sharedWithUserIds?.map((value) => ({ id: value } as UserEntity)) ?? [],
-      assets: dto.assetIds?.map((value) => ({ id: value } as AssetEntity)) ?? [],
-      albumThumbnailAssetId: dto.assetIds?.[0] || null,
-    });
-
-    // need to re-load the relations
-    return this.get(album.id) as Promise<AlbumEntity>;
   }
 
   async get(albumId: string): Promise<AlbumEntity | null> {

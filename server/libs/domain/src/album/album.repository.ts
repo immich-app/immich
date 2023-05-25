@@ -17,5 +17,6 @@ export interface IAlbumRepository {
   getNotShared(ownerId: string): Promise<AlbumEntity[]>;
   deleteAll(userId: string): Promise<void>;
   getAll(): Promise<AlbumEntity[]>;
+  create(album: Partial<AlbumEntity>): Promise<AlbumEntity>;
   save(album: Partial<AlbumEntity>): Promise<AlbumEntity>;
 }
