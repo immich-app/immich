@@ -31,13 +31,17 @@
 	});
 
 	onDestroy(() => {
-		if (abortController) abortController.abort();
+		if (abortController) {
+			abortController.abort();
+		}
 		assetInteractionStore.clearMultiselect();
 		assetInteractionStore.setIsViewingAsset(false);
 	});
 
 	async function loadMapMarkers() {
-		if (abortController) abortController.abort();
+		if (abortController) {
+			abortController.abort();
+		}
 		abortController = new AbortController();
 
 		const { onlyFavorites } = $mapSettings;

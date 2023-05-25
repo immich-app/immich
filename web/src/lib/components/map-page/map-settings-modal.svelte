@@ -83,7 +83,7 @@
 						options={[
 							{
 								value: '',
-								text: '---'
+								text: 'All'
 							},
 							{
 								value: Duration.fromObject({ hours: 24 }).toISO(),
