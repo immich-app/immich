@@ -10,6 +10,7 @@
 	import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
 	import ImageThumbnail from './image-thumbnail.svelte';
 	import VideoThumbnail from './video-thumbnail.svelte';
+	import ImageBrokenVariant from 'svelte-material-icons/ImageBrokenVariant.svelte';
 
 	const dispatch = createEventDispatcher();
 
@@ -101,7 +102,7 @@
 			</div>
 
 			<div
-				class="bg-gray-100 dark:bg-immich-dark-gray absolute select-none transition-transform"
+				class="h-full w-full bg-gray-100 dark:bg-immich-dark-gray absolute select-none transition-transform"
 				class:scale-[0.85]={selected}
 			>
 				<!-- Gradient overlay on hover -->
@@ -121,12 +122,19 @@
 						<ArchiveArrowDownOutline size="24" class="text-white" />
 					</div>
 				{/if}
-				<ImageThumbnail
-					url={api.getAssetThumbnailUrl(asset.id, format, publicSharedKey)}
-					altText={asset.originalFileName}
-					widthStyle="{width}px"
-					heightStyle="{height}px"
-				/>
+
+				{#if asset.resizePath}
+					<ImageThumbnail
+						url={api.getAssetThumbnailUrl(asset.id, format, publicSharedKey)}
+						altText={asset.originalFileName}
+						widthStyle="{width}px"
+						heightStyle="{height}px"
+					/>
+				{:else}
+					<div class="w-full h-full p-4 flex items-center justify-center">
+						<ImageBrokenVariant size="48" />
+					</div>
+				{/if}
 
 				{#if asset.type === AssetTypeEnum.Video}
 					<div class="absolute w-full h-full top-0">
