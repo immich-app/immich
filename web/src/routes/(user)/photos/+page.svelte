@@ -26,7 +26,6 @@
 		assetInteractionStore.clearMultiselect();
 	});
 
-	$: isAllArchived = Array.from($selectedAssets).every((asset) => asset.isArchived);
 	$: isAllFavorite = Array.from($selectedAssets).every((asset) => asset.isFavorite);
 </script>
 
@@ -46,11 +45,7 @@
 				<AssetSelectContextMenu icon={DotsVertical} title="Menu">
 					<FavoriteAction menuItem removeFavorite={isAllFavorite} />
 					<DownloadAction menuItem />
-					<ArchiveAction
-						menuItem
-						unarchive={isAllArchived}
-						onAssetArchive={(asset) => assetStore.removeAsset(asset.id)}
-					/>
+					<ArchiveAction menuItem onAssetArchive={(asset) => assetStore.removeAsset(asset.id)} />
 				</AssetSelectContextMenu>
 			</AssetSelectControlBar>
 		{/if}
