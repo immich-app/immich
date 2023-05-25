@@ -121,11 +121,9 @@ describe('Album service', () => {
     albumRepositoryMock = {
       addAssets: jest.fn(),
       addSharedUsers: jest.fn(),
-      delete: jest.fn(),
       get: jest.fn(),
       removeAssets: jest.fn(),
       removeUser: jest.fn(),
-      updateAlbum: jest.fn(),
       updateThumbnails: jest.fn(),
       getCountByUserId: jest.fn(),
       getSharedWithUserAlbumCount: jest.fn(),
@@ -195,21 +193,6 @@ describe('Album service', () => {
   it('throws a not found exception if the album is not found', async () => {
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve(null));
     await expect(sut.get(authUser, '0002')).rejects.toBeInstanceOf(NotFoundException);
-  });
-
-  it('deletes an owned album', async () => {
-    const albumEntity = _getOwnedAlbum();
-    albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    albumRepositoryMock.delete.mockImplementation(() => Promise.resolve());
-    await sut.delete(authUser, albumId);
-    expect(albumRepositoryMock.delete).toHaveBeenCalledTimes(1);
-    expect(albumRepositoryMock.delete).toHaveBeenCalledWith(albumEntity);
-  });
-
-  it('prevents deleting a shared album (shared with auth user)', async () => {
-    const albumEntity = _getSharedWithAuthUserAlbum();
-    albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    await expect(sut.delete(authUser, albumId)).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('removes a shared user from an owned album', async () => {

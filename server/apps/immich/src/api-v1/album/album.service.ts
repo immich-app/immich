@@ -3,7 +3,7 @@ import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AlbumEntity, SharedLinkType } from '@app/infra/entities';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
-import { AlbumResponseDto, IJobRepository, JobName, mapAlbum } from '@app/domain';
+import { AlbumResponseDto, IJobRepository, mapAlbum } from '@app/domain';
 import { IAlbumRepository } from './album-repository';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
@@ -62,17 +62,6 @@ export class AlbumService {
     const album = await this._getAlbum({ authUser, albumId });
     const updatedAlbum = await this.albumRepository.addSharedUsers(album, dto);
     return mapAlbum(updatedAlbum);
-  }
-
-  async delete(authUser: AuthUserDto, albumId: string): Promise<void> {
-    const album = await this._getAlbum({ authUser, albumId });
-
-    for (const sharedLink of album.sharedLinks) {
-      await this.shareCore.remove(authUser.id, sharedLink.id);
-    }
-
-    await this.albumRepository.delete(album);
-    await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ALBUM, data: { ids: [albumId] } });
   }
 
   async removeUser(authUser: AuthUserDto, albumId: string, userId: string | 'me'): Promise<void> {

@@ -53,7 +53,7 @@ export class SharedLinkEntity {
   assets!: AssetEntity[];
 
   @Index('IDX_sharedlink_albumId')
-  @ManyToOne(() => AlbumEntity, (album) => album.sharedLinks)
+  @ManyToOne(() => AlbumEntity, (album) => album.sharedLinks, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   album?: AlbumEntity;
 }
 

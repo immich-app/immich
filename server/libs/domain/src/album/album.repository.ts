@@ -20,4 +20,5 @@ export interface IAlbumRepository {
   getAll(): Promise<AlbumEntity[]>;
   create(album: Partial<AlbumEntity>): Promise<AlbumEntity>;
   update(album: Partial<AlbumEntity>): Promise<AlbumEntity>;
+  delete(album: AlbumEntity): Promise<void>;
 }

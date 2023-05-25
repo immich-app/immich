@@ -78,12 +78,6 @@ export class AlbumController {
   }
 
   @Authenticated()
-  @Delete(':id')
-  deleteAlbum(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
-    return this.service.delete(authUser, id);
-  }
-
-  @Authenticated()
   @Delete(':id/user/:userId')
   removeUserFromAlbum(
     @GetAuthUser() authUser: AuthUserDto,
