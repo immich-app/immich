@@ -1,8 +1,8 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsOptional } from 'class-validator';
-import { toBoolean } from 'apps/immich/src/utils/transform.util';
-import { ApiProperty } from '@nestjs/swagger';
-import { ValidateUUID } from 'apps/immich/src/decorators/validate-uuid.decorator';
+import { ValidateUUID } from '../../../../../apps/immich/src/decorators/validate-uuid.decorator';
+import { toBoolean } from '../../../../../apps/immich/src/utils/transform.util';
 
 export class GetAlbumsDto {
   @IsOptional()

@@ -60,6 +60,11 @@ function fileFilter(req: AuthRequest, file: any, cb: any) {
   ) {
     cb(null, true);
   } else {
+    // Additionally support XML but only for sidecar files
+    if (file.fieldname == 'sidecarData' && file.mimetype.match(/\/xml$/)) {
+      return cb(null, true);
+    }
+
     logger.error(`Unsupported file type ${extname(file.originalname)} file MIME type ${file.mimetype}`);
     cb(new BadRequestException(`Unsupported file type ${extname(file.originalname)}`), false);
   }
@@ -93,6 +98,11 @@ function filename(req: AuthRequest, file: Express.Multer.File, cb: any) {
   if (file.fieldname === 'livePhotoData') {
     const livePhotoFileName = `${fileNameUUID}.mov`;
     return cb(null, sanitize(livePhotoFileName));
+  }
+
+  if (file.fieldname === 'sidecarData') {
+    const sidecarFileName = `${fileNameUUID}.xmp`;
+    return cb(null, sanitize(sidecarFileName));
   }
 
   const fileName = `${fileNameUUID}${req.body['fileExtension']}`;

@@ -4,7 +4,7 @@ import {
 } from './../components/shared-components/notification/notification';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import type { UploadAsset } from '../models/upload-asset';
-import { api, AssetFileUploadResponseDto } from '@api';
+import { AssetFileUploadResponseDto } from '@api';
 import { addAssetsToAlbum, getFileMimeType, getFilenameExtension } from '$lib/utils/asset-utils';
 import { mergeMap, filter, firstValueFrom, from, of, combineLatestAll } from 'rxjs';
 import axios from 'axios';
@@ -73,7 +73,7 @@ async function fileUploader(
 	const deviceAssetId = 'web' + '-' + asset.name + '-' + asset.lastModified;
 
 	try {
-		// Create and add Unique ID of asset on the device
+		// Create and add pseudo-unique ID of asset on the device
 		formData.append('deviceAssetId', deviceAssetId);
 
 		// Get device id - for web -> use WEB
@@ -101,23 +101,6 @@ async function fileUploader(
 		// use application/octet-stream for unsupported MIME types, leading to
 		// failed uploads.
 		formData.append('assetData', new File([asset], asset.name, { type: mimeType }));
-
-		// Check if asset upload on server before performing upload
-		const { data, status } = await api.assetApi.checkDuplicateAsset(
-			{
-				deviceAssetId: String(deviceAssetId),
-				deviceId: 'WEB'
-			},
-			sharedKey
-		);
-
-		if (status === 200 && data.isExist && data.id) {
-			if (albumId) {
-				await addAssetsToAlbum(albumId, [data.id], sharedKey);
-			}
-
-			return data.id;
-		}
 
 		const newUploadAsset: UploadAsset = {
 			id: deviceAssetId,

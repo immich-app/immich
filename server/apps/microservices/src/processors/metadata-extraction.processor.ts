@@ -10,6 +10,7 @@ import {
   QueueName,
   usePagination,
   WithoutProperty,
+  WithProperty,
 } from '@app/domain';
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { Process, Processor } from '@nestjs/bull';
@@ -98,13 +99,22 @@ export class MetadataExtractionProcessor {
     let asset = job.data.asset;
 
     try {
-      const exifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((error: any) => {
+      const mediaExifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((error: any) => {
         this.logger.warn(
           `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
           error?.stack,
         );
         return null;
       });
+      const sidecarExifData = asset.sidecarPath
+        ? await exiftool.read<ImmichTags>(asset.sidecarPath).catch((error: any) => {
+            this.logger.warn(
+              `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
+              error?.stack,
+            );
+            return null;
+          })
+        : {};
 
       const exifToDate = (exifDate: string | ExifDateTime | undefined) => {
         if (!exifDate) return null;
@@ -126,31 +136,46 @@ export class MetadataExtractionProcessor {
         return exifDate.zone ?? null;
       };
 
-      const timeZone = exifTimeZone(exifData?.DateTimeOriginal ?? exifData?.CreateDate ?? asset.fileCreatedAt);
-      const fileCreatedAt = exifToDate(exifData?.DateTimeOriginal ?? exifData?.CreateDate ?? asset.fileCreatedAt);
-      const fileModifiedAt = exifToDate(exifData?.ModifyDate ?? asset.fileModifiedAt);
+      const getExifProperty = <T extends keyof ImmichTags>(...properties: T[]): any | null => {
+        for (const property of properties) {
+          const value = sidecarExifData?.[property] ?? mediaExifData?.[property];
+          if (value !== null && value !== undefined) {
+            return value;
+          }
+        }
+
+        return null;
+      };
+
+      const timeZone = exifTimeZone(getExifProperty('DateTimeOriginal', 'CreateDate') ?? asset.fileCreatedAt);
+      const fileCreatedAt = exifToDate(getExifProperty('DateTimeOriginal', 'CreateDate') ?? asset.fileCreatedAt);
+      const fileModifiedAt = exifToDate(getExifProperty('ModifyDate') ?? asset.fileModifiedAt);
       const fileStats = fs.statSync(asset.originalPath);
       const fileSizeInBytes = fileStats.size;
 
       const newExif = new ExifEntity();
       newExif.assetId = asset.id;
       newExif.fileSizeInByte = fileSizeInBytes;
-      newExif.make = exifData?.Make || null;
-      newExif.model = exifData?.Model || null;
-      newExif.exifImageHeight = exifData?.ExifImageHeight || exifData?.ImageHeight || null;
-      newExif.exifImageWidth = exifData?.ExifImageWidth || exifData?.ImageWidth || null;
-      newExif.exposureTime = exifData?.ExposureTime || null;
-      newExif.orientation = exifData?.Orientation?.toString() || null;
+      newExif.make = getExifProperty('Make');
+      newExif.model = getExifProperty('Model');
+      newExif.exifImageHeight = getExifProperty('ExifImageHeight', 'ImageHeight');
+      newExif.exifImageWidth = getExifProperty('ExifImageWidth', 'ImageWidth');
+      newExif.exposureTime = getExifProperty('ExposureTime');
+      newExif.orientation = getExifProperty('Orientation')?.toString();
       newExif.dateTimeOriginal = fileCreatedAt;
       newExif.modifyDate = fileModifiedAt;
       newExif.timeZone = timeZone;
-      newExif.lensModel = exifData?.LensModel || null;
-      newExif.fNumber = exifData?.FNumber || null;
-      newExif.focalLength = exifData?.FocalLength ? parseFloat(exifData.FocalLength) : null;
-      newExif.iso = exifData?.ISO || null;
-      newExif.latitude = exifData?.GPSLatitude || null;
-      newExif.longitude = exifData?.GPSLongitude || null;
-      newExif.livePhotoCID = exifData?.MediaGroupUUID || null;
+      newExif.lensModel = getExifProperty('LensModel');
+      newExif.fNumber = getExifProperty('FNumber');
+      const focalLength = getExifProperty('FocalLength');
+      newExif.focalLength = focalLength ? parseFloat(focalLength) : null;
+      // This is unusual - exifData.ISO should return a number, but experienced that sidecar XMP
+      // files MAY return an array of numbers instead.
+      const iso = getExifProperty('ISO');
+      newExif.iso = Array.isArray(iso) ? iso[0] : iso || null;
+      newExif.latitude = getExifProperty('GPSLatitude');
+      newExif.longitude = getExifProperty('GPSLongitude');
+      newExif.livePhotoCID = getExifProperty('MediaGroupUUID');
 
       if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
         const motionAsset = await this.assetCore.findLivePhotoMatch({
@@ -220,7 +245,7 @@ export class MetadataExtractionProcessor {
         }
       }
 
-      const exifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((error: any) => {
+      const exifData = await exiftool.read<ImmichTags>(asset.sidecarPath || asset.originalPath).catch((error: any) => {
         this.logger.warn(
           `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
           error?.stack,
@@ -343,5 +368,85 @@ export class MetadataExtractionProcessor {
     }
 
     return Duration.fromObject({ seconds: videoDurationInSecond }).toFormat('hh:mm:ss.SSS');
+  }
+}
+
+@Processor(QueueName.SIDECAR)
+export class SidecarProcessor {
+  private logger = new Logger(SidecarProcessor.name);
+  private assetCore: AssetCore;
+
+  constructor(
+    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
+  ) {
+    this.assetCore = new AssetCore(assetRepository, jobRepository);
+  }
+
+  @Process(JobName.QUEUE_SIDECAR)
+  async handleQueueSidecar(job: Job<IBaseJob>) {
+    try {
+      const { force } = job.data;
+      const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
+        return force
+          ? this.assetRepository.getWith(pagination, WithProperty.SIDECAR)
+          : this.assetRepository.getWithout(pagination, WithoutProperty.SIDECAR);
+      });
+
+      for await (const assets of assetPagination) {
+        for (const asset of assets) {
+          const name = force ? JobName.SIDECAR_SYNC : JobName.SIDECAR_DISCOVERY;
+          await this.jobRepository.queue({ name, data: { asset } });
+        }
+      }
+    } catch (error: any) {
+      this.logger.error(`Unable to queue sidecar scanning`, error?.stack);
+    }
+  }
+
+  @Process(JobName.SIDECAR_SYNC)
+  async handleSidecarSync(job: Job<IAssetJob>) {
+    const { asset } = job.data;
+    if (!asset.isVisible) {
+      return;
+    }
+
+    try {
+      const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
+      await this.jobRepository.queue({ name, data: { asset } });
+    } catch (error: any) {
+      this.logger.error(`Unable to queue metadata extraction`, error?.stack);
+    }
+  }
+
+  @Process(JobName.SIDECAR_DISCOVERY)
+  async handleSidecarDiscovery(job: Job<IAssetJob>) {
+    let { asset } = job.data;
+    if (!asset.isVisible) {
+      return;
+    }
+
+    if (asset.sidecarPath) {
+      return;
+    }
+
+    try {
+      await fs.promises.access(`${asset.originalPath}.xmp`, fs.constants.W_OK);
+
+      try {
+        asset = await this.assetCore.save({ id: asset.id, sidecarPath: `${asset.originalPath}.xmp` });
+        // TODO: optimize to only queue assets with recent xmp changes
+        const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
+        await this.jobRepository.queue({ name, data: { asset } });
+      } catch (error: any) {
+        this.logger.error(`Unable to sync sidecar`, error?.stack);
+      }
+    } catch (error: any) {
+      if (error.code == 'EACCES') {
+        this.logger.error(`Unable to queue metadata extraction, file is not writable`, error?.stack);
+      }
+
+      return;
+    }
   }
 }

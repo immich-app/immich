@@ -1,19 +1,22 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { APP_MEDIA_LOCATION, serverVersion } from '../domain.constant';
+import { serverVersion } from '../domain.constant';
 import { asHumanReadable } from '../domain.util';
-import { IStorageRepository } from '../storage';
+import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { IUserRepository, UserStatsQueryResponse } from '../user';
 import { ServerInfoResponseDto, ServerPingResponse, ServerStatsResponseDto, UsageByUserDto } from './response-dto';
 
 @Injectable()
 export class ServerInfoService {
+  private storageCore = new StorageCore();
+
   constructor(
     @Inject(IUserRepository) private userRepository: IUserRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {}
 
   async getInfo(): Promise<ServerInfoResponseDto> {
-    const diskInfo = await this.storageRepository.checkDiskUsage(APP_MEDIA_LOCATION);
+    const libraryBase = this.storageCore.getBaseFolder(StorageFolder.LIBRARY);
+    const diskInfo = await this.storageRepository.checkDiskUsage(libraryBase);
 
     const usagePercentage = (((diskInfo.total - diskInfo.free) / diskInfo.total) * 100).toFixed(2);
 

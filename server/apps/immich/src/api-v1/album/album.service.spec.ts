@@ -2,7 +2,7 @@ import { AlbumService } from './album.service';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AlbumEntity, UserEntity } from '@app/infra/entities';
-import { AlbumResponseDto, ICryptoRepository, IJobRepository, JobName, mapUser } from '@app/domain';
+import { AlbumResponseDto, ICryptoRepository, IJobRepository, mapUser } from '@app/domain';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { IAlbumRepository } from './album-repository';
 import { DownloadService } from '../../modules/download/download.service';
@@ -121,7 +121,6 @@ describe('Album service', () => {
     albumRepositoryMock = {
       addAssets: jest.fn(),
       addSharedUsers: jest.fn(),
-      create: jest.fn(),
       delete: jest.fn(),
       get: jest.fn(),
       removeAssets: jest.fn(),
@@ -150,19 +149,6 @@ describe('Album service', () => {
     );
   });
 
-  it('creates album', async () => {
-    const albumEntity = _getOwnedAlbum();
-    albumRepositoryMock.create.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-
-    const result = await sut.create(authUser, {
-      albumName: albumEntity.albumName,
-    });
-
-    expect(result.id).toEqual(albumEntity.id);
-    expect(result.albumName).toEqual(albumEntity.albumName);
-    expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [albumEntity.id] } });
-  });
-
   it('gets an owned album', async () => {
     const albumId = 'f19ab956-4761-41ea-a5d6-bae948308d58';
 
@@ -182,14 +168,14 @@ describe('Album service', () => {
       shared: false,
       assetCount: 0,
     };
-    await expect(sut.getAlbumInfo(authUser, albumId)).resolves.toEqual(expectedResult);
+    await expect(sut.get(authUser, albumId)).resolves.toEqual(expectedResult);
   });
 
   it('gets a shared album', async () => {
     const albumEntity = _getSharedWithAuthUserAlbum();
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
 
-    const result = await sut.getAlbumInfo(authUser, albumId);
+    const result = await sut.get(authUser, albumId);
     expect(result.id).toEqual(albumId);
     expect(result.ownerId).toEqual(sharedAlbumOwnerId);
     expect(result.shared).toEqual(true);
@@ -203,19 +189,19 @@ describe('Album service', () => {
     const albumId = albumEntity.id;
 
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    await expect(sut.getAlbumInfo(authUser, albumId)).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(sut.get(authUser, albumId)).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('throws a not found exception if the album is not found', async () => {
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve(null));
-    await expect(sut.getAlbumInfo(authUser, '0002')).rejects.toBeInstanceOf(NotFoundException);
+    await expect(sut.get(authUser, '0002')).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('deletes an owned album', async () => {
     const albumEntity = _getOwnedAlbum();
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
     albumRepositoryMock.delete.mockImplementation(() => Promise.resolve());
-    await sut.deleteAlbum(authUser, albumId);
+    await sut.delete(authUser, albumId);
     expect(albumRepositoryMock.delete).toHaveBeenCalledTimes(1);
     expect(albumRepositoryMock.delete).toHaveBeenCalledWith(albumEntity);
   });
@@ -223,14 +209,14 @@ describe('Album service', () => {
   it('prevents deleting a shared album (shared with auth user)', async () => {
     const albumEntity = _getSharedWithAuthUserAlbum();
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    await expect(sut.deleteAlbum(authUser, albumId)).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(sut.delete(authUser, albumId)).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('removes a shared user from an owned album', async () => {
     const albumEntity = _getOwnedSharedAlbum();
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
     albumRepositoryMock.removeUser.mockImplementation(() => Promise.resolve());
-    await expect(sut.removeUserFromAlbum(authUser, albumEntity.id, ownedAlbumSharedWithId)).resolves.toBeUndefined();
+    await expect(sut.removeUser(authUser, albumEntity.id, ownedAlbumSharedWithId)).resolves.toBeUndefined();
     expect(albumRepositoryMock.removeUser).toHaveBeenCalledTimes(1);
     expect(albumRepositoryMock.removeUser).toHaveBeenCalledWith(albumEntity, ownedAlbumSharedWithId);
   });
@@ -242,7 +228,7 @@ describe('Album service', () => {
 
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
 
-    await expect(sut.removeUserFromAlbum(authUser, albumId, userIdToRemove)).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(sut.removeUser(authUser, albumId, userIdToRemove)).rejects.toBeInstanceOf(ForbiddenException);
     expect(albumRepositoryMock.removeUser).not.toHaveBeenCalled();
   });
 
@@ -251,7 +237,7 @@ describe('Album service', () => {
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
     albumRepositoryMock.removeUser.mockImplementation(() => Promise.resolve());
 
-    await sut.removeUserFromAlbum(authUser, albumEntity.id, authUser.id);
+    await sut.removeUser(authUser, albumEntity.id, authUser.id);
     expect(albumRepositoryMock.removeUser).toHaveReturnedTimes(1);
     expect(albumRepositoryMock.removeUser).toHaveBeenCalledWith(albumEntity, authUser.id);
   });
@@ -261,7 +247,7 @@ describe('Album service', () => {
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
     albumRepositoryMock.removeUser.mockImplementation(() => Promise.resolve());
 
-    await sut.removeUserFromAlbum(authUser, albumEntity.id, 'me');
+    await sut.removeUser(authUser, albumEntity.id, 'me');
     expect(albumRepositoryMock.removeUser).toHaveReturnedTimes(1);
     expect(albumRepositoryMock.removeUser).toHaveBeenCalledWith(albumEntity, authUser.id);
   });
@@ -270,55 +256,7 @@ describe('Album service', () => {
     const albumEntity = _getOwnedAlbum();
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
 
-    await expect(sut.removeUserFromAlbum(authUser, albumEntity.id, authUser.id)).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
-  });
-
-  it('updates a owned album', async () => {
-    const albumEntity = _getOwnedAlbum();
-    const albumId = albumEntity.id;
-    const updatedAlbumName = 'new album name';
-    const updatedAlbumThumbnailAssetId = '69d2f917-0b31-48d8-9d7d-673b523f1aac';
-    albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    const updatedAlbum = { ...albumEntity, albumName: updatedAlbumName };
-    albumRepositoryMock.updateAlbum.mockResolvedValue(updatedAlbum);
-
-    const result = await sut.updateAlbumInfo(
-      authUser,
-      {
-        albumName: updatedAlbumName,
-        albumThumbnailAssetId: updatedAlbumThumbnailAssetId,
-      },
-      albumId,
-    );
-
-    expect(result.id).toEqual(albumId);
-    expect(result.albumName).toEqual(updatedAlbumName);
-    expect(albumRepositoryMock.updateAlbum).toHaveBeenCalledTimes(1);
-    expect(albumRepositoryMock.updateAlbum).toHaveBeenCalledWith(albumEntity, {
-      albumName: updatedAlbumName,
-      albumThumbnailAssetId: updatedAlbumThumbnailAssetId,
-    });
-    expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [updatedAlbum.id] } });
-  });
-
-  it('prevents updating a not owned album (shared with auth user)', async () => {
-    const albumEntity = _getSharedWithAuthUserAlbum();
-    const albumId = albumEntity.id;
-
-    albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-
-    await expect(
-      sut.updateAlbumInfo(
-        authUser,
-        {
-          albumName: 'new album name',
-          albumThumbnailAssetId: '69d2f917-0b31-48d8-9d7d-673b523f1aac',
-        },
-        albumId,
-      ),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(sut.removeUser(authUser, albumEntity.id, authUser.id)).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('adds assets to owned album', async () => {
@@ -334,13 +272,7 @@ describe('Album service', () => {
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
     albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AddAssetsResponseDto>(albumResponse));
 
-    const result = (await sut.addAssetsToAlbum(
-      authUser,
-      {
-        assetIds: ['1'],
-      },
-      albumId,
-    )) as AddAssetsResponseDto;
+    const result = (await sut.addAssets(authUser, albumId, { assetIds: ['1'] })) as AddAssetsResponseDto;
 
     // TODO: stub and expect album rendered
     expect(result.album?.id).toEqual(albumId);
@@ -359,13 +291,7 @@ describe('Album service', () => {
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
     albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AddAssetsResponseDto>(albumResponse));
 
-    const result = (await sut.addAssetsToAlbum(
-      authUser,
-      {
-        assetIds: ['1'],
-      },
-      albumId,
-    )) as AddAssetsResponseDto;
+    const result = (await sut.addAssets(authUser, albumId, { assetIds: ['1'] })) as AddAssetsResponseDto;
 
     // TODO: stub and expect album rendered
     expect(result.album?.id).toEqual(albumId);
@@ -384,15 +310,7 @@ describe('Album service', () => {
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
     albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AddAssetsResponseDto>(albumResponse));
 
-    await expect(
-      sut.addAssetsToAlbum(
-        authUser,
-        {
-          assetIds: ['1'],
-        },
-        albumId,
-      ),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(sut.addAssets(authUser, albumId, { assetIds: ['1'] })).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   // it('removes assets from owned album', async () => {
@@ -448,14 +366,6 @@ describe('Album service', () => {
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
     albumRepositoryMock.addAssets.mockImplementation(() => Promise.resolve<AddAssetsResponseDto>(albumResponse));
 
-    await expect(
-      sut.removeAssetsFromAlbum(
-        authUser,
-        {
-          assetIds: ['1'],
-        },
-        albumId,
-      ),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(sut.removeAssets(authUser, albumId, { assetIds: ['1'] })).rejects.toBeInstanceOf(ForbiddenException);
   });
 });

@@ -1,5 +1,6 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsUUID } from 'class-validator';
 import { toBoolean } from '../../../utils/transform.util';
 
 export class AssetSearchDto {
@@ -18,4 +19,9 @@ export class AssetSearchDto {
   @IsOptional()
   @IsNumber()
   skip?: number;
+
+  @IsOptional()
+  @IsUUID('4')
+  @ApiProperty({ format: 'uuid' })
+  userId?: string;
 }

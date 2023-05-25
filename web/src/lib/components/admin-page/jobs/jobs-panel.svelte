@@ -11,6 +11,7 @@
 	import FileJpgBox from 'svelte-material-icons/FileJpgBox.svelte';
 	import FolderMove from 'svelte-material-icons/FolderMove.svelte';
 	import Table from 'svelte-material-icons/Table.svelte';
+	import FileXmlBox from 'svelte-material-icons/FileXmlBox.svelte';
 	import TagMultiple from 'svelte-material-icons/TagMultiple.svelte';
 	import VectorCircle from 'svelte-material-icons/VectorCircle.svelte';
 	import Video from 'svelte-material-icons/Video.svelte';
@@ -23,6 +24,8 @@
 	interface JobDetails {
 		title: string;
 		subtitle?: string;
+		allText?: string;
+		missingText?: string;
 		icon: typeof Icon;
 		allowForceCommand?: boolean;
 		component?: ComponentType;
@@ -55,6 +58,13 @@
 			icon: Table,
 			title: 'Extract Metadata',
 			subtitle: 'Extract metadata information i.e. GPS, resolution...etc'
+		},
+		[JobName.SidecarQueue]: {
+			title: 'Sidecar Metadata',
+			icon: FileXmlBox,
+			subtitle: 'Discover or synchronize sidecar metadata from the filesystem',
+			allText: 'SYNC',
+			missingText: 'DISCOVER'
 		},
 		[JobName.ObjectTaggingQueue]: {
 			icon: TagMultiple,
@@ -118,12 +128,14 @@
 {/if}
 
 <div class="flex flex-col gap-7">
-	{#each jobDetailsArray as [jobName, { title, subtitle, allowForceCommand, icon, component, handleCommand: handleCommandOverride }]}
+	{#each jobDetailsArray as [jobName, { title, subtitle, allText, missingText, allowForceCommand, icon, component, handleCommand: handleCommandOverride }]}
 		{@const { jobCounts, queueStatus } = jobs[jobName]}
 		<JobTile
 			{icon}
 			{title}
 			{subtitle}
+			allText={allText || 'ALL'}
+			missingText={missingText || 'MISSING'}
 			{allowForceCommand}
 			{jobCounts}
 			{queueStatus}

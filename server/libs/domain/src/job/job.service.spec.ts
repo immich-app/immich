@@ -67,6 +67,7 @@ describe(JobService.name, () => {
         'thumbnail-generation-queue': expectedJobStatus,
         'video-conversion-queue': expectedJobStatus,
         'recognize-faces-queue': expectedJobStatus,
+        'sidecar-queue': expectedJobStatus,
       });
     });
   });

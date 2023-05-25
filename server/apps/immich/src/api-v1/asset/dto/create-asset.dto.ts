@@ -45,6 +45,9 @@ export class CreateAssetDto {
 
   @ApiProperty({ type: 'string', format: 'binary' })
   livePhotoData?: any;
+
+  @ApiProperty({ type: 'string', format: 'binary' })
+  sidecarData?: any;
 }
 
 export interface UploadFile {

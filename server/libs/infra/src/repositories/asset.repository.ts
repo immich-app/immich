@@ -7,12 +7,14 @@ import {
   Paginated,
   PaginationOptions,
   WithoutProperty,
+  WithProperty,
 } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetType } from '../entities';
 import { paginate } from '../utils/pagination.util';
+import OptionalBetween from '../utils/optional-between.util';
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
@@ -161,12 +163,40 @@ export class AssetRepository implements IAssetRepository {
         };
         break;
 
+      case WithoutProperty.SIDECAR:
+        where = [
+          { sidecarPath: IsNull(), isVisible: true },
+          { sidecarPath: '', isVisible: true },
+        ];
+        break;
+
       default:
         throw new Error(`Invalid getWithout property: ${property}`);
     }
 
     return paginate(this.repository, pagination, {
       relations,
+      where,
+      order: {
+        // Ensures correct order when paginating
+        createdAt: 'ASC',
+      },
+    });
+  }
+
+  getWith(pagination: PaginationOptions, property: WithProperty): Paginated<AssetEntity> {
+    let where: FindOptionsWhere<AssetEntity> | FindOptionsWhere<AssetEntity>[] = {};
+
+    switch (property) {
+      case WithProperty.SIDECAR:
+        where = [{ sidecarPath: Not(IsNull()), isVisible: true }];
+        break;
+
+      default:
+        throw new Error(`Invalid getWith property: ${property}`);
+    }
+
+    return paginate(this.repository, pagination, {
       where,
       order: {
         // Ensures correct order when paginating
@@ -183,7 +213,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   async getMapMarkers(ownerId: string, options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
-    const { isFavorite } = options;
+    const { isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
 
     const assets = await this.repository.find({
       select: {
@@ -202,6 +232,7 @@ export class AssetRepository implements IAssetRepository {
           longitude: Not(IsNull()),
         },
         isFavorite,
+        fileCreatedAt: OptionalBetween(fileCreatedAfter, fileCreatedBefore),
       },
       relations: {
         exifInfo: true,

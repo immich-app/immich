@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { afterNavigate, goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
 	import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
 	import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
@@ -23,11 +24,18 @@
 	export let data: PageData;
 
 	let isEditName = false;
-
+	let previousRoute: string = AppRoute.EXPLORE;
 	let selectedAssets: Set<AssetResponseDto> = new Set();
 	$: isMultiSelectionMode = selectedAssets.size > 0;
-	$: isAllFavorite = Array.from(selectedAssets).every((asset) => asset.isFavorite);
 	$: isAllArchive = Array.from(selectedAssets).every((asset) => asset.isArchived);
+	$: isAllFavorite = Array.from(selectedAssets).every((asset) => asset.isFavorite);
+
+	afterNavigate(({ from }) => {
+		// Prevent setting previousRoute to the current page.
+		if (from && from.route.id !== $page.route.id) {
+			previousRoute = from.url.href;
+		}
+	});
 
 	const handleNameChange = async (name: string) => {
 		try {
@@ -66,7 +74,7 @@
 	<ControlAppBar
 		showBackButton
 		backIcon={ArrowLeft}
-		on:close-button-click={() => goto(AppRoute.EXPLORE)}
+		on:close-button-click={() => goto(previousRoute)}
 	/>
 {/if}
 

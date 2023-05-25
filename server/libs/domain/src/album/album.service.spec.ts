@@ -1,5 +1,7 @@
-import { albumStub, authStub, newAlbumRepositoryMock, newAssetRepositoryMock } from '../../test';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { albumStub, authStub, newAlbumRepositoryMock, newAssetRepositoryMock, newJobRepositoryMock } from '../../test';
 import { IAssetRepository } from '../asset';
+import { IJobRepository, JobName } from '../job';
 import { IAlbumRepository } from './album.repository';
 import { AlbumService } from './album.service';
 
@@ -7,19 +9,21 @@ describe(AlbumService.name, () => {
   let sut: AlbumService;
   let albumMock: jest.Mocked<IAlbumRepository>;
   let assetMock: jest.Mocked<IAssetRepository>;
+  let jobMock: jest.Mocked<IJobRepository>;
 
   beforeEach(async () => {
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
+    jobMock = newJobRepositoryMock();
 
-    sut = new AlbumService(albumMock, assetMock);
+    sut = new AlbumService(albumMock, assetMock, jobMock);
   });
 
   it('should work', () => {
     expect(sut).toBeDefined();
   });
 
-  describe('get list of albums', () => {
+  describe('getAll', () => {
     it('gets list of albums for auth user', async () => {
       albumMock.getOwned.mockResolvedValue([albumStub.empty, albumStub.sharedWithUser]);
       albumMock.getAssetCountForIds.mockResolvedValue([
@@ -28,7 +32,7 @@ describe(AlbumService.name, () => {
       ]);
       albumMock.getInvalidThumbnail.mockResolvedValue([]);
 
-      const result = await sut.getAllAlbums(authStub.admin, {});
+      const result = await sut.getAll(authStub.admin, {});
       expect(result).toHaveLength(2);
       expect(result[0].id).toEqual(albumStub.empty.id);
       expect(result[1].id).toEqual(albumStub.sharedWithUser.id);
@@ -39,7 +43,7 @@ describe(AlbumService.name, () => {
       albumMock.getAssetCountForIds.mockResolvedValue([{ albumId: albumStub.oneAsset.id, assetCount: 1 }]);
       albumMock.getInvalidThumbnail.mockResolvedValue([]);
 
-      const result = await sut.getAllAlbums(authStub.admin, { assetId: albumStub.oneAsset.id });
+      const result = await sut.getAll(authStub.admin, { assetId: albumStub.oneAsset.id });
       expect(result).toHaveLength(1);
       expect(result[0].id).toEqual(albumStub.oneAsset.id);
       expect(albumMock.getByAssetId).toHaveBeenCalledTimes(1);
@@ -50,7 +54,7 @@ describe(AlbumService.name, () => {
       albumMock.getAssetCountForIds.mockResolvedValue([{ albumId: albumStub.sharedWithUser.id, assetCount: 0 }]);
       albumMock.getInvalidThumbnail.mockResolvedValue([]);
 
-      const result = await sut.getAllAlbums(authStub.admin, { shared: true });
+      const result = await sut.getAll(authStub.admin, { shared: true });
       expect(result).toHaveLength(1);
       expect(result[0].id).toEqual(albumStub.sharedWithUser.id);
       expect(albumMock.getShared).toHaveBeenCalledTimes(1);
@@ -61,7 +65,7 @@ describe(AlbumService.name, () => {
       albumMock.getAssetCountForIds.mockResolvedValue([{ albumId: albumStub.empty.id, assetCount: 0 }]);
       albumMock.getInvalidThumbnail.mockResolvedValue([]);
 
-      const result = await sut.getAllAlbums(authStub.admin, { shared: false });
+      const result = await sut.getAll(authStub.admin, { shared: false });
       expect(result).toHaveLength(1);
       expect(result[0].id).toEqual(albumStub.empty.id);
       expect(albumMock.getNotShared).toHaveBeenCalledTimes(1);
@@ -73,7 +77,7 @@ describe(AlbumService.name, () => {
     albumMock.getAssetCountForIds.mockResolvedValue([{ albumId: albumStub.oneAsset.id, assetCount: 1 }]);
     albumMock.getInvalidThumbnail.mockResolvedValue([]);
 
-    const result = await sut.getAllAlbums(authStub.admin, {});
+    const result = await sut.getAll(authStub.admin, {});
 
     expect(result).toHaveLength(1);
     expect(result[0].assetCount).toEqual(1);
@@ -86,14 +90,14 @@ describe(AlbumService.name, () => {
       { albumId: albumStub.oneAssetInvalidThumbnail.id, assetCount: 1 },
     ]);
     albumMock.getInvalidThumbnail.mockResolvedValue([albumStub.oneAssetInvalidThumbnail.id]);
-    albumMock.save.mockResolvedValue(albumStub.oneAssetValidThumbnail);
+    albumMock.update.mockResolvedValue(albumStub.oneAssetValidThumbnail);
     assetMock.getFirstAssetForAlbumId.mockResolvedValue(albumStub.oneAssetInvalidThumbnail.assets[0]);
 
-    const result = await sut.getAllAlbums(authStub.admin, {});
+    const result = await sut.getAll(authStub.admin, {});
 
     expect(result).toHaveLength(1);
     expect(albumMock.getInvalidThumbnail).toHaveBeenCalledTimes(1);
-    expect(albumMock.save).toHaveBeenCalledTimes(1);
+    expect(albumMock.update).toHaveBeenCalledTimes(1);
   });
 
   it('removes the thumbnail for an empty album', async () => {
@@ -102,13 +106,93 @@ describe(AlbumService.name, () => {
       { albumId: albumStub.emptyWithInvalidThumbnail.id, assetCount: 1 },
     ]);
     albumMock.getInvalidThumbnail.mockResolvedValue([albumStub.emptyWithInvalidThumbnail.id]);
-    albumMock.save.mockResolvedValue(albumStub.emptyWithValidThumbnail);
+    albumMock.update.mockResolvedValue(albumStub.emptyWithValidThumbnail);
     assetMock.getFirstAssetForAlbumId.mockResolvedValue(null);
 
-    const result = await sut.getAllAlbums(authStub.admin, {});
+    const result = await sut.getAll(authStub.admin, {});
 
     expect(result).toHaveLength(1);
     expect(albumMock.getInvalidThumbnail).toHaveBeenCalledTimes(1);
-    expect(albumMock.save).toHaveBeenCalledTimes(1);
+    expect(albumMock.update).toHaveBeenCalledTimes(1);
+  });
+
+  describe('create', () => {
+    it('creates album', async () => {
+      albumMock.create.mockResolvedValue(albumStub.empty);
+
+      await expect(sut.create(authStub.admin, { albumName: 'Empty album' })).resolves.toEqual({
+        albumName: 'Empty album',
+        albumThumbnailAssetId: null,
+        assetCount: 0,
+        assets: [],
+        createdAt: expect.anything(),
+        id: 'album-1',
+        owner: {
+          createdAt: '2021-01-01',
+          email: 'admin@test.com',
+          firstName: 'admin_first_name',
+          id: 'admin_id',
+          isAdmin: true,
+          lastName: 'admin_last_name',
+          oauthId: '',
+          profileImagePath: '',
+          shouldChangePassword: false,
+          storageLabel: 'admin',
+          updatedAt: '2021-01-01',
+        },
+        ownerId: 'admin_id',
+        shared: false,
+        sharedUsers: [],
+        updatedAt: expect.anything(),
+      });
+
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.SEARCH_INDEX_ALBUM,
+        data: { ids: [albumStub.empty.id] },
+      });
+    });
+  });
+
+  describe('update', () => {
+    it('should prevent updating an album that does not exist', async () => {
+      albumMock.getByIds.mockResolvedValue([]);
+
+      await expect(
+        sut.update(authStub.user1, 'invalid-id', {
+          albumName: 'new album name',
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(albumMock.update).not.toHaveBeenCalled();
+    });
+
+    it('should prevent updating a not owned album (shared with auth user)', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.sharedWithAdmin]);
+
+      await expect(
+        sut.update(authStub.admin, albumStub.sharedWithAdmin.id, {
+          albumName: 'new album name',
+        }),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it('should all the owner to update the album', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.oneAsset]);
+      albumMock.update.mockResolvedValue(albumStub.oneAsset);
+
+      await sut.update(authStub.admin, albumStub.oneAsset.id, {
+        albumName: 'new album name',
+      });
+
+      expect(albumMock.update).toHaveBeenCalledTimes(1);
+      expect(albumMock.update).toHaveBeenCalledWith({
+        id: 'album-4',
+        albumName: 'new album name',
+      });
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.SEARCH_INDEX_ALBUM,
+        data: { ids: [albumStub.oneAsset.id] },
+      });
+    });
   });
 });

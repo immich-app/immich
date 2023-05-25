@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/asset.service.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/asset_grid_data_structure.dart';
@@ -10,6 +11,7 @@ import 'package:immich_mobile/modules/settings/providers/app_settings.provider.d
 import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
+import 'package:immich_mobile/shared/services/user.service.dart';
 import 'package:immich_mobile/utils/db.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
@@ -23,6 +25,7 @@ class AssetsState {}
 class AssetNotifier extends StateNotifier<AssetsState> {
   final AssetService _assetService;
   final AlbumService _albumService;
+  final UserService _userService;
   final SyncService _syncService;
   final Isar _db;
   final log = Logger('AssetNotifier');
@@ -32,6 +35,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
   AssetNotifier(
     this._assetService,
     this._albumService,
+    this._userService,
     this._syncService,
     this._db,
   ) : super(AssetsState());
@@ -51,6 +55,12 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       final bool newRemote = await _assetService.refreshRemoteAssets();
       final bool newLocal = await _albumService.refreshDeviceAlbums();
       debugPrint("newRemote: $newRemote, newLocal: $newLocal");
+      await _userService.refreshUsers();
+      final List<User> partners =
+          await _db.users.filter().isPartnerSharedWithEqualTo(true).findAll();
+      for (User u in partners) {
+        await _assetService.refreshRemoteAssets(u);
+      }
       log.info("Load assets: ${stopwatch.elapsedMilliseconds}ms");
     } finally {
       _getAllAssetInProgress = false;
@@ -147,6 +157,7 @@ final assetProvider = StateNotifierProvider<AssetNotifier, AssetsState>((ref) {
   return AssetNotifier(
     ref.watch(assetServiceProvider),
     ref.watch(albumServiceProvider),
+    ref.watch(userServiceProvider),
     ref.watch(syncServiceProvider),
     ref.watch(dbProvider),
   );
@@ -161,12 +172,14 @@ final assetDetailProvider =
   }
 });
 
-final assetsProvider = StreamProvider.autoDispose<RenderList>((ref) async* {
+final assetsProvider =
+    StreamProvider.family<RenderList, int?>((ref, userId) async* {
+  if (userId == null) return;
   final query = ref
       .watch(dbProvider)
       .assets
       .filter()
-      .ownerIdEqualTo(Store.get(StoreKey.currentUser).isarId)
+      .ownerIdEqualTo(userId)
       .isArchivedEqualTo(false)
       .sortByFileCreatedAtDesc();
   final settings = ref.watch(appSettingsServiceProvider);
@@ -179,14 +192,15 @@ final assetsProvider = StreamProvider.autoDispose<RenderList>((ref) async* {
 });
 
 final remoteAssetsProvider =
-    StreamProvider.autoDispose<RenderList>((ref) async* {
+    StreamProvider.family<RenderList, int?>((ref, userId) async* {
+  if (userId == null) return;
   final query = ref
       .watch(dbProvider)
       .assets
       .where()
       .remoteIdIsNotNull()
       .filter()
-      .ownerIdEqualTo(Store.get(StoreKey.currentUser).isarId)
+      .ownerIdEqualTo(userId)
       .sortByFileCreatedAt();
   final settings = ref.watch(appSettingsServiceProvider);
   final groupBy =

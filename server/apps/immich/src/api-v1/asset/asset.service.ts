@@ -63,6 +63,12 @@ import { mapSharedLink, SharedLinkResponseDto } from '@app/domain';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { AddAssetsDto } from '../album/dto/add-assets.dto';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
+import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
+import {
+  AssetUploadAction,
+  AssetRejectReason,
+  AssetBulkUploadCheckResponseDto,
+} from './response-dto/asset-check-response.dto';
 
 const fileInfo = promisify(stat);
 
@@ -100,6 +106,7 @@ export class AssetService {
     dto: CreateAssetDto,
     file: UploadFile,
     livePhotoFile?: UploadFile,
+    sidecarFile?: UploadFile,
   ): Promise<AssetFileUploadResponseDto> {
     if (livePhotoFile) {
       livePhotoFile = {
@@ -116,19 +123,20 @@ export class AssetService {
         livePhotoAsset = await this.assetCore.create(authUser, livePhotoDto, livePhotoFile);
       }
 
-      const asset = await this.assetCore.create(authUser, dto, file, livePhotoAsset?.id);
+      const asset = await this.assetCore.create(authUser, dto, file, livePhotoAsset?.id, sidecarFile);
 
       return { id: asset.id, duplicate: false };
     } catch (error: any) {
       // clean up files
       await this.jobRepository.queue({
         name: JobName.DELETE_FILES,
-        data: { files: [file.originalPath, livePhotoFile?.originalPath] },
+        data: { files: [file.originalPath, livePhotoFile?.originalPath, sidecarFile?.originalPath] },
       });
 
       // handle duplicates with a success response
       if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_userid_checksum') {
-        const duplicate = await this.getAssetByChecksum(authUser.id, file.checksum);
+        const checksums = [file.checksum, livePhotoFile?.checksum].filter((checksum): checksum is Buffer => !!checksum);
+        const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, checksums);
         return { id: duplicate.id, duplicate: true };
       }
 
@@ -142,7 +150,10 @@ export class AssetService {
   }
 
   public async getAllAssets(authUser: AuthUserDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
-    const assets = await this._assetRepository.getAllByUserId(authUser.id, dto);
+    if (dto.userId && dto.userId !== authUser.id) {
+      await this.checkUserAccess(authUser, dto.userId);
+    }
+    const assets = await this._assetRepository.getAllByUserId(dto.userId || authUser.id, dto);
 
     return assets.map((asset) => mapAsset(asset));
   }
@@ -359,7 +370,13 @@ export class AssetService {
         await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [id] } });
 
         result.push({ id, status: DeleteAssetStatusEnum.SUCCESS });
-        deleteQueue.push(asset.originalPath, asset.webpPath, asset.resizePath, asset.encodedVideoPath);
+        deleteQueue.push(
+          asset.originalPath,
+          asset.webpPath,
+          asset.resizePath,
+          asset.encodedVideoPath,
+          asset.sidecarPath,
+        );
 
         // TODO refactor this to use cascades
         if (asset.livePhotoVideoId && !ids.includes(asset.livePhotoVideoId)) {
@@ -463,7 +480,40 @@ export class AssetService {
     authUser: AuthUserDto,
     checkExistingAssetsDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
-    return this._assetRepository.getExistingAssets(authUser.id, checkExistingAssetsDto);
+    return {
+      existingIds: await this._assetRepository.getExistingAssets(authUser.id, checkExistingAssetsDto),
+    };
+  }
+
+  async bulkUploadCheck(authUser: AuthUserDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
+    const checksums: Buffer[] = dto.assets.map((asset) => Buffer.from(asset.checksum, 'hex'));
+    const results = await this._assetRepository.getAssetsByChecksums(authUser.id, checksums);
+    const resultsMap: Record<string, string> = {};
+
+    for (const { id, checksum } of results) {
+      resultsMap[checksum.toString('hex')] = id;
+    }
+
+    return {
+      results: dto.assets.map(({ id, checksum }) => {
+        const duplicate = resultsMap[checksum];
+        if (duplicate) {
+          return {
+            id,
+            assetId: duplicate,
+            action: AssetUploadAction.REJECT,
+            reason: AssetRejectReason.DUPLICATE,
+          };
+        }
+
+        // TODO mime-check
+
+        return {
+          id,
+          action: AssetUploadAction.ACCEPT,
+        };
+      }),
+    };
   }
 
   async getAssetCountByTimeBucket(
@@ -480,10 +530,6 @@ export class AssetService {
     );
 
     return mapAssetCountByTimeBucket(result);
-  }
-
-  getAssetByChecksum(userId: string, checksum: Buffer) {
-    return this._assetRepository.getAssetByChecksum(userId, checksum);
   }
 
   getAssetCountByUserId(authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {

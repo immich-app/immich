@@ -5,10 +5,11 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/album/ui/album_thumbnail_card.dart';
-import 'package:immich_mobile/modules/album/ui/sharing_sliver_appbar.dart';
+import 'package:immich_mobile/modules/partner/providers/partner.provider.dart';
+import 'package:immich_mobile/modules/partner/ui/partner_list.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/album.dart';
-import 'package:immich_mobile/shared/models/store.dart' as store;
+import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
 
 class SharingPage extends HookConsumerWidget {
@@ -17,7 +18,8 @@ class SharingPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final List<Album> sharedAlbums = ref.watch(sharedAlbumProvider);
-    final userId = store.Store.get(store.StoreKey.currentUser).id;
+    final userId = ref.watch(currentUserProvider)?.id;
+    final partner = ref.watch(partnerSharedWithProvider);
     var isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     useEffect(
@@ -63,8 +65,7 @@ class SharingPage extends HookConsumerWidget {
             final isOwner = album.ownerId == userId;
 
             return ListTile(
-              contentPadding:
-                  const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12),
               leading: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: ImmichImage(
@@ -93,7 +94,8 @@ class SharingPage extends HookConsumerWidget {
                     )
                   : album.ownerName != null
                       ? Text(
-                          'album_thumbnail_shared_by'.tr(args: [album.ownerName!]),
+                          'album_thumbnail_shared_by'
+                              .tr(args: [album.ownerName!]),
                           style: const TextStyle(
                             fontSize: 12.0,
                           ),
@@ -106,6 +108,75 @@ class SharingPage extends HookConsumerWidget {
             );
           },
           childCount: sharedAlbums.length,
+        ),
+      );
+    }
+
+    buildTopBottons() {
+      return Padding(
+        padding: const EdgeInsets.only(
+          left: 12.0,
+          right: 12.0,
+          bottom: 12.0,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  AutoRouter.of(context)
+                      .push(CreateAlbumRoute(isSharedAlbum: true));
+                },
+                icon: const Icon(
+                  Icons.photo_album_outlined,
+                  size: 20,
+                ),
+                label: const Text(
+                  "sharing_silver_appbar_create_shared_album",
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                  ),
+                ).tr(),
+              ),
+            ),
+            const SizedBox(width: 12.0),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () =>
+                    AutoRouter.of(context).push(const PartnerRoute()),
+                icon: const Icon(
+                  Icons.swap_horizontal_circle_outlined,
+                  size: 20,
+                ),
+                label: const Text(
+                  "sharing_silver_appbar_share_partner",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                  ),
+                  maxLines: 1,
+                ).tr(),
+              ),
+            )
+          ],
+        ),
+      );
+    }
+
+    AppBar buildAppBar() {
+      return AppBar(
+        centerTitle: true,
+        automaticallyImplyLeading: false,
+        title: const Text(
+          'IMMICH',
+          style: TextStyle(
+            fontFamily: 'SnowburstOne',
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
         ),
       );
     }
@@ -123,7 +194,6 @@ class SharingPage extends HookConsumerWidget {
                 width: 0.5,
               ),
             ),
-            // color: Colors.transparent,
             child: Padding(
               padding: const EdgeInsets.all(18.0),
               child: Column(
@@ -160,11 +230,27 @@ class SharingPage extends HookConsumerWidget {
     }
 
     return Scaffold(
+      appBar: buildAppBar(),
       body: CustomScrollView(
         slivers: [
-          const SharingSliverAppBar(),
+          SliverToBoxAdapter(child: buildTopBottons()),
+          if (partner.isNotEmpty)
+            SliverPadding(
+              padding: const EdgeInsets.only(left: 12, right: 12, bottom: 4),
+              sliver: SliverToBoxAdapter(
+                child: const Text(
+                  "partner_page_title",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ).tr(),
+              ),
+            ),
+          if (partner.isNotEmpty) PartnerList(partner: partner),
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            padding: EdgeInsets.only(
+              left: 12,
+              right: 12,
+              top: partner.isEmpty ? 0 : 16,
+            ),
             sliver: SliverToBoxAdapter(
               child: const Text(
                 "sharing_page_album",

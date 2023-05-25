@@ -22,6 +22,13 @@ void main() {
       // TODO
     });
 
+    // Checks if assets exist by checksums
+    //
+    //Future<AssetBulkUploadCheckResponseDto> bulkUploadCheck(AssetBulkUploadCheckDto assetBulkUploadCheckDto) async
+    test('test bulkUploadCheck', () async {
+      // TODO
+    });
+
     // Check duplicated asset before uploading - for Web upload used
     //
     //Future<CheckDuplicateAssetResponseDto> checkDuplicateAsset(CheckDuplicateAssetDto checkDuplicateAssetDto, { String key }) async
@@ -65,7 +72,7 @@ void main() {
 
     // Get all AssetEntity belong to the user
     //
-    //Future<List<AssetResponseDto>> getAllAssets({ bool isFavorite, bool isArchived, num skip, String ifNoneMatch }) async
+    //Future<List<AssetResponseDto>> getAllAssets({ String userId, bool isFavorite, bool isArchived, num skip, String ifNoneMatch }) async
     test('test getAllAssets', () async {
       // TODO
     });
@@ -117,7 +124,7 @@ void main() {
       // TODO
     });
 
-    //Future<List<MapMarkerResponseDto>> getMapMarkers({ bool isFavorite }) async
+    //Future<List<MapMarkerResponseDto>> getMapMarkers({ bool isFavorite, DateTime fileCreatedAfter, DateTime fileCreatedBefore }) async
     test('test getMapMarkers', () async {
       // TODO
     });
@@ -151,7 +158,7 @@ void main() {
       // TODO
     });
 
-    //Future<AssetFileUploadResponseDto> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { String key, MultipartFile livePhotoData, bool isArchived, bool isVisible, String duration }) async
+    //Future<AssetFileUploadResponseDto> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { String key, MultipartFile livePhotoData, MultipartFile sidecarData, bool isArchived, bool isVisible, String duration }) async
     test('test uploadFile', () async {
       // TODO
     });

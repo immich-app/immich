@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ValidateUUID } from 'apps/immich/src/decorators/validate-uuid.decorator';
+import { ValidateUUID } from '../../../../../apps/immich/src/decorators/validate-uuid.decorator';
 import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateAlbumDto {

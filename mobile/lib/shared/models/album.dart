@@ -87,8 +87,8 @@ class Album {
         remoteId == other.remoteId &&
         localId == other.localId &&
         name == other.name &&
-        createdAt == other.createdAt &&
-        modifiedAt == other.modifiedAt &&
+        createdAt.isAtSameMomentAs(other.createdAt) &&
+        modifiedAt.isAtSameMomentAs(other.modifiedAt) &&
         shared == other.shared &&
         owner.value == other.owner.value &&
         thumbnail.value == other.thumbnail.value &&

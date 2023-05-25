@@ -14,10 +14,14 @@ export class StorageCore {
     folder: StorageFolder.ENCODED_VIDEO | StorageFolder.UPLOAD | StorageFolder.PROFILE | StorageFolder.THUMBNAILS,
     userId: string,
   ) {
-    return join(APP_MEDIA_LOCATION, folder, userId);
+    return join(this.getBaseFolder(folder), userId);
   }
 
   getLibraryFolder(user: { storageLabel: string | null; id: string }) {
-    return join(APP_MEDIA_LOCATION, StorageFolder.LIBRARY, user.storageLabel || user.id);
+    return join(this.getBaseFolder(StorageFolder.LIBRARY), user.storageLabel || user.id);
+  }
+
+  getBaseFolder(folder: StorageFolder) {
+    return join(APP_MEDIA_LOCATION, folder);
   }
 }
