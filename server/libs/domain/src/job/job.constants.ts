@@ -144,6 +144,7 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.SIDECAR_SYNC]: QueueName.SIDECAR,
 };
 
+// max concurrency for each queue (total concurrency across all jobs)
 export const QUEUE_TO_CONCURRENCY: Record<QueueName, number> = {
   [QueueName.BACKGROUND_TASK]: 5,
   [QueueName.CLIP_ENCODING]: 2,
