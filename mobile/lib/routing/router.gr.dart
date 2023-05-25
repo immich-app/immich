@@ -256,6 +256,22 @@ class _$AppRouter extends RootStackRouter {
         child: const ArchivePage(),
       );
     },
+    PartnerRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const PartnerPage(),
+      );
+    },
+    PartnerDetailRoute.name: (routeData) {
+      final args = routeData.argsAs<PartnerDetailRouteArgs>();
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: PartnerDetailPage(
+          key: args.key,
+          partner: args.partner,
+        ),
+      );
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
         routeData: routeData,
@@ -518,6 +534,22 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           ArchiveRoute.name,
           path: '/archive-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          PartnerRoute.name,
+          path: '/partner-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          PartnerDetailRoute.name,
+          path: '/partner-detail-page',
           guards: [
             authGuard,
             duplicateGuard,
@@ -1111,6 +1143,52 @@ class ArchiveRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'ArchiveRoute';
+}
+
+/// generated route for
+/// [PartnerPage]
+class PartnerRoute extends PageRouteInfo<void> {
+  const PartnerRoute()
+      : super(
+          PartnerRoute.name,
+          path: '/partner-page',
+        );
+
+  static const String name = 'PartnerRoute';
+}
+
+/// generated route for
+/// [PartnerDetailPage]
+class PartnerDetailRoute extends PageRouteInfo<PartnerDetailRouteArgs> {
+  PartnerDetailRoute({
+    Key? key,
+    required User partner,
+  }) : super(
+          PartnerDetailRoute.name,
+          path: '/partner-detail-page',
+          args: PartnerDetailRouteArgs(
+            key: key,
+            partner: partner,
+          ),
+        );
+
+  static const String name = 'PartnerDetailRoute';
+}
+
+class PartnerDetailRouteArgs {
+  const PartnerDetailRouteArgs({
+    this.key,
+    required this.partner,
+  });
+
+  final Key? key;
+
+  final User partner;
+
+  @override
+  String toString() {
+    return 'PartnerDetailRouteArgs{key: $key, partner: $partner}';
+  }
 }
 
 /// generated route for

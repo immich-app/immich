@@ -6,6 +6,8 @@ import 'package:immich_mobile/modules/album/views/album_viewer_page.dart';
 import 'package:immich_mobile/modules/album/views/asset_selection_page.dart';
 import 'package:immich_mobile/modules/album/views/create_album_page.dart';
 import 'package:immich_mobile/modules/album/views/library_page.dart';
+import 'package:immich_mobile/modules/partner/views/partner_detail_page.dart';
+import 'package:immich_mobile/modules/partner/views/partner_page.dart';
 import 'package:immich_mobile/modules/album/views/select_additional_user_for_sharing_page.dart';
 import 'package:immich_mobile/modules/album/views/select_user_for_sharing_page.dart';
 import 'package:immich_mobile/modules/album/views/sharing_page.dart';
@@ -35,6 +37,7 @@ import 'package:immich_mobile/routing/duplicate_guard.dart';
 import 'package:immich_mobile/routing/gallery_permission_guard.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/models/logger_message.model.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
@@ -136,6 +139,8 @@ part 'router.gr.dart';
         DuplicateGuard,
       ],
     ),
+    AutoRoute(page: PartnerPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(page: PartnerDetailPage, guards: [AuthGuard, DuplicateGuard])
   ],
 )
 class AppRouter extends _$AppRouter {

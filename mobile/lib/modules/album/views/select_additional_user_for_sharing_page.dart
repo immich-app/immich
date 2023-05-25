@@ -17,7 +17,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<List<User>> suggestedShareUsers =
-        ref.watch(suggestedSharedUsersProvider);
+        ref.watch(otherUsersProvider);
     final sharedUsersList = useState<Set<User>>({});
 
     addNewUsersHandler() {

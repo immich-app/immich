@@ -20,8 +20,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sharedUsersList = useState<Set<User>>({});
-    AsyncValue<List<User>> suggestedShareUsers =
-        ref.watch(suggestedSharedUsersProvider);
+    final suggestedShareUsers = ref.watch(otherUsersProvider);
 
     createSharedAlbum() async {
       var newAlbum =

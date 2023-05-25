@@ -20,6 +20,7 @@ import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
+import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 import 'package:immich_mobile/shared/services/share.service.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
@@ -38,6 +39,7 @@ class HomePage extends HookConsumerWidget {
     final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
     final sharedAlbums = ref.watch(sharedAlbumProvider);
     final albumService = ref.watch(albumServiceProvider);
+    final currentUser = ref.watch(currentUserProvider);
 
     final tipOneOpacity = useState(0.0);
     final refreshCount = useState(0);
@@ -300,7 +302,7 @@ class HomePage extends HookConsumerWidget {
         bottom: false,
         child: Stack(
           children: [
-            ref.watch(assetsProvider).when(
+            ref.watch(assetsProvider(currentUser?.isarId)).when(
                   data: (data) => data.isEmpty
                       ? buildLoadingIndicator()
                       : ImmichAssetGrid(

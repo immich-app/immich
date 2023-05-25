@@ -1,16 +1,19 @@
-import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:immich_mobile/modules/partner/services/partner.service.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
+import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/files_helper.dart';
 import 'package:isar/isar.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 final userServiceProvider = Provider(
@@ -18,6 +21,7 @@ final userServiceProvider = Provider(
     ref.watch(apiServiceProvider),
     ref.watch(dbProvider),
     ref.watch(syncServiceProvider),
+    ref.watch(partnerServiceProvider),
   ),
 );
 
@@ -25,15 +29,22 @@ class UserService {
   final ApiService _apiService;
   final Isar _db;
   final SyncService _syncService;
+  final PartnerService _partnerService;
+  final Logger _log = Logger("UserService");
 
-  UserService(this._apiService, this._db, this._syncService);
+  UserService(
+    this._apiService,
+    this._db,
+    this._syncService,
+    this._partnerService,
+  );
 
   Future<List<User>?> _getAllUsers({required bool isAll}) async {
     try {
       final dto = await _apiService.userApi.getAllUsers(isAll);
       return dto?.map(User.fromDto).toList();
     } catch (e) {
-      debugPrint("Error [getAllUsersInfo]  ${e.toString()}");
+      _log.warning("Failed get all users:\n$e");
       return null;
     }
   }
@@ -62,16 +73,45 @@ class UserService {
         ),
       );
     } catch (e) {
-      debugPrint("Error [uploadProfileImage] ${e.toString()}");
+      _log.warning("Failed to upload profile image:\n$e");
       return null;
     }
   }
 
   Future<bool> refreshUsers() async {
     final List<User>? users = await _getAllUsers(isAll: true);
-    if (users == null) {
+    final List<User>? sharedBy =
+        await _partnerService.getPartners(PartnerDirection.sharedBy);
+    final List<User>? sharedWith =
+        await _partnerService.getPartners(PartnerDirection.sharedWith);
+
+    if (users == null || sharedBy == null || sharedWith == null) {
+      _log.warning("Failed to refresh users");
       return false;
     }
+
+    users.sortBy((u) => u.id);
+    sharedBy.sortBy((u) => u.id);
+    sharedWith.sortBy((u) => u.id);
+
+    diffSortedListsSync(
+      users,
+      sharedBy,
+      compare: (User a, User b) => a.id.compareTo(b.id),
+      both: (User a, User b) => a.isPartnerSharedBy = true,
+      onlyFirst: (_) {},
+      onlySecond: (_) {},
+    );
+
+    diffSortedListsSync(
+      users,
+      sharedWith,
+      compare: (User a, User b) => a.id.compareTo(b.id),
+      both: (User a, User b) => a.isPartnerSharedWith = true,
+      onlyFirst: (_) {},
+      onlySecond: (_) {},
+    );
+
     return _syncService.syncUsersFromServer(users);
   }
 }

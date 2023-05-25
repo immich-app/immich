@@ -20,7 +20,7 @@
 
 	onMount(async () => {
 		try {
-			const { data: assets } = await api.assetApi.getAllAssets(true, undefined);
+			const { data: assets } = await api.assetApi.getAllAssets(undefined, true, undefined);
 			favorites = assets;
 		} catch {
 			handleError(Error, 'Unable to load favorites');

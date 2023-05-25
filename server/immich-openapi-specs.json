@@ -2854,6 +2854,15 @@
         "description": "Get all AssetEntity belong to the user",
         "parameters": [
           {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "isFavorite",
             "required": false,
             "in": "query",

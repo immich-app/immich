@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/etag.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
@@ -36,37 +38,47 @@ class AssetService {
 
   /// Checks the server for updated assets and updates the local database if
   /// required. Returns `true` if there were any changes.
-  Future<bool> refreshRemoteAssets() async {
+  Future<bool> refreshRemoteAssets([User? user]) async {
+    user ??= Store.get(StoreKey.currentUser);
     final Stopwatch sw = Stopwatch()..start();
     final int numOwnedRemoteAssets = await _db.assets
         .where()
         .remoteIdIsNotNull()
         .filter()
-        .ownerIdEqualTo(Store.get(StoreKey.currentUser).isarId)
+        .ownerIdEqualTo(user!.isarId)
         .count();
     final bool changes = await _syncService.syncRemoteAssetsToDb(
-      () async => (await _getRemoteAssets(hasCache: numOwnedRemoteAssets > 0))
-          ?.map(Asset.remote)
-          .toList(),
+      user,
+      () async => (await _getRemoteAssets(
+        hasCache: numOwnedRemoteAssets > 0,
+        user: user!,
+      )),
     );
     debugPrint("refreshRemoteAssets full took ${sw.elapsedMilliseconds}ms");
     return changes;
   }
 
   /// Returns `null` if the server state did not change, else list of assets
-  Future<List<AssetResponseDto>?> _getRemoteAssets({
+  Future<List<Asset>?> _getRemoteAssets({
     required bool hasCache,
+    required User user,
   }) async {
     try {
-      final etag = hasCache ? Store.tryGet(StoreKey.assetETag) : null;
+      final etag = hasCache ? _db.eTags.getByIdSync(user.id)?.value : null;
       final (List<AssetResponseDto>? assets, String? newETag) =
-          await _apiService.assetApi.getAllAssetsWithETag(eTag: etag);
+          await _apiService.assetApi
+              .getAllAssetsWithETag(eTag: etag, userId: user.id);
       if (assets == null) {
         return null;
+      } else if (assets.isNotEmpty && assets.first.ownerId != user.id) {
+        log.warning("Make sure that server and app versions match!"
+            " The server returned assets for user ${assets.first.ownerId}"
+            " while requesting assets of user ${user.id}");
+        return null;
       } else if (newETag != etag) {
-        Store.put(StoreKey.assetETag, newETag);
+        _db.writeTxn(() => _db.eTags.put(ETag(id: user.id, value: newETag)));
       }
-      return assets;
+      return assets.map(Asset.remote).toList();
     } catch (e, stack) {
       log.severe('Error while getting remote assets', e, stack);
       return null;

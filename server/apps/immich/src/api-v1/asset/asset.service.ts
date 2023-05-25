@@ -150,7 +150,10 @@ export class AssetService {
   }
 
   public async getAllAssets(authUser: AuthUserDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
-    const assets = await this._assetRepository.getAllByUserId(authUser.id, dto);
+    if (dto.userId && dto.userId !== authUser.id) {
+      await this.checkUserAccess(authUser, dto.userId);
+    }
+    const assets = await this._assetRepository.getAllByUserId(dto.userId || authUser.id, dto);
 
     return assets.map((asset) => mapAsset(asset));
   }

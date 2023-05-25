@@ -52,6 +52,14 @@ void main() {
 
   group('Test SyncService grouped', () {
     late final Isar db;
+    final owner = User(
+      id: "1",
+      updatedAt: DateTime.now(),
+      email: "a@b.c",
+      firstName: "first",
+      lastName: "last",
+      isAdmin: false,
+    );
     setUpAll(() async {
       WidgetsFlutterBinding.ensureInitialized();
       await Isar.initializeIsarCore(download: true);
@@ -59,17 +67,7 @@ void main() {
       ImmichLogger();
       db.writeTxnSync(() => db.clearSync());
       Store.init(db);
-      await Store.put(
-        StoreKey.currentUser,
-        User(
-          id: "1",
-          updatedAt: DateTime.now(),
-          email: "a@b.c",
-          firstName: "first",
-          lastName: "last",
-          isAdmin: false,
-        ),
-      );
+      await Store.put(StoreKey.currentUser, owner);
     });
     final List<Asset> initialAssets = [
       makeAsset(localId: "1", remoteId: "0-1", deviceId: 0),
@@ -92,7 +90,7 @@ void main() {
         makeAsset(localId: "1", remoteId: "1-1"),
       ];
       expect(db.assets.countSync(), 5);
-      final bool c1 = await s.syncRemoteAssetsToDb(() => remoteAssets);
+      final bool c1 = await s.syncRemoteAssetsToDb(owner, () => remoteAssets);
       expect(c1, false);
       expect(db.assets.countSync(), 5);
     });
@@ -108,7 +106,7 @@ void main() {
         makeAsset(localId: "1", remoteId: "3-1", deviceId: 3),
       ];
       expect(db.assets.countSync(), 5);
-      final bool c1 = await s.syncRemoteAssetsToDb(() => remoteAssets);
+      final bool c1 = await s.syncRemoteAssetsToDb(owner, () => remoteAssets);
       expect(c1, true);
       expect(db.assets.countSync(), 7);
     });
@@ -124,19 +122,19 @@ void main() {
         makeAsset(localId: "1", remoteId: "2-1d", deviceId: 2),
       ];
       expect(db.assets.countSync(), 5);
-      final bool c1 = await s.syncRemoteAssetsToDb(() => remoteAssets);
+      final bool c1 = await s.syncRemoteAssetsToDb(owner, () => remoteAssets);
       expect(c1, true);
       expect(db.assets.countSync(), 8);
-      final bool c2 = await s.syncRemoteAssetsToDb(() => remoteAssets);
+      final bool c2 = await s.syncRemoteAssetsToDb(owner, () => remoteAssets);
       expect(c2, false);
       expect(db.assets.countSync(), 8);
       remoteAssets.removeAt(4);
-      final bool c3 = await s.syncRemoteAssetsToDb(() => remoteAssets);
+      final bool c3 = await s.syncRemoteAssetsToDb(owner, () => remoteAssets);
       expect(c3, true);
       expect(db.assets.countSync(), 7);
       remoteAssets.add(makeAsset(localId: "1", remoteId: "2-1e", deviceId: 2));
       remoteAssets.add(makeAsset(localId: "2", remoteId: "2-2", deviceId: 2));
-      final bool c4 = await s.syncRemoteAssetsToDb(() => remoteAssets);
+      final bool c4 = await s.syncRemoteAssetsToDb(owner, () => remoteAssets);
       expect(c4, true);
       expect(db.assets.countSync(), 9);
     });

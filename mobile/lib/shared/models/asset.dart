@@ -179,9 +179,9 @@ class Asset {
         localId == other.localId &&
         deviceId == other.deviceId &&
         ownerId == other.ownerId &&
-        fileCreatedAt == other.fileCreatedAt &&
-        fileModifiedAt == other.fileModifiedAt &&
-        updatedAt == other.updatedAt &&
+        fileCreatedAt.isAtSameMomentAs(other.fileCreatedAt) &&
+        fileModifiedAt.isAtSameMomentAs(other.fileModifiedAt) &&
+        updatedAt.isAtSameMomentAs(other.updatedAt) &&
         durationInSeconds == other.durationInSeconds &&
         type == other.type &&
         width == other.width &&
