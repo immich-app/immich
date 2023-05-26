@@ -96,16 +96,10 @@ export class JobService {
     await this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } });
   }
 
+  /**
+   * Queue follow up jobs
+   */
   async onDone(item: JobItem) {
-    switch (item.name) {
-      case JobName.CLASSIFY_IMAGE:
-      case JobName.DETECT_OBJECTS:
-      case JobName.ENCODE_CLIP:
-      case JobName.METADATA_EXTRACTION:
-      case JobName.RECOGNIZE_FACES:
-        await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: [item.data.id] } });
-    }
-
     switch (item.name) {
       case JobName.SIDECAR_SYNC:
       case JobName.SIDECAR_DISCOVERY:
@@ -129,6 +123,17 @@ export class JobService {
         }
         break;
       }
+    }
+
+    // In addition to the above jobs, all of these should queue `SEARCH_INDEX_ASSET`
+    switch (item.name) {
+      case JobName.CLASSIFY_IMAGE:
+      case JobName.DETECT_OBJECTS:
+      case JobName.ENCODE_CLIP:
+      case JobName.RECOGNIZE_FACES:
+      case JobName.METADATA_EXTRACTION:
+        await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: [item.data.id] } });
+        break;
     }
   }
 }
