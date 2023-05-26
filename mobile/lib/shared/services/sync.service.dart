@@ -1,13 +1,21 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
+import 'package:crypto/crypto.dart';
+import 'package:cryptography/cryptography.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/album.dart';
+import 'package:immich_mobile/shared/models/android_device_asset.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
+import 'package:immich_mobile/shared/services/hash.service.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/utils/builtin_extensions.dart';
 import 'package:immich_mobile/utils/diff.dart';
@@ -16,15 +24,17 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-final syncServiceProvider =
-    Provider((ref) => SyncService(ref.watch(dbProvider)));
+final syncServiceProvider = Provider(
+  (ref) => SyncService(ref.watch(dbProvider), ref.watch(hashServiceProvider)),
+);
 
 class SyncService {
   final Isar _db;
+  final HashService _hashService;
   final AsyncMutex _lock = AsyncMutex();
   final Logger _log = Logger('SyncService');
 
-  SyncService(this._db);
+  SyncService(this._db, this._hashService);
 
   // public methods:
 
@@ -452,6 +462,7 @@ class SyncService {
         .findAll();
     final List<Asset> onDevice =
         await ape.getAssets(excludedAssets: excludedAssets);
+    await _hashService.hashAssets(onDevice);
     onDevice.sort(Asset.compareByLocalId);
     final (toAdd, toUpdate, toDelete) =
         _diffAssets(onDevice, inDb, compare: Asset.compareByLocalId);
@@ -522,6 +533,7 @@ class SyncService {
       return false;
     }
     album.modifiedAt = ape.lastModified ?? DateTime.now();
+    await _hashService.hashAssets(newAssets);
     final (existingInDb, updated) = await _linkWithExistingFromDb(newAssets);
     try {
       await _db.writeTxn(() async {
@@ -548,6 +560,7 @@ class SyncService {
     _log.info("Syncing a new local album to DB: ${ape.name}");
     final Album a = Album.local(ape);
     final assets = await ape.getAssets(excludedAssets: excludedAssets);
+    await _hashService.hashAssets(assets);
     final (existingInDb, updated) = await _linkWithExistingFromDb(assets);
     _log.info(
       "${existingInDb.length} assets already existed in DB, to upsert ${updated.length}",

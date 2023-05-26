@@ -132,6 +132,19 @@ class BackgroundService {
     }
   }
 
+  Future<Uint8List?> digestBytes(Uint8List data) {
+    return _foregroundChannel.invokeMethod<Uint8List>("digestBytes", [data]);
+  }
+
+  Future<Uint8List?> digestFile(String path) {
+    return _foregroundChannel.invokeMethod<Uint8List>("digestFile", [path]);
+  }
+
+  Future<Uint8List?> digestSpeed(int size, int rounds) {
+    return _foregroundChannel
+        .invokeMethod<Uint8List>("digestSpeed", [size, rounds]);
+  }
+
   /// Updates the notification shown by the background service
   Future<bool?> _updateNotification({
     String? title,

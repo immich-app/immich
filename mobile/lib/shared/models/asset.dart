@@ -53,6 +53,7 @@ class Asset {
     if (local.latitude != null) {
       exifInfo = ExifInfo(lat: local.latitude, long: local.longitude);
     }
+    _local = local;
   }
 
   Asset({

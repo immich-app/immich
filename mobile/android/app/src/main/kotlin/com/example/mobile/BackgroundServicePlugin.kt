@@ -1,10 +1,13 @@
 package app.alextran.immich
 
 import android.content.Context
+import android.util.Log
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import java.security.MessageDigest
+import java.io.File
 
 /**
  * Android plugin for Dart `BackgroundService`
@@ -16,6 +19,7 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
     private var methodChannel: MethodChannel? = null
     private var context: Context? = null
+    private val sha1: MessageDigest = MessageDigest.getInstance("SHA-1")
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         onAttachedToEngine(binding.applicationContext, binding.binaryMessenger)
@@ -69,6 +73,35 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             }
             "isIgnoringBatteryOptimizations" -> {
                 result.success(BackupWorker.isIgnoringBatteryOptimizations(ctx))
+            }
+            "digestBytes" -> {
+                val args = call.arguments<ArrayList<*>>()!!
+                val data = args.get(0) as ByteArray
+                val hash = sha1.digest(data)
+                result.success(hash)
+            }
+            "digestSpeed" -> {
+                val args = call.arguments<ArrayList<*>>()!!
+                val size = (args.get(0) as Number).toInt()
+                val rounds = (args.get(1) as Number).toInt()
+                val data = ByteArray(size)
+                var count = 0;
+                repeat(rounds-1) {
+                    count += sha1.digest(data).size
+                }
+                val hash = sha1.digest(data)
+                count += hash.size
+                Log.d(TAG, "$count")
+                result.success(hash)
+            }
+            "digestFile" -> {
+                val args = call.arguments<ArrayList<*>>()!!
+                val path = args.get(0) as String
+                File(path).forEachBlock() {
+                    buffer: ByteArray, bytesRead: Int -> sha1.update(buffer, 0, bytesRead)
+                }
+                val hash = sha1.digest()
+                result.success(hash)
             }
             else -> result.notImplemented()
         }
