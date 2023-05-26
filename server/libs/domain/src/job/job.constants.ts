@@ -43,7 +43,6 @@ export enum JobName {
 
   // object tagging
   QUEUE_OBJECT_TAGGING = 'queue-object-tagging',
-  DETECT_OBJECTS = 'detect-objects',
   CLASSIFY_IMAGE = 'classify-image',
 
   // facial recognition
@@ -105,7 +104,6 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
 
   // object tagging
   [JobName.QUEUE_OBJECT_TAGGING]: QueueName.OBJECT_TAGGING,
-  [JobName.DETECT_OBJECTS]: QueueName.OBJECT_TAGGING,
   [JobName.CLASSIFY_IMAGE]: QueueName.OBJECT_TAGGING,
 
   // facial recognition
