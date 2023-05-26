@@ -3,7 +3,7 @@ channels:
   - pytorch
   - conda-forge
 dependencies:
-  - python==3.10.*
+  - python==3.11.*
   - pytorch==2.*
   - cpuonly
   - torchvision==0.*

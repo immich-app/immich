@@ -3,7 +3,9 @@ ARG device=cpu
 USER root
 RUN apt-get update && \
     apt-get install -yqq --no-install-recommends \
-    g++ make python3-dev python3-venv
+    g++ make cmake python3-dev python3-venv \
+    && apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 USER $MAMBA_USER
 
 COPY --chown=$MAMBA_USER:$MAMBA_USER env-${device}.yaml /tmp/env.yaml
