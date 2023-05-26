@@ -1,7 +1,9 @@
 import {
-  AssetService,
   FacialRecognitionService,
+  IDeleteFilesJob,
+  JobItem,
   JobName,
+  JobService,
   JOBS_TO_QUEUE,
   MediaService,
   MetadataService,
@@ -16,12 +18,12 @@ import {
   UserService,
 } from '@app/domain';
 import { getQueueToken } from '@nestjs/bull';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Queue } from 'bull';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 
-type JobHandler<T = any> = (data: T) => void | Promise<void>;
+type JobHandler<T = any> = (data: T) => boolean | Promise<boolean>;
 
 @Injectable()
 export class ProcessorService {
@@ -30,8 +32,8 @@ export class ProcessorService {
     // TODO refactor to domain
     private metadataProcessor: MetadataExtractionProcessor,
 
-    private assetService: AssetService,
     private facialRecognitionService: FacialRecognitionService,
+    private jobService: JobService,
     private mediaService: MediaService,
     private metadataService: MetadataService,
     private personService: PersonService,
@@ -43,9 +45,10 @@ export class ProcessorService {
     private userService: UserService,
   ) {}
 
+  private logger = new Logger(ProcessorService.name);
+
   private handlers: Record<JobName, JobHandler> = {
-    [JobName.ASSET_UPLOADED]: (data) => this.assetService.handleAssetUpload(data),
-    [JobName.DELETE_FILES]: (data) => this.storageService.handleDeleteFiles(data),
+    [JobName.DELETE_FILES]: (data: IDeleteFilesJob) => this.storageService.handleDeleteFiles(data),
     [JobName.USER_DELETE_CHECK]: () => this.userService.handleUserDeleteCheck(),
     [JobName.USER_DELETION]: (data) => this.userService.handleUserDelete(data),
     [JobName.QUEUE_OBJECT_TAGGING]: (data) => this.smartInfoService.handleQueueObjectTagging(data),
@@ -71,15 +74,14 @@ export class ProcessorService {
     [JobName.QUEUE_VIDEO_CONVERSION]: (data) => this.mediaService.handleQueueVideoConversion(data),
     [JobName.VIDEO_CONVERSION]: (data) => this.mediaService.handleVideoConversion(data),
     [JobName.QUEUE_METADATA_EXTRACTION]: (data) => this.metadataProcessor.handleQueueMetadataExtraction(data),
-    [JobName.EXIF_EXTRACTION]: (data) => this.metadataProcessor.extractExifInfo(data),
-    [JobName.EXTRACT_VIDEO_METADATA]: (data) => this.metadataProcessor.extractVideoMetadata(data),
+    [JobName.METADATA_EXTRACTION]: (data) => this.metadataProcessor.handleMetadataExtraction(data),
     [JobName.QUEUE_RECOGNIZE_FACES]: (data) => this.facialRecognitionService.handleQueueRecognizeFaces(data),
     [JobName.RECOGNIZE_FACES]: (data) => this.facialRecognitionService.handleRecognizeFaces(data),
     [JobName.GENERATE_FACE_THUMBNAIL]: (data) => this.facialRecognitionService.handleGenerateFaceThumbnail(data),
     [JobName.PERSON_CLEANUP]: () => this.personService.handlePersonCleanup(),
     [JobName.QUEUE_SIDECAR]: (data) => this.metadataService.handleQueueSidecar(data),
     [JobName.SIDECAR_DISCOVERY]: (data) => this.metadataService.handleSidecarDiscovery(data),
-    [JobName.SIDECAR_SYNC]: (data) => this.metadataService.handleSidecarSync(data),
+    [JobName.SIDECAR_SYNC]: () => this.metadataService.handleSidecarSync(),
   };
 
   async init() {
@@ -98,7 +100,14 @@ export class ProcessorService {
       await queue.isReady();
 
       queue.process(jobName, concurrency, async (job): Promise<void> => {
-        await handler(job.data);
+        try {
+          const success = await handler(job.data);
+          if (success) {
+            await this.jobService.onDone({ name: jobName, data: job.data } as JobItem);
+          }
+        } catch (error: Error | any) {
+          this.logger.error(`Unable to run job handler: ${error}`, error?.stack, job.data);
+        }
       });
     }
   }

@@ -19,9 +19,6 @@ export enum JobCommand {
 }
 
 export enum JobName {
-  // upload
-  ASSET_UPLOADED = 'asset-uploaded',
-
   // conversion
   QUEUE_VIDEO_CONVERSION = 'queue-video-conversion',
   VIDEO_CONVERSION = 'video-conversion',
@@ -33,8 +30,7 @@ export enum JobName {
 
   // metadata
   QUEUE_METADATA_EXTRACTION = 'queue-metadata-extraction',
-  EXIF_EXTRACTION = 'exif-extraction',
-  EXTRACT_VIDEO_METADATA = 'extract-video-metadata',
+  METADATA_EXTRACTION = 'metadata-extraction',
 
   // user deletion
   USER_DELETION = 'user-deletion',
@@ -84,7 +80,6 @@ export const JOBS_ASSET_PAGINATION_SIZE = 1000;
 
 export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   // misc
-  [JobName.ASSET_UPLOADED]: QueueName.BACKGROUND_TASK,
   [JobName.USER_DELETE_CHECK]: QueueName.BACKGROUND_TASK,
   [JobName.USER_DELETION]: QueueName.BACKGROUND_TASK,
   [JobName.DELETE_FILES]: QueueName.BACKGROUND_TASK,
@@ -101,8 +96,7 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
 
   // metadata
   [JobName.QUEUE_METADATA_EXTRACTION]: QueueName.METADATA_EXTRACTION,
-  [JobName.EXIF_EXTRACTION]: QueueName.METADATA_EXTRACTION,
-  [JobName.EXTRACT_VIDEO_METADATA]: QueueName.METADATA_EXTRACTION,
+  [JobName.METADATA_EXTRACTION]: QueueName.METADATA_EXTRACTION,
 
   // storage template
   [JobName.STORAGE_TEMPLATE_MIGRATION]: QueueName.STORAGE_TEMPLATE_MIGRATION,

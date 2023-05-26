@@ -328,8 +328,9 @@ describe('AssetService', () => {
       });
 
       expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.ASSET_UPLOADED, data: { asset: assetEntityStub.livePhotoMotionAsset } }],
-        [{ name: JobName.ASSET_UPLOADED, data: { asset: assetEntityStub.livePhotoStillAsset } }],
+        [{ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: assetEntityStub.livePhotoMotionAsset.id } }],
+        [{ name: JobName.VIDEO_CONVERSION, data: { id: assetEntityStub.livePhotoMotionAsset.id } }],
+        [{ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: assetEntityStub.livePhotoStillAsset.id } }],
       ]);
     });
   });

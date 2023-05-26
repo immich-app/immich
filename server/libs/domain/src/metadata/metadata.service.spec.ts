@@ -33,7 +33,7 @@ describe(MetadataService.name, () => {
       expect(assetMock.getWithout).not.toHaveBeenCalled();
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.SIDECAR_SYNC,
-        data: { asset: assetEntityStub.sidecar },
+        data: { id: assetEntityStub.sidecar.id },
       });
     });
 
@@ -46,95 +46,59 @@ describe(MetadataService.name, () => {
       expect(assetMock.getWith).not.toHaveBeenCalled();
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.SIDECAR_DISCOVERY,
-        data: { asset: assetEntityStub.image },
+        data: { id: assetEntityStub.image.id },
       });
-    });
-
-    it('should log an error', async () => {
-      assetMock.getWith.mockRejectedValue(new Error('database unavailable'));
-      await sut.handleQueueSidecar({ force: true });
-      expect(jobMock.queue).not.toHaveBeenCalled();
     });
   });
 
   describe('handleSidecarSync', () => {
-    it('should skip hidden assets', async () => {
-      await sut.handleSidecarSync({ asset: assetEntityStub.livePhotoMotionAsset });
-      expect(jobMock.queue).not.toHaveBeenCalled();
-    });
-
-    it('should handle video assets', async () => {
-      await sut.handleSidecarSync({ asset: assetEntityStub.video });
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.EXTRACT_VIDEO_METADATA,
-        data: { asset: assetEntityStub.video },
-      });
-    });
-
-    it('should handle image assets', async () => {
-      await sut.handleSidecarSync({ asset: assetEntityStub.image });
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.EXIF_EXTRACTION,
-        data: { asset: assetEntityStub.image },
-      });
-    });
-
-    it('should log an error', async () => {
-      jobMock.queue.mockRejectedValue(new Error('queue job failed'));
-      await sut.handleSidecarSync({ asset: assetEntityStub.image });
+    it('should not error', async () => {
+      await sut.handleSidecarSync();
     });
   });
 
   describe('handleSidecarDiscovery', () => {
     it('should skip hidden assets', async () => {
-      await sut.handleSidecarDiscovery({ asset: assetEntityStub.livePhotoMotionAsset });
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.livePhotoMotionAsset]);
+      await sut.handleSidecarDiscovery({ id: assetEntityStub.livePhotoMotionAsset.id });
       expect(storageMock.checkFileExists).not.toHaveBeenCalled();
     });
 
     it('should skip assets with a sidecar path', async () => {
-      await sut.handleSidecarDiscovery({ asset: assetEntityStub.sidecar });
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.sidecar]);
+      await sut.handleSidecarDiscovery({ id: assetEntityStub.sidecar.id });
       expect(storageMock.checkFileExists).not.toHaveBeenCalled();
     });
 
     it('should do nothing when a sidecar is not found ', async () => {
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
       storageMock.checkFileExists.mockResolvedValue(false);
-      await sut.handleSidecarDiscovery({ asset: assetEntityStub.image });
+      await sut.handleSidecarDiscovery({ id: assetEntityStub.image.id });
       expect(assetMock.save).not.toHaveBeenCalled();
     });
 
     it('should update a image asset when a sidecar is found', async () => {
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
       assetMock.save.mockResolvedValue(assetEntityStub.image);
       storageMock.checkFileExists.mockResolvedValue(true);
-      await sut.handleSidecarDiscovery({ asset: assetEntityStub.image });
+      await sut.handleSidecarDiscovery({ id: assetEntityStub.image.id });
       expect(storageMock.checkFileExists).toHaveBeenCalledWith('/original/path.ext.xmp', constants.W_OK);
       expect(assetMock.save).toHaveBeenCalledWith({
         id: assetEntityStub.image.id,
         sidecarPath: '/original/path.ext.xmp',
-      });
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.EXIF_EXTRACTION,
-        data: { asset: assetEntityStub.image },
       });
     });
 
     it('should update a video asset when a sidecar is found', async () => {
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.video]);
       assetMock.save.mockResolvedValue(assetEntityStub.video);
       storageMock.checkFileExists.mockResolvedValue(true);
-      await sut.handleSidecarDiscovery({ asset: assetEntityStub.video });
+      await sut.handleSidecarDiscovery({ id: assetEntityStub.video.id });
       expect(storageMock.checkFileExists).toHaveBeenCalledWith('/original/path.ext.xmp', constants.W_OK);
       expect(assetMock.save).toHaveBeenCalledWith({
         id: assetEntityStub.image.id,
         sidecarPath: '/original/path.ext.xmp',
       });
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.EXTRACT_VIDEO_METADATA,
-        data: { asset: assetEntityStub.video },
-      });
-    });
-
-    it('should log an error', async () => {
-      storageMock.checkFileExists.mockRejectedValue(new Error('bad permission'));
-      await sut.handleSidecarDiscovery({ asset: assetEntityStub.image });
     });
   });
 });

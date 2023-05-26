@@ -11,6 +11,7 @@ export class StorageService {
   async handleDeleteFiles(job: IDeleteFilesJob) {
     const { files } = job;
 
+    // TODO: one job per file
     for (const file of files) {
       if (!file) {
         continue;
@@ -22,5 +23,7 @@ export class StorageService {
         this.logger.warn('Unable to remove file from disk', error);
       }
     }
+
+    return true;
   }
 }

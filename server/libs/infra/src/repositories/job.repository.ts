@@ -45,9 +45,6 @@ export class JobRepository implements IJobRepository {
 
   private getJobOptions(item: JobItem): JobOptions | null {
     switch (item.name) {
-      case JobName.ASSET_UPLOADED:
-        return { jobId: item.data.asset.id };
-
       case JobName.GENERATE_FACE_THUMBNAIL:
         return { priority: 1 };
 

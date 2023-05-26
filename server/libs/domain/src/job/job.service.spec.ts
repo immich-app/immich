@@ -1,14 +1,20 @@
 import { BadRequestException } from '@nestjs/common';
-import { newJobRepositoryMock } from '../../test';
+import { newAssetRepositoryMock, newCommunicationRepositoryMock, newJobRepositoryMock } from '../../test';
+import { IAssetRepository } from '../asset';
+import { ICommunicationRepository } from '../communication';
 import { IJobRepository, JobCommand, JobName, JobService, QueueName } from '../job';
 
 describe(JobService.name, () => {
   let sut: JobService;
+  let assetMock: jest.Mocked<IAssetRepository>;
+  let communicationMock: jest.Mocked<ICommunicationRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
 
   beforeEach(async () => {
+    assetMock = newAssetRepositoryMock();
+    communicationMock = newCommunicationRepositoryMock();
     jobMock = newJobRepositoryMock();
-    sut = new JobService(jobMock);
+    sut = new JobService(assetMock, communicationMock, jobMock);
   });
 
   it('should work', () => {
