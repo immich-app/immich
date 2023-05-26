@@ -4446,9 +4446,8 @@
           "originalFileName": {
             "type": "string"
           },
-          "resizePath": {
-            "type": "string",
-            "nullable": true
+          "resized": {
+            "type": "boolean"
           },
           "fileCreatedAt": {
             "type": "string"
@@ -4472,14 +4471,6 @@
           "duration": {
             "type": "string"
           },
-          "webpPath": {
-            "type": "string",
-            "nullable": true
-          },
-          "encodedVideoPath": {
-            "type": "string",
-            "nullable": true
-          },
           "exifInfo": {
             "$ref": "#/components/schemas/ExifResponseDto"
           },
@@ -4501,6 +4492,9 @@
             "items": {
               "$ref": "#/components/schemas/PersonResponseDto"
             }
+          },
+          "checksum": {
+            "type": "string"
           }
         },
         "required": [
@@ -4511,7 +4505,7 @@
           "deviceId",
           "originalPath",
           "originalFileName",
-          "resizePath",
+          "resized",
           "fileCreatedAt",
           "fileModifiedAt",
           "updatedAt",
@@ -4519,7 +4513,7 @@
           "isArchived",
           "mimeType",
           "duration",
-          "webpPath"
+          "checksum"
         ]
       },
       "AlbumResponseDto": {

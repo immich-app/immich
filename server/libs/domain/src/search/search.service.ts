@@ -3,7 +3,7 @@ import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config';
 import { mapAlbum } from '../album';
 import { IAlbumRepository } from '../album/album.repository';
-import { mapAsset } from '../asset';
+import { AssetResponseDto, mapAsset } from '../asset';
 import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
@@ -103,9 +103,13 @@ export class SearchService {
     }
   }
 
-  async getExploreData(authUser: AuthUserDto): Promise<SearchExploreItem<AssetEntity>[]> {
+  async getExploreData(authUser: AuthUserDto): Promise<SearchExploreItem<AssetResponseDto>[]> {
     this.assertEnabled();
-    return this.searchRepository.explore(authUser.id);
+    const results = await this.searchRepository.explore(authUser.id);
+    return results.map(({ fieldName, items }) => ({
+      fieldName,
+      items: items.map(({ value, data }) => ({ value, data: mapAsset(data) })),
+    }));
   }
 
   async search(authUser: AuthUserDto, dto: SearchDto): Promise<SearchResponseDto> {
