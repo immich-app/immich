@@ -41,7 +41,7 @@
 		try {
 			isEditName = false;
 			data.person.name = name;
-			await api.personApi.updatePerson(data.person.id, { name });
+			await api.personApi.updatePerson({ id: data.person.id, personUpdateDto: { name } });
 		} catch (error) {
 			handleError(error, 'Unable to save name');
 		}

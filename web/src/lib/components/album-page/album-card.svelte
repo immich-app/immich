@@ -36,9 +36,10 @@
 		}
 
 		const { data } = await api.assetApi.getAssetThumbnail(
-			thubmnailId,
-			ThumbnailFormat.Jpeg,
-			undefined,
+			{
+				assetId: thubmnailId,
+				format: ThumbnailFormat.Jpeg
+			},
 			{
 				responseType: 'blob'
 			}
@@ -61,7 +62,7 @@
 	});
 
 	const getAlbumOwnerInfo = async (): Promise<UserResponseDto> => {
-		const { data } = await api.userApi.getUserById(album.ownerId);
+		const { data } = await api.userApi.getUserById({ userId: album.ownerId });
 
 		return data;
 	};

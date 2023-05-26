@@ -60,22 +60,26 @@
 		try {
 			if (shareType === SharedLinkType.Album && album) {
 				const { data } = await api.albumApi.createAlbumSharedLink({
-					albumId: album.id,
-					expiresAt: expirationDate,
-					allowUpload: isAllowUpload,
-					description: description,
-					allowDownload: isAllowDownload,
-					showExif: shouldShowExif
+					createAlbumShareLinkDto: {
+						albumId: album.id,
+						expiresAt: expirationDate,
+						allowUpload: isAllowUpload,
+						description: description,
+						allowDownload: isAllowDownload,
+						showExif: shouldShowExif
+					}
 				});
 				buildSharedLink(data);
 			} else {
 				const { data } = await api.assetApi.createAssetsSharedLink({
-					assetIds: sharedAssets.map((a) => a.id),
-					expiresAt: expirationDate,
-					allowUpload: isAllowUpload,
-					description: description,
-					allowDownload: isAllowDownload,
-					showExif: shouldShowExif
+					createAssetsShareLinkDto: {
+						assetIds: sharedAssets.map((a) => a.id),
+						expiresAt: expirationDate,
+						allowUpload: isAllowUpload,
+						description: description,
+						allowDownload: isAllowDownload,
+						showExif: shouldShowExif
+					}
 				});
 				buildSharedLink(data);
 			}
@@ -133,12 +137,15 @@
 					? new Date(currentTime + expirationTime).toISOString()
 					: null;
 
-				await api.shareApi.editSharedLink(editingLink.id, {
-					description,
-					expiresAt: shouldChangeExpirationTime ? expirationDate : undefined,
-					allowUpload: isAllowUpload,
-					allowDownload: isAllowDownload,
-					showExif: shouldShowExif
+				await api.shareApi.editSharedLink({
+					id: editingLink.id,
+					editSharedLinkDto: {
+						description,
+						expiresAt: shouldChangeExpirationTime ? expirationDate : undefined,
+						allowUpload: isAllowUpload,
+						allowDownload: isAllowDownload,
+						showExif: shouldShowExif
+					}
 				});
 
 				notificationController.show({

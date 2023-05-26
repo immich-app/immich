@@ -86,9 +86,10 @@ describe('AlbumCard component', () => {
 		expect(albumImgElement).toHaveAttribute('alt', album.id);
 		expect(apiMock.assetApi.getAssetThumbnail).toHaveBeenCalledTimes(1);
 		expect(apiMock.assetApi.getAssetThumbnail).toHaveBeenCalledWith(
-			'thumbnailIdOne',
-			ThumbnailFormat.Jpeg,
-			undefined,
+			{
+				assetId: 'thumbnailIdOne',
+				format: ThumbnailFormat.Jpeg
+			},
 			{ responseType: 'blob' }
 		);
 		expect(createObjectURLMock).toHaveBeenCalledWith(thumbnailBlob);

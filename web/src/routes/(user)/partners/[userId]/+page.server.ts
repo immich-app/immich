@@ -9,7 +9,7 @@ export const load: PageServerLoad = async ({ params, parent, locals: { api } }) 
 		throw redirect(302, AppRoute.AUTH_LOGIN);
 	}
 
-	const { data: partner } = await api.userApi.getUserById(params['userId']);
+	const { data: partner } = await api.userApi.getUserById({ userId: params['userId'] });
 
 	return {
 		user,

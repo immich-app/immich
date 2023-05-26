@@ -29,7 +29,7 @@
 		}
 
 		try {
-			await api.authenticationApi.logoutAuthDevice(deleteDevice.id);
+			await api.authenticationApi.logoutAuthDevice({ id: deleteDevice.id });
 			notificationController.show({ message: `Logged out device`, type: NotificationType.Info });
 		} catch (error) {
 			handleError(error, 'Unable to log out device');

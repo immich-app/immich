@@ -29,9 +29,11 @@
 			error = '';
 
 			const { status } = await api.userApi.updateUser({
-				id: user.id,
-				password: String(password),
-				shouldChangePassword: false
+				updateUserDto: {
+					id: user.id,
+					password: String(password),
+					shouldChangePassword: false
+				}
 			});
 
 			if (status === 200) {

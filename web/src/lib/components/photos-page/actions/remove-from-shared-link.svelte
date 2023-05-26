@@ -14,12 +14,12 @@
 			// TODO: Rename API method or change functionality. The assetIds passed
 			// in are kept instead of removed.
 			const assetsToKeep = allAssets.filter((a) => !getAssets().has(a));
-			await api.assetApi.removeAssetsFromSharedLink(
-				{
+			await api.assetApi.removeAssetsFromSharedLink({
+				removeAssetsDto: {
 					assetIds: assetsToKeep.map((a) => a.id)
 				},
-				sharedLink?.key
-			);
+				key: sharedLink?.key
+			});
 
 			sharedLink.assets = assetsToKeep;
 			clearSelect();

@@ -66,9 +66,11 @@ function createAssetStore() {
 			});
 			const { data: assets } = await api.assetApi.getAssetByTimeBucket(
 				{
-					timeBucket: [bucket],
-					userId: _assetGridState.userId,
-					withoutThumbs: true
+					getAssetByTimeBucketDto: {
+						timeBucket: [bucket],
+						userId: _assetGridState.userId,
+						withoutThumbs: true
+					}
 				},
 				{ signal: currentBucketData?.cancelToken.signal }
 			);

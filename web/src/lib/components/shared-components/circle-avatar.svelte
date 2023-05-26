@@ -10,9 +10,12 @@
 	const dispatch = createEventDispatcher();
 
 	const getUserAvatar = async () => {
-		const { data } = await api.userApi.getProfileImage(user.id, {
-			responseType: 'blob'
-		});
+		const { data } = await api.userApi.getProfileImage(
+			{ userId: user.id },
+			{
+				responseType: 'blob'
+			}
+		);
 
 		if (data instanceof Blob) {
 			return URL.createObjectURL(data);

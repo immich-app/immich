@@ -65,7 +65,7 @@
 
 	const getAllAlbums = async () => {
 		try {
-			const { data } = await api.albumApi.getAllAlbums(undefined, asset.id);
+			const { data } = await api.albumApi.getAllAlbums({ assetId: asset.id });
 			appearsInAlbums = data;
 		} catch (e) {
 			console.error('Error getting album that asset belong to', e);
@@ -151,16 +151,19 @@
 
 			$downloadAssets[imageFileName] = 0;
 
-			const { data, status } = await api.assetApi.downloadFile(assetId, key, {
-				responseType: 'blob',
-				onDownloadProgress: (progressEvent) => {
-					if (progressEvent.lengthComputable) {
-						const total = progressEvent.total;
-						const current = progressEvent.loaded;
-						$downloadAssets[imageFileName] = Math.floor((current / total) * 100);
+			const { data, status } = await api.assetApi.downloadFile(
+				{ assetId, key },
+				{
+					responseType: 'blob',
+					onDownloadProgress: (progressEvent) => {
+						if (progressEvent.lengthComputable) {
+							const total = progressEvent.total;
+							const current = progressEvent.loaded;
+							$downloadAssets[imageFileName] = Math.floor((current / total) * 100);
+						}
 					}
 				}
-			});
+			);
 
 			if (!(data instanceof Blob)) {
 				return;
@@ -203,7 +206,9 @@
 				)
 			) {
 				const { data: deletedAssets } = await api.assetApi.deleteAsset({
-					ids: [asset.id]
+					deleteAssetDto: {
+						ids: [asset.id]
+					}
 				});
 
 				navigateAssetForward();
@@ -224,8 +229,11 @@
 	};
 
 	const toggleFavorite = async () => {
-		const { data } = await api.assetApi.updateAsset(asset.id, {
-			isFavorite: !asset.isFavorite
+		const { data } = await api.assetApi.updateAsset({
+			assetId: asset.id,
+			updateAssetDto: {
+				isFavorite: !asset.isFavorite
+			}
 		});
 
 		asset.isFavorite = data.isFavorite;
@@ -241,10 +249,12 @@
 		isShowAlbumPicker = false;
 
 		const { albumName }: { albumName: string } = event.detail;
-		api.albumApi.createAlbum({ albumName, assetIds: [asset.id] }).then((response) => {
-			const album = response.data;
-			goto('/albums/' + album.id);
-		});
+		api.albumApi
+			.createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } })
+			.then((response) => {
+				const album = response.data;
+				goto('/albums/' + album.id);
+			});
 	};
 
 	const handleAddToAlbum = async (event: CustomEvent<{ album: AlbumResponseDto }>) => {
@@ -272,8 +282,11 @@
 
 	const toggleArchive = async () => {
 		try {
-			const { data } = await api.assetApi.updateAsset(asset.id, {
-				isArchived: !asset.isArchived
+			const { data } = await api.assetApi.updateAsset({
+				assetId: asset.id,
+				updateAssetDto: {
+					isArchived: !asset.isArchived
+				}
 			});
 
 			asset.isArchived = data.isArchived;

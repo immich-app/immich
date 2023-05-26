@@ -7,7 +7,7 @@ export const load = (async ({ params, locals: { api } }) => {
 	const { key } = params;
 
 	try {
-		const { data: sharedLink } = await api.shareApi.getMySharedLink(key);
+		const { data: sharedLink } = await api.shareApi.getMySharedLink({ key });
 
 		const assetCount = sharedLink.assets.length;
 		const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
