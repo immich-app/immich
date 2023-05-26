@@ -455,21 +455,22 @@ describe(UserService.name, () => {
     });
 
     it('should queue user ready for deletion', async () => {
-      const user = { deletedAt: makeDeletedAt(10) };
+      const user = { id: 'deleted-user', deletedAt: makeDeletedAt(10) };
       userMock.getDeletedUsers.mockResolvedValue([user] as UserEntity[]);
 
       await sut.handleUserDeleteCheck();
 
       expect(userMock.getDeletedUsers).toHaveBeenCalled();
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.USER_DELETION, data: { user } });
+      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.USER_DELETION, data: { id: user.id } });
     });
   });
 
   describe('handleUserDelete', () => {
     it('should skip users not ready for deletion', async () => {
-      const user = { deletedAt: makeDeletedAt(5) } as UserEntity;
+      const user = { id: 'user-1', deletedAt: makeDeletedAt(5) } as UserEntity;
+      userMock.get.mockResolvedValue(user);
 
-      await sut.handleUserDelete({ user });
+      await sut.handleUserDelete({ id: user.id });
 
       expect(storageMock.unlinkDir).not.toHaveBeenCalled();
       expect(userMock.delete).not.toHaveBeenCalled();
@@ -477,8 +478,9 @@ describe(UserService.name, () => {
 
     it('should delete the user and associated assets', async () => {
       const user = { id: 'deleted-user', deletedAt: makeDeletedAt(10) } as UserEntity;
+      userMock.get.mockResolvedValue(user);
 
-      await sut.handleUserDelete({ user });
+      await sut.handleUserDelete({ id: user.id });
 
       const options = { force: true, recursive: true };
 
@@ -494,22 +496,13 @@ describe(UserService.name, () => {
 
     it('should delete the library path for a storage label', async () => {
       const user = { id: 'deleted-user', deletedAt: makeDeletedAt(10), storageLabel: 'admin' } as UserEntity;
+      userMock.get.mockResolvedValue(user);
 
-      await sut.handleUserDelete({ user });
+      await sut.handleUserDelete({ id: user.id });
 
       const options = { force: true, recursive: true };
 
       expect(storageMock.unlinkDir).toHaveBeenCalledWith('upload/library/admin', options);
-    });
-
-    it('should handle an error', async () => {
-      const user = { id: 'deleted-user', deletedAt: makeDeletedAt(10) } as UserEntity;
-
-      storageMock.unlinkDir.mockRejectedValue(new Error('Read only filesystem'));
-
-      await sut.handleUserDelete({ user });
-
-      expect(userMock.delete).not.toHaveBeenCalled();
     });
   });
 });

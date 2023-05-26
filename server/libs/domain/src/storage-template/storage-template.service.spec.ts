@@ -195,11 +195,4 @@ describe(StorageTemplateService.name, () => {
       ]);
     });
   });
-
-  it('should handle an error', async () => {
-    storageMock.removeEmptyDirs.mockRejectedValue(new Error('Read only filesystem'));
-    userMock.getList.mockResolvedValue([]);
-
-    await sut.handleMigration();
-  });
 });

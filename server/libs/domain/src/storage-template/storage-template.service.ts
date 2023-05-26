@@ -3,7 +3,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IAssetRepository } from '../asset/asset.repository';
 import { APP_MEDIA_LOCATION } from '../domain.constant';
 import { getLivePhotoMotionFilename, usePagination } from '../domain.util';
-import { IAssetJob, JOBS_ASSET_PAGINATION_SIZE } from '../job';
+import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import { IStorageRepository } from '../storage/storage.repository';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
 import { IUserRepository } from '../user/user.repository';
@@ -29,24 +29,22 @@ export class StorageTemplateService {
     this.core = new StorageTemplateCore(configRepository, config, storageRepository);
   }
 
-  async handleMigrationSingle(data: IAssetJob) {
-    const { asset } = data;
+  async handleMigrationSingle({ id }: IEntityJob) {
+    const [asset] = await this.assetRepository.getByIds([id]);
 
-    try {
-      const user = await this.userRepository.get(asset.ownerId);
-      const storageLabel = user?.storageLabel || null;
-      const filename = asset.originalFileName || asset.id;
-      await this.moveAsset(asset, { storageLabel, filename });
+    const user = await this.userRepository.get(asset.ownerId);
+    const storageLabel = user?.storageLabel || null;
+    const filename = asset.originalFileName || asset.id;
+    await this.moveAsset(asset, { storageLabel, filename });
 
-      // move motion part of live photo
-      if (asset.livePhotoVideoId) {
-        const [livePhotoVideo] = await this.assetRepository.getByIds([asset.livePhotoVideoId]);
-        const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
-        await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
-      }
-    } catch (error: any) {
-      this.logger.error('Error running single template migration', error);
+    // move motion part of live photo
+    if (asset.livePhotoVideoId) {
+      const [livePhotoVideo] = await this.assetRepository.getByIds([asset.livePhotoVideoId]);
+      const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
+      await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
     }
+
+    return true;
   }
 
   async handleMigration() {
@@ -69,11 +67,11 @@ export class StorageTemplateService {
 
       this.logger.debug('Cleaning up empty directories...');
       await this.storageRepository.removeEmptyDirs(APP_MEDIA_LOCATION);
-    } catch (error: any) {
-      this.logger.error('Error running template migration', error);
     } finally {
       console.timeEnd('migrating-time');
     }
+
+    return true;
   }
 
   // TODO: use asset core (once in domain)

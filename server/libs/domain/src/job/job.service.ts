@@ -1,21 +1,21 @@
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
+import { IAssetRepository, mapAsset } from '../asset';
+import { CommunicationEvent, ICommunicationRepository } from '../communication';
 import { assertMachineLearningEnabled } from '../domain.constant';
 import { JobCommandDto } from './dto';
 import { JobCommand, JobName, QueueName } from './job.constants';
-import { IJobRepository } from './job.repository';
+import { IJobRepository, JobItem } from './job.repository';
 import { AllJobStatusResponseDto, JobStatusDto } from './response-dto';
 
 @Injectable()
 export class JobService {
   private logger = new Logger(JobService.name);
 
-  constructor(@Inject(IJobRepository) private jobRepository: IJobRepository) {}
-
-  async handleNightlyJobs() {
-    await this.jobRepository.queue({ name: JobName.USER_DELETE_CHECK });
-    await this.jobRepository.queue({ name: JobName.PERSON_CLEANUP });
-    await this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } });
-  }
+  constructor(
+    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
+  ) {}
 
   handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<void> {
     this.logger.debug(`Handling command: queue=${queueName},force=${dto.force}`);
@@ -87,6 +87,53 @@ export class JobService {
 
       default:
         throw new BadRequestException(`Invalid job name: ${name}`);
+    }
+  }
+
+  async handleNightlyJobs() {
+    await this.jobRepository.queue({ name: JobName.USER_DELETE_CHECK });
+    await this.jobRepository.queue({ name: JobName.PERSON_CLEANUP });
+    await this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } });
+  }
+
+  /**
+   * Queue follow up jobs
+   */
+  async onDone(item: JobItem) {
+    switch (item.name) {
+      case JobName.SIDECAR_SYNC:
+      case JobName.SIDECAR_DISCOVERY:
+        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: item.data.id } });
+        break;
+
+      case JobName.METADATA_EXTRACTION:
+        await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: item.data });
+        break;
+
+      case JobName.GENERATE_JPEG_THUMBNAIL: {
+        await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: item.data });
+        await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: item.data });
+        await this.jobRepository.queue({ name: JobName.DETECT_OBJECTS, data: item.data });
+        await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: item.data });
+        await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: item.data });
+
+        const [asset] = await this.assetRepository.getByIds([item.data.id]);
+        if (asset) {
+          this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
+        }
+        break;
+      }
+    }
+
+    // In addition to the above jobs, all of these should queue `SEARCH_INDEX_ASSET`
+    switch (item.name) {
+      case JobName.CLASSIFY_IMAGE:
+      case JobName.DETECT_OBJECTS:
+      case JobName.ENCODE_CLIP:
+      case JobName.RECOGNIZE_FACES:
+      case JobName.METADATA_EXTRACTION:
+        await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: [item.data.id] } });
+        break;
     }
   }
 }

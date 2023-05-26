@@ -1,8 +1,7 @@
 import {
-  AssetCore,
-  IAssetJob,
   IAssetRepository,
   IBaseJob,
+  IEntityJob,
   IGeocodingRepository,
   IJobRepository,
   JobName,
@@ -32,7 +31,6 @@ interface ImmichTags extends Tags {
 
 export class MetadataExtractionProcessor {
   private logger = new Logger(MetadataExtractionProcessor.name);
-  private assetCore: AssetCore;
   private reverseGeocodingEnabled: boolean;
 
   constructor(
@@ -43,7 +41,6 @@ export class MetadataExtractionProcessor {
 
     configService: ConfigService,
   ) {
-    this.assetCore = new AssetCore(assetRepository, jobRepository);
     this.reverseGeocodingEnabled = !configService.get('DISABLE_REVERSE_GEOCODING');
   }
 
@@ -70,271 +67,262 @@ export class MetadataExtractionProcessor {
   }
 
   async handleQueueMetadataExtraction(job: IBaseJob) {
-    try {
-      const { force } = job;
-      const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-        return force
-          ? this.assetRepository.getAll(pagination)
-          : this.assetRepository.getWithout(pagination, WithoutProperty.EXIF);
-      });
+    const { force } = job;
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
+      return force
+        ? this.assetRepository.getAll(pagination)
+        : this.assetRepository.getWithout(pagination, WithoutProperty.EXIF);
+    });
 
-      for await (const assets of assetPagination) {
-        for (const asset of assets) {
-          const name = asset.type === AssetType.VIDEO ? JobName.EXTRACT_VIDEO_METADATA : JobName.EXIF_EXTRACTION;
-          await this.jobRepository.queue({ name, data: { asset } });
-        }
+    for await (const assets of assetPagination) {
+      for (const asset of assets) {
+        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id } });
       }
-    } catch (error: any) {
-      this.logger.error(`Unable to queue metadata extraction`, error?.stack);
+    }
+
+    return true;
+  }
+
+  async handleMetadataExtraction({ id }: IEntityJob) {
+    const [asset] = await this.assetRepository.getByIds([id]);
+    if (!asset || !asset.isVisible) {
+      return false;
+    }
+
+    if (asset.type === AssetType.VIDEO) {
+      return this.handleVideoMetadataExtraction(asset);
+    } else {
+      return this.handlePhotoMetadataExtraction(asset);
     }
   }
 
-  async extractExifInfo(job: IAssetJob) {
-    let asset = job.asset;
+  private async handlePhotoMetadataExtraction(asset: AssetEntity) {
+    const mediaExifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((error: any) => {
+      this.logger.warn(
+        `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
+        error?.stack,
+      );
+      return null;
+    });
 
-    try {
-      const mediaExifData = await exiftool.read<ImmichTags>(asset.originalPath).catch((error: any) => {
-        this.logger.warn(
-          `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
-          error?.stack,
-        );
-        return null;
-      });
-      const sidecarExifData = asset.sidecarPath
-        ? await exiftool.read<ImmichTags>(asset.sidecarPath).catch((error: any) => {
-            this.logger.warn(
-              `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
-              error?.stack,
-            );
-            return null;
-          })
-        : {};
-
-      const exifToDate = (exifDate: string | ExifDateTime | undefined) => {
-        if (!exifDate) return null;
-
-        if (typeof exifDate === 'string') {
-          return new Date(exifDate);
-        }
-
-        return exifDate.toDate();
-      };
-
-      const exifTimeZone = (exifDate: string | ExifDateTime | undefined) => {
-        if (!exifDate) return null;
-
-        if (typeof exifDate === 'string') {
+    const sidecarExifData = asset.sidecarPath
+      ? await exiftool.read<ImmichTags>(asset.sidecarPath).catch((error: any) => {
+          this.logger.warn(
+            `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
+            error?.stack,
+          );
           return null;
-        }
+        })
+      : {};
 
-        return exifDate.zone ?? null;
-      };
+    const exifToDate = (exifDate: string | ExifDateTime | undefined) => {
+      if (!exifDate) return null;
 
-      const getExifProperty = <T extends keyof ImmichTags>(...properties: T[]): any | null => {
-        for (const property of properties) {
-          const value = sidecarExifData?.[property] ?? mediaExifData?.[property];
-          if (value !== null && value !== undefined) {
-            return value;
-          }
-        }
+      if (typeof exifDate === 'string') {
+        return new Date(exifDate);
+      }
 
+      return exifDate.toDate();
+    };
+
+    const exifTimeZone = (exifDate: string | ExifDateTime | undefined) => {
+      if (!exifDate) return null;
+
+      if (typeof exifDate === 'string') {
         return null;
-      };
+      }
 
-      const timeZone = exifTimeZone(getExifProperty('DateTimeOriginal', 'CreateDate') ?? asset.fileCreatedAt);
-      const fileCreatedAt = exifToDate(getExifProperty('DateTimeOriginal', 'CreateDate') ?? asset.fileCreatedAt);
-      const fileModifiedAt = exifToDate(getExifProperty('ModifyDate') ?? asset.fileModifiedAt);
-      const fileStats = fs.statSync(asset.originalPath);
-      const fileSizeInBytes = fileStats.size;
+      return exifDate.zone ?? null;
+    };
 
-      const newExif = new ExifEntity();
-      newExif.assetId = asset.id;
-      newExif.fileSizeInByte = fileSizeInBytes;
-      newExif.make = getExifProperty('Make');
-      newExif.model = getExifProperty('Model');
-      newExif.exifImageHeight = getExifProperty('ExifImageHeight', 'ImageHeight');
-      newExif.exifImageWidth = getExifProperty('ExifImageWidth', 'ImageWidth');
-      newExif.exposureTime = getExifProperty('ExposureTime');
-      newExif.orientation = getExifProperty('Orientation')?.toString();
-      newExif.dateTimeOriginal = fileCreatedAt;
-      newExif.modifyDate = fileModifiedAt;
-      newExif.timeZone = timeZone;
-      newExif.lensModel = getExifProperty('LensModel');
-      newExif.fNumber = getExifProperty('FNumber');
-      const focalLength = getExifProperty('FocalLength');
-      newExif.focalLength = focalLength ? parseFloat(focalLength) : null;
-      // This is unusual - exifData.ISO should return a number, but experienced that sidecar XMP
-      // files MAY return an array of numbers instead.
-      const iso = getExifProperty('ISO');
-      newExif.iso = Array.isArray(iso) ? iso[0] : iso || null;
-      newExif.latitude = getExifProperty('GPSLatitude');
-      newExif.longitude = getExifProperty('GPSLongitude');
-      newExif.livePhotoCID = getExifProperty('MediaGroupUUID');
-
-      if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
-        const motionAsset = await this.assetCore.findLivePhotoMatch({
-          livePhotoCID: newExif.livePhotoCID,
-          otherAssetId: asset.id,
-          ownerId: asset.ownerId,
-          type: AssetType.VIDEO,
-        });
-        if (motionAsset) {
-          await this.assetCore.save({ id: asset.id, livePhotoVideoId: motionAsset.id });
-          await this.assetCore.save({ id: motionAsset.id, isVisible: false });
+    const getExifProperty = <T extends keyof ImmichTags>(...properties: T[]): any | null => {
+      for (const property of properties) {
+        const value = sidecarExifData?.[property] ?? mediaExifData?.[property];
+        if (value !== null && value !== undefined) {
+          return value;
         }
       }
 
-      await this.applyReverseGeocoding(asset, newExif);
+      return null;
+    };
 
-      /**
-       * IF the EXIF doesn't contain the width and height of the image,
-       * We will use Sharpjs to get the information.
-       */
-      if (!newExif.exifImageHeight || !newExif.exifImageWidth || !newExif.orientation) {
-        const metadata = await sharp(asset.originalPath).metadata();
+    const timeZone = exifTimeZone(getExifProperty('DateTimeOriginal', 'CreateDate') ?? asset.fileCreatedAt);
+    const fileCreatedAt = exifToDate(getExifProperty('DateTimeOriginal', 'CreateDate') ?? asset.fileCreatedAt);
+    const fileModifiedAt = exifToDate(getExifProperty('ModifyDate') ?? asset.fileModifiedAt);
+    const fileStats = fs.statSync(asset.originalPath);
+    const fileSizeInBytes = fileStats.size;
 
-        if (newExif.exifImageHeight === null) {
-          newExif.exifImageHeight = metadata.height || null;
-        }
+    const newExif = new ExifEntity();
+    newExif.assetId = asset.id;
+    newExif.fileSizeInByte = fileSizeInBytes;
+    newExif.make = getExifProperty('Make');
+    newExif.model = getExifProperty('Model');
+    newExif.exifImageHeight = getExifProperty('ExifImageHeight', 'ImageHeight');
+    newExif.exifImageWidth = getExifProperty('ExifImageWidth', 'ImageWidth');
+    newExif.exposureTime = getExifProperty('ExposureTime');
+    newExif.orientation = getExifProperty('Orientation')?.toString();
+    newExif.dateTimeOriginal = fileCreatedAt;
+    newExif.modifyDate = fileModifiedAt;
+    newExif.timeZone = timeZone;
+    newExif.lensModel = getExifProperty('LensModel');
+    newExif.fNumber = getExifProperty('FNumber');
+    const focalLength = getExifProperty('FocalLength');
+    newExif.focalLength = focalLength ? parseFloat(focalLength) : null;
+    // This is unusual - exifData.ISO should return a number, but experienced that sidecar XMP
+    // files MAY return an array of numbers instead.
+    const iso = getExifProperty('ISO');
+    newExif.iso = Array.isArray(iso) ? iso[0] : iso || null;
+    newExif.latitude = getExifProperty('GPSLatitude');
+    newExif.longitude = getExifProperty('GPSLongitude');
+    newExif.livePhotoCID = getExifProperty('MediaGroupUUID');
 
-        if (newExif.exifImageWidth === null) {
-          newExif.exifImageWidth = metadata.width || null;
-        }
-
-        if (newExif.orientation === null) {
-          newExif.orientation = metadata.orientation !== undefined ? `${metadata.orientation}` : null;
-        }
+    if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
+      const motionAsset = await this.assetRepository.findLivePhotoMatch({
+        livePhotoCID: newExif.livePhotoCID,
+        otherAssetId: asset.id,
+        ownerId: asset.ownerId,
+        type: AssetType.VIDEO,
+      });
+      if (motionAsset) {
+        await this.assetRepository.save({ id: asset.id, livePhotoVideoId: motionAsset.id });
+        await this.assetRepository.save({ id: motionAsset.id, isVisible: false });
       }
-
-      await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
-      asset = await this.assetCore.save({ id: asset.id, fileCreatedAt: fileCreatedAt?.toISOString() });
-      await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { asset } });
-    } catch (error: any) {
-      this.logger.error(
-        `Error extracting EXIF ${error} for assetId ${asset.id} at ${asset.originalPath}`,
-        error?.stack,
-      );
     }
+
+    await this.applyReverseGeocoding(asset, newExif);
+
+    /**
+     * IF the EXIF doesn't contain the width and height of the image,
+     * We will use Sharpjs to get the information.
+     */
+    if (!newExif.exifImageHeight || !newExif.exifImageWidth || !newExif.orientation) {
+      const metadata = await sharp(asset.originalPath).metadata();
+
+      if (newExif.exifImageHeight === null) {
+        newExif.exifImageHeight = metadata.height || null;
+      }
+
+      if (newExif.exifImageWidth === null) {
+        newExif.exifImageWidth = metadata.width || null;
+      }
+
+      if (newExif.orientation === null) {
+        newExif.orientation = metadata.orientation !== undefined ? `${metadata.orientation}` : null;
+      }
+    }
+
+    await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
+    await this.assetRepository.save({ id: asset.id, fileCreatedAt: fileCreatedAt?.toISOString() });
+
+    return true;
   }
 
-  async extractVideoMetadata(job: IAssetJob) {
-    let asset = job.asset;
+  private async handleVideoMetadataExtraction(asset: AssetEntity) {
+    const data = await ffprobe(asset.originalPath);
+    const durationString = this.extractDuration(data.format.duration || asset.duration);
+    let fileCreatedAt = asset.fileCreatedAt;
 
-    if (!asset.isVisible) {
-      return;
+    const videoTags = data.format.tags;
+    if (videoTags) {
+      if (videoTags['com.apple.quicktime.creationdate']) {
+        fileCreatedAt = String(videoTags['com.apple.quicktime.creationdate']);
+      } else if (videoTags['creation_time']) {
+        fileCreatedAt = String(videoTags['creation_time']);
+      }
     }
 
-    try {
-      const data = await ffprobe(asset.originalPath);
-      const durationString = this.extractDuration(data.format.duration || asset.duration);
-      let fileCreatedAt = asset.fileCreatedAt;
-
-      const videoTags = data.format.tags;
-      if (videoTags) {
-        if (videoTags['com.apple.quicktime.creationdate']) {
-          fileCreatedAt = String(videoTags['com.apple.quicktime.creationdate']);
-        } else if (videoTags['creation_time']) {
-          fileCreatedAt = String(videoTags['creation_time']);
-        }
-      }
-
-      const exifData = await exiftool.read<ImmichTags>(asset.sidecarPath || asset.originalPath).catch((error: any) => {
-        this.logger.warn(
-          `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
-          error?.stack,
-        );
-        return null;
-      });
-
-      const newExif = new ExifEntity();
-      newExif.assetId = asset.id;
-      newExif.fileSizeInByte = data.format.size || null;
-      newExif.dateTimeOriginal = fileCreatedAt ? new Date(fileCreatedAt) : null;
-      newExif.modifyDate = null;
-      newExif.timeZone = null;
-      newExif.latitude = null;
-      newExif.longitude = null;
-      newExif.city = null;
-      newExif.state = null;
-      newExif.country = null;
-      newExif.fps = null;
-      newExif.livePhotoCID = exifData?.ContentIdentifier || null;
-
-      if (newExif.livePhotoCID) {
-        const photoAsset = await this.assetCore.findLivePhotoMatch({
-          livePhotoCID: newExif.livePhotoCID,
-          ownerId: asset.ownerId,
-          otherAssetId: asset.id,
-          type: AssetType.IMAGE,
-        });
-        if (photoAsset) {
-          await this.assetCore.save({ id: photoAsset.id, livePhotoVideoId: asset.id });
-          await this.assetCore.save({ id: asset.id, isVisible: false });
-        }
-      }
-
-      if (videoTags && videoTags['location']) {
-        const location = videoTags['location'] as string;
-        const locationRegex = /([+-][0-9]+\.[0-9]+)([+-][0-9]+\.[0-9]+)\/$/;
-        const match = location.match(locationRegex);
-
-        if (match?.length === 3) {
-          newExif.latitude = parseFloat(match[1]);
-          newExif.longitude = parseFloat(match[2]);
-        }
-      } else if (videoTags && videoTags['com.apple.quicktime.location.ISO6709']) {
-        const location = videoTags['com.apple.quicktime.location.ISO6709'] as string;
-        const locationRegex = /([+-][0-9]+\.[0-9]+)([+-][0-9]+\.[0-9]+)([+-][0-9]+\.[0-9]+)\/$/;
-        const match = location.match(locationRegex);
-
-        if (match?.length === 4) {
-          newExif.latitude = parseFloat(match[1]);
-          newExif.longitude = parseFloat(match[2]);
-        }
-      }
-
-      if (newExif.longitude && newExif.latitude) {
-        try {
-          newExif.timeZone = tz_lookup(newExif.latitude, newExif.longitude);
-        } catch (error: any) {
-          this.logger.warn(`Error while calculating timezone from gps coordinates: ${error}`, error?.stack);
-        }
-      }
-
-      await this.applyReverseGeocoding(asset, newExif);
-
-      for (const stream of data.streams) {
-        if (stream.codec_type === 'video') {
-          newExif.exifImageWidth = stream.width || null;
-          newExif.exifImageHeight = stream.height || null;
-
-          if (typeof stream.rotation === 'string') {
-            newExif.orientation = stream.rotation;
-          } else if (typeof stream.rotation === 'number') {
-            newExif.orientation = `${stream.rotation}`;
-          } else {
-            newExif.orientation = null;
-          }
-
-          if (stream.r_frame_rate) {
-            const fpsParts = stream.r_frame_rate.split('/');
-
-            if (fpsParts.length === 2) {
-              newExif.fps = Math.round(parseInt(fpsParts[0]) / parseInt(fpsParts[1]));
-            }
-          }
-        }
-      }
-
-      await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
-      asset = await this.assetCore.save({ id: asset.id, duration: durationString, fileCreatedAt });
-      await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { asset } });
-    } catch (error: any) {
-      this.logger.error(
-        `Error in video metadata extraction due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
+    const exifData = await exiftool.read<ImmichTags>(asset.sidecarPath || asset.originalPath).catch((error: any) => {
+      this.logger.warn(
+        `The exifData parsing failed due to ${error} for asset ${asset.id} at ${asset.originalPath}`,
         error?.stack,
       );
+      return null;
+    });
+
+    const newExif = new ExifEntity();
+    newExif.assetId = asset.id;
+    newExif.fileSizeInByte = data.format.size || null;
+    newExif.dateTimeOriginal = fileCreatedAt ? new Date(fileCreatedAt) : null;
+    newExif.modifyDate = null;
+    newExif.timeZone = null;
+    newExif.latitude = null;
+    newExif.longitude = null;
+    newExif.city = null;
+    newExif.state = null;
+    newExif.country = null;
+    newExif.fps = null;
+    newExif.livePhotoCID = exifData?.ContentIdentifier || null;
+
+    if (newExif.livePhotoCID) {
+      const photoAsset = await this.assetRepository.findLivePhotoMatch({
+        livePhotoCID: newExif.livePhotoCID,
+        ownerId: asset.ownerId,
+        otherAssetId: asset.id,
+        type: AssetType.IMAGE,
+      });
+      if (photoAsset) {
+        await this.assetRepository.save({ id: photoAsset.id, livePhotoVideoId: asset.id });
+        await this.assetRepository.save({ id: asset.id, isVisible: false });
+      }
     }
+
+    if (videoTags && videoTags['location']) {
+      const location = videoTags['location'] as string;
+      const locationRegex = /([+-][0-9]+\.[0-9]+)([+-][0-9]+\.[0-9]+)\/$/;
+      const match = location.match(locationRegex);
+
+      if (match?.length === 3) {
+        newExif.latitude = parseFloat(match[1]);
+        newExif.longitude = parseFloat(match[2]);
+      }
+    } else if (videoTags && videoTags['com.apple.quicktime.location.ISO6709']) {
+      const location = videoTags['com.apple.quicktime.location.ISO6709'] as string;
+      const locationRegex = /([+-][0-9]+\.[0-9]+)([+-][0-9]+\.[0-9]+)([+-][0-9]+\.[0-9]+)\/$/;
+      const match = location.match(locationRegex);
+
+      if (match?.length === 4) {
+        newExif.latitude = parseFloat(match[1]);
+        newExif.longitude = parseFloat(match[2]);
+      }
+    }
+
+    if (newExif.longitude && newExif.latitude) {
+      try {
+        newExif.timeZone = tz_lookup(newExif.latitude, newExif.longitude);
+      } catch (error: any) {
+        this.logger.warn(`Error while calculating timezone from gps coordinates: ${error}`, error?.stack);
+      }
+    }
+
+    await this.applyReverseGeocoding(asset, newExif);
+
+    for (const stream of data.streams) {
+      if (stream.codec_type === 'video') {
+        newExif.exifImageWidth = stream.width || null;
+        newExif.exifImageHeight = stream.height || null;
+
+        if (typeof stream.rotation === 'string') {
+          newExif.orientation = stream.rotation;
+        } else if (typeof stream.rotation === 'number') {
+          newExif.orientation = `${stream.rotation}`;
+        } else {
+          newExif.orientation = null;
+        }
+
+        if (stream.r_frame_rate) {
+          const fpsParts = stream.r_frame_rate.split('/');
+
+          if (fpsParts.length === 2) {
+            newExif.fps = Math.round(parseInt(fpsParts[0]) / parseInt(fpsParts[1]));
+          }
+        }
+      }
+    }
+
+    await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
+    await this.assetRepository.save({ id: asset.id, duration: durationString, fileCreatedAt });
+
+    return true;
   }
 
   private async applyReverseGeocoding(asset: AssetEntity, newExif: ExifEntity) {

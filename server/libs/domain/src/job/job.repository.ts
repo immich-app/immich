@@ -1,12 +1,11 @@
 import { JobName, QueueName } from './job.constants';
 import {
   IAssetFaceJob,
-  IAssetJob,
   IBaseJob,
   IBulkEntityJob,
   IDeleteFilesJob,
+  IEntityJob,
   IFaceThumbnailJob,
-  IUserDeletionJob,
 } from './job.interface';
 
 export interface JobCounts {
@@ -24,50 +23,46 @@ export interface QueueStatus {
 }
 
 export type JobItem =
-  // Asset Upload
-  | { name: JobName.ASSET_UPLOADED; data: IAssetJob }
-
   // Transcoding
   | { name: JobName.QUEUE_VIDEO_CONVERSION; data: IBaseJob }
-  | { name: JobName.VIDEO_CONVERSION; data: IAssetJob }
+  | { name: JobName.VIDEO_CONVERSION; data: IEntityJob }
 
   // Thumbnails
   | { name: JobName.QUEUE_GENERATE_THUMBNAILS; data: IBaseJob }
-  | { name: JobName.GENERATE_JPEG_THUMBNAIL; data: IAssetJob }
-  | { name: JobName.GENERATE_WEBP_THUMBNAIL; data: IAssetJob }
+  | { name: JobName.GENERATE_JPEG_THUMBNAIL; data: IEntityJob }
+  | { name: JobName.GENERATE_WEBP_THUMBNAIL; data: IEntityJob }
 
   // User Deletion
   | { name: JobName.USER_DELETE_CHECK }
-  | { name: JobName.USER_DELETION; data: IUserDeletionJob }
+  | { name: JobName.USER_DELETION; data: IEntityJob }
 
   // Storage Template
   | { name: JobName.STORAGE_TEMPLATE_MIGRATION }
-  | { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE; data: IAssetJob }
+  | { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE; data: IEntityJob }
   | { name: JobName.SYSTEM_CONFIG_CHANGE }
 
   // Metadata Extraction
   | { name: JobName.QUEUE_METADATA_EXTRACTION; data: IBaseJob }
-  | { name: JobName.EXIF_EXTRACTION; data: IAssetJob }
-  | { name: JobName.EXTRACT_VIDEO_METADATA; data: IAssetJob }
+  | { name: JobName.METADATA_EXTRACTION; data: IEntityJob }
 
   // Sidecar Scanning
   | { name: JobName.QUEUE_SIDECAR; data: IBaseJob }
-  | { name: JobName.SIDECAR_DISCOVERY; data: IAssetJob }
-  | { name: JobName.SIDECAR_SYNC; data: IAssetJob }
+  | { name: JobName.SIDECAR_DISCOVERY; data: IEntityJob }
+  | { name: JobName.SIDECAR_SYNC; data: IEntityJob }
 
   // Object Tagging
   | { name: JobName.QUEUE_OBJECT_TAGGING; data: IBaseJob }
-  | { name: JobName.DETECT_OBJECTS; data: IAssetJob }
-  | { name: JobName.CLASSIFY_IMAGE; data: IAssetJob }
+  | { name: JobName.DETECT_OBJECTS; data: IEntityJob }
+  | { name: JobName.CLASSIFY_IMAGE; data: IEntityJob }
 
   // Recognize Faces
   | { name: JobName.QUEUE_RECOGNIZE_FACES; data: IBaseJob }
-  | { name: JobName.RECOGNIZE_FACES; data: IAssetJob }
+  | { name: JobName.RECOGNIZE_FACES; data: IEntityJob }
   | { name: JobName.GENERATE_FACE_THUMBNAIL; data: IFaceThumbnailJob }
 
   // Clip Embedding
   | { name: JobName.QUEUE_ENCODE_CLIP; data: IBaseJob }
-  | { name: JobName.ENCODE_CLIP; data: IAssetJob }
+  | { name: JobName.ENCODE_CLIP; data: IEntityJob }
 
   // Filesystem
   | { name: JobName.DELETE_FILES; data: IDeleteFilesJob }
