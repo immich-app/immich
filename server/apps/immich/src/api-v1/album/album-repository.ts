@@ -6,18 +6,15 @@ import { Repository } from 'typeorm';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
-import { UpdateAlbumDto } from '@app/domain';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 
 export interface IAlbumRepository {
   get(albumId: string): Promise<AlbumEntity | null>;
-  delete(album: AlbumEntity): Promise<void>;
   addSharedUsers(album: AlbumEntity, addUsersDto: AddUsersDto): Promise<AlbumEntity>;
   removeUser(album: AlbumEntity, userId: string): Promise<void>;
   removeAssets(album: AlbumEntity, removeAssets: RemoveAssetsDto): Promise<number>;
   addAssets(album: AlbumEntity, addAssetsDto: AddAssetsDto): Promise<AddAssetsResponseDto>;
-  updateAlbum(album: AlbumEntity, updateAlbumDto: UpdateAlbumDto): Promise<AlbumEntity>;
   updateThumbnails(): Promise<number | undefined>;
   getCountByUserId(userId: string): Promise<AlbumCountResponseDto>;
   getSharedWithUserAlbumCount(userId: string, assetId: string): Promise<number>;
@@ -60,10 +57,6 @@ export class AlbumRepository implements IAlbumRepository {
         },
       },
     });
-  }
-
-  async delete(album: AlbumEntity): Promise<void> {
-    await this.albumRepository.delete({ id: album.id, ownerId: album.ownerId });
   }
 
   async addSharedUsers(album: AlbumEntity, addUsersDto: AddUsersDto): Promise<AlbumEntity> {
@@ -126,13 +119,6 @@ export class AlbumRepository implements IAlbumRepository {
       successfullyAdded,
       alreadyInAlbum: alreadyExisting,
     };
-  }
-
-  updateAlbum(album: AlbumEntity, updateAlbumDto: UpdateAlbumDto): Promise<AlbumEntity> {
-    album.albumName = updateAlbumDto.albumName || album.albumName;
-    album.albumThumbnailAssetId = updateAlbumDto.albumThumbnailAssetId || album.albumThumbnailAssetId;
-
-    return this.albumRepository.save(album);
   }
 
   /**

@@ -98,4 +98,18 @@ export class AlbumService {
 
     return mapAlbum(updatedAlbum);
   }
+
+  async delete(authUser: AuthUserDto, id: string): Promise<void> {
+    const [album] = await this.albumRepository.getByIds([id]);
+    if (!album) {
+      throw new BadRequestException('Album not found');
+    }
+
+    if (album.ownerId !== authUser.id) {
+      throw new ForbiddenException('Album not owned by user');
+    }
+
+    await this.albumRepository.delete(album);
+    await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ALBUM, data: { ids: [id] } });
+  }
 }

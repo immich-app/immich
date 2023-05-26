@@ -14,5 +14,6 @@ export const newAlbumRepositoryMock = (): jest.Mocked<IAlbumRepository> => {
     hasAsset: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
+    delete: jest.fn(),
   };
 };

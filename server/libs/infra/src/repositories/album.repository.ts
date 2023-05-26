@@ -143,8 +143,12 @@ export class AlbumRepository implements IAlbumRepository {
     return this.save(album);
   }
 
-  async update(album: Partial<AlbumEntity>) {
+  async update(album: Partial<AlbumEntity>): Promise<AlbumEntity> {
     return this.save(album);
+  }
+
+  async delete(album: AlbumEntity): Promise<void> {
+    await this.repository.remove(album);
   }
 
   private async save(album: Partial<AlbumEntity>) {

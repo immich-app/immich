@@ -176,7 +176,22 @@ describe(AlbumService.name, () => {
       ).rejects.toBeInstanceOf(ForbiddenException);
     });
 
-    it('should all the owner to update the album', async () => {
+    it('should require a valid thumbnail asset id', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.oneAsset]);
+      albumMock.update.mockResolvedValue(albumStub.oneAsset);
+      albumMock.hasAsset.mockResolvedValue(false);
+
+      await expect(
+        sut.update(authStub.admin, albumStub.oneAsset.id, {
+          albumThumbnailAssetId: 'not-in-album',
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(albumMock.hasAsset).toHaveBeenCalledWith(albumStub.oneAsset.id, 'not-in-album');
+      expect(albumMock.update).not.toHaveBeenCalled();
+    });
+
+    it('should allow the owner to update the album', async () => {
       albumMock.getByIds.mockResolvedValue([albumStub.oneAsset]);
       albumMock.update.mockResolvedValue(albumStub.oneAsset);
 
@@ -193,6 +208,35 @@ describe(AlbumService.name, () => {
         name: JobName.SEARCH_INDEX_ALBUM,
         data: { ids: [albumStub.oneAsset.id] },
       });
+    });
+  });
+
+  describe('delete', () => {
+    it('should throw an error for an album not found', async () => {
+      albumMock.getByIds.mockResolvedValue([]);
+
+      await expect(sut.delete(authStub.admin, albumStub.sharedWithAdmin.id)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+
+      expect(albumMock.delete).not.toHaveBeenCalled();
+    });
+
+    it('should not let a shared user delete the album', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.sharedWithAdmin]);
+
+      await expect(sut.delete(authStub.admin, albumStub.sharedWithAdmin.id)).rejects.toBeInstanceOf(ForbiddenException);
+
+      expect(albumMock.delete).not.toHaveBeenCalled();
+    });
+
+    it('should let the owner delete an album', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.empty]);
+
+      await sut.delete(authStub.admin, albumStub.empty.id);
+
+      expect(albumMock.delete).toHaveBeenCalledTimes(1);
+      expect(albumMock.delete).toHaveBeenCalledWith(albumStub.empty);
     });
   });
 });
