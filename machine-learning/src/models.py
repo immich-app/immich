@@ -1,14 +1,11 @@
+import torch  # note: this must be called before onnxruntime if using cuda, as ort relies on the cuda libraries loaded by torch
 import onnxruntime as ort
 from onnx.utils import extract_model
 import onnx
 from onnxsim import simplify
 from insightface.app import FaceAnalysis
-import torch
 from optimum.pipelines import pipeline
-from optimum.onnxruntime import (
-    ORTModelForImageClassification,
-    # ORTModelForFeatureExtraction,
-)
+from optimum.onnxruntime import ORTModelForImageClassification
 from transformers import AutoImageProcessor
 from optimum.exporters.onnx import main_export
 from pathlib import Path
@@ -29,22 +26,13 @@ def get_model_dir(model_name: str, task: str):
 
 
 def init_image_classifier(model_name: str):
-    # feature_extractor_dir = get_model_dir(model_name, "feature-extraction")
     image_classifier_dir = get_model_dir(model_name, "image-classification")
-
-    # if not feature_extractor_dir.exists():
-    #     export_hf_model(
-    #         model_name, task="feature-extraction", model_dir=feature_extractor_dir
-    #     )
 
     if not image_classifier_dir.exists():
         export_hf_model(
             model_name, task="image-classification", model_dir=image_classifier_dir
         )
 
-    # feature_extractor = ORTModelForFeatureExtraction.from_pretrained(
-    #     feature_extractor_dir, provider=providers[0]
-    # )
     processor = AutoImageProcessor.from_pretrained(model_name)
     image_classifier = ORTModelForImageClassification.from_pretrained(
         image_classifier_dir, provider=providers[0], use_io_binding=False
@@ -109,6 +97,8 @@ def init_clip_text(model_name: str) -> ort.InferenceSession:
 
 
 def start_inference_session(model_path: Path | str):
+    if isinstance(model_path, Path):
+        model_path = model_path.as_posix()
     sess_options = ort.SessionOptions()
     sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
     return ort.InferenceSession(
@@ -126,8 +116,6 @@ def export_hf_model(model_name: str, task: str, model_dir=None):
         model_name,
         output=model_dir,
         task=task,
-        # optimize="O4" if device == "cuda" else "O3",
-        # device=device,
     )
 
     model_path = Path(model_dir, "model.onnx")

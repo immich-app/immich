@@ -1,0 +1,22 @@
+name: base
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python==3.10.*
+  - pytorch==2.*
+  - torchvision==0.*
+  - pytorch-cuda==11.8
+  - fastapi==0.*
+  - pillow==9.*
+  - uvicorn-standard==0.*
+  - transformers==4.*
+  - pydantic==1.*
+  - pip
+  - pip:
+      - optimum==1.*
+      - onnxruntime-gpu==1.*
+      - opencv-python-headless==4.*
+      - onnxsim==0.*
+      - insightface==0.*

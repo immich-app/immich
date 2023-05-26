@@ -38,7 +38,15 @@ services:
     env_file:
       - .env
     restart: always
-
+    # uncomment below lines for CUDA
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+    
   immich-web:
     container_name: immich_web
     image: ghcr.io/immich-app/immich-web:release

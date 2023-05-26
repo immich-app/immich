@@ -15,10 +15,10 @@ export class MachineLearningRepository implements IMachineLearningRepository {
   }
 
   encodeImage(input: MachineLearningInput): Promise<number[]> {
-    return client.post<number[]>('/sentence-transformer/encode-image', input).then((res) => res.data);
+    return client.post<number[]>('/clip/encode-image', input).then((res) => res.data);
   }
 
   encodeText(input: string): Promise<number[]> {
-    return client.post<number[]>('/sentence-transformer/encode-text', { text: input }).then((res) => res.data);
+    return client.post<number[]>('/clip/encode-text', { text: input }).then((res) => res.data);
   }
 }

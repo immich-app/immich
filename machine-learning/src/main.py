@@ -1,13 +1,12 @@
-# import onnxruntime as ort
+import torch  # note: this must be called before onnxruntime if using cuda, as ort relies on the cuda libraries loaded by torch
 import os
 import cv2 as cv
 import uvicorn
 
 from PIL import Image
-import numpy as np
 from fastapi import FastAPI
 from pydantic import BaseModel
-from .models import (
+from models import (
     init_clip_text,
     init_clip_vision,
     init_facial_recognition,
@@ -71,7 +70,7 @@ def image_classification(payload: MlRequestBody):
     return labels
 
 
-@app.post("/sentence-transformer/encode-image", status_code=200)
+@app.post("/clip/encode-image", status_code=200)
 def clip_encode_image(payload: MlRequestBody):
     model = _get_model(clip_model, "clip-vision")
     processor = _get_model(clip_model, "clip-processor")
@@ -84,7 +83,7 @@ def clip_encode_image(payload: MlRequestBody):
     return embeddings[0].squeeze().tolist()
 
 
-@app.post("/sentence-transformer/encode-text", status_code=200)
+@app.post("/clip/encode-text", status_code=200)
 def clip_encode_text(payload: ClipRequestBody):
     model = _get_model(clip_model, "clip-text")
     tokenizer = _get_model(clip_model, "clip-tokenizer")
@@ -131,36 +130,25 @@ def facial_recognition(payload: MlRequestBody):
 def _get_model(model_name, task):
     global _model_cache
     if task not in _model_cache:
-        if task == "image-classification":
-            _model_cache[task] = init_image_classifier(model_name)
-        elif task == "clip-vision" or task == "clip-processor":
-            _model_cache["clip-processor"] = AutoImageProcessor.from_pretrained(
-                model_name
-            )
-            _model_cache[task] = init_clip_vision(model_name)
-        elif task == "clip-text" or task == "clip-tokenizer":
-            _model_cache[task] = init_clip_text(model_name)
-            _model_cache["clip-tokenizer"] = CLIPTokenizerFast.from_pretrained(
-                model_name
-            )
-        elif task == "facial-recognition":
-            _model_cache[task] = init_facial_recognition(model_name)
-        else:
-            raise ValueError(f"Invalid task specified: {task}")
-        # match task:
-        #     case "image-classification":
-        #         _model_cache[task] = init_image_classifier(model_name)
-        #     case "clip-vision":
-        #         _model_cache[task] = init_clip_vision(model_name)
-        #     case "clip-text" | "clip-tokenizer":
-        #         _model_cache[task] = init_clip_text(model_name)
-        #         _model_cache["clip-tokenizer"] = CLIPTokenizerFast.from_pretrained(
-        #             model_name
-        #         )
-        #     case "facial-recognition":
-        #         _model_cache[task] = init_facial_recognition(model_name)
-        #     case _:
-        #         raise ValueError(f"Invalid task specified: {task}")
+        match task:
+            case "image-classification":
+                _model_cache[task] = init_image_classifier(model_name)
+            case "clip-vision":
+                _model_cache[task] = init_clip_vision(model_name)
+            case "clip-processor":
+                _model_cache["clip-processor"] = AutoImageProcessor.from_pretrained(
+                    model_name
+                )
+            case "clip-text":
+                _model_cache[task] = init_clip_text(model_name)
+            case "clip-tokenizer":
+                _model_cache["clip-tokenizer"] = CLIPTokenizerFast.from_pretrained(
+                    model_name
+                )
+            case "facial-recognition":
+                _model_cache[task] = init_facial_recognition(model_name)
+            case _:
+                raise ValueError(f"Invalid task specified: {task}")
 
     return _model_cache[task]
 
