@@ -15,9 +15,8 @@ RUN apt-get update && \
         python3-venv && \
     echo "**** build machine-learning ****" && \
     python3 -m venv /opt/venv && \
-    /opt/venv/bin/pip install -U --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cu117 \
-        torch==1.13.1 \
-        torchvision==0.14.1 && \
+    /opt/venv/bin/pip install -U --no-cache-dir --index-url https://download.pytorch.org/whl/cu117 \
+        torch && \
     /opt/venv/bin/pip install -U --no-cache-dir \
         fastapi \
         insightface \
