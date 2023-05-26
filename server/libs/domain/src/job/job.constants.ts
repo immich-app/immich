@@ -81,3 +81,79 @@ export enum JobName {
 }
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
+
+export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
+  // misc
+  [JobName.ASSET_UPLOADED]: QueueName.BACKGROUND_TASK,
+  [JobName.USER_DELETE_CHECK]: QueueName.BACKGROUND_TASK,
+  [JobName.USER_DELETION]: QueueName.BACKGROUND_TASK,
+  [JobName.DELETE_FILES]: QueueName.BACKGROUND_TASK,
+  [JobName.PERSON_CLEANUP]: QueueName.BACKGROUND_TASK,
+
+  // conversion
+  [JobName.QUEUE_VIDEO_CONVERSION]: QueueName.VIDEO_CONVERSION,
+  [JobName.VIDEO_CONVERSION]: QueueName.VIDEO_CONVERSION,
+
+  // thumbnails
+  [JobName.QUEUE_GENERATE_THUMBNAILS]: QueueName.THUMBNAIL_GENERATION,
+  [JobName.GENERATE_JPEG_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
+  [JobName.GENERATE_WEBP_THUMBNAIL]: QueueName.THUMBNAIL_GENERATION,
+
+  // metadata
+  [JobName.QUEUE_METADATA_EXTRACTION]: QueueName.METADATA_EXTRACTION,
+  [JobName.EXIF_EXTRACTION]: QueueName.METADATA_EXTRACTION,
+  [JobName.EXTRACT_VIDEO_METADATA]: QueueName.METADATA_EXTRACTION,
+
+  // storage template
+  [JobName.STORAGE_TEMPLATE_MIGRATION]: QueueName.STORAGE_TEMPLATE_MIGRATION,
+  [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE]: QueueName.STORAGE_TEMPLATE_MIGRATION,
+  [JobName.SYSTEM_CONFIG_CHANGE]: QueueName.STORAGE_TEMPLATE_MIGRATION,
+
+  // object tagging
+  [JobName.QUEUE_OBJECT_TAGGING]: QueueName.OBJECT_TAGGING,
+  [JobName.DETECT_OBJECTS]: QueueName.OBJECT_TAGGING,
+  [JobName.CLASSIFY_IMAGE]: QueueName.OBJECT_TAGGING,
+
+  // facial recognition
+  [JobName.QUEUE_RECOGNIZE_FACES]: QueueName.RECOGNIZE_FACES,
+  [JobName.RECOGNIZE_FACES]: QueueName.RECOGNIZE_FACES,
+  [JobName.GENERATE_FACE_THUMBNAIL]: QueueName.RECOGNIZE_FACES,
+
+  // clip
+  [JobName.QUEUE_ENCODE_CLIP]: QueueName.CLIP_ENCODING,
+  [JobName.ENCODE_CLIP]: QueueName.CLIP_ENCODING,
+
+  // search - albums
+  [JobName.SEARCH_INDEX_ALBUMS]: QueueName.SEARCH,
+  [JobName.SEARCH_INDEX_ALBUM]: QueueName.SEARCH,
+  [JobName.SEARCH_REMOVE_ALBUM]: QueueName.SEARCH,
+
+  // search - assets
+  [JobName.SEARCH_INDEX_ASSETS]: QueueName.SEARCH,
+  [JobName.SEARCH_INDEX_ASSET]: QueueName.SEARCH,
+  [JobName.SEARCH_REMOVE_ASSET]: QueueName.SEARCH,
+
+  // search - faces
+  [JobName.SEARCH_INDEX_FACES]: QueueName.SEARCH,
+  [JobName.SEARCH_INDEX_FACE]: QueueName.SEARCH,
+  [JobName.SEARCH_REMOVE_FACE]: QueueName.SEARCH,
+
+  // XMP sidecars
+  [JobName.QUEUE_SIDECAR]: QueueName.SIDECAR,
+  [JobName.SIDECAR_DISCOVERY]: QueueName.SIDECAR,
+  [JobName.SIDECAR_SYNC]: QueueName.SIDECAR,
+};
+
+// max concurrency for each queue (total concurrency across all jobs)
+export const QUEUE_TO_CONCURRENCY: Record<QueueName, number> = {
+  [QueueName.BACKGROUND_TASK]: 5,
+  [QueueName.CLIP_ENCODING]: 2,
+  [QueueName.METADATA_EXTRACTION]: 5,
+  [QueueName.OBJECT_TAGGING]: 2,
+  [QueueName.RECOGNIZE_FACES]: 2,
+  [QueueName.SEARCH]: 5,
+  [QueueName.SIDECAR]: 5,
+  [QueueName.STORAGE_TEMPLATE_MIGRATION]: 5,
+  [QueueName.THUMBNAIL_GENERATION]: 5,
+  [QueueName.VIDEO_CONVERSION]: 1,
+};

@@ -104,7 +104,7 @@ export class FacialRecognitionService {
       const [asset] = await this.assetRepository.getByIds([assetId]);
       if (!asset || !asset.resizePath) {
         this.logger.warn(`Asset not found for facial cropping: ${assetId}`);
-        return null;
+        return;
       }
 
       this.logger.verbose(`Cropping face for person: ${personId}`);

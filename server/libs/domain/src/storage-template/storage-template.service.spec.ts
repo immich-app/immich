@@ -42,7 +42,7 @@ describe(StorageTemplateService.name, () => {
       });
       userMock.getList.mockResolvedValue([]);
 
-      await sut.handleTemplateMigration();
+      await sut.handleMigration();
 
       expect(assetMock.getAll).toHaveBeenCalled();
     });
@@ -63,7 +63,7 @@ describe(StorageTemplateService.name, () => {
         .calledWith('upload/library/user-id/2023/2023-02-23/asset-id+1.ext')
         .mockResolvedValue(false);
 
-      await sut.handleTemplateMigration();
+      await sut.handleMigration();
 
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(storageMock.checkFileExists).toHaveBeenCalledTimes(2);
@@ -86,7 +86,7 @@ describe(StorageTemplateService.name, () => {
       });
       userMock.getList.mockResolvedValue([userEntityStub.user1]);
 
-      await sut.handleTemplateMigration();
+      await sut.handleMigration();
 
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(storageMock.moveFile).not.toHaveBeenCalled();
@@ -106,7 +106,7 @@ describe(StorageTemplateService.name, () => {
       });
       userMock.getList.mockResolvedValue([userEntityStub.user1]);
 
-      await sut.handleTemplateMigration();
+      await sut.handleMigration();
 
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(storageMock.moveFile).not.toHaveBeenCalled();
@@ -122,7 +122,7 @@ describe(StorageTemplateService.name, () => {
       assetMock.save.mockResolvedValue(assetEntityStub.image);
       userMock.getList.mockResolvedValue([userEntityStub.user1]);
 
-      await sut.handleTemplateMigration();
+      await sut.handleMigration();
 
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(storageMock.moveFile).toHaveBeenCalledWith(
@@ -143,7 +143,7 @@ describe(StorageTemplateService.name, () => {
       assetMock.save.mockResolvedValue(assetEntityStub.image);
       userMock.getList.mockResolvedValue([userEntityStub.storageLabel]);
 
-      await sut.handleTemplateMigration();
+      await sut.handleMigration();
 
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(storageMock.moveFile).toHaveBeenCalledWith(
@@ -164,7 +164,7 @@ describe(StorageTemplateService.name, () => {
       storageMock.moveFile.mockRejectedValue(new Error('Read only system'));
       userMock.getList.mockResolvedValue([userEntityStub.user1]);
 
-      await sut.handleTemplateMigration();
+      await sut.handleMigration();
 
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(storageMock.moveFile).toHaveBeenCalledWith(
@@ -182,7 +182,7 @@ describe(StorageTemplateService.name, () => {
       assetMock.save.mockRejectedValue('Connection Error!');
       userMock.getList.mockResolvedValue([userEntityStub.user1]);
 
-      await sut.handleTemplateMigration();
+      await sut.handleMigration();
 
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(assetMock.save).toHaveBeenCalledWith({
@@ -200,6 +200,6 @@ describe(StorageTemplateService.name, () => {
     storageMock.removeEmptyDirs.mockRejectedValue(new Error('Read only filesystem'));
     userMock.getList.mockResolvedValue([]);
 
-    await sut.handleTemplateMigration();
+    await sut.handleMigration();
   });
 });
