@@ -58,7 +58,7 @@ export class ProcessorService {
     [JobName.SEARCH_INDEX_FACES]: () => this.searchService.handleIndexFaces(),
     [JobName.SEARCH_INDEX_ALBUM]: (data) => this.searchService.handleIndexAlbum(data),
     [JobName.SEARCH_INDEX_ASSET]: (data) => this.searchService.handleIndexAsset(data),
-    [JobName.SEARCH_INDEX_FACE]: () => this.searchService.handleIndexFaces(),
+    [JobName.SEARCH_INDEX_FACE]: (data) => this.searchService.handleIndexFace(data),
     [JobName.SEARCH_REMOVE_ALBUM]: (data) => this.searchService.handleRemoveAlbum(data),
     [JobName.SEARCH_REMOVE_ASSET]: (data) => this.searchService.handleRemoveAsset(data),
     [JobName.SEARCH_REMOVE_FACE]: (data) => this.searchService.handleRemoveFace(data),
