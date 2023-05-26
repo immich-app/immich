@@ -116,13 +116,16 @@ export class MetadataExtractionProcessor {
       : {};
 
     const exifToDate = (exifDate: string | ExifDateTime | undefined) => {
-      if (!exifDate) return null;
-
-      if (typeof exifDate === 'string') {
-        return new Date(exifDate);
+      if (!exifDate) {
+        return null;
       }
 
-      return exifDate.toDate();
+      const date = typeof exifDate === 'string' ? new Date(exifDate) : exifDate.toDate();
+      if (isNaN(date.valueOf())) {
+        return null;
+      }
+
+      return date;
     };
 
     const exifTimeZone = (exifDate: string | ExifDateTime | undefined) => {
