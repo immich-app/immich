@@ -1,19 +1,20 @@
 <script lang="ts">
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+	import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
+	import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
 	import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
 	import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
-	import DownloadFiles from '$lib/components/photos-page/actions/download-files.svelte';
-	import RemoveFromArchive from '$lib/components/photos-page/actions/remove-from-archive.svelte';
+	import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
+	import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
 	import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
 	import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
-	import OptionAddToAlbum from '$lib/components/photos-page/menu-options/option-add-to-album.svelte';
-	import OptionAddToFavorites from '$lib/components/photos-page/menu-options/option-add-to-favorites.svelte';
 	import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
 	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
 	import { archivedAsset } from '$lib/stores/archived-asset.store';
 	import { handleError } from '$lib/utils/handle-error';
 	import { api, AssetResponseDto } from '@api';
 	import { onMount } from 'svelte';
+	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import Plus from 'svelte-material-icons/Plus.svelte';
 	import type { PageData } from './$types';
 
@@ -21,6 +22,7 @@
 
 	let selectedAssets: Set<AssetResponseDto> = new Set();
 	$: isMultiSelectionMode = selectedAssets.size > 0;
+	$: isAllFavorite = Array.from(selectedAssets).every((asset) => asset.isFavorite);
 
 	onMount(async () => {
 		try {
@@ -51,15 +53,17 @@
 				assets={selectedAssets}
 				clearSelect={() => (selectedAssets = new Set())}
 			>
+				<ArchiveAction unarchive onAssetArchive={(asset) => onAssetDelete(asset.id)} />
 				<CreateSharedLink />
-				<RemoveFromArchive onAssetArchive={(asset) => onAssetDelete(asset.id)} />
-				<DownloadFiles />
 				<AssetSelectContextMenu icon={Plus} title="Add">
-					<OptionAddToFavorites />
-					<OptionAddToAlbum />
-					<OptionAddToAlbum shared />
+					<AddToAlbum />
+					<AddToAlbum shared />
 				</AssetSelectContextMenu>
 				<DeleteAssets {onAssetDelete} />
+				<AssetSelectContextMenu icon={DotsVertical} title="Add">
+					<DownloadAction menuItem />
+					<FavoriteAction menuItem removeFavorite={isAllFavorite} />
+				</AssetSelectContextMenu>
 			</AssetSelectControlBar>
 		{/if}
 	</svelte:fragment>

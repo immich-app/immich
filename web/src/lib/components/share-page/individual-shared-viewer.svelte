@@ -7,7 +7,7 @@
 	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
 	import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
 	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-	import DownloadFiles from '../photos-page/actions/download-files.svelte';
+	import DownloadAction from '../photos-page/actions/download-action.svelte';
 	import RemoveFromSharedLink from '../photos-page/actions/remove-from-shared-link.svelte';
 	import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
 	import ControlAppBar from '../shared-components/control-app-bar.svelte';
@@ -60,7 +60,7 @@
 <section class="bg-immich-bg dark:bg-immich-dark-bg">
 	{#if isMultiSelectionMode}
 		<AssetSelectControlBar assets={selectedAssets} clearSelect={clearMultiSelectAssetAssetHandler}>
-			<DownloadFiles filename="immich-shared" sharedLinkKey={sharedLink.key} />
+			<DownloadAction filename="immich-shared" sharedLinkKey={sharedLink.key} />
 			{#if isOwned}
 				<RemoveFromSharedLink bind:sharedLink allAssets={assets} />
 			{/if}

@@ -3,29 +3,32 @@
 	import { page } from '$app/stores';
 	import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
 	import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
+	import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
+	import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
 	import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
 	import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
-	import DownloadFiles from '$lib/components/photos-page/actions/download-files.svelte';
-	import MoveToArchive from '$lib/components/photos-page/actions/move-to-archive.svelte';
+	import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
+	import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
 	import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
 	import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
-	import OptionAddToAlbum from '$lib/components/photos-page/menu-options/option-add-to-album.svelte';
-	import OptionAddToFavorites from '$lib/components/photos-page/menu-options/option-add-to-favorites.svelte';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
 	import { AppRoute } from '$lib/constants';
 	import { handleError } from '$lib/utils/handle-error';
 	import { AssetResponseDto, api } from '@api';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
+	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import Plus from 'svelte-material-icons/Plus.svelte';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 
 	let isEditName = false;
-	let multiSelectAsset: Set<AssetResponseDto> = new Set();
 	let previousRoute: string = AppRoute.EXPLORE;
-	$: isMultiSelectionMode = multiSelectAsset.size > 0;
+	let selectedAssets: Set<AssetResponseDto> = new Set();
+	$: isMultiSelectionMode = selectedAssets.size > 0;
+	$: isAllArchive = Array.from(selectedAssets).every((asset) => asset.isArchived);
+	$: isAllFavorite = Array.from(selectedAssets).every((asset) => asset.isFavorite);
 
 	afterNavigate(({ from }) => {
 		// Prevent setting previousRoute to the current page.
@@ -44,25 +47,28 @@
 		}
 	};
 
-	const handleAssetDelete = (assetId: string) => {
+	const onAssetDelete = (assetId: string) => {
 		data.assets = data.assets.filter((asset: AssetResponseDto) => asset.id !== assetId);
 	};
 </script>
 
 {#if isMultiSelectionMode}
-	<AssetSelectControlBar
-		assets={multiSelectAsset}
-		clearSelect={() => (multiSelectAsset = new Set())}
-	>
+	<AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
 		<CreateSharedLink />
-		<MoveToArchive />
-		<DownloadFiles filename={data.person.name} />
 		<AssetSelectContextMenu icon={Plus} title="Add">
-			<OptionAddToFavorites />
-			<OptionAddToAlbum />
-			<OptionAddToAlbum shared />
+			<AddToAlbum />
+			<AddToAlbum shared />
 		</AssetSelectContextMenu>
-		<DeleteAssets onAssetDelete={handleAssetDelete} />
+		<DeleteAssets {onAssetDelete} />
+		<AssetSelectContextMenu icon={DotsVertical} title="Add">
+			<DownloadAction menuItem />
+			<FavoriteAction menuItem removeFavorite={isAllFavorite} />
+			<ArchiveAction
+				menuItem
+				unarchive={isAllArchive}
+				onAssetArchive={(asset) => onAssetDelete(asset.id)}
+			/>
+		</AssetSelectContextMenu>
 	</AssetSelectControlBar>
 {:else}
 	<ControlAppBar
@@ -114,7 +120,7 @@
 				assets={data.assets}
 				viewFrom="search-page"
 				showArchiveIcon={true}
-				bind:selectedAssets={multiSelectAsset}
+				bind:selectedAssets
 			/>
 		</section>
 	</section>

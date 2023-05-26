@@ -1,13 +1,20 @@
 <script lang="ts">
 	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+	import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
+	import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
 	import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
-	import RemoveFavorite from '$lib/components/photos-page/actions/remove-favorite.svelte';
+	import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
+	import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
+	import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
+	import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
 	import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
 	import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
 	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
 	import { handleError } from '$lib/utils/handle-error';
 	import { api, AssetResponseDto } from '@api';
 	import { onMount } from 'svelte';
+	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
+	import Plus from 'svelte-material-icons/Plus.svelte';
 	import Error from '../../+error.svelte';
 	import type { PageData } from './$types';
 
@@ -17,6 +24,7 @@
 	export let data: PageData;
 
 	$: isMultiSelectionMode = selectedAssets.size > 0;
+	$: isAllArchive = Array.from(selectedAssets).every((asset) => asset.isArchived);
 
 	onMount(async () => {
 		try {
@@ -35,8 +43,17 @@
 <!-- Multiselection mode app bar -->
 {#if isMultiSelectionMode}
 	<AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
+		<FavoriteAction removeFavorite onAssetFavorite={(asset) => onAssetDelete(asset.id)} />
 		<CreateSharedLink />
-		<RemoveFavorite onAssetFavorite={(asset) => onAssetDelete(asset.id)} />
+		<AssetSelectContextMenu icon={Plus} title="Add">
+			<AddToAlbum />
+			<AddToAlbum shared />
+		</AssetSelectContextMenu>
+		<DeleteAssets {onAssetDelete} />
+		<AssetSelectContextMenu icon={DotsVertical} title="Menu">
+			<DownloadAction menuItem />
+			<ArchiveAction menuItem unarchive={isAllArchive} />
+		</AssetSelectContextMenu>
 	</AssetSelectControlBar>
 {/if}
 
