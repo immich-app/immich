@@ -5,21 +5,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';
-import { CreateAlbumDto } from './dto/create-album.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
-import { UpdateAlbumDto } from './dto/update-album.dto';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 
 export interface IAlbumRepository {
-  create(ownerId: string, createAlbumDto: CreateAlbumDto): Promise<AlbumEntity>;
   get(albumId: string): Promise<AlbumEntity | null>;
-  delete(album: AlbumEntity): Promise<void>;
   addSharedUsers(album: AlbumEntity, addUsersDto: AddUsersDto): Promise<AlbumEntity>;
   removeUser(album: AlbumEntity, userId: string): Promise<void>;
   removeAssets(album: AlbumEntity, removeAssets: RemoveAssetsDto): Promise<number>;
   addAssets(album: AlbumEntity, addAssetsDto: AddAssetsDto): Promise<AddAssetsResponseDto>;
-  updateAlbum(album: AlbumEntity, updateAlbumDto: UpdateAlbumDto): Promise<AlbumEntity>;
   updateThumbnails(): Promise<number | undefined>;
   getCountByUserId(userId: string): Promise<AlbumCountResponseDto>;
   getSharedWithUserAlbumCount(userId: string, assetId: string): Promise<number>;
@@ -45,19 +40,6 @@ export class AlbumRepository implements IAlbumRepository {
     return new AlbumCountResponseDto(ownedAlbums.length, sharedAlbums, sharedAlbumCount);
   }
 
-  async create(ownerId: string, dto: CreateAlbumDto): Promise<AlbumEntity> {
-    const album = await this.albumRepository.save({
-      ownerId,
-      albumName: dto.albumName,
-      sharedUsers: dto.sharedWithUserIds?.map((value) => ({ id: value } as UserEntity)) ?? [],
-      assets: dto.assetIds?.map((value) => ({ id: value } as AssetEntity)) ?? [],
-      albumThumbnailAssetId: dto.assetIds?.[0] || null,
-    });
-
-    // need to re-load the relations
-    return this.get(album.id) as Promise<AlbumEntity>;
-  }
-
   async get(albumId: string): Promise<AlbumEntity | null> {
     return this.albumRepository.findOne({
       where: { id: albumId },
@@ -75,10 +57,6 @@ export class AlbumRepository implements IAlbumRepository {
         },
       },
     });
-  }
-
-  async delete(album: AlbumEntity): Promise<void> {
-    await this.albumRepository.delete({ id: album.id, ownerId: album.ownerId });
   }
 
   async addSharedUsers(album: AlbumEntity, addUsersDto: AddUsersDto): Promise<AlbumEntity> {
@@ -141,13 +119,6 @@ export class AlbumRepository implements IAlbumRepository {
       successfullyAdded,
       alreadyInAlbum: alreadyExisting,
     };
-  }
-
-  updateAlbum(album: AlbumEntity, updateAlbumDto: UpdateAlbumDto): Promise<AlbumEntity> {
-    album.albumName = updateAlbumDto.albumName || album.albumName;
-    album.albumThumbnailAssetId = updateAlbumDto.albumThumbnailAssetId || album.albumThumbnailAssetId;
-
-    return this.albumRepository.save(album);
   }
 
   /**

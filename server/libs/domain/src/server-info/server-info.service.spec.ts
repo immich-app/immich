@@ -34,7 +34,7 @@ describe(ServerInfoService.name, () => {
         diskUseRaw: 300,
       });
 
-      expect(storageMock.checkDiskUsage).toHaveBeenCalledWith('./upload');
+      expect(storageMock.checkDiskUsage).toHaveBeenCalledWith('upload/library');
     });
 
     it('should return the disk space as KiB', async () => {
@@ -50,7 +50,7 @@ describe(ServerInfoService.name, () => {
         diskUseRaw: 300000,
       });
 
-      expect(storageMock.checkDiskUsage).toHaveBeenCalledWith('./upload');
+      expect(storageMock.checkDiskUsage).toHaveBeenCalledWith('upload/library');
     });
 
     it('should return the disk space as MiB', async () => {
@@ -66,7 +66,7 @@ describe(ServerInfoService.name, () => {
         diskUseRaw: 300000000,
       });
 
-      expect(storageMock.checkDiskUsage).toHaveBeenCalledWith('./upload');
+      expect(storageMock.checkDiskUsage).toHaveBeenCalledWith('upload/library');
     });
 
     it('should return the disk space as GiB', async () => {
@@ -86,7 +86,7 @@ describe(ServerInfoService.name, () => {
         diskUseRaw: 300000000000,
       });
 
-      expect(storageMock.checkDiskUsage).toHaveBeenCalledWith('./upload');
+      expect(storageMock.checkDiskUsage).toHaveBeenCalledWith('upload/library');
     });
 
     it('should return the disk space as TiB', async () => {
@@ -106,7 +106,7 @@ describe(ServerInfoService.name, () => {
         diskUseRaw: 300000000000000,
       });
 
-      expect(storageMock.checkDiskUsage).toHaveBeenCalledWith('./upload');
+      expect(storageMock.checkDiskUsage).toHaveBeenCalledWith('upload/library');
     });
 
     it('should return the disk space as PiB', async () => {
@@ -126,7 +126,7 @@ describe(ServerInfoService.name, () => {
         diskUseRaw: 300000000000000000,
       });
 
-      expect(storageMock.checkDiskUsage).toHaveBeenCalledWith('./upload');
+      expect(storageMock.checkDiskUsage).toHaveBeenCalledWith('upload/library');
     });
   });
 

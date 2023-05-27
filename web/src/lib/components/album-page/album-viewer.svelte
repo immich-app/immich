@@ -24,7 +24,7 @@
 	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
 	import Button from '../elements/buttons/button.svelte';
 	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-	import DownloadFiles from '../photos-page/actions/download-files.svelte';
+	import DownloadAction from '../photos-page/actions/download-action.svelte';
 	import RemoveFromAlbum from '../photos-page/actions/remove-from-album.svelte';
 	import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
 	import CircleAvatar from '../shared-components/circle-avatar.svelte';
@@ -338,7 +338,7 @@
 			assets={multiSelectAsset}
 			clearSelect={() => (multiSelectAsset = new Set())}
 		>
-			<DownloadFiles filename={album.albumName} sharedLinkKey={sharedLink?.key} />
+			<DownloadAction filename={album.albumName} sharedLinkKey={sharedLink?.key} />
 			{#if isOwned}
 				<RemoveFromAlbum bind:album />
 			{/if}
@@ -405,7 +405,7 @@
 						/>
 					{/if}
 
-					{#if !isPublicShared}
+					{#if !isPublicShared && isOwned}
 						<div use:clickOutside on:outclick={() => (isShowAlbumOptions = false)}>
 							<CircleIconButton
 								title="Album options"
@@ -413,15 +413,13 @@
 								logo={DotsVertical}
 								>{#if isShowAlbumOptions}
 									<ContextMenu {...contextMenuPosition}>
-										{#if isOwned}
-											<MenuOption
-												on:click={() => {
-													isShowThumbnailSelection = true;
-													isShowAlbumOptions = false;
-												}}
-												text="Set album cover"
-											/>
-										{/if}
+										<MenuOption
+											on:click={() => {
+												isShowThumbnailSelection = true;
+												isShowAlbumOptions = false;
+											}}
+											text="Set album cover"
+										/>
 									</ContextMenu>
 								{/if}
 							</CircleIconButton>

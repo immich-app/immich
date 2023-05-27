@@ -46,6 +46,7 @@ export class SystemConfigService {
 
   async refreshConfig() {
     await this.core.refreshConfig();
+    return true;
   }
 
   addValidator(validator: SystemConfigValidator) {

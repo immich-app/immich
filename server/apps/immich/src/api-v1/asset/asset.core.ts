@@ -1,5 +1,5 @@
 import { AuthUserDto, IJobRepository, JobName } from '@app/domain';
-import { AssetEntity, UserEntity } from '@app/infra/entities';
+import { AssetEntity, AssetType, UserEntity } from '@app/infra/entities';
 import { IAssetRepository } from './asset-repository';
 import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
 import { parse } from 'node:path';
@@ -12,12 +12,13 @@ export class AssetCore {
     dto: CreateAssetDto,
     file: UploadFile,
     livePhotoAssetId?: string,
+    sidecarFile?: UploadFile,
   ): Promise<AssetEntity> {
     const asset = await this.repository.create({
       owner: { id: authUser.id } as UserEntity,
 
       mimeType: file.mimeType,
-      checksum: file.checksum || null,
+      checksum: file.checksum,
       originalPath: file.originalPath,
 
       deviceAssetId: dto.deviceAssetId,
@@ -39,9 +40,13 @@ export class AssetCore {
       sharedLinks: [],
       originalFileName: parse(file.originalName).name,
       faces: [],
+      sidecarPath: sidecarFile?.originalPath || null,
     });
 
-    await this.jobRepository.queue({ name: JobName.ASSET_UPLOADED, data: { asset } });
+    await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: asset.id } });
+    if (asset.type === AssetType.VIDEO) {
+      await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: asset.id } });
+    }
 
     return asset;
   }

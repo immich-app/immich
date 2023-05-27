@@ -14,9 +14,11 @@ extension WithETag on AssetApi {
   ///   ETag of data already cached on the client
   Future<(List<AssetResponseDto>? assets, String? eTag)> getAllAssetsWithETag({
     String? eTag,
+    String? userId,
   }) async {
     final response = await getAllAssetsWithHttpInfo(
       ifNoneMatch: eTag,
+      userId: userId,
     );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));

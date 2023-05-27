@@ -56,4 +56,7 @@ export class AllJobStatusResponseDto implements Record<QueueName, JobStatusDto> 
 
   @ApiProperty({ type: JobStatusDto })
   [QueueName.RECOGNIZE_FACES]!: JobStatusDto;
+
+  @ApiProperty({ type: JobStatusDto })
+  [QueueName.SIDECAR]!: JobStatusDto;
 }

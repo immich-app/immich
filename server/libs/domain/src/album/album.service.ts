@@ -1,19 +1,21 @@
-import { AlbumEntity } from '@app/infra/entities';
-import { Inject, Injectable } from '@nestjs/common';
+import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra/entities';
+import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';
+import { IJobRepository, JobName } from '../job';
 import { IAlbumRepository } from './album.repository';
-import { GetAlbumsDto } from './dto/get-albums.dto';
-import { AlbumResponseDto } from './response-dto';
+import { CreateAlbumDto, GetAlbumsDto, UpdateAlbumDto } from './dto';
+import { AlbumResponseDto, mapAlbum } from './response-dto';
 
 @Injectable()
 export class AlbumService {
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {}
 
-  async getAllAlbums({ id: ownerId }: AuthUserDto, { assetId, shared }: GetAlbumsDto): Promise<AlbumResponseDto[]> {
+  async getAll({ id: ownerId }: AuthUserDto, { assetId, shared }: GetAlbumsDto): Promise<AlbumResponseDto[]> {
     await this.updateInvalidThumbnails();
 
     let albums: AlbumEntity[];
@@ -50,9 +52,64 @@ export class AlbumService {
 
     for (const albumId of invalidAlbumIds) {
       const newThumbnail = await this.assetRepository.getFirstAssetForAlbumId(albumId);
-      await this.albumRepository.save({ id: albumId, albumThumbnailAsset: newThumbnail });
+      await this.albumRepository.update({ id: albumId, albumThumbnailAsset: newThumbnail });
     }
 
     return invalidAlbumIds.length;
+  }
+
+  async create(authUser: AuthUserDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
+    // TODO: Handle nonexistent sharedWithUserIds and assetIds.
+    const album = await this.albumRepository.create({
+      ownerId: authUser.id,
+      albumName: dto.albumName,
+      sharedUsers: dto.sharedWithUserIds?.map((value) => ({ id: value } as UserEntity)) ?? [],
+      assets: (dto.assetIds || []).map((id) => ({ id } as AssetEntity)),
+      albumThumbnailAssetId: dto.assetIds?.[0] || null,
+    });
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [album.id] } });
+    return mapAlbum(album);
+  }
+
+  async update(authUser: AuthUserDto, id: string, dto: UpdateAlbumDto): Promise<AlbumResponseDto> {
+    const [album] = await this.albumRepository.getByIds([id]);
+    if (!album) {
+      throw new BadRequestException('Album not found');
+    }
+
+    if (album.ownerId !== authUser.id) {
+      throw new ForbiddenException('Album not owned by user');
+    }
+
+    if (dto.albumThumbnailAssetId) {
+      const valid = await this.albumRepository.hasAsset(id, dto.albumThumbnailAssetId);
+      if (!valid) {
+        throw new BadRequestException('Invalid album thumbnail');
+      }
+    }
+
+    const updatedAlbum = await this.albumRepository.update({
+      id: album.id,
+      albumName: dto.albumName,
+      albumThumbnailAssetId: dto.albumThumbnailAssetId,
+    });
+
+    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [updatedAlbum.id] } });
+
+    return mapAlbum(updatedAlbum);
+  }
+
+  async delete(authUser: AuthUserDto, id: string): Promise<void> {
+    const [album] = await this.albumRepository.getByIds([id]);
+    if (!album) {
+      throw new BadRequestException('Album not found');
+    }
+
+    if (album.ownerId !== authUser.id) {
+      throw new ForbiddenException('Album not owned by user');
+    }
+
+    await this.albumRepository.delete(album);
+    await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ALBUM, data: { ids: [id] } });
   }
 }

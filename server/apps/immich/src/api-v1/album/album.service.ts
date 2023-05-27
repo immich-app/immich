@@ -1,11 +1,9 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { CreateAlbumDto } from './dto/create-album.dto';
 import { AlbumEntity, SharedLinkType } from '@app/infra/entities';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
-import { UpdateAlbumDto } from './dto/update-album.dto';
-import { AlbumResponseDto, IJobRepository, JobName, mapAlbum } from '@app/domain';
+import { AlbumResponseDto, IJobRepository, mapAlbum } from '@app/domain';
 import { IAlbumRepository } from './album-repository';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
@@ -55,35 +53,18 @@ export class AlbumService {
     return album;
   }
 
-  async create(authUser: AuthUserDto, createAlbumDto: CreateAlbumDto): Promise<AlbumResponseDto> {
-    const albumEntity = await this.albumRepository.create(authUser.id, createAlbumDto);
-    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [albumEntity.id] } });
-    return mapAlbum(albumEntity);
-  }
-
-  async getAlbumInfo(authUser: AuthUserDto, albumId: string): Promise<AlbumResponseDto> {
+  async get(authUser: AuthUserDto, albumId: string): Promise<AlbumResponseDto> {
     const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
     return mapAlbum(album);
   }
 
-  async addUsersToAlbum(authUser: AuthUserDto, addUsersDto: AddUsersDto, albumId: string): Promise<AlbumResponseDto> {
+  async addUsers(authUser: AuthUserDto, albumId: string, dto: AddUsersDto): Promise<AlbumResponseDto> {
     const album = await this._getAlbum({ authUser, albumId });
-    const updatedAlbum = await this.albumRepository.addSharedUsers(album, addUsersDto);
+    const updatedAlbum = await this.albumRepository.addSharedUsers(album, dto);
     return mapAlbum(updatedAlbum);
   }
 
-  async deleteAlbum(authUser: AuthUserDto, albumId: string): Promise<void> {
-    const album = await this._getAlbum({ authUser, albumId });
-
-    for (const sharedLink of album.sharedLinks) {
-      await this.shareCore.remove(authUser.id, sharedLink.id);
-    }
-
-    await this.albumRepository.delete(album);
-    await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ALBUM, data: { ids: [albumId] } });
-  }
-
-  async removeUserFromAlbum(authUser: AuthUserDto, albumId: string, userId: string | 'me'): Promise<void> {
+  async removeUser(authUser: AuthUserDto, albumId: string, userId: string | 'me'): Promise<void> {
     const sharedUserId = userId == 'me' ? authUser.id : userId;
     const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
     if (album.ownerId != authUser.id && authUser.id != sharedUserId) {
@@ -95,34 +76,26 @@ export class AlbumService {
     await this.albumRepository.removeUser(album, sharedUserId);
   }
 
-  async removeAssetsFromAlbum(
-    authUser: AuthUserDto,
-    removeAssetsDto: RemoveAssetsDto,
-    albumId: string,
-  ): Promise<AlbumResponseDto> {
+  async removeAssets(authUser: AuthUserDto, albumId: string, dto: RemoveAssetsDto): Promise<AlbumResponseDto> {
     const album = await this._getAlbum({ authUser, albumId });
-    const deletedCount = await this.albumRepository.removeAssets(album, removeAssetsDto);
+    const deletedCount = await this.albumRepository.removeAssets(album, dto);
     const newAlbum = await this._getAlbum({ authUser, albumId });
 
-    if (deletedCount !== removeAssetsDto.assetIds.length) {
+    if (deletedCount !== dto.assetIds.length) {
       throw new BadRequestException('Some assets were not found in the album');
     }
 
     return mapAlbum(newAlbum);
   }
 
-  async addAssetsToAlbum(
-    authUser: AuthUserDto,
-    addAssetsDto: AddAssetsDto,
-    albumId: string,
-  ): Promise<AddAssetsResponseDto> {
+  async addAssets(authUser: AuthUserDto, albumId: string, dto: AddAssetsDto): Promise<AddAssetsResponseDto> {
     if (authUser.isPublicUser && !authUser.isAllowUpload) {
       this.logger.warn('Deny public user attempt to add asset to album');
       throw new ForbiddenException('Public user is not allowed to upload');
     }
 
     const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
-    const result = await this.albumRepository.addAssets(album, addAssetsDto);
+    const result = await this.albumRepository.addAssets(album, dto);
     const newAlbum = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
 
     return {
@@ -131,25 +104,7 @@ export class AlbumService {
     };
   }
 
-  async updateAlbumInfo(
-    authUser: AuthUserDto,
-    updateAlbumDto: UpdateAlbumDto,
-    albumId: string,
-  ): Promise<AlbumResponseDto> {
-    const album = await this._getAlbum({ authUser, albumId });
-
-    if (authUser.id != album.ownerId) {
-      throw new BadRequestException('Unauthorized to change album info');
-    }
-
-    const updatedAlbum = await this.albumRepository.updateAlbum(album, updateAlbumDto);
-
-    await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [updatedAlbum.id] } });
-
-    return mapAlbum(updatedAlbum);
-  }
-
-  async getAlbumCountByUserId(authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
+  async getCountByUserId(authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
     return this.albumRepository.getCountByUserId(authUser.id);
   }
 
@@ -160,7 +115,7 @@ export class AlbumService {
     return this.downloadService.downloadArchive(album.albumName, assets);
   }
 
-  async createAlbumSharedLink(authUser: AuthUserDto, dto: CreateAlbumShareLinkDto): Promise<SharedLinkResponseDto> {
+  async createSharedLink(authUser: AuthUserDto, dto: CreateAlbumShareLinkDto): Promise<SharedLinkResponseDto> {
     const album = await this._getAlbum({ authUser, albumId: dto.albumId });
 
     const sharedLink = await this.shareCore.create(authUser.id, {

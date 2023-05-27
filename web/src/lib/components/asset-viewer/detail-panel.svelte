@@ -173,7 +173,9 @@
 				<div><ImageOutline size="24" /></div>
 
 				<div>
-					<p>{getAssetFilename(asset)}</p>
+					<p class="break-all">
+						{getAssetFilename(asset)}
+					</p>
 					<div class="flex text-sm gap-2">
 						{#if asset.exifInfo.exifImageHeight && asset.exifInfo.exifImageWidth}
 							{#if getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}

@@ -345,7 +345,103 @@ export interface AllJobStatusResponseDto {
      * @memberof AllJobStatusResponseDto
      */
     'recognize-faces-queue': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'sidecar-queue': JobStatusDto;
 }
+/**
+ * 
+ * @export
+ * @interface AssetBulkUploadCheckDto
+ */
+export interface AssetBulkUploadCheckDto {
+    /**
+     * 
+     * @type {Array<AssetBulkUploadCheckItem>}
+     * @memberof AssetBulkUploadCheckDto
+     */
+    'assets': Array<AssetBulkUploadCheckItem>;
+}
+/**
+ * 
+ * @export
+ * @interface AssetBulkUploadCheckItem
+ */
+export interface AssetBulkUploadCheckItem {
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetBulkUploadCheckItem
+     */
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetBulkUploadCheckItem
+     */
+    'checksum': string;
+}
+/**
+ * 
+ * @export
+ * @interface AssetBulkUploadCheckResponseDto
+ */
+export interface AssetBulkUploadCheckResponseDto {
+    /**
+     * 
+     * @type {Array<AssetBulkUploadCheckResult>}
+     * @memberof AssetBulkUploadCheckResponseDto
+     */
+    'results': Array<AssetBulkUploadCheckResult>;
+}
+/**
+ * 
+ * @export
+ * @interface AssetBulkUploadCheckResult
+ */
+export interface AssetBulkUploadCheckResult {
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetBulkUploadCheckResult
+     */
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetBulkUploadCheckResult
+     */
+    'action': AssetBulkUploadCheckResultActionEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetBulkUploadCheckResult
+     */
+    'reason'?: AssetBulkUploadCheckResultReasonEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetBulkUploadCheckResult
+     */
+    'assetId'?: string;
+}
+
+export const AssetBulkUploadCheckResultActionEnum = {
+    Accept: 'accept',
+    Reject: 'reject'
+} as const;
+
+export type AssetBulkUploadCheckResultActionEnum = typeof AssetBulkUploadCheckResultActionEnum[keyof typeof AssetBulkUploadCheckResultActionEnum];
+export const AssetBulkUploadCheckResultReasonEnum = {
+    Duplicate: 'duplicate',
+    UnsupportedFormat: 'unsupported-format'
+} as const;
+
+export type AssetBulkUploadCheckResultReasonEnum = typeof AssetBulkUploadCheckResultReasonEnum[keyof typeof AssetBulkUploadCheckResultReasonEnum];
+
 /**
  * 
  * @export
@@ -1234,6 +1330,12 @@ export interface GetAssetByTimeBucketDto {
      * @memberof GetAssetByTimeBucketDto
      */
     'userId'?: string;
+    /**
+     * Include assets without thumbnails
+     * @type {boolean}
+     * @memberof GetAssetByTimeBucketDto
+     */
+    'withoutThumbs'?: boolean;
 }
 /**
  * 
@@ -1351,7 +1453,8 @@ export const JobName = {
     ClipEncodingQueue: 'clip-encoding-queue',
     BackgroundTaskQueue: 'background-task-queue',
     StorageTemplateMigrationQueue: 'storage-template-migration-queue',
-    SearchQueue: 'search-queue'
+    SearchQueue: 'search-queue',
+    SidecarQueue: 'sidecar-queue'
 } as const;
 
 export type JobName = typeof JobName[keyof typeof JobName];
@@ -3082,19 +3185,19 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
     return {
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {AddAssetsDto} addAssetsDto 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addAssetsToAlbum: async (albumId: string, addAssetsDto: AddAssetsDto, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'albumId' is not null or undefined
-            assertParamExists('addAssetsToAlbum', 'albumId', albumId)
+        addAssetsToAlbum: async (id: string, addAssetsDto: AddAssetsDto, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('addAssetsToAlbum', 'id', id)
             // verify required parameter 'addAssetsDto' is not null or undefined
             assertParamExists('addAssetsToAlbum', 'addAssetsDto', addAssetsDto)
-            const localVarPath = `/album/{albumId}/assets`
-                .replace(`{${"albumId"}}`, encodeURIComponent(String(albumId)));
+            const localVarPath = `/album/{id}/assets`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -3135,18 +3238,18 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {AddUsersDto} addUsersDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addUsersToAlbum: async (albumId: string, addUsersDto: AddUsersDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'albumId' is not null or undefined
-            assertParamExists('addUsersToAlbum', 'albumId', albumId)
+        addUsersToAlbum: async (id: string, addUsersDto: AddUsersDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('addUsersToAlbum', 'id', id)
             // verify required parameter 'addUsersDto' is not null or undefined
             assertParamExists('addUsersToAlbum', 'addUsersDto', addUsersDto)
-            const localVarPath = `/album/{albumId}/users`
-                .replace(`{${"albumId"}}`, encodeURIComponent(String(albumId)));
+            const localVarPath = `/album/{id}/users`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -3271,15 +3374,15 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteAlbum: async (albumId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'albumId' is not null or undefined
-            assertParamExists('deleteAlbum', 'albumId', albumId)
-            const localVarPath = `/album/{albumId}`
-                .replace(`{${"albumId"}}`, encodeURIComponent(String(albumId)));
+        deleteAlbum: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('deleteAlbum', 'id', id)
+            const localVarPath = `/album/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -3313,18 +3416,18 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {string} [name] 
          * @param {number} [skip] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        downloadArchive: async (albumId: string, name?: string, skip?: number, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'albumId' is not null or undefined
-            assertParamExists('downloadArchive', 'albumId', albumId)
-            const localVarPath = `/album/{albumId}/download`
-                .replace(`{${"albumId"}}`, encodeURIComponent(String(albumId)));
+        downloadArchive: async (id: string, name?: string, skip?: number, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('downloadArchive', 'id', id)
+            const localVarPath = `/album/{id}/download`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -3408,16 +3511,16 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAlbumInfo: async (albumId: string, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'albumId' is not null or undefined
-            assertParamExists('getAlbumInfo', 'albumId', albumId)
-            const localVarPath = `/album/{albumId}`
-                .replace(`{${"albumId"}}`, encodeURIComponent(String(albumId)));
+        getAlbumInfo: async (id: string, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getAlbumInfo', 'id', id)
+            const localVarPath = `/album/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -3503,18 +3606,18 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {RemoveAssetsDto} removeAssetsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        removeAssetFromAlbum: async (albumId: string, removeAssetsDto: RemoveAssetsDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'albumId' is not null or undefined
-            assertParamExists('removeAssetFromAlbum', 'albumId', albumId)
+        removeAssetFromAlbum: async (id: string, removeAssetsDto: RemoveAssetsDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('removeAssetFromAlbum', 'id', id)
             // verify required parameter 'removeAssetsDto' is not null or undefined
             assertParamExists('removeAssetFromAlbum', 'removeAssetsDto', removeAssetsDto)
-            const localVarPath = `/album/{albumId}/assets`
-                .replace(`{${"albumId"}}`, encodeURIComponent(String(albumId)));
+            const localVarPath = `/album/{id}/assets`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -3551,18 +3654,18 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {string} userId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        removeUserFromAlbum: async (albumId: string, userId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'albumId' is not null or undefined
-            assertParamExists('removeUserFromAlbum', 'albumId', albumId)
+        removeUserFromAlbum: async (id: string, userId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('removeUserFromAlbum', 'id', id)
             // verify required parameter 'userId' is not null or undefined
             assertParamExists('removeUserFromAlbum', 'userId', userId)
-            const localVarPath = `/album/{albumId}/user/{userId}`
-                .replace(`{${"albumId"}}`, encodeURIComponent(String(albumId)))
+            const localVarPath = `/album/{id}/user/{userId}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)))
                 .replace(`{${"userId"}}`, encodeURIComponent(String(userId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -3597,18 +3700,18 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {UpdateAlbumDto} updateAlbumDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateAlbumInfo: async (albumId: string, updateAlbumDto: UpdateAlbumDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'albumId' is not null or undefined
-            assertParamExists('updateAlbumInfo', 'albumId', albumId)
+        updateAlbumInfo: async (id: string, updateAlbumDto: UpdateAlbumDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('updateAlbumInfo', 'id', id)
             // verify required parameter 'updateAlbumDto' is not null or undefined
             assertParamExists('updateAlbumInfo', 'updateAlbumDto', updateAlbumDto)
-            const localVarPath = `/album/{albumId}`
-                .replace(`{${"albumId"}}`, encodeURIComponent(String(albumId)));
+            const localVarPath = `/album/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -3655,25 +3758,25 @@ export const AlbumApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {AddAssetsDto} addAssetsDto 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async addAssetsToAlbum(albumId: string, addAssetsDto: AddAssetsDto, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AddAssetsResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.addAssetsToAlbum(albumId, addAssetsDto, key, options);
+        async addAssetsToAlbum(id: string, addAssetsDto: AddAssetsDto, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AddAssetsResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.addAssetsToAlbum(id, addAssetsDto, key, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {AddUsersDto} addUsersDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async addUsersToAlbum(albumId: string, addUsersDto: AddUsersDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AlbumResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.addUsersToAlbum(albumId, addUsersDto, options);
+        async addUsersToAlbum(id: string, addUsersDto: AddUsersDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AlbumResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.addUsersToAlbum(id, addUsersDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -3698,25 +3801,25 @@ export const AlbumApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async deleteAlbum(albumId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteAlbum(albumId, options);
+        async deleteAlbum(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteAlbum(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {string} [name] 
          * @param {number} [skip] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async downloadArchive(albumId: string, name?: string, skip?: number, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.downloadArchive(albumId, name, skip, key, options);
+        async downloadArchive(id: string, name?: string, skip?: number, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.downloadArchive(id, name, skip, key, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -3730,13 +3833,13 @@ export const AlbumApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAlbumInfo(albumId: string, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AlbumResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAlbumInfo(albumId, key, options);
+        async getAlbumInfo(id: string, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AlbumResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAlbumInfo(id, key, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -3752,35 +3855,35 @@ export const AlbumApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {RemoveAssetsDto} removeAssetsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async removeAssetFromAlbum(albumId: string, removeAssetsDto: RemoveAssetsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AlbumResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.removeAssetFromAlbum(albumId, removeAssetsDto, options);
+        async removeAssetFromAlbum(id: string, removeAssetsDto: RemoveAssetsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AlbumResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.removeAssetFromAlbum(id, removeAssetsDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {string} userId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async removeUserFromAlbum(albumId: string, userId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.removeUserFromAlbum(albumId, userId, options);
+        async removeUserFromAlbum(id: string, userId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.removeUserFromAlbum(id, userId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {UpdateAlbumDto} updateAlbumDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateAlbumInfo(albumId: string, updateAlbumDto: UpdateAlbumDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AlbumResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateAlbumInfo(albumId, updateAlbumDto, options);
+        async updateAlbumInfo(id: string, updateAlbumDto: UpdateAlbumDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AlbumResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateAlbumInfo(id, updateAlbumDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -3795,24 +3898,24 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
     return {
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {AddAssetsDto} addAssetsDto 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addAssetsToAlbum(albumId: string, addAssetsDto: AddAssetsDto, key?: string, options?: any): AxiosPromise<AddAssetsResponseDto> {
-            return localVarFp.addAssetsToAlbum(albumId, addAssetsDto, key, options).then((request) => request(axios, basePath));
+        addAssetsToAlbum(id: string, addAssetsDto: AddAssetsDto, key?: string, options?: any): AxiosPromise<AddAssetsResponseDto> {
+            return localVarFp.addAssetsToAlbum(id, addAssetsDto, key, options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {AddUsersDto} addUsersDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addUsersToAlbum(albumId: string, addUsersDto: AddUsersDto, options?: any): AxiosPromise<AlbumResponseDto> {
-            return localVarFp.addUsersToAlbum(albumId, addUsersDto, options).then((request) => request(axios, basePath));
+        addUsersToAlbum(id: string, addUsersDto: AddUsersDto, options?: any): AxiosPromise<AlbumResponseDto> {
+            return localVarFp.addUsersToAlbum(id, addUsersDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3834,24 +3937,24 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteAlbum(albumId: string, options?: any): AxiosPromise<void> {
-            return localVarFp.deleteAlbum(albumId, options).then((request) => request(axios, basePath));
+        deleteAlbum(id: string, options?: any): AxiosPromise<void> {
+            return localVarFp.deleteAlbum(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {string} [name] 
          * @param {number} [skip] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        downloadArchive(albumId: string, name?: string, skip?: number, key?: string, options?: any): AxiosPromise<File> {
-            return localVarFp.downloadArchive(albumId, name, skip, key, options).then((request) => request(axios, basePath));
+        downloadArchive(id: string, name?: string, skip?: number, key?: string, options?: any): AxiosPromise<File> {
+            return localVarFp.downloadArchive(id, name, skip, key, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3863,13 +3966,13 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAlbumInfo(albumId: string, key?: string, options?: any): AxiosPromise<AlbumResponseDto> {
-            return localVarFp.getAlbumInfo(albumId, key, options).then((request) => request(axios, basePath));
+        getAlbumInfo(id: string, key?: string, options?: any): AxiosPromise<AlbumResponseDto> {
+            return localVarFp.getAlbumInfo(id, key, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3883,33 +3986,33 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {RemoveAssetsDto} removeAssetsDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        removeAssetFromAlbum(albumId: string, removeAssetsDto: RemoveAssetsDto, options?: any): AxiosPromise<AlbumResponseDto> {
-            return localVarFp.removeAssetFromAlbum(albumId, removeAssetsDto, options).then((request) => request(axios, basePath));
+        removeAssetFromAlbum(id: string, removeAssetsDto: RemoveAssetsDto, options?: any): AxiosPromise<AlbumResponseDto> {
+            return localVarFp.removeAssetFromAlbum(id, removeAssetsDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {string} userId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        removeUserFromAlbum(albumId: string, userId: string, options?: any): AxiosPromise<void> {
-            return localVarFp.removeUserFromAlbum(albumId, userId, options).then((request) => request(axios, basePath));
+        removeUserFromAlbum(id: string, userId: string, options?: any): AxiosPromise<void> {
+            return localVarFp.removeUserFromAlbum(id, userId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @param {string} albumId 
+         * @param {string} id 
          * @param {UpdateAlbumDto} updateAlbumDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateAlbumInfo(albumId: string, updateAlbumDto: UpdateAlbumDto, options?: any): AxiosPromise<AlbumResponseDto> {
-            return localVarFp.updateAlbumInfo(albumId, updateAlbumDto, options).then((request) => request(axios, basePath));
+        updateAlbumInfo(id: string, updateAlbumDto: UpdateAlbumDto, options?: any): AxiosPromise<AlbumResponseDto> {
+            return localVarFp.updateAlbumInfo(id, updateAlbumDto, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -3923,27 +4026,27 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
 export class AlbumApi extends BaseAPI {
     /**
      * 
-     * @param {string} albumId 
+     * @param {string} id 
      * @param {AddAssetsDto} addAssetsDto 
      * @param {string} [key] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AlbumApi
      */
-    public addAssetsToAlbum(albumId: string, addAssetsDto: AddAssetsDto, key?: string, options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).addAssetsToAlbum(albumId, addAssetsDto, key, options).then((request) => request(this.axios, this.basePath));
+    public addAssetsToAlbum(id: string, addAssetsDto: AddAssetsDto, key?: string, options?: AxiosRequestConfig) {
+        return AlbumApiFp(this.configuration).addAssetsToAlbum(id, addAssetsDto, key, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @param {string} albumId 
+     * @param {string} id 
      * @param {AddUsersDto} addUsersDto 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AlbumApi
      */
-    public addUsersToAlbum(albumId: string, addUsersDto: AddUsersDto, options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).addUsersToAlbum(albumId, addUsersDto, options).then((request) => request(this.axios, this.basePath));
+    public addUsersToAlbum(id: string, addUsersDto: AddUsersDto, options?: AxiosRequestConfig) {
+        return AlbumApiFp(this.configuration).addUsersToAlbum(id, addUsersDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -3970,18 +4073,18 @@ export class AlbumApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} albumId 
+     * @param {string} id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AlbumApi
      */
-    public deleteAlbum(albumId: string, options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).deleteAlbum(albumId, options).then((request) => request(this.axios, this.basePath));
+    public deleteAlbum(id: string, options?: AxiosRequestConfig) {
+        return AlbumApiFp(this.configuration).deleteAlbum(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @param {string} albumId 
+     * @param {string} id 
      * @param {string} [name] 
      * @param {number} [skip] 
      * @param {string} [key] 
@@ -3989,8 +4092,8 @@ export class AlbumApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof AlbumApi
      */
-    public downloadArchive(albumId: string, name?: string, skip?: number, key?: string, options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).downloadArchive(albumId, name, skip, key, options).then((request) => request(this.axios, this.basePath));
+    public downloadArchive(id: string, name?: string, skip?: number, key?: string, options?: AxiosRequestConfig) {
+        return AlbumApiFp(this.configuration).downloadArchive(id, name, skip, key, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4005,14 +4108,14 @@ export class AlbumApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} albumId 
+     * @param {string} id 
      * @param {string} [key] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AlbumApi
      */
-    public getAlbumInfo(albumId: string, key?: string, options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).getAlbumInfo(albumId, key, options).then((request) => request(this.axios, this.basePath));
+    public getAlbumInfo(id: string, key?: string, options?: AxiosRequestConfig) {
+        return AlbumApiFp(this.configuration).getAlbumInfo(id, key, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4029,38 +4132,38 @@ export class AlbumApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} albumId 
+     * @param {string} id 
      * @param {RemoveAssetsDto} removeAssetsDto 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AlbumApi
      */
-    public removeAssetFromAlbum(albumId: string, removeAssetsDto: RemoveAssetsDto, options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).removeAssetFromAlbum(albumId, removeAssetsDto, options).then((request) => request(this.axios, this.basePath));
+    public removeAssetFromAlbum(id: string, removeAssetsDto: RemoveAssetsDto, options?: AxiosRequestConfig) {
+        return AlbumApiFp(this.configuration).removeAssetFromAlbum(id, removeAssetsDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @param {string} albumId 
+     * @param {string} id 
      * @param {string} userId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AlbumApi
      */
-    public removeUserFromAlbum(albumId: string, userId: string, options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).removeUserFromAlbum(albumId, userId, options).then((request) => request(this.axios, this.basePath));
+    public removeUserFromAlbum(id: string, userId: string, options?: AxiosRequestConfig) {
+        return AlbumApiFp(this.configuration).removeUserFromAlbum(id, userId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @param {string} albumId 
+     * @param {string} id 
      * @param {UpdateAlbumDto} updateAlbumDto 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AlbumApi
      */
-    public updateAlbumInfo(albumId: string, updateAlbumDto: UpdateAlbumDto, options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).updateAlbumInfo(albumId, updateAlbumDto, options).then((request) => request(this.axios, this.basePath));
+    public updateAlbumInfo(id: string, updateAlbumDto: UpdateAlbumDto, options?: AxiosRequestConfig) {
+        return AlbumApiFp(this.configuration).updateAlbumInfo(id, updateAlbumDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -4114,6 +4217,50 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(addAssetsDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Checks if assets exist by checksums
+         * @param {AssetBulkUploadCheckDto} assetBulkUploadCheckDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        bulkUploadCheck: async (assetBulkUploadCheckDto: AssetBulkUploadCheckDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assetBulkUploadCheckDto' is not null or undefined
+            assertParamExists('bulkUploadCheck', 'assetBulkUploadCheckDto', assetBulkUploadCheckDto)
+            const localVarPath = `/asset/bulk-upload-check`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(assetBulkUploadCheckDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -4452,6 +4599,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * Get all AssetEntity belong to the user
+         * @param {string} [userId] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isArchived] 
          * @param {number} [skip] 
@@ -4459,7 +4607,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllAssets: async (isFavorite?: boolean, isArchived?: boolean, skip?: number, ifNoneMatch?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAllAssets: async (userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, ifNoneMatch?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/asset`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -4480,6 +4628,10 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             // authentication bearer required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (userId !== undefined) {
+                localVarQueryParameter['userId'] = userId;
+            }
 
             if (isFavorite !== undefined) {
                 localVarQueryParameter['isFavorite'] = isFavorite;
@@ -4888,10 +5040,12 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * 
          * @param {boolean} [isFavorite] 
+         * @param {string} [fileCreatedAfter] 
+         * @param {string} [fileCreatedBefore] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getMapMarkers: async (isFavorite?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getMapMarkers: async (isFavorite?: boolean, fileCreatedAfter?: string, fileCreatedBefore?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/asset/map-marker`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -4915,6 +5069,18 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
 
             if (isFavorite !== undefined) {
                 localVarQueryParameter['isFavorite'] = isFavorite;
+            }
+
+            if (fileCreatedAfter !== undefined) {
+                localVarQueryParameter['fileCreatedAfter'] = (fileCreatedAfter as any instanceof Date) ?
+                    (fileCreatedAfter as any).toISOString() :
+                    fileCreatedAfter;
+            }
+
+            if (fileCreatedBefore !== undefined) {
+                localVarQueryParameter['fileCreatedBefore'] = (fileCreatedBefore as any instanceof Date) ?
+                    (fileCreatedBefore as any).toISOString() :
+                    fileCreatedBefore;
             }
 
 
@@ -5180,13 +5346,14 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {string} fileExtension 
          * @param {string} [key] 
          * @param {File} [livePhotoData] 
+         * @param {File} [sidecarData] 
          * @param {boolean} [isArchived] 
          * @param {boolean} [isVisible] 
          * @param {string} [duration] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadFile: async (assetType: AssetTypeEnum, assetData: File, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, fileExtension: string, key?: string, livePhotoData?: File, isArchived?: boolean, isVisible?: boolean, duration?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        uploadFile: async (assetType: AssetTypeEnum, assetData: File, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, fileExtension: string, key?: string, livePhotoData?: File, sidecarData?: File, isArchived?: boolean, isVisible?: boolean, duration?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'assetType' is not null or undefined
             assertParamExists('uploadFile', 'assetType', assetType)
             // verify required parameter 'assetData' is not null or undefined
@@ -5240,6 +5407,10 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
     
             if (livePhotoData !== undefined) { 
                 localVarFormParams.append('livePhotoData', livePhotoData as any);
+            }
+    
+            if (sidecarData !== undefined) { 
+                localVarFormParams.append('sidecarData', sidecarData as any);
             }
     
             if (deviceAssetId !== undefined) { 
@@ -5310,6 +5481,16 @@ export const AssetApiFp = function(configuration?: Configuration) {
          */
         async addAssetsToSharedLink(addAssetsDto: AddAssetsDto, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SharedLinkResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.addAssetsToSharedLink(addAssetsDto, key, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * Checks if assets exist by checksums
+         * @param {AssetBulkUploadCheckDto} assetBulkUploadCheckDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async bulkUploadCheck(assetBulkUploadCheckDto: AssetBulkUploadCheckDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetBulkUploadCheckResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.bulkUploadCheck(assetBulkUploadCheckDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -5389,6 +5570,7 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * Get all AssetEntity belong to the user
+         * @param {string} [userId] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isArchived] 
          * @param {number} [skip] 
@@ -5396,8 +5578,8 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllAssets(isFavorite?: boolean, isArchived?: boolean, skip?: number, ifNoneMatch?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(isFavorite, isArchived, skip, ifNoneMatch, options);
+        async getAllAssets(userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, ifNoneMatch?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(userId, isFavorite, isArchived, skip, ifNoneMatch, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -5491,11 +5673,13 @@ export const AssetApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {boolean} [isFavorite] 
+         * @param {string} [fileCreatedAfter] 
+         * @param {string} [fileCreatedBefore] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getMapMarkers(isFavorite?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<MapMarkerResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getMapMarkers(isFavorite, options);
+        async getMapMarkers(isFavorite?: boolean, fileCreatedAfter?: string, fileCreatedBefore?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<MapMarkerResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getMapMarkers(isFavorite, fileCreatedAfter, fileCreatedBefore, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -5565,14 +5749,15 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {string} fileExtension 
          * @param {string} [key] 
          * @param {File} [livePhotoData] 
+         * @param {File} [sidecarData] 
          * @param {boolean} [isArchived] 
          * @param {boolean} [isVisible] 
          * @param {string} [duration] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadFile(assetType: AssetTypeEnum, assetData: File, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, fileExtension: string, key?: string, livePhotoData?: File, isArchived?: boolean, isVisible?: boolean, duration?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetFileUploadResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, isArchived, isVisible, duration, options);
+        async uploadFile(assetType: AssetTypeEnum, assetData: File, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, fileExtension: string, key?: string, livePhotoData?: File, sidecarData?: File, isArchived?: boolean, isVisible?: boolean, duration?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetFileUploadResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, sidecarData, isArchived, isVisible, duration, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -5594,6 +5779,15 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          */
         addAssetsToSharedLink(addAssetsDto: AddAssetsDto, key?: string, options?: any): AxiosPromise<SharedLinkResponseDto> {
             return localVarFp.addAssetsToSharedLink(addAssetsDto, key, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Checks if assets exist by checksums
+         * @param {AssetBulkUploadCheckDto} assetBulkUploadCheckDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        bulkUploadCheck(assetBulkUploadCheckDto: AssetBulkUploadCheckDto, options?: any): AxiosPromise<AssetBulkUploadCheckResponseDto> {
+            return localVarFp.bulkUploadCheck(assetBulkUploadCheckDto, options).then((request) => request(axios, basePath));
         },
         /**
          * Check duplicated asset before uploading - for Web upload used
@@ -5665,6 +5859,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * Get all AssetEntity belong to the user
+         * @param {string} [userId] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isArchived] 
          * @param {number} [skip] 
@@ -5672,8 +5867,8 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllAssets(isFavorite?: boolean, isArchived?: boolean, skip?: number, ifNoneMatch?: string, options?: any): AxiosPromise<Array<AssetResponseDto>> {
-            return localVarFp.getAllAssets(isFavorite, isArchived, skip, ifNoneMatch, options).then((request) => request(axios, basePath));
+        getAllAssets(userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, ifNoneMatch?: string, options?: any): AxiosPromise<Array<AssetResponseDto>> {
+            return localVarFp.getAllAssets(userId, isFavorite, isArchived, skip, ifNoneMatch, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5757,11 +5952,13 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         /**
          * 
          * @param {boolean} [isFavorite] 
+         * @param {string} [fileCreatedAfter] 
+         * @param {string} [fileCreatedBefore] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getMapMarkers(isFavorite?: boolean, options?: any): AxiosPromise<Array<MapMarkerResponseDto>> {
-            return localVarFp.getMapMarkers(isFavorite, options).then((request) => request(axios, basePath));
+        getMapMarkers(isFavorite?: boolean, fileCreatedAfter?: string, fileCreatedBefore?: string, options?: any): AxiosPromise<Array<MapMarkerResponseDto>> {
+            return localVarFp.getMapMarkers(isFavorite, fileCreatedAfter, fileCreatedBefore, options).then((request) => request(axios, basePath));
         },
         /**
          * Get all asset of a device that are in the database, ID only.
@@ -5825,14 +6022,15 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @param {string} fileExtension 
          * @param {string} [key] 
          * @param {File} [livePhotoData] 
+         * @param {File} [sidecarData] 
          * @param {boolean} [isArchived] 
          * @param {boolean} [isVisible] 
          * @param {string} [duration] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadFile(assetType: AssetTypeEnum, assetData: File, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, fileExtension: string, key?: string, livePhotoData?: File, isArchived?: boolean, isVisible?: boolean, duration?: string, options?: any): AxiosPromise<AssetFileUploadResponseDto> {
-            return localVarFp.uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, isArchived, isVisible, duration, options).then((request) => request(axios, basePath));
+        uploadFile(assetType: AssetTypeEnum, assetData: File, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, fileExtension: string, key?: string, livePhotoData?: File, sidecarData?: File, isArchived?: boolean, isVisible?: boolean, duration?: string, options?: any): AxiosPromise<AssetFileUploadResponseDto> {
+            return localVarFp.uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, sidecarData, isArchived, isVisible, duration, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -5854,6 +6052,17 @@ export class AssetApi extends BaseAPI {
      */
     public addAssetsToSharedLink(addAssetsDto: AddAssetsDto, key?: string, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).addAssetsToSharedLink(addAssetsDto, key, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Checks if assets exist by checksums
+     * @param {AssetBulkUploadCheckDto} assetBulkUploadCheckDto 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AssetApi
+     */
+    public bulkUploadCheck(assetBulkUploadCheckDto: AssetBulkUploadCheckDto, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).bulkUploadCheck(assetBulkUploadCheckDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5940,6 +6149,7 @@ export class AssetApi extends BaseAPI {
 
     /**
      * Get all AssetEntity belong to the user
+     * @param {string} [userId] 
      * @param {boolean} [isFavorite] 
      * @param {boolean} [isArchived] 
      * @param {number} [skip] 
@@ -5948,8 +6158,8 @@ export class AssetApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public getAllAssets(isFavorite?: boolean, isArchived?: boolean, skip?: number, ifNoneMatch?: string, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getAllAssets(isFavorite, isArchived, skip, ifNoneMatch, options).then((request) => request(this.axios, this.basePath));
+    public getAllAssets(userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, ifNoneMatch?: string, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).getAllAssets(userId, isFavorite, isArchived, skip, ifNoneMatch, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -6052,12 +6262,14 @@ export class AssetApi extends BaseAPI {
     /**
      * 
      * @param {boolean} [isFavorite] 
+     * @param {string} [fileCreatedAfter] 
+     * @param {string} [fileCreatedBefore] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public getMapMarkers(isFavorite?: boolean, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getMapMarkers(isFavorite, options).then((request) => request(this.axios, this.basePath));
+    public getMapMarkers(isFavorite?: boolean, fileCreatedAfter?: string, fileCreatedBefore?: string, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).getMapMarkers(isFavorite, fileCreatedAfter, fileCreatedBefore, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -6132,6 +6344,7 @@ export class AssetApi extends BaseAPI {
      * @param {string} fileExtension 
      * @param {string} [key] 
      * @param {File} [livePhotoData] 
+     * @param {File} [sidecarData] 
      * @param {boolean} [isArchived] 
      * @param {boolean} [isVisible] 
      * @param {string} [duration] 
@@ -6139,8 +6352,8 @@ export class AssetApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof AssetApi
      */
-    public uploadFile(assetType: AssetTypeEnum, assetData: File, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, fileExtension: string, key?: string, livePhotoData?: File, isArchived?: boolean, isVisible?: boolean, duration?: string, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, isArchived, isVisible, duration, options).then((request) => request(this.axios, this.basePath));
+    public uploadFile(assetType: AssetTypeEnum, assetData: File, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, fileExtension: string, key?: string, livePhotoData?: File, sidecarData?: File, isArchived?: boolean, isVisible?: boolean, duration?: string, options?: AxiosRequestConfig) {
+        return AssetApiFp(this.configuration).uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, sidecarData, isArchived, isVisible, duration, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

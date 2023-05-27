@@ -1,21 +1,20 @@
 <script lang="ts">
 	import { afterNavigate, goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
+	import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
 	import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
 	import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
-	import DownloadFiles from '$lib/components/photos-page/actions/download-files.svelte';
-	import MoveToArchive from '$lib/components/photos-page/actions/move-to-archive.svelte';
-	import RemoveFromArchive from '$lib/components/photos-page/actions/remove-from-archive.svelte';
+	import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
+	import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
 	import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
 	import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
-	import OptionAddToAlbum from '$lib/components/photos-page/menu-options/option-add-to-album.svelte';
-	import OptionAddToFavorites from '$lib/components/photos-page/menu-options/option-add-to-favorites.svelte';
-	import OptionRemoveFromFavorites from '$lib/components/photos-page/menu-options/option-remove-from-favorites.svelte';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
 	import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
 	import { AssetResponseDto } from '@api';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
+	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import ImageOffOutline from 'svelte-material-icons/ImageOffOutline.svelte';
 	import Plus from 'svelte-material-icons/Plus.svelte';
 	import type { PageData } from './$types';
@@ -51,22 +50,17 @@
 	{#if isMultiSelectionMode}
 		<AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
 			<CreateSharedLink />
-			{#if isAllArchived}
-				<RemoveFromArchive />
-			{:else}
-				<MoveToArchive />
-			{/if}
-			<DownloadFiles />
 			<AssetSelectContextMenu icon={Plus} title="Add">
-				{#if isAllFavorite}
-					<OptionRemoveFromFavorites />
-				{:else}
-					<OptionAddToFavorites />
-				{/if}
-				<OptionAddToAlbum />
-				<OptionAddToAlbum shared />
+				<AddToAlbum />
+				<AddToAlbum shared />
 			</AssetSelectContextMenu>
 			<DeleteAssets {onAssetDelete} />
+
+			<AssetSelectContextMenu icon={DotsVertical} title="Add">
+				<DownloadAction menuItem />
+				<FavoriteAction menuItem removeFavorite={isAllFavorite} />
+				<ArchiveAction menuItem unarchive={isAllArchived} />
+			</AssetSelectContextMenu>
 		</AssetSelectControlBar>
 	{:else}
 		<ControlAppBar on:close-button-click={() => goto(previousRoute)} backIcon={ArrowLeft}>

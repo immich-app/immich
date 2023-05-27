@@ -21,10 +21,6 @@ export class APIKeyRepository implements IKeyRepository {
     await this.repository.delete({ userId, id });
   }
 
-  async deleteAll(userId: string): Promise<void> {
-    await this.repository.delete({ userId });
-  }
-
   getKey(hashedToken: string): Promise<APIKeyEntity | null> {
     return this.repository.findOne({
       select: {

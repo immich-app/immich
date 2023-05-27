@@ -204,18 +204,6 @@ describe(SearchService.name, () => {
       ]);
     });
 
-    it('should log an error', async () => {
-      assetMock.getAll.mockResolvedValue({
-        items: [assetEntityStub.image],
-        hasNextPage: false,
-      });
-      searchMock.importAssets.mockRejectedValue(new Error('import failed'));
-
-      await sut.handleIndexAssets();
-
-      expect(searchMock.importAssets).toHaveBeenCalled();
-    });
-
     it('should skip if search is disabled', async () => {
       const sut = makeSut('false');
 
@@ -249,15 +237,6 @@ describe(SearchService.name, () => {
       await sut.handleIndexAlbums();
 
       expect(searchMock.importAlbums).toHaveBeenCalledWith([albumStub.empty], true);
-    });
-
-    it('should log an error', async () => {
-      albumMock.getAll.mockResolvedValue([albumStub.empty]);
-      searchMock.importAlbums.mockRejectedValue(new Error('import failed'));
-
-      await sut.handleIndexAlbums();
-
-      expect(searchMock.importAlbums).toHaveBeenCalled();
     });
   });
 
@@ -323,15 +302,6 @@ describe(SearchService.name, () => {
         ],
         [[], true],
       ]);
-    });
-
-    it('should log an error', async () => {
-      faceMock.getAll.mockResolvedValue([faceStub.face1]);
-      searchMock.importFaces.mockRejectedValue(new Error('import failed'));
-
-      await sut.handleIndexFaces();
-
-      expect(searchMock.importFaces).toHaveBeenCalled();
     });
 
     it('should skip if search is disabled', async () => {

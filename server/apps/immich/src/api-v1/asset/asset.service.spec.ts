@@ -157,7 +157,7 @@ describe('AssetService', () => {
       getLocationsByUserId: jest.fn(),
       getSearchPropertiesByUserId: jest.fn(),
       getAssetByTimeBucket: jest.fn(),
-      getAssetByChecksum: jest.fn(),
+      getAssetsByChecksums: jest.fn(),
       getAssetCountByUserId: jest.fn(),
       getArchivedAssetCountByUserId: jest.fn(),
       getExistingAssets: jest.fn(),
@@ -299,13 +299,13 @@ describe('AssetService', () => {
       (error as any).constraint = 'UQ_userid_checksum';
 
       assetRepositoryMock.create.mockRejectedValue(error);
-      assetRepositoryMock.getAssetByChecksum.mockResolvedValue(_getAsset_1());
+      assetRepositoryMock.getAssetsByChecksums.mockResolvedValue([_getAsset_1()]);
 
       await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({ duplicate: true, id: 'id_1' });
 
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.DELETE_FILES,
-        data: { files: ['fake_path/asset_1.jpeg', undefined] },
+        data: { files: ['fake_path/asset_1.jpeg', undefined, undefined] },
       });
       expect(storageMock.moveFile).not.toHaveBeenCalled();
     });
@@ -328,8 +328,9 @@ describe('AssetService', () => {
       });
 
       expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.ASSET_UPLOADED, data: { asset: assetEntityStub.livePhotoMotionAsset } }],
-        [{ name: JobName.ASSET_UPLOADED, data: { asset: assetEntityStub.livePhotoStillAsset } }],
+        [{ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: assetEntityStub.livePhotoMotionAsset.id } }],
+        [{ name: JobName.VIDEO_CONVERSION, data: { id: assetEntityStub.livePhotoMotionAsset.id } }],
+        [{ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: assetEntityStub.livePhotoStillAsset.id } }],
       ]);
     });
   });
@@ -413,7 +414,9 @@ describe('AssetService', () => {
             undefined,
             undefined,
             undefined,
+            undefined,
             'fake_path/asset_1.mp4',
+            undefined,
             undefined,
             undefined,
             undefined,
@@ -462,10 +465,12 @@ describe('AssetService', () => {
                 'web-path-1',
                 'resize-path-1',
                 undefined,
+                undefined,
                 'original-path-2',
                 'web-path-2',
                 'resize-path-2',
                 'encoded-video-path-2',
+                undefined,
               ],
             },
           },

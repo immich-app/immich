@@ -14,6 +14,8 @@ class User {
     required this.firstName,
     required this.lastName,
     required this.isAdmin,
+    this.isPartnerSharedBy = false,
+    this.isPartnerSharedWith = false,
   });
 
   Id get isarId => fastHash(id);
@@ -26,6 +28,8 @@ class User {
         email = dto.email,
         firstName = dto.firstName,
         lastName = dto.lastName,
+        isPartnerSharedBy = false,
+        isPartnerSharedWith = false,
         isAdmin = dto.isAdmin;
 
   @Index(unique: true, replace: false, type: IndexType.hash)
@@ -34,6 +38,8 @@ class User {
   String email;
   String firstName;
   String lastName;
+  bool isPartnerSharedBy;
+  bool isPartnerSharedWith;
   bool isAdmin;
   @Backlink(to: 'owner')
   final IsarLinks<Album> albums = IsarLinks<Album>();
@@ -44,10 +50,12 @@ class User {
   bool operator ==(other) {
     if (other is! User) return false;
     return id == other.id &&
-        updatedAt == other.updatedAt &&
+        updatedAt.isAtSameMomentAs(other.updatedAt) &&
         email == other.email &&
         firstName == other.firstName &&
         lastName == other.lastName &&
+        isPartnerSharedBy == other.isPartnerSharedBy &&
+        isPartnerSharedWith == other.isPartnerSharedWith &&
         isAdmin == other.isAdmin;
   }
 
@@ -59,5 +67,7 @@ class User {
       email.hashCode ^
       firstName.hashCode ^
       lastName.hashCode ^
+      isPartnerSharedBy.hashCode ^
+      isPartnerSharedWith.hashCode ^
       isAdmin.hashCode;
 }

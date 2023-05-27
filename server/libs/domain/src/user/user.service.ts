@@ -3,14 +3,12 @@ import { BadRequestException, Inject, Injectable, Logger, NotFoundException } fr
 import { randomBytes } from 'crypto';
 import { ReadStream } from 'fs';
 import { IAlbumRepository } from '../album/album.repository';
-import { IKeyRepository } from '../api-key/api-key.repository';
 import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto/crypto.repository';
-import { IJobRepository, IUserDeletionJob, JobName } from '../job';
+import { IEntityJob, IJobRepository, JobName } from '../job';
 import { StorageCore, StorageFolder } from '../storage';
 import { IStorageRepository } from '../storage/storage.repository';
-import { IUserTokenRepository } from '../user-token/user-token.repository';
 import { IUserRepository } from '../user/user.repository';
 import { CreateUserDto, UpdateUserDto, UserCountDto } from './dto';
 import {
@@ -36,9 +34,7 @@ export class UserService {
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(IKeyRepository) private keyRepository: IKeyRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(IUserTokenRepository) private tokenRepository: IUserTokenRepository,
   ) {
     this.userCore = new UserCore(userRepository, cryptoRepository);
   }
@@ -142,46 +138,47 @@ export class UserService {
     const users = await this.userRepository.getDeletedUsers();
     for (const user of users) {
       if (this.isReadyForDeletion(user)) {
-        await this.jobRepository.queue({ name: JobName.USER_DELETION, data: { user } });
+        await this.jobRepository.queue({ name: JobName.USER_DELETION, data: { id: user.id } });
       }
     }
+
+    return true;
   }
 
-  async handleUserDelete(data: IUserDeletionJob) {
-    const { user } = data;
+  async handleUserDelete({ id }: IEntityJob) {
+    const user = await this.userRepository.get(id, true);
+    if (!user) {
+      return false;
+    }
 
     // just for extra protection here
     if (!this.isReadyForDeletion(user)) {
-      this.logger.warn(`Skipped user that was not ready for deletion: id=${user.id}`);
-      return;
+      this.logger.warn(`Skipped user that was not ready for deletion: id=${id}`);
+      return false;
     }
 
     this.logger.log(`Deleting user: ${user.id}`);
 
-    try {
-      const folders = [
-        this.storageCore.getLibraryFolder(user),
-        this.storageCore.getFolderLocation(StorageFolder.UPLOAD, user.id),
-        this.storageCore.getFolderLocation(StorageFolder.PROFILE, user.id),
-        this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, user.id),
-        this.storageCore.getFolderLocation(StorageFolder.ENCODED_VIDEO, user.id),
-      ];
+    const folders = [
+      this.storageCore.getLibraryFolder(user),
+      this.storageCore.getFolderLocation(StorageFolder.UPLOAD, user.id),
+      this.storageCore.getFolderLocation(StorageFolder.PROFILE, user.id),
+      this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, user.id),
+      this.storageCore.getFolderLocation(StorageFolder.ENCODED_VIDEO, user.id),
+    ];
 
-      for (const folder of folders) {
-        this.logger.warn(`Removing user from filesystem: ${folder}`);
-        await this.storageRepository.unlinkDir(folder, { recursive: true, force: true });
-      }
-
-      this.logger.warn(`Removing user from database: ${user.id}`);
-
-      await this.tokenRepository.deleteAll(user.id);
-      await this.keyRepository.deleteAll(user.id);
-      await this.albumRepository.deleteAll(user.id);
-      await this.assetRepository.deleteAll(user.id);
-      await this.userRepository.delete(user, true);
-    } catch (error: any) {
-      this.logger.error(`Failed to remove user`, error, { id: user.id });
+    for (const folder of folders) {
+      this.logger.warn(`Removing user from filesystem: ${folder}`);
+      await this.storageRepository.unlinkDir(folder, { recursive: true, force: true });
     }
+
+    this.logger.warn(`Removing user from database: ${user.id}`);
+
+    await this.albumRepository.deleteAll(user.id);
+    await this.assetRepository.deleteAll(user.id);
+    await this.userRepository.delete(user, true);
+
+    return true;
   }
 
   private isReadyForDeletion(user: UserEntity): boolean {

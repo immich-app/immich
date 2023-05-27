@@ -57,6 +57,8 @@ import { AssetSearchDto } from './dto/asset-search.dto';
 import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
+import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
+import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-response.dto';
 import { AssetIdDto } from './dto/asset-id.dto';
 import { DeviceIdDto } from './dto/device-id.dto';
 
@@ -76,6 +78,7 @@ export class AssetController {
       [
         { name: 'assetData', maxCount: 1 },
         { name: 'livePhotoData', maxCount: 1 },
+        { name: 'sidecarData', maxCount: 1 },
       ],
       assetUploadOption,
     ),
@@ -88,18 +91,24 @@ export class AssetController {
   async uploadFile(
     @GetAuthUser() authUser: AuthUserDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] }))
-    files: { assetData: ImmichFile[]; livePhotoData?: ImmichFile[] },
+    files: { assetData: ImmichFile[]; livePhotoData?: ImmichFile[]; sidecarData: ImmichFile[] },
     @Body(new ValidationPipe()) dto: CreateAssetDto,
     @Response({ passthrough: true }) res: Res,
   ): Promise<AssetFileUploadResponseDto> {
     const file = mapToUploadFile(files.assetData[0]);
     const _livePhotoFile = files.livePhotoData?.[0];
+    const _sidecarFile = files.sidecarData?.[0];
     let livePhotoFile;
     if (_livePhotoFile) {
       livePhotoFile = mapToUploadFile(_livePhotoFile);
     }
 
-    const responseDto = await this.assetService.uploadFile(authUser, dto, file, livePhotoFile);
+    let sidecarFile;
+    if (_sidecarFile) {
+      sidecarFile = mapToUploadFile(_sidecarFile);
+    }
+
+    const responseDto = await this.assetService.uploadFile(authUser, dto, file, livePhotoFile, sidecarFile);
     if (responseDto.duplicate) {
       res.status(200);
     }
@@ -330,6 +339,19 @@ export class AssetController {
     @Body(ValidationPipe) checkExistingAssetsDto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
     return await this.assetService.checkExistingAssets(authUser, checkExistingAssetsDto);
+  }
+
+  /**
+   * Checks if assets exist by checksums
+   */
+  @Authenticated()
+  @Post('/bulk-upload-check')
+  @HttpCode(200)
+  bulkUploadCheck(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(ValidationPipe) dto: AssetBulkUploadCheckDto,
+  ): Promise<AssetBulkUploadCheckResponseDto> {
+    return this.assetService.bulkUploadCheck(authUser, dto);
   }
 
   @Authenticated()

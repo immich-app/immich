@@ -141,7 +141,7 @@ describe(FacialRecognitionService.name, () => {
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.FACES);
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.RECOGNIZE_FACES,
-        data: { asset: assetEntityStub.image },
+        data: { id: assetEntityStub.image.id },
       });
     });
 
@@ -158,25 +158,22 @@ describe(FacialRecognitionService.name, () => {
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.RECOGNIZE_FACES,
-        data: { asset: assetEntityStub.image },
+        data: { id: assetEntityStub.image.id },
       });
-    });
-
-    it('should log an error', async () => {
-      assetMock.getWithout.mockRejectedValue(new Error('Database unavailable'));
-      await sut.handleQueueRecognizeFaces({});
     });
   });
 
   describe('handleRecognizeFaces', () => {
     it('should skip when no resize path', async () => {
-      await sut.handleRecognizeFaces({ asset: assetEntityStub.noResizePath });
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.noResizePath]);
+      await sut.handleRecognizeFaces({ id: assetEntityStub.noResizePath.id });
       expect(machineLearningMock.detectFaces).not.toHaveBeenCalled();
     });
 
     it('should handle no results', async () => {
       machineLearningMock.detectFaces.mockResolvedValue([]);
-      await sut.handleRecognizeFaces({ asset: assetEntityStub.image });
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
+      await sut.handleRecognizeFaces({ id: assetEntityStub.image.id });
       expect(machineLearningMock.detectFaces).toHaveBeenCalledWith({
         thumbnailPath: assetEntityStub.image.resizePath,
       });
@@ -187,26 +184,23 @@ describe(FacialRecognitionService.name, () => {
     it('should match existing people', async () => {
       machineLearningMock.detectFaces.mockResolvedValue([face.middle]);
       searchMock.searchFaces.mockResolvedValue(faceSearch.oneMatch);
-
-      await sut.handleRecognizeFaces({ asset: assetEntityStub.image });
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
+      await sut.handleRecognizeFaces({ id: assetEntityStub.image.id });
 
       expect(faceMock.create).toHaveBeenCalledWith({
         personId: 'person-1',
         assetId: 'asset-id',
         embedding: [1, 2, 3, 4],
       });
-      expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.SEARCH_INDEX_FACE, data: { personId: 'person-1', assetId: 'asset-id' } }],
-        [{ name: JobName.SEARCH_INDEX_ASSET, data: { ids: ['asset-id'] } }],
-      ]);
     });
 
     it('should create a new person', async () => {
       machineLearningMock.detectFaces.mockResolvedValue([face.middle]);
       searchMock.searchFaces.mockResolvedValue(faceSearch.oneRemoteMatch);
       personMock.create.mockResolvedValue(personStub.noName);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
 
-      await sut.handleRecognizeFaces({ asset: assetEntityStub.image });
+      await sut.handleRecognizeFaces({ id: assetEntityStub.image.id });
 
       expect(personMock.create).toHaveBeenCalledWith({ ownerId: assetEntityStub.image.ownerId });
       expect(faceMock.create).toHaveBeenCalledWith({
@@ -234,13 +228,7 @@ describe(FacialRecognitionService.name, () => {
           },
         ],
         [{ name: JobName.SEARCH_INDEX_FACE, data: { personId: 'person-1', assetId: 'asset-id' } }],
-        [{ name: JobName.SEARCH_INDEX_ASSET, data: { ids: ['asset-id'] } }],
       ]);
-    });
-
-    it('should log an error', async () => {
-      machineLearningMock.detectFaces.mockRejectedValue(new Error('machine learning unavailable'));
-      await sut.handleRecognizeFaces({ asset: assetEntityStub.image });
     });
   });
 
@@ -316,11 +304,6 @@ describe(FacialRecognitionService.name, () => {
         format: 'jpeg',
         size: 250,
       });
-    });
-
-    it('should log an error', async () => {
-      assetMock.getByIds.mockRejectedValue(new Error('Database unavailable'));
-      await sut.handleGenerateFaceThumbnail(face.middle);
     });
   });
 });
