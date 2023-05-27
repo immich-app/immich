@@ -109,6 +109,10 @@ export class JobService {
       case JobName.METADATA_EXTRACTION:
         await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: item.data });
         break;
+      
+      case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE:
+        await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: item.data });
+        break;
 
       case JobName.GENERATE_JPEG_THUMBNAIL: {
         await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: item.data });
