@@ -28,7 +28,7 @@ Name | Type | Description | Notes
 **livePhotoVideoId** | **String** |  | [optional] 
 **tags** | [**List<TagResponseDto>**](TagResponseDto.md) |  | [optional] [default to const []]
 **people** | [**List<PersonResponseDto>**](PersonResponseDto.md) |  | [optional] [default to const []]
-**checksum** | **String** |  | 
+**checksum** | **String** | base64 encoded sha1 hash | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

@@ -88,6 +88,7 @@ class AssetResponseDto {
 
   List<PersonResponseDto> people;
 
+  /// base64 encoded sha1 hash
   String checksum;
 
   @override

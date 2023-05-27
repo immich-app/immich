@@ -378,7 +378,7 @@ export interface AssetBulkUploadCheckItem {
      */
     'id': string;
     /**
-     * 
+     * base64 or hex encoded sha1 hash
      * @type {string}
      * @memberof AssetBulkUploadCheckItem
      */
@@ -663,7 +663,7 @@ export interface AssetResponseDto {
      */
     'people'?: Array<PersonResponseDto>;
     /**
-     * 
+     * base64 encoded sha1 hash
      * @type {string}
      * @memberof AssetResponseDto
      */
