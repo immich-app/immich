@@ -111,7 +111,9 @@ export class JobService {
         break;
 
       case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE:
-        await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: item.data });
+        if (item.data.source === 'upload') {
+          await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: item.data });
+        }
         break;
 
       case JobName.GENERATE_JPEG_THUMBNAIL: {
