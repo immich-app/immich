@@ -120,12 +120,19 @@ export class MetadataExtractionProcessor {
         return null;
       }
 
-      const date = typeof exifDate === 'string' ? new Date(exifDate) : exifDate.toDate();
-      if (isNaN(date.valueOf())) {
+      // The try-catch block here to guard the sitiation where valid JS date string is evaluate as type `object`
+      // There for the method `toDate` is not found
+      try {
+        const date = typeof exifDate === 'string' ? new Date(exifDate) : exifDate.toDate();
+        if (isNaN(date.valueOf())) {
+          return null;
+        }
+
+        return date;
+      } catch (error: any) {
+        this.logger.warn(`Unable to parse date ${exifDate} for asset ${asset.id}`, error?.stack);
         return null;
       }
-
-      return date;
     };
 
     const exifTimeZone = (exifDate: string | ExifDateTime | undefined) => {
