@@ -115,30 +115,22 @@ export class MetadataExtractionProcessor {
         })
       : {};
 
-    const exifToDate = (exifDate: string | ExifDateTime | undefined) => {
+    const exifToDate = (exifDate: string | Date | ExifDateTime | undefined) => {
       if (!exifDate) {
         return null;
       }
 
-      // The try-catch block here to guard the sitiation where valid JS date string is evaluate as type `object`
-      // There for the method `toDate` is not found
-      try {
-        const date = typeof exifDate === 'string' ? new Date(exifDate) : exifDate.toDate();
-        if (isNaN(date.valueOf())) {
-          return null;
-        }
-
-        return date;
-      } catch (error: any) {
-        this.logger.warn(`Unable to parse date ${exifDate} for asset ${asset.id}`, error?.stack);
+      const date = exifDate instanceof ExifDateTime ? exifDate.toDate() : new Date(exifDate);
+      if (isNaN(date.valueOf())) {
         return null;
       }
+
+      return date;
     };
 
-    const exifTimeZone = (exifDate: string | ExifDateTime | undefined) => {
-      if (!exifDate) return null;
-
-      if (typeof exifDate === 'string') {
+    const exifTimeZone = (exifDate: string | Date | ExifDateTime | undefined) => {
+      const isExifDate = exifDate instanceof ExifDateTime;
+      if (!isExifDate) {
         return null;
       }
 
