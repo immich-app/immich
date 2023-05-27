@@ -19,6 +19,7 @@ export interface IFaceThumbnailJob extends IAssetFaceJob {
 
 export interface IEntityJob extends IBaseJob {
   id: string;
+  source?: string;
 }
 
 export interface IBulkEntityJob extends IBaseJob {
