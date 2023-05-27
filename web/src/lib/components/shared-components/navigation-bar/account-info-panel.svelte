@@ -4,9 +4,9 @@
 	import { fade } from 'svelte/transition';
 	import Cog from 'svelte-material-icons/Cog.svelte';
 	import Logout from 'svelte-material-icons/Logout.svelte';
-	import { goto } from '$app/navigation';
 	import Button from '$lib/components/elements/buttons/button.svelte';
 	import UserAvatar from '../user-avatar.svelte';
+	import { AppRoute } from '$lib/constants';
 
 	export let user: UserResponseDto;
 
@@ -32,21 +32,14 @@
 			<p class="text-sm text-gray-500 dark:text-immich-dark-fg">{user.email}</p>
 		</div>
 
-		<Button
-			color="dark-gray"
-			size="sm"
-			shadow={false}
-			border
-			on:click={() => {
-				goto('/user-settings');
-				dispatch('close');
-			}}
-		>
-			<div class="flex gap-2 place-items-center place-content-center px-2">
-				<Cog size="18" />
-				Account Settings
-			</div>
-		</Button>
+		<a href={AppRoute.USER_SETTINGS} on:click={() => dispatch('close')}>
+			<Button color="dark-gray" size="sm" shadow={false} border>
+				<div class="flex gap-2 place-items-center place-content-center px-2">
+					<Cog size="18" />
+					Account Settings
+				</div>
+			</Button>
+		</a>
 	</div>
 
 	<div class="mb-4 flex flex-col">
