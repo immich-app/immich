@@ -4494,7 +4494,8 @@
             }
           },
           "checksum": {
-            "type": "string"
+            "type": "string",
+            "description": "base64 encoded sha1 hash"
           }
         },
         "required": [
@@ -6167,7 +6168,8 @@
             "type": "string"
           },
           "checksum": {
-            "type": "string"
+            "type": "string",
+            "description": "base64 or hex encoded sha1 hash"
           }
         },
         "required": [

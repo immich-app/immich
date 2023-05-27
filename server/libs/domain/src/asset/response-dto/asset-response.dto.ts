@@ -28,6 +28,7 @@ export class AssetResponseDto {
   livePhotoVideoId?: string | null;
   tags?: TagResponseDto[];
   people?: PersonResponseDto[];
+  /**base64 encoded sha1 hash */
   checksum!: string;
 }
 
