@@ -6,9 +6,11 @@ import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/logger_message.model.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
+import 'package:immich_mobile/shared/services/hash.service.dart';
 import 'package:immich_mobile/shared/services/immich_logger.service.dart';
 import 'package:immich_mobile/shared/services/sync.service.dart';
 import 'package:isar/isar.dart';
+import 'package:mockito/mockito.dart';
 
 void main() {
   Asset makeAsset({
@@ -53,6 +55,7 @@ void main() {
 
   group('Test SyncService grouped', () {
     late final Isar db;
+    final MockHashService hs = MockHashService();
     final owner = User(
       id: "1",
       updatedAt: DateTime.now(),
@@ -84,7 +87,7 @@ void main() {
       });
     });
     test('test inserting existing assets', () async {
-      SyncService s = SyncService(db);
+      SyncService s = SyncService(db, hs);
       final List<Asset> remoteAssets = [
         makeAsset(localId: "1", remoteId: "0-1", deviceId: 0),
         makeAsset(localId: "1", remoteId: "2-1", deviceId: 2),
@@ -97,7 +100,7 @@ void main() {
     });
 
     test('test inserting new assets', () async {
-      SyncService s = SyncService(db);
+      SyncService s = SyncService(db, hs);
       final List<Asset> remoteAssets = [
         makeAsset(localId: "1", remoteId: "0-1", deviceId: 0),
         makeAsset(localId: "1", remoteId: "2-1", deviceId: 2),
@@ -113,7 +116,7 @@ void main() {
     });
 
     test('test syncing duplicate assets', () async {
-      SyncService s = SyncService(db);
+      SyncService s = SyncService(db, hs);
       final List<Asset> remoteAssets = [
         makeAsset(localId: "1", remoteId: "0-1", deviceId: 0),
         makeAsset(localId: "1", remoteId: "1-1"),
@@ -141,3 +144,5 @@ void main() {
     });
   });
 }
+
+class MockHashService extends Mock implements HashService {}

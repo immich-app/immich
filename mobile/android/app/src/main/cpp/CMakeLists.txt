@@ -1,5 +1,0 @@
-cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
-project(native_hash VERSION 1.0.0 LANGUAGES C)
-find_package(openssl REQUIRED CONFIG)
-add_library(${PROJECT_NAME} SHARED hash.c)
-target_link_libraries(${PROJECT_NAME} PRIVATE openssl::crypto)
