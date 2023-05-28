@@ -73,11 +73,7 @@ android {
 
     buildTypes {
         release {
-            signingConfig signingConfigs.debug
-            applicationIdSuffix ".debug"
-        }
-        debug {
-            applicationIdSuffix ".debug"
+            signingConfig signingConfigs.release
         }
     }
 }
