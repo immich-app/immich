@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, Delete, Put, Query, Response } from '@nestjs/common';
 import { ParseMeUUIDPipe } from '../validation/parse-me-uuid-pipe';
 import { AlbumService } from './album.service';
-import { Authenticated } from '../../decorators/authenticated.decorator';
+import { Authenticated, SharedLinkRoute } from '../../decorators/authenticated.decorator';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { AddUsersDto } from './dto/add-users.dto';
@@ -32,24 +32,23 @@ const handleDownload = (download: DownloadArchive, res: Res) => {
 
 @ApiTags('Album')
 @Controller('album')
+@Authenticated()
 @UseValidation()
 export class AlbumController {
   constructor(private readonly service: AlbumService) {}
 
-  @Authenticated()
   @Get('count-by-user-id')
   getAlbumCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
     return this.service.getCountByUserId(authUser);
   }
 
-  @Authenticated()
   @Put(':id/users')
   addUsersToAlbum(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: AddUsersDto) {
     // TODO: Handle nonexistent sharedUserIds.
     return this.service.addUsers(authUser, id, dto);
   }
 
-  @Authenticated({ isShared: true })
+  @SharedLinkRoute()
   @Put(':id/assets')
   addAssetsToAlbum(
     @GetAuthUser() authUser: AuthUserDto,
@@ -61,13 +60,12 @@ export class AlbumController {
     return this.service.addAssets(authUser, id, dto);
   }
 
-  @Authenticated({ isShared: true })
+  @SharedLinkRoute()
   @Get(':id')
   getAlbumInfo(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
     return this.service.get(authUser, id);
   }
 
-  @Authenticated()
   @Delete(':id/assets')
   removeAssetFromAlbum(
     @GetAuthUser() authUser: AuthUserDto,
@@ -77,7 +75,6 @@ export class AlbumController {
     return this.service.removeAssets(authUser, id, dto);
   }
 
-  @Authenticated()
   @Delete(':id/user/:userId')
   removeUserFromAlbum(
     @GetAuthUser() authUser: AuthUserDto,
@@ -87,7 +84,7 @@ export class AlbumController {
     return this.service.removeUser(authUser, id, userId);
   }
 
-  @Authenticated({ isShared: true })
+  @SharedLinkRoute()
   @Get(':id/download')
   @ApiOkResponse({ content: { 'application/zip': { schema: { type: 'string', format: 'binary' } } } })
   downloadArchive(
@@ -100,7 +97,6 @@ export class AlbumController {
     return this.service.downloadArchive(authUser, id, dto).then((download) => handleDownload(download, res));
   }
 
-  @Authenticated()
   @Post('create-shared-link')
   createAlbumSharedLink(@GetAuthUser() authUser: AuthUserDto, @Body() dto: CreateAlbumSharedLinkDto) {
     return this.service.createSharedLink(authUser, dto);

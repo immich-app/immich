@@ -12,15 +12,17 @@ import { Body, Controller, Get, HttpStatus, Post, Redirect, Req, Res } from '@ne
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { GetAuthUser, GetLoginDetails } from '../decorators/auth-user.decorator';
-import { Authenticated } from '../decorators/authenticated.decorator';
+import { Authenticated, PublicRoute } from '../decorators/authenticated.decorator';
 import { UseValidation } from '../decorators/use-validation.decorator';
 
 @ApiTags('OAuth')
 @Controller('oauth')
+@Authenticated()
 @UseValidation()
 export class OAuthController {
   constructor(private service: OAuthService) {}
 
+  @PublicRoute()
   @Get('mobile-redirect')
   @Redirect()
   mobileRedirect(@Req() req: Request) {
@@ -30,11 +32,13 @@ export class OAuthController {
     };
   }
 
+  @PublicRoute()
   @Post('config')
   generateConfig(@Body() dto: OAuthConfigDto): Promise<OAuthConfigResponseDto> {
     return this.service.generateConfig(dto);
   }
 
+  @PublicRoute()
   @Post('callback')
   async callback(
     @Res({ passthrough: true }) res: Response,
@@ -46,13 +50,11 @@ export class OAuthController {
     return response;
   }
 
-  @Authenticated()
   @Post('link')
   link(@GetAuthUser() authUser: AuthUserDto, @Body() dto: OAuthCallbackDto): Promise<UserResponseDto> {
     return this.service.link(authUser, dto);
   }
 
-  @Authenticated()
   @Post('unlink')
   unlink(@GetAuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
     return this.service.unlink(authUser);

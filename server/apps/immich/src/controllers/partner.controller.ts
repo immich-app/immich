@@ -8,11 +8,11 @@ import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Partner')
 @Controller('partner')
+@Authenticated()
 @UseValidation()
 export class PartnerController {
   constructor(private service: PartnerService) {}
 
-  @Authenticated()
   @Get()
   @ApiQuery({ name: 'direction', type: 'string', enum: PartnerDirection, required: true })
   getPartners(
@@ -22,13 +22,11 @@ export class PartnerController {
     return this.service.getAll(authUser, direction);
   }
 
-  @Authenticated()
   @Post(':id')
   createPartner(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
     return this.service.create(authUser, id);
   }
 
-  @Authenticated()
   @Delete(':id')
   removePartner(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(authUser, id);

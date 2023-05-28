@@ -8,9 +8,9 @@ import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { mapTag, TagResponseDto } from '@app/domain';
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
 
-@Authenticated()
 @ApiTags('Tag')
 @Controller('tag')
+@Authenticated()
 export class TagController {
   constructor(private readonly tagService: TagService) {}
 

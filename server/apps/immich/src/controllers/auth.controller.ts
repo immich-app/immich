@@ -19,16 +19,18 @@ import { Body, Controller, Delete, Get, Param, Post, Req, Res } from '@nestjs/co
 import { ApiBadRequestResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { GetAuthUser, GetLoginDetails } from '../decorators/auth-user.decorator';
-import { Authenticated } from '../decorators/authenticated.decorator';
+import { Authenticated, PublicRoute } from '../decorators/authenticated.decorator';
 import { UseValidation } from '../decorators/use-validation.decorator';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
+@Authenticated()
 @UseValidation()
 export class AuthController {
   constructor(private readonly service: AuthService) {}
 
+  @PublicRoute()
   @Post('login')
   async login(
     @Body() loginCredential: LoginCredentialDto,
@@ -40,43 +42,38 @@ export class AuthController {
     return response;
   }
 
+  @PublicRoute()
   @Post('admin-sign-up')
   @ApiBadRequestResponse({ description: 'The server already has an admin' })
   adminSignUp(@Body() signUpCredential: SignUpDto): Promise<AdminSignupResponseDto> {
     return this.service.adminSignUp(signUpCredential);
   }
 
-  @Authenticated()
   @Get('devices')
   getAuthDevices(@GetAuthUser() authUser: AuthUserDto): Promise<AuthDeviceResponseDto[]> {
     return this.service.getDevices(authUser);
   }
 
-  @Authenticated()
   @Delete('devices')
   logoutAuthDevices(@GetAuthUser() authUser: AuthUserDto): Promise<void> {
     return this.service.logoutDevices(authUser);
   }
 
-  @Authenticated()
   @Delete('devices/:id')
   logoutAuthDevice(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.logoutDevice(authUser, id);
   }
 
-  @Authenticated()
   @Post('validateToken')
   validateAccessToken(): ValidateAccessTokenResponseDto {
     return { authStatus: true };
   }
 
-  @Authenticated()
   @Post('change-password')
   changePassword(@GetAuthUser() authUser: AuthUserDto, @Body() dto: ChangePasswordDto): Promise<UserResponseDto> {
     return this.service.changePassword(authUser, dto);
   }
 
-  @Authenticated()
   @Post('logout')
   logout(
     @Req() req: Request,
