@@ -112,36 +112,12 @@ class SyncService {
 
   /// Syncs a new asset to the db. Returns `true` if successful
   Future<bool> _syncNewAssetToDb(Asset newAsset) async {
-    final List<Asset> inDb = await _db.assets
-        .where()
-        .localIdDeviceIdEqualTo(newAsset.localId, newAsset.deviceId)
-        .findAll();
-    Asset? match;
-    if (inDb.length == 1) {
-      // exactly one match: trivial case
-      match = inDb.first;
-    } else if (inDb.length > 1) {
-      // TODO instead of this heuristics: match by checksum once available
-      for (Asset a in inDb) {
-        if (a.ownerId == newAsset.ownerId &&
-            a.fileModifiedAt.isAtSameMomentAs(newAsset.fileModifiedAt)) {
-          assert(match == null);
-          match = a;
-        }
-      }
-      if (match == null) {
-        for (Asset a in inDb) {
-          if (a.ownerId == newAsset.ownerId) {
-            assert(match == null);
-            match = a;
-          }
-        }
-      }
-    }
-    if (match != null) {
+    final Asset? inDb =
+        await _db.assets.where().checksumEqualTo(newAsset.checksum).findFirst();
+    if (inDb != null) {
       // unify local/remote assets by replacing the
       // local-only asset in the DB with a local&remote asset
-      newAsset = match.updatedCopy(newAsset);
+      newAsset = inDb.updatedCopy(newAsset);
     }
     try {
       await _db.writeTxn(() => newAsset.put(_db));
@@ -165,11 +141,10 @@ class SyncService {
     final List<Asset> inDb = await _db.assets
         .filter()
         .ownerIdEqualTo(user.isarId)
-        .sortByDeviceId()
-        .thenByLocalId()
-        .thenByFileModifiedAt()
+        .sortByChecksum()
         .findAll();
-    remote.sort(Asset.compareByOwnerDeviceLocalIdModified);
+
+    remote.sort(Asset.compareByChecksum);
     final (toAdd, toUpdate, toRemove) = _diffAssets(remote, inDb, remote: true);
     if (toAdd.isEmpty && toUpdate.isEmpty && toRemove.isEmpty) {
       return false;
@@ -248,16 +223,15 @@ class SyncService {
     if (dto.assetCount != dto.assets.length) {
       return false;
     }
-    final assetsInDb = await album.assets
-        .filter()
-        .sortByOwnerId()
-        .thenByDeviceId()
-        .thenByLocalId()
-        .thenByFileModifiedAt()
-        .findAll();
+    final assetsInDb =
+        await album.assets.filter().sortByOwnerId().thenByChecksum().findAll();
     final List<Asset> assetsOnRemote = dto.getAssets();
-    assetsOnRemote.sort(Asset.compareByOwnerDeviceLocalIdModified);
-    final (toAdd, toUpdate, toUnlink) = _diffAssets(assetsOnRemote, assetsInDb);
+    assetsOnRemote.sort(Asset.compareByOwnerChecksum);
+    final (toAdd, toUpdate, toUnlink) = _diffAssets(
+      assetsOnRemote,
+      assetsInDb,
+      compare: Asset.compareByOwnerChecksum,
+    );
 
     // update shared users
     final List<User> sharedUsers = album.sharedUsers.toList(growable: false);
@@ -450,12 +424,10 @@ class SyncService {
     final inDb = await album.assets
         .filter()
         .ownerIdEqualTo(Store.get(StoreKey.currentUser).isarId)
-        .deviceIdEqualTo(Store.get(StoreKey.deviceIdHash))
         .sortByLocalId()
         .findAll();
     final List<Asset> onDevice =
-        await ape.getAssets(excludedAssets: excludedAssets);
-    await _hashService.hashAssets(onDevice);
+        await _hashService.getHashedAssets(ape, excludedAssets: excludedAssets);
     onDevice.sort(Asset.compareByLocalId);
     final (toAdd, toUpdate, toDelete) =
         _diffAssets(onDevice, inDb, compare: Asset.compareByLocalId);
@@ -521,12 +493,11 @@ class SyncService {
     if (modified == null) {
       return false;
     }
-    final List<Asset> newAssets = await modified.getAssets();
+    final List<Asset> newAssets = await _hashService.getHashedAssets(modified);
     if (totalOnDevice != album.assets.length + newAssets.length) {
       return false;
     }
     album.modifiedAt = ape.lastModified ?? DateTime.now();
-    await _hashService.hashAssets(newAssets);
     final (existingInDb, updated) = await _linkWithExistingFromDb(newAssets);
     try {
       await _db.writeTxn(() async {
@@ -552,8 +523,8 @@ class SyncService {
   ]) async {
     _log.info("Syncing a new local album to DB: ${ape.name}");
     final Album a = Album.local(ape);
-    final assets = await ape.getAssets(excludedAssets: excludedAssets);
-    await _hashService.hashAssets(assets);
+    final assets =
+        await _hashService.getHashedAssets(ape, excludedAssets: excludedAssets);
     final (existingInDb, updated) = await _linkWithExistingFromDb(assets);
     _log.info(
       "${existingInDb.length} assets already existed in DB, to upsert ${updated.length}",
@@ -581,23 +552,18 @@ class SyncService {
     }
     final List<Asset> inDb = await _db.assets
         .where()
-        .anyOf(
-          assets,
-          (q, Asset e) => q.localIdDeviceIdEqualTo(e.localId, e.deviceId),
-        )
+        .anyOf(assets, (q, Asset e) => q.checksumEqualTo(e.checksum))
         .sortByOwnerId()
-        .thenByDeviceId()
-        .thenByLocalId()
-        .thenByFileModifiedAt()
+        .thenByChecksum()
         .findAll();
-    assets.sort(Asset.compareByOwnerDeviceLocalIdModified);
+    assets.sort(Asset.compareByOwnerChecksum);
     final List<Asset> existing = [], toUpsert = [];
     diffSortedListsSync(
       inDb,
       assets,
       // do not compare by modified date because for some assets dates differ on
       // client and server, thus never reaching "both" case below
-      compare: Asset.compareByOwnerDeviceLocalId,
+      compare: Asset.compareByOwnerChecksum,
       both: (Asset a, Asset b) {
         if (a.canUpdate(b)) {
           toUpsert.add(a.updatedCopy(b));
@@ -645,7 +611,7 @@ class SyncService {
   List<Asset> assets,
   List<Asset> inDb, {
   bool? remote,
-  int Function(Asset, Asset) compare = Asset.compareByOwnerDeviceLocalId,
+  int Function(Asset, Asset) compare = Asset.compareByChecksum,
 }) {
   final List<Asset> toAdd = [];
   final List<Asset> toUpdate = [];
@@ -669,7 +635,7 @@ class SyncService {
         }
       } else if (remote == false && a.isRemote) {
         if (a.isLocal) {
-          a.isLocal = false;
+          a.localId = null;
           toUpdate.add(a);
         }
       } else {

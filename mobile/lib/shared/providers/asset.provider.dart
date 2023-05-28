@@ -95,20 +95,9 @@ class AssetNotifier extends StateNotifier<AssetsState> {
   }
 
   Future<List<String>> _deleteLocalAssets(Set<Asset> assetsToDelete) async {
-    final int deviceId = Store.get(StoreKey.deviceIdHash);
-    final List<String> local = [];
+    final List<String> local =
+        assetsToDelete.where((a) => a.isLocal).map((a) => a.localId!).toList();
     // Delete asset from device
-    for (final Asset asset in assetsToDelete) {
-      if (asset.isLocal) {
-        local.add(asset.localId);
-      } else if (asset.deviceId == deviceId) {
-        // Delete asset on device if it is still present
-        var localAsset = await AssetEntity.fromId(asset.localId);
-        if (localAsset != null) {
-          local.add(localAsset.id);
-        }
-      }
-    }
     if (local.isNotEmpty) {
       try {
         return await PhotoManager.editor.deleteWithIds(local);

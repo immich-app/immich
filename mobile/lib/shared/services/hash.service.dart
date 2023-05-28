@@ -1,21 +1,37 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/background_service/background.service.dart';
 import 'package:immich_mobile/shared/models/android_device_asset.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/device_asset.dart';
 import 'package:immich_mobile/shared/models/ios_device_asset.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/utils/builtin_extensions.dart';
 import 'package:isar/isar.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 class HashService {
   HashService(this._db, this._backgroundService);
   final Isar _db;
   final BackgroundService _backgroundService;
+
+  Future<List<Asset>> getHashedAssets(
+    AssetPathEntity album, {
+    int start = 0,
+    int end = 0x7fffffffffffffff,
+    Set<String>? excludedAssets,
+  }) async {
+    final entities = await album.getAssetListRange(start: start, end: end);
+    final filtered = excludedAssets == null
+        ? entities
+        : entities.where((e) => !excludedAssets.contains(e.id)).toList();
+    return hashAssets(filtered);
+  }
 
   Future<void> benchmarkHashAssets(List<Asset> assets) async {
     if (Platform.isAndroid) {
@@ -58,8 +74,8 @@ class HashService {
   Future<List<int>?> getHash(Asset a) async {
     assert(a.isLocal, "can only get hash of local assets");
     final deviceAsset = await (Platform.isAndroid
-        ? _db.androidDeviceAssets.get(a.localId.toInt())
-        : _db.iOSDeviceAssets.getById(a.localId));
+        ? _db.androidDeviceAssets.get(a.localId!.toInt())
+        : _db.iOSDeviceAssets.getById(a.localId!));
     // final List<int>? hash;
     // if (deviceAsset == null) {
     //   final file = await a.local!.originFile;
@@ -74,15 +90,16 @@ class HashService {
     return hash;
   }
 
-  Future<void> hashAssets(List<Asset> assets) async {
+  Future<List<Asset>> hashAssets(List<AssetEntity> assets) async {
+    List<DeviceAsset?> hashes;
     if (Platform.isAndroid) {
       final List<AndroidDeviceAsset> toAdd = [];
-      final List<int> ids = assets.map((a) => a.localId.toInt()).toList();
-      final hashes = await _db.androidDeviceAssets.getAll(ids);
+      final List<int> ids = assets.map((a) => a.id.toInt()).toList();
+      hashes = await _db.androidDeviceAssets.getAll(ids);
 
       for (int i = 0; i < assets.length; i++) {
         if (hashes[i] == null) {
-          final file = await assets[i].local!.originFile;
+          final file = await assets[i].originFile;
           if (file != null) {
             final h = await _hashAssetJavaFile(file);
             if (h != null) toAdd.add(AndroidDeviceAsset(id: ids[i], hash: h));
@@ -92,12 +109,12 @@ class HashService {
       await _db.writeTxn(() => _db.androidDeviceAssets.putAll(toAdd));
     } else if (Platform.isIOS) {
       final List<IOSDeviceAsset> toAdd = [];
-      final List<String> ids = assets.map((a) => a.localId).toList();
-      final hashes = await _db.iOSDeviceAssets.getAllById(ids);
+      final List<String> ids = assets.map((a) => a.id).toList();
+      hashes = await _db.iOSDeviceAssets.getAllById(ids);
 
       for (int i = 0; i < assets.length; i++) {
         if (hashes[i] == null) {
-          final file = await assets[i].local!.originFile;
+          final file = await assets[i].originFile;
           if (file != null) {
             final h = await _hashAssetCrypto(file);
             toAdd.add(IOSDeviceAsset(id: ids[i], hash: h));
@@ -108,6 +125,9 @@ class HashService {
     } else {
       throw Exception("hashAssets implementation missing");
     }
+    return assets
+        .mapIndexed((i, a) => Asset.local(a, hashes[i]!.hash))
+        .toList();
   }
 
   Future<int> _readFile(File f) async {
