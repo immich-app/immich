@@ -21,11 +21,13 @@
 		try {
 			const { id, email, firstName, lastName, storageLabel } = user;
 			const { status } = await api.userApi.updateUser({
-				id,
-				email,
-				firstName,
-				lastName,
-				storageLabel: storageLabel || ''
+				updateUserDto: {
+					id,
+					email,
+					firstName,
+					lastName,
+					storageLabel: storageLabel || ''
+				}
 			});
 
 			if (status === 200) {
@@ -42,9 +44,11 @@
 				const defaultPassword = 'password';
 
 				const { status } = await api.userApi.updateUser({
-					id: user.id,
-					password: defaultPassword,
-					shouldChangePassword: true
+					updateUserDto: {
+						id: user.id,
+						password: defaultPassword,
+						shouldChangePassword: true
+					}
 				});
 
 				if (status == 200) {

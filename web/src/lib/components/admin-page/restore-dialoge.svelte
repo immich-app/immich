@@ -8,7 +8,7 @@
 	const dispatch = createEventDispatcher();
 
 	const restoreUser = async () => {
-		const restoredUser = await api.userApi.restoreUser(user.id);
+		const restoredUser = await api.userApi.restoreUser({ userId: user.id });
 		if (restoredUser.data.deletedAt == null) dispatch('user-restore-success');
 		else dispatch('user-restore-fail');
 	};

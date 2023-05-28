@@ -15,13 +15,13 @@
 
 	onMount(async () => {
 		// TODO: update endpoint to have a query param for deleted users
-		let { data: users } = await api.userApi.getAllUsers(false);
+		let { data: users } = await api.userApi.getAllUsers({ isAll: false });
 
 		// remove invalid users
 		users = users.filter((_user) => !(_user.deletedAt || _user.id === user.id));
 
 		// exclude partners from the list of users available for selection
-		const { data: partners } = await api.partnerApi.getPartners('shared-by');
+		const { data: partners } = await api.partnerApi.getPartners({ direction: 'shared-by' });
 		const partnerIds = partners.map((partner) => partner.id);
 		availableUsers = users.filter((user) => !partnerIds.includes(user.id));
 	});

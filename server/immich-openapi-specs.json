@@ -4148,7 +4148,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.57.1",
+    "version": "1.58.0",
     "contact": {}
   },
   "tags": [],
@@ -4446,9 +4446,8 @@
           "originalFileName": {
             "type": "string"
           },
-          "resizePath": {
-            "type": "string",
-            "nullable": true
+          "resized": {
+            "type": "boolean"
           },
           "fileCreatedAt": {
             "type": "string"
@@ -4472,14 +4471,6 @@
           "duration": {
             "type": "string"
           },
-          "webpPath": {
-            "type": "string",
-            "nullable": true
-          },
-          "encodedVideoPath": {
-            "type": "string",
-            "nullable": true
-          },
           "exifInfo": {
             "$ref": "#/components/schemas/ExifResponseDto"
           },
@@ -4501,6 +4492,10 @@
             "items": {
               "$ref": "#/components/schemas/PersonResponseDto"
             }
+          },
+          "checksum": {
+            "type": "string",
+            "description": "base64 encoded sha1 hash"
           }
         },
         "required": [
@@ -4511,7 +4506,7 @@
           "deviceId",
           "originalPath",
           "originalFileName",
-          "resizePath",
+          "resized",
           "fileCreatedAt",
           "fileModifiedAt",
           "updatedAt",
@@ -4519,7 +4514,7 @@
           "isArchived",
           "mimeType",
           "duration",
-          "webpPath"
+          "checksum"
         ]
       },
       "AlbumResponseDto": {
@@ -6173,7 +6168,8 @@
             "type": "string"
           },
           "checksum": {
-            "type": "string"
+            "type": "string",
+            "description": "base64 or hex encoded sha1 hash"
           }
         },
         "required": [

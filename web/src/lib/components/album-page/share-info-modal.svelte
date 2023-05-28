@@ -53,7 +53,7 @@
 	const removeUser = async (userId: string) => {
 		if (window.confirm('Do you want to remove selected user from the album?')) {
 			try {
-				await api.albumApi.removeUserFromAlbum(album.id, userId);
+				await api.albumApi.removeUserFromAlbum({ id: album.id, userId });
 				dispatch('user-deleted', { userId });
 			} catch (e) {
 				console.error('Error [share-info-modal] [removeUser]', e);

@@ -16,7 +16,7 @@
 	let removePartner: UserResponseDto | null = null;
 
 	const refreshPartners = async () => {
-		const { data } = await api.partnerApi.getPartners('shared-by');
+		const { data } = await api.partnerApi.getPartners({ direction: 'shared-by' });
 		partners = data;
 	};
 
@@ -26,7 +26,7 @@
 		}
 
 		try {
-			await api.partnerApi.removePartner(removePartner.id);
+			await api.partnerApi.removePartner({ id: removePartner.id });
 			removePartner = null;
 			await refreshPartners();
 		} catch (error) {
@@ -37,7 +37,7 @@
 	const handleCreatePartners = async (users: UserResponseDto[]) => {
 		try {
 			for (const user of users) {
-				await api.partnerApi.createPartner(user.id);
+				await api.partnerApi.createPartner({ id: user.id });
 			}
 
 			await refreshPartners();

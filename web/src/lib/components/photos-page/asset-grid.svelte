@@ -28,8 +28,10 @@
 
 	onMount(async () => {
 		const { data: assetCountByTimebucket } = await api.assetApi.getAssetCountByTimeBucket({
-			timeGroup: TimeGroupEnum.Month,
-			userId: user?.id
+			getAssetCountByTimeBucketDto: {
+				timeGroup: TimeGroupEnum.Month,
+				userId: user?.id
+			}
 		});
 		bucketInfo = assetCountByTimebucket;
 

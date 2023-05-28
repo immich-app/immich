@@ -26,7 +26,7 @@
 
 	onMount(async () => {
 		try {
-			const { data: assets } = await api.assetApi.getAllAssets(undefined, undefined, true);
+			const { data: assets } = await api.assetApi.getAllAssets({ isArchived: true });
 			$archivedAsset = assets;
 		} catch {
 			handleError(Error, 'Unable to load archived assets');

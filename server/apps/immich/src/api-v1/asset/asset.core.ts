@@ -43,7 +43,7 @@ export class AssetCore {
       sidecarPath: sidecarFile?.originalPath || null,
     });
 
-    await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: asset.id } });
+    await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id, source: 'upload' } });
     if (asset.type === AssetType.VIDEO) {
       await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: asset.id } });
     }

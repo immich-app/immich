@@ -21,7 +21,9 @@
 	const createSharedAlbum = async () => {
 		try {
 			const { data: newAlbum } = await api.albumApi.createAlbum({
-				albumName: 'Untitled'
+				createAlbumDto: {
+					albumName: 'Untitled'
+				}
 			});
 
 			goto('/albums/' + newAlbum.id);

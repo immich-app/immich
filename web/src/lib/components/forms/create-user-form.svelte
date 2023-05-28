@@ -46,10 +46,12 @@
 
 			try {
 				const { status } = await api.userApi.createUser({
-					email: String(email),
-					password: String(password),
-					firstName: String(firstName),
-					lastName: String(lastName)
+					createUserDto: {
+						email: String(email),
+						password: String(password),
+						firstName: String(firstName),
+						lastName: String(lastName)
+					}
 				});
 
 				if (status === 201) {

@@ -15,8 +15,11 @@
 	const handleRemoveFromAlbum = async () => {
 		if (window.confirm('Do you want to remove selected assets from the album?')) {
 			try {
-				const { data } = await api.albumApi.removeAssetFromAlbum(album.id, {
-					assetIds: Array.from(getAssets()).map((a) => a.id)
+				const { data } = await api.albumApi.removeAssetFromAlbum({
+					id: album.id,
+					removeAssetsDto: {
+						assetIds: Array.from(getAssets()).map((a) => a.id)
+					}
 				});
 
 				album = data;

@@ -19,7 +19,7 @@
 	let sharedLinks: SharedLinkResponseDto[] = [];
 	onMount(async () => {
 		await getSharedLinks();
-		const { data } = await api.userApi.getAllUsers(false);
+		const { data } = await api.userApi.getAllUsers({ isAll: false });
 
 		// remove invalid users
 		users = data.filter((user) => !(user.deletedAt || user.id === album.ownerId));
