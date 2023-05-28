@@ -13,7 +13,7 @@
 	import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
 	import { flip } from 'svelte/animate';
 	import AlbumCard from '$lib/components/album-page/album-card.svelte';
-	import CircleAvatar from '$lib/components/shared-components/circle-avatar.svelte';
+	import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
 	import { AppRoute } from '$lib/constants';
 
 	export let data: PageData;
@@ -63,13 +63,12 @@
 				</div>
 
 				<div class="flex flex-row flex-wrap gap-4">
-					{#each data.partners as partner}
-						<button
-							on:click={() => goto(`/partners/${partner.id}`)}
+					{#each data.partners as partner (partner.id)}
+						<a
+							href="/partners/{partner.id}"
 							class="flex rounded-lg gap-4 py-4 px-5 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
 						>
-							<CircleAvatar user={partner} />
-
+							<UserAvatar user={partner} size="md" autoColor />
 							<div class="text-left">
 								<p class="text-immich-fg dark:text-immich-dark-fg">
 									{partner.firstName}
@@ -79,7 +78,7 @@
 									{partner.email}
 								</p>
 							</div>
-						</button>
+						</a>
 					{/each}
 				</div>
 			</div>

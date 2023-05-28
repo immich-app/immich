@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { clickOutside } from '$lib/utils/click-outside';
-	import { imageLoad } from '$lib/utils/image-load';
 	import { createEventDispatcher } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
@@ -16,20 +15,14 @@
 	import Magnify from 'svelte-material-icons/Magnify.svelte';
 	import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
 	import Cog from 'svelte-material-icons/Cog.svelte';
+	import UserAvatar from '../user-avatar.svelte';
 	export let user: UserResponseDto;
 	export let showUploadButton = true;
 
 	let shouldShowAccountInfo = false;
 	let shouldShowAccountInfoPanel = false;
 
-	// Show fallback while loading profile picture and hide when image loads.
-	let showProfilePictureFallback = true;
-
 	const dispatch = createEventDispatcher();
-
-	const getFirstLetter = (text?: string) => {
-		return text?.charAt(0).toUpperCase();
-	};
 
 	const logOut = async () => {
 		const { data } = await api.authenticationApi.logout();
@@ -116,27 +109,14 @@
 
 				<div use:clickOutside on:outclick={() => (shouldShowAccountInfoPanel = false)}>
 					<button
-						class="flex place-items-center place-content-center rounded-full bg-immich-primary hover:bg-immich-primary/80 h-12 w-12 text-gray-100 dark:text-immich-dark-bg dark:bg-immich-dark-primary"
+						class="flex"
 						on:mouseover={() => (shouldShowAccountInfo = true)}
 						on:focus={() => (shouldShowAccountInfo = true)}
 						on:blur={() => (shouldShowAccountInfo = false)}
 						on:mouseleave={() => (shouldShowAccountInfo = false)}
 						on:click={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
 					>
-						{#if user.profileImagePath}
-							<img
-								class:hidden={showProfilePictureFallback}
-								src={api.getProfileImageUrl(user.id)}
-								alt="profile-img"
-								class="inline rounded-full h-12 w-12 object-cover shadow-md border-2 border-immich-primary hover:border-immich-dark-primary dark:hover:border-immich-primary dark:border-immich-dark-primary transition-all"
-								draggable="false"
-								use:imageLoad
-								on:image-load={() => (showProfilePictureFallback = false)}
-							/>
-						{/if}
-						{#if showProfilePictureFallback}
-							{getFirstLetter(user.firstName)}{getFirstLetter(user.lastName)}
-						{/if}
+						<UserAvatar {user} size="md" showTitle={false} interactive />
 					</button>
 
 					{#if shouldShowAccountInfo && !shouldShowAccountInfoPanel}

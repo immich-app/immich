@@ -27,7 +27,7 @@
 	import DownloadAction from '../photos-page/actions/download-action.svelte';
 	import RemoveFromAlbum from '../photos-page/actions/remove-from-album.svelte';
 	import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
-	import CircleAvatar from '../shared-components/circle-avatar.svelte';
+	import UserAvatar from '../shared-components/user-avatar.svelte';
 	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
 	import ControlAppBar from '../shared-components/control-app-bar.svelte';
@@ -478,13 +478,11 @@
 			</span>
 		{/if}
 		{#if album.shared}
-			<div class="my-6 flex">
-				{#each album.sharedUsers as user}
-					{#key user.id}
-						<span class="mr-1">
-							<CircleAvatar {user} on:click={() => (isShowShareInfoModal = true)} />
-						</span>
-					{/key}
+			<div class="flex my-6 gap-x-1">
+				{#each album.sharedUsers as user (user.id)}
+					<button on:click={() => (isShowShareInfoModal = true)}>
+						<UserAvatar {user} size="md" autoColor />
+					</button>
 				{/each}
 
 				<button
