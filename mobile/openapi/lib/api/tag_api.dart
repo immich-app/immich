@@ -20,7 +20,7 @@ class TagApi {
   /// Parameters:
   ///
   /// * [CreateTagDto] createTagDto (required):
-  Future<Response> createWithHttpInfo(CreateTagDto createTagDto,) async {
+  Future<Response> createTagWithHttpInfo(CreateTagDto createTagDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/tag';
 
@@ -48,8 +48,8 @@ class TagApi {
   /// Parameters:
   ///
   /// * [CreateTagDto] createTagDto (required):
-  Future<TagResponseDto?> create(CreateTagDto createTagDto,) async {
-    final response = await createWithHttpInfo(createTagDto,);
+  Future<TagResponseDto?> createTag(CreateTagDto createTagDto,) async {
+    final response = await createTagWithHttpInfo(createTagDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -67,7 +67,7 @@ class TagApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> deleteWithHttpInfo(String id,) async {
+  Future<Response> deleteTagWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final path = r'/tag/{id}'
       .replaceAll('{id}', id);
@@ -96,15 +96,15 @@ class TagApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> delete(String id,) async {
-    final response = await deleteWithHttpInfo(id,);
+  Future<void> deleteTag(String id,) async {
+    final response = await deleteTagWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
   }
 
   /// Performs an HTTP 'GET /tag' operation and returns the [Response].
-  Future<Response> findAllWithHttpInfo() async {
+  Future<Response> getAllTagsWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/tag';
 
@@ -129,8 +129,8 @@ class TagApi {
     );
   }
 
-  Future<List<TagResponseDto>?> findAll() async {
-    final response = await findAllWithHttpInfo();
+  Future<List<TagResponseDto>?> getAllTags() async {
+    final response = await getAllTagsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -151,7 +151,7 @@ class TagApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> findOneWithHttpInfo(String id,) async {
+  Future<Response> getTagByIdWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final path = r'/tag/{id}'
       .replaceAll('{id}', id);
@@ -180,8 +180,8 @@ class TagApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<TagResponseDto?> findOne(String id,) async {
-    final response = await findOneWithHttpInfo(id,);
+  Future<TagResponseDto?> getTagById(String id,) async {
+    final response = await getTagByIdWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -201,7 +201,7 @@ class TagApi {
   /// * [String] id (required):
   ///
   /// * [UpdateTagDto] updateTagDto (required):
-  Future<Response> updateWithHttpInfo(String id, UpdateTagDto updateTagDto,) async {
+  Future<Response> updateTagWithHttpInfo(String id, UpdateTagDto updateTagDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/tag/{id}'
       .replaceAll('{id}', id);
@@ -232,8 +232,8 @@ class TagApi {
   /// * [String] id (required):
   ///
   /// * [UpdateTagDto] updateTagDto (required):
-  Future<TagResponseDto?> update(String id, UpdateTagDto updateTagDto,) async {
-    final response = await updateWithHttpInfo(id, updateTagDto,);
+  Future<TagResponseDto?> updateTag(String id, UpdateTagDto updateTagDto,) async {
+    final response = await updateTagWithHttpInfo(id, updateTagDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

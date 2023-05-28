@@ -9,15 +9,15 @@ All URIs are relative to */api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**create**](TagApi.md#create) | **POST** /tag | 
-[**delete**](TagApi.md#delete) | **DELETE** /tag/{id} | 
-[**findAll**](TagApi.md#findall) | **GET** /tag | 
-[**findOne**](TagApi.md#findone) | **GET** /tag/{id} | 
-[**update**](TagApi.md#update) | **PATCH** /tag/{id} | 
+[**createTag**](TagApi.md#createtag) | **POST** /tag | 
+[**deleteTag**](TagApi.md#deletetag) | **DELETE** /tag/{id} | 
+[**getAllTags**](TagApi.md#getalltags) | **GET** /tag | 
+[**getTagById**](TagApi.md#gettagbyid) | **GET** /tag/{id} | 
+[**updateTag**](TagApi.md#updatetag) | **PATCH** /tag/{id} | 
 
 
-# **create**
-> TagResponseDto create(createTagDto)
+# **createTag**
+> TagResponseDto createTag(createTagDto)
 
 
 
@@ -43,10 +43,10 @@ final api_instance = TagApi();
 final createTagDto = CreateTagDto(); // CreateTagDto | 
 
 try {
-    final result = api_instance.create(createTagDto);
+    final result = api_instance.createTag(createTagDto);
     print(result);
 } catch (e) {
-    print('Exception when calling TagApi->create: $e\n');
+    print('Exception when calling TagApi->createTag: $e\n');
 }
 ```
 
@@ -71,8 +71,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **delete**
-> delete(id)
+# **deleteTag**
+> deleteTag(id)
 
 
 
@@ -98,9 +98,9 @@ final api_instance = TagApi();
 final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    api_instance.delete(id);
+    api_instance.deleteTag(id);
 } catch (e) {
-    print('Exception when calling TagApi->delete: $e\n');
+    print('Exception when calling TagApi->deleteTag: $e\n');
 }
 ```
 
@@ -125,8 +125,8 @@ void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **findAll**
-> List<TagResponseDto> findAll()
+# **getAllTags**
+> List<TagResponseDto> getAllTags()
 
 
 
@@ -151,10 +151,10 @@ import 'package:openapi/api.dart';
 final api_instance = TagApi();
 
 try {
-    final result = api_instance.findAll();
+    final result = api_instance.getAllTags();
     print(result);
 } catch (e) {
-    print('Exception when calling TagApi->findAll: $e\n');
+    print('Exception when calling TagApi->getAllTags: $e\n');
 }
 ```
 
@@ -176,8 +176,8 @@ This endpoint does not need any parameter.
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **findOne**
-> TagResponseDto findOne(id)
+# **getTagById**
+> TagResponseDto getTagById(id)
 
 
 
@@ -203,10 +203,10 @@ final api_instance = TagApi();
 final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 
 try {
-    final result = api_instance.findOne(id);
+    final result = api_instance.getTagById(id);
     print(result);
 } catch (e) {
-    print('Exception when calling TagApi->findOne: $e\n');
+    print('Exception when calling TagApi->getTagById: $e\n');
 }
 ```
 
@@ -231,8 +231,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **update**
-> TagResponseDto update(id, updateTagDto)
+# **updateTag**
+> TagResponseDto updateTag(id, updateTagDto)
 
 
 
@@ -259,10 +259,10 @@ final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 final updateTagDto = UpdateTagDto(); // UpdateTagDto | 
 
 try {
-    final result = api_instance.update(id, updateTagDto);
+    final result = api_instance.updateTag(id, updateTagDto);
     print(result);
 } catch (e) {
-    print('Exception when calling TagApi->update: $e\n');
+    print('Exception when calling TagApi->updateTag: $e\n');
 }
 ```
 

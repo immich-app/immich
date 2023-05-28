@@ -2422,16 +2422,16 @@ export interface SystemConfigTemplateStorageOptionDto {
 export interface TagResponseDto {
     /**
      * 
-     * @type {string}
-     * @memberof TagResponseDto
-     */
-    'id': string;
-    /**
-     * 
      * @type {TagTypeEnum}
      * @memberof TagResponseDto
      */
     'type': TagTypeEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof TagResponseDto
+     */
+    'id': string;
     /**
      * 
      * @type {string}
@@ -2444,12 +2444,6 @@ export interface TagResponseDto {
      * @memberof TagResponseDto
      */
     'userId': string;
-    /**
-     * 
-     * @type {string}
-     * @memberof TagResponseDto
-     */
-    'renameTagId'?: string | null;
 }
 
 
@@ -2558,12 +2552,6 @@ export interface UpdateTagDto {
      * @memberof UpdateTagDto
      */
     'name'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateTagDto
-     */
-    'renameTagId'?: string;
 }
 /**
  * 
@@ -10649,55 +10637,13 @@ export const TagApiAxiosParamCreator = function (configuration?: Configuration) 
     return {
         /**
          * 
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        _delete: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('_delete', 'id', id)
-            const localVarPath = `/tag/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @param {CreateTagDto} createTagDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        create: async (createTagDto: CreateTagDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        createTag: async (createTagDto: CreateTagDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'createTagDto' is not null or undefined
-            assertParamExists('create', 'createTagDto', createTagDto)
+            assertParamExists('createTag', 'createTagDto', createTagDto)
             const localVarPath = `/tag`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -10735,10 +10681,52 @@ export const TagApiAxiosParamCreator = function (configuration?: Configuration) 
         },
         /**
          * 
+         * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        findAll: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        deleteTag: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('deleteTag', 'id', id)
+            const localVarPath = `/tag/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAllTags: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/tag`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -10777,9 +10765,9 @@ export const TagApiAxiosParamCreator = function (configuration?: Configuration) 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        findOne: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getTagById: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('findOne', 'id', id)
+            assertParamExists('getTagById', 'id', id)
             const localVarPath = `/tag/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -10820,11 +10808,11 @@ export const TagApiAxiosParamCreator = function (configuration?: Configuration) 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        update: async (id: string, updateTagDto: UpdateTagDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        updateTag: async (id: string, updateTagDto: UpdateTagDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('update', 'id', id)
+            assertParamExists('updateTag', 'id', id)
             // verify required parameter 'updateTagDto' is not null or undefined
-            assertParamExists('update', 'updateTagDto', updateTagDto)
+            assertParamExists('updateTag', 'updateTagDto', updateTagDto)
             const localVarPath = `/tag/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -10873,31 +10861,12 @@ export const TagApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async _delete(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator._delete(id, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
          * @param {CreateTagDto} createTagDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async create(createTagDto: CreateTagDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TagResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.create(createTagDto, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async findAll(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<TagResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.findAll(options);
+        async createTag(createTagDto: CreateTagDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TagResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.createTag(createTagDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -10906,8 +10875,27 @@ export const TagApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async findOne(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TagResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.findOne(id, options);
+        async deleteTag(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteTag(id, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getAllTags(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<TagResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllTags(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getTagById(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TagResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getTagById(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -10917,8 +10905,8 @@ export const TagApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async update(id: string, updateTagDto: UpdateTagDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TagResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.update(id, updateTagDto, options);
+        async updateTag(id: string, updateTagDto: UpdateTagDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TagResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateTag(id, updateTagDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -10933,29 +10921,12 @@ export const TagApiFactory = function (configuration?: Configuration, basePath?:
     return {
         /**
          * 
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        _delete(id: string, options?: any): AxiosPromise<void> {
-            return localVarFp._delete(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @param {CreateTagDto} createTagDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        create(createTagDto: CreateTagDto, options?: any): AxiosPromise<TagResponseDto> {
-            return localVarFp.create(createTagDto, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        findAll(options?: any): AxiosPromise<Array<TagResponseDto>> {
-            return localVarFp.findAll(options).then((request) => request(axios, basePath));
+        createTag(createTagDto: CreateTagDto, options?: any): AxiosPromise<TagResponseDto> {
+            return localVarFp.createTag(createTagDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -10963,8 +10934,25 @@ export const TagApiFactory = function (configuration?: Configuration, basePath?:
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        findOne(id: string, options?: any): AxiosPromise<TagResponseDto> {
-            return localVarFp.findOne(id, options).then((request) => request(axios, basePath));
+        deleteTag(id: string, options?: any): AxiosPromise<void> {
+            return localVarFp.deleteTag(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAllTags(options?: any): AxiosPromise<Array<TagResponseDto>> {
+            return localVarFp.getAllTags(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getTagById(id: string, options?: any): AxiosPromise<TagResponseDto> {
+            return localVarFp.getTagById(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -10973,71 +10961,71 @@ export const TagApiFactory = function (configuration?: Configuration, basePath?:
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        update(id: string, updateTagDto: UpdateTagDto, options?: any): AxiosPromise<TagResponseDto> {
-            return localVarFp.update(id, updateTagDto, options).then((request) => request(axios, basePath));
+        updateTag(id: string, updateTagDto: UpdateTagDto, options?: any): AxiosPromise<TagResponseDto> {
+            return localVarFp.updateTag(id, updateTagDto, options).then((request) => request(axios, basePath));
         },
     };
 };
 
 /**
- * Request parameters for _delete operation in TagApi.
+ * Request parameters for createTag operation in TagApi.
  * @export
- * @interface TagApiDeleteRequest
+ * @interface TagApiCreateTagRequest
  */
-export interface TagApiDeleteRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof TagApiDelete
-     */
-    readonly id: string
-}
-
-/**
- * Request parameters for create operation in TagApi.
- * @export
- * @interface TagApiCreateRequest
- */
-export interface TagApiCreateRequest {
+export interface TagApiCreateTagRequest {
     /**
      * 
      * @type {CreateTagDto}
-     * @memberof TagApiCreate
+     * @memberof TagApiCreateTag
      */
     readonly createTagDto: CreateTagDto
 }
 
 /**
- * Request parameters for findOne operation in TagApi.
+ * Request parameters for deleteTag operation in TagApi.
  * @export
- * @interface TagApiFindOneRequest
+ * @interface TagApiDeleteTagRequest
  */
-export interface TagApiFindOneRequest {
+export interface TagApiDeleteTagRequest {
     /**
      * 
      * @type {string}
-     * @memberof TagApiFindOne
+     * @memberof TagApiDeleteTag
      */
     readonly id: string
 }
 
 /**
- * Request parameters for update operation in TagApi.
+ * Request parameters for getTagById operation in TagApi.
  * @export
- * @interface TagApiUpdateRequest
+ * @interface TagApiGetTagByIdRequest
  */
-export interface TagApiUpdateRequest {
+export interface TagApiGetTagByIdRequest {
     /**
      * 
      * @type {string}
-     * @memberof TagApiUpdate
+     * @memberof TagApiGetTagById
+     */
+    readonly id: string
+}
+
+/**
+ * Request parameters for updateTag operation in TagApi.
+ * @export
+ * @interface TagApiUpdateTagRequest
+ */
+export interface TagApiUpdateTagRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof TagApiUpdateTag
      */
     readonly id: string
 
     /**
      * 
      * @type {UpdateTagDto}
-     * @memberof TagApiUpdate
+     * @memberof TagApiUpdateTag
      */
     readonly updateTagDto: UpdateTagDto
 }
@@ -11051,24 +11039,24 @@ export interface TagApiUpdateRequest {
 export class TagApi extends BaseAPI {
     /**
      * 
-     * @param {TagApiDeleteRequest} requestParameters Request parameters.
+     * @param {TagApiCreateTagRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TagApi
      */
-    public _delete(requestParameters: TagApiDeleteRequest, options?: AxiosRequestConfig) {
-        return TagApiFp(this.configuration)._delete(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    public createTag(requestParameters: TagApiCreateTagRequest, options?: AxiosRequestConfig) {
+        return TagApiFp(this.configuration).createTag(requestParameters.createTagDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @param {TagApiCreateRequest} requestParameters Request parameters.
+     * @param {TagApiDeleteTagRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TagApi
      */
-    public create(requestParameters: TagApiCreateRequest, options?: AxiosRequestConfig) {
-        return TagApiFp(this.configuration).create(requestParameters.createTagDto, options).then((request) => request(this.axios, this.basePath));
+    public deleteTag(requestParameters: TagApiDeleteTagRequest, options?: AxiosRequestConfig) {
+        return TagApiFp(this.configuration).deleteTag(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -11077,30 +11065,30 @@ export class TagApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof TagApi
      */
-    public findAll(options?: AxiosRequestConfig) {
-        return TagApiFp(this.configuration).findAll(options).then((request) => request(this.axios, this.basePath));
+    public getAllTags(options?: AxiosRequestConfig) {
+        return TagApiFp(this.configuration).getAllTags(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @param {TagApiFindOneRequest} requestParameters Request parameters.
+     * @param {TagApiGetTagByIdRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TagApi
      */
-    public findOne(requestParameters: TagApiFindOneRequest, options?: AxiosRequestConfig) {
-        return TagApiFp(this.configuration).findOne(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    public getTagById(requestParameters: TagApiGetTagByIdRequest, options?: AxiosRequestConfig) {
+        return TagApiFp(this.configuration).getTagById(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @param {TagApiUpdateRequest} requestParameters Request parameters.
+     * @param {TagApiUpdateTagRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TagApi
      */
-    public update(requestParameters: TagApiUpdateRequest, options?: AxiosRequestConfig) {
-        return TagApiFp(this.configuration).update(requestParameters.id, requestParameters.updateTagDto, options).then((request) => request(this.axios, this.basePath));
+    public updateTag(requestParameters: TagApiUpdateTagRequest, options?: AxiosRequestConfig) {
+        return TagApiFp(this.configuration).updateTag(requestParameters.id, requestParameters.updateTagDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
