@@ -1,6 +1,6 @@
 import { TagType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateTagDto {
   @IsString()
@@ -11,4 +11,10 @@ export class CreateTagDto {
   @IsNotEmpty()
   @ApiProperty({ enumName: 'TagTypeEnum', enum: TagType })
   type!: TagType;
+}
+
+export class UpdateTagDto {
+  @IsString()
+  @IsOptional()
+  name?: string;
 }

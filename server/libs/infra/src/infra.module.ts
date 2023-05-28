@@ -17,6 +17,7 @@ import {
   ISmartInfoRepository,
   IStorageRepository,
   ISystemConfigRepository,
+  ITagRepository,
   IUserRepository,
   IUserTokenRepository,
 } from '@app/domain';
@@ -45,6 +46,7 @@ import {
   SharedLinkRepository,
   SmartInfoRepository,
   SystemConfigRepository,
+  TagRepository,
   TypesenseRepository,
   UserRepository,
   UserTokenRepository,
@@ -68,6 +70,7 @@ const providers: Provider[] = [
   { provide: ISmartInfoRepository, useClass: SmartInfoRepository },
   { provide: IStorageRepository, useClass: FilesystemProvider },
   { provide: ISystemConfigRepository, useClass: SystemConfigRepository },
+  { provide: ITagRepository, useClass: TagRepository },
   { provide: IUserRepository, useClass: UserRepository },
   { provide: IUserTokenRepository, useClass: UserTokenRepository },
 ];
