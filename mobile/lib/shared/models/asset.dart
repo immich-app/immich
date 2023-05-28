@@ -347,7 +347,7 @@ class Asset {
     return """
 {
   "remoteId": "${remoteId ?? "N/A"}",
-  "localId": "$localId ?? "N/A"",
+  "localId": "${localId ?? "N/A"}",
   "checksum": "$prettyHash",
   "ownerId": "$ownerId", 
   "livePhotoVideoId": "${livePhotoVideoId ?? "N/A"}",

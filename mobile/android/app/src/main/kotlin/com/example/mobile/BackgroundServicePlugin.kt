@@ -8,6 +8,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import java.security.MessageDigest
 import java.io.File
+import java.io.FileInputStream
 
 /**
  * Android plugin for Dart `BackgroundService`
@@ -100,6 +101,26 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 File(path).forEachBlock() {
                     buffer: ByteArray, bytesRead: Int -> sha1.update(buffer, 0, bytesRead)
                 }
+                val hash = sha1.digest()
+                result.success(hash)
+            }
+            "digestFile2" -> {
+                val args = call.arguments<ArrayList<*>>()!!
+                val path = args.get(0) as String
+                val bufLen = 1024*1024
+                val buf = ByteArray(bufLen)
+                var len = 0
+                val file = FileInputStream(path)
+                try {
+                    while (true) {
+                        len = file.read(buf)
+                        if (len != bufLen) break
+                        sha1.update(buf)
+                    }
+                } finally {
+                    file.close()
+                }
+                sha1.update(buf, 0, len)
                 val hash = sha1.digest()
                 result.success(hash)
             }

@@ -140,6 +140,10 @@ class BackgroundService {
     return _foregroundChannel.invokeMethod<Uint8List>("digestFile", [path]);
   }
 
+  Future<Uint8List?> digestFile2(String path) {
+    return _foregroundChannel.invokeMethod<Uint8List>("digestFile2", [path]);
+  }
+
   Future<Uint8List?> digestSpeed(int size, int rounds) {
     return _foregroundChannel
         .invokeMethod<Uint8List>("digestSpeed", [size, rounds]);
