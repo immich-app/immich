@@ -2,7 +2,7 @@ import { ITagRepository } from '@app/domain';
 import { TagEntity } from '@app/infra/entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class TagRepository implements ITagRepository {
