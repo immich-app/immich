@@ -19,7 +19,7 @@ import {
   StreamableFile,
   ParseFilePipe,
 } from '@nestjs/common';
-import { Authenticated } from '../../decorators/authenticated.decorator';
+import { Authenticated, SharedLinkRoute } from '../../decorators/authenticated.decorator';
 import { AssetService } from './asset.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
@@ -68,10 +68,11 @@ function asStreamableFile({ stream, type, length }: ImmichReadStream) {
 
 @ApiTags('Asset')
 @Controller('asset')
+@Authenticated()
 export class AssetController {
   constructor(private assetService: AssetService) {}
 
-  @Authenticated({ isShared: true })
+  @SharedLinkRoute()
   @Post('upload')
   @UseInterceptors(
     FileFieldsInterceptor(
@@ -116,7 +117,7 @@ export class AssetController {
     return responseDto;
   }
 
-  @Authenticated({ isShared: true })
+  @SharedLinkRoute()
   @Get('/download/:assetId')
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   async downloadFile(
@@ -127,7 +128,7 @@ export class AssetController {
     return this.assetService.downloadFile(authUser, assetId).then(asStreamableFile);
   }
 
-  @Authenticated({ isShared: true })
+  @SharedLinkRoute()
   @Post('/download-files')
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   async downloadFiles(
@@ -148,7 +149,7 @@ export class AssetController {
   /**
    * Current this is not used in any UI element
    */
-  @Authenticated({ isShared: true })
+  @SharedLinkRoute()
   @Get('/download-library')
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   async downloadLibrary(
@@ -165,7 +166,7 @@ export class AssetController {
     return stream;
   }
 
-  @Authenticated({ isShared: true })
+  @SharedLinkRoute()
   @Get('/file/:assetId')
   @Header('Cache-Control', 'max-age=31536000')
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
@@ -180,7 +181,7 @@ export class AssetController {
     return this.assetService.serveFile(authUser, assetId, query, res, headers);
   }
 
-  @Authenticated({ isShared: true })
+  @SharedLinkRoute()
   @Get('/thumbnail/:assetId')
   @Header('Cache-Control', 'max-age=31536000')
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
@@ -195,25 +196,21 @@ export class AssetController {
     return this.assetService.getAssetThumbnail(assetId, query, res, headers);
   }
 
-  @Authenticated()
   @Get('/curated-objects')
   async getCuratedObjects(@GetAuthUser() authUser: AuthUserDto): Promise<CuratedObjectsResponseDto[]> {
     return this.assetService.getCuratedObject(authUser);
   }
 
-  @Authenticated()
   @Get('/curated-locations')
   async getCuratedLocations(@GetAuthUser() authUser: AuthUserDto): Promise<CuratedLocationsResponseDto[]> {
     return this.assetService.getCuratedLocation(authUser);
   }
 
-  @Authenticated()
   @Get('/search-terms')
   async getAssetSearchTerms(@GetAuthUser() authUser: AuthUserDto): Promise<string[]> {
     return this.assetService.getAssetSearchTerm(authUser);
   }
 
-  @Authenticated()
   @Post('/search')
   async searchAsset(
     @GetAuthUser() authUser: AuthUserDto,
@@ -222,7 +219,6 @@ export class AssetController {
     return this.assetService.searchAsset(authUser, searchAssetDto);
   }
 
-  @Authenticated()
   @Post('/count-by-time-bucket')
   async getAssetCountByTimeBucket(
     @GetAuthUser() authUser: AuthUserDto,
@@ -231,13 +227,11 @@ export class AssetController {
     return this.assetService.getAssetCountByTimeBucket(authUser, getAssetCountByTimeGroupDto);
   }
 
-  @Authenticated()
   @Get('/count-by-user-id')
   async getAssetCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
     return this.assetService.getAssetCountByUserId(authUser);
   }
 
-  @Authenticated()
   @Get('/stat/archive')
   async getArchivedAssetCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
     return this.assetService.getArchivedAssetCountByUserId(authUser);
@@ -245,7 +239,6 @@ export class AssetController {
   /**
    * Get all AssetEntity belong to the user
    */
-  @Authenticated()
   @Get('/')
   @ApiHeader({
     name: 'if-none-match',
@@ -260,7 +253,6 @@ export class AssetController {
     return this.assetService.getAllAssets(authUser, dto);
   }
 
-  @Authenticated()
   @Post('/time-bucket')
   async getAssetByTimeBucket(
     @GetAuthUser() authUser: AuthUserDto,
@@ -272,7 +264,6 @@ export class AssetController {
   /**
    * Get all asset of a device that are in the database, ID only.
    */
-  @Authenticated()
   @Get('/:deviceId')
   async getUserAssetsByDeviceId(@GetAuthUser() authUser: AuthUserDto, @Param() { deviceId }: DeviceIdDto) {
     return await this.assetService.getUserAssetsByDeviceId(authUser, deviceId);
@@ -281,7 +272,7 @@ export class AssetController {
   /**
    * Get a single asset's information
    */
-  @Authenticated({ isShared: true })
+  @SharedLinkRoute()
   @Get('/assetById/:assetId')
   async getAssetById(
     @GetAuthUser() authUser: AuthUserDto,
@@ -294,7 +285,6 @@ export class AssetController {
   /**
    * Update an asset
    */
-  @Authenticated()
   @Put('/:assetId')
   async updateAsset(
     @GetAuthUser() authUser: AuthUserDto,
@@ -305,7 +295,6 @@ export class AssetController {
     return await this.assetService.updateAsset(authUser, assetId, dto);
   }
 
-  @Authenticated()
   @Delete('/')
   async deleteAsset(
     @GetAuthUser() authUser: AuthUserDto,
@@ -318,7 +307,7 @@ export class AssetController {
   /**
    * Check duplicated asset before uploading - for Web upload used
    */
-  @Authenticated({ isShared: true })
+  @SharedLinkRoute()
   @Post('/check')
   @HttpCode(200)
   async checkDuplicateAsset(
@@ -331,7 +320,6 @@ export class AssetController {
   /**
    * Checks if multiple assets exist on the server and returns all existing - used by background backup
    */
-  @Authenticated()
   @Post('/exist')
   @HttpCode(200)
   async checkExistingAssets(
@@ -344,7 +332,6 @@ export class AssetController {
   /**
    * Checks if assets exist by checksums
    */
-  @Authenticated()
   @Post('/bulk-upload-check')
   @HttpCode(200)
   bulkUploadCheck(
@@ -354,7 +341,6 @@ export class AssetController {
     return this.assetService.bulkUploadCheck(authUser, dto);
   }
 
-  @Authenticated()
   @Post('/shared-link')
   async createAssetsSharedLink(
     @GetAuthUser() authUser: AuthUserDto,
@@ -363,7 +349,7 @@ export class AssetController {
     return await this.assetService.createAssetsSharedLink(authUser, dto);
   }
 
-  @Authenticated({ isShared: true })
+  @SharedLinkRoute()
   @Patch('/shared-link/add')
   async addAssetsToSharedLink(
     @GetAuthUser() authUser: AuthUserDto,
@@ -372,7 +358,7 @@ export class AssetController {
     return await this.assetService.addAssetsToSharedLink(authUser, dto);
   }
 
-  @Authenticated({ isShared: true })
+  @SharedLinkRoute()
   @Patch('/shared-link/remove')
   async removeAssetsFromSharedLink(
     @GetAuthUser() authUser: AuthUserDto,

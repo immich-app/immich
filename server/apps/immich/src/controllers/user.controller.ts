@@ -14,7 +14,7 @@ import {
   Header,
 } from '@nestjs/common';
 import { UserService } from '@app/domain';
-import { Authenticated } from '../decorators/authenticated.decorator';
+import { AdminRoute, Authenticated, PublicRoute } from '../decorators/authenticated.decorator';
 import { AuthUserDto, GetAuthUser } from '../decorators/auth-user.decorator';
 import { CreateUserDto } from '@app/domain';
 import { UpdateUserDto } from '@app/domain';
@@ -32,58 +32,55 @@ import { UserIdDto } from '@app/domain/user/dto/user-id.dto';
 
 @ApiTags('User')
 @Controller('user')
+@Authenticated()
 @UseValidation()
 export class UserController {
   constructor(private service: UserService) {}
 
-  @Authenticated()
   @Get()
   getAllUsers(@GetAuthUser() authUser: AuthUserDto, @Query('isAll') isAll: boolean): Promise<UserResponseDto[]> {
     return this.service.getAllUsers(authUser, isAll);
   }
 
-  @Authenticated()
   @Get('/info/:userId')
   getUserById(@Param() { userId }: UserIdDto): Promise<UserResponseDto> {
     return this.service.getUserById(userId);
   }
 
-  @Authenticated()
   @Get('me')
   getMyUserInfo(@GetAuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
     return this.service.getUserInfo(authUser);
   }
 
-  @Authenticated({ admin: true })
+  @AdminRoute()
   @Post()
   createUser(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
     return this.service.createUser(createUserDto);
   }
 
+  @PublicRoute()
   @Get('/count')
   getUserCount(@Query() dto: UserCountDto): Promise<UserCountResponseDto> {
     return this.service.getUserCount(dto);
   }
 
-  @Authenticated({ admin: true })
+  @AdminRoute()
   @Delete('/:userId')
   deleteUser(@GetAuthUser() authUser: AuthUserDto, @Param() { userId }: UserIdDto): Promise<UserResponseDto> {
     return this.service.deleteUser(authUser, userId);
   }
 
-  @Authenticated({ admin: true })
+  @AdminRoute()
   @Post('/:userId/restore')
   restoreUser(@GetAuthUser() authUser: AuthUserDto, @Param() { userId }: UserIdDto): Promise<UserResponseDto> {
     return this.service.restoreUser(authUser, userId);
   }
 
-  @Authenticated()
   @Put()
   updateUser(@GetAuthUser() authUser: AuthUserDto, @Body() updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
     return this.service.updateUser(authUser, updateUserDto);
   }
 
-  @Authenticated()
   @UseInterceptors(FileInterceptor('file', profileImageUploadOption))
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -98,7 +95,6 @@ export class UserController {
     return this.service.createProfileImage(authUser, fileInfo);
   }
 
-  @Authenticated()
   @Get('/profile-image/:userId')
   @Header('Cache-Control', 'max-age=600')
   async getProfileImage(@Param() { userId }: UserIdDto, @Response({ passthrough: true }) res: Res): Promise<any> {
