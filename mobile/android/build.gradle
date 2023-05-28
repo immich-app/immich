@@ -1,5 +1,6 @@
 buildscript {
     ext.kotlin_version = '1.8.20'
+    ext.kotlin_coroutines_version = '1.7.1'
     ext.work_version = '2.7.1'
     ext.concurrent_version = '1.1.0'
     ext.guava_version = '31.0.1-android'

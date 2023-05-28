@@ -18,11 +18,7 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-/// State does not contain archived assets.
-/// Use database provider if you want to access the isArchived assets
-class AssetsState {}
-
-class AssetNotifier extends StateNotifier<AssetsState> {
+class AssetNotifier extends StateNotifier<bool> {
   final AssetService _assetService;
   final AlbumService _albumService;
   final UserService _userService;
@@ -38,7 +34,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     this._userService,
     this._syncService,
     this._db,
-  ) : super(AssetsState());
+  ) : super(false);
 
   Future<void> getAllAsset({bool clear = false}) async {
     if (_getAllAssetInProgress || _deleteInProgress) {
@@ -48,6 +44,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     final stopwatch = Stopwatch()..start();
     try {
       _getAllAssetInProgress = true;
+      state = true;
       if (clear) {
         await clearAssetsAndAlbums(_db);
         log.info("Manual refresh requested, cleared assets and albums from db");
@@ -64,6 +61,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       log.info("Load assets: ${stopwatch.elapsedMilliseconds}ms");
     } finally {
       _getAllAssetInProgress = false;
+      state = false;
     }
   }
 
@@ -79,6 +77,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
 
   Future<void> deleteAssets(Set<Asset> deleteAssets) async {
     _deleteInProgress = true;
+    state = true;
     try {
       final localDeleted = await _deleteLocalAssets(deleteAssets);
       final remoteDeleted = await _deleteRemoteAssets(deleteAssets);
@@ -91,6 +90,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       }
     } finally {
       _deleteInProgress = false;
+      state = false;
     }
   }
 
@@ -142,7 +142,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
   }
 }
 
-final assetProvider = StateNotifierProvider<AssetNotifier, AssetsState>((ref) {
+final assetProvider = StateNotifierProvider<AssetNotifier, bool>((ref) {
   return AssetNotifier(
     ref.watch(assetServiceProvider),
     ref.watch(albumServiceProvider),

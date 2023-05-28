@@ -9,6 +9,7 @@ import io.flutter.plugin.common.MethodChannel
 import java.security.MessageDigest
 import java.io.File
 import java.io.FileInputStream
+import kotlinx.coroutines.*
 
 /**
  * Android plugin for Dart `BackgroundService`
@@ -75,54 +76,48 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             "isIgnoringBatteryOptimizations" -> {
                 result.success(BackupWorker.isIgnoringBatteryOptimizations(ctx))
             }
-            "digestBytes" -> {
-                val args = call.arguments<ArrayList<*>>()!!
-                val data = args.get(0) as ByteArray
-                val hash = sha1.digest(data)
-                result.success(hash)
-            }
-            "digestSpeed" -> {
-                val args = call.arguments<ArrayList<*>>()!!
-                val size = (args.get(0) as Number).toInt()
-                val rounds = (args.get(1) as Number).toInt()
-                val data = ByteArray(size)
-                var count = 0;
-                repeat(rounds-1) {
-                    count += sha1.digest(data).size
+            "digestFiles" -> {
+                val args = call.arguments<ArrayList<String>>()!!
+                GlobalScope.launch(Dispatchers.IO) {
+                    val buf = ByteArray(BUFSIZE)
+                    val digest: MessageDigest = MessageDigest.getInstance("SHA-1")
+                    val hashes = ArrayList<ByteArray>(args.size)
+                    for (i in args.indices) {
+                        val path = args[i]
+                        var len = 0
+                        val file = FileInputStream(path)
+                        try {
+                            while (true) {
+                                len = file.read(buf)
+                                if (len != BUFSIZE) break
+                                digest.update(buf)
+                            }
+                        } finally {
+                            file.close()
+                        }
+                        digest.update(buf, 0, len)
+                        hashes.add(digest.digest())
+                    }
+                    result.success(hashes)
                 }
-                val hash = sha1.digest(data)
-                count += hash.size
-                Log.d(TAG, "$count")
-                result.success(hash)
             }
             "digestFile" -> {
                 val args = call.arguments<ArrayList<*>>()!!
                 val path = args.get(0) as String
-                File(path).forEachBlock() {
-                    buffer: ByteArray, bytesRead: Int -> sha1.update(buffer, 0, bytesRead)
-                }
-                val hash = sha1.digest()
-                result.success(hash)
-            }
-            "digestFile2" -> {
-                val args = call.arguments<ArrayList<*>>()!!
-                val path = args.get(0) as String
-                val bufLen = 1024*1024
-                val buf = ByteArray(bufLen)
+                val buf = ByteArray(BUFSIZE)
                 var len = 0
                 val file = FileInputStream(path)
                 try {
                     while (true) {
                         len = file.read(buf)
-                        if (len != bufLen) break
+                        if (len != BUFSIZE) break
                         sha1.update(buf)
                     }
                 } finally {
                     file.close()
                 }
                 sha1.update(buf, 0, len)
-                val hash = sha1.digest()
-                result.success(hash)
+                result.success(sha1.digest())
             }
             else -> result.notImplemented()
         }
@@ -130,3 +125,4 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 }
 
 private const val TAG = "BackgroundServicePlugin"
+private const val BUFSIZE = 2*1024*1024;
