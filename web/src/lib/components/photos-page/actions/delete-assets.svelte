@@ -20,7 +20,9 @@
 			let count = 0;
 
 			const { data: deletedAssets } = await api.assetApi.deleteAsset({
-				ids: Array.from(getAssets()).map((a) => a.id)
+				deleteAssetDto: {
+					ids: Array.from(getAssets()).map((a) => a.id)
+				}
 			});
 
 			for (const asset of deletedAssets) {

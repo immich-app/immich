@@ -115,12 +115,12 @@ export class MetadataExtractionProcessor {
         })
       : {};
 
-    const exifToDate = (exifDate: string | ExifDateTime | undefined) => {
+    const exifToDate = (exifDate: string | Date | ExifDateTime | undefined) => {
       if (!exifDate) {
         return null;
       }
 
-      const date = typeof exifDate === 'string' ? new Date(exifDate) : exifDate.toDate();
+      const date = exifDate instanceof ExifDateTime ? exifDate.toDate() : new Date(exifDate);
       if (isNaN(date.valueOf())) {
         return null;
       }
@@ -128,10 +128,9 @@ export class MetadataExtractionProcessor {
       return date;
     };
 
-    const exifTimeZone = (exifDate: string | ExifDateTime | undefined) => {
-      if (!exifDate) return null;
-
-      if (typeof exifDate === 'string') {
+    const exifTimeZone = (exifDate: string | Date | ExifDateTime | undefined) => {
+      const isExifDate = exifDate instanceof ExifDateTime;
+      if (!isExifDate) {
         return null;
       }
 

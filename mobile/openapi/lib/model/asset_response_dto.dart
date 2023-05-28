@@ -20,7 +20,7 @@ class AssetResponseDto {
     required this.deviceId,
     required this.originalPath,
     required this.originalFileName,
-    required this.resizePath,
+    required this.resized,
     required this.fileCreatedAt,
     required this.fileModifiedAt,
     required this.updatedAt,
@@ -28,13 +28,12 @@ class AssetResponseDto {
     required this.isArchived,
     required this.mimeType,
     required this.duration,
-    required this.webpPath,
-    this.encodedVideoPath,
     this.exifInfo,
     this.smartInfo,
     this.livePhotoVideoId,
     this.tags = const [],
     this.people = const [],
+    required this.checksum,
   });
 
   AssetTypeEnum type;
@@ -51,7 +50,7 @@ class AssetResponseDto {
 
   String originalFileName;
 
-  String? resizePath;
+  bool resized;
 
   String fileCreatedAt;
 
@@ -66,10 +65,6 @@ class AssetResponseDto {
   String? mimeType;
 
   String duration;
-
-  String? webpPath;
-
-  String? encodedVideoPath;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -93,6 +88,9 @@ class AssetResponseDto {
 
   List<PersonResponseDto> people;
 
+  /// base64 encoded sha1 hash
+  String checksum;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
      other.type == type &&
@@ -102,7 +100,7 @@ class AssetResponseDto {
      other.deviceId == deviceId &&
      other.originalPath == originalPath &&
      other.originalFileName == originalFileName &&
-     other.resizePath == resizePath &&
+     other.resized == resized &&
      other.fileCreatedAt == fileCreatedAt &&
      other.fileModifiedAt == fileModifiedAt &&
      other.updatedAt == updatedAt &&
@@ -110,13 +108,12 @@ class AssetResponseDto {
      other.isArchived == isArchived &&
      other.mimeType == mimeType &&
      other.duration == duration &&
-     other.webpPath == webpPath &&
-     other.encodedVideoPath == encodedVideoPath &&
      other.exifInfo == exifInfo &&
      other.smartInfo == smartInfo &&
      other.livePhotoVideoId == livePhotoVideoId &&
      other.tags == tags &&
-     other.people == people;
+     other.people == people &&
+     other.checksum == checksum;
 
   @override
   int get hashCode =>
@@ -128,7 +125,7 @@ class AssetResponseDto {
     (deviceId.hashCode) +
     (originalPath.hashCode) +
     (originalFileName.hashCode) +
-    (resizePath == null ? 0 : resizePath!.hashCode) +
+    (resized.hashCode) +
     (fileCreatedAt.hashCode) +
     (fileModifiedAt.hashCode) +
     (updatedAt.hashCode) +
@@ -136,16 +133,15 @@ class AssetResponseDto {
     (isArchived.hashCode) +
     (mimeType == null ? 0 : mimeType!.hashCode) +
     (duration.hashCode) +
-    (webpPath == null ? 0 : webpPath!.hashCode) +
-    (encodedVideoPath == null ? 0 : encodedVideoPath!.hashCode) +
     (exifInfo == null ? 0 : exifInfo!.hashCode) +
     (smartInfo == null ? 0 : smartInfo!.hashCode) +
     (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
     (tags.hashCode) +
-    (people.hashCode);
+    (people.hashCode) +
+    (checksum.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, originalFileName=$originalFileName, resizePath=$resizePath, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, updatedAt=$updatedAt, isFavorite=$isFavorite, isArchived=$isArchived, mimeType=$mimeType, duration=$duration, webpPath=$webpPath, encodedVideoPath=$encodedVideoPath, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags, people=$people]';
+  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, originalFileName=$originalFileName, resized=$resized, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, updatedAt=$updatedAt, isFavorite=$isFavorite, isArchived=$isArchived, mimeType=$mimeType, duration=$duration, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags, people=$people, checksum=$checksum]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -156,11 +152,7 @@ class AssetResponseDto {
       json[r'deviceId'] = this.deviceId;
       json[r'originalPath'] = this.originalPath;
       json[r'originalFileName'] = this.originalFileName;
-    if (this.resizePath != null) {
-      json[r'resizePath'] = this.resizePath;
-    } else {
-      // json[r'resizePath'] = null;
-    }
+      json[r'resized'] = this.resized;
       json[r'fileCreatedAt'] = this.fileCreatedAt;
       json[r'fileModifiedAt'] = this.fileModifiedAt;
       json[r'updatedAt'] = this.updatedAt;
@@ -172,16 +164,6 @@ class AssetResponseDto {
       // json[r'mimeType'] = null;
     }
       json[r'duration'] = this.duration;
-    if (this.webpPath != null) {
-      json[r'webpPath'] = this.webpPath;
-    } else {
-      // json[r'webpPath'] = null;
-    }
-    if (this.encodedVideoPath != null) {
-      json[r'encodedVideoPath'] = this.encodedVideoPath;
-    } else {
-      // json[r'encodedVideoPath'] = null;
-    }
     if (this.exifInfo != null) {
       json[r'exifInfo'] = this.exifInfo;
     } else {
@@ -199,6 +181,7 @@ class AssetResponseDto {
     }
       json[r'tags'] = this.tags;
       json[r'people'] = this.people;
+      json[r'checksum'] = this.checksum;
     return json;
   }
 
@@ -228,7 +211,7 @@ class AssetResponseDto {
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
         originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
-        resizePath: mapValueOfType<String>(json, r'resizePath'),
+        resized: mapValueOfType<bool>(json, r'resized')!,
         fileCreatedAt: mapValueOfType<String>(json, r'fileCreatedAt')!,
         fileModifiedAt: mapValueOfType<String>(json, r'fileModifiedAt')!,
         updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
@@ -236,13 +219,12 @@ class AssetResponseDto {
         isArchived: mapValueOfType<bool>(json, r'isArchived')!,
         mimeType: mapValueOfType<String>(json, r'mimeType'),
         duration: mapValueOfType<String>(json, r'duration')!,
-        webpPath: mapValueOfType<String>(json, r'webpPath'),
-        encodedVideoPath: mapValueOfType<String>(json, r'encodedVideoPath'),
         exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
         smartInfo: SmartInfoResponseDto.fromJson(json[r'smartInfo']),
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
         tags: TagResponseDto.listFromJson(json[r'tags']),
         people: PersonResponseDto.listFromJson(json[r'people']),
+        checksum: mapValueOfType<String>(json, r'checksum')!,
       );
     }
     return null;
@@ -297,7 +279,7 @@ class AssetResponseDto {
     'deviceId',
     'originalPath',
     'originalFileName',
-    'resizePath',
+    'resized',
     'fileCreatedAt',
     'fileModifiedAt',
     'updatedAt',
@@ -305,7 +287,7 @@ class AssetResponseDto {
     'isArchived',
     'mimeType',
     'duration',
-    'webpPath',
+    'checksum',
   };
 }
 

@@ -10,7 +10,7 @@ export const load = (async ({ parent, locals: { api } }) => {
 		throw redirect(302, '/photos');
 	}
 
-	const { data: allUsers } = await api.userApi.getAllUsers(false);
+	const { data: allUsers } = await api.userApi.getAllUsers({ isAll: false });
 
 	return {
 		user,

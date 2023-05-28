@@ -30,6 +30,7 @@ import {
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { when } from 'jest-when';
+import { AssetRejectReason, AssetUploadAction } from './response-dto/asset-check-response.dto';
 
 const _getCreateAssetDto = (): CreateAssetDto => {
   const createAssetDto = new CreateAssetDto();
@@ -328,9 +329,14 @@ describe('AssetService', () => {
       });
 
       expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: assetEntityStub.livePhotoMotionAsset.id } }],
+        [
+          {
+            name: JobName.METADATA_EXTRACTION,
+            data: { id: assetEntityStub.livePhotoMotionAsset.id, source: 'upload' },
+          },
+        ],
         [{ name: JobName.VIDEO_CONVERSION, data: { id: assetEntityStub.livePhotoMotionAsset.id } }],
-        [{ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: assetEntityStub.livePhotoStillAsset.id } }],
+        [{ name: JobName.METADATA_EXTRACTION, data: { id: assetEntityStub.livePhotoStillAsset.id, source: 'upload' } }],
       ]);
     });
   });
@@ -497,6 +503,34 @@ describe('AssetService', () => {
       await sut.downloadFile(authStub.admin, 'id_1');
 
       expect(storageMock.createReadStream).toHaveBeenCalledWith('fake_path/asset_1.jpeg', 'image/jpeg');
+    });
+  });
+
+  describe('bulkUploadCheck', () => {
+    it('should accept hex and base64 checksums', async () => {
+      const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
+      const file2 = Buffer.from('53be335e99f18a66ff12e9a901c7a6171dd76573', 'hex');
+
+      assetRepositoryMock.getAssetsByChecksums.mockResolvedValue([
+        { id: 'asset-1', checksum: file1 },
+        { id: 'asset-2', checksum: file2 },
+      ]);
+
+      await expect(
+        sut.bulkUploadCheck(authStub.admin, {
+          assets: [
+            { id: '1', checksum: file1.toString('hex') },
+            { id: '2', checksum: file2.toString('base64') },
+          ],
+        }),
+      ).resolves.toEqual({
+        results: [
+          { id: '1', assetId: 'asset-1', action: AssetUploadAction.REJECT, reason: AssetRejectReason.DUPLICATE },
+          { id: '2', assetId: 'asset-2', action: AssetUploadAction.REJECT, reason: AssetRejectReason.DUPLICATE },
+        ],
+      });
+
+      expect(assetRepositoryMock.getAssetsByChecksums).toHaveBeenCalledWith(authStub.admin.id, [file1, file2]);
     });
   });
 });

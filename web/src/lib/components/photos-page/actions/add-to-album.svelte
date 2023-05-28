@@ -27,7 +27,7 @@
 
 		const { albumName }: { albumName: string } = event.detail;
 		const assetIds = Array.from(getAssets()).map((asset) => asset.id);
-		api.albumApi.createAlbum({ albumName, assetIds }).then((response) => {
+		api.albumApi.createAlbum({ createAlbumDto: { albumName, assetIds } }).then((response) => {
 			const { id, albumName } = response.data;
 
 			notificationController.show({

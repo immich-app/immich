@@ -29,7 +29,7 @@
 	const handleDeleteLink = async (linkId: string) => {
 		if (window.confirm('Do you want to delete the shared link? ')) {
 			try {
-				await api.shareApi.removeSharedLink(linkId);
+				await api.shareApi.removeSharedLink({ id: linkId });
 				notificationController.show({
 					message: 'Shared link deleted',
 					type: NotificationType.Info
@@ -47,7 +47,7 @@
 	};
 
 	const handleEditLink = async (id: string) => {
-		const { data } = await api.shareApi.getSharedLinkById(id);
+		const { data } = await api.shareApi.getSharedLinkById({ id });
 		editSharedLink = data;
 		showEditForm = true;
 	};

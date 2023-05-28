@@ -51,8 +51,8 @@ void main() {
       // TODO
     });
 
-    // String resizePath
-    test('to test the property `resizePath`', () async {
+    // bool resized
+    test('to test the property `resized`', () async {
       // TODO
     });
 
@@ -91,16 +91,6 @@ void main() {
       // TODO
     });
 
-    // String webpPath
-    test('to test the property `webpPath`', () async {
-      // TODO
-    });
-
-    // String encodedVideoPath
-    test('to test the property `encodedVideoPath`', () async {
-      // TODO
-    });
-
     // ExifResponseDto exifInfo
     test('to test the property `exifInfo`', () async {
       // TODO
@@ -123,6 +113,12 @@ void main() {
 
     // List<PersonResponseDto> people (default value: const [])
     test('to test the property `people`', () async {
+      // TODO
+    });
+
+    // base64 encoded sha1 hash
+    // String checksum
+    test('to test the property `checksum`', () async {
       // TODO
     });
 

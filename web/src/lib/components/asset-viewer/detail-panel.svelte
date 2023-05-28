@@ -12,6 +12,7 @@
 	import { AssetResponseDto, AlbumResponseDto, api, ThumbnailFormat } from '@api';
 	import { asByteUnitString } from '../../utils/byte-units';
 	import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
+	import { getAssetFilename } from '$lib/utils/asset-utils';
 
 	export let asset: AssetResponseDto;
 	export let albums: AlbumResponseDto[] = [];
@@ -21,7 +22,7 @@
 	$: {
 		// Get latest description from server
 		if (asset.id) {
-			api.assetApi.getAssetById(asset.id).then((res) => {
+			api.assetApi.getAssetById({ assetId: asset.id }).then((res) => {
 				people = res.data?.people || [];
 				textarea.value = res.data?.exifInfo?.description || '';
 			});
@@ -64,8 +65,11 @@
 	const handleFocusOut = async () => {
 		dispatch('description-focus-out');
 		try {
-			await api.assetApi.updateAsset(asset.id, {
-				description: description
+			await api.assetApi.updateAsset({
+				assetId: asset.id,
+				updateAssetDto: {
+					description: description
+				}
 			});
 		} catch (error) {
 			console.error(error);
@@ -173,7 +177,7 @@
 
 				<div>
 					<p class="break-all">
-						{`${asset.originalFileName}.${asset.originalPath.split('.')[1]}` || ''}
+						{getAssetFilename(asset)}
 					</p>
 					<div class="flex text-sm gap-2">
 						{#if asset.exifInfo.exifImageHeight && asset.exifInfo.exifImageWidth}

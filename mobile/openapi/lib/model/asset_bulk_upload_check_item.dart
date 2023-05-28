@@ -19,6 +19,7 @@ class AssetBulkUploadCheckItem {
 
   String id;
 
+  /// base64 or hex encoded sha1 hash
   String checksum;
 
   @override

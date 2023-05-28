@@ -40,12 +40,12 @@
 
 			const assetIds = results.filter((id) => !!id) as string[];
 
-			await api.assetApi.addAssetsToSharedLink(
-				{
+			await api.assetApi.addAssetsToSharedLink({
+				addAssetsDto: {
 					assetIds
 				},
-				sharedLink?.key
-			);
+				key: sharedLink?.key
+			});
 
 			notificationController.show({
 				message: `Successfully add ${assetIds.length} to the shared link`,

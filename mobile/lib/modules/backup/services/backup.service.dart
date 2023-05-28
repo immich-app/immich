@@ -219,8 +219,6 @@ class BackupService {
 
         if (file != null) {
           String originalFileName = await entity.titleAsync;
-          String fileNameWithoutPath =
-              originalFileName.toString().split(".")[0];
           var fileExtension = p.extension(file.path);
           var mimeType = FileHelper.getMimeType(file.path);
           var fileStream = file.openRead();
@@ -228,7 +226,7 @@ class BackupService {
             "assetData",
             fileStream,
             file.lengthSync(),
-            filename: fileNameWithoutPath,
+            filename: originalFileName,
             contentType: MediaType(
               mimeType["type"],
               mimeType["subType"],
@@ -334,14 +332,13 @@ class BackupService {
       var motionFile = File(validPath);
       var fileStream = motionFile.openRead();
       String originalFileName = await entity.titleAsync;
-      String fileNameWithoutPath = originalFileName.toString().split(".")[0];
       var mimeType = FileHelper.getMimeType(validPath);
 
       return http.MultipartFile(
         "livePhotoData",
         fileStream,
         motionFile.lengthSync(),
-        filename: fileNameWithoutPath,
+        filename: originalFileName,
         contentType: MediaType(
           mimeType["type"],
           mimeType["subType"],

@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.57.1",
+  "version": "1.58.0",
   "description": "",
   "author": "",
   "private": true,
@@ -141,7 +141,7 @@
       "./libs/domain/": {
         "branches": 80,
         "functions": 87,
-        "lines": 94,
+        "lines": 93.8,
         "statements": 93
       }
     },

@@ -1,6 +1,6 @@
 import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
-import { IAssetRepository } from '../asset';
+import { IAssetRepository, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
 import { IJobRepository, JobName } from '../job';
 import { IAlbumRepository } from './album.repository';
@@ -40,6 +40,7 @@ export class AlbumService {
     return albums.map((album) => {
       return {
         ...album,
+        assets: album?.assets?.map(mapAsset),
         sharedLinks: undefined, // Don't return shared links
         shared: album.sharedLinks?.length > 0 || album.sharedUsers?.length > 0,
         assetCount: albumsAssetCountObj[album.id],

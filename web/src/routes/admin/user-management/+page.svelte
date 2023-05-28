@@ -46,7 +46,7 @@
 	};
 
 	const onUserCreated = async () => {
-		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
 		allUsers = getAllUsersRes.data;
 		shouldShowCreateUserForm = false;
 	};
@@ -57,13 +57,13 @@
 	};
 
 	const onEditUserSuccess = async () => {
-		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
 		allUsers = getAllUsersRes.data;
 		shouldShowEditUserForm = false;
 	};
 
 	const onEditPasswordSuccess = async () => {
-		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
 		allUsers = getAllUsersRes.data;
 		shouldShowEditUserForm = false;
 		shouldShowInfoPanel = true;
@@ -75,13 +75,13 @@
 	};
 
 	const onUserDeleteSuccess = async () => {
-		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
 		allUsers = getAllUsersRes.data;
 		shouldShowDeleteConfirmDialog = false;
 	};
 
 	const onUserDeleteFail = async () => {
-		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
 		allUsers = getAllUsersRes.data;
 		shouldShowDeleteConfirmDialog = false;
 	};
@@ -92,14 +92,14 @@
 	};
 
 	const onUserRestoreSuccess = async () => {
-		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
 		allUsers = getAllUsersRes.data;
 		shouldShowRestoreDialog = false;
 	};
 
 	const onUserRestoreFail = async () => {
 		// show fail dialog
-		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
 		allUsers = getAllUsersRes.data;
 		shouldShowRestoreDialog = false;
 	};

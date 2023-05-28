@@ -90,7 +90,7 @@ describe('Albums BLoC', () => {
 		const newAlbum = await sut.createAlbum();
 
 		expect(apiMock.albumApi.createAlbum).toHaveBeenCalledTimes(1);
-		expect(apiMock.albumApi.createAlbum).toHaveBeenCalledWith(payload);
+		expect(apiMock.albumApi.createAlbum).toHaveBeenCalledWith({ createAlbumDto: payload });
 		expect(newAlbum).toEqual(returnedAlbum);
 	});
 
@@ -130,7 +130,7 @@ describe('Albums BLoC', () => {
 		const updatedAlbums = get(sut.albums);
 
 		expect(apiMock.albumApi.deleteAlbum).toHaveBeenCalledTimes(1);
-		expect(apiMock.albumApi.deleteAlbum).toHaveBeenCalledWith(albumToDeleteId);
+		expect(apiMock.albumApi.deleteAlbum).toHaveBeenCalledWith({ id: albumToDeleteId });
 		expect(updatedAlbums).toHaveLength(4);
 		expect(updatedAlbums).not.toContain(albumToDelete);
 		expect(get(sut.isShowContextMenu)).toBe(false);

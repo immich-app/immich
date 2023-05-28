@@ -40,7 +40,7 @@
 	const handleCreate = async (event: CustomEvent<APIKeyResponseDto>) => {
 		try {
 			const dto = event.detail;
-			const { data } = await api.keyApi.createKey(dto);
+			const { data } = await api.keyApi.createKey({ aPIKeyCreateDto: dto });
 			secret = data.secret;
 		} catch (error) {
 			handleError(error, 'Unable to create a new API Key');
@@ -58,7 +58,7 @@
 		const dto = event.detail;
 
 		try {
-			await api.keyApi.updateKey(editKey.id, { name: dto.name });
+			await api.keyApi.updateKey({ id: editKey.id, aPIKeyUpdateDto: { name: dto.name } });
 			notificationController.show({
 				message: `Saved API Key`,
 				type: NotificationType.Info
@@ -77,7 +77,7 @@
 		}
 
 		try {
-			await api.keyApi.deleteKey(deleteKey.id);
+			await api.keyApi.deleteKey({ id: deleteKey.id });
 			notificationController.show({
 				message: `Removed API Key: ${deleteKey.name}`,
 				type: NotificationType.Info

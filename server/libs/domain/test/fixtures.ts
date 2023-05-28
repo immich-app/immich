@@ -446,7 +446,7 @@ const assetResponse: AssetResponseDto = {
   type: AssetType.VIDEO,
   originalPath: 'fake_path/jpeg',
   originalFileName: 'asset_1.jpeg',
-  resizePath: '',
+  resized: false,
   fileModifiedAt: today.toISOString(),
   fileCreatedAt: today.toISOString(),
   updatedAt: today.toISOString(),
@@ -457,13 +457,12 @@ const assetResponse: AssetResponseDto = {
     tags: [],
     objects: ['a', 'b', 'c'],
   },
-  webpPath: '',
-  encodedVideoPath: '',
   duration: '0:00:00.00000',
   exifInfo: assetInfo,
   livePhotoVideoId: null,
   tags: [],
   people: [],
+  checksum: 'ZmlsZSBoYXNo',
 };
 
 const albumResponse: AlbumResponseDto = {

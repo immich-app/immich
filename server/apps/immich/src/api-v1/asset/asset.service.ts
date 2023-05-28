@@ -486,17 +486,24 @@ export class AssetService {
   }
 
   async bulkUploadCheck(authUser: AuthUserDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
+    // support base64 and hex checksums
+    for (const asset of dto.assets) {
+      if (asset.checksum.length === 28) {
+        asset.checksum = Buffer.from(asset.checksum, 'base64').toString('hex');
+      }
+    }
+
     const checksums: Buffer[] = dto.assets.map((asset) => Buffer.from(asset.checksum, 'hex'));
     const results = await this._assetRepository.getAssetsByChecksums(authUser.id, checksums);
-    const resultsMap: Record<string, string> = {};
+    const checksumMap: Record<string, string> = {};
 
     for (const { id, checksum } of results) {
-      resultsMap[checksum.toString('hex')] = id;
+      checksumMap[checksum.toString('hex')] = id;
     }
 
     return {
       results: dto.assets.map(({ id, checksum }) => {
-        const duplicate = resultsMap[checksum];
+        const duplicate = checksumMap[checksum];
         if (duplicate) {
           return {
             id,

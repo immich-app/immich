@@ -24,7 +24,7 @@
 	import VideoViewer from './video-viewer.svelte';
 
 	import { assetStore } from '$lib/stores/assets.store';
-	import { addAssetsToAlbum } from '$lib/utils/asset-utils';
+	import { addAssetsToAlbum, getFilenameExtension } from '$lib/utils/asset-utils';
 	import { browser } from '$app/environment';
 
 	export let asset: AssetResponseDto;
@@ -65,7 +65,7 @@
 
 	const getAllAlbums = async () => {
 		try {
-			const { data } = await api.albumApi.getAllAlbums(undefined, asset.id);
+			const { data } = await api.albumApi.getAllAlbums({ assetId: asset.id });
 			appearsInAlbums = data;
 		} catch (e) {
 			console.error('Error getting album that asset belong to', e);
@@ -125,24 +125,10 @@
 		downloadFile(asset.id, false, publicSharedKey);
 	};
 
-	/**
-	 * Get the filename of the asset based on the user defined template
-	 */
-	const getTemplateFilename = () => {
-		const filenameWithExtension = asset.originalPath.split('/').pop() as string;
-		const filenameWithoutExtension = filenameWithExtension.split('.')[0];
-		return {
-			filenameWithExtension,
-			filenameWithoutExtension
-		};
-	};
-
 	const downloadFile = async (assetId: string, isLivePhoto: boolean, key: string) => {
 		try {
-			const { filenameWithoutExtension } = getTemplateFilename();
-
-			const imageExtension = isLivePhoto ? 'mov' : asset.originalPath.split('.')[1];
-			const imageFileName = filenameWithoutExtension + '.' + imageExtension;
+			const imageExtension = isLivePhoto ? 'mov' : getFilenameExtension(asset.originalPath);
+			const imageFileName = asset.originalFileName + '.' + imageExtension;
 
 			// If assets is already download -> return;
 			if ($downloadAssets[imageFileName]) {
@@ -151,16 +137,19 @@
 
 			$downloadAssets[imageFileName] = 0;
 
-			const { data, status } = await api.assetApi.downloadFile(assetId, key, {
-				responseType: 'blob',
-				onDownloadProgress: (progressEvent) => {
-					if (progressEvent.lengthComputable) {
-						const total = progressEvent.total;
-						const current = progressEvent.loaded;
-						$downloadAssets[imageFileName] = Math.floor((current / total) * 100);
+			const { data, status } = await api.assetApi.downloadFile(
+				{ assetId, key },
+				{
+					responseType: 'blob',
+					onDownloadProgress: (progressEvent) => {
+						if (progressEvent.lengthComputable) {
+							const total = progressEvent.total;
+							const current = progressEvent.loaded;
+							$downloadAssets[imageFileName] = Math.floor((current / total) * 100);
+						}
 					}
 				}
-			});
+			);
 
 			if (!(data instanceof Blob)) {
 				return;
@@ -203,7 +192,9 @@
 				)
 			) {
 				const { data: deletedAssets } = await api.assetApi.deleteAsset({
-					ids: [asset.id]
+					deleteAssetDto: {
+						ids: [asset.id]
+					}
 				});
 
 				navigateAssetForward();
@@ -224,8 +215,11 @@
 	};
 
 	const toggleFavorite = async () => {
-		const { data } = await api.assetApi.updateAsset(asset.id, {
-			isFavorite: !asset.isFavorite
+		const { data } = await api.assetApi.updateAsset({
+			assetId: asset.id,
+			updateAssetDto: {
+				isFavorite: !asset.isFavorite
+			}
 		});
 
 		asset.isFavorite = data.isFavorite;
@@ -241,10 +235,12 @@
 		isShowAlbumPicker = false;
 
 		const { albumName }: { albumName: string } = event.detail;
-		api.albumApi.createAlbum({ albumName, assetIds: [asset.id] }).then((response) => {
-			const album = response.data;
-			goto('/albums/' + album.id);
-		});
+		api.albumApi
+			.createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } })
+			.then((response) => {
+				const album = response.data;
+				goto('/albums/' + album.id);
+			});
 	};
 
 	const handleAddToAlbum = async (event: CustomEvent<{ album: AlbumResponseDto }>) => {
@@ -272,8 +268,11 @@
 
 	const toggleArchive = async () => {
 		try {
-			const { data } = await api.assetApi.updateAsset(asset.id, {
-				isArchived: !asset.isArchived
+			const { data } = await api.assetApi.updateAsset({
+				assetId: asset.id,
+				updateAssetDto: {
+					isArchived: !asset.isArchived
+				}
 			});
 
 			asset.isArchived = data.isArchived;
@@ -351,7 +350,7 @@
 
 	<div class="row-start-1 row-span-full col-start-1 col-span-4">
 		{#key asset.id}
-			{#if !asset.resizePath}
+			{#if !asset.resized}
 				<div class="h-full w-full flex justify-center">
 					<div
 						class="h-full bg-gray-100 dark:bg-immich-dark-gray flex items-center justify-center aspect-square px-auto"

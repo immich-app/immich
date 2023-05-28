@@ -48,9 +48,11 @@
 		const { fileCreatedAfter, fileCreatedBefore } = getFileCreatedDates();
 
 		const { data } = await api.assetApi.getMapMarkers(
-			onlyFavorites || undefined,
-			fileCreatedAfter,
-			fileCreatedBefore,
+			{
+				isFavorite: onlyFavorites || undefined,
+				fileCreatedAfter,
+				fileCreatedBefore
+			},
 			{
 				signal: abortController.signal
 			}
