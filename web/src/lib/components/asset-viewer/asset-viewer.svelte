@@ -24,7 +24,7 @@
 	import VideoViewer from './video-viewer.svelte';
 
 	import { assetStore } from '$lib/stores/assets.store';
-	import { addAssetsToAlbum } from '$lib/utils/asset-utils';
+	import { addAssetsToAlbum, getFilenameExtension } from '$lib/utils/asset-utils';
 	import { browser } from '$app/environment';
 
 	export let asset: AssetResponseDto;
@@ -125,24 +125,10 @@
 		downloadFile(asset.id, false, publicSharedKey);
 	};
 
-	/**
-	 * Get the filename of the asset based on the user defined template
-	 */
-	const getTemplateFilename = () => {
-		const filenameWithExtension = asset.originalPath.split('/').pop() as string;
-		const filenameWithoutExtension = filenameWithExtension.split('.')[0];
-		return {
-			filenameWithExtension,
-			filenameWithoutExtension
-		};
-	};
-
 	const downloadFile = async (assetId: string, isLivePhoto: boolean, key: string) => {
 		try {
-			const { filenameWithoutExtension } = getTemplateFilename();
-
-			const imageExtension = isLivePhoto ? 'mov' : asset.originalPath.split('.')[1];
-			const imageFileName = filenameWithoutExtension + '.' + imageExtension;
+			const imageExtension = isLivePhoto ? 'mov' : getFilenameExtension(asset.originalPath);
+			const imageFileName = asset.originalFileName + '.' + imageExtension;
 
 			// If assets is already download -> return;
 			if ($downloadAssets[imageFileName]) {

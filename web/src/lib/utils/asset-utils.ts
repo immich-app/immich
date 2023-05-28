@@ -108,8 +108,17 @@ export async function bulkDownload(
  * an empty string when not found.
  */
 export function getFilenameExtension(filename: string): string {
-	const lastIndex = filename.lastIndexOf('.');
-	return filename.slice(lastIndex + 1).toLowerCase();
+	const lastIndex = Math.max(0, filename.lastIndexOf('.'));
+	const startIndex = (lastIndex || Infinity) + 1;
+	return filename.slice(startIndex).toLowerCase();
+}
+
+/**
+ * Returns the filename of an asset including file extension
+ */
+export function getAssetFilename(asset: AssetResponseDto): string {
+	const fileExtension = getFilenameExtension(asset.originalPath);
+	return `${asset.originalFileName}.${fileExtension}`;
 }
 
 /**
