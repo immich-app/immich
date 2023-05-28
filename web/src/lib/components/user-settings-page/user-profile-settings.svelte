@@ -16,10 +16,12 @@
 	const handleSaveProfile = async () => {
 		try {
 			const { data } = await api.userApi.updateUser({
-				id: user.id,
-				email: user.email,
-				firstName: user.firstName,
-				lastName: user.lastName
+				updateUserDto: {
+					id: user.id,
+					email: user.email,
+					firstName: user.firstName,
+					lastName: user.lastName
+				}
 			});
 
 			Object.assign(user, data);

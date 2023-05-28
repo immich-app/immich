@@ -57,8 +57,10 @@
 			loading = true;
 
 			const { data } = await api.authenticationApi.login({
-				email,
-				password
+				loginCredentialDto: {
+					email,
+					password
+				}
 			});
 
 			if (!data.isAdmin && data.shouldChangePassword) {

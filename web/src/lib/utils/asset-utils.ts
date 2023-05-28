@@ -10,17 +10,19 @@ export const addAssetsToAlbum = async (
 	assetIds: Array<string>,
 	key: string | undefined = undefined
 ): Promise<AddAssetsResponseDto> =>
-	api.albumApi.addAssetsToAlbum(albumId, { assetIds }, key).then(({ data: dto }) => {
-		if (dto.successfullyAdded > 0) {
-			// This might be 0 if the user tries to add an asset that is already in the album
-			notificationController.show({
-				message: `Added ${dto.successfullyAdded} to ${dto.album?.albumName}`,
-				type: NotificationType.Info
-			});
-		}
+	api.albumApi
+		.addAssetsToAlbum({ id: albumId, addAssetsDto: { assetIds }, key })
+		.then(({ data: dto }) => {
+			if (dto.successfullyAdded > 0) {
+				// This might be 0 if the user tries to add an asset that is already in the album
+				notificationController.show({
+					message: `Added ${dto.successfullyAdded} to ${dto.album?.albumName}`,
+					type: NotificationType.Info
+				});
+			}
 
-		return dto;
-	});
+			return dto;
+		});
 
 export async function bulkDownload(
 	fileName: string,
@@ -43,20 +45,23 @@ export async function bulkDownload(
 
 			let total = 0;
 
-			const { data, status, headers } = await api.assetApi.downloadFiles({ assetIds }, key, {
-				responseType: 'blob',
-				onDownloadProgress: function (progressEvent) {
-					const request = this as XMLHttpRequest;
-					if (!total) {
-						total = Number(request.getResponseHeader('X-Immich-Content-Length-Hint')) || 0;
-					}
+			const { data, status, headers } = await api.assetApi.downloadFiles(
+				{ downloadFilesDto: { assetIds }, key },
+				{
+					responseType: 'blob',
+					onDownloadProgress: function (progressEvent) {
+						const request = this as XMLHttpRequest;
+						if (!total) {
+							total = Number(request.getResponseHeader('X-Immich-Content-Length-Hint')) || 0;
+						}
 
-					if (total) {
-						const current = progressEvent.loaded;
-						downloadAssets.set({ [downloadFileName]: Math.floor((current / total) * 100) });
+						if (total) {
+							const current = progressEvent.loaded;
+							downloadAssets.set({ [downloadFileName]: Math.floor((current / total) * 100) });
+						}
 					}
 				}
-			});
+			);
 
 			const isNotComplete = headers['x-immich-archive-complete'] === 'false';
 			const fileCount = Number(headers['x-immich-archive-file-count']) || 0;

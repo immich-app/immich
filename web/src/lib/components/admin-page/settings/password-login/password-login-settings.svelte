@@ -48,8 +48,10 @@
 			}
 
 			const { data: updated } = await api.systemConfigApi.updateConfig({
-				...current,
-				passwordLogin: passwordLoginConfig
+				systemConfigDto: {
+					...current,
+					passwordLogin: passwordLoginConfig
+				}
 			});
 
 			passwordLoginConfig = { ...updated.passwordLogin };

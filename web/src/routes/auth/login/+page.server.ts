@@ -4,7 +4,7 @@ import type { OAuthConfigResponseDto } from '@api';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals: { api } }) => {
-	const { data } = await api.userApi.getUserCount(true);
+	const { data } = await api.userApi.getUserCount({ admin: true });
 	if (data.userCount === 0) {
 		// Admin not registered
 		throw redirect(302, AppRoute.AUTH_REGISTER);
@@ -17,7 +17,7 @@ export const load = (async ({ locals: { api } }) => {
 
 	try {
 		// TODO: Figure out how to get correct redirect URI server-side.
-		const { data } = await api.oauthApi.generateConfig({ redirectUri: '/' });
+		const { data } = await api.oauthApi.generateConfig({ oAuthConfigDto: { redirectUri: '/' } });
 		data.url = undefined;
 
 		authConfig = data;

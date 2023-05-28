@@ -21,13 +21,13 @@ export const oauth = {
 	getConfig: (location: Location) => {
 		const redirectUri = location.href.split('?')[0];
 		console.log(`OAuth Redirect URI: ${redirectUri}`);
-		return api.oauthApi.generateConfig({ redirectUri });
+		return api.oauthApi.generateConfig({ oAuthConfigDto: { redirectUri } });
 	},
 	login: (location: Location) => {
-		return api.oauthApi.callback({ url: location.href });
+		return api.oauthApi.callback({ oAuthCallbackDto: { url: location.href } });
 	},
 	link: (location: Location): AxiosPromise<UserResponseDto> => {
-		return api.oauthApi.link({ url: location.href });
+		return api.oauthApi.link({ oAuthCallbackDto: { url: location.href } });
 	},
 	unlink: () => {
 		return api.oauthApi.unlink();

@@ -73,8 +73,10 @@
 			}
 
 			const { data: updated } = await api.systemConfigApi.updateConfig({
-				...current,
-				oauth: oauthConfig
+				systemConfigDto: {
+					...current,
+					oauth: oauthConfig
+				}
 			});
 
 			oauthConfig = { ...updated.oauth };

@@ -7,8 +7,8 @@ export const load = (async ({ locals, parent, params }) => {
 		throw redirect(302, '/auth/login');
 	}
 
-	const { data: person } = await locals.api.personApi.getPerson(params.personId);
-	const { data: assets } = await locals.api.personApi.getPersonAssets(params.personId);
+	const { data: person } = await locals.api.personApi.getPerson({ id: params.personId });
+	const { data: assets } = await locals.api.personApi.getPersonAssets({ id: params.personId });
 
 	return {
 		user,

@@ -20,7 +20,7 @@ function web {
   wget -O apiInner.mustache https://raw.githubusercontent.com/OpenAPITools/openapi-generator/v6.0.1/modules/openapi-generator/src/main/resources/typescript-axios/apiInner.mustache
   patch -u apiInner.mustache < apiInner.mustache.patch
   cd ../../..
-  npx --yes @openapitools/openapi-generator-cli generate -g typescript-axios -i ./immich-openapi-specs.json -o ../web/src/api/open-api -t ./openapi-generator/templates/web
+  npx --yes @openapitools/openapi-generator-cli generate -g typescript-axios -i ./immich-openapi-specs.json -o ../web/src/api/open-api -t ./openapi-generator/templates/web --additional-properties=useSingleRequestParameter=true
 }
 
 if [[ $1 == 'mobile' ]]; then

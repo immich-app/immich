@@ -97,8 +97,10 @@
 			const { data: currentConfig } = await api.systemConfigApi.getConfig();
 
 			const result = await api.systemConfigApi.updateConfig({
-				...currentConfig,
-				storageTemplate: storageConfig
+				systemConfigDto: {
+					...currentConfig,
+					storageTemplate: storageConfig
+				}
 			});
 
 			storageConfig.template = result.data.storageTemplate.template;

@@ -17,8 +17,10 @@
 	const handleChangePassword = async () => {
 		try {
 			await api.authenticationApi.changePassword({
-				password,
-				newPassword
+				changePasswordDto: {
+					password,
+					newPassword
+				}
 			});
 
 			notificationController.show({

@@ -9,7 +9,7 @@ export const load = (async ({ parent, locals: { api } }) => {
 		throw redirect(302, '/photos');
 	}
 
-	const { data } = await api.userApi.getUserCount(true);
+	const { data } = await api.userApi.getUserCount({ admin: true });
 
 	if (data.userCount > 0) {
 		// Redirect to login page if an admin is already registered.

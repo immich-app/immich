@@ -124,8 +124,11 @@
 	$: {
 		if (!isEditingTitle && currentAlbumName != album.albumName && isOwned) {
 			api.albumApi
-				.updateAlbumInfo(album.id, {
-					albumName: album.albumName
+				.updateAlbumInfo({
+					id: album.id,
+					updateAlbumDto: {
+						albumName: album.albumName
+					}
 				})
 				.then(() => {
 					currentAlbumName = album.albumName;
@@ -143,13 +146,13 @@
 	const createAlbumHandler = async (event: CustomEvent) => {
 		const { assets }: { assets: AssetResponseDto[] } = event.detail;
 		try {
-			const { data } = await api.albumApi.addAssetsToAlbum(
-				album.id,
-				{
+			const { data } = await api.albumApi.addAssetsToAlbum({
+				id: album.id,
+				addAssetsDto: {
 					assetIds: assets.map((a) => a.id)
 				},
-				sharedLink?.key
-			);
+				key: sharedLink?.key
+			});
 
 			if (data.album) {
 				album = data.album;
@@ -168,8 +171,11 @@
 		const { selectedUsers }: { selectedUsers: UserResponseDto[] } = event.detail;
 
 		try {
-			const { data } = await api.albumApi.addUsersToAlbum(album.id, {
-				sharedUserIds: Array.from(selectedUsers).map((u) => u.id)
+			const { data } = await api.albumApi.addUsersToAlbum({
+				id: album.id,
+				addUsersDto: {
+					sharedUserIds: Array.from(selectedUsers).map((u) => u.id)
+				}
 			});
 
 			album = data;
@@ -193,7 +199,7 @@
 		}
 
 		try {
-			const { data } = await api.albumApi.getAlbumInfo(album.id);
+			const { data } = await api.albumApi.getAlbumInfo({ id: album.id });
 
 			album = data;
 			isShowShareInfoModal = false;
@@ -213,7 +219,7 @@
 			)
 		) {
 			try {
-				await api.albumApi.deleteAlbum(album.id);
+				await api.albumApi.deleteAlbum({ id: album.id });
 				goto(backUrl);
 			} catch (e) {
 				console.error('Error [userDeleteMenu] ', e);
@@ -241,10 +247,7 @@
 				let total = 0;
 
 				const { data, status, headers } = await api.albumApi.downloadArchive(
-					album.id,
-					undefined,
-					skip || undefined,
-					sharedLink?.key,
+					{ id: album.id, skip: skip || undefined, key: sharedLink?.key },
 					{
 						responseType: 'blob',
 						onDownloadProgress: function (progressEvent) {
@@ -311,8 +314,11 @@
 	const setAlbumThumbnailHandler = (event: CustomEvent) => {
 		const { asset }: { asset: AssetResponseDto } = event.detail;
 		try {
-			api.albumApi.updateAlbumInfo(album.id, {
-				albumThumbnailAssetId: asset.id
+			api.albumApi.updateAlbumInfo({
+				id: album.id,
+				updateAlbumDto: {
+					albumThumbnailAssetId: asset.id
+				}
 			});
 		} catch (e) {
 			console.error('Error [setAlbumThumbnailHandler] ', e);
