@@ -21,6 +21,7 @@ void main() {
       // TODO
     });
 
+    // base64 or hex encoded sha1 hash
     // String checksum
     test('to test the property `checksum`', () async {
       // TODO

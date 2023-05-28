@@ -378,7 +378,7 @@ export interface AssetBulkUploadCheckItem {
      */
     'id': string;
     /**
-     * 
+     * base64 or hex encoded sha1 hash
      * @type {string}
      * @memberof AssetBulkUploadCheckItem
      */
@@ -586,10 +586,10 @@ export interface AssetResponseDto {
     'originalFileName': string;
     /**
      * 
-     * @type {string}
+     * @type {boolean}
      * @memberof AssetResponseDto
      */
-    'resizePath': string | null;
+    'resized': boolean;
     /**
      * 
      * @type {string}
@@ -634,18 +634,6 @@ export interface AssetResponseDto {
     'duration': string;
     /**
      * 
-     * @type {string}
-     * @memberof AssetResponseDto
-     */
-    'webpPath': string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetResponseDto
-     */
-    'encodedVideoPath'?: string | null;
-    /**
-     * 
      * @type {ExifResponseDto}
      * @memberof AssetResponseDto
      */
@@ -674,6 +662,12 @@ export interface AssetResponseDto {
      * @memberof AssetResponseDto
      */
     'people'?: Array<PersonResponseDto>;
+    /**
+     * base64 encoded sha1 hash
+     * @type {string}
+     * @memberof AssetResponseDto
+     */
+    'checksum': string;
 }
 
 

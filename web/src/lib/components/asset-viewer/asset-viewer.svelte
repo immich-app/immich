@@ -350,7 +350,7 @@
 
 	<div class="row-start-1 row-span-full col-start-1 col-span-4">
 		{#key asset.id}
-			{#if !asset.resizePath}
+			{#if !asset.resized}
 				<div class="h-full w-full flex justify-center">
 					<div
 						class="h-full bg-gray-100 dark:bg-immich-dark-gray flex items-center justify-center aspect-square px-auto"

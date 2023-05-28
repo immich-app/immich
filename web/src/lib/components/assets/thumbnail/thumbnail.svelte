@@ -123,7 +123,7 @@
 					</div>
 				{/if}
 
-				{#if asset.resizePath}
+				{#if asset.resized}
 					<ImageThumbnail
 						url={api.getAssetThumbnailUrl(asset.id, format, publicSharedKey)}
 						altText={asset.originalFileName}

@@ -15,7 +15,7 @@ Name | Type | Description | Notes
 **deviceId** | **String** |  | 
 **originalPath** | **String** |  | 
 **originalFileName** | **String** |  | 
-**resizePath** | **String** |  | 
+**resized** | **bool** |  | 
 **fileCreatedAt** | **String** |  | 
 **fileModifiedAt** | **String** |  | 
 **updatedAt** | **String** |  | 
@@ -23,13 +23,12 @@ Name | Type | Description | Notes
 **isArchived** | **bool** |  | 
 **mimeType** | **String** |  | 
 **duration** | **String** |  | 
-**webpPath** | **String** |  | 
-**encodedVideoPath** | **String** |  | [optional] 
 **exifInfo** | [**ExifResponseDto**](ExifResponseDto.md) |  | [optional] 
 **smartInfo** | [**SmartInfoResponseDto**](SmartInfoResponseDto.md) |  | [optional] 
 **livePhotoVideoId** | **String** |  | [optional] 
 **tags** | [**List<TagResponseDto>**](TagResponseDto.md) |  | [optional] [default to const []]
 **people** | [**List<PersonResponseDto>**](PersonResponseDto.md) |  | [optional] [default to const []]
+**checksum** | **String** | base64 encoded sha1 hash | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

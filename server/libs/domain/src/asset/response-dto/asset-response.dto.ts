@@ -15,7 +15,7 @@ export class AssetResponseDto {
   type!: AssetType;
   originalPath!: string;
   originalFileName!: string;
-  resizePath!: string | null;
+  resized!: boolean;
   fileCreatedAt!: string;
   fileModifiedAt!: string;
   updatedAt!: string;
@@ -23,13 +23,13 @@ export class AssetResponseDto {
   isArchived!: boolean;
   mimeType!: string | null;
   duration!: string;
-  webpPath!: string | null;
-  encodedVideoPath?: string | null;
   exifInfo?: ExifResponseDto;
   smartInfo?: SmartInfoResponseDto;
   livePhotoVideoId?: string | null;
   tags?: TagResponseDto[];
   people?: PersonResponseDto[];
+  /**base64 encoded sha1 hash */
+  checksum!: string;
 }
 
 export function mapAsset(entity: AssetEntity): AssetResponseDto {
@@ -41,21 +41,20 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     type: entity.type,
     originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,
-    resizePath: entity.resizePath,
+    resized: !!entity.resizePath,
     fileCreatedAt: entity.fileCreatedAt,
     fileModifiedAt: entity.fileModifiedAt,
     updatedAt: entity.updatedAt,
     isFavorite: entity.isFavorite,
     isArchived: entity.isArchived,
     mimeType: entity.mimeType,
-    webpPath: entity.webpPath,
-    encodedVideoPath: entity.encodedVideoPath,
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
     people: entity.faces?.map(mapFace),
+    checksum: entity.checksum.toString('base64'),
   };
 }
 
@@ -68,20 +67,19 @@ export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
     type: entity.type,
     originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,
-    resizePath: entity.resizePath,
+    resized: !!entity.resizePath,
     fileCreatedAt: entity.fileCreatedAt,
     fileModifiedAt: entity.fileModifiedAt,
     updatedAt: entity.updatedAt,
     isFavorite: entity.isFavorite,
     isArchived: entity.isArchived,
     mimeType: entity.mimeType,
-    webpPath: entity.webpPath,
-    encodedVideoPath: entity.encodedVideoPath,
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: undefined,
     smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map(mapTag),
     people: entity.faces?.map(mapFace),
+    checksum: entity.checksum.toString('base64'),
   };
 }
