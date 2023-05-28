@@ -100,16 +100,21 @@ const AssetSchema = CollectionSchema(
   deserializeProp: _assetDeserializeProp,
   idName: r'id',
   indexes: {
-    r'checksum': IndexSchema(
-      id: 6127114820490579911,
-      name: r'checksum',
-      unique: false,
+    r'checksum_ownerId': IndexSchema(
+      id: 5611361749756160119,
+      name: r'checksum_ownerId',
+      unique: true,
       replace: false,
       properties: [
         IndexPropertySchema(
           name: r'checksum',
           type: IndexType.hash,
           caseSensitive: true,
+        ),
+        IndexPropertySchema(
+          name: r'ownerId',
+          type: IndexType.value,
+          caseSensitive: false,
         )
       ],
     ),
@@ -296,6 +301,94 @@ void _assetAttach(IsarCollection<dynamic> col, Id id, Asset object) {
   object.id = id;
 }
 
+extension AssetByIndex on IsarCollection<Asset> {
+  Future<Asset?> getByChecksumOwnerId(String checksum, int ownerId) {
+    return getByIndex(r'checksum_ownerId', [checksum, ownerId]);
+  }
+
+  Asset? getByChecksumOwnerIdSync(String checksum, int ownerId) {
+    return getByIndexSync(r'checksum_ownerId', [checksum, ownerId]);
+  }
+
+  Future<bool> deleteByChecksumOwnerId(String checksum, int ownerId) {
+    return deleteByIndex(r'checksum_ownerId', [checksum, ownerId]);
+  }
+
+  bool deleteByChecksumOwnerIdSync(String checksum, int ownerId) {
+    return deleteByIndexSync(r'checksum_ownerId', [checksum, ownerId]);
+  }
+
+  Future<List<Asset?>> getAllByChecksumOwnerId(
+      List<String> checksumValues, List<int> ownerIdValues) {
+    final len = checksumValues.length;
+    assert(ownerIdValues.length == len,
+        'All index values must have the same length');
+    final values = <List<dynamic>>[];
+    for (var i = 0; i < len; i++) {
+      values.add([checksumValues[i], ownerIdValues[i]]);
+    }
+
+    return getAllByIndex(r'checksum_ownerId', values);
+  }
+
+  List<Asset?> getAllByChecksumOwnerIdSync(
+      List<String> checksumValues, List<int> ownerIdValues) {
+    final len = checksumValues.length;
+    assert(ownerIdValues.length == len,
+        'All index values must have the same length');
+    final values = <List<dynamic>>[];
+    for (var i = 0; i < len; i++) {
+      values.add([checksumValues[i], ownerIdValues[i]]);
+    }
+
+    return getAllByIndexSync(r'checksum_ownerId', values);
+  }
+
+  Future<int> deleteAllByChecksumOwnerId(
+      List<String> checksumValues, List<int> ownerIdValues) {
+    final len = checksumValues.length;
+    assert(ownerIdValues.length == len,
+        'All index values must have the same length');
+    final values = <List<dynamic>>[];
+    for (var i = 0; i < len; i++) {
+      values.add([checksumValues[i], ownerIdValues[i]]);
+    }
+
+    return deleteAllByIndex(r'checksum_ownerId', values);
+  }
+
+  int deleteAllByChecksumOwnerIdSync(
+      List<String> checksumValues, List<int> ownerIdValues) {
+    final len = checksumValues.length;
+    assert(ownerIdValues.length == len,
+        'All index values must have the same length');
+    final values = <List<dynamic>>[];
+    for (var i = 0; i < len; i++) {
+      values.add([checksumValues[i], ownerIdValues[i]]);
+    }
+
+    return deleteAllByIndexSync(r'checksum_ownerId', values);
+  }
+
+  Future<Id> putByChecksumOwnerId(Asset object) {
+    return putByIndex(r'checksum_ownerId', object);
+  }
+
+  Id putByChecksumOwnerIdSync(Asset object, {bool saveLinks = true}) {
+    return putByIndexSync(r'checksum_ownerId', object, saveLinks: saveLinks);
+  }
+
+  Future<List<Id>> putAllByChecksumOwnerId(List<Asset> objects) {
+    return putAllByIndex(r'checksum_ownerId', objects);
+  }
+
+  List<Id> putAllByChecksumOwnerIdSync(List<Asset> objects,
+      {bool saveLinks = true}) {
+    return putAllByIndexSync(r'checksum_ownerId', objects,
+        saveLinks: saveLinks);
+  }
+}
+
 extension AssetQueryWhereSort on QueryBuilder<Asset, Asset, QWhere> {
   QueryBuilder<Asset, Asset, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
@@ -370,29 +463,29 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> checksumEqualTo(
+  QueryBuilder<Asset, Asset, QAfterWhereClause> checksumEqualToAnyOwnerId(
       String checksum) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'checksum',
+        indexName: r'checksum_ownerId',
         value: [checksum],
       ));
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> checksumNotEqualTo(
+  QueryBuilder<Asset, Asset, QAfterWhereClause> checksumNotEqualToAnyOwnerId(
       String checksum) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'checksum',
+              indexName: r'checksum_ownerId',
               lower: [],
               upper: [checksum],
               includeUpper: false,
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'checksum',
+              indexName: r'checksum_ownerId',
               lower: [checksum],
               includeLower: false,
               upper: [],
@@ -400,18 +493,112 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
       } else {
         return query
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'checksum',
+              indexName: r'checksum_ownerId',
               lower: [checksum],
               includeLower: false,
               upper: [],
             ))
             .addWhereClause(IndexWhereClause.between(
-              indexName: r'checksum',
+              indexName: r'checksum_ownerId',
               lower: [],
               upper: [checksum],
               includeUpper: false,
             ));
       }
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterWhereClause> checksumOwnerIdEqualTo(
+      String checksum, int ownerId) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'checksum_ownerId',
+        value: [checksum, ownerId],
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterWhereClause>
+      checksumEqualToOwnerIdNotEqualTo(String checksum, int ownerId) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'checksum_ownerId',
+              lower: [checksum],
+              upper: [checksum, ownerId],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'checksum_ownerId',
+              lower: [checksum, ownerId],
+              includeLower: false,
+              upper: [checksum],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'checksum_ownerId',
+              lower: [checksum, ownerId],
+              includeLower: false,
+              upper: [checksum],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'checksum_ownerId',
+              lower: [checksum],
+              upper: [checksum, ownerId],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterWhereClause>
+      checksumEqualToOwnerIdGreaterThan(
+    String checksum,
+    int ownerId, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'checksum_ownerId',
+        lower: [checksum, ownerId],
+        includeLower: include,
+        upper: [checksum],
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterWhereClause> checksumEqualToOwnerIdLessThan(
+    String checksum,
+    int ownerId, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'checksum_ownerId',
+        lower: [checksum],
+        upper: [checksum, ownerId],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterWhereClause> checksumEqualToOwnerIdBetween(
+    String checksum,
+    int lowerOwnerId,
+    int upperOwnerId, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'checksum_ownerId',
+        lower: [checksum, lowerOwnerId],
+        includeLower: includeLower,
+        upper: [checksum, upperOwnerId],
+        includeUpper: includeUpper,
+      ));
     });
   }
 

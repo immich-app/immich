@@ -111,16 +111,16 @@ class SyncService {
   // private methods:
 
   /// Syncs a new asset to the db. Returns `true` if successful
-  Future<bool> _syncNewAssetToDb(Asset newAsset) async {
+  Future<bool> _syncNewAssetToDb(Asset a) async {
     final Asset? inDb =
-        await _db.assets.where().checksumEqualTo(newAsset.checksum).findFirst();
+        await _db.assets.getByChecksumOwnerId(a.checksum, a.ownerId);
     if (inDb != null) {
       // unify local/remote assets by replacing the
       // local-only asset in the DB with a local&remote asset
-      newAsset = inDb.updatedCopy(newAsset);
+      a = inDb.updatedCopy(a);
     }
     try {
-      await _db.writeTxn(() => newAsset.put(_db));
+      await _db.writeTxn(() => a.put(_db));
     } on IsarError catch (e) {
       _log.severe("Failed to put new asset into db: $e");
       return false;
@@ -552,12 +552,15 @@ class SyncService {
     }
     final List<Asset> inDb = await _db.assets
         .where()
-        .anyOf(assets, (q, Asset e) => q.checksumEqualTo(e.checksum))
+        .anyOf(
+          assets,
+          (q, Asset e) => q.checksumOwnerIdEqualTo(e.checksum, e.ownerId),
+        )
         .sortByOwnerId()
         .thenByChecksum()
         .findAll();
     assets.sort(Asset.compareByOwnerChecksum);
-    final List<Asset> existing = [], toUpsert = [];
+    final List<Asset> existing = [], toUpsert = [], toAdd = [];
     diffSortedListsSync(
       inDb,
       assets,
@@ -578,8 +581,16 @@ class SyncService {
         null,
         StackTrace.current,
       ),
-      onlySecond: (Asset b) => toUpsert.add(b),
+      onlySecond: (Asset b) => toAdd.add(b),
     );
+    // filter out any duplicates (same checksum+owner)
+    final duplicates = await _db.assets.getAllByChecksumOwnerId(
+      toAdd.map((e) => e.checksum).toList(),
+      toAdd.map((e) => e.ownerId).toList(),
+    );
+    for (int i = 0; i < toAdd.length; i++) {
+      if (duplicates[i] == null) toUpsert.add(toAdd[i]);
+    }
     return (existing, toUpsert);
   }
 

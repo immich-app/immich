@@ -16,7 +16,7 @@ part 'asset.g.dart';
 class Asset {
   Asset.remote(AssetResponseDto remote)
       : remoteId = remote.id,
-        checksum = String.fromCharCodes(base64Decode(remote.checksum)),
+        checksum = remote.checksum,
         fileCreatedAt = remote.fileCreatedAt,
         fileModifiedAt = remote.fileModifiedAt,
         updatedAt = remote.updatedAt,
@@ -34,7 +34,7 @@ class Asset {
 
   Asset.local(AssetEntity local, List<int> hash)
       : localId = local.id,
-        checksum = String.fromCharCodes(hash),
+        checksum = base64.encode(hash),
         durationInSeconds = local.duration,
         type = AssetType.values[local.typeInt],
         height = local.height,
@@ -97,9 +97,14 @@ class Asset {
 
   Id id = Isar.autoIncrement;
 
-  /// stores the raw SHA1 bytes interpreted as a String (invalid UTF8!)
+  /// stores the raw SHA1 bytes as a base64 String
   /// because Isar cannot sort lists of byte arrays
-  @Index(unique: false, replace: false, type: IndexType.hash)
+  @Index(
+    unique: true,
+    replace: false,
+    type: IndexType.hash,
+    composite: [CompositeIndex("ownerId")],
+  )
   String checksum;
 
   @Index(unique: false, replace: false, type: IndexType.hash)
@@ -152,9 +157,6 @@ class Asset {
 
   @ignore
   bool get isImage => type == AssetType.image;
-
-  @ignore
-  String get prettyHash => base64.encode(checksum.codeUnits);
 
   @ignore
   AssetState get storage {
@@ -348,7 +350,7 @@ class Asset {
 {
   "remoteId": "${remoteId ?? "N/A"}",
   "localId": "${localId ?? "N/A"}",
-  "checksum": "$prettyHash",
+  "checksum": "$checksum",
   "ownerId": "$ownerId", 
   "livePhotoVideoId": "${livePhotoVideoId ?? "N/A"}",
   "fileCreatedAt": "$fileCreatedAt",

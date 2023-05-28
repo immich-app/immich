@@ -49,10 +49,10 @@ class AssetNotifier extends StateNotifier<bool> {
         await clearAssetsAndAlbums(_db);
         log.info("Manual refresh requested, cleared assets and albums from db");
       }
+      await _userService.refreshUsers();
       final bool newRemote = await _assetService.refreshRemoteAssets();
       final bool newLocal = await _albumService.refreshDeviceAlbums();
       debugPrint("newRemote: $newRemote, newLocal: $newLocal");
-      await _userService.refreshUsers();
       final List<User> partners =
           await _db.users.filter().isPartnerSharedWithEqualTo(true).findAll();
       for (User u in partners) {

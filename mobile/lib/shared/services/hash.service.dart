@@ -134,7 +134,8 @@ class HashService {
       throw Exception("hashAssets implementation missing");
     }
     debugPrint(
-        "Files: $totalFiles, Total time: ${totalTime.elapsedMilliseconds}ms, total bytes: $totalBytes, ${(totalBytes / (1024 * 1024.0)) / totalTime.elapsedMilliseconds * 1000} mb/s");
+      "Files: $totalFiles, Total time: ${totalTime.elapsedMilliseconds}ms, total bytes: $totalBytes, ${(totalBytes / (1024 * 1024.0)) / totalTime.elapsedMilliseconds * 1000} mb/s",
+    );
     return assets
         .mapIndexed((i, a) => Asset.local(a, hashes[i]!.hash))
         .toList();
@@ -142,17 +143,16 @@ class HashService {
 
   Future<Uint8List> _hashAssetCrypto(File f) async {
     late Digest output;
-    final sink2 = sha1.startChunkedConversion(
+    final sink = sha1.startChunkedConversion(
       ChunkedConversionSink<Digest>.withCallback((accumulated) {
         output = accumulated.first;
       }),
     );
     await for (final chunk in f.openRead()) {
-      sink2.add(chunk);
+      sink.add(chunk);
     }
-    sink2.close();
-    final h2 = output.bytes;
-    return Uint8List.fromList(h2);
+    sink.close();
+    return Uint8List.fromList(output.bytes);
   }
 
   Future<Uint8List> _hashFile(File f) async {
