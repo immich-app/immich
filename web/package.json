@@ -57,6 +57,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@zoom-image/svelte": "^0.1.0",
 		"axios": "^0.27.2",
 		"copy-image-clipboard": "^2.1.2",
 		"handlebars": "^4.7.7",
