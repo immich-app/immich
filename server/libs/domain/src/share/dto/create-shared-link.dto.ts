@@ -2,7 +2,7 @@ import { AlbumEntity, AssetEntity, SharedLinkType } from '@app/infra/entities';
 
 export class CreateSharedLinkDto {
   description?: string;
-  expiresAt?: string;
+  expiresAt?: Date;
   type!: SharedLinkType;
   assets!: AssetEntity[];
   album?: AlbumEntity;

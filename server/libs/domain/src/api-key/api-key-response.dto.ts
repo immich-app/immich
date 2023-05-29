@@ -8,8 +8,8 @@ export class APIKeyCreateResponseDto {
 export class APIKeyResponseDto {
   id!: string;
   name!: string;
-  createdAt!: string;
-  updatedAt!: string;
+  createdAt!: Date;
+  updatedAt!: Date;
 }
 
 export function mapKey(entity: APIKeyEntity): APIKeyResponseDto {

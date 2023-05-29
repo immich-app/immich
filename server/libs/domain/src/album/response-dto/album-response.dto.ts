@@ -7,8 +7,8 @@ export class AlbumResponseDto {
   id!: string;
   ownerId!: string;
   albumName!: string;
-  createdAt!: string;
-  updatedAt!: string;
+  createdAt!: Date;
+  updatedAt!: Date;
   albumThumbnailAssetId!: string | null;
   shared!: boolean;
   sharedUsers!: UserResponseDto[];

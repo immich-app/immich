@@ -22,9 +22,7 @@ class User {
 
   User.fromDto(UserResponseDto dto)
       : id = dto.id,
-        updatedAt = dto.updatedAt != null
-            ? DateTime.parse(dto.updatedAt!).toUtc()
-            : DateTime.now().toUtc(),
+        updatedAt = dto.updatedAt,
         email = dto.email,
         firstName = dto.firstName,
         lastName = dto.lastName,

@@ -6,12 +6,12 @@ export class UserResponseDto {
   firstName!: string;
   lastName!: string;
   storageLabel!: string | null;
-  createdAt!: string;
   profileImagePath!: string;
   shouldChangePassword!: boolean;
   isAdmin!: boolean;
-  deletedAt?: Date;
-  updatedAt?: string;
+  createdAt!: Date;
+  deletedAt!: Date | null;
+  updatedAt!: Date;
   oauthId!: string;
 }
 
@@ -22,10 +22,10 @@ export function mapUser(entity: UserEntity): UserResponseDto {
     firstName: entity.firstName,
     lastName: entity.lastName,
     storageLabel: entity.storageLabel,
-    createdAt: entity.createdAt,
     profileImagePath: entity.profileImagePath,
     shouldChangePassword: entity.shouldChangePassword,
     isAdmin: entity.isAdmin,
+    createdAt: entity.createdAt,
     deletedAt: entity.deletedAt,
     updatedAt: entity.updatedAt,
     oauthId: entity.oauthId,

@@ -13,8 +13,8 @@ Name | Type | Description | Notes
 **description** | **String** |  | [optional] 
 **userId** | **String** |  | 
 **key** | **String** |  | 
-**createdAt** | **String** |  | 
-**expiresAt** | **String** |  | 
+**createdAt** | [**DateTime**](DateTime.md) |  | 
+**expiresAt** | [**DateTime**](DateTime.md) |  | 
 **assets** | [**List<AssetResponseDto>**](AssetResponseDto.md) |  | [default to const []]
 **album** | [**AlbumResponseDto**](AlbumResponseDto.md) |  | [optional] 
 **allowUpload** | **bool** |  | 

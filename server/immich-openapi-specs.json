@@ -4196,9 +4196,6 @@
             "type": "string",
             "nullable": true
           },
-          "createdAt": {
-            "type": "string"
-          },
           "profileImagePath": {
             "type": "string"
           },
@@ -4208,11 +4205,17 @@
           "isAdmin": {
             "type": "boolean"
           },
-          "deletedAt": {
+          "createdAt": {
             "format": "date-time",
             "type": "string"
           },
+          "deletedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
           "updatedAt": {
+            "format": "date-time",
             "type": "string"
           },
           "oauthId": {
@@ -4225,10 +4228,12 @@
           "firstName",
           "lastName",
           "storageLabel",
-          "createdAt",
           "profileImagePath",
           "shouldChangePassword",
           "isAdmin",
+          "createdAt",
+          "deletedAt",
+          "updatedAt",
           "oauthId"
         ]
       },
@@ -4536,9 +4541,11 @@
             "type": "string"
           },
           "createdAt": {
+            "format": "date-time",
             "type": "string"
           },
           "updatedAt": {
+            "format": "date-time",
             "type": "string"
           },
           "albumThumbnailAssetId": {
@@ -4633,9 +4640,11 @@
             "type": "string"
           },
           "createdAt": {
+            "format": "date-time",
             "type": "string"
           },
           "updatedAt": {
+            "format": "date-time",
             "type": "string"
           }
         },
@@ -4800,6 +4809,7 @@
             "type": "string"
           },
           "createdAt": {
+            "format": "date-time",
             "type": "string"
           }
         },
@@ -5396,9 +5406,11 @@
             "type": "string"
           },
           "createdAt": {
+            "format": "date-time",
             "type": "string"
           },
           "expiresAt": {
+            "format": "date-time",
             "type": "string",
             "nullable": true
           },
@@ -5441,6 +5453,7 @@
             "type": "string"
           },
           "expiresAt": {
+            "format": "date-time",
             "type": "string",
             "nullable": true
           },
@@ -6255,6 +6268,7 @@
             }
           },
           "expiresAt": {
+            "format": "date-time",
             "type": "string"
           },
           "allowUpload": {
@@ -6393,8 +6407,8 @@
             "format": "uuid"
           },
           "expiresAt": {
-            "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "type": "string"
           },
           "allowUpload": {
             "type": "boolean"

@@ -28,10 +28,10 @@ export class AlbumEntity {
   albumName!: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: string;
+  createdAt!: Date;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: string;
+  updatedAt!: Date;
 
   @ManyToOne(() => AssetEntity, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
   albumThumbnailAsset!: AssetEntity | null;

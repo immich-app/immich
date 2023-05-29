@@ -23,7 +23,7 @@ export class ShareCore {
       key: Buffer.from(this.cryptoRepository.randomBytes(50)),
       description: dto.description,
       userId,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(),
       expiresAt: dto.expiresAt ?? null,
       type: dto.type,
       assets: dto.assets,
