@@ -74,10 +74,11 @@
 	};
 
 	const { createZoomImage: createZoomImageWheel } = useZoomImageWheel();
-	$: if (imgElement)
+	$: if (imgElement) {
 		createZoomImageWheel(imgElement, {
 			wheelZoomRatio: 0.06
 		});
+	}
 </script>
 
 <svelte:window on:keydown={handleKeypress} on:copyImage={doCopy} />
