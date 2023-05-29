@@ -11,12 +11,12 @@ export class MapMarkerDto {
   isFavorite?: boolean;
 
   @IsOptional()
-  @IsDate({})
+  @IsDate()
   @Type(() => Date)
   fileCreatedAfter?: Date;
 
   @IsOptional()
-  @IsDate({})
+  @IsDate()
   @Type(() => Date)
   fileCreatedBefore?: Date;
 }
