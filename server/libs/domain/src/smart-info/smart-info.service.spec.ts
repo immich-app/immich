@@ -30,6 +30,8 @@ describe(SmartInfoService.name, () => {
     jobMock = newJobRepositoryMock();
     machineMock = newMachineLearningRepositoryMock();
     sut = new SmartInfoService(assetMock, jobMock, smartMock, machineMock);
+
+    assetMock.getByIds.mockResolvedValue([asset]);
   });
 
   it('should work', () => {
@@ -46,8 +48,8 @@ describe(SmartInfoService.name, () => {
       await sut.handleQueueObjectTagging({ force: false });
 
       expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.CLASSIFY_IMAGE, data: { asset: assetEntityStub.image } }],
-        [{ name: JobName.DETECT_OBJECTS, data: { asset: assetEntityStub.image } }],
+        [{ name: JobName.CLASSIFY_IMAGE, data: { id: assetEntityStub.image.id } }],
+        [{ name: JobName.DETECT_OBJECTS, data: { id: assetEntityStub.image.id } }],
       ]);
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.OBJECT_TAGS);
     });
@@ -61,8 +63,8 @@ describe(SmartInfoService.name, () => {
       await sut.handleQueueObjectTagging({ force: true });
 
       expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.CLASSIFY_IMAGE, data: { asset: assetEntityStub.image } }],
-        [{ name: JobName.DETECT_OBJECTS, data: { asset: assetEntityStub.image } }],
+        [{ name: JobName.CLASSIFY_IMAGE, data: { id: assetEntityStub.image.id } }],
+        [{ name: JobName.DETECT_OBJECTS, data: { id: assetEntityStub.image.id } }],
       ]);
       expect(assetMock.getAll).toHaveBeenCalled();
     });
@@ -70,7 +72,10 @@ describe(SmartInfoService.name, () => {
 
   describe('handleTagImage', () => {
     it('should skip assets without a resize path', async () => {
-      await sut.handleClassifyImage({ asset: { resizePath: '' } as AssetEntity });
+      const asset = { resizePath: '' } as AssetEntity;
+      assetMock.getByIds.mockResolvedValue([asset]);
+
+      await sut.handleClassifyImage({ id: asset.id });
 
       expect(smartMock.upsert).not.toHaveBeenCalled();
       expect(machineMock.classifyImage).not.toHaveBeenCalled();
@@ -79,7 +84,7 @@ describe(SmartInfoService.name, () => {
     it('should save the returned tags', async () => {
       machineMock.classifyImage.mockResolvedValue(['tag1', 'tag2', 'tag3']);
 
-      await sut.handleClassifyImage({ asset });
+      await sut.handleClassifyImage({ id: asset.id });
 
       expect(machineMock.classifyImage).toHaveBeenCalledWith({ thumbnailPath: 'path/to/resize.ext' });
       expect(smartMock.upsert).toHaveBeenCalledWith({
@@ -88,18 +93,10 @@ describe(SmartInfoService.name, () => {
       });
     });
 
-    it('should handle an error with the machine learning pipeline', async () => {
-      machineMock.classifyImage.mockRejectedValue(new Error('Unable to read thumbnail'));
-
-      await sut.handleClassifyImage({ asset });
-
-      expect(smartMock.upsert).not.toHaveBeenCalled();
-    });
-
     it('should no update the smart info if no tags were returned', async () => {
       machineMock.classifyImage.mockResolvedValue([]);
 
-      await sut.handleClassifyImage({ asset });
+      await sut.handleClassifyImage({ id: asset.id });
 
       expect(machineMock.classifyImage).toHaveBeenCalled();
       expect(smartMock.upsert).not.toHaveBeenCalled();
@@ -108,7 +105,10 @@ describe(SmartInfoService.name, () => {
 
   describe('handleDetectObjects', () => {
     it('should skip assets without a resize path', async () => {
-      await sut.handleDetectObjects({ asset: { resizePath: '' } as AssetEntity });
+      const asset = { resizePath: '' } as AssetEntity;
+      assetMock.getByIds.mockResolvedValue([asset]);
+
+      await sut.handleDetectObjects({ id: asset.id });
 
       expect(smartMock.upsert).not.toHaveBeenCalled();
       expect(machineMock.detectObjects).not.toHaveBeenCalled();
@@ -117,7 +117,7 @@ describe(SmartInfoService.name, () => {
     it('should save the returned objects', async () => {
       machineMock.detectObjects.mockResolvedValue(['obj1', 'obj2', 'obj3']);
 
-      await sut.handleDetectObjects({ asset });
+      await sut.handleDetectObjects({ id: asset.id });
 
       expect(machineMock.detectObjects).toHaveBeenCalledWith({ thumbnailPath: 'path/to/resize.ext' });
       expect(smartMock.upsert).toHaveBeenCalledWith({
@@ -126,18 +126,10 @@ describe(SmartInfoService.name, () => {
       });
     });
 
-    it('should handle an error with the machine learning pipeline', async () => {
-      machineMock.detectObjects.mockRejectedValue(new Error('Unable to read thumbnail'));
-
-      await sut.handleDetectObjects({ asset });
-
-      expect(smartMock.upsert).not.toHaveBeenCalled();
-    });
-
     it('should no update the smart info if no objects were returned', async () => {
       machineMock.detectObjects.mockResolvedValue([]);
 
-      await sut.handleDetectObjects({ asset });
+      await sut.handleDetectObjects({ id: asset.id });
 
       expect(machineMock.detectObjects).toHaveBeenCalled();
       expect(smartMock.upsert).not.toHaveBeenCalled();
@@ -153,7 +145,7 @@ describe(SmartInfoService.name, () => {
 
       await sut.handleQueueEncodeClip({ force: false });
 
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.ENCODE_CLIP, data: { asset: assetEntityStub.image } });
+      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.ENCODE_CLIP, data: { id: assetEntityStub.image.id } });
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.CLIP_ENCODING);
     });
 
@@ -165,14 +157,17 @@ describe(SmartInfoService.name, () => {
 
       await sut.handleQueueEncodeClip({ force: true });
 
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.ENCODE_CLIP, data: { asset: assetEntityStub.image } });
+      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.ENCODE_CLIP, data: { id: assetEntityStub.image.id } });
       expect(assetMock.getAll).toHaveBeenCalled();
     });
   });
 
   describe('handleEncodeClip', () => {
     it('should skip assets without a resize path', async () => {
-      await sut.handleEncodeClip({ asset: { resizePath: '' } as AssetEntity });
+      const asset = { resizePath: '' } as AssetEntity;
+      assetMock.getByIds.mockResolvedValue([asset]);
+
+      await sut.handleEncodeClip({ id: asset.id });
 
       expect(smartMock.upsert).not.toHaveBeenCalled();
       expect(machineMock.encodeImage).not.toHaveBeenCalled();
@@ -181,21 +176,13 @@ describe(SmartInfoService.name, () => {
     it('should save the returned objects', async () => {
       machineMock.encodeImage.mockResolvedValue([0.01, 0.02, 0.03]);
 
-      await sut.handleEncodeClip({ asset });
+      await sut.handleEncodeClip({ id: asset.id });
 
       expect(machineMock.encodeImage).toHaveBeenCalledWith({ thumbnailPath: 'path/to/resize.ext' });
       expect(smartMock.upsert).toHaveBeenCalledWith({
         assetId: 'asset-1',
         clipEmbedding: [0.01, 0.02, 0.03],
       });
-    });
-
-    it('should handle an error with the machine learning pipeline', async () => {
-      machineMock.encodeImage.mockRejectedValue(new Error('Unable to read thumbnail'));
-
-      await sut.handleEncodeClip({ asset });
-
-      expect(smartMock.upsert).not.toHaveBeenCalled();
     });
   });
 });

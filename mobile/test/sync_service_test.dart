@@ -47,6 +47,7 @@ void main() {
         LoggerMessageSchema
       ],
       maxSizeMiB: 256,
+      directory: ".",
     );
   }
 

@@ -24,10 +24,10 @@
 	import ShareVariantOutline from 'svelte-material-icons/ShareVariantOutline.svelte';
 	import Button from '../elements/buttons/button.svelte';
 	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-	import DownloadFiles from '../photos-page/actions/download-files.svelte';
+	import DownloadAction from '../photos-page/actions/download-action.svelte';
 	import RemoveFromAlbum from '../photos-page/actions/remove-from-album.svelte';
 	import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
-	import CircleAvatar from '../shared-components/circle-avatar.svelte';
+	import UserAvatar from '../shared-components/user-avatar.svelte';
 	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
 	import ControlAppBar from '../shared-components/control-app-bar.svelte';
@@ -124,8 +124,11 @@
 	$: {
 		if (!isEditingTitle && currentAlbumName != album.albumName && isOwned) {
 			api.albumApi
-				.updateAlbumInfo(album.id, {
-					albumName: album.albumName
+				.updateAlbumInfo({
+					id: album.id,
+					updateAlbumDto: {
+						albumName: album.albumName
+					}
 				})
 				.then(() => {
 					currentAlbumName = album.albumName;
@@ -143,13 +146,13 @@
 	const createAlbumHandler = async (event: CustomEvent) => {
 		const { assets }: { assets: AssetResponseDto[] } = event.detail;
 		try {
-			const { data } = await api.albumApi.addAssetsToAlbum(
-				album.id,
-				{
+			const { data } = await api.albumApi.addAssetsToAlbum({
+				id: album.id,
+				addAssetsDto: {
 					assetIds: assets.map((a) => a.id)
 				},
-				sharedLink?.key
-			);
+				key: sharedLink?.key
+			});
 
 			if (data.album) {
 				album = data.album;
@@ -168,8 +171,11 @@
 		const { selectedUsers }: { selectedUsers: UserResponseDto[] } = event.detail;
 
 		try {
-			const { data } = await api.albumApi.addUsersToAlbum(album.id, {
-				sharedUserIds: Array.from(selectedUsers).map((u) => u.id)
+			const { data } = await api.albumApi.addUsersToAlbum({
+				id: album.id,
+				addUsersDto: {
+					sharedUserIds: Array.from(selectedUsers).map((u) => u.id)
+				}
 			});
 
 			album = data;
@@ -193,7 +199,7 @@
 		}
 
 		try {
-			const { data } = await api.albumApi.getAlbumInfo(album.id);
+			const { data } = await api.albumApi.getAlbumInfo({ id: album.id });
 
 			album = data;
 			isShowShareInfoModal = false;
@@ -213,7 +219,7 @@
 			)
 		) {
 			try {
-				await api.albumApi.deleteAlbum(album.id);
+				await api.albumApi.deleteAlbum({ id: album.id });
 				goto(backUrl);
 			} catch (e) {
 				console.error('Error [userDeleteMenu] ', e);
@@ -241,10 +247,7 @@
 				let total = 0;
 
 				const { data, status, headers } = await api.albumApi.downloadArchive(
-					album.id,
-					undefined,
-					skip || undefined,
-					sharedLink?.key,
+					{ id: album.id, skip: skip || undefined, key: sharedLink?.key },
 					{
 						responseType: 'blob',
 						onDownloadProgress: function (progressEvent) {
@@ -311,8 +314,11 @@
 	const setAlbumThumbnailHandler = (event: CustomEvent) => {
 		const { asset }: { asset: AssetResponseDto } = event.detail;
 		try {
-			api.albumApi.updateAlbumInfo(album.id, {
-				albumThumbnailAssetId: asset.id
+			api.albumApi.updateAlbumInfo({
+				id: album.id,
+				updateAlbumDto: {
+					albumThumbnailAssetId: asset.id
+				}
 			});
 		} catch (e) {
 			console.error('Error [setAlbumThumbnailHandler] ', e);
@@ -338,7 +344,7 @@
 			assets={multiSelectAsset}
 			clearSelect={() => (multiSelectAsset = new Set())}
 		>
-			<DownloadFiles filename={album.albumName} sharedLinkKey={sharedLink?.key} />
+			<DownloadAction filename={album.albumName} sharedLinkKey={sharedLink?.key} />
 			{#if isOwned}
 				<RemoveFromAlbum bind:album />
 			{/if}
@@ -472,13 +478,11 @@
 			</span>
 		{/if}
 		{#if album.shared}
-			<div class="my-6 flex">
-				{#each album.sharedUsers as user}
-					{#key user.id}
-						<span class="mr-1">
-							<CircleAvatar {user} on:click={() => (isShowShareInfoModal = true)} />
-						</span>
-					{/key}
+			<div class="flex my-6 gap-x-1">
+				{#each album.sharedUsers as user (user.id)}
+					<button on:click={() => (isShowShareInfoModal = true)}>
+						<UserAvatar {user} size="md" autoColor />
+					</button>
 				{/each}
 
 				<button

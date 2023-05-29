@@ -28,8 +28,10 @@
 			const { data: configs } = await api.systemConfigApi.getConfig();
 
 			const result = await api.systemConfigApi.updateConfig({
-				...configs,
-				ffmpeg: ffmpegConfig
+				systemConfigDto: {
+					...configs,
+					ffmpeg: ffmpegConfig
+				}
 			});
 
 			ffmpegConfig = { ...result.data.ffmpeg };

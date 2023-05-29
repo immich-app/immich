@@ -40,7 +40,9 @@ export const useAlbums = (props: AlbumsProps) => {
 	async function createAlbum(): Promise<AlbumResponseDto | undefined> {
 		try {
 			const { data: newAlbum } = await api.albumApi.createAlbum({
-				albumName: 'Untitled'
+				createAlbumDto: {
+					albumName: 'Untitled'
+				}
 			});
 
 			return newAlbum;
@@ -53,7 +55,7 @@ export const useAlbums = (props: AlbumsProps) => {
 	}
 
 	async function deleteAlbum(album: AlbumResponseDto): Promise<void> {
-		await api.albumApi.deleteAlbum(album.id);
+		await api.albumApi.deleteAlbum({ id: album.id });
 	}
 
 	async function showAlbumContextMenu(
@@ -83,7 +85,7 @@ export const useAlbums = (props: AlbumsProps) => {
 			)
 		) {
 			try {
-				await api.albumApi.deleteAlbum(albumToDelete.id);
+				await api.albumApi.deleteAlbum({ id: albumToDelete.id });
 				const _albums = get(albums);
 				albums.set(_albums.filter((a) => a.id !== albumToDelete.id));
 			} catch {

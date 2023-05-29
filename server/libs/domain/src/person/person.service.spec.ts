@@ -122,14 +122,5 @@ describe(PersonService.name, () => {
         data: { files: ['/path/to/thumbnail'] },
       });
     });
-
-    it('should log an error', async () => {
-      personMock.getAllWithoutFaces.mockResolvedValue([personStub.noName]);
-      personMock.delete.mockRejectedValue(new Error('database unavailable'));
-
-      await sut.handlePersonCleanup();
-
-      expect(jobMock.queue).not.toHaveBeenCalled();
-    });
   });
 });

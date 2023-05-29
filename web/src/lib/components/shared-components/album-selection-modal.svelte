@@ -16,7 +16,7 @@
 	export let shared: boolean;
 
 	onMount(async () => {
-		const { data } = await api.albumApi.getAllAlbums(shared || undefined);
+		const { data } = await api.albumApi.getAllAlbums({ shared: shared || undefined });
 		albums = data;
 
 		recentAlbums = albums

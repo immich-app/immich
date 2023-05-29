@@ -123,11 +123,35 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
-  create(album: Partial<AlbumEntity>): Promise<AlbumEntity> {
+  async hasAsset(id: string, assetId: string): Promise<boolean> {
+    const count = await this.repository.count({
+      where: {
+        id,
+        assets: {
+          id: assetId,
+        },
+      },
+      relations: {
+        assets: true,
+      },
+    });
+
+    return Boolean(count);
+  }
+
+  async create(album: Partial<AlbumEntity>): Promise<AlbumEntity> {
     return this.save(album);
   }
 
-  async save(album: Partial<AlbumEntity>) {
+  async update(album: Partial<AlbumEntity>): Promise<AlbumEntity> {
+    return this.save(album);
+  }
+
+  async delete(album: AlbumEntity): Promise<void> {
+    await this.repository.remove(album);
+  }
+
+  private async save(album: Partial<AlbumEntity>) {
     const { id } = await this.repository.save(album);
     return this.repository.findOneOrFail({ where: { id }, relations: { owner: true } });
   }

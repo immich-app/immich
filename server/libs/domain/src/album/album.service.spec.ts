@@ -1,3 +1,4 @@
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { albumStub, authStub, newAlbumRepositoryMock, newAssetRepositoryMock, newJobRepositoryMock } from '../../test';
 import { IAssetRepository } from '../asset';
 import { IJobRepository, JobName } from '../job';
@@ -89,14 +90,14 @@ describe(AlbumService.name, () => {
       { albumId: albumStub.oneAssetInvalidThumbnail.id, assetCount: 1 },
     ]);
     albumMock.getInvalidThumbnail.mockResolvedValue([albumStub.oneAssetInvalidThumbnail.id]);
-    albumMock.save.mockResolvedValue(albumStub.oneAssetValidThumbnail);
+    albumMock.update.mockResolvedValue(albumStub.oneAssetValidThumbnail);
     assetMock.getFirstAssetForAlbumId.mockResolvedValue(albumStub.oneAssetInvalidThumbnail.assets[0]);
 
     const result = await sut.getAll(authStub.admin, {});
 
     expect(result).toHaveLength(1);
     expect(albumMock.getInvalidThumbnail).toHaveBeenCalledTimes(1);
-    expect(albumMock.save).toHaveBeenCalledTimes(1);
+    expect(albumMock.update).toHaveBeenCalledTimes(1);
   });
 
   it('removes the thumbnail for an empty album', async () => {
@@ -105,14 +106,14 @@ describe(AlbumService.name, () => {
       { albumId: albumStub.emptyWithInvalidThumbnail.id, assetCount: 1 },
     ]);
     albumMock.getInvalidThumbnail.mockResolvedValue([albumStub.emptyWithInvalidThumbnail.id]);
-    albumMock.save.mockResolvedValue(albumStub.emptyWithValidThumbnail);
+    albumMock.update.mockResolvedValue(albumStub.emptyWithValidThumbnail);
     assetMock.getFirstAssetForAlbumId.mockResolvedValue(null);
 
     const result = await sut.getAll(authStub.admin, {});
 
     expect(result).toHaveLength(1);
     expect(albumMock.getInvalidThumbnail).toHaveBeenCalledTimes(1);
-    expect(albumMock.save).toHaveBeenCalledTimes(1);
+    expect(albumMock.update).toHaveBeenCalledTimes(1);
   });
 
   describe('create', () => {
@@ -149,6 +150,93 @@ describe(AlbumService.name, () => {
         name: JobName.SEARCH_INDEX_ALBUM,
         data: { ids: [albumStub.empty.id] },
       });
+    });
+  });
+
+  describe('update', () => {
+    it('should prevent updating an album that does not exist', async () => {
+      albumMock.getByIds.mockResolvedValue([]);
+
+      await expect(
+        sut.update(authStub.user1, 'invalid-id', {
+          albumName: 'new album name',
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(albumMock.update).not.toHaveBeenCalled();
+    });
+
+    it('should prevent updating a not owned album (shared with auth user)', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.sharedWithAdmin]);
+
+      await expect(
+        sut.update(authStub.admin, albumStub.sharedWithAdmin.id, {
+          albumName: 'new album name',
+        }),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it('should require a valid thumbnail asset id', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.oneAsset]);
+      albumMock.update.mockResolvedValue(albumStub.oneAsset);
+      albumMock.hasAsset.mockResolvedValue(false);
+
+      await expect(
+        sut.update(authStub.admin, albumStub.oneAsset.id, {
+          albumThumbnailAssetId: 'not-in-album',
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(albumMock.hasAsset).toHaveBeenCalledWith(albumStub.oneAsset.id, 'not-in-album');
+      expect(albumMock.update).not.toHaveBeenCalled();
+    });
+
+    it('should allow the owner to update the album', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.oneAsset]);
+      albumMock.update.mockResolvedValue(albumStub.oneAsset);
+
+      await sut.update(authStub.admin, albumStub.oneAsset.id, {
+        albumName: 'new album name',
+      });
+
+      expect(albumMock.update).toHaveBeenCalledTimes(1);
+      expect(albumMock.update).toHaveBeenCalledWith({
+        id: 'album-4',
+        albumName: 'new album name',
+      });
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.SEARCH_INDEX_ALBUM,
+        data: { ids: [albumStub.oneAsset.id] },
+      });
+    });
+  });
+
+  describe('delete', () => {
+    it('should throw an error for an album not found', async () => {
+      albumMock.getByIds.mockResolvedValue([]);
+
+      await expect(sut.delete(authStub.admin, albumStub.sharedWithAdmin.id)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+
+      expect(albumMock.delete).not.toHaveBeenCalled();
+    });
+
+    it('should not let a shared user delete the album', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.sharedWithAdmin]);
+
+      await expect(sut.delete(authStub.admin, albumStub.sharedWithAdmin.id)).rejects.toBeInstanceOf(ForbiddenException);
+
+      expect(albumMock.delete).not.toHaveBeenCalled();
+    });
+
+    it('should let the owner delete an album', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.empty]);
+
+      await sut.delete(authStub.admin, albumStub.empty.id);
+
+      expect(albumMock.delete).toHaveBeenCalledTimes(1);
+      expect(albumMock.delete).toHaveBeenCalledWith(albumStub.empty);
     });
   });
 });

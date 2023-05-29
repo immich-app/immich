@@ -2,7 +2,7 @@ import { AlbumService } from './album.service';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AlbumEntity, UserEntity } from '@app/infra/entities';
-import { AlbumResponseDto, ICryptoRepository, IJobRepository, JobName, mapUser } from '@app/domain';
+import { AlbumResponseDto, ICryptoRepository, IJobRepository, mapUser } from '@app/domain';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { IAlbumRepository } from './album-repository';
 import { DownloadService } from '../../modules/download/download.service';
@@ -121,11 +121,9 @@ describe('Album service', () => {
     albumRepositoryMock = {
       addAssets: jest.fn(),
       addSharedUsers: jest.fn(),
-      delete: jest.fn(),
       get: jest.fn(),
       removeAssets: jest.fn(),
       removeUser: jest.fn(),
-      updateAlbum: jest.fn(),
       updateThumbnails: jest.fn(),
       getCountByUserId: jest.fn(),
       getSharedWithUserAlbumCount: jest.fn(),
@@ -197,21 +195,6 @@ describe('Album service', () => {
     await expect(sut.get(authUser, '0002')).rejects.toBeInstanceOf(NotFoundException);
   });
 
-  it('deletes an owned album', async () => {
-    const albumEntity = _getOwnedAlbum();
-    albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    albumRepositoryMock.delete.mockImplementation(() => Promise.resolve());
-    await sut.delete(authUser, albumId);
-    expect(albumRepositoryMock.delete).toHaveBeenCalledTimes(1);
-    expect(albumRepositoryMock.delete).toHaveBeenCalledWith(albumEntity);
-  });
-
-  it('prevents deleting a shared album (shared with auth user)', async () => {
-    const albumEntity = _getSharedWithAuthUserAlbum();
-    albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    await expect(sut.delete(authUser, albumId)).rejects.toBeInstanceOf(ForbiddenException);
-  });
-
   it('removes a shared user from an owned album', async () => {
     const albumEntity = _getOwnedSharedAlbum();
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
@@ -257,44 +240,6 @@ describe('Album service', () => {
     albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
 
     await expect(sut.removeUser(authUser, albumEntity.id, authUser.id)).rejects.toBeInstanceOf(BadRequestException);
-  });
-
-  it('updates a owned album', async () => {
-    const albumEntity = _getOwnedAlbum();
-    const albumId = albumEntity.id;
-    const updatedAlbumName = 'new album name';
-    const updatedAlbumThumbnailAssetId = '69d2f917-0b31-48d8-9d7d-673b523f1aac';
-    albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-    const updatedAlbum = { ...albumEntity, albumName: updatedAlbumName };
-    albumRepositoryMock.updateAlbum.mockResolvedValue(updatedAlbum);
-
-    const result = await sut.update(authUser, albumId, {
-      albumName: updatedAlbumName,
-      albumThumbnailAssetId: updatedAlbumThumbnailAssetId,
-    });
-
-    expect(result.id).toEqual(albumId);
-    expect(result.albumName).toEqual(updatedAlbumName);
-    expect(albumRepositoryMock.updateAlbum).toHaveBeenCalledTimes(1);
-    expect(albumRepositoryMock.updateAlbum).toHaveBeenCalledWith(albumEntity, {
-      albumName: updatedAlbumName,
-      albumThumbnailAssetId: updatedAlbumThumbnailAssetId,
-    });
-    expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [updatedAlbum.id] } });
-  });
-
-  it('prevents updating a not owned album (shared with auth user)', async () => {
-    const albumEntity = _getSharedWithAuthUserAlbum();
-    const albumId = albumEntity.id;
-
-    albumRepositoryMock.get.mockImplementation(() => Promise.resolve<AlbumEntity>(albumEntity));
-
-    await expect(
-      sut.update(authUser, albumId, {
-        albumName: 'new album name',
-        albumThumbnailAssetId: '69d2f917-0b31-48d8-9d7d-673b523f1aac',
-      }),
-    ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('adds assets to owned album', async () => {

@@ -1,10 +1,9 @@
 import { AssetEntity, AssetType, TranscodePreset } from '@app/infra/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { join } from 'path';
-import { IAssetRepository, mapAsset, WithoutProperty } from '../asset';
-import { CommunicationEvent, ICommunicationRepository } from '../communication';
+import { IAssetRepository, WithoutProperty } from '../asset';
 import { usePagination } from '../domain.util';
-import { IAssetJob, IBaseJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
+import { IBaseJob, IEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
 import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
@@ -19,7 +18,6 @@ export class MediaService {
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IMediaRepository) private mediaRepository: IMediaRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
@@ -28,155 +26,128 @@ export class MediaService {
     this.configCore = new SystemConfigCore(systemConfig);
   }
 
-  async handleQueueGenerateThumbnails(job: IBaseJob): Promise<void> {
-    try {
-      const { force } = job;
+  async handleQueueGenerateThumbnails(job: IBaseJob) {
+    const { force } = job;
 
-      const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-        return force
-          ? this.assetRepository.getAll(pagination)
-          : this.assetRepository.getWithout(pagination, WithoutProperty.THUMBNAIL);
-      });
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
+      return force
+        ? this.assetRepository.getAll(pagination)
+        : this.assetRepository.getWithout(pagination, WithoutProperty.THUMBNAIL);
+    });
 
-      for await (const assets of assetPagination) {
-        for (const asset of assets) {
-          await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { asset } });
-        }
+    for await (const assets of assetPagination) {
+      for (const asset of assets) {
+        await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: asset.id } });
       }
-    } catch (error: any) {
-      this.logger.error('Failed to queue generate thumbnail jobs', error.stack);
     }
+
+    return true;
   }
 
-  async handleGenerateJpegThumbnail(data: IAssetJob): Promise<void> {
-    const [asset] = await this.assetRepository.getByIds([data.asset.id]);
-
+  async handleGenerateJpegThumbnail({ id }: IEntityJob) {
+    const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
-      this.logger.warn(
-        `Asset not found: ${data.asset.id} - Original Path: ${data.asset.originalPath} - Resize Path: ${data.asset.resizePath}`,
-      );
-      return;
+      return false;
     }
 
-    try {
-      const resizePath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
-      this.storageRepository.mkdirSync(resizePath);
-      const jpegThumbnailPath = join(resizePath, `${asset.id}.jpeg`);
+    const resizePath = this.storageCore.getFolderLocation(StorageFolder.THUMBNAILS, asset.ownerId);
+    this.storageRepository.mkdirSync(resizePath);
+    const jpegThumbnailPath = join(resizePath, `${asset.id}.jpeg`);
 
-      if (asset.type == AssetType.IMAGE) {
-        try {
-          await this.mediaRepository.resize(asset.originalPath, jpegThumbnailPath, {
-            size: JPEG_THUMBNAIL_SIZE,
-            format: 'jpeg',
-          });
-        } catch (error) {
-          this.logger.warn(
-            `Failed to generate jpeg thumbnail using sharp, trying with exiftool-vendored (asset=${asset.id})`,
-          );
-          await this.mediaRepository.extractThumbnailFromExif(asset.originalPath, jpegThumbnailPath);
-        }
+    if (asset.type == AssetType.IMAGE) {
+      try {
+        await this.mediaRepository.resize(asset.originalPath, jpegThumbnailPath, {
+          size: JPEG_THUMBNAIL_SIZE,
+          format: 'jpeg',
+        });
+      } catch (error) {
+        this.logger.warn(
+          `Failed to generate jpeg thumbnail using sharp, trying with exiftool-vendored (asset=${asset.id})`,
+        );
+        await this.mediaRepository.extractThumbnailFromExif(asset.originalPath, jpegThumbnailPath);
       }
-
-      if (asset.type == AssetType.VIDEO) {
-        this.logger.log('Start Generating Video Thumbnail');
-        await this.mediaRepository.extractVideoThumbnail(asset.originalPath, jpegThumbnailPath, JPEG_THUMBNAIL_SIZE);
-        this.logger.log(`Generating Video Thumbnail Success ${asset.id}`);
-      }
-
-      await this.assetRepository.save({ id: asset.id, resizePath: jpegThumbnailPath });
-
-      asset.resizePath = jpegThumbnailPath;
-
-      await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: { asset } });
-      await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: { asset } });
-      await this.jobRepository.queue({ name: JobName.DETECT_OBJECTS, data: { asset } });
-      await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: { asset } });
-      await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: { asset } });
-
-      this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
-    } catch (error: any) {
-      this.logger.error(`Failed to generate thumbnail for asset: ${asset.id}/${asset.type}`, error.stack);
     }
+
+    if (asset.type == AssetType.VIDEO) {
+      this.logger.log('Start Generating Video Thumbnail');
+      await this.mediaRepository.extractVideoThumbnail(asset.originalPath, jpegThumbnailPath, JPEG_THUMBNAIL_SIZE);
+      this.logger.log(`Generating Video Thumbnail Success ${asset.id}`);
+    }
+
+    await this.assetRepository.save({ id: asset.id, resizePath: jpegThumbnailPath });
+
+    return true;
   }
 
-  async handleGenerateWepbThumbnail(data: IAssetJob): Promise<void> {
-    const { asset } = data;
-
-    if (!asset.resizePath) {
-      return;
+  async handleGenerateWepbThumbnail({ id }: IEntityJob) {
+    const [asset] = await this.assetRepository.getByIds([id]);
+    if (!asset || !asset.resizePath) {
+      return false;
     }
 
     const webpPath = asset.resizePath.replace('jpeg', 'webp');
 
-    try {
-      await this.mediaRepository.resize(asset.resizePath, webpPath, { size: WEBP_THUMBNAIL_SIZE, format: 'webp' });
-      await this.assetRepository.save({ id: asset.id, webpPath: webpPath });
-    } catch (error: any) {
-      this.logger.error(`Failed to generate webp thumbnail for asset: ${asset.id}`, error.stack);
-    }
+    await this.mediaRepository.resize(asset.resizePath, webpPath, { size: WEBP_THUMBNAIL_SIZE, format: 'webp' });
+    await this.assetRepository.save({ id: asset.id, webpPath: webpPath });
+
+    return true;
   }
 
   async handleQueueVideoConversion(job: IBaseJob) {
     const { force } = job;
 
-    try {
-      const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-        return force
-          ? this.assetRepository.getAll(pagination, { type: AssetType.VIDEO })
-          : this.assetRepository.getWithout(pagination, WithoutProperty.ENCODED_VIDEO);
-      });
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
+      return force
+        ? this.assetRepository.getAll(pagination, { type: AssetType.VIDEO })
+        : this.assetRepository.getWithout(pagination, WithoutProperty.ENCODED_VIDEO);
+    });
 
-      for await (const assets of assetPagination) {
-        for (const asset of assets) {
-          await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { asset } });
-        }
+    for await (const assets of assetPagination) {
+      for (const asset of assets) {
+        await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: asset.id } });
       }
-    } catch (error: any) {
-      this.logger.error('Failed to queue video conversions', error.stack);
     }
+
+    return true;
   }
 
-  async handleVideoConversion(job: IAssetJob) {
-    const [asset] = await this.assetRepository.getByIds([job.asset.id]);
-
+  async handleVideoConversion({ id }: IEntityJob) {
+    const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset) {
-      this.logger.warn(`Asset not found: ${job.asset.id} - Original Path: ${job.asset.originalPath}`);
-      return;
+      return false;
     }
 
-    try {
-      const input = asset.originalPath;
-      const outputFolder = this.storageCore.getFolderLocation(StorageFolder.ENCODED_VIDEO, asset.ownerId);
-      const output = join(outputFolder, `${asset.id}.mp4`);
-      this.storageRepository.mkdirSync(outputFolder);
+    const input = asset.originalPath;
+    const outputFolder = this.storageCore.getFolderLocation(StorageFolder.ENCODED_VIDEO, asset.ownerId);
+    const output = join(outputFolder, `${asset.id}.mp4`);
+    this.storageRepository.mkdirSync(outputFolder);
 
-      const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input);
-      const mainVideoStream = this.getMainVideoStream(videoStreams);
-      const mainAudioStream = this.getMainAudioStream(audioStreams);
-      const containerExtension = format.formatName;
-      if (!mainVideoStream || !mainAudioStream || !containerExtension) {
-        return;
-      }
-
-      const { ffmpeg: config } = await this.configCore.getConfig();
-
-      const required = this.isTranscodeRequired(asset, mainVideoStream, mainAudioStream, containerExtension, config);
-      if (!required) {
-        return;
-      }
-
-      const outputOptions = this.getFfmpegOptions(mainVideoStream, config);
-      const twoPass = this.eligibleForTwoPass(config);
-
-      this.logger.log(`Start encoding video ${asset.id} ${outputOptions}`);
-      await this.mediaRepository.transcode(input, output, { outputOptions, twoPass });
-
-      this.logger.log(`Encoding success ${asset.id}`);
-
-      await this.assetRepository.save({ id: asset.id, encodedVideoPath: output });
-    } catch (error: any) {
-      this.logger.error(`Failed to handle video conversion for asset: ${asset.id}`, error.stack);
+    const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input);
+    const mainVideoStream = this.getMainVideoStream(videoStreams);
+    const mainAudioStream = this.getMainAudioStream(audioStreams);
+    const containerExtension = format.formatName;
+    if (!mainVideoStream || !mainAudioStream || !containerExtension) {
+      return false;
     }
+
+    const { ffmpeg: config } = await this.configCore.getConfig();
+
+    const required = this.isTranscodeRequired(asset, mainVideoStream, mainAudioStream, containerExtension, config);
+    if (!required) {
+      return false;
+    }
+
+    const outputOptions = this.getFfmpegOptions(mainVideoStream, config);
+    const twoPass = this.eligibleForTwoPass(config);
+
+    this.logger.log(`Start encoding video ${asset.id} ${outputOptions}`);
+    await this.mediaRepository.transcode(input, output, { outputOptions, twoPass });
+
+    this.logger.log(`Encoding success ${asset.id}`);
+
+    await this.assetRepository.save({ id: asset.id, encodedVideoPath: output });
+
+    return true;
   }
 
   private getMainVideoStream(streams: VideoStreamInfo[]): VideoStreamInfo | null {

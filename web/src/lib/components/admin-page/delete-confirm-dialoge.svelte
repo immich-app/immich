@@ -10,7 +10,7 @@
 
 	const deleteUser = async () => {
 		try {
-			const deletedUser = await api.userApi.deleteUser(user.id);
+			const deletedUser = await api.userApi.deleteUser({ userId: user.id });
 			if (deletedUser.data.deletedAt != null) {
 				dispatch('user-delete-success');
 			} else {

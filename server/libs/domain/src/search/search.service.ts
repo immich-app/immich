@@ -3,7 +3,7 @@ import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config';
 import { mapAlbum } from '../album';
 import { IAlbumRepository } from '../album/album.repository';
-import { mapAsset } from '../asset';
+import { AssetResponseDto, mapAsset } from '../asset';
 import { IAssetRepository } from '../asset/asset.repository';
 import { AuthUserDto } from '../auth';
 import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
@@ -103,9 +103,13 @@ export class SearchService {
     }
   }
 
-  async getExploreData(authUser: AuthUserDto): Promise<SearchExploreItem<AssetEntity>[]> {
+  async getExploreData(authUser: AuthUserDto): Promise<SearchExploreItem<AssetResponseDto>[]> {
     this.assertEnabled();
-    return this.searchRepository.explore(authUser.id);
+    const results = await this.searchRepository.explore(authUser.id);
+    return results.map(({ fieldName, items }) => ({
+      fieldName,
+      items: items.map(({ value, data }) => ({ value, data: mapAsset(data) })),
+    }));
   }
 
   async search(authUser: AuthUserDto, dto: SearchDto): Promise<SearchResponseDto> {
@@ -137,122 +141,128 @@ export class SearchService {
 
   async handleIndexAlbums() {
     if (!this.enabled) {
-      return;
+      return false;
     }
 
-    try {
-      const albums = this.patchAlbums(await this.albumRepository.getAll());
-      this.logger.log(`Indexing ${albums.length} albums`);
-      await this.searchRepository.importAlbums(albums, true);
-    } catch (error: any) {
-      this.logger.error(`Unable to index all albums`, error?.stack);
-    }
+    const albums = this.patchAlbums(await this.albumRepository.getAll());
+    this.logger.log(`Indexing ${albums.length} albums`);
+    await this.searchRepository.importAlbums(albums, true);
+
+    return true;
   }
 
   async handleIndexAssets() {
     if (!this.enabled) {
-      return;
+      return false;
     }
 
-    try {
-      // TODO: do this in batches based on searchIndexVersion
-      const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-        this.assetRepository.getAll(pagination, { isVisible: true }),
-      );
+    // TODO: do this in batches based on searchIndexVersion
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getAll(pagination, { isVisible: true }),
+    );
 
-      for await (const assets of assetPagination) {
-        this.logger.debug(`Indexing ${assets.length} assets`);
+    for await (const assets of assetPagination) {
+      this.logger.debug(`Indexing ${assets.length} assets`);
 
-        const patchedAssets = this.patchAssets(assets);
-        await this.searchRepository.importAssets(patchedAssets, false);
-      }
-
-      await this.searchRepository.importAssets([], true);
-
-      this.logger.debug('Finished re-indexing all assets');
-    } catch (error: any) {
-      this.logger.error(`Unable to index all assets`, error?.stack);
+      const patchedAssets = this.patchAssets(assets);
+      await this.searchRepository.importAssets(patchedAssets, false);
     }
+
+    await this.searchRepository.importAssets([], true);
+
+    this.logger.debug('Finished re-indexing all assets');
+
+    return false;
   }
 
   async handleIndexFaces() {
     if (!this.enabled) {
-      return;
+      return false;
     }
 
-    try {
-      // TODO: do this in batches based on searchIndexVersion
-      const faces = this.patchFaces(await this.faceRepository.getAll());
-      this.logger.log(`Indexing ${faces.length} faces`);
+    // TODO: do this in batches based on searchIndexVersion
+    const faces = this.patchFaces(await this.faceRepository.getAll());
+    this.logger.log(`Indexing ${faces.length} faces`);
 
-      const chunkSize = 1000;
-      for (let i = 0; i < faces.length; i += chunkSize) {
-        await this.searchRepository.importFaces(faces.slice(i, i + chunkSize), false);
-      }
-
-      await this.searchRepository.importFaces([], true);
-
-      this.logger.debug('Finished re-indexing all faces');
-    } catch (error: any) {
-      this.logger.error(`Unable to index all faces`, error?.stack);
+    const chunkSize = 1000;
+    for (let i = 0; i < faces.length; i += chunkSize) {
+      await this.searchRepository.importFaces(faces.slice(i, i + chunkSize), false);
     }
+
+    await this.searchRepository.importFaces([], true);
+
+    this.logger.debug('Finished re-indexing all faces');
+
+    return true;
   }
 
   handleIndexAlbum({ ids }: IBulkEntityJob) {
     if (!this.enabled) {
-      return;
+      return false;
     }
 
     for (const id of ids) {
       this.albumQueue.upsert.add(id);
     }
+
+    return true;
   }
 
   handleIndexAsset({ ids }: IBulkEntityJob) {
     if (!this.enabled) {
-      return;
+      return false;
     }
 
     for (const id of ids) {
       this.assetQueue.upsert.add(id);
     }
+
+    return true;
   }
 
   async handleIndexFace({ assetId, personId }: IAssetFaceJob) {
     if (!this.enabled) {
-      return;
+      return false;
     }
 
     // immediately push to typesense
     await this.searchRepository.importFaces(await this.idsToFaces([{ assetId, personId }]), false);
+
+    return true;
   }
 
   handleRemoveAlbum({ ids }: IBulkEntityJob) {
     if (!this.enabled) {
-      return;
+      return false;
     }
 
     for (const id of ids) {
       this.albumQueue.delete.add(id);
     }
+
+    return true;
   }
 
   handleRemoveAsset({ ids }: IBulkEntityJob) {
     if (!this.enabled) {
-      return;
+      return false;
     }
 
     for (const id of ids) {
       this.assetQueue.delete.add(id);
     }
+
+    return true;
   }
 
   handleRemoveFace({ assetId, personId }: IAssetFaceJob) {
     if (!this.enabled) {
-      return;
+      return false;
     }
 
     this.faceQueue.delete.add(this.asKey({ assetId, personId }));
+
+    return true;
   }
 
   private async flush() {

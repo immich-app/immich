@@ -67,7 +67,7 @@ export class PersonService {
     return mapPerson(person);
   }
 
-  async handlePersonCleanup(): Promise<void> {
+  async handlePersonCleanup() {
     const people = await this.repository.getAllWithoutFaces();
     for (const person of people) {
       this.logger.debug(`Person ${person.name || person.id} no longer has any faces, deleting.`);
@@ -78,5 +78,7 @@ export class PersonService {
         this.logger.error(`Unable to delete person: ${error}`, error?.stack);
       }
     }
+
+    return true;
   }
 }

@@ -22,9 +22,9 @@ export class FilesystemProvider implements IStorageRepository {
     await moveFile(source, destination, { mkdirp: true, clobber: false });
   }
 
-  async checkFileExists(filepath: string): Promise<boolean> {
+  async checkFileExists(filepath: string, mode = constants.F_OK): Promise<boolean> {
     try {
-      await fs.access(filepath, constants.F_OK);
+      await fs.access(filepath, mode);
       return true;
     } catch (_) {
       return false;
