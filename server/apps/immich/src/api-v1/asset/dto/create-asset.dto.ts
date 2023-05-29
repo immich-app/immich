@@ -16,10 +16,10 @@ export class CreateAssetDto {
   assetType!: AssetType;
 
   @IsNotEmpty()
-  fileCreatedAt!: string;
+  fileCreatedAt!: Date;
 
   @IsNotEmpty()
-  fileModifiedAt!: string;
+  fileModifiedAt!: Date;
 
   @IsNotEmpty()
   isFavorite!: boolean;

@@ -214,7 +214,7 @@ export class MetadataExtractionProcessor {
     }
 
     await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
-    await this.assetRepository.save({ id: asset.id, fileCreatedAt: fileCreatedAt?.toISOString() });
+    await this.assetRepository.save({ id: asset.id, fileCreatedAt: fileCreatedAt || undefined });
 
     return true;
   }
@@ -227,9 +227,9 @@ export class MetadataExtractionProcessor {
     const videoTags = data.format.tags;
     if (videoTags) {
       if (videoTags['com.apple.quicktime.creationdate']) {
-        fileCreatedAt = String(videoTags['com.apple.quicktime.creationdate']);
+        fileCreatedAt = new Date(videoTags['com.apple.quicktime.creationdate']);
       } else if (videoTags['creation_time']) {
-        fileCreatedAt = String(videoTags['creation_time']);
+        fileCreatedAt = new Date(videoTags['creation_time']);
       }
     }
 

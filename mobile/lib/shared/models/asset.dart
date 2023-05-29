@@ -15,9 +15,9 @@ class Asset {
   Asset.remote(AssetResponseDto remote)
       : remoteId = remote.id,
         isLocal = false,
-        fileCreatedAt = DateTime.parse(remote.fileCreatedAt),
-        fileModifiedAt = DateTime.parse(remote.fileModifiedAt),
-        updatedAt = DateTime.parse(remote.updatedAt),
+        fileCreatedAt = remote.fileCreatedAt,
+        fileModifiedAt = remote.fileModifiedAt,
+        updatedAt = remote.updatedAt,
         durationInSeconds = remote.duration.toDuration()?.inSeconds ?? 0,
         type = remote.type.toAssetType(),
         fileName = p.basename(remote.originalPath),
