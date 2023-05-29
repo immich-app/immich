@@ -1476,8 +1476,8 @@ final assetType = ; // AssetTypeEnum |
 final assetData = BINARY_DATA_HERE; // MultipartFile | 
 final deviceAssetId = deviceAssetId_example; // String | 
 final deviceId = deviceId_example; // String | 
-final fileCreatedAt = fileCreatedAt_example; // String | 
-final fileModifiedAt = fileModifiedAt_example; // String | 
+final fileCreatedAt = 2013-10-20T19:20:30+01:00; // DateTime | 
+final fileModifiedAt = 2013-10-20T19:20:30+01:00; // DateTime | 
 final isFavorite = true; // bool | 
 final fileExtension = fileExtension_example; // String | 
 final key = key_example; // String | 
@@ -1503,8 +1503,8 @@ Name | Type | Description  | Notes
  **assetData** | **MultipartFile**|  | 
  **deviceAssetId** | **String**|  | 
  **deviceId** | **String**|  | 
- **fileCreatedAt** | **String**|  | 
- **fileModifiedAt** | **String**|  | 
+ **fileCreatedAt** | **DateTime**|  | 
+ **fileModifiedAt** | **DateTime**|  | 
  **isFavorite** | **bool**|  | 
  **fileExtension** | **String**|  | 
  **key** | **String**|  | [optional] 

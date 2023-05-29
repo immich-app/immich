@@ -16,9 +16,9 @@ Name | Type | Description | Notes
 **originalPath** | **String** |  | 
 **originalFileName** | **String** |  | 
 **resized** | **bool** |  | 
-**fileCreatedAt** | **String** |  | 
-**fileModifiedAt** | **String** |  | 
-**updatedAt** | **String** |  | 
+**fileCreatedAt** | [**DateTime**](DateTime.md) |  | 
+**fileModifiedAt** | [**DateTime**](DateTime.md) |  | 
+**updatedAt** | [**DateTime**](DateTime.md) |  | 
 **isFavorite** | **bool** |  | 
 **isArchived** | **bool** |  | 
 **mimeType** | **String** |  | 

@@ -55,16 +55,16 @@ export class AssetEntity {
   encodedVideoPath!: string | null;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: string;
+  createdAt!: Date;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: string;
+  updatedAt!: Date;
 
   @Column({ type: 'timestamptz' })
-  fileCreatedAt!: string;
+  fileCreatedAt!: Date;
 
   @Column({ type: 'timestamptz' })
-  fileModifiedAt!: string;
+  fileModifiedAt!: Date;
 
   @Column({ type: 'boolean', default: false })
   isFavorite!: boolean;

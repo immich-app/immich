@@ -4450,12 +4450,15 @@
             "type": "boolean"
           },
           "fileCreatedAt": {
+            "format": "date-time",
             "type": "string"
           },
           "fileModifiedAt": {
+            "format": "date-time",
             "type": "string"
           },
           "updatedAt": {
+            "format": "date-time",
             "type": "string"
           },
           "isFavorite": {
@@ -5783,9 +5786,11 @@
             "type": "string"
           },
           "fileCreatedAt": {
+            "format": "date-time",
             "type": "string"
           },
           "fileModifiedAt": {
+            "format": "date-time",
             "type": "string"
           },
           "isFavorite": {

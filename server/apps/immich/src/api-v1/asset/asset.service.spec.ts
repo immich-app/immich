@@ -37,8 +37,8 @@ const _getCreateAssetDto = (): CreateAssetDto => {
   createAssetDto.deviceAssetId = 'deviceAssetId';
   createAssetDto.deviceId = 'deviceId';
   createAssetDto.assetType = AssetType.OTHER;
-  createAssetDto.fileCreatedAt = '2022-06-19T23:41:36.910Z';
-  createAssetDto.fileModifiedAt = '2022-06-19T23:41:36.910Z';
+  createAssetDto.fileCreatedAt = new Date('2022-06-19T23:41:36.910Z');
+  createAssetDto.fileModifiedAt = new Date('2022-06-19T23:41:36.910Z');
   createAssetDto.isFavorite = false;
   createAssetDto.isArchived = false;
   createAssetDto.duration = '0:00:00.000000';
@@ -56,9 +56,9 @@ const _getAsset_1 = () => {
   asset_1.type = AssetType.VIDEO;
   asset_1.originalPath = 'fake_path/asset_1.jpeg';
   asset_1.resizePath = '';
-  asset_1.fileModifiedAt = '2022-06-19T23:41:36.910Z';
-  asset_1.fileCreatedAt = '2022-06-19T23:41:36.910Z';
-  asset_1.updatedAt = '2022-06-19T23:41:36.910Z';
+  asset_1.fileModifiedAt = new Date('2022-06-19T23:41:36.910Z');
+  asset_1.fileCreatedAt = new Date('2022-06-19T23:41:36.910Z');
+  asset_1.updatedAt = new Date('2022-06-19T23:41:36.910Z');
   asset_1.isFavorite = false;
   asset_1.isArchived = false;
   asset_1.mimeType = 'image/jpeg';
@@ -81,9 +81,9 @@ const _getAsset_2 = () => {
   asset_2.type = AssetType.VIDEO;
   asset_2.originalPath = 'fake_path/asset_2.jpeg';
   asset_2.resizePath = '';
-  asset_2.fileModifiedAt = '2022-06-19T23:41:36.910Z';
-  asset_2.fileCreatedAt = '2022-06-19T23:41:36.910Z';
-  asset_2.updatedAt = '2022-06-19T23:41:36.910Z';
+  asset_2.fileModifiedAt = new Date('2022-06-19T23:41:36.910Z');
+  asset_2.fileCreatedAt = new Date('2022-06-19T23:41:36.910Z');
+  asset_2.updatedAt = new Date('2022-06-19T23:41:36.910Z');
   asset_2.isFavorite = false;
   asset_2.isArchived = false;
   asset_2.mimeType = 'image/jpeg';
