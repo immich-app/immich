@@ -15,6 +15,13 @@ describe(StorageService.name, () => {
     expect(sut).toBeDefined();
   });
 
+  describe('init', () => {
+    it('should create the library folder on initialization', () => {
+      sut.init();
+      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/library');
+    });
+  });
+
   describe('handleDeleteFiles', () => {
     it('should handle null values', async () => {
       await sut.handleDeleteFiles({ files: [undefined, null] });
