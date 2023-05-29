@@ -133,12 +133,12 @@
 		>
 			<!-- Date group title -->
 			<p
-				class="font-medium text-xs md:text-sm text-immich-fg dark:text-immich-dark-fg mb-2 flex place-items-center h-6"
+				class="font-medium text-xs md:text-sm text-immich-fg dark:text-immich-dark-fg mb-2 flex place-items-center h-6 sticky top-0 z-10"
 			>
 				{#if (hoveredDateGroup == dateGroupTitle && isMouseOverGroup) || $selectedGroup.has(dateGroupTitle)}
 					<div
 						transition:fly={{ x: -24, duration: 200, opacity: 0.5 }}
-						class="inline-block px-2 hover:cursor-pointer"
+						class="inline-block px-2 hover:cursor-pointer fixed"
 						on:click={() => selectAssetGroupHandler(assetsInDateGroup, dateGroupTitle)}
 						on:keydown={() => selectAssetGroupHandler(assetsInDateGroup, dateGroupTitle)}
 					>
@@ -150,7 +150,7 @@
 					</div>
 				{/if}
 
-				<span>
+				<span class="ml-10">
 					{dateGroupTitle}
 				</span>
 			</p>
