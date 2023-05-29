@@ -4,7 +4,6 @@
 	import { albumAssetSelectionStore } from '$lib/stores/album-asset-selection.store';
 	import { downloadAssets } from '$lib/stores/download';
 	import { locale } from '$lib/stores/preferences.store';
-	import { clickOutside } from '$lib/utils/click-outside';
 	import { openFileUploadDialog } from '$lib/utils/file-uploader';
 	import {
 		AlbumResponseDto,
@@ -376,16 +375,14 @@
 			</svelte:fragment>
 
 			<svelte:fragment slot="trailing">
-				{#if album.assetCount > 0}
+				{#if !isCreatingSharedAlbum}
 					{#if !sharedLink}
 						<CircleIconButton
 							title="Add Photos"
 							on:click={() => (isShowAssetSelection = true)}
 							logo={FileImagePlusOutline}
 						/>
-					{/if}
-
-					{#if sharedLink?.allowUpload}
+					{:else if sharedLink?.allowUpload}
 						<CircleIconButton
 							title="Add Photos"
 							on:click={() => openFileUploadDialog(album.id, sharedLink?.key)}
@@ -393,7 +390,6 @@
 						/>
 					{/if}
 
-					<!-- Share and remove album -->
 					{#if isOwned}
 						<CircleIconButton
 							title="Share"
@@ -402,7 +398,9 @@
 						/>
 						<CircleIconButton title="Remove album" on:click={removeAlbum} logo={DeleteOutline} />
 					{/if}
+				{/if}
 
+				{#if album.assetCount > 0 && !isCreatingSharedAlbum}
 					{#if !isPublicShared || (isPublicShared && sharedLink?.allowDownload)}
 						<CircleIconButton
 							title="Download"
@@ -412,29 +410,31 @@
 					{/if}
 
 					{#if !isPublicShared && isOwned}
-						<div use:clickOutside on:outclick={() => (isShowAlbumOptions = false)}>
-							<CircleIconButton
-								title="Album options"
-								on:click={showAlbumOptionsMenu}
-								logo={DotsVertical}
-								>{#if isShowAlbumOptions}
-									<ContextMenu {...contextMenuPosition}>
-										<MenuOption
-											on:click={() => {
-												isShowThumbnailSelection = true;
-												isShowAlbumOptions = false;
-											}}
-											text="Set album cover"
-										/>
-									</ContextMenu>
-								{/if}
-							</CircleIconButton>
-						</div>
+						<CircleIconButton
+							title="Album options"
+							on:click={showAlbumOptionsMenu}
+							logo={DotsVertical}
+						>
+							{#if isShowAlbumOptions}
+								<ContextMenu
+									{...contextMenuPosition}
+									on:outclick={() => (isShowAlbumOptions = false)}
+								>
+									<MenuOption
+										on:click={() => {
+											isShowThumbnailSelection = true;
+											isShowAlbumOptions = false;
+										}}
+										text="Set album cover"
+									/>
+								</ContextMenu>
+							{/if}
+						</CircleIconButton>
 					{/if}
+				{/if}
 
-					{#if isPublicShared}
-						<ThemeButton />
-					{/if}
+				{#if isPublicShared}
+					<ThemeButton />
 				{/if}
 
 				{#if isCreatingSharedAlbum && album.sharedUsers.length == 0}
