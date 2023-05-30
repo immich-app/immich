@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { toBoolean } from 'apps/immich/src/utils/transform.util';
-import { Transform } from 'class-transformer';
-import { IsBoolean, IsISO8601, IsOptional } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsDate, IsOptional } from 'class-validator';
 
 export class MapMarkerDto {
   @ApiProperty()
@@ -10,13 +10,13 @@ export class MapMarkerDto {
   @Transform(toBoolean)
   isFavorite?: boolean;
 
-  @ApiProperty({ format: 'date-time' })
   @IsOptional()
-  @IsISO8601({ strict: true, strictSeparator: true })
-  fileCreatedAfter?: string;
+  @IsDate()
+  @Type(() => Date)
+  fileCreatedAfter?: Date;
 
-  @ApiProperty({ format: 'date-time' })
   @IsOptional()
-  @IsISO8601({ strict: true, strictSeparator: true })
-  fileCreatedBefore?: string;
+  @IsDate()
+  @Type(() => Date)
+  fileCreatedBefore?: Date;
 }

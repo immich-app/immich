@@ -9,7 +9,8 @@
 		| 'green'
 		| 'gray'
 		| 'transparent-gray'
-		| 'dark-gray';
+		| 'dark-gray'
+		| 'overlay-primary';
 	export type Size = 'icon' | 'link' | 'sm' | 'base' | 'lg';
 	export type Rounded = 'lg' | '3xl' | 'full' | false;
 	export type Shadow = 'md' | false;
@@ -38,9 +39,10 @@
 		green: 'bg-lime-600 text-white enabled:hover:bg-lime-500',
 		gray: 'bg-gray-500 dark:bg-gray-200 enabled:hover:bg-gray-500/75 enabled:dark:hover:bg-gray-200/80 text-white dark:text-immich-dark-gray',
 		'transparent-gray':
-			'dark:text-immich-dark-fg enabled:hover:bg-immich-primary/5 enabled:hover:text-gray-700 enabled:hover:dark:text-immich-dark-fg enabled:dark:hover:bg-immich-dark-primary/25 ',
+			'dark:text-immich-dark-fg enabled:hover:bg-immich-primary/5 enabled:hover:text-gray-700 enabled:hover:dark:text-immich-dark-fg enabled:dark:hover:bg-immich-dark-primary/25',
 		'dark-gray':
-			'dark:border-immich-dark-gray dark:bg-gray-500 enabled:dark:hover:bg-immich-dark-primary/50 enabled:hover:bg-immich-primary/10 dark:text-white'
+			'dark:border-immich-dark-gray dark:bg-gray-500 enabled:dark:hover:bg-immich-dark-primary/50 enabled:hover:bg-immich-primary/10 dark:text-white',
+		'overlay-primary': 'text-gray-500 enabled:hover:bg-gray-100'
 	};
 
 	const sizeClasses: Record<Size, string> = {

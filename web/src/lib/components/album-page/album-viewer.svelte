@@ -4,7 +4,6 @@
 	import { albumAssetSelectionStore } from '$lib/stores/album-asset-selection.store';
 	import { downloadAssets } from '$lib/stores/download';
 	import { locale } from '$lib/stores/preferences.store';
-	import { clickOutside } from '$lib/utils/click-outside';
 	import { openFileUploadDialog } from '$lib/utils/file-uploader';
 	import {
 		AlbumResponseDto,
@@ -27,7 +26,7 @@
 	import DownloadAction from '../photos-page/actions/download-action.svelte';
 	import RemoveFromAlbum from '../photos-page/actions/remove-from-album.svelte';
 	import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
-	import CircleAvatar from '../shared-components/circle-avatar.svelte';
+	import UserAvatar from '../shared-components/user-avatar.svelte';
 	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
 	import ControlAppBar from '../shared-components/control-app-bar.svelte';
@@ -376,16 +375,14 @@
 			</svelte:fragment>
 
 			<svelte:fragment slot="trailing">
-				{#if album.assetCount > 0}
+				{#if !isCreatingSharedAlbum}
 					{#if !sharedLink}
 						<CircleIconButton
 							title="Add Photos"
 							on:click={() => (isShowAssetSelection = true)}
 							logo={FileImagePlusOutline}
 						/>
-					{/if}
-
-					{#if sharedLink?.allowUpload}
+					{:else if sharedLink?.allowUpload}
 						<CircleIconButton
 							title="Add Photos"
 							on:click={() => openFileUploadDialog(album.id, sharedLink?.key)}
@@ -393,7 +390,6 @@
 						/>
 					{/if}
 
-					<!-- Share and remove album -->
 					{#if isOwned}
 						<CircleIconButton
 							title="Share"
@@ -402,7 +398,9 @@
 						/>
 						<CircleIconButton title="Remove album" on:click={removeAlbum} logo={DeleteOutline} />
 					{/if}
+				{/if}
 
+				{#if album.assetCount > 0 && !isCreatingSharedAlbum}
 					{#if !isPublicShared || (isPublicShared && sharedLink?.allowDownload)}
 						<CircleIconButton
 							title="Download"
@@ -412,29 +410,31 @@
 					{/if}
 
 					{#if !isPublicShared && isOwned}
-						<div use:clickOutside on:outclick={() => (isShowAlbumOptions = false)}>
-							<CircleIconButton
-								title="Album options"
-								on:click={showAlbumOptionsMenu}
-								logo={DotsVertical}
-								>{#if isShowAlbumOptions}
-									<ContextMenu {...contextMenuPosition}>
-										<MenuOption
-											on:click={() => {
-												isShowThumbnailSelection = true;
-												isShowAlbumOptions = false;
-											}}
-											text="Set album cover"
-										/>
-									</ContextMenu>
-								{/if}
-							</CircleIconButton>
-						</div>
+						<CircleIconButton
+							title="Album options"
+							on:click={showAlbumOptionsMenu}
+							logo={DotsVertical}
+						>
+							{#if isShowAlbumOptions}
+								<ContextMenu
+									{...contextMenuPosition}
+									on:outclick={() => (isShowAlbumOptions = false)}
+								>
+									<MenuOption
+										on:click={() => {
+											isShowThumbnailSelection = true;
+											isShowAlbumOptions = false;
+										}}
+										text="Set album cover"
+									/>
+								</ContextMenu>
+							{/if}
+						</CircleIconButton>
 					{/if}
+				{/if}
 
-					{#if isPublicShared}
-						<ThemeButton />
-					{/if}
+				{#if isPublicShared}
+					<ThemeButton />
 				{/if}
 
 				{#if isCreatingSharedAlbum && album.sharedUsers.length == 0}
@@ -478,13 +478,11 @@
 			</span>
 		{/if}
 		{#if album.shared}
-			<div class="my-6 flex">
-				{#each album.sharedUsers as user}
-					{#key user.id}
-						<span class="mr-1">
-							<CircleAvatar {user} on:click={() => (isShowShareInfoModal = true)} />
-						</span>
-					{/key}
+			<div class="flex my-6 gap-x-1">
+				{#each album.sharedUsers as user (user.id)}
+					<button on:click={() => (isShowShareInfoModal = true)}>
+						<UserAvatar {user} size="md" autoColor />
+					</button>
 				{/each}
 
 				<button

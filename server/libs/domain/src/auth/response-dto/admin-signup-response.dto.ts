@@ -5,7 +5,7 @@ export class AdminSignupResponseDto {
   email!: string;
   firstName!: string;
   lastName!: string;
-  createdAt!: string;
+  createdAt!: Date;
 }
 
 export function mapAdminSignupResponse(entity: UserEntity): AdminSignupResponseDto {

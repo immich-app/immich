@@ -9,7 +9,7 @@ import 'package:openapi/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **description** | **String** |  | [optional] 
-**expiresAt** | **String** |  | [optional] 
+**expiresAt** | [**DateTime**](DateTime.md) |  | [optional] 
 **allowUpload** | **bool** |  | [optional] 
 **allowDownload** | **bool** |  | [optional] 
 **showExif** | **bool** |  | [optional] 

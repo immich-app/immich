@@ -1,5 +1,5 @@
 <script lang="ts" context="module">
-	export type Color = 'transparent-primary' | 'transparent-gray';
+	export type Color = 'transparent-primary' | 'transparent-gray' | 'overlay-primary';
 </script>
 
 <script lang="ts">

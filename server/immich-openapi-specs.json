@@ -4148,7 +4148,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.58.0",
+    "version": "1.59.1",
     "contact": {}
   },
   "tags": [],
@@ -4196,9 +4196,6 @@
             "type": "string",
             "nullable": true
           },
-          "createdAt": {
-            "type": "string"
-          },
           "profileImagePath": {
             "type": "string"
           },
@@ -4208,11 +4205,17 @@
           "isAdmin": {
             "type": "boolean"
           },
-          "deletedAt": {
+          "createdAt": {
             "format": "date-time",
             "type": "string"
           },
+          "deletedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
           "updatedAt": {
+            "format": "date-time",
             "type": "string"
           },
           "oauthId": {
@@ -4225,10 +4228,12 @@
           "firstName",
           "lastName",
           "storageLabel",
-          "createdAt",
           "profileImagePath",
           "shouldChangePassword",
           "isAdmin",
+          "createdAt",
+          "deletedAt",
+          "updatedAt",
           "oauthId"
         ]
       },
@@ -4450,12 +4455,15 @@
             "type": "boolean"
           },
           "fileCreatedAt": {
+            "format": "date-time",
             "type": "string"
           },
           "fileModifiedAt": {
+            "format": "date-time",
             "type": "string"
           },
           "updatedAt": {
+            "format": "date-time",
             "type": "string"
           },
           "isFavorite": {
@@ -4533,9 +4541,11 @@
             "type": "string"
           },
           "createdAt": {
+            "format": "date-time",
             "type": "string"
           },
           "updatedAt": {
+            "format": "date-time",
             "type": "string"
           },
           "albumThumbnailAssetId": {
@@ -4630,9 +4640,11 @@
             "type": "string"
           },
           "createdAt": {
+            "format": "date-time",
             "type": "string"
           },
           "updatedAt": {
+            "format": "date-time",
             "type": "string"
           }
         },
@@ -4797,6 +4809,7 @@
             "type": "string"
           },
           "createdAt": {
+            "format": "date-time",
             "type": "string"
           }
         },
@@ -5393,9 +5406,11 @@
             "type": "string"
           },
           "createdAt": {
+            "format": "date-time",
             "type": "string"
           },
           "expiresAt": {
+            "format": "date-time",
             "type": "string",
             "nullable": true
           },
@@ -5438,6 +5453,7 @@
             "type": "string"
           },
           "expiresAt": {
+            "format": "date-time",
             "type": "string",
             "nullable": true
           },
@@ -5783,9 +5799,11 @@
             "type": "string"
           },
           "fileCreatedAt": {
+            "format": "date-time",
             "type": "string"
           },
           "fileModifiedAt": {
+            "format": "date-time",
             "type": "string"
           },
           "isFavorite": {
@@ -6250,6 +6268,7 @@
             }
           },
           "expiresAt": {
+            "format": "date-time",
             "type": "string"
           },
           "allowUpload": {
@@ -6388,8 +6407,8 @@
             "format": "uuid"
           },
           "expiresAt": {
-            "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "type": "string"
           },
           "allowUpload": {
             "type": "boolean"

@@ -1,15 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ValidateUUID } from 'apps/immich/src/decorators/validate-uuid.decorator';
-import { IsBoolean, IsISO8601, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsBoolean, IsDate, IsOptional, IsString } from 'class-validator';
 
 export class CreateAlbumShareLinkDto {
   @ValidateUUID()
   albumId!: string;
 
-  @IsISO8601()
   @IsOptional()
-  @ApiProperty({ format: 'date-time' })
-  expiresAt?: string;
+  @IsDate()
+  @Type(() => Date)
+  @ApiProperty()
+  expiresAt?: Date;
 
   @IsBoolean()
   @IsOptional()

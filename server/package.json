@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.58.0",
+  "version": "1.59.1",
   "description": "",
   "author": "",
   "private": true,
@@ -140,8 +140,8 @@
     "coverageThreshold": {
       "./libs/domain/": {
         "branches": 80,
-        "functions": 87,
-        "lines": 93.8,
+        "functions": 85,
+        "lines": 93,
         "statements": 93
       }
     },

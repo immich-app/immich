@@ -32,8 +32,9 @@ describe('Album service', () => {
     ...authUser,
     firstName: 'auth',
     lastName: 'user',
-    createdAt: 'date',
-    updatedAt: 'date',
+    createdAt: new Date('2022-06-19T23:41:36.910Z'),
+    deletedAt: null,
+    updatedAt: new Date('2022-06-19T23:41:36.910Z'),
     profileImagePath: '',
     shouldChangePassword: false,
     oauthId: '',
@@ -52,8 +53,8 @@ describe('Album service', () => {
     albumEntity.owner = albumOwner;
     albumEntity.id = albumId;
     albumEntity.albumName = 'name';
-    albumEntity.createdAt = 'date';
-    albumEntity.updatedAt = 'date';
+    albumEntity.createdAt = new Date('2022-06-19T23:41:36.910Z');
+    albumEntity.updatedAt = new Date('2022-06-19T23:41:36.910Z');
     albumEntity.sharedUsers = [];
     albumEntity.assets = [];
     albumEntity.albumThumbnailAssetId = null;
@@ -67,7 +68,7 @@ describe('Album service', () => {
     albumEntity.owner = albumOwner;
     albumEntity.id = albumId;
     albumEntity.albumName = 'name';
-    albumEntity.createdAt = 'date';
+    albumEntity.createdAt = new Date('2022-06-19T23:41:36.910Z');
     albumEntity.assets = [];
     albumEntity.albumThumbnailAssetId = null;
     albumEntity.sharedUsers = [
@@ -86,7 +87,7 @@ describe('Album service', () => {
     albumEntity.owner = albumOwner;
     albumEntity.id = albumId;
     albumEntity.albumName = 'name';
-    albumEntity.createdAt = 'date';
+    albumEntity.createdAt = new Date('2022-06-19T23:41:36.910Z');
     albumEntity.assets = [];
     albumEntity.albumThumbnailAssetId = null;
     albumEntity.sharedUsers = [
@@ -109,7 +110,7 @@ describe('Album service', () => {
     albumEntity.ownerId = '5555';
     albumEntity.id = albumId;
     albumEntity.albumName = 'name';
-    albumEntity.createdAt = 'date';
+    albumEntity.createdAt = new Date('2022-06-19T23:41:36.910Z');
     albumEntity.sharedUsers = [];
     albumEntity.assets = [];
     albumEntity.albumThumbnailAssetId = null;
@@ -158,8 +159,8 @@ describe('Album service', () => {
       owner: mapUser(albumOwner),
       id: albumId,
       albumName: 'name',
-      createdAt: 'date',
-      updatedAt: 'date',
+      createdAt: new Date('2022-06-19T23:41:36.910Z'),
+      updatedAt: new Date('2022-06-19T23:41:36.910Z'),
       sharedUsers: [],
       assets: [],
       albumThumbnailAssetId: null,

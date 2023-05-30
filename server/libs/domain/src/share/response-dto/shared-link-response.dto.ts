@@ -12,8 +12,8 @@ export class SharedLinkResponseDto {
 
   @ApiProperty({ enumName: 'SharedLinkType', enum: SharedLinkType })
   type!: SharedLinkType;
-  createdAt!: string;
-  expiresAt!: string | null;
+  createdAt!: Date;
+  expiresAt!: Date | null;
   assets!: AssetResponseDto[];
   album?: AlbumResponseDto;
   allowUpload!: boolean;

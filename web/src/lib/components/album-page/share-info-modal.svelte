@@ -3,7 +3,7 @@
 	import { AlbumResponseDto, api, UserResponseDto } from '@api';
 	import { clickOutside } from '$lib/utils/click-outside';
 	import BaseModal from '../shared-components/base-modal.svelte';
-	import CircleAvatar from '../shared-components/circle-avatar.svelte';
+	import UserAvatar from '../shared-components/user-avatar.svelte';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
@@ -79,7 +79,7 @@
 				class="flex gap-4 p-5 place-items-center justify-between w-full transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
 			>
 				<div class="flex gap-4 place-items-center">
-					<CircleAvatar {user} />
+					<UserAvatar {user} size="md" autoColor />
 					<p class="font-medium text-sm">{user.firstName} {user.lastName}</p>
 				</div>
 

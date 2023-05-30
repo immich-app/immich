@@ -56,17 +56,17 @@ void main() {
       // TODO
     });
 
-    // String fileCreatedAt
+    // DateTime fileCreatedAt
     test('to test the property `fileCreatedAt`', () async {
       // TODO
     });
 
-    // String fileModifiedAt
+    // DateTime fileModifiedAt
     test('to test the property `fileModifiedAt`', () async {
       // TODO
     });
 
-    // String updatedAt
+    // DateTime updatedAt
     test('to test the property `updatedAt`', () async {
       // TODO
     });

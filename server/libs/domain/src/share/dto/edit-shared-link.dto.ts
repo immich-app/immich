@@ -5,7 +5,7 @@ export class EditSharedLinkDto {
   description?: string;
 
   @IsOptional()
-  expiresAt?: string | null;
+  expiresAt?: Date | null;
 
   @IsOptional()
   allowUpload?: boolean;

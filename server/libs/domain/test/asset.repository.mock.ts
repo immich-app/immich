@@ -2,7 +2,7 @@ import { IAssetRepository } from '../src';
 
 export const newAssetRepositoryMock = (): jest.Mocked<IAssetRepository> => {
   return {
-    getByIds: jest.fn(),
+    getByIds: jest.fn().mockResolvedValue([]),
     getWithout: jest.fn(),
     getWith: jest.fn(),
     getFirstAssetForAlbumId: jest.fn(),

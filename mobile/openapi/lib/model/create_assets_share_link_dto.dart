@@ -29,7 +29,7 @@ class CreateAssetsShareLinkDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? expiresAt;
+  DateTime? expiresAt;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -89,7 +89,7 @@ class CreateAssetsShareLinkDto {
     final json = <String, dynamic>{};
       json[r'assetIds'] = this.assetIds;
     if (this.expiresAt != null) {
-      json[r'expiresAt'] = this.expiresAt;
+      json[r'expiresAt'] = this.expiresAt!.toUtc().toIso8601String();
     } else {
       // json[r'expiresAt'] = null;
     }
@@ -138,7 +138,7 @@ class CreateAssetsShareLinkDto {
         assetIds: json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        expiresAt: mapValueOfType<String>(json, r'expiresAt'),
+        expiresAt: mapDateTime(json, r'expiresAt', ''),
         allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
         allowDownload: mapValueOfType<bool>(json, r'allowDownload'),
         showExif: mapValueOfType<bool>(json, r'showExif'),

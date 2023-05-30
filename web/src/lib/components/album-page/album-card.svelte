@@ -15,9 +15,9 @@
 	import { AlbumResponseDto, api, ThumbnailFormat, UserResponseDto } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
-	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 	import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
 	import { locale } from '$lib/stores/preferences.store';
+	import IconButton from '../elements/buttons/icon-button.svelte';
 
 	export let album: AlbumResponseDto;
 	export let isSharingView = false;
@@ -82,7 +82,9 @@
 			on:click|stopPropagation|preventDefault={showAlbumContextMenu}
 			data-testid="context-button-parent"
 		>
-			<CircleIconButton logo={DotsVertical} size={'20'} />
+			<IconButton color="overlay-primary">
+				<DotsVertical size="20" />
+			</IconButton>
 		</div>
 	{/if}
 
@@ -115,7 +117,10 @@
 				{album.assetCount.toLocaleString($locale)}
 				{album.assetCount == 1 ? `item` : `items`}
 			</p>
-			<p>·</p>
+
+			{#if isSharingView || album.shared}
+				<p>·</p>
+			{/if}
 
 			{#if isSharingView}
 				{#await getAlbumOwnerInfo() then albumOwner}

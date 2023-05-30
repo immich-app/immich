@@ -61,7 +61,7 @@ export class AlbumRepository implements IAlbumRepository {
 
   async addSharedUsers(album: AlbumEntity, addUsersDto: AddUsersDto): Promise<AlbumEntity> {
     album.sharedUsers.push(...addUsersDto.sharedUserIds.map((id) => ({ id } as UserEntity)));
-    album.updatedAt = new Date().toISOString();
+    album.updatedAt = new Date();
 
     await this.albumRepository.save(album);
 
@@ -71,7 +71,7 @@ export class AlbumRepository implements IAlbumRepository {
 
   async removeUser(album: AlbumEntity, userId: string): Promise<void> {
     album.sharedUsers = album.sharedUsers.filter((user) => user.id !== userId);
-    album.updatedAt = new Date().toISOString();
+    album.updatedAt = new Date();
     await this.albumRepository.save(album);
   }
 
@@ -84,7 +84,7 @@ export class AlbumRepository implements IAlbumRepository {
 
     const numRemovedAssets = assetCount - album.assets.length;
     if (numRemovedAssets > 0) {
-      album.updatedAt = new Date().toISOString();
+      album.updatedAt = new Date();
     }
     await this.albumRepository.save(album, {});
 
@@ -111,7 +111,7 @@ export class AlbumRepository implements IAlbumRepository {
 
     const successfullyAdded = addAssetsDto.assetIds.length - alreadyExisting.length;
     if (successfullyAdded > 0) {
-      album.updatedAt = new Date().toISOString();
+      album.updatedAt = new Date();
     }
     await this.albumRepository.save(album);
 

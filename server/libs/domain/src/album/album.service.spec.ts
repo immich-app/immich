@@ -128,7 +128,6 @@ describe(AlbumService.name, () => {
         createdAt: expect.anything(),
         id: 'album-1',
         owner: {
-          createdAt: '2021-01-01',
           email: 'admin@test.com',
           firstName: 'admin_first_name',
           id: 'admin_id',
@@ -138,7 +137,9 @@ describe(AlbumService.name, () => {
           profileImagePath: '',
           shouldChangePassword: false,
           storageLabel: 'admin',
-          updatedAt: '2021-01-01',
+          createdAt: new Date('2021-01-01'),
+          deletedAt: null,
+          updatedAt: new Date('2021-01-01'),
         },
         ownerId: 'admin_id',
         shared: false,

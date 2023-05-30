@@ -13,8 +13,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetType } from '../entities';
-import { paginate } from '../utils/pagination.util';
 import OptionalBetween from '../utils/optional-between.util';
+import { paginate } from '../utils/pagination.util';
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
@@ -154,7 +154,7 @@ export class AssetRepository implements IAssetRepository {
           faces: true,
         };
         where = {
-          resizePath: IsNull(),
+          resizePath: Not(IsNull()),
           isVisible: true,
           faces: {
             assetId: IsNull(),

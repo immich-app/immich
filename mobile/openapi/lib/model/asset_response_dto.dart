@@ -52,11 +52,11 @@ class AssetResponseDto {
 
   bool resized;
 
-  String fileCreatedAt;
+  DateTime fileCreatedAt;
 
-  String fileModifiedAt;
+  DateTime fileModifiedAt;
 
-  String updatedAt;
+  DateTime updatedAt;
 
   bool isFavorite;
 
@@ -153,9 +153,9 @@ class AssetResponseDto {
       json[r'originalPath'] = this.originalPath;
       json[r'originalFileName'] = this.originalFileName;
       json[r'resized'] = this.resized;
-      json[r'fileCreatedAt'] = this.fileCreatedAt;
-      json[r'fileModifiedAt'] = this.fileModifiedAt;
-      json[r'updatedAt'] = this.updatedAt;
+      json[r'fileCreatedAt'] = this.fileCreatedAt.toUtc().toIso8601String();
+      json[r'fileModifiedAt'] = this.fileModifiedAt.toUtc().toIso8601String();
+      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
       json[r'isFavorite'] = this.isFavorite;
       json[r'isArchived'] = this.isArchived;
     if (this.mimeType != null) {
@@ -212,9 +212,9 @@ class AssetResponseDto {
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
         originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
         resized: mapValueOfType<bool>(json, r'resized')!,
-        fileCreatedAt: mapValueOfType<String>(json, r'fileCreatedAt')!,
-        fileModifiedAt: mapValueOfType<String>(json, r'fileModifiedAt')!,
-        updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
+        fileCreatedAt: mapDateTime(json, r'fileCreatedAt', '')!,
+        fileModifiedAt: mapDateTime(json, r'fileModifiedAt', '')!,
+        updatedAt: mapDateTime(json, r'updatedAt', '')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived')!,
         mimeType: mapValueOfType<String>(json, r'mimeType'),

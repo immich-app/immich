@@ -107,7 +107,7 @@ export class StorageTemplateCore {
       this.render(
         template,
         {
-          fileCreatedAt: new Date().toISOString(),
+          fileCreatedAt: new Date(),
           originalPath: '/upload/test/IMG_123.jpg',
           type: AssetType.IMAGE,
         } as AssetEntity,
@@ -140,7 +140,7 @@ export class StorageTemplateCore {
       filetypefull: asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO',
     };
 
-    const dt = luxon.DateTime.fromISO(new Date(asset.fileCreatedAt).toISOString());
+    const dt = luxon.DateTime.fromJSDate(asset.fileCreatedAt);
 
     const dateTokens = [
       ...supportedYearTokens,

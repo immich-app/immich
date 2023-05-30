@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { UserResponseDto, api } from '@api';
-	import CircleAvatar from '../shared-components/circle-avatar.svelte';
+	import UserAvatar from '../shared-components/user-avatar.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import Button from '../elements/buttons/button.svelte';
 	import PartnerSelectionModal from './partner-selection-modal.svelte';
@@ -55,10 +55,9 @@
 <section class="my-4">
 	{#if partners.length > 0}
 		<div class="flex flex-row gap-4">
-			{#each partners as partner}
+			{#each partners as partner (partner.id)}
 				<div class="flex rounded-lg gap-4 py-4 px-5 transition-all">
-					<CircleAvatar user={partner} />
-
+					<UserAvatar user={partner} size="md" autoColor />
 					<div class="text-left">
 						<p class="text-immich-fg dark:text-immich-dark-fg">
 							{partner.firstName}

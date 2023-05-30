@@ -6,6 +6,7 @@ import {
   MACHINE_LEARNING_ENABLED,
   SearchService,
   SERVER_VERSION,
+  StorageService,
 } from '@app/domain';
 import { RedisIoAdapter } from '@app/infra';
 import { Logger } from '@nestjs/common';
@@ -71,6 +72,8 @@ async function bootstrap() {
     },
     customSiteTitle: 'Immich API Documentation',
   });
+
+  app.get(StorageService).init();
 
   await app.listen(serverPort, () => {
     if (process.env.NODE_ENV == 'development') {

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateAssetsShareLinkDto {
   @IsArray()
@@ -17,9 +18,10 @@ export class CreateAssetsShareLinkDto {
   })
   assetIds!: string[];
 
-  @IsString()
+  @IsDate()
+  @Type(() => Date)
   @IsOptional()
-  expiresAt?: string;
+  expiresAt?: Date;
 
   @IsBoolean()
   @IsOptional()

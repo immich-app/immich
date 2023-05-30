@@ -15,8 +15,8 @@ export interface LivePhotoSearchOptions {
 
 export interface MapMarkerSearchOptions {
   isFavorite?: boolean;
-  fileCreatedBefore?: string;
-  fileCreatedAfter?: string;
+  fileCreatedBefore?: Date;
+  fileCreatedAfter?: Date;
 }
 
 export interface MapMarker {

@@ -6,8 +6,6 @@ import { PartnerService } from './partner.service';
 
 const responseDto = {
   admin: {
-    createdAt: '2021-01-01',
-    deletedAt: undefined,
     email: 'admin@test.com',
     firstName: 'admin_first_name',
     id: 'admin_id',
@@ -16,12 +14,12 @@ const responseDto = {
     oauthId: '',
     profileImagePath: '',
     shouldChangePassword: false,
-    updatedAt: '2021-01-01',
     storageLabel: 'admin',
+    createdAt: new Date('2021-01-01'),
+    deletedAt: null,
+    updatedAt: new Date('2021-01-01'),
   },
   user1: {
-    createdAt: '2021-01-01',
-    deletedAt: undefined,
     email: 'immich@test.com',
     firstName: 'immich_first_name',
     id: 'user-id',
@@ -30,8 +28,10 @@ const responseDto = {
     oauthId: '',
     profileImagePath: '',
     shouldChangePassword: false,
-    updatedAt: '2021-01-01',
     storageLabel: null,
+    createdAt: new Date('2021-01-01'),
+    deletedAt: null,
+    updatedAt: new Date('2021-01-01'),
   },
 };
 

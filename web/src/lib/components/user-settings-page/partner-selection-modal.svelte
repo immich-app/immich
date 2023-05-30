@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { api, UserResponseDto } from '@api';
 	import BaseModal from '../shared-components/base-modal.svelte';
-	import CircleAvatar from '../shared-components/circle-avatar.svelte';
+	import UserAvatar from '../shared-components/user-avatar.svelte';
 	import ImmichLogo from '../shared-components/immich-logo.svelte';
 	import Button from '../elements/buttons/button.svelte';
 	import { createEventDispatcher, onMount } from 'svelte';
@@ -56,7 +56,7 @@
 							>✓</span
 						>
 					{:else}
-						<CircleAvatar {user} />
+						<UserAvatar {user} size="md" autoColor />
 					{/if}
 
 					<div class="text-left">

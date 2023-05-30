@@ -19,8 +19,8 @@ export class APIKeyEntity {
   userId!: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: string;
+  createdAt!: Date;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: string;
+  updatedAt!: Date;
 }

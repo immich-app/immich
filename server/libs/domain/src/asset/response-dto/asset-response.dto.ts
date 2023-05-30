@@ -16,9 +16,9 @@ export class AssetResponseDto {
   originalPath!: string;
   originalFileName!: string;
   resized!: boolean;
-  fileCreatedAt!: string;
-  fileModifiedAt!: string;
-  updatedAt!: string;
+  fileCreatedAt!: Date;
+  fileModifiedAt!: Date;
+  updatedAt!: Date;
   isFavorite!: boolean;
   isArchived!: boolean;
   mimeType!: string | null;
