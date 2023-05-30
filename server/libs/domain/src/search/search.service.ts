@@ -106,9 +106,22 @@ export class SearchService {
   async getExploreData(authUser: AuthUserDto): Promise<SearchExploreItem<AssetResponseDto>[]> {
     this.assertEnabled();
     const results = await this.searchRepository.explore(authUser.id);
+    const lookup = await this.getLookupMap(
+      results.reduce(
+        (ids: string[], result: SearchExploreItem<AssetEntity>) => [
+          ...ids,
+          ...result.items.map((item) => item.data.id),
+        ],
+        [],
+      ),
+    );
+
     return results.map(({ fieldName, items }) => ({
       fieldName,
-      items: items.map(({ value, data }) => ({ value, data: mapAsset(data) })),
+      items: items
+        .map(({ value, data }) => ({ value, data: lookup[data.id] }))
+        .filter(({ data }) => !!data)
+        .map(({ value, data }) => ({ value, data: mapAsset(data) })),
     }));
   }
 
@@ -132,10 +145,17 @@ export class SearchService {
     }
 
     const albums = await this.searchRepository.searchAlbums(query, filters);
+    const lookup = await this.getLookupMap(assets.items.map((asset) => asset.id));
 
     return {
       albums: { ...albums, items: albums.items.map(mapAlbum) },
-      assets: { ...assets, items: assets.items.map(mapAsset) },
+      assets: {
+        ...assets,
+        items: assets.items
+          .map((item) => lookup[item.id])
+          .filter((item) => !!item)
+          .map(mapAsset),
+      },
     };
   }
 
@@ -357,5 +377,14 @@ export class SearchService {
   private asParts(key: string): AssetFaceId {
     const [assetId, personId] = key.split('|');
     return { assetId, personId };
+  }
+
+  private async getLookupMap(assetIds: string[]) {
+    const assets = await this.assetRepository.getByIds(assetIds);
+    const lookup: Record<string, AssetEntity> = {};
+    for (const asset of assets) {
+      lookup[asset.id] = asset;
+    }
+    return lookup;
   }
 }
