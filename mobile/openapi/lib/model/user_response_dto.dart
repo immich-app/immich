@@ -18,12 +18,12 @@ class UserResponseDto {
     required this.firstName,
     required this.lastName,
     required this.storageLabel,
-    required this.createdAt,
     required this.profileImagePath,
     required this.shouldChangePassword,
     required this.isAdmin,
-    this.deletedAt,
-    this.updatedAt,
+    required this.createdAt,
+    required this.deletedAt,
+    required this.updatedAt,
     required this.oauthId,
   });
 
@@ -37,29 +37,17 @@ class UserResponseDto {
 
   String? storageLabel;
 
-  String createdAt;
-
   String profileImagePath;
 
   bool shouldChangePassword;
 
   bool isAdmin;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
+  DateTime createdAt;
+
   DateTime? deletedAt;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? updatedAt;
+  DateTime updatedAt;
 
   String oauthId;
 
@@ -70,10 +58,10 @@ class UserResponseDto {
      other.firstName == firstName &&
      other.lastName == lastName &&
      other.storageLabel == storageLabel &&
-     other.createdAt == createdAt &&
      other.profileImagePath == profileImagePath &&
      other.shouldChangePassword == shouldChangePassword &&
      other.isAdmin == isAdmin &&
+     other.createdAt == createdAt &&
      other.deletedAt == deletedAt &&
      other.updatedAt == updatedAt &&
      other.oauthId == oauthId;
@@ -86,16 +74,16 @@ class UserResponseDto {
     (firstName.hashCode) +
     (lastName.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode) +
-    (createdAt.hashCode) +
     (profileImagePath.hashCode) +
     (shouldChangePassword.hashCode) +
     (isAdmin.hashCode) +
+    (createdAt.hashCode) +
     (deletedAt == null ? 0 : deletedAt!.hashCode) +
-    (updatedAt == null ? 0 : updatedAt!.hashCode) +
+    (updatedAt.hashCode) +
     (oauthId.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, storageLabel=$storageLabel, createdAt=$createdAt, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin, deletedAt=$deletedAt, updatedAt=$updatedAt, oauthId=$oauthId]';
+  String toString() => 'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, storageLabel=$storageLabel, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin, createdAt=$createdAt, deletedAt=$deletedAt, updatedAt=$updatedAt, oauthId=$oauthId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -108,20 +96,16 @@ class UserResponseDto {
     } else {
       // json[r'storageLabel'] = null;
     }
-      json[r'createdAt'] = this.createdAt;
       json[r'profileImagePath'] = this.profileImagePath;
       json[r'shouldChangePassword'] = this.shouldChangePassword;
       json[r'isAdmin'] = this.isAdmin;
+      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
     if (this.deletedAt != null) {
       json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
     } else {
       // json[r'deletedAt'] = null;
     }
-    if (this.updatedAt != null) {
-      json[r'updatedAt'] = this.updatedAt;
-    } else {
-      // json[r'updatedAt'] = null;
-    }
+      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
       json[r'oauthId'] = this.oauthId;
     return json;
   }
@@ -150,12 +134,12 @@ class UserResponseDto {
         firstName: mapValueOfType<String>(json, r'firstName')!,
         lastName: mapValueOfType<String>(json, r'lastName')!,
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
-        createdAt: mapValueOfType<String>(json, r'createdAt')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
+        createdAt: mapDateTime(json, r'createdAt', '')!,
         deletedAt: mapDateTime(json, r'deletedAt', ''),
-        updatedAt: mapValueOfType<String>(json, r'updatedAt'),
+        updatedAt: mapDateTime(json, r'updatedAt', '')!,
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
       );
     }
@@ -209,10 +193,12 @@ class UserResponseDto {
     'firstName',
     'lastName',
     'storageLabel',
-    'createdAt',
     'profileImagePath',
     'shouldChangePassword',
     'isAdmin',
+    'createdAt',
+    'deletedAt',
+    'updatedAt',
     'oauthId',
   };
 }

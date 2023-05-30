@@ -41,12 +41,12 @@ void main() {
       // TODO
     });
 
-    // String createdAt
+    // DateTime createdAt
     test('to test the property `createdAt`', () async {
       // TODO
     });
 
-    // String expiresAt
+    // DateTime expiresAt
     test('to test the property `expiresAt`', () async {
       // TODO
     });

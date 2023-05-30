@@ -231,10 +231,10 @@ describe('AuthService', () => {
 
     it('should sign up the admin', async () => {
       userMock.getAdmin.mockResolvedValue(null);
-      userMock.create.mockResolvedValue({ ...dto, id: 'admin', createdAt: 'today' } as UserEntity);
+      userMock.create.mockResolvedValue({ ...dto, id: 'admin', createdAt: new Date('2021-01-01') } as UserEntity);
       await expect(sut.adminSignUp(dto)).resolves.toEqual({
         id: 'admin',
-        createdAt: 'today',
+        createdAt: new Date('2021-01-01'),
         email: 'test@immich.com',
         firstName: 'immich',
         lastName: 'admin',

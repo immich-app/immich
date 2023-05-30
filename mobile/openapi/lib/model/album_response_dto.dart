@@ -34,9 +34,9 @@ class AlbumResponseDto {
 
   String albumName;
 
-  String createdAt;
+  DateTime createdAt;
 
-  String updatedAt;
+  DateTime updatedAt;
 
   String? albumThumbnailAssetId;
 
@@ -86,8 +86,8 @@ class AlbumResponseDto {
       json[r'id'] = this.id;
       json[r'ownerId'] = this.ownerId;
       json[r'albumName'] = this.albumName;
-      json[r'createdAt'] = this.createdAt;
-      json[r'updatedAt'] = this.updatedAt;
+      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
+      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     if (this.albumThumbnailAssetId != null) {
       json[r'albumThumbnailAssetId'] = this.albumThumbnailAssetId;
     } else {
@@ -123,8 +123,8 @@ class AlbumResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         albumName: mapValueOfType<String>(json, r'albumName')!,
-        createdAt: mapValueOfType<String>(json, r'createdAt')!,
-        updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
+        createdAt: mapDateTime(json, r'createdAt', '')!,
+        updatedAt: mapDateTime(json, r'updatedAt', '')!,
         albumThumbnailAssetId: mapValueOfType<String>(json, r'albumThumbnailAssetId'),
         shared: mapValueOfType<bool>(json, r'shared')!,
         sharedUsers: UserResponseDto.listFromJson(json[r'sharedUsers']),

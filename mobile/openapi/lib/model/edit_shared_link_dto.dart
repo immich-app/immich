@@ -28,7 +28,7 @@ class EditSharedLinkDto {
   ///
   String? description;
 
-  String? expiresAt;
+  DateTime? expiresAt;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -82,7 +82,7 @@ class EditSharedLinkDto {
       // json[r'description'] = null;
     }
     if (this.expiresAt != null) {
-      json[r'expiresAt'] = this.expiresAt;
+      json[r'expiresAt'] = this.expiresAt!.toUtc().toIso8601String();
     } else {
       // json[r'expiresAt'] = null;
     }
@@ -124,7 +124,7 @@ class EditSharedLinkDto {
 
       return EditSharedLinkDto(
         description: mapValueOfType<String>(json, r'description'),
-        expiresAt: mapValueOfType<String>(json, r'expiresAt'),
+        expiresAt: mapDateTime(json, r'expiresAt', ''),
         allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
         allowDownload: mapValueOfType<bool>(json, r'allowDownload'),
         showExif: mapValueOfType<bool>(json, r'showExif'),

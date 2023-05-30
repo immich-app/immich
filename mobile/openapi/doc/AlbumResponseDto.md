@@ -12,8 +12,8 @@ Name | Type | Description | Notes
 **id** | **String** |  | 
 **ownerId** | **String** |  | 
 **albumName** | **String** |  | 
-**createdAt** | **String** |  | 
-**updatedAt** | **String** |  | 
+**createdAt** | [**DateTime**](DateTime.md) |  | 
+**updatedAt** | [**DateTime**](DateTime.md) |  | 
 **albumThumbnailAssetId** | **String** |  | 
 **shared** | **bool** |  | 
 **sharedUsers** | [**List<UserResponseDto>**](UserResponseDto.md) |  | [default to const []]

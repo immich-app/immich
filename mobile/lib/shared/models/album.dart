@@ -128,8 +128,8 @@ class Album {
     final Album a = Album(
       remoteId: dto.id,
       name: dto.albumName,
-      createdAt: DateTime.parse(dto.createdAt),
-      modifiedAt: DateTime.parse(dto.updatedAt),
+      createdAt: dto.createdAt,
+      modifiedAt: dto.updatedAt,
       shared: dto.shared,
     );
     a.owner.value = await db.users.getById(dto.ownerId);

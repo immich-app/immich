@@ -28,7 +28,7 @@ class AdminSignupResponseDto {
 
   String lastName;
 
-  String createdAt;
+  DateTime createdAt;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AdminSignupResponseDto &&
@@ -56,7 +56,7 @@ class AdminSignupResponseDto {
       json[r'email'] = this.email;
       json[r'firstName'] = this.firstName;
       json[r'lastName'] = this.lastName;
-      json[r'createdAt'] = this.createdAt;
+      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
     return json;
   }
 
@@ -83,7 +83,7 @@ class AdminSignupResponseDto {
         email: mapValueOfType<String>(json, r'email')!,
         firstName: mapValueOfType<String>(json, r'firstName')!,
         lastName: mapValueOfType<String>(json, r'lastName')!,
-        createdAt: mapValueOfType<String>(json, r'createdAt')!,
+        createdAt: mapDateTime(json, r'createdAt', '')!,
       );
     }
     return null;

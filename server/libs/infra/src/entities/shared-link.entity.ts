@@ -35,10 +35,10 @@ export class SharedLinkEntity {
   type!: SharedLinkType;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: string;
+  createdAt!: Date;
 
   @Column({ type: 'timestamptz', nullable: true })
-  expiresAt!: string | null;
+  expiresAt!: Date | null;
 
   @Column({ type: 'boolean', default: false })
   allowUpload!: boolean;

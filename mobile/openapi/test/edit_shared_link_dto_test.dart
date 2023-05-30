@@ -21,7 +21,7 @@ void main() {
       // TODO
     });
 
-    // String expiresAt
+    // DateTime expiresAt
     test('to test the property `expiresAt`', () async {
       // TODO
     });

@@ -42,14 +42,14 @@ export class UserEntity {
   @Column({ default: true })
   shouldChangePassword!: boolean;
 
-  @CreateDateColumn()
-  createdAt!: string;
+  @CreateDateColumn({ type: 'timestamptz' })
+  createdAt!: Date;
 
-  @DeleteDateColumn()
-  deletedAt?: Date;
+  @DeleteDateColumn({ type: 'timestamptz' })
+  deletedAt!: Date | null;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: string;
+  updatedAt!: Date;
 
   @OneToMany(() => TagEntity, (tag) => tag.user)
   tags!: TagEntity[];

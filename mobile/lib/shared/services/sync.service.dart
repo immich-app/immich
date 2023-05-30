@@ -279,7 +279,7 @@ class SyncService {
 
     album.name = dto.albumName;
     album.shared = dto.shared;
-    album.modifiedAt = DateTime.parse(dto.updatedAt);
+    album.modifiedAt = dto.updatedAt;
     if (album.thumbnail.value?.remoteId != dto.albumThumbnailAssetId) {
       album.thumbnail.value = await _db.assets
           .where()
@@ -713,5 +713,5 @@ bool _hasAlbumResponseDtoChanged(AlbumResponseDto dto, Album a) {
       dto.albumThumbnailAssetId != a.thumbnail.value?.remoteId ||
       dto.shared != a.shared ||
       dto.sharedUsers.length != a.sharedUsers.length ||
-      !DateTime.parse(dto.updatedAt).isAtSameMomentAs(a.modifiedAt);
+      !dto.updatedAt.isAtSameMomentAs(a.modifiedAt);
 }
