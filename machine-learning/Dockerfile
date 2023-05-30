@@ -10,11 +10,12 @@ USER $MAMBA_USER
 
 COPY --chown=$MAMBA_USER:$MAMBA_USER env-${device}.yaml /tmp/env.yaml
 RUN micromamba install -y --file /tmp/env.yaml
+RUN ln -s /opt/conda/lib/libnvrtc.so.11.2 /opt/conda/lib/libnvrtc.so
 
 FROM mambaorg/micromamba:1-jammy
+USER root
 COPY --from=builder /opt/conda/lib /opt/conda/lib
 COPY --from=builder /opt/conda/bin /opt/conda/bin
-
 WORKDIR /usr/src/app
 COPY src .
 

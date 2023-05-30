@@ -18,5 +18,8 @@ dependencies:
       - optimum==1.*
       - onnxruntime-gpu==1.*
       - opencv-python-headless==4.*
-      - onnxsim==0.*
       - insightface==0.*
+      - aiocache==0.*
+      - nvidia-pyindex
+  - pip:
+      - onnx_graphsurgeon==0.*

@@ -37,6 +37,8 @@ services:
       - model-cache:/cache
     env_file:
       - .env
+    environment:
+      - HF_HOME=/cache
     restart: always
     # uncomment below lines for CUDA
     # deploy:

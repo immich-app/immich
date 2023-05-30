@@ -175,7 +175,7 @@ describe(FacialRecognitionService.name, () => {
       assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
       await sut.handleRecognizeFaces({ id: assetEntityStub.image.id });
       expect(machineLearningMock.detectFaces).toHaveBeenCalledWith({
-        thumbnailPath: assetEntityStub.image.resizePath,
+        imagePath: assetEntityStub.image.resizePath,
       });
       expect(faceMock.create).not.toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
@@ -268,7 +268,7 @@ describe(FacialRecognitionService.name, () => {
       });
       expect(personMock.update).toHaveBeenCalledWith({
         id: 'person-1',
-        thumbnailPath: 'upload/thumbs/user-id/person-1.jpeg',
+        imagePath: 'upload/thumbs/user-id/person-1.jpeg',
       });
     });
 

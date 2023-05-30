@@ -40,7 +40,7 @@ export class SmartInfoService {
       return false;
     }
 
-    const tags = await this.machineLearning.classifyImage({ thumbnailPath: asset.resizePath });
+    const tags = await this.machineLearning.classifyImage({ imagePath: asset.resizePath });
     if (tags.length === 0) {
       return false;
     }
@@ -73,7 +73,7 @@ export class SmartInfoService {
       return false;
     }
 
-    const clipEmbedding = await this.machineLearning.encodeImage({ thumbnailPath: asset.resizePath });
+    const clipEmbedding = await this.machineLearning.encodeImage({ imagePath: asset.resizePath });
     await this.repository.upsert({ assetId: asset.id, clipEmbedding: clipEmbedding });
 
     return true;
