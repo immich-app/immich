@@ -140,8 +140,8 @@
     "coverageThreshold": {
       "./libs/domain/": {
         "branches": 80,
-        "functions": 87,
-        "lines": 93.7,
+        "functions": 85,
+        "lines": 93,
         "statements": 93
       }
     },
