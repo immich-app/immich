@@ -136,8 +136,11 @@ class BackgroundService {
     return _foregroundChannel.invokeMethod<Uint8List>("digestFile", [path]);
   }
 
-  Future<List<Uint8List>?> digestFiles(List<String> paths) {
-    return _foregroundChannel.invokeListMethod<Uint8List>("digestFiles", paths);
+  Future<List<Uint8List?>?> digestFiles(List<String> paths) {
+    return _foregroundChannel.invokeListMethod<Uint8List?>(
+      "digestFiles",
+      paths,
+    );
   }
 
   /// Updates the notification shown by the background service

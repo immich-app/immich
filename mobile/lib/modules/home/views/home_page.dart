@@ -47,11 +47,11 @@ class HomePage extends HookConsumerWidget {
 
     useEffect(
       () {
-        ref.watch(websocketProvider.notifier).connect();
-        ref.watch(assetProvider.notifier).getAllAsset();
-        ref.watch(albumProvider.notifier).getAllAlbums();
-        ref.watch(sharedAlbumProvider.notifier).getAllSharedAlbums();
-        ref.watch(serverInfoProvider.notifier).getServerVersion();
+        ref.read(websocketProvider.notifier).connect();
+        Future(() => ref.read(assetProvider.notifier).getAllAsset());
+        ref.read(albumProvider.notifier).getAllAlbums();
+        ref.read(sharedAlbumProvider.notifier).getAllSharedAlbums();
+        ref.read(serverInfoProvider.notifier).getServerVersion();
 
         selectionEnabledHook.addListener(() {
           multiselectEnabled.state = selectionEnabledHook.value;
@@ -144,7 +144,7 @@ class HomePage extends HookConsumerWidget {
           );
           if (remoteAssets.isNotEmpty) {
             await ref
-                .watch(assetProvider.notifier)
+                .read(assetProvider.notifier)
                 .toggleArchive(remoteAssets, true);
 
             final assetOrAssets = remoteAssets.length > 1 ? 'assets' : 'asset';
@@ -163,7 +163,7 @@ class HomePage extends HookConsumerWidget {
       void onDelete() async {
         processing.value = true;
         try {
-          await ref.watch(assetProvider.notifier).deleteAssets(selection.value);
+          await ref.read(assetProvider.notifier).deleteAssets(selection.value);
           selectionEnabledHook.value = false;
         } finally {
           processing.value = false;

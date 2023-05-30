@@ -81,24 +81,28 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                 GlobalScope.launch(Dispatchers.IO) {
                     val buf = ByteArray(BUFSIZE)
                     val digest: MessageDigest = MessageDigest.getInstance("SHA-1")
-                    val hashes = ArrayList<ByteArray>(args.size)
+                    val hashes = arrayOfNulls<ByteArray>(args.size)
                     for (i in args.indices) {
                         val path = args[i]
                         var len = 0
-                        val file = FileInputStream(path)
                         try {
-                            while (true) {
-                                len = file.read(buf)
-                                if (len != BUFSIZE) break
-                                digest.update(buf)
+                            val file = FileInputStream(path)
+                            try {
+                                while (true) {
+                                    len = file.read(buf)
+                                    if (len != BUFSIZE) break
+                                    digest.update(buf)
+                                }
+                            } finally {
+                                file.close()
                             }
-                        } finally {
-                            file.close()
+                            digest.update(buf, 0, len)
+                            hashes[i] = digest.digest()
+                        } catch (e: Exception) {
+                            // skip this file
                         }
-                        digest.update(buf, 0, len)
-                        hashes.add(digest.digest())
                     }
-                    result.success(hashes)
+                    result.success(hashes.asList())
                 }
             }
             "digestFile" -> {

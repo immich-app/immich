@@ -424,13 +424,12 @@ class SyncService {
     final inDb = await album.assets
         .filter()
         .ownerIdEqualTo(Store.get(StoreKey.currentUser).isarId)
-        .sortByLocalId()
+        .sortByChecksum()
         .findAll();
     final List<Asset> onDevice =
         await _hashService.getHashedAssets(ape, excludedAssets: excludedAssets);
-    onDevice.sort(Asset.compareByLocalId);
-    final (toAdd, toUpdate, toDelete) =
-        _diffAssets(onDevice, inDb, compare: Asset.compareByLocalId);
+    onDevice.sort(Asset.compareByChecksum);
+    final (toAdd, toUpdate, toDelete) = _diffAssets(onDevice, inDb);
     if (toAdd.isEmpty &&
         toUpdate.isEmpty &&
         toDelete.isEmpty &&
@@ -589,7 +588,13 @@ class SyncService {
       toAdd.map((e) => e.ownerId).toList(),
     );
     for (int i = 0; i < toAdd.length; i++) {
-      if (duplicates[i] == null) toUpsert.add(toAdd[i]);
+      if (duplicates[i] == null) {
+        toUpsert.add(toAdd[i]);
+      } else {
+        _log.info("Duplicate asset on device! "
+            "IDs: ${duplicates[i]!.localId} == ${toAdd[i].localId}, "
+            "Filenames: ${duplicates[i]!.fileName} == ${toAdd[i].fileName}");
+      }
     }
     return (existing, toUpsert);
   }

@@ -22,7 +22,7 @@ class Asset {
         updatedAt = remote.updatedAt,
         durationInSeconds = remote.duration.toDuration()?.inSeconds ?? 0,
         type = remote.type.toAssetType(),
-        fileName = p.basename(remote.originalFileName),
+        fileName = p.basename(remote.originalPath),
         height = remote.exifInfo?.exifImageHeight?.toInt(),
         width = remote.exifInfo?.exifImageWidth?.toInt(),
         livePhotoVideoId = remote.livePhotoVideoId,
@@ -329,9 +329,6 @@ class Asset {
   }
 
   static int compareById(Asset a, Asset b) => a.id.compareTo(b.id);
-
-  static int compareByLocalId(Asset a, Asset b) =>
-      a.localId!.compareTo(b.localId!);
 
   static int compareByChecksum(Asset a, Asset b) =>
       a.checksum.compareTo(b.checksum);
