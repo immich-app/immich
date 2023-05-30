@@ -1,5 +1,13 @@
-import { CreateTagDto, TagResponseDto, TagService, UpdateTagDto } from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  AssetIdsDto,
+  AssetIdsResponseDto,
+  AssetResponseDto,
+  CreateTagDto,
+  TagResponseDto,
+  TagService,
+  UpdateTagDto,
+} from '@app/domain';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthUserDto, GetAuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
@@ -40,5 +48,28 @@ export class TagController {
   @Delete(':id')
   deleteTag(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(authUser, id);
+  }
+
+  @Get(':id/assets')
+  getTagAssets(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto[]> {
+    return this.service.getAssets(authUser, id);
+  }
+
+  @Put(':id/assets')
+  tagAssets(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: AssetIdsDto,
+  ): Promise<AssetIdsResponseDto[]> {
+    return this.service.addAssets(authUser, id, dto);
+  }
+
+  @Delete(':id/assets')
+  untagAssets(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body() dto: AssetIdsDto,
+    @Param() { id }: UUIDParamDto,
+  ): Promise<AssetIdsResponseDto[]> {
+    return this.service.removeAssets(authUser, id, dto);
   }
 }
