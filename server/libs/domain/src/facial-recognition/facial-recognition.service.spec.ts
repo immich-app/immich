@@ -268,7 +268,7 @@ describe(FacialRecognitionService.name, () => {
       });
       expect(personMock.update).toHaveBeenCalledWith({
         id: 'person-1',
-        imagePath: 'upload/thumbs/user-id/person-1.jpeg',
+        thumbnailPath: 'upload/thumbs/user-id/person-1.jpeg',
       });
     });
 
