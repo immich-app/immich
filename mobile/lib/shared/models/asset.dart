@@ -246,6 +246,13 @@ class Asset {
           height: a.height ?? height,
           exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
         );
+      } else if (isRemote) {
+        return _copyWith(
+          localId: localId ?? a.localId,
+          width: width ?? a.width,
+          height: height ?? a.height,
+          exifInfo: exifInfo ?? a.exifInfo?.copyWith(id: id),
+        );
       } else {
         return a._copyWith(
           id: id,
