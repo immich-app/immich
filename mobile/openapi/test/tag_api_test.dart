@@ -32,8 +32,23 @@ void main() {
       // TODO
     });
 
+    //Future<List<AssetResponseDto>> getTagAssets(String id) async
+    test('test getTagAssets', () async {
+      // TODO
+    });
+
     //Future<TagResponseDto> getTagById(String id) async
     test('test getTagById', () async {
+      // TODO
+    });
+
+    //Future<List<AssetIdsResponseDto>> tagAssets(String id, AssetIdsDto assetIdsDto) async
+    test('test tagAssets', () async {
+      // TODO
+    });
+
+    //Future<List<AssetIdsResponseDto>> untagAssets(String id, AssetIdsDto assetIdsDto) async
+    test('test untagAssets', () async {
       // TODO
     });
 

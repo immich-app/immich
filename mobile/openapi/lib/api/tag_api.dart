@@ -147,6 +147,57 @@ class TagApi {
     return null;
   }
 
+  /// Performs an HTTP 'GET /tag/{id}/assets' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> getTagAssetsWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/tag/{id}/assets'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<List<AssetResponseDto>?> getTagAssets(String id,) async {
+    final response = await getTagAssetsWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
+        .cast<AssetResponseDto>()
+        .toList();
+
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'GET /tag/{id}' operation and returns the [Response].
   /// Parameters:
   ///
@@ -191,6 +242,116 @@ class TagApi {
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'TagResponseDto',) as TagResponseDto;
     
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'PUT /tag/{id}/assets' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetIdsDto] assetIdsDto (required):
+  Future<Response> tagAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/tag/{id}/assets'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetIdsDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetIdsDto] assetIdsDto (required):
+  Future<List<AssetIdsResponseDto>?> tagAssets(String id, AssetIdsDto assetIdsDto,) async {
+    final response = await tagAssetsWithHttpInfo(id, assetIdsDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AssetIdsResponseDto>') as List)
+        .cast<AssetIdsResponseDto>()
+        .toList();
+
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'DELETE /tag/{id}/assets' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetIdsDto] assetIdsDto (required):
+  Future<Response> untagAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/tag/{id}/assets'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetIdsDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetIdsDto] assetIdsDto (required):
+  Future<List<AssetIdsResponseDto>?> untagAssets(String id, AssetIdsDto assetIdsDto,) async {
+    final response = await untagAssetsWithHttpInfo(id, assetIdsDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AssetIdsResponseDto>') as List)
+        .cast<AssetIdsResponseDto>()
+        .toList();
+
     }
     return null;
   }

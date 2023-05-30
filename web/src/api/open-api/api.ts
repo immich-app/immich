@@ -539,6 +539,53 @@ export interface AssetFileUploadResponseDto {
 /**
  * 
  * @export
+ * @interface AssetIdsDto
+ */
+export interface AssetIdsDto {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof AssetIdsDto
+     */
+    'assetIds': Array<string>;
+}
+/**
+ * 
+ * @export
+ * @interface AssetIdsResponseDto
+ */
+export interface AssetIdsResponseDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetIdsResponseDto
+     */
+    'assetId': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetIdsResponseDto
+     */
+    'success': boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetIdsResponseDto
+     */
+    'error'?: AssetIdsResponseDtoErrorEnum;
+}
+
+export const AssetIdsResponseDtoErrorEnum = {
+    Duplicate: 'duplicate',
+    NoPermission: 'no_permission',
+    NotFound: 'not_found'
+} as const;
+
+export type AssetIdsResponseDtoErrorEnum = typeof AssetIdsResponseDtoErrorEnum[keyof typeof AssetIdsResponseDtoErrorEnum];
+
+/**
+ * 
+ * @export
  * @interface AssetResponseDto
  */
 export interface AssetResponseDto {
@@ -10765,6 +10812,48 @@ export const TagApiAxiosParamCreator = function (configuration?: Configuration) 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        getTagAssets: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getTagAssets', 'id', id)
+            const localVarPath = `/tag/{id}/assets`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         getTagById: async (id: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('getTagById', 'id', id)
@@ -10795,6 +10884,102 @@ export const TagApiAxiosParamCreator = function (configuration?: Configuration) 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {AssetIdsDto} assetIdsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        tagAssets: async (id: string, assetIdsDto: AssetIdsDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('tagAssets', 'id', id)
+            // verify required parameter 'assetIdsDto' is not null or undefined
+            assertParamExists('tagAssets', 'assetIdsDto', assetIdsDto)
+            const localVarPath = `/tag/{id}/assets`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(assetIdsDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {AssetIdsDto} assetIdsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        untagAssets: async (id: string, assetIdsDto: AssetIdsDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('untagAssets', 'id', id)
+            // verify required parameter 'assetIdsDto' is not null or undefined
+            assertParamExists('untagAssets', 'assetIdsDto', assetIdsDto)
+            const localVarPath = `/tag/{id}/assets`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(assetIdsDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -10894,8 +11079,40 @@ export const TagApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        async getTagAssets(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getTagAssets(id, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         async getTagById(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<TagResponseDto>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getTagById(id, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {AssetIdsDto} assetIdsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async tagAssets(id: string, assetIdsDto: AssetIdsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetIdsResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.tagAssets(id, assetIdsDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {AssetIdsDto} assetIdsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async untagAssets(id: string, assetIdsDto: AssetIdsDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetIdsResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.untagAssets(id, assetIdsDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -10951,8 +11168,37 @@ export const TagApiFactory = function (configuration?: Configuration, basePath?:
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        getTagAssets(id: string, options?: any): AxiosPromise<Array<AssetResponseDto>> {
+            return localVarFp.getTagAssets(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         getTagById(id: string, options?: any): AxiosPromise<TagResponseDto> {
             return localVarFp.getTagById(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {AssetIdsDto} assetIdsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        tagAssets(id: string, assetIdsDto: AssetIdsDto, options?: any): AxiosPromise<Array<AssetIdsResponseDto>> {
+            return localVarFp.tagAssets(id, assetIdsDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {AssetIdsDto} assetIdsDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        untagAssets(id: string, assetIdsDto: AssetIdsDto, options?: any): AxiosPromise<Array<AssetIdsResponseDto>> {
+            return localVarFp.untagAssets(id, assetIdsDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -10996,6 +11242,20 @@ export interface TagApiDeleteTagRequest {
 }
 
 /**
+ * Request parameters for getTagAssets operation in TagApi.
+ * @export
+ * @interface TagApiGetTagAssetsRequest
+ */
+export interface TagApiGetTagAssetsRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof TagApiGetTagAssets
+     */
+    readonly id: string
+}
+
+/**
  * Request parameters for getTagById operation in TagApi.
  * @export
  * @interface TagApiGetTagByIdRequest
@@ -11007,6 +11267,48 @@ export interface TagApiGetTagByIdRequest {
      * @memberof TagApiGetTagById
      */
     readonly id: string
+}
+
+/**
+ * Request parameters for tagAssets operation in TagApi.
+ * @export
+ * @interface TagApiTagAssetsRequest
+ */
+export interface TagApiTagAssetsRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof TagApiTagAssets
+     */
+    readonly id: string
+
+    /**
+     * 
+     * @type {AssetIdsDto}
+     * @memberof TagApiTagAssets
+     */
+    readonly assetIdsDto: AssetIdsDto
+}
+
+/**
+ * Request parameters for untagAssets operation in TagApi.
+ * @export
+ * @interface TagApiUntagAssetsRequest
+ */
+export interface TagApiUntagAssetsRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof TagApiUntagAssets
+     */
+    readonly id: string
+
+    /**
+     * 
+     * @type {AssetIdsDto}
+     * @memberof TagApiUntagAssets
+     */
+    readonly assetIdsDto: AssetIdsDto
 }
 
 /**
@@ -11071,6 +11373,17 @@ export class TagApi extends BaseAPI {
 
     /**
      * 
+     * @param {TagApiGetTagAssetsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TagApi
+     */
+    public getTagAssets(requestParameters: TagApiGetTagAssetsRequest, options?: AxiosRequestConfig) {
+        return TagApiFp(this.configuration).getTagAssets(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
      * @param {TagApiGetTagByIdRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -11078,6 +11391,28 @@ export class TagApi extends BaseAPI {
      */
     public getTagById(requestParameters: TagApiGetTagByIdRequest, options?: AxiosRequestConfig) {
         return TagApiFp(this.configuration).getTagById(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {TagApiTagAssetsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TagApi
+     */
+    public tagAssets(requestParameters: TagApiTagAssetsRequest, options?: AxiosRequestConfig) {
+        return TagApiFp(this.configuration).tagAssets(requestParameters.id, requestParameters.assetIdsDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {TagApiUntagAssetsRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TagApi
+     */
+    public untagAssets(requestParameters: TagApiUntagAssetsRequest, options?: AxiosRequestConfig) {
+        return TagApiFp(this.configuration).untagAssets(requestParameters.id, requestParameters.assetIdsDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

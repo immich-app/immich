@@ -25,6 +25,8 @@ doc/AssetCountByTimeBucket.md
 doc/AssetCountByTimeBucketResponseDto.md
 doc/AssetCountByUserIdResponseDto.md
 doc/AssetFileUploadResponseDto.md
+doc/AssetIdsDto.md
+doc/AssetIdsResponseDto.md
 doc/AssetResponseDto.md
 doc/AssetTypeEnum.md
 doc/AuthDeviceResponseDto.md
@@ -154,6 +156,8 @@ lib/model/asset_count_by_time_bucket.dart
 lib/model/asset_count_by_time_bucket_response_dto.dart
 lib/model/asset_count_by_user_id_response_dto.dart
 lib/model/asset_file_upload_response_dto.dart
+lib/model/asset_ids_dto.dart
+lib/model/asset_ids_response_dto.dart
 lib/model/asset_response_dto.dart
 lib/model/asset_type_enum.dart
 lib/model/auth_device_response_dto.dart
@@ -252,6 +256,8 @@ test/asset_count_by_time_bucket_response_dto_test.dart
 test/asset_count_by_time_bucket_test.dart
 test/asset_count_by_user_id_response_dto_test.dart
 test/asset_file_upload_response_dto_test.dart
+test/asset_ids_dto_test.dart
+test/asset_ids_response_dto_test.dart
 test/asset_response_dto_test.dart
 test/asset_type_enum_test.dart
 test/auth_device_response_dto_test.dart

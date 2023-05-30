@@ -157,7 +157,10 @@ Class | Method | HTTP request | Description
 *TagApi* | [**createTag**](doc//TagApi.md#createtag) | **POST** /tag | 
 *TagApi* | [**deleteTag**](doc//TagApi.md#deletetag) | **DELETE** /tag/{id} | 
 *TagApi* | [**getAllTags**](doc//TagApi.md#getalltags) | **GET** /tag | 
+*TagApi* | [**getTagAssets**](doc//TagApi.md#gettagassets) | **GET** /tag/{id}/assets | 
 *TagApi* | [**getTagById**](doc//TagApi.md#gettagbyid) | **GET** /tag/{id} | 
+*TagApi* | [**tagAssets**](doc//TagApi.md#tagassets) | **PUT** /tag/{id}/assets | 
+*TagApi* | [**untagAssets**](doc//TagApi.md#untagassets) | **DELETE** /tag/{id}/assets | 
 *TagApi* | [**updateTag**](doc//TagApi.md#updatetag) | **PATCH** /tag/{id} | 
 *UserApi* | [**createProfileImage**](doc//UserApi.md#createprofileimage) | **POST** /user/profile-image | 
 *UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /user | 
@@ -192,6 +195,8 @@ Class | Method | HTTP request | Description
  - [AssetCountByTimeBucketResponseDto](doc//AssetCountByTimeBucketResponseDto.md)
  - [AssetCountByUserIdResponseDto](doc//AssetCountByUserIdResponseDto.md)
  - [AssetFileUploadResponseDto](doc//AssetFileUploadResponseDto.md)
+ - [AssetIdsDto](doc//AssetIdsDto.md)
+ - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
  - [AuthDeviceResponseDto](doc//AuthDeviceResponseDto.md)
