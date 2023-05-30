@@ -140,7 +140,7 @@ IMMICH_MACHINE_LEARNING_URL=http://immich-machine-learning:3003
 ###################################################################################
 # Immich Version
 #
-# This allows all immich docker images to be pinned to a specific version. By default, 
+# This allows all immich docker images to be pinned to a specific version. By default,
 # the version is "release" but could be a specific version, like "v1.59.0".
 ###################################################################################
 
