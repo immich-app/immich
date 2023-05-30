@@ -100,28 +100,11 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                             hashes[i] = digest.digest()
                         } catch (e: Exception) {
                             // skip this file
+                            Log.w(TAG, "Failed to hash file ${args[i]}: $e")
                         }
                     }
                     result.success(hashes.asList())
                 }
-            }
-            "digestFile" -> {
-                val args = call.arguments<ArrayList<*>>()!!
-                val path = args.get(0) as String
-                val buf = ByteArray(BUFSIZE)
-                var len = 0
-                val file = FileInputStream(path)
-                try {
-                    while (true) {
-                        len = file.read(buf)
-                        if (len != BUFSIZE) break
-                        sha1.update(buf)
-                    }
-                } finally {
-                    file.close()
-                }
-                sha1.update(buf, 0, len)
-                result.success(sha1.digest())
             }
             else -> result.notImplemented()
         }

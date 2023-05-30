@@ -21,6 +21,7 @@ class HashService {
   final BackgroundService _backgroundService;
   final _log = Logger('HashService');
 
+  /// Returns all assets that were successfully hashed
   Future<List<Asset>> getHashedAssets(
     AssetPathEntity album, {
     int start = 0,
@@ -31,115 +32,110 @@ class HashService {
     final filtered = excludedAssets == null
         ? entities
         : entities.where((e) => !excludedAssets.contains(e.id)).toList();
-    return hashAssets(filtered);
+    return _hashAssets(filtered);
   }
 
-  Future<List<int>?> hashAsset(Asset a) async {
-    assert(a.isLocal, "can only get hash of local assets");
-    final deviceAsset = await (Platform.isAndroid
-        ? _db.androidDeviceAssets.get(a.localId!.toInt())
-        : _db.iOSDeviceAssets.getById(a.localId!));
-    if (deviceAsset != null) return deviceAsset.hash;
-    final file = await a.local!.originFile;
-    if (file == null) {
-      _log.warning("Failed to get file for asset ${a.id}, skipping");
-      return null;
-    }
-    final hash =
-        await (Platform.isAndroid ? _hashFile(file) : _hashAssetCrypto(file));
-    if (hash == null) {
-      _log.warning("Failed to hash file ${file.path} for asset ${a.id}");
-      return null;
-    }
-    if (Platform.isAndroid) {
-      final da = AndroidDeviceAsset(id: a.localId!.toInt(), hash: hash);
-      await _db.writeTxn(() => _db.androidDeviceAssets.put(da));
-    } else {
-      final da = IOSDeviceAsset(id: a.localId!, hash: hash);
-      await _db.writeTxn(() => _db.iOSDeviceAssets.put(da));
-    }
-    return hash;
-  }
-
-  Future<List<Asset>> hashAssets(List<AssetEntity> assets) async {
-    final Stopwatch totalTime = Stopwatch()..start();
+  /// Converts a list of [AssetEntity]s to [Asset]s including only those
+  /// that were successfully hashed. Hashes are looked up in a DB table
+  /// [AndroidDeviceAsset] / [IOSDeviceAsset] by local id. Only missing
+  /// entries are newly hashed and added to the DB table.
+  Future<List<Asset>> _hashAssets(List<AssetEntity> assetEntities) async {
     const int batchFileCount = 128;
     const int batchDataSize = 1024 * 1024 * 1024; // 1GB
-    int totalBytes = 0;
-    int totalFiles = 0;
-    final List<DeviceAsset?> hashes;
-    final Stopwatch sw = Stopwatch()..start();
-    final List<DeviceAsset> toAdd = [];
-    final ids = assets
+
+    final ids = assetEntities
         .map(Platform.isAndroid ? (a) => a.id.toInt() : (a) => a.id)
         .toList();
-    hashes = await (Platform.isAndroid
-        ? _db.androidDeviceAssets.getAll(ids.cast())
-        : _db.iOSDeviceAssets.getAllById(ids.cast()));
-    debugPrint("Checking hash DB took ${sw.elapsedMilliseconds}ms");
-    sw.reset();
-    int bytes = 0;
+    final List<DeviceAsset?> hashes = await _lookupHashes(ids);
+    final List<DeviceAsset> toAdd = [];
     final List<String> toHash = [];
-    for (int i = 0; i < assets.length; i++) {
-      if (hashes[i] != null) continue;
-      final file = await assets[i].originFile;
-      if (file == null) {
-        _log.warning("Failed to get file for asset ${assets[i].id}, skipping");
+
+    int bytes = 0;
+
+    for (int i = 0; i < assetEntities.length; i++) {
+      if (hashes[i] != null) {
         continue;
       }
-      bytes += file.lengthSync();
+      final file = await assetEntities[i].originFile;
+      if (file == null) {
+        _log.warning(
+          "Failed to get file for asset ${assetEntities[i].id}, skipping",
+        );
+        continue;
+      }
+      bytes += await file.length();
       toHash.add(file.path);
-      final da = Platform.isAndroid
+      final deviceAsset = Platform.isAndroid
           ? AndroidDeviceAsset(id: ids[i] as int, hash: const [])
           : IOSDeviceAsset(id: ids[i] as String, hash: const []);
-      toAdd.add(da);
-      totalFiles++;
-      hashes[i] = da;
-      if (toHash.length == batchFileCount ||
-          bytes >= batchDataSize ||
-          (i + 1 == assets.length && toHash.isNotEmpty)) {
-        final h = await _hashFiles(toHash);
-        bool anyNull = false;
-        for (int j = 0; j < h.length; j++) {
-          if (h[j] != null) {
-            toAdd[j].hash = h[j]!;
-          } else {
-            _log.warning("Failed to hash file ${toHash[j]}, skipping");
-            anyNull = true;
-          }
-        }
-        debugPrint(
-          "Hashing ${toAdd.length} files / $bytes b took ${sw.elapsedMilliseconds}ms: ${(bytes / (1024 * 1024.0)) / sw.elapsedMilliseconds * 1000} mb/s",
-        );
-        final validHashes =
-            anyNull ? toAdd.where((e) => e.hash.isNotEmpty).toList() : toAdd;
-        await _db.writeTxn(
-          () => Platform.isAndroid
-              ? _db.androidDeviceAssets.putAll(validHashes.cast())
-              : _db.iOSDeviceAssets.putAll(validHashes.cast()),
-        );
-        toAdd.clear();
-        toHash.clear();
-        totalBytes += bytes;
-        bytes = 0;
-        sw.reset();
+      toAdd.add(deviceAsset);
+      hashes[i] = deviceAsset;
+      if (toHash.length == batchFileCount || bytes >= batchDataSize) {
+        await _processBatch(toHash, toAdd);
       }
     }
-    if (totalFiles > 0) {
-      debugPrint(
-        "Files: $totalFiles, Total time: ${totalTime.elapsedMilliseconds}ms, total bytes: $totalBytes, ${(totalBytes / (1024 * 1024.0)) / totalTime.elapsedMilliseconds * 1000} mb/s",
-      );
+    if (toHash.isNotEmpty) {
+      await _processBatch(toHash, toAdd);
     }
-    final List<Asset> result = [];
-    for (int i = 0; i < assets.length; i++) {
-      if (hashes[i] != null && hashes[i]!.hash.isNotEmpty) {
-        result.add(Asset.local(assets[i], hashes[i]!.hash));
-      }
-    }
-    return result;
+    return _mapAllHashedAssets(assetEntities, hashes);
   }
 
-  Future<Uint8List?> _hashAssetCrypto(File f) async {
+  /// Lookup hashes of assets by their local ID
+  Future<List<DeviceAsset?>> _lookupHashes(List<Object> ids) =>
+      Platform.isAndroid
+          ? _db.androidDeviceAssets.getAll(ids.cast())
+          : _db.iOSDeviceAssets.getAllById(ids.cast());
+
+  /// Processes a batch of files and saves any successfully hashed
+  /// values to the DB table.
+  Future<void> _processBatch(
+    final List<String> toHash,
+    final List<DeviceAsset> toAdd,
+  ) async {
+    final hashes = await _hashFiles(toHash);
+    bool anyNull = false;
+    for (int j = 0; j < hashes.length; j++) {
+      if (hashes[j] != null) {
+        toAdd[j].hash = hashes[j]!;
+      } else {
+        _log.warning("Failed to hash file ${toHash[j]}, skipping");
+        anyNull = true;
+      }
+    }
+    final validHashes =
+        anyNull ? toAdd.where((e) => e.hash.isNotEmpty).toList() : toAdd;
+    await _db.writeTxn(
+      () => Platform.isAndroid
+          ? _db.androidDeviceAssets.putAll(validHashes.cast())
+          : _db.iOSDeviceAssets.putAll(validHashes.cast()),
+    );
+    toAdd.clear();
+    toHash.clear();
+  }
+
+  /// Hashes the given files and returns a list of the same length
+  /// files that could not be hashed have a `null` value
+  Future<List<Uint8List?>> _hashFiles(List<String> paths) async {
+    if (Platform.isAndroid) {
+      final List<Uint8List?>? hashes =
+          await _backgroundService.digestFiles(paths);
+      if (hashes == null) {
+        throw Exception("Hashing ${paths.length} files failed");
+      }
+      return hashes;
+    } else if (Platform.isIOS) {
+      final List<Uint8List?> result = List.filled(paths.length, null);
+      for (int i = 0; i < paths.length; i++) {
+        result[i] = await _hashAssetDart(File(paths[i]));
+      }
+      return result;
+    } else {
+      throw Exception("_hashFiles implementation missing");
+    }
+  }
+
+  /// Hashes a single file using Dart's crypto package
+  Future<Uint8List?> _hashAssetDart(File f) async {
     late Digest output;
     final sink = sha1.startChunkedConversion(
       ChunkedConversionSink<Digest>.withCallback((accumulated) {
@@ -153,25 +149,18 @@ class HashService {
     return Uint8List.fromList(output.bytes);
   }
 
-  Future<Uint8List?> _hashFile(File f) => _backgroundService.digestFile(f.path);
-
-  Future<List<Uint8List?>> _hashFiles(List<String> paths) async {
-    if (Platform.isAndroid) {
-      final List<Uint8List?>? hashes =
-          await _backgroundService.digestFiles(paths);
-      if (hashes == null) {
-        throw Exception("Hashing ${paths.length} files failed");
+  /// Converts [AssetEntity]s that were successfully hashed to [Asset]s
+  List<Asset> _mapAllHashedAssets(
+    List<AssetEntity> assets,
+    List<DeviceAsset?> hashes,
+  ) {
+    final List<Asset> result = [];
+    for (int i = 0; i < assets.length; i++) {
+      if (hashes[i] != null && hashes[i]!.hash.isNotEmpty) {
+        result.add(Asset.local(assets[i], hashes[i]!.hash));
       }
-      return hashes;
-    } else if (Platform.isIOS) {
-      final List<Uint8List?> result = List.filled(paths.length, null);
-      for (int i = 0; i < paths.length; i++) {
-        result[i] = await _hashAssetCrypto(File(paths[i]));
-      }
-      return result;
-    } else {
-      throw Exception("_hashFiles implementation missing");
     }
+    return result;
   }
 }
 
