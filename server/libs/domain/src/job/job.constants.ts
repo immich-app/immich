@@ -140,14 +140,14 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
 
 // max concurrency for each queue (total concurrency across all jobs)
 export const QUEUE_TO_CONCURRENCY: Record<QueueName, number> = {
-  [QueueName.BACKGROUND_TASK]: 5,
-  [QueueName.CLIP_ENCODING]: 2,
-  [QueueName.METADATA_EXTRACTION]: 5,
-  [QueueName.OBJECT_TAGGING]: 2,
-  [QueueName.RECOGNIZE_FACES]: 2,
-  [QueueName.SEARCH]: 5,
-  [QueueName.SIDECAR]: 5,
-  [QueueName.STORAGE_TEMPLATE_MIGRATION]: 5,
-  [QueueName.THUMBNAIL_GENERATION]: 5,
+  [QueueName.BACKGROUND_TASK]: 1,
+  [QueueName.CLIP_ENCODING]: 1,
+  [QueueName.METADATA_EXTRACTION]: 1,
+  [QueueName.OBJECT_TAGGING]: 1,
+  [QueueName.RECOGNIZE_FACES]: 1,
+  [QueueName.SEARCH]: 1,
+  [QueueName.SIDECAR]: 1,
+  [QueueName.STORAGE_TEMPLATE_MIGRATION]: 1,
+  [QueueName.THUMBNAIL_GENERATION]: 1,
   [QueueName.VIDEO_CONVERSION]: 1,
 };
