@@ -13,13 +13,13 @@ dependencies:
   - uvicorn-standard==0.*
   - transformers==4.*
   - pydantic==1.*
+  - aiocache==0.*
   - pip
   - pip:
       - optimum==1.*
       - onnxruntime-gpu==1.*
       - opencv-python-headless==4.*
       - insightface==0.*
-      - aiocache==0.*
       - nvidia-pyindex
   - pip:
       - onnx_graphsurgeon==0.*
