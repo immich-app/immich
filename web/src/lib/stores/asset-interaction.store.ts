@@ -2,7 +2,7 @@ import { AssetGridState } from '$lib/models/asset-grid-state';
 import { api, AssetResponseDto } from '@api';
 import { derived, writable } from 'svelte/store';
 import { assetGridState, assetStore } from './assets.store';
-import { sortBy } from 'lodash-es';
+import { orderBy } from 'lodash-es';
 
 // Asset Viewer
 export const viewingAssetStoreState = writable<AssetResponseDto>();
@@ -69,7 +69,11 @@ function createAssetInteractionStore() {
 	const navigateAsset = async (direction: 'next' | 'previous') => {
 		// Flatten and sort the asset by date if there are new assets
 		if (assetSortedByDate.length === 0 || savedAssetLength !== _assetGridState.assets.length) {
-			assetSortedByDate = sortBy(_assetGridState.assets, (a) => a.fileCreatedAt);
+			assetSortedByDate = orderBy(
+				_assetGridState.assets,
+				['fileCreatedAt', 'originalPath'],
+				['desc', 'asc']
+			);
 			savedAssetLength = _assetGridState.assets.length;
 		}
 
@@ -77,7 +81,7 @@ function createAssetInteractionStore() {
 		const currentIndex = assetSortedByDate.findIndex((a) => a.id === _viewingAssetStoreState.id);
 
 		// Get the next or previous asset
-		const nextIndex = direction === 'previous' ? currentIndex + 1 : currentIndex - 1;
+		const nextIndex = direction === 'previous' ? currentIndex - 1 : currentIndex + 1;
 
 		// Run out of asset, this might be because there is no asset in the next bucket.
 		if (nextIndex == -1) {

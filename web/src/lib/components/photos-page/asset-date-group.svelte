@@ -33,6 +33,7 @@
 	let hoveredDateGroup = '';
 	$: assetsGroupByDate = lodash
 		.chain(assets)
+		.orderBy(['fileCreatedAt', 'originalPath'], ['desc', 'asc'])
 		.groupBy((a) => new Date(a.fileCreatedAt).toLocaleDateString($locale, groupDateFormat))
 		.sortBy((group) => assets.indexOf(group[0]))
 		.value();
