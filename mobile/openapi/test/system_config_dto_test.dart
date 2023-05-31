@@ -36,6 +36,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigDisplayDto display
+    test('to test the property `display`', () async {
+      // TODO
+    });
+
 
   });
 

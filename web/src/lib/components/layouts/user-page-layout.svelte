@@ -3,6 +3,7 @@
 	import type { UserResponseDto } from '@api';
 	import NavigationBar from '../shared-components/navigation-bar/navigation-bar.svelte';
 	import SideBar from '../shared-components/side-bar/side-bar.svelte';
+	import AccentColor from '../shared-components/accent-color.svelte';
 	export let user: UserResponseDto;
 	export let hideNavbar = false;
 	export let showUploadButton = false;
@@ -16,6 +17,8 @@
 
 	<slot name="header" />
 </header>
+
+<AccentColor {user} />
 
 <main
 	class="grid md:grid-cols-[theme(spacing.64)_auto] grid-cols-[theme(spacing.18)_auto] relative pt-[var(--navbar-height)] h-screen overflow-hidden bg-immich-bg dark:bg-immich-dark-bg"

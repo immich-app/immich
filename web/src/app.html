@@ -12,6 +12,31 @@
 			if (theme === 'light') {
 				document.documentElement.classList.remove('dark');
 			}
+
+			const accentColorString = localStorage.getItem('accent-colors');
+			if (accentColorString) {
+				const accentColors = JSON.parse(accentColorString);
+
+				const accentColor = accentColors['accentColor'];
+				if (accentColor) {
+					document.documentElement.style.setProperty('--accent-color', accentColor);
+				}
+				const darkAccentColor = accentColors['darkAccentColor'];
+				if (darkAccentColor) {
+					document.documentElement.style.setProperty('--dark-accent-color', darkAccentColor);
+				}
+				const userAccentColor = accentColors['userAccentColor'];
+				if (userAccentColor) {
+					document.documentElement.style.setProperty('--user-accent-color', userAccentColor);
+				}
+				const userDarkAccentColor = accentColors['userDarkAccentColor'];
+				if (userDarkAccentColor) {
+					document.documentElement.style.setProperty(
+						'--user-dark-accent-color',
+						userDarkAccentColor
+					);
+				}
+			}
 		</script>
 	</head>
 

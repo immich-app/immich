@@ -13,6 +13,7 @@ import { IJobRepository, JobName } from '../job';
 import { mapConfig, SystemConfigDto } from './dto/system-config.dto';
 import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
 import { SystemConfigCore, SystemConfigValidator } from './system-config.core';
+import { SystemConfigDisplayDto } from './dto/system-config-display.dto';
 
 @Injectable()
 export class SystemConfigService {
@@ -31,6 +32,11 @@ export class SystemConfigService {
   async getConfig(): Promise<SystemConfigDto> {
     const config = await this.core.getConfig();
     return mapConfig(config);
+  }
+
+  async getAccentColors(): Promise<SystemConfigDisplayDto> {
+    const config = await this.core.getConfig();
+    return mapConfig(config).display;
   }
 
   getDefaults(): SystemConfigDto {

@@ -20,6 +20,7 @@ import {
   SharedLinkController,
   SystemConfigController,
   UserController,
+  AccentColorsController,
 } from './controllers';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './middlewares/auth.guard';
@@ -48,6 +49,7 @@ import { AppCronJobs } from './app.cron-jobs';
     SystemConfigController,
     UserController,
     PersonController,
+    AccentColorsController,
   ],
   providers: [
     //

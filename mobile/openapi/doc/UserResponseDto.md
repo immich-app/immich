@@ -14,6 +14,8 @@ Name | Type | Description | Notes
 **lastName** | **String** |  | 
 **storageLabel** | **String** |  | 
 **profileImagePath** | **String** |  | 
+**accentColor** | **String** |  | 
+**darkAccentColor** | **String** |  | 
 **shouldChangePassword** | **bool** |  | 
 **isAdmin** | **bool** |  | 
 **createdAt** | [**DateTime**](DateTime.md) |  | 

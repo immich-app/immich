@@ -135,6 +135,8 @@ describe(AlbumService.name, () => {
           lastName: 'admin_last_name',
           oauthId: '',
           profileImagePath: '',
+          accentColor: '',
+          darkAccentColor: '',
           shouldChangePassword: false,
           storageLabel: 'admin',
           createdAt: new Date('2021-01-01'),

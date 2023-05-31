@@ -46,6 +46,16 @@ void main() {
       // TODO
     });
 
+    // String accentColor
+    test('to test the property `accentColor`', () async {
+      // TODO
+    });
+
+    // String darkAccentColor
+    test('to test the property `darkAccentColor`', () async {
+      // TODO
+    });
+
     // bool shouldChangePassword
     test('to test the property `shouldChangePassword`', () async {
       // TODO

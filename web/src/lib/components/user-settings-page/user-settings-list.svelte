@@ -9,6 +9,7 @@
 	import DeviceList from './device-list.svelte';
 	import PartnerSettings from './partner-settings.svelte';
 	import UserProfileSettings from './user-profile-settings.svelte';
+	import AccentColorSettings from './accent-color-settings.svelte';
 
 	export let user: UserResponseDto;
 
@@ -55,4 +56,8 @@
 
 <SettingAccordion title="Sharing" subtitle="Manage sharing with partners">
 	<PartnerSettings {user} />
+</SettingAccordion>
+
+<SettingAccordion title="Display" subtitle="Change the look of Immich">
+	<AccentColorSettings {user} />
 </SettingAccordion>

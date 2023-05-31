@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
 import { MapSettings } from '$lib/components/map-page/map-settings-modal.svelte';
+import { AccentColorSettings } from '$lib/components/shared-components/accent-color.svelte';
 import { persisted } from 'svelte-local-storage-store';
 
 const initialTheme =
@@ -27,4 +28,11 @@ export const mapSettings = persisted<MapSettings>('map-settings', {
 	relativeDate: '',
 	dateAfter: '',
 	dateBefore: ''
+});
+
+export const accentColors = persisted<AccentColorSettings>('accent-colors', {
+	accentColor: '',
+	darkAccentColor: '',
+	userAccentColor: '',
+	userDarkAccentColor: ''
 });

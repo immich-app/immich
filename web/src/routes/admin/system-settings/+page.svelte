@@ -5,6 +5,7 @@
 	import PasswordLoginSettings from '$lib/components/admin-page/settings/password-login/password-login-settings.svelte';
 	import SettingAccordion from '$lib/components/admin-page/settings/setting-accordion.svelte';
 	import StorageTemplateSettings from '$lib/components/admin-page/settings/storage-template/storage-template-settings.svelte';
+	import DisplaySettings from '$lib/components/admin-page/settings/display/display-settings.svelte';
 	import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 	import { api } from '@api';
 	import type { PageData } from './$types';
@@ -45,6 +46,10 @@
 			isOpen={$page.url.searchParams.get('open') === 'storage-template'}
 		>
 			<StorageTemplateSettings storageConfig={configs.storageTemplate} user={data.user} />
+		</SettingAccordion>
+
+		<SettingAccordion title="Display" subtitle="Change the look of Immich">
+			<DisplaySettings displayConfig={configs.display} />
 		</SettingAccordion>
 	{/await}
 </section>

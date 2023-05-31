@@ -38,6 +38,10 @@ const defaults: SystemConfig = Object.freeze({
   storageTemplate: {
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
+  display: {
+    accentColor: '',
+    darkAccentColor: '',
+  },
 });
 
 const singleton = new Subject<SystemConfig>();

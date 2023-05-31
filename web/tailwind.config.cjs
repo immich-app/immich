@@ -6,13 +6,13 @@ module.exports = {
 		extend: {
 			colors: {
 				// Light Theme
-				'immich-primary': '#4250af',
+				'immich-primary': 'var(--user-accent-color, var(--accent-color, #4250af))',
 				'immich-bg': 'white',
 				'immich-fg': 'black',
 				'immich-gray': '#F6F6F4',
 
 				// Dark Theme
-				'immich-dark-primary': '#adcbfa',
+				'immich-dark-primary': 'var(--user-dark-accent-color, var(--dark-accent-color, #adcbfa))',
 				'immich-dark-bg': 'black',
 				'immich-dark-fg': '#e5e7eb',
 				'immich-dark-gray': '#212121'

@@ -8,6 +8,7 @@ doc/APIKeyCreateDto.md
 doc/APIKeyCreateResponseDto.md
 doc/APIKeyResponseDto.md
 doc/APIKeyUpdateDto.md
+doc/AccentColorsApi.md
 doc/AddAssetsDto.md
 doc/AddAssetsResponseDto.md
 doc/AddUsersDto.md
@@ -91,6 +92,7 @@ doc/SharedLinkType.md
 doc/SignUpDto.md
 doc/SmartInfoResponseDto.md
 doc/SystemConfigApi.md
+doc/SystemConfigDisplayDto.md
 doc/SystemConfigDto.md
 doc/SystemConfigFFmpegDto.md
 doc/SystemConfigOAuthDto.md
@@ -113,6 +115,7 @@ doc/UserResponseDto.md
 doc/ValidateAccessTokenResponseDto.md
 git_push.sh
 lib/api.dart
+lib/api/accent_colors_api.dart
 lib/api/album_api.dart
 lib/api/api_key_api.dart
 lib/api/asset_api.dart
@@ -211,6 +214,7 @@ lib/model/shared_link_response_dto.dart
 lib/model/shared_link_type.dart
 lib/model/sign_up_dto.dart
 lib/model/smart_info_response_dto.dart
+lib/model/system_config_display_dto.dart
 lib/model/system_config_dto.dart
 lib/model/system_config_f_fmpeg_dto.dart
 lib/model/system_config_o_auth_dto.dart
@@ -230,6 +234,7 @@ lib/model/user_count_response_dto.dart
 lib/model/user_response_dto.dart
 lib/model/validate_access_token_response_dto.dart
 pubspec.yaml
+test/accent_colors_api_test.dart
 test/add_assets_dto_test.dart
 test/add_assets_response_dto_test.dart
 test/add_users_dto_test.dart
@@ -318,6 +323,7 @@ test/shared_link_type_test.dart
 test/sign_up_dto_test.dart
 test/smart_info_response_dto_test.dart
 test/system_config_api_test.dart
+test/system_config_display_dto_test.dart
 test/system_config_dto_test.dart
 test/system_config_f_fmpeg_dto_test.dart
 test/system_config_o_auth_dto_test.dart

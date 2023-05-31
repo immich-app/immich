@@ -77,6 +77,7 @@ Class | Method | HTTP request | Description
 *APIKeyApi* | [**getKey**](doc//APIKeyApi.md#getkey) | **GET** /api-key/{id} | 
 *APIKeyApi* | [**getKeys**](doc//APIKeyApi.md#getkeys) | **GET** /api-key | 
 *APIKeyApi* | [**updateKey**](doc//APIKeyApi.md#updatekey) | **PUT** /api-key/{id} | 
+*AccentColorsApi* | [**getColors**](doc//AccentColorsApi.md#getcolors) | **GET** /accent-colors | 
 *AlbumApi* | [**addAssetsToAlbum**](doc//AlbumApi.md#addassetstoalbum) | **PUT** /album/{id}/assets | 
 *AlbumApi* | [**addUsersToAlbum**](doc//AlbumApi.md#adduserstoalbum) | **PUT** /album/{id}/users | 
 *AlbumApi* | [**createAlbum**](doc//AlbumApi.md#createalbum) | **POST** /album | 
@@ -249,6 +250,7 @@ Class | Method | HTTP request | Description
  - [SharedLinkType](doc//SharedLinkType.md)
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
+ - [SystemConfigDisplayDto](doc//SystemConfigDisplayDto.md)
  - [SystemConfigDto](doc//SystemConfigDto.md)
  - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
  - [SystemConfigOAuthDto](doc//SystemConfigOAuthDto.md)

@@ -21,6 +21,8 @@ class UpdateUserDto {
     this.storageLabel,
     this.isAdmin,
     this.shouldChangePassword,
+    this.accentColor,
+    this.darkAccentColor,
   });
 
   String id;
@@ -81,6 +83,22 @@ class UpdateUserDto {
   ///
   bool? shouldChangePassword;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? accentColor;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? darkAccentColor;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateUserDto &&
      other.id == id &&
@@ -90,7 +108,9 @@ class UpdateUserDto {
      other.lastName == lastName &&
      other.storageLabel == storageLabel &&
      other.isAdmin == isAdmin &&
-     other.shouldChangePassword == shouldChangePassword;
+     other.shouldChangePassword == shouldChangePassword &&
+     other.accentColor == accentColor &&
+     other.darkAccentColor == darkAccentColor;
 
   @override
   int get hashCode =>
@@ -102,10 +122,12 @@ class UpdateUserDto {
     (lastName == null ? 0 : lastName!.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode) +
     (isAdmin == null ? 0 : isAdmin!.hashCode) +
-    (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode);
+    (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode) +
+    (accentColor == null ? 0 : accentColor!.hashCode) +
+    (darkAccentColor == null ? 0 : darkAccentColor!.hashCode);
 
   @override
-  String toString() => 'UpdateUserDto[id=$id, email=$email, password=$password, firstName=$firstName, lastName=$lastName, storageLabel=$storageLabel, isAdmin=$isAdmin, shouldChangePassword=$shouldChangePassword]';
+  String toString() => 'UpdateUserDto[id=$id, email=$email, password=$password, firstName=$firstName, lastName=$lastName, storageLabel=$storageLabel, isAdmin=$isAdmin, shouldChangePassword=$shouldChangePassword, accentColor=$accentColor, darkAccentColor=$darkAccentColor]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -145,6 +167,16 @@ class UpdateUserDto {
     } else {
       // json[r'shouldChangePassword'] = null;
     }
+    if (this.accentColor != null) {
+      json[r'accentColor'] = this.accentColor;
+    } else {
+      // json[r'accentColor'] = null;
+    }
+    if (this.darkAccentColor != null) {
+      json[r'darkAccentColor'] = this.darkAccentColor;
+    } else {
+      // json[r'darkAccentColor'] = null;
+    }
     return json;
   }
 
@@ -175,6 +207,8 @@ class UpdateUserDto {
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
         isAdmin: mapValueOfType<bool>(json, r'isAdmin'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword'),
+        accentColor: mapValueOfType<String>(json, r'accentColor'),
+        darkAccentColor: mapValueOfType<String>(json, r'darkAccentColor'),
       );
     }
     return null;

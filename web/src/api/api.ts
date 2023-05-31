@@ -15,7 +15,8 @@ import {
 	ShareApi,
 	SystemConfigApi,
 	UserApi,
-	UserApiFp
+	UserApiFp,
+	AccentColorsApi
 } from './open-api';
 import { BASE_PATH } from './open-api/base';
 import { DUMMY_BASE_URL, toPathString } from './open-api/common';
@@ -35,6 +36,7 @@ export class ImmichApi {
 	public personApi: PersonApi;
 	public systemConfigApi: SystemConfigApi;
 	public userApi: UserApi;
+	public accentColorsApi: AccentColorsApi;
 
 	private config: Configuration;
 
@@ -54,6 +56,7 @@ export class ImmichApi {
 		this.personApi = new PersonApi(this.config);
 		this.systemConfigApi = new SystemConfigApi(this.config);
 		this.userApi = new UserApi(this.config);
+		this.accentColorsApi = new AccentColorsApi(this.config);
 	}
 
 	private createUrl(path: string, params?: Record<string, unknown>) {

@@ -2398,6 +2398,27 @@
         ]
       }
     },
+    "/accent-colors": {
+      "get": {
+        "operationId": "getColors",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemConfigDisplayDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Accent Colors"
+        ]
+      }
+    },
     "/asset/upload": {
       "post": {
         "operationId": "uploadFile",
@@ -4199,6 +4220,12 @@
           "profileImagePath": {
             "type": "string"
           },
+          "accentColor": {
+            "type": "string"
+          },
+          "darkAccentColor": {
+            "type": "string"
+          },
           "shouldChangePassword": {
             "type": "boolean"
           },
@@ -4229,6 +4256,8 @@
           "lastName",
           "storageLabel",
           "profileImagePath",
+          "accentColor",
+          "darkAccentColor",
           "shouldChangePassword",
           "isAdmin",
           "createdAt",
@@ -5586,6 +5615,21 @@
           "template"
         ]
       },
+      "SystemConfigDisplayDto": {
+        "type": "object",
+        "properties": {
+          "accentColor": {
+            "type": "string"
+          },
+          "darkAccentColor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "accentColor",
+          "darkAccentColor"
+        ]
+      },
       "SystemConfigDto": {
         "type": "object",
         "properties": {
@@ -5600,13 +5644,17 @@
           },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
+          },
+          "display": {
+            "$ref": "#/components/schemas/SystemConfigDisplayDto"
           }
         },
         "required": [
           "ffmpeg",
           "oauth",
           "passwordLogin",
-          "storageTemplate"
+          "storageTemplate",
+          "display"
         ]
       },
       "SystemConfigTemplateStorageOptionDto": {
@@ -5730,6 +5778,12 @@
           },
           "shouldChangePassword": {
             "type": "boolean"
+          },
+          "accentColor": {
+            "type": "string"
+          },
+          "darkAccentColor": {
+            "type": "string"
           }
         },
         "required": [

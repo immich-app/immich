@@ -85,6 +85,8 @@ export const userEntityStub = {
     oauthId: '',
     shouldChangePassword: false,
     profileImagePath: '',
+    accentColor: '',
+    darkAccentColor: '',
     createdAt: new Date('2021-01-01'),
     deletedAt: null,
     updatedAt: new Date('2021-01-01'),
@@ -100,6 +102,8 @@ export const userEntityStub = {
     oauthId: '',
     shouldChangePassword: false,
     profileImagePath: '',
+    accentColor: '',
+    darkAccentColor: '',
     createdAt: new Date('2021-01-01'),
     deletedAt: null,
     updatedAt: new Date('2021-01-01'),
@@ -115,6 +119,8 @@ export const userEntityStub = {
     oauthId: '',
     shouldChangePassword: false,
     profileImagePath: '',
+    accentColor: '',
+    darkAccentColor: '',
     createdAt: new Date('2021-01-01'),
     deletedAt: null,
     updatedAt: new Date('2021-01-01'),
@@ -545,6 +551,10 @@ export const systemConfigStub = {
     },
     storageTemplate: {
       template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
+    },
+    display: {
+      accentColor: '',
+      darkAccentColor: '',
     },
   } as SystemConfig),
   enabled: Object.freeze({

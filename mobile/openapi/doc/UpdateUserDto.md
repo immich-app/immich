@@ -16,6 +16,8 @@ Name | Type | Description | Notes
 **storageLabel** | **String** |  | [optional] 
 **isAdmin** | **bool** |  | [optional] 
 **shouldChangePassword** | **bool** |  | [optional] 
+**accentColor** | **String** |  | [optional] 
+**darkAccentColor** | **String** |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

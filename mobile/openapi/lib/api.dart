@@ -29,6 +29,7 @@ part 'auth/http_basic_auth.dart';
 part 'auth/http_bearer_auth.dart';
 
 part 'api/api_key_api.dart';
+part 'api/accent_colors_api.dart';
 part 'api/album_api.dart';
 part 'api/asset_api.dart';
 part 'api/authentication_api.dart';
@@ -119,6 +120,7 @@ part 'model/shared_link_response_dto.dart';
 part 'model/shared_link_type.dart';
 part 'model/sign_up_dto.dart';
 part 'model/smart_info_response_dto.dart';
+part 'model/system_config_display_dto.dart';
 part 'model/system_config_dto.dart';
 part 'model/system_config_f_fmpeg_dto.dart';
 part 'model/system_config_o_auth_dto.dart';

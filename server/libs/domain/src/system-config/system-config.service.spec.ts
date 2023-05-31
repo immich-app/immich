@@ -41,6 +41,10 @@ const updatedConfig = Object.freeze({
   storageTemplate: {
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
   },
+  display: {
+    accentColor: '',
+    darkAccentColor: '',
+  },
 });
 
 describe(SystemConfigService.name, () => {

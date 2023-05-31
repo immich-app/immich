@@ -333,6 +333,8 @@ class ApiClient {
           return SignUpDto.fromJson(value);
         case 'SmartInfoResponseDto':
           return SmartInfoResponseDto.fromJson(value);
+        case 'SystemConfigDisplayDto':
+          return SystemConfigDisplayDto.fromJson(value);
         case 'SystemConfigDto':
           return SystemConfigDto.fromJson(value);
         case 'SystemConfigFFmpegDto':

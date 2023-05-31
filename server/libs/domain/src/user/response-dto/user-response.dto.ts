@@ -7,6 +7,8 @@ export class UserResponseDto {
   lastName!: string;
   storageLabel!: string | null;
   profileImagePath!: string;
+  accentColor!: string;
+  darkAccentColor!: string;
   shouldChangePassword!: boolean;
   isAdmin!: boolean;
   createdAt!: Date;
@@ -23,6 +25,8 @@ export function mapUser(entity: UserEntity): UserResponseDto {
     lastName: entity.lastName,
     storageLabel: entity.storageLabel,
     profileImagePath: entity.profileImagePath,
+    accentColor: entity.accentColor,
+    darkAccentColor: entity.darkAccentColor,
     shouldChangePassword: entity.shouldChangePassword,
     isAdmin: entity.isAdmin,
     createdAt: entity.createdAt,

@@ -20,6 +20,8 @@ describe('TagService', () => {
     isAdmin: true,
     email: 'testuser@email.com',
     profileImagePath: '',
+    accentColor: '',
+    darkAccentColor: '',
     shouldChangePassword: true,
     createdAt: new Date('2022-12-02T19:29:23.603Z'),
     deletedAt: null,

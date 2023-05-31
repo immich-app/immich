@@ -5,6 +5,7 @@ import { SystemConfigFFmpegDto } from './system-config-ffmpeg.dto';
 import { SystemConfigOAuthDto } from './system-config-oauth.dto';
 import { SystemConfigPasswordLoginDto } from './system-config-password-login.dto';
 import { SystemConfigStorageTemplateDto } from './system-config-storage-template.dto';
+import { SystemConfigDisplayDto } from './system-config-display.dto';
 
 export class SystemConfigDto {
   @Type(() => SystemConfigFFmpegDto)
@@ -26,6 +27,11 @@ export class SystemConfigDto {
   @ValidateNested()
   @IsObject()
   storageTemplate!: SystemConfigStorageTemplateDto;
+
+  @Type(() => SystemConfigDisplayDto)
+  @ValidateNested()
+  @IsObject()
+  display!: SystemConfigDisplayDto;
 }
 
 export function mapConfig(config: SystemConfig): SystemConfigDto {

@@ -34,6 +34,8 @@ export enum SystemConfigKey {
   OAUTH_MOBILE_REDIRECT_URI = 'oauth.mobileRedirectUri',
   PASSWORD_LOGIN_ENABLED = 'passwordLogin.enabled',
   STORAGE_TEMPLATE = 'storageTemplate.template',
+  DISPLAY_ACCENT_COLOR = 'display.accentColor',
+  DISPLAY_DARK_ACCENT_COLOR = 'display.darkAccentColor',
 }
 
 export enum TranscodePreset {
@@ -72,5 +74,9 @@ export interface SystemConfig {
   };
   storageTemplate: {
     template: string;
+  };
+  display: {
+    accentColor: string;
+    darkAccentColor: string;
   };
 }

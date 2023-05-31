@@ -19,6 +19,8 @@ class UserResponseDto {
     required this.lastName,
     required this.storageLabel,
     required this.profileImagePath,
+    required this.accentColor,
+    required this.darkAccentColor,
     required this.shouldChangePassword,
     required this.isAdmin,
     required this.createdAt,
@@ -38,6 +40,10 @@ class UserResponseDto {
   String? storageLabel;
 
   String profileImagePath;
+
+  String accentColor;
+
+  String darkAccentColor;
 
   bool shouldChangePassword;
 
@@ -59,6 +65,8 @@ class UserResponseDto {
      other.lastName == lastName &&
      other.storageLabel == storageLabel &&
      other.profileImagePath == profileImagePath &&
+     other.accentColor == accentColor &&
+     other.darkAccentColor == darkAccentColor &&
      other.shouldChangePassword == shouldChangePassword &&
      other.isAdmin == isAdmin &&
      other.createdAt == createdAt &&
@@ -75,6 +83,8 @@ class UserResponseDto {
     (lastName.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode) +
     (profileImagePath.hashCode) +
+    (accentColor.hashCode) +
+    (darkAccentColor.hashCode) +
     (shouldChangePassword.hashCode) +
     (isAdmin.hashCode) +
     (createdAt.hashCode) +
@@ -83,7 +93,7 @@ class UserResponseDto {
     (oauthId.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, storageLabel=$storageLabel, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin, createdAt=$createdAt, deletedAt=$deletedAt, updatedAt=$updatedAt, oauthId=$oauthId]';
+  String toString() => 'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, storageLabel=$storageLabel, profileImagePath=$profileImagePath, accentColor=$accentColor, darkAccentColor=$darkAccentColor, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin, createdAt=$createdAt, deletedAt=$deletedAt, updatedAt=$updatedAt, oauthId=$oauthId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -97,6 +107,8 @@ class UserResponseDto {
       // json[r'storageLabel'] = null;
     }
       json[r'profileImagePath'] = this.profileImagePath;
+      json[r'accentColor'] = this.accentColor;
+      json[r'darkAccentColor'] = this.darkAccentColor;
       json[r'shouldChangePassword'] = this.shouldChangePassword;
       json[r'isAdmin'] = this.isAdmin;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
@@ -135,6 +147,8 @@ class UserResponseDto {
         lastName: mapValueOfType<String>(json, r'lastName')!,
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
+        accentColor: mapValueOfType<String>(json, r'accentColor')!,
+        darkAccentColor: mapValueOfType<String>(json, r'darkAccentColor')!,
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         createdAt: mapDateTime(json, r'createdAt', '')!,
@@ -194,6 +208,8 @@ class UserResponseDto {
     'lastName',
     'storageLabel',
     'profileImagePath',
+    'accentColor',
+    'darkAccentColor',
     'shouldChangePassword',
     'isAdmin',
     'createdAt',

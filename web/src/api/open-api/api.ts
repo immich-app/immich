@@ -2173,6 +2173,25 @@ export interface SmartInfoResponseDto {
 /**
  * 
  * @export
+ * @interface SystemConfigDisplayDto
+ */
+export interface SystemConfigDisplayDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigDisplayDto
+     */
+    'accentColor': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SystemConfigDisplayDto
+     */
+    'darkAccentColor': string;
+}
+/**
+ * 
+ * @export
  * @interface SystemConfigDto
  */
 export interface SystemConfigDto {
@@ -2200,6 +2219,12 @@ export interface SystemConfigDto {
      * @memberof SystemConfigDto
      */
     'storageTemplate': SystemConfigStorageTemplateDto;
+    /**
+     * 
+     * @type {SystemConfigDisplayDto}
+     * @memberof SystemConfigDto
+     */
+    'display': SystemConfigDisplayDto;
 }
 /**
  * 
@@ -2619,6 +2644,18 @@ export interface UpdateUserDto {
      * @memberof UpdateUserDto
      */
     'shouldChangePassword'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateUserDto
+     */
+    'accentColor'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UpdateUserDto
+     */
+    'darkAccentColor'?: string;
 }
 /**
  * 
@@ -2718,6 +2755,18 @@ export interface UserResponseDto {
      * @memberof UserResponseDto
      */
     'profileImagePath': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserResponseDto
+     */
+    'accentColor': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserResponseDto
+     */
+    'darkAccentColor': string;
     /**
      * 
      * @type {boolean}
@@ -3229,6 +3278,100 @@ export class APIKeyApi extends BaseAPI {
      */
     public updateKey(requestParameters: APIKeyApiUpdateKeyRequest, options?: AxiosRequestConfig) {
         return APIKeyApiFp(this.configuration).updateKey(requestParameters.id, requestParameters.aPIKeyUpdateDto, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+/**
+ * AccentColorsApi - axios parameter creator
+ * @export
+ */
+export const AccentColorsApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getColors: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/accent-colors`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * AccentColorsApi - functional programming interface
+ * @export
+ */
+export const AccentColorsApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = AccentColorsApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getColors(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SystemConfigDisplayDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getColors(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * AccentColorsApi - factory interface
+ * @export
+ */
+export const AccentColorsApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = AccentColorsApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getColors(options?: any): AxiosPromise<SystemConfigDisplayDto> {
+            return localVarFp.getColors(options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * AccentColorsApi - object-oriented interface
+ * @export
+ * @class AccentColorsApi
+ * @extends {BaseAPI}
+ */
+export class AccentColorsApi extends BaseAPI {
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AccentColorsApi
+     */
+    public getColors(options?: AxiosRequestConfig) {
+        return AccentColorsApiFp(this.configuration).getColors(options).then((request) => request(this.axios, this.basePath));
     }
 }
 

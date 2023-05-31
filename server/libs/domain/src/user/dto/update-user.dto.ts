@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsBoolean, IsEmail, IsHexColor, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateIf } from 'class-validator';
 import { toEmail, toSanitized } from '../../../../../apps/immich/src/utils/transform.util';
 
 export class UpdateUserDto {
@@ -41,4 +41,14 @@ export class UpdateUserDto {
   @IsOptional()
   @IsBoolean()
   shouldChangePassword?: boolean;
+
+  @IsOptional()
+  @ValidateIf((_, value) => value !== '')
+  @IsHexColor()
+  accentColor?: string;
+
+  @IsOptional()
+  @ValidateIf((_, value) => value !== '')
+  @IsHexColor()
+  darkAccentColor?: string;
 }

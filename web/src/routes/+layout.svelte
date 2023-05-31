@@ -14,9 +14,62 @@
 	import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
 	import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
 	import FaviconHeader from '$lib/components/shared-components/favicon-header.svelte';
+	import { api } from '@api';
+	import { accentColors } from '$lib/stores/preferences.store';
+	import { onMount } from 'svelte';
 
 	let showNavigationLoadingBar = false;
 	export let data: LayoutData;
+
+	let mounted = false;
+
+	$: $accentColors,
+		(() => {
+			if (!mounted) return;
+
+			if ($accentColors.accentColor) {
+				document.documentElement.style.setProperty('--accent-color', $accentColors.accentColor);
+			} else {
+				document.documentElement.style.setProperty('--accent-color', null);
+			}
+
+			if ($accentColors.darkAccentColor) {
+				document.documentElement.style.setProperty(
+					'--dark-accent-color',
+					$accentColors.darkAccentColor
+				);
+			} else {
+				document.documentElement.style.setProperty('--dark-accent-color', null);
+			}
+
+			if ($accentColors.userAccentColor) {
+				document.documentElement.style.setProperty(
+					'--user-accent-color',
+					$accentColors.userAccentColor
+				);
+			} else {
+				document.documentElement.style.setProperty('--user-accent-color', null);
+			}
+
+			if ($accentColors.userDarkAccentColor) {
+				document.documentElement.style.setProperty(
+					'--user-dark-accent-color',
+					$accentColors.userDarkAccentColor
+				);
+			} else {
+				document.documentElement.style.setProperty('--user-dark-accent-color', null);
+			}
+		})();
+
+	onMount(async () => {
+		mounted = true;
+
+		const { data } = await api.accentColorsApi.getColors();
+		$accentColors = {
+			accentColor: data.accentColor,
+			darkAccentColor: data.darkAccentColor
+		};
+	});
 
 	beforeNavigate(() => {
 		showNavigationLoadingBar = true;

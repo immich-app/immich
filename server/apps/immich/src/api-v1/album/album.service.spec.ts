@@ -36,6 +36,8 @@ describe('Album service', () => {
     deletedAt: null,
     updatedAt: new Date('2022-06-19T23:41:36.910Z'),
     profileImagePath: '',
+    accentColor: '',
+    darkAccentColor: '',
     shouldChangePassword: false,
     oauthId: '',
     tags: [],
