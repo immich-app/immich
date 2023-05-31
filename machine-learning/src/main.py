@@ -35,11 +35,6 @@ eager_startup = (
 
 cache_folder = os.getenv("MACHINE_LEARNING_CACHE_FOLDER", "/cache")
 
-model_type_to_name = {
-    "image-classification": classification_model,
-    "clip": clip_model,
-    "facial-recognition": facial_recognition_model,
-}
 _model_cache = {}
 
 app = FastAPI()
@@ -47,12 +42,13 @@ app = FastAPI()
 
 @app.on_event("startup")
 async def startup_event():
+    if not eager_startup:
+        return
+
     # Get all models
-    for model_type, model_name in model_type_to_name.items():
-        if eager_startup:
-            get_cached_model(model_name, model_type)
-        else:
-            _get_model(model_name, model_type)
+    _get_model(classification_model, "image-classification")
+    _get_model(clip_model)
+    _get_model(facial_recognition_model, "facial-recognition")
 
 
 @app.get("/")
@@ -67,28 +63,28 @@ def ping():
 
 @app.post("/image-classifier/tag-image", status_code=200)
 def image_classification(payload: MlRequestBody):
-    model = get_cached_model(classification_model, "image-classification")
+    model = _get_model(classification_model, "image-classification")
     assetPath = payload.thumbnailPath
     return run_engine(model, assetPath)
 
 
 @app.post("/sentence-transformer/encode-image", status_code=200)
 def clip_encode_image(payload: MlRequestBody):
-    model = get_cached_model(clip_model, "clip")
+    model = _get_model(clip_model)
     assetPath = payload.thumbnailPath
     return model.encode(Image.open(assetPath)).tolist()
 
 
 @app.post("/sentence-transformer/encode-text", status_code=200)
 def clip_encode_text(payload: ClipRequestBody):
-    model = get_cached_model(clip_model, "clip")
+    model = _get_model(clip_model)
     text = payload.text
     return model.encode(text).tolist()
 
 
 @app.post("/facial-recognition/detect-faces", status_code=200)
 def facial_recognition(payload: MlRequestBody):
-    model = get_cached_model(facial_recognition_model, "facial-recognition")
+    model = _get_model(facial_recognition_model, "facial-recognition")
     assetPath = payload.thumbnailPath
     img = cv.imread(assetPath)
     height, width, _ = img.shape
@@ -132,32 +128,24 @@ def run_engine(engine, path):
     return result
 
 
-def get_cached_model(model, task):
+def _get_model(model, task=None):
     global _model_cache
     key = "|".join([model, str(task)])
-    if key in _model_cache:
-        return _model_cache[key]
-    else:
-        model = _get_model(model, task)
-        _model_cache[key] = model
-
-    return model
-
-
-def _get_model(model, task):
-    match task:
-        case "facial-recognition":
-            model = FaceAnalysis(
-                name=model,
-                root=cache_folder,
-                allowed_modules=["detection", "recognition"],
-            )
-            model.prepare(ctx_id=0, det_size=(640, 640))
-        case "clip":
-            model = SentenceTransformer(model, cache_folder=cache_folder)
-        case _:
-            model = pipeline(model=model, task=task)
-    return model
+    if key not in _model_cache:
+        if task:
+            if task == "facial-recognition":
+                face_model = FaceAnalysis(
+                    name=model,
+                    root=cache_folder,
+                    allowed_modules=["detection", "recognition"],
+                )
+                face_model.prepare(ctx_id=0, det_size=(640, 640))
+                _model_cache[key] = face_model
+            else:
+                _model_cache[key] = pipeline(model=model, task=task)
+        else:
+            _model_cache[key] = SentenceTransformer(model, cache_folder=cache_folder)
+    return _model_cache[key]
 
 
 if __name__ == "__main__":
