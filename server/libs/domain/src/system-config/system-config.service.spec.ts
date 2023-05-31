@@ -1,7 +1,7 @@
-import { SystemConfigEntity, SystemConfigKey, TranscodePreset } from '@app/infra/entities';
+import { SystemConfig, SystemConfigEntity, SystemConfigKey, TranscodePreset } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import { newJobRepositoryMock, newSystemConfigRepositoryMock, systemConfigStub } from '../../test';
-import { IJobRepository, JobName } from '../job';
+import { IJobRepository, JobName, QueueName } from '../job';
 import { SystemConfigValidator } from './system-config.core';
 import { ISystemConfigRepository } from './system-config.repository';
 import { SystemConfigService } from './system-config.service';
@@ -11,7 +11,19 @@ const updates: SystemConfigEntity[] = [
   { key: SystemConfigKey.OAUTH_AUTO_LAUNCH, value: true },
 ];
 
-const updatedConfig = Object.freeze({
+const updatedConfig = Object.freeze<SystemConfig>({
+  job: {
+    [QueueName.BACKGROUND_TASK]: { concurrency: 5 },
+    [QueueName.CLIP_ENCODING]: { concurrency: 2 },
+    [QueueName.METADATA_EXTRACTION]: { concurrency: 5 },
+    [QueueName.OBJECT_TAGGING]: { concurrency: 2 },
+    [QueueName.RECOGNIZE_FACES]: { concurrency: 2 },
+    [QueueName.SEARCH]: { concurrency: 5 },
+    [QueueName.SIDECAR]: { concurrency: 5 },
+    [QueueName.STORAGE_TEMPLATE_MIGRATION]: { concurrency: 5 },
+    [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
+    [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
+  },
   ffmpeg: {
     crf: 30,
     threads: 0,

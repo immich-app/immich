@@ -13,80 +13,80 @@ part of openapi.api;
 class AllJobStatusResponseDto {
   /// Returns a new [AllJobStatusResponseDto] instance.
   AllJobStatusResponseDto({
-    required this.thumbnailGenerationQueue,
-    required this.metadataExtractionQueue,
-    required this.videoConversionQueue,
-    required this.objectTaggingQueue,
-    required this.clipEncodingQueue,
-    required this.storageTemplateMigrationQueue,
-    required this.backgroundTaskQueue,
-    required this.searchQueue,
-    required this.recognizeFacesQueue,
-    required this.sidecarQueue,
+    required this.thumbnailGeneration,
+    required this.metadataExtraction,
+    required this.videoConversion,
+    required this.objectTagging,
+    required this.clipEncoding,
+    required this.storageTemplateMigration,
+    required this.backgroundTask,
+    required this.search,
+    required this.recognizeFaces,
+    required this.sidecar,
   });
 
-  JobStatusDto thumbnailGenerationQueue;
+  JobStatusDto thumbnailGeneration;
 
-  JobStatusDto metadataExtractionQueue;
+  JobStatusDto metadataExtraction;
 
-  JobStatusDto videoConversionQueue;
+  JobStatusDto videoConversion;
 
-  JobStatusDto objectTaggingQueue;
+  JobStatusDto objectTagging;
 
-  JobStatusDto clipEncodingQueue;
+  JobStatusDto clipEncoding;
 
-  JobStatusDto storageTemplateMigrationQueue;
+  JobStatusDto storageTemplateMigration;
 
-  JobStatusDto backgroundTaskQueue;
+  JobStatusDto backgroundTask;
 
-  JobStatusDto searchQueue;
+  JobStatusDto search;
 
-  JobStatusDto recognizeFacesQueue;
+  JobStatusDto recognizeFaces;
 
-  JobStatusDto sidecarQueue;
+  JobStatusDto sidecar;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AllJobStatusResponseDto &&
-     other.thumbnailGenerationQueue == thumbnailGenerationQueue &&
-     other.metadataExtractionQueue == metadataExtractionQueue &&
-     other.videoConversionQueue == videoConversionQueue &&
-     other.objectTaggingQueue == objectTaggingQueue &&
-     other.clipEncodingQueue == clipEncodingQueue &&
-     other.storageTemplateMigrationQueue == storageTemplateMigrationQueue &&
-     other.backgroundTaskQueue == backgroundTaskQueue &&
-     other.searchQueue == searchQueue &&
-     other.recognizeFacesQueue == recognizeFacesQueue &&
-     other.sidecarQueue == sidecarQueue;
+     other.thumbnailGeneration == thumbnailGeneration &&
+     other.metadataExtraction == metadataExtraction &&
+     other.videoConversion == videoConversion &&
+     other.objectTagging == objectTagging &&
+     other.clipEncoding == clipEncoding &&
+     other.storageTemplateMigration == storageTemplateMigration &&
+     other.backgroundTask == backgroundTask &&
+     other.search == search &&
+     other.recognizeFaces == recognizeFaces &&
+     other.sidecar == sidecar;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (thumbnailGenerationQueue.hashCode) +
-    (metadataExtractionQueue.hashCode) +
-    (videoConversionQueue.hashCode) +
-    (objectTaggingQueue.hashCode) +
-    (clipEncodingQueue.hashCode) +
-    (storageTemplateMigrationQueue.hashCode) +
-    (backgroundTaskQueue.hashCode) +
-    (searchQueue.hashCode) +
-    (recognizeFacesQueue.hashCode) +
-    (sidecarQueue.hashCode);
+    (thumbnailGeneration.hashCode) +
+    (metadataExtraction.hashCode) +
+    (videoConversion.hashCode) +
+    (objectTagging.hashCode) +
+    (clipEncoding.hashCode) +
+    (storageTemplateMigration.hashCode) +
+    (backgroundTask.hashCode) +
+    (search.hashCode) +
+    (recognizeFaces.hashCode) +
+    (sidecar.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[thumbnailGenerationQueue=$thumbnailGenerationQueue, metadataExtractionQueue=$metadataExtractionQueue, videoConversionQueue=$videoConversionQueue, objectTaggingQueue=$objectTaggingQueue, clipEncodingQueue=$clipEncodingQueue, storageTemplateMigrationQueue=$storageTemplateMigrationQueue, backgroundTaskQueue=$backgroundTaskQueue, searchQueue=$searchQueue, recognizeFacesQueue=$recognizeFacesQueue, sidecarQueue=$sidecarQueue]';
+  String toString() => 'AllJobStatusResponseDto[thumbnailGeneration=$thumbnailGeneration, metadataExtraction=$metadataExtraction, videoConversion=$videoConversion, objectTagging=$objectTagging, clipEncoding=$clipEncoding, storageTemplateMigration=$storageTemplateMigration, backgroundTask=$backgroundTask, search=$search, recognizeFaces=$recognizeFaces, sidecar=$sidecar]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'thumbnail-generation-queue'] = this.thumbnailGenerationQueue;
-      json[r'metadata-extraction-queue'] = this.metadataExtractionQueue;
-      json[r'video-conversion-queue'] = this.videoConversionQueue;
-      json[r'object-tagging-queue'] = this.objectTaggingQueue;
-      json[r'clip-encoding-queue'] = this.clipEncodingQueue;
-      json[r'storage-template-migration-queue'] = this.storageTemplateMigrationQueue;
-      json[r'background-task-queue'] = this.backgroundTaskQueue;
-      json[r'search-queue'] = this.searchQueue;
-      json[r'recognize-faces-queue'] = this.recognizeFacesQueue;
-      json[r'sidecar-queue'] = this.sidecarQueue;
+      json[r'thumbnailGeneration'] = this.thumbnailGeneration;
+      json[r'metadataExtraction'] = this.metadataExtraction;
+      json[r'videoConversion'] = this.videoConversion;
+      json[r'objectTagging'] = this.objectTagging;
+      json[r'clipEncoding'] = this.clipEncoding;
+      json[r'storageTemplateMigration'] = this.storageTemplateMigration;
+      json[r'backgroundTask'] = this.backgroundTask;
+      json[r'search'] = this.search;
+      json[r'recognizeFaces'] = this.recognizeFaces;
+      json[r'sidecar'] = this.sidecar;
     return json;
   }
 
@@ -109,16 +109,16 @@ class AllJobStatusResponseDto {
       }());
 
       return AllJobStatusResponseDto(
-        thumbnailGenerationQueue: JobStatusDto.fromJson(json[r'thumbnail-generation-queue'])!,
-        metadataExtractionQueue: JobStatusDto.fromJson(json[r'metadata-extraction-queue'])!,
-        videoConversionQueue: JobStatusDto.fromJson(json[r'video-conversion-queue'])!,
-        objectTaggingQueue: JobStatusDto.fromJson(json[r'object-tagging-queue'])!,
-        clipEncodingQueue: JobStatusDto.fromJson(json[r'clip-encoding-queue'])!,
-        storageTemplateMigrationQueue: JobStatusDto.fromJson(json[r'storage-template-migration-queue'])!,
-        backgroundTaskQueue: JobStatusDto.fromJson(json[r'background-task-queue'])!,
-        searchQueue: JobStatusDto.fromJson(json[r'search-queue'])!,
-        recognizeFacesQueue: JobStatusDto.fromJson(json[r'recognize-faces-queue'])!,
-        sidecarQueue: JobStatusDto.fromJson(json[r'sidecar-queue'])!,
+        thumbnailGeneration: JobStatusDto.fromJson(json[r'thumbnailGeneration'])!,
+        metadataExtraction: JobStatusDto.fromJson(json[r'metadataExtraction'])!,
+        videoConversion: JobStatusDto.fromJson(json[r'videoConversion'])!,
+        objectTagging: JobStatusDto.fromJson(json[r'objectTagging'])!,
+        clipEncoding: JobStatusDto.fromJson(json[r'clipEncoding'])!,
+        storageTemplateMigration: JobStatusDto.fromJson(json[r'storageTemplateMigration'])!,
+        backgroundTask: JobStatusDto.fromJson(json[r'backgroundTask'])!,
+        search: JobStatusDto.fromJson(json[r'search'])!,
+        recognizeFaces: JobStatusDto.fromJson(json[r'recognizeFaces'])!,
+        sidecar: JobStatusDto.fromJson(json[r'sidecar'])!,
       );
     }
     return null;
@@ -166,16 +166,16 @@ class AllJobStatusResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'thumbnail-generation-queue',
-    'metadata-extraction-queue',
-    'video-conversion-queue',
-    'object-tagging-queue',
-    'clip-encoding-queue',
-    'storage-template-migration-queue',
-    'background-task-queue',
-    'search-queue',
-    'recognize-faces-queue',
-    'sidecar-queue',
+    'thumbnailGeneration',
+    'metadataExtraction',
+    'videoConversion',
+    'objectTagging',
+    'clipEncoding',
+    'storageTemplateMigration',
+    'backgroundTask',
+    'search',
+    'recognizeFaces',
+    'sidecar',
   };
 }
 

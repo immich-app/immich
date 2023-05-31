@@ -16,53 +16,53 @@ void main() {
   // final instance = AllJobStatusResponseDto();
 
   group('test AllJobStatusResponseDto', () {
-    // JobStatusDto thumbnailGenerationQueue
-    test('to test the property `thumbnailGenerationQueue`', () async {
+    // JobStatusDto thumbnailGeneration
+    test('to test the property `thumbnailGeneration`', () async {
       // TODO
     });
 
-    // JobStatusDto metadataExtractionQueue
-    test('to test the property `metadataExtractionQueue`', () async {
+    // JobStatusDto metadataExtraction
+    test('to test the property `metadataExtraction`', () async {
       // TODO
     });
 
-    // JobStatusDto videoConversionQueue
-    test('to test the property `videoConversionQueue`', () async {
+    // JobStatusDto videoConversion
+    test('to test the property `videoConversion`', () async {
       // TODO
     });
 
-    // JobStatusDto objectTaggingQueue
-    test('to test the property `objectTaggingQueue`', () async {
+    // JobStatusDto objectTagging
+    test('to test the property `objectTagging`', () async {
       // TODO
     });
 
-    // JobStatusDto clipEncodingQueue
-    test('to test the property `clipEncodingQueue`', () async {
+    // JobStatusDto clipEncoding
+    test('to test the property `clipEncoding`', () async {
       // TODO
     });
 
-    // JobStatusDto storageTemplateMigrationQueue
-    test('to test the property `storageTemplateMigrationQueue`', () async {
+    // JobStatusDto storageTemplateMigration
+    test('to test the property `storageTemplateMigration`', () async {
       // TODO
     });
 
-    // JobStatusDto backgroundTaskQueue
-    test('to test the property `backgroundTaskQueue`', () async {
+    // JobStatusDto backgroundTask
+    test('to test the property `backgroundTask`', () async {
       // TODO
     });
 
-    // JobStatusDto searchQueue
-    test('to test the property `searchQueue`', () async {
+    // JobStatusDto search
+    test('to test the property `search`', () async {
       // TODO
     });
 
-    // JobStatusDto recognizeFacesQueue
-    test('to test the property `recognizeFacesQueue`', () async {
+    // JobStatusDto recognizeFaces
+    test('to test the property `recognizeFaces`', () async {
       // TODO
     });
 
-    // JobStatusDto sidecarQueue
-    test('to test the property `sidecarQueue`', () async {
+    // JobStatusDto sidecar
+    test('to test the property `sidecar`', () async {
       // TODO
     });
 

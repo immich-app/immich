@@ -1,7 +1,8 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { QueueName } from '../../../domain/src';
 
 @Entity('system_config')
-export class SystemConfigEntity<T = string | boolean | number> {
+export class SystemConfigEntity<T = SystemConfigValue> {
   @PrimaryColumn()
   key!: SystemConfigKey;
 
@@ -9,7 +10,7 @@ export class SystemConfigEntity<T = string | boolean | number> {
   value!: T;
 }
 
-export type SystemConfigValue = any;
+export type SystemConfigValue = string | number | boolean;
 
 // dot notation matches path in `SystemConfig`
 export enum SystemConfigKey {
@@ -22,6 +23,18 @@ export enum SystemConfigKey {
   FFMPEG_MAX_BITRATE = 'ffmpeg.maxBitrate',
   FFMPEG_TWO_PASS = 'ffmpeg.twoPass',
   FFMPEG_TRANSCODE = 'ffmpeg.transcode',
+
+  JOB_THUMBNAIL_GENERATION_CONCURRENCY = 'job.thumbnailGeneration.concurrency',
+  JOB_METADATA_EXTRACTION_CONCURRENCY = 'job.metadataExtraction.concurrency',
+  JOB_VIDEO_CONVERSION_CONCURRENCY = 'job.videoConversion.concurrency',
+  JOB_OBJECT_TAGGING_CONCURRENCY = 'job.objectTagging.concurrency',
+  JOB_RECOGNIZE_FACES_CONCURRENCY = 'job.recognizeFaces.concurrency',
+  JOB_CLIP_ENCODING_CONCURRENCY = 'job.clipEncoding.concurrency',
+  JOB_BACKGROUND_TASK_CONCURRENCY = 'job.backgroundTask.concurrency',
+  JOB_STORAGE_TEMPLATE_MIGRATION_CONCURRENCY = 'job.storageTemplateMigration.concurrency',
+  JOB_SEARCH_CONCURRENCY = 'job.search.concurrency',
+  JOB_SIDECAR_CONCURRENCY = 'job.sidecar.concurrency',
+
   OAUTH_ENABLED = 'oauth.enabled',
   OAUTH_ISSUER_URL = 'oauth.issuerUrl',
   OAUTH_CLIENT_ID = 'oauth.clientId',
@@ -32,7 +45,9 @@ export enum SystemConfigKey {
   OAUTH_AUTO_REGISTER = 'oauth.autoRegister',
   OAUTH_MOBILE_OVERRIDE_ENABLED = 'oauth.mobileOverrideEnabled',
   OAUTH_MOBILE_REDIRECT_URI = 'oauth.mobileRedirectUri',
+
   PASSWORD_LOGIN_ENABLED = 'passwordLogin.enabled',
+
   STORAGE_TEMPLATE = 'storageTemplate.template',
 }
 
@@ -55,6 +70,7 @@ export interface SystemConfig {
     twoPass: boolean;
     transcode: TranscodePreset;
   };
+  job: Record<QueueName, { concurrency: number }>;
   oauth: {
     enabled: boolean;
     issuerUrl: string;

@@ -2,20 +2,26 @@ import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common'
 import { IAssetRepository, mapAsset } from '../asset';
 import { CommunicationEvent, ICommunicationRepository } from '../communication';
 import { assertMachineLearningEnabled } from '../domain.constant';
+import { ISystemConfigRepository } from '../system-config';
+import { SystemConfigCore } from '../system-config/system-config.core';
 import { JobCommandDto } from './dto';
 import { JobCommand, JobName, QueueName } from './job.constants';
-import { IJobRepository, JobItem } from './job.repository';
+import { IJobRepository, JobHandler, JobItem } from './job.repository';
 import { AllJobStatusResponseDto, JobStatusDto } from './response-dto';
 
 @Injectable()
 export class JobService {
   private logger = new Logger(JobService.name);
+  private configCore: SystemConfigCore;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-  ) {}
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+  ) {
+    this.configCore = new SystemConfigCore(configRepository);
+  }
 
   handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<void> {
     this.logger.debug(`Handling command: queue=${queueName},force=${dto.force}`);
@@ -88,6 +94,36 @@ export class JobService {
       default:
         throw new BadRequestException(`Invalid job name: ${name}`);
     }
+  }
+
+  async registerHandlers(jobHandlers: Record<JobName, JobHandler>) {
+    const config = await this.configCore.getConfig();
+    for (const queueName of Object.values(QueueName)) {
+      const concurrency = config.job[queueName].concurrency;
+      this.logger.debug(`Registering ${queueName} with a concurrency of ${concurrency}`);
+      this.jobRepository.addHandler(queueName, concurrency, async (item: JobItem): Promise<void> => {
+        const { name, data } = item;
+
+        try {
+          const handler = jobHandlers[name];
+          const success = await handler(data);
+          if (success) {
+            await this.onDone(item);
+          }
+        } catch (error: Error | any) {
+          this.logger.error(`Unable to run job handler: ${error}`, error?.stack, data);
+        }
+      });
+    }
+
+    this.configCore.config$.subscribe((config) => {
+      this.logger.log(`Updating queue concurrency settings`);
+      for (const queueName of Object.values(QueueName)) {
+        const concurrency = config.job[queueName].concurrency;
+        this.logger.debug(`Setting ${queueName} concurrency to ${concurrency}`);
+        this.jobRepository.setConcurrency(queueName, concurrency);
+      }
+    });
   }
 
   async handleNightlyJobs() {

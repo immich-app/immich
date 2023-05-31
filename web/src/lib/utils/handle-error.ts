@@ -9,7 +9,7 @@ export function handleError(error: unknown, message: string) {
 
 	let serverMessage = (error as ApiError)?.response?.data?.message;
 	if (serverMessage) {
-		serverMessage = `${String(serverMessage).slice(0, 50)}\n<i>(Immich Server Error)<i>`;
+		serverMessage = `${String(serverMessage).slice(0, 75)}\n(Immich Server Error)`;
 	}
 
 	notificationController.show({

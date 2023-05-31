@@ -1,20 +1,28 @@
 import { BadRequestException } from '@nestjs/common';
-import { newAssetRepositoryMock, newCommunicationRepositoryMock, newJobRepositoryMock } from '../../test';
+import {
+  newAssetRepositoryMock,
+  newCommunicationRepositoryMock,
+  newJobRepositoryMock,
+  newSystemConfigRepositoryMock,
+} from '../../test';
 import { IAssetRepository } from '../asset';
 import { ICommunicationRepository } from '../communication';
-import { IJobRepository, JobCommand, JobName, JobService, QueueName } from '../job';
+import { IJobRepository, JobCommand, JobHandler, JobName, JobService, QueueName } from '../job';
+import { ISystemConfigRepository } from '../system-config';
 
 describe(JobService.name, () => {
   let sut: JobService;
   let assetMock: jest.Mocked<IAssetRepository>;
+  let configMock: jest.Mocked<ISystemConfigRepository>;
   let communicationMock: jest.Mocked<ICommunicationRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
 
   beforeEach(async () => {
     assetMock = newAssetRepositoryMock();
+    configMock = newSystemConfigRepositoryMock();
     communicationMock = newCommunicationRepositoryMock();
     jobMock = newJobRepositoryMock();
-    sut = new JobService(assetMock, communicationMock, jobMock);
+    sut = new JobService(assetMock, communicationMock, jobMock, configMock);
   });
 
   it('should work', () => {
@@ -64,16 +72,16 @@ describe(JobService.name, () => {
       };
 
       await expect(sut.getAllJobsStatus()).resolves.toEqual({
-        'background-task-queue': expectedJobStatus,
-        'clip-encoding-queue': expectedJobStatus,
-        'metadata-extraction-queue': expectedJobStatus,
-        'object-tagging-queue': expectedJobStatus,
-        'search-queue': expectedJobStatus,
-        'storage-template-migration-queue': expectedJobStatus,
-        'thumbnail-generation-queue': expectedJobStatus,
-        'video-conversion-queue': expectedJobStatus,
-        'recognize-faces-queue': expectedJobStatus,
-        'sidecar-queue': expectedJobStatus,
+        [QueueName.BACKGROUND_TASK]: expectedJobStatus,
+        [QueueName.CLIP_ENCODING]: expectedJobStatus,
+        [QueueName.METADATA_EXTRACTION]: expectedJobStatus,
+        [QueueName.OBJECT_TAGGING]: expectedJobStatus,
+        [QueueName.SEARCH]: expectedJobStatus,
+        [QueueName.STORAGE_TEMPLATE_MIGRATION]: expectedJobStatus,
+        [QueueName.THUMBNAIL_GENERATION]: expectedJobStatus,
+        [QueueName.VIDEO_CONVERSION]: expectedJobStatus,
+        [QueueName.RECOGNIZE_FACES]: expectedJobStatus,
+        [QueueName.SIDECAR]: expectedJobStatus,
       });
     });
   });
@@ -147,12 +155,28 @@ describe(JobService.name, () => {
       expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_METADATA_EXTRACTION, data: { force: false } });
     });
 
+    it('should handle a start sidecar command', async () => {
+      jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
+
+      await sut.handleCommand(QueueName.SIDECAR, { command: JobCommand.START, force: false });
+
+      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_SIDECAR, data: { force: false } });
+    });
+
     it('should handle a start thumbnail generation command', async () => {
       jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
       await sut.handleCommand(QueueName.THUMBNAIL_GENERATION, { command: JobCommand.START, force: false });
 
       expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } });
+    });
+
+    it('should handle a start recognize faces command', async () => {
+      jobMock.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
+
+      await sut.handleCommand(QueueName.RECOGNIZE_FACES, { command: JobCommand.START, force: false });
+
+      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_RECOGNIZE_FACES, data: { force: false } });
     });
 
     it('should throw a bad request when an invalid queue is used', async () => {
@@ -163,6 +187,21 @@ describe(JobService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(jobMock.queue).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('registerHandlers', () => {
+    it('should register a handler for each queue', async () => {
+      const mock = jest.fn();
+      const handlers = Object.values(JobName).reduce((map, jobName) => ({ ...map, [jobName]: mock }), {}) as Record<
+        JobName,
+        JobHandler
+      >;
+
+      await sut.registerHandlers(handlers);
+
+      expect(configMock.load).toHaveBeenCalled();
+      expect(jobMock.addHandler).toHaveBeenCalledTimes(Object.keys(QueueName).length);
     });
   });
 });

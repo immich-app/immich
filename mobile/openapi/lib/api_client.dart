@@ -275,6 +275,8 @@ class ApiClient {
           return JobCountsDto.fromJson(value);
         case 'JobName':
           return JobNameTypeTransformer().decode(value);
+        case 'JobSettingsDto':
+          return JobSettingsDto.fromJson(value);
         case 'JobStatusDto':
           return JobStatusDto.fromJson(value);
         case 'LoginCredentialDto':
@@ -337,6 +339,8 @@ class ApiClient {
           return SystemConfigDto.fromJson(value);
         case 'SystemConfigFFmpegDto':
           return SystemConfigFFmpegDto.fromJson(value);
+        case 'SystemConfigJobDto':
+          return SystemConfigJobDto.fromJson(value);
         case 'SystemConfigOAuthDto':
           return SystemConfigOAuthDto.fromJson(value);
         case 'SystemConfigPasswordLoginDto':

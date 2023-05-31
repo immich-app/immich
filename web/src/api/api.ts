@@ -15,7 +15,8 @@ import {
 	ShareApi,
 	SystemConfigApi,
 	UserApi,
-	UserApiFp
+	UserApiFp,
+	JobName
 } from './open-api';
 import { BASE_PATH } from './open-api/base';
 import { DUMMY_BASE_URL, toPathString } from './open-api/common';
@@ -105,6 +106,23 @@ export class ImmichApi {
 	public getPeopleThumbnailUrl(personId: string) {
 		const path = `/person/${personId}/thumbnail`;
 		return this.createUrl(path);
+	}
+
+	public getJobName(jobName: JobName) {
+		const names: Record<JobName, string> = {
+			[JobName.ThumbnailGeneration]: 'Generate Thumbnails',
+			[JobName.MetadataExtraction]: 'Extract Metadata',
+			[JobName.Sidecar]: 'Sidecar Metadata',
+			[JobName.ObjectTagging]: 'Tag Objects',
+			[JobName.ClipEncoding]: 'Encode Clip',
+			[JobName.RecognizeFaces]: 'Recognize Faces',
+			[JobName.VideoConversion]: 'Transcode Videos',
+			[JobName.StorageTemplateMigration]: 'Storage Template Migration',
+			[JobName.BackgroundTask]: 'Background Tasks',
+			[JobName.Search]: 'Search'
+		};
+
+		return names[jobName];
 	}
 }
 
