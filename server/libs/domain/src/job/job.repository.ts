@@ -52,7 +52,6 @@ export type JobItem =
 
   // Object Tagging
   | { name: JobName.QUEUE_OBJECT_TAGGING; data: IBaseJob }
-  | { name: JobName.DETECT_OBJECTS; data: IEntityJob }
   | { name: JobName.CLASSIFY_IMAGE; data: IEntityJob }
 
   // Recognize Faces

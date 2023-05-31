@@ -49,7 +49,6 @@ describe(SmartInfoService.name, () => {
 
       expect(jobMock.queue.mock.calls).toEqual([
         [{ name: JobName.CLASSIFY_IMAGE, data: { id: assetEntityStub.image.id } }],
-        [{ name: JobName.DETECT_OBJECTS, data: { id: assetEntityStub.image.id } }],
       ]);
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.OBJECT_TAGS);
     });
@@ -64,7 +63,6 @@ describe(SmartInfoService.name, () => {
 
       expect(jobMock.queue.mock.calls).toEqual([
         [{ name: JobName.CLASSIFY_IMAGE, data: { id: assetEntityStub.image.id } }],
-        [{ name: JobName.DETECT_OBJECTS, data: { id: assetEntityStub.image.id } }],
       ]);
       expect(assetMock.getAll).toHaveBeenCalled();
     });
@@ -99,39 +97,6 @@ describe(SmartInfoService.name, () => {
       await sut.handleClassifyImage({ id: asset.id });
 
       expect(machineMock.classifyImage).toHaveBeenCalled();
-      expect(smartMock.upsert).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('handleDetectObjects', () => {
-    it('should skip assets without a resize path', async () => {
-      const asset = { resizePath: '' } as AssetEntity;
-      assetMock.getByIds.mockResolvedValue([asset]);
-
-      await sut.handleDetectObjects({ id: asset.id });
-
-      expect(smartMock.upsert).not.toHaveBeenCalled();
-      expect(machineMock.detectObjects).not.toHaveBeenCalled();
-    });
-
-    it('should save the returned objects', async () => {
-      machineMock.detectObjects.mockResolvedValue(['obj1', 'obj2', 'obj3']);
-
-      await sut.handleDetectObjects({ id: asset.id });
-
-      expect(machineMock.detectObjects).toHaveBeenCalledWith({ thumbnailPath: 'path/to/resize.ext' });
-      expect(smartMock.upsert).toHaveBeenCalledWith({
-        assetId: 'asset-1',
-        objects: ['obj1', 'obj2', 'obj3'],
-      });
-    });
-
-    it('should no update the smart info if no objects were returned', async () => {
-      machineMock.detectObjects.mockResolvedValue([]);
-
-      await sut.handleDetectObjects({ id: asset.id });
-
-      expect(machineMock.detectObjects).toHaveBeenCalled();
       expect(smartMock.upsert).not.toHaveBeenCalled();
     });
   });
