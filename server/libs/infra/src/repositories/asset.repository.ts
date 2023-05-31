@@ -117,7 +117,6 @@ export class AssetRepository implements IAssetRepository {
         };
         where = {
           isVisible: true,
-          resizePath: Not(IsNull()),
           exifInfo: {
             assetId: IsNull(),
           },
@@ -130,6 +129,7 @@ export class AssetRepository implements IAssetRepository {
         };
         where = {
           isVisible: true,
+          resizePath: Not(IsNull()),
           smartInfo: {
             clipEmbedding: IsNull(),
           },
@@ -141,7 +141,7 @@ export class AssetRepository implements IAssetRepository {
           smartInfo: true,
         };
         where = {
-          resizePath: IsNull(),
+          resizePath: Not(IsNull()),
           isVisible: true,
           smartInfo: {
             tags: IsNull(),
