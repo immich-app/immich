@@ -19,14 +19,14 @@ log = logging.getLogger()
 log.setLevel(logging.INFO)
 
 classification_model = os.getenv(
-    "ML_CLASSIFICATION_MODEL", "microsoft/beit-base-patch16-224"
+    "MACHINE_LEARNING_CLASSIFICATION_MODEL", "microsoft/beit-base-patch16-224"
 )
-clip_model = os.getenv("ML_CLIP_MODEL", "openai/clip-vit-base-patch32")
-face_model = os.getenv("ML_FACIAL_RECOGNITION_MODEL", "buffalo_l")
-min_face_score = float(os.getenv("ML_MIN_FACE_SCORE", 0.7))
-min_tag_score = float(os.getenv("ML_MIN_TAG_SCORE", 0.1))
-eager_startup = os.getenv("ML_EAGER_STARTUP", "true") == "true"  # loads all models at startup
-model_ttl = int(os.getenv("ML_MODEL_TTL", 300))  # models are unloaded if unused for this duration
+clip_model = os.getenv("MACHINE_LEARNING_CLIP_IMAGE_MODEL", "openai/clip-vit-base-patch32")
+face_model = os.getenv("MACHINE_LEARNING_FACIAL_RECOGNITION_MODEL", "buffalo_l")
+min_face_score = float(os.getenv("MACHINE_LEARNING_MIN_FACE_SCORE", 0.7))
+min_tag_score = float(os.getenv("MACHINE_LEARNING_MIN_TAG_SCORE", 0.1))
+eager_startup = os.getenv("MACHINE_LEARNING_EAGER_STARTUP", "true") == "true"  # loads all models at startup
+model_ttl = int(os.getenv("MACHINE_LEARNING_MODEL_TTL", 300))  # models are unloaded if unused for this duration
 
 model_type_to_name = {
     "image-classification": classification_model,
@@ -201,6 +201,7 @@ async def facial_recognition(payload: dto.VisionModelRequest) -> dto.FacialRecog
             y2=round(y2)
         )
 
+        # TODO this shouldn't need to return width and height
         face = dto.ImageFace(
             image_width=width,
             image_height=height,
