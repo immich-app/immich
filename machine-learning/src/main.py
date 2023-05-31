@@ -22,11 +22,16 @@ class ClipRequestBody(BaseModel):
 classification_model = os.getenv(
     "MACHINE_LEARNING_CLASSIFICATION_MODEL", "microsoft/resnet-50"
 )
-clip_image_model = os.getenv("MACHINE_LEARNING_CLIP_IMAGE_MODEL", "clip-ViT-B-32")
-clip_text_model = os.getenv("MACHINE_LEARNING_CLIP_TEXT_MODEL", "clip-ViT-B-32")
+clip_model = os.getenv("MACHINE_LEARNING_CLIP_IMAGE_MODEL", "clip-ViT-B-32")
 facial_recognition_model = os.getenv(
     "MACHINE_LEARNING_FACIAL_RECOGNITION_MODEL", "buffalo_l"
 )
+
+min_face_score = float(os.getenv("MACHINE_LEARNING_MIN_FACE_SCORE", 0.7))
+min_tag_score = float(os.getenv("MACHINE_LEARNING_MIN_TAG_SCORE", 0.9))
+eager_startup = (
+    os.getenv("MACHINE_LEARNING_EAGER_STARTUP", "true") == "true"
+)  # loads all models at startup
 
 cache_folder = os.getenv("MACHINE_LEARNING_CACHE_FOLDER", "/cache")
 
@@ -37,10 +42,12 @@ app = FastAPI()
 
 @app.on_event("startup")
 async def startup_event():
+    if not eager_startup:
+        return
+
     # Get all models
     _get_model(classification_model, "image-classification")
-    _get_model(clip_image_model)
-    _get_model(clip_text_model)
+    _get_model(clip_model)
     _get_model(facial_recognition_model, "facial-recognition")
 
 
@@ -53,6 +60,7 @@ async def root():
 def ping():
     return "pong"
 
+
 @app.post("/image-classifier/tag-image", status_code=200)
 def image_classification(payload: MlRequestBody):
     model = _get_model(classification_model, "image-classification")
@@ -62,14 +70,14 @@ def image_classification(payload: MlRequestBody):
 
 @app.post("/sentence-transformer/encode-image", status_code=200)
 def clip_encode_image(payload: MlRequestBody):
-    model = _get_model(clip_image_model)
+    model = _get_model(clip_model)
     assetPath = payload.thumbnailPath
     return model.encode(Image.open(assetPath)).tolist()
 
 
 @app.post("/sentence-transformer/encode-text", status_code=200)
 def clip_encode_text(payload: ClipRequestBody):
-    model = _get_model(clip_text_model)
+    model = _get_model(clip_model)
     text = payload.text
     return model.encode(text).tolist()
 
@@ -84,7 +92,7 @@ def facial_recognition(payload: MlRequestBody):
     faces = model.get(img)
 
     for face in faces:
-        if face.det_score < 0.7:
+        if face.det_score < min_face_score:
             continue
         x1, y1, x2, y2 = face.bbox
 
@@ -111,7 +119,7 @@ def run_engine(engine, path):
 
     for index, pred in enumerate(predictions):
         tags = pred["label"].split(", ")
-        if pred["score"] > 0.9:
+        if pred["score"] > min_tag_score:
             result = [*result, *tags]
 
     if len(result) > 1:
