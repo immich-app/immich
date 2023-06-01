@@ -154,11 +154,14 @@ Class | Method | HTTP request | Description
 *SystemConfigApi* | [**getDefaults**](doc//SystemConfigApi.md#getdefaults) | **GET** /system-config/defaults | 
 *SystemConfigApi* | [**getStorageTemplateOptions**](doc//SystemConfigApi.md#getstoragetemplateoptions) | **GET** /system-config/storage-template-options | 
 *SystemConfigApi* | [**updateConfig**](doc//SystemConfigApi.md#updateconfig) | **PUT** /system-config | 
-*TagApi* | [**create**](doc//TagApi.md#create) | **POST** /tag | 
-*TagApi* | [**delete**](doc//TagApi.md#delete) | **DELETE** /tag/{id} | 
-*TagApi* | [**findAll**](doc//TagApi.md#findall) | **GET** /tag | 
-*TagApi* | [**findOne**](doc//TagApi.md#findone) | **GET** /tag/{id} | 
-*TagApi* | [**update**](doc//TagApi.md#update) | **PATCH** /tag/{id} | 
+*TagApi* | [**createTag**](doc//TagApi.md#createtag) | **POST** /tag | 
+*TagApi* | [**deleteTag**](doc//TagApi.md#deletetag) | **DELETE** /tag/{id} | 
+*TagApi* | [**getAllTags**](doc//TagApi.md#getalltags) | **GET** /tag | 
+*TagApi* | [**getTagAssets**](doc//TagApi.md#gettagassets) | **GET** /tag/{id}/assets | 
+*TagApi* | [**getTagById**](doc//TagApi.md#gettagbyid) | **GET** /tag/{id} | 
+*TagApi* | [**tagAssets**](doc//TagApi.md#tagassets) | **PUT** /tag/{id}/assets | 
+*TagApi* | [**untagAssets**](doc//TagApi.md#untagassets) | **DELETE** /tag/{id}/assets | 
+*TagApi* | [**updateTag**](doc//TagApi.md#updatetag) | **PATCH** /tag/{id} | 
 *UserApi* | [**createProfileImage**](doc//UserApi.md#createprofileimage) | **POST** /user/profile-image | 
 *UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /user | 
 *UserApi* | [**deleteUser**](doc//UserApi.md#deleteuser) | **DELETE** /user/{userId} | 
@@ -192,6 +195,8 @@ Class | Method | HTTP request | Description
  - [AssetCountByTimeBucketResponseDto](doc//AssetCountByTimeBucketResponseDto.md)
  - [AssetCountByUserIdResponseDto](doc//AssetCountByUserIdResponseDto.md)
  - [AssetFileUploadResponseDto](doc//AssetFileUploadResponseDto.md)
+ - [AssetIdsDto](doc//AssetIdsDto.md)
+ - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
  - [AuthDeviceResponseDto](doc//AuthDeviceResponseDto.md)

@@ -13,54 +13,44 @@ part of openapi.api;
 class TagResponseDto {
   /// Returns a new [TagResponseDto] instance.
   TagResponseDto({
-    required this.id,
     required this.type,
+    required this.id,
     required this.name,
     required this.userId,
-    this.renameTagId,
   });
 
-  String id;
-
   TagTypeEnum type;
+
+  String id;
 
   String name;
 
   String userId;
 
-  String? renameTagId;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is TagResponseDto &&
-     other.id == id &&
      other.type == type &&
+     other.id == id &&
      other.name == name &&
-     other.userId == userId &&
-     other.renameTagId == renameTagId;
+     other.userId == userId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id.hashCode) +
     (type.hashCode) +
+    (id.hashCode) +
     (name.hashCode) +
-    (userId.hashCode) +
-    (renameTagId == null ? 0 : renameTagId!.hashCode);
+    (userId.hashCode);
 
   @override
-  String toString() => 'TagResponseDto[id=$id, type=$type, name=$name, userId=$userId, renameTagId=$renameTagId]';
+  String toString() => 'TagResponseDto[type=$type, id=$id, name=$name, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'id'] = this.id;
       json[r'type'] = this.type;
+      json[r'id'] = this.id;
       json[r'name'] = this.name;
       json[r'userId'] = this.userId;
-    if (this.renameTagId != null) {
-      json[r'renameTagId'] = this.renameTagId;
-    } else {
-      // json[r'renameTagId'] = null;
-    }
     return json;
   }
 
@@ -83,11 +73,10 @@ class TagResponseDto {
       }());
 
       return TagResponseDto(
-        id: mapValueOfType<String>(json, r'id')!,
         type: TagTypeEnum.fromJson(json[r'type'])!,
+        id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
         userId: mapValueOfType<String>(json, r'userId')!,
-        renameTagId: mapValueOfType<String>(json, r'renameTagId'),
       );
     }
     return null;
@@ -135,8 +124,8 @@ class TagResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'id',
     'type',
+    'id',
     'name',
     'userId',
   };

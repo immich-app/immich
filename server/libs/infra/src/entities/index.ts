@@ -7,6 +7,7 @@ import { PersonEntity } from './person.entity';
 import { SharedLinkEntity } from './shared-link.entity';
 import { SmartInfoEntity } from './smart-info.entity';
 import { SystemConfigEntity } from './system-config.entity';
+import { TagEntity } from './tag.entity';
 import { UserTokenEntity } from './user-token.entity';
 import { UserEntity } from './user.entity';
 
@@ -34,6 +35,7 @@ export const databaseEntities = [
   SharedLinkEntity,
   SmartInfoEntity,
   SystemConfigEntity,
+  TagEntity,
   UserEntity,
   UserTokenEntity,
 ];
