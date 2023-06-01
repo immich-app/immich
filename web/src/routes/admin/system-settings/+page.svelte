@@ -29,7 +29,11 @@
 			<FFmpegSettings ffmpegConfig={configs.ffmpeg} />
 		</SettingAccordion>
 
-		<SettingAccordion title="Job Settings" subtitle="Manage job concurrency">
+		<SettingAccordion
+			title="Job Settings"
+			subtitle="Manage job concurrency"
+			isOpen={$page.url.searchParams.get('open') === 'job-settings'}
+		>
 			<JobSettings jobConfig={configs.job} />
 		</SettingAccordion>
 

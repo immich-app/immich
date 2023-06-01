@@ -11,6 +11,7 @@
 	import FileJpgBox from 'svelte-material-icons/FileJpgBox.svelte';
 	import FileXmlBox from 'svelte-material-icons/FileXmlBox.svelte';
 	import FolderMove from 'svelte-material-icons/FolderMove.svelte';
+	import Information from 'svelte-material-icons/Information.svelte';
 	import Table from 'svelte-material-icons/Table.svelte';
 	import TagMultiple from 'svelte-material-icons/TagMultiple.svelte';
 	import VectorCircle from 'svelte-material-icons/VectorCircle.svelte';
@@ -18,6 +19,7 @@
 	import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
 	import JobTile from './job-tile.svelte';
 	import StorageMigrationDescription from './storage-migration-description.svelte';
+	import { AppRoute } from '$lib/constants';
 
 	export let jobs: AllJobStatusResponseDto;
 
@@ -128,6 +130,17 @@
 {/if}
 
 <div class="flex flex-col gap-7">
+	<div class="flex dark:text-white text-black gap-2 bg-gray-200 dark:bg-gray-700 p-6 rounded-full">
+		<Information />
+		<p class="text-xs">
+			MANAGE JOB CURRENCENCY LEVEL IN
+			<a
+				href={`${AppRoute.ADMIN_SETTINGS}?open=job-settings`}
+				class="text-immich-primary dark:text-immich-dark-primary font-medium">JOB SETTINGS</a
+			>
+		</p>
+	</div>
+
 	{#each jobDetailsArray as [jobName, { title, subtitle, allText, missingText, allowForceCommand, icon, component, handleCommand: handleCommandOverride }]}
 		{@const { jobCounts, queueStatus } = jobs[jobName]}
 		<JobTile
