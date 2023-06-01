@@ -229,7 +229,7 @@ describe('AssetService', () => {
 
       expect(assetRepositoryMock.getById).toHaveBeenCalledWith(asset1.id);
       expect(sharedLinkRepositoryMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
-      expect(sharedLinkRepositoryMock.save).not.toHaveBeenCalled();
+      expect(sharedLinkRepositoryMock.update).not.toHaveBeenCalled();
     });
 
     it('should add assets to a shared link', async () => {
@@ -241,13 +241,13 @@ describe('AssetService', () => {
       assetRepositoryMock.getById.mockResolvedValue(asset1);
       sharedLinkRepositoryMock.get.mockResolvedValue(sharedLinkStub.valid);
       sharedLinkRepositoryMock.hasAssetAccess.mockResolvedValue(true);
-      sharedLinkRepositoryMock.save.mockResolvedValue(sharedLinkStub.valid);
+      sharedLinkRepositoryMock.update.mockResolvedValue(sharedLinkStub.valid);
 
       await expect(sut.addAssetsToSharedLink(authDto, dto)).resolves.toEqual(sharedLinkResponseStub.valid);
 
       expect(assetRepositoryMock.getById).toHaveBeenCalledWith(asset1.id);
       expect(sharedLinkRepositoryMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
-      expect(sharedLinkRepositoryMock.save).toHaveBeenCalled();
+      expect(sharedLinkRepositoryMock.update).toHaveBeenCalled();
     });
 
     it('should remove assets from a shared link', async () => {
@@ -259,13 +259,13 @@ describe('AssetService', () => {
       assetRepositoryMock.getById.mockResolvedValue(asset1);
       sharedLinkRepositoryMock.get.mockResolvedValue(sharedLinkStub.valid);
       sharedLinkRepositoryMock.hasAssetAccess.mockResolvedValue(true);
-      sharedLinkRepositoryMock.save.mockResolvedValue(sharedLinkStub.valid);
+      sharedLinkRepositoryMock.update.mockResolvedValue(sharedLinkStub.valid);
 
       await expect(sut.removeAssetsFromSharedLink(authDto, dto)).resolves.toEqual(sharedLinkResponseStub.valid);
 
       expect(assetRepositoryMock.getById).toHaveBeenCalledWith(asset1.id);
       expect(sharedLinkRepositoryMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
-      expect(sharedLinkRepositoryMock.save).toHaveBeenCalled();
+      expect(sharedLinkRepositoryMock.update).toHaveBeenCalled();
     });
   });
 

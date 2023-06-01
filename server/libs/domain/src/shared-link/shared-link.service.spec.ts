@@ -1,25 +1,16 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
-import {
-  authStub,
-  newCryptoRepositoryMock,
-  newSharedLinkRepositoryMock,
-  sharedLinkResponseStub,
-  sharedLinkStub,
-} from '../../test';
-import { ICryptoRepository } from '../crypto';
+import { authStub, newSharedLinkRepositoryMock, sharedLinkResponseStub, sharedLinkStub } from '../../test';
 import { SharedLinkService } from './shared-link.service';
 import { ISharedLinkRepository } from './shared-link.repository';
 
 describe(SharedLinkService.name, () => {
   let sut: SharedLinkService;
-  let cryptoMock: jest.Mocked<ICryptoRepository>;
   let shareMock: jest.Mocked<ISharedLinkRepository>;
 
   beforeEach(async () => {
-    cryptoMock = newCryptoRepositoryMock();
     shareMock = newSharedLinkRepositoryMock();
 
-    sut = new SharedLinkService(cryptoMock, shareMock);
+    sut = new SharedLinkService(shareMock);
   });
 
   it('should work', () => {
@@ -27,7 +18,7 @@ describe(SharedLinkService.name, () => {
   });
 
   describe('getAll', () => {
-    it('should return all keys for a user', async () => {
+    it('should return all shared links for a user', async () => {
       shareMock.getAll.mockResolvedValue([sharedLinkStub.expired, sharedLinkStub.valid]);
       await expect(sut.getAll(authStub.user1)).resolves.toEqual([
         sharedLinkResponseStub.expired,
@@ -43,55 +34,63 @@ describe(SharedLinkService.name, () => {
       expect(shareMock.get).not.toHaveBeenCalled();
     });
 
-    it('should return the key for the public user (auth dto)', async () => {
+    it('should return the shared link for the public user', async () => {
       const authDto = authStub.adminSharedLink;
       shareMock.get.mockResolvedValue(sharedLinkStub.valid);
       await expect(sut.getMine(authDto)).resolves.toEqual(sharedLinkResponseStub.valid);
       expect(shareMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
     });
+
+    it('should return not return exif', async () => {
+      const authDto = authStub.adminSharedLinkNoExif;
+      shareMock.get.mockResolvedValue(sharedLinkStub.readonlyNoExif);
+      await expect(sut.getMine(authDto)).resolves.toEqual(sharedLinkResponseStub.readonlyNoExif);
+      expect(shareMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
+    });
   });
 
   describe('get', () => {
-    it('should not work on a missing key', async () => {
+    it('should throw an error for an invalid shared link', async () => {
       shareMock.get.mockResolvedValue(null);
-      await expect(sut.getById(authStub.user1, sharedLinkStub.valid.id, true)).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
-      expect(shareMock.get).toHaveBeenCalledWith(authStub.user1.id, sharedLinkStub.valid.id);
-      expect(shareMock.remove).not.toHaveBeenCalled();
+      await expect(sut.get(authStub.user1, 'missing-id')).rejects.toBeInstanceOf(BadRequestException);
+      expect(shareMock.get).toHaveBeenCalledWith(authStub.user1.id, 'missing-id');
+      expect(shareMock.update).not.toHaveBeenCalled();
     });
 
-    it('should get a key by id', async () => {
+    it('should get a shared link by id', async () => {
       shareMock.get.mockResolvedValue(sharedLinkStub.valid);
-      await expect(sut.getById(authStub.user1, sharedLinkStub.valid.id, false)).resolves.toEqual(
-        sharedLinkResponseStub.valid,
-      );
+      await expect(sut.get(authStub.user1, sharedLinkStub.valid.id)).resolves.toEqual(sharedLinkResponseStub.valid);
       expect(shareMock.get).toHaveBeenCalledWith(authStub.user1.id, sharedLinkStub.valid.id);
     });
+  });
 
-    it('should include exif', async () => {
-      shareMock.get.mockResolvedValue(sharedLinkStub.readonly);
-      await expect(sut.getById(authStub.user1, sharedLinkStub.readonly.id, true)).resolves.toEqual(
-        sharedLinkResponseStub.readonly,
-      );
-      expect(shareMock.get).toHaveBeenCalledWith(authStub.user1.id, sharedLinkStub.readonly.id);
+  describe('update', () => {
+    it('should throw an error for an invalid shared link', async () => {
+      shareMock.get.mockResolvedValue(null);
+      await expect(sut.update(authStub.user1, 'missing-id', {})).rejects.toBeInstanceOf(BadRequestException);
+      expect(shareMock.get).toHaveBeenCalledWith(authStub.user1.id, 'missing-id');
+      expect(shareMock.update).not.toHaveBeenCalled();
     });
 
-    it('should exclude exif', async () => {
-      shareMock.get.mockResolvedValue(sharedLinkStub.readonly);
-      await expect(sut.getById(authStub.user1, sharedLinkStub.readonly.id, false)).resolves.toEqual(
-        sharedLinkResponseStub.readonlyNoExif,
-      );
-      expect(shareMock.get).toHaveBeenCalledWith(authStub.user1.id, sharedLinkStub.readonly.id);
+    it('should update a shared link', async () => {
+      shareMock.get.mockResolvedValue(sharedLinkStub.valid);
+      shareMock.update.mockResolvedValue(sharedLinkStub.valid);
+      await sut.update(authStub.user1, sharedLinkStub.valid.id, { allowDownload: false });
+      expect(shareMock.get).toHaveBeenCalledWith(authStub.user1.id, sharedLinkStub.valid.id);
+      expect(shareMock.update).toHaveBeenCalledWith({
+        id: sharedLinkStub.valid.id,
+        userId: authStub.user1.id,
+        allowDownload: false,
+      });
     });
   });
 
   describe('remove', () => {
-    it('should not work on a missing key', async () => {
+    it('should throw an error for an invalid shared link', async () => {
       shareMock.get.mockResolvedValue(null);
-      await expect(sut.remove(authStub.user1, sharedLinkStub.valid.id)).rejects.toBeInstanceOf(BadRequestException);
-      expect(shareMock.get).toHaveBeenCalledWith(authStub.user1.id, sharedLinkStub.valid.id);
-      expect(shareMock.remove).not.toHaveBeenCalled();
+      await expect(sut.remove(authStub.user1, 'missing-id')).rejects.toBeInstanceOf(BadRequestException);
+      expect(shareMock.get).toHaveBeenCalledWith(authStub.user1.id, 'missing-id');
+      expect(shareMock.update).not.toHaveBeenCalled();
     });
 
     it('should remove a key', async () => {
@@ -99,29 +98,6 @@ describe(SharedLinkService.name, () => {
       await sut.remove(authStub.user1, sharedLinkStub.valid.id);
       expect(shareMock.get).toHaveBeenCalledWith(authStub.user1.id, sharedLinkStub.valid.id);
       expect(shareMock.remove).toHaveBeenCalledWith(sharedLinkStub.valid);
-    });
-  });
-
-  describe('edit', () => {
-    it('should not work on a missing key', async () => {
-      shareMock.get.mockResolvedValue(null);
-      await expect(sut.edit(authStub.user1, sharedLinkStub.valid.id, {})).rejects.toBeInstanceOf(BadRequestException);
-      expect(shareMock.get).toHaveBeenCalledWith(authStub.user1.id, sharedLinkStub.valid.id);
-      expect(shareMock.save).not.toHaveBeenCalled();
-    });
-
-    it('should edit a key', async () => {
-      shareMock.get.mockResolvedValue(sharedLinkStub.valid);
-      shareMock.save.mockResolvedValue(sharedLinkStub.valid);
-      const dto = { allowDownload: false };
-      await sut.edit(authStub.user1, sharedLinkStub.valid.id, dto);
-      // await expect(sut.edit(authStub.user1, sharedLinkStub.valid.id, dto)).rejects.toBeInstanceOf(BadRequestException);
-      expect(shareMock.get).toHaveBeenCalledWith(authStub.user1.id, sharedLinkStub.valid.id);
-      expect(shareMock.save).toHaveBeenCalledWith({
-        id: sharedLinkStub.valid.id,
-        userId: authStub.user1.id,
-        allowDownload: false,
-      });
     });
   });
 });

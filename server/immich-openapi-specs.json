@@ -1565,41 +1565,8 @@
           }
         ]
       },
-      "delete": {
-        "operationId": "removeSharedLink",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "share"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      },
       "patch": {
-        "operationId": "editSharedLink",
+        "operationId": "updateSharedLink",
         "parameters": [
           {
             "name": "id",
@@ -1631,6 +1598,39 @@
                 }
               }
             }
+          }
+        },
+        "tags": [
+          "share"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "removeSharedLink",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
           }
         },
         "tags": [

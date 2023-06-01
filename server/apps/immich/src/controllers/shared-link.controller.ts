@@ -29,20 +29,20 @@ export class SharedLinkController {
     @GetAuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,
   ): Promise<SharedLinkResponseDto> {
-    return this.service.getById(authUser, id, true);
+    return this.service.get(authUser, id);
+  }
+
+  @Patch(':id')
+  updateSharedLink(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: EditSharedLinkDto,
+  ): Promise<SharedLinkResponseDto> {
+    return this.service.update(authUser, id, dto);
   }
 
   @Delete(':id')
   removeSharedLink(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(authUser, id);
-  }
-
-  @Patch(':id')
-  editSharedLink(
-    @GetAuthUser() authUser: AuthUserDto,
-    @Param() { id }: UUIDParamDto,
-    @Body() dto: EditSharedLinkDto,
-  ): Promise<SharedLinkResponseDto> {
-    return this.service.edit(authUser, id, dto);
   }
 }

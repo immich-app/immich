@@ -137,7 +137,7 @@
 					? new Date(currentTime + expirationTime).toISOString()
 					: null;
 
-				await api.shareApi.editSharedLink({
+				await api.shareApi.updateSharedLink({
 					id: editingLink.id,
 					editSharedLinkDto: {
 						description,

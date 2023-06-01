@@ -10,14 +10,7 @@ export class SharedLinkCore {
 
   constructor(private repository: ISharedLinkRepository, private cryptoRepository: ICryptoRepository) {}
 
-  getAll(userId: string): Promise<SharedLinkEntity[]> {
-    return this.repository.getAll(userId);
-  }
-
-  get(userId: string, id: string): Promise<SharedLinkEntity | null> {
-    return this.repository.get(userId, id);
-  }
-
+  // TODO: move to SharedLinkController/SharedLinkService
   create(userId: string, dto: CreateSharedLinkDto): Promise<SharedLinkEntity> {
     return this.repository.create({
       key: Buffer.from(this.cryptoRepository.randomBytes(50)),
@@ -34,42 +27,24 @@ export class SharedLinkCore {
     });
   }
 
-  async save(userId: string, id: string, entity: Partial<SharedLinkEntity>): Promise<SharedLinkEntity> {
-    const link = await this.get(userId, id);
-    if (!link) {
-      throw new BadRequestException('Shared link not found');
-    }
-
-    return this.repository.save({ ...entity, userId, id });
-  }
-
-  async remove(userId: string, id: string): Promise<void> {
-    const link = await this.get(userId, id);
-    if (!link) {
-      throw new BadRequestException('Shared link not found');
-    }
-
-    await this.repository.remove(link);
-  }
-
   async addAssets(userId: string, id: string, assets: AssetEntity[]) {
-    const link = await this.get(userId, id);
+    const link = await this.repository.get(userId, id);
     if (!link) {
       throw new BadRequestException('Shared link not found');
     }
 
-    return this.repository.save({ ...link, assets: [...link.assets, ...assets] });
+    return this.repository.update({ ...link, assets: [...link.assets, ...assets] });
   }
 
   async removeAssets(userId: string, id: string, assets: AssetEntity[]) {
-    const link = await this.get(userId, id);
+    const link = await this.repository.get(userId, id);
     if (!link) {
       throw new BadRequestException('Shared link not found');
     }
 
     const newAssets = link.assets.filter((asset) => assets.find((a) => a.id === asset.id));
 
-    return this.repository.save({ ...link, assets: newAssets });
+    return this.repository.update({ ...link, assets: newAssets });
   }
 
   async hasAssetAccess(id: string, assetId: string): Promise<boolean> {
