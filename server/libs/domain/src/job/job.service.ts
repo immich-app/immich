@@ -119,7 +119,6 @@ export class JobService {
       case JobName.GENERATE_JPEG_THUMBNAIL: {
         await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: item.data });
         await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: item.data });
-        await this.jobRepository.queue({ name: JobName.DETECT_OBJECTS, data: item.data });
         await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: item.data });
         await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: item.data });
 
@@ -134,7 +133,6 @@ export class JobService {
     // In addition to the above jobs, all of these should queue `SEARCH_INDEX_ASSET`
     switch (item.name) {
       case JobName.CLASSIFY_IMAGE:
-      case JobName.DETECT_OBJECTS:
       case JobName.ENCODE_CLIP:
       case JobName.RECOGNIZE_FACES:
       case JobName.METADATA_EXTRACTION:
