@@ -219,6 +219,10 @@ class ApiClient {
           return AssetCountByUserIdResponseDto.fromJson(value);
         case 'AssetFileUploadResponseDto':
           return AssetFileUploadResponseDto.fromJson(value);
+        case 'AssetIdsDto':
+          return AssetIdsDto.fromJson(value);
+        case 'AssetIdsResponseDto':
+          return AssetIdsResponseDto.fromJson(value);
         case 'AssetResponseDto':
           return AssetResponseDto.fromJson(value);
         case 'AssetTypeEnum':

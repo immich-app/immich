@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AssetEntity, ExifEntity } from '@app/infra/entities';
 import { AssetRepository, IAssetRepository } from './asset-repository';
 import { DownloadModule } from '../../modules/download/download.module';
-import { TagModule } from '../tag/tag.module';
 import { AlbumModule } from '../album/album.module';
 
 const ASSET_REPOSITORY_PROVIDER = {
@@ -18,7 +17,6 @@ const ASSET_REPOSITORY_PROVIDER = {
     //
     TypeOrmModule.forFeature([AssetEntity, ExifEntity]),
     DownloadModule,
-    TagModule,
     AlbumModule,
   ],
   controllers: [AssetController],

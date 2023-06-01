@@ -10,6 +10,8 @@ import {
   SharedLinkEntity,
   SharedLinkType,
   SystemConfig,
+  TagEntity,
+  TagType,
   TranscodePreset,
   UserEntity,
   UserTokenEntity,
@@ -24,6 +26,7 @@ import {
   QueueName,
   SearchResult,
   SharedLinkResponseDto,
+  TagResponseDto,
   VideoFormat,
   VideoInfo,
   VideoStreamInfo,
@@ -999,5 +1002,26 @@ export const faceStub = {
     personId: personStub.withName.id,
     person: personStub.withName,
     embedding: [1, 2, 3, 4],
+  }),
+};
+
+export const tagStub = {
+  tag1: Object.freeze<TagEntity>({
+    id: 'tag-1',
+    name: 'Tag1',
+    type: TagType.CUSTOM,
+    userId: userEntityStub.admin.id,
+    user: userEntityStub.admin,
+    renameTagId: null,
+    assets: [],
+  }),
+};
+
+export const tagResponseStub = {
+  tag1: Object.freeze<TagResponseDto>({
+    id: 'tag-1',
+    name: 'Tag1',
+    type: 'CUSTOM',
+    userId: 'admin_id',
   }),
 };

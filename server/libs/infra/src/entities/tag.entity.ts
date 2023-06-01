@@ -21,7 +21,7 @@ export class TagEntity {
   userId!: string;
 
   @Column({ type: 'uuid', comment: 'The new renamed tagId', nullable: true })
-  renameTagId!: string;
+  renameTagId!: string | null;
 
   @ManyToMany(() => AssetEntity, (asset) => asset.tags)
   assets!: AssetEntity[];
