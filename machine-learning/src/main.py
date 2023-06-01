@@ -22,7 +22,8 @@ class ClipRequestBody(BaseModel):
 classification_model = os.getenv(
     "MACHINE_LEARNING_CLASSIFICATION_MODEL", "microsoft/resnet-50"
 )
-clip_model = os.getenv("MACHINE_LEARNING_CLIP_IMAGE_MODEL", "clip-ViT-B-32")
+clip_image_model = os.getenv("MACHINE_LEARNING_CLIP_IMAGE_MODEL", "clip-ViT-B-32")
+clip_text_model = os.getenv("MACHINE_LEARNING_CLIP_TEXT_MODEL", "clip-ViT-B-32")
 facial_recognition_model = os.getenv(
     "MACHINE_LEARNING_FACIAL_RECOGNITION_MODEL", "buffalo_l"
 )
@@ -35,11 +36,6 @@ eager_startup = (
 
 cache_folder = os.getenv("MACHINE_LEARNING_CACHE_FOLDER", "/cache")
 
-model_type_to_name = {
-    "image-classification": classification_model,
-    "clip": clip_model,
-    "facial-recognition": facial_recognition_model,
-}
 _model_cache = {}
 
 app = FastAPI()
@@ -47,8 +43,15 @@ app = FastAPI()
 
 @app.on_event("startup")
 async def startup_event():
+    models = [
+        (classification_model, "image-classification"),
+        (clip_image_model, "clip"),
+        (clip_text_model, "clip"),
+        (facial_recognition_model, "facial-recognition"),
+    ]
+
     # Get all models
-    for model_type, model_name in model_type_to_name.items():
+    for model_name, model_type in models:
         if eager_startup:
             get_cached_model(model_name, model_type)
         else:
@@ -74,14 +77,14 @@ def image_classification(payload: MlRequestBody):
 
 @app.post("/sentence-transformer/encode-image", status_code=200)
 def clip_encode_image(payload: MlRequestBody):
-    model = get_cached_model(clip_model, "clip")
+    model = get_cached_model(clip_image_model, "clip")
     assetPath = payload.thumbnailPath
     return model.encode(Image.open(assetPath)).tolist()
 
 
 @app.post("/sentence-transformer/encode-text", status_code=200)
 def clip_encode_text(payload: ClipRequestBody):
-    model = get_cached_model(clip_model, "clip")
+    model = get_cached_model(clip_text_model, "clip")
     text = payload.text
     return model.encode(text).tolist()
 
