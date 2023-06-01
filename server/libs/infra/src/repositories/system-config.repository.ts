@@ -9,7 +9,7 @@ export class SystemConfigRepository implements ISystemConfigRepository {
     private repository: Repository<SystemConfigEntity>,
   ) {}
 
-  load(): Promise<SystemConfigEntity<string | boolean | number>[]> {
+  load(): Promise<SystemConfigEntity[]> {
     return this.repository.find();
   }
 

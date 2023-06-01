@@ -23,29 +23,29 @@ class JobName {
 
   String toJson() => value;
 
-  static const thumbnailGenerationQueue = JobName._(r'thumbnail-generation-queue');
-  static const metadataExtractionQueue = JobName._(r'metadata-extraction-queue');
-  static const videoConversionQueue = JobName._(r'video-conversion-queue');
-  static const objectTaggingQueue = JobName._(r'object-tagging-queue');
-  static const recognizeFacesQueue = JobName._(r'recognize-faces-queue');
-  static const clipEncodingQueue = JobName._(r'clip-encoding-queue');
-  static const backgroundTaskQueue = JobName._(r'background-task-queue');
-  static const storageTemplateMigrationQueue = JobName._(r'storage-template-migration-queue');
-  static const searchQueue = JobName._(r'search-queue');
-  static const sidecarQueue = JobName._(r'sidecar-queue');
+  static const thumbnailGeneration = JobName._(r'thumbnailGeneration');
+  static const metadataExtraction = JobName._(r'metadataExtraction');
+  static const videoConversion = JobName._(r'videoConversion');
+  static const objectTagging = JobName._(r'objectTagging');
+  static const recognizeFaces = JobName._(r'recognizeFaces');
+  static const clipEncoding = JobName._(r'clipEncoding');
+  static const backgroundTask = JobName._(r'backgroundTask');
+  static const storageTemplateMigration = JobName._(r'storageTemplateMigration');
+  static const search = JobName._(r'search');
+  static const sidecar = JobName._(r'sidecar');
 
   /// List of all possible values in this [enum][JobName].
   static const values = <JobName>[
-    thumbnailGenerationQueue,
-    metadataExtractionQueue,
-    videoConversionQueue,
-    objectTaggingQueue,
-    recognizeFacesQueue,
-    clipEncodingQueue,
-    backgroundTaskQueue,
-    storageTemplateMigrationQueue,
-    searchQueue,
-    sidecarQueue,
+    thumbnailGeneration,
+    metadataExtraction,
+    videoConversion,
+    objectTagging,
+    recognizeFaces,
+    clipEncoding,
+    backgroundTask,
+    storageTemplateMigration,
+    search,
+    sidecar,
   ];
 
   static JobName? fromJson(dynamic value) => JobNameTypeTransformer().decode(value);
@@ -84,16 +84,16 @@ class JobNameTypeTransformer {
   JobName? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'thumbnail-generation-queue': return JobName.thumbnailGenerationQueue;
-        case r'metadata-extraction-queue': return JobName.metadataExtractionQueue;
-        case r'video-conversion-queue': return JobName.videoConversionQueue;
-        case r'object-tagging-queue': return JobName.objectTaggingQueue;
-        case r'recognize-faces-queue': return JobName.recognizeFacesQueue;
-        case r'clip-encoding-queue': return JobName.clipEncodingQueue;
-        case r'background-task-queue': return JobName.backgroundTaskQueue;
-        case r'storage-template-migration-queue': return JobName.storageTemplateMigrationQueue;
-        case r'search-queue': return JobName.searchQueue;
-        case r'sidecar-queue': return JobName.sidecarQueue;
+        case r'thumbnailGeneration': return JobName.thumbnailGeneration;
+        case r'metadataExtraction': return JobName.metadataExtraction;
+        case r'videoConversion': return JobName.videoConversion;
+        case r'objectTagging': return JobName.objectTagging;
+        case r'recognizeFaces': return JobName.recognizeFaces;
+        case r'clipEncoding': return JobName.clipEncoding;
+        case r'backgroundTask': return JobName.backgroundTask;
+        case r'storageTemplateMigration': return JobName.storageTemplateMigration;
+        case r'search': return JobName.search;
+        case r'sidecar': return JobName.sidecar;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

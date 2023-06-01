@@ -1,14 +1,14 @@
 export enum QueueName {
-  THUMBNAIL_GENERATION = 'thumbnail-generation-queue',
-  METADATA_EXTRACTION = 'metadata-extraction-queue',
-  VIDEO_CONVERSION = 'video-conversion-queue',
-  OBJECT_TAGGING = 'object-tagging-queue',
-  RECOGNIZE_FACES = 'recognize-faces-queue',
-  CLIP_ENCODING = 'clip-encoding-queue',
-  BACKGROUND_TASK = 'background-task-queue',
-  STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration-queue',
-  SEARCH = 'search-queue',
-  SIDECAR = 'sidecar-queue',
+  THUMBNAIL_GENERATION = 'thumbnailGeneration',
+  METADATA_EXTRACTION = 'metadataExtraction',
+  VIDEO_CONVERSION = 'videoConversion',
+  OBJECT_TAGGING = 'objectTagging',
+  RECOGNIZE_FACES = 'recognizeFaces',
+  CLIP_ENCODING = 'clipEncoding',
+  BACKGROUND_TASK = 'backgroundTask',
+  STORAGE_TEMPLATE_MIGRATION = 'storageTemplateMigration',
+  SEARCH = 'search',
+  SIDECAR = 'sidecar',
 }
 
 export enum JobCommand {
@@ -134,18 +134,4 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.QUEUE_SIDECAR]: QueueName.SIDECAR,
   [JobName.SIDECAR_DISCOVERY]: QueueName.SIDECAR,
   [JobName.SIDECAR_SYNC]: QueueName.SIDECAR,
-};
-
-// max concurrency for each queue (total concurrency across all jobs)
-export const QUEUE_TO_CONCURRENCY: Record<QueueName, number> = {
-  [QueueName.BACKGROUND_TASK]: 5,
-  [QueueName.CLIP_ENCODING]: 2,
-  [QueueName.METADATA_EXTRACTION]: 5,
-  [QueueName.OBJECT_TAGGING]: 2,
-  [QueueName.RECOGNIZE_FACES]: 2,
-  [QueueName.SEARCH]: 5,
-  [QueueName.SIDECAR]: 5,
-  [QueueName.STORAGE_TEMPLATE_MIGRATION]: 5,
-  [QueueName.THUMBNAIL_GENERATION]: 5,
-  [QueueName.VIDEO_CONVERSION]: 1,
 };

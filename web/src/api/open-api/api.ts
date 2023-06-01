@@ -296,61 +296,61 @@ export interface AllJobStatusResponseDto {
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'thumbnail-generation-queue': JobStatusDto;
+    'thumbnailGeneration': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'metadata-extraction-queue': JobStatusDto;
+    'metadataExtraction': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'video-conversion-queue': JobStatusDto;
+    'videoConversion': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'object-tagging-queue': JobStatusDto;
+    'objectTagging': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'clip-encoding-queue': JobStatusDto;
+    'clipEncoding': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'storage-template-migration-queue': JobStatusDto;
+    'storageTemplateMigration': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'background-task-queue': JobStatusDto;
+    'backgroundTask': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'search-queue': JobStatusDto;
+    'search': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'recognize-faces-queue': JobStatusDto;
+    'recognizeFaces': JobStatusDto;
     /**
      * 
      * @type {JobStatusDto}
      * @memberof AllJobStatusResponseDto
      */
-    'sidecar-queue': JobStatusDto;
+    'sidecar': JobStatusDto;
 }
 /**
  * 
@@ -1486,21 +1486,34 @@ export interface JobCountsDto {
  */
 
 export const JobName = {
-    ThumbnailGenerationQueue: 'thumbnail-generation-queue',
-    MetadataExtractionQueue: 'metadata-extraction-queue',
-    VideoConversionQueue: 'video-conversion-queue',
-    ObjectTaggingQueue: 'object-tagging-queue',
-    RecognizeFacesQueue: 'recognize-faces-queue',
-    ClipEncodingQueue: 'clip-encoding-queue',
-    BackgroundTaskQueue: 'background-task-queue',
-    StorageTemplateMigrationQueue: 'storage-template-migration-queue',
-    SearchQueue: 'search-queue',
-    SidecarQueue: 'sidecar-queue'
+    ThumbnailGeneration: 'thumbnailGeneration',
+    MetadataExtraction: 'metadataExtraction',
+    VideoConversion: 'videoConversion',
+    ObjectTagging: 'objectTagging',
+    RecognizeFaces: 'recognizeFaces',
+    ClipEncoding: 'clipEncoding',
+    BackgroundTask: 'backgroundTask',
+    StorageTemplateMigration: 'storageTemplateMigration',
+    Search: 'search',
+    Sidecar: 'sidecar'
 } as const;
 
 export type JobName = typeof JobName[keyof typeof JobName];
 
 
+/**
+ * 
+ * @export
+ * @interface JobSettingsDto
+ */
+export interface JobSettingsDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof JobSettingsDto
+     */
+    'concurrency': number;
+}
 /**
  * 
  * @export
@@ -2247,6 +2260,12 @@ export interface SystemConfigDto {
      * @memberof SystemConfigDto
      */
     'storageTemplate': SystemConfigStorageTemplateDto;
+    /**
+     * 
+     * @type {SystemConfigJobDto}
+     * @memberof SystemConfigDto
+     */
+    'job': SystemConfigJobDto;
 }
 /**
  * 
@@ -2319,6 +2338,73 @@ export const SystemConfigFFmpegDtoTranscodeEnum = {
 
 export type SystemConfigFFmpegDtoTranscodeEnum = typeof SystemConfigFFmpegDtoTranscodeEnum[keyof typeof SystemConfigFFmpegDtoTranscodeEnum];
 
+/**
+ * 
+ * @export
+ * @interface SystemConfigJobDto
+ */
+export interface SystemConfigJobDto {
+    /**
+     * 
+     * @type {JobSettingsDto}
+     * @memberof SystemConfigJobDto
+     */
+    'thumbnailGeneration': JobSettingsDto;
+    /**
+     * 
+     * @type {JobSettingsDto}
+     * @memberof SystemConfigJobDto
+     */
+    'metadataExtraction': JobSettingsDto;
+    /**
+     * 
+     * @type {JobSettingsDto}
+     * @memberof SystemConfigJobDto
+     */
+    'videoConversion': JobSettingsDto;
+    /**
+     * 
+     * @type {JobSettingsDto}
+     * @memberof SystemConfigJobDto
+     */
+    'objectTagging': JobSettingsDto;
+    /**
+     * 
+     * @type {JobSettingsDto}
+     * @memberof SystemConfigJobDto
+     */
+    'clipEncoding': JobSettingsDto;
+    /**
+     * 
+     * @type {JobSettingsDto}
+     * @memberof SystemConfigJobDto
+     */
+    'storageTemplateMigration': JobSettingsDto;
+    /**
+     * 
+     * @type {JobSettingsDto}
+     * @memberof SystemConfigJobDto
+     */
+    'backgroundTask': JobSettingsDto;
+    /**
+     * 
+     * @type {JobSettingsDto}
+     * @memberof SystemConfigJobDto
+     */
+    'search': JobSettingsDto;
+    /**
+     * 
+     * @type {JobSettingsDto}
+     * @memberof SystemConfigJobDto
+     */
+    'recognizeFaces': JobSettingsDto;
+    /**
+     * 
+     * @type {JobSettingsDto}
+     * @memberof SystemConfigJobDto
+     */
+    'sidecar': JobSettingsDto;
+}
 /**
  * 
  * @export

@@ -5106,63 +5106,63 @@
       "AllJobStatusResponseDto": {
         "type": "object",
         "properties": {
-          "thumbnail-generation-queue": {
+          "thumbnailGeneration": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "metadata-extraction-queue": {
+          "metadataExtraction": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "video-conversion-queue": {
+          "videoConversion": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "object-tagging-queue": {
+          "objectTagging": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "clip-encoding-queue": {
+          "clipEncoding": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "storage-template-migration-queue": {
+          "storageTemplateMigration": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "background-task-queue": {
+          "backgroundTask": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "search-queue": {
+          "search": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "recognize-faces-queue": {
+          "recognizeFaces": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "sidecar-queue": {
+          "sidecar": {
             "$ref": "#/components/schemas/JobStatusDto"
           }
         },
         "required": [
-          "thumbnail-generation-queue",
-          "metadata-extraction-queue",
-          "video-conversion-queue",
-          "object-tagging-queue",
-          "clip-encoding-queue",
-          "storage-template-migration-queue",
-          "background-task-queue",
-          "search-queue",
-          "recognize-faces-queue",
-          "sidecar-queue"
+          "thumbnailGeneration",
+          "metadataExtraction",
+          "videoConversion",
+          "objectTagging",
+          "clipEncoding",
+          "storageTemplateMigration",
+          "backgroundTask",
+          "search",
+          "recognizeFaces",
+          "sidecar"
         ]
       },
       "JobName": {
         "type": "string",
         "enum": [
-          "thumbnail-generation-queue",
-          "metadata-extraction-queue",
-          "video-conversion-queue",
-          "object-tagging-queue",
-          "recognize-faces-queue",
-          "clip-encoding-queue",
-          "background-task-queue",
-          "storage-template-migration-queue",
-          "search-queue",
-          "sidecar-queue"
+          "thumbnailGeneration",
+          "metadataExtraction",
+          "videoConversion",
+          "objectTagging",
+          "recognizeFaces",
+          "clipEncoding",
+          "backgroundTask",
+          "storageTemplateMigration",
+          "search",
+          "sidecar"
         ]
       },
       "JobCommand": {
@@ -5733,6 +5733,64 @@
           "template"
         ]
       },
+      "JobSettingsDto": {
+        "type": "object",
+        "properties": {
+          "concurrency": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "concurrency"
+        ]
+      },
+      "SystemConfigJobDto": {
+        "type": "object",
+        "properties": {
+          "thumbnailGeneration": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "metadataExtraction": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "videoConversion": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "objectTagging": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "clipEncoding": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "storageTemplateMigration": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "backgroundTask": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "search": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "recognizeFaces": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "sidecar": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          }
+        },
+        "required": [
+          "thumbnailGeneration",
+          "metadataExtraction",
+          "videoConversion",
+          "objectTagging",
+          "clipEncoding",
+          "storageTemplateMigration",
+          "backgroundTask",
+          "search",
+          "recognizeFaces",
+          "sidecar"
+        ]
+      },
       "SystemConfigDto": {
         "type": "object",
         "properties": {
@@ -5747,13 +5805,17 @@
           },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
+          },
+          "job": {
+            "$ref": "#/components/schemas/SystemConfigJobDto"
           }
         },
         "required": [
           "ffmpeg",
           "oauth",
           "passwordLogin",
-          "storageTemplate"
+          "storageTemplate",
+          "job"
         ]
       },
       "SystemConfigTemplateStorageOptionDto": {

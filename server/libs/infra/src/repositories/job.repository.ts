@@ -1,12 +1,32 @@
 import { IJobRepository, JobCounts, JobItem, JobName, JOBS_TO_QUEUE, QueueName, QueueStatus } from '@app/domain';
-import { getQueueToken } from '@nestjs/bull';
-import { Injectable } from '@nestjs/common';
+import { getQueueToken } from '@nestjs/bullmq';
+import { Injectable, Logger } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import { JobOptions, Queue, type JobCounts as BullJobCounts } from 'bull';
+import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullmq';
+import { bullConfig } from '../infra.config';
 
 @Injectable()
 export class JobRepository implements IJobRepository {
+  private workers: Partial<Record<QueueName, Worker>> = {};
+  private logger = new Logger(JobRepository.name);
+
   constructor(private moduleRef: ModuleRef) {}
+
+  addHandler(queueName: QueueName, concurrency: number, handler: (item: JobItem) => Promise<void>) {
+    const workerHandler: Processor = async (job: Job) => handler(job as JobItem);
+    const workerOptions: WorkerOptions = { ...bullConfig, concurrency };
+    this.workers[queueName] = new Worker(queueName, workerHandler, workerOptions);
+  }
+
+  setConcurrency(queueName: QueueName, concurrency: number) {
+    const worker = this.workers[queueName];
+    if (!worker) {
+      this.logger.warn(`Unable to set queue concurrency, worker not found: '${queueName}'`);
+      return;
+    }
+
+    worker.concurrency = concurrency;
+  }
 
   async getQueueStatus(name: QueueName): Promise<QueueStatus> {
     const queue = this.getQueue(name);
@@ -26,13 +46,18 @@ export class JobRepository implements IJobRepository {
   }
 
   empty(name: QueueName) {
-    return this.getQueue(name).empty();
+    return this.getQueue(name).drain();
   }
 
   getJobCounts(name: QueueName): Promise<JobCounts> {
-    // Typecast needed because the `paused` key is missing from Bull's
-    // type definition. Can be removed once fixed upstream.
-    return this.getQueue(name).getJobCounts() as Promise<BullJobCounts & { paused: number }>;
+    return this.getQueue(name).getJobCounts(
+      'active',
+      'completed',
+      'failed',
+      'delayed',
+      'waiting',
+      'paused',
+    ) as unknown as Promise<JobCounts>;
   }
 
   async queue(item: JobItem): Promise<void> {
@@ -43,7 +68,7 @@ export class JobRepository implements IJobRepository {
     await this.getQueue(JOBS_TO_QUEUE[jobName]).add(jobName, jobData, jobOptions);
   }
 
-  private getJobOptions(item: JobItem): JobOptions | null {
+  private getJobOptions(item: JobItem): JobsOptions | null {
     switch (item.name) {
       case JobName.GENERATE_FACE_THUMBNAIL:
         return { priority: 1 };

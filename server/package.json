@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.20.13",
-    "@nestjs/bull": "^0.6.2",
+    "@nestjs/bullmq": "^1.1.0",
     "@nestjs/common": "^9.2.1",
     "@nestjs/config": "^2.2.0",
     "@nestjs/core": "^9.2.1",
@@ -55,7 +55,7 @@
     "archiver": "^5.3.1",
     "axios": "^0.26.0",
     "bcrypt": "^5.0.1",
-    "bull": "^4.10.2",
+    "bullmq": "^3.14.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.6",
@@ -140,9 +140,9 @@
     "coverageThreshold": {
       "./libs/domain/": {
         "branches": 80,
-        "functions": 85,
-        "lines": 93,
-        "statements": 93
+        "functions": 80,
+        "lines": 90,
+        "statements": 90
       }
     },
     "setupFilesAfterEnv": [

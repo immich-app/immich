@@ -8,16 +8,16 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**thumbnailGenerationQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
-**metadataExtractionQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
-**videoConversionQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
-**objectTaggingQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
-**clipEncodingQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
-**storageTemplateMigrationQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
-**backgroundTaskQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
-**searchQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
-**recognizeFacesQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
-**sidecarQueue** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**thumbnailGeneration** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**metadataExtraction** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**videoConversion** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**objectTagging** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**clipEncoding** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**storageTemplateMigration** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**backgroundTask** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**search** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**recognizeFaces** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**sidecar** | [**JobStatusDto**](JobStatusDto.md) |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

@@ -33,13 +33,13 @@ export type JobItem =
   | { name: JobName.GENERATE_WEBP_THUMBNAIL; data: IEntityJob }
 
   // User Deletion
-  | { name: JobName.USER_DELETE_CHECK }
+  | { name: JobName.USER_DELETE_CHECK; data?: IBaseJob }
   | { name: JobName.USER_DELETION; data: IEntityJob }
 
   // Storage Template
-  | { name: JobName.STORAGE_TEMPLATE_MIGRATION }
+  | { name: JobName.STORAGE_TEMPLATE_MIGRATION; data?: IBaseJob }
   | { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE; data: IEntityJob }
-  | { name: JobName.SYSTEM_CONFIG_CHANGE }
+  | { name: JobName.SYSTEM_CONFIG_CHANGE; data?: IBaseJob }
 
   // Metadata Extraction
   | { name: JobName.QUEUE_METADATA_EXTRACTION; data: IBaseJob }
@@ -67,22 +67,26 @@ export type JobItem =
   | { name: JobName.DELETE_FILES; data: IDeleteFilesJob }
 
   // Asset Deletion
-  | { name: JobName.PERSON_CLEANUP }
+  | { name: JobName.PERSON_CLEANUP; data?: IBaseJob }
 
   // Search
-  | { name: JobName.SEARCH_INDEX_ASSETS }
+  | { name: JobName.SEARCH_INDEX_ASSETS; data?: IBaseJob }
   | { name: JobName.SEARCH_INDEX_ASSET; data: IBulkEntityJob }
-  | { name: JobName.SEARCH_INDEX_FACES }
+  | { name: JobName.SEARCH_INDEX_FACES; data?: IBaseJob }
   | { name: JobName.SEARCH_INDEX_FACE; data: IAssetFaceJob }
-  | { name: JobName.SEARCH_INDEX_ALBUMS }
+  | { name: JobName.SEARCH_INDEX_ALBUMS; data?: IBaseJob }
   | { name: JobName.SEARCH_INDEX_ALBUM; data: IBulkEntityJob }
   | { name: JobName.SEARCH_REMOVE_ASSET; data: IBulkEntityJob }
   | { name: JobName.SEARCH_REMOVE_ALBUM; data: IBulkEntityJob }
   | { name: JobName.SEARCH_REMOVE_FACE; data: IAssetFaceJob };
 
+export type JobHandler<T = any> = (data: T) => boolean | Promise<boolean>;
+
 export const IJobRepository = 'IJobRepository';
 
 export interface IJobRepository {
+  addHandler(queueName: QueueName, concurrency: number, handler: (job: JobItem) => Promise<void>): void;
+  setConcurrency(queueName: QueueName, concurrency: number): void;
   queue(item: JobItem): Promise<void>;
   pause(name: QueueName): Promise<void>;
   resume(name: QueueName): Promise<void>;

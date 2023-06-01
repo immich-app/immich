@@ -21,7 +21,7 @@ import {
   IUserRepository,
   IUserTokenRepository,
 } from '@app/domain';
-import { BullModule } from '@nestjs/bull';
+import { BullModule } from '@nestjs/bullmq';
 import { Global, Module, Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
