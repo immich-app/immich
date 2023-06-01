@@ -82,8 +82,11 @@ export class ShareCore {
     }
   }
 
-  async validate(key: string): Promise<AuthUserDto | null> {
-    const link = await this.repository.getByKey(key);
+  async validate(key: string | string[]): Promise<AuthUserDto | null> {
+    key = Array.isArray(key) ? key[0] : key;
+
+    const bytes = Buffer.from(key, key.length === 100 ? 'hex' : 'base64url');
+    const link = await this.repository.getByKey(bytes);
     if (link) {
       if (!link.expiresAt || new Date(link.expiresAt) > new Date()) {
         const user = link.user;

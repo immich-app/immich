@@ -60,10 +60,10 @@ export class SharedLinkRepository implements ISharedLinkRepository {
     });
   }
 
-  async getByKey(key: string): Promise<SharedLinkEntity | null> {
+  async getByKey(key: Buffer): Promise<SharedLinkEntity | null> {
     return await this.repository.findOne({
       where: {
-        key: Buffer.from(key, 'hex'),
+        key,
       },
       relations: {
         assets: true,

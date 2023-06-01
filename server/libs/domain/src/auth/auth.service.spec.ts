@@ -277,11 +277,20 @@ describe('AuthService', () => {
       await expect(sut.validate(headers, {})).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
-    it('should accept a valid key', async () => {
+    it('should accept a base64url key', async () => {
       shareMock.getByKey.mockResolvedValue(sharedLinkStub.valid);
       userMock.get.mockResolvedValue(userEntityStub.admin);
-      const headers: IncomingHttpHeaders = { 'x-immich-share-key': 'key' };
+      const headers: IncomingHttpHeaders = { 'x-immich-share-key': sharedLinkStub.valid.key.toString('base64url') };
       await expect(sut.validate(headers, {})).resolves.toEqual(authStub.adminSharedLink);
+      expect(shareMock.getByKey).toHaveBeenCalledWith(sharedLinkStub.valid.key);
+    });
+
+    it('should accept a hex key', async () => {
+      shareMock.getByKey.mockResolvedValue(sharedLinkStub.valid);
+      userMock.get.mockResolvedValue(userEntityStub.admin);
+      const headers: IncomingHttpHeaders = { 'x-immich-share-key': sharedLinkStub.valid.key.toString('hex') };
+      await expect(sut.validate(headers, {})).resolves.toEqual(authStub.adminSharedLink);
+      expect(shareMock.getByKey).toHaveBeenCalledWith(sharedLinkStub.valid.key);
     });
   });
 
