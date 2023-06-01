@@ -135,13 +135,11 @@ def run_engine(engine, path):
 def get_cached_model(model, task):
     global _model_cache
     key = "|".join([model, str(task)])
-    if key in _model_cache:
-        return _model_cache[key]
-    else:
+    if key not in _model_cache:
         model = _get_model(model, task)
         _model_cache[key] = model
 
-    return model
+    return _model_cache[key]
 
 
 def _get_model(model, task):
