@@ -20,7 +20,7 @@ import {
 } from '../../test';
 import { IKeyRepository } from '../api-key';
 import { ICryptoRepository } from '../crypto/crypto.repository';
-import { ISharedLinkRepository } from '../share';
+import { ISharedLinkRepository } from '../shared-link';
 import { ISystemConfigRepository } from '../system-config';
 import { IUserRepository } from '../user';
 import { IUserTokenRepository } from '../user-token';

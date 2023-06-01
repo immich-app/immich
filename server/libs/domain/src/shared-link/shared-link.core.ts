@@ -5,8 +5,8 @@ import { ICryptoRepository } from '../crypto';
 import { CreateSharedLinkDto } from './dto';
 import { ISharedLinkRepository } from './shared-link.repository';
 
-export class ShareCore {
-  readonly logger = new Logger(ShareCore.name);
+export class SharedLinkCore {
+  readonly logger = new Logger(SharedLinkCore.name);
 
   constructor(private repository: ISharedLinkRepository, private cryptoRepository: ICryptoRepository) {}
 

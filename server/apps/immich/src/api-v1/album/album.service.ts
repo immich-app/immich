@@ -10,13 +10,19 @@ import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from '../asset/dto/download-library.dto';
-import { ShareCore, ISharedLinkRepository, mapSharedLink, SharedLinkResponseDto, ICryptoRepository } from '@app/domain';
+import {
+  SharedLinkCore,
+  ISharedLinkRepository,
+  mapSharedLink,
+  SharedLinkResponseDto,
+  ICryptoRepository,
+} from '@app/domain';
 import { CreateAlbumShareLinkDto } from './dto/create-album-shared-link.dto';
 
 @Injectable()
 export class AlbumService {
   readonly logger = new Logger(AlbumService.name);
-  private shareCore: ShareCore;
+  private shareCore: SharedLinkCore;
 
   constructor(
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
@@ -25,7 +31,7 @@ export class AlbumService {
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
-    this.shareCore = new ShareCore(sharedLinkRepository, cryptoRepository);
+    this.shareCore = new SharedLinkCore(sharedLinkRepository, cryptoRepository);
   }
 
   private async _getAlbum({

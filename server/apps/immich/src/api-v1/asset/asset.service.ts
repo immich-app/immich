@@ -54,7 +54,7 @@ import { ICryptoRepository, IJobRepository } from '@app/domain';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
 import { IAlbumRepository } from '../album/album-repository';
-import { ShareCore } from '@app/domain';
+import { SharedLinkCore } from '@app/domain';
 import { IPartnerRepository } from '@app/domain';
 import { ISharedLinkRepository } from '@app/domain';
 import { DownloadFilesDto } from './dto/download-files.dto';
@@ -80,7 +80,7 @@ interface ServableFile {
 @Injectable()
 export class AssetService {
   readonly logger = new Logger(AssetService.name);
-  private shareCore: ShareCore;
+  private shareCore: SharedLinkCore;
   private assetCore: AssetCore;
   private partnerCore: PartnerCore;
 
@@ -97,7 +97,7 @@ export class AssetService {
     @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
-    this.shareCore = new ShareCore(sharedLinkRepository, cryptoRepository);
+    this.shareCore = new SharedLinkCore(sharedLinkRepository, cryptoRepository);
     this.partnerCore = new PartnerCore(partnerRepository);
   }
 

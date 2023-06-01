@@ -7,11 +7,11 @@ import {
   sharedLinkStub,
 } from '../../test';
 import { ICryptoRepository } from '../crypto';
-import { ShareService } from './share.service';
+import { SharedLinkService } from './shared-link.service';
 import { ISharedLinkRepository } from './shared-link.repository';
 
-describe(ShareService.name, () => {
-  let sut: ShareService;
+describe(SharedLinkService.name, () => {
+  let sut: SharedLinkService;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let shareMock: jest.Mocked<ISharedLinkRepository>;
 
@@ -19,7 +19,7 @@ describe(ShareService.name, () => {
     cryptoMock = newCryptoRepositoryMock();
     shareMock = newSharedLinkRepositoryMock();
 
-    sut = new ShareService(cryptoMock, shareMock);
+    sut = new SharedLinkService(cryptoMock, shareMock);
   });
 
   it('should work', () => {

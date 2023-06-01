@@ -3,19 +3,19 @@ import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { EditSharedLinkDto } from './dto';
 import { mapSharedLink, mapSharedLinkWithNoExif, SharedLinkResponseDto } from './response-dto';
-import { ShareCore } from './share.core';
+import { SharedLinkCore } from './shared-link.core';
 import { ISharedLinkRepository } from './shared-link.repository';
 
 @Injectable()
-export class ShareService {
-  readonly logger = new Logger(ShareService.name);
-  private shareCore: ShareCore;
+export class SharedLinkService {
+  readonly logger = new Logger(SharedLinkService.name);
+  private shareCore: SharedLinkCore;
 
   constructor(
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
   ) {
-    this.shareCore = new ShareCore(sharedLinkRepository, cryptoRepository);
+    this.shareCore = new SharedLinkCore(sharedLinkRepository, cryptoRepository);
   }
 
   async getAll(authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {
