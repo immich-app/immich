@@ -135,11 +135,11 @@ export class JobService {
   /**
    * Queue follow up jobs
    */
-  async onDone(item: JobItem) {
+  private async onDone(item: JobItem) {
     switch (item.name) {
       case JobName.SIDECAR_SYNC:
       case JobName.SIDECAR_DISCOVERY:
-        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: item.data.id } });
+        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: item.data });
         break;
 
       case JobName.METADATA_EXTRACTION:
