@@ -82,7 +82,9 @@ export class ShareCore {
     }
   }
 
-  async validate(key: string): Promise<AuthUserDto | null> {
+  async validate(key: string | string[]): Promise<AuthUserDto | null> {
+    key = Array.isArray(key) ? key[0] : key;
+
     const bytes = Buffer.from(key, key.length === 100 ? 'hex' : 'base64url');
     const link = await this.repository.getByKey(bytes);
     if (link) {
