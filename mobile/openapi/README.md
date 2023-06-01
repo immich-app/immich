@@ -145,11 +145,11 @@ Class | Method | HTTP request | Description
 *ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
 *ServerInfoApi* | [**getStats**](doc//ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
-*ShareApi* | [**editSharedLink**](doc//ShareApi.md#editsharedlink) | **PATCH** /share/{id} | 
 *ShareApi* | [**getAllSharedLinks**](doc//ShareApi.md#getallsharedlinks) | **GET** /share | 
 *ShareApi* | [**getMySharedLink**](doc//ShareApi.md#getmysharedlink) | **GET** /share/me | 
 *ShareApi* | [**getSharedLinkById**](doc//ShareApi.md#getsharedlinkbyid) | **GET** /share/{id} | 
 *ShareApi* | [**removeSharedLink**](doc//ShareApi.md#removesharedlink) | **DELETE** /share/{id} | 
+*ShareApi* | [**updateSharedLink**](doc//ShareApi.md#updatesharedlink) | **PATCH** /share/{id} | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
 *SystemConfigApi* | [**getDefaults**](doc//SystemConfigApi.md#getdefaults) | **GET** /system-config/defaults | 
 *SystemConfigApi* | [**getStorageTemplateOptions**](doc//SystemConfigApi.md#getstoragetemplateoptions) | **GET** /system-config/storage-template-options | 
