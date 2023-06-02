@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 if [ "$DB_HOSTNAME_FILE" ]; then
 	export DB_HOSTNAME=$(cat $DB_HOSTNAME_FILE)
