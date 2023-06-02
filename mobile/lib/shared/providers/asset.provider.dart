@@ -182,7 +182,8 @@ final assetsProvider =
       .ownerIdEqualTo(userId)
       .isArchivedEqualTo(false)
       .sortByFileCreatedAtDesc()
-      .thenByFileName();
+      .thenByRemoteId()
+      .thenByLocalId();
   final settings = ref.watch(appSettingsServiceProvider);
   final groupBy =
       GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)];
@@ -203,7 +204,7 @@ final remoteAssetsProvider =
       .filter()
       .ownerIdEqualTo(userId)
       .sortByFileCreatedAt()
-      .thenByFileName();
+      .thenByRemoteId();
   final settings = ref.watch(appSettingsServiceProvider);
   final groupBy =
       GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)];

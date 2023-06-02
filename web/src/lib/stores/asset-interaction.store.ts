@@ -69,11 +69,7 @@ function createAssetInteractionStore() {
 	const navigateAsset = async (direction: 'next' | 'previous') => {
 		// Flatten and sort the asset by date if there are new assets
 		if (assetSortedByDate.length === 0 || savedAssetLength !== _assetGridState.assets.length) {
-			assetSortedByDate = orderBy(
-				_assetGridState.assets,
-				['fileCreatedAt', 'originalPath'],
-				['desc', 'asc']
-			);
+			assetSortedByDate = orderBy(_assetGridState.assets, ['fileCreatedAt', 'id'], ['desc', 'asc']);
 			savedAssetLength = _assetGridState.assets.length;
 		}
 
