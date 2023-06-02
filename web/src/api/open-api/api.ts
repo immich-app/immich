@@ -4847,16 +4847,16 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {string} assetId 
+         * @param {string} id 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        downloadFile: async (assetId: string, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'assetId' is not null or undefined
-            assertParamExists('downloadFile', 'assetId', assetId)
-            const localVarPath = `/asset/download/{assetId}`
-                .replace(`{${"assetId"}}`, encodeURIComponent(String(assetId)));
+        downloadFile: async (id: string, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('downloadFile', 'id', id)
+            const localVarPath = `/asset/download/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -5097,16 +5097,16 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * Get a single asset\'s information
-         * @param {string} assetId 
+         * @param {string} id 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAssetById: async (assetId: string, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'assetId' is not null or undefined
-            assertParamExists('getAssetById', 'assetId', assetId)
-            const localVarPath = `/asset/assetById/{assetId}`
-                .replace(`{${"assetId"}}`, encodeURIComponent(String(assetId)));
+        getAssetById: async (id: string, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getAssetById', 'id', id)
+            const localVarPath = `/asset/assetById/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -5308,17 +5308,17 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {string} assetId 
+         * @param {string} id 
          * @param {ThumbnailFormat} [format] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAssetThumbnail: async (assetId: string, format?: ThumbnailFormat, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'assetId' is not null or undefined
-            assertParamExists('getAssetThumbnail', 'assetId', assetId)
-            const localVarPath = `/asset/thumbnail/{assetId}`
-                .replace(`{${"assetId"}}`, encodeURIComponent(String(assetId)));
+        getAssetThumbnail: async (id: string, format?: ThumbnailFormat, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getAssetThumbnail', 'id', id)
+            const localVarPath = `/asset/thumbnail/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -5628,18 +5628,18 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
-         * @param {string} assetId 
+         * @param {string} id 
          * @param {boolean} [isThumb] 
          * @param {boolean} [isWeb] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        serveFile: async (assetId: string, isThumb?: boolean, isWeb?: boolean, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'assetId' is not null or undefined
-            assertParamExists('serveFile', 'assetId', assetId)
-            const localVarPath = `/asset/file/{assetId}`
-                .replace(`{${"assetId"}}`, encodeURIComponent(String(assetId)));
+        serveFile: async (id: string, isThumb?: boolean, isWeb?: boolean, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('serveFile', 'id', id)
+            const localVarPath = `/asset/file/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -5685,18 +5685,18 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * Update an asset
-         * @param {string} assetId 
+         * @param {string} id 
          * @param {UpdateAssetDto} updateAssetDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateAsset: async (assetId: string, updateAssetDto: UpdateAssetDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'assetId' is not null or undefined
-            assertParamExists('updateAsset', 'assetId', assetId)
+        updateAsset: async (id: string, updateAssetDto: UpdateAssetDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('updateAsset', 'id', id)
             // verify required parameter 'updateAssetDto' is not null or undefined
             assertParamExists('updateAsset', 'updateAssetDto', updateAssetDto)
-            const localVarPath = `/asset/{assetId}`
-                .replace(`{${"assetId"}}`, encodeURIComponent(String(assetId)));
+            const localVarPath = `/asset/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -5933,13 +5933,13 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} assetId 
+         * @param {string} id 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async downloadFile(assetId: string, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.downloadFile(assetId, key, options);
+        async downloadFile(id: string, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.downloadFile(id, key, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -5990,13 +5990,13 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * Get a single asset\'s information
-         * @param {string} assetId 
+         * @param {string} id 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAssetById(assetId: string, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetById(assetId, key, options);
+        async getAssetById(id: string, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetById(id, key, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6039,14 +6039,14 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} assetId 
+         * @param {string} id 
          * @param {ThumbnailFormat} [format] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAssetThumbnail(assetId: string, format?: ThumbnailFormat, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetThumbnail(assetId, format, key, options);
+        async getAssetThumbnail(id: string, format?: ThumbnailFormat, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAssetThumbnail(id, format, key, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6112,26 +6112,26 @@ export const AssetApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} assetId 
+         * @param {string} id 
          * @param {boolean} [isThumb] 
          * @param {boolean} [isWeb] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async serveFile(assetId: string, isThumb?: boolean, isWeb?: boolean, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.serveFile(assetId, isThumb, isWeb, key, options);
+        async serveFile(id: string, isThumb?: boolean, isWeb?: boolean, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<File>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.serveFile(id, isThumb, isWeb, key, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
          * Update an asset
-         * @param {string} assetId 
+         * @param {string} id 
          * @param {UpdateAssetDto} updateAssetDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateAsset(assetId: string, updateAssetDto: UpdateAssetDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateAsset(assetId, updateAssetDto, options);
+        async updateAsset(id: string, updateAssetDto: UpdateAssetDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateAsset(id, updateAssetDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6225,13 +6225,13 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
-         * @param {string} assetId 
+         * @param {string} id 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        downloadFile(assetId: string, key?: string, options?: any): AxiosPromise<File> {
-            return localVarFp.downloadFile(assetId, key, options).then((request) => request(axios, basePath));
+        downloadFile(id: string, key?: string, options?: any): AxiosPromise<File> {
+            return localVarFp.downloadFile(id, key, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6277,13 +6277,13 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * Get a single asset\'s information
-         * @param {string} assetId 
+         * @param {string} id 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAssetById(assetId: string, key?: string, options?: any): AxiosPromise<AssetResponseDto> {
-            return localVarFp.getAssetById(assetId, key, options).then((request) => request(axios, basePath));
+        getAssetById(id: string, key?: string, options?: any): AxiosPromise<AssetResponseDto> {
+            return localVarFp.getAssetById(id, key, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6321,14 +6321,14 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
-         * @param {string} assetId 
+         * @param {string} id 
          * @param {ThumbnailFormat} [format] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAssetThumbnail(assetId: string, format?: ThumbnailFormat, key?: string, options?: any): AxiosPromise<File> {
-            return localVarFp.getAssetThumbnail(assetId, format, key, options).then((request) => request(axios, basePath));
+        getAssetThumbnail(id: string, format?: ThumbnailFormat, key?: string, options?: any): AxiosPromise<File> {
+            return localVarFp.getAssetThumbnail(id, format, key, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6387,25 +6387,25 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
-         * @param {string} assetId 
+         * @param {string} id 
          * @param {boolean} [isThumb] 
          * @param {boolean} [isWeb] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        serveFile(assetId: string, isThumb?: boolean, isWeb?: boolean, key?: string, options?: any): AxiosPromise<File> {
-            return localVarFp.serveFile(assetId, isThumb, isWeb, key, options).then((request) => request(axios, basePath));
+        serveFile(id: string, isThumb?: boolean, isWeb?: boolean, key?: string, options?: any): AxiosPromise<File> {
+            return localVarFp.serveFile(id, isThumb, isWeb, key, options).then((request) => request(axios, basePath));
         },
         /**
          * Update an asset
-         * @param {string} assetId 
+         * @param {string} id 
          * @param {UpdateAssetDto} updateAssetDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateAsset(assetId: string, updateAssetDto: UpdateAssetDto, options?: any): AxiosPromise<AssetResponseDto> {
-            return localVarFp.updateAsset(assetId, updateAssetDto, options).then((request) => request(axios, basePath));
+        updateAsset(id: string, updateAssetDto: UpdateAssetDto, options?: any): AxiosPromise<AssetResponseDto> {
+            return localVarFp.updateAsset(id, updateAssetDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6541,7 +6541,7 @@ export interface AssetApiDownloadFileRequest {
      * @type {string}
      * @memberof AssetApiDownloadFile
      */
-    readonly assetId: string
+    readonly id: string
 
     /**
      * 
@@ -6653,7 +6653,7 @@ export interface AssetApiGetAssetByIdRequest {
      * @type {string}
      * @memberof AssetApiGetAssetById
      */
-    readonly assetId: string
+    readonly id: string
 
     /**
      * 
@@ -6702,7 +6702,7 @@ export interface AssetApiGetAssetThumbnailRequest {
      * @type {string}
      * @memberof AssetApiGetAssetThumbnail
      */
-    readonly assetId: string
+    readonly id: string
 
     /**
      * 
@@ -6807,7 +6807,7 @@ export interface AssetApiServeFileRequest {
      * @type {string}
      * @memberof AssetApiServeFile
      */
-    readonly assetId: string
+    readonly id: string
 
     /**
      * 
@@ -6842,7 +6842,7 @@ export interface AssetApiUpdateAssetRequest {
      * @type {string}
      * @memberof AssetApiUpdateAsset
      */
-    readonly assetId: string
+    readonly id: string
 
     /**
      * 
@@ -7038,7 +7038,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public downloadFile(requestParameters: AssetApiDownloadFileRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).downloadFile(requestParameters.assetId, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).downloadFile(requestParameters.id, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7092,7 +7092,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public getAssetById(requestParameters: AssetApiGetAssetByIdRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getAssetById(requestParameters.assetId, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).getAssetById(requestParameters.id, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7145,7 +7145,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public getAssetThumbnail(requestParameters: AssetApiGetAssetThumbnailRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getAssetThumbnail(requestParameters.assetId, requestParameters.format, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).getAssetThumbnail(requestParameters.id, requestParameters.format, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7220,7 +7220,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public serveFile(requestParameters: AssetApiServeFileRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).serveFile(requestParameters.assetId, requestParameters.isThumb, requestParameters.isWeb, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).serveFile(requestParameters.id, requestParameters.isThumb, requestParameters.isWeb, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7231,7 +7231,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public updateAsset(requestParameters: AssetApiUpdateAssetRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).updateAsset(requestParameters.assetId, requestParameters.updateAssetDto, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).updateAsset(requestParameters.id, requestParameters.updateAssetDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

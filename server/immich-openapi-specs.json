@@ -2801,12 +2801,12 @@
         ]
       }
     },
-    "/asset/download/{assetId}": {
+    "/asset/download/{id}": {
       "get": {
         "operationId": "downloadFile",
         "parameters": [
           {
-            "name": "assetId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -2966,7 +2966,7 @@
         ]
       }
     },
-    "/asset/file/{assetId}": {
+    "/asset/file/{id}": {
       "get": {
         "operationId": "serveFile",
         "parameters": [
@@ -2989,7 +2989,7 @@
             }
           },
           {
-            "name": "assetId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -3035,12 +3035,12 @@
         ]
       }
     },
-    "/asset/thumbnail/{assetId}": {
+    "/asset/thumbnail/{id}": {
       "get": {
         "operationId": "getAssetThumbnail",
         "parameters": [
           {
-            "name": "assetId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -3563,13 +3563,13 @@
         ]
       }
     },
-    "/asset/assetById/{assetId}": {
+    "/asset/assetById/{id}": {
       "get": {
         "operationId": "getAssetById",
         "description": "Get a single asset's information",
         "parameters": [
           {
-            "name": "assetId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -3614,13 +3614,13 @@
         ]
       }
     },
-    "/asset/{assetId}": {
+    "/asset/{id}": {
       "put": {
         "operationId": "updateAsset",
         "description": "Update an asset",
         "parameters": [
           {
-            "name": "assetId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {

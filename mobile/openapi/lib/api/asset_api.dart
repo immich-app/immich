@@ -332,16 +332,16 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /asset/download/{assetId}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /asset/download/{id}' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] assetId (required):
+  /// * [String] id (required):
   ///
   /// * [String] key:
-  Future<Response> downloadFileWithHttpInfo(String assetId, { String? key, }) async {
+  Future<Response> downloadFileWithHttpInfo(String id, { String? key, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/asset/download/{assetId}'
-      .replaceAll('{assetId}', assetId);
+    final path = r'/asset/download/{id}'
+      .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -370,11 +370,11 @@ class AssetApi {
 
   /// Parameters:
   ///
-  /// * [String] assetId (required):
+  /// * [String] id (required):
   ///
   /// * [String] key:
-  Future<MultipartFile?> downloadFile(String assetId, { String? key, }) async {
-    final response = await downloadFileWithHttpInfo(assetId,  key: key, );
+  Future<MultipartFile?> downloadFile(String id, { String? key, }) async {
+    final response = await downloadFileWithHttpInfo(id,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -650,13 +650,13 @@ class AssetApi {
   ///
   /// Parameters:
   ///
-  /// * [String] assetId (required):
+  /// * [String] id (required):
   ///
   /// * [String] key:
-  Future<Response> getAssetByIdWithHttpInfo(String assetId, { String? key, }) async {
+  Future<Response> getAssetByIdWithHttpInfo(String id, { String? key, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/asset/assetById/{assetId}'
-      .replaceAll('{assetId}', assetId);
+    final path = r'/asset/assetById/{id}'
+      .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -687,11 +687,11 @@ class AssetApi {
   ///
   /// Parameters:
   ///
-  /// * [String] assetId (required):
+  /// * [String] id (required):
   ///
   /// * [String] key:
-  Future<AssetResponseDto?> getAssetById(String assetId, { String? key, }) async {
-    final response = await getAssetByIdWithHttpInfo(assetId,  key: key, );
+  Future<AssetResponseDto?> getAssetById(String id, { String? key, }) async {
+    final response = await getAssetByIdWithHttpInfo(id,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -887,18 +887,18 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /asset/thumbnail/{assetId}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /asset/thumbnail/{id}' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] assetId (required):
+  /// * [String] id (required):
   ///
   /// * [ThumbnailFormat] format:
   ///
   /// * [String] key:
-  Future<Response> getAssetThumbnailWithHttpInfo(String assetId, { ThumbnailFormat? format, String? key, }) async {
+  Future<Response> getAssetThumbnailWithHttpInfo(String id, { ThumbnailFormat? format, String? key, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/asset/thumbnail/{assetId}'
-      .replaceAll('{assetId}', assetId);
+    final path = r'/asset/thumbnail/{id}'
+      .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -930,13 +930,13 @@ class AssetApi {
 
   /// Parameters:
   ///
-  /// * [String] assetId (required):
+  /// * [String] id (required):
   ///
   /// * [ThumbnailFormat] format:
   ///
   /// * [String] key:
-  Future<MultipartFile?> getAssetThumbnail(String assetId, { ThumbnailFormat? format, String? key, }) async {
-    final response = await getAssetThumbnailWithHttpInfo(assetId,  format: format, key: key, );
+  Future<MultipartFile?> getAssetThumbnail(String id, { ThumbnailFormat? format, String? key, }) async {
+    final response = await getAssetThumbnailWithHttpInfo(id,  format: format, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -1267,20 +1267,20 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /asset/file/{assetId}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /asset/file/{id}' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] assetId (required):
+  /// * [String] id (required):
   ///
   /// * [bool] isThumb:
   ///
   /// * [bool] isWeb:
   ///
   /// * [String] key:
-  Future<Response> serveFileWithHttpInfo(String assetId, { bool? isThumb, bool? isWeb, String? key, }) async {
+  Future<Response> serveFileWithHttpInfo(String id, { bool? isThumb, bool? isWeb, String? key, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/asset/file/{assetId}'
-      .replaceAll('{assetId}', assetId);
+    final path = r'/asset/file/{id}'
+      .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -1315,15 +1315,15 @@ class AssetApi {
 
   /// Parameters:
   ///
-  /// * [String] assetId (required):
+  /// * [String] id (required):
   ///
   /// * [bool] isThumb:
   ///
   /// * [bool] isWeb:
   ///
   /// * [String] key:
-  Future<MultipartFile?> serveFile(String assetId, { bool? isThumb, bool? isWeb, String? key, }) async {
-    final response = await serveFileWithHttpInfo(assetId,  isThumb: isThumb, isWeb: isWeb, key: key, );
+  Future<MultipartFile?> serveFile(String id, { bool? isThumb, bool? isWeb, String? key, }) async {
+    final response = await serveFileWithHttpInfo(id,  isThumb: isThumb, isWeb: isWeb, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -1343,13 +1343,13 @@ class AssetApi {
   ///
   /// Parameters:
   ///
-  /// * [String] assetId (required):
+  /// * [String] id (required):
   ///
   /// * [UpdateAssetDto] updateAssetDto (required):
-  Future<Response> updateAssetWithHttpInfo(String assetId, UpdateAssetDto updateAssetDto,) async {
+  Future<Response> updateAssetWithHttpInfo(String id, UpdateAssetDto updateAssetDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/asset/{assetId}'
-      .replaceAll('{assetId}', assetId);
+    final path = r'/asset/{id}'
+      .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody = updateAssetDto;
@@ -1376,11 +1376,11 @@ class AssetApi {
   ///
   /// Parameters:
   ///
-  /// * [String] assetId (required):
+  /// * [String] id (required):
   ///
   /// * [UpdateAssetDto] updateAssetDto (required):
-  Future<AssetResponseDto?> updateAsset(String assetId, UpdateAssetDto updateAssetDto,) async {
-    final response = await updateAssetWithHttpInfo(assetId, updateAssetDto,);
+  Future<AssetResponseDto?> updateAsset(String id, UpdateAssetDto updateAssetDto,) async {
+    final response = await updateAssetWithHttpInfo(id, updateAssetDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

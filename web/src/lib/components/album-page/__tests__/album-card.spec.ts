@@ -87,7 +87,7 @@ describe('AlbumCard component', () => {
 		expect(apiMock.assetApi.getAssetThumbnail).toHaveBeenCalledTimes(1);
 		expect(apiMock.assetApi.getAssetThumbnail).toHaveBeenCalledWith(
 			{
-				assetId: 'thumbnailIdOne',
+				id: 'thumbnailIdOne',
 				format: ThumbnailFormat.Jpeg
 			},
 			{ responseType: 'blob' }
