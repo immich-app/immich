@@ -8,7 +8,10 @@ packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-torch = {version = "^2.0.1+cpu", source = "pytorch-cpu"}
+torch = [
+    {platform = "arm64", version = "^2.0.1", source = "pytorch-cpu"},
+    {platform = "amd64", version = "^2.0.1+cpu", source = "pytorch-cpu"}
+]
 transformers = "^4.29.2"
 sentence-transformers = "^2.2.2"
 onnxruntime = "^1.15.0"
