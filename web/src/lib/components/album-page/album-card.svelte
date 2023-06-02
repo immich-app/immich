@@ -37,7 +37,7 @@
 
 		const { data } = await api.assetApi.getAssetThumbnail(
 			{
-				assetId: thubmnailId,
+				id: thubmnailId,
 				format: ThumbnailFormat.Jpeg
 			},
 			{
