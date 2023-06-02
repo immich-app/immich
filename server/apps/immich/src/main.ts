@@ -6,7 +6,6 @@ import {
   MACHINE_LEARNING_ENABLED,
   SearchService,
   SERVER_VERSION,
-  StorageService,
 } from '@app/domain';
 import { RedisIoAdapter } from '@app/infra';
 import { Logger } from '@nestjs/common';
@@ -18,6 +17,7 @@ import cookieParser from 'cookie-parser';
 import { writeFileSync } from 'fs';
 import path from 'path';
 import { AppModule } from './app.module';
+import { AppService } from './app.service';
 import { patchOpenAPI } from './utils/patch-open-api.util';
 
 const logger = new Logger('ImmichServer');
@@ -73,7 +73,7 @@ async function bootstrap() {
     customSiteTitle: 'Immich API Documentation',
   });
 
-  app.get(StorageService).init();
+  await app.get(AppService).init();
 
   await app.listen(serverPort, () => {
     if (process.env.NODE_ENV == 'development') {
