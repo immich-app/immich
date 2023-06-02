@@ -1,5 +1,6 @@
 import { QueueName } from '@app/domain';
-import { BullModuleOptions } from '@nestjs/bull';
+import { RegisterQueueOptions } from '@nestjs/bullmq';
+import { QueueOptions } from 'bullmq';
 import { RedisOptions } from 'ioredis';
 import { InitOptions } from 'local-reverse-geocoder';
 import { ConfigurationOptions } from 'typesense/lib/Typesense/Configuration';
@@ -26,9 +27,9 @@ function parseRedisConfig(): RedisOptions {
 
 export const redisConfig: RedisOptions = parseRedisConfig();
 
-export const bullConfig: BullModuleOptions = {
+export const bullConfig: QueueOptions = {
   prefix: 'immich_bull',
-  redis: redisConfig,
+  connection: redisConfig,
   defaultJobOptions: {
     attempts: 3,
     removeOnComplete: true,
@@ -36,7 +37,7 @@ export const bullConfig: BullModuleOptions = {
   },
 };
 
-export const bullQueues: BullModuleOptions[] = Object.values(QueueName).map((name) => ({ name }));
+export const bullQueues: RegisterQueueOptions[] = Object.values(QueueName).map((name) => ({ name }));
 
 function parseTypeSenseConfig(): ConfigurationOptions {
   const typesenseURL = process.env.TYPESENSE_URL;

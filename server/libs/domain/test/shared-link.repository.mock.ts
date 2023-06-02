@@ -7,7 +7,7 @@ export const newSharedLinkRepositoryMock = (): jest.Mocked<ISharedLinkRepository
     getByKey: jest.fn(),
     create: jest.fn(),
     remove: jest.fn(),
-    save: jest.fn(),
+    update: jest.fn(),
     hasAssetAccess: jest.fn(),
   };
 };

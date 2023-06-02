@@ -1,4 +1,4 @@
-import { AssetResponseDto } from '@api';
+import type { AssetResponseDto } from '@api';
 
 export class AssetBucket {
 	/**

@@ -2,20 +2,26 @@ import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common'
 import { IAssetRepository, mapAsset } from '../asset';
 import { CommunicationEvent, ICommunicationRepository } from '../communication';
 import { assertMachineLearningEnabled } from '../domain.constant';
+import { ISystemConfigRepository } from '../system-config';
+import { SystemConfigCore } from '../system-config/system-config.core';
 import { JobCommandDto } from './dto';
 import { JobCommand, JobName, QueueName } from './job.constants';
-import { IJobRepository, JobItem } from './job.repository';
+import { IJobRepository, JobHandler, JobItem } from './job.repository';
 import { AllJobStatusResponseDto, JobStatusDto } from './response-dto';
 
 @Injectable()
 export class JobService {
   private logger = new Logger(JobService.name);
+  private configCore: SystemConfigCore;
 
   constructor(
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(ICommunicationRepository) private communicationRepository: ICommunicationRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-  ) {}
+    @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
+  ) {
+    this.configCore = new SystemConfigCore(configRepository);
+  }
 
   handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<void> {
     this.logger.debug(`Handling command: queue=${queueName},force=${dto.force}`);
@@ -90,6 +96,36 @@ export class JobService {
     }
   }
 
+  async registerHandlers(jobHandlers: Record<JobName, JobHandler>) {
+    const config = await this.configCore.getConfig();
+    for (const queueName of Object.values(QueueName)) {
+      const concurrency = config.job[queueName].concurrency;
+      this.logger.debug(`Registering ${queueName} with a concurrency of ${concurrency}`);
+      this.jobRepository.addHandler(queueName, concurrency, async (item: JobItem): Promise<void> => {
+        const { name, data } = item;
+
+        try {
+          const handler = jobHandlers[name];
+          const success = await handler(data);
+          if (success) {
+            await this.onDone(item);
+          }
+        } catch (error: Error | any) {
+          this.logger.error(`Unable to run job handler: ${error}`, error?.stack, data);
+        }
+      });
+    }
+
+    this.configCore.config$.subscribe((config) => {
+      this.logger.log(`Updating queue concurrency settings`);
+      for (const queueName of Object.values(QueueName)) {
+        const concurrency = config.job[queueName].concurrency;
+        this.logger.debug(`Setting ${queueName} concurrency to ${concurrency}`);
+        this.jobRepository.setConcurrency(queueName, concurrency);
+      }
+    });
+  }
+
   async handleNightlyJobs() {
     await this.jobRepository.queue({ name: JobName.USER_DELETE_CHECK });
     await this.jobRepository.queue({ name: JobName.PERSON_CLEANUP });
@@ -99,11 +135,11 @@ export class JobService {
   /**
    * Queue follow up jobs
    */
-  async onDone(item: JobItem) {
+  private async onDone(item: JobItem) {
     switch (item.name) {
       case JobName.SIDECAR_SYNC:
       case JobName.SIDECAR_DISCOVERY:
-        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: item.data.id } });
+        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: item.data });
         break;
 
       case JobName.METADATA_EXTRACTION:
@@ -120,7 +156,6 @@ export class JobService {
         await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: item.data });
         await this.jobRepository.queue({ name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: item.data });
         await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: item.data });
-        await this.jobRepository.queue({ name: JobName.DETECT_OBJECTS, data: item.data });
         await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: item.data });
         await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: item.data });
 
@@ -135,7 +170,6 @@ export class JobService {
     // In addition to the above jobs, all of these should queue `SEARCH_INDEX_ASSET`
     switch (item.name) {
       case JobName.CLASSIFY_IMAGE:
-      case JobName.DETECT_OBJECTS:
       case JobName.ENCODE_CLIP:
       case JobName.RECOGNIZE_FACES:
       case JobName.METADATA_EXTRACTION:

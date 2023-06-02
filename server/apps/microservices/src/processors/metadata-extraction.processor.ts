@@ -22,6 +22,7 @@ import fs from 'node:fs';
 import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
 import { promisify } from 'util';
+import { parseLatitude, parseLongitude } from '../utils/coordinates';
 
 const ffprobe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 
@@ -174,8 +175,8 @@ export class MetadataExtractionProcessor {
     // files MAY return an array of numbers instead.
     const iso = getExifProperty('ISO');
     newExif.iso = Array.isArray(iso) ? iso[0] : iso || null;
-    newExif.latitude = getExifProperty('GPSLatitude');
-    newExif.longitude = getExifProperty('GPSLongitude');
+    newExif.latitude = parseLatitude(getExifProperty('GPSLatitude'));
+    newExif.longitude = parseLongitude(getExifProperty('GPSLongitude'));
     newExif.livePhotoCID = getExifProperty('MediaGroupUUID');
 
     if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
@@ -274,8 +275,8 @@ export class MetadataExtractionProcessor {
       const match = location.match(locationRegex);
 
       if (match?.length === 3) {
-        newExif.latitude = parseFloat(match[1]);
-        newExif.longitude = parseFloat(match[2]);
+        newExif.latitude = parseLatitude(match[1]);
+        newExif.longitude = parseLongitude(match[2]);
       }
     } else if (videoTags && videoTags['com.apple.quicktime.location.ISO6709']) {
       const location = videoTags['com.apple.quicktime.location.ISO6709'] as string;
@@ -283,8 +284,8 @@ export class MetadataExtractionProcessor {
       const match = location.match(locationRegex);
 
       if (match?.length === 4) {
-        newExif.latitude = parseFloat(match[1]);
-        newExif.longitude = parseFloat(match[2]);
+        newExif.latitude = parseLatitude(match[1]);
+        newExif.longitude = parseLongitude(match[2]);
       }
     }
 

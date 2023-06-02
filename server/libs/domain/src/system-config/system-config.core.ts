@@ -1,13 +1,20 @@
-import { SystemConfig, SystemConfigEntity, SystemConfigKey, TranscodePreset } from '@app/infra/entities';
+import {
+  SystemConfig,
+  SystemConfigEntity,
+  SystemConfigKey,
+  SystemConfigValue,
+  TranscodePreset,
+} from '@app/infra/entities';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import * as _ from 'lodash';
 import { Subject } from 'rxjs';
 import { DeepPartial } from 'typeorm';
+import { QueueName } from '../job/job.constants';
 import { ISystemConfigRepository } from './system-config.repository';
 
 export type SystemConfigValidator = (config: SystemConfig) => void | Promise<void>;
 
-const defaults: SystemConfig = Object.freeze({
+const defaults = Object.freeze<SystemConfig>({
   ffmpeg: {
     crf: 23,
     threads: 0,
@@ -18,6 +25,18 @@ const defaults: SystemConfig = Object.freeze({
     maxBitrate: '0',
     twoPass: false,
     transcode: TranscodePreset.REQUIRED,
+  },
+  job: {
+    [QueueName.BACKGROUND_TASK]: { concurrency: 5 },
+    [QueueName.CLIP_ENCODING]: { concurrency: 2 },
+    [QueueName.METADATA_EXTRACTION]: { concurrency: 5 },
+    [QueueName.OBJECT_TAGGING]: { concurrency: 2 },
+    [QueueName.RECOGNIZE_FACES]: { concurrency: 2 },
+    [QueueName.SEARCH]: { concurrency: 5 },
+    [QueueName.SIDECAR]: { concurrency: 5 },
+    [QueueName.STORAGE_TEMPLATE_MIGRATION]: { concurrency: 5 },
+    [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
+    [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
   },
   oauth: {
     enabled: false,
@@ -85,7 +104,7 @@ export class SystemConfigCore {
 
     for (const key of Object.values(SystemConfigKey)) {
       // get via dot notation
-      const item = { key, value: _.get(config, key) };
+      const item = { key, value: _.get(config, key) as SystemConfigValue };
       const defaultValue = _.get(defaults, key);
       const isMissing = !_.has(config, key);
 

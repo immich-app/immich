@@ -95,25 +95,25 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 *AssetApi* | [**createAssetsSharedLink**](doc//AssetApi.md#createassetssharedlink) | **POST** /asset/shared-link | 
 *AssetApi* | [**deleteAsset**](doc//AssetApi.md#deleteasset) | **DELETE** /asset | 
-*AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **GET** /asset/download/{assetId} | 
+*AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **GET** /asset/download/{id} | 
 *AssetApi* | [**downloadFiles**](doc//AssetApi.md#downloadfiles) | **POST** /asset/download-files | 
 *AssetApi* | [**downloadLibrary**](doc//AssetApi.md#downloadlibrary) | **GET** /asset/download-library | 
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getArchivedAssetCountByUserId**](doc//AssetApi.md#getarchivedassetcountbyuserid) | **GET** /asset/stat/archive | 
-*AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{assetId} | 
+*AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{id} | 
 *AssetApi* | [**getAssetByTimeBucket**](doc//AssetApi.md#getassetbytimebucket) | **POST** /asset/time-bucket | 
 *AssetApi* | [**getAssetCountByTimeBucket**](doc//AssetApi.md#getassetcountbytimebucket) | **POST** /asset/count-by-time-bucket | 
 *AssetApi* | [**getAssetCountByUserId**](doc//AssetApi.md#getassetcountbyuserid) | **GET** /asset/count-by-user-id | 
 *AssetApi* | [**getAssetSearchTerms**](doc//AssetApi.md#getassetsearchterms) | **GET** /asset/search-terms | 
-*AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{assetId} | 
+*AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
 *AssetApi* | [**getCuratedLocations**](doc//AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 *AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
 *AssetApi* | [**getMapMarkers**](doc//AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 *AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 *AssetApi* | [**removeAssetsFromSharedLink**](doc//AssetApi.md#removeassetsfromsharedlink) | **PATCH** /asset/shared-link/remove | 
 *AssetApi* | [**searchAsset**](doc//AssetApi.md#searchasset) | **POST** /asset/search | 
-*AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{assetId} | 
-*AssetApi* | [**updateAsset**](doc//AssetApi.md#updateasset) | **PUT** /asset/{assetId} | 
+*AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{id} | 
+*AssetApi* | [**updateAsset**](doc//AssetApi.md#updateasset) | **PUT** /asset/{id} | 
 *AssetApi* | [**uploadFile**](doc//AssetApi.md#uploadfile) | **POST** /asset/upload | 
 *AuthenticationApi* | [**adminSignUp**](doc//AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
@@ -145,20 +145,23 @@ Class | Method | HTTP request | Description
 *ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
 *ServerInfoApi* | [**getStats**](doc//ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
-*ShareApi* | [**editSharedLink**](doc//ShareApi.md#editsharedlink) | **PATCH** /share/{id} | 
 *ShareApi* | [**getAllSharedLinks**](doc//ShareApi.md#getallsharedlinks) | **GET** /share | 
 *ShareApi* | [**getMySharedLink**](doc//ShareApi.md#getmysharedlink) | **GET** /share/me | 
 *ShareApi* | [**getSharedLinkById**](doc//ShareApi.md#getsharedlinkbyid) | **GET** /share/{id} | 
 *ShareApi* | [**removeSharedLink**](doc//ShareApi.md#removesharedlink) | **DELETE** /share/{id} | 
+*ShareApi* | [**updateSharedLink**](doc//ShareApi.md#updatesharedlink) | **PATCH** /share/{id} | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
 *SystemConfigApi* | [**getDefaults**](doc//SystemConfigApi.md#getdefaults) | **GET** /system-config/defaults | 
 *SystemConfigApi* | [**getStorageTemplateOptions**](doc//SystemConfigApi.md#getstoragetemplateoptions) | **GET** /system-config/storage-template-options | 
 *SystemConfigApi* | [**updateConfig**](doc//SystemConfigApi.md#updateconfig) | **PUT** /system-config | 
-*TagApi* | [**create**](doc//TagApi.md#create) | **POST** /tag | 
-*TagApi* | [**delete**](doc//TagApi.md#delete) | **DELETE** /tag/{id} | 
-*TagApi* | [**findAll**](doc//TagApi.md#findall) | **GET** /tag | 
-*TagApi* | [**findOne**](doc//TagApi.md#findone) | **GET** /tag/{id} | 
-*TagApi* | [**update**](doc//TagApi.md#update) | **PATCH** /tag/{id} | 
+*TagApi* | [**createTag**](doc//TagApi.md#createtag) | **POST** /tag | 
+*TagApi* | [**deleteTag**](doc//TagApi.md#deletetag) | **DELETE** /tag/{id} | 
+*TagApi* | [**getAllTags**](doc//TagApi.md#getalltags) | **GET** /tag | 
+*TagApi* | [**getTagAssets**](doc//TagApi.md#gettagassets) | **GET** /tag/{id}/assets | 
+*TagApi* | [**getTagById**](doc//TagApi.md#gettagbyid) | **GET** /tag/{id} | 
+*TagApi* | [**tagAssets**](doc//TagApi.md#tagassets) | **PUT** /tag/{id}/assets | 
+*TagApi* | [**untagAssets**](doc//TagApi.md#untagassets) | **DELETE** /tag/{id}/assets | 
+*TagApi* | [**updateTag**](doc//TagApi.md#updatetag) | **PATCH** /tag/{id} | 
 *UserApi* | [**createProfileImage**](doc//UserApi.md#createprofileimage) | **POST** /user/profile-image | 
 *UserApi* | [**createUser**](doc//UserApi.md#createuser) | **POST** /user | 
 *UserApi* | [**deleteUser**](doc//UserApi.md#deleteuser) | **DELETE** /user/{userId} | 
@@ -192,6 +195,8 @@ Class | Method | HTTP request | Description
  - [AssetCountByTimeBucketResponseDto](doc//AssetCountByTimeBucketResponseDto.md)
  - [AssetCountByUserIdResponseDto](doc//AssetCountByUserIdResponseDto.md)
  - [AssetFileUploadResponseDto](doc//AssetFileUploadResponseDto.md)
+ - [AssetIdsDto](doc//AssetIdsDto.md)
+ - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
  - [AuthDeviceResponseDto](doc//AuthDeviceResponseDto.md)
@@ -220,6 +225,7 @@ Class | Method | HTTP request | Description
  - [JobCommandDto](doc//JobCommandDto.md)
  - [JobCountsDto](doc//JobCountsDto.md)
  - [JobName](doc//JobName.md)
+ - [JobSettingsDto](doc//JobSettingsDto.md)
  - [JobStatusDto](doc//JobStatusDto.md)
  - [LoginCredentialDto](doc//LoginCredentialDto.md)
  - [LoginResponseDto](doc//LoginResponseDto.md)
@@ -251,6 +257,7 @@ Class | Method | HTTP request | Description
  - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
  - [SystemConfigDto](doc//SystemConfigDto.md)
  - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
+ - [SystemConfigJobDto](doc//SystemConfigJobDto.md)
  - [SystemConfigOAuthDto](doc//SystemConfigOAuthDto.md)
  - [SystemConfigPasswordLoginDto](doc//SystemConfigPasswordLoginDto.md)
  - [SystemConfigStorageTemplateDto](doc//SystemConfigStorageTemplateDto.md)

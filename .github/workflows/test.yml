@@ -96,7 +96,11 @@ jobs:
         if: ${{ !cancelled() }}
 
       - name: Run svelte checks
-        run: npm run check
+        run: npm run check:svelte
+        if: ${{ !cancelled() }}
+
+      - name: Run tsc
+        run: npm run check:typescript
         if: ${{ !cancelled() }}
 
       - name: Run unit tests & coverage

@@ -17,11 +17,6 @@ void main() {
   // final instance = ShareApi();
 
   group('tests for ShareApi', () {
-    //Future<SharedLinkResponseDto> editSharedLink(String id, EditSharedLinkDto editSharedLinkDto) async
-    test('test editSharedLink', () async {
-      // TODO
-    });
-
     //Future<List<SharedLinkResponseDto>> getAllSharedLinks() async
     test('test getAllSharedLinks', () async {
       // TODO
@@ -39,6 +34,11 @@ void main() {
 
     //Future removeSharedLink(String id) async
     test('test removeSharedLink', () async {
+      // TODO
+    });
+
+    //Future<SharedLinkResponseDto> updateSharedLink(String id, EditSharedLinkDto editSharedLinkDto) async
+    test('test updateSharedLink', () async {
       // TODO
     });
 

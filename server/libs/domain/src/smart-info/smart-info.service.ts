@@ -27,26 +27,8 @@ export class SmartInfoService {
     for await (const assets of assetPagination) {
       for (const asset of assets) {
         await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: { id: asset.id } });
-        await this.jobRepository.queue({ name: JobName.DETECT_OBJECTS, data: { id: asset.id } });
       }
     }
-
-    return true;
-  }
-
-  async handleDetectObjects({ id }: IEntityJob) {
-    const [asset] = await this.assetRepository.getByIds([id]);
-
-    if (!MACHINE_LEARNING_ENABLED || !asset.resizePath) {
-      return false;
-    }
-
-    const objects = await this.machineLearning.detectObjects({ thumbnailPath: asset.resizePath });
-    if (objects.length === 0) {
-      return false;
-    }
-
-    await this.repository.upsert({ assetId: asset.id, objects });
 
     return true;
   }

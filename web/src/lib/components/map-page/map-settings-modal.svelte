@@ -1,15 +1,6 @@
-<script lang="ts" context="module">
-	export interface MapSettings {
-		allowDarkMode: boolean;
-		onlyFavorites: boolean;
-		relativeDate: string;
-		dateAfter: string;
-		dateBefore: string;
-	}
-</script>
-
 <script lang="ts">
 	import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+	import type { MapSettings } from '$lib/stores/preferences.store';
 	import { Duration } from 'luxon';
 	import { createEventDispatcher } from 'svelte';
 	import { fly } from 'svelte/transition';

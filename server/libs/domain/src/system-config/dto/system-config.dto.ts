@@ -1,6 +1,7 @@
 import { SystemConfig } from '@app/infra/entities';
 import { Type } from 'class-transformer';
 import { IsObject, ValidateNested } from 'class-validator';
+import { SystemConfigJobDto } from './system-config-job.dto';
 import { SystemConfigFFmpegDto } from './system-config-ffmpeg.dto';
 import { SystemConfigOAuthDto } from './system-config-oauth.dto';
 import { SystemConfigPasswordLoginDto } from './system-config-password-login.dto';
@@ -26,6 +27,11 @@ export class SystemConfigDto {
   @ValidateNested()
   @IsObject()
   storageTemplate!: SystemConfigStorageTemplateDto;
+
+  @Type(() => SystemConfigJobDto)
+  @ValidateNested()
+  @IsObject()
+  job!: SystemConfigJobDto;
 }
 
 export function mapConfig(config: SystemConfig): SystemConfigDto {

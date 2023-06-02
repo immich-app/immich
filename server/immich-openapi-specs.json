@@ -1565,41 +1565,8 @@
           }
         ]
       },
-      "delete": {
-        "operationId": "removeSharedLink",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "share"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      },
       "patch": {
-        "operationId": "editSharedLink",
+        "operationId": "updateSharedLink",
         "parameters": [
           {
             "name": "id",
@@ -1631,6 +1598,39 @@
                 }
               }
             }
+          }
+        },
+        "tags": [
+          "share"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "removeSharedLink",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
           }
         },
         "tags": [
@@ -1771,6 +1771,357 @@
         },
         "tags": [
           "System Config"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/tag": {
+      "post": {
+        "operationId": "createTag",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTagDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "getAllTags",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TagResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/tag/{id}": {
+      "get": {
+        "operationId": "getTagById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "updateTag",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTagDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deleteTag",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Tag"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/tag/{id}/assets": {
+      "get": {
+        "operationId": "getTagAssets",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "tagAssets",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetIdsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetIdsResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "untagAssets",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetIdsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetIdsResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Tag"
         ],
         "security": [
           {
@@ -2450,12 +2801,12 @@
         ]
       }
     },
-    "/asset/download/{assetId}": {
+    "/asset/download/{id}": {
       "get": {
         "operationId": "downloadFile",
         "parameters": [
           {
-            "name": "assetId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -2615,7 +2966,7 @@
         ]
       }
     },
-    "/asset/file/{assetId}": {
+    "/asset/file/{id}": {
       "get": {
         "operationId": "serveFile",
         "parameters": [
@@ -2638,7 +2989,7 @@
             }
           },
           {
-            "name": "assetId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -2684,12 +3035,12 @@
         ]
       }
     },
-    "/asset/thumbnail/{assetId}": {
+    "/asset/thumbnail/{id}": {
       "get": {
         "operationId": "getAssetThumbnail",
         "parameters": [
           {
-            "name": "assetId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -3212,13 +3563,13 @@
         ]
       }
     },
-    "/asset/assetById/{assetId}": {
+    "/asset/assetById/{id}": {
       "get": {
         "operationId": "getAssetById",
         "description": "Get a single asset's information",
         "parameters": [
           {
-            "name": "assetId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -3263,13 +3614,13 @@
         ]
       }
     },
-    "/asset/{assetId}": {
+    "/asset/{id}": {
       "put": {
         "operationId": "updateAsset",
         "description": "Update an asset",
         "parameters": [
           {
-            "name": "assetId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -3584,206 +3935,6 @@
         },
         "tags": [
           "Asset"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
-    "/tag": {
-      "post": {
-        "operationId": "create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateTagDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TagResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Tag"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      },
-      "get": {
-        "operationId": "findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TagResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Tag"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
-    "/tag/{id}": {
-      "get": {
-        "operationId": "findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TagResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Tag"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      },
-      "patch": {
-        "operationId": "update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateTagDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TagResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Tag"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      },
-      "delete": {
-        "operationId": "delete",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Tag"
         ],
         "security": [
           {
@@ -4384,26 +4535,22 @@
       "TagResponseDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string"
-          },
           "type": {
             "$ref": "#/components/schemas/TagTypeEnum"
+          },
+          "id": {
+            "type": "string"
           },
           "name": {
             "type": "string"
           },
           "userId": {
             "type": "string"
-          },
-          "renameTagId": {
-            "type": "string",
-            "nullable": true
           }
         },
         "required": [
-          "id",
           "type",
+          "id",
           "name",
           "userId"
         ]
@@ -4964,63 +5111,63 @@
       "AllJobStatusResponseDto": {
         "type": "object",
         "properties": {
-          "thumbnail-generation-queue": {
+          "thumbnailGeneration": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "metadata-extraction-queue": {
+          "metadataExtraction": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "video-conversion-queue": {
+          "videoConversion": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "object-tagging-queue": {
+          "objectTagging": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "clip-encoding-queue": {
+          "clipEncoding": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "storage-template-migration-queue": {
+          "storageTemplateMigration": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "background-task-queue": {
+          "backgroundTask": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "search-queue": {
+          "search": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "recognize-faces-queue": {
+          "recognizeFaces": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
-          "sidecar-queue": {
+          "sidecar": {
             "$ref": "#/components/schemas/JobStatusDto"
           }
         },
         "required": [
-          "thumbnail-generation-queue",
-          "metadata-extraction-queue",
-          "video-conversion-queue",
-          "object-tagging-queue",
-          "clip-encoding-queue",
-          "storage-template-migration-queue",
-          "background-task-queue",
-          "search-queue",
-          "recognize-faces-queue",
-          "sidecar-queue"
+          "thumbnailGeneration",
+          "metadataExtraction",
+          "videoConversion",
+          "objectTagging",
+          "clipEncoding",
+          "storageTemplateMigration",
+          "backgroundTask",
+          "search",
+          "recognizeFaces",
+          "sidecar"
         ]
       },
       "JobName": {
         "type": "string",
         "enum": [
-          "thumbnail-generation-queue",
-          "metadata-extraction-queue",
-          "video-conversion-queue",
-          "object-tagging-queue",
-          "recognize-faces-queue",
-          "clip-encoding-queue",
-          "background-task-queue",
-          "storage-template-migration-queue",
-          "search-queue",
-          "sidecar-queue"
+          "thumbnailGeneration",
+          "metadataExtraction",
+          "videoConversion",
+          "objectTagging",
+          "recognizeFaces",
+          "clipEncoding",
+          "backgroundTask",
+          "storageTemplateMigration",
+          "search",
+          "sidecar"
         ]
       },
       "JobCommand": {
@@ -5591,6 +5738,64 @@
           "template"
         ]
       },
+      "JobSettingsDto": {
+        "type": "object",
+        "properties": {
+          "concurrency": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "concurrency"
+        ]
+      },
+      "SystemConfigJobDto": {
+        "type": "object",
+        "properties": {
+          "thumbnailGeneration": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "metadataExtraction": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "videoConversion": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "objectTagging": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "clipEncoding": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "storageTemplateMigration": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "backgroundTask": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "search": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "recognizeFaces": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "sidecar": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          }
+        },
+        "required": [
+          "thumbnailGeneration",
+          "metadataExtraction",
+          "videoConversion",
+          "objectTagging",
+          "clipEncoding",
+          "storageTemplateMigration",
+          "backgroundTask",
+          "search",
+          "recognizeFaces",
+          "sidecar"
+        ]
+      },
       "SystemConfigDto": {
         "type": "object",
         "properties": {
@@ -5605,13 +5810,17 @@
           },
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
+          },
+          "job": {
+            "$ref": "#/components/schemas/SystemConfigJobDto"
           }
         },
         "required": [
           "ffmpeg",
           "oauth",
           "passwordLogin",
-          "storageTemplate"
+          "storageTemplate",
+          "job"
         ]
       },
       "SystemConfigTemplateStorageOptionDto": {
@@ -5668,6 +5877,67 @@
           "minuteOptions",
           "secondOptions",
           "presetOptions"
+        ]
+      },
+      "CreateTagDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/TagTypeEnum"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "name"
+        ]
+      },
+      "UpdateTagDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "AssetIdsDto": {
+        "type": "object",
+        "properties": {
+          "assetIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "assetIds"
+        ]
+      },
+      "AssetIdsResponseDto": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean"
+          },
+          "error": {
+            "enum": [
+              "duplicate",
+              "no_permission",
+              "not_found"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "success"
         ]
       },
       "CreateUserDto": {
@@ -6322,32 +6592,6 @@
         "required": [
           "assetIds"
         ]
-      },
-      "CreateTagDto": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/TagTypeEnum"
-          },
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "type",
-          "name"
-        ]
-      },
-      "UpdateTagDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "renameTagId": {
-            "type": "string"
-          }
-        }
       },
       "AlbumCountResponseDto": {
         "type": "object",

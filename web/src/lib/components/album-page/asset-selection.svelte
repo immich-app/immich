@@ -1,18 +1,18 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte';
-	import { quintOut } from 'svelte/easing';
-	import { fly } from 'svelte/transition';
-	import { AssetResponseDto } from '@api';
-	import { openFileUploadDialog } from '$lib/utils/file-uploader';
-	import ControlAppBar from '../shared-components/control-app-bar.svelte';
-	import AssetGrid from '../photos-page/asset-grid.svelte';
 	import {
 		assetInteractionStore,
 		assetsInAlbumStoreState,
 		selectedAssets
 	} from '$lib/stores/asset-interaction.store';
 	import { locale } from '$lib/stores/preferences.store';
+	import { openFileUploadDialog } from '$lib/utils/file-uploader';
+	import type { AssetResponseDto } from '@api';
+	import { createEventDispatcher, onMount } from 'svelte';
+	import { quintOut } from 'svelte/easing';
+	import { fly } from 'svelte/transition';
 	import Button from '../elements/buttons/button.svelte';
+	import AssetGrid from '../photos-page/asset-grid.svelte';
+	import ControlAppBar from '../shared-components/control-app-bar.svelte';
 
 	const dispatch = createEventDispatcher();
 

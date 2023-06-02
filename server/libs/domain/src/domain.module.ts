@@ -12,11 +12,12 @@ import { PartnerService } from './partner';
 import { PersonService } from './person';
 import { SearchService } from './search';
 import { ServerInfoService } from './server-info';
-import { ShareService } from './share';
+import { SharedLinkService } from './shared-link';
 import { SmartInfoService } from './smart-info';
 import { StorageService } from './storage';
 import { StorageTemplateService } from './storage-template';
 import { INITIAL_SYSTEM_CONFIG, SystemConfigService } from './system-config';
+import { TagService } from './tag';
 import { UserService } from './user';
 
 const providers: Provider[] = [
@@ -33,11 +34,12 @@ const providers: Provider[] = [
   PartnerService,
   SearchService,
   ServerInfoService,
-  ShareService,
+  SharedLinkService,
   SmartInfoService,
   StorageService,
   StorageTemplateService,
   SystemConfigService,
+  TagService,
   UserService,
   {
     provide: INITIAL_SYSTEM_CONFIG,

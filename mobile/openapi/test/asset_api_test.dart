@@ -53,7 +53,7 @@ void main() {
       // TODO
     });
 
-    //Future<MultipartFile> downloadFile(String assetId, { String key }) async
+    //Future<MultipartFile> downloadFile(String id, { String key }) async
     test('test downloadFile', () async {
       // TODO
     });
@@ -84,7 +84,7 @@ void main() {
 
     // Get a single asset's information
     //
-    //Future<AssetResponseDto> getAssetById(String assetId, { String key }) async
+    //Future<AssetResponseDto> getAssetById(String id, { String key }) async
     test('test getAssetById', () async {
       // TODO
     });
@@ -109,7 +109,7 @@ void main() {
       // TODO
     });
 
-    //Future<MultipartFile> getAssetThumbnail(String assetId, { ThumbnailFormat format, String key }) async
+    //Future<MultipartFile> getAssetThumbnail(String id, { ThumbnailFormat format, String key }) async
     test('test getAssetThumbnail', () async {
       // TODO
     });
@@ -146,14 +146,14 @@ void main() {
       // TODO
     });
 
-    //Future<MultipartFile> serveFile(String assetId, { bool isThumb, bool isWeb, String key }) async
+    //Future<MultipartFile> serveFile(String id, { bool isThumb, bool isWeb, String key }) async
     test('test serveFile', () async {
       // TODO
     });
 
     // Update an asset
     //
-    //Future<AssetResponseDto> updateAsset(String assetId, UpdateAssetDto updateAssetDto) async
+    //Future<AssetResponseDto> updateAsset(String id, UpdateAssetDto updateAssetDto) async
     test('test updateAsset', () async {
       // TODO
     });

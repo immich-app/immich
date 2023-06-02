@@ -21,6 +21,9 @@
 
 	const handleInput = (e: Event) => {
 		value = (e.target as HTMLInputElement).value;
+		if (inputType === SettingInputFieldType.NUMBER) {
+			value = Number(value) || 0;
+		}
 	};
 </script>
 

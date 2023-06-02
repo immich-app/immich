@@ -2,17 +2,19 @@ import {
   AlbumEntity,
   APIKeyEntity,
   AssetEntity,
+  AssetFaceEntity,
   AssetType,
-  PersonEntity,
+  ExifEntity,
   PartnerEntity,
+  PersonEntity,
   SharedLinkEntity,
   SharedLinkType,
   SystemConfig,
+  TagEntity,
+  TagType,
   TranscodePreset,
   UserEntity,
   UserTokenEntity,
-  AssetFaceEntity,
-  ExifEntity,
 } from '@app/infra/entities';
 import {
   AlbumResponseDto,
@@ -21,8 +23,10 @@ import {
   AuthUserDto,
   ExifResponseDto,
   mapUser,
+  QueueName,
   SearchResult,
   SharedLinkResponseDto,
+  TagResponseDto,
   VideoFormat,
   VideoInfo,
   VideoStreamInfo,
@@ -33,6 +37,11 @@ const tomorrow = new Date();
 const yesterday = new Date();
 tomorrow.setDate(today.getDate() + 1);
 yesterday.setDate(yesterday.getDate() - 1);
+
+const sharedLinkBytes = Buffer.from(
+  '2c2b646895f84753bff43fb696ad124f3b0faf2a0bd547406f26fa4a76b5c71990092baa536275654b2ab7a191fb21a6d6cd',
+  'hex',
+);
 
 export const authStub = {
   admin: Object.freeze<AuthUserDto>({
@@ -60,6 +69,16 @@ export const authStub = {
     isAllowDownload: true,
     isPublicUser: true,
     isShowExif: true,
+    sharedLinkId: '123',
+  }),
+  adminSharedLinkNoExif: Object.freeze<AuthUserDto>({
+    id: 'admin_id',
+    email: 'admin@test.com',
+    isAdmin: true,
+    isAllowUpload: true,
+    isAllowDownload: true,
+    isPublicUser: true,
+    isShowExif: false,
     sharedLinkId: '123',
   }),
   readonlySharedLink: Object.freeze<AuthUserDto>({
@@ -534,6 +553,18 @@ export const systemConfigStub = {
       twoPass: false,
       transcode: TranscodePreset.REQUIRED,
     },
+    job: {
+      [QueueName.BACKGROUND_TASK]: { concurrency: 5 },
+      [QueueName.CLIP_ENCODING]: { concurrency: 2 },
+      [QueueName.METADATA_EXTRACTION]: { concurrency: 5 },
+      [QueueName.OBJECT_TAGGING]: { concurrency: 2 },
+      [QueueName.RECOGNIZE_FACES]: { concurrency: 2 },
+      [QueueName.SEARCH]: { concurrency: 5 },
+      [QueueName.SIDECAR]: { concurrency: 5 },
+      [QueueName.STORAGE_TEMPLATE_MIGRATION]: { concurrency: 5 },
+      [QueueName.THUMBNAIL_GENERATION]: { concurrency: 5 },
+      [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
+    },
     oauth: {
       autoLaunch: false,
       autoRegister: true,
@@ -652,7 +683,7 @@ export const sharedLinkStub = {
     id: '123',
     userId: authStub.admin.id,
     user: userEntityStub.admin,
-    key: Buffer.from('secret-key', 'utf8'),
+    key: sharedLinkBytes,
     type: SharedLinkType.ALBUM,
     createdAt: today,
     expiresAt: tomorrow,
@@ -666,7 +697,7 @@ export const sharedLinkStub = {
     id: '123',
     userId: authStub.admin.id,
     user: userEntityStub.admin,
-    key: Buffer.from('secret-key', 'utf8'),
+    key: sharedLinkBytes,
     type: SharedLinkType.ALBUM,
     createdAt: today,
     expiresAt: yesterday,
@@ -675,17 +706,17 @@ export const sharedLinkStub = {
     showExif: true,
     assets: [],
   } as SharedLinkEntity),
-  readonly: Object.freeze<SharedLinkEntity>({
+  readonlyNoExif: Object.freeze<SharedLinkEntity>({
     id: '123',
     userId: authStub.admin.id,
     user: userEntityStub.admin,
-    key: Buffer.from('secret-key', 'utf8'),
+    key: sharedLinkBytes,
     type: SharedLinkType.ALBUM,
     createdAt: today,
     expiresAt: tomorrow,
     allowUpload: false,
     allowDownload: false,
-    showExif: true,
+    showExif: false,
     assets: [],
     album: {
       id: 'album-123',
@@ -777,7 +808,7 @@ export const sharedLinkResponseStub = {
     description: undefined,
     expiresAt: tomorrow,
     id: '123',
-    key: '7365637265742d6b6579',
+    key: sharedLinkBytes.toString('base64url'),
     showExif: true,
     type: SharedLinkType.ALBUM,
     userId: 'admin_id',
@@ -791,7 +822,7 @@ export const sharedLinkResponseStub = {
     description: undefined,
     expiresAt: yesterday,
     id: '123',
-    key: '7365637265742d6b6579',
+    key: sharedLinkBytes.toString('base64url'),
     showExif: true,
     type: SharedLinkType.ALBUM,
     userId: 'admin_id',
@@ -799,7 +830,7 @@ export const sharedLinkResponseStub = {
   readonly: Object.freeze<SharedLinkResponseDto>({
     id: '123',
     userId: 'admin_id',
-    key: '7365637265742d6b6579',
+    key: sharedLinkBytes.toString('base64url'),
     type: SharedLinkType.ALBUM,
     createdAt: today,
     expiresAt: tomorrow,
@@ -813,14 +844,14 @@ export const sharedLinkResponseStub = {
   readonlyNoExif: Object.freeze<SharedLinkResponseDto>({
     id: '123',
     userId: 'admin_id',
-    key: '7365637265742d6b6579',
+    key: sharedLinkBytes.toString('base64url'),
     type: SharedLinkType.ALBUM,
     createdAt: today,
     expiresAt: tomorrow,
     description: undefined,
     allowUpload: false,
     allowDownload: false,
-    showExif: true,
+    showExif: false,
     album: albumResponse,
     assets: [{ ...assetResponse, exifInfo: undefined }],
   }),
@@ -993,5 +1024,26 @@ export const faceStub = {
     personId: personStub.withName.id,
     person: personStub.withName,
     embedding: [1, 2, 3, 4],
+  }),
+};
+
+export const tagStub = {
+  tag1: Object.freeze<TagEntity>({
+    id: 'tag-1',
+    name: 'Tag1',
+    type: TagType.CUSTOM,
+    userId: userEntityStub.admin.id,
+    user: userEntityStub.admin,
+    renameTagId: null,
+    assets: [],
+  }),
+};
+
+export const tagResponseStub = {
+  tag1: Object.freeze<TagResponseDto>({
+    id: 'tag-1',
+    name: 'Tag1',
+    type: 'CUSTOM',
+    userId: 'admin_id',
   }),
 };

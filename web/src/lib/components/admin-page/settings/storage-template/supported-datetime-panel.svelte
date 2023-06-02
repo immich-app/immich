@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { SystemConfigTemplateStorageOptionDto } from '@api';
+	import type { SystemConfigTemplateStorageOptionDto } from '@api';
 	import * as luxon from 'luxon';
 
 	export let options: SystemConfigTemplateStorageOptionDto;

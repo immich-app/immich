@@ -45,11 +45,6 @@ import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { DownloadDto } from './dto/download-library.dto';
-import {
-  IMMICH_ARCHIVE_COMPLETE,
-  IMMICH_ARCHIVE_FILE_COUNT,
-  IMMICH_CONTENT_LENGTH_HINT,
-} from '../../constants/download.constant';
 import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { SharedLinkResponseDto } from '@app/domain';
@@ -59,8 +54,9 @@ import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-response.dto';
-import { AssetIdDto } from './dto/asset-id.dto';
+import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
 import { DeviceIdDto } from './dto/device-id.dto';
+import { handleDownload } from '../../app.utils';
 
 function asStreamableFile({ stream, type, length }: ImmichReadStream) {
   return new StreamableFile(stream, { type, length });
@@ -118,14 +114,14 @@ export class AssetController {
   }
 
   @SharedLinkRoute()
-  @Get('/download/:assetId')
+  @Get('/download/:id')
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   async downloadFile(
     @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
-    @Param() { assetId }: AssetIdDto,
+    @Param() { id }: UUIDParamDto,
   ) {
-    return this.assetService.downloadFile(authUser, assetId).then(asStreamableFile);
+    return this.assetService.downloadFile(authUser, id).then(asStreamableFile);
   }
 
   @SharedLinkRoute()
@@ -138,12 +134,7 @@ export class AssetController {
   ) {
     this.assetService.checkDownloadAccess(authUser);
     await this.assetService.checkAssetsAccess(authUser, [...dto.assetIds]);
-    const { stream, fileName, fileSize, fileCount, complete } = await this.assetService.downloadFiles(dto);
-    res.attachment(fileName);
-    res.setHeader(IMMICH_CONTENT_LENGTH_HINT, fileSize);
-    res.setHeader(IMMICH_ARCHIVE_FILE_COUNT, fileCount);
-    res.setHeader(IMMICH_ARCHIVE_COMPLETE, `${complete}`);
-    return stream;
+    return this.assetService.downloadFiles(dto).then((download) => handleDownload(download, res));
   }
 
   /**
@@ -158,16 +149,11 @@ export class AssetController {
     @Response({ passthrough: true }) res: Res,
   ) {
     this.assetService.checkDownloadAccess(authUser);
-    const { stream, fileName, fileSize, fileCount, complete } = await this.assetService.downloadLibrary(authUser, dto);
-    res.attachment(fileName);
-    res.setHeader(IMMICH_CONTENT_LENGTH_HINT, fileSize);
-    res.setHeader(IMMICH_ARCHIVE_FILE_COUNT, fileCount);
-    res.setHeader(IMMICH_ARCHIVE_COMPLETE, `${complete}`);
-    return stream;
+    return this.assetService.downloadLibrary(authUser, dto).then((download) => handleDownload(download, res));
   }
 
   @SharedLinkRoute()
-  @Get('/file/:assetId')
+  @Get('/file/:id')
   @Header('Cache-Control', 'max-age=31536000')
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   async serveFile(
@@ -175,25 +161,25 @@ export class AssetController {
     @Headers() headers: Record<string, string>,
     @Response({ passthrough: true }) res: Res,
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
-    @Param() { assetId }: AssetIdDto,
+    @Param() { id }: UUIDParamDto,
   ) {
-    await this.assetService.checkAssetsAccess(authUser, [assetId]);
-    return this.assetService.serveFile(authUser, assetId, query, res, headers);
+    await this.assetService.checkAssetsAccess(authUser, [id]);
+    return this.assetService.serveFile(authUser, id, query, res, headers);
   }
 
   @SharedLinkRoute()
-  @Get('/thumbnail/:assetId')
+  @Get('/thumbnail/:id')
   @Header('Cache-Control', 'max-age=31536000')
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   async getAssetThumbnail(
     @GetAuthUser() authUser: AuthUserDto,
     @Headers() headers: Record<string, string>,
     @Response({ passthrough: true }) res: Res,
-    @Param() { assetId }: AssetIdDto,
+    @Param() { id }: UUIDParamDto,
     @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,
   ) {
-    await this.assetService.checkAssetsAccess(authUser, [assetId]);
-    return this.assetService.getAssetThumbnail(assetId, query, res, headers);
+    await this.assetService.checkAssetsAccess(authUser, [id]);
+    return this.assetService.getAssetThumbnail(id, query, res, headers);
   }
 
   @Get('/curated-objects')
@@ -273,26 +259,23 @@ export class AssetController {
    * Get a single asset's information
    */
   @SharedLinkRoute()
-  @Get('/assetById/:assetId')
-  async getAssetById(
-    @GetAuthUser() authUser: AuthUserDto,
-    @Param() { assetId }: AssetIdDto,
-  ): Promise<AssetResponseDto> {
-    await this.assetService.checkAssetsAccess(authUser, [assetId]);
-    return await this.assetService.getAssetById(authUser, assetId);
+  @Get('/assetById/:id')
+  async getAssetById(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
+    await this.assetService.checkAssetsAccess(authUser, [id]);
+    return await this.assetService.getAssetById(authUser, id);
   }
 
   /**
    * Update an asset
    */
-  @Put('/:assetId')
+  @Put('/:id')
   async updateAsset(
     @GetAuthUser() authUser: AuthUserDto,
-    @Param() { assetId }: AssetIdDto,
+    @Param() { id }: UUIDParamDto,
     @Body(ValidationPipe) dto: UpdateAssetDto,
   ): Promise<AssetResponseDto> {
-    await this.assetService.checkAssetsAccess(authUser, [assetId], true);
-    return await this.assetService.updateAsset(authUser, assetId, dto);
+    await this.assetService.checkAssetsAccess(authUser, [id], true);
+    return await this.assetService.updateAsset(authUser, id, dto);
   }
 
   @Delete('/')
