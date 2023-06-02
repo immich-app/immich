@@ -9,8 +9,8 @@ packages = [{include = "app"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 torch = [
-    {platform = "arm64", version = "^2.0.1", source = "pytorch-cpu"},
-    {platform = "amd64", version = "^2.0.1+cpu", source = "pytorch-cpu"}
+    {markers = "platform_machine == 'arm64' or platform_machine == 'aarch64'", version = "=2.0.1", source = "pypi"},
+    {markers = "platform_machine == 'amd64' or platform_machine == 'x86_64'", version = "=2.0.1+cpu", source = "pytorch-cpu"}
 ]
 transformers = "^4.29.2"
 sentence-transformers = "^2.2.2"
