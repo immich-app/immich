@@ -1,29 +1,26 @@
-FROM python:3.10 as builder
-
+FROM python:3.11 as builder
 ENV PYTHONDONTWRITEBYTECODE=1 \
   PYTHONUNBUFFERED=1 \
   PIP_NO_CACHE_DIR=true
 
+RUN pip install --upgrade pip && pip install poetry
+RUN poetry config installer.max-workers 10 && \
+  poetry config virtualenvs.create false
 RUN python -m venv /opt/venv
-RUN /opt/venv/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu
-RUN /opt/venv/bin/pip install transformers tqdm numpy scikit-learn scipy nltk sentencepiece fastapi Pillow uvicorn[standard]
-RUN /opt/venv/bin/pip install --no-deps sentence-transformers
-# Facial Recognition Stuff
-RUN /opt/venv/bin/pip install insightface onnxruntime
+ENV VIRTUAL_ENV="/opt/venv" PATH="/opt/venv/bin:${PATH}"
 
-FROM python:3.10-slim
+COPY poetry.lock pyproject.toml ./
+RUN poetry install --sync --no-interaction --no-ansi --no-root --only main
 
-ENV NODE_ENV=production
-
-COPY --from=builder /opt/venv /opt/venv
-
-ENV TRANSFORMERS_CACHE=/cache \
+FROM python:3.11-slim
+WORKDIR /usr/src/app
+ENV NODE_ENV=production \
+  TRANSFORMERS_CACHE=/cache \
   PYTHONDONTWRITEBYTECODE=1 \
   PYTHONUNBUFFERED=1 \
-  PATH="/opt/venv/bin:$PATH"
+  PATH="/opt/venv/bin:$PATH" \
+  PYTHONPATH=`pwd`
 
-WORKDIR /usr/src/app
-
-COPY . .
-ENV PYTHONPATH=`pwd`
-CMD ["python", "src/main.py"]
+COPY --from=builder /opt/venv /opt/venv
+COPY app .
+ENTRYPOINT ["python", "main.py"]
