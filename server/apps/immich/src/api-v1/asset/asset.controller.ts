@@ -45,11 +45,6 @@ import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { DownloadDto } from './dto/download-library.dto';
-import {
-  IMMICH_ARCHIVE_COMPLETE,
-  IMMICH_ARCHIVE_FILE_COUNT,
-  IMMICH_CONTENT_LENGTH_HINT,
-} from '../../constants/download.constant';
 import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { SharedLinkResponseDto } from '@app/domain';
@@ -61,6 +56,7 @@ import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-response.dto';
 import { AssetIdDto } from './dto/asset-id.dto';
 import { DeviceIdDto } from './dto/device-id.dto';
+import { handleDownload } from '../../app.utils';
 
 function asStreamableFile({ stream, type, length }: ImmichReadStream) {
   return new StreamableFile(stream, { type, length });
@@ -138,12 +134,7 @@ export class AssetController {
   ) {
     this.assetService.checkDownloadAccess(authUser);
     await this.assetService.checkAssetsAccess(authUser, [...dto.assetIds]);
-    const { stream, fileName, fileSize, fileCount, complete } = await this.assetService.downloadFiles(dto);
-    res.attachment(fileName);
-    res.setHeader(IMMICH_CONTENT_LENGTH_HINT, fileSize);
-    res.setHeader(IMMICH_ARCHIVE_FILE_COUNT, fileCount);
-    res.setHeader(IMMICH_ARCHIVE_COMPLETE, `${complete}`);
-    return stream;
+    return this.assetService.downloadFiles(dto).then((download) => handleDownload(download, res));
   }
 
   /**
@@ -158,12 +149,7 @@ export class AssetController {
     @Response({ passthrough: true }) res: Res,
   ) {
     this.assetService.checkDownloadAccess(authUser);
-    const { stream, fileName, fileSize, fileCount, complete } = await this.assetService.downloadLibrary(authUser, dto);
-    res.attachment(fileName);
-    res.setHeader(IMMICH_CONTENT_LENGTH_HINT, fileSize);
-    res.setHeader(IMMICH_ARCHIVE_FILE_COUNT, fileCount);
-    res.setHeader(IMMICH_ARCHIVE_COMPLETE, `${complete}`);
-    return stream;
+    return this.assetService.downloadLibrary(authUser, dto).then((download) => handleDownload(download, res));
   }
 
   @SharedLinkRoute()
