@@ -1,23 +1,11 @@
-<script lang="ts" context="module">
-	type OnShowContextMenu = {
-		showalbumcontextmenu: OnShowContextMenuDetail;
-	};
-
-	type OnClick = {
-		click: OnClickDetail;
-	};
-
-	export type OnShowContextMenuDetail = { x: number; y: number };
-	export type OnClickDetail = AlbumResponseDto;
-</script>
-
 <script lang="ts">
+	import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
+	import { locale } from '$lib/stores/preferences.store';
 	import { AlbumResponseDto, api, ThumbnailFormat, UserResponseDto } from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
-	import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
-	import { locale } from '$lib/stores/preferences.store';
 	import IconButton from '../elements/buttons/icon-button.svelte';
+	import type { OnClick, OnShowContextMenu } from './album-card';
 
 	export let album: AlbumResponseDto;
 	export let isSharingView = false;

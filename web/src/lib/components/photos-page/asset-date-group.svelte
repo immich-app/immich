@@ -1,10 +1,4 @@
 <script lang="ts">
-	import { assetStore } from '$lib/stores/assets.store';
-	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
-	import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
-	import { fly } from 'svelte/transition';
-	import { AssetResponseDto } from '@api';
-	import lodash from 'lodash-es';
 	import {
 		assetInteractionStore,
 		assetsInAlbumStoreState,
@@ -12,9 +6,15 @@
 		selectedAssets,
 		selectedGroup
 	} from '$lib/stores/asset-interaction.store';
+	import { assetStore } from '$lib/stores/assets.store';
 	import { locale } from '$lib/stores/preferences.store';
-	import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
+	import type { AssetResponseDto } from '@api';
+	import lodash from 'lodash-es';
+	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
+	import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
 	import { flip } from 'svelte/animate';
+	import { fly } from 'svelte/transition';
+	import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
 
 	export let assets: AssetResponseDto[];
 	export let bucketDate: string;
