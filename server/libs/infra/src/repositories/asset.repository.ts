@@ -11,7 +11,7 @@ import {
 } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Raw, Repository } from 'typeorm';
+import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetType } from '../entities';
 import OptionalBetween from '../utils/optional-between.util';
 import { paginate } from '../utils/pagination.util';
@@ -214,9 +214,6 @@ export class AssetRepository implements IAssetRepository {
 
   async getMapMarkers(ownerId: string, options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
     const { isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
-    const coordinateFilter = Raw(
-      (column) => `${column} IS NOT NULL AND ${column} NOT IN ('NaN', 'Infinity', '-Infinity')`,
-    );
 
     const assets = await this.repository.find({
       select: {
@@ -231,8 +228,8 @@ export class AssetRepository implements IAssetRepository {
         isVisible: true,
         isArchived: false,
         exifInfo: {
-          latitude: coordinateFilter,
-          longitude: coordinateFilter,
+          latitude: Not(IsNull()),
+          longitude: Not(IsNull()),
         },
         isFavorite,
         fileCreatedAt: OptionalBetween(fileCreatedAfter, fileCreatedBefore),
