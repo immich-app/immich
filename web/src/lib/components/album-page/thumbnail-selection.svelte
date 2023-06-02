@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { AlbumResponseDto, AssetResponseDto } from '@api';
+	import type { AlbumResponseDto, AssetResponseDto } from '@api';
 	import { createEventDispatcher } from 'svelte';
 	import { quintOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 	import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
-	import ControlAppBar from '../shared-components/control-app-bar.svelte';
 	import Button from '../elements/buttons/button.svelte';
+	import ControlAppBar from '../shared-components/control-app-bar.svelte';
 
 	export let album: AlbumResponseDto;
 

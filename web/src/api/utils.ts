@@ -1,6 +1,6 @@
-import { AxiosError, AxiosPromise } from 'axios';
+import type { AxiosError, AxiosPromise } from 'axios';
 import { api } from './api';
-import { UserResponseDto } from './open-api';
+import type { UserResponseDto } from './open-api';
 
 export type ApiError = AxiosError<{ message: string }>;
 

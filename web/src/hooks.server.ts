@@ -1,6 +1,6 @@
-import type { Handle, HandleServerError } from '@sveltejs/kit';
-import { AxiosError, AxiosResponse } from 'axios';
 import { env } from '$env/dynamic/public';
+import type { Handle, HandleServerError } from '@sveltejs/kit';
+import type { AxiosError, AxiosResponse } from 'axios';
 import { ImmichApi } from './api/api';
 
 export const handle = (async ({ event, resolve }) => {

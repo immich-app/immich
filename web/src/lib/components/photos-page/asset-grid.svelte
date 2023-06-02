@@ -1,22 +1,21 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
-
-	import { UserResponseDto } from '@api';
-	import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
-	import { assetGridState, assetStore, loadingBucketState } from '$lib/stores/assets.store';
-	import { api, AssetCountByTimeBucketResponseDto, AssetResponseDto, TimeGroupEnum } from '@api';
-	import AssetDateGroup from './asset-date-group.svelte';
-	import Portal from '../shared-components/portal/portal.svelte';
-	import AssetViewer from '../asset-viewer/asset-viewer.svelte';
 	import {
 		assetInteractionStore,
 		isViewingAssetStoreState,
 		viewingAssetStoreState
 	} from '$lib/stores/asset-interaction.store';
+	import { assetGridState, assetStore, loadingBucketState } from '$lib/stores/assets.store';
+	import type { UserResponseDto } from '@api';
+	import { AssetCountByTimeBucketResponseDto, AssetResponseDto, TimeGroupEnum, api } from '@api';
+	import { onDestroy, onMount } from 'svelte';
+	import AssetViewer from '../asset-viewer/asset-viewer.svelte';
+	import IntersectionObserver from '../asset-viewer/intersection-observer.svelte';
+	import Portal from '../shared-components/portal/portal.svelte';
 	import Scrollbar, {
 		OnScrollbarClickDetail,
 		OnScrollbarDragDetail
 	} from '../shared-components/scrollbar/scrollbar.svelte';
+	import AssetDateGroup from './asset-date-group.svelte';
 
 	export let user: UserResponseDto | undefined = undefined;
 	export let isAlbumSelectionMode = false;

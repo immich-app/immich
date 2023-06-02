@@ -1,13 +1,13 @@
+import { uploadAssetsStore } from '$lib/stores/upload';
+import { addAssetsToAlbum, getFileMimeType, getFilenameExtension } from '$lib/utils/asset-utils';
+import type { AssetFileUploadResponseDto } from '@api';
+import axios from 'axios';
+import { combineLatestAll, filter, firstValueFrom, from, mergeMap, of } from 'rxjs';
+import type { UploadAsset } from '../models/upload-asset';
 import {
 	notificationController,
 	NotificationType
 } from './../components/shared-components/notification/notification';
-import { uploadAssetsStore } from '$lib/stores/upload';
-import type { UploadAsset } from '../models/upload-asset';
-import { AssetFileUploadResponseDto } from '@api';
-import { addAssetsToAlbum, getFileMimeType, getFilenameExtension } from '$lib/utils/asset-utils';
-import { mergeMap, filter, firstValueFrom, from, of, combineLatestAll } from 'rxjs';
-import axios from 'axios';
 
 export const openFileUploadDialog = async (
 	albumId: string | undefined = undefined,

@@ -3,10 +3,11 @@
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
+	import { AppRoute } from '$lib/constants';
 	import { handleError } from '$lib/utils/handle-error';
 	import { AllJobStatusResponseDto, api, JobCommand, JobCommandDto, JobName } from '@api';
 	import type { ComponentType } from 'svelte';
-	import Icon from 'svelte-material-icons/DotsVertical.svelte';
+	import type Icon from 'svelte-material-icons/DotsVertical.svelte';
 	import FaceRecognition from 'svelte-material-icons/FaceRecognition.svelte';
 	import FileJpgBox from 'svelte-material-icons/FileJpgBox.svelte';
 	import FileXmlBox from 'svelte-material-icons/FileXmlBox.svelte';
@@ -19,7 +20,6 @@
 	import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
 	import JobTile from './job-tile.svelte';
 	import StorageMigrationDescription from './storage-migration-description.svelte';
-	import { AppRoute } from '$lib/constants';
 
 	export let jobs: AllJobStatusResponseDto;
 

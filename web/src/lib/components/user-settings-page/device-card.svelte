@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { locale } from '$lib/stores/preferences.store';
-	import { AuthDeviceResponseDto } from '@api';
+	import type { AuthDeviceResponseDto } from '@api';
 	import { DateTime, ToRelativeCalendarOptions } from 'luxon';
 	import { createEventDispatcher } from 'svelte';
 	import Android from 'svelte-material-icons/Android.svelte';
