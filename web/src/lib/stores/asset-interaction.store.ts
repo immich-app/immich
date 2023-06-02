@@ -57,7 +57,7 @@ function createAssetInteractionStore() {
 	};
 
 	const setViewingAssetId = async (id: string) => {
-		const { data } = await api.assetApi.getAssetById({ assetId: id });
+		const { data } = await api.assetApi.getAssetById({ id });
 		viewingAssetStoreState.set(data);
 		isViewingAssetStoreState.set(true);
 	};
