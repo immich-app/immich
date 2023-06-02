@@ -35,6 +35,7 @@ export class AssetCore {
       livePhotoVideo: livePhotoAssetId != null ? ({ id: livePhotoAssetId } as AssetEntity) : null,
       resizePath: null,
       webpPath: null,
+      thumbhash: null,
       encodedVideoPath: null,
       tags: [],
       sharedLinks: [],

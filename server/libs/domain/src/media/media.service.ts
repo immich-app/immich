@@ -9,6 +9,8 @@ import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config
 import { SystemConfigCore } from '../system-config/system-config.core';
 import { JPEG_THUMBNAIL_SIZE, WEBP_THUMBNAIL_SIZE } from './media.constant';
 import { AudioStreamInfo, IMediaRepository, VideoStreamInfo } from './media.repository';
+import { rgbaToThumbHash } from 'thumbhash-node';
+import sharp from "sharp";
 
 @Injectable()
 export class MediaService {
@@ -91,6 +93,40 @@ export class MediaService {
     await this.assetRepository.save({ id: asset.id, webpPath: webpPath });
 
     return true;
+  }
+
+  async handleGenerateThumbhashThumbnail({ id }: IEntityJob) {
+    const [asset] = await this.assetRepository.getByIds([id]);
+    if (!asset || !asset.resizePath) {
+      return false;
+    }
+    try {
+      const image = sharp(asset.resizePath);
+      const resizedImage = image.resize(100,100);
+      const { data, info } = await resizedImage.raw().toBuffer({ resolveWithObject: true });
+      const numPixels = info.width * info.height;
+      const rgbaList = new Uint8Array(numPixels * 4); // Create a Uint8Array with the appropriate size
+
+      for (let i = 0; i < numPixels; i++) {
+        const offset = i * info.channels;
+        const r = data[offset];
+        const g = data[offset + 1];
+        const b = data[offset + 2];
+        const a = info.channels === 4 ? data[offset + 3] : 255;
+
+        rgbaList[i * 4] = r; // Store the values in the Uint8Array
+        rgbaList[i * 4 + 1] = g;
+        rgbaList[i * 4 + 2] = b;
+        rgbaList[i * 4 + 3] = a;
+      }
+      const thumbhash = rgbaToThumbHash(info.width, info.height, rgbaList);
+      const thumbHashB64 = Buffer.from(thumbhash).toString('base64');
+      await this.assetRepository.save({ id: asset.id, thumbhash: thumbHashB64 });
+      return true;
+    } catch (error) {
+      console.error('Error processing image:', error);
+      return false;
+    }
   }
 
   async handleQueueVideoConversion(job: IBaseJob) {

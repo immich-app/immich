@@ -583,6 +583,12 @@ export interface AssetResponseDto {
      * @type {string}
      * @memberof AssetResponseDto
      */
+    'thumbhash': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetResponseDto
+     */
     'originalFileName': string;
     /**
      * 

@@ -52,6 +52,9 @@ export class AssetEntity {
   webpPath!: string | null;
 
   @Column({ type: 'varchar', nullable: true, default: '' })
+  thumbhash!: string | null;
+
+  @Column({ type: 'varchar', nullable: true, default: '' })
   encodedVideoPath!: string | null;
 
   @CreateDateColumn({ type: 'timestamptz' })
