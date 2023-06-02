@@ -28,7 +28,7 @@ import {
   sharedLinkStub,
 } from '@app/domain/../test';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { when } from 'jest-when';
 import { AssetRejectReason, AssetUploadAction } from './response-dto/asset-check-response.dto';
 
