@@ -18,7 +18,7 @@ import { AuthUserDto, ChangePasswordDto, LoginCredentialDto, SignUpDto } from '.
 import { AdminSignupResponseDto, LoginResponseDto, LogoutResponseDto, mapAdminSignupResponse } from './response-dto';
 import { IUserTokenRepository, UserTokenCore } from '../user-token';
 import cookieParser from 'cookie';
-import { ISharedLinkRepository, ShareCore } from '../share';
+import { ISharedLinkRepository, SharedLinkCore } from '../shared-link';
 import { APIKeyCore } from '../api-key/api-key.core';
 import { IKeyRepository } from '../api-key';
 import { AuthDeviceResponseDto, mapUserToken } from './response-dto';
@@ -29,7 +29,7 @@ export class AuthService {
   private authCore: AuthCore;
   private oauthCore: OAuthCore;
   private userCore: UserCore;
-  private shareCore: ShareCore;
+  private shareCore: SharedLinkCore;
   private keyCore: APIKeyCore;
 
   private logger = new Logger(AuthService.name);
@@ -48,7 +48,7 @@ export class AuthService {
     this.authCore = new AuthCore(cryptoRepository, configRepository, userTokenRepository, initialConfig);
     this.oauthCore = new OAuthCore(configRepository, initialConfig);
     this.userCore = new UserCore(userRepository, cryptoRepository);
-    this.shareCore = new ShareCore(shareRepository, cryptoRepository);
+    this.shareCore = new SharedLinkCore(shareRepository, cryptoRepository);
     this.keyCore = new APIKeyCore(cryptoRepository, keyRepository);
   }
 
