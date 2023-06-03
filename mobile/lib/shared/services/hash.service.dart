@@ -95,15 +95,16 @@ class HashService {
     final hashes = await _hashFiles(toHash);
     bool anyNull = false;
     for (int j = 0; j < hashes.length; j++) {
-      if (hashes[j] != null) {
+      if (hashes[j]?.length == 20) {
         toAdd[j].hash = hashes[j]!;
       } else {
         _log.warning("Failed to hash file ${toHash[j]}, skipping");
         anyNull = true;
       }
     }
-    final validHashes =
-        anyNull ? toAdd.where((e) => e.hash.isNotEmpty).toList() : toAdd;
+    final validHashes = anyNull
+        ? toAdd.where((e) => e.hash.length == 20).toList(growable: false)
+        : toAdd;
     await _db.writeTxn(
       () => Platform.isAndroid
           ? _db.androidDeviceAssets.putAll(validHashes.cast())
