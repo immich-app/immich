@@ -353,6 +353,7 @@ class Asset {
   String toString() {
     return """
 {
+  "id": $id,
   "remoteId": "${remoteId ?? "N/A"}",
   "localId": "${localId ?? "N/A"}",
   "checksum": "$checksum",

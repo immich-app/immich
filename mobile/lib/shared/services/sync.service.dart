@@ -595,9 +595,29 @@ class SyncService {
       });
       _log.info("Upserted ${assets.length} assets into the DB");
     } on IsarError catch (e) {
-      _log.warning(
+      _log.severe(
         "Failed to upsert ${assets.length} assets into the DB: ${e.toString()}",
       );
+      final inDb = await _db.assets.getAllByChecksumOwnerId(
+        assets.map((e) => e.checksum).toList(growable: false),
+        assets.map((e) => e.ownerId).toInt64List(),
+      );
+      // give details on the errors
+      for (int i = 0; i < assets.length; i++) {
+        final Asset a = assets[i];
+        final Asset? b = inDb[i];
+        if (b == null) {
+          if (a.id != Isar.autoIncrement) {
+            _log.warning(
+              "Trying to update an asset that does not exist in DB:\n$a",
+            );
+          }
+        } else if (a.id != b.id) {
+          _log.warning(
+            "Trying to insert another asset with the same checksum+owner. In DB:\n$b\nTo insert:\n$a",
+          );
+        }
+      }
     }
   }
 }
