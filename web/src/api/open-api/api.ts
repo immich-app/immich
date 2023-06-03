@@ -1396,6 +1396,12 @@ export interface GetAssetCountByTimeBucketDto {
      * @memberof GetAssetCountByTimeBucketDto
      */
     'userId'?: string;
+    /**
+     * Include assets without thumbnails
+     * @type {boolean}
+     * @memberof GetAssetCountByTimeBucketDto
+     */
+    'withoutThumbs'?: boolean;
 }
 
 
@@ -4999,12 +5005,13 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {string} [userId] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isArchived] 
+         * @param {boolean} [withoutThumbs] Include assets without thumbnails
          * @param {number} [skip] 
          * @param {string} [ifNoneMatch] ETag of data already cached on the client
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllAssets: async (userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, ifNoneMatch?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAllAssets: async (userId?: string, isFavorite?: boolean, isArchived?: boolean, withoutThumbs?: boolean, skip?: number, ifNoneMatch?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/asset`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -5036,6 +5043,10 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
 
             if (isArchived !== undefined) {
                 localVarQueryParameter['isArchived'] = isArchived;
+            }
+
+            if (withoutThumbs !== undefined) {
+                localVarQueryParameter['withoutThumbs'] = withoutThumbs;
             }
 
             if (skip !== undefined) {
@@ -5970,13 +5981,14 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {string} [userId] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isArchived] 
+         * @param {boolean} [withoutThumbs] Include assets without thumbnails
          * @param {number} [skip] 
          * @param {string} [ifNoneMatch] ETag of data already cached on the client
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllAssets(userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, ifNoneMatch?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(userId, isFavorite, isArchived, skip, ifNoneMatch, options);
+        async getAllAssets(userId?: string, isFavorite?: boolean, isArchived?: boolean, withoutThumbs?: boolean, skip?: number, ifNoneMatch?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllAssets(userId, isFavorite, isArchived, withoutThumbs, skip, ifNoneMatch, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6259,13 +6271,14 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @param {string} [userId] 
          * @param {boolean} [isFavorite] 
          * @param {boolean} [isArchived] 
+         * @param {boolean} [withoutThumbs] Include assets without thumbnails
          * @param {number} [skip] 
          * @param {string} [ifNoneMatch] ETag of data already cached on the client
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllAssets(userId?: string, isFavorite?: boolean, isArchived?: boolean, skip?: number, ifNoneMatch?: string, options?: any): AxiosPromise<Array<AssetResponseDto>> {
-            return localVarFp.getAllAssets(userId, isFavorite, isArchived, skip, ifNoneMatch, options).then((request) => request(axios, basePath));
+        getAllAssets(userId?: string, isFavorite?: boolean, isArchived?: boolean, withoutThumbs?: boolean, skip?: number, ifNoneMatch?: string, options?: any): AxiosPromise<Array<AssetResponseDto>> {
+            return localVarFp.getAllAssets(userId, isFavorite, isArchived, withoutThumbs, skip, ifNoneMatch, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6626,6 +6639,13 @@ export interface AssetApiGetAllAssetsRequest {
      * @memberof AssetApiGetAllAssets
      */
     readonly isArchived?: boolean
+
+    /**
+     * Include assets without thumbnails
+     * @type {boolean}
+     * @memberof AssetApiGetAllAssets
+     */
+    readonly withoutThumbs?: boolean
 
     /**
      * 
@@ -7071,7 +7091,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public getAllAssets(requestParameters: AssetApiGetAllAssetsRequest = {}, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getAllAssets(requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.skip, requestParameters.ifNoneMatch, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).getAllAssets(requestParameters.userId, requestParameters.isFavorite, requestParameters.isArchived, requestParameters.withoutThumbs, requestParameters.skip, requestParameters.ifNoneMatch, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
