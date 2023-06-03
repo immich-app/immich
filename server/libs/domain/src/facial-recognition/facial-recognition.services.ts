@@ -54,7 +54,7 @@ export class FacialRecognitionService {
       return false;
     }
 
-    const faces = await this.machineLearning.detectFaces({ thumbnailPath: asset.resizePath });
+    const faces = await this.machineLearning.detectFaces({ imagePath: asset.resizePath });
 
     this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);
     this.logger.verbose(faces.map((face) => ({ ...face, embedding: `float[${face.embedding.length}]` })));

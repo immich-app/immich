@@ -10,7 +10,7 @@ def to_lower_camel(string: str) -> str:
 
 
 class VisionModelRequest(BaseModel):
-    thumbnail_path: str
+    image_path: str
 
     class Config:
         alias_generator = to_lower_camel

@@ -72,7 +72,7 @@ def ping() -> str:
 @app.post("/image-classifier/tag-image", response_model=TagResponse, status_code=200)
 def image_classification(payload: VisionModelRequest) -> list[str]:
     model = get_cached_model(classification_model, "image-classification")
-    assetPath = payload.thumbnail_path
+    assetPath = payload.image_path
     labels = run_engine(model, assetPath)
     return labels
 
@@ -84,7 +84,7 @@ def image_classification(payload: VisionModelRequest) -> list[str]:
 )
 def clip_encode_image(payload: VisionModelRequest) -> list[float]:
     model = get_cached_model(clip_image_model, "clip")
-    image = Image.open(payload.thumbnail_path)
+    image = Image.open(payload.image_path)
     return model.encode(image).tolist()
 
 
@@ -103,7 +103,7 @@ def clip_encode_text(payload: TextModelRequest) -> list[float]:
 )
 def facial_recognition(payload: VisionModelRequest) -> list[dict[str, Any]]:
     model = get_cached_model(facial_recognition_model, "facial-recognition")
-    img = cv.imread(payload.thumbnail_path)
+    img = cv.imread(payload.image_path)
     height, width, _ = img.shape
     results = []
     faces = model.get(img)
