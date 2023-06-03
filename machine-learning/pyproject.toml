@@ -41,16 +41,16 @@ max-line-length = 120
 
 [tool.mypy]
 python_version = "3.11"
-plugins = pydantic.mypy
-follow_imports = silent
-warn_redundant_casts = True
-disallow_any_generics = True
-check_untyped_defs = True
-no_implicit_reexport = True
-disallow_untyped_defs = True
+plugins = "pydantic.mypy"
+follow_imports = "silent"
+warn_redundant_casts = true
+disallow_any_generics = true
+check_untyped_defs = true
+no_implicit_reexport = true
+disallow_untyped_defs = true
 
 [tool.pydantic-mypy]
-init_forbid_extra = True
-init_typed = True
-warn_required_dynamic_aliases = True
-warn_untyped_fields = True
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+warn_untyped_fields = true
