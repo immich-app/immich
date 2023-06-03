@@ -53,6 +53,7 @@ class Asset {
       exifInfo = ExifInfo(lat: local.latitude, long: local.longitude);
     }
     _local = local;
+    assert(hash.length == 20, "invalid SHA1 hash");
   }
 
   Asset({

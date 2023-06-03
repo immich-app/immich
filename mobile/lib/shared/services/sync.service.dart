@@ -36,6 +36,7 @@ class SyncService {
   Future<bool> syncUsersFromServer(List<User> users) async {
     users.sortBy((u) => u.id);
     final dbUsers = await _db.users.where().sortById().findAll();
+    assert(dbUsers.isSortedBy((u) => u.id), "dbUsers not sorted!");
     final List<int> toDelete = [];
     final List<User> toUpsert = [];
     final changes = diffSortedListsSync(
@@ -143,6 +144,7 @@ class SyncService {
         .ownerIdEqualTo(user.isarId)
         .sortByChecksum()
         .findAll();
+    assert(inDb.isSorted(Asset.compareByChecksum), "inDb not sorted!");
 
     remote.sort(Asset.compareByChecksum);
     final (toAdd, toUpdate, toRemove) = _diffAssets(remote, inDb, remote: true);
@@ -177,6 +179,7 @@ class SyncService {
       query = baseQuery.owner((q) => q.isarIdEqualTo(me.isarId));
     }
     final List<Album> dbAlbums = await query.sortByRemoteId().findAll();
+    assert(dbAlbums.isSortedBy((e) => e.remoteId!), "dbAlbums not sorted!");
 
     final List<Asset> toDelete = [];
     final List<Asset> existing = [];
@@ -225,6 +228,7 @@ class SyncService {
     }
     final assetsInDb =
         await album.assets.filter().sortByOwnerId().thenByChecksum().findAll();
+    assert(assetsInDb.isSorted(Asset.compareByOwnerChecksum), "inDb unsorted!");
     final List<Asset> assetsOnRemote = dto.getAssets();
     assetsOnRemote.sort(Asset.compareByOwnerChecksum);
     final (toAdd, toUpdate, toUnlink) = _diffAssets(
@@ -274,6 +278,7 @@ class SyncService {
         await album.assets.update(link: assetsToLink, unlink: toUnlink.cast());
         await _db.albums.put(album);
       });
+      _log.info("Synced changes of remote album ${album.name} to DB");
     } on IsarError catch (e) {
       _log.severe("Failed to sync remote album to database $e");
     }
@@ -359,10 +364,11 @@ class SyncService {
     Set<String>? excludedAssets,
   ]) async {
     onDevice.sort((a, b) => a.id.compareTo(b.id));
-    final List<Album> inDb =
+    final inDb =
         await _db.albums.where().localIdIsNotNull().sortByLocalId().findAll();
     final List<Asset> deleteCandidates = [];
     final List<Asset> existing = [];
+    assert(inDb.isSorted((a, b) => a.localId!.compareTo(b.localId!)), "sort!");
     final bool anyChanges = await diffSortedLists(
       onDevice,
       inDb,
@@ -426,6 +432,7 @@ class SyncService {
         .ownerIdEqualTo(Store.get(StoreKey.currentUser).isarId)
         .sortByChecksum()
         .findAll();
+    assert(inDb.isSorted(Asset.compareByChecksum), "inDb not sorted!");
     final List<Asset> onDevice =
         await _hashService.getHashedAssets(ape, excludedAssets: excludedAssets);
     onDevice.sort(Asset.compareByChecksum);
@@ -546,56 +553,29 @@ class SyncService {
   Future<(List<Asset> existing, List<Asset> updated)> _linkWithExistingFromDb(
     List<Asset> assets,
   ) async {
-    if (assets.isEmpty) {
-      return ([].cast<Asset>(), [].cast<Asset>());
-    }
-    final List<Asset> inDb = await _db.assets
-        .where()
-        .anyOf(
-          assets,
-          (q, Asset e) => q.checksumOwnerIdEqualTo(e.checksum, e.ownerId),
-        )
-        .sortByOwnerId()
-        .thenByChecksum()
-        .findAll();
-    assets.sort(Asset.compareByOwnerChecksum);
-    final List<Asset> existing = [], toUpsert = [], toAdd = [];
-    diffSortedListsSync(
-      inDb,
-      assets,
-      // do not compare by modified date because for some assets dates differ on
-      // client and server, thus never reaching "both" case below
-      compare: Asset.compareByOwnerChecksum,
-      both: (Asset a, Asset b) {
-        if (a.canUpdate(b)) {
-          toUpsert.add(a.updatedCopy(b));
-          return true;
-        } else {
-          existing.add(a);
-          return false;
-        }
-      },
-      onlyFirst: (Asset a) => _log.finer(
-        "_linkWithExistingFromDb encountered asset only in DB: $a",
-        null,
-        StackTrace.current,
-      ),
-      onlySecond: (Asset b) => toAdd.add(b),
+    if (assets.isEmpty) return ([].cast<Asset>(), [].cast<Asset>());
+
+    final List<Asset?> inDb = await _db.assets.getAllByChecksumOwnerId(
+      assets.map((a) => a.checksum).toList(growable: false),
+      assets.map((a) => a.ownerId).toInt64List(),
     );
-    // filter out any duplicates (same checksum+owner)
-    final duplicates = await _db.assets.getAllByChecksumOwnerId(
-      toAdd.map((e) => e.checksum).toList(),
-      toAdd.map((e) => e.ownerId).toList(),
-    );
-    for (int i = 0; i < toAdd.length; i++) {
-      if (duplicates[i] == null) {
-        toUpsert.add(toAdd[i]);
+    assert(inDb.length == assets.length);
+    final List<Asset> existing = [], toUpsert = [];
+    for (int i = 0; i < assets.length; i++) {
+      final Asset? b = inDb[i];
+      if (b == null) {
+        toUpsert.add(assets[i]);
+        continue;
+      }
+      if (b.canUpdate(assets[i])) {
+        final updated = b.updatedCopy(assets[i]);
+        assert(updated.id != Isar.autoIncrement);
+        toUpsert.add(updated);
       } else {
-        _log.info("Duplicate asset on device! "
-            "IDs: ${duplicates[i]!.localId} == ${toAdd[i].localId}, "
-            "Filenames: ${duplicates[i]!.fileName} == ${toAdd[i].fileName}");
+        existing.add(b);
       }
     }
+    assert(existing.length + toUpsert.length == assets.length);
     return (existing, toUpsert);
   }
 

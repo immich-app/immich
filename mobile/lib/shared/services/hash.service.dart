@@ -109,6 +109,7 @@ class HashService {
           ? _db.androidDeviceAssets.putAll(validHashes.cast())
           : _db.iOSDeviceAssets.putAll(validHashes.cast()),
     );
+    debugPrint("Hashed ${validHashes.length}/${toHash.length} assets");
     toAdd.clear();
     toHash.clear();
   }
