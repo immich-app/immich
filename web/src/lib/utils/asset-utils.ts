@@ -150,3 +150,18 @@ export function getFileMimeType(file: File): string {
 			return '';
 	}
 }
+
+/**
+ * Returns aspect ratio for the asset
+ */
+export function getAssetRatio(asset: AssetResponseDto) {
+	let height = asset.exifInfo?.exifImageHeight || 235;
+	let width = asset.exifInfo?.exifImageWidth || 235;
+	const orientation = Number(asset.exifInfo?.orientation);
+	if (orientation) {
+		if (orientation == 6 || orientation == -90) {
+			[width, height] = [height, width];
+		}
+	}
+	return { width, height };
+}

@@ -3286,6 +3286,51 @@
         ]
       }
     },
+    "/asset/timeline-layout": {
+      "post": {
+        "operationId": "getTimelineLayout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetTimelineLayoutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetTimelineLayoutResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/asset/count-by-user-id": {
       "get": {
         "operationId": "getAssetCountByUserId",
@@ -6271,6 +6316,30 @@
         "required": [
           "totalCount",
           "buckets"
+        ]
+      },
+      "GetTimelineLayoutDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "AssetTimelineLayoutResponseDto": {
+        "type": "object",
+        "properties": {
+          "timeBucket": {
+            "type": "string"
+          },
+          "ratio": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "timeBucket",
+          "ratio"
         ]
       },
       "AssetCountByUserIdResponseDto": {

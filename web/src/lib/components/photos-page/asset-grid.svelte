@@ -35,7 +35,7 @@
 		});
 		bucketInfo = assetCountByTimebucket;
 
-		assetStore.setInitialState(viewportHeight, viewportWidth, assetCountByTimebucket, user?.id);
+		await assetStore.setInitialState(viewportHeight, viewportWidth, user?.id);
 
 		// Get asset bucket if bucket height is smaller than viewport height
 		let bucketsToFetchInitially: string[] = [];
@@ -56,7 +56,7 @@
 	});
 
 	onDestroy(() => {
-		assetStore.setInitialState(0, 0, { totalCount: 0, buckets: [] }, undefined);
+		assetStore.setInitialState(0, 0, undefined);
 	});
 
 	function intersectedHandler(event: CustomEvent) {
@@ -115,9 +115,10 @@
 	/>
 {/if}
 
+<!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
 	id="asset-grid"
-	class="overflow-y-auto pl-4 scrollbar-hidden"
+	class="overflow-y-auto ml-4 mb-4 mr-[60px] scrollbar-hidden"
 	bind:clientHeight={viewportHeight}
 	bind:clientWidth={viewportWidth}
 	bind:this={assetGridElement}
