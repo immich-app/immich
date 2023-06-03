@@ -6,7 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
-import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
+import { GetAssetCountByTimeBucketDto, TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
@@ -37,7 +37,7 @@ export interface IAssetRepository {
   getLocationsByUserId(userId: string): Promise<CuratedLocationsResponseDto[]>;
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
-  getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum): Promise<AssetCountByTimeBucket[]>;
+  getAssetCountByTimeBucket(userId: string, dto: GetAssetCountByTimeBucketDto): Promise<AssetCountByTimeBucket[]>;
   getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getArchivedAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
@@ -119,36 +119,35 @@ export class AssetRepository implements IAssetRepository {
     return builder.getMany();
   }
 
-  async getAssetCountByTimeBucket(userId: string, timeBucket: TimeGroupEnum) {
-    let result: AssetCountByTimeBucket[] = [];
+  async getAssetCountByTimeBucket(
+    userId: string,
+    dto: GetAssetCountByTimeBucketDto,
+  ): Promise<AssetCountByTimeBucket[]> {
+    const builder = this.assetRepository
+      .createQueryBuilder('asset')
+      .select(`COUNT(asset.id)::int`, 'count')
+      .where('"ownerId" = :userId', { userId: userId })
+      .andWhere('asset.isVisible = true')
+      .andWhere('asset.isArchived = false');
 
-    if (timeBucket === TimeGroupEnum.Month) {
-      result = await this.assetRepository
-        .createQueryBuilder('asset')
-        .select(`COUNT(asset.id)::int`, 'count')
+    // Using a parameter for this doesn't work https://github.com/typeorm/typeorm/issues/7308
+    if (dto.timeGroup === TimeGroupEnum.Month) {
+      builder
         .addSelect(`date_trunc('month', "fileCreatedAt")`, 'timeBucket')
-        .where('"ownerId" = :userId', { userId: userId })
-        .andWhere('asset.resizePath is not NULL')
-        .andWhere('asset.isVisible = true')
-        .andWhere('asset.isArchived = false')
         .groupBy(`date_trunc('month', "fileCreatedAt")`)
-        .orderBy(`date_trunc('month', "fileCreatedAt")`, 'DESC')
-        .getRawMany();
-    } else if (timeBucket === TimeGroupEnum.Day) {
-      result = await this.assetRepository
-        .createQueryBuilder('asset')
-        .select(`COUNT(asset.id)::int`, 'count')
+        .orderBy(`date_trunc('month', "fileCreatedAt")`, 'DESC');
+    } else if (dto.timeGroup === TimeGroupEnum.Day) {
+      builder
         .addSelect(`date_trunc('day', "fileCreatedAt")`, 'timeBucket')
-        .where('"ownerId" = :userId', { userId: userId })
-        .andWhere('asset.resizePath is not NULL')
-        .andWhere('asset.isVisible = true')
-        .andWhere('asset.isArchived = false')
         .groupBy(`date_trunc('day', "fileCreatedAt")`)
-        .orderBy(`date_trunc('day', "fileCreatedAt")`, 'DESC')
-        .getRawMany();
+        .orderBy(`date_trunc('day', "fileCreatedAt")`, 'DESC');
     }
 
-    return result;
+    if (!dto.withoutThumbs) {
+      builder.andWhere('asset.resizePath is not NULL');
+    }
+
+    return builder.getRawMany();
   }
 
   async getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]> {
@@ -231,7 +230,7 @@ export class AssetRepository implements IAssetRepository {
     return this.assetRepository.find({
       where: {
         ownerId,
-        resizePath: Not(IsNull()),
+        resizePath: dto.withoutThumbs ? undefined : Not(IsNull()),
         isVisible: true,
         isFavorite: dto.isFavorite,
         isArchived: dto.isArchived,

@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
+import { toBoolean } from '../../../utils/transform.util';
 
 export enum TimeGroupEnum {
   Day = 'day',
@@ -19,4 +21,12 @@ export class GetAssetCountByTimeBucketDto {
   @IsUUID('4')
   @ApiProperty({ format: 'uuid' })
   userId?: string;
+
+  /**
+   * Include assets without thumbnails
+   */
+  @IsOptional()
+  @IsBoolean()
+  @Transform(toBoolean)
+  withoutThumbs?: boolean;
 }

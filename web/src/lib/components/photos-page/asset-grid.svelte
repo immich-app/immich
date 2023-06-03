@@ -29,7 +29,8 @@
 		const { data: assetCountByTimebucket } = await api.assetApi.getAssetCountByTimeBucket({
 			getAssetCountByTimeBucketDto: {
 				timeGroup: TimeGroupEnum.Month,
-				userId: user?.id
+				userId: user?.id,
+				withoutThumbs: true
 			}
 		});
 		bucketInfo = assetCountByTimebucket;
