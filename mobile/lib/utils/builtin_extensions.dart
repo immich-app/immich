@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:collection/collection.dart';
 
 extension DurationExtension on String {
@@ -43,5 +45,13 @@ extension ListExtension<E> on List<E> {
       return ListSlice<E>(self.source, self.start + start, self.start + end);
     }
     return ListSlice<E>(this, start, end);
+  }
+}
+
+extension IntListExtension on Iterable<int> {
+  Int64List toInt64List() {
+    final list = Int64List(length);
+    list.setAll(0, this);
+    return list;
   }
 }
