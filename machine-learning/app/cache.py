@@ -63,14 +63,20 @@ class ModelCache:
 class RevalidationPlugin(BasePlugin):
     """Revalidates cache item's TTL after cache hit."""
 
-    async def post_get(self, client, key, ret=None, **kwargs):
-        if ret is not None and key in client._handlers:
+    async def post_get(self, client, key, ret=None, namespace=None, **kwargs):
+        if ret is None:
+            return
+        if namespace is not None:
+            key = client.build_key(key, namespace)
+        if key in client._handlers:
             await client.expire(key, client.ttl)
 
-    async def post_multi_get(self, client, keys, ret=None, **kwargs):
+    async def post_multi_get(self, client, keys, ret=None, namespace=None, **kwargs):
         if ret is None:
             return
 
         for key, val in zip(keys, ret):
+            if namespace is not None:
+                key = client.build_key(key, namespace)
             if val is not None and key in client._handlers:
                 await client.expire(key, client.ttl)
