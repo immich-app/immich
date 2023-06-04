@@ -15,14 +15,17 @@ import { Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import tz_lookup from '@photostructure/tz-lookup';
-import { ExifDateTime, exiftool, Tags } from 'exiftool-vendored';
+import { exiftool, Tags } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { Duration } from 'luxon';
 import fs from 'node:fs';
 import sharp from 'sharp';
 import { Repository } from 'typeorm/repository/Repository';
 import { promisify } from 'util';
-import { parseLatitude, parseLongitude } from '../utils/coordinates';
+import { parseLatitude, parseLongitude } from '../utils/exif/coordinates';
+import { exifTimeZone, exifToDate } from '../utils/exif/date-time';
+import { parseISO } from '../utils/exif/iso';
+import { toNumberOrNull } from '../utils/numbers';
 
 const ffprobe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 
@@ -116,32 +119,13 @@ export class MetadataExtractionProcessor {
         })
       : {};
 
-    const exifToDate = (exifDate: string | Date | ExifDateTime | undefined) => {
-      if (!exifDate) {
-        return null;
-      }
-
-      const date = exifDate instanceof ExifDateTime ? exifDate.toDate() : new Date(exifDate);
-      if (isNaN(date.valueOf())) {
-        return null;
-      }
-
-      return date;
-    };
-
-    const exifTimeZone = (exifDate: string | Date | ExifDateTime | undefined) => {
-      const isExifDate = exifDate instanceof ExifDateTime;
-      if (!isExifDate) {
-        return null;
-      }
-
-      return exifDate.zone ?? null;
-    };
-
-    const getExifProperty = <T extends keyof ImmichTags>(...properties: T[]): any | null => {
+    const getExifProperty = <T extends keyof ImmichTags>(
+      ...properties: T[]
+    ): NonNullable<ImmichTags[T]> | string | null => {
       for (const property of properties) {
         const value = sidecarExifData?.[property] ?? mediaExifData?.[property];
         if (value !== null && value !== undefined) {
+          // Can also be string when the value cannot be parsed
           return value;
         }
       }
@@ -160,25 +144,27 @@ export class MetadataExtractionProcessor {
     newExif.fileSizeInByte = fileSizeInBytes;
     newExif.make = getExifProperty('Make');
     newExif.model = getExifProperty('Model');
-    newExif.exifImageHeight = getExifProperty('ExifImageHeight', 'ImageHeight');
-    newExif.exifImageWidth = getExifProperty('ExifImageWidth', 'ImageWidth');
+    newExif.exifImageHeight = toNumberOrNull(getExifProperty('ExifImageHeight', 'ImageHeight'));
+    newExif.exifImageWidth = toNumberOrNull(getExifProperty('ExifImageWidth', 'ImageWidth'));
     newExif.exposureTime = getExifProperty('ExposureTime');
-    newExif.orientation = getExifProperty('Orientation')?.toString();
+    newExif.orientation = getExifProperty('Orientation')?.toString() ?? null;
     newExif.dateTimeOriginal = fileCreatedAt;
     newExif.modifyDate = fileModifiedAt;
     newExif.timeZone = timeZone;
     newExif.lensModel = getExifProperty('LensModel');
-    newExif.fNumber = getExifProperty('FNumber');
-    const focalLength = getExifProperty('FocalLength');
-    newExif.focalLength = focalLength ? parseFloat(focalLength) : null;
-    // This is unusual - exifData.ISO should return a number, but experienced that sidecar XMP
-    // files MAY return an array of numbers instead.
-    const iso = getExifProperty('ISO');
-    newExif.iso = Array.isArray(iso) ? iso[0] : iso || null;
-    newExif.latitude = parseLatitude(getExifProperty('GPSLatitude'));
-    newExif.longitude = parseLongitude(getExifProperty('GPSLongitude'));
-    newExif.livePhotoCID = getExifProperty('MediaGroupUUID');
+    newExif.fNumber = toNumberOrNull(getExifProperty('FNumber'));
+    newExif.focalLength = toNumberOrNull(getExifProperty('FocalLength'));
 
+    // Handle array values by converting to string
+    const iso = getExifProperty('ISO')?.toString();
+    newExif.iso = iso ? parseISO(iso) : null;
+
+    const latitude = getExifProperty('GPSLatitude');
+    const longitude = getExifProperty('GPSLongitude');
+    newExif.latitude = latitude !== null ? parseLatitude(latitude) : null;
+    newExif.longitude = longitude !== null ? parseLongitude(longitude) : null;
+
+    newExif.livePhotoCID = getExifProperty('MediaGroupUUID');
     if (newExif.livePhotoCID && !asset.livePhotoVideoId) {
       const motionAsset = await this.assetRepository.findLivePhotoMatch({
         livePhotoCID: newExif.livePhotoCID,
