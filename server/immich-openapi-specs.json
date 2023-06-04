@@ -3381,6 +3381,15 @@
             }
           },
           {
+            "name": "withoutThumbs",
+            "required": false,
+            "in": "query",
+            "description": "Include assets without thumbnails",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "skip",
             "required": false,
             "in": "query",
@@ -6221,6 +6230,10 @@
           "userId": {
             "type": "string",
             "format": "uuid"
+          },
+          "withoutThumbs": {
+            "type": "boolean",
+            "description": "Include assets without thumbnails"
           }
         },
         "required": [

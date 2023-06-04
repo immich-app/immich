@@ -16,6 +16,14 @@ export class AssetSearchDto {
   @Transform(toBoolean)
   isArchived?: boolean;
 
+  /**
+   * Include assets without thumbnails
+   */
+  @IsOptional()
+  @IsBoolean()
+  @Transform(toBoolean)
+  withoutThumbs?: boolean;
+
   @IsOptional()
   @IsNumber()
   skip?: number;

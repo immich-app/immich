@@ -533,7 +533,7 @@ export class AssetService {
 
     const result = await this._assetRepository.getAssetCountByTimeBucket(
       getAssetCountByTimeBucketDto.userId || authUser.id,
-      getAssetCountByTimeBucketDto.timeGroup,
+      getAssetCountByTimeBucketDto,
     );
 
     return mapAssetCountByTimeBucket(result);
