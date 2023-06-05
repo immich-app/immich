@@ -1,5 +1,6 @@
 from aiocache.plugins import TimingPlugin, BasePlugin
 from aiocache.backends.memory import SimpleMemoryCache
+from aiocache.lock import OptimisticLock
 from typing import Any
 from models import get_model
 
@@ -22,6 +23,7 @@ class ModelCache:
             profiling: Collects metrics for cache operations, adding slight overhead. Defaults to False.
         """
 
+        self.ttl = ttl
         plugins = []
 
         if revalidate:
@@ -29,7 +31,9 @@ class ModelCache:
         if profiling:
             plugins.append(TimingPlugin())
 
-        self.cache = SimpleMemoryCache(ttl=ttl, timeout=timeout, plugins=plugins)
+        self.cache = SimpleMemoryCache(
+            ttl=ttl, timeout=timeout, plugins=plugins, namespace=None
+        )
 
     async def get_cached_model(
         self, model_name: str, model_type: str, **model_kwargs
@@ -43,14 +47,12 @@ class ModelCache:
             model: The requested model.
         """
 
-        model = await self.cache.get(model_name, namespace=model_type)
+        key = self.cache.build_key(model_name, model_type)
+        model = await self.cache.get(key)
         if model is None:
-            model = get_model(model_name, model_type, **model_kwargs)
-            await self.cache.set(
-                model_name,
-                model,
-                namespace=model_type,
-            )
+            async with OptimisticLock(self.cache, key) as lock:
+                model = get_model(model_name, model_type, **model_kwargs)
+                await lock.cas(model, ttl=self.ttl)
         return model
 
     async def get_profiling(self) -> dict[str, float] | None:
