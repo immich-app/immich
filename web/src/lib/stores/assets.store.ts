@@ -1,6 +1,5 @@
 import { AssetGridState } from '$lib/models/asset-grid-state';
-import { calculateViewportLayout } from '$lib/utils/viewport-utils';
-import { api } from '@api';
+import { AssetCountByTimeBucketResponseDto, api } from '@api';
 import { sumBy, flatMap } from 'lodash-es';
 import { writable } from 'svelte/store';
 
@@ -20,23 +19,38 @@ function createAssetStore() {
 	loadingBucketState.subscribe((state) => {
 		_loadingBucketState = state;
 	});
+
+	const estimateViewportHeight = (assetCount: number, viewportWidth: number): number => {
+		// Rough estimation assuming all assets are squares seems fine
+		const thumbnailHeight = 237;
+		const unwrappedWidth = assetCount * thumbnailHeight;
+		const rows = Math.ceil(unwrappedWidth / viewportWidth);
+		const height = rows * thumbnailHeight;
+		return height;
+	};
+
 	/**
 	 * Set initial state
 	 * @param viewportHeight
 	 * @param viewportWidth
 	 * @param data
 	 */
-	const setInitialState = async (
+	const setInitialState = (
 		viewportHeight: number,
 		viewportWidth: number,
+		data: AssetCountByTimeBucketResponseDto,
 		userId: string | undefined
 	) => {
-		const buckets = await calculateViewportLayout(userId, viewportWidth);
 		assetGridState.set({
 			viewportHeight,
 			viewportWidth,
 			timelineHeight: 0,
-			buckets,
+			buckets: data.buckets.map((bucket) => ({
+				bucketDate: bucket.timeBucket,
+				bucketHeight: estimateViewportHeight(bucket.count, viewportWidth),
+				assets: [],
+				cancelToken: new AbortController()
+			})),
 			assets: [],
 			userId
 		});

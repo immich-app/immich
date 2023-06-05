@@ -33,9 +33,10 @@
 				withoutThumbs: true
 			}
 		});
+
 		bucketInfo = assetCountByTimebucket;
 
-		await assetStore.setInitialState(viewportHeight, viewportWidth, user?.id);
+		assetStore.setInitialState(viewportHeight, viewportWidth, assetCountByTimebucket, user?.id);
 
 		// Get asset bucket if bucket height is smaller than viewport height
 		let bucketsToFetchInitially: string[] = [];
@@ -56,7 +57,7 @@
 	});
 
 	onDestroy(() => {
-		assetStore.setInitialState(0, 0, undefined);
+		assetStore.setInitialState(0, 0, { totalCount: 0, buckets: [] }, undefined);
 	});
 
 	function intersectedHandler(event: CustomEvent) {
