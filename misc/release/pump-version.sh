@@ -63,6 +63,7 @@ if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
   echo "Pumping Server: $CURRENT_SERVER => $NEXT_SERVER"
   npm --prefix server version $SERVER_PUMP
   npm --prefix server run api:generate
+  poetry --directory machine-learning version $SERVER_PUMP
 fi
 
 if [ "$CURRENT_MOBILE" != "$NEXT_MOBILE" ]; then

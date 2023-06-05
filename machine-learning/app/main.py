@@ -1,22 +1,23 @@
 import os
-import numpy as np
+from typing import Any
+from schemas import (
+    EmbeddingResponse,
+    FaceResponse,
+    TagResponse,
+    MessageResponse,
+    TextModelRequest,
+    TextResponse,
+    VisionModelRequest,
+)
 import cv2 as cv
 import uvicorn
 
 from insightface.app import FaceAnalysis
 from transformers import pipeline
 from sentence_transformers import SentenceTransformer
+from transformers import Pipeline
 from PIL import Image
 from fastapi import FastAPI
-from pydantic import BaseModel
-
-
-class MlRequestBody(BaseModel):
-    thumbnailPath: str
-
-
-class ClipRequestBody(BaseModel):
-    text: str
 
 
 classification_model = os.getenv(
@@ -42,7 +43,7 @@ app = FastAPI()
 
 
 @app.on_event("startup")
-async def startup_event():
+async def startup_event() -> None:
     models = [
         (classification_model, "image-classification"),
         (clip_image_model, "clip"),
@@ -58,42 +59,51 @@ async def startup_event():
             _get_model(model_name, model_type)
 
 
-@app.get("/")
-async def root():
+@app.get("/", response_model=MessageResponse)
+async def root() -> dict[str, str]:
     return {"message": "Immich ML"}
 
 
-@app.get("/ping")
-def ping():
+@app.get("/ping", response_model=TextResponse)
+def ping() -> str:
     return "pong"
 
 
-@app.post("/image-classifier/tag-image", status_code=200)
-def image_classification(payload: MlRequestBody):
+@app.post("/image-classifier/tag-image", response_model=TagResponse, status_code=200)
+def image_classification(payload: VisionModelRequest) -> list[str]:
     model = get_cached_model(classification_model, "image-classification")
-    assetPath = payload.thumbnailPath
-    return run_engine(model, assetPath)
+    assetPath = payload.image_path
+    labels = run_engine(model, assetPath)
+    return labels
 
 
-@app.post("/sentence-transformer/encode-image", status_code=200)
-def clip_encode_image(payload: MlRequestBody):
+@app.post(
+    "/sentence-transformer/encode-image",
+    response_model=EmbeddingResponse,
+    status_code=200,
+)
+def clip_encode_image(payload: VisionModelRequest) -> list[float]:
     model = get_cached_model(clip_image_model, "clip")
-    assetPath = payload.thumbnailPath
-    return model.encode(Image.open(assetPath)).tolist()
+    image = Image.open(payload.image_path)
+    return model.encode(image).tolist()
 
 
-@app.post("/sentence-transformer/encode-text", status_code=200)
-def clip_encode_text(payload: ClipRequestBody):
+@app.post(
+    "/sentence-transformer/encode-text",
+    response_model=EmbeddingResponse,
+    status_code=200,
+)
+def clip_encode_text(payload: TextModelRequest) -> list[float]:
     model = get_cached_model(clip_text_model, "clip")
-    text = payload.text
-    return model.encode(text).tolist()
+    return model.encode(payload.text).tolist()
 
 
-@app.post("/facial-recognition/detect-faces", status_code=200)
-def facial_recognition(payload: MlRequestBody):
+@app.post(
+    "/facial-recognition/detect-faces", response_model=FaceResponse, status_code=200
+)
+def facial_recognition(payload: VisionModelRequest) -> list[dict[str, Any]]:
     model = get_cached_model(facial_recognition_model, "facial-recognition")
-    assetPath = payload.thumbnailPath
-    img = cv.imread(assetPath)
+    img = cv.imread(payload.image_path)
     height, width, _ = img.shape
     results = []
     faces = model.get(img)
@@ -120,11 +130,11 @@ def facial_recognition(payload: MlRequestBody):
     return results
 
 
-def run_engine(engine, path):
-    result = []
-    predictions = engine(path)
+def run_engine(engine: Pipeline, path: str) -> list[str]:
+    result: list[str] = []
+    predictions: list[dict[str, Any]] = engine(path)  # type: ignore
 
-    for index, pred in enumerate(predictions):
+    for pred in predictions:
         tags = pred["label"].split(", ")
         if pred["score"] > min_tag_score:
             result = [*result, *tags]
@@ -135,7 +145,7 @@ def run_engine(engine, path):
     return result
 
 
-def get_cached_model(model, task):
+def get_cached_model(model, task) -> Any:
     global _model_cache
     key = "|".join([model, str(task)])
     if key not in _model_cache:
@@ -145,7 +155,7 @@ def get_cached_model(model, task):
     return _model_cache[key]
 
 
-def _get_model(model, task):
+def _get_model(model, task) -> Any:
     match task:
         case "facial-recognition":
             model = FaceAnalysis(
