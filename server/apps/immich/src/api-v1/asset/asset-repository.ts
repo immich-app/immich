@@ -9,6 +9,7 @@ import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group
 import { AssetTimelineLayout } from './response-dto/asset-timeline-layout-response.dto';
 import { GetAssetCountByTimeBucketDto, TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
+import { GetTimelineLayoutDto } from './dto/get-timeline-layout.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { In } from 'typeorm/find-options/operator/In';
@@ -39,7 +40,7 @@ export interface IAssetRepository {
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
   getAssetCountByTimeBucket(userId: string, dto: GetAssetCountByTimeBucketDto): Promise<AssetCountByTimeBucket[]>;
-  getAssetTimelineLayout(userId: string): Promise<AssetTimelineLayout[]>;
+  getAssetTimelineLayout(userId: string, dto: GetTimelineLayoutDto): Promise<AssetTimelineLayout[]>;
   getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getArchivedAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
@@ -153,8 +154,8 @@ export class AssetRepository implements IAssetRepository {
     return builder.getRawMany();
   }
 
-  async getAssetTimelineLayout(userId: string): Promise<AssetTimelineLayout[]> {
-    return await this.assetRepository
+  async getAssetTimelineLayout(userId: string, dto: GetTimelineLayoutDto): Promise<AssetTimelineLayout[]> {
+    const builder = this.assetRepository
       .createQueryBuilder('asset')
       .leftJoin('asset.exifInfo', 'ei')
       .select(`date_trunc('month', "fileCreatedAt")`, 'timeBucket')
@@ -162,12 +163,16 @@ export class AssetRepository implements IAssetRepository {
       .addSelect('ei.exifImageWidth', 'exifImageWidth')
       .addSelect('ei.orientation', 'orientation')
       .where('"ownerId" = :userId', { userId })
-      .andWhere('asset.resizePath is not NULL')
       .andWhere('asset.isVisible = true')
       .andWhere('asset.isArchived = false')
       .andWhere('asset.resizePath is not NULL')
-      .orderBy(`date_trunc('month', "fileCreatedAt")`, 'DESC')
-      .getRawMany();
+      .orderBy(`date_trunc('month', "fileCreatedAt")`, 'DESC');
+
+    if (!dto.withoutThumbs) {
+      builder.andWhere('asset.resizePath is not NULL');
+    }
+
+    return builder.getRawMany();
   }
 
   async getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]> {

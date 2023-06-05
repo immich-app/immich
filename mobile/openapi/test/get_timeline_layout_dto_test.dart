@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // bool withoutThumbs
+    test('to test the property `withoutThumbs`', () async {
+      // TODO
+    });
+
 
   });
 

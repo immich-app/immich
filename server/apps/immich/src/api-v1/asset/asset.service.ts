@@ -549,7 +549,7 @@ export class AssetService {
       await this.checkUserAccess(authUser, dto.userId);
     }
 
-    const result = await this._assetRepository.getAssetTimelineLayout(dto.userId || authUser.id);
+    const result = await this._assetRepository.getAssetTimelineLayout(dto.userId || authUser.id, dto);
 
     return mapAssetTimelineLayout(result);
   }

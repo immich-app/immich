@@ -14,6 +14,7 @@ class GetTimelineLayoutDto {
   /// Returns a new [GetTimelineLayoutDto] instance.
   GetTimelineLayoutDto({
     this.userId,
+    this.withoutThumbs,
   });
 
   ///
@@ -24,17 +25,27 @@ class GetTimelineLayoutDto {
   ///
   String? userId;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? withoutThumbs;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is GetTimelineLayoutDto &&
-     other.userId == userId;
+     other.userId == userId &&
+     other.withoutThumbs == withoutThumbs;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (userId == null ? 0 : userId!.hashCode);
+    (userId == null ? 0 : userId!.hashCode) +
+    (withoutThumbs == null ? 0 : withoutThumbs!.hashCode);
 
   @override
-  String toString() => 'GetTimelineLayoutDto[userId=$userId]';
+  String toString() => 'GetTimelineLayoutDto[userId=$userId, withoutThumbs=$withoutThumbs]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -42,6 +53,11 @@ class GetTimelineLayoutDto {
       json[r'userId'] = this.userId;
     } else {
       // json[r'userId'] = null;
+    }
+    if (this.withoutThumbs != null) {
+      json[r'withoutThumbs'] = this.withoutThumbs;
+    } else {
+      // json[r'withoutThumbs'] = null;
     }
     return json;
   }
@@ -66,6 +82,7 @@ class GetTimelineLayoutDto {
 
       return GetTimelineLayoutDto(
         userId: mapValueOfType<String>(json, r'userId'),
+        withoutThumbs: mapValueOfType<bool>(json, r'withoutThumbs'),
       );
     }
     return null;

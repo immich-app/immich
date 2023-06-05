@@ -1436,6 +1436,12 @@ export interface GetTimelineLayoutDto {
      * @memberof GetTimelineLayoutDto
      */
     'userId'?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof GetTimelineLayoutDto
+     */
+    'withoutThumbs'?: boolean;
 }
 /**
  * 

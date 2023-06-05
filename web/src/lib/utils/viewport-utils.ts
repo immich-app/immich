@@ -18,7 +18,8 @@ export async function calculateViewportLayout(
 
 	const { data: assets } = await api.assetApi.getTimelineLayout({
 		getTimelineLayoutDto: {
-			userId
+			userId,
+			withoutThumbs: true
 		}
 	});
 
