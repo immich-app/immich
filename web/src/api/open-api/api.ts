@@ -721,25 +721,6 @@ export interface AssetResponseDto {
 /**
  * 
  * @export
- * @interface AssetTimelineLayoutResponseDto
- */
-export interface AssetTimelineLayoutResponseDto {
-    /**
-     * 
-     * @type {string}
-     * @memberof AssetTimelineLayoutResponseDto
-     */
-    'timeBucket': string;
-    /**
-     * 
-     * @type {number}
-     * @memberof AssetTimelineLayoutResponseDto
-     */
-    'ratio': number;
-}
-/**
- * 
- * @export
  * @enum {string}
  */
 
@@ -1424,25 +1405,6 @@ export interface GetAssetCountByTimeBucketDto {
 }
 
 
-/**
- * 
- * @export
- * @interface GetTimelineLayoutDto
- */
-export interface GetTimelineLayoutDto {
-    /**
-     * 
-     * @type {string}
-     * @memberof GetTimelineLayoutDto
-     */
-    'userId'?: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof GetTimelineLayoutDto
-     */
-    'withoutThumbs'?: boolean;
-}
 /**
  * 
  * @export
@@ -5541,50 +5503,6 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
-         * 
-         * @param {GetTimelineLayoutDto} getTimelineLayoutDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getTimelineLayout: async (getTimelineLayoutDto: GetTimelineLayoutDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'getTimelineLayoutDto' is not null or undefined
-            assertParamExists('getTimelineLayout', 'getTimelineLayoutDto', getTimelineLayoutDto)
-            const localVarPath = `/asset/timeline-layout`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(getTimelineLayoutDto, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
          * Get all asset of a device that are in the database, ID only.
          * @param {string} deviceId 
          * @param {*} [options] Override http request option.
@@ -6174,16 +6092,6 @@ export const AssetApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         * 
-         * @param {GetTimelineLayoutDto} getTimelineLayoutDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getTimelineLayout(getTimelineLayoutDto: GetTimelineLayoutDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetTimelineLayoutResponseDto>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getTimelineLayout(getTimelineLayoutDto, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
          * Get all asset of a device that are in the database, ID only.
          * @param {string} deviceId 
          * @param {*} [options] Override http request option.
@@ -6461,15 +6369,6 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          */
         getMapMarkers(isFavorite?: boolean, fileCreatedAfter?: string, fileCreatedBefore?: string, options?: any): AxiosPromise<Array<MapMarkerResponseDto>> {
             return localVarFp.getMapMarkers(isFavorite, fileCreatedAfter, fileCreatedBefore, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {GetTimelineLayoutDto} getTimelineLayoutDto 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getTimelineLayout(getTimelineLayoutDto: GetTimelineLayoutDto, options?: any): AxiosPromise<Array<AssetTimelineLayoutResponseDto>> {
-            return localVarFp.getTimelineLayout(getTimelineLayoutDto, options).then((request) => request(axios, basePath));
         },
         /**
          * Get all asset of a device that are in the database, ID only.
@@ -6866,20 +6765,6 @@ export interface AssetApiGetMapMarkersRequest {
      * @memberof AssetApiGetMapMarkers
      */
     readonly fileCreatedBefore?: string
-}
-
-/**
- * Request parameters for getTimelineLayout operation in AssetApi.
- * @export
- * @interface AssetApiGetTimelineLayoutRequest
- */
-export interface AssetApiGetTimelineLayoutRequest {
-    /**
-     * 
-     * @type {GetTimelineLayoutDto}
-     * @memberof AssetApiGetTimelineLayout
-     */
-    readonly getTimelineLayoutDto: GetTimelineLayoutDto
 }
 
 /**
@@ -7312,17 +7197,6 @@ export class AssetApi extends BaseAPI {
      */
     public getMapMarkers(requestParameters: AssetApiGetMapMarkersRequest = {}, options?: AxiosRequestConfig) {
         return AssetApiFp(this.configuration).getMapMarkers(requestParameters.isFavorite, requestParameters.fileCreatedAfter, requestParameters.fileCreatedBefore, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {AssetApiGetTimelineLayoutRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AssetApi
-     */
-    public getTimelineLayout(requestParameters: AssetApiGetTimelineLayoutRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getTimelineLayout(requestParameters.getTimelineLayoutDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

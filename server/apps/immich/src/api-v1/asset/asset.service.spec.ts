@@ -153,7 +153,6 @@ describe('AssetService', () => {
       getAllByUserId: jest.fn(),
       getAllByDeviceId: jest.fn(),
       getAssetCountByTimeBucket: jest.fn(),
-      getAssetTimelineLayout: jest.fn(),
       getById: jest.fn(),
       getDetectedObjectsByUserId: jest.fn(),
       getLocationsByUserId: jest.fn(),

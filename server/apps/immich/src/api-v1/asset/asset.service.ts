@@ -42,12 +42,7 @@ import {
   AssetCountByTimeBucketResponseDto,
   mapAssetCountByTimeBucket,
 } from './response-dto/asset-count-by-time-group-response.dto';
-import {
-  AssetTimelineLayoutResponseDto,
-  mapAssetTimelineLayout,
-} from './response-dto/asset-timeline-layout-response.dto';
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
-import { GetTimelineLayoutDto } from './dto/get-timeline-layout.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { AssetCore } from './asset.core';
@@ -542,16 +537,6 @@ export class AssetService {
     );
 
     return mapAssetCountByTimeBucket(result);
-  }
-
-  async getTimelineLayout(authUser: AuthUserDto, dto: GetTimelineLayoutDto): Promise<AssetTimelineLayoutResponseDto[]> {
-    if (dto.userId !== undefined) {
-      await this.checkUserAccess(authUser, dto.userId);
-    }
-
-    const result = await this._assetRepository.getAssetTimelineLayout(dto.userId || authUser.id, dto);
-
-    return mapAssetTimelineLayout(result);
   }
 
   getAssetCountByUserId(authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {

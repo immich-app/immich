@@ -225,8 +225,6 @@ class ApiClient {
           return AssetIdsResponseDto.fromJson(value);
         case 'AssetResponseDto':
           return AssetResponseDto.fromJson(value);
-        case 'AssetTimelineLayoutResponseDto':
-          return AssetTimelineLayoutResponseDto.fromJson(value);
         case 'AssetTypeEnum':
           return AssetTypeEnumTypeTransformer().decode(value);
         case 'AuthDeviceResponseDto':
@@ -273,8 +271,6 @@ class ApiClient {
           return GetAssetByTimeBucketDto.fromJson(value);
         case 'GetAssetCountByTimeBucketDto':
           return GetAssetCountByTimeBucketDto.fromJson(value);
-        case 'GetTimelineLayoutDto':
-          return GetTimelineLayoutDto.fromJson(value);
         case 'JobCommand':
           return JobCommandTypeTransformer().decode(value);
         case 'JobCommandDto':

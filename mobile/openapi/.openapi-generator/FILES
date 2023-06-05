@@ -28,7 +28,6 @@ doc/AssetFileUploadResponseDto.md
 doc/AssetIdsDto.md
 doc/AssetIdsResponseDto.md
 doc/AssetResponseDto.md
-doc/AssetTimelineLayoutResponseDto.md
 doc/AssetTypeEnum.md
 doc/AuthDeviceResponseDto.md
 doc/AuthenticationApi.md
@@ -53,7 +52,6 @@ doc/EditSharedLinkDto.md
 doc/ExifResponseDto.md
 doc/GetAssetByTimeBucketDto.md
 doc/GetAssetCountByTimeBucketDto.md
-doc/GetTimelineLayoutDto.md
 doc/JobApi.md
 doc/JobCommand.md
 doc/JobCommandDto.md
@@ -163,7 +161,6 @@ lib/model/asset_file_upload_response_dto.dart
 lib/model/asset_ids_dto.dart
 lib/model/asset_ids_response_dto.dart
 lib/model/asset_response_dto.dart
-lib/model/asset_timeline_layout_response_dto.dart
 lib/model/asset_type_enum.dart
 lib/model/auth_device_response_dto.dart
 lib/model/change_password_dto.dart
@@ -187,7 +184,6 @@ lib/model/edit_shared_link_dto.dart
 lib/model/exif_response_dto.dart
 lib/model/get_asset_by_time_bucket_dto.dart
 lib/model/get_asset_count_by_time_bucket_dto.dart
-lib/model/get_timeline_layout_dto.dart
 lib/model/job_command.dart
 lib/model/job_command_dto.dart
 lib/model/job_counts_dto.dart
@@ -267,7 +263,6 @@ test/asset_file_upload_response_dto_test.dart
 test/asset_ids_dto_test.dart
 test/asset_ids_response_dto_test.dart
 test/asset_response_dto_test.dart
-test/asset_timeline_layout_response_dto_test.dart
 test/asset_type_enum_test.dart
 test/auth_device_response_dto_test.dart
 test/authentication_api_test.dart
@@ -292,7 +287,6 @@ test/edit_shared_link_dto_test.dart
 test/exif_response_dto_test.dart
 test/get_asset_by_time_bucket_dto_test.dart
 test/get_asset_count_by_time_bucket_dto_test.dart
-test/get_timeline_layout_dto_test.dart
 test/job_api_test.dart
 test/job_command_dto_test.dart
 test/job_command_test.dart

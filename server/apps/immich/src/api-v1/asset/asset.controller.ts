@@ -38,9 +38,7 @@ import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-res
 import { DeleteAssetResponseDto } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
 import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by-time-group-response.dto';
-import { AssetTimelineLayoutResponseDto } from './response-dto/asset-timeline-layout-response.dto';
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
-import { GetTimelineLayoutDto } from './dto/get-timeline-layout.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
@@ -213,14 +211,6 @@ export class AssetController {
     @Body(ValidationPipe) getAssetCountByTimeGroupDto: GetAssetCountByTimeBucketDto,
   ): Promise<AssetCountByTimeBucketResponseDto> {
     return this.assetService.getAssetCountByTimeBucket(authUser, getAssetCountByTimeGroupDto);
-  }
-
-  @Post('/timeline-layout')
-  async getTimelineLayout(
-    @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: GetTimelineLayoutDto,
-  ): Promise<AssetTimelineLayoutResponseDto[]> {
-    return this.assetService.getTimelineLayout(authUser, dto);
   }
 
   @Get('/count-by-user-id')

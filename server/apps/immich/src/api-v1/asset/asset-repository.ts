@@ -6,10 +6,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
-import { AssetTimelineLayout } from './response-dto/asset-timeline-layout-response.dto';
 import { GetAssetCountByTimeBucketDto, TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
-import { GetTimelineLayoutDto } from './dto/get-timeline-layout.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { In } from 'typeorm/find-options/operator/In';
@@ -40,7 +38,6 @@ export interface IAssetRepository {
   getDetectedObjectsByUserId(userId: string): Promise<CuratedObjectsResponseDto[]>;
   getSearchPropertiesByUserId(userId: string): Promise<SearchPropertiesDto[]>;
   getAssetCountByTimeBucket(userId: string, dto: GetAssetCountByTimeBucketDto): Promise<AssetCountByTimeBucket[]>;
-  getAssetTimelineLayout(userId: string, dto: GetTimelineLayoutDto): Promise<AssetTimelineLayout[]>;
   getAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getArchivedAssetCountByUserId(userId: string): Promise<AssetCountByUserIdResponseDto>;
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
@@ -146,27 +143,6 @@ export class AssetRepository implements IAssetRepository {
         .groupBy(`date_trunc('day', "fileCreatedAt")`)
         .orderBy(`date_trunc('day', "fileCreatedAt")`, 'DESC');
     }
-
-    if (!dto.withoutThumbs) {
-      builder.andWhere('asset.resizePath is not NULL');
-    }
-
-    return builder.getRawMany();
-  }
-
-  async getAssetTimelineLayout(userId: string, dto: GetTimelineLayoutDto): Promise<AssetTimelineLayout[]> {
-    const builder = this.assetRepository
-      .createQueryBuilder('asset')
-      .leftJoin('asset.exifInfo', 'ei')
-      .select(`date_trunc('month', "fileCreatedAt")`, 'timeBucket')
-      .addSelect('ei.exifImageHeight', 'exifImageHeight')
-      .addSelect('ei.exifImageWidth', 'exifImageWidth')
-      .addSelect('ei.orientation', 'orientation')
-      .where('"ownerId" = :userId', { userId })
-      .andWhere('asset.isVisible = true')
-      .andWhere('asset.isArchived = false')
-      .andWhere('asset.resizePath is not NULL')
-      .orderBy(`date_trunc('month', "fileCreatedAt")`, 'DESC');
 
     if (!dto.withoutThumbs) {
       builder.andWhere('asset.resizePath is not NULL');

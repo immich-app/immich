@@ -109,7 +109,6 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getCuratedLocations**](doc//AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 *AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
 *AssetApi* | [**getMapMarkers**](doc//AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
-*AssetApi* | [**getTimelineLayout**](doc//AssetApi.md#gettimelinelayout) | **POST** /asset/timeline-layout | 
 *AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
 *AssetApi* | [**removeAssetsFromSharedLink**](doc//AssetApi.md#removeassetsfromsharedlink) | **PATCH** /asset/shared-link/remove | 
 *AssetApi* | [**searchAsset**](doc//AssetApi.md#searchasset) | **POST** /asset/search | 
@@ -199,7 +198,6 @@ Class | Method | HTTP request | Description
  - [AssetIdsDto](doc//AssetIdsDto.md)
  - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
- - [AssetTimelineLayoutResponseDto](doc//AssetTimelineLayoutResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
  - [AuthDeviceResponseDto](doc//AuthDeviceResponseDto.md)
  - [ChangePasswordDto](doc//ChangePasswordDto.md)
@@ -223,7 +221,6 @@ Class | Method | HTTP request | Description
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [GetAssetByTimeBucketDto](doc//GetAssetByTimeBucketDto.md)
  - [GetAssetCountByTimeBucketDto](doc//GetAssetCountByTimeBucketDto.md)
- - [GetTimelineLayoutDto](doc//GetTimelineLayoutDto.md)
  - [JobCommand](doc//JobCommand.md)
  - [JobCommandDto](doc//JobCommandDto.md)
  - [JobCountsDto](doc//JobCountsDto.md)
