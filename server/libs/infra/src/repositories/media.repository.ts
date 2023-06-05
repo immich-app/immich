@@ -160,7 +160,6 @@ export class MediaRepository implements IMediaRepository {
       rgbaList[i * 4 + 3] = a;
     }
     const thumbhash = rgbaToThumbHash(info.width, info.height, rgbaList);
-    console.log("Thumbhash: ", Buffer.from(thumbhash).toString('base64'));
     return Buffer.from(thumbhash);
   }
 }

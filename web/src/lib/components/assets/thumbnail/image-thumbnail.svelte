@@ -16,7 +16,6 @@
   
 	onMount(() => {
 		const Str = Buffer.Buffer.from(thumbhash).toString('base64');
-		console.log(Str);
 		lazyLoad(imageElement, {
 			hash: Str,
 			hashType: 'thumbhash',
