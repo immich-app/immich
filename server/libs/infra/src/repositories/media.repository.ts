@@ -4,6 +4,8 @@ import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import sharp from 'sharp';
 import { promisify } from 'util';
 import fs from 'fs/promises';
+import { rgbaToThumbHash } from 'thumbhash-node';
+import { round } from 'lodash';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 
@@ -123,5 +125,42 @@ export class MediaRepository implements IMediaRepository {
         })
         .run();
     });
+  }
+
+  async extractThumbhash(imagePath: string): Promise<Buffer> {
+    const image = sharp(imagePath);
+    const meta = await image.metadata();
+    var w = meta.width!;
+    var h = meta.height!;
+    if (w>h){
+      h=round(h/w*100);
+      w=100;
+    }else if (w<h){
+      w=round(w/h*100);
+      h=100;
+    }else{
+      w=100;
+      h=100;
+    }
+    const resizedImage = image.resize(w,h);
+    const { data, info } = await resizedImage.raw().toBuffer({ resolveWithObject: true });
+    const numPixels = info.width * info.height;
+    const rgbaList = new Uint8Array(numPixels * 4); // Create a Uint8Array with the appropriate size
+
+    for (let i = 0; i < numPixels; i++) {
+      const offset = i * info.channels;
+      const r = data[offset];
+      const g = data[offset + 1];
+      const b = data[offset + 2];
+      const a = info.channels === 4 ? data[offset + 3] : 255;
+
+      rgbaList[i * 4] = r; // Store the values in the Uint8Array
+      rgbaList[i * 4 + 1] = g;
+      rgbaList[i * 4 + 2] = b;
+      rgbaList[i * 4 + 3] = a;
+    }
+    const thumbhash = rgbaToThumbHash(info.width, info.height, rgbaList);
+    console.log("Thumbhash: ", Buffer.from(thumbhash).toString('base64'));
+    return Buffer.from(thumbhash);
   }
 }

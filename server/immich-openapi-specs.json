@@ -4602,7 +4602,7 @@
             "type": "boolean"
           },
           "thumbhash": {
-            "type": "string",
+            "type": "object",
             "nullable": true
           },
           "fileCreatedAt": {

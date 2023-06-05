@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { lazyLoad } from 'unlazy';
-  
+	import * as Buffer from 'buffer';
+
 	export let url: string;
 	export let altText: string;
 	export let heightStyle: string | undefined = undefined;
 	export let widthStyle: string;
-	export let thumbhash: string;
+	export let thumbhash: Buffer;
 	export let curve = false;
 	export let shadow = false;
 	export let circle = false;
@@ -14,15 +15,16 @@
 	let imageElement: HTMLImageElement;
   
 	onMount(() => {
-	  lazyLoad(imageElement, {
-		hash: thumbhash,
-		hashType: 'thumbhash',
-	  });
+		const Str = Buffer.Buffer.from(thumbhash).toString('base64');
+		console.log(Str);
+		lazyLoad(imageElement, {
+			hash: Str,
+			hashType: 'thumbhash',
+		});
 	});
   </script>
   
   <img
-	load="lazy"
 	style:width={widthStyle}
 	style:height={heightStyle}
 	data-src={url}
@@ -32,7 +34,6 @@
 	class:shadow-lg={shadow}
 	class:rounded-full={circle}
 	draggable="false"
-	data-thumbhash={thumbhash}
 	bind:this={imageElement}
   />
   

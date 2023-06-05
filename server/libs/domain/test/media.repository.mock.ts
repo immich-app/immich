@@ -4,6 +4,7 @@ export const newMediaRepositoryMock = (): jest.Mocked<IMediaRepository> => {
   return {
     extractThumbnailFromExif: jest.fn(),
     extractVideoThumbnail: jest.fn(),
+    extractThumbhash: jest.fn(),
     resize: jest.fn(),
     crop: jest.fn(),
     probe: jest.fn(),

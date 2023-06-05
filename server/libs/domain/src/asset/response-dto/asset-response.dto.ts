@@ -16,7 +16,7 @@ export class AssetResponseDto {
   originalPath!: string;
   originalFileName!: string;
   resized!: boolean;
-  thumbhash!: string | null;
+  thumbhash!: Buffer | null;
   fileCreatedAt!: Date;
   fileModifiedAt!: Date;
   updatedAt!: Date;
