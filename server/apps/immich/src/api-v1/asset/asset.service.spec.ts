@@ -225,7 +225,7 @@ describe('AssetService', () => {
 
       assetRepositoryMock.getById.mockResolvedValue(asset1);
       sharedLinkRepositoryMock.get.mockResolvedValue(null);
-      sharedLinkRepositoryMock.hasAssetAccess.mockResolvedValue(true);
+      accessMock.hasSharedLinkAssetAccess.mockResolvedValue(true);
 
       await expect(sut.addAssetsToSharedLink(authDto, dto)).rejects.toBeInstanceOf(BadRequestException);
 
@@ -242,7 +242,7 @@ describe('AssetService', () => {
 
       assetRepositoryMock.getById.mockResolvedValue(asset1);
       sharedLinkRepositoryMock.get.mockResolvedValue(sharedLinkStub.valid);
-      sharedLinkRepositoryMock.hasAssetAccess.mockResolvedValue(true);
+      accessMock.hasSharedLinkAssetAccess.mockResolvedValue(true);
       sharedLinkRepositoryMock.update.mockResolvedValue(sharedLinkStub.valid);
 
       await expect(sut.addAssetsToSharedLink(authDto, dto)).resolves.toEqual(sharedLinkResponseStub.valid);
@@ -260,7 +260,7 @@ describe('AssetService', () => {
 
       assetRepositoryMock.getById.mockResolvedValue(asset1);
       sharedLinkRepositoryMock.get.mockResolvedValue(sharedLinkStub.valid);
-      sharedLinkRepositoryMock.hasAssetAccess.mockResolvedValue(true);
+      accessMock.hasSharedLinkAssetAccess.mockResolvedValue(true);
       sharedLinkRepositoryMock.update.mockResolvedValue(sharedLinkStub.valid);
 
       await expect(sut.removeAssetsFromSharedLink(authDto, dto)).resolves.toEqual(sharedLinkResponseStub.valid);

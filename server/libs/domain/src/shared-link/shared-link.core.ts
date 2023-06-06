@@ -47,10 +47,6 @@ export class SharedLinkCore {
     return this.repository.update({ ...link, assets: newAssets });
   }
 
-  async hasAssetAccess(id: string, assetId: string): Promise<boolean> {
-    return this.repository.hasAssetAccess(id, assetId);
-  }
-
   checkDownloadAccess(user: AuthUserDto) {
     if (user.isPublicUser && !user.isAllowDownload) {
       throw new ForbiddenException();

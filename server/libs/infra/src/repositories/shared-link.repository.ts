@@ -86,31 +86,6 @@ export class SharedLinkRepository implements ISharedLinkRepository {
     await this.repository.remove(entity);
   }
 
-  async hasAssetAccess(id: string, assetId: string): Promise<boolean> {
-    return (
-      // album asset
-      (await this.repository.exist({
-        where: {
-          id,
-          album: {
-            assets: {
-              id: assetId,
-            },
-          },
-        },
-      })) ||
-      // individual asset
-      (await this.repository.exist({
-        where: {
-          id,
-          assets: {
-            id: assetId,
-          },
-        },
-      }))
-    );
-  }
-
   private async save(entity: Partial<SharedLinkEntity>): Promise<SharedLinkEntity> {
     await this.repository.save(entity);
     return this.repository.findOneOrFail({ where: { id: entity.id } });
