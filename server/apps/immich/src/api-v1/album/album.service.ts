@@ -64,24 +64,6 @@ export class AlbumService {
     return mapAlbum(album);
   }
 
-  async addUsers(authUser: AuthUserDto, albumId: string, dto: AddUsersDto): Promise<AlbumResponseDto> {
-    const album = await this._getAlbum({ authUser, albumId });
-    const updatedAlbum = await this.albumRepository.addSharedUsers(album, dto);
-    return mapAlbum(updatedAlbum);
-  }
-
-  async removeUser(authUser: AuthUserDto, albumId: string, userId: string | 'me'): Promise<void> {
-    const sharedUserId = userId == 'me' ? authUser.id : userId;
-    const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
-    if (album.ownerId != authUser.id && authUser.id != sharedUserId) {
-      throw new ForbiddenException('Cannot remove a user from a album that is not owned');
-    }
-    if (album.ownerId == sharedUserId) {
-      throw new BadRequestException('The owner of the album cannot be removed');
-    }
-    await this.albumRepository.removeUser(album, sharedUserId);
-  }
-
   async removeAssets(authUser: AuthUserDto, albumId: string, dto: RemoveAssetsDto): Promise<AlbumResponseDto> {
     const album = await this._getAlbum({ authUser, albumId });
     const deletedCount = await this.albumRepository.removeAssets(album, dto);

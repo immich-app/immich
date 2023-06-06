@@ -1,7 +1,8 @@
-/*  */ import { AlbumService, AuthUserDto, CreateAlbumDto, UpdateAlbumDto } from '@app/domain';
+import { AddUsersDto, AlbumService, AuthUserDto, CreateAlbumDto, UpdateAlbumDto } from '@app/domain';
 import { GetAlbumsDto } from '@app/domain/album/dto/get-albums.dto';
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { ParseMeUUIDPipe } from '../api-v1/validation/parse-me-uuid-pipe';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
 import { UseValidation } from '../decorators/use-validation.decorator';
@@ -32,5 +33,19 @@ export class AlbumController {
   @Delete(':id')
   deleteAlbum(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
     return this.service.delete(authUser, id);
+  }
+
+  @Put(':id/users')
+  addUsersToAlbum(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: AddUsersDto) {
+    return this.service.addUsers(authUser, id, dto);
+  }
+
+  @Delete(':id/user/:userId')
+  removeUserFromAlbum(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+    @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
+  ) {
+    return this.service.removeUser(authUser, id, userId);
   }
 }

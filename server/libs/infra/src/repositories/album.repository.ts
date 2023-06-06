@@ -16,6 +16,7 @@ export class AlbumRepository implements IAlbumRepository {
       },
       relations: {
         owner: true,
+        sharedUsers: true,
       },
     });
   }
@@ -153,6 +154,12 @@ export class AlbumRepository implements IAlbumRepository {
 
   private async save(album: Partial<AlbumEntity>) {
     const { id } = await this.repository.save(album);
-    return this.repository.findOneOrFail({ where: { id }, relations: { owner: true } });
+    return this.repository.findOneOrFail({
+      where: { id },
+      relations: {
+        owner: true,
+        sharedUsers: true,
+      },
+    });
   }
 }
