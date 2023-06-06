@@ -1,4 +1,5 @@
 import {
+  IAccessRepository,
   IAlbumRepository,
   IAssetRepository,
   ICommunicationRepository,
@@ -30,6 +31,7 @@ import { databaseConfig } from './database.config';
 import { databaseEntities } from './entities';
 import { bullConfig, bullQueues } from './infra.config';
 import {
+  AccessRepository,
   AlbumRepository,
   APIKeyRepository,
   AssetRepository,
@@ -53,6 +55,7 @@ import {
 } from './repositories';
 
 const providers: Provider[] = [
+  { provide: IAccessRepository, useClass: AccessRepository },
   { provide: IAlbumRepository, useClass: AlbumRepository },
   { provide: IAssetRepository, useClass: AssetRepository },
   { provide: ICommunicationRepository, useClass: CommunicationRepository },

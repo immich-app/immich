@@ -25,12 +25,12 @@ import { CuratedObjectsResponseDto } from './response-dto/curated-objects-respon
 import {
   AssetResponseDto,
   getLivePhotoMotionFilename,
+  IAccessRepository,
   ImmichReadStream,
   IStorageRepository,
   JobName,
   mapAsset,
   mapAssetWithoutExif,
-  PartnerCore,
 } from '@app/domain';
 import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
@@ -55,7 +55,6 @@ import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
 import { IAlbumRepository } from '../album/album-repository';
 import { SharedLinkCore } from '@app/domain';
-import { IPartnerRepository } from '@app/domain';
 import { ISharedLinkRepository } from '@app/domain';
 import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
@@ -82,9 +81,9 @@ export class AssetService {
   readonly logger = new Logger(AssetService.name);
   private shareCore: SharedLinkCore;
   private assetCore: AssetCore;
-  private partnerCore: PartnerCore;
 
   constructor(
+    @Inject(IAccessRepository) private accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
     @Inject(IAlbumRepository) private _albumRepository: IAlbumRepository,
     @InjectRepository(AssetEntity)
@@ -94,11 +93,9 @@ export class AssetService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
     this.shareCore = new SharedLinkCore(sharedLinkRepository, cryptoRepository);
-    this.partnerCore = new PartnerCore(partnerRepository);
   }
 
   public async uploadFile(
@@ -581,7 +578,7 @@ export class AssetService {
         }
 
         // Step 3: Check if any partner owns the asset
-        const canAccess = await this.partnerCore.hasAssetAccess(assetId, authUser.id);
+        const canAccess = await this.accessRepository.hasPartnerAssetAccess(authUser.id, assetId);
         if (canAccess) {
           continue;
         }
@@ -601,7 +598,8 @@ export class AssetService {
 
   private async checkUserAccess(authUser: AuthUserDto, userId: string) {
     // Check if userId shares assets with authUser
-    if (!(await this.partnerCore.get({ sharedById: userId, sharedWithId: authUser.id }))) {
+    const canAccess = await this.accessRepository.hasPartnerAccess(authUser.id, userId);
+    if (!canAccess) {
       throw new ForbiddenException();
     }
   }
