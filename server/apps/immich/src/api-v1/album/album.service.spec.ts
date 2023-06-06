@@ -2,17 +2,12 @@ import { AlbumService } from './album.service';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AlbumEntity, UserEntity } from '@app/infra/entities';
-import { AlbumResponseDto, ICryptoRepository, IJobRepository, mapUser } from '@app/domain';
+import { AlbumResponseDto, ICryptoRepository, mapUser } from '@app/domain';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { IAlbumRepository } from './album-repository';
 import { DownloadService } from '../../modules/download/download.service';
 import { ISharedLinkRepository } from '@app/domain';
-import {
-  newCryptoRepositoryMock,
-  newJobRepositoryMock,
-  newSharedLinkRepositoryMock,
-  userEntityStub,
-} from '@app/domain/../test';
+import { newCryptoRepositoryMock, newSharedLinkRepositoryMock, userEntityStub } from '@app/domain/../test';
 
 describe('Album service', () => {
   let sut: AlbumService;
@@ -20,7 +15,6 @@ describe('Album service', () => {
   let sharedLinkRepositoryMock: jest.Mocked<ISharedLinkRepository>;
   let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
-  let jobMock: jest.Mocked<IJobRepository>;
 
   const authUser: AuthUserDto = Object.freeze({
     id: '1111',
@@ -137,14 +131,12 @@ describe('Album service', () => {
     };
 
     cryptoMock = newCryptoRepositoryMock();
-    jobMock = newJobRepositoryMock();
 
     sut = new AlbumService(
       albumRepositoryMock,
       sharedLinkRepositoryMock,
       downloadServiceMock as DownloadService,
       cryptoMock,
-      jobMock,
     );
   });
 

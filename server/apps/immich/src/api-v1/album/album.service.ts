@@ -3,7 +3,7 @@ import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AlbumEntity, SharedLinkType } from '@app/infra/entities';
 import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
-import { AlbumResponseDto, IJobRepository, mapAlbum } from '@app/domain';
+import { AlbumResponseDto, mapAlbum } from '@app/domain';
 import { IAlbumRepository } from './album-repository';
 import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
@@ -29,7 +29,6 @@ export class AlbumService {
     @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
     private downloadService: DownloadService,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     this.shareCore = new SharedLinkCore(sharedLinkRepository, cryptoRepository);
   }
@@ -115,6 +114,8 @@ export class AlbumService {
   }
 
   async downloadArchive(authUser: AuthUserDto, albumId: string, dto: DownloadDto) {
+    this.shareCore.checkDownloadAccess(authUser);
+
     const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
     const assets = (album.assets || []).map((asset) => asset).slice(dto.skip || 0);
 
@@ -136,9 +137,5 @@ export class AlbumService {
     });
 
     return mapSharedLink(sharedLink);
-  }
-
-  checkDownloadAccess(authUser: AuthUserDto) {
-    this.shareCore.checkDownloadAccess(authUser);
   }
 }

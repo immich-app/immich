@@ -80,7 +80,6 @@ export class AlbumController {
     @Query() dto: DownloadDto,
     @Response({ passthrough: true }) res: Res,
   ) {
-    this.service.checkDownloadAccess(authUser);
     return this.service.downloadArchive(authUser, id, dto).then((download) => handleDownload(download, res));
   }
 
