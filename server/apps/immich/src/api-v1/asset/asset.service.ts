@@ -175,6 +175,8 @@ export class AssetService {
   }
 
   public async getAssetById(authUser: AuthUserDto, assetId: string): Promise<AssetResponseDto> {
+    await this.checkAssetsAccess(authUser, [assetId]);
+
     const allowExif = this.getExifPermission(authUser);
     const asset = await this._assetRepository.getById(assetId);
 
@@ -186,6 +188,8 @@ export class AssetService {
   }
 
   public async updateAsset(authUser: AuthUserDto, assetId: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
+    await this.checkAssetsAccess(authUser, [assetId], true);
+
     const asset = await this._assetRepository.getById(assetId);
     if (!asset) {
       throw new BadRequestException('Asset not found');
@@ -198,13 +202,17 @@ export class AssetService {
     return mapAsset(updatedAsset);
   }
 
-  public async downloadLibrary(user: AuthUserDto, dto: DownloadDto) {
-    const assets = await this._assetRepository.getAllByUserId(user.id, dto);
+  public async downloadLibrary(authUser: AuthUserDto, dto: DownloadDto) {
+    this.checkDownloadAccess(authUser);
+    const assets = await this._assetRepository.getAllByUserId(authUser.id, dto);
 
     return this.downloadService.downloadArchive(dto.name || `library`, assets);
   }
 
-  public async downloadFiles(dto: DownloadFilesDto) {
+  public async downloadFiles(authUser: AuthUserDto, dto: DownloadFilesDto) {
+    this.checkDownloadAccess(authUser);
+    await this.checkAssetsAccess(authUser, [...dto.assetIds]);
+
     const assetToDownload = [];
 
     for (const assetId of dto.assetIds) {
@@ -239,7 +247,14 @@ export class AssetService {
     throw new NotFoundException();
   }
 
-  async getAssetThumbnail(assetId: string, query: GetAssetThumbnailDto, res: Res, headers: Record<string, string>) {
+  async getAssetThumbnail(
+    authUser: AuthUserDto,
+    assetId: string,
+    query: GetAssetThumbnailDto,
+    res: Res,
+    headers: Record<string, string>,
+  ) {
+    await this.checkAssetsAccess(authUser, [assetId]);
     const asset = await this._assetRepository.get(assetId);
     if (!asset) {
       throw new NotFoundException('Asset not found');
@@ -265,6 +280,8 @@ export class AssetService {
     res: Res,
     headers: Record<string, string>,
   ) {
+    await this.checkAssetsAccess(authUser, [assetId]);
+
     const allowOriginalFile = !!(!authUser.isPublicUser || authUser.isAllowDownload);
 
     const asset = await this._assetRepository.getById(assetId);
@@ -346,6 +363,8 @@ export class AssetService {
   }
 
   public async deleteAll(authUser: AuthUserDto, dto: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
+    await this.checkAssetsAccess(authUser, dto.ids, true);
+
     const deleteQueue: Array<string | null> = [];
     const result: DeleteAssetResponseDto[] = [];
 
@@ -547,7 +566,7 @@ export class AssetService {
     return this._assetRepository.getArchivedAssetCountByUserId(authUser.id);
   }
 
-  async checkAssetsAccess(authUser: AuthUserDto, assetIds: string[], mustBeOwner = false) {
+  private async checkAssetsAccess(authUser: AuthUserDto, assetIds: string[], mustBeOwner = false) {
     for (const assetId of assetIds) {
       // Step 1: Check if asset is part of a public shared
       if (authUser.sharedLinkId) {
@@ -587,7 +606,7 @@ export class AssetService {
     }
   }
 
-  checkDownloadAccess(authUser: AuthUserDto) {
+  private checkDownloadAccess(authUser: AuthUserDto) {
     this.shareCore.checkDownloadAccess(authUser);
   }
 
