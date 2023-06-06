@@ -30,7 +30,6 @@ import {
   JobName,
   mapAsset,
   mapAssetWithoutExif,
-  PartnerCore,
 } from '@app/domain';
 import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
@@ -82,7 +81,6 @@ export class AssetService {
   readonly logger = new Logger(AssetService.name);
   private shareCore: SharedLinkCore;
   private assetCore: AssetCore;
-  private partnerCore: PartnerCore;
 
   constructor(
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
@@ -98,7 +96,6 @@ export class AssetService {
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
     this.shareCore = new SharedLinkCore(sharedLinkRepository, cryptoRepository);
-    this.partnerCore = new PartnerCore(partnerRepository);
   }
 
   public async uploadFile(
@@ -562,7 +559,7 @@ export class AssetService {
         }
 
         // Step 3: Check if any partner owns the asset
-        const canAccess = await this.partnerCore.hasAssetAccess(assetId, authUser.id);
+        const canAccess = await this.partnerRepository.hasAssetAccess(assetId, authUser.id);
         if (canAccess) {
           continue;
         }
@@ -582,7 +579,7 @@ export class AssetService {
 
   private async checkUserAccess(authUser: AuthUserDto, userId: string) {
     // Check if userId shares assets with authUser
-    if (!(await this.partnerCore.get({ sharedById: userId, sharedWithId: authUser.id }))) {
+    if (!(await this.partnerRepository.get({ sharedById: userId, sharedWithId: authUser.id }))) {
       throw new ForbiddenException();
     }
   }

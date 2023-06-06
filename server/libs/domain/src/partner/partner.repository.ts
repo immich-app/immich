@@ -5,6 +5,11 @@ export interface PartnerIds {
   sharedWithId: string;
 }
 
+export enum PartnerDirection {
+  SharedBy = 'shared-by',
+  SharedWith = 'shared-with',
+}
+
 export const IPartnerRepository = 'IPartnerRepository';
 
 export interface IPartnerRepository {
