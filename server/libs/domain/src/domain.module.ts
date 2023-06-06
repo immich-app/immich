@@ -12,7 +12,7 @@ import { PartnerService } from './partner';
 import { PersonService } from './person';
 import { SearchService } from './search';
 import { ServerInfoService } from './server-info';
-import { ShareService } from './share';
+import { SharedLinkService } from './shared-link';
 import { SmartInfoService } from './smart-info';
 import { StorageService } from './storage';
 import { StorageTemplateService } from './storage-template';
@@ -34,7 +34,7 @@ const providers: Provider[] = [
   PartnerService,
   SearchService,
   ServerInfoService,
-  ShareService,
+  SharedLinkService,
   SmartInfoService,
   StorageService,
   StorageTemplateService,

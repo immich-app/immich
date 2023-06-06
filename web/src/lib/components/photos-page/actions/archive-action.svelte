@@ -28,7 +28,7 @@
 
 		for (const asset of getAssets()) {
 			if (asset.isArchived !== isArchived) {
-				api.assetApi.updateAsset({ assetId: asset.id, updateAssetDto: { isArchived } });
+				api.assetApi.updateAsset({ id: asset.id, updateAssetDto: { isArchived } });
 
 				onAssetArchive(asset, isArchived);
 				cnt = cnt + 1;

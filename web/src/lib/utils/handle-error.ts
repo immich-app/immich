@@ -1,4 +1,4 @@
-import { ApiError } from '../../api';
+import type { ApiError } from '@api';
 import {
 	notificationController,
 	NotificationType

@@ -80,7 +80,7 @@ export class SearchService {
     };
   }
 
-  async bootstrap() {
+  async init() {
     if (!this.enabled) {
       return;
     }

@@ -1,16 +1,12 @@
 import { ISharedLinkRepository } from '@app/domain';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SharedLinkEntity } from '../entities';
 
 @Injectable()
 export class SharedLinkRepository implements ISharedLinkRepository {
-  readonly logger = new Logger(SharedLinkRepository.name);
-  constructor(
-    @InjectRepository(SharedLinkEntity)
-    private readonly repository: Repository<SharedLinkEntity>,
-  ) {}
+  constructor(@InjectRepository(SharedLinkEntity) private repository: Repository<SharedLinkEntity>) {}
 
   get(userId: string, id: string): Promise<SharedLinkEntity | null> {
     return this.repository.findOne({
@@ -78,40 +74,45 @@ export class SharedLinkRepository implements ISharedLinkRepository {
     });
   }
 
-  create(entity: Omit<SharedLinkEntity, 'id'>): Promise<SharedLinkEntity> {
-    return this.repository.save(entity);
+  create(entity: Partial<SharedLinkEntity>): Promise<SharedLinkEntity> {
+    return this.save(entity);
+  }
+
+  update(entity: Partial<SharedLinkEntity>): Promise<SharedLinkEntity> {
+    return this.save(entity);
   }
 
   async remove(entity: SharedLinkEntity): Promise<void> {
     await this.repository.remove(entity);
   }
 
-  async save(entity: SharedLinkEntity): Promise<SharedLinkEntity> {
-    await this.repository.save(entity);
-    return this.repository.findOneOrFail({ where: { id: entity.id } });
-  }
-
   async hasAssetAccess(id: string, assetId: string): Promise<boolean> {
-    const count1 = await this.repository.count({
-      where: {
-        id,
-        assets: {
-          id: assetId,
+    return (
+      // album asset
+      (await this.repository.exist({
+        where: {
+          id,
+          album: {
+            assets: {
+              id: assetId,
+            },
+          },
         },
-      },
-    });
-
-    const count2 = await this.repository.count({
-      where: {
-        id,
-        album: {
+      })) ||
+      // individual asset
+      (await this.repository.exist({
+        where: {
+          id,
           assets: {
             id: assetId,
           },
         },
-      },
-    });
+      }))
+    );
+  }
 
-    return Boolean(count1 + count2);
+  private async save(entity: Partial<SharedLinkEntity>): Promise<SharedLinkEntity> {
+    await this.repository.save(entity);
+    return this.repository.findOneOrFail({ where: { id: entity.id } });
   }
 }

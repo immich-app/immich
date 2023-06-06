@@ -84,7 +84,7 @@ describe(SmartInfoService.name, () => {
 
       await sut.handleClassifyImage({ id: asset.id });
 
-      expect(machineMock.classifyImage).toHaveBeenCalledWith({ thumbnailPath: 'path/to/resize.ext' });
+      expect(machineMock.classifyImage).toHaveBeenCalledWith({ imagePath: 'path/to/resize.ext' });
       expect(smartMock.upsert).toHaveBeenCalledWith({
         assetId: 'asset-1',
         tags: ['tag1', 'tag2', 'tag3'],
@@ -143,7 +143,7 @@ describe(SmartInfoService.name, () => {
 
       await sut.handleEncodeClip({ id: asset.id });
 
-      expect(machineMock.encodeImage).toHaveBeenCalledWith({ thumbnailPath: 'path/to/resize.ext' });
+      expect(machineMock.encodeImage).toHaveBeenCalledWith({ imagePath: 'path/to/resize.ext' });
       expect(smartMock.upsert).toHaveBeenCalledWith({
         assetId: 'asset-1',
         clipEmbedding: [0.01, 0.02, 0.03],

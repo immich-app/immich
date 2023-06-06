@@ -17,7 +17,7 @@
 
 <script lang="ts">
 	import { locale } from '$lib/stores/preferences.store';
-	import { AssetResponseDto } from '@api';
+	import type { AssetResponseDto } from '@api';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import ControlAppBar from '../shared-components/control-app-bar.svelte';
 

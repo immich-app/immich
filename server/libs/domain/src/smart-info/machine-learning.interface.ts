@@ -1,7 +1,7 @@
 export const IMachineLearningRepository = 'IMachineLearningRepository';
 
 export interface MachineLearningInput {
-  thumbnailPath: string;
+  imagePath: string;
 }
 
 export interface BoundingBox {

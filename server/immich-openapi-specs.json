@@ -1565,41 +1565,8 @@
           }
         ]
       },
-      "delete": {
-        "operationId": "removeSharedLink",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "share"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      },
       "patch": {
-        "operationId": "editSharedLink",
+        "operationId": "updateSharedLink",
         "parameters": [
           {
             "name": "id",
@@ -1631,6 +1598,39 @@
                 }
               }
             }
+          }
+        },
+        "tags": [
+          "share"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "removeSharedLink",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
           }
         },
         "tags": [
@@ -2801,12 +2801,12 @@
         ]
       }
     },
-    "/asset/download/{assetId}": {
+    "/asset/download/{id}": {
       "get": {
         "operationId": "downloadFile",
         "parameters": [
           {
-            "name": "assetId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -2966,7 +2966,7 @@
         ]
       }
     },
-    "/asset/file/{assetId}": {
+    "/asset/file/{id}": {
       "get": {
         "operationId": "serveFile",
         "parameters": [
@@ -2989,7 +2989,7 @@
             }
           },
           {
-            "name": "assetId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -3035,12 +3035,12 @@
         ]
       }
     },
-    "/asset/thumbnail/{assetId}": {
+    "/asset/thumbnail/{id}": {
       "get": {
         "operationId": "getAssetThumbnail",
         "parameters": [
           {
-            "name": "assetId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -3381,6 +3381,15 @@
             }
           },
           {
+            "name": "withoutThumbs",
+            "required": false,
+            "in": "query",
+            "description": "Include assets without thumbnails",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "skip",
             "required": false,
             "in": "query",
@@ -3563,13 +3572,13 @@
         ]
       }
     },
-    "/asset/assetById/{assetId}": {
+    "/asset/assetById/{id}": {
       "get": {
         "operationId": "getAssetById",
         "description": "Get a single asset's information",
         "parameters": [
           {
-            "name": "assetId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -3614,13 +3623,13 @@
         ]
       }
     },
-    "/asset/{assetId}": {
+    "/asset/{id}": {
       "put": {
         "operationId": "updateAsset",
         "description": "Update an asset",
         "parameters": [
           {
-            "name": "assetId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -4299,7 +4308,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.59.1",
+    "version": "1.60.0",
     "contact": {}
   },
   "tags": [],
@@ -6221,6 +6230,10 @@
           "userId": {
             "type": "string",
             "format": "uuid"
+          },
+          "withoutThumbs": {
+            "type": "boolean",
+            "description": "Include assets without thumbnails"
           }
         },
         "required": [

@@ -110,11 +110,11 @@ describe(SearchService.name, () => {
     });
   });
 
-  describe(`bootstrap`, () => {
+  describe(`init`, () => {
     it('should skip when search is disabled', async () => {
       const sut = makeSut('false');
 
-      await sut.bootstrap();
+      await sut.init();
 
       expect(searchMock.setup).not.toHaveBeenCalled();
       expect(searchMock.checkMigrationStatus).not.toHaveBeenCalled();
@@ -125,7 +125,7 @@ describe(SearchService.name, () => {
 
     it('should skip schema migration if not needed', async () => {
       searchMock.checkMigrationStatus.mockResolvedValue({ assets: false, albums: false, faces: false });
-      await sut.bootstrap();
+      await sut.init();
 
       expect(searchMock.setup).toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
@@ -133,7 +133,7 @@ describe(SearchService.name, () => {
 
     it('should do schema migration if needed', async () => {
       searchMock.checkMigrationStatus.mockResolvedValue({ assets: true, albums: true, faces: true });
-      await sut.bootstrap();
+      await sut.init();
 
       expect(searchMock.setup).toHaveBeenCalled();
       expect(jobMock.queue.mock.calls).toEqual([

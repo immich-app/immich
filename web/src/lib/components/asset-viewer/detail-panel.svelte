@@ -22,7 +22,7 @@
 	$: {
 		// Get latest description from server
 		if (asset.id) {
-			api.assetApi.getAssetById({ assetId: asset.id }).then((res) => {
+			api.assetApi.getAssetById({ id: asset.id }).then((res) => {
 				people = res.data?.people || [];
 				textarea.value = res.data?.exifInfo?.description || '';
 			});
@@ -66,7 +66,7 @@
 		dispatch('description-focus-out');
 		try {
 			await api.assetApi.updateAsset({
-				assetId: asset.id,
+				id: asset.id,
 				updateAssetDto: {
 					description: description
 				}

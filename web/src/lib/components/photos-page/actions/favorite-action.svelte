@@ -28,7 +28,7 @@
 		let cnt = 0;
 		for (const asset of getAssets()) {
 			if (asset.isFavorite !== isFavorite) {
-				api.assetApi.updateAsset({ assetId: asset.id, updateAssetDto: { isFavorite } });
+				api.assetApi.updateAsset({ id: asset.id, updateAssetDto: { isFavorite } });
 				onAssetFavorite(asset, isFavorite);
 				cnt = cnt + 1;
 			}

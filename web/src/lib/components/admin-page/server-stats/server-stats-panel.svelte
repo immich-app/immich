@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { ServerStatsResponseDto } from '@api';
-	import CameraIris from 'svelte-material-icons/CameraIris.svelte';
-	import PlayCircle from 'svelte-material-icons/PlayCircle.svelte';
-	import Memory from 'svelte-material-icons/Memory.svelte';
-	import StatsCard from './stats-card.svelte';
-	import { asByteUnitString, getBytesWithUnit } from '../../../utils/byte-units';
 	import { locale } from '$lib/stores/preferences.store';
+	import type { ServerStatsResponseDto } from '@api';
+	import CameraIris from 'svelte-material-icons/CameraIris.svelte';
+	import Memory from 'svelte-material-icons/Memory.svelte';
+	import PlayCircle from 'svelte-material-icons/PlayCircle.svelte';
+	import { asByteUnitString, getBytesWithUnit } from '../../../utils/byte-units';
+	import StatsCard from './stats-card.svelte';
 
 	export let stats: ServerStatsResponseDto = {
 		photos: 0,

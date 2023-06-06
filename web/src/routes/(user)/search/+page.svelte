@@ -12,7 +12,7 @@
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
 	import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
-	import { AssetResponseDto } from '@api';
+	import type { AssetResponseDto } from '@api';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import ImageOffOutline from 'svelte-material-icons/ImageOffOutline.svelte';

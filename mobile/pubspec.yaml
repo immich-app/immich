@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: "none"
-version: 1.59.1+82
+version: 1.60.0+83
 isar_version: &isar_version 3.1.0+1
 
 environment:

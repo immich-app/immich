@@ -45,11 +45,6 @@ import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { DownloadDto } from './dto/download-library.dto';
-import {
-  IMMICH_ARCHIVE_COMPLETE,
-  IMMICH_ARCHIVE_FILE_COUNT,
-  IMMICH_CONTENT_LENGTH_HINT,
-} from '../../constants/download.constant';
 import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { SharedLinkResponseDto } from '@app/domain';
@@ -59,8 +54,9 @@ import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-response.dto';
-import { AssetIdDto } from './dto/asset-id.dto';
+import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
 import { DeviceIdDto } from './dto/device-id.dto';
+import { handleDownload } from '../../app.utils';
 
 function asStreamableFile({ stream, type, length }: ImmichReadStream) {
   return new StreamableFile(stream, { type, length });
@@ -123,26 +119,21 @@ export class AssetController {
   }
 
   @SharedLinkRoute()
-  @Get('/download/:assetId')
+  @Get('/download/:id')
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
-  downloadFile(@GetAuthUser() authUser: AuthUserDto, @Param() { assetId }: AssetIdDto) {
-    return this.assetService.downloadFile(authUser, assetId).then(asStreamableFile);
+  downloadFile(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
+    return this.assetService.downloadFile(authUser, id).then(asStreamableFile);
   }
 
   @SharedLinkRoute()
   @Post('/download-files')
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
-  async downloadFiles(
+  downloadFiles(
     @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
     @Body(new ValidationPipe()) dto: DownloadFilesDto,
   ) {
-    const { stream, fileName, fileSize, fileCount, complete } = await this.assetService.downloadFiles(authUser, dto);
-    res.attachment(fileName);
-    res.setHeader(IMMICH_CONTENT_LENGTH_HINT, fileSize);
-    res.setHeader(IMMICH_ARCHIVE_FILE_COUNT, fileCount);
-    res.setHeader(IMMICH_ARCHIVE_COMPLETE, `${complete}`);
-    return stream;
+    return this.assetService.downloadFiles(authUser, dto).then((download) => handleDownload(download, res));
   }
 
   /**
@@ -151,21 +142,16 @@ export class AssetController {
   @SharedLinkRoute()
   @Get('/download-library')
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
-  async downloadLibrary(
+  downloadLibrary(
     @GetAuthUser() authUser: AuthUserDto,
     @Query(new ValidationPipe({ transform: true })) dto: DownloadDto,
     @Response({ passthrough: true }) res: Res,
   ) {
-    const { stream, fileName, fileSize, fileCount, complete } = await this.assetService.downloadLibrary(authUser, dto);
-    res.attachment(fileName);
-    res.setHeader(IMMICH_CONTENT_LENGTH_HINT, fileSize);
-    res.setHeader(IMMICH_ARCHIVE_FILE_COUNT, fileCount);
-    res.setHeader(IMMICH_ARCHIVE_COMPLETE, `${complete}`);
-    return stream;
+    return this.assetService.downloadLibrary(authUser, dto).then((download) => handleDownload(download, res));
   }
 
   @SharedLinkRoute()
-  @Get('/file/:assetId')
+  @Get('/file/:id')
   @Header('Cache-Control', 'max-age=31536000')
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   serveFile(
@@ -173,23 +159,23 @@ export class AssetController {
     @Headers() headers: Record<string, string>,
     @Response({ passthrough: true }) res: Res,
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
-    @Param() { assetId }: AssetIdDto,
+    @Param() { id }: UUIDParamDto,
   ) {
-    return this.assetService.serveFile(authUser, assetId, query, res, headers);
+    return this.assetService.serveFile(authUser, id, query, res, headers);
   }
 
   @SharedLinkRoute()
-  @Get('/thumbnail/:assetId')
+  @Get('/thumbnail/:id')
   @Header('Cache-Control', 'max-age=31536000')
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   getAssetThumbnail(
     @GetAuthUser() authUser: AuthUserDto,
     @Headers() headers: Record<string, string>,
     @Response({ passthrough: true }) res: Res,
-    @Param() { assetId }: AssetIdDto,
+    @Param() { id }: UUIDParamDto,
     @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,
   ) {
-    return this.assetService.getAssetThumbnail(authUser, assetId, query, res, headers);
+    return this.assetService.getAssetThumbnail(authUser, id, query, res, headers);
   }
 
   @Get('/curated-objects')
@@ -269,21 +255,21 @@ export class AssetController {
    * Get a single asset's information
    */
   @SharedLinkRoute()
-  @Get('/assetById/:assetId')
-  getAssetById(@GetAuthUser() authUser: AuthUserDto, @Param() { assetId }: AssetIdDto): Promise<AssetResponseDto> {
-    return this.assetService.getAssetById(authUser, assetId);
+  @Get('/assetById/:id')
+  getAssetById(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
+    return this.assetService.getAssetById(authUser, id);
   }
 
   /**
    * Update an asset
    */
-  @Put('/:assetId')
+  @Put('/:id')
   updateAsset(
     @GetAuthUser() authUser: AuthUserDto,
-    @Param() { assetId }: AssetIdDto,
+    @Param() { id }: UUIDParamDto,
     @Body(ValidationPipe) dto: UpdateAssetDto,
   ): Promise<AssetResponseDto> {
-    return this.assetService.updateAsset(authUser, assetId, dto);
+    return this.assetService.updateAsset(authUser, id, dto);
   }
 
   @Delete('/')

@@ -37,7 +37,7 @@ describe('AlbumCard component', () => {
 	])(
 		'shows album data without thumbnail with count $count - shared: $shared',
 		async ({ album, count, shared }) => {
-			sut = render(AlbumCard, { album });
+			sut = render(AlbumCard, { album, user: album.owner });
 
 			const albumImgElement = sut.getByTestId('album-image');
 			const albumNameElement = sut.getByTestId('album-name');
@@ -58,10 +58,10 @@ describe('AlbumCard component', () => {
 	);
 
 	it('shows album data and and loads the thumbnail image when available', async () => {
-		const thumbnailBlob = new Blob();
+		const thumbnailFile = new File([new Blob()], 'fileThumbnail');
 		const thumbnailUrl = 'blob:thumbnailUrlOne';
 		apiMock.assetApi.getAssetThumbnail.mockResolvedValue({
-			data: thumbnailBlob,
+			data: thumbnailFile,
 			config: {},
 			headers: {},
 			status: 200,
@@ -74,7 +74,7 @@ describe('AlbumCard component', () => {
 			shared: false,
 			albumName: 'some album name'
 		});
-		sut = render(AlbumCard, { album });
+		sut = render(AlbumCard, { album, user: album.owner });
 
 		const albumImgElement = sut.getByTestId('album-image');
 		const albumNameElement = sut.getByTestId('album-name');
@@ -87,12 +87,12 @@ describe('AlbumCard component', () => {
 		expect(apiMock.assetApi.getAssetThumbnail).toHaveBeenCalledTimes(1);
 		expect(apiMock.assetApi.getAssetThumbnail).toHaveBeenCalledWith(
 			{
-				assetId: 'thumbnailIdOne',
+				id: 'thumbnailIdOne',
 				format: ThumbnailFormat.Jpeg
 			},
 			{ responseType: 'blob' }
 		);
-		expect(createObjectURLMock).toHaveBeenCalledWith(thumbnailBlob);
+		expect(createObjectURLMock).toHaveBeenCalledWith(thumbnailFile);
 
 		expect(albumNameElement).toHaveTextContent('some album name');
 		expect(albumDetailsElement).toHaveTextContent('0 items');
@@ -102,7 +102,7 @@ describe('AlbumCard component', () => {
 		const album = Object.freeze(albumFactory.build({ albumThumbnailAssetId: null }));
 
 		beforeEach(async () => {
-			sut = render(AlbumCard, { album });
+			sut = render(AlbumCard, { album, user: album.owner });
 
 			const albumImgElement = sut.getByTestId('album-image');
 			await waitFor(() => expect(albumImgElement).toHaveAttribute('src'));

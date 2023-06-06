@@ -10,7 +10,7 @@
 </script>
 
 <script lang="ts">
-	import { MapMarkerResponseDto } from '@api';
+	import type { MapMarkerResponseDto } from '@api';
 	import { DivIcon, LeafletEvent, LeafletMouseEvent, MarkerCluster, Point } from 'leaflet';
 	import 'leaflet.markercluster';
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
