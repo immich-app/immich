@@ -25,6 +25,7 @@ import { CuratedObjectsResponseDto } from './response-dto/curated-objects-respon
 import {
   AssetResponseDto,
   getLivePhotoMotionFilename,
+  IAccessRepository,
   ImmichReadStream,
   IStorageRepository,
   JobName,
@@ -54,7 +55,6 @@ import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
 import { IAlbumRepository } from '../album/album-repository';
 import { SharedLinkCore } from '@app/domain';
-import { IPartnerRepository } from '@app/domain';
 import { ISharedLinkRepository } from '@app/domain';
 import { DownloadFilesDto } from './dto/download-files.dto';
 import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
@@ -83,6 +83,7 @@ export class AssetService {
   private assetCore: AssetCore;
 
   constructor(
+    @Inject(IAccessRepository) private accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
     @Inject(IAlbumRepository) private _albumRepository: IAlbumRepository,
     @InjectRepository(AssetEntity)
@@ -92,7 +93,6 @@ export class AssetService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
     this.shareCore = new SharedLinkCore(sharedLinkRepository, cryptoRepository);
@@ -559,7 +559,7 @@ export class AssetService {
         }
 
         // Step 3: Check if any partner owns the asset
-        const canAccess = await this.partnerRepository.hasAssetAccess(assetId, authUser.id);
+        const canAccess = await this.accessRepository.hasPartnerAssetAccess(authUser.id, assetId);
         if (canAccess) {
           continue;
         }
@@ -579,7 +579,8 @@ export class AssetService {
 
   private async checkUserAccess(authUser: AuthUserDto, userId: string) {
     // Check if userId shares assets with authUser
-    if (!(await this.partnerRepository.get({ sharedById: userId, sharedWithId: authUser.id }))) {
+    const canAccess = await this.accessRepository.hasPartnerAccess(authUser.id, userId);
+    if (!canAccess) {
       throw new ForbiddenException();
     }
   }

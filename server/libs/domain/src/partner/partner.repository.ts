@@ -17,5 +17,4 @@ export interface IPartnerRepository {
   get(partner: PartnerIds): Promise<PartnerEntity | null>;
   create(partner: PartnerIds): Promise<PartnerEntity>;
   remove(entity: PartnerEntity): Promise<void>;
-  hasAssetAccess(assetId: string, userId: string): Promise<boolean>;
 }

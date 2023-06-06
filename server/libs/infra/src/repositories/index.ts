@@ -1,3 +1,4 @@
+export * from './access.repository';
 export * from './album.repository';
 export * from './api-key.repository';
 export * from './asset.repository';

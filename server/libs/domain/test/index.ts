@@ -1,3 +1,4 @@
+export * from './access.repository.mock';
 export * from './album.repository.mock';
 export * from './api-key.repository.mock';
 export * from './asset.repository.mock';
