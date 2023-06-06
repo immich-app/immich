@@ -126,16 +126,11 @@ class HashService {
       }
       return hashes;
     } else if (Platform.isIOS) {
-      return await compute(
-        (paths) async {
-          final List<Uint8List?> result = List.filled(paths.length, null);
-          for (int i = 0; i < paths.length; i++) {
-            result[i] = await _hashAssetDart(File(paths[i]));
-          }
-          return result;
-        },
-        paths,
-      );
+      final List<Uint8List?> result = List.filled(paths.length, null);
+      for (int i = 0; i < paths.length; i++) {
+        result[i] = await _hashAssetDart(File(paths[i]));
+      }
+      return result;
     } else {
       throw Exception("_hashFiles implementation missing");
     }
