@@ -1,7 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AlbumEntity, SharedLinkType } from '@app/infra/entities';
-import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { AlbumResponseDto, IJobRepository, mapAlbum } from '@app/domain';
 import { IAlbumRepository } from './album-repository';
