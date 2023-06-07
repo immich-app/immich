@@ -564,10 +564,12 @@ export class AssetService {
   }
 
   private async checkAssetsAccess(authUser: AuthUserDto, assetIds: string[], mustBeOwner = false) {
+    const sharedLinkId = authUser.sharedLinkId;
+
     for (const assetId of assetIds) {
       // Step 1: Check if asset is part of a public shared
-      if (authUser.sharedLinkId) {
-        const canAccess = await this.shareCore.hasAssetAccess(authUser.sharedLinkId, assetId);
+      if (sharedLinkId) {
+        const canAccess = await this.accessRepository.hasSharedLinkAssetAccess(sharedLinkId, assetId);
         if (canAccess) {
           continue;
         }

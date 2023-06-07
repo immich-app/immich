@@ -9,5 +9,4 @@ export interface ISharedLinkRepository {
   create(entity: Omit<SharedLinkEntity, 'id' | 'user'>): Promise<SharedLinkEntity>;
   update(entity: Partial<SharedLinkEntity>): Promise<SharedLinkEntity>;
   remove(entity: SharedLinkEntity): Promise<void>;
-  hasAssetAccess(id: string, assetId: string): Promise<boolean>;
 }
