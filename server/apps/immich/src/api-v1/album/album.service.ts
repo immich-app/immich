@@ -1,7 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { AlbumEntity, SharedLinkType } from '@app/infra/entities';
-import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { AlbumResponseDto, mapAlbum } from '@app/domain';
 import { IAlbumRepository } from './album-repository';
@@ -61,24 +60,6 @@ export class AlbumService {
   async get(authUser: AuthUserDto, albumId: string): Promise<AlbumResponseDto> {
     const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
     return mapAlbum(album);
-  }
-
-  async addUsers(authUser: AuthUserDto, albumId: string, dto: AddUsersDto): Promise<AlbumResponseDto> {
-    const album = await this._getAlbum({ authUser, albumId });
-    const updatedAlbum = await this.albumRepository.addSharedUsers(album, dto);
-    return mapAlbum(updatedAlbum);
-  }
-
-  async removeUser(authUser: AuthUserDto, albumId: string, userId: string | 'me'): Promise<void> {
-    const sharedUserId = userId == 'me' ? authUser.id : userId;
-    const album = await this._getAlbum({ authUser, albumId, validateIsOwner: false });
-    if (album.ownerId != authUser.id && authUser.id != sharedUserId) {
-      throw new ForbiddenException('Cannot remove a user from a album that is not owned');
-    }
-    if (album.ownerId == sharedUserId) {
-      throw new BadRequestException('The owner of the album cannot be removed');
-    }
-    await this.albumRepository.removeUser(album, sharedUserId);
   }
 
   async removeAssets(authUser: AuthUserDto, albumId: string, dto: RemoveAssetsDto): Promise<AlbumResponseDto> {

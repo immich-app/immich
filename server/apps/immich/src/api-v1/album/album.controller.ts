@@ -1,10 +1,8 @@
 import { Controller, Get, Post, Body, Param, Delete, Put, Query, Response } from '@nestjs/common';
-import { ParseMeUUIDPipe } from '../validation/parse-me-uuid-pipe';
 import { AlbumService } from './album.service';
 import { Authenticated, SharedLinkRoute } from '../../decorators/authenticated.decorator';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { AddAssetsDto } from './dto/add-assets.dto';
-import { AddUsersDto } from './dto/add-users.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AlbumResponseDto } from '@app/domain';
@@ -27,12 +25,6 @@ export class AlbumController {
   @Get('count-by-user-id')
   getAlbumCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
     return this.service.getCountByUserId(authUser);
-  }
-
-  @Put(':id/users')
-  addUsersToAlbum(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: AddUsersDto) {
-    // TODO: Handle nonexistent sharedUserIds.
-    return this.service.addUsers(authUser, id, dto);
   }
 
   @SharedLinkRoute()
@@ -60,15 +52,6 @@ export class AlbumController {
     @Param() { id }: UUIDParamDto,
   ): Promise<AlbumResponseDto> {
     return this.service.removeAssets(authUser, id, dto);
-  }
-
-  @Delete(':id/user/:userId')
-  removeUserFromAlbum(
-    @GetAuthUser() authUser: AuthUserDto,
-    @Param() { id }: UUIDParamDto,
-    @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
-  ) {
-    return this.service.removeUser(authUser, id, userId);
   }
 
   @SharedLinkRoute()

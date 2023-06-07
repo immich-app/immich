@@ -3,8 +3,9 @@ import { BadRequestException, ForbiddenException, Inject, Injectable } from '@ne
 import { IAssetRepository, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
 import { IJobRepository, JobName } from '../job';
+import { IUserRepository } from '../user';
 import { IAlbumRepository } from './album.repository';
-import { CreateAlbumDto, GetAlbumsDto, UpdateAlbumDto } from './dto';
+import { AddUsersDto, CreateAlbumDto, GetAlbumsDto, UpdateAlbumDto } from './dto';
 import { AlbumResponseDto, mapAlbum } from './response-dto';
 
 @Injectable()
@@ -13,6 +14,7 @@ export class AlbumService {
     @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {}
 
   async getAll({ id: ownerId }: AuthUserDto, { assetId, shared }: GetAlbumsDto): Promise<AlbumResponseDto[]> {
@@ -48,7 +50,7 @@ export class AlbumService {
     });
   }
 
-  async updateInvalidThumbnails(): Promise<number> {
+  private async updateInvalidThumbnails(): Promise<number> {
     const invalidAlbumIds = await this.albumRepository.getInvalidThumbnail();
 
     for (const albumId of invalidAlbumIds) {
@@ -60,7 +62,13 @@ export class AlbumService {
   }
 
   async create(authUser: AuthUserDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
-    // TODO: Handle nonexistent sharedWithUserIds and assetIds.
+    for (const userId of dto.sharedWithUserIds || []) {
+      const exists = await this.userRepository.get(userId);
+      if (!exists) {
+        throw new BadRequestException('User not found');
+      }
+    }
+
     const album = await this.albumRepository.create({
       ownerId: authUser.id,
       albumName: dto.albumName,
@@ -68,19 +76,14 @@ export class AlbumService {
       assets: (dto.assetIds || []).map((id) => ({ id } as AssetEntity)),
       albumThumbnailAssetId: dto.assetIds?.[0] || null,
     });
+
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ALBUM, data: { ids: [album.id] } });
     return mapAlbum(album);
   }
 
   async update(authUser: AuthUserDto, id: string, dto: UpdateAlbumDto): Promise<AlbumResponseDto> {
-    const [album] = await this.albumRepository.getByIds([id]);
-    if (!album) {
-      throw new BadRequestException('Album not found');
-    }
-
-    if (album.ownerId !== authUser.id) {
-      throw new ForbiddenException('Album not owned by user');
-    }
+    const album = await this.get(id);
+    this.assertOwner(authUser, album);
 
     if (dto.albumThumbnailAssetId) {
       const valid = await this.albumRepository.hasAsset(id, dto.albumThumbnailAssetId);
@@ -112,5 +115,74 @@ export class AlbumService {
 
     await this.albumRepository.delete(album);
     await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ALBUM, data: { ids: [id] } });
+  }
+
+  async addUsers(authUser: AuthUserDto, id: string, dto: AddUsersDto) {
+    const album = await this.get(id);
+    this.assertOwner(authUser, album);
+
+    for (const userId of dto.sharedUserIds) {
+      const exists = album.sharedUsers.find((user) => user.id === userId);
+      if (exists) {
+        throw new BadRequestException('User already added');
+      }
+
+      const user = await this.userRepository.get(userId);
+      if (!user) {
+        throw new BadRequestException('User not found');
+      }
+
+      album.sharedUsers.push({ id: userId } as UserEntity);
+    }
+
+    return this.albumRepository
+      .update({
+        id: album.id,
+        updatedAt: new Date(),
+        sharedUsers: album.sharedUsers,
+      })
+      .then(mapAlbum);
+  }
+
+  async removeUser(authUser: AuthUserDto, id: string, userId: string | 'me'): Promise<void> {
+    if (userId === 'me') {
+      userId = authUser.id;
+    }
+
+    const album = await this.get(id);
+
+    if (album.ownerId === userId) {
+      throw new BadRequestException('Cannot remove album owner');
+    }
+
+    const exists = album.sharedUsers.find((user) => user.id === userId);
+    if (!exists) {
+      throw new BadRequestException('Album not shared with user');
+    }
+
+    // non-admin can remove themselves
+    if (authUser.id !== userId) {
+      this.assertOwner(authUser, album);
+    }
+
+    await this.albumRepository.update({
+      id: album.id,
+      updatedAt: new Date(),
+      sharedUsers: album.sharedUsers.filter((user) => user.id !== userId),
+    });
+  }
+
+  private async get(id: string) {
+    const [album] = await this.albumRepository.getByIds([id]);
+    if (!album) {
+      throw new BadRequestException('Album not found');
+    }
+    return album;
+  }
+
+  private assertOwner(authUser: AuthUserDto, album: AlbumEntity) {
+    if (album.ownerId !== authUser.id) {
+      throw new ForbiddenException('Album not owned by user');
+    }
   }
 }
