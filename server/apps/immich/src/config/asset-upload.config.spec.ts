@@ -79,6 +79,18 @@ describe('assetUploadOption', () => {
       expect(callback).toHaveBeenCalledWith(null, true);
     });
 
+    it('should allow .cr2 recognized', () => {
+      const file = { mimetype: 'image/x-canon-cr2', originalname: 'test.cr2' } as any;
+      fileFilter(mock.userRequest, file, callback);
+      expect(callback).toHaveBeenCalledWith(null, true);
+    });
+
+    it('should allow .avif recognized', () => {
+      const file = { mimetype: 'image/avif', originalname: 'test.avif' } as any;
+      fileFilter(mock.userRequest, file, callback);
+      expect(callback).toHaveBeenCalledWith(null, true);
+    });
+
     it('should allow .wmv videos', () => {
       const file = { mimetype: 'video/x-ms-wmv', originalname: 'test.wmv' } as any;
       fileFilter(mock.userRequest, file, callback);
