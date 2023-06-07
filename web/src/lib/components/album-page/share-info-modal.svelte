@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { AlbumResponseDto, api, UserResponseDto } from '@api';
-	import { clickOutside } from '$lib/utils/click-outside';
 	import BaseModal from '../shared-components/base-modal.svelte';
 	import UserAvatar from '../shared-components/user-avatar.svelte';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
@@ -20,9 +19,8 @@
 	const dispatch = createEventDispatcher();
 
 	let currentUser: UserResponseDto;
-	let isShowMenu = false;
 	let position = { x: 0, y: 0 };
-	let targetUserId: string;
+	let selectedMenuUser: UserResponseDto | null = null;
 	let selectedRemoveUser: UserResponseDto | null = null;
 
 	$: isOwned = currentUser?.id == album.ownerId;
@@ -36,8 +34,8 @@
 		}
 	});
 
-	const showContextMenu = (userId: string) => {
-		const iconButton = document.getElementById('icon-' + userId);
+	const showContextMenu = (user: UserResponseDto) => {
+		const iconButton = document.getElementById('icon-' + user.id);
 
 		if (iconButton) {
 			position = {
@@ -46,8 +44,13 @@
 			};
 		}
 
-		targetUserId = userId;
-		isShowMenu = !isShowMenu;
+		selectedMenuUser = user;
+		selectedRemoveUser = null;
+	};
+
+	const handleMenuRemove = () => {
+		selectedRemoveUser = selectedMenuUser;
+		selectedMenuUser = null;
 	};
 
 	const handleRemoveUser = async () => {
@@ -60,8 +63,13 @@
 		try {
 			await api.albumApi.removeUserFromAlbum({ id: album.id, userId });
 			dispatch('user-deleted', { userId });
+			const message =
+				userId === 'me' ? `Left ${album.albumName}` : `Removed ${selectedRemoveUser.firstName}`;
+			notificationController.show({ type: NotificationType.Info, message });
 		} catch (e) {
 			handleError(e, 'Unable to remove user');
+		} finally {
+			selectedRemoveUser = null;
 		}
 	};
 </script>
@@ -86,20 +94,20 @@
 
 					<div id={`icon-${user.id}`} class="flex place-items-center">
 						{#if isOwned}
-							<div use:clickOutside on:outclick={() => (isShowMenu = false)}>
+							<div>
 								<CircleIconButton
-									on:click={() => showContextMenu(user.id)}
+									on:click={() => showContextMenu(user)}
 									logo={DotsVertical}
-									backgroundColor={'transparent'}
-									hoverColor={'#e2e7e9'}
-									size={'20'}
-								>
-									{#if isShowMenu}
-										<ContextMenu {...position}>
-											<MenuOption on:click={() => (selectedRemoveUser = user)} text="Remove" />
-										</ContextMenu>
-									{/if}
-								</CircleIconButton>
+									backgroundColor="transparent"
+									hoverColor="#e2e7e9"
+									size="20"
+								/>
+
+								{#if selectedMenuUser === user}
+									<ContextMenu {...position} on:outclick={() => (selectedMenuUser = null)}>
+										<MenuOption on:click={handleMenuRemove} text="Remove" />
+									</ContextMenu>
+								{/if}
 							</div>
 						{:else if user.id == currentUser?.id}
 							<button
@@ -120,7 +128,7 @@
 		title="Leave Album?"
 		prompt="Are you sure you want to leave {album.albumName}?"
 		confirmText="Leave"
-		on:confirm={() => handleRemoveUser()}
+		on:confirm={handleRemoveUser}
 		on:cancel={() => (selectedRemoveUser = null)}
 	/>
 {/if}
@@ -130,7 +138,7 @@
 		title="Remove User?"
 		prompt="Are you sure you want to remove {selectedRemoveUser.firstName} {selectedRemoveUser.lastName}"
 		confirmText="Remove"
-		on:confirm={() => handleRemoveUser()}
+		on:confirm={handleRemoveUser}
 		on:cancel={() => (selectedRemoveUser = null)}
 	/>
 {/if}

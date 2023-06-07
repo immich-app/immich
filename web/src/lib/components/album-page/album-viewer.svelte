@@ -203,7 +203,7 @@
 			const { data } = await api.albumApi.getAlbumInfo({ id: album.id });
 
 			album = data;
-			isShowShareInfoModal = false;
+			isShowShareInfoModal = data.sharedUsers.length >= 1;
 		} catch (e) {
 			handleError(e, 'Error deleting share users');
 		}
