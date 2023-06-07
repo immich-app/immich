@@ -30,6 +30,6 @@ async function bootstrap() {
   await app.get(AppService).init();
   await app.listen(port);
 
-  logger.log(`Listening on ${port} [v${SERVER_VERSION}] [${envName}] `);
+  logger.log(`Immich Server is listening on ${port} [v${SERVER_VERSION}] [${envName}] `);
 }
 bootstrap();
