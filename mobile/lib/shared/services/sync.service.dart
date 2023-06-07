@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
+import 'package:immich_mobile/shared/models/etag.dart';
 import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/models/user.dart';
@@ -433,9 +434,11 @@ class SyncService {
         .sortByChecksum()
         .findAll();
     assert(inDb.isSorted(Asset.compareByChecksum), "inDb not sorted!");
+    final int assetCountOnDevice = await ape.assetCountAsync;
     final List<Asset> onDevice =
         await _hashService.getHashedAssets(ape, excludedAssets: excludedAssets);
-    onDevice.sort(Asset.compareByChecksum);
+    _removeDuplicates(onDevice);
+    // _removeDuplicates sorts `onDevice` by checksum
     final (toAdd, toUpdate, toDelete) = _diffAssets(onDevice, inDb);
     if (toAdd.isEmpty &&
         toUpdate.isEmpty &&
@@ -473,6 +476,9 @@ class SyncService {
         await _db.albums.put(album);
         album.thumbnail.value ??= await album.assets.filter().findFirst();
         await album.thumbnail.save();
+        await _db.eTags.put(
+          ETag(id: ape.eTagKeyAssetCount, value: assetCountOnDevice.toString()),
+        );
       });
       _log.info("Synced changes of local album ${ape.name} to DB");
     } on IsarError catch (e) {
@@ -485,8 +491,13 @@ class SyncService {
   /// fast path for common case: only new assets were added to device album
   /// returns `true` if successfull, else `false`
   Future<bool> _syncDeviceAlbumFast(AssetPathEntity ape, Album album) async {
+    if (!(ape.lastModified ?? DateTime.now()).isAfter(album.modifiedAt)) {
+      return false;
+    }
     final int totalOnDevice = await ape.assetCountAsync;
-    final AssetPathEntity? modified = totalOnDevice > album.assetCount
+    final int lastKnownTotal =
+        (await _db.eTags.getById(ape.eTagKeyAssetCount))?.value?.toInt() ?? 0;
+    final AssetPathEntity? modified = totalOnDevice > lastKnownTotal
         ? await ape.fetchPathProperties(
             filterOptionGroup: FilterOptionGroup(
               updateTimeCond: DateTimeCond(
@@ -500,16 +511,21 @@ class SyncService {
       return false;
     }
     final List<Asset> newAssets = await _hashService.getHashedAssets(modified);
-    if (totalOnDevice != album.assets.length + newAssets.length) {
+
+    if (totalOnDevice != lastKnownTotal + newAssets.length) {
       return false;
     }
     album.modifiedAt = ape.lastModified ?? DateTime.now();
+    _removeDuplicates(newAssets);
     final (existingInDb, updated) = await _linkWithExistingFromDb(newAssets);
     try {
       await _db.writeTxn(() async {
         await _db.assets.putAll(updated);
         await album.assets.update(link: existingInDb + updated);
         await _db.albums.put(album);
+        await _db.eTags.put(
+          ETag(id: ape.eTagKeyAssetCount, value: totalOnDevice.toString()),
+        );
       });
       _log.info("Fast synced local album ${ape.name} to DB");
     } on IsarError catch (e) {
@@ -531,6 +547,7 @@ class SyncService {
     final Album a = Album.local(ape);
     final assets =
         await _hashService.getHashedAssets(ape, excludedAssets: excludedAssets);
+    _removeDuplicates(assets);
     final (existingInDb, updated) = await _linkWithExistingFromDb(assets);
     _log.info(
       "${existingInDb.length} assets already existed in DB, to upsert ${updated.length}",
@@ -598,11 +615,12 @@ class SyncService {
       _log.severe(
         "Failed to upsert ${assets.length} assets into the DB: ${e.toString()}",
       );
+      // give details on the errors
+      assets.sort(Asset.compareByOwnerChecksum);
       final inDb = await _db.assets.getAllByChecksumOwnerId(
         assets.map((e) => e.checksum).toList(growable: false),
         assets.map((e) => e.ownerId).toInt64List(),
       );
-      // give details on the errors
       for (int i = 0; i < assets.length; i++) {
         final Asset a = assets[i];
         final Asset? b = inDb[i];
@@ -618,7 +636,38 @@ class SyncService {
           );
         }
       }
+      for (int i = 1; i < assets.length; i++) {
+        if (Asset.compareByOwnerChecksum(assets[i - 1], assets[i]) == 0) {
+          _log.warning(
+            "Trying to insert duplicate assets:\n${assets[i - 1]}\n${assets[i]}",
+          );
+        }
+      }
     }
+  }
+
+  List<Asset> _removeDuplicates(List<Asset> assets) {
+    final int before = assets.length;
+    assets.sort(Asset.compareByOwnerChecksumCreatedModified);
+    assets.uniqueConsecutive(
+      compare: Asset.compareByOwnerChecksum,
+      onDuplicate: (a, b) =>
+          _log.info("Ignoring duplicate assets on device:\n$a\n$b"),
+    );
+    final int duplicates = before - assets.length;
+    if (duplicates > 0) {
+      _log.warning("Ignored $duplicates duplicate assets on device");
+    }
+    return assets;
+  }
+
+  /// returns `true` if the albums differ on the surface
+  Future<bool> _hasAssetPathEntityChanged(AssetPathEntity a, Album b) async {
+    return a.name != b.name ||
+        a.lastModified == null ||
+        !a.lastModified!.isAtSameMomentAs(b.modifiedAt) ||
+        await a.assetCountAsync !=
+            (await _db.eTags.getById(a.eTagKeyAssetCount))?.value?.toInt();
   }
 }
 
@@ -673,9 +722,9 @@ class SyncService {
     return const ([], []);
   }
   deleteCandidates.sort(Asset.compareById);
-  deleteCandidates.uniqueConsecutive((a) => a.id);
+  deleteCandidates.uniqueConsecutive(compare: Asset.compareById);
   existing.sort(Asset.compareById);
-  existing.uniqueConsecutive((a) => a.id);
+  existing.uniqueConsecutive(compare: Asset.compareById);
   final (tooAdd, toUpdate, toRemove) = _diffAssets(
     existing,
     deleteCandidates,
@@ -684,14 +733,6 @@ class SyncService {
   );
   assert(tooAdd.isEmpty, "toAdd should be empty in _handleAssetRemoval");
   return (toRemove.map((e) => e.id).toList(), toUpdate);
-}
-
-/// returns `true` if the albums differ on the surface
-Future<bool> _hasAssetPathEntityChanged(AssetPathEntity a, Album b) async {
-  return a.name != b.name ||
-      a.lastModified == null ||
-      !a.lastModified!.isAtSameMomentAs(b.modifiedAt) ||
-      await a.assetCountAsync != b.assetCount;
 }
 
 /// returns `true` if the albums differ on the surface

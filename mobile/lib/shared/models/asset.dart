@@ -343,21 +343,29 @@ class Asset {
 
   static int compareByOwnerChecksum(Asset a, Asset b) {
     final int ownerIdOrder = a.ownerId.compareTo(b.ownerId);
-    if (ownerIdOrder != 0) {
-      return ownerIdOrder;
-    }
+    if (ownerIdOrder != 0) return ownerIdOrder;
     return compareByChecksum(a, b);
+  }
+
+  static int compareByOwnerChecksumCreatedModified(Asset a, Asset b) {
+    final int ownerIdOrder = a.ownerId.compareTo(b.ownerId);
+    if (ownerIdOrder != 0) return ownerIdOrder;
+    final int checksumOrder = compareByChecksum(a, b);
+    if (checksumOrder != 0) return checksumOrder;
+    final int createdOrder = a.fileCreatedAt.compareTo(b.fileCreatedAt);
+    if (createdOrder != 0) return createdOrder;
+    return a.fileModifiedAt.compareTo(b.fileModifiedAt);
   }
 
   @override
   String toString() {
     return """
 {
-  "id": $id,
+  "id": ${id == Isar.autoIncrement ? '"N/A"' : id},
   "remoteId": "${remoteId ?? "N/A"}",
   "localId": "${localId ?? "N/A"}",
   "checksum": "$checksum",
-  "ownerId": "$ownerId", 
+  "ownerId": $ownerId, 
   "livePhotoVideoId": "${livePhotoVideoId ?? "N/A"}",
   "fileCreatedAt": "$fileCreatedAt",
   "fileModifiedAt": "$fileModifiedAt", 
@@ -367,7 +375,7 @@ class Asset {
   "fileName": "$fileName", 
   "isFavorite": $isFavorite, 
   "isRemote: $isRemote,
-  "storage": $storage,
+  "storage": "$storage",
   "width": ${width ?? "N/A"},
   "height": ${height ?? "N/A"},
   "isArchived": $isArchived

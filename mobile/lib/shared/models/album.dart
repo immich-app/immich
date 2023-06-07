@@ -169,3 +169,7 @@ extension AssetsHelper on IsarCollection<Album> {
 extension AlbumResponseDtoHelper on AlbumResponseDto {
   List<Asset> getAssets() => assets.map(Asset.remote).toList();
 }
+
+extension AssetPathEntityHelper on AssetPathEntity {
+  String get eTagKeyAssetCount => "device-album-$id-asset-count";
+}
