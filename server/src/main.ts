@@ -2,7 +2,11 @@ import { bootstrap as immich } from './immich/main';
 import { bootstrap as microservices } from './microservices/main';
 import { bootstrap as cli } from './cli/immich';
 
-const immichApp = process.env.IMMICH_APP;
+const immichApp = process.argv[2] || process.env.IMMICH_APP;
+
+if (process.argv[2] === immichApp) {
+  process.argv.splice(2, 1);
+}
 
 function bootstrap() {
   switch (immichApp) {

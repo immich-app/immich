@@ -1,1 +1,1 @@
-/bin/sh start.sh cli "$@"
+node ./dist/main cli "$@"

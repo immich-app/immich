@@ -8,7 +8,7 @@ services:
       context: ../server
       dockerfile: Dockerfile
       target: builder
-    command: npm run start:debug
+    command: npm run start:debug immich
     volumes:
       - ../server:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
@@ -19,7 +19,6 @@ services:
     env_file:
       - .env
     environment:
-      - IMMICH_APP=immich
       - NODE_ENV=development
     depends_on:
       - redis
@@ -54,7 +53,7 @@ services:
       context: ../server
       dockerfile: Dockerfile
       target: builder
-    command: npm run start:debug
+    command: npm run start:debug microservices
     volumes:
       - ../server:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
@@ -64,7 +63,6 @@ services:
     ports:
       - 9231:9230
     environment:
-      - IMMICH_APP=microservices
       - NODE_ENV=development
     depends_on:
       - database

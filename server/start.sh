@@ -20,4 +20,4 @@ if [ "$DB_PASSWORD_FILE" ]; then
 	unset DB_PASSWORD_FILE
 fi
 
-exec node dist/src $1
+exec node dist/main $1
