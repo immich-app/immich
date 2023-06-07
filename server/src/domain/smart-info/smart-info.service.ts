@@ -1,8 +1,8 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IAssetRepository, WithoutProperty } from '../asset';
-import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
-import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
+import { MACHINE_LEARNING_BATCH_SIZE, MACHINE_LEARNING_ENABLED } from '../domain.constant';
+import { batched, notNull, usePagination } from '../domain.util';
+import { IBaseJob, IBulkEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
 import { IMachineLearningRepository } from './machine-learning.interface';
 import { ISmartInfoRepository } from './smart-info.repository';
 
@@ -25,29 +25,44 @@ export class SmartInfoService {
     });
 
     for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: { id: asset.id } });
+      const pageIDs = assets.filter((asset) => asset.resizePath).map((asset) => asset.id);
+
+      for (const ids of batched(pageIDs, MACHINE_LEARNING_BATCH_SIZE)) {
+        await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: { ids } });
       }
     }
 
     return true;
   }
 
-  async handleClassifyImage({ id }: IEntityJob) {
-    const [asset] = await this.assetRepository.getByIds([id]);
-
-    if (!MACHINE_LEARNING_ENABLED || !asset.resizePath) {
+  async handleClassifyImage({ ids }: IBulkEntityJob) {
+    if (!MACHINE_LEARNING_ENABLED || !ids) {
       return false;
     }
 
-    const tags = await this.machineLearning.classifyImage({ imagePath: asset.resizePath });
-    if (tags.length === 0) {
+    const assets = await this.assetRepository.getByIds(ids);
+    const imagePaths = assets
+      .map((asset) => asset.resizePath)
+      .filter(notNull)
+      .filter((resizePath) => resizePath.length > 0);
+
+    if (imagePaths.length === 0) {
       return false;
     }
+    const batchTags = await this.machineLearning.classifyImage({ imagePaths });
 
-    await this.repository.upsert({ assetId: asset.id, tags });
+    let addedTags = false;
+    for (let i = 0; i < assets.length; i++) {
+      const asset = assets[i];
+      const tags = batchTags[i];
 
-    return true;
+      if (tags) {
+        await this.repository.upsert({ assetId: asset.id, tags });
+        addedTags = true;
+      }
+    }
+
+    return addedTags;
   }
 
   async handleQueueEncodeClip({ force }: IBaseJob) {
@@ -58,23 +73,38 @@ export class SmartInfoService {
     });
 
     for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: { id: asset.id } });
+      const pageIDs = assets.filter((asset) => asset.resizePath).map((asset) => asset.id);
+
+      for (const ids of batched(pageIDs, MACHINE_LEARNING_BATCH_SIZE)) {
+        await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: { ids } });
       }
     }
 
     return true;
   }
 
-  async handleEncodeClip({ id }: IEntityJob) {
-    const [asset] = await this.assetRepository.getByIds([id]);
-
-    if (!MACHINE_LEARNING_ENABLED || !asset.resizePath) {
+  async handleEncodeClip({ ids }: IBulkEntityJob) {
+    if (!MACHINE_LEARNING_ENABLED || !ids) {
       return false;
     }
 
-    const clipEmbedding = await this.machineLearning.encodeImage({ imagePath: asset.resizePath });
-    await this.repository.upsert({ assetId: asset.id, clipEmbedding: clipEmbedding });
+    const assets = await this.assetRepository.getByIds(ids);
+    const imagePaths = assets
+      .map((asset) => asset.resizePath)
+      .filter(notNull)
+      .filter((resizePath) => resizePath.length > 0);
+
+    if (imagePaths.length === 0) {
+      return false;
+    }
+    const batchEmbeddings = await this.machineLearning.encodeImage({ imagePaths });
+
+    for (let i = 0; i < assets.length; i++) {
+      const asset = assets[i];
+      const clipEmbedding = batchEmbeddings[i];
+
+      await this.repository.upsert({ assetId: asset.id, clipEmbedding });
+    }
 
     return true;
   }

@@ -264,15 +264,15 @@ describe(JobService.name, () => {
         jobs: [JobName.GENERATE_WEBP_THUMBNAIL, JobName.CLASSIFY_IMAGE, JobName.ENCODE_CLIP, JobName.RECOGNIZE_FACES],
       },
       {
-        item: { name: JobName.CLASSIFY_IMAGE, data: { id: 'asset-1' } },
+        item: { name: JobName.CLASSIFY_IMAGE, data: { ids: ['asset-1'] } },
         jobs: [JobName.SEARCH_INDEX_ASSET],
       },
       {
-        item: { name: JobName.ENCODE_CLIP, data: { id: 'asset-1' } },
+        item: { name: JobName.ENCODE_CLIP, data: { ids: ['asset-1'] } },
         jobs: [JobName.SEARCH_INDEX_ASSET],
       },
       {
-        item: { name: JobName.RECOGNIZE_FACES, data: { id: 'asset-1' } },
+        item: { name: JobName.RECOGNIZE_FACES, data: { ids: ['asset-1'] } },
         jobs: [JobName.SEARCH_INDEX_ASSET],
       },
     ];

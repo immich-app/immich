@@ -52,16 +52,16 @@ export type JobItem =
 
   // Object Tagging
   | { name: JobName.QUEUE_OBJECT_TAGGING; data: IBaseJob }
-  | { name: JobName.CLASSIFY_IMAGE; data: IEntityJob }
+  | { name: JobName.CLASSIFY_IMAGE; data: IBulkEntityJob }
 
   // Recognize Faces
   | { name: JobName.QUEUE_RECOGNIZE_FACES; data: IBaseJob }
-  | { name: JobName.RECOGNIZE_FACES; data: IEntityJob }
+  | { name: JobName.RECOGNIZE_FACES; data: IBulkEntityJob }
   | { name: JobName.GENERATE_FACE_THUMBNAIL; data: IFaceThumbnailJob }
 
   // Clip Embedding
   | { name: JobName.QUEUE_ENCODE_CLIP; data: IBaseJob }
-  | { name: JobName.ENCODE_CLIP; data: IEntityJob }
+  | { name: JobName.ENCODE_CLIP; data: IBulkEntityJob }
 
   // Filesystem
   | { name: JobName.DELETE_FILES; data: IDeleteFilesJob }

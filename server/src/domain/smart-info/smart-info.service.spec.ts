@@ -48,7 +48,7 @@ describe(SmartInfoService.name, () => {
       await sut.handleQueueObjectTagging({ force: false });
 
       expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.CLASSIFY_IMAGE, data: { id: assetEntityStub.image.id } }],
+        [{ name: JobName.CLASSIFY_IMAGE, data: { ids: [assetEntityStub.image.id] } }],
       ]);
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.OBJECT_TAGS);
     });
@@ -62,7 +62,7 @@ describe(SmartInfoService.name, () => {
       await sut.handleQueueObjectTagging({ force: true });
 
       expect(jobMock.queue.mock.calls).toEqual([
-        [{ name: JobName.CLASSIFY_IMAGE, data: { id: assetEntityStub.image.id } }],
+        [{ name: JobName.CLASSIFY_IMAGE, data: { ids: [assetEntityStub.image.id] } }],
       ]);
       expect(assetMock.getAll).toHaveBeenCalled();
     });
@@ -73,18 +73,18 @@ describe(SmartInfoService.name, () => {
       const asset = { resizePath: '' } as AssetEntity;
       assetMock.getByIds.mockResolvedValue([asset]);
 
-      await sut.handleClassifyImage({ id: asset.id });
+      await sut.handleClassifyImage({ ids: [asset.id] });
 
       expect(smartMock.upsert).not.toHaveBeenCalled();
       expect(machineMock.classifyImage).not.toHaveBeenCalled();
     });
 
     it('should save the returned tags', async () => {
-      machineMock.classifyImage.mockResolvedValue(['tag1', 'tag2', 'tag3']);
+      machineMock.classifyImage.mockResolvedValue([['tag1', 'tag2', 'tag3']]);
 
-      await sut.handleClassifyImage({ id: asset.id });
+      await sut.handleClassifyImage({ ids: [asset.id] });
 
-      expect(machineMock.classifyImage).toHaveBeenCalledWith({ imagePath: 'path/to/resize.ext' });
+      expect(machineMock.classifyImage).toHaveBeenCalledWith({ imagePaths: ['path/to/resize.ext'] });
       expect(smartMock.upsert).toHaveBeenCalledWith({
         assetId: 'asset-1',
         tags: ['tag1', 'tag2', 'tag3'],
@@ -94,7 +94,7 @@ describe(SmartInfoService.name, () => {
     it('should no update the smart info if no tags were returned', async () => {
       machineMock.classifyImage.mockResolvedValue([]);
 
-      await sut.handleClassifyImage({ id: asset.id });
+      await sut.handleClassifyImage({ ids: [asset.id] });
 
       expect(machineMock.classifyImage).toHaveBeenCalled();
       expect(smartMock.upsert).not.toHaveBeenCalled();
@@ -110,7 +110,10 @@ describe(SmartInfoService.name, () => {
 
       await sut.handleQueueEncodeClip({ force: false });
 
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.ENCODE_CLIP, data: { id: assetEntityStub.image.id } });
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.ENCODE_CLIP,
+        data: { ids: [assetEntityStub.image.id] },
+      });
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.CLIP_ENCODING);
     });
 
@@ -122,7 +125,10 @@ describe(SmartInfoService.name, () => {
 
       await sut.handleQueueEncodeClip({ force: true });
 
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.ENCODE_CLIP, data: { id: assetEntityStub.image.id } });
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.ENCODE_CLIP,
+        data: { ids: [assetEntityStub.image.id] },
+      });
       expect(assetMock.getAll).toHaveBeenCalled();
     });
   });
@@ -132,18 +138,18 @@ describe(SmartInfoService.name, () => {
       const asset = { resizePath: '' } as AssetEntity;
       assetMock.getByIds.mockResolvedValue([asset]);
 
-      await sut.handleEncodeClip({ id: asset.id });
+      await sut.handleEncodeClip({ ids: [asset.id] });
 
       expect(smartMock.upsert).not.toHaveBeenCalled();
       expect(machineMock.encodeImage).not.toHaveBeenCalled();
     });
 
     it('should save the returned objects', async () => {
-      machineMock.encodeImage.mockResolvedValue([0.01, 0.02, 0.03]);
+      machineMock.encodeImage.mockResolvedValue([[0.01, 0.02, 0.03]]);
 
-      await sut.handleEncodeClip({ id: asset.id });
+      await sut.handleEncodeClip({ ids: [asset.id] });
 
-      expect(machineMock.encodeImage).toHaveBeenCalledWith({ imagePath: 'path/to/resize.ext' });
+      expect(machineMock.encodeImage).toHaveBeenCalledWith({ imagePaths: ['path/to/resize.ext'] });
       expect(smartMock.upsert).toHaveBeenCalledWith({
         assetId: 'asset-1',
         clipEmbedding: [0.01, 0.02, 0.03],

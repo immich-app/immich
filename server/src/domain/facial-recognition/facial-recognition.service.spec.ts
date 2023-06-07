@@ -141,7 +141,7 @@ describe(FacialRecognitionService.name, () => {
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.FACES);
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.RECOGNIZE_FACES,
-        data: { id: assetEntityStub.image.id },
+        data: { ids: [assetEntityStub.image.id] },
       });
     });
 
@@ -158,7 +158,7 @@ describe(FacialRecognitionService.name, () => {
       expect(assetMock.getAll).toHaveBeenCalled();
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.RECOGNIZE_FACES,
-        data: { id: assetEntityStub.image.id },
+        data: { ids: [assetEntityStub.image.id] },
       });
     });
   });
@@ -166,26 +166,26 @@ describe(FacialRecognitionService.name, () => {
   describe('handleRecognizeFaces', () => {
     it('should skip when no resize path', async () => {
       assetMock.getByIds.mockResolvedValue([assetEntityStub.noResizePath]);
-      await sut.handleRecognizeFaces({ id: assetEntityStub.noResizePath.id });
+      await sut.handleRecognizeFaces({ ids: [assetEntityStub.noResizePath.id] });
       expect(machineLearningMock.detectFaces).not.toHaveBeenCalled();
     });
 
     it('should handle no results', async () => {
-      machineLearningMock.detectFaces.mockResolvedValue([]);
+      machineLearningMock.detectFaces.mockResolvedValue([[]]);
       assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
-      await sut.handleRecognizeFaces({ id: assetEntityStub.image.id });
+      await sut.handleRecognizeFaces({ ids: [assetEntityStub.image.id] });
       expect(machineLearningMock.detectFaces).toHaveBeenCalledWith({
-        imagePath: assetEntityStub.image.resizePath,
+        imagePaths: [assetEntityStub.image.resizePath],
       });
       expect(faceMock.create).not.toHaveBeenCalled();
       expect(jobMock.queue).not.toHaveBeenCalled();
     });
 
     it('should match existing people', async () => {
-      machineLearningMock.detectFaces.mockResolvedValue([face.middle]);
+      machineLearningMock.detectFaces.mockResolvedValue([[face.middle]]);
       searchMock.searchFaces.mockResolvedValue(faceSearch.oneMatch);
       assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
-      await sut.handleRecognizeFaces({ id: assetEntityStub.image.id });
+      await sut.handleRecognizeFaces({ ids: [assetEntityStub.image.id] });
 
       expect(faceMock.create).toHaveBeenCalledWith({
         personId: 'person-1',
@@ -195,12 +195,12 @@ describe(FacialRecognitionService.name, () => {
     });
 
     it('should create a new person', async () => {
-      machineLearningMock.detectFaces.mockResolvedValue([face.middle]);
+      machineLearningMock.detectFaces.mockResolvedValue([[face.middle]]);
       searchMock.searchFaces.mockResolvedValue(faceSearch.oneRemoteMatch);
       personMock.create.mockResolvedValue(personStub.noName);
       assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
 
-      await sut.handleRecognizeFaces({ id: assetEntityStub.image.id });
+      await sut.handleRecognizeFaces({ ids: [assetEntityStub.image.id] });
 
       expect(personMock.create).toHaveBeenCalledWith({ ownerId: assetEntityStub.image.ownerId });
       expect(faceMock.create).toHaveBeenCalledWith({

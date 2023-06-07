@@ -89,6 +89,7 @@ export class JobService {
         return this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force } });
 
       case QueueName.RECOGNIZE_FACES:
+        assertMachineLearningEnabled();
         return this.jobRepository.queue({ name: JobName.QUEUE_RECOGNIZE_FACES, data: { force } });
 
       default:
@@ -154,9 +155,9 @@ export class JobService {
 
       case JobName.GENERATE_JPEG_THUMBNAIL: {
         await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: item.data });
-        await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: item.data });
-        await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: item.data });
-        await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: item.data });
+        await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: { ids: [item.data.id], ...item.data } });
+        await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: { ids: [item.data.id], ...item.data } });
+        await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: { ids: [item.data.id], ...item.data } });
 
         const [asset] = await this.assetRepository.getByIds([item.data.id]);
         if (asset) {
@@ -168,11 +169,13 @@ export class JobService {
 
     // In addition to the above jobs, all of these should queue `SEARCH_INDEX_ASSET`
     switch (item.name) {
+      case JobName.METADATA_EXTRACTION:
+        await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: [item.data.id] } });
+        break;
       case JobName.CLASSIFY_IMAGE:
       case JobName.ENCODE_CLIP:
       case JobName.RECOGNIZE_FACES:
-      case JobName.METADATA_EXTRACTION:
-        await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: [item.data.id] } });
+        await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: item.data });
         break;
     }
   }

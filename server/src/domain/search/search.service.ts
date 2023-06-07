@@ -135,8 +135,8 @@ export class SearchService {
     let assets: SearchResult<AssetEntity>;
     switch (strategy) {
       case SearchStrategy.CLIP:
-        const clip = await this.machineLearning.encodeText(query);
-        assets = await this.searchRepository.vectorSearch(clip, filters);
+        const clip = await this.machineLearning.encodeText([query]);
+        assets = await this.searchRepository.vectorSearch(clip[0], filters);
         break;
       case SearchStrategy.TEXT:
       default:

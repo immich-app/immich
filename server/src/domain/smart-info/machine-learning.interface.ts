@@ -1,7 +1,7 @@
 export const IMachineLearningRepository = 'IMachineLearningRepository';
 
 export interface MachineLearningInput {
-  imagePath: string;
+  imagePaths: string[];
 }
 
 export interface BoundingBox {
@@ -20,8 +20,8 @@ export interface DetectFaceResult {
 }
 
 export interface IMachineLearningRepository {
-  classifyImage(input: MachineLearningInput): Promise<string[]>;
-  encodeImage(input: MachineLearningInput): Promise<number[]>;
-  encodeText(input: string): Promise<number[]>;
-  detectFaces(input: MachineLearningInput): Promise<DetectFaceResult[]>;
+  classifyImage(input: MachineLearningInput): Promise<string[][]>;
+  encodeImage(input: MachineLearningInput): Promise<number[][]>;
+  encodeText(input: string[]): Promise<number[][]>;
+  detectFaces(input: MachineLearningInput): Promise<DetectFaceResult[][]>;
 }

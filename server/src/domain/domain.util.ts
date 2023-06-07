@@ -33,6 +33,18 @@ export function asHumanReadable(bytes: number, precision = 1): string {
   return `${remainder.toFixed(magnitude == 0 ? 0 : precision)} ${units[magnitude]}`;
 }
 
+export function batched<T>(items: T[], batchSize: number): T[][] {
+  const batchedItems = [];
+  for (let i = 0; i < items.length; i += batchSize) {
+    batchedItems.push(items.slice(i, i + batchSize));
+  }
+  return batchedItems;
+}
+
+export function notNull<T>(value: T): value is NonNullable<T> {
+  return value != null && value != undefined;
+}
+
 export interface PaginationOptions {
   take: number;
   skip?: number;

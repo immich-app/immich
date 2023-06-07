@@ -1,9 +1,16 @@
 import { Inject, Logger } from '@nestjs/common';
 import { join } from 'path';
 import { IAssetRepository, WithoutProperty } from '../asset';
-import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
-import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IFaceThumbnailJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
+import { MACHINE_LEARNING_BATCH_SIZE, MACHINE_LEARNING_ENABLED } from '../domain.constant';
+import { batched, notNull, usePagination } from '../domain.util';
+import {
+  IBaseJob,
+  IBulkEntityJob,
+  IFaceThumbnailJob,
+  IJobRepository,
+  JobName,
+  JOBS_ASSET_PAGINATION_SIZE,
+} from '../job';
 import { CropOptions, FACE_THUMBNAIL_SIZE, IMediaRepository } from '../media';
 import { IPersonRepository } from '../person/person.repository';
 import { ISearchRepository } from '../search/search.repository';
@@ -40,51 +47,66 @@ export class FacialRecognitionService {
     }
 
     for await (const assets of assetPagination) {
-      for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: { id: asset.id } });
+      const pageIDs = assets.filter((asset) => asset.resizePath).map((asset) => asset.id);
+
+      for (const ids of batched(pageIDs, MACHINE_LEARNING_BATCH_SIZE)) {
+        await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: { ids } });
       }
     }
 
     return true;
   }
 
-  async handleRecognizeFaces({ id }: IEntityJob) {
-    const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset || !MACHINE_LEARNING_ENABLED || !asset.resizePath) {
+  async handleRecognizeFaces({ ids }: IBulkEntityJob) {
+    if (!MACHINE_LEARNING_ENABLED || !ids) {
       return false;
     }
 
-    const faces = await this.machineLearning.detectFaces({ imagePath: asset.resizePath });
+    const assets = await this.assetRepository.getByIds(ids);
+    const imagePaths = assets
+      .map((asset) => asset.resizePath)
+      .filter(notNull)
+      .filter((resizePath) => resizePath.length > 0);
 
-    this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);
-    this.logger.verbose(faces.map((face) => ({ ...face, embedding: `float[${face.embedding.length}]` })));
+    if (imagePaths.length === 0) {
+      return false;
+    }
+    const batchFaces = await this.machineLearning.detectFaces({ imagePaths });
 
-    for (const { embedding, ...rest } of faces) {
-      const faceSearchResult = await this.searchRepository.searchFaces(embedding, { ownerId: asset.ownerId });
+    for (let i = 0; i < assets.length; i++) {
+      const asset = assets[i];
+      const faces = batchFaces[i];
 
-      let personId: string | null = null;
+      this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);
+      this.logger.verbose(faces.map((face) => ({ ...face, embedding: `float[${face.embedding.length}]` })));
 
-      // try to find a matching face and link to the associated person
-      // The closer to 0, the better the match. Range is from 0 to 2
-      if (faceSearchResult.total && faceSearchResult.distances[0] < 0.6) {
-        this.logger.verbose(`Match face with distance ${faceSearchResult.distances[0]}`);
-        personId = faceSearchResult.items[0].personId;
+      for (const { embedding, ...rest } of faces) {
+        const faceSearchResult = await this.searchRepository.searchFaces(embedding, { ownerId: asset.ownerId });
+
+        let personId: string | null = null;
+
+        // try to find a matching face and link to the associated person
+        // The closer to 0, the better the match. Range is from 0 to 2
+        if (faceSearchResult.total && faceSearchResult.distances[0] < 0.6) {
+          this.logger.verbose(`Match face with distance ${faceSearchResult.distances[0]}`);
+          personId = faceSearchResult.items[0].personId;
+        }
+
+        if (!personId) {
+          this.logger.debug('No matches, creating a new person.');
+          const person = await this.personRepository.create({ ownerId: asset.ownerId });
+          personId = person.id;
+          await this.jobRepository.queue({
+            name: JobName.GENERATE_FACE_THUMBNAIL,
+            data: { assetId: asset.id, personId, ...rest },
+          });
+        }
+
+        const faceId: AssetFaceId = { assetId: asset.id, personId };
+
+        await this.faceRepository.create({ ...faceId, embedding });
+        await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACE, data: faceId });
       }
-
-      if (!personId) {
-        this.logger.debug('No matches, creating a new person.');
-        const person = await this.personRepository.create({ ownerId: asset.ownerId });
-        personId = person.id;
-        await this.jobRepository.queue({
-          name: JobName.GENERATE_FACE_THUMBNAIL,
-          data: { assetId: asset.id, personId, ...rest },
-        });
-      }
-
-      const faceId: AssetFaceId = { assetId: asset.id, personId };
-
-      await this.faceRepository.create({ ...faceId, embedding });
-      await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACE, data: faceId });
     }
 
     return true;
