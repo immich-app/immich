@@ -16,10 +16,14 @@
     "esModuleInterop": true,
     "baseUrl": "./",
     "paths": {
-      "@app/infra": ["libs/infra/src"],
-      "@app/infra/*": ["libs/infra/src/*"],
-      "@app/domain": ["libs/domain/src"],
-      "@app/domain/*": ["libs/domain/src/*"]
+      "@test": ["test"],
+      "@test/*": ["test/*"],
+      "@app/immich": ["src/immich"],
+      "@app/immich/*": ["src/immich/*"],
+      "@app/infra": ["src/infra"],
+      "@app/infra/*": ["src/infra/*"],
+      "@app/domain": ["src/domain"],
+      "@app/domain/*": ["src/domain/*"]
     }
   },
   "exclude": ["dist", "node_modules", "upload"]
