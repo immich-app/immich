@@ -21,9 +21,11 @@ function createAssetStore() {
 	});
 
 	const estimateViewportHeight = (assetCount: number, viewportWidth: number): number => {
-		// Rough estimation assuming all assets are squares seems fine
-		const thumbnailHeight = 237;
-		const unwrappedWidth = assetCount * thumbnailHeight;
+		// Ideally we would use the average aspect ratio for the photoset, however assume
+		// a normal landscape aspect ratio of 3:2, then discount for the likelihood we
+		// will be scaling down and coalescing.
+		const thumbnailHeight = 235;
+		const unwrappedWidth = (3 / 2) * assetCount * thumbnailHeight * (7 / 10);
 		const rows = Math.ceil(unwrappedWidth / viewportWidth);
 		const height = rows * thumbnailHeight;
 		return height;
