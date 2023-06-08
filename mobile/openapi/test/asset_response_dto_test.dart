@@ -56,6 +56,11 @@ void main() {
       // TODO
     });
 
+    // Object thumbhash
+    test('to test the property `thumbhash`', () async {
+      // TODO
+    });
+
     // DateTime fileCreatedAt
     test('to test the property `fileCreatedAt`', () async {
       // TODO

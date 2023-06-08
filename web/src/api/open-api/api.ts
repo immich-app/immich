@@ -639,6 +639,12 @@ export interface AssetResponseDto {
     'resized': boolean;
     /**
      * 
+     * @type {object}
+     * @memberof AssetResponseDto
+     */
+    'thumbhash': object | null;
+    /**
+     * 
      * @type {string}
      * @memberof AssetResponseDto
      */
