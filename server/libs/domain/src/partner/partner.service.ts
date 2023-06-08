@@ -33,7 +33,8 @@ export class PartnerService {
     const partners = await this.repository.getAll(authUser.id);
     const key = direction === PartnerDirection.SharedBy ? 'sharedById' : 'sharedWithId';
     return partners
-      .filter((partner) => partner.sharedBy && partner[key] === authUser.id)
+      .filter((partner) => partner.sharedBy && partner.sharedWith) // Filter out soft deleted users
+      .filter((partner) => partner[key] === authUser.id)
       .map((partner) => this.map(partner, direction));
   }
 
