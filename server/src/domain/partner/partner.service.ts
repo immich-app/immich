@@ -32,7 +32,10 @@ export class PartnerService {
   async getAll(authUser: AuthUserDto, direction: PartnerDirection): Promise<UserResponseDto[]> {
     const partners = await this.repository.getAll(authUser.id);
     const key = direction === PartnerDirection.SharedBy ? 'sharedById' : 'sharedWithId';
-    return partners.filter((partner) => partner[key] === authUser.id).map((partner) => this.map(partner, direction));
+    return partners
+      .filter((partner) => partner.sharedBy && partner.sharedWith) // Filter out soft deleted users
+      .filter((partner) => partner[key] === authUser.id)
+      .map((partner) => this.map(partner, direction));
   }
 
   private map(partner: PartnerEntity, direction: PartnerDirection): UserResponseDto {
