@@ -31,7 +31,7 @@
 		style:height={heightStyle}
 		data-src={url}
 		alt={altText}
-		class="object-cover transition-opacity duration-300"
+		class="object-cover"
 		class:rounded-lg={curve}
 		class:shadow-lg={shadow}
 		class:rounded-full={circle}
@@ -47,7 +47,7 @@
 		style:height={heightStyle}
 		src={url}
 		alt={altText}
-		class="object-cover transition-opacity duration-300"
+		class="object-cover"
 		class:rounded-lg={curve}
 		class:shadow-lg={shadow}
 		class:rounded-full={circle}
