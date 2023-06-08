@@ -21,6 +21,7 @@
 									url={api.getPeopleThumbnailUrl(person.id)}
 									altText={person.name}
 									widthStyle="100%"
+									thumbhash={null}
 								/>
 							</div>
 							{#if person.name}

@@ -52,6 +52,7 @@
 							url={api.getPeopleThumbnailUrl(person.id)}
 							altText={person.name}
 							widthStyle="100%"
+							thumbhash={null}
 						/>
 						<p class="font-medium mt-2 text-ellipsis text-sm dark:text-white">{person.name}</p>
 					</a>

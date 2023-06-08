@@ -134,7 +134,7 @@ export class MediaRepository implements IMediaRepository {
       .raw()
       .ensureAlpha()
       .toBuffer({ resolveWithObject: true });
-  
+
     const thumbhash = rgbaToThumbHash(info.width, info.height, data);
     return Buffer.from(thumbhash);
   }

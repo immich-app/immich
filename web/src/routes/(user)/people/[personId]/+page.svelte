@@ -94,6 +94,7 @@
 			altText={data.person.name}
 			widthStyle="3.375rem"
 			heightStyle="3.375rem"
+			thumbhash={null}
 		/>
 		<button
 			title="Edit name"

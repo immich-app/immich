@@ -4602,8 +4602,9 @@
             "type": "boolean"
           },
           "thumbhash": {
-            "type": "object",
-            "nullable": true
+            "type": "string",
+            "nullable": true,
+            "description": "base64 encoded thumbhash"
           },
           "fileCreatedAt": {
             "format": "date-time",

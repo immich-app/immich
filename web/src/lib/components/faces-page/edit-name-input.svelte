@@ -26,6 +26,7 @@
 		altText={person.name}
 		widthStyle="2rem"
 		heightStyle="2rem"
+		thumbhash={null}
 	/>
 	<form
 		class="ml-4 flex justify-between w-full gap-16"

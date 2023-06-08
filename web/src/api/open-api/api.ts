@@ -638,11 +638,11 @@ export interface AssetResponseDto {
      */
     'resized': boolean;
     /**
-     * 
-     * @type {object}
+     * base64 encoded thumbhash
+     * @type {string}
      * @memberof AssetResponseDto
      */
-    'thumbhash': object | null;
+    'thumbhash': string | null;
     /**
      * 
      * @type {string}

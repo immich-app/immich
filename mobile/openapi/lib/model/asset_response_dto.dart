@@ -53,7 +53,8 @@ class AssetResponseDto {
 
   bool resized;
 
-  Object? thumbhash;
+  /// base64 encoded thumbhash
+  String? thumbhash;
 
   DateTime fileCreatedAt;
 
@@ -222,7 +223,7 @@ class AssetResponseDto {
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
         originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
         resized: mapValueOfType<bool>(json, r'resized')!,
-        thumbhash: mapValueOfType<Object>(json, r'thumbhash'),
+        thumbhash: mapValueOfType<String>(json, r'thumbhash'),
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', '')!,
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', '')!,
         updatedAt: mapDateTime(json, r'updatedAt', '')!,

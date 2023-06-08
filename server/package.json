@@ -55,7 +55,7 @@
     "archiver": "^5.3.1",
     "axios": "^0.26.0",
     "bcrypt": "^5.0.1",
-    "bullmq": "^3.14.1",
+    "bullmq": "^3.15.4",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.6",
