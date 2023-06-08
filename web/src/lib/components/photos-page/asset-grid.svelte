@@ -16,6 +16,7 @@
 		OnScrollbarDragDetail
 	} from '../shared-components/scrollbar/scrollbar.svelte';
 	import AssetDateGroup from './asset-date-group.svelte';
+	import { BucketPosition } from '$lib/models/asset-grid-state';
 
 	export let user: UserResponseDto | undefined = undefined;
 	export let isAlbumSelectionMode = false;
@@ -52,7 +53,7 @@
 		});
 
 		bucketsToFetchInitially.forEach((bucketDate) => {
-			assetStore.getAssetsByBucket(bucketDate);
+			assetStore.getAssetsByBucket(bucketDate, BucketPosition.Visible);
 		});
 	});
 
@@ -61,13 +62,16 @@
 	});
 
 	function intersectedHandler(event: CustomEvent) {
-		const el = event.detail as HTMLElement;
+		const el = event.detail.container as HTMLElement;
 		const target = el.firstChild as HTMLElement;
-
 		if (target) {
 			const bucketDate = target.id.split('_')[1];
-			assetStore.getAssetsByBucket(bucketDate);
+			assetStore.getAssetsByBucket(bucketDate, event.detail.position);
 		}
+	}
+
+	function handleScrollTimeline(event: CustomEvent) {
+		assetGridElement.scrollBy(0, event.detail.heightDelta);
 	}
 
 	const navigateToPreviousAsset = () => {
@@ -145,9 +149,11 @@
 						{#if intersecting}
 							<AssetDateGroup
 								{isAlbumSelectionMode}
+								on:shift={handleScrollTimeline}
 								assets={bucket.assets}
 								bucketDate={bucket.bucketDate}
 								bucketHeight={bucket.bucketHeight}
+								{viewportWidth}
 							/>
 						{/if}
 					</div>

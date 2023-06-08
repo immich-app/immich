@@ -16,11 +16,13 @@
 	import { fly } from 'svelte/transition';
 	import { getAssetRatio } from '$lib/utils/asset-utils';
 	import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
+	import { createEventDispatcher } from 'svelte';
 
 	export let assets: AssetResponseDto[];
 	export let bucketDate: string;
 	export let bucketHeight: number;
 	export let isAlbumSelectionMode = false;
+	export let viewportWidth: number;
 
 	const groupDateFormat: Intl.DateTimeFormatOptions = {
 		weekday: 'short',
@@ -29,10 +31,11 @@
 		year: 'numeric'
 	};
 
+	const dispatch = createEventDispatcher();
+
 	let isMouseOverGroup = false;
 	let actualBucketHeight: number;
 	let hoveredDateGroup = '';
-	let viewportWidth = 0;
 
 	interface LayoutBox {
 		top: number;
@@ -64,8 +67,17 @@
 
 	$: {
 		if (actualBucketHeight && actualBucketHeight != 0 && actualBucketHeight != bucketHeight) {
-			assetStore.updateBucketHeight(bucketDate, actualBucketHeight);
+			const heightDelta = assetStore.updateBucketHeight(bucketDate, actualBucketHeight);
+			if (heightDelta !== 0) {
+				scrollTimeline(heightDelta);
+			}
 		}
+	}
+
+	function scrollTimeline(heightDelta: number) {
+		dispatch('shift', {
+			heightDelta
+		});
 	}
 
 	const calculateWidth = (boxes: LayoutBox[]): number => {
