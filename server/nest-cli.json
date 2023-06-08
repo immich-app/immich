@@ -1,11 +1,10 @@
 {
+  "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "apps/immich/src",
-  "monorepo": true,
-  "root": "apps/immich",
+  "sourceRoot": "src",
   "compilerOptions": {
+    "deleteOutDir": true,
     "webpack": false,
-    "tsConfigPath": "apps/immich/tsconfig.app.json",
     "plugins": [
       {
         "name": "@nestjs/swagger",
@@ -15,52 +14,5 @@
         }
       }
     ]
-  },
-  "projects": {
-    "immich": {
-      "type": "application",
-      "root": "apps/immich",
-      "entryFile": "main",
-      "sourceRoot": "apps/immich/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/immich/tsconfig.app.json"
-      }
-    },
-    "microservices": {
-      "type": "application",
-      "root": "apps/microservices",
-      "entryFile": "main",
-      "sourceRoot": "apps/microservices/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/microservices/tsconfig.app.json"
-      }
-    },
-    "cli": {
-      "type": "application",
-      "root": "apps/cli",
-      "entryFile": "immich",
-      "sourceRoot": "apps/cli/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/cli/tsconfig.app.json"
-      }
-    },
-    "infra": {
-      "type": "library",
-      "root": "libs/infra",
-      "entryFile": "index",
-      "sourceRoot": "libs/infra/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/infra/tsconfig.lib.json"
-      }
-    },
-    "domain": {
-      "type": "library",
-      "root": "libs/domain",
-      "entryFile": "index",
-      "sourceRoot": "libs/domain/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/domain/tsconfig.lib.json"
-      }
-    }
   }
 }

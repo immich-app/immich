@@ -9,16 +9,14 @@
     "immich": "./bin/cli.sh"
   },
   "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "nest build immich && nest build microservices && nest build cli",
+    "build": "nest build",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
-    "start": "nest start",
+    "start": "npm run start:dev",
     "nest": "nest",
-    "start:dev": "nest start --watch",
-    "start:debug": "rimraf dist && nest start --debug 0.0.0.0:9230 --watch",
-    "start:prod": "node dist/main",
-    "lint": "eslint \"{apps,libs}/**/*.ts\" --max-warnings 0",
+    "start:dev": "nest start --watch --",
+    "start:debug": "nest start --debug 0.0.0.0:9230 --watch --",
+    "lint": "eslint \"src/**/*.ts\" --max-warnings 0",
     "lint:fix": "npm run lint -- --fix",
     "check": "tsc --noEmit",
     "check:code": "npm run format && npm run lint && npm run check",
@@ -27,13 +25,13 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./apps/immich/test/jest-e2e.json --runInBand",
+    "test:e2e": "jest --config jest-e2e.json --runInBand",
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
     "typeorm:migrations:create": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:create",
-    "typeorm:migrations:generate": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:generate -d ./libs/infra/src/database.config.ts",
-    "typeorm:migrations:run": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:run -d ./libs/infra/src/database.config.ts",
-    "typeorm:migrations:revert": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:revert -d ./libs/infra/src/database.config.ts",
-    "typeorm:schema:drop": "node --require ts-node/register ./node_modules/typeorm/cli.js schema:drop -d ./libs/infra/src/database.config.ts",
+    "typeorm:migrations:generate": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:generate -d ./src/infra/database.config.ts",
+    "typeorm:migrations:run": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:run -d ./src/infra/database.config.ts",
+    "typeorm:migrations:revert": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:revert -d ./src/infra/database.config.ts",
+    "typeorm:schema:drop": "node --require ts-node/register ./node_modules/typeorm/cli.js schema:drop -d ./src/infra/database.config.ts",
     "typeorm:schema:reset": "npm run typeorm:schema:drop && npm run typeorm:migrations:run",
     "api:typescript": "bash ./bin/generate-open-api.sh web",
     "api:dart": "bash ./bin/generate-open-api.sh mobile",
@@ -134,11 +132,11 @@
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s",
-      "!<rootDir>/libs/infra/**/*"
+      "!<rootDir>/infra/**/*"
     ],
     "coverageDirectory": "./coverage",
     "coverageThreshold": {
-      "./libs/domain/": {
+      "./src/domain/": {
         "branches": 80,
         "functions": 80,
         "lines": 90,
@@ -146,17 +144,15 @@
       }
     },
     "setupFilesAfterEnv": [
-      "<rootDir>/libs/domain/test/setup.ts"
+      "<rootDir>/test/setup.ts"
     ],
     "testEnvironment": "node",
-    "roots": [
-      "<rootDir>/apps/",
-      "<rootDir>/libs/"
-    ],
     "moduleNameMapper": {
-      "^@app/infra(|/.*)$": "<rootDir>/libs/infra/src/$1",
-      "^@app/domain(|/.*)$": "<rootDir>/libs/domain/src/$1"
+      "^@test(|/.*)$": "<rootDir>/test/$1",
+      "^@app/immich(|/.*)$": "<rootDir>/src/immich/$1",
+      "^@app/infra(|/.*)$": "<rootDir>/src/infra/$1",
+      "^@app/domain(|/.*)$": "<rootDir>/src/domain/$1"
     },
-    "globalSetup": "<rootDir>/libs/domain/test/global-setup.js"
+    "globalSetup": "<rootDir>/test/global-setup.js"
   }
 }
