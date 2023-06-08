@@ -1,0 +1,16 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "modulePaths": ["<rootDir>"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": ".e2e-spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "^@test(|/.*)$": "<rootDir>/test/$1",
+    "^@app/immich(|/.*)$": "<rootDir>/src/immich/$1",
+    "^@app/infra(|/.*)$": "<rootDir>/src/infra/$1",
+    "^@app/domain(|/.*)$": "<rootDir>/src/domain/$1"
+  }
+}

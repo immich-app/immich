@@ -30,4 +30,4 @@ The Open API client libraries need to be regenerated whenever there are changes 
 
 ## Database Migrations
 
-A database migration needs to be generated whenever there are changes to `server/libs/infra/src/entities`. See [Database Migration](/docs/developer/database-migrations.md) for more details.
+A database migration needs to be generated whenever there are changes to `server/src/infra/src/entities`. See [Database Migration](/docs/developer/database-migrations.md) for more details.

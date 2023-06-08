@@ -10,9 +10,9 @@ sidebar_position: 2
 
 This environment includes the following services:
 
-- Core server - `/server/apps/immich`
+- Core server - `/server/src/immich`
 - Machine learning - `/machine-learning`
-- Microservices - `/server/apps/microservicess`
+- Microservices - `/server/src/microservicess`
 - Web app - `/web`
 - Redis
 - PostgreSQL development database with exposed port `5432` so you can use any database client to acess it

@@ -9,17 +9,20 @@
 	import { assetStore } from '$lib/stores/assets.store';
 	import { locale } from '$lib/stores/preferences.store';
 	import type { AssetResponseDto } from '@api';
+	import justifiedLayout from 'justified-layout';
 	import lodash from 'lodash-es';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
-	import { flip } from 'svelte/animate';
 	import { fly } from 'svelte/transition';
+	import { getAssetRatio } from '$lib/utils/asset-utils';
 	import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
+	import { createEventDispatcher } from 'svelte';
 
 	export let assets: AssetResponseDto[];
 	export let bucketDate: string;
 	export let bucketHeight: number;
 	export let isAlbumSelectionMode = false;
+	export let viewportWidth: number;
 
 	const groupDateFormat: Intl.DateTimeFormatOptions = {
 		weekday: 'short',
@@ -28,20 +31,65 @@
 		year: 'numeric'
 	};
 
+	const dispatch = createEventDispatcher();
+
 	let isMouseOverGroup = false;
 	let actualBucketHeight: number;
 	let hoveredDateGroup = '';
+
+	interface LayoutBox {
+		top: number;
+		left: number;
+		width: number;
+	}
+
 	$: assetsGroupByDate = lodash
 		.chain(assets)
 		.groupBy((a) => new Date(a.fileCreatedAt).toLocaleDateString($locale, groupDateFormat))
 		.sortBy((group) => assets.indexOf(group[0]))
 		.value();
 
+	$: geometry = (() => {
+		const geometry = [];
+		for (let group of assetsGroupByDate) {
+			geometry.push(
+				justifiedLayout(group.map(getAssetRatio), {
+					boxSpacing: 2,
+					containerWidth: Math.floor(viewportWidth),
+					containerPadding: 0,
+					targetRowHeightTolerance: 0.15,
+					targetRowHeight: 235
+				})
+			);
+		}
+		return geometry;
+	})();
+
 	$: {
 		if (actualBucketHeight && actualBucketHeight != 0 && actualBucketHeight != bucketHeight) {
-			assetStore.updateBucketHeight(bucketDate, actualBucketHeight);
+			const heightDelta = assetStore.updateBucketHeight(bucketDate, actualBucketHeight);
+			if (heightDelta !== 0) {
+				scrollTimeline(heightDelta);
+			}
 		}
 	}
+
+	function scrollTimeline(heightDelta: number) {
+		dispatch('shift', {
+			heightDelta
+		});
+	}
+
+	const calculateWidth = (boxes: LayoutBox[]): number => {
+		let width = 0;
+		for (const box of boxes) {
+			if (box.top < 100) {
+				width = box.left + box.width;
+			}
+		}
+
+		return width;
+	};
 
 	const assetClickHandler = (
 		asset: AssetResponseDto,
@@ -112,8 +160,9 @@
 
 <section
 	id="asset-group-by-date"
-	class="flex flex-wrap gap-12 mt-5"
+	class="flex flex-wrap gap-x-12"
 	bind:clientHeight={actualBucketHeight}
+	bind:clientWidth={viewportWidth}
 >
 	{#each assetsGroupByDate as assetsInDateGroup, groupIndex (assetsInDateGroup[0].id)}
 		{@const dateGroupTitle = new Date(assetsInDateGroup[0].fileCreatedAt).toLocaleDateString(
@@ -123,8 +172,7 @@
 		<!-- Asset Group By Date -->
 
 		<div
-			animate:flip={{ duration: 300 }}
-			class="flex flex-col"
+			class="flex flex-col mt-5"
 			on:mouseenter={() => {
 				isMouseOverGroup = true;
 				assetMouseEventHandler(dateGroupTitle);
@@ -156,9 +204,18 @@
 			</p>
 
 			<!-- Image grid -->
-			<div class="flex flex-wrap gap-[2px]">
-				{#each assetsInDateGroup as asset (asset.id)}
-					<div animate:flip={{ duration: 300 }}>
+			<div
+				class="relative"
+				style="height: {geometry[groupIndex].containerHeight}px;width: {calculateWidth(
+					geometry[groupIndex].boxes
+				)}px"
+			>
+				{#each assetsInDateGroup as asset, index (asset.id)}
+					{@const box = geometry[groupIndex].boxes[index]}
+					<div
+						class="absolute"
+						style="width: {box.width}px; height: {box.height}px; top: {box.top}px; left: {box.left}px"
+					>
 						<Thumbnail
 							{asset}
 							{groupIndex}
@@ -168,6 +225,8 @@
 							selected={$selectedAssets.has(asset) ||
 								$assetsInAlbumStoreState.findIndex((a) => a.id == asset.id) != -1}
 							disabled={$assetsInAlbumStoreState.findIndex((a) => a.id == asset.id) != -1}
+							thumbnailWidth={box.width}
+							thumbnailHeight={box.height}
 						/>
 					</div>
 				{/each}
