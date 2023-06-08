@@ -24,27 +24,4 @@ export class PartnerRepository implements IPartnerRepository {
   async remove(entity: PartnerEntity): Promise<void> {
     await this.repository.remove(entity);
   }
-
-  async hasAssetAccess(assetId: string, userId: string): Promise<boolean> {
-    const count = await this.repository.count({
-      where: {
-        sharedWith: {
-          id: userId,
-        },
-        sharedBy: {
-          assets: {
-            id: assetId,
-          },
-        },
-      },
-      relations: {
-        sharedWith: true,
-        sharedBy: {
-          assets: true,
-        },
-      },
-    });
-
-    return count == 1;
-  }
 }

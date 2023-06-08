@@ -1,7 +1,17 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
-import { albumStub, authStub, newAlbumRepositoryMock, newAssetRepositoryMock, newJobRepositoryMock } from '../../test';
+import _ from 'lodash';
+import {
+  albumStub,
+  authStub,
+  newAlbumRepositoryMock,
+  newAssetRepositoryMock,
+  newJobRepositoryMock,
+  newUserRepositoryMock,
+  userEntityStub,
+} from '../../test';
 import { IAssetRepository } from '../asset';
 import { IJobRepository, JobName } from '../job';
+import { IUserRepository } from '../user';
 import { IAlbumRepository } from './album.repository';
 import { AlbumService } from './album.service';
 
@@ -10,13 +20,15 @@ describe(AlbumService.name, () => {
   let albumMock: jest.Mocked<IAlbumRepository>;
   let assetMock: jest.Mocked<IAssetRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
+  let userMock: jest.Mocked<IUserRepository>;
 
   beforeEach(async () => {
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
     jobMock = newJobRepositoryMock();
+    userMock = newUserRepositoryMock();
 
-    sut = new AlbumService(albumMock, assetMock, jobMock);
+    sut = new AlbumService(albumMock, assetMock, jobMock, userMock);
   });
 
   it('should work', () => {
@@ -152,6 +164,18 @@ describe(AlbumService.name, () => {
         data: { ids: [albumStub.empty.id] },
       });
     });
+
+    it('should require valid userIds', async () => {
+      userMock.get.mockResolvedValue(null);
+      await expect(
+        sut.create(authStub.admin, {
+          albumName: 'Empty album',
+          sharedWithUserIds: ['user-3'],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(userMock.get).toHaveBeenCalledWith('user-3');
+      expect(albumMock.create).not.toHaveBeenCalled();
+    });
   });
 
   describe('update', () => {
@@ -238,6 +262,132 @@ describe(AlbumService.name, () => {
 
       expect(albumMock.delete).toHaveBeenCalledTimes(1);
       expect(albumMock.delete).toHaveBeenCalledWith(albumStub.empty);
+    });
+  });
+
+  describe('addUsers', () => {
+    it('should require a valid album id', async () => {
+      albumMock.getByIds.mockResolvedValue([]);
+      await expect(sut.addUsers(authStub.admin, 'album-1', { sharedUserIds: ['user-1'] })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(albumMock.update).not.toHaveBeenCalled();
+    });
+
+    it('should require the user to be the owner', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.sharedWithAdmin]);
+      await expect(
+        sut.addUsers(authStub.admin, albumStub.sharedWithAdmin.id, { sharedUserIds: ['user-1'] }),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+      expect(albumMock.update).not.toHaveBeenCalled();
+    });
+
+    it('should throw an error if the userId is already added', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.sharedWithAdmin]);
+      await expect(
+        sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, { sharedUserIds: [authStub.admin.id] }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(albumMock.update).not.toHaveBeenCalled();
+    });
+
+    it('should throw an error if the userId does not exist', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.sharedWithAdmin]);
+      userMock.get.mockResolvedValue(null);
+      await expect(
+        sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, { sharedUserIds: ['user-3'] }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(albumMock.update).not.toHaveBeenCalled();
+    });
+
+    it('should add valid shared users', async () => {
+      albumMock.getByIds.mockResolvedValue([_.cloneDeep(albumStub.sharedWithAdmin)]);
+      albumMock.update.mockResolvedValue(albumStub.sharedWithAdmin);
+      userMock.get.mockResolvedValue(userEntityStub.user2);
+      await sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, { sharedUserIds: [authStub.user2.id] });
+      expect(albumMock.update).toHaveBeenCalledWith({
+        id: albumStub.sharedWithAdmin.id,
+        updatedAt: expect.any(Date),
+        sharedUsers: [userEntityStub.admin, { id: authStub.user2.id }],
+      });
+    });
+  });
+
+  describe('removeUser', () => {
+    it('should require a valid album id', async () => {
+      albumMock.getByIds.mockResolvedValue([]);
+      await expect(sut.removeUser(authStub.admin, 'album-1', 'user-1')).rejects.toBeInstanceOf(BadRequestException);
+      expect(albumMock.update).not.toHaveBeenCalled();
+    });
+
+    it('should remove a shared user from an owned album', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.sharedWithUser]);
+
+      await expect(
+        sut.removeUser(authStub.admin, albumStub.sharedWithUser.id, userEntityStub.user1.id),
+      ).resolves.toBeUndefined();
+
+      expect(albumMock.update).toHaveBeenCalledTimes(1);
+      expect(albumMock.update).toHaveBeenCalledWith({
+        id: albumStub.sharedWithUser.id,
+        updatedAt: expect.any(Date),
+        sharedUsers: [],
+      });
+    });
+
+    it('should prevent removing a shared user from a not-owned album (shared with auth user)', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.sharedWithMultiple]);
+
+      await expect(
+        sut.removeUser(authStub.user1, albumStub.sharedWithMultiple.id, authStub.user2.id),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+
+      expect(albumMock.update).not.toHaveBeenCalled();
+    });
+
+    it('should allow a shared user to remove themselves', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.sharedWithUser]);
+
+      await sut.removeUser(authStub.user1, albumStub.sharedWithUser.id, authStub.user1.id);
+
+      expect(albumMock.update).toHaveBeenCalledTimes(1);
+      expect(albumMock.update).toHaveBeenCalledWith({
+        id: albumStub.sharedWithUser.id,
+        updatedAt: expect.any(Date),
+        sharedUsers: [],
+      });
+    });
+
+    it('should allow a shared user to remove themselves using "me"', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.sharedWithUser]);
+
+      await sut.removeUser(authStub.user1, albumStub.sharedWithUser.id, 'me');
+
+      expect(albumMock.update).toHaveBeenCalledTimes(1);
+      expect(albumMock.update).toHaveBeenCalledWith({
+        id: albumStub.sharedWithUser.id,
+        updatedAt: expect.any(Date),
+        sharedUsers: [],
+      });
+    });
+
+    it('should not allow the owner to be removed', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.empty]);
+
+      await expect(sut.removeUser(authStub.admin, albumStub.empty.id, authStub.admin.id)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+
+      expect(albumMock.update).not.toHaveBeenCalled();
+    });
+
+    it('should throw an error for a user not in the album', async () => {
+      albumMock.getByIds.mockResolvedValue([albumStub.empty]);
+
+      await expect(sut.removeUser(authStub.admin, albumStub.empty.id, 'user-3')).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+
+      expect(albumMock.update).not.toHaveBeenCalled();
     });
   });
 });

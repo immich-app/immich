@@ -1,3 +1,4 @@
+export * from './access';
 export * from './album';
 export * from './api-key';
 export * from './asset';
@@ -13,10 +14,10 @@ export * from './job';
 export * from './media';
 export * from './metadata';
 export * from './oauth';
+export * from './partner';
 export * from './person';
 export * from './search';
 export * from './server-info';
-export * from './partner';
 export * from './shared-link';
 export * from './smart-info';
 export * from './storage';

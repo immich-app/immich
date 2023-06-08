@@ -13,11 +13,13 @@ import {
   SystemConfigService,
   UserService,
 } from '@app/domain';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 
 @Injectable()
 export class AppService {
+  private logger = new Logger(AppService.name);
+
   constructor(
     // TODO refactor to domain
     private metadataProcessor: MetadataExtractionProcessor,
@@ -71,5 +73,17 @@ export class AppService {
       [JobName.SIDECAR_DISCOVERY]: (data) => this.metadataService.handleSidecarDiscovery(data),
       [JobName.SIDECAR_SYNC]: () => this.metadataService.handleSidecarSync(),
     });
+
+    process.on('uncaughtException', (error: Error | any) => {
+      const isCsvError = error.code === 'CSV_RECORD_INCONSISTENT_FIELDS_LENGTH';
+      if (!isCsvError) {
+        throw error;
+      }
+
+      this.logger.warn('Geocoding csv parse error, trying again without cache...');
+      this.metadataProcessor.init(true);
+    });
+
+    await this.metadataProcessor.init();
   }
 }

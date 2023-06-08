@@ -62,6 +62,12 @@ function asStreamableFile({ stream, type, length }: ImmichReadStream) {
   return new StreamableFile(stream, { type, length });
 }
 
+interface UploadFiles {
+  assetData: ImmichFile[];
+  livePhotoData?: ImmichFile[];
+  sidecarData: ImmichFile[];
+}
+
 @ApiTags('Asset')
 @Controller('asset')
 @Authenticated()
@@ -87,8 +93,7 @@ export class AssetController {
   })
   async uploadFile(
     @GetAuthUser() authUser: AuthUserDto,
-    @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] }))
-    files: { assetData: ImmichFile[]; livePhotoData?: ImmichFile[]; sidecarData: ImmichFile[] },
+    @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
     @Body(new ValidationPipe()) dto: CreateAssetDto,
     @Response({ passthrough: true }) res: Res,
   ): Promise<AssetFileUploadResponseDto> {
@@ -116,25 +121,19 @@ export class AssetController {
   @SharedLinkRoute()
   @Get('/download/:id')
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
-  async downloadFile(
-    @GetAuthUser() authUser: AuthUserDto,
-    @Response({ passthrough: true }) res: Res,
-    @Param() { id }: UUIDParamDto,
-  ) {
+  downloadFile(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
     return this.assetService.downloadFile(authUser, id).then(asStreamableFile);
   }
 
   @SharedLinkRoute()
   @Post('/download-files')
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
-  async downloadFiles(
+  downloadFiles(
     @GetAuthUser() authUser: AuthUserDto,
     @Response({ passthrough: true }) res: Res,
     @Body(new ValidationPipe()) dto: DownloadFilesDto,
   ) {
-    this.assetService.checkDownloadAccess(authUser);
-    await this.assetService.checkAssetsAccess(authUser, [...dto.assetIds]);
-    return this.assetService.downloadFiles(dto).then((download) => handleDownload(download, res));
+    return this.assetService.downloadFiles(authUser, dto).then((download) => handleDownload(download, res));
   }
 
   /**
@@ -143,12 +142,11 @@ export class AssetController {
   @SharedLinkRoute()
   @Get('/download-library')
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
-  async downloadLibrary(
+  downloadLibrary(
     @GetAuthUser() authUser: AuthUserDto,
     @Query(new ValidationPipe({ transform: true })) dto: DownloadDto,
     @Response({ passthrough: true }) res: Res,
   ) {
-    this.assetService.checkDownloadAccess(authUser);
     return this.assetService.downloadLibrary(authUser, dto).then((download) => handleDownload(download, res));
   }
 
@@ -156,14 +154,13 @@ export class AssetController {
   @Get('/file/:id')
   @Header('Cache-Control', 'max-age=31536000')
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
-  async serveFile(
+  serveFile(
     @GetAuthUser() authUser: AuthUserDto,
     @Headers() headers: Record<string, string>,
     @Response({ passthrough: true }) res: Res,
     @Query(new ValidationPipe({ transform: true })) query: ServeFileDto,
     @Param() { id }: UUIDParamDto,
   ) {
-    await this.assetService.checkAssetsAccess(authUser, [id]);
     return this.assetService.serveFile(authUser, id, query, res, headers);
   }
 
@@ -171,55 +168,54 @@ export class AssetController {
   @Get('/thumbnail/:id')
   @Header('Cache-Control', 'max-age=31536000')
   @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
-  async getAssetThumbnail(
+  getAssetThumbnail(
     @GetAuthUser() authUser: AuthUserDto,
     @Headers() headers: Record<string, string>,
     @Response({ passthrough: true }) res: Res,
     @Param() { id }: UUIDParamDto,
     @Query(new ValidationPipe({ transform: true })) query: GetAssetThumbnailDto,
   ) {
-    await this.assetService.checkAssetsAccess(authUser, [id]);
-    return this.assetService.getAssetThumbnail(id, query, res, headers);
+    return this.assetService.getAssetThumbnail(authUser, id, query, res, headers);
   }
 
   @Get('/curated-objects')
-  async getCuratedObjects(@GetAuthUser() authUser: AuthUserDto): Promise<CuratedObjectsResponseDto[]> {
+  getCuratedObjects(@GetAuthUser() authUser: AuthUserDto): Promise<CuratedObjectsResponseDto[]> {
     return this.assetService.getCuratedObject(authUser);
   }
 
   @Get('/curated-locations')
-  async getCuratedLocations(@GetAuthUser() authUser: AuthUserDto): Promise<CuratedLocationsResponseDto[]> {
+  getCuratedLocations(@GetAuthUser() authUser: AuthUserDto): Promise<CuratedLocationsResponseDto[]> {
     return this.assetService.getCuratedLocation(authUser);
   }
 
   @Get('/search-terms')
-  async getAssetSearchTerms(@GetAuthUser() authUser: AuthUserDto): Promise<string[]> {
+  getAssetSearchTerms(@GetAuthUser() authUser: AuthUserDto): Promise<string[]> {
     return this.assetService.getAssetSearchTerm(authUser);
   }
 
   @Post('/search')
-  async searchAsset(
+  searchAsset(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) searchAssetDto: SearchAssetDto,
+    @Body(ValidationPipe) dto: SearchAssetDto,
   ): Promise<AssetResponseDto[]> {
-    return this.assetService.searchAsset(authUser, searchAssetDto);
+    return this.assetService.searchAsset(authUser, dto);
   }
 
   @Post('/count-by-time-bucket')
-  async getAssetCountByTimeBucket(
+  getAssetCountByTimeBucket(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) getAssetCountByTimeGroupDto: GetAssetCountByTimeBucketDto,
+    @Body(ValidationPipe) dto: GetAssetCountByTimeBucketDto,
   ): Promise<AssetCountByTimeBucketResponseDto> {
-    return this.assetService.getAssetCountByTimeBucket(authUser, getAssetCountByTimeGroupDto);
+    return this.assetService.getAssetCountByTimeBucket(authUser, dto);
   }
 
   @Get('/count-by-user-id')
-  async getAssetCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
+  getAssetCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
     return this.assetService.getAssetCountByUserId(authUser);
   }
 
   @Get('/stat/archive')
-  async getArchivedAssetCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
+  getArchivedAssetCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
     return this.assetService.getArchivedAssetCountByUserId(authUser);
   }
   /**
@@ -240,19 +236,19 @@ export class AssetController {
   }
 
   @Post('/time-bucket')
-  async getAssetByTimeBucket(
+  getAssetByTimeBucket(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) getAssetByTimeBucketDto: GetAssetByTimeBucketDto,
+    @Body(ValidationPipe) dto: GetAssetByTimeBucketDto,
   ): Promise<AssetResponseDto[]> {
-    return await this.assetService.getAssetByTimeBucket(authUser, getAssetByTimeBucketDto);
+    return this.assetService.getAssetByTimeBucket(authUser, dto);
   }
 
   /**
    * Get all asset of a device that are in the database, ID only.
    */
   @Get('/:deviceId')
-  async getUserAssetsByDeviceId(@GetAuthUser() authUser: AuthUserDto, @Param() { deviceId }: DeviceIdDto) {
-    return await this.assetService.getUserAssetsByDeviceId(authUser, deviceId);
+  getUserAssetsByDeviceId(@GetAuthUser() authUser: AuthUserDto, @Param() { deviceId }: DeviceIdDto) {
+    return this.assetService.getUserAssetsByDeviceId(authUser, deviceId);
   }
 
   /**
@@ -260,30 +256,27 @@ export class AssetController {
    */
   @SharedLinkRoute()
   @Get('/assetById/:id')
-  async getAssetById(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
-    await this.assetService.checkAssetsAccess(authUser, [id]);
-    return await this.assetService.getAssetById(authUser, id);
+  getAssetById(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
+    return this.assetService.getAssetById(authUser, id);
   }
 
   /**
    * Update an asset
    */
   @Put('/:id')
-  async updateAsset(
+  updateAsset(
     @GetAuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,
     @Body(ValidationPipe) dto: UpdateAssetDto,
   ): Promise<AssetResponseDto> {
-    await this.assetService.checkAssetsAccess(authUser, [id], true);
-    return await this.assetService.updateAsset(authUser, id, dto);
+    return this.assetService.updateAsset(authUser, id, dto);
   }
 
   @Delete('/')
-  async deleteAsset(
+  deleteAsset(
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: DeleteAssetDto,
   ): Promise<DeleteAssetResponseDto[]> {
-    await this.assetService.checkAssetsAccess(authUser, dto.ids, true);
     return this.assetService.deleteAll(authUser, dto);
   }
 
@@ -293,11 +286,11 @@ export class AssetController {
   @SharedLinkRoute()
   @Post('/check')
   @HttpCode(200)
-  async checkDuplicateAsset(
+  checkDuplicateAsset(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) checkDuplicateAssetDto: CheckDuplicateAssetDto,
+    @Body(ValidationPipe) dto: CheckDuplicateAssetDto,
   ): Promise<CheckDuplicateAssetResponseDto> {
-    return await this.assetService.checkDuplicatedAsset(authUser, checkDuplicateAssetDto);
+    return this.assetService.checkDuplicatedAsset(authUser, dto);
   }
 
   /**
@@ -305,11 +298,11 @@ export class AssetController {
    */
   @Post('/exist')
   @HttpCode(200)
-  async checkExistingAssets(
+  checkExistingAssets(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) checkExistingAssetsDto: CheckExistingAssetsDto,
+    @Body(ValidationPipe) dto: CheckExistingAssetsDto,
   ): Promise<CheckExistingAssetsResponseDto> {
-    return await this.assetService.checkExistingAssets(authUser, checkExistingAssetsDto);
+    return this.assetService.checkExistingAssets(authUser, dto);
   }
 
   /**
@@ -325,28 +318,28 @@ export class AssetController {
   }
 
   @Post('/shared-link')
-  async createAssetsSharedLink(
+  createAssetsSharedLink(
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: CreateAssetsShareLinkDto,
   ): Promise<SharedLinkResponseDto> {
-    return await this.assetService.createAssetsSharedLink(authUser, dto);
+    return this.assetService.createAssetsSharedLink(authUser, dto);
   }
 
   @SharedLinkRoute()
   @Patch('/shared-link/add')
-  async addAssetsToSharedLink(
+  addAssetsToSharedLink(
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: AddAssetsDto,
   ): Promise<SharedLinkResponseDto> {
-    return await this.assetService.addAssetsToSharedLink(authUser, dto);
+    return this.assetService.addAssetsToSharedLink(authUser, dto);
   }
 
   @SharedLinkRoute()
   @Patch('/shared-link/remove')
-  async removeAssetsFromSharedLink(
+  removeAssetsFromSharedLink(
     @GetAuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: RemoveAssetsDto,
   ): Promise<SharedLinkResponseDto> {
-    return await this.assetService.removeAssetsFromSharedLink(authUser, dto);
+    return this.assetService.removeAssetsFromSharedLink(authUser, dto);
   }
 }
