@@ -1,6 +1,5 @@
-import { AssetGridState } from '$lib/models/asset-grid-state';
-import { calculateViewportHeightByNumberOfAsset } from '$lib/utils/viewport-utils';
-import { api, AssetCountByTimeBucketResponseDto } from '@api';
+import { AssetGridState, BucketPosition } from '$lib/models/asset-grid-state';
+import { AssetCountByTimeBucketResponseDto, api } from '@api';
 import { sumBy, flatMap } from 'lodash-es';
 import { writable } from 'svelte/store';
 
@@ -20,6 +19,18 @@ function createAssetStore() {
 	loadingBucketState.subscribe((state) => {
 		_loadingBucketState = state;
 	});
+
+	const estimateViewportHeight = (assetCount: number, viewportWidth: number): number => {
+		// Ideally we would use the average aspect ratio for the photoset, however assume
+		// a normal landscape aspect ratio of 3:2, then discount for the likelihood we
+		// will be scaling down and coalescing.
+		const thumbnailHeight = 235;
+		const unwrappedWidth = (3 / 2) * assetCount * thumbnailHeight * (7 / 10);
+		const rows = Math.ceil(unwrappedWidth / viewportWidth);
+		const height = rows * thumbnailHeight;
+		return height;
+	};
+
 	/**
 	 * Set initial state
 	 * @param viewportHeight
@@ -36,11 +47,12 @@ function createAssetStore() {
 			viewportHeight,
 			viewportWidth,
 			timelineHeight: 0,
-			buckets: data.buckets.map((d) => ({
-				bucketDate: d.timeBucket,
-				bucketHeight: calculateViewportHeightByNumberOfAsset(d.count, viewportWidth),
+			buckets: data.buckets.map((bucket) => ({
+				bucketDate: bucket.timeBucket,
+				bucketHeight: estimateViewportHeight(bucket.count, viewportWidth),
 				assets: [],
-				cancelToken: new AbortController()
+				cancelToken: new AbortController(),
+				position: BucketPosition.Unknown
 			})),
 			assets: [],
 			userId
@@ -53,10 +65,15 @@ function createAssetStore() {
 		});
 	};
 
-	const getAssetsByBucket = async (bucket: string) => {
+	const getAssetsByBucket = async (bucket: string, position: BucketPosition) => {
 		try {
 			const currentBucketData = _assetGridState.buckets.find((b) => b.bucketDate === bucket);
 			if (currentBucketData?.assets && currentBucketData.assets.length > 0) {
+				assetGridState.update((state) => {
+					const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucket);
+					state.buckets[bucketIndex].position = position;
+					return state;
+				});
 				return;
 			}
 
@@ -83,8 +100,8 @@ function createAssetStore() {
 			assetGridState.update((state) => {
 				const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucket);
 				state.buckets[bucketIndex].assets = assets;
+				state.buckets[bucketIndex].position = position;
 				state.assets = flatMap(state.buckets, (b) => b.assets);
-
 				return state;
 			});
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -120,21 +137,31 @@ function createAssetStore() {
 		});
 	};
 
-	const updateBucketHeight = (bucket: string, actualBucketHeight: number) => {
+	const updateBucketHeight = (bucket: string, actualBucketHeight: number): number => {
+		let scrollTimeline = false;
+		let heightDelta = 0;
+
 		assetGridState.update((state) => {
 			const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucket);
 			// Update timeline height based on the new bucket height
 			const estimateBucketHeight = state.buckets[bucketIndex].bucketHeight;
 
-			if (actualBucketHeight >= estimateBucketHeight) {
-				state.timelineHeight += actualBucketHeight - estimateBucketHeight;
-			} else {
-				state.timelineHeight -= estimateBucketHeight - actualBucketHeight;
-			}
+			heightDelta = actualBucketHeight - estimateBucketHeight;
+			state.timelineHeight += heightDelta;
+
+			scrollTimeline = state.buckets[bucketIndex].position == BucketPosition.Above;
 
 			state.buckets[bucketIndex].bucketHeight = actualBucketHeight;
+			state.buckets[bucketIndex].position = BucketPosition.Unknown;
+
 			return state;
 		});
+
+		if (scrollTimeline) {
+			return heightDelta;
+		}
+
+		return 0;
 	};
 
 	const cancelBucketRequest = async (token: AbortController, bucketDate: string) => {

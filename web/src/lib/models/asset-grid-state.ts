@@ -1,5 +1,12 @@
 import type { AssetResponseDto } from '@api';
 
+export enum BucketPosition {
+	Above = 'above',
+	Below = 'below',
+	Visible = 'visible',
+	Unknown = 'unknown'
+}
+
 export class AssetBucket {
 	/**
 	 * The DOM height of the bucket in pixel
@@ -9,6 +16,7 @@ export class AssetBucket {
 	bucketDate!: string;
 	assets!: AssetResponseDto[];
 	cancelToken!: AbortController;
+	position!: BucketPosition;
 }
 
 export class AssetGridState {

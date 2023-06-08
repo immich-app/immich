@@ -104,6 +104,7 @@ export class AssetRepository implements IAssetRepository {
     // Get asset entity from a list of time buckets
     let builder = this.assetRepository
       .createQueryBuilder('asset')
+      .leftJoinAndSelect('asset.exifInfo', 'exifInfo')
       .where('asset.ownerId = :userId', { userId: userId })
       .andWhere(`date_trunc('month', "fileCreatedAt") IN (:...buckets)`, {
         buckets: [...dto.timeBucket],

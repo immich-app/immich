@@ -1,4 +1,4 @@
-import { AssetGridState } from '$lib/models/asset-grid-state';
+import { AssetGridState, BucketPosition } from '$lib/models/asset-grid-state';
 import { api, AssetResponseDto } from '@api';
 import { derived, writable } from 'svelte/store';
 import { assetGridState, assetStore } from './assets.store';
@@ -92,7 +92,7 @@ function createAssetInteractionStore() {
 			}
 
 			if (nextBucket !== '') {
-				await assetStore.getAssetsByBucket(nextBucket);
+				await assetStore.getAssetsByBucket(nextBucket, BucketPosition.Below);
 				navigateAsset(direction);
 			}
 			return;
