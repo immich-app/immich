@@ -1,3 +1,4 @@
+from typing import TypeVar
 from pydantic import BaseModel
 
 
@@ -10,7 +11,7 @@ def to_lower_camel(string: str) -> str:
 
 
 class VisionModelRequest(BaseModel):
-    image_path: str
+    image_paths: str | list[str]
 
     class Config:
         alias_generator = to_lower_camel
@@ -18,7 +19,7 @@ class VisionModelRequest(BaseModel):
 
 
 class TextModelRequest(BaseModel):
-    text: str
+    text: str | list[str]
 
 
 class TextResponse(BaseModel):
@@ -29,8 +30,12 @@ class MessageResponse(BaseModel):
     message: str
 
 
-class TagResponse(BaseModel):
+class Tags(BaseModel):
     __root__: list[str]
+
+
+class TagResponse(BaseModel):
+    __root__: Tags | list[Tags]
 
 
 class Embedding(BaseModel):
@@ -38,7 +43,7 @@ class Embedding(BaseModel):
 
 
 class EmbeddingResponse(BaseModel):
-    __root__: Embedding
+    __root__: Embedding | list[Embedding]
 
 
 class BoundingBox(BaseModel):
@@ -60,5 +65,9 @@ class Face(BaseModel):
         allow_population_by_field_name = True
 
 
-class FaceResponse(BaseModel):
+class Faces(BaseModel):
     __root__: list[Face]
+
+
+class FaceResponse(BaseModel):
+    __root__: Faces | list[Faces]
