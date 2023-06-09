@@ -1,3 +1,4 @@
+from enum import StrEnum
 from typing import ParamSpec, TypeAlias, Literal, TypeVar
 from pydantic import BaseModel
 
@@ -77,6 +78,13 @@ class FaceResponse(BaseModel):
     __root__: ImageFaces | list[ImageFaces]
 
 
-ModelType: TypeAlias = Literal['image-classification', 'clip', 'facial-recognition', 'tokenizer', 'processor']
+class ModelType(StrEnum):
+    IMAGE_CLASSIFICATION = 'image-classification'
+    CLIP = 'clip'
+    FACIAL_RECOGNITION = 'facial-recognition'
+    TOKENIZER = 'tokenizer'
+    PROCESSOR = 'processor'
+
+
 R = TypeVar("R")
 P = ParamSpec("P")

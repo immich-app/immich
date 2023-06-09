@@ -30,11 +30,11 @@ def get_model(model_name: str, model_type: ModelType, **model_kwargs):
 
     cache_dir = _get_cache_dir(model_name, model_type)
     match model_type:
-        case "facial-recognition":
+        case ModelType.FACIAL_RECOGNITION:
             model = _load_facial_recognition(
                 model_name, cache_dir=cache_dir, **model_kwargs
             )
-        case "clip":
+        case ModelType.CLIP:
             model = SentenceTransformer(
                 model_name, cache_folder=cache_dir.as_posix(), **model_kwargs
             )
@@ -50,7 +50,7 @@ def get_model(model_name: str, model_type: ModelType, **model_kwargs):
 
 def run_classification(
     model: Pipeline, images: list[Image], min_score: float | None = None
-) -> list[str] | list[list[str]]:
+) -> list[list[str]]:
 
     batch_predictions: list[list[dict[str, Any]]] = model(images)  # type: ignore
     results = [
@@ -127,7 +127,7 @@ def _load_facial_recognition(
     **model_kwargs,
 ):
     if cache_dir is None:
-        cache_dir = _get_cache_dir(model_name, "facial-recognition")
+        cache_dir = _get_cache_dir(model_name, ModelType.FACIAL_RECOGNITION)
     if isinstance(cache_dir, Path):
         cache_dir = cache_dir.as_posix()
     if min_face_score is None:
@@ -143,5 +143,5 @@ def _load_facial_recognition(
     return model
 
 
-def _get_cache_dir(model_name: str, model_type: str) -> Path:
+def _get_cache_dir(model_name: str, model_type: ModelType) -> Path:
     return Path(cache_folder) / device / model_type / model_name
