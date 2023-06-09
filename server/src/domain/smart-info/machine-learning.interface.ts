@@ -11,17 +11,21 @@ export interface BoundingBox {
   y2: number;
 }
 
-export interface DetectFaceResult {
-  imageWidth: number;
-  imageHeight: number;
+export interface Face {
   boundingBox: BoundingBox;
   score: number;
   embedding: number[];
+}
+
+export interface DetectFaceResult {
+  imageWidth: number;
+  imageHeight: number;
+  faces: Face[]
 }
 
 export interface IMachineLearningRepository {
   classifyImage(input: MachineLearningInput): Promise<string[][]>;
   encodeImage(input: MachineLearningInput): Promise<number[][]>;
   encodeText(input: string[]): Promise<number[][]>;
-  detectFaces(input: MachineLearningInput): Promise<DetectFaceResult[][]>;
+  detectFaces(input: MachineLearningInput): Promise<DetectFaceResult[]>;
 }

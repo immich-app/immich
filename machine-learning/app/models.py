@@ -1,3 +1,4 @@
+from schemas import ModelType
 import torch
 from insightface.app import FaceAnalysis
 from pathlib import Path
@@ -7,13 +8,14 @@ from transformers import pipeline, Pipeline
 from sentence_transformers import SentenceTransformer
 from typing import Any
 import cv2 as cv
+from PIL.Image import Image
 import numpy as np
 from insightface.utils.face_align import norm_crop
 cache_folder = os.getenv("MACHINE_LEARNING_CACHE_FOLDER", "/cache")
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
-def get_model(model_name: str, model_type: str, **model_kwargs):
+def get_model(model_name: str, model_type: ModelType, **model_kwargs):
     """
     Instantiates the specified model.
 
@@ -21,9 +23,6 @@ def get_model(model_name: str, model_type: str, **model_kwargs):
         model_name: Name of model in the model hub used for the task.
         model_type: Model type or task, which determines which model zoo is used.
             `facial-recognition` uses Insightface, while all other models use the HF Model Hub.
-
-            Options:
-                `image-classification`, `clip`,`facial-recognition`, `tokenizer`, `processor`
 
     Returns:
         model: The requested model.
@@ -37,7 +36,7 @@ def get_model(model_name: str, model_type: str, **model_kwargs):
             )
         case "clip":
             model = SentenceTransformer(
-                model_name, cache_folder=cache_dir, **model_kwargs
+                model_name, cache_folder=cache_dir.as_posix(), **model_kwargs
             )
         case _:
             model = pipeline(
@@ -50,13 +49,10 @@ def get_model(model_name: str, model_type: str, **model_kwargs):
 
 
 def run_classification(
-    model: Pipeline, image_paths: str | list[str], min_score: float | None = None
+    model: Pipeline, images: list[Image], min_score: float | None = None
 ) -> list[str] | list[list[str]]:
 
-    batch_predictions = model(image_paths)  # type: ignore
-    if not (batched := isinstance(batch_predictions[0], list)):
-        batch_predictions = [batch_predictions]
-
+    batch_predictions: list[list[dict[str, Any]]] = model(images)  # type: ignore
     results = [
         list({
             tag
@@ -67,51 +63,49 @@ def run_classification(
         for predictions in batch_predictions
     ]
 
-    return results[0] if not batched else results
+    return results
 
 
-def run_facial_recognition(
-    model: FaceAnalysis, image_paths: str | list[str]
-) -> list[dict[str, Any]] | list[list[dict[str, Any]]]:
-    if not (batched := isinstance(image_paths, list)):
-        images = [cv.imread(image_paths)]
-    else:
-        images = [cv.imread(image_path) for image_path in image_paths]
+def run_facial_recognition(model: FaceAnalysis, images: list[cv.Mat]) -> list[dict[str, Any]]:
+    batch_det: list[np.ndarray[int, np.dtype[np.float32]]] = []
+    image_offsets: list[int] = []
+    batch_cropped_images: list[cv.Mat] = []
+    results: list[dict[str, Any]] = []
 
-    batch_det = []
-    face_counts = []
-    batch_cropped_images = []
+    total_faces = 0
     for image in images:
         # detection model doesn't support batching, but recognition model does
         bboxes, kpss = model.det_model.detect(image)
         face_count = bboxes.shape[0]
-        face_counts.append(face_count)
-        if face_count == 0:
-            continue
-
+        total_faces += face_count
+        image_offsets.append(total_faces)
+        height, width, _ = image.shape
+        image_faces = {
+            "imageWidth": width,
+            "imageHeight": height,
+            "faces": []
+        }
+        results.append(image_faces)
         batch_det.append(bboxes)
         for kps in kpss:
             batch_cropped_images.append(norm_crop(image, kps))
-    if not batch_cropped_images:
-        return [] if not batched else [[]] * len(image_paths)
-    
-    embeddings = model.models['recognition'].get_feat(batch_cropped_images).tolist()
-    batch_det_np = np.stack(batch_det)
-    batch_bboxes = batch_det_np[:, :4].round().tolist()
-    det_scores = batch_det_np[:, 4].tolist()
 
-    results = []
-    images_with_faces = [image for i, image in enumerate(images) for _ in range(face_counts[i])]
-    for i, image in enumerate(images_with_faces):
-        height, width, _ = image.shape
-        image_faces = []
-        for j in face_counts[i]:
-            embedding = embeddings[i][j]
-            x1, y1, x2, y2 = batch_bboxes[i][j]
-            det_score = det_scores[i][j]
+    if not batch_cropped_images:
+        return results
+
+    embeddings = model.models['recognition'].get_feat(batch_cropped_images)
+    image_embeddings = np.array_split(embeddings, image_offsets)
+
+    for i, image_faces in enumerate(results):
+        if image_embeddings[i].shape[0] == 0:
+            continue
+
+        embeddings = image_embeddings[i].tolist()
+        bboxes = batch_det[i][:, :4].round().tolist()
+        det_scores = batch_det[i][:, 4].tolist()
+        for embedding, bbox, det_score in zip(embeddings, bboxes, det_scores):
+            x1, y1, x2, y2 = bbox
             face = {
-                "imageWidth": width,
-                "imageHeight": height,
                 "boundingBox": {
                     "x1": x1,
                     "y1": y1,
@@ -121,10 +115,9 @@ def run_facial_recognition(
                 "score": det_score,
                 "embedding": embedding,
             }
-            image_faces.append(face)
-        results.append(image_faces)
 
-    return results[0] if not batched else results
+            image_faces["faces"].append(face)
+    return results
 
 
 def _load_facial_recognition(
@@ -151,4 +144,4 @@ def _load_facial_recognition(
 
 
 def _get_cache_dir(model_name: str, model_type: str) -> Path:
-    return Path(cache_folder, device, model_type, model_name)
+    return Path(cache_folder) / device / model_type / model_name

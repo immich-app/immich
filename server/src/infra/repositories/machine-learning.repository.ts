@@ -10,8 +10,8 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     return client.post<string[][]>('/image-classifier/tag-image', input).then((res) => res.data);
   }
 
-  detectFaces(input: MachineLearningInput): Promise<DetectFaceResult[][]> {
-    return client.post<DetectFaceResult[][]>('/facial-recognition/detect-faces', input).then((res) => res.data);
+  detectFaces(input: MachineLearningInput): Promise<DetectFaceResult[]> {
+    return client.post<DetectFaceResult[]>('/facial-recognition/detect-faces', input).then((res) => res.data);
   }
 
   encodeImage(input: MachineLearningInput): Promise<number[][]> {

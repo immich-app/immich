@@ -21,7 +21,7 @@ export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload
 
 export const MACHINE_LEARNING_URL = process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003';
 export const MACHINE_LEARNING_ENABLED = MACHINE_LEARNING_URL !== 'false';
-export const MACHINE_LEARNING_BATCH_SIZE = 4;
+export const MACHINE_LEARNING_BATCH_SIZE = 8;
 
 export function assertMachineLearningEnabled() {
   if (!MACHINE_LEARNING_ENABLED) {

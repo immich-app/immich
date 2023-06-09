@@ -2,6 +2,7 @@ from aiocache.plugins import TimingPlugin, BasePlugin
 from aiocache.backends.memory import SimpleMemoryCache
 from aiocache.lock import OptimisticLock
 from typing import Any
+from schemas import ModelType
 from models import get_model
 
 
@@ -36,7 +37,7 @@ class ModelCache:
         )
 
     async def get_cached_model(
-        self, model_name: str, model_type: str, **model_kwargs
+        self, model_name: str, model_type: ModelType, **model_kwargs
     ) -> Any:
         """
         Args:

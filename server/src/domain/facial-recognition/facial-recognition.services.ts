@@ -72,16 +72,15 @@ export class FacialRecognitionService {
       return false;
     }
     const batchFaces = await this.machineLearning.detectFaces({ imagePaths });
-
-    for (let i = 0; i < assets.length; i++) {
+    for (let i = 0; i < batchFaces.length; i++) {
       const asset = assets[i];
-      const faces = batchFaces[i];
+      const imageFaces = batchFaces[i];
 
-      this.logger.debug(`${faces.length} faces detected in ${asset.resizePath}`);
-      this.logger.verbose(faces.map((face) => ({ ...face, embedding: `float[${face.embedding.length}]` })));
+      this.logger.debug(`${imageFaces.faces.length} faces detected in ${asset.resizePath}`);
+      this.logger.verbose(imageFaces.faces.map((face) => ({ ...face, embedding: `float[${face.embedding.length}]` })));
 
-      for (const { embedding, ...rest } of faces) {
-        const faceSearchResult = await this.searchRepository.searchFaces(embedding, { ownerId: asset.ownerId });
+      for (const face of imageFaces.faces) {
+        const faceSearchResult = await this.searchRepository.searchFaces(face['embedding'], { ownerId: asset.ownerId });
 
         let personId: string | null = null;
 
@@ -98,13 +97,19 @@ export class FacialRecognitionService {
           personId = person.id;
           await this.jobRepository.queue({
             name: JobName.GENERATE_FACE_THUMBNAIL,
-            data: { assetId: asset.id, personId, ...rest },
+            data: {
+              assetId: asset.id,
+              personId,
+              imageHeight: imageFaces.imageHeight,
+              imageWidth: imageFaces.imageWidth,
+              boundingBox: face.boundingBox,
+            },
           });
         }
 
         const faceId: AssetFaceId = { assetId: asset.id, personId };
 
-        await this.faceRepository.create({ ...faceId, embedding });
+        await this.faceRepository.create({ ...faceId, embedding: face.embedding });
         await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_FACE, data: faceId });
       }
     }

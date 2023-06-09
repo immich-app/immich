@@ -1,8 +1,9 @@
 import os
-from typing import Any
-
+from pathlib import Path
+from typing import Any, Callable
 from cache import ModelCache
 from schemas import (
+    R,
     EmbeddingResponse,
     FaceResponse,
     TagResponse,
@@ -12,10 +13,10 @@ from schemas import (
     VisionModelRequest,
 )
 import uvicorn
-
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from fastapi import FastAPI, HTTPException
 from models import get_model, run_classification, run_facial_recognition
+import cv2 as cv
 
 classification_model = os.getenv(
     "MACHINE_LEARNING_CLASSIFICATION_MODEL", "microsoft/resnet-50"
@@ -73,7 +74,8 @@ async def image_classification(payload: VisionModelRequest) -> list[str] | list[
     model = await _model_cache.get_cached_model(
         classification_model, "image-classification"
     )
-    labels = run_classification(model, payload.image_paths, min_tag_score)
+    images = _load_images(payload.image_paths, Image.open)
+    labels = run_classification(model, images, min_tag_score)
     return labels
 
 
@@ -89,8 +91,8 @@ async def clip_encode_image(payload: VisionModelRequest) -> list[float] | list[l
         image_paths = [payload.image_paths]
     else:
         image_paths = payload.image_paths
-    images = [Image.open(image_path) for image_path in image_paths]
 
+    images = _load_images(image_paths, Image.open)
     model = await _model_cache.get_cached_model(clip_image_model, "clip")
     embedding = model.encode(images).tolist()
 
@@ -111,9 +113,9 @@ async def clip_encode_text(payload: TextModelRequest) -> list[float] | list[list
         texts = payload.text
 
     model = await _model_cache.get_cached_model(clip_text_model, "clip")
-    embedding = model.encode(texts).tolist()
+    embeddings = model.encode(texts).tolist()
 
-    return embedding[0] if not batched else embedding
+    return embeddings[0] if not batched else embeddings
 
 
 @app.post(
@@ -122,12 +124,39 @@ async def clip_encode_text(payload: TextModelRequest) -> list[float] | list[list
 async def facial_recognition(payload: VisionModelRequest) -> list[dict[str, Any]] | list[list[dict[str, Any]]]:
     if _model_cache is None:
         raise HTTPException(status_code=500, detail="Unable to load model.")
+    if not (batched := isinstance(payload.image_paths, list)):
+        images_paths = [payload.image_paths]
+    else:
+        images_paths = payload.image_paths
 
+    images = _load_images(images_paths, cv.imread)
     model = await _model_cache.get_cached_model(
         facial_recognition_model, "facial-recognition"
     )
-    faces = run_facial_recognition(model, payload.image_paths)
-    return faces
+    batch_faces = run_facial_recognition(model, images)
+    return batch_faces[0] if not batched else batch_faces
+
+
+def _load_images(image_paths: str | list[str], loader: Callable[[str], R] = Image.open) -> list[R]:
+    if not isinstance(image_paths, list):
+        image_paths = [image_paths]
+
+    images = []
+    for i, image_path in enumerate(image_paths):
+        try:
+            image = loader(image_path)
+            if image is None:  # cv2.imread silently returns None on failure
+                if not Path(image_path).exists():
+                    raise FileNotFoundError
+                else:
+                    raise UnidentifiedImageError
+            images.append(image)
+        except FileNotFoundError:
+            raise HTTPException(404, f"Could not find image #{i}: {image_path}")
+        except UnidentifiedImageError:
+            raise HTTPException(415, f"Unable to load image #{i}: {image_path}")
+
+    return images
 
 
 if __name__ == "__main__":

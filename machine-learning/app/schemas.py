@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import ParamSpec, TypeAlias, Literal, TypeVar
 from pydantic import BaseModel
 
 
@@ -54,8 +54,6 @@ class BoundingBox(BaseModel):
 
 
 class Face(BaseModel):
-    image_width: int
-    image_height: int
     bounding_box: BoundingBox
     score: float
     embedding: Embedding
@@ -65,9 +63,20 @@ class Face(BaseModel):
         allow_population_by_field_name = True
 
 
-class Faces(BaseModel):
-    __root__: list[Face]
+class ImageFaces(BaseModel):
+    image_width: int
+    image_height: int
+    faces: list[Face]
+
+    class Config:
+        alias_generator = to_lower_camel
+        allow_population_by_field_name = True
 
 
 class FaceResponse(BaseModel):
-    __root__: Faces | list[Faces]
+    __root__: ImageFaces | list[ImageFaces]
+
+
+ModelType: TypeAlias = Literal['image-classification', 'clip', 'facial-recognition', 'tokenizer', 'processor']
+R = TypeVar("R")
+P = ParamSpec("P")
