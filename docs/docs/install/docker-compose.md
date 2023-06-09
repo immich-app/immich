@@ -136,6 +136,15 @@ IMMICH_MACHINE_LEARNING_URL=http://immich-machine-learning:3003
 ####################################################################################
 
 #IMMICH_API_URL_EXTERNAL=http://localhost:3001
+
+###################################################################################
+# Immich Version - Optional
+#
+# This allows all immich docker images to be pinned to a specific version. By default,
+# the version is "release" but could be a specific version, like "v1.59.0".
+###################################################################################
+
+#IMMICH_VERSION=
 ```
 
 </details>
@@ -158,6 +167,8 @@ For more information on how to use the application, please refer to the [Post In
 :::
 
 ### Step 4 - Upgrading
+
+If `IMMICH_VERSION` is set, it will need to be updated to the latest or desired version.
 
 When a new version of Immich is [released](https://github.com/immich-app/immich/releases), the application can be upgraded with the following commands, run in the directory with the `docker-compose.yml` file:
 

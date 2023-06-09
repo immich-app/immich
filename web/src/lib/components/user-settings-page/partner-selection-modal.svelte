@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { api, UserResponseDto } from '@api';
 	import BaseModal from '../shared-components/base-modal.svelte';
-	import CircleAvatar from '../shared-components/circle-avatar.svelte';
+	import UserAvatar from '../shared-components/user-avatar.svelte';
 	import ImmichLogo from '../shared-components/immich-logo.svelte';
 	import Button from '../elements/buttons/button.svelte';
 	import { createEventDispatcher, onMount } from 'svelte';
+
+	export let user: UserResponseDto;
 
 	let availableUsers: UserResponseDto[] = [];
 	let selectedUsers: UserResponseDto[] = [];
@@ -13,13 +15,13 @@
 
 	onMount(async () => {
 		// TODO: update endpoint to have a query param for deleted users
-		let { data: users } = await api.userApi.getAllUsers(false);
+		let { data: users } = await api.userApi.getAllUsers({ isAll: false });
 
-		// remove soft deleted users
-		users = users.filter((user) => !user.deletedAt);
+		// remove invalid users
+		users = users.filter((_user) => !(_user.deletedAt || _user.id === user.id));
 
 		// exclude partners from the list of users available for selection
-		const { data: partners } = await api.partnerApi.getPartners('shared-by');
+		const { data: partners } = await api.partnerApi.getPartners({ direction: 'shared-by' });
 		const partnerIds = partners.map((partner) => partner.id);
 		availableUsers = users.filter((user) => !partnerIds.includes(user.id));
 	});
@@ -54,7 +56,7 @@
 							>✓</span
 						>
 					{:else}
-						<CircleAvatar {user} />
+						<UserAvatar {user} size="md" autoColor />
 					{/if}
 
 					<div class="text-left">

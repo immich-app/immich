@@ -13,7 +13,6 @@
 	import { handleError } from '$lib/utils/handle-error';
 	import { AssetResponseDto, SharedLinkResponseDto, ThumbnailFormat } from '@api';
 	import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
-	import justifiedLayout from 'justified-layout';
 	import { flip } from 'svelte/animate';
 	import { archivedAsset } from '$lib/stores/archived-asset.store';
 
@@ -30,26 +29,20 @@
 	let currentViewAssetIndex = 0;
 
 	let viewWidth: number;
+	let thumbnailSize = 300;
 
 	$: isMultiSelectionMode = selectedAssets.size > 0;
-	$: geometry = justifiedLayout(assets.map(getAssetRatio), {
-		boxSpacing: 5,
-		containerWidth: Math.floor(viewWidth),
-		targetRowHeight: 235
-	});
 
-	function getAssetRatio(asset: AssetResponseDto) {
-		let height = asset.exifInfo?.exifImageHeight || 235;
-		let width = asset.exifInfo?.exifImageWidth || 235;
-
-		const orientation = Number(asset.exifInfo?.orientation);
-		if (orientation) {
-			if (orientation == 6 || orientation == -90) {
-				[width, height] = [height, width];
-			}
+	$: {
+		if (assets.length < 6) {
+			thumbnailSize = Math.min(320, Math.floor(viewWidth / assets.length - assets.length));
+		} else {
+			if (viewWidth > 600) thumbnailSize = Math.floor(viewWidth / 7 - 7);
+			else if (viewWidth > 400) thumbnailSize = Math.floor(viewWidth / 4 - 6);
+			else if (viewWidth > 300) thumbnailSize = Math.floor(viewWidth / 2 - 6);
+			else if (viewWidth > 200) thumbnailSize = Math.floor(viewWidth / 2 - 6);
+			else if (viewWidth > 100) thumbnailSize = Math.floor(viewWidth / 1 - 6);
 		}
-
-		return { width, height };
 	}
 
 	const viewAssetHandler = (event: CustomEvent) => {
@@ -121,34 +114,22 @@
 </script>
 
 {#if assets.length > 0}
-	<div
-		class="relative w-full mb-20"
-		bind:clientWidth={viewWidth}
-		style="height: {geometry.containerHeight}px"
-	>
-		{#if viewWidth}
-			{#each assets as asset, index (asset.id)}
-				{@const box = geometry.boxes[index]}
-				<div
-					class="absolute"
-					style="width: {box.width}px; height: {box.height}px; top: {box.top}px; left: {box.left}px"
-					animate:flip={{ duration: 500 }}
-				>
-					<Thumbnail
-						{asset}
-						thumbnailWidth={box.width}
-						thumbnailHeight={box.height}
-						readonly={disableAssetSelect}
-						publicSharedKey={sharedLink?.key}
-						format={assets.length < 7 ? ThumbnailFormat.Jpeg : ThumbnailFormat.Webp}
-						on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
-						on:select={selectAssetHandler}
-						selected={selectedAssets.has(asset)}
-						{showArchiveIcon}
-					/>
-				</div>
-			{/each}
-		{/if}
+	<div class="flex flex-wrap gap-1 w-full pb-20" bind:clientWidth={viewWidth}>
+		{#each assets as asset (asset.id)}
+			<div animate:flip={{ duration: 500 }}>
+				<Thumbnail
+					{asset}
+					{thumbnailSize}
+					readonly={disableAssetSelect}
+					publicSharedKey={sharedLink?.key}
+					format={assets.length < 7 ? ThumbnailFormat.Jpeg : ThumbnailFormat.Webp}
+					on:click={(e) => (isMultiSelectionMode ? selectAssetHandler(e) : viewAssetHandler(e))}
+					on:select={selectAssetHandler}
+					selected={selectedAssets.has(asset)}
+					{showArchiveIcon}
+				/>
+			</div>
+		{/each}
 	</div>
 {/if}
 

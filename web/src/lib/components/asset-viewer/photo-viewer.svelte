@@ -7,9 +7,11 @@
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
+	import { useZoomImageWheel } from '@zoom-image/svelte';
 
 	export let asset: AssetResponseDto;
 	export let publicSharedKey = '';
+	let imgElement: HTMLDivElement;
 
 	let assetData: string;
 
@@ -26,9 +28,12 @@
 
 	const loadAssetData = async () => {
 		try {
-			const { data } = await api.assetApi.serveFile(asset.id, false, true, publicSharedKey, {
-				responseType: 'blob'
-			});
+			const { data } = await api.assetApi.serveFile(
+				{ id: asset.id, isThumb: false, isWeb: true, key: publicSharedKey },
+				{
+					responseType: 'blob'
+				}
+			);
 
 			if (!(data instanceof Blob)) {
 				return;
@@ -67,6 +72,13 @@
 			});
 		}
 	};
+
+	const { createZoomImage: createZoomImageWheel } = useZoomImageWheel();
+	$: if (imgElement) {
+		createZoomImageWheel(imgElement, {
+			wheelZoomRatio: 0.06
+		});
+	}
 </script>
 
 <svelte:window on:keydown={handleKeypress} on:copyImage={doCopy} />
@@ -78,12 +90,14 @@
 	{#await loadAssetData()}
 		<LoadingSpinner />
 	{:then assetData}
-		<img
-			transition:fade={{ duration: 150 }}
-			src={assetData}
-			alt={asset.id}
-			class="object-contain h-full transition-all"
-			draggable="false"
-		/>
+		<div bind:this={imgElement} class="h-full w-full">
+			<img
+				transition:fade={{ duration: 150 }}
+				src={assetData}
+				alt={asset.id}
+				class="object-contain h-full w-full"
+				draggable="false"
+			/>
+		</div>
 	{/await}
 </div>

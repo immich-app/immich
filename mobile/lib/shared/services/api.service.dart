@@ -16,6 +16,7 @@ class ApiService {
   late AssetApi assetApi;
   late SearchApi searchApi;
   late ServerInfoApi serverInfoApi;
+  late PartnerApi partnerApi;
   late PersonApi personApi;
 
   ApiService() {
@@ -38,6 +39,7 @@ class ApiService {
     assetApi = AssetApi(_apiClient);
     serverInfoApi = ServerInfoApi(_apiClient);
     searchApi = SearchApi(_apiClient);
+    partnerApi = PartnerApi(_apiClient);
     personApi = PersonApi(_apiClient);
   }
 

@@ -36,6 +36,11 @@ void main() {
       // TODO
     });
 
+    // SystemConfigJobDto job
+    test('to test the property `job`', () async {
+      // TODO
+    });
+
 
   });
 

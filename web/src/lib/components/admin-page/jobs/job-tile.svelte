@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type Icon from 'svelte-material-icons/AbTesting.svelte';
 	import SelectionSearch from 'svelte-material-icons/SelectionSearch.svelte';
 	import Play from 'svelte-material-icons/Play.svelte';
 	import Pause from 'svelte-material-icons/Pause.svelte';
@@ -17,15 +18,23 @@
 	export let jobCounts: JobCountsDto;
 	export let queueStatus: QueueStatusDto;
 	export let allowForceCommand = true;
+	export let icon: typeof Icon;
+
+	export let allText: string;
+	export let missingText: string;
+
+	const slots = $$props.$$slots;
 
 	$: waitingCount = jobCounts.waiting + jobCounts.paused + jobCounts.delayed;
 	$: isIdle = !queueStatus.isActive && !queueStatus.isPaused;
+
+	const commonClasses = 'flex place-items-center justify-between w-full py-2 sm:py-4 pr-4 pl-6';
 
 	const dispatch = createEventDispatcher<{ command: JobCommandDto }>();
 </script>
 
 <div
-	class="flex sm:flex-row flex-col bg-gray-100 dark:bg-immich-dark-gray rounded-3xl overflow-hidden"
+	class="flex sm:flex-row flex-col bg-gray-100 dark:bg-immich-dark-gray rounded-2xl sm:rounded-[35px] overflow-hidden"
 >
 	<div class="flex flex-col w-full">
 		{#if queueStatus.isPaused}
@@ -33,11 +42,14 @@
 		{:else if queueStatus.isActive}
 			<JobTileStatus color="success">Active</JobTileStatus>
 		{/if}
-		<div class="flex flex-col gap-2 p-9">
+		<div class="flex flex-col gap-2 p-5 sm:p-7 md:p-9">
 			<div
 				class="flex items-center gap-4 text-xl font-semibold text-immich-primary dark:text-immich-dark-primary"
 			>
-				<span>{title.toUpperCase()}</span>
+				<span class="flex gap-2 items-center">
+					<svelte:component this={icon} size="1.25em" class="shrink-0 hidden sm:block" />
+					{title.toUpperCase()}
+				</span>
 				<div class="flex gap-2">
 					{#if jobCounts.failed > 0}
 						<Badge color="primary">
@@ -55,13 +67,16 @@
 			{#if subtitle}
 				<div class="text-sm dark:text-white whitespace-pre-line">{subtitle}</div>
 			{/if}
-			<div class="text-sm dark:text-white">
-				<slot />
-			</div>
 
-			<div class="flex w-full max-w-md mt-2">
+			{#if slots?.description}
+				<div class="text-sm dark:text-white">
+					<slot name="description" />
+				</div>
+			{/if}
+
+			<div class="flex w-full max-w-md mt-2 flex-col sm:flex-row">
 				<div
-					class="flex place-items-center justify-between bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray w-full rounded-tl-lg rounded-bl-lg py-4 pl-4 pr-6"
+					class="{commonClasses} bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray rounded-t-lg sm:rounded-l-lg sm:rounded-r-none"
 				>
 					<p>Active</p>
 					<p class="text-2xl">
@@ -70,7 +85,7 @@
 				</div>
 
 				<div
-					class="flex place-items-center justify-between bg-gray-200 text-immich-dark-bg dark:bg-gray-700 dark:text-immich-gray w-full rounded-tr-lg rounded-br-lg py-4 pr-4 pl-6"
+					class="{commonClasses} bg-gray-200 text-immich-dark-bg dark:bg-gray-700 dark:text-immich-gray rounded-b-lg sm:rounded-r-lg sm:rounded-l-none flex-row-reverse"
 				>
 					<p class="text-2xl">
 						{waitingCount.toLocaleString($locale)}
@@ -112,13 +127,15 @@
 				color="gray"
 				on:click={() => dispatch('command', { command: JobCommand.Start, force: true })}
 			>
-				<AllInclusive size="24" /> ALL
+				<AllInclusive size="24" />
+				{allText}
 			</JobTileButton>
 			<JobTileButton
 				color="light-gray"
 				on:click={() => dispatch('command', { command: JobCommand.Start, force: false })}
 			>
-				<SelectionSearch size="24" /> MISSING
+				<SelectionSearch size="24" />
+				{missingText}
 			</JobTileButton>
 		{:else}
 			<JobTileButton

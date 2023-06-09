@@ -22,6 +22,13 @@ void main() {
       // TODO
     });
 
+    // Checks if assets exist by checksums
+    //
+    //Future<AssetBulkUploadCheckResponseDto> bulkUploadCheck(AssetBulkUploadCheckDto assetBulkUploadCheckDto) async
+    test('test bulkUploadCheck', () async {
+      // TODO
+    });
+
     // Check duplicated asset before uploading - for Web upload used
     //
     //Future<CheckDuplicateAssetResponseDto> checkDuplicateAsset(CheckDuplicateAssetDto checkDuplicateAssetDto, { String key }) async
@@ -46,7 +53,7 @@ void main() {
       // TODO
     });
 
-    //Future<MultipartFile> downloadFile(String assetId, { String key }) async
+    //Future<MultipartFile> downloadFile(String id, { String key }) async
     test('test downloadFile', () async {
       // TODO
     });
@@ -65,7 +72,7 @@ void main() {
 
     // Get all AssetEntity belong to the user
     //
-    //Future<List<AssetResponseDto>> getAllAssets({ bool isFavorite, bool isArchived, num skip, String ifNoneMatch }) async
+    //Future<List<AssetResponseDto>> getAllAssets({ String userId, bool isFavorite, bool isArchived, bool withoutThumbs, num skip, String ifNoneMatch }) async
     test('test getAllAssets', () async {
       // TODO
     });
@@ -77,7 +84,7 @@ void main() {
 
     // Get a single asset's information
     //
-    //Future<AssetResponseDto> getAssetById(String assetId, { String key }) async
+    //Future<AssetResponseDto> getAssetById(String id, { String key }) async
     test('test getAssetById', () async {
       // TODO
     });
@@ -102,7 +109,7 @@ void main() {
       // TODO
     });
 
-    //Future<MultipartFile> getAssetThumbnail(String assetId, { ThumbnailFormat format, String key }) async
+    //Future<MultipartFile> getAssetThumbnail(String id, { ThumbnailFormat format, String key }) async
     test('test getAssetThumbnail', () async {
       // TODO
     });
@@ -117,7 +124,7 @@ void main() {
       // TODO
     });
 
-    //Future<List<MapMarkerResponseDto>> getMapMarkers({ bool isFavorite }) async
+    //Future<List<MapMarkerResponseDto>> getMapMarkers({ bool isFavorite, DateTime fileCreatedAfter, DateTime fileCreatedBefore }) async
     test('test getMapMarkers', () async {
       // TODO
     });
@@ -139,19 +146,19 @@ void main() {
       // TODO
     });
 
-    //Future<MultipartFile> serveFile(String assetId, { bool isThumb, bool isWeb, String key }) async
+    //Future<MultipartFile> serveFile(String id, { bool isThumb, bool isWeb, String key }) async
     test('test serveFile', () async {
       // TODO
     });
 
     // Update an asset
     //
-    //Future<AssetResponseDto> updateAsset(String assetId, UpdateAssetDto updateAssetDto) async
+    //Future<AssetResponseDto> updateAsset(String id, UpdateAssetDto updateAssetDto) async
     test('test updateAsset', () async {
       // TODO
     });
 
-    //Future<AssetFileUploadResponseDto> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, String fileCreatedAt, String fileModifiedAt, bool isFavorite, String fileExtension, { String key, MultipartFile livePhotoData, bool isArchived, bool isVisible, String duration }) async
+    //Future<AssetFileUploadResponseDto> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, String fileExtension, { String key, MultipartFile livePhotoData, MultipartFile sidecarData, bool isArchived, bool isVisible, String duration }) async
     test('test uploadFile', () async {
       // TODO
     });

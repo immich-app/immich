@@ -35,7 +35,7 @@ services:
     ports:
       - 3003:3003
     volumes:
-      - ../machine-learning/src:/usr/src/app
+      - ../machine-learning/app:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - model-cache:/cache
     env_file:

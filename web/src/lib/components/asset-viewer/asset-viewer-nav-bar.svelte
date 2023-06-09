@@ -1,25 +1,21 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
-
+	import { page } from '$app/stores';
 	import { clickOutside } from '$lib/utils/click-outside';
+	import type { AssetResponseDto } from '@api';
+	import { createEventDispatcher } from 'svelte';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import CloudDownloadOutline from 'svelte-material-icons/CloudDownloadOutline.svelte';
-	import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
-	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
+	import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
+	import Heart from 'svelte-material-icons/Heart.svelte';
+	import HeartOutline from 'svelte-material-icons/HeartOutline.svelte';
+	import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
+	import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
+	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
 	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
-	import Heart from 'svelte-material-icons/Heart.svelte';
-	import HeartOutline from 'svelte-material-icons/HeartOutline.svelte';
-	import ContentCopy from 'svelte-material-icons/ContentCopy.svelte';
-	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
-	import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
-	import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
-	import ArchiveArrowUpOutline from 'svelte-material-icons/ArchiveArrowUpOutline.svelte';
-
-	import { page } from '$app/stores';
-	import { AssetResponseDto } from '../../../api';
 
 	export let asset: AssetResponseDto;
 	export let showCopyButton: boolean;
@@ -52,15 +48,6 @@
 		<CircleIconButton isOpacity={true} logo={ArrowLeft} on:click={() => dispatch('goBack')} />
 	</div>
 	<div class="text-white flex gap-2 justify-end w-[calc(100%-3rem)] overflow-hidden">
-		{#if isOwner}
-			<CircleIconButton
-				isOpacity={true}
-				logo={asset.isArchived ? ArchiveArrowUpOutline : ArchiveArrowDownOutline}
-				title={asset.isArchived ? 'Unarchive' : 'Archive'}
-				on:click={() => dispatch('toggleArchive')}
-			/>
-		{/if}
-
 		{#if showMotionPlayButton}
 			{#if isMotionPhotoPlaying}
 				<CircleIconButton
@@ -134,6 +121,13 @@
 								on:click={() => onMenuClick('addToSharedAlbum')}
 								text="Add to Shared Album"
 							/>
+
+							{#if isOwner}
+								<MenuOption
+									on:click={() => dispatch('toggleArchive')}
+									text={asset.isArchived ? 'Unarchive' : 'Archive'}
+								/>
+							{/if}
 						</ContextMenu>
 					{/if}
 				</CircleIconButton>

@@ -87,8 +87,8 @@ class Album {
         remoteId == other.remoteId &&
         localId == other.localId &&
         name == other.name &&
-        createdAt == other.createdAt &&
-        modifiedAt == other.modifiedAt &&
+        createdAt.isAtSameMomentAs(other.createdAt) &&
+        modifiedAt.isAtSameMomentAs(other.modifiedAt) &&
         shared == other.shared &&
         owner.value == other.owner.value &&
         thumbnail.value == other.thumbnail.value &&
@@ -128,8 +128,8 @@ class Album {
     final Album a = Album(
       remoteId: dto.id,
       name: dto.albumName,
-      createdAt: DateTime.parse(dto.createdAt),
-      modifiedAt: DateTime.parse(dto.updatedAt),
+      createdAt: dto.createdAt,
+      modifiedAt: dto.updatedAt,
       shared: dto.shared,
     );
     a.owner.value = await db.users.getById(dto.ownerId);

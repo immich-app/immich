@@ -203,6 +203,14 @@ class ApiClient {
           return AlbumResponseDto.fromJson(value);
         case 'AllJobStatusResponseDto':
           return AllJobStatusResponseDto.fromJson(value);
+        case 'AssetBulkUploadCheckDto':
+          return AssetBulkUploadCheckDto.fromJson(value);
+        case 'AssetBulkUploadCheckItem':
+          return AssetBulkUploadCheckItem.fromJson(value);
+        case 'AssetBulkUploadCheckResponseDto':
+          return AssetBulkUploadCheckResponseDto.fromJson(value);
+        case 'AssetBulkUploadCheckResult':
+          return AssetBulkUploadCheckResult.fromJson(value);
         case 'AssetCountByTimeBucket':
           return AssetCountByTimeBucket.fromJson(value);
         case 'AssetCountByTimeBucketResponseDto':
@@ -211,6 +219,10 @@ class ApiClient {
           return AssetCountByUserIdResponseDto.fromJson(value);
         case 'AssetFileUploadResponseDto':
           return AssetFileUploadResponseDto.fromJson(value);
+        case 'AssetIdsDto':
+          return AssetIdsDto.fromJson(value);
+        case 'AssetIdsResponseDto':
+          return AssetIdsResponseDto.fromJson(value);
         case 'AssetResponseDto':
           return AssetResponseDto.fromJson(value);
         case 'AssetTypeEnum':
@@ -267,6 +279,8 @@ class ApiClient {
           return JobCountsDto.fromJson(value);
         case 'JobName':
           return JobNameTypeTransformer().decode(value);
+        case 'JobSettingsDto':
+          return JobSettingsDto.fromJson(value);
         case 'JobStatusDto':
           return JobStatusDto.fromJson(value);
         case 'LoginCredentialDto':
@@ -329,6 +343,8 @@ class ApiClient {
           return SystemConfigDto.fromJson(value);
         case 'SystemConfigFFmpegDto':
           return SystemConfigFFmpegDto.fromJson(value);
+        case 'SystemConfigJobDto':
+          return SystemConfigJobDto.fromJson(value);
         case 'SystemConfigOAuthDto':
           return SystemConfigOAuthDto.fromJson(value);
         case 'SystemConfigPasswordLoginDto':

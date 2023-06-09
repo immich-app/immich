@@ -8,6 +8,7 @@ import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/db.provider.dart';
+import 'package:immich_mobile/shared/providers/user.provider.dart';
 import 'package:isar/isar.dart';
 
 class SharedAlbumNotifier extends StateNotifier<List<Album>> {
@@ -73,7 +74,9 @@ final sharedAlbumProvider =
 });
 
 final sharedAlbumDetailProvider =
-    StreamProvider.autoDispose.family<Album, int>((ref, albumId) async* {
+    StreamProvider.family<Album, int>((ref, albumId) async* {
+  final user = ref.watch(currentUserProvider);
+  if (user == null) return;
   final AlbumService sharedAlbumService = ref.watch(albumServiceProvider);
 
   await for (final a in sharedAlbumService.watchAlbum(albumId)) {

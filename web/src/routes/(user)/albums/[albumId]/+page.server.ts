@@ -10,7 +10,7 @@ export const load = (async ({ params, locals: { api, user } }) => {
 	const albumId = params['albumId'];
 
 	try {
-		const { data: album } = await api.albumApi.getAlbumInfo(albumId);
+		const { data: album } = await api.albumApi.getAlbumInfo({ id: albumId });
 		return {
 			album,
 			meta: {

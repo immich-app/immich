@@ -1,1 +1,1 @@
-node ./dist/apps/cli/apps/cli/src/immich "$@"
+node ./dist/main cli "$@"

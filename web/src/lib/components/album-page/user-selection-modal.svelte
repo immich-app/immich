@@ -2,7 +2,7 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { AlbumResponseDto, api, SharedLinkResponseDto, UserResponseDto } from '@api';
 	import BaseModal from '../shared-components/base-modal.svelte';
-	import CircleAvatar from '../shared-components/circle-avatar.svelte';
+	import UserAvatar from '../shared-components/user-avatar.svelte';
 	import Link from 'svelte-material-icons/Link.svelte';
 	import ShareCircle from 'svelte-material-icons/ShareCircle.svelte';
 	import { goto } from '$app/navigation';
@@ -19,10 +19,10 @@
 	let sharedLinks: SharedLinkResponseDto[] = [];
 	onMount(async () => {
 		await getSharedLinks();
-		const { data } = await api.userApi.getAllUsers(false);
+		const { data } = await api.userApi.getAllUsers({ isAll: false });
 
-		// remove soft deleted users
-		users = data.filter((user) => !user.deletedAt);
+		// remove invalid users
+		users = data.filter((user) => !(user.deletedAt || user.id === album.ownerId));
 
 		// Remove the existed shared users from the album
 		sharedUsersInAlbum.forEach((sharedUser) => {
@@ -72,7 +72,7 @@
 							on:click={() => deselectUser(user)}
 							class="flex gap-1 place-items-center border border-gray-400 rounded-full p-1 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
 						>
-							<CircleAvatar size={28} {user} />
+							<UserAvatar {user} size="sm" autoColor />
 							<p class="text-xs font-medium">{user.firstName} {user.lastName}</p>
 						</button>
 					{/key}
@@ -95,7 +95,7 @@
 								>✓</span
 							>
 						{:else}
-							<CircleAvatar {user} />
+							<UserAvatar {user} size="md" autoColor />
 						{/if}
 
 						<div class="text-left">

@@ -40,7 +40,9 @@ class SyncService {
       dbUsers,
       compare: (User a, User b) => a.id.compareTo(b.id),
       both: (User a, User b) {
-        if (!a.updatedAt.isAtSameMomentAs(b.updatedAt)) {
+        if (!a.updatedAt.isAtSameMomentAs(b.updatedAt) ||
+            a.isPartnerSharedBy != b.isPartnerSharedBy ||
+            a.isPartnerSharedWith != b.isPartnerSharedWith) {
           toUpsert.add(a);
           return true;
         }
@@ -61,9 +63,10 @@ class SyncService {
   /// Syncs remote assets owned by the logged-in user to the DB
   /// Returns `true` if there were any changes
   Future<bool> syncRemoteAssetsToDb(
+    User user,
     FutureOr<List<Asset>?> Function() loadAssets,
   ) =>
-      _lock.run(() => _syncRemoteAssetsToDb(loadAssets));
+      _lock.run(() => _syncRemoteAssetsToDb(user, loadAssets));
 
   /// Syncs remote albums to the database
   /// returns `true` if there were any changes
@@ -149,13 +152,13 @@ class SyncService {
   /// Syncs remote assets to the databas
   /// returns `true` if there were any changes
   Future<bool> _syncRemoteAssetsToDb(
+    User user,
     FutureOr<List<Asset>?> Function() loadAssets,
   ) async {
     final List<Asset>? remote = await loadAssets();
     if (remote == null) {
       return false;
     }
-    final User user = Store.get(StoreKey.currentUser);
     final List<Asset> inDb = await _db.assets
         .filter()
         .ownerIdEqualTo(user.isarId)
@@ -276,7 +279,7 @@ class SyncService {
 
     album.name = dto.albumName;
     album.shared = dto.shared;
-    album.modifiedAt = DateTime.parse(dto.updatedAt);
+    album.modifiedAt = dto.updatedAt;
     if (album.thumbnail.value?.remoteId != dto.albumThumbnailAssetId) {
       album.thumbnail.value = await _db.assets
           .where()
@@ -349,10 +352,19 @@ class SyncService {
       );
     } else if (album.shared) {
       final User user = Store.get(StoreKey.currentUser);
-      // delete assets in DB unless they belong to this user or are part of some other shared album
-      deleteCandidates.addAll(
-        await album.assets.filter().not().ownerIdEqualTo(user.isarId).findAll(),
-      );
+      // delete assets in DB unless they belong to this user or are part of some other shared album or belong to a partner
+      final userIds = await _db.users
+          .filter()
+          .isPartnerSharedWithEqualTo(true)
+          .isarIdProperty()
+          .findAll();
+      userIds.add(user.isarId);
+      final orphanedAssets = await album.assets
+          .filter()
+          .not()
+          .anyOf(userIds, (q, int id) => q.ownerIdEqualTo(id))
+          .findAll();
+      deleteCandidates.addAll(orphanedAssets);
     }
     try {
       final bool ok = await _db.writeTxn(() => _db.albums.delete(album.id));
@@ -701,5 +713,5 @@ bool _hasAlbumResponseDtoChanged(AlbumResponseDto dto, Album a) {
       dto.albumThumbnailAssetId != a.thumbnail.value?.remoteId ||
       dto.shared != a.shared ||
       dto.sharedUsers.length != a.sharedUsers.length ||
-      !DateTime.parse(dto.updatedAt).isAtSameMomentAs(a.modifiedAt);
+      !dto.updatedAt.isAtSameMomentAs(a.modifiedAt);
 }

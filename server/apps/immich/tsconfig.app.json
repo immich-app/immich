@@ -1,9 +1,0 @@
-{
-  "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "declaration": false,
-    "outDir": "../../dist/apps/immich"
-  },
-  "include": ["src/**/*", "../../libs/**/*"],
-  "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
-}

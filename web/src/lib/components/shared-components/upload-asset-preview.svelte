@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { fade } from 'svelte/transition';
-	import { asByteUnitString } from '$lib/utils/byte-units';
-	import { UploadAsset } from '$lib/models/upload-asset';
-	import ImmichLogo from './immich-logo.svelte';
+	import type { UploadAsset } from '$lib/models/upload-asset';
 	import { locale } from '$lib/stores/preferences.store';
+	import { asByteUnitString } from '$lib/utils/byte-units';
+	import { fade } from 'svelte/transition';
+	import ImmichLogo from './immich-logo.svelte';
 
 	export let uploadAsset: UploadAsset;
 

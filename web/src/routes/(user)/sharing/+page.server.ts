@@ -8,8 +8,8 @@ export const load = (async ({ locals: { api, user } }) => {
 	}
 
 	try {
-		const { data: sharedAlbums } = await api.albumApi.getAllAlbums(true);
-		const { data: partners } = await api.partnerApi.getPartners('shared-with');
+		const { data: sharedAlbums } = await api.albumApi.getAllAlbums({ shared: true });
+		const { data: partners } = await api.partnerApi.getPartners({ direction: 'shared-with' });
 
 		return {
 			user,

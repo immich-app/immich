@@ -16,7 +16,6 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2020",
-    "importsNotUsedAsValues": "preserve",
     "preserveValueImports": false,
     "paths": {
       "$lib": [

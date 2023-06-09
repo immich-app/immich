@@ -12,14 +12,18 @@
 	import { fly } from 'svelte/transition';
 
 	export let inputType: SettingInputFieldType;
-	export let value: string;
+	export let value: string | number;
 	export let label = '';
+	export let desc = '';
 	export let required = false;
 	export let disabled = false;
 	export let isEdited = false;
 
 	const handleInput = (e: Event) => {
 		value = (e.target as HTMLInputElement).value;
+		if (inputType === SettingInputFieldType.NUMBER) {
+			value = Number(value) || 0;
+		}
 	};
 </script>
 
@@ -39,8 +43,17 @@
 			</div>
 		{/if}
 	</div>
+
+	{#if desc}
+		<p class="immich-form-label text-xs pb-2" id="{label}-desc">
+			{desc}
+		</p>
+	{/if}
+
 	<input
-		class="immich-form-input w-full"
+		class="immich-form-input pb-2 w-full"
+		aria-describedby={desc ? `${label}-desc` : undefined}
+		aria-labelledby="{label}-label"
 		id={label}
 		name={label}
 		type={inputType}

@@ -31,10 +31,12 @@
 			const lastName = form.get('lastName');
 
 			const { status } = await api.authenticationApi.adminSignUp({
-				email: String(email),
-				password: String(password),
-				firstName: String(firstName),
-				lastName: String(lastName)
+				signUpDto: {
+					email: String(email),
+					password: String(password),
+					firstName: String(firstName),
+					lastName: String(lastName)
+				}
 			});
 
 			if (status === 201) {

@@ -51,22 +51,22 @@ void main() {
       // TODO
     });
 
-    // String resizePath
-    test('to test the property `resizePath`', () async {
+    // bool resized
+    test('to test the property `resized`', () async {
       // TODO
     });
 
-    // String fileCreatedAt
+    // DateTime fileCreatedAt
     test('to test the property `fileCreatedAt`', () async {
       // TODO
     });
 
-    // String fileModifiedAt
+    // DateTime fileModifiedAt
     test('to test the property `fileModifiedAt`', () async {
       // TODO
     });
 
-    // String updatedAt
+    // DateTime updatedAt
     test('to test the property `updatedAt`', () async {
       // TODO
     });
@@ -88,16 +88,6 @@ void main() {
 
     // String duration
     test('to test the property `duration`', () async {
-      // TODO
-    });
-
-    // String webpPath
-    test('to test the property `webpPath`', () async {
-      // TODO
-    });
-
-    // String encodedVideoPath
-    test('to test the property `encodedVideoPath`', () async {
       // TODO
     });
 
@@ -123,6 +113,12 @@ void main() {
 
     // List<PersonResponseDto> people (default value: const [])
     test('to test the property `people`', () async {
+      // TODO
+    });
+
+    // base64 encoded sha1 hash
+    // String checksum
+    test('to test the property `checksum`', () async {
       // TODO
     });
 

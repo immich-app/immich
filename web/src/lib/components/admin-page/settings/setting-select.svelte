@@ -5,6 +5,7 @@
 	export let value: string;
 	export let options: { value: string; text: string }[];
 	export let label = '';
+	export let desc = '';
 	export let name = '';
 	export let isEdited = false;
 
@@ -26,8 +27,16 @@
 			</div>
 		{/if}
 	</div>
+
+	{#if desc}
+		<p class="immich-form-label text-xs pb-2" id="{name}-desc">
+			{desc}
+		</p>
+	{/if}
+
 	<select
-		class="immich-form-input w-full"
+		class="immich-form-input pb-2 w-full"
+		aria-describedby={desc ? `${name}-desc` : undefined}
 		{name}
 		id="{name}-select"
 		bind:value

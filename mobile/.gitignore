@@ -49,3 +49,8 @@ app.*.map.json
 
 # Fastlane
 ios/fastlane/report.xml
+
+# Isar
+default.isar
+default.isar.lock
+libisar.so

@@ -36,8 +36,8 @@ void main() {
       // TODO
     });
 
-    // String createdAt
-    test('to test the property `createdAt`', () async {
+    // String storageLabel
+    test('to test the property `storageLabel`', () async {
       // TODO
     });
 
@@ -56,12 +56,17 @@ void main() {
       // TODO
     });
 
+    // DateTime createdAt
+    test('to test the property `createdAt`', () async {
+      // TODO
+    });
+
     // DateTime deletedAt
     test('to test the property `deletedAt`', () async {
       // TODO
     });
 
-    // String updatedAt
+    // DateTime updatedAt
     test('to test the property `updatedAt`', () async {
       // TODO
     });

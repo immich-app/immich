@@ -13,6 +13,9 @@
 	import { page } from '$app/stores';
 	import { locale } from '$lib/stores/preferences.store';
 	import Button from '$lib/components/elements/buttons/button.svelte';
+	import type { PageData } from './$types';
+
+	export let data: PageData;
 
 	let allUsers: UserResponseDto[] = [];
 	let shouldShowEditUserForm = false;
@@ -43,7 +46,7 @@
 	};
 
 	const onUserCreated = async () => {
-		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
 		allUsers = getAllUsersRes.data;
 		shouldShowCreateUserForm = false;
 	};
@@ -54,13 +57,13 @@
 	};
 
 	const onEditUserSuccess = async () => {
-		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
 		allUsers = getAllUsersRes.data;
 		shouldShowEditUserForm = false;
 	};
 
 	const onEditPasswordSuccess = async () => {
-		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
 		allUsers = getAllUsersRes.data;
 		shouldShowEditUserForm = false;
 		shouldShowInfoPanel = true;
@@ -72,13 +75,13 @@
 	};
 
 	const onUserDeleteSuccess = async () => {
-		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
 		allUsers = getAllUsersRes.data;
 		shouldShowDeleteConfirmDialog = false;
 	};
 
 	const onUserDeleteFail = async () => {
-		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
 		allUsers = getAllUsersRes.data;
 		shouldShowDeleteConfirmDialog = false;
 	};
@@ -89,14 +92,14 @@
 	};
 
 	const onUserRestoreSuccess = async () => {
-		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
 		allUsers = getAllUsersRes.data;
 		shouldShowRestoreDialog = false;
 	};
 
 	const onUserRestoreFail = async () => {
 		// show fail dialog
-		const getAllUsersRes = await api.userApi.getAllUsers(false);
+		const getAllUsersRes = await api.userApi.getAllUsers({ isAll: false });
 		allUsers = getAllUsersRes.data;
 		shouldShowRestoreDialog = false;
 	};
@@ -113,6 +116,7 @@
 		<FullScreenModal on:clickOutside={() => (shouldShowEditUserForm = false)}>
 			<EditUserForm
 				user={selectedUser}
+				canResetPassword={selectedUser?.id !== data.user.id}
 				on:edit-success={onEditUserSuccess}
 				on:reset-password-success={onEditPasswordSuccess}
 			/>
@@ -195,12 +199,14 @@
 								>
 									<PencilOutline size="16" />
 								</button>
-								<button
-									on:click={() => deleteUserHandler(user)}
-									class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
-								>
-									<TrashCanOutline size="16" />
-								</button>
+								{#if user.id !== data.user.id}
+									<button
+										on:click={() => deleteUserHandler(user)}
+										class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
+									>
+										<TrashCanOutline size="16" />
+									</button>
+								{/if}
 							{/if}
 							{#if isDeleted(user)}
 								<button

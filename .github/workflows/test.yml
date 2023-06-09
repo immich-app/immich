@@ -96,7 +96,11 @@ jobs:
         if: ${{ !cancelled() }}
 
       - name: Run svelte checks
-        run: npm run check
+        run: npm run check:svelte
+        if: ${{ !cancelled() }}
+
+      - name: Run tsc
+        run: npm run check:typescript
         if: ${{ !cancelled() }}
 
       - name: Run unit tests & coverage
@@ -163,13 +167,13 @@ jobs:
         run: npm --prefix server run typeorm:migrations:run
       - name: Generate new migrations
         continue-on-error: true
-        run: npm --prefix server run typeorm:migrations:generate ./libs/infra/src/migrations/TestMigration
+        run: npm --prefix server run typeorm:migrations:generate ./src/infra/migrations/TestMigration
       - name: Find file changes
         uses: tj-actions/verify-changed-files@v13.1
         id: verify-changed-files
         with:
           files: |
-            server/libs/infra/src/migrations/
+            server/src/infra/migrations/
       - name: Verify files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |

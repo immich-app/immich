@@ -43,9 +43,9 @@ class SharedLinkResponseDto {
 
   String key;
 
-  String createdAt;
+  DateTime createdAt;
 
-  String? expiresAt;
+  DateTime? expiresAt;
 
   List<AssetResponseDto> assets;
 
@@ -108,9 +108,9 @@ class SharedLinkResponseDto {
     }
       json[r'userId'] = this.userId;
       json[r'key'] = this.key;
-      json[r'createdAt'] = this.createdAt;
+      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
     if (this.expiresAt != null) {
-      json[r'expiresAt'] = this.expiresAt;
+      json[r'expiresAt'] = this.expiresAt!.toUtc().toIso8601String();
     } else {
       // json[r'expiresAt'] = null;
     }
@@ -150,8 +150,8 @@ class SharedLinkResponseDto {
         description: mapValueOfType<String>(json, r'description'),
         userId: mapValueOfType<String>(json, r'userId')!,
         key: mapValueOfType<String>(json, r'key')!,
-        createdAt: mapValueOfType<String>(json, r'createdAt')!,
-        expiresAt: mapValueOfType<String>(json, r'expiresAt'),
+        createdAt: mapDateTime(json, r'createdAt', '')!,
+        expiresAt: mapDateTime(json, r'expiresAt', ''),
         assets: AssetResponseDto.listFromJson(json[r'assets']),
         album: AlbumResponseDto.fromJson(json[r'album']),
         allowUpload: mapValueOfType<bool>(json, r'allowUpload')!,

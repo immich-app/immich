@@ -16,13 +16,13 @@ void main() {
   // final instance = TagResponseDto();
 
   group('test TagResponseDto', () {
-    // String id
-    test('to test the property `id`', () async {
+    // TagTypeEnum type
+    test('to test the property `type`', () async {
       // TODO
     });
 
-    // TagTypeEnum type
-    test('to test the property `type`', () async {
+    // String id
+    test('to test the property `id`', () async {
       // TODO
     });
 
@@ -33,11 +33,6 @@ void main() {
 
     // String userId
     test('to test the property `userId`', () async {
-      // TODO
-    });
-
-    // String renameTagId
-    test('to test the property `renameTagId`', () async {
       // TODO
     });
 

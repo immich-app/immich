@@ -12,12 +12,13 @@ Name | Type | Description | Notes
 **email** | **String** |  | 
 **firstName** | **String** |  | 
 **lastName** | **String** |  | 
-**createdAt** | **String** |  | 
+**storageLabel** | **String** |  | 
 **profileImagePath** | **String** |  | 
 **shouldChangePassword** | **bool** |  | 
 **isAdmin** | **bool** |  | 
-**deletedAt** | [**DateTime**](DateTime.md) |  | [optional] 
-**updatedAt** | **String** |  | [optional] 
+**createdAt** | [**DateTime**](DateTime.md) |  | 
+**deletedAt** | [**DateTime**](DateTime.md) |  | 
+**updatedAt** | [**DateTime**](DateTime.md) |  | 
 **oauthId** | **String** |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

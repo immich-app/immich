@@ -16,10 +16,12 @@
 	const handleSaveProfile = async () => {
 		try {
 			const { data } = await api.userApi.updateUser({
-				id: user.id,
-				email: user.email,
-				firstName: user.firstName,
-				lastName: user.lastName
+				updateUserDto: {
+					id: user.id,
+					email: user.email,
+					firstName: user.firstName,
+					lastName: user.lastName
+				}
 			});
 
 			Object.assign(user, data);
@@ -63,6 +65,14 @@
 					label="LAST NAME"
 					bind:value={user.lastName}
 					required={true}
+				/>
+
+				<SettingInputField
+					inputType={SettingInputFieldType.TEXT}
+					label="STORAGE LABEL"
+					disabled={true}
+					value={user.storageLabel || ''}
+					required={false}
 				/>
 
 				<div class="flex justify-end">

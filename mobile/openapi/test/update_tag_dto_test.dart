@@ -21,11 +21,6 @@ void main() {
       // TODO
     });
 
-    // String renameTagId
-    test('to test the property `renameTagId`', () async {
-      // TODO
-    });
-
 
   });
 

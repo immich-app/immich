@@ -11,6 +11,7 @@
 	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
 	import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
+	import ImageBrokenVariant from 'svelte-material-icons/ImageBrokenVariant.svelte';
 	import { fly } from 'svelte/transition';
 	import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
 	import {
@@ -23,7 +24,7 @@
 	import VideoViewer from './video-viewer.svelte';
 
 	import { assetStore } from '$lib/stores/assets.store';
-	import { addAssetsToAlbum } from '$lib/utils/asset-utils';
+	import { addAssetsToAlbum, getFilenameExtension } from '$lib/utils/asset-utils';
 	import { browser } from '$app/environment';
 
 	export let asset: AssetResponseDto;
@@ -64,7 +65,7 @@
 
 	const getAllAlbums = async () => {
 		try {
-			const { data } = await api.albumApi.getAllAlbums(undefined, asset.id);
+			const { data } = await api.albumApi.getAllAlbums({ assetId: asset.id });
 			appearsInAlbums = data;
 		} catch (e) {
 			console.error('Error getting album that asset belong to', e);
@@ -124,24 +125,10 @@
 		downloadFile(asset.id, false, publicSharedKey);
 	};
 
-	/**
-	 * Get the filename of the asset based on the user defined template
-	 */
-	const getTemplateFilename = () => {
-		const filenameWithExtension = asset.originalPath.split('/').pop() as string;
-		const filenameWithoutExtension = filenameWithExtension.split('.')[0];
-		return {
-			filenameWithExtension,
-			filenameWithoutExtension
-		};
-	};
-
 	const downloadFile = async (assetId: string, isLivePhoto: boolean, key: string) => {
 		try {
-			const { filenameWithoutExtension } = getTemplateFilename();
-
-			const imageExtension = isLivePhoto ? 'mov' : asset.originalPath.split('.')[1];
-			const imageFileName = filenameWithoutExtension + '.' + imageExtension;
+			const imageExtension = isLivePhoto ? 'mov' : getFilenameExtension(asset.originalPath);
+			const imageFileName = asset.originalFileName + '.' + imageExtension;
 
 			// If assets is already download -> return;
 			if ($downloadAssets[imageFileName]) {
@@ -150,16 +137,19 @@
 
 			$downloadAssets[imageFileName] = 0;
 
-			const { data, status } = await api.assetApi.downloadFile(assetId, key, {
-				responseType: 'blob',
-				onDownloadProgress: (progressEvent) => {
-					if (progressEvent.lengthComputable) {
-						const total = progressEvent.total;
-						const current = progressEvent.loaded;
-						$downloadAssets[imageFileName] = Math.floor((current / total) * 100);
+			const { data, status } = await api.assetApi.downloadFile(
+				{ id: assetId, key },
+				{
+					responseType: 'blob',
+					onDownloadProgress: (progressEvent) => {
+						if (progressEvent.lengthComputable) {
+							const total = progressEvent.total;
+							const current = progressEvent.loaded;
+							$downloadAssets[imageFileName] = Math.floor((current / total) * 100);
+						}
 					}
 				}
-			});
+			);
 
 			if (!(data instanceof Blob)) {
 				return;
@@ -202,7 +192,9 @@
 				)
 			) {
 				const { data: deletedAssets } = await api.assetApi.deleteAsset({
-					ids: [asset.id]
+					deleteAssetDto: {
+						ids: [asset.id]
+					}
 				});
 
 				navigateAssetForward();
@@ -223,8 +215,11 @@
 	};
 
 	const toggleFavorite = async () => {
-		const { data } = await api.assetApi.updateAsset(asset.id, {
-			isFavorite: !asset.isFavorite
+		const { data } = await api.assetApi.updateAsset({
+			id: asset.id,
+			updateAssetDto: {
+				isFavorite: !asset.isFavorite
+			}
 		});
 
 		asset.isFavorite = data.isFavorite;
@@ -240,10 +235,12 @@
 		isShowAlbumPicker = false;
 
 		const { albumName }: { albumName: string } = event.detail;
-		api.albumApi.createAlbum({ albumName, assetIds: [asset.id] }).then((response) => {
-			const album = response.data;
-			goto('/albums/' + album.id);
-		});
+		api.albumApi
+			.createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } })
+			.then((response) => {
+				const album = response.data;
+				goto('/albums/' + album.id);
+			});
 	};
 
 	const handleAddToAlbum = async (event: CustomEvent<{ album: AlbumResponseDto }>) => {
@@ -271,8 +268,11 @@
 
 	const toggleArchive = async () => {
 		try {
-			const { data } = await api.assetApi.updateAsset(asset.id, {
-				isArchived: !asset.isArchived
+			const { data } = await api.assetApi.updateAsset({
+				id: asset.id,
+				updateAssetDto: {
+					isArchived: !asset.isArchived
+				}
 			});
 
 			asset.isArchived = data.isArchived;
@@ -325,7 +325,7 @@
 
 	{#if showNavigation}
 		<div
-			class={`row-start-2 row-span-end col-start-1 col-span-2 flex place-items-center hover:cursor-pointer w-3/4 mb-[60px] ${
+			class={`row-start-2 row-span-end col-start-1 flex place-items-center hover:cursor-pointer w-1/4 mb-[60px] ${
 				asset.type === AssetTypeEnum.Video ? '' : 'z-[999]'
 			}`}
 			on:mouseenter={() => {
@@ -350,7 +350,15 @@
 
 	<div class="row-start-1 row-span-full col-start-1 col-span-4">
 		{#key asset.id}
-			{#if asset.type === AssetTypeEnum.Image}
+			{#if !asset.resized}
+				<div class="h-full w-full flex justify-center">
+					<div
+						class="h-full bg-gray-100 dark:bg-immich-dark-gray flex items-center justify-center aspect-square px-auto"
+					>
+						<ImageBrokenVariant size="25%" />
+					</div>
+				</div>
+			{:else if asset.type === AssetTypeEnum.Image}
 				{#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
 					<VideoViewer
 						{publicSharedKey}
@@ -369,7 +377,7 @@
 
 	{#if showNavigation}
 		<div
-			class={`row-start-2 row-span-full col-start-3 col-span-2 flex justify-end place-items-center hover:cursor-pointer w-3/4 justify-self-end mb-[60px] ${
+			class={`row-start-2 row-span-full col-start-4 flex justify-end place-items-center hover:cursor-pointer w-1/4 justify-self-end mb-[60px] ${
 				asset.type === AssetTypeEnum.Video ? '' : 'z-[500]'
 			}`}
 			on:click={navigateAssetForward}

@@ -11,11 +11,7 @@
 
 <header>
 	{#if !hideNavbar}
-		<NavigationBar
-			{user}
-			shouldShowUploadButton={showUploadButton}
-			on:uploadClicked={() => openFileUploadDialog()}
-		/>
+		<NavigationBar {user} {showUploadButton} on:uploadClicked={() => openFileUploadDialog()} />
 	{/if}
 
 	<slot name="header" />
@@ -24,7 +20,9 @@
 <main
 	class="grid md:grid-cols-[theme(spacing.64)_auto] grid-cols-[theme(spacing.18)_auto] relative pt-[var(--navbar-height)] h-screen overflow-hidden bg-immich-bg dark:bg-immich-dark-bg"
 >
-	<SideBar />
+	<slot name="sidebar">
+		<SideBar />
+	</slot>
 	<slot name="content">
 		{#if title}
 			<section class="relative">

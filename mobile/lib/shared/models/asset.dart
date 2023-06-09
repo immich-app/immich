@@ -15,9 +15,9 @@ class Asset {
   Asset.remote(AssetResponseDto remote)
       : remoteId = remote.id,
         isLocal = false,
-        fileCreatedAt = DateTime.parse(remote.fileCreatedAt),
-        fileModifiedAt = DateTime.parse(remote.fileModifiedAt),
-        updatedAt = DateTime.parse(remote.updatedAt),
+        fileCreatedAt = remote.fileCreatedAt,
+        fileModifiedAt = remote.fileModifiedAt,
+        updatedAt = remote.updatedAt,
         durationInSeconds = remote.duration.toDuration()?.inSeconds ?? 0,
         type = remote.type.toAssetType(),
         fileName = p.basename(remote.originalPath),
@@ -179,9 +179,9 @@ class Asset {
         localId == other.localId &&
         deviceId == other.deviceId &&
         ownerId == other.ownerId &&
-        fileCreatedAt == other.fileCreatedAt &&
-        fileModifiedAt == other.fileModifiedAt &&
-        updatedAt == other.updatedAt &&
+        fileCreatedAt.isAtSameMomentAs(other.fileCreatedAt) &&
+        fileModifiedAt.isAtSameMomentAs(other.fileModifiedAt) &&
+        updatedAt.isAtSameMomentAs(other.updatedAt) &&
         durationInSeconds == other.durationInSeconds &&
         type == other.type &&
         width == other.width &&
