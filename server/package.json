@@ -131,8 +131,8 @@
       "^.+\\.ts$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s",
-      "!<rootDir>/infra/**/*"
+      "<rootDir>/src/**/*.(t|j)s",
+      "!<rootDir>/src/infra/**/*"
     ],
     "coverageDirectory": "./coverage",
     "coverageThreshold": {
