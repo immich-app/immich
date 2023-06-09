@@ -146,11 +146,8 @@ describe('AssetService', () => {
       get: jest.fn(),
       create: jest.fn(),
       remove: jest.fn(),
-      save: jest.fn(),
 
       update: jest.fn(),
-      getAll: jest.fn(),
-      getAllVideos: jest.fn(),
       getAllByUserId: jest.fn(),
       getAllByDeviceId: jest.fn(),
       getAssetCountByTimeBucket: jest.fn(),
@@ -283,7 +280,6 @@ describe('AssetService', () => {
       const dto = _getCreateAssetDto();
 
       assetRepositoryMock.create.mockResolvedValue(assetEntity);
-      assetRepositoryMock.save.mockResolvedValue(assetEntity);
 
       await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({ duplicate: false, id: 'id_1' });
 
@@ -319,9 +315,7 @@ describe('AssetService', () => {
       (error as any).constraint = 'UQ_userid_checksum';
 
       assetRepositoryMock.create.mockResolvedValueOnce(assetEntityStub.livePhotoMotionAsset);
-      assetRepositoryMock.save.mockResolvedValueOnce(assetEntityStub.livePhotoMotionAsset);
       assetRepositoryMock.create.mockResolvedValueOnce(assetEntityStub.livePhotoStillAsset);
-      assetRepositoryMock.save.mockResolvedValueOnce(assetEntityStub.livePhotoStillAsset);
 
       await expect(
         sut.uploadFile(authStub.user1, dto, fileStub.livePhotoStill, fileStub.livePhotoMotion),
