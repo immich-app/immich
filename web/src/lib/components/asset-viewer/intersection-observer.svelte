@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { BucketPosition } from '$lib/models/asset-grid-state';
 	import { onMount } from 'svelte';
 	import { createEventDispatcher } from 'svelte';
 
@@ -28,7 +29,17 @@
 					}
 
 					if (intersecting) {
-						dispatch('intersected', container);
+						let position: BucketPosition = BucketPosition.Visible;
+						if (entries[0].boundingClientRect.top + 50 > entries[0].intersectionRect.bottom) {
+							position = BucketPosition.Below;
+						} else if (entries[0].boundingClientRect.bottom < 0) {
+							position = BucketPosition.Above;
+						}
+
+						dispatch('intersected', {
+							container,
+							position
+						});
 					}
 				},
 				{

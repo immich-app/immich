@@ -30,7 +30,10 @@
 
 	const getFavoriteCount = async () => {
 		try {
-			const { data: assets } = await api.assetApi.getAllAssets({ isFavorite: true });
+			const { data: assets } = await api.assetApi.getAllAssets({
+				isFavorite: true,
+				withoutThumbs: true
+			});
 
 			return {
 				favorites: assets.length

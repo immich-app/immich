@@ -228,6 +228,101 @@
         ]
       }
     },
+    "/album/{id}/users": {
+      "put": {
+        "operationId": "addUsersToAlbum",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddUsersDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlbumResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Album"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/album/{id}/user/{userId}": {
+      "delete": {
+        "operationId": "removeUserFromAlbum",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Album"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/api-key": {
       "post": {
         "operationId": "createKey",
@@ -3381,6 +3476,15 @@
             }
           },
           {
+            "name": "withoutThumbs",
+            "required": false,
+            "in": "query",
+            "description": "Include assets without thumbnails",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "skip",
             "required": false,
             "in": "query",
@@ -3981,58 +4085,6 @@
         ]
       }
     },
-    "/album/{id}/users": {
-      "put": {
-        "operationId": "addUsersToAlbum",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AddUsersDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AlbumResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Album"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
     "/album/{id}/assets": {
       "put": {
         "operationId": "addAssetsToAlbum",
@@ -4125,49 +4177,6 @@
                 }
               }
             }
-          }
-        },
-        "tags": [
-          "Album"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
-    "/album/{id}/user/{userId}": {
-      "delete": {
-        "operationId": "removeUserFromAlbum",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "userId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
           }
         },
         "tags": [
@@ -4299,7 +4308,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.59.1",
+    "version": "1.60.0",
     "contact": {}
   },
   "tags": [],
@@ -4774,6 +4783,21 @@
             "format": "uuid"
           }
         }
+      },
+      "AddUsersDto": {
+        "type": "object",
+        "properties": {
+          "sharedUserIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "sharedUserIds"
+        ]
       },
       "APIKeyCreateDto": {
         "type": "object",
@@ -6227,6 +6251,10 @@
           "userId": {
             "type": "string",
             "format": "uuid"
+          },
+          "withoutThumbs": {
+            "type": "boolean",
+            "description": "Include assets without thumbnails"
           }
         },
         "required": [
@@ -6611,21 +6639,6 @@
           "owned",
           "shared",
           "sharing"
-        ]
-      },
-      "AddUsersDto": {
-        "type": "object",
-        "properties": {
-          "sharedUserIds": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        },
-        "required": [
-          "sharedUserIds"
         ]
       },
       "AddAssetsResponseDto": {
