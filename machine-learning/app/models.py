@@ -54,7 +54,7 @@ def run_classification(
 ) -> list[str] | list[list[str]]:
 
     batch_predictions = model(image_paths)  # type: ignore
-    if (batched := isinstance(batch_predictions[0], dict)):
+    if not (batched := isinstance(batch_predictions[0], list)):
         batch_predictions = [batch_predictions]
 
     results = [
