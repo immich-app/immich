@@ -72,6 +72,9 @@ class HashService {
       hashes[i] = deviceAsset;
       if (toHash.length == batchFileCount || bytes >= batchDataSize) {
         await _processBatch(toHash, toAdd);
+        toAdd.clear();
+        toHash.clear();
+        bytes = 0;
       }
     }
     if (toHash.isNotEmpty) {
@@ -110,9 +113,7 @@ class HashService {
           ? _db.androidDeviceAssets.putAll(validHashes.cast())
           : _db.iOSDeviceAssets.putAll(validHashes.cast()),
     );
-    debugPrint("Hashed ${validHashes.length}/${toHash.length} assets");
-    toAdd.clear();
-    toHash.clear();
+    _log.fine("Hashed ${validHashes.length}/${toHash.length} assets");
   }
 
   /// Hashes the given files and returns a list of the same length
