@@ -66,8 +66,11 @@ class AssetService {
     try {
       final etag = hasCache ? _db.eTags.getByIdSync(user.id)?.value : null;
       final (List<AssetResponseDto>? assets, String? newETag) =
-          await _apiService.assetApi
-              .getAllAssetsWithETag(eTag: etag, userId: user.id);
+          await _apiService.assetApi.getAllAssetsWithETag(
+        eTag: etag,
+        userId: user.id,
+        withoutThumbs: true,
+      );
       if (assets == null) {
         return null;
       } else if (assets.isNotEmpty && assets.first.ownerId != user.id) {
