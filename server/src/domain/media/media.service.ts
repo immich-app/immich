@@ -180,8 +180,8 @@ export class MediaService {
 
     const allTargetsMatching = isTargetVideoCodec && isTargetAudioCodec && isTargetContainer;
 
-    const targetResolution = Number.parseInt(ffmpegConfig.targetResolution);
-    const isLargerThanTargetResolution = Math.min(videoStream.height, videoStream.width) > targetResolution;
+    const targetRes = Number.parseInt(ffmpegConfig.targetResolution) || Math.min(videoStream.height, videoStream.width);
+    const isLargerThanTargetRes = Math.min(videoStream.height, videoStream.width) > targetRes;
 
     switch (ffmpegConfig.transcode) {
       case TranscodePreset.DISABLED:
@@ -194,7 +194,7 @@ export class MediaService {
         return !allTargetsMatching;
 
       case TranscodePreset.OPTIMAL:
-        return !allTargetsMatching || isLargerThanTargetResolution;
+        return !allTargetsMatching || isLargerThanTargetRes;
 
       default:
         return false;
@@ -212,7 +212,7 @@ export class MediaService {
 
     // video dimensions
     const videoIsRotated = Math.abs(stream.rotation) === 90;
-    const targetResolution = Number.parseInt(ffmpeg.targetResolution);
+    const targetResolution = Number.parseInt(ffmpeg.targetResolution) || Math.min(stream.height, stream.width);
     const isVideoVertical = stream.height > stream.width || videoIsRotated;
     const scaling = isVideoVertical ? `${targetResolution}:-2` : `-2:${targetResolution}`;
     const shouldScale = Math.min(stream.height, stream.width) > targetResolution;
