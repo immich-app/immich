@@ -58,6 +58,7 @@ function createAssetStore() {
 			userId
 		});
 
+    console.log("Initial buckets: "+ data.buckets.length)
 		// Update timeline height based on calculated bucket height
 		assetGridState.update((state) => {
 			state.timelineHeight = sumBy(state.buckets, (d) => d.bucketHeight);
