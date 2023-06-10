@@ -1,21 +1,11 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import {
-    NotificationType,
-    notificationController
-  } from '$lib/components/shared-components/notification/notification';
-  import {api, AssetResponseDto} from '@api';
   import SelectAll from 'svelte-material-icons/SelectAll.svelte';
   import TimerSand from 'svelte-material-icons/TimerSand.svelte';
-  import {
-    assetInteractionStore,
-    selectedAssets
-  } from '$lib/stores/asset-interaction.store';
-  import {assetGridState, assetStore, loadingBucketState} from '$lib/stores/assets.store';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+  import {assetInteractionStore} from '$lib/stores/asset-interaction.store';
+  import {assetGridState, assetStore} from '$lib/stores/assets.store';
   import {handleError} from '../../../utils/handle-error';
-  import {AssetGridState} from "$lib/models/asset-grid-state";
-  import {sumBy} from "lodash-es";
+  import {AssetGridState, BucketPosition} from "$lib/models/asset-grid-state";
 
   let selecting = false;
 
@@ -28,7 +18,7 @@
       });
 
       for (let i = 0; i < _assetGridState.buckets.length; i++) {
-        await assetStore.getAssetsByBucket(_assetGridState.buckets[i].bucketDate, i)
+        await assetStore.getAssetsByBucket(_assetGridState.buckets[i].bucketDate, BucketPosition.Unknown)
         for (const asset of _assetGridState.buckets[i].assets) {
           assetInteractionStore.addAssetToMultiselectGroup(asset)
         }
