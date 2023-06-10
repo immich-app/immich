@@ -13,8 +13,8 @@ void main() {
 
     testAssets.add(
       Asset(
+        checksum: "",
         localId: '$i',
-        deviceId: 1,
         ownerId: 1,
         fileCreatedAt: date,
         fileModifiedAt: date,
@@ -23,7 +23,6 @@ void main() {
         type: AssetType.image,
         fileName: '',
         isFavorite: false,
-        isLocal: false,
         isArchived: false,
       ),
     );

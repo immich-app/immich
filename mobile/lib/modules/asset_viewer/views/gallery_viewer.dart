@@ -287,7 +287,7 @@ class GalleryViewerPage extends HookConsumerWidget {
             isFavorite: asset().isFavorite,
             onMoreInfoPressed: showInfo,
             onFavorite: asset().isRemote ? () => toggleFavorite(asset()) : null,
-            onDownloadPressed: asset().storage == AssetState.local
+            onDownloadPressed: asset().isLocal
                 ? null
                 : () =>
                     ref.watch(imageViewerStateProvider.notifier).downloadAsset(
