@@ -135,6 +135,13 @@ export class AssetService {
         livePhotoAsset = await this.assetCore.create(authUser, livePhotoDto, livePhotoFile);
       }
 
+      if (dto.isReadOnly) {
+        const duplicate = await this._assetRepository.getAssetByOriginalPath(authUser.id, file.originalPath)
+        if (duplicate.length > 0) {
+          return { id: duplicate[0].id, duplicate: true };
+        }
+      }
+
       const asset = await this.assetCore.create(authUser, dto, file, livePhotoAsset?.id, sidecarFile);
 
       return { id: asset.id, duplicate: false };
