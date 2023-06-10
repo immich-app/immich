@@ -5155,7 +5155,8 @@
             "type": "boolean"
           },
           "isReadOnly": {
-            "type": "boolean"
+            "type": "boolean",
+            "default": false
           },
           "fileExtension": {
             "type": "string"
@@ -5610,7 +5611,8 @@
             "type": "boolean"
           },
           "isReadOnly": {
-            "type": "boolean"
+            "type": "boolean",
+            "default": false
           },
           "fileExtension": {
             "type": "string"
