@@ -7,7 +7,6 @@
   import {api, AssetResponseDto} from '@api';
   import SelectAll from 'svelte-material-icons/SelectAll.svelte';
   import TimerSand from 'svelte-material-icons/TimerSand.svelte';
-  import {getAssetControlContext} from '../asset-select-control-bar.svelte';
   import {
     assetInteractionStore,
     selectedAssets
@@ -45,5 +44,5 @@
   <CircleIconButton title="Delete" logo={TimerSand}/>
 {/if}
 {#if !selecting}
-  <CircleIconButton title="Delete" logo={SelectAll} on:click={handleSelectAll}/>
+  <CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll}/>
 {/if}

@@ -53,7 +53,7 @@
   <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
     <FavoriteAction removeFavorite onAssetFavorite={(asset) => onAssetDelete(asset.id)}/>
     <CreateSharedLink/>
-    <CircleIconButton title="Delete" logo={SelectAll} on:click={handleSelectAll}/>
+    <CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll}/>
     <AssetSelectContextMenu icon={Plus} title="Add">
       <AddToAlbum/>
       <AddToAlbum shared/>

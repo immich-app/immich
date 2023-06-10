@@ -62,7 +62,7 @@
 				clearSelect={() => (selectedAssets = new Set())}
 			>
 				<ArchiveAction unarchive onAssetArchive={(asset) => onAssetDelete(asset.id)} />
-        <CircleIconButton title="Delete" logo={SelectAll} on:click={handleSelectAll}/>
+        <CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll}/>
 				<CreateSharedLink />
 				<AssetSelectContextMenu icon={Plus} title="Add">
 					<AddToAlbum />
