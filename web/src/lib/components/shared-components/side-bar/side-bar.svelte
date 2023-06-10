@@ -17,6 +17,7 @@
 	import SideBarButton from './side-bar-button.svelte';
 	import { locale } from '$lib/stores/preferences.store';
 	import SideBarSection from './side-bar-section.svelte';
+	import { LL } from '$lib/i18n/i18n-svelte';
 
 	const getAssetCount = async () => {
 		const { data: allAssetCount } = await api.assetApi.getAssetCountByUserId();
@@ -91,7 +92,7 @@
 		draggable="false"
 	>
 		<SideBarButton
-			title="Photos"
+			title={$LL.word.photos()}
 			logo={isPhotosSelected ? ImageMultiple : ImageMultipleOutline}
 			isSelected={isPhotosSelected}
 		>
@@ -114,17 +115,21 @@
 		draggable="false"
 	>
 		<SideBarButton
-			title="Explore"
+			title={$LL.word.explore()}
 			logo={Magnify}
 			isSelected={$page.route.id === '/(user)/explore'}
 		/>
 	</a>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.MAP} draggable="false">
-		<SideBarButton title="Map" logo={Map} isSelected={$page.route.id === '/(user)/map'} />
+		<SideBarButton
+			title={$LL.word.map()}
+			logo={Map}
+			isSelected={$page.route.id === '/(user)/map'}
+		/>
 	</a>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.SHARING} draggable="false">
 		<SideBarButton
-			title="Sharing"
+			title={$LL.word.sharing()}
 			logo={isSharingSelected ? AccountMultiple : AccountMultipleOutline}
 			isSelected={isSharingSelected}
 		>
@@ -146,7 +151,7 @@
 	</div>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.FAVORITES} draggable="false">
 		<SideBarButton
-			title="Favorites"
+			title={$LL.word.favorites()}
 			logo={isFavoritesSelected ? HeartMultiple : HeartMultipleOutline}
 			isSelected={isFavoritesSelected}
 		>
@@ -163,7 +168,7 @@
 	</a>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.ALBUMS} draggable="false">
 		<SideBarButton
-			title="Albums"
+			title={$LL.word.albums()}
 			logo={ImageAlbum}
 			flippedLogo={true}
 			isSelected={$page.route.id === '/(user)/albums'}
@@ -181,7 +186,7 @@
 	</a>
 	<a data-sveltekit-preload-data="hover" href={AppRoute.ARCHIVE} draggable="false">
 		<SideBarButton
-			title="Archive"
+			title={$LL.word.archive()}
 			logo={ArchiveArrowDownOutline}
 			isSelected={$page.route.id === '/(user)/archive'}
 		>

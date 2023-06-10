@@ -9,6 +9,7 @@
 	import DeviceList from './device-list.svelte';
 	import PartnerSettings from './partner-settings.svelte';
 	import UserProfileSettings from './user-profile-settings.svelte';
+	import { LL } from '$lib/i18n/i18n-svelte';
 
 	export let user: UserResponseDto;
 
@@ -27,32 +28,44 @@
 	});
 </script>
 
-<SettingAccordion title="Account" subtitle="Manage your account">
+<SettingAccordion
+	title={$LL.user_settings.account()}
+	subtitle={$LL.user_settings.account_subtitle()}
+>
 	<UserProfileSettings {user} />
 </SettingAccordion>
 
-<SettingAccordion title="API Keys" subtitle="Manage your API keys">
+<SettingAccordion
+	title={$LL.user_settings.api_keys()}
+	subtitle={$LL.user_settings.api_keys_subtitle()}
+>
 	<UserAPIKeyList />
 </SettingAccordion>
 
-<SettingAccordion title="Authorized Devices" subtitle="Manage your logged-in devices">
+<SettingAccordion
+	title={$LL.user_settings.authorized_devices()}
+	subtitle={$LL.user_settings.authorized_devices_subtitle()}
+>
 	<DeviceList />
 </SettingAccordion>
 
 {#if oauthEnabled}
 	<SettingAccordion
-		title="OAuth"
-		subtitle="Manage your OAuth connection"
+		title={$LL.user_settings.oauth()}
+		subtitle={$LL.user_settings.oauth_subtitle()}
 		isOpen={oauthOpen || $page.url.searchParams.get('open') === 'oauth'}
 	>
 		<OAuthSettings {user} />
 	</SettingAccordion>
 {/if}
 
-<SettingAccordion title="Password" subtitle="Change your password">
+<SettingAccordion
+	title={$LL.user_settings.password()}
+	subtitle={$LL.user_settings.password_subtitle()}
+>
 	<ChangePasswordSettings />
 </SettingAccordion>
 
-<SettingAccordion title="Sharing" subtitle="Manage sharing with partners">
+<SettingAccordion title={$LL.word.sharing()} subtitle={$LL.user_settings.sharing_subtitle()}>
 	<PartnerSettings {user} />
 </SettingAccordion>

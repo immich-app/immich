@@ -1,21 +1,24 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		%sveltekit.head%
-		<script>
-			/**
-			 * Prevent FOUC on page load.
-			 */
-			const theme = localStorage.getItem('color-theme') || 'dark';
-			if (theme === 'light') {
-				document.documentElement.classList.remove('dark');
-			}
-		</script>
-	</head>
+<html lang="en" class="dark" data-theme="dark">
 
-	<body class="bg-immich-bg dark:bg-immich-dark-bg">
-		<div>%sveltekit.body%</div>
-	</body>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	%sveltekit.head%
+	<script>
+		/**
+		 * Prevent FOUC on page load.
+		 */
+		const theme = localStorage.getItem('color-theme') || 'dark';
+		if (theme === 'light') {
+			document.documentElement.classList.remove('dark');
+			document.documentElement.removeAttribute('data-theme');
+		}
+	</script>
+</head>
+
+<body class="bg-immich-bg dark:bg-immich-dark-bg">
+	<div>%sveltekit.body%</div>
+</body>
+
 </html>

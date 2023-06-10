@@ -7,6 +7,7 @@
 	import Logout from 'svelte-material-icons/Logout.svelte';
 	import { fade } from 'svelte/transition';
 	import UserAvatar from '../user-avatar.svelte';
+	import { LL } from '$lib/i18n/i18n-svelte';
 
 	export let user: UserResponseDto;
 
@@ -36,7 +37,7 @@
 			<Button color="dark-gray" size="sm" shadow={false} border>
 				<div class="flex gap-2 place-items-center place-content-center px-2">
 					<Cog size="18" />
-					Account Settings
+					{$LL.account.account_settings()}
 				</div>
 			</Button>
 		</a>
@@ -48,7 +49,7 @@
 			on:click={() => dispatch('logout')}
 		>
 			<Logout size={24} />
-			Sign Out</button
+			{$LL.account.sign_out()}</button
 		>
 	</div>
 </div>

@@ -11,8 +11,10 @@
 		if (browser) {
 			if ($colorTheme === 'light') {
 				document.documentElement.classList.remove('dark');
+				document.documentElement.removeAttribute('data-theme');
 			} else {
 				document.documentElement.classList.add('dark');
+				document.documentElement.setAttribute('data-theme', 'dark');
 			}
 		}
 	}

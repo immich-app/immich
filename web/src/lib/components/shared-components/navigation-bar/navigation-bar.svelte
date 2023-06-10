@@ -16,6 +16,9 @@
 	import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
 	import Cog from 'svelte-material-icons/Cog.svelte';
 	import UserAvatar from '../user-avatar.svelte';
+	import I18nButton from '../i18n-button.svelte';
+	import { LL } from '$lib/i18n/i18n-svelte';
+
 	export let user: UserResponseDto;
 	export let showUploadButton = true;
 
@@ -63,14 +66,12 @@
 					</IconButton>
 				</a>
 
-				<ThemeButton />
-
 				{#if !$page.url.pathname.includes('/admin') && showUploadButton}
 					<div in:fly={{ x: 50, duration: 250 }}>
 						<LinkButton on:click={() => dispatch('uploadClicked')}>
 							<div class="flex gap-2">
 								<TrayArrowUp size="1.5em" />
-								<span class="md:block hidden">Upload</span>
+								<span class="md:block hidden">{$LL.word.upload()}</span>
 							</div>
 						</LinkButton>
 					</div>
@@ -85,7 +86,7 @@
 										? 'text-immich-primary dark:text-immich-dark-primary underline item'
 										: ''}
 								>
-									Administration
+									{$LL.word.administration()}
 								</span>
 							</LinkButton>
 						</div>
@@ -106,6 +107,9 @@
 						</div>
 					</a>
 				{/if}
+
+				<ThemeButton />
+				<I18nButton />
 
 				<div use:clickOutside on:outclick={() => (shouldShowAccountInfoPanel = false)}>
 					<button

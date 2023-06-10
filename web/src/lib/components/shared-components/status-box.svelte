@@ -6,6 +6,7 @@
 	import { api, ServerInfoResponseDto } from '@api';
 	import { asByteUnitString } from '../../utils/byte-units';
 	import { locale } from '$lib/stores/preferences.store';
+	import { LL } from '$lib/i18n/i18n-svelte';
 
 	let isServerOk = true;
 	let serverVersion = '';
@@ -57,7 +58,9 @@
 			<Cloud size={'24'} />
 		</div>
 		<div class="hidden md:block group-hover:sm:block">
-			<p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Storage</p>
+			<p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">
+				{$LL.word.storage()}
+			</p>
 			{#if serverInfo}
 				<div class="w-full bg-gray-200 rounded-full h-[7px] dark:bg-gray-700 my-2">
 					<!-- style={`width: ${$downloadAssets[fileName]}%`} -->
@@ -67,8 +70,10 @@
 					/>
 				</div>
 				<p class="text-xs">
-					{asByteUnitString(serverInfo?.diskUseRaw, $locale)} of
-					{asByteUnitString(serverInfo?.diskSizeRaw, $locale)} used
+					{$LL.storage.usage({
+						usedSpace: asByteUnitString(serverInfo?.diskUseRaw, $locale),
+						totalSpace: asByteUnitString(serverInfo?.diskSizeRaw, $locale)
+					})}
 				</p>
 			{:else}
 				<div class="mt-2">
@@ -87,20 +92,24 @@
 			<Dns size={'24'} />
 		</div>
 		<div class="text-xs hidden md:block group-hover:sm:block">
-			<p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">Server</p>
+			<p class="text-sm font-medium text-immich-primary dark:text-immich-dark-primary">
+				{$LL.word.server()}
+			</p>
 
 			<div class="flex justify-items-center justify-between mt-2">
-				<p>Status</p>
+				<p>{$LL.word.status()}</p>
 
 				{#if isServerOk}
-					<p class="font-medium text-immich-primary dark:text-immich-dark-primary">Online</p>
+					<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
+						{$LL.word.online()}
+					</p>
 				{:else}
-					<p class="font-medium text-red-500">Offline</p>
+					<p class="font-medium text-red-500">{$LL.word.offline()}</p>
 				{/if}
 			</div>
 
 			<div class="flex justify-items-center justify-between mt-2">
-				<p>Version</p>
+				<p>{$LL.word.version()}</p>
 				<p class="font-medium text-immich-primary dark:text-immich-dark-primary">
 					{serverVersion}
 				</p>

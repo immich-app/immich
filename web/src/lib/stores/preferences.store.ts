@@ -20,6 +20,14 @@ export const locale = persisted<string | undefined>('locale', undefined, {
 	}
 });
 
+// Language store for i18n
+export const language = persisted<string>('language', 'en', {
+	serializer: {
+		parse: (text) => text,
+		stringify: (obj) => obj ?? 'en'
+	}
+});
+
 export interface MapSettings {
 	allowDarkMode: boolean;
 	onlyFavorites: boolean;
