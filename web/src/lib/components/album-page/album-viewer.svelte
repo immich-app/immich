@@ -24,7 +24,6 @@
 	import Button from '../elements/buttons/button.svelte';
 	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 	import DownloadAction from '../photos-page/actions/download-action.svelte';
-	import SelectAllAssets from '../photos-page/actions/select-all-assets.svelte';
 	import RemoveFromAlbum from '../photos-page/actions/remove-from-album.svelte';
 	import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
 	import UserAvatar from '../shared-components/user-avatar.svelte';
