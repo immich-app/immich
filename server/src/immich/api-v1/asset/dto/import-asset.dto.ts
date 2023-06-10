@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsBoolean } from 'class-validator';
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
@@ -7,8 +7,10 @@ import mime from 'mime-types';
 import { CreateAssetDto } from './create-asset.dto';
 
 export class ImportAssetDto extends CreateAssetDto {
-  // The properties below are added to correctly generate the API docs
-  // and client SDKs. Validation should be handled in the controller.
+  @IsOptional()
+  @IsBoolean()
+  isReadOnly?: boolean;
+
   @ApiProperty()
   @IsString()
   assetData!: string;
