@@ -201,7 +201,7 @@
 					</div>
 				{/if}
 
-				<span class="truncate">
+				<span class="truncate" title={dateGroupTitle}>
 					{dateGroupTitle}
 				</span>
 			</p>
