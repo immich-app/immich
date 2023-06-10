@@ -182,6 +182,7 @@
 			<!-- Date group title -->
 			<p
 				class="font-medium text-xs md:text-sm text-immich-fg dark:text-immich-dark-fg mb-2 flex place-items-center h-6"
+				style="width: {calculateWidth(geometry[groupIndex].boxes)}px"
 			>
 				{#if (hoveredDateGroup == dateGroupTitle && isMouseOverGroup) || $selectedGroup.has(dateGroupTitle)}
 					<div
@@ -198,7 +199,7 @@
 					</div>
 				{/if}
 
-				<span>
+				<span class="truncate">
 					{dateGroupTitle}
 				</span>
 			</p>
