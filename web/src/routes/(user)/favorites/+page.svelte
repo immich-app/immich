@@ -69,10 +69,10 @@
   <section>
     <!-- Empty Message -->
     {#if favorites.length === 0}
-      <EmptyPlaceholder
-        text="Add favorites to quickly find your best pictures and videos"
-        alt="Empty favorites"
-      />
+        <EmptyPlaceholder
+            text="Add favorites to quickly find your best pictures and videos"
+            alt="Empty favorites"
+        />
     {/if}
 
     <GalleryViewer assets={favorites} bind:selectedAssets viewFrom="favorites-page"/>
