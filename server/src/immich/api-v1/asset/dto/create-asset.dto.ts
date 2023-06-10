@@ -32,6 +32,10 @@ export class CreateAssetDto {
   @IsBoolean()
   isVisible?: boolean;
 
+  @IsOptional()
+  @IsBoolean()
+  isReadOnly?: boolean;
+
   @IsNotEmpty()
   fileExtension!: string;
 

@@ -1472,6 +1472,58 @@
         ]
       }
     },
+    "/asset/import": {
+      "post": {
+        "operationId": "importFile",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Asset Import Information",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportAssetDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetFileUploadResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/asset/map-marker": {
       "get": {
         "operationId": "getMapMarkers",
@@ -5102,6 +5154,9 @@
           "isVisible": {
             "type": "boolean"
           },
+          "isReadOnly": {
+            "type": "boolean"
+          },
           "fileExtension": {
             "type": "string"
           },
@@ -5511,6 +5566,68 @@
         },
         "required": [
           "timeGroup"
+        ]
+      },
+      "ImportAssetDto": {
+        "type": "object",
+        "properties": {
+          "assetType": {
+            "$ref": "#/components/schemas/AssetTypeEnum"
+          },
+          "assetData": {
+            "type": "string",
+            "format": "binary"
+          },
+          "livePhotoData": {
+            "type": "string",
+            "format": "binary"
+          },
+          "sidecarData": {
+            "type": "string",
+            "format": "binary"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "fileCreatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fileModifiedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "isArchived": {
+            "type": "boolean"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "isReadOnly": {
+            "type": "boolean"
+          },
+          "fileExtension": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetType",
+          "assetData",
+          "deviceAssetId",
+          "deviceId",
+          "fileCreatedAt",
+          "fileModifiedAt",
+          "isFavorite",
+          "fileExtension"
         ]
       },
       "JobCommand": {

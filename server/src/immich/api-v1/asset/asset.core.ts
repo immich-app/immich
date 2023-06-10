@@ -41,6 +41,7 @@ export class AssetCore {
       originalFileName: parse(file.originalName).name,
       faces: [],
       sidecarPath: sidecarFile?.originalPath || null,
+      isReadOnly: dto.isReadOnly ?? false,
     });
 
     await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id, source: 'upload' } });

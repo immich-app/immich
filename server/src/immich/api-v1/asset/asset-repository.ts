@@ -40,6 +40,7 @@ export interface IAssetRepository {
   getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetCheck[]>;
   getExistingAssets(userId: string, checkDuplicateAssetDto: CheckExistingAssetsDto): Promise<string[]>;
   countByIdAndUser(assetId: string, userId: string): Promise<number>;
+  getAssetByOriginalPath(userId: string, originalPath: string): Promise<AssetCheck[]>;
 }
 
 export const IAssetRepository = 'IAssetRepository';
@@ -359,5 +360,24 @@ export class AssetRepository implements IAssetRepository {
     }
 
     return assetCountByUserId;
+  }
+
+  /**
+   * Get asset by filepath on the database
+   * @param ownerId
+   * @param originalPath
+   *
+   */
+  getAssetByOriginalPath(ownerId: string, originalPath: string): Promise<AssetCheck[]> {
+    return this.assetRepository.find({
+      select: {
+        id: true,
+        checksum: true,
+      },
+      where: {
+        ownerId,
+        originalPath,
+      },
+    });
   }
 }

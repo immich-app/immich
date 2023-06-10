@@ -105,6 +105,21 @@ export class AssetService {
     livePhotoFile?: UploadFile,
     sidecarFile?: UploadFile,
   ): Promise<AssetFileUploadResponseDto> {
+    if (dto.isReadOnly) {
+      // If this is read-only, we are likely importing. Ensure that the filesystem locations
+      // actually exist.
+      for (const fileToCheck of [file, livePhotoFile, sidecarFile]) {
+        if (fileToCheck) {
+          try {
+            await fs.access(file.originalPath, constants.R_OK);
+          } catch (error: any) {
+            this.logger.error(`Error importing file`, `${error}`);
+            throw new BadRequestException(`Error importing file`, `${error}`);
+          }
+        }
+      }
+    }
+
     if (livePhotoFile) {
       livePhotoFile = {
         ...livePhotoFile,
@@ -124,11 +139,13 @@ export class AssetService {
 
       return { id: asset.id, duplicate: false };
     } catch (error: any) {
-      // clean up files
-      await this.jobRepository.queue({
-        name: JobName.DELETE_FILES,
-        data: { files: [file.originalPath, livePhotoFile?.originalPath, sidecarFile?.originalPath] },
-      });
+      if (!dto.isReadOnly) {
+        // clean up files
+        await this.jobRepository.queue({
+          name: JobName.DELETE_FILES,
+          data: { files: [file.originalPath, livePhotoFile?.originalPath, sidecarFile?.originalPath] },
+        });
+      }
 
       // handle duplicates with a success response
       if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_userid_checksum') {
@@ -386,13 +403,16 @@ export class AssetService {
         await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [id] } });
 
         result.push({ id, status: DeleteAssetStatusEnum.SUCCESS });
-        deleteQueue.push(
-          asset.originalPath,
-          asset.webpPath,
-          asset.resizePath,
-          asset.encodedVideoPath,
-          asset.sidecarPath,
-        );
+
+        if (!asset.isReadOnly) {
+          deleteQueue.push(
+            asset.originalPath,
+            asset.webpPath,
+            asset.resizePath,
+            asset.encodedVideoPath,
+            asset.sidecarPath,
+          );
+        }
 
         // TODO refactor this to use cascades
         if (asset.livePhotoVideoId && !ids.includes(asset.livePhotoVideoId)) {

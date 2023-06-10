@@ -57,6 +57,7 @@ import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-resp
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
 import { DeviceIdDto } from './dto/device-id.dto';
 import { handleDownload } from '../../app.utils';
+import { ImportAssetDto, mapToImportFile } from './dto/import-asset.dto';
 
 function asStreamableFile({ stream, type, length }: ImmichReadStream) {
   return new StreamableFile(stream, { type, length });
@@ -108,6 +109,38 @@ export class AssetController {
     let sidecarFile;
     if (_sidecarFile) {
       sidecarFile = mapToUploadFile(_sidecarFile);
+    }
+
+    const responseDto = await this.assetService.uploadFile(authUser, dto, file, livePhotoFile, sidecarFile);
+    if (responseDto.duplicate) {
+      res.status(200);
+    }
+
+    return responseDto;
+  }
+
+  @SharedLinkRoute()
+  @Post('import')
+  @ApiBody({
+    description: 'Asset Import Information',
+    type: ImportAssetDto,
+  })
+  async importFile(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Body(new ValidationPipe()) dto: CreateAssetDto,
+    @Response({ passthrough: true }) res: Res,
+  ): Promise<AssetFileUploadResponseDto> {
+    const file = await mapToImportFile(dto.assetData);
+    const _livePhotoFile = dto.livePhotoData;
+    const _sidecarFile = dto.sidecarData;
+    let livePhotoFile;
+    if (_livePhotoFile) {
+      livePhotoFile = await mapToImportFile(_livePhotoFile);
+    }
+
+    let sidecarFile;
+    if (_sidecarFile) {
+      sidecarFile = await mapToImportFile(_sidecarFile);
     }
 
     const responseDto = await this.assetService.uploadFile(authUser, dto, file, livePhotoFile, sidecarFile);
