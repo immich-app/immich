@@ -9,7 +9,7 @@ import { CreateAssetDto } from './create-asset.dto';
 export class ImportAssetDto extends CreateAssetDto {
   @IsOptional()
   @IsBoolean()
-  isReadOnly?: boolean;
+  isReadOnly?: boolean = true;
 
   @ApiProperty()
   @IsString()
