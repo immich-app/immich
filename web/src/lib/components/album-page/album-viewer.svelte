@@ -33,7 +33,7 @@
 	import CreateSharedLinkModal from '../shared-components/create-share-link-modal/create-shared-link-modal.svelte';
 	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
 	import ImmichLogo from '../shared-components/immich-logo.svelte';
-  import SelectAll from 'svelte-material-icons/SelectAll.svelte';
+    import SelectAll from 'svelte-material-icons/SelectAll.svelte';
 	import {
 		NotificationType,
 		notificationController
@@ -44,7 +44,6 @@
 	import ThumbnailSelection from './thumbnail-selection.svelte';
 	import UserSelectionModal from './user-selection-modal.svelte';
 	import { handleError } from '../../utils/handle-error';
-  import {selectedAssets} from "$lib/stores/asset-interaction.store";
 
 	export let album: AlbumResponseDto;
 	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
@@ -347,7 +346,7 @@
 			assets={multiSelectAsset}
 			clearSelect={() => (multiSelectAsset = new Set())}
 		>
-      <CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll}/>
+            <CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll}/>
 			<DownloadAction filename={album.albumName} sharedLinkKey={sharedLink?.key} />
 			{#if isOwned}
 				<RemoveFromAlbum bind:album />

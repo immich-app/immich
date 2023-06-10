@@ -38,7 +38,7 @@
 				clearSelect={assetInteractionStore.clearMultiselect}
 			>
 				<CreateSharedLink />
-        <SelectAllAssets/>
+				<SelectAllAssets/>
 				<AssetSelectContextMenu icon={Plus} title="Add">
 					<AddToAlbum />
 					<AddToAlbum shared />
