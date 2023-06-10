@@ -12,7 +12,6 @@
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import SelectAll from 'svelte-material-icons/SelectAll.svelte';
-  import TimerSand from 'svelte-material-icons/TimerSand.svelte';
   import {handleError} from '$lib/utils/handle-error';
   import {api, AssetResponseDto} from '@api';
   import {onMount} from 'svelte';
@@ -54,7 +53,7 @@
   <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
     <FavoriteAction removeFavorite onAssetFavorite={(asset) => onAssetDelete(asset.id)}/>
     <CreateSharedLink/>
-      <CircleIconButton title="Delete" logo={SelectAll} on:click={handleSelectAll}/>
+    <CircleIconButton title="Delete" logo={SelectAll} on:click={handleSelectAll}/>
     <AssetSelectContextMenu icon={Plus} title="Add">
       <AddToAlbum/>
       <AddToAlbum shared/>
