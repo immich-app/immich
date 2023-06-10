@@ -7,7 +7,7 @@
   import {api, AssetResponseDto} from '@api';
   import SelectAll from 'svelte-material-icons/SelectAll.svelte';
   import TimerSand from 'svelte-material-icons/TimerSand.svelte';
-  import {OnSelectAll, getAssetControlContext} from '../asset-select-control-bar.svelte';
+  import {getAssetControlContext} from '../asset-select-control-bar.svelte';
   import {
     assetInteractionStore,
     selectedAssets
@@ -17,8 +17,6 @@
   import {handleError} from '../../../utils/handle-error';
   import {AssetGridState} from "$lib/models/asset-grid-state";
   import {sumBy} from "lodash-es";
-
-  export let onSelectAll: OnSelectAll;
 
   let selecting = false;
 

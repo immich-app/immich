@@ -2,7 +2,6 @@
 	import { createContext } from '$lib/utils/context';
 
 	export type OnAssetDelete = (assetId: string) => void;
-	export type OnSelectAll = (assetId: string) => void;
 	export type OnAssetArchive = (asset: AssetResponseDto, archived: boolean) => void;
 	export type OnAssetFavorite = (asset: AssetResponseDto, favorite: boolean) => void;
 
