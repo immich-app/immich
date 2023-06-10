@@ -136,7 +136,7 @@ export class AssetService {
       }
 
       if (dto.isReadOnly) {
-        const duplicate = await this._assetRepository.getAssetByOriginalPath(authUser.id, file.originalPath)
+        const duplicate = await this._assetRepository.getAssetByOriginalPath(authUser.id, file.originalPath);
         if (duplicate.length > 0) {
           return { id: duplicate[0].id, duplicate: true };
         }
