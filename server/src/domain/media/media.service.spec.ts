@@ -263,7 +263,7 @@ describe(MediaService.name, () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
       configMock.load.mockResolvedValue([
         { key: SystemConfigKey.FFMPEG_TRANSCODE, value: 'all' },
-        { key: SystemConfigKey.FFMPEG_TARGET_RESOLUTION, value: '' },
+        { key: SystemConfigKey.FFMPEG_TARGET_RESOLUTION, value: 'original' },
       ]);
       await sut.handleVideoConversion({ id: assetEntityStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
