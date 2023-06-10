@@ -10,8 +10,6 @@
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import SelectAll from 'svelte-material-icons/SelectAll.svelte';
   import {handleError} from '$lib/utils/handle-error';
   import {api, AssetResponseDto} from '@api';
   import {onMount} from 'svelte';
@@ -19,24 +17,25 @@
   import Plus from 'svelte-material-icons/Plus.svelte';
   import Error from '../../+error.svelte';
   import type {PageData} from './$types';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import SelectAll from 'svelte-material-icons/SelectAll.svelte';
 
   let favorites: AssetResponseDto[] = [];
   let selectedAssets: Set<AssetResponseDto> = new Set();
   export let data: PageData;
-
   $: isMultiSelectionMode = selectedAssets.size > 0;
   $: isAllArchive = Array.from(selectedAssets).every((asset) => asset.isArchived);
 
   onMount(async () => {
-    try {
-      const {data: assets} = await api.assetApi.getAllAssets({
-        isFavorite: true,
-        withoutThumbs: true
-      });
-      favorites = assets;
-    } catch {
-      handleError(Error, 'Unable to load favorites');
-    }
+      try {
+          const { data: assets } = await api.assetApi.getAllAssets({
+              isFavorite: true,
+              withoutThumbs: true
+          });
+          favorites = assets;
+      } catch {
+          handleError(Error, 'Unable to load favorites');
+      }
   });
 
   const handleSelectAll = () => {
