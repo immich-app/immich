@@ -68,20 +68,16 @@ def ping() -> str:
 
 
 @app.post("/image-classifier/tag-image", response_model=TagResponse, status_code=200)
-async def image_classification(payload: VisionModelRequest) -> list[str] | list[list[str]]:
+async def image_classification(payload: VisionModelRequest) -> list[list[str]]:
     if _model_cache is None:
         raise HTTPException(status_code=500, detail="Unable to load model.")
-    if not (batched := isinstance(payload.image_paths, list)):
-        image_paths = [payload.image_paths]
-    else:
-        image_paths = payload.image_paths
-        
+
     model = await _model_cache.get_cached_model(
         classification_model, ModelType.IMAGE_CLASSIFICATION
     )
-    images = _load_images(image_paths, Image.open)
+    images = _load_images(payload.image_paths, Image.open)
     batch_labels = run_classification(model, images, min_tag_score)
-    return batch_labels[0] if not batched else batch_labels
+    return batch_labels
 
 
 @app.post(
@@ -89,19 +85,15 @@ async def image_classification(payload: VisionModelRequest) -> list[str] | list[
     response_model=EmbeddingResponse,
     status_code=200,
 )
-async def clip_encode_image(payload: VisionModelRequest) -> list[float] | list[list[float]]:
+async def clip_encode_image(payload: VisionModelRequest) -> list[list[float]]:
     if _model_cache is None:
         raise HTTPException(status_code=500, detail="Unable to load model.")
-    if not (batched := isinstance(payload.image_paths, list)):
-        image_paths = [payload.image_paths]
-    else:
-        image_paths = payload.image_paths
 
-    images = _load_images(image_paths, Image.open)
+    images = _load_images(payload.image_paths, Image.open)
     model = await _model_cache.get_cached_model(clip_image_model, ModelType.CLIP)
     embedding = model.encode(images).tolist()
 
-    return embedding[0] if not batched else embedding
+    return embedding
 
 
 @app.post(
@@ -109,7 +101,7 @@ async def clip_encode_image(payload: VisionModelRequest) -> list[float] | list[l
     response_model=EmbeddingResponse,
     status_code=200,
 )
-async def clip_encode_text(payload: TextModelRequest) -> list[float] | list[list[float]]:
+async def clip_encode_text(payload: TextModelRequest) -> list[list[float]]:
     if _model_cache is None:
         raise HTTPException(status_code=500, detail="Unable to load model.")
     if not (batched := isinstance(payload.text, list)):
@@ -126,26 +118,19 @@ async def clip_encode_text(payload: TextModelRequest) -> list[float] | list[list
 @app.post(
     "/facial-recognition/detect-faces", response_model=FaceResponse, status_code=200
 )
-async def facial_recognition(payload: VisionModelRequest) -> dict[str, Any] | list[dict[str, Any]]:
+async def facial_recognition(payload: VisionModelRequest) -> list[dict[str, Any]]:
     if _model_cache is None:
         raise HTTPException(status_code=500, detail="Unable to load model.")
-    if not (batched := isinstance(payload.image_paths, list)):
-        images_paths = [payload.image_paths]
-    else:
-        images_paths = payload.image_paths
 
-    images = _load_images(images_paths, cv.imread)
+    images = _load_images(payload.image_paths, cv.imread)
     model = await _model_cache.get_cached_model(
         facial_recognition_model, ModelType.FACIAL_RECOGNITION
     )
     batch_faces = run_facial_recognition(model, images)
-    return batch_faces[0] if not batched else batch_faces
+    return batch_faces
 
 
-def _load_images(image_paths: str | list[str], loader: Callable[[str], R] = Image.open) -> list[R]:
-    if not isinstance(image_paths, list):
-        image_paths = [image_paths]
-
+def _load_images(image_paths: list[str], loader: Callable[[str], R] = Image.open) -> list[R]:
     images = []
     for i, image_path in enumerate(image_paths):
         try:

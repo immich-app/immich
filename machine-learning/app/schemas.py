@@ -1,5 +1,5 @@
 from enum import StrEnum
-from typing import ParamSpec, TypeAlias, Literal, TypeVar
+from typing import ParamSpec, TypeVar
 from pydantic import BaseModel
 
 
@@ -12,7 +12,7 @@ def to_lower_camel(string: str) -> str:
 
 
 class VisionModelRequest(BaseModel):
-    image_paths: str | list[str]
+    image_paths: list[str]
 
     class Config:
         alias_generator = to_lower_camel
@@ -20,7 +20,7 @@ class VisionModelRequest(BaseModel):
 
 
 class TextModelRequest(BaseModel):
-    text: str | list[str]
+    text: list[str]
 
 
 class TextResponse(BaseModel):
@@ -36,7 +36,7 @@ class Tags(BaseModel):
 
 
 class TagResponse(BaseModel):
-    __root__: Tags | list[Tags]
+    __root__: list[Tags]
 
 
 class Embedding(BaseModel):
@@ -44,7 +44,7 @@ class Embedding(BaseModel):
 
 
 class EmbeddingResponse(BaseModel):
-    __root__: Embedding | list[Embedding]
+    __root__: list[Embedding]
 
 
 class BoundingBox(BaseModel):
@@ -75,7 +75,7 @@ class ImageFaces(BaseModel):
 
 
 class FaceResponse(BaseModel):
-    __root__: ImageFaces | list[ImageFaces]
+    __root__: list[ImageFaces]
 
 
 class ModelType(StrEnum):

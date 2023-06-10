@@ -40,7 +40,7 @@ def get_model(model_name: str, model_type: ModelType, **model_kwargs):
             )
         case _:
             model = pipeline(
-                model_type,
+                model_type.value,
                 model_name,
                 model_kwargs={"cache_dir": cache_dir, **model_kwargs},
             )
