@@ -20,23 +20,25 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import SelectAll from 'svelte-material-icons/SelectAll.svelte';
 
-  let favorites: AssetResponseDto[] = [];
-  let selectedAssets: Set<AssetResponseDto> = new Set();
-  export let data: PageData;
-  $: isMultiSelectionMode = selectedAssets.size > 0;
-  $: isAllArchive = Array.from(selectedAssets).every((asset) => asset.isArchived);
+	let favorites: AssetResponseDto[] = [];
+	let selectedAssets: Set<AssetResponseDto> = new Set();
 
-  onMount(async () => {
-      try {
-          const { data: assets } = await api.assetApi.getAllAssets({
-              isFavorite: true,
-              withoutThumbs: true
-          });
-          favorites = assets;
-      } catch {
-          handleError(Error, 'Unable to load favorites');
-      }
-  });
+	export let data: PageData;
+
+	$: isMultiSelectionMode = selectedAssets.size > 0;
+	$: isAllArchive = Array.from(selectedAssets).every((asset) => asset.isArchived);
+
+	onMount(async () => {
+		try {
+			const { data: assets } = await api.assetApi.getAllAssets({
+				isFavorite: true,
+				withoutThumbs: true
+			});
+			favorites = assets;
+		} catch {
+			handleError(Error, 'Unable to load favorites');
+		}
+	});
 
   const handleSelectAll = () => {
     selectedAssets = new Set(favorites);
@@ -49,32 +51,32 @@
 
 <!-- Multiselection mode app bar -->
 {#if isMultiSelectionMode}
-  <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
-    <FavoriteAction removeFavorite onAssetFavorite={(asset) => onAssetDelete(asset.id)}/>
-    <CreateSharedLink/>
-    <CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll}/>
-    <AssetSelectContextMenu icon={Plus} title="Add">
-      <AddToAlbum/>
-      <AddToAlbum shared/>
-    </AssetSelectContextMenu>
-    <DeleteAssets {onAssetDelete}/>
-    <AssetSelectContextMenu icon={DotsVertical} title="Menu">
-      <DownloadAction menuItem/>
-      <ArchiveAction menuItem unarchive={isAllArchive}/>
-    </AssetSelectContextMenu>
-  </AssetSelectControlBar>
+	<AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
+		<FavoriteAction removeFavorite onAssetFavorite={(asset) => onAssetDelete(asset.id)} />
+		<CreateSharedLink />
+        <CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll}/>
+		<AssetSelectContextMenu icon={Plus} title="Add">
+			<AddToAlbum />
+			<AddToAlbum shared />
+		</AssetSelectContextMenu>
+		<DeleteAssets {onAssetDelete} />
+		<AssetSelectContextMenu icon={DotsVertical} title="Menu">
+			<DownloadAction menuItem />
+			<ArchiveAction menuItem unarchive={isAllArchive} />
+		</AssetSelectContextMenu>
+	</AssetSelectControlBar>
 {/if}
 
 <UserPageLayout user={data.user} hideNavbar={isMultiSelectionMode} title={data.meta.title}>
-  <section>
-    <!-- Empty Message -->
-    {#if favorites.length === 0}
-        <EmptyPlaceholder
-            text="Add favorites to quickly find your best pictures and videos"
-            alt="Empty favorites"
-        />
-    {/if}
+	<section>
+		<!-- Empty Message -->
+		{#if favorites.length === 0}
+			<EmptyPlaceholder
+				text="Add favorites to quickly find your best pictures and videos"
+				alt="Empty favorites"
+			/>
+		{/if}
 
-    <GalleryViewer assets={favorites} bind:selectedAssets viewFrom="favorites-page"/>
-  </section>
+		<GalleryViewer assets={favorites} bind:selectedAssets viewFrom="favorites-page" />
+	</section>
 </UserPageLayout>
