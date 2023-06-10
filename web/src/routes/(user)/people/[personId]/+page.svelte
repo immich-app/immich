@@ -20,7 +20,7 @@
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import Plus from 'svelte-material-icons/Plus.svelte';
 	import type { PageData } from './$types';
-	import CircleIconButton from "$lib/components/elements/buttons/circle-icon-button.svelte";
+	import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 	import SelectAll from 'svelte-material-icons/SelectAll.svelte';
 
 	export let data: PageData;
@@ -52,15 +52,15 @@
 	const onAssetDelete = (assetId: string) => {
 		data.assets = data.assets.filter((asset: AssetResponseDto) => asset.id !== assetId);
 	};
-    const handleSelectAll = () => {
-      selectedAssets = new Set(data.assets)
-    }
+	const handleSelectAll = () => {
+		selectedAssets = new Set(data.assets);
+	};
 </script>
 
 {#if isMultiSelectionMode}
 	<AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
 		<CreateSharedLink />
-        <CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll}/>
+		<CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll} />
 		<AssetSelectContextMenu icon={Plus} title="Add">
 			<AddToAlbum />
 			<AddToAlbum shared />
