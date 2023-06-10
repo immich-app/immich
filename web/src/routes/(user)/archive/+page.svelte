@@ -10,15 +10,15 @@
 	import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
 	import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
 	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
-	import SelectAll from 'svelte-material-icons/SelectAll.svelte';
-	import {archivedAsset} from '$lib/stores/archived-asset.store';
-	import {handleError} from '$lib/utils/handle-error';
-	import {api, AssetResponseDto} from '@api';
-	import {onMount} from 'svelte';
+  import SelectAll from 'svelte-material-icons/SelectAll.svelte';
+	import { archivedAsset } from '$lib/stores/archived-asset.store';
+	import { handleError } from '$lib/utils/handle-error';
+	import { api, AssetResponseDto } from '@api';
+	import { onMount } from 'svelte';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import Plus from 'svelte-material-icons/Plus.svelte';
-	import type {PageData} from './$types';
-	import CircleIconButton from "$lib/components/elements/buttons/circle-icon-button.svelte";
+	import type { PageData } from './$types';
+  import CircleIconButton from "$lib/components/elements/buttons/circle-icon-button.svelte";
 
 	export let data: PageData;
 
@@ -28,7 +28,7 @@
 
 	onMount(async () => {
 		try {
-			const {data: assets} = await api.assetApi.getAllAssets({
+			const { data: assets } = await api.assetApi.getAllAssets({
 				isArchived: true,
 				withoutThumbs: true
 			});
@@ -41,41 +41,41 @@
 	const onAssetDelete = (assetId: string) => {
 		$archivedAsset = $archivedAsset.filter((a) => a.id !== assetId);
 	};
-	const handleSelectAll = () => {
-		selectedAssets = new Set($archivedAsset)
-	}
+  const handleSelectAll = () => {
+    selectedAssets = new Set($archivedAsset)
+  }
 </script>
 
 <UserPageLayout user={data.user} hideNavbar={isMultiSelectionMode} title={data.meta.title}>
-    <!-- Empty Message -->
-    {#if $archivedAsset.length === 0}
-        <EmptyPlaceholder
-                text="Archive photos and videos to hide them from your Photos view"
-                alt="Empty archive"
-        />
-    {/if}
+	<!-- Empty Message -->
+	{#if $archivedAsset.length === 0}
+		<EmptyPlaceholder
+			text="Archive photos and videos to hide them from your Photos view"
+			alt="Empty archive"
+		/>
+	{/if}
 
-    <svelte:fragment slot="header">
-        {#if isMultiSelectionMode}
-            <AssetSelectControlBar
-                    assets={selectedAssets}
-                    clearSelect={() => (selectedAssets = new Set())}
-            >
-                <ArchiveAction unarchive onAssetArchive={(asset) => onAssetDelete(asset.id)}/>
-                <CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll}/>
-                <CreateSharedLink/>
-                <AssetSelectContextMenu icon={Plus} title="Add">
-                    <AddToAlbum/>
-                    <AddToAlbum shared/>
-                </AssetSelectContextMenu>
-                <DeleteAssets {onAssetDelete}/>
-                <AssetSelectContextMenu icon={DotsVertical} title="Add">
-                    <DownloadAction menuItem/>
-                    <FavoriteAction menuItem removeFavorite={isAllFavorite}/>
-                </AssetSelectContextMenu>
-            </AssetSelectControlBar>
-        {/if}
-    </svelte:fragment>
+	<svelte:fragment slot="header">
+		{#if isMultiSelectionMode}
+			<AssetSelectControlBar
+				assets={selectedAssets}
+				clearSelect={() => (selectedAssets = new Set())}
+			>
+				<ArchiveAction unarchive onAssetArchive={(asset) => onAssetDelete(asset.id)} />
+        <CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll}/>
+				<CreateSharedLink />
+				<AssetSelectContextMenu icon={Plus} title="Add">
+					<AddToAlbum />
+					<AddToAlbum shared />
+				</AssetSelectContextMenu>
+				<DeleteAssets {onAssetDelete} />
+				<AssetSelectContextMenu icon={DotsVertical} title="Add">
+					<DownloadAction menuItem />
+					<FavoriteAction menuItem removeFavorite={isAllFavorite} />
+				</AssetSelectContextMenu>
+			</AssetSelectControlBar>
+		{/if}
+	</svelte:fragment>
 
-    <GalleryViewer assets={$archivedAsset} bind:selectedAssets viewFrom="archive-page"/>
+	<GalleryViewer assets={$archivedAsset} bind:selectedAssets viewFrom="archive-page" />
 </UserPageLayout>
