@@ -20,7 +20,7 @@ export interface Face {
 export interface DetectFaceResult {
   imageWidth: number;
   imageHeight: number;
-  faces: Face[]
+  faces: Face[];
 }
 
 export interface IMachineLearningRepository {
