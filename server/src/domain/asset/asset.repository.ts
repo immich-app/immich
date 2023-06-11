@@ -51,4 +51,5 @@ export interface IAssetRepository {
   save(asset: Partial<AssetEntity>): Promise<AssetEntity>;
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
   getMapMarkers(ownerId: string, options?: MapMarkerSearchOptions): Promise<MapMarker[]>;
+  getByOriginalPath(path: string): Promise<AssetEntity[]>;
 }

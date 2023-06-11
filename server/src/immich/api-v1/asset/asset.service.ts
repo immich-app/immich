@@ -173,19 +173,22 @@ export class AssetService {
     livePhotoFile?: UploadFile,
     sidecarFile?: UploadFile,
   ): Promise<AssetFileUploadResponseDto> {
-    if (dto.isReadOnly) {
-      // If this is read-only, we are likely importing. Ensure that the filesystem locations
-      // actually exist.
-      for (const fileToCheck of [file, livePhotoFile, sidecarFile]) {
-        if (fileToCheck) {
-          try {
-            await fs.access(file.originalPath, constants.R_OK);
-          } catch (error: any) {
-            this.logger.error(`Error importing file`, `${error}`);
-            throw new BadRequestException(`Error importing file`, `${error}`);
-          }
+    // Ensure that the filesystem locations actually exist.
+    for (const fileToCheck of [file, livePhotoFile, sidecarFile]) {
+      if (fileToCheck) {
+        try {
+          await fs.access(file.originalPath, constants.R_OK);
+        } catch (error: any) {
+          this.logger.error(`Error importing file`, `${error}`);
+          throw new BadRequestException(`Error importing file`, `${error}`);
         }
       }
+    }
+
+    // Ensure the path isn't already in use by another user
+    const duplicates = await this.assetRepository.getByOriginalPath(file.originalPath);
+    if (duplicates.length > 0) {
+      return { id: duplicates[0].id, duplicate: true };
     }
 
     return this.uploadFile(authUser, dto, file, livePhotoFile, sidecarFile);

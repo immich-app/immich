@@ -43,6 +43,7 @@ export class AssetEntity {
   type!: AssetType;
 
   @Column()
+  @Index()
   originalPath!: string;
 
   @Column({ type: 'varchar', nullable: true })

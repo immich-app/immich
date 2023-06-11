@@ -4,6 +4,7 @@ import path from 'path';
 import crypto from 'crypto';
 import mime from 'mime-types';
 import { CreateAssetDto, UploadFile } from './create-asset.dto';
+import sanitize from 'sanitize-filename';
 
 export class ImportAssetDto extends CreateAssetDto {
   @IsOptional()
@@ -23,6 +24,7 @@ export class ImportAssetDto extends CreateAssetDto {
 }
 
 export async function mapToImportFile(filepath: string): Promise<UploadFile> {
+  filepath = sanitize(filepath);
   const pathInfo = path.parse(filepath);
 
   const checksum = await new Promise<string>((resolve, reject) => {
