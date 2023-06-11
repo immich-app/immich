@@ -121,13 +121,9 @@ export class AssetController {
 
   @SharedLinkRoute()
   @Post('import')
-  @ApiBody({
-    description: 'Asset Import Information',
-    type: ImportAssetDto,
-  })
   async importFile(
     @GetAuthUser() authUser: AuthUserDto,
-    @Body(new ValidationPipe()) dto: CreateAssetDto,
+    @Body(new ValidationPipe()) dto: ImportAssetDto,
     @Response({ passthrough: true }) res: Res,
   ): Promise<AssetFileUploadResponseDto> {
     const file = await mapToImportFile(dto.assetData);
@@ -143,7 +139,7 @@ export class AssetController {
       sidecarFile = await mapToImportFile(_sidecarFile);
     }
 
-    const responseDto = await this.assetService.uploadFile(authUser, dto, file, livePhotoFile, sidecarFile);
+    const responseDto = await this.assetService.importFile(authUser, dto, file, livePhotoFile, sidecarFile);
     if (responseDto.duplicate) {
       res.status(200);
     }
