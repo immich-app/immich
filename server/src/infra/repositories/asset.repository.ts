@@ -20,6 +20,10 @@ import { paginate } from '../utils/pagination.util';
 export class AssetRepository implements IAssetRepository {
   constructor(@InjectRepository(AssetEntity) private repository: Repository<AssetEntity>) {}
 
+  getByDate(date: Date): Promise<AssetEntity[]> {
+    throw new Error('Method not implemented.');
+  }
+
   getByIds(ids: string[]): Promise<AssetEntity[]> {
     return this.repository.find({
       where: { id: In(ids) },

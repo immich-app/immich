@@ -1534,6 +1534,31 @@
         ]
       }
     },
+    "/asset/memory-lane": {
+      "get": {
+        "operationId": "getMemoryLane",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/asset/search": {
       "post": {
         "operationId": "searchAsset",

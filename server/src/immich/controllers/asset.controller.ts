@@ -1,4 +1,4 @@
-import { AssetService, AuthUserDto, MapMarkerResponseDto } from '@app/domain';
+import { AssetResponseDto, AssetService, AuthUserDto, MapMarkerResponseDto } from '@app/domain';
 import { MapMarkerDto } from '@app/domain/asset/dto/map-marker.dto';
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
@@ -16,5 +16,10 @@ export class AssetController {
   @Get('/map-marker')
   getMapMarkers(@GetAuthUser() authUser: AuthUserDto, @Query() options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
     return this.service.getMapMarkers(authUser, options);
+  }
+
+  @Get('memory-lane')
+  getMemoryLane(@GetAuthUser() authUser: AuthUserDto) {
+    return this.service.getMemoryLane(authUser);
   }
 }
