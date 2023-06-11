@@ -1,5 +1,5 @@
 import { IsOptional, IsString, IsBoolean } from 'class-validator';
-import fs from 'fs/promises';
+import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import mime from 'mime-types';
@@ -25,7 +25,7 @@ export class ImportAssetDto extends CreateAssetDto {
 export async function mapToImportFile(filepath: string): Promise<UploadFile> {
   const pathInfo = path.parse(filepath);
 
-  const checksum = await new Promise((resolve, reject) => {
+  const checksum = await new Promise<string>((resolve, reject) => {
     const hash = crypto.createHash('sha1');
     const stream = fs.createReadStream(filepath);
     stream.on('error', (err) => reject(err));
