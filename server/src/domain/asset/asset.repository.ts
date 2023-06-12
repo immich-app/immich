@@ -42,7 +42,7 @@ export enum WithProperty {
 export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
-  getByDate(date: Date): Promise<AssetEntity[]>;
+  getByDate(ownerId: string, date: Date): Promise<AssetEntity[]>;
   getByIds(ids: string[]): Promise<AssetEntity[]>;
   getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity>;
   getWith(pagination: PaginationOptions, property: WithProperty): Paginated<AssetEntity>;

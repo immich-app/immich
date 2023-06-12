@@ -20,8 +20,21 @@ import { paginate } from '../utils/pagination.util';
 export class AssetRepository implements IAssetRepository {
   constructor(@InjectRepository(AssetEntity) private repository: Repository<AssetEntity>) {}
 
-  getByDate(date: Date): Promise<AssetEntity[]> {
-    throw new Error('Method not implemented.');
+  getByDate(ownerId: string, date: Date): Promise<AssetEntity[]> {
+    let builder = this.repository
+      .createQueryBuilder('asset')
+      .select('asset.id')
+      .leftJoin('asset.exifInfo', 'exifInfo')
+      .where('asset.ownerId = :ownerId', { ownerId })
+      .andWhere(
+        `coalesce(date_trunc('day', asset."fileCreatedAt", "exifInfo"."timeZone") at TIME ZONE "exifInfo"."timeZone", date_trunc('day', asset."fileCreatedAt")) IN (:date)`,
+        { date },
+      )
+      .andWhere('asset.isVisible = true')
+      .andWhere('asset.isArchived = false')
+      .orderBy('asset.fileCreatedAt', 'DESC');
+
+    return builder.getMany();
   }
 
   getByIds(ids: string[]): Promise<AssetEntity[]> {

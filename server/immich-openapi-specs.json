@@ -1540,7 +1540,17 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MemoryLaneResponseDto"
+                  }
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -5732,6 +5742,25 @@
           "id",
           "lat",
           "lon"
+        ]
+      },
+      "MemoryLaneResponseDto": {
+        "type": "object",
+        "properties": {
+          "year": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "year",
+          "assets"
         ]
       },
       "OAuthCallbackDto": {

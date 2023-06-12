@@ -5,6 +5,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { GetAuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
 import { UseValidation } from '../decorators/use-validation.decorator';
+import { MemoryLaneResponseDto } from '@app/domain/asset/response-dto/memory-lane-response.dto';
 
 @ApiTags('Asset')
 @Controller('asset')
@@ -19,7 +20,7 @@ export class AssetController {
   }
 
   @Get('memory-lane')
-  getMemoryLane(@GetAuthUser() authUser: AuthUserDto) {
+  getMemoryLane(@GetAuthUser() authUser: AuthUserDto): Promise<MemoryLaneResponseDto[]>{
     return this.service.getMemoryLane(authUser);
   }
 }
