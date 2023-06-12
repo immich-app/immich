@@ -18,11 +18,7 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-/// State does not contain archived assets.
-/// Use database provider if you want to access the isArchived assets
-class AssetsState {}
-
-class AssetNotifier extends StateNotifier<AssetsState> {
+class AssetNotifier extends StateNotifier<bool> {
   final AssetService _assetService;
   final AlbumService _albumService;
   final UserService _userService;
@@ -38,7 +34,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     this._userService,
     this._syncService,
     this._db,
-  ) : super(AssetsState());
+  ) : super(false);
 
   Future<void> getAllAsset({bool clear = false}) async {
     if (_getAllAssetInProgress || _deleteInProgress) {
@@ -48,14 +44,15 @@ class AssetNotifier extends StateNotifier<AssetsState> {
     final stopwatch = Stopwatch()..start();
     try {
       _getAllAssetInProgress = true;
+      state = true;
       if (clear) {
         await clearAssetsAndAlbums(_db);
         log.info("Manual refresh requested, cleared assets and albums from db");
       }
+      await _userService.refreshUsers();
       final bool newRemote = await _assetService.refreshRemoteAssets();
       final bool newLocal = await _albumService.refreshDeviceAlbums();
       debugPrint("newRemote: $newRemote, newLocal: $newLocal");
-      await _userService.refreshUsers();
       final List<User> partners =
           await _db.users.filter().isPartnerSharedWithEqualTo(true).findAll();
       for (User u in partners) {
@@ -64,6 +61,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       log.info("Load assets: ${stopwatch.elapsedMilliseconds}ms");
     } finally {
       _getAllAssetInProgress = false;
+      state = false;
     }
   }
 
@@ -79,6 +77,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
 
   Future<void> deleteAssets(Set<Asset> deleteAssets) async {
     _deleteInProgress = true;
+    state = true;
     try {
       final localDeleted = await _deleteLocalAssets(deleteAssets);
       final remoteDeleted = await _deleteRemoteAssets(deleteAssets);
@@ -91,24 +90,14 @@ class AssetNotifier extends StateNotifier<AssetsState> {
       }
     } finally {
       _deleteInProgress = false;
+      state = false;
     }
   }
 
   Future<List<String>> _deleteLocalAssets(Set<Asset> assetsToDelete) async {
-    final int deviceId = Store.get(StoreKey.deviceIdHash);
-    final List<String> local = [];
+    final List<String> local =
+        assetsToDelete.where((a) => a.isLocal).map((a) => a.localId!).toList();
     // Delete asset from device
-    for (final Asset asset in assetsToDelete) {
-      if (asset.isLocal) {
-        local.add(asset.localId);
-      } else if (asset.deviceId == deviceId) {
-        // Delete asset on device if it is still present
-        var localAsset = await AssetEntity.fromId(asset.localId);
-        if (localAsset != null) {
-          local.add(localAsset.id);
-        }
-      }
-    }
     if (local.isNotEmpty) {
       try {
         return await PhotoManager.editor.deleteWithIds(local);
@@ -153,7 +142,7 @@ class AssetNotifier extends StateNotifier<AssetsState> {
   }
 }
 
-final assetProvider = StateNotifierProvider<AssetNotifier, AssetsState>((ref) {
+final assetProvider = StateNotifierProvider<AssetNotifier, bool>((ref) {
   return AssetNotifier(
     ref.watch(assetServiceProvider),
     ref.watch(albumServiceProvider),

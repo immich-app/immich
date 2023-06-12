@@ -6,12 +6,39 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/scroll_notifier.provider.dart';
 import 'package:immich_mobile/modules/home/providers/multiselect.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/providers/asset.provider.dart';
 
-class TabControllerPage extends ConsumerWidget {
+class TabControllerPage extends HookConsumerWidget {
   const TabControllerPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final refreshing = ref.watch(assetProvider);
+
+    Widget buildIcon(Widget icon) {
+      if (!refreshing) return icon;
+      return Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: [
+          icon,
+          Positioned(
+            right: -14,
+            child: SizedBox(
+              height: 12,
+              width: 12,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Theme.of(context).primaryColor,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     navigationRail(TabsRouter tabsRouter) {
       return NavigationRail(
         labelType: NavigationRailLabelType.all,
@@ -83,9 +110,12 @@ class TabControllerPage extends ConsumerWidget {
             icon: const Icon(
               Icons.photo_library_outlined,
             ),
-            selectedIcon: Icon(
-              Icons.photo_library,
-              color: Theme.of(context).primaryColor,
+            selectedIcon: buildIcon(
+              Icon(
+                size: 24,
+                Icons.photo_library,
+                color: Theme.of(context).primaryColor,
+              ),
             ),
           ),
           NavigationDestination(
@@ -113,9 +143,11 @@ class TabControllerPage extends ConsumerWidget {
             icon: const Icon(
               Icons.photo_album_outlined,
             ),
-            selectedIcon: Icon(
-              Icons.photo_album_rounded,
-              color: Theme.of(context).primaryColor,
+            selectedIcon: buildIcon(
+              Icon(
+                Icons.photo_album_rounded,
+                color: Theme.of(context).primaryColor,
+              ),
             ),
           )
         ],

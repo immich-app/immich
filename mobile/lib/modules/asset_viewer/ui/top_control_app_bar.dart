@@ -72,15 +72,7 @@ class TopControlAppBar extends HookConsumerWidget {
                     color: Colors.grey[200],
                   ),
           ),
-        if (!asset.isLocal)
-          IconButton(
-            onPressed: onDownloadPressed,
-            icon: Icon(
-              Icons.cloud_download_outlined,
-              color: Colors.grey[200],
-            ),
-          ),
-        if (asset.storage == AssetState.merged)
+        if (asset.storage == AssetState.remote)
           IconButton(
             onPressed: onDownloadPressed,
             icon: Icon(
