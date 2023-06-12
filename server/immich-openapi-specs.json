@@ -5130,6 +5130,13 @@
             "type": "string",
             "format": "binary"
           },
+          "isReadOnly": {
+            "type": "boolean",
+            "default": false
+          },
+          "fileExtension": {
+            "type": "string"
+          },
           "deviceAssetId": {
             "type": "string"
           },
@@ -5153,13 +5160,6 @@
           "isVisible": {
             "type": "boolean"
           },
-          "isReadOnly": {
-            "type": "boolean",
-            "default": false
-          },
-          "fileExtension": {
-            "type": "string"
-          },
           "duration": {
             "type": "string"
           }
@@ -5167,12 +5167,12 @@
         "required": [
           "assetType",
           "assetData",
+          "fileExtension",
           "deviceAssetId",
           "deviceId",
           "fileCreatedAt",
           "fileModifiedAt",
-          "isFavorite",
-          "fileExtension"
+          "isFavorite"
         ]
       },
       "CreateAssetsShareLinkDto": {
@@ -5574,17 +5574,15 @@
           "assetType": {
             "$ref": "#/components/schemas/AssetTypeEnum"
           },
-          "assetData": {
-            "type": "string",
-            "format": "binary"
+          "isReadOnly": {
+            "type": "boolean",
+            "default": true
           },
-          "livePhotoData": {
-            "type": "string",
-            "format": "binary"
+          "assetPath": {
+            "type": "string"
           },
-          "sidecarData": {
-            "type": "string",
-            "format": "binary"
+          "sidecarPath": {
+            "type": "string"
           },
           "deviceAssetId": {
             "type": "string"
@@ -5609,26 +5607,18 @@
           "isVisible": {
             "type": "boolean"
           },
-          "isReadOnly": {
-            "type": "boolean",
-            "default": false
-          },
-          "fileExtension": {
-            "type": "string"
-          },
           "duration": {
             "type": "string"
           }
         },
         "required": [
           "assetType",
-          "assetData",
+          "assetPath",
           "deviceAssetId",
           "deviceId",
           "fileCreatedAt",
           "fileModifiedAt",
-          "isFavorite",
-          "fileExtension"
+          "isFavorite"
         ]
       },
       "JobCommand": {

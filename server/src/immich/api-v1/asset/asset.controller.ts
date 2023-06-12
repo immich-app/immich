@@ -33,7 +33,7 @@ import { CuratedObjectsResponseDto } from './response-dto/curated-objects-respon
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { AssetResponseDto, ImmichReadStream } from '@app/domain';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
-import { CreateAssetDto, mapToUploadFile } from './dto/create-asset.dto';
+import { CreateAssetDto, ImportAssetDto, mapToUploadFile } from './dto/create-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
 import { DeleteAssetResponseDto } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
@@ -57,7 +57,6 @@ import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-resp
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
 import { DeviceIdDto } from './dto/device-id.dto';
 import { handleDownload } from '../../app.utils';
-import { ImportAssetDto, mapToImportFile } from './dto/import-asset.dto';
 
 function asStreamableFile({ stream, type, length }: ImmichReadStream) {
   return new StreamableFile(stream, { type, length });
@@ -119,27 +118,13 @@ export class AssetController {
     return responseDto;
   }
 
-  @SharedLinkRoute()
   @Post('import')
   async importFile(
     @GetAuthUser() authUser: AuthUserDto,
     @Body(new ValidationPipe()) dto: ImportAssetDto,
     @Response({ passthrough: true }) res: Res,
   ): Promise<AssetFileUploadResponseDto> {
-    const file = await mapToImportFile(dto.assetData);
-    const _livePhotoFile = dto.livePhotoData;
-    const _sidecarFile = dto.sidecarData;
-    let livePhotoFile;
-    if (_livePhotoFile) {
-      livePhotoFile = await mapToImportFile(_livePhotoFile);
-    }
-
-    let sidecarFile;
-    if (_sidecarFile) {
-      sidecarFile = await mapToImportFile(_sidecarFile);
-    }
-
-    const responseDto = await this.assetService.importFile(authUser, dto, file, livePhotoFile, sidecarFile);
+    const responseDto = await this.assetService.importFile(authUser, dto);
     if (responseDto.duplicate) {
       res.status(200);
     }

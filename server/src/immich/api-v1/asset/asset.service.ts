@@ -32,7 +32,7 @@ import {
   mapAsset,
   mapAssetWithoutExif,
 } from '@app/domain';
-import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
+import { CreateAssetDto, ImportAssetDto, UploadFile } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
 import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
@@ -68,6 +68,8 @@ import {
   AssetRejectReason,
   AssetBulkUploadCheckResponseDto,
 } from './response-dto/asset-check-response.dto';
+import mime from 'mime';
+import path from 'path';
 
 const fileInfo = promisify(stat);
 
@@ -91,7 +93,7 @@ export class AssetService {
     private downloadService: DownloadService,
     @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
@@ -105,21 +107,6 @@ export class AssetService {
     livePhotoFile?: UploadFile,
     sidecarFile?: UploadFile,
   ): Promise<AssetFileUploadResponseDto> {
-    if (dto.isReadOnly) {
-      // If this is read-only, we are likely importing. Ensure that the filesystem locations
-      // actually exist.
-      for (const fileToCheck of [file, livePhotoFile, sidecarFile]) {
-        if (fileToCheck) {
-          try {
-            await fs.access(file.originalPath, constants.R_OK);
-          } catch (error: any) {
-            this.logger.error(`Error importing file`, `${error}`);
-            throw new BadRequestException(`Error importing file`, `${error}`);
-          }
-        }
-      }
-    }
-
     if (livePhotoFile) {
       livePhotoFile = {
         ...livePhotoFile,
@@ -135,24 +122,15 @@ export class AssetService {
         livePhotoAsset = await this.assetCore.create(authUser, livePhotoDto, livePhotoFile);
       }
 
-      if (dto.isReadOnly) {
-        const duplicate = await this._assetRepository.getAssetByOriginalPath(authUser.id, file.originalPath);
-        if (duplicate.length > 0) {
-          return { id: duplicate[0].id, duplicate: true };
-        }
-      }
-
-      const asset = await this.assetCore.create(authUser, dto, file, livePhotoAsset?.id, sidecarFile);
+      const asset = await this.assetCore.create(authUser, dto, file, livePhotoAsset?.id, sidecarFile?.originalPath);
 
       return { id: asset.id, duplicate: false };
     } catch (error: any) {
-      if (!dto.isReadOnly) {
-        // clean up files
-        await this.jobRepository.queue({
-          name: JobName.DELETE_FILES,
-          data: { files: [file.originalPath, livePhotoFile?.originalPath, sidecarFile?.originalPath] },
-        });
-      }
+      // clean up files
+      await this.jobRepository.queue({
+        name: JobName.DELETE_FILES,
+        data: { files: [file.originalPath, livePhotoFile?.originalPath, sidecarFile?.originalPath] },
+      });
 
       // handle duplicates with a success response
       if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_userid_checksum') {
@@ -166,32 +144,49 @@ export class AssetService {
     }
   }
 
-  public async importFile(
-    authUser: AuthUserDto,
-    dto: CreateAssetDto,
-    file: UploadFile,
-    livePhotoFile?: UploadFile,
-    sidecarFile?: UploadFile,
-  ): Promise<AssetFileUploadResponseDto> {
-    // Ensure that the filesystem locations actually exist.
-    for (const fileToCheck of [file, livePhotoFile, sidecarFile]) {
-      if (fileToCheck) {
-        try {
-          await fs.access(file.originalPath, constants.R_OK);
-        } catch (error: any) {
-          this.logger.error(`Error importing file`, `${error}`);
-          throw new BadRequestException(`Error importing file`, `${error}`);
-        }
+  public async importFile(authUser: AuthUserDto, dto: ImportAssetDto): Promise<AssetFileUploadResponseDto> {
+    for (const filepath of [dto.assetPath, dto.sidecarPath]) {
+      if (!filepath) {
+        continue;
+      }
+
+      const exists = await this.storageRepository.checkFileExists(filepath, constants.R_OK);
+      if (!exists) {
+        throw new BadRequestException('File does not exist');
       }
     }
 
-    // Ensure the path isn't already in use by another user
-    const duplicates = await this.assetRepository.getByOriginalPath(file.originalPath);
-    if (duplicates.length > 0) {
-      return { id: duplicates[0].id, duplicate: true };
-    }
+    const assetFile: UploadFile = {
+      checksum: await this.cryptoRepository.hashFile(dto.assetPath),
+      mimeType: mime.lookup(dto.assetPath) as string,
+      originalPath: dto.assetPath,
+      originalName: path.parse(dto.assetPath).name,
+    };
 
-    return this.uploadFile(authUser, dto, file, livePhotoFile, sidecarFile);
+    try {
+      const asset = await this.assetCore.create(authUser, dto, assetFile, undefined, dto.sidecarPath);
+      return { id: asset.id, duplicate: false };
+    } catch (error: QueryFailedError | Error | any) {
+      // handle duplicates with a success response
+      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_userid_checksum') {
+        const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, [assetFile.checksum]);
+        return { id: duplicate.id, duplicate: true };
+      }
+
+      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_4ed4f8052685ff5b1e7ca1058ba') {
+        const duplicate = await this._assetRepository.getByOriginalPath(dto.assetPath);
+        if (duplicate) {
+          if (duplicate.ownerId === authUser.id) {
+            return { id: duplicate.id, duplicate: true };
+          }
+
+          throw new BadRequestException('Path in user by another user');
+        }
+      }
+
+      this.logger.error(`Error importing file ${error}`, error?.stack);
+      throw new BadRequestException(`Error importing file`, `${error}`);
+    }
   }
 
   public async getUserAssetsByDeviceId(authUser: AuthUserDto, deviceId: string) {
