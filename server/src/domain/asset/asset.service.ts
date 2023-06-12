@@ -27,7 +27,7 @@ export class AssetService {
       const assets = await this.assetRepository.getByDate(authUser.id, year);
       result.push({
         year: year.getFullYear(),
-        assets: assets.map((a) => a.id),
+        assets: assets.map((a) => mapAsset(a)),
       });
     }
 

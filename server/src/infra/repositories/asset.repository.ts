@@ -23,7 +23,6 @@ export class AssetRepository implements IAssetRepository {
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]> {
     let builder = this.repository
       .createQueryBuilder('asset')
-      .select('asset.id')
       .leftJoin('asset.exifInfo', 'exifInfo')
       .where('asset.ownerId = :ownerId', { ownerId })
       .andWhere(
