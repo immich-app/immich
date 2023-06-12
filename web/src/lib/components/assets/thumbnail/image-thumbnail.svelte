@@ -25,7 +25,7 @@
 	});
 </script>
 
-{#if !thumbhash}
+{#if thumbhash}
 	<img
 		style:width={widthStyle}
 		style:height={heightStyle}
@@ -41,7 +41,7 @@
 {/if}
 
 <!-- not everthing yet has thumbhash support so the old method is kept -->
-{#if thumbhash}
+{#if !thumbhash}
 	<img
 		style:width={widthStyle}
 		style:height={heightStyle}
