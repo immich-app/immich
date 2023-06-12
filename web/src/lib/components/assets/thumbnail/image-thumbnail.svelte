@@ -7,7 +7,7 @@
 	export let altText: string;
 	export let heightStyle: string | undefined = undefined;
 	export let widthStyle: string;
-	export let thumbhash: string | null;
+	export let thumbhash: string | null = null;
 	export let curve = false;
 	export let shadow = false;
 	export let circle = false;
@@ -15,17 +15,17 @@
 
 	let imageElement: HTMLImageElement;
 
-	if (thumbhash != null) {
-		onMount(() => {
+	onMount(() => {
+		if (thumbhash != null) {
 			lazyLoad(imageElement, {
 				hash: thumbhash || '',
 				hashType: 'thumbhash'
 			});
-		});
-	}
+		}
+	});
 </script>
 
-{#if thumbhash != null}
+{#if !thumbhash}
 	<img
 		style:width={widthStyle}
 		style:height={heightStyle}
@@ -41,7 +41,7 @@
 {/if}
 
 <!-- not everthing yet has thumbhash support so the old method is kept -->
-{#if thumbhash == null}
+{#if thumbhash}
 	<img
 		style:width={widthStyle}
 		style:height={heightStyle}

@@ -100,7 +100,7 @@ export class MediaService {
     }
 
     const thumbhash = await this.mediaRepository.extractThumbhash(asset.resizePath);
-    await this.assetRepository.save({ id: asset.id, thumbhash: thumbhash });
+    await this.assetRepository.save({ id: asset.id, thumbhash });
 
     return true;
   }
