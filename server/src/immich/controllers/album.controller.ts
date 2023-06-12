@@ -1,4 +1,11 @@
-import { AddUsersDto, AlbumService, AuthUserDto, CreateAlbumDto, UpdateAlbumDto } from '@app/domain';
+import {
+  AddUsersDto,
+  AlbumCountResponseDto,
+  AlbumService,
+  AuthUserDto,
+  CreateAlbumDto,
+  UpdateAlbumDto,
+} from '@app/domain';
 import { GetAlbumsDto } from '@app/domain/album/dto/get-albums.dto';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
@@ -14,6 +21,11 @@ import { UUIDParamDto } from './dto/uuid-param.dto';
 @UseValidation()
 export class AlbumController {
   constructor(private service: AlbumService) {}
+
+  @Get('count')
+  getAlbumCount(@GetAuthUser() authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
+    return this.service.getCount(authUser);
+  }
 
   @Get()
   getAllAlbums(@GetAuthUser() authUser: AuthUserDto, @Query() query: GetAlbumsDto) {
