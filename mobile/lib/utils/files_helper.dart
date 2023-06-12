@@ -47,6 +47,12 @@ class FileHelper {
       case 'webm':
         return {"type": "video", "subType": "webm"};
 
+      case 'avif':
+        return {"type": "image", "subType": "avif"};
+
+      case 'cr2':
+        return {"type": "image", "subType": "x-canon-cr2"};
+
       case 'insp':
         return {"type": "image", "subType": "jpeg"};
 
