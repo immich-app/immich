@@ -42,6 +42,7 @@
 	import ShareInfoModal from './share-info-modal.svelte';
 	import ThumbnailSelection from './thumbnail-selection.svelte';
 	import UserSelectionModal from './user-selection-modal.svelte';
+	import { handleError } from '../../utils/handle-error';
 
 	export let album: AlbumResponseDto;
 	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
@@ -195,19 +196,16 @@
 		if (userId == 'me') {
 			isShowShareInfoModal = false;
 			goto(backUrl);
+			return;
 		}
 
 		try {
 			const { data } = await api.albumApi.getAlbumInfo({ id: album.id });
 
 			album = data;
-			isShowShareInfoModal = false;
+			isShowShareInfoModal = data.sharedUsers.length >= 1;
 		} catch (e) {
-			console.error('Error [sharedUserDeletedHandler] ', e);
-			notificationController.show({
-				type: NotificationType.Error,
-				message: 'Error deleting share users, check console for more details'
-			});
+			handleError(e, 'Error deleting share users');
 		}
 	};
 

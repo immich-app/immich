@@ -40,3 +40,5 @@ upload/
 tmp/
 core
 .reverse-geocoding-dump/
+
+**/node_modules/**
