@@ -252,15 +252,4 @@ export class AssetRepository implements IAssetRepository {
       lon: asset.exifInfo!.longitude!,
     }));
   }
-
-  getByOriginalPath(originalPath: string): Promise<AssetEntity[]> {
-    return this.repository.find({
-      where: { originalPath },
-      relations: {
-        exifInfo: true,
-        smartInfo: true,
-        tags: true,
-      },
-    });
-  }
 }

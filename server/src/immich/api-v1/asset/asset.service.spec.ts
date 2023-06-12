@@ -161,7 +161,7 @@ describe('AssetService', () => {
       getArchivedAssetCountByUserId: jest.fn(),
       getExistingAssets: jest.fn(),
       countByIdAndUser: jest.fn(),
-      getAssetByOriginalPath: jest.fn(),
+      getByOriginalPath: jest.fn(),
     };
 
     albumRepositoryMock = {
@@ -539,44 +539,38 @@ describe('AssetService', () => {
 
   describe('importFile', () => {
     it('should handle a file import', async () => {
-      const assetEntity = _getAsset_1();
-      const file = {
-        originalPath: 'fake_path/asset_1.jpeg',
-        mimeType: 'image/jpeg',
-        checksum: Buffer.from('file hash', 'utf8'),
-        originalName: 'asset_1.jpeg',
-        isReadOnly: true,
-      };
-      const dto = _getCreateAssetDto();
+      assetRepositoryMock.create.mockResolvedValue(assetEntityStub.image);
+      storageMock.checkFileExists.mockResolvedValue(true);
 
-      assetRepositoryMock.create.mockResolvedValue(assetEntity);
-
-      await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({ duplicate: false, id: 'id_1' });
+      await expect(
+        sut.importFile(authStub.user1, {
+          ..._getCreateAssetDto(),
+          assetPath: 'fake_path/asset_1.jpeg',
+          isReadOnly: true,
+        }),
+      ).resolves.toEqual({ duplicate: false, id: 'asset-id' });
 
       expect(assetRepositoryMock.create).toHaveBeenCalled();
     });
 
     it('should handle a duplicate if originalPath already exists', async () => {
-      const file = {
-        originalPath: 'fake_path/asset_1.jpeg',
-        mimeType: 'image/jpeg',
-        checksum: Buffer.from('different file hash', 'utf8'),
-        originalName: 'asset_1.jpeg',
-      };
-      const dto = _getCreateAssetDto();
       const error = new QueryFailedError('', [], '');
       (error as any).constraint = 'UQ_userid_checksum';
 
       assetRepositoryMock.create.mockRejectedValue(error);
-      assetRepositoryMock.getAssetsByChecksums.mockResolvedValue([_getAsset_1()]);
+      assetRepositoryMock.getAssetsByChecksums.mockResolvedValue([assetEntityStub.image]);
+      storageMock.checkFileExists.mockResolvedValue(true);
+      cryptoMock.hashFile.mockResolvedValue(Buffer.from('file hash', 'utf8'));
 
-      await expect(sut.uploadFile(authStub.user1, dto, file)).resolves.toEqual({ duplicate: true, id: 'id_1' });
+      await expect(
+        sut.importFile(authStub.user1, {
+          ..._getCreateAssetDto(),
+          assetPath: 'fake_path/asset_1.jpeg',
+          isReadOnly: true,
+        }),
+      ).resolves.toEqual({ duplicate: true, id: 'asset-id' });
 
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.DELETE_FILES,
-        data: { files: ['fake_path/asset_1.jpeg', undefined, undefined] },
-      });
-      expect(storageMock.moveFile).not.toHaveBeenCalled();
+      expect(assetRepositoryMock.create).toHaveBeenCalled();
     });
   });
 });
