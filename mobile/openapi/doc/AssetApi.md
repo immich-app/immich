@@ -30,6 +30,7 @@ Method | HTTP request | Description
 [**getCuratedObjects**](AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
 [**getMapMarkers**](AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 [**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
+[**importFile**](AssetApi.md#importfile) | **POST** /asset/import | 
 [**removeAssetsFromSharedLink**](AssetApi.md#removeassetsfromsharedlink) | **PATCH** /asset/shared-link/remove | 
 [**searchAsset**](AssetApi.md#searchasset) | **POST** /asset/search | 
 [**serveFile**](AssetApi.md#servefile) | **GET** /asset/file/{id} | 
@@ -1218,6 +1219,63 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **importFile**
+> AssetFileUploadResponseDto importFile(importAssetDto, key)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final importAssetDto = ImportAssetDto(); // ImportAssetDto | 
+final key = key_example; // String | 
+
+try {
+    final result = api_instance.importFile(importAssetDto, key);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->importFile: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **importAssetDto** | [**ImportAssetDto**](ImportAssetDto.md)|  | 
+ **key** | **String**|  | [optional] 
+
+### Return type
+
+[**AssetFileUploadResponseDto**](AssetFileUploadResponseDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **removeAssetsFromSharedLink**
 > SharedLinkResponseDto removeAssetsFromSharedLink(removeAssetsDto, key)
 
@@ -1451,7 +1509,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadFile**
-> AssetFileUploadResponseDto uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, sidecarData, isArchived, isVisible, duration)
+> AssetFileUploadResponseDto uploadFile(assetType, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration)
 
 
 
@@ -1476,21 +1534,22 @@ import 'package:openapi/api.dart';
 final api_instance = AssetApi();
 final assetType = ; // AssetTypeEnum | 
 final assetData = BINARY_DATA_HERE; // MultipartFile | 
+final fileExtension = fileExtension_example; // String | 
 final deviceAssetId = deviceAssetId_example; // String | 
 final deviceId = deviceId_example; // String | 
 final fileCreatedAt = 2013-10-20T19:20:30+01:00; // DateTime | 
 final fileModifiedAt = 2013-10-20T19:20:30+01:00; // DateTime | 
 final isFavorite = true; // bool | 
-final fileExtension = fileExtension_example; // String | 
 final key = key_example; // String | 
 final livePhotoData = BINARY_DATA_HERE; // MultipartFile | 
 final sidecarData = BINARY_DATA_HERE; // MultipartFile | 
+final isReadOnly = true; // bool | 
 final isArchived = true; // bool | 
 final isVisible = true; // bool | 
 final duration = duration_example; // String | 
 
 try {
-    final result = api_instance.uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, sidecarData, isArchived, isVisible, duration);
+    final result = api_instance.uploadFile(assetType, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->uploadFile: $e\n');
@@ -1503,15 +1562,16 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **assetType** | [**AssetTypeEnum**](AssetTypeEnum.md)|  | 
  **assetData** | **MultipartFile**|  | 
+ **fileExtension** | **String**|  | 
  **deviceAssetId** | **String**|  | 
  **deviceId** | **String**|  | 
  **fileCreatedAt** | **DateTime**|  | 
  **fileModifiedAt** | **DateTime**|  | 
  **isFavorite** | **bool**|  | 
- **fileExtension** | **String**|  | 
  **key** | **String**|  | [optional] 
  **livePhotoData** | **MultipartFile**|  | [optional] 
  **sidecarData** | **MultipartFile**|  | [optional] 
+ **isReadOnly** | **bool**|  | [optional] [default to false]
  **isArchived** | **bool**|  | [optional] 
  **isVisible** | **bool**|  | [optional] 
  **duration** | **String**|  | [optional] 

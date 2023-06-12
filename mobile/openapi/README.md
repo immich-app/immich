@@ -110,6 +110,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
 *AssetApi* | [**getMapMarkers**](doc//AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 *AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
+*AssetApi* | [**importFile**](doc//AssetApi.md#importfile) | **POST** /asset/import | 
 *AssetApi* | [**removeAssetsFromSharedLink**](doc//AssetApi.md#removeassetsfromsharedlink) | **PATCH** /asset/shared-link/remove | 
 *AssetApi* | [**searchAsset**](doc//AssetApi.md#searchasset) | **POST** /asset/search | 
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{id} | 
@@ -221,6 +222,7 @@ Class | Method | HTTP request | Description
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [GetAssetByTimeBucketDto](doc//GetAssetByTimeBucketDto.md)
  - [GetAssetCountByTimeBucketDto](doc//GetAssetCountByTimeBucketDto.md)
+ - [ImportAssetDto](doc//ImportAssetDto.md)
  - [JobCommand](doc//JobCommand.md)
  - [JobCommandDto](doc//JobCommandDto.md)
  - [JobCountsDto](doc//JobCountsDto.md)
