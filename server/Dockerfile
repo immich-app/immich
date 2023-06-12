@@ -1,4 +1,4 @@
-FROM node:18-alpine3.17 as builder
+FROM node:18.16.0-alpine3.18@sha256:f41850f74ff16a33daff988e2ea06ef8f5daeb6fb84913c7df09552a98caba09 as builder
 
 WORKDIR /usr/src/app
 
@@ -17,7 +17,7 @@ RUN npm run build
 RUN npm prune --omit=dev --omit=optional
 
 
-FROM node:18-alpine3.17
+FROM node:18.16.0-alpine3.18@sha256:f41850f74ff16a33daff988e2ea06ef8f5daeb6fb84913c7df09552a98caba09
 
 ENV NODE_ENV=production
 
