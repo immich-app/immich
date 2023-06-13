@@ -93,13 +93,13 @@ export class MediaService {
     return true;
   }
 
-  async handleGenerateThumbhashThumbnail({ id }: IEntityJob) {
+  async handleGenerateThumbhashThumbnail({ id }: IEntityJob): Promise<boolean> {
     const [asset] = await this.assetRepository.getByIds([id]);
     if (!asset || !asset.resizePath) {
       return false;
     }
 
-    const thumbhash = await this.mediaRepository.extractThumbhash(asset.resizePath);
+    const thumbhash = await this.mediaRepository.generateThumbhash(asset.resizePath);
     await this.assetRepository.save({ id: asset.id, thumbhash });
 
     return true;

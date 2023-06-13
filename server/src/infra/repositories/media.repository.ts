@@ -126,7 +126,7 @@ export class MediaRepository implements IMediaRepository {
     });
   }
 
-  async extractThumbhash(imagePath: string): Promise<Buffer> {
+  async generateThumbhash(imagePath: string): Promise<Buffer> {
     const maxSize = 100;
 
     const { data, info } = await sharp(imagePath)
