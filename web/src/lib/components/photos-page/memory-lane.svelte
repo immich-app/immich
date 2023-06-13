@@ -41,7 +41,7 @@
 	<section
 		id="memory-lane"
 		bind:this={memoryLaneElement}
-		class="relative overflow-x-auto whitespace-nowrap mt-5 transition-all"
+		class="relative overflow-x-hidden whitespace-nowrap mt-5 transition-all"
 		bind:offsetWidth
 	>
 		{#if isOverflow}
@@ -74,13 +74,13 @@
 					>
 						<img
 							class="rounded-xl h-full w-full object-cover"
-							src={api.getAssetThumbnailUrl(day.assets[1].id, 'JPEG')}
+							src={api.getAssetThumbnailUrl(day.assets[0].id, 'JPEG')}
 							alt={title}
 							draggable="false"
 						/>
 						<p class="absolute bottom-2 left-4 font-medium text-xl text-white z-10">{title}</p>
 						<div
-							class="absolute top-0 left-0 w-full h-full rounded-xl bg-gradient-to-t from-black/30 via-transparent to-transparent z-0"
+							class="absolute top-0 left-0 w-full h-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent z-0 hover:bg-black/20 hover:cursor-pointer transition-all"
 						/>
 					</div>
 				{/if}
@@ -90,11 +90,6 @@
 {/if}
 
 <style>
-	#memory-lane::-webkit-scrollbar {
-		/* width: 0px; */
-		display: none;
-	}
-
 	.memory-card {
 		box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
 	}
