@@ -20,7 +20,10 @@ export class AssetController {
   }
 
   @Get('memory-lane')
-  getMemoryLane(@GetAuthUser() authUser: AuthUserDto): Promise<MemoryLaneResponseDto[]>{
-    return this.service.getMemoryLane(authUser);
+  getMemoryLane(
+    @GetAuthUser() authUser: AuthUserDto,
+    @Query('timezone') timezone: string,
+  ): Promise<MemoryLaneResponseDto> {
+    return this.service.getMemoryLane(authUser, timezone);
   }
 }

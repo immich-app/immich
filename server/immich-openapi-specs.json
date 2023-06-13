@@ -1537,17 +1537,23 @@
     "/asset/memory-lane": {
       "get": {
         "operationId": "getMemoryLane",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "timezone",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/MemoryLaneResponseDto"
-                  }
+                  "$ref": "#/components/schemas/MemoryLaneResponseDto"
                 }
               }
             }
@@ -5747,20 +5753,15 @@
       "MemoryLaneResponseDto": {
         "type": "object",
         "properties": {
-          "year": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "assets": {
+          "onThisDay": {
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/OnThisDay"
             }
           }
         },
         "required": [
-          "year",
-          "assets"
+          "onThisDay"
         ]
       },
       "OAuthCallbackDto": {
@@ -5807,6 +5808,25 @@
         "required": [
           "enabled",
           "passwordLoginEnabled"
+        ]
+      },
+      "OnThisDay": {
+        "type": "object",
+        "properties": {
+          "year": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            }
+          }
+        },
+        "required": [
+          "year",
+          "assets"
         ]
       },
       "PersonResponseDto": {
