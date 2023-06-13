@@ -70,7 +70,7 @@
 					{@const title = `${thisYear - day.year} years since...`}
 					<div
 						id="memory-card-{day.year}"
-						class="memory-card relative inline-block mr-8 rounded-xl aspect-video h-[250px]"
+						class="memory-card relative inline-block mr-8 rounded-xl aspect-video h-[215px]"
 					>
 						<img
 							class="rounded-xl h-full w-full object-cover"
