@@ -1,5 +1,7 @@
 FROM node:18-alpine3.17 as builder
 
+USER node
+
 WORKDIR /usr/src/app
 
 RUN apk add --update-cache build-base python3 vips-heif vips-dev ffmpeg perl
@@ -10,7 +12,6 @@ RUN npm ci
 
 COPY . .
 
-
 FROM builder as prod
 
 RUN npm run build
@@ -18,6 +19,8 @@ RUN npm prune --omit=dev --omit=optional
 
 
 FROM node:18-alpine3.17
+
+USER node
 
 ENV NODE_ENV=production
 

@@ -1,8 +1,12 @@
 # Our Node base image
 FROM node:18-alpine3.17 as base
 
+USER node
+
 WORKDIR /usr/src/app
+
 EXPOSE 3000
+
 RUN apk add --no-cache setpriv
 
 FROM base as builder
@@ -18,8 +22,11 @@ COPY --chown=node:node . .
 EXPOSE 3000
 
 FROM builder AS dev
+
 ENV CHOKIDAR_USEPOLLING=true
+
 EXPOSE 24678
+
 CMD ["npm", "run", "dev"]
 
 FROM builder AS prod
