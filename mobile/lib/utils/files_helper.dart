@@ -53,6 +53,9 @@ class FileHelper {
       case 'insv':
         return {"type": "video", "subType": "mp4"};
 
+      case 'arw':
+        return {"type": "image", "subType": "x-sony-arw"};
+
       default:
         return {"type": "unsupport", "subType": "unsupport"};
     }
