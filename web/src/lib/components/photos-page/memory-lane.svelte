@@ -2,6 +2,8 @@
 	import { onMount } from 'svelte';
 	import { DateTime } from 'luxon';
 	import { OnThisDay, api } from '@api';
+	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
+	import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
 
 	let onThisDay: OnThisDay[] = [];
 	let thisYear = DateTime.local().year;
@@ -21,81 +23,64 @@
 	$: isOverflow = offsetWidth < innerWidth;
 
 	function scrollLeft() {
-		console.log('scroll left');
-
-		memoryLaneElement.scrollLeft -= 200;
+		memoryLaneElement.scrollTo({
+			left: memoryLaneElement.scrollLeft - 400,
+			behavior: 'smooth'
+		});
 	}
 
 	function scrollRight() {
-		console.log('scroll right');
-
-		memoryLaneElement.scrollLeft += 200;
+		memoryLaneElement.scrollTo({
+			left: memoryLaneElement.scrollLeft + 400,
+			behavior: 'smooth'
+		});
 	}
 </script>
 
 {#if shouldRender}
-	<button on:click={scrollLeft}>Scroll left</button>
-	<button on:click={scrollRight}>Scroll right</button>
-
 	<section
 		id="memory-lane"
 		bind:this={memoryLaneElement}
-		class="overflow-x-auto whitespace-nowrap mt-5 transition-all"
+		class="relative overflow-x-auto whitespace-nowrap mt-5 transition-all"
 		bind:offsetWidth
 	>
-		<div class="border border-red-500 inline-block" bind:offsetWidth={innerWidth}>
+		{#if isOverflow}
+			<div class="sticky left-0 z-20">
+				<div class="absolute right-0 top-[6rem] z-20">
+					<button
+						class="rounded-full opacity-50 hover:opacity-100 p-2 border border-gray-500 bg-gray-100 text-gray-500"
+						on:click={scrollRight}
+					>
+						<ChevronRight size="36" /></button
+					>
+				</div>
+
+				<div class="absolute left-0 top-[6rem] z-20">
+					<button
+						class="rounded-full opacity-50 hover:opacity-100 p-2 border border-gray-500 bg-gray-100 text-gray-500"
+						on:click={scrollLeft}><ChevronLeft size="36" /></button
+					>
+				</div>
+			</div>
+		{/if}
+
+		<div class="inline-block" bind:offsetWidth={innerWidth}>
 			{#each onThisDay as day (day.year)}
 				{#if day.assets.length > 0}
 					{@const title = `${thisYear - day.year} years since...`}
-					<div id="memory-card" class="relative inline-block mr-8 rounded-xl h-[250px] w-[400px]">
+					<div
+						id="memory-card-{day.year}"
+						class="memory-card relative inline-block mr-8 rounded-xl aspect-video h-[250px]"
+					>
 						<img
 							class="rounded-xl h-full w-full object-cover"
-							src={api.getAssetThumbnailUrl(day.assets[0].id, 'JPEG')}
+							src={api.getAssetThumbnailUrl(day.assets[1].id, 'JPEG')}
 							alt={title}
 							draggable="false"
 						/>
 						<p class="absolute bottom-2 left-4 font-medium text-xl text-white z-10">{title}</p>
 						<div
-							class="absolute top-0 left-0 w-full h-full rounded-xl bg-gradient-to-t from-gray-black/30 via-transparent to-transparent z-0"
-						/>
-					</div>
-
-					<div id="memory-card" class="relative inline-block mr-8 rounded-xl h-[250px] w-[400px]">
-						<img
-							class="rounded-xl h-full w-full object-cover"
-							src={api.getAssetThumbnailUrl(day.assets[0].id, 'JPEG')}
-							alt={title}
-							draggable="false"
-						/>
-						<p class="absolute bottom-2 left-4 font-medium text-xl text-white z-10">{title}</p>
-						<div
-							class="absolute top-0 left-0 w-full h-full rounded-xl bg-gradient-to-t from-gray-black/30 via-transparent to-transparent z-0"
-						/>
-					</div>
-
-					<div id="memory-card" class="relative inline-block mr-8 rounded-xl h-[250px] w-[400px]">
-						<img
-							class="rounded-xl h-full w-full object-cover"
-							src={api.getAssetThumbnailUrl(day.assets[0].id, 'JPEG')}
-							alt={title}
-							draggable="false"
-						/>
-						<p class="absolute bottom-2 left-4 font-medium text-xl text-white z-10">{title}</p>
-						<div
-							class="absolute top-0 left-0 w-full h-full rounded-xl bg-gradient-to-t from-gray-black/30 via-transparent to-transparent z-0"
-						/>
-					</div>
-
-					<div id="memory-card" class="relative inline-block mr-8 rounded-xl h-[250px] w-[400px]">
-						<img
-							class="rounded-xl h-full w-full object-cover"
-							src={api.getAssetThumbnailUrl(day.assets[0].id, 'JPEG')}
-							alt={title}
-							draggable="false"
-						/>
-						<p class="absolute bottom-2 left-4 font-medium text-xl text-white z-10">{title}</p>
-						<div
-							class="absolute top-0 left-0 w-full h-full rounded-xl bg-gradient-to-t from-gray-black/30 via-transparent to-transparent z-0"
+							class="absolute top-0 left-0 w-full h-full rounded-xl bg-gradient-to-t from-black/30 via-transparent to-transparent z-0"
 						/>
 					</div>
 				{/if}
@@ -110,7 +95,7 @@
 		display: none;
 	}
 
-	#memory-card {
+	.memory-card {
 		box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
 	}
 </style>
