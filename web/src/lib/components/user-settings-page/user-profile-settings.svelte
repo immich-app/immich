@@ -75,6 +75,14 @@
 					required={false}
 				/>
 
+				<SettingInputField
+					inputType={SettingInputFieldType.TEXT}
+					label="EXTERNAL PATH"
+					disabled={true}
+					value={user.externalPath || ''}
+					required={false}
+				/>
+
 				<div class="flex justify-end">
 					<Button type="submit" size="sm" on:click={() => handleSaveProfile()}>Save</Button>
 				</div>

@@ -145,6 +145,12 @@ export class AssetService {
   }
 
   public async importFile(authUser: AuthUserDto, dto: ImportAssetDto): Promise<AssetFileUploadResponseDto> {
+    dto = {
+      ...dto,
+      assetPath: path.resolve(dto.assetPath),
+      sidecarPath: dto.sidecarPath ? path.resolve(dto.sidecarPath) : undefined,
+    };
+
     for (const filepath of [dto.assetPath, dto.sidecarPath]) {
       if (!filepath) {
         continue;
@@ -154,6 +160,10 @@ export class AssetService {
       if (!exists) {
         throw new BadRequestException('File does not exist');
       }
+    }
+
+    if (!authUser.externalPath || !dto.assetPath.match(new RegExp(`^${authUser.externalPath}`))) {
+      throw new BadRequestException("File does not exist within user's external path");
     }
 
     const assetFile: UploadFile = {

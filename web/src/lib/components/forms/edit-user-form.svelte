@@ -26,7 +26,8 @@
 					email,
 					firstName,
 					lastName,
-					storageLabel: storageLabel || ''
+					storageLabel: storageLabel || '',
+					externalPath: externalPath || ''
 				}
 			});
 
@@ -129,6 +130,17 @@
 					class="text-immich-primary dark:text-immich-dark-primary">Storage Migration Job</a
 				>
 			</p>
+		</div>
+
+		<div class="m-4 flex flex-col gap-2">
+			<label class="immich-form-label" for="external-path">External Path</label>
+			<input
+				class="immich-form-input"
+				id="external-path"
+				name="external-path"
+				type="text"
+				bind:value={user.externalPath}
+			/>
 		</div>
 
 		{#if error}

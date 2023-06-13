@@ -29,6 +29,10 @@ export class UpdateUserDto {
   @Transform(toSanitized)
   storageLabel?: string;
 
+  @IsOptional()
+  @IsString()
+  externalPath?: string;
+
   @IsNotEmpty()
   @IsUUID('4')
   @ApiProperty({ format: 'uuid' })

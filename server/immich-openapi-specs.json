@@ -1475,16 +1475,7 @@
     "/asset/import": {
       "post": {
         "operationId": "importFile",
-        "parameters": [
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -5271,6 +5262,10 @@
           "storageLabel": {
             "type": "string",
             "nullable": true
+          },
+          "externalPath": {
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -6665,6 +6660,9 @@
             "type": "string"
           },
           "storageLabel": {
+            "type": "string"
+          },
+          "externalPath": {
             "type": "string"
           },
           "isAdmin": {

@@ -28,6 +28,7 @@ export class UserCore {
       // Users can never update the isAdmin property.
       delete dto.isAdmin;
       delete dto.storageLabel;
+      delete dto.externalPath;
     } else if (dto.isAdmin && authUser.id !== id) {
       // Admin cannot create another admin.
       throw new BadRequestException('The server already has an admin');
@@ -54,6 +55,10 @@ export class UserCore {
 
       if (dto.storageLabel === '') {
         dto.storageLabel = null;
+      }
+
+      if (dto.externalPath === '') {
+        dto.externalPath = null;
       }
 
       return this.userRepository.update(id, dto);
