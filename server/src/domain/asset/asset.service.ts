@@ -40,6 +40,6 @@ export class AssetService {
       });
     }
 
-    return onThisDay;
+    return onThisDay.filter((o) => o.assets.length > 0);
   }
 }

@@ -4,17 +4,20 @@
 	import { OnThisDay, api } from '@api';
 	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
 	import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
+	import { memoryStore } from '$lib/stores/memory.store';
+	import { goto } from '$app/navigation';
 
 	let onThisDay: OnThisDay[] = [];
 	let thisYear = DateTime.local().year;
 
-	$: shouldRender = onThisDay.find((day) => day.assets.length > 0) != undefined;
+	$: shouldRender = onThisDay.length > 0;
 
 	onMount(async () => {
 		const timezone = DateTime.local().zoneName;
 		const { data } = await api.assetApi.getMemoryLane({ timezone });
 
 		onThisDay = data.onThisDay;
+		$memoryStore = data;
 	});
 
 	let memoryLaneElement: HTMLElement;
@@ -65,25 +68,24 @@
 		{/if}
 
 		<div class="inline-block" bind:offsetWidth={innerWidth}>
-			{#each onThisDay as day (day.year)}
-				{#if day.assets.length > 0}
-					{@const title = `${thisYear - day.year} years since...`}
+			{#each onThisDay as day, i (day.year)}
+				{@const title = `${thisYear - day.year} years since...`}
+				<button
+					id="memory-card-{day.year}"
+					class="memory-card relative inline-block mr-8 rounded-xl aspect-video h-[215px]"
+					on:click={() => goto(`/memory?index=${i}`)}
+				>
+					<img
+						class="rounded-xl h-full w-full object-cover"
+						src={api.getAssetThumbnailUrl(day.assets[0].id, 'JPEG')}
+						alt={title}
+						draggable="false"
+					/>
+					<p class="absolute bottom-2 left-4 font-medium text-xl text-white z-10">{title}</p>
 					<div
-						id="memory-card-{day.year}"
-						class="memory-card relative inline-block mr-8 rounded-xl aspect-video h-[215px]"
-					>
-						<img
-							class="rounded-xl h-full w-full object-cover"
-							src={api.getAssetThumbnailUrl(day.assets[0].id, 'JPEG')}
-							alt={title}
-							draggable="false"
-						/>
-						<p class="absolute bottom-2 left-4 font-medium text-xl text-white z-10">{title}</p>
-						<div
-							class="absolute top-0 left-0 w-full h-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent z-0 hover:bg-black/20 hover:cursor-pointer transition-all"
-						/>
-					</div>
-				{/if}
+						class="absolute top-0 left-0 w-full h-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent z-0 hover:bg-black/20 transition-all"
+					/>
+				</button>
 			{/each}
 		</div>
 	</section>
