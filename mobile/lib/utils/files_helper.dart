@@ -47,6 +47,12 @@ class FileHelper {
       case 'webm':
         return {"type": "video", "subType": "webm"};
 
+      case 'insp':
+        return {"type": "image", "subType": "jpeg"};
+
+      case 'insv':
+        return {"type": "video", "subType": "mp4"};
+
       default:
         return {"type": "unsupport", "subType": "unsupport"};
     }

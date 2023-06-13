@@ -66,7 +66,7 @@
 	<div
 		style:width="{width}px"
 		style:height="{height}px"
-		class="relative group {disabled
+		class="relative group overflow-hidden {disabled
 			? 'bg-gray-300'
 			: 'bg-immich-primary/20 dark:bg-immich-dark-primary/20'}"
 		class:cursor-not-allowed={disabled}

@@ -33,6 +33,7 @@
 	import CreateSharedLinkModal from '../shared-components/create-share-link-modal/create-shared-link-modal.svelte';
 	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
 	import ImmichLogo from '../shared-components/immich-logo.svelte';
+	import SelectAll from 'svelte-material-icons/SelectAll.svelte';
 	import {
 		NotificationType,
 		notificationController
@@ -332,6 +333,10 @@
 		isShowShareUserSelection = false;
 		isShowShareLinkModal = true;
 	};
+
+	const handleSelectAll = () => {
+		multiSelectAsset = new Set(album.assets);
+	};
 </script>
 
 <section class="bg-immich-bg dark:bg-immich-dark-bg" class:hidden={isShowThumbnailSelection}>
@@ -341,6 +346,7 @@
 			assets={multiSelectAsset}
 			clearSelect={() => (multiSelectAsset = new Set())}
 		>
+			<CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll} />
 			<DownloadAction filename={album.albumName} sharedLinkKey={sharedLink?.key} />
 			{#if isOwned}
 				<RemoveFromAlbum bind:album />

@@ -21,7 +21,25 @@ export const handleDownload = (download: DownloadArchive, res: Response) => {
   return download.stream;
 };
 
+function sortKeys<T extends object>(obj: T): T {
+  if (!obj) {
+    return obj;
+  }
+
+  const result: Partial<T> = {};
+  const keys = Object.keys(obj).sort() as Array<keyof T>;
+  for (const key of keys) {
+    result[key] = obj[key];
+  }
+  return result as T;
+}
+
 const patchOpenAPI = (document: OpenAPIObject) => {
+  document.paths = sortKeys(document.paths);
+  if (document.components?.schemas) {
+    document.components.schemas = sortKeys(document.components.schemas);
+  }
+
   for (const path of Object.values(document.paths)) {
     const operations = {
       get: path.get,

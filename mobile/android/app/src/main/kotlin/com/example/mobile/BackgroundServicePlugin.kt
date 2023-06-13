@@ -1,10 +1,15 @@
 package app.alextran.immich
 
 import android.content.Context
+import android.util.Log
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import java.security.MessageDigest
+import java.io.File
+import java.io.FileInputStream
+import kotlinx.coroutines.*
 
 /**
  * Android plugin for Dart `BackgroundService`
@@ -16,6 +21,7 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
     private var methodChannel: MethodChannel? = null
     private var context: Context? = null
+    private val sha1: MessageDigest = MessageDigest.getInstance("SHA-1")
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         onAttachedToEngine(binding.applicationContext, binding.binaryMessenger)
@@ -70,9 +76,40 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             "isIgnoringBatteryOptimizations" -> {
                 result.success(BackupWorker.isIgnoringBatteryOptimizations(ctx))
             }
+            "digestFiles" -> {
+                val args = call.arguments<ArrayList<String>>()!!
+                GlobalScope.launch(Dispatchers.IO) {
+                    val buf = ByteArray(BUFSIZE)
+                    val digest: MessageDigest = MessageDigest.getInstance("SHA-1")
+                    val hashes = arrayOfNulls<ByteArray>(args.size)
+                    for (i in args.indices) {
+                        val path = args[i]
+                        var len = 0
+                        try {
+                            val file = FileInputStream(path)
+                            try {
+                                while (true) {
+                                    len = file.read(buf)
+                                    if (len != BUFSIZE) break
+                                    digest.update(buf)
+                                }
+                            } finally {
+                                file.close()
+                            }
+                            digest.update(buf, 0, len)
+                            hashes[i] = digest.digest()
+                        } catch (e: Exception) {
+                            // skip this file
+                            Log.w(TAG, "Failed to hash file ${args[i]}: $e")
+                        }
+                    }
+                    result.success(hashes.asList())
+                }
+            }
             else -> result.notImplemented()
         }
     }
 }
 
 private const val TAG = "BackgroundServicePlugin"
+private const val BUFSIZE = 2*1024*1024;

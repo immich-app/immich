@@ -146,6 +146,10 @@ export function getFileMimeType(file: File): string {
 			return 'image/x-fuji-raf';
 		case 'srw':
 			return 'image/x-samsung-srw';
+		case 'insp':
+			return 'image/jpeg';
+		case 'insv':
+			return 'video/mp4';
 		default:
 			return '';
 	}

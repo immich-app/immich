@@ -259,6 +259,23 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should not scale resolution if no target resolution', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TRANSCODE, value: 'all' },
+        { key: SystemConfigKey.FFMPEG_TARGET_RESOLUTION, value: 'original' },
+      ]);
+      await sut.handleVideoConversion({ id: assetEntityStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        {
+          outputOptions: ['-vcodec h264', '-acodec aac', '-movflags faststart', '-preset ultrafast', '-crf 23'],
+          twoPass: false,
+        },
+      );
+    });
+
     it('should transcode with alternate scaling video is vertical', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamVertical2160p);
       configMock.load.mockResolvedValue([{ key: SystemConfigKey.FFMPEG_TRANSCODE, value: 'optimal' }]);
