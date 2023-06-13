@@ -19,7 +19,7 @@
 
 	const editUser = async () => {
 		try {
-			const { id, email, firstName, lastName, storageLabel } = user;
+			const { id, email, firstName, lastName, storageLabel, externalPath } = user;
 			const { status } = await api.userApi.updateUser({
 				updateUserDto: {
 					id,
