@@ -5,7 +5,7 @@ import { toEmail, toSanitized } from '@app/immich/utils/transform.util';
 
 export class UpdateUserDto {
   @IsOptional()
-  @IsEmail()
+  @IsEmail({ require_tld: false })
   @Transform(toEmail)
   email?: string;
 
