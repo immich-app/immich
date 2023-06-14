@@ -14,7 +14,6 @@ export class UserResponseDto {
   deletedAt!: Date | null;
   updatedAt!: Date;
   oauthId!: string;
-  externalPath!: string | null;
 }
 
 export function mapUser(entity: UserEntity): UserResponseDto {
@@ -32,6 +31,5 @@ export function mapUser(entity: UserEntity): UserResponseDto {
     deletedAt: entity.deletedAt,
     updatedAt: entity.updatedAt,
     oauthId: entity.oauthId,
-    externalPath: entity.externalPath,
   };
 }

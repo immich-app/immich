@@ -2937,6 +2937,12 @@ export interface UserResponseDto {
      * @type {string}
      * @memberof UserResponseDto
      */
+    'externalPath': string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserResponseDto
+     */
     'profileImagePath': string;
     /**
      * 

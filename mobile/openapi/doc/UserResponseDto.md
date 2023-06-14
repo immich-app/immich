@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **firstName** | **String** |  | 
 **lastName** | **String** |  | 
 **storageLabel** | **String** |  | 
+**externalPath** | **String** |  | 
 **profileImagePath** | **String** |  | 
 **shouldChangePassword** | **bool** |  | 
 **isAdmin** | **bool** |  | 
