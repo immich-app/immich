@@ -8,11 +8,20 @@
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import { AppRoute } from '$lib/constants';
 	import { page } from '$app/stores';
+	import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
+
+	const thisYear = DateTime.local().year;
 
 	let currentIndex = 0;
 
-	const thisYear = DateTime.local().year;
-	let onThisDay: OnThisDay;
+	$: lastIndex = currentIndex - 1;
+	$: nextIndex = currentIndex + 1;
+	$: showNextMemory = nextIndex <= $memoryStore?.onThisDay.length - 1;
+	$: showPreviousMemory = currentIndex != 0;
+
+	let currentMemory: OnThisDay;
+	let nextMemory: OnThisDay;
+	let lastMemory: OnThisDay;
 
 	onMount(async () => {
 		if (!$memoryStore) {
@@ -24,36 +33,93 @@
 		const queryIndex = $page.url.searchParams.get('index');
 		if (queryIndex != null) {
 			currentIndex = parseInt(queryIndex);
-			if (isNaN(currentIndex)) {
-				currentIndex = 0;
-			}
-
-			if (currentIndex > $memoryStore.onThisDay.length - 1) {
+			if (isNaN(currentIndex) || currentIndex > $memoryStore.onThisDay.length - 1) {
 				currentIndex = 0;
 			}
 		}
 
-		onThisDay = $memoryStore.onThisDay[currentIndex];
+		currentMemory = $memoryStore.onThisDay[currentIndex];
+		nextMemory = $memoryStore.onThisDay[nextIndex];
+
+		if (currentIndex < 0) {
+			lastMemory = $memoryStore.onThisDay[lastIndex];
+		}
 	});
+
+	const toNextMemory = () => {};
+
+	const toPreviousMemory = () => {};
 </script>
 
-<section class="w-full h-screen bg-immich-dark-gray">
-	{#if $memoryStore}
+<section id="memory-viewer" class="w-full">
+	{#if currentMemory}
 		<ControlAppBar on:close-button-click={() => goto(AppRoute.PHOTOS)} backIcon={ArrowLeft}>
 			<svelte:fragment slot="leading">
-				{@const title = `${thisYear - $memoryStore.onThisDay[currentIndex].year} years since...`}
+				{@const title = `${thisYear - currentMemory.year} years since...`}
 				<p class="text-lg">
-					{title}
+					{title} - {showNextMemory}
 				</p>
 			</svelte:fragment>
 		</ControlAppBar>
 
 		<!-- Viewer -->
 
-		<section id="memory-viewer" class="pt-20">
-			<div>left</div>
-			<div>middle</div>
-			<div>right</div>
+		<section class="mt-20 overflow-hidden">
+			<div
+				class="flex w-[300%] h-[calc(100vh_-_160px)] items-center justify-center box-border ml-[-100%] gap-10 overflow-hidden"
+			>
+				<button
+					class="rounded-xl h-[60vh] opacity-25 hover:opacity-100 transition-all"
+					disabled={!showPreviousMemory}
+					style:opacity={showPreviousMemory ? 1 : 0}
+				>
+					<div class="rounded-xl h-full w-full">
+						<img
+							class="rounded-xl h-full w-full object-contain"
+							src={showPreviousMemory
+								? api.getAssetThumbnailUrl(lastMemory.assets[0].id, 'JPEG')
+								: noThumbnailUrl}
+							alt=""
+							draggable="false"
+						/>
+					</div>
+				</button>
+
+				<div
+					class="main-view rounded-2xl h-full relative w-[75vw] bg-black flex place-items-center place-content-center"
+				>
+					<div class="bg-black h-full rounded-2xl">
+						<img
+							class="h-full w-full object-contain"
+							src={api.getAssetThumbnailUrl(currentMemory.assets[0].id, 'JPEG')}
+							alt=""
+							draggable="false"
+						/>
+					</div>
+				</div>
+
+				<button class="rounded-xl h-[60vh] opacity-25 hover:opacity-100 transition-all">
+					<img
+						class="rounded-xl h-full w-full object-contain"
+						src={showNextMemory
+							? api.getAssetThumbnailUrl(nextMemory.assets[0].id, 'JPEG')
+							: noThumbnailUrl}
+						alt=""
+						draggable="false"
+					/>
+				</button>
+			</div>
 		</section>
 	{/if}
 </section>
+
+<style>
+	:global(html),
+	#memory-viewer {
+		background-color: #212121;
+	}
+
+	.main-view {
+		box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.3), 0 8px 12px 6px rgba(0, 0, 0, 0.15);
+	}
+</style>
