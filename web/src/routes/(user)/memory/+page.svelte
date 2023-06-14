@@ -5,8 +5,9 @@
 	import { OnThisDay, api } from '@api';
 	import { goto } from '$app/navigation';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
+	import Close from 'svelte-material-icons/Close.svelte';
 	import ChevronDown from 'svelte-material-icons/ChevronDown.svelte';
+	import ChevronUp from 'svelte-material-icons/ChevronUp.svelte';
 	import { AppRoute } from '$lib/constants';
 	import { page } from '$app/stores';
 	import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
@@ -27,6 +28,8 @@
 	$: showPreviousMemory = currentIndex != 0;
 
 	let memoryGallery: HTMLElement;
+	let memoryWrapper: HTMLElement;
+	let galleryInView = false;
 
 	onMount(async () => {
 		if (!$memoryStore) {
@@ -76,13 +79,11 @@
 			lastMemory = $memoryStore.onThisDay[lastIndex];
 		}
 	};
-
-	let galleryInView = false;
 </script>
 
-<section id="memory-viewer" class="w-full">
+<section id="memory-viewer" class="w-full" bind:this={memoryWrapper}>
 	{#if currentMemory}
-		<ControlAppBar on:close-button-click={() => goto(AppRoute.PHOTOS)} backIcon={ArrowLeft}>
+		<ControlAppBar on:close-button-click={() => goto(AppRoute.PHOTOS)} backIcon={Close}>
 			<svelte:fragment slot="leading">
 				{@const title = `${thisYear - currentMemory.year} years since...`}
 				<p class="text-lg">
@@ -91,12 +92,24 @@
 			</svelte:fragment>
 		</ControlAppBar>
 
+		<div
+			class="sticky top-20 flex place-content-center place-items-center z-30 transition-opacity"
+			class:opacity-0={!galleryInView}
+			class:opacity-100={galleryInView}
+		>
+			<button
+				on:click={() => memoryWrapper.scrollIntoView({ behavior: 'smooth' })}
+				disabled={!galleryInView}
+			>
+				<CircleIconButton logo={ChevronUp} backgroundColor="white" iconColor="black" />
+			</button>
+		</div>
 		<!-- Viewer -->
-
 		<section class="mt-20 overflow-hidden">
 			<div
 				class="flex w-[300%] h-[calc(100vh_-_160px)] items-center justify-center box-border ml-[-100%] gap-10 overflow-hidden"
 			>
+				<!-- PREVIOUS MEMORY -->
 				<div
 					class="rounded-2xl w-[30vw] transition-all"
 					class:opacity-25={showPreviousMemory}
@@ -128,6 +141,7 @@
 					</button>
 				</div>
 
+				<!-- CURRENT MEMORY -->
 				<div
 					class="main-view rounded-2xl h-full relative w-[70vw] bg-black flex place-items-center place-content-center"
 				>
@@ -141,6 +155,7 @@
 					</div>
 				</div>
 
+				<!-- NEXT MEMORY -->
 				<div
 					class="rounded-xl w-[30vw] transition-all"
 					class:opacity-25={showNextMemory}
@@ -180,7 +195,7 @@
 				class:opacity-100={!galleryInView}
 			>
 				<button on:click={() => memoryGallery.scrollIntoView({ behavior: 'smooth' })}>
-					<CircleIconButton logo={ChevronDown} backgroundColor="#b1b3b6" />
+					<CircleIconButton logo={ChevronDown} backgroundColor="white" iconColor="black" />
 				</button>
 			</div>
 
@@ -188,6 +203,7 @@
 				once={false}
 				on:intersected={() => (galleryInView = true)}
 				on:hidden={() => (galleryInView = false)}
+				bottom={-200}
 			>
 				<div id="gallery-memory" bind:this={memoryGallery}>
 					<GalleryViewer assets={currentMemory.assets} viewFrom="album-page" />
