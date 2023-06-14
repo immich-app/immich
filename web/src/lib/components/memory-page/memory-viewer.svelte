@@ -9,6 +9,8 @@
 	import Pause from 'svelte-material-icons/Pause.svelte';
 	import ChevronDown from 'svelte-material-icons/ChevronDown.svelte';
 	import ChevronUp from 'svelte-material-icons/ChevronUp.svelte';
+	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
+	import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
 	import { AppRoute } from '$lib/constants';
 	import { page } from '$app/stores';
 	import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
@@ -138,6 +140,22 @@
 		autoPlayIndex = 0;
 		autoPlayProgress = 0;
 	};
+
+	const toNextCurrentAsset = () => {
+		autoPlayIndex += 1;
+
+		if (autoPlayIndex > currentMemory.assets.length - 1) {
+			toNextMemory();
+		}
+	};
+
+	const toPreviousCurrentAsset = () => {
+		autoPlayIndex -= 1;
+
+		if (autoPlayIndex < 0) {
+			toPreviousMemory();
+		}
+	};
 </script>
 
 <section id="memory-viewer" class="w-full bg-immich-dark-gray" bind:this={memoryWrapper}>
@@ -224,6 +242,28 @@
 					class="main-view rounded-2xl h-full relative w-[70vw] bg-black flex place-items-center place-content-center"
 				>
 					<div class="bg-black w-full h-full rounded-2xl">
+						<!-- CONTROL BUTTONS -->
+						<div class="absolute h-full flex justify-between w-full">
+							<div class="flex h-full flex-col place-content-center place-items-center ml-4">
+								<div class="inline-block">
+									<CircleIconButton
+										logo={ChevronLeft}
+										backgroundColor="#202123"
+										on:click={toPreviousCurrentAsset}
+									/>
+								</div>
+							</div>
+							<div class="flex h-full flex-col place-content-center place-items-center mr-4">
+								<div class="inline-block">
+									<CircleIconButton
+										logo={ChevronRight}
+										backgroundColor="#202123"
+										on:click={toNextCurrentAsset}
+									/>
+								</div>
+							</div>
+						</div>
+
 						{#key currentMemory.assets[autoPlayIndex].id}
 							<img
 								transition:fade|local
