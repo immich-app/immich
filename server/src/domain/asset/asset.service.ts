@@ -3,7 +3,7 @@ import { AuthUserDto } from '../auth';
 import { IAssetRepository } from './asset.repository';
 import { MapMarkerDto } from './dto/map-marker.dto';
 import { MapMarkerResponseDto, mapAsset } from './response-dto';
-import { MemoryLaneResponseDto, OnThisDay } from './response-dto/memory-lane-response.dto';
+import { MemoryLaneResponseDto } from './response-dto/memory-lane-response.dto';
 import { DateTime } from 'luxon';
 
 export class AssetService {
@@ -13,15 +13,8 @@ export class AssetService {
     return this.assetRepository.getMapMarkers(authUser.id, options);
   }
 
-  async getMemoryLane(authUser: AuthUserDto, timezone: string): Promise<MemoryLaneResponseDto> {
-    const memory = new MemoryLaneResponseDto();
-    memory.onThisDay = await this.getOnThisDay(authUser.id, timezone);
-
-    return memory;
-  }
-
-  private async getOnThisDay(userId: string, timezone: string): Promise<OnThisDay[]> {
-    const onThisDay: OnThisDay[] = [];
+  async getMemoryLane(authUser: AuthUserDto, timezone: string): Promise<MemoryLaneResponseDto[]> {
+    const result: MemoryLaneResponseDto[] = [];
 
     const luxonDate = DateTime.fromISO(new Date().toISOString(), { zone: timezone });
     const today = new Date(luxonDate.year, luxonDate.month - 1, luxonDate.day);
@@ -32,14 +25,17 @@ export class AssetService {
     });
 
     for (const year of years) {
-      const assets = await this.assetRepository.getByDate(userId, year);
+      const assets = await this.assetRepository.getByDate(authUser.id, year);
 
-      onThisDay.push({
-        year: year.getFullYear(),
-        assets: assets.map((a) => mapAsset(a)),
-      });
+      if (assets.length > 0) {
+        const memory = new MemoryLaneResponseDto();
+        memory.title = `${today.getFullYear() - year.getFullYear()} years since...`;
+        memory.assets = assets.map((a) => mapAsset(a));
+
+        result.push(memory);
+      }
     }
 
-    return onThisDay.filter((o) => o.assets.length > 0);
+    return result;
   }
 }

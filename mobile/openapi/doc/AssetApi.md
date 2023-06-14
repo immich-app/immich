@@ -1163,7 +1163,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getMemoryLane**
-> MemoryLaneResponseDto getMemoryLane(timezone)
+> List<MemoryLaneResponseDto> getMemoryLane(timezone)
 
 
 
@@ -1204,7 +1204,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**MemoryLaneResponseDto**](MemoryLaneResponseDto.md)
+[**List<MemoryLaneResponseDto>**](MemoryLaneResponseDto.md)
 
 ### Authorization
 

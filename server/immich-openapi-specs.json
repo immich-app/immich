@@ -1553,7 +1553,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MemoryLaneResponseDto"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MemoryLaneResponseDto"
+                  }
                 }
               }
             }
@@ -5753,15 +5756,19 @@
       "MemoryLaneResponseDto": {
         "type": "object",
         "properties": {
-          "onThisDay": {
+          "title": {
+            "type": "string"
+          },
+          "assets": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/OnThisDay"
+              "$ref": "#/components/schemas/AssetResponseDto"
             }
           }
         },
         "required": [
-          "onThisDay"
+          "title",
+          "assets"
         ]
       },
       "OAuthCallbackDto": {
@@ -5808,25 +5815,6 @@
         "required": [
           "enabled",
           "passwordLoginEnabled"
-        ]
-      },
-      "OnThisDay": {
-        "type": "object",
-        "properties": {
-          "year": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "assets": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AssetResponseDto"
-            }
-          }
-        },
-        "required": [
-          "year",
-          "assets"
         ]
       },
       "PersonResponseDto": {

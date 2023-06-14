@@ -129,7 +129,7 @@ void main() {
       // TODO
     });
 
-    //Future<MemoryLaneResponseDto> getMemoryLane(String timezone) async
+    //Future<List<MemoryLaneResponseDto>> getMemoryLane(String timezone) async
     test('test getMemoryLane', () async {
       // TODO
     });

@@ -23,7 +23,7 @@ export class AssetController {
   getMemoryLane(
     @GetAuthUser() authUser: AuthUserDto,
     @Query('timezone') timezone: string,
-  ): Promise<MemoryLaneResponseDto> {
+  ): Promise<MemoryLaneResponseDto[]> {
     return this.service.getMemoryLane(authUser, timezone);
   }
 }

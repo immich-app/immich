@@ -16,8 +16,13 @@ void main() {
   // final instance = MemoryLaneResponseDto();
 
   group('test MemoryLaneResponseDto', () {
-    // List<OnThisDay> onThisDay (default value: const [])
-    test('to test the property `onThisDay`', () async {
+    // String title
+    test('to test the property `title`', () async {
+      // TODO
+    });
+
+    // List<AssetResponseDto> assets (default value: const [])
+    test('to test the property `assets`', () async {
       // TODO
     });
 

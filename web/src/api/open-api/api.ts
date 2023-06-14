@@ -1665,10 +1665,16 @@ export interface MapMarkerResponseDto {
 export interface MemoryLaneResponseDto {
     /**
      * 
-     * @type {Array<OnThisDay>}
+     * @type {string}
      * @memberof MemoryLaneResponseDto
      */
-    'onThisDay': Array<OnThisDay>;
+    'title': string;
+    /**
+     * 
+     * @type {Array<AssetResponseDto>}
+     * @memberof MemoryLaneResponseDto
+     */
+    'assets': Array<AssetResponseDto>;
 }
 /**
  * 
@@ -1732,25 +1738,6 @@ export interface OAuthConfigResponseDto {
      * @memberof OAuthConfigResponseDto
      */
     'autoLaunch'?: boolean;
-}
-/**
- * 
- * @export
- * @interface OnThisDay
- */
-export interface OnThisDay {
-    /**
-     * 
-     * @type {number}
-     * @memberof OnThisDay
-     */
-    'year': number;
-    /**
-     * 
-     * @type {Array<AssetResponseDto>}
-     * @memberof OnThisDay
-     */
-    'assets': Array<AssetResponseDto>;
 }
 /**
  * 
@@ -6174,7 +6161,7 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getMemoryLane(timezone: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MemoryLaneResponseDto>> {
+        async getMemoryLane(timezone: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<MemoryLaneResponseDto>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getMemoryLane(timezone, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -6463,7 +6450,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getMemoryLane(timezone: string, options?: any): AxiosPromise<MemoryLaneResponseDto> {
+        getMemoryLane(timezone: string, options?: any): AxiosPromise<Array<MemoryLaneResponseDto>> {
             return localVarFp.getMemoryLane(timezone, options).then((request) => request(axios, basePath));
         },
         /**

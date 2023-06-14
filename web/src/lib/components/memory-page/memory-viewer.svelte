@@ -2,7 +2,7 @@
 	import { memoryStore } from '$lib/stores/memory.store';
 	import { DateTime } from 'luxon';
 	import { onMount } from 'svelte';
-	import { OnThisDay, api } from '@api';
+	import { MemoryLaneResponseDto, api } from '@api';
 	import { goto } from '$app/navigation';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import Play from 'svelte-material-icons/Play.svelte';
@@ -20,13 +20,13 @@
 	const thisYear = DateTime.local().year;
 
 	let currentIndex = 0;
-	let currentMemory: OnThisDay;
-	let nextMemory: OnThisDay;
-	let lastMemory: OnThisDay;
+	let currentMemory: MemoryLaneResponseDto;
+	let nextMemory: MemoryLaneResponseDto;
+	let lastMemory: MemoryLaneResponseDto;
 
 	let lastIndex = 0;
 	let nextIndex = 0;
-	$: showNextMemory = nextIndex <= $memoryStore?.onThisDay.length - 1;
+	$: showNextMemory = nextIndex <= $memoryStore?.length - 1;
 	$: showPreviousMemory = currentIndex != 0;
 
 	let memoryGallery: HTMLElement;
@@ -43,18 +43,18 @@
 		const queryIndex = $page.url.searchParams.get('index');
 		if (queryIndex != null) {
 			currentIndex = parseInt(queryIndex);
-			if (isNaN(currentIndex) || currentIndex > $memoryStore.onThisDay.length - 1) {
+			if (isNaN(currentIndex) || currentIndex > $memoryStore.length - 1) {
 				currentIndex = 0;
 			}
 		}
 
-		currentMemory = $memoryStore.onThisDay[currentIndex];
+		currentMemory = $memoryStore[currentIndex];
 
 		nextIndex = currentIndex + 1;
-		nextMemory = $memoryStore.onThisDay[nextIndex];
+		nextMemory = $memoryStore[nextIndex];
 
 		if (currentIndex > 0) {
-			lastMemory = $memoryStore.onThisDay[lastIndex];
+			lastMemory = $memoryStore[lastIndex];
 		}
 	});
 
@@ -66,9 +66,9 @@
 			nextIndex = currentIndex + 1;
 			lastIndex = currentIndex - 1;
 
-			currentMemory = $memoryStore.onThisDay[currentIndex];
-			nextMemory = $memoryStore.onThisDay[nextIndex];
-			lastMemory = $memoryStore.onThisDay[lastIndex];
+			currentMemory = $memoryStore[currentIndex];
+			nextMemory = $memoryStore[nextIndex];
+			lastMemory = $memoryStore[lastIndex];
 
 			return true;
 		}
@@ -84,9 +84,9 @@
 			nextIndex = currentIndex + 1;
 			lastIndex = currentIndex - 1;
 
-			currentMemory = $memoryStore.onThisDay[currentIndex];
-			nextMemory = $memoryStore.onThisDay[nextIndex];
-			lastMemory = $memoryStore.onThisDay[lastIndex];
+			currentMemory = $memoryStore[currentIndex];
+			nextMemory = $memoryStore[nextIndex];
+			lastMemory = $memoryStore[lastIndex];
 		}
 	};
 
@@ -146,9 +146,8 @@
 	{#if currentMemory}
 		<ControlAppBar on:close-button-click={() => goto(AppRoute.PHOTOS)} forceDark>
 			<svelte:fragment slot="leading">
-				{@const title = `${thisYear - currentMemory.year} years since...`}
 				<p class="text-lg">
-					{title}
+					{currentMemory.title}
 				</p>
 			</svelte:fragment>
 
@@ -214,11 +213,9 @@
 						/>
 
 						{#if showPreviousMemory}
-							{@const title = `${thisYear - lastMemory.year} years since...`}
-
 							<div class="absolute right-4 bottom-4 text-white text-left">
 								<p class="font-semibold text-xs text-gray-200">PREVIOUS</p>
-								<p class="text-xl">{title}</p>
+								<p class="text-xl">{lastMemory.title}</p>
 							</div>
 						{/if}
 					</button>
@@ -271,11 +268,9 @@
 						/>
 
 						{#if showNextMemory}
-							{@const title = `${thisYear - nextMemory.year} years since...`}
-
 							<div class="absolute left-4 bottom-4 text-white text-left">
 								<p class="font-semibold text-xs text-gray-200">UP NEXT</p>
-								<p class="text-xl">{title}</p>
+								<p class="text-xl">{nextMemory.title}</p>
 							</div>
 						{/if}
 					</button>

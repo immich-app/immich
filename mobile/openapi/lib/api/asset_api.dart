@@ -1149,7 +1149,7 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [String] timezone (required):
-  Future<MemoryLaneResponseDto?> getMemoryLane(String timezone,) async {
+  Future<List<MemoryLaneResponseDto>?> getMemoryLane(String timezone,) async {
     final response = await getMemoryLaneWithHttpInfo(timezone,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -1158,8 +1158,11 @@ class AssetApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MemoryLaneResponseDto',) as MemoryLaneResponseDto;
-    
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<MemoryLaneResponseDto>') as List)
+        .cast<MemoryLaneResponseDto>()
+        .toList();
+
     }
     return null;
   }

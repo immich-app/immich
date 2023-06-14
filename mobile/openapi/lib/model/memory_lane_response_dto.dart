@@ -13,26 +13,32 @@ part of openapi.api;
 class MemoryLaneResponseDto {
   /// Returns a new [MemoryLaneResponseDto] instance.
   MemoryLaneResponseDto({
-    this.onThisDay = const [],
+    required this.title,
+    this.assets = const [],
   });
 
-  List<OnThisDay> onThisDay;
+  String title;
+
+  List<AssetResponseDto> assets;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MemoryLaneResponseDto &&
-     other.onThisDay == onThisDay;
+     other.title == title &&
+     other.assets == assets;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (onThisDay.hashCode);
+    (title.hashCode) +
+    (assets.hashCode);
 
   @override
-  String toString() => 'MemoryLaneResponseDto[onThisDay=$onThisDay]';
+  String toString() => 'MemoryLaneResponseDto[title=$title, assets=$assets]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'onThisDay'] = this.onThisDay;
+      json[r'title'] = this.title;
+      json[r'assets'] = this.assets;
     return json;
   }
 
@@ -55,7 +61,8 @@ class MemoryLaneResponseDto {
       }());
 
       return MemoryLaneResponseDto(
-        onThisDay: OnThisDay.listFromJson(json[r'onThisDay']),
+        title: mapValueOfType<String>(json, r'title')!,
+        assets: AssetResponseDto.listFromJson(json[r'assets']),
       );
     }
     return null;
@@ -103,7 +110,8 @@ class MemoryLaneResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'onThisDay',
+    'title',
+    'assets',
   };
 }
 

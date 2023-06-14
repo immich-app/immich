@@ -1,22 +1,20 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { DateTime } from 'luxon';
-	import { OnThisDay, api } from '@api';
+	import { MemoryLaneResponseDto, api } from '@api';
 	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
 	import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
 	import { memoryStore } from '$lib/stores/memory.store';
 	import { goto } from '$app/navigation';
 
-	let onThisDay: OnThisDay[] = [];
-	let thisYear = DateTime.local().year;
-
-	$: shouldRender = onThisDay.length > 0;
+	let memoryLane: MemoryLaneResponseDto[] = [];
+	$: shouldRender = memoryLane.length > 0;
 
 	onMount(async () => {
 		const timezone = DateTime.local().zoneName;
 		const { data } = await api.assetApi.getMemoryLane({ timezone });
 
-		onThisDay = data.onThisDay;
+		memoryLane = data;
 		$memoryStore = data;
 	});
 
@@ -68,20 +66,18 @@
 		{/if}
 
 		<div class="inline-block" bind:offsetWidth={innerWidth}>
-			{#each onThisDay as day, i (day.year)}
-				{@const title = `${thisYear - day.year} years since...`}
+			{#each memoryLane as memory, i (memory.title)}
 				<button
-					id="memory-card-{day.year}"
 					class="memory-card relative inline-block mr-8 rounded-xl aspect-video h-[215px]"
 					on:click={() => goto(`/memory?index=${i}`)}
 				>
 					<img
 						class="rounded-xl h-full w-full object-cover"
-						src={api.getAssetThumbnailUrl(day.assets[0].id, 'JPEG')}
-						alt={title}
+						src={api.getAssetThumbnailUrl(memory.assets[0].id, 'JPEG')}
+						alt={memory.title}
 						draggable="false"
 					/>
-					<p class="absolute bottom-2 left-4 text-xl text-white z-10">{title}</p>
+					<p class="absolute bottom-2 left-4 text-lg text-white z-10">{memory.title}</p>
 					<div
 						class="absolute top-0 left-0 w-full h-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent z-0 hover:bg-black/20 transition-all"
 					/>

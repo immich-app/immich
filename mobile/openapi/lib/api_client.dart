@@ -299,8 +299,6 @@ class ApiClient {
           return OAuthConfigDto.fromJson(value);
         case 'OAuthConfigResponseDto':
           return OAuthConfigResponseDto.fromJson(value);
-        case 'OnThisDay':
-          return OnThisDay.fromJson(value);
         case 'PersonResponseDto':
           return PersonResponseDto.fromJson(value);
         case 'PersonUpdateDto':

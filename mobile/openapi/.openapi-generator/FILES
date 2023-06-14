@@ -68,7 +68,6 @@ doc/OAuthApi.md
 doc/OAuthCallbackDto.md
 doc/OAuthConfigDto.md
 doc/OAuthConfigResponseDto.md
-doc/OnThisDay.md
 doc/PartnerApi.md
 doc/PersonApi.md
 doc/PersonResponseDto.md
@@ -200,7 +199,6 @@ lib/model/memory_lane_response_dto.dart
 lib/model/o_auth_callback_dto.dart
 lib/model/o_auth_config_dto.dart
 lib/model/o_auth_config_response_dto.dart
-lib/model/on_this_day.dart
 lib/model/person_response_dto.dart
 lib/model/person_update_dto.dart
 lib/model/queue_status_dto.dart
@@ -307,7 +305,6 @@ test/o_auth_api_test.dart
 test/o_auth_callback_dto_test.dart
 test/o_auth_config_dto_test.dart
 test/o_auth_config_response_dto_test.dart
-test/on_this_day_test.dart
 test/partner_api_test.dart
 test/person_api_test.dart
 test/person_response_dto_test.dart
