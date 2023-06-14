@@ -81,7 +81,7 @@
 	};
 </script>
 
-<section id="memory-viewer" class="w-full h-full bg-immich-dark-gray" bind:this={memoryWrapper}>
+<section id="memory-viewer" class="w-full bg-immich-dark-gray" bind:this={memoryWrapper}>
 	{#if currentMemory}
 		<ControlAppBar on:close-button-click={() => goto(AppRoute.PHOTOS)} forceDark>
 			<svelte:fragment slot="leading">
@@ -90,6 +90,8 @@
 					{title}
 				</p>
 			</svelte:fragment>
+
+			<div class="flex place-items-center place-content-center" />
 		</ControlAppBar>
 
 		{#if galleryInView}
@@ -113,7 +115,7 @@
 			>
 				<!-- PREVIOUS MEMORY -->
 				<div
-					class="rounded-2xl w-[30vw] transition-all"
+					class="rounded-2xl w-[20vw]"
 					class:opacity-25={showPreviousMemory}
 					class:opacity-0={!showPreviousMemory}
 					class:hover:opacity-70={showPreviousMemory}
@@ -159,7 +161,7 @@
 
 				<!-- NEXT MEMORY -->
 				<div
-					class="rounded-xl w-[30vw] transition-all"
+					class="rounded-xl w-[20vw]"
 					class:opacity-25={showNextMemory}
 					class:opacity-0={!showNextMemory}
 					class:hover:opacity-70={showNextMemory}
@@ -193,30 +195,28 @@
 
 		<!-- GALERY VIEWER -->
 
-		{#if currentMemory.assets.length > 1}
-			<section class="bg-immich-dark-gray">
-				<div
-					class="sticky flex place-content-center place-items-center mb-10 mt-4 transition-all"
-					class:opacity-0={galleryInView}
-					class:opacity-100={!galleryInView}
-				>
-					<button on:click={() => memoryGallery.scrollIntoView({ behavior: 'smooth' })}>
-						<CircleIconButton logo={ChevronDown} backgroundColor="white" />
-					</button>
-				</div>
+		<section class="bg-immich-dark-gray pl-4">
+			<div
+				class="sticky flex place-content-center place-items-center mb-10 mt-4 transition-all"
+				class:opacity-0={galleryInView}
+				class:opacity-100={!galleryInView}
+			>
+				<button on:click={() => memoryGallery.scrollIntoView({ behavior: 'smooth' })}>
+					<CircleIconButton logo={ChevronDown} backgroundColor="white" />
+				</button>
+			</div>
 
-				<IntersectionObserver
-					once={false}
-					on:intersected={() => (galleryInView = true)}
-					on:hidden={() => (galleryInView = false)}
-					bottom={-200}
-				>
-					<div id="gallery-memory" bind:this={memoryGallery}>
-						<GalleryViewer assets={currentMemory.assets} viewFrom="album-page" />
-					</div>
-				</IntersectionObserver>
-			</section>
-		{/if}
+			<IntersectionObserver
+				once={false}
+				on:intersected={() => (galleryInView = true)}
+				on:hidden={() => (galleryInView = false)}
+				bottom={-200}
+			>
+				<div id="gallery-memory" bind:this={memoryGallery}>
+					<GalleryViewer assets={currentMemory.assets} viewFrom="album-page" />
+				</div>
+			</IntersectionObserver>
+		</section>
 	{/if}
 </section>
 

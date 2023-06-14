@@ -16,8 +16,12 @@
 	const dispatch = createEventDispatcher();
 
 	const onScroll = () => {
-		if (window.pageYOffset > 80 && !forceDark) {
+		if (window.pageYOffset > 80) {
 			appBarBorder = 'border border-gray-200 bg-gray-50 dark:border-gray-600';
+
+			if (forceDark) {
+				appBarBorder = 'border border-gray-600';
+			}
 		} else {
 			appBarBorder = 'bg-immich-bg border border-transparent';
 		}
