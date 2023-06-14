@@ -154,7 +154,6 @@ export const userEntityStub = {
     assets: [],
   }),
   storageLabel: Object.freeze<UserEntity>({
-    externalPath: null,
     ...authStub.user1,
     password: 'immich_password',
     firstName: 'immich_first_name',
