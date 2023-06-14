@@ -13,15 +13,14 @@
 	const thisYear = DateTime.local().year;
 
 	let currentIndex = 0;
-
-	$: lastIndex = currentIndex - 1;
-	$: nextIndex = currentIndex + 1;
-	$: showNextMemory = nextIndex <= $memoryStore?.onThisDay.length - 1;
-	$: showPreviousMemory = currentIndex != 0;
-
 	let currentMemory: OnThisDay;
 	let nextMemory: OnThisDay;
 	let lastMemory: OnThisDay;
+
+	let lastIndex = 0;
+	let nextIndex = 0;
+	$: showNextMemory = nextIndex <= $memoryStore?.onThisDay.length - 1;
+	$: showPreviousMemory = currentIndex != 0;
 
 	onMount(async () => {
 		if (!$memoryStore) {
@@ -39,16 +38,39 @@
 		}
 
 		currentMemory = $memoryStore.onThisDay[currentIndex];
+
+		nextIndex = currentIndex + 1;
 		nextMemory = $memoryStore.onThisDay[nextIndex];
 
-		if (currentIndex < 0) {
+		if (currentIndex > 0) {
 			lastMemory = $memoryStore.onThisDay[lastIndex];
 		}
 	});
 
-	const toNextMemory = () => {};
+	const toNextMemory = () => {
+		if (showNextMemory) {
+			currentIndex += 1;
+			nextIndex = currentIndex + 1;
+			lastIndex = currentIndex - 1;
 
-	const toPreviousMemory = () => {};
+			currentMemory = $memoryStore.onThisDay[currentIndex];
+			nextMemory = $memoryStore.onThisDay[nextIndex];
+			lastMemory = $memoryStore.onThisDay[lastIndex];
+			console.log(lastMemory, lastIndex, $memoryStore.onThisDay[lastIndex]);
+		}
+	};
+
+	const toPreviousMemory = () => {
+		if (showPreviousMemory) {
+			currentIndex -= 1;
+			nextIndex = currentIndex + 1;
+			lastIndex = currentIndex - 1;
+
+			currentMemory = $memoryStore.onThisDay[currentIndex];
+			nextMemory = $memoryStore.onThisDay[nextIndex];
+			lastMemory = $memoryStore.onThisDay[lastIndex];
+		}
+	};
 </script>
 
 <section id="memory-viewer" class="w-full">
@@ -57,7 +79,7 @@
 			<svelte:fragment slot="leading">
 				{@const title = `${thisYear - currentMemory.year} years since...`}
 				<p class="text-lg">
-					{title} - {showNextMemory}
+					{title}
 				</p>
 			</svelte:fragment>
 		</ControlAppBar>
@@ -69,14 +91,17 @@
 				class="flex w-[300%] h-[calc(100vh_-_160px)] items-center justify-center box-border ml-[-100%] gap-10 overflow-hidden"
 			>
 				<button
-					class="rounded-xl h-[60vh] opacity-25 hover:opacity-100 transition-all"
+					class="rounded-xl w-[30vw] transition-all"
 					disabled={!showPreviousMemory}
-					style:opacity={showPreviousMemory ? 1 : 0}
+					class:opacity-25={showPreviousMemory}
+					class:opacity-0={!showPreviousMemory}
+					class:hover:opacity-100={showPreviousMemory}
+					on:click={toPreviousMemory}
 				>
 					<div class="rounded-xl h-full w-full">
 						<img
 							class="rounded-xl h-full w-full object-contain"
-							src={showPreviousMemory
+							src={showPreviousMemory && lastMemory
 								? api.getAssetThumbnailUrl(lastMemory.assets[0].id, 'JPEG')
 								: noThumbnailUrl}
 							alt=""
@@ -86,7 +111,7 @@
 				</button>
 
 				<div
-					class="main-view rounded-2xl h-full relative w-[75vw] bg-black flex place-items-center place-content-center"
+					class="main-view rounded-2xl h-full relative w-[70vw] bg-black flex place-items-center place-content-center"
 				>
 					<div class="bg-black h-full rounded-2xl">
 						<img
@@ -98,15 +123,24 @@
 					</div>
 				</div>
 
-				<button class="rounded-xl h-[60vh] opacity-25 hover:opacity-100 transition-all">
-					<img
-						class="rounded-xl h-full w-full object-contain"
-						src={showNextMemory
-							? api.getAssetThumbnailUrl(nextMemory.assets[0].id, 'JPEG')
-							: noThumbnailUrl}
-						alt=""
-						draggable="false"
-					/>
+				<button
+					class="rounded-xl w-[30vw] transition-all"
+					disabled={!showNextMemory}
+					class:opacity-25={showNextMemory}
+					class:opacity-0={!showNextMemory}
+					class:hover:opacity-100={showNextMemory}
+					on:click={toNextMemory}
+				>
+					<div class="rounded-xl h-full w-full">
+						<img
+							class="rounded-xl h-full w-full object-contain"
+							src={showNextMemory
+								? api.getAssetThumbnailUrl(nextMemory.assets[0].id, 'JPEG')
+								: noThumbnailUrl}
+							alt=""
+							draggable="false"
+						/>
+					</div>
 				</button>
 			</div>
 		</section>
