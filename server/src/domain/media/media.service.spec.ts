@@ -151,6 +151,22 @@ describe(MediaService.name, () => {
     });
   });
 
+  describe('handleGenerateThumbhashThumbnail', () => {
+    it('should skip thumbhash generate if resize path is missing', async () => {
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.noResizePath]);
+      await sut.handleGenerateThumbhashThumbnail({ id: assetEntityStub.noResizePath.id });
+      expect(mediaMock.generateThumbhash).not.toHaveBeenCalled();
+    });
+
+    it('should generate a thumbhash', async () => {
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
+      await sut.handleGenerateThumbhashThumbnail({ id: assetEntityStub.image.id });
+
+      expect(mediaMock.generateThumbhash).toHaveBeenCalledWith('/uploads/user-id/thumbs/path.ext');
+      expect(assetMock.save).toHaveBeenCalledWith({ id: 'asset-id', thumbhash: undefined });
+    });
+  });
+
   describe('handleQueueVideoConversion', () => {
     it('should queue all video assets', async () => {
       assetMock.getAll.mockResolvedValue({

@@ -18,7 +18,7 @@
 	onMount(() => {
 		if (thumbhash != null) {
 			lazyLoad(imageElement, {
-				hash: thumbhash || '',
+				hash: thumbhash,
 				hashType: 'thumbhash'
 			});
 		}
