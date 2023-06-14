@@ -234,11 +234,15 @@
 							/>
 						{/key}
 
-						<div class="absolute top-4 left-8">
-							<p class="text-white text-sm font-medium">
+						<div class="absolute top-4 left-8 text-white text-sm font-medium">
+							<p>
 								{DateTime.fromISO(currentMemory.assets[0].fileCreatedAt).toLocaleString(
 									DateTime.DATE_FULL
 								)}
+							</p>
+							<p>
+								{currentMemory.assets[autoPlayIndex].exifInfo?.city || ''}
+								{currentMemory.assets[autoPlayIndex].exifInfo?.country || ''}
 							</p>
 						</div>
 					</div>
