@@ -6738,10 +6738,6 @@
             "type": "string",
             "nullable": true
           },
-          "externalPath": {
-            "type": "string",
-            "nullable": true
-          },
           "profileImagePath": {
             "type": "string"
           },
@@ -6774,7 +6770,6 @@
           "firstName",
           "lastName",
           "storageLabel",
-          "externalPath",
           "profileImagePath",
           "shouldChangePassword",
           "isAdmin",

@@ -12,6 +12,7 @@ services:
     volumes:
       - ../server:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /mnt/storage:/mnt/storage:ro
       - /usr/src/app/node_modules
     ports:
       - 3001:3001
@@ -37,6 +38,7 @@ services:
     volumes:
       - ../machine-learning/app:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /mnt/storage:/mnt/storage:ro
       - model-cache:/cache
     env_file:
       - .env
@@ -57,6 +59,7 @@ services:
     volumes:
       - ../server:/usr/src/app
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /mnt/storage:/mnt/storage:ro
       - /usr/src/app/node_modules
     env_file:
       - .env
@@ -138,6 +141,15 @@ services:
     depends_on:
       - immich-server
     restart: always
+
+  # pgadmin:
+    # container_name: pgadmin
+    # image: dpage/pgadmin4
+    # environment:
+    #   PGADMIN_DEFAULT_EMAIL: me@example.com
+    #   PGADMIN_DEFAULT_PASSWORD: applepie
+    # ports:
+    #   - 8090:80
 
 volumes:
   pgdata:
