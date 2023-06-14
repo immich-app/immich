@@ -61,7 +61,6 @@
 			currentMemory = $memoryStore.onThisDay[currentIndex];
 			nextMemory = $memoryStore.onThisDay[nextIndex];
 			lastMemory = $memoryStore.onThisDay[lastIndex];
-			console.log(lastMemory, lastIndex, $memoryStore.onThisDay[lastIndex]);
 		}
 	};
 
@@ -95,15 +94,17 @@
 			<div
 				class="flex w-[300%] h-[calc(100vh_-_160px)] items-center justify-center box-border ml-[-100%] gap-10 overflow-hidden"
 			>
-				<button
+				<div
 					class="rounded-2xl w-[30vw] transition-all"
-					disabled={!showPreviousMemory}
 					class:opacity-25={showPreviousMemory}
 					class:opacity-0={!showPreviousMemory}
-					class:hover:opacity-100={showPreviousMemory}
-					on:click={toPreviousMemory}
+					class:hover:opacity-70={showPreviousMemory}
 				>
-					<div class="rounded-2xl h-full w-full">
+					<button
+						class="rounded-2xl h-full w-full relative"
+						disabled={!showPreviousMemory}
+						on:click={toPreviousMemory}
+					>
 						<img
 							class="rounded-2xl h-full w-full object-contain"
 							src={showPreviousMemory && lastMemory
@@ -112,8 +113,17 @@
 							alt=""
 							draggable="false"
 						/>
-					</div>
-				</button>
+
+						{#if showPreviousMemory}
+							{@const title = `${thisYear - lastMemory.year} years since...`}
+
+							<div class="absolute right-4 bottom-4 text-white text-left">
+								<p class="font-semibold text-xs text-gray-200">PREVIOUS</p>
+								<p class="text-xl">{title}</p>
+							</div>
+						{/if}
+					</button>
+				</div>
 
 				<div
 					class="main-view rounded-2xl h-full relative w-[70vw] bg-black flex place-items-center place-content-center"
@@ -128,15 +138,17 @@
 					</div>
 				</div>
 
-				<button
+				<div
 					class="rounded-xl w-[30vw] transition-all"
-					disabled={!showNextMemory}
 					class:opacity-25={showNextMemory}
 					class:opacity-0={!showNextMemory}
-					class:hover:opacity-100={showNextMemory}
-					on:click={toNextMemory}
+					class:hover:opacity-70={showNextMemory}
 				>
-					<div class="rounded-2xl h-full w-full">
+					<button
+						class="rounded-2xl h-full w-full relative"
+						on:click={toNextMemory}
+						disabled={!showNextMemory}
+					>
 						<img
 							class="rounded-2xl h-full w-full object-contain"
 							src={showNextMemory
@@ -145,8 +157,17 @@
 							alt=""
 							draggable="false"
 						/>
-					</div>
-				</button>
+
+						{#if showNextMemory}
+							{@const title = `${thisYear - nextMemory.year} years since...`}
+
+							<div class="absolute left-4 bottom-4 text-white text-left">
+								<p class="font-semibold text-xs text-gray-200">UP NEXT</p>
+								<p class="text-xl">{title}</p>
+							</div>
+						{/if}
+					</button>
+				</div>
 			</div>
 		</section>
 
