@@ -3,7 +3,7 @@ import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { toEmail, toSanitized } from '@app/immich/utils/transform.util';
 
 export class CreateUserDto {
-  @IsEmail()
+  @IsEmail({ require_tld: false })
   @Transform(toEmail)
   email!: string;
 
@@ -29,7 +29,7 @@ export class CreateAdminDto {
   @IsNotEmpty()
   isAdmin!: true;
 
-  @IsEmail()
+  @IsEmail({ require_tld: false })
   @Transform(({ value }) => value?.toLowerCase())
   email!: string;
 
@@ -44,7 +44,7 @@ export class CreateAdminDto {
 }
 
 export class CreateUserOAuthDto {
-  @IsEmail()
+  @IsEmail({ require_tld: false })
   @Transform(({ value }) => value?.toLowerCase())
   email!: string;
 
