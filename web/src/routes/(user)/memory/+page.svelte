@@ -96,16 +96,16 @@
 				class="flex w-[300%] h-[calc(100vh_-_160px)] items-center justify-center box-border ml-[-100%] gap-10 overflow-hidden"
 			>
 				<button
-					class="rounded-xl w-[30vw] transition-all"
+					class="rounded-2xl w-[30vw] transition-all"
 					disabled={!showPreviousMemory}
 					class:opacity-25={showPreviousMemory}
 					class:opacity-0={!showPreviousMemory}
 					class:hover:opacity-100={showPreviousMemory}
 					on:click={toPreviousMemory}
 				>
-					<div class="rounded-xl h-full w-full">
+					<div class="rounded-2xl h-full w-full">
 						<img
-							class="rounded-xl h-full w-full object-contain"
+							class="rounded-2xl h-full w-full object-contain"
 							src={showPreviousMemory && lastMemory
 								? api.getAssetThumbnailUrl(lastMemory.assets[0].id, 'JPEG')
 								: noThumbnailUrl}
@@ -120,7 +120,7 @@
 				>
 					<div class="bg-black w-full h-full rounded-2xl">
 						<img
-							class="w-full h-full object-contain"
+							class="rounded-2xl w-full h-full object-contain"
 							src={api.getAssetThumbnailUrl(currentMemory.assets[0].id, 'JPEG')}
 							alt=""
 							draggable="false"
@@ -136,9 +136,9 @@
 					class:hover:opacity-100={showNextMemory}
 					on:click={toNextMemory}
 				>
-					<div class="rounded-xl h-full w-full">
+					<div class="rounded-2xl h-full w-full">
 						<img
-							class="rounded-xl h-full w-full object-contain"
+							class="rounded-2xl h-full w-full object-contain"
 							src={showNextMemory
 								? api.getAssetThumbnailUrl(nextMemory.assets[0].id, 'JPEG')
 								: noThumbnailUrl}
