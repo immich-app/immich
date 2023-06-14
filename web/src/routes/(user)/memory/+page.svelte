@@ -6,9 +6,12 @@
 	import { goto } from '$app/navigation';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
+	import ChevronDown from 'svelte-material-icons/ChevronDown.svelte';
 	import { AppRoute } from '$lib/constants';
 	import { page } from '$app/stores';
 	import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
+	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
+	import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
 	const thisYear = DateTime.local().year;
 
@@ -21,6 +24,8 @@
 	let nextIndex = 0;
 	$: showNextMemory = nextIndex <= $memoryStore?.onThisDay.length - 1;
 	$: showPreviousMemory = currentIndex != 0;
+
+	let memoryGallery: HTMLElement;
 
 	onMount(async () => {
 		if (!$memoryStore) {
@@ -142,6 +147,18 @@
 						/>
 					</div>
 				</button>
+			</div>
+		</section>
+
+		<section>
+			<div class="sticky flex place-content-center place-items-center mb-10 mt-4">
+				<button on:click={() => memoryGallery.scrollIntoView({ behavior: 'smooth' })}>
+					<CircleIconButton logo={ChevronDown} backgroundColor="#b1b3b6" />
+				</button>
+			</div>
+
+			<div id="gallery-memory" bind:this={memoryGallery}>
+				<GalleryViewer assets={currentMemory.assets} viewFrom="album-page" />
 			</div>
 		</section>
 	{/if}
