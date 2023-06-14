@@ -12,6 +12,7 @@
 	import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
 	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
 	import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
 
 	const thisYear = DateTime.local().year;
 
@@ -75,6 +76,8 @@
 			lastMemory = $memoryStore.onThisDay[lastIndex];
 		}
 	};
+
+	let galleryInView = false;
 </script>
 
 <section id="memory-viewer" class="w-full">
@@ -170,17 +173,26 @@
 				</div>
 			</div>
 		</section>
-
 		<section>
-			<div class="sticky flex place-content-center place-items-center mb-10 mt-4">
+			<div
+				class="sticky flex place-content-center place-items-center mb-10 mt-4 transition-all"
+				class:opacity-0={galleryInView}
+				class:opacity-100={!galleryInView}
+			>
 				<button on:click={() => memoryGallery.scrollIntoView({ behavior: 'smooth' })}>
 					<CircleIconButton logo={ChevronDown} backgroundColor="#b1b3b6" />
 				</button>
 			</div>
 
-			<div id="gallery-memory" bind:this={memoryGallery}>
-				<GalleryViewer assets={currentMemory.assets} viewFrom="album-page" />
-			</div>
+			<IntersectionObserver
+				once={false}
+				on:intersected={() => (galleryInView = true)}
+				on:hidden={() => (galleryInView = false)}
+			>
+				<div id="gallery-memory" bind:this={memoryGallery}>
+					<GalleryViewer assets={currentMemory.assets} viewFrom="album-page" />
+				</div>
+			</IntersectionObserver>
 		</section>
 	{/if}
 </section>

@@ -1,4 +1,4 @@
-import { AssetResponseDto, AssetService, AuthUserDto, MapMarkerResponseDto } from '@app/domain';
+import { AssetService, AuthUserDto, MapMarkerResponseDto } from '@app/domain';
 import { MapMarkerDto } from '@app/domain/asset/dto/map-marker.dto';
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
