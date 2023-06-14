@@ -14,6 +14,7 @@ Name | Type | Description | Notes
 **firstName** | **String** |  | [optional] 
 **lastName** | **String** |  | [optional] 
 **storageLabel** | **String** |  | [optional] 
+**externalPath** | **String** |  | [optional] 
 **isAdmin** | **bool** |  | [optional] 
 **shouldChangePassword** | **bool** |  | [optional] 
 

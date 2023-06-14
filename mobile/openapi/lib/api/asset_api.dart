@@ -1175,9 +1175,7 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [ImportAssetDto] importAssetDto (required):
-  ///
-  /// * [String] key:
-  Future<Response> importFileWithHttpInfo(ImportAssetDto importAssetDto, { String? key, }) async {
+  Future<Response> importFileWithHttpInfo(ImportAssetDto importAssetDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/import';
 
@@ -1187,10 +1185,6 @@ class AssetApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
-
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
-    }
 
     const contentTypes = <String>['application/json'];
 
@@ -1209,10 +1203,8 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [ImportAssetDto] importAssetDto (required):
-  ///
-  /// * [String] key:
-  Future<AssetFileUploadResponseDto?> importFile(ImportAssetDto importAssetDto, { String? key, }) async {
-    final response = await importFileWithHttpInfo(importAssetDto,  key: key, );
+  Future<AssetFileUploadResponseDto?> importFile(ImportAssetDto importAssetDto,) async {
+    final response = await importFileWithHttpInfo(importAssetDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

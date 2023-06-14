@@ -1220,7 +1220,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **importFile**
-> AssetFileUploadResponseDto importFile(importAssetDto, key)
+> AssetFileUploadResponseDto importFile(importAssetDto)
 
 
 
@@ -1244,10 +1244,9 @@ import 'package:openapi/api.dart';
 
 final api_instance = AssetApi();
 final importAssetDto = ImportAssetDto(); // ImportAssetDto | 
-final key = key_example; // String | 
 
 try {
-    final result = api_instance.importFile(importAssetDto, key);
+    final result = api_instance.importFile(importAssetDto);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->importFile: $e\n');
@@ -1259,7 +1258,6 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **importAssetDto** | [**ImportAssetDto**](ImportAssetDto.md)|  | 
- **key** | **String**|  | [optional] 
 
 ### Return type
 
