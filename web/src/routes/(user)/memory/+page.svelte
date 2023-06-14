@@ -81,9 +81,9 @@
 	};
 </script>
 
-<section id="memory-viewer" class="w-full" bind:this={memoryWrapper}>
+<section id="memory-viewer" class="w-full h-full bg-immich-dark-gray" bind:this={memoryWrapper}>
 	{#if currentMemory}
-		<ControlAppBar on:close-button-click={() => goto(AppRoute.PHOTOS)} backIcon={Close}>
+		<ControlAppBar on:close-button-click={() => goto(AppRoute.PHOTOS)} forceDark>
 			<svelte:fragment slot="leading">
 				{@const title = `${thisYear - currentMemory.year} years since...`}
 				<p class="text-lg">
@@ -107,7 +107,7 @@
 			</div>
 		{/if}
 		<!-- Viewer -->
-		<section class="mt-20 overflow-hidden">
+		<section class="pt-20 overflow-hidden">
 			<div
 				class="flex w-[300%] h-[calc(100vh_-_180px)] items-center justify-center box-border ml-[-100%] gap-10 overflow-hidden"
 			>
@@ -194,7 +194,7 @@
 		<!-- GALERY VIEWER -->
 
 		{#if currentMemory.assets.length > 1}
-			<section>
+			<section class="bg-immich-dark-gray">
 				<div
 					class="sticky flex place-content-center place-items-center mb-10 mt-4 transition-all"
 					class:opacity-0={galleryInView}
@@ -221,11 +221,6 @@
 </section>
 
 <style>
-	:global(html),
-	#memory-viewer {
-		background-color: #212121;
-	}
-
 	.main-view {
 		box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.3), 0 8px 12px 6px rgba(0, 0, 0, 0.15);
 	}
