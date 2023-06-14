@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
@@ -110,8 +111,12 @@ class ImmichImage extends StatelessWidget {
         );
       },
       errorWidget: (context, url, error) {
-        debugPrint("Error getting thumbnail $url = $error");
-        CachedNetworkImage.evictFromCache(thumbnailRequestUrl);
+        if (error is HttpExceptionWithStatus &&
+            error.statusCode >= 400 &&
+            error.statusCode < 500) {
+          debugPrint("Evicting thumbnail '$url' from cache: $error");
+          CachedNetworkImage.evictFromCache(url);
+        }
         return Icon(
           Icons.image_not_supported_outlined,
           color: Theme.of(context).primaryColor,
