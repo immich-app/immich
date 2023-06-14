@@ -5,7 +5,8 @@
 	import { OnThisDay, api } from '@api';
 	import { goto } from '$app/navigation';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-	import Close from 'svelte-material-icons/Close.svelte';
+	import Play from 'svelte-material-icons/Play.svelte';
+	import Pause from 'svelte-material-icons/Pause.svelte';
 	import ChevronDown from 'svelte-material-icons/ChevronDown.svelte';
 	import ChevronUp from 'svelte-material-icons/ChevronUp.svelte';
 	import { AppRoute } from '$lib/constants';
@@ -14,6 +15,7 @@
 	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
 	import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
+	import { fade, slide, crossfade, fly } from 'svelte/transition';
 
 	const thisYear = DateTime.local().year;
 
@@ -56,9 +58,29 @@
 		}
 	});
 
-	const toNextMemory = () => {
+	const toNextMemory = (): boolean => {
 		if (showNextMemory) {
+			resetAutoPlay();
+
 			currentIndex += 1;
+			nextIndex = currentIndex + 1;
+			lastIndex = currentIndex - 1;
+
+			currentMemory = $memoryStore.onThisDay[currentIndex];
+			nextMemory = $memoryStore.onThisDay[nextIndex];
+			lastMemory = $memoryStore.onThisDay[lastIndex];
+
+			return true;
+		}
+
+		return false;
+	};
+
+	const toPreviousMemory = () => {
+		if (showPreviousMemory) {
+			resetAutoPlay();
+
+			currentIndex -= 1;
 			nextIndex = currentIndex + 1;
 			lastIndex = currentIndex - 1;
 
@@ -68,16 +90,55 @@
 		}
 	};
 
-	const toPreviousMemory = () => {
-		if (showPreviousMemory) {
-			currentIndex -= 1;
-			nextIndex = currentIndex + 1;
-			lastIndex = currentIndex - 1;
+	let autoPlayInterval: NodeJS.Timeout;
+	let autoPlay = false;
+	let autoPlaySpeed = 5000;
+	let autoPlayProgress = 0;
+	let autoPlayIndex = 0;
+	let canPlayNext = true;
 
-			currentMemory = $memoryStore.onThisDay[currentIndex];
-			nextMemory = $memoryStore.onThisDay[nextIndex];
-			lastMemory = $memoryStore.onThisDay[lastIndex];
+	const toggleAutoPlay = () => {
+		autoPlay = !autoPlay;
+		if (autoPlay) {
+			autoPlayInterval = setInterval(() => {
+				if (!canPlayNext) return;
+
+				window.requestAnimationFrame(() => {
+					autoPlayProgress += 1;
+				});
+
+				if (autoPlayProgress > 100) {
+					autoPlayProgress = 0;
+					canPlayNext = false;
+					autoPlayTransition();
+				}
+			}, autoPlaySpeed / 100);
+		} else {
+			clearInterval(autoPlayInterval);
 		}
+	};
+
+	const autoPlayTransition = () => {
+		if (autoPlayIndex < currentMemory.assets.length - 1) {
+			autoPlayIndex += 1;
+		} else {
+			const canAdvance = toNextMemory();
+			if (!canAdvance) {
+				autoPlay = false;
+				clearInterval(autoPlayInterval);
+				return;
+			}
+		}
+
+		// Delay for nicer animation of the progress bar
+		setTimeout(() => {
+			canPlayNext = true;
+		}, 250);
+	};
+
+	const resetAutoPlay = () => {
+		autoPlayIndex = 0;
+		autoPlayProgress = 0;
 	};
 </script>
 
@@ -91,7 +152,17 @@
 				</p>
 			</svelte:fragment>
 
-			<div class="flex place-items-center place-content-center" />
+			<div class="flex place-items-center place-content-center overflow-hidden gap-2">
+				<CircleIconButton logo={autoPlay ? Pause : Play} forceDark on:click={toggleAutoPlay} />
+
+				<div class="relative w-full">
+					<span class="absolute left-0 w-full h-[2px] bg-gray-500" />
+					<span
+						class="absolute left-0 h-[2px] bg-white transition-all"
+						style:width={`${autoPlayProgress}%`}
+					/>
+				</div>
+			</div>
 		</ControlAppBar>
 
 		{#if galleryInView}
@@ -115,7 +186,7 @@
 			>
 				<!-- PREVIOUS MEMORY -->
 				<div
-					class="rounded-2xl w-[20vw]"
+					class="rounded-2xl w-[20vw] h-1/2"
 					class:opacity-25={showPreviousMemory}
 					class:opacity-0={!showPreviousMemory}
 					class:hover:opacity-70={showPreviousMemory}
@@ -126,7 +197,7 @@
 						on:click={toPreviousMemory}
 					>
 						<img
-							class="rounded-2xl h-full w-full object-contain"
+							class="rounded-2xl h-full w-full object-cover"
 							src={showPreviousMemory && lastMemory
 								? api.getAssetThumbnailUrl(lastMemory.assets[0].id, 'JPEG')
 								: noThumbnailUrl}
@@ -150,18 +221,21 @@
 					class="main-view rounded-2xl h-full relative w-[70vw] bg-black flex place-items-center place-content-center"
 				>
 					<div class="bg-black w-full h-full rounded-2xl">
-						<img
-							class="rounded-2xl w-full h-full object-contain"
-							src={api.getAssetThumbnailUrl(currentMemory.assets[0].id, 'JPEG')}
-							alt=""
-							draggable="false"
-						/>
+						{#key currentMemory.assets[autoPlayIndex].id}
+							<img
+								transition:fade|local
+								class="rounded-2xl w-full h-full object-contain transition-all"
+								src={api.getAssetThumbnailUrl(currentMemory.assets[autoPlayIndex].id, 'JPEG')}
+								alt=""
+								draggable="false"
+							/>
+						{/key}
 					</div>
 				</div>
 
 				<!-- NEXT MEMORY -->
 				<div
-					class="rounded-xl w-[20vw]"
+					class="rounded-xl w-[20vw] h-1/2"
 					class:opacity-25={showNextMemory}
 					class:opacity-0={!showNextMemory}
 					class:hover:opacity-70={showNextMemory}
@@ -172,7 +246,7 @@
 						disabled={!showNextMemory}
 					>
 						<img
-							class="rounded-2xl h-full w-full object-contain"
+							class="rounded-2xl h-full w-full object-cover"
 							src={showNextMemory
 								? api.getAssetThumbnailUrl(nextMemory.assets[0].id, 'JPEG')
 								: noThumbnailUrl}
