@@ -113,9 +113,9 @@
 				<div
 					class="main-view rounded-2xl h-full relative w-[70vw] bg-black flex place-items-center place-content-center"
 				>
-					<div class="bg-black h-full rounded-2xl">
+					<div class="bg-black w-full h-full rounded-2xl">
 						<img
-							class="h-full w-full object-contain"
+							class="w-full h-full object-contain"
 							src={api.getAssetThumbnailUrl(currentMemory.assets[0].id, 'JPEG')}
 							alt=""
 							draggable="false"
