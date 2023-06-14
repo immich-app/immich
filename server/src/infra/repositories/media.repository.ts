@@ -4,7 +4,6 @@ import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import sharp from 'sharp';
 import { promisify } from 'util';
 import fs from 'fs/promises';
-import { rgbaToThumbHash } from 'thumbhash-node';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 
@@ -135,7 +134,20 @@ export class MediaRepository implements IMediaRepository {
       .ensureAlpha()
       .toBuffer({ resolveWithObject: true });
 
-    const thumbhash = rgbaToThumbHash(info.width, info.height, data);
-    return Buffer.from(thumbhash);
+    // This is a workaround because this project uses CommonJS while thumbhash uses ESM
+    return new Promise<Buffer>((resolve, reject) => {
+      (eval('import("thumbhash")') as Promise<typeof import('thumbhash')>)
+        .then((thumbhash_lib) => {
+          try {
+            const thumbhash = thumbhash_lib.rgbaToThumbHash(info.width, info.height, data);
+            resolve(Buffer.from(thumbhash));
+          } catch (error) {
+            reject(error);
+          }
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
   }
 }
