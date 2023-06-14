@@ -107,7 +107,7 @@
 		<!-- Viewer -->
 		<section class="mt-20 overflow-hidden">
 			<div
-				class="flex w-[300%] h-[calc(100vh_-_160px)] items-center justify-center box-border ml-[-100%] gap-10 overflow-hidden"
+				class="flex w-[300%] h-[calc(100vh_-_210px)] items-center justify-center box-border ml-[-100%] gap-10 overflow-hidden"
 			>
 				<!-- PREVIOUS MEMORY -->
 				<div
@@ -188,28 +188,33 @@
 				</div>
 			</div>
 		</section>
-		<section>
-			<div
-				class="sticky flex place-content-center place-items-center mb-10 mt-4 transition-all"
-				class:opacity-0={galleryInView}
-				class:opacity-100={!galleryInView}
-			>
-				<button on:click={() => memoryGallery.scrollIntoView({ behavior: 'smooth' })}>
-					<CircleIconButton logo={ChevronDown} backgroundColor="white" iconColor="black" />
-				</button>
-			</div>
 
-			<IntersectionObserver
-				once={false}
-				on:intersected={() => (galleryInView = true)}
-				on:hidden={() => (galleryInView = false)}
-				bottom={-200}
-			>
-				<div id="gallery-memory" bind:this={memoryGallery}>
-					<GalleryViewer assets={currentMemory.assets} viewFrom="album-page" />
+		<!-- GALERY VIEWER -->
+
+		{#if currentMemory.assets.length > 1}
+			<section>
+				<div
+					class="sticky flex place-content-center place-items-center mb-10 mt-4 transition-all"
+					class:opacity-0={galleryInView}
+					class:opacity-100={!galleryInView}
+				>
+					<button on:click={() => memoryGallery.scrollIntoView({ behavior: 'smooth' })}>
+						<CircleIconButton logo={ChevronDown} backgroundColor="white" iconColor="black" />
+					</button>
 				</div>
-			</IntersectionObserver>
-		</section>
+
+				<IntersectionObserver
+					once={false}
+					on:intersected={() => (galleryInView = true)}
+					on:hidden={() => (galleryInView = false)}
+					bottom={-200}
+				>
+					<div id="gallery-memory" bind:this={memoryGallery}>
+						<GalleryViewer assets={currentMemory.assets} viewFrom="album-page" />
+					</div>
+				</IntersectionObserver>
+			</section>
+		{/if}
 	{/if}
 </section>
 

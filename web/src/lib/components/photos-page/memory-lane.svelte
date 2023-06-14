@@ -81,7 +81,7 @@
 						alt={title}
 						draggable="false"
 					/>
-					<p class="absolute bottom-2 left-4 font-medium text-xl text-white z-10">{title}</p>
+					<p class="absolute bottom-2 left-4 text-xl text-white z-10">{title}</p>
 					<div
 						class="absolute top-0 left-0 w-full h-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent z-0 hover:bg-black/20 transition-all"
 					/>
