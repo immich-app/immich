@@ -17,8 +17,6 @@
 	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
 	import { fade } from 'svelte/transition';
 
-	const thisYear = DateTime.local().year;
-
 	let currentIndex = 0;
 	let currentMemory: MemoryLaneResponseDto;
 	let nextMemory: MemoryLaneResponseDto;
