@@ -92,22 +92,24 @@
 			</svelte:fragment>
 		</ControlAppBar>
 
-		<div
-			class="sticky top-20 flex place-content-center place-items-center z-30 transition-opacity"
-			class:opacity-0={!galleryInView}
-			class:opacity-100={galleryInView}
-		>
-			<button
-				on:click={() => memoryWrapper.scrollIntoView({ behavior: 'smooth' })}
-				disabled={!galleryInView}
+		{#if galleryInView}
+			<div
+				class="sticky top-20 flex place-content-center place-items-center z-30 transition-opacity"
+				class:opacity-0={!galleryInView}
+				class:opacity-100={galleryInView}
 			>
-				<CircleIconButton logo={ChevronUp} backgroundColor="white" iconColor="black" />
-			</button>
-		</div>
+				<button
+					on:click={() => memoryWrapper.scrollIntoView({ behavior: 'smooth' })}
+					disabled={!galleryInView}
+				>
+					<CircleIconButton logo={ChevronUp} backgroundColor="white" />
+				</button>
+			</div>
+		{/if}
 		<!-- Viewer -->
 		<section class="mt-20 overflow-hidden">
 			<div
-				class="flex w-[300%] h-[calc(100vh_-_210px)] items-center justify-center box-border ml-[-100%] gap-10 overflow-hidden"
+				class="flex w-[300%] h-[calc(100vh_-_180px)] items-center justify-center box-border ml-[-100%] gap-10 overflow-hidden"
 			>
 				<!-- PREVIOUS MEMORY -->
 				<div
@@ -199,7 +201,7 @@
 					class:opacity-100={!galleryInView}
 				>
 					<button on:click={() => memoryGallery.scrollIntoView({ behavior: 'smooth' })}>
-						<CircleIconButton logo={ChevronDown} backgroundColor="white" iconColor="black" />
+						<CircleIconButton logo={ChevronDown} backgroundColor="white" />
 					</button>
 				</div>
 

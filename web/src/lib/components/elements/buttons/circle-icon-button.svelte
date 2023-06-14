@@ -3,7 +3,6 @@
 
 	export let logo: typeof Icon;
 	export let backgroundColor = 'transparent';
-	export let iconColor = 'white';
 	export let hoverColor = '#e2e7e9';
 	export let size = '24';
 	export let title = '';
@@ -20,7 +19,7 @@
 		: 'immich-circle-icon-button hover:dark:text-immich-dark-gray'}"
 	on:click
 >
-	<svelte:component this={logo} {size} color={iconColor} />
+	<svelte:component this={logo} {size} />
 	<slot />
 </button>
 
