@@ -15,7 +15,7 @@
 	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
 	import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
-	import { fade, slide, crossfade, fly } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 
 	const thisYear = DateTime.local().year;
 
