@@ -28,8 +28,9 @@ export class AssetService {
       const assets = await this.assetRepository.getByDate(authUser.id, year);
 
       if (assets.length > 0) {
+        const yearGap = today.getFullYear() - year.getFullYear();
         const memory = new MemoryLaneResponseDto();
-        memory.title = `${today.getFullYear() - year.getFullYear()} years since...`;
+        memory.title = `${yearGap} year${yearGap > 1 && 's'} since...`;
         memory.assets = assets.map((a) => mapAsset(a));
 
         result.push(memory);
