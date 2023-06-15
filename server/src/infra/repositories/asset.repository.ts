@@ -11,6 +11,7 @@ import {
 } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { DateTime } from 'luxon';
 import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetType } from '../entities';
 import OptionalBetween from '../utils/optional-between.util';
@@ -21,7 +22,7 @@ export class AssetRepository implements IAssetRepository {
   constructor(@InjectRepository(AssetEntity) private repository: Repository<AssetEntity>) {}
 
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]> {
-    // For reference of a correct approach althought slower
+    // For reference of a correct approach although slower
 
     // let builder = this.repository
     //   .createQueryBuilder('asset')
@@ -36,14 +37,13 @@ export class AssetRepository implements IAssetRepository {
     //   .orderBy('asset.fileCreatedAt', 'DESC');
 
     // return builder.getMany();
-    const tomorrow = new Date(date.getTime() + 24 * 60 * 60 * 1000);
 
     return this.repository.find({
       where: {
         ownerId,
         isVisible: true,
         isArchived: false,
-        fileCreatedAt: OptionalBetween(date, tomorrow),
+        fileCreatedAt: OptionalBetween(date, DateTime.fromJSDate(date).plus({ day: 1 }).toJSDate()),
       },
       relations: {
         exifInfo: true,
