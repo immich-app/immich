@@ -62,7 +62,7 @@
 		if (showNextMemory) {
 			resetAutoPlay();
 
-			currentIndex += 1;
+			currentIndex++;
 			nextIndex = currentIndex + 1;
 			lastIndex = currentIndex - 1;
 
@@ -80,7 +80,7 @@
 		if (showPreviousMemory) {
 			resetAutoPlay();
 
-			currentIndex -= 1;
+			currentIndex--;
 			nextIndex = currentIndex + 1;
 			lastIndex = currentIndex - 1;
 
@@ -104,7 +104,7 @@
 				if (!canPlayNext) return;
 
 				window.requestAnimationFrame(() => {
-					autoPlayProgress += 1;
+					autoPlayProgress++;
 				});
 
 				if (autoPlayProgress > 100) {
@@ -120,7 +120,7 @@
 
 	const autoPlayTransition = () => {
 		if (autoPlayIndex < currentMemory.assets.length - 1) {
-			autoPlayIndex += 1;
+			autoPlayIndex++;
 		} else {
 			const canAdvance = toNextMemory();
 			if (!canAdvance) {
@@ -142,7 +142,7 @@
 	};
 
 	const toNextCurrentAsset = () => {
-		autoPlayIndex += 1;
+		autoPlayIndex++;
 
 		if (autoPlayIndex > currentMemory.assets.length - 1) {
 			toNextMemory();
@@ -150,7 +150,7 @@
 	};
 
 	const toPreviousCurrentAsset = () => {
-		autoPlayIndex -= 1;
+		autoPlayIndex--;
 
 		if (autoPlayIndex < 0) {
 			toPreviousMemory();
