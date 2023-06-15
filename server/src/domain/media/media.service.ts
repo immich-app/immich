@@ -98,7 +98,7 @@ export class MediaService {
 
   async handleGenerateThumbhashThumbnail({ id }: IEntityJob): Promise<boolean> {
     const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset || !asset.resizePath) {
+    if (!asset?.resizePath) {
       return false;
     }
 
