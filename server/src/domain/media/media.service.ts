@@ -54,24 +54,18 @@ export class MediaService {
     this.storageRepository.mkdirSync(resizePath);
     const jpegThumbnailPath = join(resizePath, `${asset.id}.jpeg`);
 
-    if (asset.type == AssetType.IMAGE) {
-      try {
+    switch (asset.type) {
+      case AssetType.IMAGE:
         await this.mediaRepository.resize(asset.originalPath, jpegThumbnailPath, {
           size: JPEG_THUMBNAIL_SIZE,
           format: 'jpeg',
         });
-      } catch (error: any) {
-        this.logger.warn(
-          `Failed to generate jpeg thumbnail using sharp, trying with exiftool-vendored (asset=${asset.id}): ${error.message}`,
-        );
-        await this.mediaRepository.extractThumbnailFromExif(asset.originalPath, jpegThumbnailPath);
-      }
-    }
-
-    if (asset.type == AssetType.VIDEO) {
-      this.logger.log('Start Generating Video Thumbnail');
-      await this.mediaRepository.extractVideoThumbnail(asset.originalPath, jpegThumbnailPath, JPEG_THUMBNAIL_SIZE);
-      this.logger.log(`Generating Video Thumbnail Success ${asset.id}`);
+        break;
+      case AssetType.VIDEO:
+        this.logger.log('Generating video thumbnail');
+        await this.mediaRepository.extractVideoThumbnail(asset.originalPath, jpegThumbnailPath, JPEG_THUMBNAIL_SIZE);
+        this.logger.log(`Successfully generated video thumbnail ${asset.id}`);
+        break;
     }
 
     await this.assetRepository.save({ id: asset.id, resizePath: jpegThumbnailPath });
