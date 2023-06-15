@@ -81,28 +81,6 @@ describe(MediaService.name, () => {
         size: 1440,
         format: 'jpeg',
       });
-      expect(mediaMock.extractThumbnailFromExif).not.toHaveBeenCalled();
-      expect(assetMock.save).toHaveBeenCalledWith({
-        id: 'asset-id',
-        resizePath: 'upload/thumbs/user-id/asset-id.jpeg',
-      });
-    });
-
-    it('should generate a thumbnail for an image from exif', async () => {
-      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
-      mediaMock.resize.mockRejectedValue(new Error('unsupported format'));
-
-      await sut.handleGenerateJpegThumbnail({ id: assetEntityStub.image.id });
-
-      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
-      expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.ext', 'upload/thumbs/user-id/asset-id.jpeg', {
-        size: 1440,
-        format: 'jpeg',
-      });
-      expect(mediaMock.extractThumbnailFromExif).toHaveBeenCalledWith(
-        '/original/path.ext',
-        'upload/thumbs/user-id/asset-id.jpeg',
-      );
       expect(assetMock.save).toHaveBeenCalledWith({
         id: 'asset-id',
         resizePath: 'upload/thumbs/user-id/asset-id.jpeg',

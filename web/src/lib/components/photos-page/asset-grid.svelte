@@ -17,6 +17,7 @@
 	} from '../shared-components/scrollbar/scrollbar.svelte';
 	import AssetDateGroup from './asset-date-group.svelte';
 	import { BucketPosition } from '$lib/models/asset-grid-state';
+	import MemoryLane from './memory-lane.svelte';
 
 	export let user: UserResponseDto | undefined = undefined;
 	export let isAlbumSelectionMode = false;
@@ -130,6 +131,7 @@
 	on:scroll={handleTimelineScroll}
 >
 	{#if assetGridElement}
+		<MemoryLane />
 		<section id="virtual-timeline" style:height={$assetGridState.timelineHeight + 'px'}>
 			{#each $assetGridState.buckets as bucket, bucketIndex (bucketIndex)}
 				<IntersectionObserver

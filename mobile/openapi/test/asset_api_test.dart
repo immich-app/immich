@@ -129,6 +129,11 @@ void main() {
       // TODO
     });
 
+    //Future<List<MemoryLaneResponseDto>> getMemoryLane(String timezone) async
+    test('test getMemoryLane', () async {
+      // TODO
+    });
+
     // Get all asset of a device that are in the database, ID only.
     //
     //Future<List<String>> getUserAssetsByDeviceId(String deviceId) async

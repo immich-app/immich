@@ -28,7 +28,8 @@ export async function bootstrap() {
   useSwagger(app, isDev);
 
   await app.get(AppService).init();
-  await app.listen(port);
+  const server = await app.listen(port);
+  server.setTimeout(1800000);
 
   logger.log(`Immich Server is listening on ${port} [v${SERVER_VERSION}] [${envName}] `);
 }

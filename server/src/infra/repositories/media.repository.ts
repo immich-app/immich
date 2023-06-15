@@ -1,5 +1,4 @@
 import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
-import { exiftool } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import sharp from 'sharp';
 import { promisify } from 'util';
@@ -17,10 +16,6 @@ export class MediaRepository implements IMediaRepository {
         height: options.height,
       })
       .toBuffer();
-  }
-
-  extractThumbnailFromExif(input: string, output: string): Promise<void> {
-    return exiftool.extractThumbnail(input, output);
   }
 
   async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {

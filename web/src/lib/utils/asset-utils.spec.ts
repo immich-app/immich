@@ -1,6 +1,6 @@
 import type { AssetResponseDto } from '@api';
 import { describe, expect, it } from '@jest/globals';
-import { getAssetFilename, getFilenameExtension } from './asset-utils';
+import { getAssetFilename, getFilenameExtension, getFileMimeType } from './asset-utils';
 
 describe('get file extension from filename', () => {
 	it('returns the extension without including the dot', () => {
@@ -55,6 +55,53 @@ describe('get asset filename', () => {
 			}
 		].forEach(({ asset, result }) => {
 			expect(getAssetFilename(asset as AssetResponseDto)).toEqual(result);
+		});
+	});
+});
+
+describe('get file mime type', () => {
+	for (const { extension, mimeType } of [
+		{ extension: '3gp', mimeType: 'video/3gpp' },
+		{ extension: 'arw', mimeType: 'image/x-sony-arw' },
+		{ extension: 'dng', mimeType: 'image/dng' },
+		{ extension: 'heic', mimeType: 'image/heic' },
+		{ extension: 'heif', mimeType: 'image/heif' },
+		{ extension: 'insp', mimeType: 'image/jpeg' },
+		{ extension: 'insv', mimeType: 'video/mp4' },
+		{ extension: 'nef', mimeType: 'image/x-nikon-nef' },
+		{ extension: 'raf', mimeType: 'image/x-fuji-raf' },
+		{ extension: 'srw', mimeType: 'image/x-samsung-srw' }
+	]) {
+		it(`returns the mime type for ${extension}`, () => {
+			expect(getFileMimeType({ name: `filename.${extension}` } as File)).toEqual(mimeType);
+		});
+	}
+
+	it('returns the mime type from the file', () => {
+		[
+			{
+				file: {
+					name: 'filename.jpg',
+					type: 'image/jpeg'
+				},
+				result: 'image/jpeg'
+			},
+			{
+				file: {
+					name: 'filename.txt',
+					type: 'text/plain'
+				},
+				result: 'text/plain'
+			},
+			{
+				file: {
+					name: 'filename.txt',
+					type: ''
+				},
+				result: ''
+			}
+		].forEach(({ file, result }) => {
+			expect(getFileMimeType(file as File)).toEqual(result);
 		});
 	});
 });
