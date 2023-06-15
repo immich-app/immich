@@ -60,7 +60,7 @@ export class MediaService {
     const assetPaginationThumbhash = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
         ? this.assetRepository.getAll(pagination)
-        : this.assetRepository.getWithout(pagination, WithoutProperty.THUMBNAIL);
+        : this.assetRepository.getWithout(pagination, WithoutProperty.THUMBHASH_THUMBNAIL);
     });
 
     for await (const assets of assetPaginationThumbhash) {
