@@ -1539,10 +1539,12 @@
         "operationId": "getMemoryLane",
         "parameters": [
           {
-            "name": "timezone",
+            "name": "timestamp",
             "required": true,
             "in": "query",
+            "description": "Get pictures for +24 hours from this time going back x years",
             "schema": {
+              "format": "date-time",
               "type": "string"
             }
           }

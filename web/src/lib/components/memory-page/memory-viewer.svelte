@@ -35,8 +35,9 @@
 
 	onMount(async () => {
 		if (!$memoryStore) {
-			const timezone = DateTime.local().zoneName;
-			const { data } = await api.assetApi.getMemoryLane({ timezone });
+			const { data } = await api.assetApi.getMemoryLane({
+				timestamp: DateTime.local().startOf('day').toISO()
+			});
 			$memoryStore = data;
 		}
 

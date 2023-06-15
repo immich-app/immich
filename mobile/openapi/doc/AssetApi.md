@@ -1163,7 +1163,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getMemoryLane**
-> List<MemoryLaneResponseDto> getMemoryLane(timezone)
+> List<MemoryLaneResponseDto> getMemoryLane(timestamp)
 
 
 
@@ -1186,10 +1186,10 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
-final timezone = timezone_example; // String | 
+final timestamp = 2013-10-20T19:20:30+01:00; // DateTime | Get pictures for +24 hours from this time going back x years
 
 try {
-    final result = api_instance.getMemoryLane(timezone);
+    final result = api_instance.getMemoryLane(timestamp);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getMemoryLane: $e\n');
@@ -1200,7 +1200,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **timezone** | **String**|  | 
+ **timestamp** | **DateTime**| Get pictures for +24 hours from this time going back x years | 
 
 ### Return type
 
