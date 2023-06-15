@@ -8,7 +8,7 @@ import { extname } from 'path';
 import sanitize from 'sanitize-filename';
 import { AuthRequest, AuthUserDto } from '../decorators/auth-user.decorator';
 import { patchFormData } from '../utils/path-form-data.util';
-import { supportedFileTypes } from '@app/domain';
+import { isSupportedFileType } from '@app/domain';
 
 export interface ImmichFile extends Express.Multer.File {
   /** sha1 hash of file */
@@ -54,11 +54,7 @@ function fileFilter(req: AuthRequest, file: any, cb: any) {
   if (!req.user || (req.user.isPublicUser && !req.user.isAllowUpload)) {
     return cb(new UnauthorizedException());
   }
-  if (
-    file.mimetype.match(
-      new RegExp(`/(${supportedFileTypes.join("|")})$`)
-    )
-  ) {
+  if (isSupportedFileType(file.mimetype)) {
     cb(null, true);
   } else {
     // Additionally support XML but only for sidecar files

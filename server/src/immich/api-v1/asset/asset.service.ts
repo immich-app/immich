@@ -27,11 +27,11 @@ import {
   getLivePhotoMotionFilename,
   IAccessRepository,
   ImmichReadStream,
+  isSupportedFileType,
   IStorageRepository,
   JobName,
   mapAsset,
   mapAssetWithoutExif,
-  supportedFileTypes,
 } from '@app/domain';
 import { CreateAssetDto, ImportAssetDto, UploadFile } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
@@ -153,7 +153,7 @@ export class AssetService {
     };
 
     const assetPathType = mime.lookup(dto.assetPath) as string
-    if (!assetPathType.match(new RegExp(`/(${supportedFileTypes.join("|")})$`))) {
+    if (!isSupportedFileType(assetPathType)) {
       throw new BadRequestException(`Unsupported file type ${assetPathType}`);
     }
 

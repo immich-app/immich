@@ -55,3 +55,7 @@ export const supportedFileTypes: string[] = [
   "x-ms-wmv",
   "x-matroska",
 ]
+
+export function isSupportedFileType(mimeType: string): boolean {
+  return mimeType.match(new RegExp(`/(${supportedFileTypes.join("|")})$`)) ? true : false
+}
