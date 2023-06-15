@@ -25,7 +25,7 @@
 		<UserAvatar size="lg" {user} />
 
 		<div>
-			<p class="text-lg text-immich-primary dark:text-immich-dark-primary font-medium">
+			<p class="text-lg text-immich-primary dark:text-immich-dark-primary font-medium text-center">
 				{user.firstName}
 				{user.lastName}
 			</p>
