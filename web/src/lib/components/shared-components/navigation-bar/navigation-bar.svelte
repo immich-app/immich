@@ -1,21 +1,21 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
+	import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
 	import { clickOutside } from '$lib/utils/click-outside';
+	import { UserResponseDto, api } from '@api';
 	import { createEventDispatcher } from 'svelte';
-	import { fade, fly } from 'svelte/transition';
+	import Cog from 'svelte-material-icons/Cog.svelte';
+	import Magnify from 'svelte-material-icons/Magnify.svelte';
 	import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
-	import { api, UserResponseDto } from '@api';
-	import ThemeButton from '../theme-button.svelte';
+	import { fade, fly } from 'svelte/transition';
 	import { AppRoute } from '../../../constants';
-	import AccountInfoPanel from './account-info-panel.svelte';
 	import ImmichLogo from '../immich-logo.svelte';
 	import SearchBar from '../search-bar/search-bar.svelte';
-	import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-	import Magnify from 'svelte-material-icons/Magnify.svelte';
-	import IconButton from '$lib/components/elements/buttons/icon-button.svelte';
-	import Cog from 'svelte-material-icons/Cog.svelte';
+	import ThemeButton from '../theme-button.svelte';
 	import UserAvatar from '../user-avatar.svelte';
+	import AccountInfoPanel from './account-info-panel.svelte';
 	export let user: UserResponseDto;
 	export let showUploadButton = true;
 
@@ -70,7 +70,7 @@
 						<LinkButton on:click={() => dispatch('uploadClicked')}>
 							<div class="flex gap-2">
 								<TrayArrowUp size="1.5em" />
-								<span class="md:block hidden">Upload</span>
+								<span class="md:block hidden">Uploads</span>
 							</div>
 						</LinkButton>
 					</div>
