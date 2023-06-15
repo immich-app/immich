@@ -29,15 +29,15 @@ export class MediaService {
   async handleQueueGenerateThumbnails(job: IBaseJob) {
     const { force } = job;
 
-    const assetPaginationThumbnail = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
+    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
         ? this.assetRepository.getAll(pagination)
         : this.assetRepository.getWithout(pagination, WithoutProperty.THUMBNAIL);
     });
 
-    for await (const assets of assetPaginationThumbnail) {
+    for await (const assets of assetPagination) {
       for (const asset of assets) {
-        if (!asset.resizePath) {
+        if (!asset.resizePath || force) {
           await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: asset.id } });
           continue;
         }

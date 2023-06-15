@@ -133,9 +133,9 @@ export class AssetRepository implements IAssetRepository {
         where = [
           { resizePath: IsNull(), isVisible: true },
           { resizePath: '', isVisible: true },
-          { thumbhash: IsNull(), isVisible: true },
           { webpPath: IsNull(), isVisible: true },
           { webpPath: '', isVisible: true },
+          { thumbhash: IsNull(), isVisible: true },
         ];
         break;
 

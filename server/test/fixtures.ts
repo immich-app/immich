@@ -213,7 +213,7 @@ export const assetEntityStub = {
     faces: [],
     sidecarPath: null,
   }),
-  noWebp: Object.freeze<AssetEntity>({
+  noWebpPath: Object.freeze<AssetEntity>({
     id: 'asset-id',
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),

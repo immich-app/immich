@@ -40,7 +40,7 @@ describe(MediaService.name, () => {
   describe('handleQueueGenerateThumbnails', () => {
     it('should queue all assets', async () => {
       assetMock.getAll.mockResolvedValue({
-        items: [assetEntityStub.noResizePath],
+        items: [assetEntityStub.image],
         hasNextPage: false,
       });
 
@@ -55,28 +55,45 @@ describe(MediaService.name, () => {
     });
 
     it('should queue all assets with missing parts of thumbnails', async () => {
-      assetMock.getAll.mockResolvedValue({
+      assetMock.getWithout.mockResolvedValue({
+        items: [assetEntityStub.noResizePath],
+        hasNextPage: false,
+      });
+
+      await sut.handleQueueGenerateThumbnails({ force: false });
+
+      expect(assetMock.getAll).not.toHaveBeenCalled();
+      expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.GENERATE_JPEG_THUMBNAIL,
+        data: { id: assetEntityStub.image.id },
+      });
+
+      assetMock.getWithout.mockResolvedValue({
+        items: [assetEntityStub.noWebpPath],
+        hasNextPage: false,
+      });
+
+      await sut.handleQueueGenerateThumbnails({ force: false });
+
+      expect(assetMock.getAll).not.toHaveBeenCalled();
+      expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.GENERATE_WEBP_THUMBNAIL,
+        data: { id: assetEntityStub.image.id },
+      });
+
+      assetMock.getWithout.mockResolvedValue({
         items: [assetEntityStub.noThumbhash],
         hasNextPage: false,
       });
 
-      await sut.handleQueueGenerateThumbnails({ force: true });
+      await sut.handleQueueGenerateThumbnails({ force: false });
 
-      expect(assetMock.getAll).toHaveBeenCalled();
+      expect(assetMock.getAll).not.toHaveBeenCalled();
+      expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.GENERATE_THUMBHASH_THUMBNAIL,
-        data: { id: assetEntityStub.image.id },
-      });
-      assetMock.getAll.mockResolvedValue({
-        items: [assetEntityStub.noWebp],
-        hasNextPage: false,
-      });
-
-      await sut.handleQueueGenerateThumbnails({ force: true });
-
-      expect(assetMock.getAll).toHaveBeenCalled();
-      expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.GENERATE_WEBP_THUMBNAIL,
         data: { id: assetEntityStub.image.id },
       });
     });
