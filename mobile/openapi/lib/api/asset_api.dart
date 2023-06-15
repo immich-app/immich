@@ -1115,6 +1115,58 @@ class AssetApi {
     return null;
   }
 
+  /// Performs an HTTP 'GET /asset/memory-lane' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] timezone (required):
+  Future<Response> getMemoryLaneWithHttpInfo(String timezone,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset/memory-lane';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+      queryParams.addAll(_queryParams('', 'timezone', timezone));
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] timezone (required):
+  Future<List<MemoryLaneResponseDto>?> getMemoryLane(String timezone,) async {
+    final response = await getMemoryLaneWithHttpInfo(timezone,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<MemoryLaneResponseDto>') as List)
+        .cast<MemoryLaneResponseDto>()
+        .toList();
+
+    }
+    return null;
+  }
+
   /// Get all asset of a device that are in the database, ID only.
   ///
   /// Note: This method returns the HTTP [Response].
