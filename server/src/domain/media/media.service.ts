@@ -37,7 +37,16 @@ export class MediaService {
 
     for await (const assets of assetPagination) {
       for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: asset.id } });
+        if (!asset.resizePath) {
+          await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: asset.id } });
+          continue;
+        }
+        if (!asset.webpPath) {
+          await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: { id: asset.id } });
+        }
+        if (!asset.thumbhash) {
+          await this.jobRepository.queue({ name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: { id: asset.id } });
+        }
       }
     }
 

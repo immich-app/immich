@@ -16,7 +16,7 @@
 	let imageElement: HTMLImageElement;
 
 	onMount(() => {
-		if (thumbhash != null) {
+		if (thumbhash) {
 			lazyLoad(imageElement, {
 				hash: thumbhash,
 				hashType: 'thumbhash'
@@ -38,10 +38,9 @@
 		draggable="false"
 		bind:this={imageElement}
 	/>
-{/if}
 
-<!-- not everthing yet has thumbhash support so the old method is kept -->
-{#if !thumbhash}
+	<!-- not everthing yet has thumbhash support so the old method is kept -->
+{:else}
 	<img
 		style:width={widthStyle}
 		style:height={heightStyle}
