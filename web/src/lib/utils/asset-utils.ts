@@ -127,7 +127,7 @@ export function getAssetFilename(asset: AssetResponseDto): string {
 export function getFileMimeType(file: File): string {
 	const mimeTypes: Record<string, string> = {
 		'3gp': 'video/3gpp',
-		arw: 'image/x-sony-arw',
+		arw: 'image/x-sony-arw' || 'image/awr',
 		dng: 'image/dng',
 		heic: 'image/heic',
 		heif: 'image/heif',
