@@ -27,3 +27,31 @@ export function assertMachineLearningEnabled() {
     throw new BadRequestException('Machine learning is not enabled.');
   }
 }
+
+export const supportedFileTypes: string[] = [
+  "jpg",
+  "jpeg",
+  "png",
+  "gif",
+  "avi",
+  "mov",
+  "mp4",
+  "webm",
+  "x-msvideo",
+  "quicktime",
+  "heic",
+  "heif",
+  "dng",
+  "x-adobe-dng",
+  "webp",
+  "tiff",
+  "3gpp",
+  "nef",
+  "x-nikon-nef",
+  "x-fuji-raf",
+  "x-samsung-srw",
+  "mpeg",
+  "x-flv",
+  "x-ms-wmv",
+  "x-matroska",
+]

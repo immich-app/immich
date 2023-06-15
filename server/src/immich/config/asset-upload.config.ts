@@ -8,6 +8,7 @@ import { extname } from 'path';
 import sanitize from 'sanitize-filename';
 import { AuthRequest, AuthUserDto } from '../decorators/auth-user.decorator';
 import { patchFormData } from '../utils/path-form-data.util';
+import { supportedFileTypes } from '@app/domain';
 
 export interface ImmichFile extends Express.Multer.File {
   /** sha1 hash of file */
@@ -55,7 +56,7 @@ function fileFilter(req: AuthRequest, file: any, cb: any) {
   }
   if (
     file.mimetype.match(
-      /\/(jpg|jpeg|png|gif|avi|mov|mp4|webm|x-msvideo|quicktime|heic|heif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef|x-fuji-raf|x-samsung-srw|mpeg|x-flv|x-ms-wmv|x-matroska)$/,
+      new RegExp(`/(${supportedFileTypes.join("|")})$`)
     )
   ) {
     cb(null, true);

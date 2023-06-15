@@ -31,6 +31,7 @@ import {
   JobName,
   mapAsset,
   mapAssetWithoutExif,
+  supportedFileTypes,
 } from '@app/domain';
 import { CreateAssetDto, ImportAssetDto, UploadFile } from './dto/create-asset.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
@@ -151,6 +152,18 @@ export class AssetService {
       sidecarPath: dto.sidecarPath ? path.resolve(dto.sidecarPath) : undefined,
     };
 
+    const assetPathType = mime.lookup(dto.assetPath) as string
+    if (!assetPathType.match(new RegExp(`/(${supportedFileTypes.join("|")})$`))) {
+      throw new BadRequestException(`Unsupported file type ${assetPathType}`);
+    }
+
+    if (dto.sidecarPath) {
+      const sidecarType = mime.lookup(dto.sidecarPath) as string
+      if (!sidecarType.match(/\/xml$/)) {
+        throw new BadRequestException(`Unsupported sidecar file type ${assetPathType}`);
+      }
+    }
+
     for (const filepath of [dto.assetPath, dto.sidecarPath]) {
       if (!filepath) {
         continue;
@@ -168,7 +181,7 @@ export class AssetService {
 
     const assetFile: UploadFile = {
       checksum: await this.cryptoRepository.hashFile(dto.assetPath),
-      mimeType: mime.lookup(dto.assetPath) as string,
+      mimeType: assetPathType,
       originalPath: dto.assetPath,
       originalName: path.parse(dto.assetPath).name,
     };
