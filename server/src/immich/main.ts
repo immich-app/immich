@@ -29,7 +29,7 @@ export async function bootstrap() {
 
   await app.get(AppService).init();
   const server = await app.listen(port);
-  server.setTimeout(1800000);
+  server.requestTimeout = 30 * 60 * 1000;
 
   logger.log(`Immich Server is listening on ${port} [v${SERVER_VERSION}] [${envName}] `);
 }
