@@ -15,7 +15,7 @@ export class AssetService {
   }
 
   async getMemoryLane(authUser: AuthUserDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
-    const target = DateTime.fromJSDate(dto.date);
+    const target = DateTime.fromJSDate(dto.timestamp);
 
     const onRequest = async (yearsAgo: number): Promise<MemoryLaneResponseDto> => {
       const assets = await this.assetRepository.getByDate(authUser.id, target.minus({ years: yearsAgo }).toJSDate());

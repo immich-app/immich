@@ -5,7 +5,7 @@ export class MemoryLaneDto {
   /** Get pictures for +24 hours from this time going back x years */
   @IsDate()
   @Type(() => Date)
-  date!: Date;
+  timestamp!: Date;
 
   @IsNumber()
   @IsPositive()
