@@ -90,32 +90,40 @@
 		}
 	};
 
-	let autoPlayInterval: NodeJS.Timeout;
 	let autoPlay = false;
 	let autoPlaySpeed = 5000;
 	let autoPlayProgress = 0;
 	let autoPlayIndex = 0;
-	let canPlayNext = true;
+	let autoPlayAnimationFrameRequest: number;
 
-	const toggleAutoPlay = () => {
-		autoPlay = !autoPlay;
-		if (autoPlay) {
-			autoPlayInterval = setInterval(() => {
-				if (!canPlayNext) return;
+	const toggleAutoPlay = () => (autoPlay ? disableAutoPlay() : enableAutoPlay());
 
-				window.requestAnimationFrame(() => {
-					autoPlayProgress++;
-				});
+	const enableAutoPlay = () => {
+		autoPlay = true;
 
-				if (autoPlayProgress > 100) {
-					autoPlayProgress = 0;
-					canPlayNext = false;
-					autoPlayTransition();
-				}
-			}, autoPlaySpeed / 100);
-		} else {
-			clearInterval(autoPlayInterval);
+		let previousTransition;
+		function draw(now: number) {
+			previousTransition ??= now;
+
+			const elapsed = previousTransition - now;
+			const progress = (elapsed / autoPlaySpeed) * 100;
+
+			if (progress >= 100) {
+				autoPlayProgress = 0;
+				autoPlayTransition();
+				previousTransition = now;
+			} else {
+				autoPlayProgress = progress;
+			}
+
+			autoPlayAnimationFrameRequest = requestAnimationFrame(draw);
 		}
+		autoPlayAnimationFrameRequest = requestAnimationFrame(draw);
+	};
+
+	const disableAutoPlay = () => {
+		autoPlay = false;
+		cancelAnimationFrame(autoPlayAnimationFrameRequest);
 	};
 
 	const autoPlayTransition = () => {
@@ -125,15 +133,10 @@
 			const canAdvance = toNextMemory();
 			if (!canAdvance) {
 				autoPlay = false;
-				clearInterval(autoPlayInterval);
+				cancelAnimationFrame(autoPlayAnimationFrameRequest);
 				return;
 			}
 		}
-
-		// Delay for nicer animation of the progress bar
-		setTimeout(() => {
-			canPlayNext = true;
-		}, 250);
 	};
 
 	const resetAutoPlay = () => {
