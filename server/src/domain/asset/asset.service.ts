@@ -16,16 +16,20 @@ export class AssetService {
 
   async getMemoryLane(authUser: AuthUserDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
     const target = DateTime.fromJSDate(dto.date);
-    const results: MemoryLaneResponseDto[] = [];
 
-    for (let i = 1; i <= dto.years; i++) {
-      const assets = await this.assetRepository.getByDate(authUser.id, target.minus({ years: i }).toJSDate());
-      results.push({
-        title: `${i} year${i > 1 ? 's' : ''} since...`,
+    const onRequest = async (yearsAgo: number): Promise<MemoryLaneResponseDto> => {
+      const assets = await this.assetRepository.getByDate(authUser.id, target.minus({ years: yearsAgo }).toJSDate());
+      return {
+        title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} since...`,
         assets: assets.map((a) => mapAsset(a)),
-      });
+      };
+    };
+
+    const requests: Promise<MemoryLaneResponseDto>[] = [];
+    for (let i = 1; i <= dto.years; i++) {
+      requests.push(onRequest(i));
     }
 
-    return results.filter((result) => result.assets.length > 0);
+    return Promise.all(requests).then((results) => results.filter((result) => result.assets.length > 0));
   }
 }
