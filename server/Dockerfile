@@ -2,7 +2,7 @@ FROM node:18.16.0-alpine3.18@sha256:f41850f74ff16a33daff988e2ea06ef8f5daeb6fb849
 
 WORKDIR /usr/src/app
 
-RUN apk add --update-cache build-base python3 vips-heif vips-dev ffmpeg perl
+RUN apk add --update-cache build-base imagemagick-dev python3 ffmpeg libraw-dev perl vips-dev vips-heif vips-magick
 
 COPY package.json package-lock.json ./
 
@@ -23,7 +23,7 @@ ENV NODE_ENV=production
 
 WORKDIR /usr/src/app
 
-RUN apk add --no-cache vips-heif vips vips-cpp ffmpeg perl
+RUN apk add --no-cache ffmpeg imagemagick-dev libraw-dev perl vips-dev vips-heif vips-magick
 
 COPY --from=prod /usr/src/app/node_modules ./node_modules
 COPY --from=prod /usr/src/app/dist ./dist

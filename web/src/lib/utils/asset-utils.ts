@@ -125,34 +125,20 @@ export function getAssetFilename(asset: AssetResponseDto): string {
  * Returns the MIME type of the file and an empty string when not found.
  */
 export function getFileMimeType(file: File): string {
-	if (file.type !== '') {
-		// Return the MIME type determined by the browser.
-		return file.type;
-	}
-
-	// Return MIME type based on the file extension.
-	switch (getFilenameExtension(file.name)) {
-		case 'heic':
-			return 'image/heic';
-		case 'heif':
-			return 'image/heif';
-		case 'dng':
-			return 'image/dng';
-		case '3gp':
-			return 'video/3gpp';
-		case 'nef':
-			return 'image/x-nikon-nef';
-		case 'raf':
-			return 'image/x-fuji-raf';
-		case 'srw':
-			return 'image/x-samsung-srw';
-		case 'insp':
-			return 'image/jpeg';
-		case 'insv':
-			return 'video/mp4';
-		default:
-			return '';
-	}
+	const mimeTypes: Record<string, string> = {
+		'3gp': 'video/3gpp',
+		arw: 'image/x-sony-arw',
+		dng: 'image/dng',
+		heic: 'image/heic',
+		heif: 'image/heif',
+		insp: 'image/jpeg',
+		insv: 'video/mp4',
+		nef: 'image/x-nikon-nef',
+		raf: 'image/x-fuji-raf',
+		srw: 'image/x-samsung-srw'
+	};
+	// Return the MIME type determined by the browser or the MIME type based on the file extension.
+	return file.type || (mimeTypes[getFilenameExtension(file.name)] ?? '');
 }
 
 /**
