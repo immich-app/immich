@@ -543,9 +543,9 @@ describe('AssetService', () => {
       storageMock.checkFileExists.mockResolvedValue(true);
 
       await expect(
-        sut.importFile(authStub.user1, {
+        sut.importFile(authStub.external1, {
           ..._getCreateAssetDto(),
-          assetPath: 'fake_path/asset_1.jpeg',
+          assetPath: '/data/user1/fake_path/asset_1.jpeg',
           isReadOnly: true,
         }),
       ).resolves.toEqual({ duplicate: false, id: 'asset-id' });
@@ -563,9 +563,9 @@ describe('AssetService', () => {
       cryptoMock.hashFile.mockResolvedValue(Buffer.from('file hash', 'utf8'));
 
       await expect(
-        sut.importFile(authStub.user1, {
+        sut.importFile(authStub.external1, {
           ..._getCreateAssetDto(),
-          assetPath: 'fake_path/asset_1.jpeg',
+          assetPath: '/data/user1/fake_path/asset_1.jpeg',
           isReadOnly: true,
         }),
       ).resolves.toEqual({ duplicate: true, id: 'asset-id' });

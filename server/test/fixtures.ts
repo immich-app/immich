@@ -50,6 +50,7 @@ export const authStub = {
     isAdmin: true,
     isPublicUser: false,
     isAllowUpload: true,
+    externalPath: null,
   }),
   user1: Object.freeze<AuthUserDto>({
     id: 'user-id',
@@ -60,6 +61,7 @@ export const authStub = {
     isAllowDownload: true,
     isShowExif: true,
     accessTokenId: 'token-id',
+    externalPath: null,
   }),
   user2: Object.freeze<AuthUserDto>({
     id: 'user-2',
@@ -70,6 +72,18 @@ export const authStub = {
     isAllowDownload: true,
     isShowExif: true,
     accessTokenId: 'token-id',
+    externalPath: null,
+  }),
+  external1: Object.freeze<AuthUserDto>({
+    id: 'user-id',
+    email: 'immich@test.com',
+    isAdmin: false,
+    isPublicUser: false,
+    isAllowUpload: true,
+    isAllowDownload: true,
+    isShowExif: true,
+    accessTokenId: 'token-id',
+    externalPath: '/data/user1',
   }),
   adminSharedLink: Object.freeze<AuthUserDto>({
     id: 'admin_id',
@@ -80,6 +94,7 @@ export const authStub = {
     isPublicUser: true,
     isShowExif: true,
     sharedLinkId: '123',
+    externalPath: null,
   }),
   adminSharedLinkNoExif: Object.freeze<AuthUserDto>({
     id: 'admin_id',
@@ -90,6 +105,7 @@ export const authStub = {
     isPublicUser: true,
     isShowExif: false,
     sharedLinkId: '123',
+    externalPath: null,
   }),
   readonlySharedLink: Object.freeze<AuthUserDto>({
     id: 'admin_id',
@@ -101,6 +117,7 @@ export const authStub = {
     isShowExif: true,
     sharedLinkId: '123',
     accessTokenId: 'token-id',
+    externalPath: null,
   }),
 };
 
