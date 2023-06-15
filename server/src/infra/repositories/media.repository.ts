@@ -134,20 +134,7 @@ export class MediaRepository implements IMediaRepository {
       .ensureAlpha()
       .toBuffer({ resolveWithObject: true });
 
-    // This is a workaround because this project uses CommonJS while thumbhash uses ESM
-    return new Promise<Buffer>((resolve, reject) => {
-      (eval('import("thumbhash")') as Promise<typeof import('thumbhash')>)
-        .then((thumbhash_lib) => {
-          try {
-            const thumbhash = thumbhash_lib.rgbaToThumbHash(info.width, info.height, data);
-            resolve(Buffer.from(thumbhash));
-          } catch (error) {
-            reject(error);
-          }
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
+    const thumbhash = await import('thumbhash');
+    return Buffer.from(thumbhash.rgbaToThumbHash(info.width, info.height, data));
   }
 }
