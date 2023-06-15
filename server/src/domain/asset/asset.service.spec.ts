@@ -44,7 +44,9 @@ describe(AssetService.name, () => {
     it('should get pictures for each year', async () => {
       assetMock.getByDate.mockResolvedValue([]);
 
-      await expect(sut.getMemoryLane(authStub.admin, { date: new Date(2023, 5, 15), years: 10 })).resolves.toEqual([]);
+      await expect(sut.getMemoryLane(authStub.admin, { timestamp: new Date(2023, 5, 15), years: 10 })).resolves.toEqual(
+        [],
+      );
 
       expect(assetMock.getByDate).toHaveBeenCalledTimes(10);
       expect(assetMock.getByDate.mock.calls).toEqual([
@@ -64,9 +66,9 @@ describe(AssetService.name, () => {
     it('should keep hours from the date', async () => {
       assetMock.getByDate.mockResolvedValue([]);
 
-      await expect(sut.getMemoryLane(authStub.admin, { date: new Date(2023, 5, 15, 5), years: 2 })).resolves.toEqual(
-        [],
-      );
+      await expect(
+        sut.getMemoryLane(authStub.admin, { timestamp: new Date(2023, 5, 15, 5), years: 2 }),
+      ).resolves.toEqual([]);
 
       expect(assetMock.getByDate).toHaveBeenCalledTimes(2);
       expect(assetMock.getByDate.mock.calls).toEqual([
@@ -84,7 +86,7 @@ describe(AssetService.name, () => {
       .calledWith(authStub.admin.id, new Date('2021-06-15T00:00:00.000Z'))
       .mockResolvedValue([assetEntityStub.video]);
 
-    await expect(sut.getMemoryLane(authStub.admin, { date: new Date(2023, 5, 15), years: 2 })).resolves.toEqual([
+    await expect(sut.getMemoryLane(authStub.admin, { timestamp: new Date(2023, 5, 15), years: 2 })).resolves.toEqual([
       { title: '1 year since...', assets: [mapAsset(assetEntityStub.image)] },
       { title: '2 years since...', assets: [mapAsset(assetEntityStub.video)] },
     ]);
