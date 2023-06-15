@@ -27,8 +27,6 @@ export interface MapMarker {
 
 export enum WithoutProperty {
   THUMBNAIL = 'thumbnail',
-  WEBP_THUMBNAIL = 'webp-thumbnail',
-  THUMBHASH_THUMBNAIL = 'thumbhash-thumbnail',
   ENCODED_VIDEO = 'encoded-video',
   EXIF = 'exif',
   CLIP_ENCODING = 'clip-embedding',

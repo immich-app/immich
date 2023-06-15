@@ -133,18 +133,10 @@ export class AssetRepository implements IAssetRepository {
         where = [
           { resizePath: IsNull(), isVisible: true },
           { resizePath: '', isVisible: true },
-        ];
-        break;
-
-      case WithoutProperty.WEBP_THUMBNAIL:
-        where = [
+          { thumbhash: IsNull(), isVisible: true },
           { webpPath: IsNull(), isVisible: true },
           { webpPath: '', isVisible: true },
         ];
-        break;
-
-      case WithoutProperty.THUMBHASH_THUMBNAIL:
-        where = [{ thumbhash: IsNull(), isVisible: true }];
         break;
 
       case WithoutProperty.ENCODED_VIDEO:

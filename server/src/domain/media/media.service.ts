@@ -39,32 +39,11 @@ export class MediaService {
       for (const asset of assets) {
         if (!asset.resizePath) {
           await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: asset.id } });
+          continue;
         }
-      }
-    }
-
-    const assetPaginationWebp = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force
-        ? this.assetRepository.getAll(pagination)
-        : this.assetRepository.getWithout(pagination, WithoutProperty.WEBP_THUMBNAIL);
-    });
-
-    for await (const assets of assetPaginationWebp) {
-      for (const asset of assets) {
         if (!asset.webpPath) {
           await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: { id: asset.id } });
         }
-      }
-    }
-
-    const assetPaginationThumbhash = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force
-        ? this.assetRepository.getAll(pagination)
-        : this.assetRepository.getWithout(pagination, WithoutProperty.THUMBHASH_THUMBNAIL);
-    });
-
-    for await (const assets of assetPaginationThumbhash) {
-      for (const asset of assets) {
         if (!asset.thumbhash) {
           await this.jobRepository.queue({ name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: { id: asset.id } });
         }
