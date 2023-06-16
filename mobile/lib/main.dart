@@ -42,6 +42,7 @@ import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,6 +64,9 @@ Future<void> initApp() async {
       debugPrint("Error setting high refresh rate: $e");
     }
   }
+
+  // Initialize timezone library
+  tz.initializeTimeZones();
 
   // Initialize Immich Logger Service
   ImmichLogger();
