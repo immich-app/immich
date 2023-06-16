@@ -1,13 +1,12 @@
-import { AlbumService } from './album.service';
-import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { NotFoundException, ForbiddenException } from '@nestjs/common';
+import { AlbumResponseDto, ICryptoRepository, ISharedLinkRepository, mapUser } from '@app/domain';
 import { AlbumEntity, UserEntity } from '@app/infra/entities';
-import { AlbumResponseDto, ICryptoRepository, mapUser } from '@app/domain';
-import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
-import { IAlbumRepository } from './album-repository';
-import { DownloadService } from '../../modules/download/download.service';
-import { ISharedLinkRepository } from '@app/domain';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { newCryptoRepositoryMock, newSharedLinkRepositoryMock, userEntityStub } from '@test';
+import { AuthUserDto } from '../../decorators/auth-user.decorator';
+import { DownloadService } from '../../modules/download/download.service';
+import { IAlbumRepository } from './album-repository';
+import { AlbumService } from './album.service';
+import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 
 describe('Album service', () => {
   let sut: AlbumService;
@@ -98,7 +97,6 @@ describe('Album service', () => {
       get: jest.fn(),
       removeAssets: jest.fn(),
       updateThumbnails: jest.fn(),
-      getSharedWithUserAlbumCount: jest.fn(),
     };
 
     sharedLinkRepositoryMock = newSharedLinkRepositoryMock();

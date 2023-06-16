@@ -53,7 +53,6 @@ import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-res
 import { ICryptoRepository, IJobRepository } from '@app/domain';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from './dto/download-library.dto';
-import { IAlbumRepository } from '../album/album-repository';
 import { SharedLinkCore } from '@app/domain';
 import { ISharedLinkRepository } from '@app/domain';
 import { DownloadFilesDto } from './dto/download-files.dto';
@@ -85,7 +84,6 @@ export class AssetService {
   constructor(
     @Inject(IAccessRepository) private accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
-    @Inject(IAlbumRepository) private _albumRepository: IAlbumRepository,
     @InjectRepository(AssetEntity)
     private assetRepository: Repository<AssetEntity>,
     private downloadService: DownloadService,
@@ -567,31 +565,32 @@ export class AssetService {
     const sharedLinkId = authUser.sharedLinkId;
 
     for (const assetId of assetIds) {
-      // Step 1: Check if asset is part of a public shared
       if (sharedLinkId) {
         const canAccess = await this.accessRepository.hasSharedLinkAssetAccess(sharedLinkId, assetId);
         if (canAccess) {
           continue;
         }
-      } else {
-        // Step 2: Check if user owns asset
-        if ((await this._assetRepository.countByIdAndUser(assetId, authUser.id)) == 1) {
-          continue;
-        }
 
-        // Step 3: Check if any partner owns the asset
-        const canAccess = await this.accessRepository.hasPartnerAssetAccess(authUser.id, assetId);
-        if (canAccess) {
-          continue;
-        }
+        throw new ForbiddenException();
+      }
 
-        // Avoid additional checks if ownership is required
-        if (!mustBeOwner) {
-          // Step 2: Check if asset is part of an album shared with me
-          if ((await this._albumRepository.getSharedWithUserAlbumCount(authUser.id, assetId)) > 0) {
-            continue;
-          }
-        }
+      const isOwner = await this.accessRepository.hasOwnerAssetAccess(authUser.id, assetId);
+      if (isOwner) {
+        continue;
+      }
+
+      if (mustBeOwner) {
+        throw new ForbiddenException();
+      }
+
+      const isPartnerShared = await this.accessRepository.hasPartnerAssetAccess(authUser.id, assetId);
+      if (isPartnerShared) {
+        continue;
+      }
+
+      const isAlbumShared = await this.accessRepository.hasAlbumAssetAccess(authUser.id, assetId);
+      if (isAlbumShared) {
+        continue;
       }
 
       throw new ForbiddenException();

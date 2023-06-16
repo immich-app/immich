@@ -124,8 +124,8 @@ export class AlbumRepository implements IAlbumRepository {
     });
   }
 
-  async hasAsset(id: string, assetId: string): Promise<boolean> {
-    const count = await this.repository.count({
+  hasAsset(id: string, assetId: string): Promise<boolean> {
+    return this.repository.exist({
       where: {
         id,
         assets: {
@@ -136,8 +136,6 @@ export class AlbumRepository implements IAlbumRepository {
         assets: true,
       },
     });
-
-    return Boolean(count);
   }
 
   async create(album: Partial<AlbumEntity>): Promise<AlbumEntity> {
