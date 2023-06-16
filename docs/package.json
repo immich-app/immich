@@ -17,8 +17,8 @@
     "check": "tsc"
   },
   "dependencies": {
-    "@docusaurus/core": "2.1.0",
-    "@docusaurus/preset-classic": "2.1.0",
+    "@docusaurus/core": "2.4.1",
+    "@docusaurus/preset-classic": "2.4.1",
     "@mdx-js/react": "^1.6.22",
     "autoprefixer": "^10.4.13",
     "clsx": "^1.2.1",
@@ -32,7 +32,7 @@
     "url": "^0.11.0"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "2.1.0",
+    "@docusaurus/module-type-aliases": "2.4.1",
     "@tsconfig/docusaurus": "^1.0.5",
     "prettier": "^2.8.8",
     "typescript": "^5.0.0"
