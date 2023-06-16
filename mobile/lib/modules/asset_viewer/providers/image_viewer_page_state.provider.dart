@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/modules/album/services/album.service.dart';
 import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_state.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/services/image_viewer.service.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
@@ -12,9 +13,13 @@ import 'package:immich_mobile/shared/ui/share_dialog.dart';
 class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
   final ImageViewerService _imageViewerService;
   final ShareService _shareService;
+  final AlbumService _albumService;
 
-  ImageViewerStateNotifier(this._imageViewerService, this._shareService)
-      : super(
+  ImageViewerStateNotifier(
+    this._imageViewerService,
+    this._shareService,
+    this._albumService,
+  ) : super(
           ImageViewerPageState(
             downloadAssetStatus: DownloadAssetStatus.idle,
           ),
@@ -34,6 +39,7 @@ class ImageViewerStateNotifier extends StateNotifier<ImageViewerPageState> {
         toastType: ToastType.success,
         gravity: ToastGravity.BOTTOM,
       );
+      _albumService.refreshDeviceAlbums();
     } else {
       state = state.copyWith(downloadAssetStatus: DownloadAssetStatus.error);
       ImmichToast.show(
@@ -66,5 +72,6 @@ final imageViewerStateProvider =
   ((ref) => ImageViewerStateNotifier(
         ref.watch(imageViewerServiceProvider),
         ref.watch(shareServiceProvider),
+        ref.watch(albumServiceProvider),
       )),
 );

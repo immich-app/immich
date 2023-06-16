@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/hash.dart';
@@ -14,7 +16,7 @@ part 'asset.g.dart';
 class Asset {
   Asset.remote(AssetResponseDto remote)
       : remoteId = remote.id,
-        isLocal = false,
+        checksum = remote.checksum,
         fileCreatedAt = remote.fileCreatedAt,
         fileModifiedAt = remote.fileModifiedAt,
         updatedAt = remote.updatedAt,
@@ -24,23 +26,20 @@ class Asset {
         height = remote.exifInfo?.exifImageHeight?.toInt(),
         width = remote.exifInfo?.exifImageWidth?.toInt(),
         livePhotoVideoId = remote.livePhotoVideoId,
-        localId = remote.deviceAssetId,
-        deviceId = fastHash(remote.deviceId),
         ownerId = fastHash(remote.ownerId),
         exifInfo =
             remote.exifInfo != null ? ExifInfo.fromDto(remote.exifInfo!) : null,
         isFavorite = remote.isFavorite,
         isArchived = remote.isArchived;
 
-  Asset.local(AssetEntity local)
+  Asset.local(AssetEntity local, List<int> hash)
       : localId = local.id,
-        isLocal = true,
+        checksum = base64.encode(hash),
         durationInSeconds = local.duration,
         type = AssetType.values[local.typeInt],
         height = local.height,
         width = local.width,
         fileName = local.title!,
-        deviceId = Store.get(StoreKey.deviceIdHash),
         ownerId = Store.get(StoreKey.currentUser).isarId,
         fileModifiedAt = local.modifiedDateTime,
         updatedAt = local.modifiedDateTime,
@@ -53,13 +52,15 @@ class Asset {
     if (local.latitude != null) {
       exifInfo = ExifInfo(lat: local.latitude, long: local.longitude);
     }
+    _local = local;
+    assert(hash.length == 20, "invalid SHA1 hash");
   }
 
   Asset({
     this.id = Isar.autoIncrement,
+    required this.checksum,
     this.remoteId,
     required this.localId,
-    required this.deviceId,
     required this.ownerId,
     required this.fileCreatedAt,
     required this.fileModifiedAt,
@@ -72,7 +73,6 @@ class Asset {
     this.livePhotoVideoId,
     this.exifInfo,
     required this.isFavorite,
-    required this.isLocal,
     required this.isArchived,
   });
 
@@ -83,7 +83,7 @@ class Asset {
   AssetEntity? get local {
     if (isLocal && _local == null) {
       _local = AssetEntity(
-        id: localId,
+        id: localId!,
         typeInt: isImage ? 1 : 2,
         width: width ?? 0,
         height: height ?? 0,
@@ -98,18 +98,21 @@ class Asset {
 
   Id id = Isar.autoIncrement;
 
+  /// stores the raw SHA1 bytes as a base64 String
+  /// because Isar cannot sort lists of byte arrays
+  @Index(
+    unique: true,
+    replace: false,
+    type: IndexType.hash,
+    composite: [CompositeIndex("ownerId")],
+  )
+  String checksum;
+
   @Index(unique: false, replace: false, type: IndexType.hash)
   String? remoteId;
 
-  @Index(
-    unique: false,
-    replace: false,
-    type: IndexType.hash,
-    composite: [CompositeIndex('deviceId')],
-  )
-  String localId;
-
-  int deviceId;
+  @Index(unique: false, replace: false, type: IndexType.hash)
+  String? localId;
 
   int ownerId;
 
@@ -134,13 +137,14 @@ class Asset {
 
   bool isFavorite;
 
-  /// `true` if this [Asset] is present on the device
-  bool isLocal;
-
   bool isArchived;
 
   @ignore
   ExifInfo? exifInfo;
+
+  /// `true` if this [Asset] is present on the device
+  @ignore
+  bool get isLocal => localId != null;
 
   @ignore
   bool get isInDb => id != Isar.autoIncrement;
@@ -175,9 +179,9 @@ class Asset {
   bool operator ==(other) {
     if (other is! Asset) return false;
     return id == other.id &&
+        checksum == other.checksum &&
         remoteId == other.remoteId &&
         localId == other.localId &&
-        deviceId == other.deviceId &&
         ownerId == other.ownerId &&
         fileCreatedAt.isAtSameMomentAs(other.fileCreatedAt) &&
         fileModifiedAt.isAtSameMomentAs(other.fileModifiedAt) &&
@@ -197,9 +201,9 @@ class Asset {
   @ignore
   int get hashCode =>
       id.hashCode ^
+      checksum.hashCode ^
       remoteId.hashCode ^
       localId.hashCode ^
-      deviceId.hashCode ^
       ownerId.hashCode ^
       fileCreatedAt.hashCode ^
       fileModifiedAt.hashCode ^
@@ -217,8 +221,7 @@ class Asset {
   /// Returns `true` if this [Asset] can updated with values from parameter [a]
   bool canUpdate(Asset a) {
     assert(isInDb);
-    assert(localId == a.localId);
-    assert(deviceId == a.deviceId);
+    assert(checksum == a.checksum);
     assert(a.storage != AssetState.merged);
     return a.updatedAt.isAfter(updatedAt) ||
         a.isRemote && !isRemote ||
@@ -239,10 +242,17 @@ class Asset {
       if (a.isRemote) {
         return a._copyWith(
           id: id,
-          isLocal: isLocal,
+          localId: localId,
           width: a.width ?? width,
           height: a.height ?? height,
           exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
+        );
+      } else if (isRemote) {
+        return _copyWith(
+          localId: localId ?? a.localId,
+          width: width ?? a.width,
+          height: height ?? a.height,
+          exifInfo: exifInfo ?? a.exifInfo?.copyWith(id: id),
         );
       } else {
         return a._copyWith(
@@ -270,7 +280,7 @@ class Asset {
       } else {
         // add only missing values (and set isLocal to true)
         return _copyWith(
-          isLocal: true,
+          localId: localId ?? a.localId,
           width: width ?? a.width,
           height: height ?? a.height,
           exifInfo: exifInfo ?? a.exifInfo?.copyWith(id: id),
@@ -281,9 +291,9 @@ class Asset {
 
   Asset _copyWith({
     Id? id,
+    String? checksum,
     String? remoteId,
     String? localId,
-    int? deviceId,
     int? ownerId,
     DateTime? fileCreatedAt,
     DateTime? fileModifiedAt,
@@ -295,15 +305,14 @@ class Asset {
     String? fileName,
     String? livePhotoVideoId,
     bool? isFavorite,
-    bool? isLocal,
     bool? isArchived,
     ExifInfo? exifInfo,
   }) =>
       Asset(
         id: id ?? this.id,
+        checksum: checksum ?? this.checksum,
         remoteId: remoteId ?? this.remoteId,
         localId: localId ?? this.localId,
-        deviceId: deviceId ?? this.deviceId,
         ownerId: ownerId ?? this.ownerId,
         fileCreatedAt: fileCreatedAt ?? this.fileCreatedAt,
         fileModifiedAt: fileModifiedAt ?? this.fileModifiedAt,
@@ -315,7 +324,6 @@ class Asset {
         fileName: fileName ?? this.fileName,
         livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
         isFavorite: isFavorite ?? this.isFavorite,
-        isLocal: isLocal ?? this.isLocal,
         isArchived: isArchived ?? this.isArchived,
         exifInfo: exifInfo ?? this.exifInfo,
       );
@@ -328,39 +336,36 @@ class Asset {
     }
   }
 
-  /// compares assets by [ownerId], [deviceId], [localId]
-  static int compareByOwnerDeviceLocalId(Asset a, Asset b) {
-    final int ownerIdOrder = a.ownerId.compareTo(b.ownerId);
-    if (ownerIdOrder != 0) {
-      return ownerIdOrder;
-    }
-    final int deviceIdOrder = a.deviceId.compareTo(b.deviceId);
-    if (deviceIdOrder != 0) {
-      return deviceIdOrder;
-    }
-    final int localIdOrder = a.localId.compareTo(b.localId);
-    return localIdOrder;
-  }
-
-  /// compares assets by [ownerId], [deviceId], [localId], [fileModifiedAt]
-  static int compareByOwnerDeviceLocalIdModified(Asset a, Asset b) {
-    final int order = compareByOwnerDeviceLocalId(a, b);
-    return order != 0 ? order : a.fileModifiedAt.compareTo(b.fileModifiedAt);
-  }
-
   static int compareById(Asset a, Asset b) => a.id.compareTo(b.id);
 
-  static int compareByLocalId(Asset a, Asset b) =>
-      a.localId.compareTo(b.localId);
+  static int compareByChecksum(Asset a, Asset b) =>
+      a.checksum.compareTo(b.checksum);
+
+  static int compareByOwnerChecksum(Asset a, Asset b) {
+    final int ownerIdOrder = a.ownerId.compareTo(b.ownerId);
+    if (ownerIdOrder != 0) return ownerIdOrder;
+    return compareByChecksum(a, b);
+  }
+
+  static int compareByOwnerChecksumCreatedModified(Asset a, Asset b) {
+    final int ownerIdOrder = a.ownerId.compareTo(b.ownerId);
+    if (ownerIdOrder != 0) return ownerIdOrder;
+    final int checksumOrder = compareByChecksum(a, b);
+    if (checksumOrder != 0) return checksumOrder;
+    final int createdOrder = a.fileCreatedAt.compareTo(b.fileCreatedAt);
+    if (createdOrder != 0) return createdOrder;
+    return a.fileModifiedAt.compareTo(b.fileModifiedAt);
+  }
 
   @override
   String toString() {
     return """
 {
+  "id": ${id == Isar.autoIncrement ? '"N/A"' : id},
   "remoteId": "${remoteId ?? "N/A"}",
-  "localId": "$localId", 
-  "deviceId": "$deviceId", 
-  "ownerId": "$ownerId", 
+  "localId": "${localId ?? "N/A"}",
+  "checksum": "$checksum",
+  "ownerId": $ownerId, 
   "livePhotoVideoId": "${livePhotoVideoId ?? "N/A"}",
   "fileCreatedAt": "$fileCreatedAt",
   "fileModifiedAt": "$fileModifiedAt", 
@@ -369,9 +374,8 @@ class Asset {
   "type": "$type",
   "fileName": "$fileName", 
   "isFavorite": $isFavorite, 
-  "isLocal": $isLocal,
   "isRemote: $isRemote,
-  "storage": $storage,
+  "storage": "$storage",
   "width": ${width ?? "N/A"},
   "height": ${height ?? "N/A"},
   "isArchived": $isArchived
@@ -424,10 +428,6 @@ extension AssetsHelper on IsarCollection<Asset> {
   QueryBuilder<Asset, Asset, QAfterWhereClause> _remote(Iterable<String> ids) =>
       where().anyOf(ids, (q, String e) => q.remoteIdEqualTo(e));
   QueryBuilder<Asset, Asset, QAfterWhereClause> _local(Iterable<String> ids) {
-    return where().anyOf(
-      ids,
-      (q, String e) =>
-          q.localIdDeviceIdEqualTo(e, Store.get(StoreKey.deviceIdHash)),
-    );
+    return where().anyOf(ids, (q, String e) => q.localIdEqualTo(e));
   }
 }

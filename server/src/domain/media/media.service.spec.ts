@@ -81,28 +81,6 @@ describe(MediaService.name, () => {
         size: 1440,
         format: 'jpeg',
       });
-      expect(mediaMock.extractThumbnailFromExif).not.toHaveBeenCalled();
-      expect(assetMock.save).toHaveBeenCalledWith({
-        id: 'asset-id',
-        resizePath: 'upload/thumbs/user-id/asset-id.jpeg',
-      });
-    });
-
-    it('should generate a thumbnail for an image from exif', async () => {
-      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
-      mediaMock.resize.mockRejectedValue(new Error('unsupported format'));
-
-      await sut.handleGenerateJpegThumbnail({ id: assetEntityStub.image.id });
-
-      expect(storageMock.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id');
-      expect(mediaMock.resize).toHaveBeenCalledWith('/original/path.ext', 'upload/thumbs/user-id/asset-id.jpeg', {
-        size: 1440,
-        format: 'jpeg',
-      });
-      expect(mediaMock.extractThumbnailFromExif).toHaveBeenCalledWith(
-        '/original/path.ext',
-        'upload/thumbs/user-id/asset-id.jpeg',
-      );
       expect(assetMock.save).toHaveBeenCalledWith({
         id: 'asset-id',
         resizePath: 'upload/thumbs/user-id/asset-id.jpeg',
@@ -254,6 +232,23 @@ describe(MediaService.name, () => {
             '-preset ultrafast',
             '-crf 23',
           ],
+          twoPass: false,
+        },
+      );
+    });
+
+    it('should not scale resolution if no target resolution', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);
+      configMock.load.mockResolvedValue([
+        { key: SystemConfigKey.FFMPEG_TRANSCODE, value: 'all' },
+        { key: SystemConfigKey.FFMPEG_TARGET_RESOLUTION, value: 'original' },
+      ]);
+      await sut.handleVideoConversion({ id: assetEntityStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/asset-id.mp4',
+        {
+          outputOptions: ['-vcodec h264', '-acodec aac', '-movflags faststart', '-preset ultrafast', '-crf 23'],
           twoPass: false,
         },
       );

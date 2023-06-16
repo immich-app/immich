@@ -143,7 +143,8 @@
 							{ value: '1440', text: '1440p' },
 							{ value: '1080', text: '1080p' },
 							{ value: '720', text: '720p' },
-							{ value: '480', text: '480p' }
+							{ value: '480', text: '480p' },
+							{ value: 'original', text: 'original' }
 						]}
 						name="resolution"
 						isEdited={!(ffmpegConfig.targetResolution == savedConfig.targetResolution)}

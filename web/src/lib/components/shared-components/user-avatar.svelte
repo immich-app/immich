@@ -73,7 +73,7 @@
 			class:font-medium={!autoColor}
 			class:font-semibold={autoColor}
 		>
-			{(user.firstName[0] + user.lastName[0]).toUpperCase()}
+			{((user.firstName[0] || '') + (user.lastName[0] || '')).toUpperCase()}
 		</span>
 	{/if}
 </figure>

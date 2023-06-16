@@ -43,7 +43,12 @@ void main() {
 
     test('withKey', () {
       final a = ["a", "bb", "cc", "ddd"];
-      expect(a.uniqueConsecutive((s) => s.length), ["a", "bb", "ddd"]);
+      expect(
+        a.uniqueConsecutive(
+          compare: (s1, s2) => s1.length.compareTo(s2.length),
+        ),
+        ["a", "bb", "ddd"],
+      );
     });
   });
 }

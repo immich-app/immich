@@ -11,6 +11,7 @@ import {
 } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { DateTime } from 'luxon';
 import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
 import { AssetEntity, AssetType } from '../entities';
 import OptionalBetween from '../utils/optional-between.util';
@@ -19,6 +20,39 @@ import { paginate } from '../utils/pagination.util';
 @Injectable()
 export class AssetRepository implements IAssetRepository {
   constructor(@InjectRepository(AssetEntity) private repository: Repository<AssetEntity>) {}
+
+  getByDate(ownerId: string, date: Date): Promise<AssetEntity[]> {
+    // For reference of a correct approach although slower
+
+    // let builder = this.repository
+    //   .createQueryBuilder('asset')
+    //   .leftJoin('asset.exifInfo', 'exifInfo')
+    //   .where('asset.ownerId = :ownerId', { ownerId })
+    //   .andWhere(
+    //     `coalesce(date_trunc('day', asset."fileCreatedAt", "exifInfo"."timeZone") at TIME ZONE "exifInfo"."timeZone", date_trunc('day', asset."fileCreatedAt")) IN (:date)`,
+    //     { date },
+    //   )
+    //   .andWhere('asset.isVisible = true')
+    //   .andWhere('asset.isArchived = false')
+    //   .orderBy('asset.fileCreatedAt', 'DESC');
+
+    // return builder.getMany();
+
+    return this.repository.find({
+      where: {
+        ownerId,
+        isVisible: true,
+        isArchived: false,
+        fileCreatedAt: OptionalBetween(date, DateTime.fromJSDate(date).plus({ day: 1 }).toJSDate()),
+      },
+      relations: {
+        exifInfo: true,
+      },
+      order: {
+        fileCreatedAt: 'DESC',
+      },
+    });
+  }
 
   getByIds(ids: string[]): Promise<AssetEntity[]> {
     return this.repository.find({

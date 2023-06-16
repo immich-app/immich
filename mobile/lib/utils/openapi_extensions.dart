@@ -15,10 +15,16 @@ extension WithETag on AssetApi {
   Future<(List<AssetResponseDto>? assets, String? eTag)> getAllAssetsWithETag({
     String? eTag,
     String? userId,
+    bool? isFavorite,
+    bool? isArchived,
+    bool? withoutThumbs,
   }) async {
     final response = await getAllAssetsWithHttpInfo(
       ifNoneMatch: eTag,
       userId: userId,
+      isFavorite: isFavorite,
+      isArchived: isArchived,
+      withoutThumbs: withoutThumbs,
     );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));

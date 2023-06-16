@@ -3,6 +3,15 @@ import { validateSync } from 'class-validator';
 import { LoginCredentialDto } from './login-credential.dto';
 
 describe('LoginCredentialDto', () => {
+  it('should allow emails without a tld', () => {
+    const someEmail = 'test@test';
+
+    const dto = plainToInstance(LoginCredentialDto, { email: someEmail, password: 'password' });
+    const errors = validateSync(dto);
+    expect(errors).toHaveLength(0);
+    expect(dto.email).toEqual(someEmail);
+  });
+
   it('should fail without an email', () => {
     const dto = plainToInstance(LoginCredentialDto, { password: 'password' });
     const errors = validateSync(dto);

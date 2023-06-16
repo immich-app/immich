@@ -54,24 +54,18 @@ export class MediaService {
     this.storageRepository.mkdirSync(resizePath);
     const jpegThumbnailPath = join(resizePath, `${asset.id}.jpeg`);
 
-    if (asset.type == AssetType.IMAGE) {
-      try {
+    switch (asset.type) {
+      case AssetType.IMAGE:
         await this.mediaRepository.resize(asset.originalPath, jpegThumbnailPath, {
           size: JPEG_THUMBNAIL_SIZE,
           format: 'jpeg',
         });
-      } catch (error) {
-        this.logger.warn(
-          `Failed to generate jpeg thumbnail using sharp, trying with exiftool-vendored (asset=${asset.id})`,
-        );
-        await this.mediaRepository.extractThumbnailFromExif(asset.originalPath, jpegThumbnailPath);
-      }
-    }
-
-    if (asset.type == AssetType.VIDEO) {
-      this.logger.log('Start Generating Video Thumbnail');
-      await this.mediaRepository.extractVideoThumbnail(asset.originalPath, jpegThumbnailPath, JPEG_THUMBNAIL_SIZE);
-      this.logger.log(`Generating Video Thumbnail Success ${asset.id}`);
+        break;
+      case AssetType.VIDEO:
+        this.logger.log('Generating video thumbnail');
+        await this.mediaRepository.extractVideoThumbnail(asset.originalPath, jpegThumbnailPath, JPEG_THUMBNAIL_SIZE);
+        this.logger.log(`Successfully generated video thumbnail ${asset.id}`);
+        break;
     }
 
     await this.assetRepository.save({ id: asset.id, resizePath: jpegThumbnailPath });
@@ -179,9 +173,9 @@ export class MediaService {
     );
 
     const allTargetsMatching = isTargetVideoCodec && isTargetAudioCodec && isTargetContainer;
-
-    const targetResolution = Number.parseInt(ffmpegConfig.targetResolution);
-    const isLargerThanTargetResolution = Math.min(videoStream.height, videoStream.width) > targetResolution;
+    const scalingEnabled = ffmpegConfig.targetResolution !== 'original';
+    const targetRes = Number.parseInt(ffmpegConfig.targetResolution);
+    const isLargerThanTargetRes = scalingEnabled && Math.min(videoStream.height, videoStream.width) > targetRes;
 
     switch (ffmpegConfig.transcode) {
       case TranscodePreset.DISABLED:
@@ -194,7 +188,7 @@ export class MediaService {
         return !allTargetsMatching;
 
       case TranscodePreset.OPTIMAL:
-        return !allTargetsMatching || isLargerThanTargetResolution;
+        return !allTargetsMatching || isLargerThanTargetRes;
 
       default:
         return false;
@@ -212,10 +206,11 @@ export class MediaService {
 
     // video dimensions
     const videoIsRotated = Math.abs(stream.rotation) === 90;
+    const scalingEnabled = ffmpeg.targetResolution !== 'original';
     const targetResolution = Number.parseInt(ffmpeg.targetResolution);
     const isVideoVertical = stream.height > stream.width || videoIsRotated;
     const scaling = isVideoVertical ? `${targetResolution}:-2` : `-2:${targetResolution}`;
-    const shouldScale = Math.min(stream.height, stream.width) > targetResolution;
+    const shouldScale = scalingEnabled && Math.min(stream.height, stream.width) > targetResolution;
 
     // video codec
     const isVP9 = ffmpeg.targetVideoCodec === 'vp9';

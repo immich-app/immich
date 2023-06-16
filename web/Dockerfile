@@ -1,5 +1,5 @@
 # Our Node base image
-FROM node:18-alpine3.17 as base
+FROM node:18.16.0-alpine3.18@sha256:f41850f74ff16a33daff988e2ea06ef8f5daeb6fb84913c7df09552a98caba09 as base
 
 WORKDIR /usr/src/app
 EXPOSE 3000
