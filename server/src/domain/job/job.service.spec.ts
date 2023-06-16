@@ -7,9 +7,9 @@ import {
   newJobRepositoryMock,
   newSystemConfigRepositoryMock,
 } from '@test';
+import { IJobRepository, JobCommand, JobHandler, JobItem, JobName, JobService, QueueName } from '.';
 import { IAssetRepository } from '../asset';
 import { ICommunicationRepository } from '../communication';
-import { IJobRepository, JobCommand, JobHandler, JobItem, JobName, JobService, QueueName } from '.';
 import { ISystemConfigRepository } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
 

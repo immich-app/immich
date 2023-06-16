@@ -1,11 +1,11 @@
 import { AssetService, AuthUserDto, MapMarkerResponseDto, MemoryLaneDto } from '@app/domain';
 import { MapMarkerDto } from '@app/domain/asset/dto/map-marker.dto';
+import { MemoryLaneResponseDto } from '@app/domain/asset/response-dto/memory-lane-response.dto';
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
 import { UseValidation } from '../decorators/use-validation.decorator';
-import { MemoryLaneResponseDto } from '@app/domain/asset/response-dto/memory-lane-response.dto';
 
 @ApiTags('Asset')
 @Controller('asset')

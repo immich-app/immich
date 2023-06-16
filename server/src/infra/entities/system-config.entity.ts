@@ -1,5 +1,5 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
 import { QueueName } from '@app/domain/job/job.constants';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('system_config')
 export class SystemConfigEntity<T = SystemConfigValue> {

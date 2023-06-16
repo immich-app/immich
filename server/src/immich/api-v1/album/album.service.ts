@@ -1,21 +1,22 @@
-import { BadRequestException, Inject, Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
-import { AuthUserDto } from '../../decorators/auth-user.decorator';
+import {
+  AlbumResponseDto,
+  ICryptoRepository,
+  ISharedLinkRepository,
+  mapAlbum,
+  mapSharedLink,
+  SharedLinkCore,
+  SharedLinkResponseDto,
+} from '@app/domain';
 import { AlbumEntity, SharedLinkType } from '@app/infra/entities';
-import { RemoveAssetsDto } from './dto/remove-assets.dto';
-import { AlbumResponseDto, mapAlbum } from '@app/domain';
-import { IAlbumRepository } from './album-repository';
-import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
-import { AddAssetsDto } from './dto/add-assets.dto';
+import { BadRequestException, ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { DownloadService } from '../../modules/download/download.service';
 import { DownloadDto } from '../asset/dto/download-library.dto';
-import {
-  SharedLinkCore,
-  ISharedLinkRepository,
-  mapSharedLink,
-  SharedLinkResponseDto,
-  ICryptoRepository,
-} from '@app/domain';
+import { IAlbumRepository } from './album-repository';
+import { AddAssetsDto } from './dto/add-assets.dto';
 import { CreateAlbumShareLinkDto } from './dto/create-album-shared-link.dto';
+import { RemoveAssetsDto } from './dto/remove-assets.dto';
+import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 
 @Injectable()
 export class AlbumService {
