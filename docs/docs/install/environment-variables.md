@@ -41,6 +41,8 @@
 | `MACHINE_LEARNING_CACHE_FOLDER`    | ML Cache Location                |           `/cache`           | machine learning      |
 | `REVERSE_GEOCODING_DUMP_DIRECTORY` | Reverse Geocoding Dump Directory | `./.reverse-geocoding-dump/` | microservices         |
 
+> All the above paths are modifying the internal paths of the containers.
+
 ## Database
 
 | Variable      | Description       |   Default   | Services              |
@@ -66,8 +68,30 @@
 | `REDIS_PASSWORD` | Redis Password |       ``       | server, microservices |
 | `REDIS_SOCKET`   | Redis Socket   |       ``       | server, microservices |
 
-> `REDIS_URL` must start with `ioredis://`.
+> `REDIS_URL` must start with `ioredis://` and a `base64` encoded JSON string.
 > When `REDIS_URL` is defined, the other redis (`REDIS_*`) variables are ignored.
+
+Redis (Sentinel) URL example JSON before encoding:
+
+```json
+{
+  "sentinels": [
+    {
+      "host": "redis-sentinel-node-0",
+      "port": 26379
+    },
+    {
+      "host": "redis-sentinel-node-1",
+      "port": 26379
+    },
+    {
+      "host": "redis-sentinel-node-2",
+      "port": 26379
+    }
+  ],
+  "name": "redis-sentinel"
+}
+```
 
 ## Typesense
 
@@ -80,8 +104,30 @@
 | `TYPESENSE_PORT`     | Typesense Port     |   `8108`    | server, microservices |
 | `TYPESENSE_PROTOCOL` | Typesense Protocol |   `http`    | server, microservices |
 
-> `TYPESENSE_URL` must start with `ha://`
+> `TYPESENSE_URL` must start with `ha://` and a `base64` encoded JSON string.
 > When `TYPESENSE_URL` is defined, the other typesense (`TYPESENSE_*`) variables are ignored.
+
+Typesense URL example JSON before encoding:
+
+```json
+[
+  {
+    "host": "typesense-1.example.net",
+    "port": "443",
+    "protocol": "https"
+  },
+      {
+    "host": "typesense-2.example.net",
+    "port": "443",
+    "protocol": "https"
+  },
+      {
+    "host": "typesense-3.example.net",
+    "port": "443",
+    "protocol": "https"
+  }
+]
+```
 
 ## Machine Learning
 
