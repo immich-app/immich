@@ -1,14 +1,14 @@
 import torch
 from insightface.app import FaceAnalysis
 from pathlib import Path
-import os
 
 from transformers import pipeline, Pipeline
 from sentence_transformers import SentenceTransformer
 from typing import Any
 import cv2 as cv
+from config import get_settings
 
-cache_folder = os.getenv("MACHINE_LEARNING_CACHE_FOLDER", "/cache")
+settings = get_settings()
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
@@ -101,7 +101,7 @@ def _load_facial_recognition(
     if isinstance(cache_dir, Path):
         cache_dir = cache_dir.as_posix()
     if min_face_score is None:
-        min_face_score = float(os.getenv("MACHINE_LEARNING_MIN_FACE_SCORE", 0.7))
+        min_face_score = settings.min_face_score
 
     model = FaceAnalysis(
         name=model_name,
@@ -114,4 +114,4 @@ def _load_facial_recognition(
 
 
 def _get_cache_dir(model_name: str, model_type: str) -> Path:
-    return Path(cache_folder, device, model_type, model_name)
+    return Path(settings.cache_folder, device, model_type, model_name)
