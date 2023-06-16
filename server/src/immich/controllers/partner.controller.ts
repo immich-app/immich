@@ -1,7 +1,7 @@
 import { PartnerDirection, PartnerService, UserResponseDto } from '@app/domain';
 import { Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
-import { AuthUserDto, GetAuthUser } from '../decorators/auth-user.decorator';
+import { AuthUserDto, AuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
 import { UseValidation } from '../decorators/use-validation.decorator';
 import { UUIDParamDto } from './dto/uuid-param.dto';
@@ -16,19 +16,19 @@ export class PartnerController {
   @Get()
   @ApiQuery({ name: 'direction', type: 'string', enum: PartnerDirection, required: true })
   getPartners(
-    @GetAuthUser() authUser: AuthUserDto,
+    @AuthUser() authUser: AuthUserDto,
     @Query('direction') direction: PartnerDirection,
   ): Promise<UserResponseDto[]> {
     return this.service.getAll(authUser, direction);
   }
 
   @Post(':id')
-  createPartner(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
+  createPartner(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
     return this.service.create(authUser, id);
   }
 
   @Delete(':id')
-  removePartner(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
+  removePartner(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(authUser, id);
   }
 }
