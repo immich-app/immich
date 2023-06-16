@@ -109,6 +109,7 @@
     "jest": "^27.2.5",
     "jest-when": "^3.5.2",
     "prettier": "^2.3.2",
+    "prettier-plugin-organize-imports": "^3.2.2",
     "rimraf": "^3.0.2",
     "source-map-support": "^0.5.20",
     "supertest": "^6.1.3",
