@@ -6,11 +6,6 @@ import { AssetEntity, ExifEntity } from '@app/infra/entities';
 import { AssetRepository, IAssetRepository } from './asset-repository';
 import { DownloadModule } from '../../modules/download/download.module';
 
-const ASSET_REPOSITORY_PROVIDER = {
-  provide: IAssetRepository,
-  useClass: AssetRepository,
-};
-
 @Module({
   imports: [
     //
@@ -18,7 +13,6 @@ const ASSET_REPOSITORY_PROVIDER = {
     DownloadModule,
   ],
   controllers: [AssetController],
-  providers: [AssetService, ASSET_REPOSITORY_PROVIDER],
-  exports: [ASSET_REPOSITORY_PROVIDER],
+  providers: [AssetService, { provide: IAssetRepository, useClass: AssetRepository }],
 })
 export class AssetModule {}
