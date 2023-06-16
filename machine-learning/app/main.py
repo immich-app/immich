@@ -1,4 +1,5 @@
 import os
+import io
 from typing import Any
 
 from cache import ModelCache
@@ -12,7 +13,8 @@ from schemas import (
 )
 import uvicorn
 from PIL import Image
-from fastapi import FastAPI, HTTPException, Depends, UploadFile
+from fastapi import FastAPI, HTTPException, Depends, File
+from typing_extensions import Annotated
 from models import get_model, run_classification, run_facial_recognition
 from config import get_settings, Settings
 
@@ -45,6 +47,8 @@ def dep_model_cache():
     if _model_cache is None:
         raise HTTPException(status_code=500, detail="Unable to load model.")
 
+def dep_input_image(image: Annotated[bytes, File()]) -> Image:
+    return Image.open(io.BytesIO(image))
 
 @app.get("/", response_model=MessageResponse)
 async def root() -> dict[str, str]:
@@ -63,13 +67,13 @@ def ping() -> str:
     dependencies=[Depends(dep_model_cache)],
 )
 async def image_classification(
-    image: UploadFile, settings: Settings = Depends(get_settings)
+    image: Image = Depends(dep_input_image), settings: Settings = Depends(get_settings)
 ) -> list[str]:
     try:
         model = await _model_cache.get_cached_model(
             settings.classification_model, "image-classification"
         )
-        labels = run_classification(model, Image.open(image.file), settings.min_tag_score)
+        labels = run_classification(model, image, settings.min_tag_score)
     except Exception as ex:
         raise HTTPException(status_code=500, detail=str(ex))
     else:
@@ -83,11 +87,10 @@ async def image_classification(
     dependencies=[Depends(dep_model_cache)],
 )
 async def clip_encode_image(
-    image: UploadFile, settings: Settings = Depends(get_settings)
+    image: Image = Depends(dep_input_image), settings: Settings = Depends(get_settings)
 ) -> list[float]:
     model = await _model_cache.get_cached_model(settings.clip_image_model, "clip")
-    img = Image.open(image.file)
-    embedding = model.encode(img).tolist()
+    embedding = model.encode(image).tolist()
     return embedding
 
 
@@ -112,12 +115,12 @@ async def clip_encode_text(
     dependencies=[Depends(dep_model_cache)],
 )
 async def facial_recognition(
-    image: UploadFile, settings: Settings = Depends(get_settings)
+    image: Annotated[bytes, File()], settings: Settings = Depends(get_settings)
 ) -> list[dict[str, Any]]:
     model = await _model_cache.get_cached_model(
         settings.facial_recognition_model, "facial-recognition"
     )
-    faces = run_facial_recognition(model, image.file)
+    faces = run_facial_recognition(model, image)
     return faces
 
 

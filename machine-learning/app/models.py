@@ -10,7 +10,6 @@ import numpy as np
 from PIL import Image
 from config import get_settings
 
-settings = get_settings()
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
@@ -65,9 +64,9 @@ def run_classification(
 
 
 def run_facial_recognition(
-    model: FaceAnalysis, image: BinaryIO
+    model: FaceAnalysis, image: bytes
 ) -> list[dict[str, Any]]:
-    file_bytes = np.fromfile(image, dtype=np.uint8)
+    file_bytes = np.frombuffer(image, dtype=np.uint8)
     img = cv.imdecode(file_bytes, cv.IMREAD_COLOR)
     height, width, _ = img.shape
     results = []
@@ -99,6 +98,7 @@ def _load_facial_recognition(
     cache_dir: Path | str | None = None,
     **model_kwargs,
 ):
+    settings = get_settings()
     if cache_dir is None:
         cache_dir = _get_cache_dir(model_name, "facial-recognition")
     if isinstance(cache_dir, Path):
@@ -117,4 +117,5 @@ def _load_facial_recognition(
 
 
 def _get_cache_dir(model_name: str, model_type: str) -> Path:
+    settings = get_settings()
     return Path(settings.cache_folder, device, model_type, model_name)

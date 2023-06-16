@@ -11,8 +11,8 @@ class Settings(BaseSettings):
     eager_startup: bool = True
     model_ttl: int = 300
     host: str = "0.0.0.0"
-    port:int = 3003
-    workers:int = 1
+    port: int = 3003
+    workers: int = 1
     min_face_score: float = 0.7
 
     class Config(BaseSettings.Config):
