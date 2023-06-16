@@ -4,15 +4,19 @@
 
 | Variable                      | Description                                  |                   Default                   | Services                                |
 | :---------------------------- | :------------------------------------------- | :-----------------------------------------: | :-------------------------------------- |
-| `TZ`                          | Timezone                                     |                     ``                      | microservices                           |
+| `TZ`                          | Timezone                                     |                                             | microservices                           |
 | `NODE_ENV`                    | Environment (production, development)        |                `production`                 | server, microservices, machine learning |
 | `LOG_LEVEL`                   | Log Level (verbose, debug, log, warn, error) |                    `log`                    | server, microservices                   |
 | `DISABLE_REVERSE_GEOCODING`   | Disable Reverse Geocoding Precision          |                   `false`                   | microservices                           |
 | `REVERSE_GEOCODING_PRECISION` | Reverse Geocoding Precision                  |                     `3`                     | microservices                           |
 | `PUBLIC_LOGIN_PAGE_MESSAGE`   | Public Login Page Message                    | `My Family Photos and Videos Backup Server` | web                                     |
 
-> `TZ` is only used by the `exiftool` in the microservices container.
-> It is considered as a fallback timezone if the timezone cannot be determined from the image metadata.
+:::tip
+
+`TZ` is only used by the `exiftool` in the microservices container.
+It is used as a fallback timezone if the timezone cannot be determined from the image metadata.
+
+:::
 
 ## Ports
 
@@ -41,36 +45,49 @@
 | `MACHINE_LEARNING_CACHE_FOLDER`    | ML Cache Location                |           `/cache`           | machine learning      |
 | `REVERSE_GEOCODING_DUMP_DIRECTORY` | Reverse Geocoding Dump Directory | `./.reverse-geocoding-dump/` | microservices         |
 
-> All the above paths are modifying the internal paths of the containers.
+:::info
+
+The above paths are modifying the internal paths of the containers.
+
+:::
 
 ## Database
 
 | Variable      | Description       |   Default   | Services              |
 | :------------ | :---------------- | :---------: | :-------------------- |
-| `DB_URL`      | Database URL      |     ``      | server, microservices |
+| `DB_URL`      | Database URL      |             | server, microservices |
 | `DB_HOSTNAME` | Database Host     | `localhost` | server, microservices |
 | `DB_PORT`     | Database Port     |   `5432`    | server, microservices |
 | `DB_USERNAME` | Database User     | `postgres`  | server, microservices |
 | `DB_PASSWORD` | Database Password | `postgres`  | server, microservices |
 | `DB_DATABASE` | Database Name     |  `immich`   | server, microservices |
 
-> When `DB_URL` is defined, the other database (`DB_*`) variables are ignored.
+:::info
+
+When `DB_URL` is defined, the other database (`DB_*`) variables are ignored.
+
+:::
 
 ## Redis
 
 | Variable         | Description    |    Default     | Services              |
 | :--------------- | :------------- | :------------: | :-------------------- |
-| `REDIS_URL`      | Redis URL      |       ``       | server, microservices |
+| `REDIS_URL`      | Redis URL      |                | server, microservices |
 | `REDIS_HOST`     | Redis Host     | `immich_redis` | server, microservices |
 | `REDIS_PORT`     | Redis Port     |     `6379`     | server, microservices |
 | `REDIS_INDEX`    | Redis Index    |      `0`       | server, microservices |
-| `REDIS_USERNAME` | Redis Username |       ``       | server, microservices |
-| `REDIS_PASSWORD` | Redis Password |       ``       | server, microservices |
-| `REDIS_SOCKET`   | Redis Socket   |       ``       | server, microservices |
+| `REDIS_USERNAME` | Redis Username |                | server, microservices |
+| `REDIS_PASSWORD` | Redis Password |                | server, microservices |
+| `REDIS_SOCKET`   | Redis Socket   |                | server, microservices |
 
-> `REDIS_URL` must start with `ioredis://` and a `base64` encoded JSON string.
-> When `REDIS_URL` is defined, the other redis (`REDIS_*`) variables are ignored.
-> When `REDIS_SOCKET` is defined, the other redis (`REDIS_*`) variables are ignored.
+:::info
+
+`REDIS_URL` must start with `ioredis://` and a `base64` encoded JSON string.
+
+- When `REDIS_URL` is defined, the other redis (`REDIS_*`) variables are ignored.
+- When `REDIS_SOCKET` is defined, the other redis (`REDIS_*`) variables are ignored.
+
+:::
 
 Redis (Sentinel) URL example JSON before encoding:
 
@@ -99,14 +116,19 @@ Redis (Sentinel) URL example JSON before encoding:
 | Variable             | Description        |   Default   | Services              |
 | :------------------- | :----------------- | :---------: | :-------------------- |
 | `TYPESENSE_ENABLED`  | Enable Typesense   |   `false`   | server, microservices |
-| `TYPESENSE_URL`      | Typesense URL      |     ``      | server, microservices |
-| `TYPESENSE_API_KEY`  | Typesense API Key  |     ``      | server, microservices |
+| `TYPESENSE_URL`      | Typesense URL      |             | server, microservices |
+| `TYPESENSE_API_KEY`  | Typesense API Key  |             | server, microservices |
 | `TYPESENSE_HOST`     | Typesense Host     | `typesense` | server, microservices |
 | `TYPESENSE_PORT`     | Typesense Port     |   `8108`    | server, microservices |
 | `TYPESENSE_PROTOCOL` | Typesense Protocol |   `http`    | server, microservices |
 
-> `TYPESENSE_URL` must start with `ha://` and a `base64` encoded JSON string.
-> When `TYPESENSE_URL` is defined, the other typesense (`TYPESENSE_*`) variables are ignored.
+:::info
+
+`TYPESENSE_URL` must start with `ha://` and a `base64` encoded JSON string.
+
+- When `TYPESENSE_URL` is defined, the other typesense (`TYPESENSE_*`) variables are ignored.
+
+:::
 
 Typesense URL example JSON before encoding:
 
@@ -117,12 +139,12 @@ Typesense URL example JSON before encoding:
     "port": "443",
     "protocol": "https"
   },
-      {
+  {
     "host": "typesense-2.example.net",
     "port": "443",
     "protocol": "https"
   },
-      {
+  {
     "host": "typesense-3.example.net",
     "port": "443",
     "protocol": "https"
