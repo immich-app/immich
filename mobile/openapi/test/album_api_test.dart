@@ -47,8 +47,8 @@ void main() {
       // TODO
     });
 
-    //Future<AlbumCountResponseDto> getAlbumCountByUserId() async
-    test('test getAlbumCountByUserId', () async {
+    //Future<AlbumCountResponseDto> getAlbumCount() async
+    test('test getAlbumCount', () async {
       // TODO
     });
 

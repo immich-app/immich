@@ -83,7 +83,7 @@ Class | Method | HTTP request | Description
 *AlbumApi* | [**createAlbumSharedLink**](doc//AlbumApi.md#createalbumsharedlink) | **POST** /album/create-shared-link | 
 *AlbumApi* | [**deleteAlbum**](doc//AlbumApi.md#deletealbum) | **DELETE** /album/{id} | 
 *AlbumApi* | [**downloadArchive**](doc//AlbumApi.md#downloadarchive) | **GET** /album/{id}/download | 
-*AlbumApi* | [**getAlbumCountByUserId**](doc//AlbumApi.md#getalbumcountbyuserid) | **GET** /album/count-by-user-id | 
+*AlbumApi* | [**getAlbumCount**](doc//AlbumApi.md#getalbumcount) | **GET** /album/count | 
 *AlbumApi* | [**getAlbumInfo**](doc//AlbumApi.md#getalbuminfo) | **GET** /album/{id} | 
 *AlbumApi* | [**getAllAlbums**](doc//AlbumApi.md#getallalbums) | **GET** /album | 
 *AlbumApi* | [**removeAssetFromAlbum**](doc//AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{id}/assets | 

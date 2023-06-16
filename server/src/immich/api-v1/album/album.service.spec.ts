@@ -98,7 +98,6 @@ describe('Album service', () => {
       get: jest.fn(),
       removeAssets: jest.fn(),
       updateThumbnails: jest.fn(),
-      getCountByUserId: jest.fn(),
       getSharedWithUserAlbumCount: jest.fn(),
     };
 

@@ -6,7 +6,6 @@ import { AddAssetsDto } from './dto/add-assets.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AlbumResponseDto } from '@app/domain';
-import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { Response as Res } from 'express';
 import { DownloadDto } from '../asset/dto/download-library.dto';
@@ -21,11 +20,6 @@ import { handleDownload } from '../../app.utils';
 @UseValidation()
 export class AlbumController {
   constructor(private readonly service: AlbumService) {}
-
-  @Get('count-by-user-id')
-  getAlbumCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
-    return this.service.getCountByUserId(authUser);
-  }
 
   @SharedLinkRoute()
   @Put(':id/assets')

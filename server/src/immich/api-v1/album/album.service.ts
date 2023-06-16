@@ -4,7 +4,6 @@ import { AlbumEntity, SharedLinkType } from '@app/infra/entities';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { AlbumResponseDto, mapAlbum } from '@app/domain';
 import { IAlbumRepository } from './album-repository';
-import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { DownloadService } from '../../modules/download/download.service';
@@ -88,10 +87,6 @@ export class AlbumService {
       ...result,
       album: mapAlbum(newAlbum),
     };
-  }
-
-  async getCountByUserId(authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
-    return this.albumRepository.getCountByUserId(authUser.id);
   }
 
   async downloadArchive(authUser: AuthUserDto, albumId: string, dto: DownloadDto) {

@@ -210,7 +210,7 @@ export interface AlbumCountResponseDto {
      * @type {number}
      * @memberof AlbumCountResponseDto
      */
-    'sharing': number;
+    'notShared': number;
 }
 /**
  * 
@@ -3678,8 +3678,8 @@ export const AlbumApiAxiosParamCreator = function (configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAlbumCountByUserId: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/album/count-by-user-id`;
+        getAlbumCount: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/album/count`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -4029,8 +4029,8 @@ export const AlbumApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAlbumCountByUserId(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AlbumCountResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAlbumCountByUserId(options);
+        async getAlbumCount(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AlbumCountResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAlbumCount(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -4163,8 +4163,8 @@ export const AlbumApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAlbumCountByUserId(options?: any): AxiosPromise<AlbumCountResponseDto> {
-            return localVarFp.getAlbumCountByUserId(options).then((request) => request(axios, basePath));
+        getAlbumCount(options?: any): AxiosPromise<AlbumCountResponseDto> {
+            return localVarFp.getAlbumCount(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4529,8 +4529,8 @@ export class AlbumApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof AlbumApi
      */
-    public getAlbumCountByUserId(options?: AxiosRequestConfig) {
-        return AlbumApiFp(this.configuration).getAlbumCountByUserId(options).then((request) => request(this.axios, this.basePath));
+    public getAlbumCount(options?: AxiosRequestConfig) {
+        return AlbumApiFp(this.configuration).getAlbumCount(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

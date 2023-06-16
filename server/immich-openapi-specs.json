@@ -95,9 +95,9 @@
         ]
       }
     },
-    "/album/count-by-user-id": {
+    "/album/count": {
       "get": {
-        "operationId": "getAlbumCountByUserId",
+        "operationId": "getAlbumCount",
         "parameters": [],
         "responses": {
           "200": {
@@ -4530,14 +4530,14 @@
           "shared": {
             "type": "integer"
           },
-          "sharing": {
+          "notShared": {
             "type": "integer"
           }
         },
         "required": [
           "owned",
           "shared",
-          "sharing"
+          "notShared"
         ]
       },
       "AlbumResponseDto": {

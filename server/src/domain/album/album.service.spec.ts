@@ -35,6 +35,23 @@ describe(AlbumService.name, () => {
     expect(sut).toBeDefined();
   });
 
+  describe('getCount', () => {
+    it('should get the album count', async () => {
+      albumMock.getOwned.mockResolvedValue([]),
+        albumMock.getShared.mockResolvedValue([]),
+        albumMock.getNotShared.mockResolvedValue([]),
+        await expect(sut.getCount(authStub.admin)).resolves.toEqual({
+          owned: 0,
+          shared: 0,
+          notShared: 0,
+        });
+
+      expect(albumMock.getOwned).toHaveBeenCalledWith(authStub.admin.id);
+      expect(albumMock.getShared).toHaveBeenCalledWith(authStub.admin.id);
+      expect(albumMock.getNotShared).toHaveBeenCalledWith(authStub.admin.id);
+    });
+  });
+
   describe('getAll', () => {
     it('gets list of albums for auth user', async () => {
       albumMock.getOwned.mockResolvedValue([albumStub.empty, albumStub.sharedWithUser]);
