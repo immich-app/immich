@@ -256,17 +256,6 @@ class _$AppRouter extends RootStackRouter {
         child: const ArchivePage(),
       );
     },
-    PersonResultRoute.name: (routeData) {
-      final args = routeData.argsAs<PersonResultRouteArgs>();
-      return MaterialPageX<dynamic>(
-        routeData: routeData,
-        child: PersonResultPage(
-          key: args.key,
-          personId: args.personId,
-          personName: args.personName,
-        ),
-      );
-    },
     PartnerRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
         routeData: routeData,
@@ -280,6 +269,17 @@ class _$AppRouter extends RootStackRouter {
         child: PartnerDetailPage(
           key: args.key,
           partner: args.partner,
+        ),
+      );
+    },
+    PersonResultRoute.name: (routeData) {
+      final args = routeData.argsAs<PersonResultRouteArgs>();
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: PersonResultPage(
+          key: args.key,
+          personId: args.personId,
+          personName: args.personName,
         ),
       );
     },
@@ -551,14 +551,6 @@ class _$AppRouter extends RootStackRouter {
           ],
         ),
         RouteConfig(
-          PersonResultRoute.name,
-          path: '/person-result-page',
-          guards: [
-            authGuard,
-            duplicateGuard,
-          ],
-        ),
-        RouteConfig(
           PartnerRoute.name,
           path: '/partner-page',
           guards: [
@@ -569,6 +561,14 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           PartnerDetailRoute.name,
           path: '/partner-detail-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          PersonResultRoute.name,
+          path: '/person-result-page',
           guards: [
             authGuard,
             duplicateGuard,
@@ -1165,45 +1165,6 @@ class ArchiveRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [PersonResultPage]
-class PersonResultRoute extends PageRouteInfo<PersonResultRouteArgs> {
-  PersonResultRoute({
-    Key? key,
-    required String personId,
-    required String personName,
-  }) : super(
-          PersonResultRoute.name,
-          path: '/person-result-page',
-          args: PersonResultRouteArgs(
-            key: key,
-            personId: personId,
-            personName: personName,
-          ),
-        );
-
-  static const String name = 'PersonResultRoute';
-}
-
-class PersonResultRouteArgs {
-  const PersonResultRouteArgs({
-    this.key,
-    required this.personId,
-    required this.personName,
-  });
-
-  final Key? key;
-
-  final String personId;
-
-  final String personName;
-
-  @override
-  String toString() {
-    return 'PersonResultRouteArgs{key: $key, personId: $personId, personName: $personName}';
-  }
-}
-
-/// generated route for
 /// [PartnerPage]
 class PartnerRoute extends PageRouteInfo<void> {
   const PartnerRoute()
@@ -1246,6 +1207,45 @@ class PartnerDetailRouteArgs {
   @override
   String toString() {
     return 'PartnerDetailRouteArgs{key: $key, partner: $partner}';
+  }
+}
+
+/// generated route for
+/// [PersonResultPage]
+class PersonResultRoute extends PageRouteInfo<PersonResultRouteArgs> {
+  PersonResultRoute({
+    Key? key,
+    required String personId,
+    required String personName,
+  }) : super(
+          PersonResultRoute.name,
+          path: '/person-result-page',
+          args: PersonResultRouteArgs(
+            key: key,
+            personId: personId,
+            personName: personName,
+          ),
+        );
+
+  static const String name = 'PersonResultRoute';
+}
+
+class PersonResultRouteArgs {
+  const PersonResultRouteArgs({
+    this.key,
+    required this.personId,
+    required this.personName,
+  });
+
+  final Key? key;
+
+  final String personId;
+
+  final String personName;
+
+  @override
+  String toString() {
+    return 'PersonResultRouteArgs{key: $key, personId: $personId, personName: $personName}';
   }
 }
 

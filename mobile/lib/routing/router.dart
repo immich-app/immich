@@ -39,6 +39,7 @@ import 'package:immich_mobile/routing/gallery_permission_guard.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/album.dart';
 import 'package:immich_mobile/shared/models/logger_message.model.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/views/app_log_detail_page.dart';
@@ -140,7 +141,7 @@ part 'router.gr.dart';
       ],
     ),
     AutoRoute(page: PartnerPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: PartnerDetailPage, guards: [AuthGuard, DuplicateGuard])
+    AutoRoute(page: PartnerDetailPage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(
       page: PersonResultPage,
       guards: [
