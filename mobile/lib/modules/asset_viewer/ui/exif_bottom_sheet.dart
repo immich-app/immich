@@ -7,6 +7,7 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/ui/drag_sheet.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
+import 'package:timezone/timezone.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ExifBottomSheet extends HookConsumerWidget {
@@ -165,13 +166,41 @@ class ExifBottomSheet extends HookConsumerWidget {
       );
     }
 
+    /// Returns the adjusted original DateTime to the
+    /// provided TZ identifier, if no or an invalid
+    /// identifier is provided, the original date is
+    /// provided
+    getOriginalDate(DateTime date, String? timezone) {
+      // TODO This does not support the "UTC-5" format
+      if (timezone != null && timezone.contains('/')) {
+        final parsedTZ = getLocation(timezone);
+        return TZDateTime.from(date, parsedTZ);
+      }
+
+      return date;
+    }
+
     buildDate() {
-      final fileCreatedAt = asset.fileCreatedAt.toLocal();
+      // Isar stores dates in UTC, but returns them in local time
+      // see https://isar.dev/schema.html#datetime
+      final fileCreatedAt =
+          getOriginalDate(asset.fileCreatedAt, exifInfo?.timeZone);
       final date = DateFormat.yMMMEd().format(fileCreatedAt);
       final time = DateFormat.jm().format(fileCreatedAt);
 
+      // Prepare the offset for the "GMT+00:00" format
+      final formattedOffset =
+          fileCreatedAt.timeZoneOffset.isNegative ? '-' : '+';
+      final formattedOffsetHours =
+          fileCreatedAt.timeZoneOffset.inHours.abs().toString().padLeft(2, '0');
+      final formattedOffsetMinutes = fileCreatedAt.timeZoneOffset.inMinutes
+          .remainder(60)
+          .abs()
+          .toString()
+          .padLeft(2, '0');
+
       return Text(
-        '$date • $time',
+        '$date • $time GMT$formattedOffset$formattedOffsetHours:$formattedOffsetMinutes',
         style: const TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 14,
