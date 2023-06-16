@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { memoryStore } from '$lib/stores/memory.store';
 	import { DateTime } from 'luxon';
-	import { onDestroy, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { api } from '@api';
 	import { goto } from '$app/navigation';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
@@ -72,8 +72,6 @@
 	// Progress should be reset when the current memory or asset changes.
 	$: memoryIndex, assetIndex, reset();
 
-	onDestroy(() => pause());
-
 	onMount(async () => {
 		if (!$memoryStore) {
 			const { data } = await api.assetApi.getMemoryLane({
@@ -107,7 +105,7 @@
 
 					{#each currentMemory.assets as _, i}
 						<button
-							class="relative w-full"
+							class="relative w-full py-2"
 							on:click={() => goto(`?memory=${memoryIndex}&asset=${i}`)}
 						>
 							<span class="absolute left-0 w-full h-[2px] bg-gray-500" />
