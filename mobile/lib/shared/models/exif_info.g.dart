@@ -86,6 +86,11 @@ const ExifInfoSchema = CollectionSchema(
       id: 13,
       name: r'state',
       type: IsarType.string,
+    ),
+    r'timeZone': PropertySchema(
+      id: 14,
+      name: r'timeZone',
+      type: IsarType.string,
     )
   },
   estimateSize: _exifInfoEstimateSize,
@@ -150,6 +155,12 @@ int _exifInfoEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  {
+    final value = object.timeZone;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -173,6 +184,7 @@ void _exifInfoSerialize(
   writer.writeFloat(offsets[11], object.mm);
   writer.writeString(offsets[12], object.model);
   writer.writeString(offsets[13], object.state);
+  writer.writeString(offsets[14], object.timeZone);
 }
 
 ExifInfo _exifInfoDeserialize(
@@ -197,6 +209,7 @@ ExifInfo _exifInfoDeserialize(
     mm: reader.readFloatOrNull(offsets[11]),
     model: reader.readStringOrNull(offsets[12]),
     state: reader.readStringOrNull(offsets[13]),
+    timeZone: reader.readStringOrNull(offsets[14]),
   );
   return object;
 }
@@ -235,6 +248,8 @@ P _exifInfoDeserializeProp<P>(
     case 12:
       return (reader.readStringOrNull(offset)) as P;
     case 13:
+      return (reader.readStringOrNull(offset)) as P;
+    case 14:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1956,6 +1971,152 @@ extension ExifInfoQueryFilter
       ));
     });
   }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'timeZone',
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'timeZone',
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'timeZone',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'timeZone',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'timeZone',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'timeZone',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'timeZone',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'timeZone',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'timeZone',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'timeZone',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'timeZone',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'timeZone',
+        value: '',
+      ));
+    });
+  }
 }
 
 extension ExifInfoQueryObject
@@ -2130,6 +2291,18 @@ extension ExifInfoQuerySortBy on QueryBuilder<ExifInfo, ExifInfo, QSortBy> {
   QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> sortByStateDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'state', Sort.desc);
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> sortByTimeZone() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'timeZone', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> sortByTimeZoneDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'timeZone', Sort.desc);
     });
   }
 }
@@ -2315,6 +2488,18 @@ extension ExifInfoQuerySortThenBy
       return query.addSortBy(r'state', Sort.desc);
     });
   }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> thenByTimeZone() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'timeZone', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> thenByTimeZoneDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'timeZone', Sort.desc);
+    });
+  }
 }
 
 extension ExifInfoQueryWhereDistinct
@@ -2409,6 +2594,13 @@ extension ExifInfoQueryWhereDistinct
       return query.addDistinctBy(r'state', caseSensitive: caseSensitive);
     });
   }
+
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByTimeZone(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'timeZone', caseSensitive: caseSensitive);
+    });
+  }
 }
 
 extension ExifInfoQueryProperty
@@ -2500,6 +2692,12 @@ extension ExifInfoQueryProperty
   QueryBuilder<ExifInfo, String?, QQueryOperations> stateProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'state');
+    });
+  }
+
+  QueryBuilder<ExifInfo, String?, QQueryOperations> timeZoneProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'timeZone');
     });
   }
 }

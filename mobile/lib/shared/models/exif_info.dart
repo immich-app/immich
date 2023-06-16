@@ -22,6 +22,7 @@ class ExifInfo {
   String? state;
   String? country;
   String? description;
+  String? timeZone;
 
   @ignore
   String get exposureTime {
@@ -60,7 +61,8 @@ class ExifInfo {
         city = dto.city,
         state = dto.state,
         country = dto.country,
-        description = dto.description;
+        description = dto.description,
+        timeZone = dto.timeZone;
 
   ExifInfo({
     this.id,
@@ -78,6 +80,7 @@ class ExifInfo {
     this.state,
     this.country,
     this.description,
+    this.timeZone,
   });
 
   ExifInfo copyWith({
@@ -96,6 +99,7 @@ class ExifInfo {
     String? state,
     String? country,
     String? description,
+    String? timeZone,
   }) =>
       ExifInfo(
         id: id ?? this.id,
@@ -113,6 +117,7 @@ class ExifInfo {
         state: state ?? this.state,
         country: country ?? this.country,
         description: description ?? this.description,
+        timeZone: timeZone ?? this.timeZone,
       );
 
   @override
@@ -132,7 +137,8 @@ class ExifInfo {
         city == other.city &&
         state == other.state &&
         country == other.country &&
-        description == other.description;
+        description == other.description &&
+        timeZone == other.timeZone;
   }
 
   @override
@@ -152,7 +158,8 @@ class ExifInfo {
       city.hashCode ^
       state.hashCode ^
       country.hashCode ^
-      description.hashCode;
+      description.hashCode ^
+      timeZone.hashCode;
 }
 
 double? _exposureTimeToSeconds(String? s) {
