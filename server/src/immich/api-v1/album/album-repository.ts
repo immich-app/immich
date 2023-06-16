@@ -1,5 +1,5 @@
-import { AlbumEntity, AssetEntity } from '@app/infra/entities';
 import { dataSource } from '@app/infra/database.config';
+import { AlbumEntity, AssetEntity } from '@app/infra/entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -12,7 +12,6 @@ export interface IAlbumRepository {
   removeAssets(album: AlbumEntity, removeAssets: RemoveAssetsDto): Promise<number>;
   addAssets(album: AlbumEntity, addAssetsDto: AddAssetsDto): Promise<AddAssetsResponseDto>;
   updateThumbnails(): Promise<number | undefined>;
-  getSharedWithUserAlbumCount(userId: string, assetId: string): Promise<number>;
 }
 
 export const IAlbumRepository = 'IAlbumRepository';
@@ -129,26 +128,5 @@ export class AlbumRepository implements IAlbumRepository {
     const result = await updateAlbums.execute();
 
     return result.affected;
-  }
-
-  async getSharedWithUserAlbumCount(userId: string, assetId: string): Promise<number> {
-    return this.albumRepository.count({
-      where: [
-        {
-          ownerId: userId,
-          assets: {
-            id: assetId,
-          },
-        },
-        {
-          sharedUsers: {
-            id: userId,
-          },
-          assets: {
-            id: assetId,
-          },
-        },
-      ],
-    });
   }
 }
