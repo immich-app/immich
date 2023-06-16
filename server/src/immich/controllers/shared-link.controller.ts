@@ -1,7 +1,7 @@
 import { AuthUserDto, EditSharedLinkDto, SharedLinkResponseDto, SharedLinkService } from '@app/domain';
 import { Body, Controller, Delete, Get, Param, Patch } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { GetAuthUser } from '../decorators/auth-user.decorator';
+import { AuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated, SharedLinkRoute } from '../decorators/authenticated.decorator';
 import { UseValidation } from '../decorators/use-validation.decorator';
 import { UUIDParamDto } from './dto/uuid-param.dto';
@@ -14,27 +14,24 @@ export class SharedLinkController {
   constructor(private readonly service: SharedLinkService) {}
 
   @Get()
-  getAllSharedLinks(@GetAuthUser() authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {
+  getAllSharedLinks(@AuthUser() authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {
     return this.service.getAll(authUser);
   }
 
   @SharedLinkRoute()
   @Get('me')
-  getMySharedLink(@GetAuthUser() authUser: AuthUserDto): Promise<SharedLinkResponseDto> {
+  getMySharedLink(@AuthUser() authUser: AuthUserDto): Promise<SharedLinkResponseDto> {
     return this.service.getMine(authUser);
   }
 
   @Get(':id')
-  getSharedLinkById(
-    @GetAuthUser() authUser: AuthUserDto,
-    @Param() { id }: UUIDParamDto,
-  ): Promise<SharedLinkResponseDto> {
+  getSharedLinkById(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<SharedLinkResponseDto> {
     return this.service.get(authUser, id);
   }
 
   @Patch(':id')
   updateSharedLink(
-    @GetAuthUser() authUser: AuthUserDto,
+    @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: EditSharedLinkDto,
   ): Promise<SharedLinkResponseDto> {
@@ -42,7 +39,7 @@ export class SharedLinkController {
   }
 
   @Delete(':id')
-  removeSharedLink(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
+  removeSharedLink(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(authUser, id);
   }
 }

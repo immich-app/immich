@@ -18,7 +18,7 @@ import {
 import { Body, Controller, Delete, Get, Param, Post, Req, Res } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { GetAuthUser, GetLoginDetails } from '../decorators/auth-user.decorator';
+import { AuthUser, GetLoginDetails } from '../decorators/auth-user.decorator';
 import { Authenticated, PublicRoute } from '../decorators/authenticated.decorator';
 import { UseValidation } from '../decorators/use-validation.decorator';
 import { UUIDParamDto } from './dto/uuid-param.dto';
@@ -50,17 +50,17 @@ export class AuthController {
   }
 
   @Get('devices')
-  getAuthDevices(@GetAuthUser() authUser: AuthUserDto): Promise<AuthDeviceResponseDto[]> {
+  getAuthDevices(@AuthUser() authUser: AuthUserDto): Promise<AuthDeviceResponseDto[]> {
     return this.service.getDevices(authUser);
   }
 
   @Delete('devices')
-  logoutAuthDevices(@GetAuthUser() authUser: AuthUserDto): Promise<void> {
+  logoutAuthDevices(@AuthUser() authUser: AuthUserDto): Promise<void> {
     return this.service.logoutDevices(authUser);
   }
 
   @Delete('devices/:id')
-  logoutAuthDevice(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
+  logoutAuthDevice(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.logoutDevice(authUser, id);
   }
 
@@ -70,7 +70,7 @@ export class AuthController {
   }
 
   @Post('change-password')
-  changePassword(@GetAuthUser() authUser: AuthUserDto, @Body() dto: ChangePasswordDto): Promise<UserResponseDto> {
+  changePassword(@AuthUser() authUser: AuthUserDto, @Body() dto: ChangePasswordDto): Promise<UserResponseDto> {
     return this.service.changePassword(authUser, dto);
   }
 
@@ -78,7 +78,7 @@ export class AuthController {
   logout(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-    @GetAuthUser() authUser: AuthUserDto,
+    @AuthUser() authUser: AuthUserDto,
   ): Promise<LogoutResponseDto> {
     const authType: AuthType = req.cookies[IMMICH_AUTH_TYPE_COOKIE];
 
