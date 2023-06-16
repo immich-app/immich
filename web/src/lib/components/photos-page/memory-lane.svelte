@@ -70,7 +70,7 @@
 			{#each memoryLane as memory, i (memory.title)}
 				<button
 					class="memory-card relative inline-block mr-8 rounded-xl aspect-video h-[215px]"
-					on:click={() => goto(`/memory?index=${i}`)}
+					on:click={() => goto(`/memory?memory=${i}`)}
 				>
 					<img
 						class="rounded-xl h-full w-full object-cover"
