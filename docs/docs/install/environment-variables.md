@@ -70,6 +70,7 @@
 
 > `REDIS_URL` must start with `ioredis://` and a `base64` encoded JSON string.
 > When `REDIS_URL` is defined, the other redis (`REDIS_*`) variables are ignored.
+> When `REDIS_SOCKET` is defined, the other redis (`REDIS_*`) variables are ignored.
 
 Redis (Sentinel) URL example JSON before encoding:
 
