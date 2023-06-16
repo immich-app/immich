@@ -8,10 +8,15 @@ const client = axios.create({ baseURL: MACHINE_LEARNING_URL });
 
 @Injectable()
 export class MachineLearningRepository implements IMachineLearningRepository {
-  classifyImage(input: MachineLearningInput): Promise<string[]> {
+  private createFormData(input: MachineLearningInput): FormData {
     const formData = new FormData();
     const fileStream = createReadStream(input.imagePath);
     formData.append('image', fileStream);
+    return formData;
+  }
+
+  classifyImage(input: MachineLearningInput): Promise<string[]> {
+    const formData = this.createFormData(input);
     return client
       .post<string[]>('/image-classifier/tag-image', formData, {
         headers: formData.getHeaders(),
@@ -20,9 +25,7 @@ export class MachineLearningRepository implements IMachineLearningRepository {
   }
 
   detectFaces(input: MachineLearningInput): Promise<DetectFaceResult[]> {
-    const formData = new FormData();
-    const fileStream = createReadStream(input.imagePath);
-    formData.append('image', fileStream);
+    const formData = this.createFormData(input);
     return client
       .post<DetectFaceResult[]>('/facial-recognition/detect-faces', formData, {
         headers: formData.getHeaders(),
@@ -31,9 +34,7 @@ export class MachineLearningRepository implements IMachineLearningRepository {
   }
 
   encodeImage(input: MachineLearningInput): Promise<number[]> {
-    const formData = new FormData();
-    const fileStream = createReadStream(input.imagePath);
-    formData.append('image', fileStream);
+    const formData = this.createFormData(input);
     return client
       .post<number[]>('/sentence-transformer/encode-image', formData, {
         headers: formData.getHeaders(),
