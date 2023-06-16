@@ -9,12 +9,13 @@
 | `LOG_LEVEL`                   | Log Level (verbose, debug, log, warn, error) |                    `log`                    | server, microservices                   |
 | `DISABLE_REVERSE_GEOCODING`   | Disable Reverse Geocoding Precision          |                   `false`                   | microservices                           |
 | `REVERSE_GEOCODING_PRECISION` | Reverse Geocoding Precision                  |                     `3`                     | microservices                           |
-| `PUBLIC_LOGIN_PAGE_MESSAGE`   | Public Login Page Message                    | `My Family Photos and Videos Backup Server` | web                                     |
+| `PUBLIC_LOGIN_PAGE_MESSAGE`   | Public Login Page Message                    |                                             | web                                     |
 
 :::tip
 
-`TZ` is only used by the `exiftool` in the microservices container.
-It is used as a fallback timezone if the timezone cannot be determined from the image metadata.
+`TZ` is only used by the `exiftool` as a fallback in case the timezone cannot be determined from the image metadata.
+
+`exiftool` is only present in the microservices container.
 
 :::
 
@@ -43,7 +44,9 @@ It is used as a fallback timezone if the timezone cannot be determined from the 
 | :--------------------------------- | :------------------------------- | :--------------------------: | :-------------------- |
 | `IMMICH_MEDIA_LOCATION`            | Media Location                   |          `./upload`          | server, microservices |
 | `MACHINE_LEARNING_CACHE_FOLDER`    | ML Cache Location                |           `/cache`           | machine learning      |
+| `TRANSFORMERS_CACHE`               | ML Transformers Cache Location   |           `/cache`           | machine learning      |
 | `REVERSE_GEOCODING_DUMP_DIRECTORY` | Reverse Geocoding Dump Directory | `./.reverse-geocoding-dump/` | microservices         |
+| `TYPESENSE_DATA_DIR`               | Typesense Data Directory         |           `/data`            | typesense             |
 
 :::info
 
@@ -83,6 +86,7 @@ When `DB_URL` is defined, the other database (`DB_*`) variables are ignored.
 :::info
 
 `REDIS_URL` must start with `ioredis://` and a `base64` encoded JSON string.
+More info can be found in the upstream [ioredis](https://ioredis.readthedocs.io/en/latest/API/) documentation.
 
 - When `REDIS_URL` is defined, the other redis (`REDIS_*`) variables are ignored.
 - When `REDIS_SOCKET` is defined, the other redis (`REDIS_*`) variables are ignored.
@@ -113,18 +117,21 @@ Redis (Sentinel) URL example JSON before encoding:
 
 ## Typesense
 
-| Variable             | Description        |   Default   | Services              |
-| :------------------- | :----------------- | :---------: | :-------------------- |
-| `TYPESENSE_ENABLED`  | Enable Typesense   |   `false`   | server, microservices |
-| `TYPESENSE_URL`      | Typesense URL      |             | server, microservices |
-| `TYPESENSE_API_KEY`  | Typesense API Key  |             | server, microservices |
-| `TYPESENSE_HOST`     | Typesense Host     | `typesense` | server, microservices |
-| `TYPESENSE_PORT`     | Typesense Port     |   `8108`    | server, microservices |
-| `TYPESENSE_PROTOCOL` | Typesense Protocol |   `http`    | server, microservices |
+| Variable             | Description        |   Default   | Services                         |
+| :------------------- | :----------------- | :---------: | :------------------------------- |
+| `TYPESENSE_ENABLED`  | Enable Typesense   |             | server, microservices            |
+| `TYPESENSE_URL`      | Typesense URL      |             | server, microservices            |
+| `TYPESENSE_HOST`     | Typesense Host     | `typesense` | server, microservices            |
+| `TYPESENSE_PORT`     | Typesense Port     |   `8108`    | server, microservices            |
+| `TYPESENSE_PROTOCOL` | Typesense Protocol |   `http`    | server, microservices            |
+| `TYPESENSE_API_KEY`  | Typesense API Key  |             | server, microservices, typesense |
 
 :::info
 
 `TYPESENSE_URL` must start with `ha://` and a `base64` encoded JSON string.
+
+`TYPESENSE_ENABLED`: Anything other than `false`, behaves as `true`.
+Even undefined is treated as `true`.
 
 - When `TYPESENSE_URL` is defined, the other typesense (`TYPESENSE_*`) variables are ignored.
 
