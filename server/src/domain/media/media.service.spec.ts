@@ -54,7 +54,7 @@ describe(MediaService.name, () => {
       });
     });
 
-    it('should queue all assets with missing parts of thumbnails', async () => {
+    it('should queue all assets with missing resize path', async () => {
       assetMock.getWithout.mockResolvedValue({
         items: [assetEntityStub.noResizePath],
         hasNextPage: false,
@@ -68,7 +68,9 @@ describe(MediaService.name, () => {
         name: JobName.GENERATE_JPEG_THUMBNAIL,
         data: { id: assetEntityStub.image.id },
       });
+    });
 
+    it('should queue all assets with missing webp path', async () => {
       assetMock.getWithout.mockResolvedValue({
         items: [assetEntityStub.noWebpPath],
         hasNextPage: false,
@@ -82,7 +84,9 @@ describe(MediaService.name, () => {
         name: JobName.GENERATE_WEBP_THUMBNAIL,
         data: { id: assetEntityStub.image.id },
       });
+    });
 
+    it('should queue all assets with missing thumbhash', async () => {
       assetMock.getWithout.mockResolvedValue({
         items: [assetEntityStub.noThumbhash],
         hasNextPage: false,
