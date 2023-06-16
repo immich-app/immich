@@ -159,6 +159,7 @@ export class AlbumRepository implements IAlbumRepository {
       relations: {
         owner: true,
         sharedUsers: true,
+        assets: true,
       },
     });
   }
