@@ -10,7 +10,7 @@ All URIs are relative to */api*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**getAllJobsStatus**](JobApi.md#getalljobsstatus) | **GET** /jobs | 
-[**sendJobCommand**](JobApi.md#sendjobcommand) | **PUT** /jobs/{jobId} | 
+[**sendJobCommand**](JobApi.md#sendjobcommand) | **PUT** /jobs/{id} | 
 
 
 # **getAllJobsStatus**
@@ -65,7 +65,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **sendJobCommand**
-> JobStatusDto sendJobCommand(jobId, jobCommandDto)
+> JobStatusDto sendJobCommand(id, jobCommandDto)
 
 
 
@@ -88,11 +88,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = JobApi();
-final jobId = ; // JobName | 
+final id = ; // JobName | 
 final jobCommandDto = JobCommandDto(); // JobCommandDto | 
 
 try {
-    final result = api_instance.sendJobCommand(jobId, jobCommandDto);
+    final result = api_instance.sendJobCommand(id, jobCommandDto);
     print(result);
 } catch (e) {
     print('Exception when calling JobApi->sendJobCommand: $e\n');
@@ -103,7 +103,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **jobId** | [**JobName**](.md)|  | 
+ **id** | [**JobName**](.md)|  | 
  **jobCommandDto** | [**JobCommandDto**](JobCommandDto.md)|  | 
 
 ### Return type
