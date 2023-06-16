@@ -22,7 +22,7 @@
 	"devDependencies": {
 		"@babel/preset-env": "^7.20.2",
 		"@babel/preset-typescript": "^7.18.6",
-		"@faker-js/faker": "^7.6.0",
+		"@faker-js/faker": "^8.0.0",
 		"@sveltejs/adapter-node": "^1.2.0",
 		"@sveltejs/kit": "^1.15.2",
 		"@testing-library/jest-dom": "^5.16.5",
@@ -53,13 +53,13 @@
 		"svelte-preprocess": "^5.0.1",
 		"tailwindcss": "^3.2.7",
 		"tslib": "^2.5.0",
-		"typescript": "^4.9.5",
+		"typescript": "^5.0.0",
 		"vite": "^4.1.4"
 	},
 	"type": "module",
 	"dependencies": {
 		"@zoom-image/svelte": "^0.1.0",
-		"axios": "^0.27.2",
+		"axios": "^1.0.0",
 		"copy-image-clipboard": "^2.1.2",
 		"handlebars": "^4.7.7",
 		"justified-layout": "^4.1.0",
