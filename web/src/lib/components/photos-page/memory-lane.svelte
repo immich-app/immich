@@ -11,8 +11,9 @@
 	$: shouldRender = memoryLane.length > 0;
 
 	onMount(async () => {
-		const timezone = DateTime.local().zoneName;
-		const { data } = await api.assetApi.getMemoryLane({ timezone });
+		const { data } = await api.assetApi.getMemoryLane({
+			timestamp: DateTime.local().startOf('day').toISO()
+		});
 
 		memoryLane = data;
 		$memoryStore = data;

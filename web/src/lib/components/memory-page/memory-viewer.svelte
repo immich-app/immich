@@ -51,13 +51,12 @@
 	let galleryInView = false;
 
 	onMount(async () => {
-		if ($memoryStore) {
-			return;
+		if (!$memoryStore) {
+			const { data } = await api.assetApi.getMemoryLane({
+				timestamp: DateTime.local().startOf('day').toISO()
+			});
+			$memoryStore = data;
 		}
-
-		const timezone = DateTime.local().zoneName;
-		const { data } = await api.assetApi.getMemoryLane({ timezone });
-		$memoryStore = data;
 	});
 
 	onDestroy(() => browser && pause());
