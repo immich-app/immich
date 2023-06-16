@@ -52,6 +52,9 @@
 	const play = () => progress.set(1);
 	const pause = () => progress.set($progress);
 
+	let resetPromise = Promise.resolve();
+	const reset = () => (resetPromise = progress.set(0));
+
 	let paused = false;
 
 	// Play or pause progress when the paused state changes.
@@ -67,7 +70,7 @@
 	$: !$progress && !paused && play();
 
 	// Progress should be reset when the current memory or asset changes.
-	$: memoryIndex, assetIndex, progress.set(0);
+	$: memoryIndex, assetIndex, reset();
 
 	onDestroy(() => pause());
 
@@ -102,10 +105,25 @@
 						on:click={() => (paused = !paused)}
 					/>
 
-					<div class="relative w-full">
-						<span class="absolute left-0 w-full h-[2px] bg-gray-500" />
-						<span class="absolute left-0 h-[2px] bg-white" style:width={`${$progress * 100}%`} />
-					</div>
+					{#each currentMemory.assets as _, i}
+						<button
+							class="relative w-full"
+							on:click={() => goto(`?memory=${memoryIndex}&asset=${i}`)}
+						>
+							<span class="absolute left-0 w-full h-[2px] bg-gray-500" />
+							{#await resetPromise}
+								<span
+									class="absolute left-0 h-[2px] bg-white"
+									style:width={`${i < assetIndex ? 100 : 0}%`}
+								/>
+							{:then}
+								<span
+									class="absolute left-0 h-[2px] bg-white"
+									style:width={`${i < assetIndex ? 100 : i > assetIndex ? 0 : $progress * 100}%`}
+								/>
+							{/await}
+						</button>
+					{/each}
 
 					<div>
 						<p class="text-small">
