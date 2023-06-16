@@ -10,6 +10,8 @@ function createUploadStore() {
 		return $uploadAssets.length > 0 ? true : false;
 	});
 
+	const isUploadingHasDuplicate = writable<boolean>(false);
+
 	const addNewUploadAsset = (newAsset: UploadAsset) => {
 		uploadAssets.update((currentSet) => [...currentSet, newAsset]);
 	};
@@ -36,6 +38,7 @@ function createUploadStore() {
 	return {
 		subscribe,
 		isUploading,
+		isUploadingHasDuplicate,
 		addNewUploadAsset,
 		updateProgress,
 		removeUploadAsset

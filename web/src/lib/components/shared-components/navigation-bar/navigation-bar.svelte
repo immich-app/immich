@@ -70,7 +70,7 @@
 						<LinkButton on:click={() => dispatch('uploadClicked')}>
 							<div class="flex gap-2">
 								<TrayArrowUp size="1.5em" />
-								<span class="md:block hidden">Uploads</span>
+								<span class="md:block hidden">Upload</span>
 							</div>
 						</LinkButton>
 					</div>

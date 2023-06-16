@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { fade } from 'svelte/transition';
 	import CloseCircleOutline from 'svelte-material-icons/CloseCircleOutline.svelte';
 	import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
 	import WindowClose from 'svelte-material-icons/WindowClose.svelte';
+	import { fade } from 'svelte/transition';
 
 	import {
-		ImmichNotification,
-		notificationController,
-		NotificationType
+	  ImmichNotification,
+	  notificationController,
+	  NotificationType
 	} from '$lib/components/shared-components/notification/notification';
 	import { onMount } from 'svelte';
 
@@ -15,6 +15,7 @@
 
 	let infoPrimaryColor = '#4250AF';
 	let errorPrimaryColor = '#E64132';
+	let warningPrimaryColor = "#D08613"
 
 	$: icon =
 		notificationInfo.type === NotificationType.Error ? CloseCircleOutline : InformationOutline;
@@ -27,6 +28,10 @@
 		if (notificationInfo.type === NotificationType.Error) {
 			return '#FBE8E6';
 		}
+
+		if(notificationInfo.type === NotificationType.Warning){
+			return '#FDE7A3'
+		}
 	};
 
 	$: borderStyle = () => {
@@ -37,6 +42,10 @@
 		if (notificationInfo.type === NotificationType.Error) {
 			return '1px solid #F0E8E7';
 		}
+
+		if (notificationInfo.type === NotificationType.Warning) {
+			return '1px solid #D8DDFF';
+		}
 	};
 
 	$: primaryColor = () => {
@@ -46,6 +55,10 @@
 
 		if (notificationInfo.type === NotificationType.Error) {
 			return errorPrimaryColor;
+		}
+
+		if (notificationInfo.type === NotificationType.Warning) {
+			return warningPrimaryColor
 		}
 	};
 

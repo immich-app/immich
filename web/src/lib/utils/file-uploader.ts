@@ -5,8 +5,8 @@ import axios from 'axios';
 import { combineLatestAll, filter, firstValueFrom, from, mergeMap, of } from 'rxjs';
 import type { UploadAsset } from '../models/upload-asset';
 import {
-	notificationController,
-	NotificationType
+	NotificationType,
+	notificationController
 } from './../components/shared-components/notification/notification';
 
 export const openFileUploadDialog = async (
@@ -122,6 +122,10 @@ async function fileUploader(
 		});
 
 		if (response.status == 200 || response.status == 201) {
+			if (response.status === 200) {
+				uploadAssetsStore.isUploadingHasDuplicate.set(true);
+			}
+
 			const res: AssetFileUploadResponseDto = response.data;
 
 			if (albumId && res.id) {

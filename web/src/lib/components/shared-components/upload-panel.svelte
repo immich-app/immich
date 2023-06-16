@@ -1,15 +1,16 @@
 <script lang="ts">
-	import { quartInOut } from 'svelte/easing';
-	import { scale, fade } from 'svelte/transition';
 	import { uploadAssetsStore } from '$lib/stores/upload';
 	import CloudUploadOutline from 'svelte-material-icons/CloudUploadOutline.svelte';
 	import WindowMinimize from 'svelte-material-icons/WindowMinimize.svelte';
-	import { notificationController, NotificationType } from './notification/notification';
+	import { quartInOut } from 'svelte/easing';
+	import { fade, scale } from 'svelte/transition';
+	import { NotificationType, notificationController } from './notification/notification';
 	import UploadAssetPreview from './upload-asset-preview.svelte';
 
 	let showDetail = true;
 	let uploadLength = 0;
 	let isUploading = false;
+	let isUploadingWithDuplicate = false
 
 	// Reactive action to update asset uploadLength whenever there is a new one added to the list
 	$: {
@@ -21,6 +22,10 @@
 	uploadAssetsStore.isUploading.subscribe((value) => {
 		isUploading = value;
 	});
+
+	uploadAssetsStore.isUploadingHasDuplicate.subscribe((value) => {
+		isUploadingWithDuplicate = value
+	})
 </script>
 
 {#if isUploading}
@@ -29,9 +34,16 @@
 		out:fade={{ duration: 250, delay: 1000 }}
 		on:outroend={() => {
 			notificationController.show({
-				message: 'Upload success, refresh the page to see new upload assets',
+				message: `Upload success, refresh the page to see new upload assets`,
 				type: NotificationType.Info
 			});
+			if (isUploadingWithDuplicate){
+				notificationController.show({
+				message: `Duplicate pictures will not appear on refresh`,
+				type: NotificationType.Warning
+			});
+			}
+			uploadAssetsStore.isUploadingHasDuplicate.set(false);
 		}}
 		class="absolute right-6 bottom-6 z-[10000]"
 	>

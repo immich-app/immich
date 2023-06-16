@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { notificationController } from './notification';
 	import { fade } from 'svelte/transition';
+	import { notificationController } from './notification';
 
-	import NotificationCard from './notification-card.svelte';
 	import { flip } from 'svelte/animate';
 	import { quintOut } from 'svelte/easing';
+	import NotificationCard from './notification-card.svelte';
 
 	const { notificationList } = notificationController;
 </script>
