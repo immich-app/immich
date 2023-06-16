@@ -95,7 +95,7 @@ services:
 
   typesense:
     container_name: immich_typesense
-    image: typesense/typesense:0.24.0
+    image: typesense/typesense:0.24.1
     environment:
       - TYPESENSE_API_KEY=${TYPESENSE_API_KEY}
       - TYPESENSE_DATA_DIR=/data
