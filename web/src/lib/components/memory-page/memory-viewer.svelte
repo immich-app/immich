@@ -19,6 +19,47 @@
 	import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
 	import { fade } from 'svelte/transition';
+	import { get, writable } from 'svelte/store';
+
+	class Animation {
+		progress = writable(0);
+
+		private animationFrameRequest = 0;
+		private duration: number;
+		private start: number | null = null;
+
+		constructor(duration: number) {
+			this.duration = duration;
+		}
+
+		cancel() {
+			if (browser) {
+				cancelAnimationFrame(this.animationFrameRequest);
+			}
+		}
+
+		request() {
+			this.animationFrameRequest = requestAnimationFrame(this.draw.bind(this));
+		}
+
+		draw(now: number) {
+			this.request();
+
+			this.start ??= now - get(this.progress) * this.duration;
+
+			const elapsed = now - this.start;
+			this.progress.set(Math.min(1, elapsed / this.duration));
+		}
+
+		reset() {
+			this.progress.set(0);
+			this.resetStart();
+		}
+
+		resetStart() {
+			this.start = null;
+		}
+	}
 
 	let memoryIndex: number;
 	$: {
@@ -42,13 +83,38 @@
 
 	$: canAdvance = !!(nextMemory || nextAsset);
 
-	$: if (!canAdvance && browser) {
-		pause();
+	const toNextMemory = () => goto(`?memory=${memoryIndex + 1}`);
+	const toPreviousMemory = () => goto(`?memory=${memoryIndex - 1}`);
+
+	const toNextAsset = () => goto(`?memory=${memoryIndex}&asset=${assetIndex + 1}`);
+	const toPreviousAsset = () => goto(`?memory=${memoryIndex}&asset=${assetIndex - 1}`);
+
+	const toNext = () => (nextAsset ? toNextAsset() : toNextMemory());
+	const toPrevious = () => (previousAsset ? toPreviousAsset() : toPreviousMemory());
+
+	const animation = new Animation(5000); // 5 second duration
+
+	let { progress } = animation;
+
+	$: if ($progress === 1) {
+		toNext();
 	}
 
-	let memoryGallery: HTMLElement;
-	let memoryWrapper: HTMLElement;
-	let galleryInView = false;
+	let paused = true;
+
+	$: paused ||= !canAdvance;
+
+	$: if (paused) {
+		animation.cancel();
+		animation.resetStart();
+	} else {
+		animation.request();
+	}
+
+	// Progress should be reset when the current memory or asset changes.
+	$: memoryIndex, assetIndex, animation.reset();
+
+	onDestroy(() => animation.cancel());
 
 	onMount(async () => {
 		if (!$memoryStore) {
@@ -59,67 +125,9 @@
 		}
 	});
 
-	onDestroy(() => browser && pause());
-
-	const toPreviousMemory = () => previousMemory && goto(`?memory=${memoryIndex - 1}`);
-
-	const toNextMemory = () => nextMemory && goto(`?memory=${memoryIndex + 1}`);
-
-	const toPreviousAsset = () =>
-		previousAsset ? goto(`?memory=${memoryIndex}&asset=${assetIndex - 1}`) : toPreviousMemory();
-
-	const toNextAsset = () =>
-		nextAsset ? goto(`?memory=${memoryIndex}&asset=${assetIndex + 1}`) : toNextMemory();
-
-	const duration = 5000; // 5 seconds
-
-	let paused = true;
-	let progress = 0;
-	let animationFrameRequest: number;
-	let start: number | null = null;
-
-	const requestDraw = () => (animationFrameRequest = requestAnimationFrame(draw));
-
-	const draw = (now: number) => {
-		requestDraw();
-
-		start ??= now - progress * duration;
-
-		const elapsed = now - start;
-		progress = Math.min(1, elapsed / duration);
-
-		if (progress !== 1) {
-			return;
-		}
-
-		toNextAsset();
-		start = now;
-	};
-
-	const play = () => {
-		if (!canAdvance) {
-			return;
-		}
-
-		paused = false;
-		requestDraw();
-	};
-
-	const pause = () => {
-		paused = true;
-		cancelAnimationFrame(animationFrameRequest);
-		resetStart();
-	};
-
-	const resetProgress = () => {
-		progress = 0;
-		resetStart();
-	};
-
-	const resetStart = () => (start = null);
-
-	// Progress should be reset when the current memory or asset changes.
-	$: memoryIndex, assetIndex, resetProgress();
+	let memoryGallery: HTMLElement;
+	let memoryWrapper: HTMLElement;
+	let galleryInView = false;
 </script>
 
 <section id="memory-viewer" class="w-full bg-immich-dark-gray" bind:this={memoryWrapper}>
@@ -136,12 +144,12 @@
 					<CircleIconButton
 						logo={paused ? Play : Pause}
 						forceDark
-						on:click={paused ? play : pause}
+						on:click={() => (paused = !paused)}
 					/>
 
 					<div class="relative w-full">
 						<span class="absolute left-0 w-full h-[2px] bg-gray-500" />
-						<span class="absolute left-0 h-[2px] bg-white" style:width={`${progress * 100}%`} />
+						<span class="absolute left-0 h-[2px] bg-white" style:width={`${$progress * 100}%`} />
 					</div>
 
 					<div>
@@ -215,7 +223,7 @@
 										<CircleIconButton
 											logo={ChevronLeft}
 											backgroundColor="#202123"
-											on:click={toPreviousAsset}
+											on:click={toPrevious}
 										/>
 									{/if}
 								</div>
@@ -226,7 +234,7 @@
 										<CircleIconButton
 											logo={ChevronRight}
 											backgroundColor="#202123"
-											on:click={toNextAsset}
+											on:click={toNext}
 										/>
 									{/if}
 								</div>
