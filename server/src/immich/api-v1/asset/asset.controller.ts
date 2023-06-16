@@ -1,62 +1,61 @@
-import { AddAssetsDto } from '../album/dto/add-assets.dto';
+import { AssetResponseDto, ImmichReadStream, SharedLinkResponseDto } from '@app/domain';
 import {
-  Controller,
-  Post,
-  UseInterceptors,
   Body,
+  Controller,
+  Delete,
   Get,
+  Header,
+  Headers,
+  HttpCode,
   Param,
-  ValidationPipe,
+  ParseFilePipe,
+  Patch,
+  Post,
+  Put,
   Query,
   Response,
-  Headers,
-  Delete,
-  HttpCode,
-  Header,
-  Put,
-  UploadedFiles,
-  Patch,
   StreamableFile,
-  ParseFilePipe,
+  UploadedFiles,
+  UseInterceptors,
+  ValidationPipe,
 } from '@nestjs/common';
-import { Authenticated, SharedLinkRoute } from '../../decorators/authenticated.decorator';
-import { AssetService } from './asset.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { AuthUserDto, AuthUser } from '../../decorators/auth-user.decorator';
-import { ServeFileDto } from './dto/serve-file.dto';
-import { Response as Res } from 'express';
-import { DeleteAssetDto } from './dto/delete-asset.dto';
-import { SearchAssetDto } from './dto/search-asset.dto';
-import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
-import { AssetResponseDto, ImmichReadStream } from '@app/domain';
-import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
-import { CreateAssetDto, mapToUploadFile } from './dto/create-asset.dto';
-import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
-import { DeleteAssetResponseDto } from './response-dto/delete-asset-response.dto';
-import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
-import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by-time-group-response.dto';
-import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
-import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
-import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
-import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
-import { UpdateAssetDto } from './dto/update-asset.dto';
-import { DownloadDto } from './dto/download-library.dto';
-import { DownloadFilesDto } from './dto/download-files.dto';
-import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
-import { SharedLinkResponseDto } from '@app/domain';
-import { AssetSearchDto } from './dto/asset-search.dto';
-import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config';
-import FileNotEmptyValidator from '../validation/file-not-empty-validator';
-import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
-import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
-import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-response.dto';
-import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
-import { DeviceIdDto } from './dto/device-id.dto';
+import { Response as Res } from 'express';
 import { handleDownload } from '../../app.utils';
+import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config';
+import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
+import { AuthUser, AuthUserDto } from '../../decorators/auth-user.decorator';
+import { Authenticated, SharedLinkRoute } from '../../decorators/authenticated.decorator';
+import { AddAssetsDto } from '../album/dto/add-assets.dto';
+import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
+import FileNotEmptyValidator from '../validation/file-not-empty-validator';
+import { AssetService } from './asset.service';
+import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
+import { AssetSearchDto } from './dto/asset-search.dto';
+import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
+import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
+import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
+import { CreateAssetDto, mapToUploadFile } from './dto/create-asset.dto';
+import { DeleteAssetDto } from './dto/delete-asset.dto';
+import { DeviceIdDto } from './dto/device-id.dto';
+import { DownloadFilesDto } from './dto/download-files.dto';
+import { DownloadDto } from './dto/download-library.dto';
+import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
+import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
+import { GetAssetThumbnailDto } from './dto/get-asset-thumbnail.dto';
+import { SearchAssetDto } from './dto/search-asset.dto';
+import { ServeFileDto } from './dto/serve-file.dto';
+import { UpdateAssetDto } from './dto/update-asset.dto';
+import { AssetBulkUploadCheckResponseDto } from './response-dto/asset-check-response.dto';
+import { AssetCountByTimeBucketResponseDto } from './response-dto/asset-count-by-time-group-response.dto';
+import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
+import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
+import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
+import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
+import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
+import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
+import { DeleteAssetResponseDto } from './response-dto/delete-asset-response.dto';
 
 function asStreamableFile({ stream, type, length }: ImmichReadStream) {
   return new StreamableFile(stream, { type, length });

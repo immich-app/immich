@@ -1,4 +1,4 @@
-import { describe, it, expect } from '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 import { isDecimalNumber, isNumberInRange, toNumberOrNull } from './numbers';
 
 describe('checks if a number is a decimal number', () => {

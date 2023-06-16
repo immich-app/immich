@@ -1,6 +1,5 @@
 import { SystemConfig, UserEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
-import { generators, Issuer } from 'openid-client';
 import {
   authStub,
   loginResponseStub,
@@ -12,6 +11,7 @@ import {
   userEntityStub,
   userTokenEntityStub,
 } from '@test';
+import { generators, Issuer } from 'openid-client';
 import { OAuthService } from '.';
 import { LoginDetails } from '../auth';
 import { ICryptoRepository } from '../crypto';

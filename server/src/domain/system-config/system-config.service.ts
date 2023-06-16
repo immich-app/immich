@@ -1,4 +1,8 @@
+import { Inject, Injectable } from '@nestjs/common';
 import { ISystemConfigRepository } from '.';
+import { IJobRepository, JobName } from '../job';
+import { mapConfig, SystemConfigDto } from './dto/system-config.dto';
+import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
 import {
   supportedDayTokens,
   supportedHourTokens,
@@ -8,10 +12,6 @@ import {
   supportedSecondTokens,
   supportedYearTokens,
 } from './system-config.constants';
-import { Inject, Injectable } from '@nestjs/common';
-import { IJobRepository, JobName } from '../job';
-import { mapConfig, SystemConfigDto } from './dto/system-config.dto';
-import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
 import { SystemConfigCore, SystemConfigValidator } from './system-config.core';
 
 @Injectable()

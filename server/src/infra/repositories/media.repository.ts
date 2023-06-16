@@ -1,8 +1,8 @@
 import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
+import fs from 'fs/promises';
 import sharp from 'sharp';
 import { promisify } from 'util';
-import fs from 'fs/promises';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 
