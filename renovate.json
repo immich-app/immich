@@ -1,8 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:base"
-  ],
+  "extends": ["config:base"],
   "packageRules": [
     {
       "matchPaths": ["mobile"],
@@ -16,5 +14,6 @@
       "matchPaths": ["web"],
       "groupName": "web"
     }
-  ]
+  ],
+  "enabled": false
 }
