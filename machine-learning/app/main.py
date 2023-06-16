@@ -15,7 +15,6 @@ from PIL import Image
 from fastapi import FastAPI, HTTPException, Depends, UploadFile
 from models import get_model, run_classification, run_facial_recognition
 from config import get_settings, Settings
-from utils import saved_image
 
 _model_cache = None
 
@@ -66,16 +65,15 @@ def ping() -> str:
 async def image_classification(
     image: UploadFile, settings: Settings = Depends(get_settings)
 ) -> list[str]:
-    with saved_image(image) as tmp_path:
-        try:
-            model = await _model_cache.get_cached_model(
-                settings.classification_model, "image-classification"
-            )
-            labels = run_classification(model, str(tmp_path), settings.min_tag_score)
-        except Exception as ex:
-            raise HTTPException(status_code=500, detail=str(ex))
-        else:
-            return labels
+    try:
+        model = await _model_cache.get_cached_model(
+            settings.classification_model, "image-classification"
+        )
+        labels = run_classification(model, Image.open(image.file), settings.min_tag_score)
+    except Exception as ex:
+        raise HTTPException(status_code=500, detail=str(ex))
+    else:
+        return labels
 
 
 @app.post(
@@ -87,11 +85,10 @@ async def image_classification(
 async def clip_encode_image(
     image: UploadFile, settings: Settings = Depends(get_settings)
 ) -> list[float]:
-    with saved_image(image) as tmp_path:
-        model = await _model_cache.get_cached_model(settings.clip_image_model, "clip")
-        image = Image.open(tmp_path)
-        embedding = model.encode(image).tolist()
-        return embedding
+    model = await _model_cache.get_cached_model(settings.clip_image_model, "clip")
+    img = Image.open(image.file)
+    embedding = model.encode(img).tolist()
+    return embedding
 
 
 @app.post(
@@ -117,12 +114,11 @@ async def clip_encode_text(
 async def facial_recognition(
     image: UploadFile, settings: Settings = Depends(get_settings)
 ) -> list[dict[str, Any]]:
-    with saved_image(image) as tmp_path:
-        model = await _model_cache.get_cached_model(
-            settings.facial_recognition_model, "facial-recognition"
-        )
-        faces = run_facial_recognition(model, str(tmp_path))
-        return faces
+    model = await _model_cache.get_cached_model(
+        settings.facial_recognition_model, "facial-recognition"
+    )
+    faces = run_facial_recognition(model, image.file)
+    return faces
 
 
 if __name__ == "__main__":
