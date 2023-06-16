@@ -18,7 +18,7 @@ onnxruntime = "^1.15.0"
 insightface = "^0.7.3"
 opencv-python-headless = "^4.7.0.72"
 pillow = "^9.5.0"
-fastapi = "^0.95.2"
+fastapi = "^0.97.0"
 uvicorn = {extras = ["standard"], version = "^0.22.0"}
 pydantic = "^1.10.8"
 aiocache = "^0.12.1"
