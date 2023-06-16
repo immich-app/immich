@@ -4,9 +4,9 @@ import { IAssetRepository, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
 import { IJobRepository, JobName } from '../job';
 import { IUserRepository } from '../user';
+import { AlbumCountResponseDto, AlbumResponseDto, mapAlbum } from './album-response.dto';
 import { IAlbumRepository } from './album.repository';
 import { AddUsersDto, CreateAlbumDto, GetAlbumsDto, UpdateAlbumDto } from './dto';
-import { AlbumResponseDto, mapAlbum } from './response-dto';
 
 @Injectable()
 export class AlbumService {
@@ -16,6 +16,20 @@ export class AlbumService {
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {}
+
+  async getCount(authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
+    const [owned, shared, notShared] = await Promise.all([
+      this.albumRepository.getOwned(authUser.id),
+      this.albumRepository.getShared(authUser.id),
+      this.albumRepository.getNotShared(authUser.id),
+    ]);
+
+    return {
+      owned: owned.length,
+      shared: shared.length,
+      notShared: notShared.length,
+    };
+  }
 
   async getAll({ id: ownerId }: AuthUserDto, { assetId, shared }: GetAlbumsDto): Promise<AlbumResponseDto[]> {
     await this.updateInvalidThumbnails();

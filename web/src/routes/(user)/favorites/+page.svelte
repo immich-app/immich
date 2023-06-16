@@ -17,6 +17,8 @@
 	import Plus from 'svelte-material-icons/Plus.svelte';
 	import Error from '../../+error.svelte';
 	import type { PageData } from './$types';
+	import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+	import SelectAll from 'svelte-material-icons/SelectAll.svelte';
 
 	let favorites: AssetResponseDto[] = [];
 	let selectedAssets: Set<AssetResponseDto> = new Set();
@@ -38,6 +40,10 @@
 		}
 	});
 
+	const handleSelectAll = () => {
+		selectedAssets = new Set(favorites);
+	};
+
 	const onAssetDelete = (assetId: string) => {
 		favorites = favorites.filter((a) => a.id !== assetId);
 	};
@@ -48,6 +54,7 @@
 	<AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
 		<FavoriteAction removeFavorite onAssetFavorite={(asset) => onAssetDelete(asset.id)} />
 		<CreateSharedLink />
+		<CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll} />
 		<AssetSelectContextMenu icon={Plus} title="Add">
 			<AddToAlbum />
 			<AddToAlbum shared />

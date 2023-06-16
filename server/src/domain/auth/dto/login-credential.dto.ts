@@ -3,7 +3,7 @@ import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
 export class LoginCredentialDto {
-  @IsEmail()
+  @IsEmail({ require_tld: false })
   @ApiProperty({ example: 'testuser@email.com' })
   @Transform(({ value }) => value.toLowerCase())
   email!: string;

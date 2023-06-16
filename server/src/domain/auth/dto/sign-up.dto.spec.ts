@@ -30,6 +30,20 @@ describe('SignUpDto', () => {
     expect(errors[0].property).toEqual('email');
   });
 
+  it('should allow emails without a tld', () => {
+    const someEmail = 'test@test';
+
+    const dto = plainToInstance(SignUpDto, {
+      email: someEmail,
+      password: 'password',
+      firstName: 'first name',
+      lastName: 'last name',
+    });
+    const errors = validateSync(dto);
+    expect(errors).toHaveLength(0);
+    expect(dto.email).toEqual(someEmail);
+  });
+
   it('should make the email all lowercase', () => {
     const dto = plainToInstance(SignUpDto, {
       email: 'TeSt@ImMiCh.com',

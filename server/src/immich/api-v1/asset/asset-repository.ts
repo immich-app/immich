@@ -334,15 +334,6 @@ export class AssetRepository implements IAssetRepository {
     return assets.map((asset) => asset.deviceAssetId);
   }
 
-  countByIdAndUser(assetId: string, ownerId: string): Promise<number> {
-    return this.assetRepository.count({
-      where: {
-        id: assetId,
-        ownerId,
-      },
-    });
-  }
-
   private getAssetCount(items: any): AssetCountByUserIdResponseDto {
     const assetCountByUserId = new AssetCountByUserIdResponseDto();
 

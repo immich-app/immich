@@ -52,15 +52,17 @@
 	$: geometry = (() => {
 		const geometry = [];
 		for (let group of assetsGroupByDate) {
-			geometry.push(
-				justifiedLayout(group.map(getAssetRatio), {
-					boxSpacing: 2,
-					containerWidth: Math.floor(viewportWidth),
-					containerPadding: 0,
-					targetRowHeightTolerance: 0.15,
-					targetRowHeight: 235
-				})
-			);
+			const justifiedLayoutResult = justifiedLayout(group.map(getAssetRatio), {
+				boxSpacing: 2,
+				containerWidth: Math.floor(viewportWidth),
+				containerPadding: 0,
+				targetRowHeightTolerance: 0.15,
+				targetRowHeight: 235
+			});
+			geometry.push({
+				...justifiedLayoutResult,
+				containerWidth: calculateWidth(justifiedLayoutResult.boxes)
+			});
 		}
 		return geometry;
 	})();
@@ -182,6 +184,7 @@
 			<!-- Date group title -->
 			<p
 				class="font-medium text-xs md:text-sm text-immich-fg dark:text-immich-dark-fg mb-2 flex place-items-center h-6"
+				style="width: {geometry[groupIndex].containerWidth}px"
 			>
 				{#if (hoveredDateGroup == dateGroupTitle && isMouseOverGroup) || $selectedGroup.has(dateGroupTitle)}
 					<div
@@ -198,7 +201,7 @@
 					</div>
 				{/if}
 
-				<span>
+				<span class="truncate" title={dateGroupTitle}>
 					{dateGroupTitle}
 				</span>
 			</p>
@@ -206,9 +209,8 @@
 			<!-- Image grid -->
 			<div
 				class="relative"
-				style="height: {geometry[groupIndex].containerHeight}px;width: {calculateWidth(
-					geometry[groupIndex].boxes
-				)}px"
+				style="height: {geometry[groupIndex].containerHeight}px;width: {geometry[groupIndex]
+					.containerWidth}px"
 			>
 				{#each assetsInDateGroup as asset, index (asset.id)}
 					{@const box = geometry[groupIndex].boxes[index]}

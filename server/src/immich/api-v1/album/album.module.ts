@@ -6,15 +6,9 @@ import { AlbumEntity, AssetEntity } from '@app/infra/entities';
 import { AlbumRepository, IAlbumRepository } from './album-repository';
 import { DownloadModule } from '../../modules/download/download.module';
 
-const ALBUM_REPOSITORY_PROVIDER = {
-  provide: IAlbumRepository,
-  useClass: AlbumRepository,
-};
-
 @Module({
   imports: [TypeOrmModule.forFeature([AlbumEntity, AssetEntity]), DownloadModule],
   controllers: [AlbumController],
-  providers: [AlbumService, ALBUM_REPOSITORY_PROVIDER],
-  exports: [ALBUM_REPOSITORY_PROVIDER],
+  providers: [AlbumService, { provide: IAlbumRepository, useClass: AlbumRepository }],
 })
 export class AlbumModule {}

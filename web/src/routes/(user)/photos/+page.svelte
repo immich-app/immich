@@ -6,6 +6,7 @@
 	import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
 	import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
 	import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
+	import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
 	import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
 	import AssetSelectContextMenu from '$lib/components/photos-page/asset-select-context-menu.svelte';
 	import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
@@ -37,6 +38,7 @@
 				clearSelect={assetInteractionStore.clearMultiselect}
 			>
 				<CreateSharedLink />
+				<SelectAllAssets />
 				<AssetSelectContextMenu icon={Plus} title="Add">
 					<AddToAlbum />
 					<AddToAlbum shared />
@@ -51,5 +53,5 @@
 		{/if}
 	</svelte:fragment>
 
-	<AssetGrid slot="content" />
+	<AssetGrid slot="content" showMemoryLane />
 </UserPageLayout>
