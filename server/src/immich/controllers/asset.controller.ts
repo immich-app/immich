@@ -14,7 +14,7 @@ import { MemoryLaneResponseDto } from '@app/domain/asset/response-dto/memory-lan
 export class AssetController {
   constructor(private service: AssetService) {}
 
-  @Get('/map-marker')
+  @Get('map-marker')
   getMapMarkers(@AuthUser() authUser: AuthUserDto, @Query() options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
     return this.service.getMapMarkers(authUser, options);
   }

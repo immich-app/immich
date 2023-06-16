@@ -57,16 +57,16 @@ class JobApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /jobs/{jobId}' operation and returns the [Response].
+  /// Performs an HTTP 'PUT /jobs/{id}' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [JobName] jobId (required):
+  /// * [JobName] id (required):
   ///
   /// * [JobCommandDto] jobCommandDto (required):
-  Future<Response> sendJobCommandWithHttpInfo(JobName jobId, JobCommandDto jobCommandDto,) async {
+  Future<Response> sendJobCommandWithHttpInfo(JobName id, JobCommandDto jobCommandDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/jobs/{jobId}'
-      .replaceAll('{jobId}', jobId.toString());
+    final path = r'/jobs/{id}'
+      .replaceAll('{id}', id.toString());
 
     // ignore: prefer_final_locals
     Object? postBody = jobCommandDto;
@@ -91,11 +91,11 @@ class JobApi {
 
   /// Parameters:
   ///
-  /// * [JobName] jobId (required):
+  /// * [JobName] id (required):
   ///
   /// * [JobCommandDto] jobCommandDto (required):
-  Future<JobStatusDto?> sendJobCommand(JobName jobId, JobCommandDto jobCommandDto,) async {
-    final response = await sendJobCommandWithHttpInfo(jobId, jobCommandDto,);
+  Future<JobStatusDto?> sendJobCommand(JobName id, JobCommandDto jobCommandDto,) async {
+    final response = await sendJobCommandWithHttpInfo(id, jobCommandDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

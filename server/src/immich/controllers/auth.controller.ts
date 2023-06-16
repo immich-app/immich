@@ -28,7 +28,7 @@ import { UUIDParamDto } from './dto/uuid-param.dto';
 @Authenticated()
 @UseValidation()
 export class AuthController {
-  constructor(private readonly service: AuthService) {}
+  constructor(private service: AuthService) {}
 
   @PublicRoute()
   @Post('login')

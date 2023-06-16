@@ -8053,18 +8053,18 @@ export const JobApiAxiosParamCreator = function (configuration?: Configuration) 
         },
         /**
          * 
-         * @param {JobName} jobId 
+         * @param {JobName} id 
          * @param {JobCommandDto} jobCommandDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        sendJobCommand: async (jobId: JobName, jobCommandDto: JobCommandDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'jobId' is not null or undefined
-            assertParamExists('sendJobCommand', 'jobId', jobId)
+        sendJobCommand: async (id: JobName, jobCommandDto: JobCommandDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('sendJobCommand', 'id', id)
             // verify required parameter 'jobCommandDto' is not null or undefined
             assertParamExists('sendJobCommand', 'jobCommandDto', jobCommandDto)
-            const localVarPath = `/jobs/{jobId}`
-                .replace(`{${"jobId"}}`, encodeURIComponent(String(jobId)));
+            const localVarPath = `/jobs/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -8120,13 +8120,13 @@ export const JobApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {JobName} jobId 
+         * @param {JobName} id 
          * @param {JobCommandDto} jobCommandDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async sendJobCommand(jobId: JobName, jobCommandDto: JobCommandDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobStatusDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.sendJobCommand(jobId, jobCommandDto, options);
+        async sendJobCommand(id: JobName, jobCommandDto: JobCommandDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobStatusDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.sendJobCommand(id, jobCommandDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -8149,13 +8149,13 @@ export const JobApiFactory = function (configuration?: Configuration, basePath?:
         },
         /**
          * 
-         * @param {JobName} jobId 
+         * @param {JobName} id 
          * @param {JobCommandDto} jobCommandDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        sendJobCommand(jobId: JobName, jobCommandDto: JobCommandDto, options?: any): AxiosPromise<JobStatusDto> {
-            return localVarFp.sendJobCommand(jobId, jobCommandDto, options).then((request) => request(axios, basePath));
+        sendJobCommand(id: JobName, jobCommandDto: JobCommandDto, options?: any): AxiosPromise<JobStatusDto> {
+            return localVarFp.sendJobCommand(id, jobCommandDto, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -8171,7 +8171,7 @@ export interface JobApiSendJobCommandRequest {
      * @type {JobName}
      * @memberof JobApiSendJobCommand
      */
-    readonly jobId: JobName
+    readonly id: JobName
 
     /**
      * 
@@ -8206,7 +8206,7 @@ export class JobApi extends BaseAPI {
      * @memberof JobApi
      */
     public sendJobCommand(requestParameters: JobApiSendJobCommandRequest, options?: AxiosRequestConfig) {
-        return JobApiFp(this.configuration).sendJobCommand(requestParameters.jobId, requestParameters.jobCommandDto, options).then((request) => request(this.axios, this.basePath));
+        return JobApiFp(this.configuration).sendJobCommand(requestParameters.id, requestParameters.jobCommandDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
