@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:chewie/chewie.dart';
 import 'package:immich_mobile/modules/asset_viewer/models/image_viewer_page_state.model.dart';
 import 'package:immich_mobile/modules/asset_viewer/providers/image_viewer_page_state.provider.dart';
+import 'package:immich_mobile/modules/asset_viewer/ui/video_player_controls.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
@@ -177,6 +178,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
       allowFullScreen: false,
       allowedScreenSleep: false,
       showControls: !widget.isMotionVideo,
+      customControls: const VideoPlayerControls(),
       hideControlsTimer: const Duration(seconds: 5),
     );
   }
