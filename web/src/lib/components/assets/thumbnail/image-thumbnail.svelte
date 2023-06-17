@@ -46,7 +46,7 @@
 		style:height={heightStyle}
 		src={url}
 		alt={altText}
-		class="object-cover"
+		class="object-cover transition-opacity duration-300"
 		class:rounded-lg={curve}
 		class:shadow-lg={shadow}
 		class:rounded-full={circle}
