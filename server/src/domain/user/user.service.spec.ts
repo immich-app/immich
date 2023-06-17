@@ -1,6 +1,5 @@
 import { UserEntity } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { when } from 'jest-when';
 import {
   newAlbumRepositoryMock,
   newAssetRepositoryMock,
@@ -9,6 +8,7 @@ import {
   newStorageRepositoryMock,
   newUserRepositoryMock,
 } from '@test';
+import { when } from 'jest-when';
 import { IAlbumRepository } from '../album';
 import { IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';

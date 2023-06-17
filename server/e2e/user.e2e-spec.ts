@@ -1,11 +1,10 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import request from 'supertest';
-import { clearDb, authCustom } from '../test/test-utils';
-import { CreateUserDto, UserService, AuthUserDto, UserResponseDto } from '@app/domain';
-import { DataSource } from 'typeorm';
-import { AuthService } from '@app/domain';
+import { AuthService, AuthUserDto, CreateUserDto, UserResponseDto, UserService } from '@app/domain';
 import { AppModule } from '@app/immich/app.module';
+import { INestApplication } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import request from 'supertest';
+import { DataSource } from 'typeorm';
+import { authCustom, clearDb } from '../test/test-utils';
 
 function _createUser(userService: UserService, data: CreateUserDto) {
   return userService.createUser(data);

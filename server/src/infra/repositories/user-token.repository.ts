@@ -1,8 +1,8 @@
+import { IUserTokenRepository } from '@app/domain/user-token';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserTokenEntity } from '../entities';
-import { IUserTokenRepository } from '@app/domain/user-token';
 
 @Injectable()
 export class UserTokenRepository implements IUserTokenRepository {

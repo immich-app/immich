@@ -95,9 +95,9 @@
         ]
       }
     },
-    "/album/count-by-user-id": {
+    "/album/count": {
       "get": {
-        "operationId": "getAlbumCountByUserId",
+        "operationId": "getAlbumCount",
         "parameters": [],
         "responses": {
           "200": {
@@ -1539,10 +1539,12 @@
         "operationId": "getMemoryLane",
         "parameters": [
           {
-            "name": "timezone",
+            "name": "timestamp",
             "required": true,
             "in": "query",
+            "description": "Get pictures for +24 hours from this time going back x years",
             "schema": {
+              "format": "date-time",
               "type": "string"
             }
           }
@@ -2385,12 +2387,12 @@
         ]
       }
     },
-    "/jobs/{jobId}": {
+    "/jobs/{id}": {
       "put": {
         "operationId": "sendJobCommand",
         "parameters": [
           {
-            "name": "jobId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -4352,7 +4354,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.60.0",
+    "version": "1.61.0",
     "contact": {}
   },
   "tags": [],
@@ -4528,14 +4530,14 @@
           "shared": {
             "type": "integer"
           },
-          "sharing": {
+          "notShared": {
             "type": "integer"
           }
         },
         "required": [
           "owned",
           "shared",
-          "sharing"
+          "notShared"
         ]
       },
       "AlbumResponseDto": {

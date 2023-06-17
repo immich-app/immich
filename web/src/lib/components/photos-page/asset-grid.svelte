@@ -21,6 +21,7 @@
 
 	export let user: UserResponseDto | undefined = undefined;
 	export let isAlbumSelectionMode = false;
+	export let showMemoryLane = false;
 
 	let viewportHeight = 0;
 	let viewportWidth = 0;
@@ -131,7 +132,9 @@
 	on:scroll={handleTimelineScroll}
 >
 	{#if assetGridElement}
-		<MemoryLane />
+		{#if showMemoryLane}
+			<MemoryLane />
+		{/if}
 		<section id="virtual-timeline" style:height={$assetGridState.timelineHeight + 'px'}>
 			{#each $assetGridState.buckets as bucket, bucketIndex (bucketIndex)}
 				<IntersectionObserver

@@ -23,22 +23,28 @@ export class JobService {
     this.configCore = new SystemConfigCore(configRepository);
   }
 
-  handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<void> {
+  async handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<JobStatusDto> {
     this.logger.debug(`Handling command: queue=${queueName},force=${dto.force}`);
 
     switch (dto.command) {
       case JobCommand.START:
-        return this.start(queueName, dto);
+        await this.start(queueName, dto);
+        break;
 
       case JobCommand.PAUSE:
-        return this.jobRepository.pause(queueName);
+        await this.jobRepository.pause(queueName);
+        break;
 
       case JobCommand.RESUME:
-        return this.jobRepository.resume(queueName);
+        await this.jobRepository.resume(queueName);
+        break;
 
       case JobCommand.EMPTY:
-        return this.jobRepository.empty(queueName);
+        await this.jobRepository.empty(queueName);
+        break;
     }
+
+    return this.getJobStatus(queueName);
   }
 
   async getJobStatus(queueName: QueueName): Promise<JobStatusDto> {

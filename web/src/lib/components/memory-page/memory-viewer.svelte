@@ -2,7 +2,7 @@
 	import { memoryStore } from '$lib/stores/memory.store';
 	import { DateTime } from 'luxon';
 	import { onMount } from 'svelte';
-	import { MemoryLaneResponseDto, api } from '@api';
+	import { api } from '@api';
 	import { goto } from '$app/navigation';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import Play from 'svelte-material-icons/Play.svelte';
@@ -18,144 +18,72 @@
 	import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
 	import { fade } from 'svelte/transition';
+	import { tweened } from 'svelte/motion';
 
-	let currentIndex = 0;
-	let currentMemory: MemoryLaneResponseDto;
-	let nextMemory: MemoryLaneResponseDto;
-	let lastMemory: MemoryLaneResponseDto;
+	const parseIndex = (s: string | null, max: number | null) =>
+		Math.max(Math.min(parseInt(s ?? '') || 0, max ?? 0), 0);
 
-	let lastIndex = 0;
-	let nextIndex = 0;
-	$: showNextMemory = nextIndex <= $memoryStore?.length - 1;
-	$: showPreviousMemory = currentIndex != 0;
+	$: memoryIndex = parseIndex($page.url.searchParams.get('memory'), $memoryStore?.length - 1);
+	$: assetIndex = parseIndex($page.url.searchParams.get('asset'), currentMemory?.assets.length - 1);
+
+	$: previousMemory = $memoryStore?.[memoryIndex - 1];
+	$: currentMemory = $memoryStore?.[memoryIndex];
+	$: nextMemory = $memoryStore?.[memoryIndex + 1];
+
+	$: previousAsset = currentMemory?.assets[assetIndex - 1];
+	$: currentAsset = currentMemory?.assets[assetIndex];
+	$: nextAsset = currentMemory?.assets[assetIndex + 1];
+
+	$: canAdvance = !!(nextMemory || nextAsset);
+
+	const toNextMemory = () => goto(`?memory=${memoryIndex + 1}`);
+	const toPreviousMemory = () => goto(`?memory=${memoryIndex - 1}`);
+
+	const toNextAsset = () => goto(`?memory=${memoryIndex}&asset=${assetIndex + 1}`);
+	const toPreviousAsset = () => goto(`?memory=${memoryIndex}&asset=${assetIndex - 1}`);
+
+	const toNext = () => (nextAsset ? toNextAsset() : toNextMemory());
+	const toPrevious = () => (previousAsset ? toPreviousAsset() : toPreviousMemory());
+
+	const progress = tweened<number>(0, {
+		duration: (from: number, to: number) => (to ? 5000 * (to - from) : 0)
+	});
+
+	const play = () => progress.set(1);
+	const pause = () => progress.set($progress);
+
+	let resetPromise = Promise.resolve();
+	const reset = () => (resetPromise = progress.set(0));
+
+	let paused = false;
+
+	// Play or pause progress when the paused state changes.
+	$: paused ? pause() : play();
+
+	// Progress should be paused when it's no longer possible to advance.
+	$: paused ||= !canAdvance;
+
+	// Advance to the next asset or memory when progress is complete.
+	$: $progress === 1 && toNext();
+
+	// Progress should be resumed when reset and not paused.
+	$: !$progress && !paused && play();
+
+	// Progress should be reset when the current memory or asset changes.
+	$: memoryIndex, assetIndex, reset();
+
+	onMount(async () => {
+		if (!$memoryStore) {
+			const { data } = await api.assetApi.getMemoryLane({
+				timestamp: DateTime.local().startOf('day').toISO() || ''
+			});
+			$memoryStore = data;
+		}
+	});
 
 	let memoryGallery: HTMLElement;
 	let memoryWrapper: HTMLElement;
 	let galleryInView = false;
-
-	onMount(async () => {
-		if (!$memoryStore) {
-			const timezone = DateTime.local().zoneName;
-			const { data } = await api.assetApi.getMemoryLane({ timezone });
-			$memoryStore = data;
-		}
-
-		const queryIndex = $page.url.searchParams.get('index');
-		if (queryIndex != null) {
-			currentIndex = parseInt(queryIndex);
-			if (isNaN(currentIndex) || currentIndex > $memoryStore.length - 1) {
-				currentIndex = 0;
-			}
-		}
-
-		currentMemory = $memoryStore[currentIndex];
-
-		nextIndex = currentIndex + 1;
-		nextMemory = $memoryStore[nextIndex];
-
-		if (currentIndex > 0) {
-			lastMemory = $memoryStore[lastIndex];
-		}
-	});
-
-	const toNextMemory = (): boolean => {
-		if (showNextMemory) {
-			resetAutoPlay();
-
-			currentIndex++;
-			nextIndex = currentIndex + 1;
-			lastIndex = currentIndex - 1;
-
-			currentMemory = $memoryStore[currentIndex];
-			nextMemory = $memoryStore[nextIndex];
-			lastMemory = $memoryStore[lastIndex];
-
-			return true;
-		}
-
-		return false;
-	};
-
-	const toPreviousMemory = () => {
-		if (showPreviousMemory) {
-			resetAutoPlay();
-
-			currentIndex--;
-			nextIndex = currentIndex + 1;
-			lastIndex = currentIndex - 1;
-
-			currentMemory = $memoryStore[currentIndex];
-			nextMemory = $memoryStore[nextIndex];
-			lastMemory = $memoryStore[lastIndex];
-		}
-	};
-
-	let autoPlayInterval: NodeJS.Timeout;
-	let autoPlay = false;
-	let autoPlaySpeed = 5000;
-	let autoPlayProgress = 0;
-	let autoPlayIndex = 0;
-	let canPlayNext = true;
-
-	const toggleAutoPlay = () => {
-		autoPlay = !autoPlay;
-		if (autoPlay) {
-			autoPlayInterval = setInterval(() => {
-				if (!canPlayNext) return;
-
-				window.requestAnimationFrame(() => {
-					autoPlayProgress++;
-				});
-
-				if (autoPlayProgress > 100) {
-					autoPlayProgress = 0;
-					canPlayNext = false;
-					autoPlayTransition();
-				}
-			}, autoPlaySpeed / 100);
-		} else {
-			clearInterval(autoPlayInterval);
-		}
-	};
-
-	const autoPlayTransition = () => {
-		if (autoPlayIndex < currentMemory.assets.length - 1) {
-			autoPlayIndex++;
-		} else {
-			const canAdvance = toNextMemory();
-			if (!canAdvance) {
-				autoPlay = false;
-				clearInterval(autoPlayInterval);
-				return;
-			}
-		}
-
-		// Delay for nicer animation of the progress bar
-		setTimeout(() => {
-			canPlayNext = true;
-		}, 250);
-	};
-
-	const resetAutoPlay = () => {
-		autoPlayIndex = 0;
-		autoPlayProgress = 0;
-	};
-
-	const toNextCurrentAsset = () => {
-		autoPlayIndex++;
-
-		if (autoPlayIndex > currentMemory.assets.length - 1) {
-			toNextMemory();
-		}
-	};
-
-	const toPreviousCurrentAsset = () => {
-		autoPlayIndex--;
-
-		if (autoPlayIndex < 0) {
-			toPreviousMemory();
-		}
-	};
 </script>
 
 <section id="memory-viewer" class="w-full bg-immich-dark-gray" bind:this={memoryWrapper}>
@@ -169,19 +97,35 @@
 
 			{#if !galleryInView}
 				<div class="flex place-items-center place-content-center overflow-hidden gap-2">
-					<CircleIconButton logo={autoPlay ? Pause : Play} forceDark on:click={toggleAutoPlay} />
+					<CircleIconButton
+						logo={paused ? Play : Pause}
+						forceDark
+						on:click={() => (paused = !paused)}
+					/>
 
-					<div class="relative w-full">
-						<span class="absolute left-0 w-full h-[2px] bg-gray-500" />
-						<span
-							class="absolute left-0 h-[2px] bg-white transition-all"
-							style:width={`${autoPlayProgress}%`}
-						/>
-					</div>
+					{#each currentMemory.assets as _, i}
+						<button
+							class="relative w-full py-2"
+							on:click={() => goto(`?memory=${memoryIndex}&asset=${i}`)}
+						>
+							<span class="absolute left-0 w-full h-[2px] bg-gray-500" />
+							{#await resetPromise}
+								<span
+									class="absolute left-0 h-[2px] bg-white"
+									style:width={`${i < assetIndex ? 100 : 0}%`}
+								/>
+							{:then}
+								<span
+									class="absolute left-0 h-[2px] bg-white"
+									style:width={`${i < assetIndex ? 100 : i > assetIndex ? 0 : $progress * 100}%`}
+								/>
+							{/await}
+						</button>
+					{/each}
 
 					<div>
 						<p class="text-small">
-							{autoPlayIndex + 1}/{currentMemory.assets.length}
+							{assetIndex + 1}/{currentMemory.assets.length}
 						</p>
 					</div>
 				</div>
@@ -210,28 +154,28 @@
 				<!-- PREVIOUS MEMORY -->
 				<div
 					class="rounded-2xl w-[20vw] h-1/2"
-					class:opacity-25={showPreviousMemory}
-					class:opacity-0={!showPreviousMemory}
-					class:hover:opacity-70={showPreviousMemory}
+					class:opacity-25={previousMemory}
+					class:opacity-0={!previousMemory}
+					class:hover:opacity-70={previousMemory}
 				>
 					<button
 						class="rounded-2xl h-full w-full relative"
-						disabled={!showPreviousMemory}
+						disabled={!previousMemory}
 						on:click={toPreviousMemory}
 					>
 						<img
 							class="rounded-2xl h-full w-full object-cover"
-							src={showPreviousMemory && lastMemory
-								? api.getAssetThumbnailUrl(lastMemory.assets[0].id, 'JPEG')
+							src={previousMemory
+								? api.getAssetThumbnailUrl(previousMemory.assets[0].id, 'JPEG')
 								: noThumbnailUrl}
 							alt=""
 							draggable="false"
 						/>
 
-						{#if showPreviousMemory}
+						{#if previousMemory}
 							<div class="absolute right-4 bottom-4 text-white text-left">
 								<p class="font-semibold text-xs text-gray-200">PREVIOUS</p>
-								<p class="text-xl">{lastMemory.title}</p>
+								<p class="text-xl">{previousMemory.title}</p>
 							</div>
 						{/if}
 					</button>
@@ -246,29 +190,33 @@
 						<div class="absolute h-full flex justify-between w-full">
 							<div class="flex h-full flex-col place-content-center place-items-center ml-4">
 								<div class="inline-block">
-									<CircleIconButton
-										logo={ChevronLeft}
-										backgroundColor="#202123"
-										on:click={toPreviousCurrentAsset}
-									/>
+									{#if previousMemory || previousAsset}
+										<CircleIconButton
+											logo={ChevronLeft}
+											backgroundColor="#202123"
+											on:click={toPrevious}
+										/>
+									{/if}
 								</div>
 							</div>
 							<div class="flex h-full flex-col place-content-center place-items-center mr-4">
 								<div class="inline-block">
-									<CircleIconButton
-										logo={ChevronRight}
-										backgroundColor="#202123"
-										on:click={toNextCurrentAsset}
-									/>
+									{#if canAdvance}
+										<CircleIconButton
+											logo={ChevronRight}
+											backgroundColor="#202123"
+											on:click={toNext}
+										/>
+									{/if}
 								</div>
 							</div>
 						</div>
 
-						{#key currentMemory.assets[autoPlayIndex].id}
+						{#key currentAsset.id}
 							<img
 								transition:fade|local
 								class="rounded-2xl w-full h-full object-contain transition-all"
-								src={api.getAssetThumbnailUrl(currentMemory.assets[autoPlayIndex].id, 'JPEG')}
+								src={api.getAssetThumbnailUrl(currentAsset.id, 'JPEG')}
 								alt=""
 								draggable="false"
 							/>
@@ -281,8 +229,8 @@
 								)}
 							</p>
 							<p>
-								{currentMemory.assets[autoPlayIndex].exifInfo?.city || ''}
-								{currentMemory.assets[autoPlayIndex].exifInfo?.country || ''}
+								{currentAsset.exifInfo?.city || ''}
+								{currentAsset.exifInfo?.country || ''}
 							</p>
 						</div>
 					</div>
@@ -291,25 +239,25 @@
 				<!-- NEXT MEMORY -->
 				<div
 					class="rounded-xl w-[20vw] h-1/2"
-					class:opacity-25={showNextMemory}
-					class:opacity-0={!showNextMemory}
-					class:hover:opacity-70={showNextMemory}
+					class:opacity-25={nextMemory}
+					class:opacity-0={!nextMemory}
+					class:hover:opacity-70={nextMemory}
 				>
 					<button
 						class="rounded-2xl h-full w-full relative"
 						on:click={toNextMemory}
-						disabled={!showNextMemory}
+						disabled={!nextMemory}
 					>
 						<img
 							class="rounded-2xl h-full w-full object-cover"
-							src={showNextMemory
+							src={nextMemory
 								? api.getAssetThumbnailUrl(nextMemory.assets[0].id, 'JPEG')
 								: noThumbnailUrl}
 							alt=""
 							draggable="false"
 						/>
 
-						{#if showNextMemory}
+						{#if nextMemory}
 							<div class="absolute left-4 bottom-4 text-white text-left">
 								<p class="font-semibold text-xs text-gray-200">UP NEXT</p>
 								<p class="text-xl">{nextMemory.title}</p>

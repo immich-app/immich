@@ -1,4 +1,3 @@
-import { when } from 'jest-when';
 import {
   assetEntityStub,
   newAssetRepositoryMock,
@@ -8,8 +7,9 @@ import {
   systemConfigStub,
   userEntityStub,
 } from '@test';
-import { IAssetRepository } from '../asset';
+import { when } from 'jest-when';
 import { StorageTemplateService } from '.';
+import { IAssetRepository } from '../asset';
 import { IStorageRepository } from '../storage/storage.repository';
 import { ISystemConfigRepository } from '../system-config';
 import { IUserRepository } from '../user';

@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { ValidateUUID } from '@app/immich/decorators/validate-uuid.decorator';
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsOptional, IsString } from 'class-validator';
 
