@@ -201,7 +201,7 @@ export class AssetService {
             return { id: duplicate.id, duplicate: true };
           }
 
-          throw new BadRequestException('Path in user by another user');
+          throw new BadRequestException('Path in use by another user');
         }
       }
 
