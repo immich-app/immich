@@ -25,12 +25,12 @@ services:
       - immich-test-network
   immich-redis-test:
     container_name: immich-redis-test
-    image: redis:6.2
+    image: redis:6.2-alpine
     networks:
       - immich-test-network
   immich-database-test:
     container_name: immich-database-test
-    image: postgres:14
+    image: postgres:14-alpine
     env_file:
       - .env.test
     environment:
