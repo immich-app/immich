@@ -13,10 +13,9 @@ from schemas import (
 )
 import uvicorn
 from PIL import Image
-from fastapi import FastAPI, HTTPException, Depends, File
-from typing_extensions import Annotated
+from fastapi import FastAPI, HTTPException, Depends, Body
 from models import get_model, run_classification, run_facial_recognition
-from config import get_settings, Settings
+from config import settings
 
 _model_cache = None
 
@@ -26,7 +25,6 @@ app = FastAPI()
 @app.on_event("startup")
 async def startup_event() -> None:
     global _model_cache
-    settings = get_settings()
     _model_cache = ModelCache(ttl=settings.model_ttl, revalidate=True)
     models = [
         (settings.classification_model, "image-classification"),
@@ -47,7 +45,7 @@ def dep_model_cache():
     if _model_cache is None:
         raise HTTPException(status_code=500, detail="Unable to load model.")
 
-def dep_input_image(image: Annotated[bytes, File()]) -> Image:
+def dep_input_image(image: bytes = Body(...)) -> Image:
     return Image.open(io.BytesIO(image))
 
 @app.get("/", response_model=MessageResponse)
@@ -67,7 +65,7 @@ def ping() -> str:
     dependencies=[Depends(dep_model_cache)],
 )
 async def image_classification(
-    image: Image = Depends(dep_input_image), settings: Settings = Depends(get_settings)
+    image: Image = Depends(dep_input_image)
 ) -> list[str]:
     try:
         model = await _model_cache.get_cached_model(
@@ -87,7 +85,7 @@ async def image_classification(
     dependencies=[Depends(dep_model_cache)],
 )
 async def clip_encode_image(
-    image: Image = Depends(dep_input_image), settings: Settings = Depends(get_settings)
+    image: Image = Depends(dep_input_image)
 ) -> list[float]:
     model = await _model_cache.get_cached_model(settings.clip_image_model, "clip")
     embedding = model.encode(image).tolist()
@@ -101,7 +99,7 @@ async def clip_encode_image(
     dependencies=[Depends(dep_model_cache)],
 )
 async def clip_encode_text(
-    payload: TextModelRequest, settings: Settings = Depends(get_settings)
+    payload: TextModelRequest
 ) -> list[float]:
     model = await _model_cache.get_cached_model(settings.clip_text_model, "clip")
     embedding = model.encode(payload.text).tolist()
@@ -115,7 +113,7 @@ async def clip_encode_text(
     dependencies=[Depends(dep_model_cache)],
 )
 async def facial_recognition(
-    image: Annotated[bytes, File()], settings: Settings = Depends(get_settings)
+    image: bytes = Body(...),
 ) -> list[dict[str, Any]]:
     model = await _model_cache.get_cached_model(
         settings.facial_recognition_model, "facial-recognition"
@@ -125,7 +123,6 @@ async def facial_recognition(
 
 
 if __name__ == "__main__":
-    settings = get_settings()
     is_dev = os.getenv("NODE_ENV") == "development"
     uvicorn.run(
         "main:app",

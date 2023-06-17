@@ -8,7 +8,7 @@ from typing import Any, BinaryIO
 import cv2 as cv
 import numpy as np
 from PIL import Image
-from config import get_settings
+from config import settings
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -98,7 +98,6 @@ def _load_facial_recognition(
     cache_dir: Path | str | None = None,
     **model_kwargs,
 ):
-    settings = get_settings()
     if cache_dir is None:
         cache_dir = _get_cache_dir(model_name, "facial-recognition")
     if isinstance(cache_dir, Path):
@@ -117,5 +116,4 @@ def _load_facial_recognition(
 
 
 def _get_cache_dir(model_name: str, model_type: str) -> Path:
-    settings = get_settings()
     return Path(settings.cache_folder, device, model_type, model_name)

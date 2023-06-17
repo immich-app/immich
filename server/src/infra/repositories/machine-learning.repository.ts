@@ -1,7 +1,6 @@
 import { DetectFaceResult, IMachineLearningRepository, MachineLearningInput, MACHINE_LEARNING_URL } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
-import FormData from 'form-data';
 import { createReadStream } from 'fs';
 
 const client = axios.create({ baseURL: MACHINE_LEARNING_URL });
@@ -9,13 +8,8 @@ const client = axios.create({ baseURL: MACHINE_LEARNING_URL });
 @Injectable()
 export class MachineLearningRepository implements IMachineLearningRepository {
   private post<T>(input: MachineLearningInput, endpoint: string): Promise<T> {
-    const formData = new FormData();
-    const fileStream = createReadStream(input.imagePath);
-    formData.append('image', fileStream);
     return client
-      .post<T>(endpoint, formData, {
-        headers: formData.getHeaders(),
-      })
+      .post<T>(endpoint, createReadStream(input.imagePath))
       .then((res) => res.data);
   }
 
