@@ -10,6 +10,7 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:video_player/video_player.dart';
+import 'package:wakelock/wakelock.dart';
 
 // ignore: must_be_immutable
 class VideoViewerPage extends HookConsumerWidget {
@@ -130,13 +131,16 @@ class _VideoPlayerState extends State<VideoPlayer> {
     videoPlayerController.addListener(() {
       if (videoPlayerController.value.isInitialized) {
         if (videoPlayerController.value.isPlaying) {
+          Wakelock.enable();
           widget.onPlaying?.call();
         } else if (!videoPlayerController.value.isPlaying) {
+          Wakelock.disable();
           widget.onPaused?.call();
         }
 
         if (videoPlayerController.value.position ==
             videoPlayerController.value.duration) {
+          Wakelock.disable();
           widget.onVideoEnded();
         }
       }
@@ -170,7 +174,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
       videoPlayerController: videoPlayerController,
       autoPlay: true,
       autoInitialize: true,
-      allowFullScreen: true,
+      allowFullScreen: false,
       allowedScreenSleep: false,
       showControls: !widget.isMotionVideo,
       hideControlsTimer: const Duration(seconds: 5),
