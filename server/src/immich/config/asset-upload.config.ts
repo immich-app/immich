@@ -55,7 +55,7 @@ function fileFilter(req: AuthRequest, file: any, cb: any) {
   }
   if (
     file.mimetype.match(
-      /\/(jpg|jpeg|png|gif|avi|mov|mp4|webm|x-msvideo|quicktime|heic|heif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef|x-fuji-raf|x-samsung-srw|mpeg|x-flv|x-ms-wmv|x-matroska|x-sony-arw|arw)$/,
+      /\/(jpg|jpeg|png|gif|avi|mov|mp4|webm|x-msvideo|quicktime|heic|heif|avif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef|x-fuji-raf|x-samsung-srw|mpeg|x-flv|x-ms-wmv|x-matroska|x-sony-arw|arw|x-canon-crw|x-canon-cr2|x-canon-cr3)$/,
     )
   ) {
     cb(null, true);

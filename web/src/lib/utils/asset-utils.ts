@@ -131,11 +131,15 @@ export function getFileMimeType(file: File): string {
 		dng: 'image/dng',
 		heic: 'image/heic',
 		heif: 'image/heif',
+		avif: 'image/avif',
 		insp: 'image/jpeg',
 		insv: 'video/mp4',
 		nef: 'image/x-nikon-nef',
 		raf: 'image/x-fuji-raf',
-		srw: 'image/x-samsung-srw'
+		srw: 'image/x-samsung-srw',
+		crw: 'image/x-canon-crw',
+		cr2: 'image/x-canon-cr2',
+		cr3: 'image/x-canon-cr3'
 	};
 	// Return the MIME type determined by the browser or the MIME type based on the file extension.
 	return file.type || (mimeTypes[getFilenameExtension(file.name)] ?? '');
