@@ -139,7 +139,27 @@ export function getFileMimeType(file: File): string {
 		srw: 'image/x-samsung-srw',
 		crw: 'image/x-canon-crw',
 		cr2: 'image/x-canon-cr2',
-		cr3: 'image/x-canon-cr3'
+		cr3: 'image/x-canon-cr3',
+		erf: 'image/x-epson-erf',
+		raf: 'image/x-fuji-raf',
+		dcr: 'image/x-kodak-dcr',
+		k25: 'image/x-kodak-k25',
+		kdc: 'image/x-kodak-kdc',
+		mrw: 'image/x-minolta-mrw',
+		orf: 'image/x-olympus-orf',
+		raw: 'image/x-panasonic-raw',
+		pef: 'image/x-pentax-pef',
+		x3f: 'image/x-sigma-x3f',
+		srf: 'image/x-sony-srf',
+		sr2: 'image/x-sony-sr2',
+		'3fr': 'image/x-hasselblad-3fr',
+		fff: 'image/x-hasselblad-fff',
+		rwl: 'image/x-leica-rwl',
+		ori: 'image/x-olympus-ori',
+		iiq: 'image/x-phaseone-iiq',
+		ari: 'image/x-arriflex-ari',
+		cap: 'image/x-phaseone-cap',
+		cin: 'image/x-phantom-cin'
 	};
 	// Return the MIME type determined by the browser or the MIME type based on the file extension.
 	return file.type || (mimeTypes[getFilenameExtension(file.name)] ?? '');
