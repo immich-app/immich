@@ -210,7 +210,6 @@ export class AuthService {
             isAllowUpload: link.allowUpload,
             isAllowDownload: link.allowDownload,
             isShowExif: link.showExif,
-            externalPath: user.externalPath,
           };
         }
       }

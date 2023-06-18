@@ -141,6 +141,11 @@
 				type="text"
 				bind:value={user.externalPath}
 			/>
+
+			<p>
+				Note: Absolute path of parent import directory. A user can only import files if they exist
+				at or under this path.
+			</p>
 		</div>
 
 		{#if error}

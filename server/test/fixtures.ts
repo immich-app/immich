@@ -94,7 +94,6 @@ export const authStub = {
     isPublicUser: true,
     isShowExif: true,
     sharedLinkId: '123',
-    externalPath: null,
   }),
   adminSharedLinkNoExif: Object.freeze<AuthUserDto>({
     id: 'admin_id',
@@ -105,7 +104,6 @@ export const authStub = {
     isPublicUser: true,
     isShowExif: false,
     sharedLinkId: '123',
-    externalPath: null,
   }),
   readonlySharedLink: Object.freeze<AuthUserDto>({
     id: 'admin_id',
@@ -117,7 +115,6 @@ export const authStub = {
     isShowExif: true,
     sharedLinkId: '123',
     accessTokenId: 'token-id',
-    externalPath: null,
   }),
 };
 
