@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import numpy as np
 from PIL.Image import Image
 from sentence_transformers import SentenceTransformer
 
@@ -39,15 +38,7 @@ class CLIPSTEncoder:
             )
 
     def encode_text(self, text: str) -> list[float]:
-        return self.encode_text_batch([text])[0]
+        return self.text_model.encode(text).tolist()
 
     def encode_image(self, image: Image) -> list[float]:
-        return self.encode_image_batch([image])[0]
-
-    def encode_text_batch(self, texts: list[str]) -> list[list[float]]:
-        embeddings: np.ndarray = self.text_model.encode(texts)  # type: ignore
-        return embeddings.tolist()
-
-    def encode_image_batch(self, images: list[Image]) -> list[list[float]]:
-        embeddings: np.ndarray = self.vision_model.encode(images)  # type: ignore
-        return embeddings.tolist()
+        return self.vision_model.encode(image).tolist()

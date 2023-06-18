@@ -98,7 +98,7 @@ async def clip_encode_image(
     image: Image.Image = Depends(dep_pil_image),
 ) -> list[float]:
     model = await _model_cache.get(settings.clip_image_model, ModelType.CLIP)
-    embedding = model.encode_image(image).tolist()
+    embedding = model.encode_image(image)
     return embedding
 
 
@@ -110,7 +110,7 @@ async def clip_encode_image(
 )
 async def clip_encode_text(payload: TextModelRequest) -> list[float]:
     model = await _model_cache.get(settings.clip_text_model, ModelType.CLIP)
-    embedding = model.encode_image(payload.text).tolist()
+    embedding = model.encode_image(payload.text)
     return embedding
 
 
@@ -133,7 +133,7 @@ async def facial_recognition(
 if __name__ == "__main__":
     is_dev = os.getenv("NODE_ENV") == "development"
     uvicorn.run(
-        "main:app",
+        "app.main:app",
         host=settings.host,
         port=settings.port,
         reload=is_dev,

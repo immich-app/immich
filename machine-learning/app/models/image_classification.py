@@ -4,7 +4,7 @@ from typing import Any
 from PIL.Image import Image
 from transformers.pipelines import pipeline
 
-from ..config import get_cache_dir
+from ..config import get_cache_dir, settings
 from ..schemas import ModelType
 
 
@@ -17,7 +17,7 @@ class ImageClassifier:
         **model_kwargs,
     ):
         self.model_name = model_name
-        self.min_score = min_score
+        self.min_score = min_score if min_score is not None else settings.min_tag_score
         if cache_dir is None:
             cache_dir = get_cache_dir(model_name, ModelType.IMAGE_CLASSIFICATION)
 
@@ -28,20 +28,13 @@ class ImageClassifier:
         )
 
     def classify(self, image: Image) -> list[str]:
-        return self.classify_batch([image])[0]
-
-    def classify_batch(self, images: list[Image]) -> list[list[str]]:
-        batch_predictions: list[list[dict[str, Any]]] = self.model(images)  # type: ignore
-        results = [
-            list(
-                {
-                    tag
-                    for pred in predictions
-                    for tag in pred["label"].split(", ")
-                    if pred["score"] >= self.min_score
-                }
-            )
-            for predictions in batch_predictions
-        ]
-
-        return results
+        predictions = self.model(image)
+        tags = list(
+            {
+                tag
+                for pred in predictions
+                for tag in pred["label"].split(", ")
+                if pred["score"] >= self.min_score
+            }
+        )
+        return tags
