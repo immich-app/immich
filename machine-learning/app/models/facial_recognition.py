@@ -1,10 +1,7 @@
 from pathlib import Path
-from typing import Any
 
 import cv2
-import numpy as np
 from insightface.app import FaceAnalysis
-from insightface.utils.face_align import norm_crop
 
 from ..config import get_cache_dir, settings
 from ..schemas import ModelType
