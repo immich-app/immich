@@ -9,6 +9,7 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "target": "es2017",
+    "moduleResolution": "node16",
     "sourceMap": true,
     "outDir": "./dist",
     "incremental": true,

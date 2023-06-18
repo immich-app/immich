@@ -4865,6 +4865,11 @@
           "resized": {
             "type": "boolean"
           },
+          "thumbhash": {
+            "type": "string",
+            "nullable": true,
+            "description": "base64 encoded thumbhash"
+          },
           "fileCreatedAt": {
             "format": "date-time",
             "type": "string"
@@ -4926,6 +4931,7 @@
           "originalPath",
           "originalFileName",
           "resized",
+          "thumbhash",
           "fileCreatedAt",
           "fileModifiedAt",
           "updatedAt",

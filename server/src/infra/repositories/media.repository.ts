@@ -119,4 +119,17 @@ export class MediaRepository implements IMediaRepository {
         .run();
     });
   }
+
+  async generateThumbhash(imagePath: string): Promise<Buffer> {
+    const maxSize = 100;
+
+    const { data, info } = await sharp(imagePath)
+      .resize(maxSize, maxSize, { fit: 'inside', withoutEnlargement: true })
+      .raw()
+      .ensureAlpha()
+      .toBuffer({ resolveWithObject: true });
+
+    const thumbhash = await import('thumbhash');
+    return Buffer.from(thumbhash.rgbaToThumbHash(info.width, info.height, data));
+  }
 }

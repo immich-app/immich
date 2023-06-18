@@ -261,7 +261,13 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1' } },
-        jobs: [JobName.GENERATE_WEBP_THUMBNAIL, JobName.CLASSIFY_IMAGE, JobName.ENCODE_CLIP, JobName.RECOGNIZE_FACES],
+        jobs: [
+          JobName.GENERATE_WEBP_THUMBNAIL,
+          JobName.CLASSIFY_IMAGE,
+          JobName.ENCODE_CLIP,
+          JobName.RECOGNIZE_FACES,
+          JobName.GENERATE_THUMBHASH_THUMBNAIL,
+        ],
       },
       {
         item: { name: JobName.CLASSIFY_IMAGE, data: { id: 'asset-1' } },

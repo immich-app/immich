@@ -135,6 +135,7 @@ export class AssetRepository implements IAssetRepository {
           { resizePath: '', isVisible: true },
           { webpPath: IsNull(), isVisible: true },
           { webpPath: '', isVisible: true },
+          { thumbhash: IsNull(), isVisible: true },
         ];
         break;
 

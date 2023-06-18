@@ -16,6 +16,7 @@ Name | Type | Description | Notes
 **originalPath** | **String** |  | 
 **originalFileName** | **String** |  | 
 **resized** | **bool** |  | 
+**thumbhash** | **String** | base64 encoded thumbhash | 
 **fileCreatedAt** | [**DateTime**](DateTime.md) |  | 
 **fileModifiedAt** | [**DateTime**](DateTime.md) |  | 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 

@@ -54,9 +54,9 @@ describe(MediaService.name, () => {
       });
     });
 
-    it('should queue all assets with missing thumbnails', async () => {
+    it('should queue all assets with missing resize path', async () => {
       assetMock.getWithout.mockResolvedValue({
-        items: [assetEntityStub.image],
+        items: [assetEntityStub.noResizePath],
         hasNextPage: false,
       });
 
@@ -66,6 +66,38 @@ describe(MediaService.name, () => {
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.GENERATE_JPEG_THUMBNAIL,
+        data: { id: assetEntityStub.image.id },
+      });
+    });
+
+    it('should queue all assets with missing webp path', async () => {
+      assetMock.getWithout.mockResolvedValue({
+        items: [assetEntityStub.noWebpPath],
+        hasNextPage: false,
+      });
+
+      await sut.handleQueueGenerateThumbnails({ force: false });
+
+      expect(assetMock.getAll).not.toHaveBeenCalled();
+      expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.GENERATE_WEBP_THUMBNAIL,
+        data: { id: assetEntityStub.image.id },
+      });
+    });
+
+    it('should queue all assets with missing thumbhash', async () => {
+      assetMock.getWithout.mockResolvedValue({
+        items: [assetEntityStub.noThumbhash],
+        hasNextPage: false,
+      });
+
+      await sut.handleQueueGenerateThumbnails({ force: false });
+
+      expect(assetMock.getAll).not.toHaveBeenCalled();
+      expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.GENERATE_THUMBHASH_THUMBNAIL,
         data: { id: assetEntityStub.image.id },
       });
     });
@@ -126,6 +158,25 @@ describe(MediaService.name, () => {
         { format: 'webp', size: 250 },
       );
       expect(assetMock.save).toHaveBeenCalledWith({ id: 'asset-id', webpPath: '/uploads/user-id/thumbs/path.ext' });
+    });
+  });
+
+  describe('handleGenerateThumbhashThumbnail', () => {
+    it('should skip thumbhash generation if resize path is missing', async () => {
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.noResizePath]);
+      await sut.handleGenerateThumbhashThumbnail({ id: assetEntityStub.noResizePath.id });
+      expect(mediaMock.generateThumbhash).not.toHaveBeenCalled();
+    });
+
+    it('should generate a thumbhash', async () => {
+      const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
+      mediaMock.generateThumbhash.mockResolvedValue(thumbhashBuffer);
+
+      await sut.handleGenerateThumbhashThumbnail({ id: assetEntityStub.image.id });
+
+      expect(mediaMock.generateThumbhash).toHaveBeenCalledWith('/uploads/user-id/thumbs/path.ext');
+      expect(assetMock.save).toHaveBeenCalledWith({ id: 'asset-id', thumbhash: thumbhashBuffer });
     });
   });
 
