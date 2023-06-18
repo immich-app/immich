@@ -98,6 +98,7 @@ part 'model/login_credential_dto.dart';
 part 'model/login_response_dto.dart';
 part 'model/logout_response_dto.dart';
 part 'model/map_marker_response_dto.dart';
+part 'model/memory_lane_response_dto.dart';
 part 'model/o_auth_callback_dto.dart';
 part 'model/o_auth_config_dto.dart';
 part 'model/o_auth_config_response_dto.dart';

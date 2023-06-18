@@ -1,11 +1,11 @@
+import { toEmail, toSanitized } from '@app/immich/utils/transform.util';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
-import { toEmail, toSanitized } from '@app/immich/utils/transform.util';
 
 export class UpdateUserDto {
   @IsOptional()
-  @IsEmail()
+  @IsEmail({ require_tld: false })
   @Transform(toEmail)
   email?: string;
 

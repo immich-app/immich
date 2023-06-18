@@ -53,5 +53,5 @@
 		{/if}
 	</svelte:fragment>
 
-	<AssetGrid slot="content" />
+	<AssetGrid slot="content" showMemoryLane />
 </UserPageLayout>

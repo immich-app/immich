@@ -1,7 +1,7 @@
 import { TagType } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
-import { when } from 'jest-when';
 import { assetEntityStub, authStub, newTagRepositoryMock, tagResponseStub, tagStub } from '@test';
+import { when } from 'jest-when';
 import { AssetIdErrorReason } from '../asset';
 import { ITagRepository } from './tag.repository';
 import { TagService } from './tag.service';

@@ -1,9 +1,8 @@
 import { CropOptions, IMediaRepository, ResizeOptions, TranscodeOptions, VideoInfo } from '@app/domain';
-import { exiftool } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
+import fs from 'fs/promises';
 import sharp from 'sharp';
 import { promisify } from 'util';
-import fs from 'fs/promises';
 
 const probe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 
@@ -17,10 +16,6 @@ export class MediaRepository implements IMediaRepository {
         height: options.height,
       })
       .toBuffer();
-  }
-
-  extractThumbnailFromExif(input: string, output: string): Promise<void> {
-    return exiftool.extractThumbnail(input, output);
   }
 
   async resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void> {
@@ -123,5 +118,18 @@ export class MediaRepository implements IMediaRepository {
         })
         .run();
     });
+  }
+
+  async generateThumbhash(imagePath: string): Promise<Buffer> {
+    const maxSize = 100;
+
+    const { data, info } = await sharp(imagePath)
+      .resize(maxSize, maxSize, { fit: 'inside', withoutEnlargement: true })
+      .raw()
+      .ensureAlpha()
+      .toBuffer({ resolveWithObject: true });
+
+    const thumbhash = await import('thumbhash');
+    return Buffer.from(thumbhash.rgbaToThumbHash(info.width, info.height, data));
   }
 }

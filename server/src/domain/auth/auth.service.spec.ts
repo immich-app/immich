@@ -1,8 +1,5 @@
 import { SystemConfig, UserEntity } from '@app/infra/entities';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
-import { IncomingHttpHeaders } from 'http';
-import { generators, Issuer } from 'openid-client';
-import { Socket } from 'socket.io';
 import {
   authStub,
   keyStub,
@@ -18,6 +15,9 @@ import {
   userEntityStub,
   userTokenEntityStub,
 } from '@test';
+import { IncomingHttpHeaders } from 'http';
+import { generators, Issuer } from 'openid-client';
+import { Socket } from 'socket.io';
 import { IKeyRepository } from '../api-key';
 import { ICryptoRepository } from '../crypto/crypto.repository';
 import { ISharedLinkRepository } from '../shared-link';

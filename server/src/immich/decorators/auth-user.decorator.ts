@@ -8,7 +8,7 @@ export interface AuthRequest extends Request {
   user?: AuthUserDto;
 }
 
-export const GetAuthUser = createParamDecorator((data, ctx: ExecutionContext): AuthUserDto => {
+export const AuthUser = createParamDecorator((data, ctx: ExecutionContext): AuthUserDto => {
   return ctx.switchToHttp().getRequest<{ user: AuthUserDto }>().user;
 });
 

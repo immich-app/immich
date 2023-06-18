@@ -1,7 +1,7 @@
 import { AlbumEntity } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { AssetResponseDto, mapAsset } from '../../asset';
-import { mapUser, UserResponseDto } from '../../user';
+import { AssetResponseDto, mapAsset } from '../asset';
+import { mapUser, UserResponseDto } from '../user';
 
 export class AlbumResponseDto {
   id!: string;
@@ -62,4 +62,15 @@ export function mapAlbumExcludeAssetInfo(entity: AlbumEntity): AlbumResponseDto 
     assets: [],
     assetCount: entity.assets?.length || 0,
   };
+}
+
+export class AlbumCountResponseDto {
+  @ApiProperty({ type: 'integer' })
+  owned!: number;
+
+  @ApiProperty({ type: 'integer' })
+  shared!: number;
+
+  @ApiProperty({ type: 'integer' })
+  notShared!: number;
 }

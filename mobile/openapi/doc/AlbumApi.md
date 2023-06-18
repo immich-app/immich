@@ -15,7 +15,7 @@ Method | HTTP request | Description
 [**createAlbumSharedLink**](AlbumApi.md#createalbumsharedlink) | **POST** /album/create-shared-link | 
 [**deleteAlbum**](AlbumApi.md#deletealbum) | **DELETE** /album/{id} | 
 [**downloadArchive**](AlbumApi.md#downloadarchive) | **GET** /album/{id}/download | 
-[**getAlbumCountByUserId**](AlbumApi.md#getalbumcountbyuserid) | **GET** /album/count-by-user-id | 
+[**getAlbumCount**](AlbumApi.md#getalbumcount) | **GET** /album/count | 
 [**getAlbumInfo**](AlbumApi.md#getalbuminfo) | **GET** /album/{id} | 
 [**getAllAlbums**](AlbumApi.md#getallalbums) | **GET** /album | 
 [**removeAssetFromAlbum**](AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{id}/assets | 
@@ -364,8 +364,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getAlbumCountByUserId**
-> AlbumCountResponseDto getAlbumCountByUserId()
+# **getAlbumCount**
+> AlbumCountResponseDto getAlbumCount()
 
 
 
@@ -390,10 +390,10 @@ import 'package:openapi/api.dart';
 final api_instance = AlbumApi();
 
 try {
-    final result = api_instance.getAlbumCountByUserId();
+    final result = api_instance.getAlbumCount();
     print(result);
 } catch (e) {
-    print('Exception when calling AlbumApi->getAlbumCountByUserId: $e\n');
+    print('Exception when calling AlbumApi->getAlbumCount: $e\n');
 }
 ```
 

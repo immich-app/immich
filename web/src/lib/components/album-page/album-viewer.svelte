@@ -86,7 +86,7 @@
 	afterNavigate(({ from }) => {
 		backUrl = from?.url.pathname ?? '/albums';
 
-		if (from?.url.pathname === '/sharing') {
+		if (from?.url.pathname === '/sharing' && album.sharedUsers.length === 0) {
 			isCreatingSharedAlbum = true;
 		}
 	});

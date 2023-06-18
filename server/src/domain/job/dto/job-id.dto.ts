@@ -6,5 +6,5 @@ export class JobIdDto {
   @IsNotEmpty()
   @IsEnum(QueueName)
   @ApiProperty({ type: String, enum: QueueName, enumName: 'JobName' })
-  jobId!: QueueName;
+  id!: QueueName;
 }

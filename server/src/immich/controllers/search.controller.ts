@@ -8,7 +8,7 @@ import {
 } from '@app/domain';
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { GetAuthUser } from '../decorators/auth-user.decorator';
+import { AuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
 import { UseValidation } from '../decorators/use-validation.decorator';
 
@@ -20,7 +20,7 @@ export class SearchController {
   constructor(private service: SearchService) {}
 
   @Get()
-  search(@GetAuthUser() authUser: AuthUserDto, @Query() dto: SearchDto): Promise<SearchResponseDto> {
+  search(@AuthUser() authUser: AuthUserDto, @Query() dto: SearchDto): Promise<SearchResponseDto> {
     return this.service.search(authUser, dto);
   }
 
@@ -30,7 +30,7 @@ export class SearchController {
   }
 
   @Get('explore')
-  getExploreData(@GetAuthUser() authUser: AuthUserDto): Promise<SearchExploreResponseDto[]> {
+  getExploreData(@AuthUser() authUser: AuthUserDto): Promise<SearchExploreResponseDto[]> {
     return this.service.getExploreData(authUser) as Promise<SearchExploreResponseDto[]>;
   }
 }

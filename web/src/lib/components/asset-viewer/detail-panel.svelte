@@ -120,6 +120,7 @@
 							altText={person.name}
 							widthStyle="90px"
 							heightStyle="90px"
+							thumbhash={null}
 						/>
 						<p class="font-medium mt-1 truncate">{person.name}</p>
 					</a>

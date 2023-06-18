@@ -45,9 +45,9 @@ export interface TranscodeOptions {
 
 export interface IMediaRepository {
   // image
-  extractThumbnailFromExif(input: string, output: string): Promise<void>;
   resize(input: string | Buffer, output: string, options: ResizeOptions): Promise<void>;
   crop(input: string, options: CropOptions): Promise<Buffer>;
+  generateThumbhash(imagePath: string): Promise<Buffer>;
 
   // video
   extractVideoThumbnail(input: string, output: string, size: number): Promise<void>;

@@ -95,9 +95,9 @@
         ]
       }
     },
-    "/album/count-by-user-id": {
+    "/album/count": {
       "get": {
-        "operationId": "getAlbumCountByUserId",
+        "operationId": "getAlbumCount",
         "parameters": [],
         "responses": {
           "200": {
@@ -1534,6 +1534,52 @@
         ]
       }
     },
+    "/asset/memory-lane": {
+      "get": {
+        "operationId": "getMemoryLane",
+        "parameters": [
+          {
+            "name": "timestamp",
+            "required": true,
+            "in": "query",
+            "description": "Get pictures for +24 hours from this time going back x years",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MemoryLaneResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/asset/search": {
       "post": {
         "operationId": "searchAsset",
@@ -2341,12 +2387,12 @@
         ]
       }
     },
-    "/jobs/{jobId}": {
+    "/jobs/{id}": {
       "put": {
         "operationId": "sendJobCommand",
         "parameters": [
           {
-            "name": "jobId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -4308,7 +4354,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.60.0",
+    "version": "1.61.0",
     "contact": {}
   },
   "tags": [],
@@ -4484,14 +4530,14 @@
           "shared": {
             "type": "integer"
           },
-          "sharing": {
+          "notShared": {
             "type": "integer"
           }
         },
         "required": [
           "owned",
           "shared",
-          "sharing"
+          "notShared"
         ]
       },
       "AlbumResponseDto": {
@@ -4819,6 +4865,11 @@
           "resized": {
             "type": "boolean"
           },
+          "thumbhash": {
+            "type": "string",
+            "nullable": true,
+            "description": "base64 encoded thumbhash"
+          },
           "fileCreatedAt": {
             "format": "date-time",
             "type": "string"
@@ -4880,6 +4931,7 @@
           "originalPath",
           "originalFileName",
           "resized",
+          "thumbhash",
           "fileCreatedAt",
           "fileModifiedAt",
           "updatedAt",
@@ -5707,6 +5759,24 @@
           "id",
           "lat",
           "lon"
+        ]
+      },
+      "MemoryLaneResponseDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssetResponseDto"
+            }
+          }
+        },
+        "required": [
+          "title",
+          "assets"
         ]
       },
       "OAuthCallbackDto": {

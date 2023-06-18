@@ -1,8 +1,8 @@
+import { AuthUserDto } from '@app/immich/decorators/auth-user.decorator';
+import { AuthGuard } from '@app/immich/middlewares/auth.guard';
 import { CanActivate, ExecutionContext } from '@nestjs/common';
 import { TestingModuleBuilder } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
-import { AuthUserDto } from '@app/immich/decorators/auth-user.decorator';
-import { AuthGuard } from '@app/immich/middlewares/auth.guard';
 
 type CustomAuthCallback = () => AuthUserDto;
 

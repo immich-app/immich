@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { authStub, newSharedLinkRepositoryMock, sharedLinkResponseStub, sharedLinkStub } from '@test';
-import { SharedLinkService } from './shared-link.service';
 import { ISharedLinkRepository } from './shared-link.repository';
+import { SharedLinkService } from './shared-link.service';
 
 describe(SharedLinkService.name, () => {
   let sut: SharedLinkService;
