@@ -1,5 +1,4 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
-import _ from 'lodash';
 import {
   albumStub,
   authStub,
@@ -9,6 +8,7 @@ import {
   newUserRepositoryMock,
   userEntityStub,
 } from '@test';
+import _ from 'lodash';
 import { IAssetRepository } from '../asset';
 import { IJobRepository, JobName } from '../job';
 import { IUserRepository } from '../user';

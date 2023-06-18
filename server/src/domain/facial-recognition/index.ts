@@ -1,2 +1,2 @@
-export * from './facial-recognition.services';
 export * from './face.repository';
+export * from './facial-recognition.services';

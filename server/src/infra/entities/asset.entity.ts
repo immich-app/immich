@@ -51,6 +51,9 @@ export class AssetEntity {
   @Column({ type: 'varchar', nullable: true, default: '' })
   webpPath!: string | null;
 
+  @Column({ type: 'bytea', nullable: true })
+  thumbhash!: Buffer | null;
+
   @Column({ type: 'varchar', nullable: true, default: '' })
   encodedVideoPath!: string | null;
 

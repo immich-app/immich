@@ -1,10 +1,10 @@
-import { Module } from '@nestjs/common';
-import { AssetService } from './asset.service';
-import { AssetController } from './asset.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { AssetEntity, ExifEntity } from '@app/infra/entities';
-import { AssetRepository, IAssetRepository } from './asset-repository';
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { DownloadModule } from '../../modules/download/download.module';
+import { AssetRepository, IAssetRepository } from './asset-repository';
+import { AssetController } from './asset.controller';
+import { AssetService } from './asset.service';
 
 @Module({
   imports: [

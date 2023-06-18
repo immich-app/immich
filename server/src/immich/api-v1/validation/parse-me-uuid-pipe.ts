@@ -1,4 +1,4 @@
-import { ParseUUIDPipe, Injectable, ArgumentMetadata } from '@nestjs/common';
+import { ArgumentMetadata, Injectable, ParseUUIDPipe } from '@nestjs/common';
 
 @Injectable()
 export class ParseMeUUIDPipe extends ParseUUIDPipe {

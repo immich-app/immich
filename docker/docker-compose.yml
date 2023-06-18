@@ -33,7 +33,6 @@ services:
     container_name: immich_machine_learning
     image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
     volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - model-cache:/cache
     env_file:
       - .env

@@ -1,7 +1,7 @@
-import { IsEnum, IsString, IsInt, IsBoolean, Min, Max } from 'class-validator';
 import { TranscodePreset } from '@app/infra/entities';
-import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsBoolean, IsEnum, IsInt, IsString, Max, Min } from 'class-validator';
 
 export class SystemConfigFFmpegDto {
   @IsInt()

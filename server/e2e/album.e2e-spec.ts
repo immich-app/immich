@@ -1,13 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import request from 'supertest';
-import { clearDb, getAuthUser, authCustom } from '../test/test-utils';
-import { CreateAlbumDto } from '@app/domain';
+import { AlbumResponseDto, AuthService, CreateAlbumDto, SharedLinkResponseDto, UserService } from '@app/domain';
 import { CreateAlbumShareLinkDto } from '@app/immich/api-v1/album/dto/create-album-shared-link.dto';
-import { AuthUserDto } from '@app/immich/decorators/auth-user.decorator';
-import { AlbumResponseDto, AuthService, SharedLinkResponseDto, UserService } from '@app/domain';
-import { DataSource } from 'typeorm';
 import { AppModule } from '@app/immich/app.module';
+import { AuthUserDto } from '@app/immich/decorators/auth-user.decorator';
+import { INestApplication } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import request from 'supertest';
+import { DataSource } from 'typeorm';
+import { authCustom, clearDb, getAuthUser } from '../test/test-utils';
 
 async function _createAlbum(app: INestApplication, data: CreateAlbumDto) {
   const res = await request(app.getHttpServer()).post('/album').send(data);

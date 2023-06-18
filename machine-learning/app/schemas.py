@@ -9,14 +9,6 @@ def to_lower_camel(string: str) -> str:
     return "".join(tokens)
 
 
-class VisionModelRequest(BaseModel):
-    image_path: str
-
-    class Config:
-        alias_generator = to_lower_camel
-        allow_population_by_field_name = True
-
-
 class TextModelRequest(BaseModel):
     text: str
 

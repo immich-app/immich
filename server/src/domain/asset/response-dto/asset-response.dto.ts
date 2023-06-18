@@ -16,6 +16,8 @@ export class AssetResponseDto {
   originalPath!: string;
   originalFileName!: string;
   resized!: boolean;
+  /**base64 encoded thumbhash */
+  thumbhash!: string | null;
   fileCreatedAt!: Date;
   fileModifiedAt!: Date;
   updatedAt!: Date;
@@ -42,6 +44,7 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,
     resized: !!entity.resizePath,
+    thumbhash: entity.thumbhash?.toString('base64') ?? null,
     fileCreatedAt: entity.fileCreatedAt,
     fileModifiedAt: entity.fileModifiedAt,
     updatedAt: entity.updatedAt,
@@ -68,6 +71,7 @@ export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
     originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,
     resized: !!entity.resizePath,
+    thumbhash: entity.thumbhash?.toString('base64') || null,
     fileCreatedAt: entity.fileCreatedAt,
     fileModifiedAt: entity.fileModifiedAt,
     updatedAt: entity.updatedAt,

@@ -160,6 +160,7 @@ export class JobService {
 
       case JobName.GENERATE_JPEG_THUMBNAIL: {
         await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: item.data });
+        await this.jobRepository.queue({ name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: item.data });
         await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: item.data });
         await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: item.data });
         await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: item.data });

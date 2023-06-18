@@ -31,6 +31,7 @@ export type JobItem =
   | { name: JobName.QUEUE_GENERATE_THUMBNAILS; data: IBaseJob }
   | { name: JobName.GENERATE_JPEG_THUMBNAIL; data: IEntityJob }
   | { name: JobName.GENERATE_WEBP_THUMBNAIL; data: IEntityJob }
+  | { name: JobName.GENERATE_THUMBHASH_THUMBNAIL; data: IEntityJob }
 
   // User Deletion
   | { name: JobName.USER_DELETE_CHECK; data?: IBaseJob }

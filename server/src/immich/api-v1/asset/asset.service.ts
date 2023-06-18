@@ -1,75 +1,79 @@
-import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import {
-  BadRequestException,
-  ForbiddenException,
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-  NotFoundException,
-  StreamableFile,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { QueryFailedError, Repository } from 'typeorm';
-import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { AssetEntity, AssetType, SharedLinkType } from '@app/infra/entities';
-import { constants, createReadStream, stat } from 'fs';
-import { ServeFileDto } from './dto/serve-file.dto';
-import { Response as Res } from 'express';
-import { promisify } from 'util';
-import { DeleteAssetDto } from './dto/delete-asset.dto';
-import { SearchAssetDto } from './dto/search-asset.dto';
-import fs from 'fs/promises';
-import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
-import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import {
-  AssetResponseDto,
-  getLivePhotoMotionFilename,
+  SharedLinkCore,
   IAccessRepository,
-  ImmichReadStream,
-  isSupportedFileType,
+  ISharedLinkRepository,
+  IJobRepository,
+  ICryptoRepository,
   IStorageRepository,
+  AuthUserDto,
+  getLivePhotoMotionFilename,
   JobName,
+  isSupportedFileType,
+  AssetResponseDto,
   mapAsset,
   mapAssetWithoutExif,
+  ImmichReadStream,
+  SharedLinkResponseDto,
+  mapSharedLink,
 } from '@app/domain';
-import { CreateAssetDto, ImportAssetDto, UploadFile } from './dto/create-asset.dto';
-import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
-import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
-import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
+import { DownloadService } from '@app/immich/modules/download/download.service';
+import { AssetEntity, AssetType, SharedLinkType } from '@app/infra/entities';
+import {
+  Injectable,
+  Logger,
+  Inject,
+  BadRequestException,
+  InternalServerErrorException,
+  NotFoundException,
+  StreamableFile,
+  ForbiddenException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { constants } from 'buffer';
+import { stat, createReadStream } from 'fs';
+import mime from 'mime';
+import path from 'path';
+import { Repository, QueryFailedError } from 'typeorm';
+import { promisify } from 'util';
+import { AddAssetsDto } from '../album/dto/add-assets.dto';
+import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
 import { IAssetRepository } from './asset-repository';
+import { AssetCore } from './asset.core';
+import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
+import { AssetSearchDto } from './dto/asset-search.dto';
+import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
+import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
+import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
+import { CreateAssetDto, UploadFile, ImportAssetDto } from './dto/create-asset.dto';
+import { DeleteAssetDto } from './dto/delete-asset.dto';
+import { DownloadFilesDto } from './dto/download-files.dto';
+import { DownloadDto } from './dto/download-library.dto';
+import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
+import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
+import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
+import { SearchAssetDto } from './dto/search-asset.dto';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
+import { ServeFileDto } from './dto/serve-file.dto';
+import { UpdateAssetDto } from './dto/update-asset.dto';
+import {
+  AssetBulkUploadCheckResponseDto,
+  AssetUploadAction,
+  AssetRejectReason,
+} from './response-dto/asset-check-response.dto';
 import {
   AssetCountByTimeBucketResponseDto,
   mapAssetCountByTimeBucket,
 } from './response-dto/asset-count-by-time-group-response.dto';
-import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
-import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
-import { AssetCore } from './asset.core';
-import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
-import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
-import { ICryptoRepository, IJobRepository } from '@app/domain';
-import { DownloadService } from '../../modules/download/download.service';
-import { DownloadDto } from './dto/download-library.dto';
-import { SharedLinkCore } from '@app/domain';
-import { ISharedLinkRepository } from '@app/domain';
-import { DownloadFilesDto } from './dto/download-files.dto';
-import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
-import { mapSharedLink, SharedLinkResponseDto } from '@app/domain';
-import { AssetSearchDto } from './dto/asset-search.dto';
-import { AddAssetsDto } from '../album/dto/add-assets.dto';
-import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
-import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
-import {
-  AssetUploadAction,
-  AssetRejectReason,
-  AssetBulkUploadCheckResponseDto,
-} from './response-dto/asset-check-response.dto';
-import mime from 'mime';
-import path from 'path';
+import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
+import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
+import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
+import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
+import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
+import { R_OK, W_OK } from 'constants';
+import fs from 'fs/promises';
+import { Response as Res } from 'express';
 
 const fileInfo = promisify(stat);
 
@@ -150,13 +154,13 @@ export class AssetService {
       sidecarPath: dto.sidecarPath ? path.resolve(dto.sidecarPath) : undefined,
     };
 
-    const assetPathType = mime.lookup(dto.assetPath) as string
+    const assetPathType = mime.lookup(dto.assetPath) as string;
     if (!isSupportedFileType(assetPathType)) {
       throw new BadRequestException(`Unsupported file type ${assetPathType}`);
     }
 
     if (dto.sidecarPath) {
-      const sidecarType = mime.lookup(dto.sidecarPath) as string
+      const sidecarType = mime.lookup(dto.sidecarPath) as string;
       if (!sidecarType.match(/\/xml$/)) {
         throw new BadRequestException(`Unsupported sidecar file type ${assetPathType}`);
       }
@@ -167,7 +171,7 @@ export class AssetService {
         continue;
       }
 
-      const exists = await this.storageRepository.checkFileExists(filepath, constants.R_OK);
+      const exists = await this.storageRepository.checkFileExists(filepath, R_OK);
       if (!exists) {
         throw new BadRequestException('File does not exist');
       }
@@ -372,7 +376,7 @@ export class AssetService {
         let videoPath = asset.originalPath;
         let mimeType = asset.mimeType;
 
-        await fs.access(videoPath, constants.R_OK | constants.W_OK);
+        await fs.access(videoPath, R_OK | W_OK);
 
         if (asset.encodedVideoPath) {
           videoPath = asset.encodedVideoPath == '' ? String(asset.originalPath) : String(asset.encodedVideoPath);
@@ -801,7 +805,7 @@ export class AssetService {
       return;
     }
 
-    await fs.access(filepath, constants.R_OK);
+    await fs.access(filepath, R_OK);
 
     return new StreamableFile(createReadStream(filepath));
   }
