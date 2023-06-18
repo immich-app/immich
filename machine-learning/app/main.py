@@ -1,23 +1,26 @@
 import os
-import io
+from io import BytesIO
 from typing import Any
 
-from cache import ModelCache
-from schemas import (
+import cv2
+import numpy as np
+import uvicorn
+from fastapi import Body, Depends, FastAPI, HTTPException
+from PIL import Image
+
+from .config import settings
+from .models.cache import ModelCache, get_model
+from .schemas import (
     EmbeddingResponse,
     FaceResponse,
-    TagResponse,
     MessageResponse,
+    ModelType,
+    TagResponse,
     TextModelRequest,
     TextResponse,
 )
-import uvicorn
-from PIL import Image
-from fastapi import FastAPI, HTTPException, Depends, Body
-from models import get_model, run_classification, run_facial_recognition
-from config import settings
 
-_model_cache = None
+_model_cache: Any = None
 
 app = FastAPI()
 
@@ -27,16 +30,16 @@ async def startup_event() -> None:
     global _model_cache
     _model_cache = ModelCache(ttl=settings.model_ttl, revalidate=True)
     models = [
-        (settings.classification_model, "image-classification"),
-        (settings.clip_image_model, "clip"),
-        (settings.clip_text_model, "clip"),
-        (settings.facial_recognition_model, "facial-recognition"),
+        (settings.classification_model, ModelType.IMAGE_CLASSIFICATION),
+        (settings.clip_image_model, ModelType.CLIP),
+        (settings.clip_text_model, ModelType.CLIP),
+        (settings.facial_recognition_model, ModelType.FACIAL_RECOGNITION),
     ]
 
     # Get all models
     for model_name, model_type in models:
         if settings.eager_startup:
-            await _model_cache.get_cached_model(model_name, model_type)
+            await _model_cache.get(model_name, model_type)
         else:
             get_model(model_name, model_type)
 
@@ -45,8 +48,15 @@ def dep_model_cache():
     if _model_cache is None:
         raise HTTPException(status_code=500, detail="Unable to load model.")
 
-def dep_input_image(image: bytes = Body(...)) -> Image:
-    return Image.open(io.BytesIO(image))
+
+def dep_pil_image(byte_image: bytes = Body(...)) -> Image.Image:
+    return Image.open(BytesIO(byte_image))
+
+
+def dep_cv_image(byte_image: bytes = Body(...)) -> cv2.Mat:
+    byte_image_np = np.frombuffer(byte_image, np.uint8)
+    return cv2.imdecode(byte_image_np, cv2.IMREAD_COLOR)
+
 
 @app.get("/", response_model=MessageResponse)
 async def root() -> dict[str, str]:
@@ -65,13 +75,13 @@ def ping() -> str:
     dependencies=[Depends(dep_model_cache)],
 )
 async def image_classification(
-    image: Image = Depends(dep_input_image)
+    image: Image.Image = Depends(dep_pil_image),
 ) -> list[str]:
     try:
-        model = await _model_cache.get_cached_model(
-            settings.classification_model, "image-classification"
+        model = await _model_cache.get(
+            settings.classification_model, ModelType.IMAGE_CLASSIFICATION
         )
-        labels = run_classification(model, image, settings.min_tag_score)
+        labels = model.classify(image)
     except Exception as ex:
         raise HTTPException(status_code=500, detail=str(ex))
     else:
@@ -85,10 +95,10 @@ async def image_classification(
     dependencies=[Depends(dep_model_cache)],
 )
 async def clip_encode_image(
-    image: Image = Depends(dep_input_image)
+    image: Image.Image = Depends(dep_pil_image),
 ) -> list[float]:
-    model = await _model_cache.get_cached_model(settings.clip_image_model, "clip")
-    embedding = model.encode(image).tolist()
+    model = await _model_cache.get(settings.clip_image_model, ModelType.CLIP)
+    embedding = model.encode_image(image).tolist()
     return embedding
 
 
@@ -98,11 +108,9 @@ async def clip_encode_image(
     status_code=200,
     dependencies=[Depends(dep_model_cache)],
 )
-async def clip_encode_text(
-    payload: TextModelRequest
-) -> list[float]:
-    model = await _model_cache.get_cached_model(settings.clip_text_model, "clip")
-    embedding = model.encode(payload.text).tolist()
+async def clip_encode_text(payload: TextModelRequest) -> list[float]:
+    model = await _model_cache.get(settings.clip_text_model, ModelType.CLIP)
+    embedding = model.encode_image(payload.text).tolist()
     return embedding
 
 
@@ -113,12 +121,12 @@ async def clip_encode_text(
     dependencies=[Depends(dep_model_cache)],
 )
 async def facial_recognition(
-    image: bytes = Body(...),
+    image: cv2.Mat = Depends(dep_cv_image),
 ) -> list[dict[str, Any]]:
-    model = await _model_cache.get_cached_model(
-        settings.facial_recognition_model, "facial-recognition"
+    model = await _model_cache.get(
+        settings.facial_recognition_model, ModelType.FACIAL_RECOGNITION
     )
-    faces = run_facial_recognition(model, image)
+    faces = model.recognize(image)
     return faces
 
 

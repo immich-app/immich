@@ -1,3 +1,5 @@
+from enum import Enum
+
 from pydantic import BaseModel
 
 
@@ -54,3 +56,9 @@ class Face(BaseModel):
 
 class FaceResponse(BaseModel):
     __root__: list[Face]
+
+
+class ModelType(Enum):
+    IMAGE_CLASSIFICATION = "image-classification"
+    CLIP = "clip"
+    FACIAL_RECOGNITION = "facial-recognition"

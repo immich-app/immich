@@ -1,8 +1,14 @@
-from aiocache.plugins import TimingPlugin, BasePlugin
+import asyncio
+from typing import Any
+
 from aiocache.backends.memory import SimpleMemoryCache
 from aiocache.lock import OptimisticLock
-from typing import Any
-from models import get_model
+from aiocache.plugins import BasePlugin, TimingPlugin
+
+from ..schemas import ModelType
+from .clip import CLIPSTEncoder
+from .facial_recognition import FaceRecognizer
+from .image_classification import ImageClassifier
 
 
 class ModelCache:
@@ -10,7 +16,7 @@ class ModelCache:
 
     def __init__(
         self,
-        ttl: int | None = None,
+        ttl: float | None = None,
         revalidate: bool = False,
         timeout: int | None = None,
         profiling: bool = False,
@@ -35,9 +41,7 @@ class ModelCache:
             ttl=ttl, timeout=timeout, plugins=plugins, namespace=None
         )
 
-    async def get_cached_model(
-        self, model_name: str, model_type: str, **model_kwargs
-    ) -> Any:
+    async def get(self, model_name: str, model_type: ModelType, **model_kwargs) -> Any:
         """
         Args:
             model_name: Name of model in the model hub used for the task.
@@ -47,11 +51,13 @@ class ModelCache:
             model: The requested model.
         """
 
-        key = self.cache.build_key(model_name, model_type)
+        key = self.cache.build_key(model_name, model_type.value)
         model = await self.cache.get(key)
         if model is None:
             async with OptimisticLock(self.cache, key) as lock:
-                model = get_model(model_name, model_type, **model_kwargs)
+                model = await asyncio.get_running_loop().run_in_executor(
+                    None, lambda: get_model(model_name, model_type, **model_kwargs)
+                )
                 await lock.cas(model, ttl=self.ttl)
         return model
 
@@ -82,3 +88,15 @@ class RevalidationPlugin(BasePlugin):
                 key = client.build_key(key, namespace)
             if val is not None and key in client._handlers:
                 await client.expire(key, client.ttl)
+
+
+def get_model(model_name: str, model_type: ModelType, **kwargs) -> Any:
+    match model_type:
+        case ModelType.IMAGE_CLASSIFICATION:
+            return ImageClassifier(model_name, **kwargs)
+        case ModelType.CLIP:
+            return CLIPSTEncoder(model_name, **kwargs)
+        case ModelType.FACIAL_RECOGNITION:
+            return FaceRecognizer(model_name, **kwargs)
+        case _:
+            raise ValueError(f"Unsupported model type: {model_type}")
