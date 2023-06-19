@@ -58,17 +58,11 @@ def face_preds() -> list[SimpleNamespace]:
 
 
 @pytest.fixture
-def mock_classifier_pipeline(
-    classifier_preds: list[dict[str, Any]]
-) -> Iterator[mock.Mock]:
+def mock_classifier_pipeline(classifier_preds: list[dict[str, Any]]) -> Iterator[mock.Mock]:
     with mock.patch("app.models.image_classification.pipeline") as model:
 
-        def forward(
-            inputs: Image.Image | list[Image.Image], **kwargs: Any
-        ) -> list[dict[str, Any]]:
-            if isinstance(inputs, list) and not all(
-                [isinstance(img, Image.Image) for img in inputs]
-            ):
+        def forward(inputs: Image.Image | list[Image.Image], **kwargs: Any) -> list[dict[str, Any]]:
+            if isinstance(inputs, list) and not all([isinstance(img, Image.Image) for img in inputs]):
                 raise TypeError
             elif not isinstance(inputs, Image.Image):
                 raise TypeError
@@ -86,16 +80,10 @@ def mock_classifier_pipeline(
 def mock_st(clip_embedding: ndarray) -> Iterator[mock.Mock]:
     with mock.patch("app.models.clip.SentenceTransformer") as model:
 
-        def encode(
-            inputs: Image.Image | list[Image.Image], **kwargs: Any
-        ) -> ndarray | list[ndarray]:
+        def encode(inputs: Image.Image | list[Image.Image], **kwargs: Any) -> ndarray | list[ndarray]:
             #  mypy complains unless isinstance(inputs, list) is used explicitly
-            img_batch = isinstance(inputs, list) and all(
-                [isinstance(inst, Image.Image) for inst in inputs]
-            )
-            text_batch = isinstance(inputs, list) and all(
-                [isinstance(inst, str) for inst in inputs]
-            )
+            img_batch = isinstance(inputs, list) and all([isinstance(inst, Image.Image) for inst in inputs])
+            text_batch = isinstance(inputs, list) and all([isinstance(inst, str) for inst in inputs])
             if isinstance(inputs, list) and not any([img_batch, text_batch]):
                 raise TypeError
 
@@ -114,9 +102,7 @@ def mock_st(clip_embedding: ndarray) -> Iterator[mock.Mock]:
 def mock_faceanalysis(face_preds: list[SimpleNamespace]) -> Iterator[mock.Mock]:
     with mock.patch("app.models.facial_recognition.FaceAnalysis") as model:
 
-        def get(
-            image: np.ndarray[int, np.dtype[np.float32]], **kwargs: Any
-        ) -> list[SimpleNamespace]:
+        def get(image: np.ndarray[int, np.dtype[np.float32]], **kwargs: Any) -> list[SimpleNamespace]:
             if not isinstance(image, np.ndarray):
                 raise TypeError
 

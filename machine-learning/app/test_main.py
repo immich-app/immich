@@ -29,9 +29,7 @@ class TestImageClassifier:
             model_kwargs={"cache_dir": cache_dir},
         )
 
-    def test_min_score(
-        self, mock_classifier_pipeline: mock.Mock, pil_image: Image.Image
-    ) -> None:
+    def test_min_score(self, mock_classifier_pipeline: mock.Mock, pil_image: Image.Image) -> None:
         classifier = ImageClassifier("test_model_name", min_score=0.0)
         classifier.min_score = 0.0
         all_labels = classifier.classify(pil_image)
@@ -48,9 +46,7 @@ class TestImageClassifier:
         ]
         assert filtered_labels == ["that's an image alright"]
 
-    def test_endpoint(
-        self, pil_image: Image.Image, mock_classifier_pipeline: mock.Mock
-    ) -> None:
+    def test_endpoint(self, pil_image: Image.Image, mock_classifier_pipeline: mock.Mock) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
         headers = {"Content-Type": "image/jpg"}
@@ -62,9 +58,7 @@ class TestImageClassifier:
         assert response.status_code == 200
 
     @pytest.mark.skip(reason="Not implemented")
-    def test_model(
-        self, pil_image: Image.Image, mock_classifier_pipeline: mock.Mock
-    ) -> None:
+    def test_model(self, pil_image: Image.Image, mock_classifier_pipeline: mock.Mock) -> None:
         pass
 
 
@@ -119,9 +113,7 @@ class TestCLIP:
         assert response.status_code == 200
 
     def test_text_endpoint(self, mock_st: mock.Mock) -> None:
-        response = client.post(
-            "/sentence-transformer/encode-text", json={"text": "test search query"}
-        )
+        response = client.post("/sentence-transformer/encode-text", json={"text": "test search query"})
         assert response.status_code == 200
 
     @pytest.mark.skip(reason="Not implemented")
@@ -145,9 +137,7 @@ class TestFaceRecognition:
         )
 
     def test_basic(self, cv_image: cv2.Mat, mock_faceanalysis: mock.Mock) -> None:
-        face_recognizer = FaceRecognizer(
-            "test_model_name", min_score=0.0, cache_dir="test_cache"
-        )
+        face_recognizer = FaceRecognizer("test_model_name", min_score=0.0, cache_dir="test_cache")
         faces = face_recognizer.recognize(cv_image)
 
         assert len(faces) == 2
@@ -160,9 +150,7 @@ class TestFaceRecognition:
 
         mock_faceanalysis.assert_called_once()
 
-    def test_endpoint(
-        self, pil_image: Image.Image, mock_faceanalysis: mock.Mock
-    ) -> None:
+    def test_endpoint(self, pil_image: Image.Image, mock_faceanalysis: mock.Mock) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
         headers = {"Content-Type": "image/png"}

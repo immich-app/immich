@@ -139,16 +139,15 @@ jobs:
           python -m pip install poetry
           poetry config virtualenvs.create false
           poetry install --with dev
-          mypy --install-types --non-interactive
-      - name: Lint with mypy
+      - name: Run mypy type checking
         run: |
-          mypy app
+          mypy --install-types --non-interactive app/
       - name: Check black formatting
         run: |
           black --check app
-      - name: Check imports
+      - name: Lint with ruff
         run: |
-          isort --check --diff app
+          ruff check --format=github app
       - name: Run tests and coverage
         run: |
           pytest --cov app
