@@ -141,7 +141,6 @@ export function getFileMimeType(file: File): string {
 		cr2: 'image/x-canon-cr2',
 		cr3: 'image/x-canon-cr3',
 		erf: 'image/x-epson-erf',
-		raf: 'image/x-fuji-raf',
 		dcr: 'image/x-kodak-dcr',
 		k25: 'image/x-kodak-k25',
 		kdc: 'image/x-kodak-kdc',
