@@ -19,7 +19,11 @@ export class FilesystemProvider implements IStorageRepository {
   }
 
   async moveFile(source: string, destination: string): Promise<void> {
-    await moveFile(source, destination, { mkdirp: true, clobber: false });
+    if (await this.checkFileExists(destination)) {
+      throw new Error(`Destination file already exists: ${destination}`);
+    }
+
+    await moveFile(source, destination, { mkdirp: true, clobber: true });
   }
 
   async checkFileExists(filepath: string, mode = constants.F_OK): Promise<boolean> {
