@@ -1,26 +1,25 @@
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, Iterator, TypeAlias
 from unittest import mock
 
 import numpy as np
+import pytest
 from PIL import Image
-from pytest import MonkeyPatch, fixture
 
-from .config import settings
-from .models.cache import ModelCache
+ndarray: TypeAlias = np.ndarray[int, np.dtype[np.float32]]
 
 
-@fixture
+@pytest.fixture
 def pil_image() -> Image.Image:
     return Image.new("RGB", (600, 800))
 
 
-@fixture
-def cv_image(pil_image: Image.Image) -> np.ndarray:
+@pytest.fixture
+def cv_image(pil_image: Image.Image) -> ndarray:
     return np.asarray(pil_image)[:, :, ::-1]  # PIL uses RGB while cv2 uses BGR
 
 
-@fixture
+@pytest.fixture
 def classifier_preds() -> list[dict[str, Any]]:
     return [
         {"label": "that's an image alright", "score": 0.8},
@@ -31,12 +30,12 @@ def classifier_preds() -> list[dict[str, Any]]:
     ]
 
 
-@fixture
-def clip_embedding() -> np.ndarray[int, np.dtype[np.float32]]:
+@pytest.fixture
+def clip_embedding() -> ndarray:
     return np.random.rand(512).astype(np.float32)
 
 
-@fixture
+@pytest.fixture
 def face_preds() -> list[SimpleNamespace]:
     return [
         SimpleNamespace(  # this is so these fields can be accessed through dot notation
@@ -58,18 +57,23 @@ def face_preds() -> list[SimpleNamespace]:
     ]
 
 
-@fixture
-def mock_classifier_pipeline(classifier_preds):
+@pytest.fixture
+def mock_classifier_pipeline(
+    classifier_preds: list[dict[str, Any]]
+) -> Iterator[mock.Mock]:
     with mock.patch("app.models.image_classification.pipeline") as model:
 
-        def forward(inputs, *args, **kwargs):
-            batched = isinstance(inputs, list)
-            if batched and not all([isinstance(img, Image.Image) for img in inputs]):
+        def forward(
+            inputs: Image.Image | list[Image.Image], **kwargs: Any
+        ) -> list[dict[str, Any]]:
+            if isinstance(inputs, list) and not all(
+                [isinstance(img, Image.Image) for img in inputs]
+            ):
                 raise TypeError
             elif not isinstance(inputs, Image.Image):
                 raise TypeError
 
-            if batched:
+            if isinstance(inputs, list):
                 return [classifier_preds] * len(inputs)
 
             return classifier_preds
@@ -78,20 +82,24 @@ def mock_classifier_pipeline(classifier_preds):
         yield model
 
 
-@fixture
-def mock_st(clip_embedding):
+@pytest.fixture
+def mock_st(clip_embedding: ndarray) -> Iterator[mock.Mock]:
     with mock.patch("app.models.clip.SentenceTransformer") as model:
 
-        def encode(inputs, *args, **kwargs):
-            batched = isinstance(inputs, list)
-            img_batch = batched and all(
+        def encode(
+            inputs: Image.Image | list[Image.Image], **kwargs: Any
+        ) -> ndarray | list[ndarray]:
+            #  mypy complains unless isinstance(inputs, list) is used explicitly
+            img_batch = isinstance(inputs, list) and all(
                 [isinstance(inst, Image.Image) for inst in inputs]
             )
-            text_batch = batched and all([isinstance(inst, str) for inst in inputs])
-            if batched and not any(img_batch, text_batch):
+            text_batch = isinstance(inputs, list) and all(
+                [isinstance(inst, str) for inst in inputs]
+            )
+            if isinstance(inputs, list) and not any([img_batch, text_batch]):
                 raise TypeError
 
-            if batched:
+            if isinstance(inputs, list):
                 return [clip_embedding] * len(inputs)
 
             return clip_embedding
@@ -102,11 +110,13 @@ def mock_st(clip_embedding):
         yield model
 
 
-@fixture
-def mock_faceanalysis(face_preds):
+@pytest.fixture
+def mock_faceanalysis(face_preds: list[SimpleNamespace]) -> Iterator[mock.Mock]:
     with mock.patch("app.models.facial_recognition.FaceAnalysis") as model:
 
-        def get(image, *args, **kwargs):
+        def get(
+            image: np.ndarray[int, np.dtype[np.float32]], **kwargs: Any
+        ) -> list[SimpleNamespace]:
             if not isinstance(image, np.ndarray):
                 raise TypeError
 

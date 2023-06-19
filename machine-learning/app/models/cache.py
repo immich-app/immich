@@ -39,7 +39,7 @@ class ModelCache:
         )
 
     async def get(
-        self, model_name: str, model_type: ModelType, **model_kwargs
+        self, model_name: str, model_type: ModelType, **model_kwargs: Any
     ) -> InferenceModel:
         """
         Args:
@@ -73,7 +73,14 @@ class ModelCache:
 class RevalidationPlugin(BasePlugin):
     """Revalidates cache item's TTL after cache hit."""
 
-    async def post_get(self, client, key, ret=None, namespace=None, **kwargs):
+    async def post_get(
+        self,
+        client: SimpleMemoryCache,
+        key: str,
+        ret: Any | None = None,
+        namespace: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         if ret is None:
             return
         if namespace is not None:
@@ -81,7 +88,14 @@ class RevalidationPlugin(BasePlugin):
         if key in client._handlers:
             await client.expire(key, client.ttl)
 
-    async def post_multi_get(self, client, keys, ret=None, namespace=None, **kwargs):
+    async def post_multi_get(
+        self,
+        client: SimpleMemoryCache,
+        keys: list[str],
+        ret: list[Any] | None = None,
+        namespace: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         if ret is None:
             return
 

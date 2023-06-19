@@ -31,6 +31,7 @@ pytest = "^7.3.1"
 locust = "^2.15.1"
 gunicorn = "^20.1.0"
 httpx = "^0.24.1"
+isort = "^5.12.0"
 
 [[tool.poetry.source]]
 name = "pytorch-cpu"
@@ -59,3 +60,20 @@ init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
 warn_untyped_fields = true
+
+[[tool.mypy.overrides]]
+module = [
+    "transformers.pipelines",
+    "cv2",
+    "insightface.app",
+    "sentence_transformers",
+    "aiocache.backends.memory",
+    "aiocache.lock",
+    "aiocache.plugins"
+]
+ignore_missing_imports = true
+
+[tool.isort]
+indent = 4
+profile = "black"
+balanced_wrapping = true
