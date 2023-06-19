@@ -4584,6 +4584,10 @@
           },
           "owner": {
             "$ref": "#/components/schemas/UserResponseDto"
+          },
+          "lastModifiedAssetTimestamp": {
+            "format": "date-time",
+            "type": "string"
           }
         },
         "required": [

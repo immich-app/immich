@@ -284,6 +284,12 @@ export interface AlbumResponseDto {
      * @memberof AlbumResponseDto
      */
     'owner': UserResponseDto;
+    /**
+     * 
+     * @type {string}
+     * @memberof AlbumResponseDto
+     */
+    'lastModifiedAssetTimestamp'?: string;
 }
 /**
  * 

@@ -53,15 +53,19 @@ export class AlbumService {
       return obj;
     }, {});
 
-    return albums.map((album) => {
-      return {
-        ...album,
-        assets: album?.assets?.map(mapAsset),
-        sharedLinks: undefined, // Don't return shared links
-        shared: album.sharedLinks?.length > 0 || album.sharedUsers?.length > 0,
-        assetCount: albumsAssetCountObj[album.id],
-      } as AlbumResponseDto;
-    });
+    return Promise.all(
+      albums.map(async (album) => {
+        const lastModifiedAsset = await this.assetRepository.getLastUpdatedAssetForAlbumId(album.id);
+        return {
+          ...album,
+          assets: album?.assets?.map(mapAsset),
+          sharedLinks: undefined, // Don't return shared links
+          shared: album.sharedLinks?.length > 0 || album.sharedUsers?.length > 0,
+          assetCount: albumsAssetCountObj[album.id],
+          lastModifiedAssetTimestamp: lastModifiedAsset?.fileModifiedAt,
+        } as AlbumResponseDto;
+      }),
+    );
   }
 
   private async updateInvalidThumbnails(): Promise<number> {
