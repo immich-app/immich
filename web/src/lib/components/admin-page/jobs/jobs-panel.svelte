@@ -8,6 +8,7 @@
 	import { AllJobStatusResponseDto, api, JobCommand, JobCommandDto, JobName } from '@api';
 	import type { ComponentType } from 'svelte';
 	import type Icon from 'svelte-material-icons/DotsVertical.svelte';
+	import AllInclusive from 'svelte-material-icons/AllInclusive.svelte';
 	import FaceRecognition from 'svelte-material-icons/FaceRecognition.svelte';
 	import FileJpgBox from 'svelte-material-icons/FileJpgBox.svelte';
 	import FileXmlBox from 'svelte-material-icons/FileXmlBox.svelte';
@@ -36,6 +37,7 @@
 	}
 
 	let faceConfirm = false;
+	let allConfirm = false;
 
 	const handleFaceCommand = async (jobId: JobName, dto: JobCommandDto) => {
 		if (dto.force) {
@@ -46,9 +48,23 @@
 		await handleCommand(jobId, dto);
 	};
 
+	const handleAllCommandConfirm = async (dto: JobCommandDto) => {
+		if (dto.force) {
+			allConfirm = true;
+			return;
+		}
+
+		await handleAllCommand(dto);
+	};
+
 	const onFaceConfirm = () => {
 		faceConfirm = false;
 		handleCommand(JobName.RecognizeFaces, { command: JobCommand.Start, force: true });
+	};
+
+	const onAllConfirm = () => {
+		allConfirm = false;
+		handleAllCommand({ command: JobCommand.Start, force: true });
 	};
 
 	const jobDetails: Partial<Record<JobName, JobDetails>> = {
@@ -120,6 +136,25 @@
 			handleError(error, `Command '${jobCommand.command}' failed for job: ${title}`);
 		}
 	}
+
+	async function handleAllCommand(jobCommand: JobCommandDto) {
+		try {
+			console.log(jobCommand);
+			const { data } = await api.jobApi.sendAllJobsCommand({ jobCommandDto: jobCommand });
+			jobs = data;
+
+			switch (jobCommand.command) {
+				case JobCommand.Empty:
+					notificationController.show({
+						message: `Cleared all jobs`,
+						type: NotificationType.Info
+					});
+					break;
+			}
+		} catch (error) {
+			handleError(error, `Command '${jobCommand.command}' failed for all jobs`);
+		}
+	}
 </script>
 
 {#if faceConfirm}
@@ -127,6 +162,14 @@
 		prompt="Are you sure you want to reprocess all faces? This will also clear named people."
 		on:confirm={onFaceConfirm}
 		on:cancel={() => (faceConfirm = false)}
+	/>
+{/if}
+
+{#if allConfirm}
+	<ConfirmDialogue
+		prompt="Are you sure you want to reprocess all jobs? This will also clear named people."
+		on:confirm={onAllConfirm}
+		on:cancel={() => (allConfirm = false)}
 	/>
 {/if}
 
@@ -139,6 +182,30 @@
 			</Button>
 		</a>
 	</div>
+
+	<JobTile
+		icon={AllInclusive}
+		title="All Jobs"
+		subtitle="Run all jobs with one click"
+		allText="ALL"
+		missingText="MISSING"
+		jobCounts={{
+			waiting: Object.values(jobs).reduce((acc, job) => acc + job.jobCounts.waiting, 0),
+			active: Object.values(jobs).reduce((acc, job) => acc + job.jobCounts.active, 0),
+			completed: Object.values(jobs).reduce((acc, job) => acc + job.jobCounts.completed, 0),
+			failed: Object.values(jobs).reduce((acc, job) => acc + job.jobCounts.failed, 0),
+			delayed: Object.values(jobs).reduce((acc, job) => acc + job.jobCounts.delayed, 0),
+			paused: Object.values(jobs).reduce((acc, job) => acc + job.jobCounts.paused, 0)
+		}}
+		queueStatus={{
+			isActive: Object.values(jobs).some((job) => job.queueStatus.isActive),
+			isPaused: Object.values(jobs).every((job) => job.queueStatus.isPaused)
+		}}
+		on:command={({ detail }) => handleAllCommandConfirm(detail)}
+	/>
+
+	<hr class="border-gray-300 dark:border-immich-dark-gray" />
+
 	{#each jobDetailsArray as [jobName, { title, subtitle, allText, missingText, allowForceCommand, icon, component, handleCommand: handleCommandOverride }]}
 		{@const { jobCounts, queueStatus } = jobs[jobName]}
 		<JobTile

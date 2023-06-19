@@ -41,12 +41,24 @@ export class JobRepository implements IJobRepository {
     return this.getQueue(name).pause();
   }
 
+  pauseAll() {
+    return Promise.all(Object.values(QueueName).map((queueName) => this.pause(queueName)));
+  }
+
   resume(name: QueueName) {
     return this.getQueue(name).resume();
   }
 
+  resumeAll() {
+    return Promise.all(Object.values(QueueName).map((queueName) => this.resume(queueName)));
+  }
+
   empty(name: QueueName) {
     return this.getQueue(name).drain();
+  }
+
+  emptyAll() {
+    return Promise.all(Object.values(QueueName).map((queueName) => this.empty(queueName)));
   }
 
   getJobCounts(name: QueueName): Promise<JobCounts> {

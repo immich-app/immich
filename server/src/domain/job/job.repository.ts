@@ -90,8 +90,11 @@ export interface IJobRepository {
   setConcurrency(queueName: QueueName, concurrency: number): void;
   queue(item: JobItem): Promise<void>;
   pause(name: QueueName): Promise<void>;
+  pauseAll(): Promise<void[]>;
   resume(name: QueueName): Promise<void>;
+  resumeAll(): Promise<void[]>;
   empty(name: QueueName): Promise<void>;
+  emptyAll(): Promise<void[]>;
   getQueueStatus(name: QueueName): Promise<QueueStatus>;
   getJobCounts(name: QueueName): Promise<JobCounts>;
 }

@@ -47,6 +47,30 @@ export class JobService {
     return this.getJobStatus(queueName);
   }
 
+  async handleAllCommand(dto: JobCommandDto): Promise<AllJobStatusResponseDto> {
+    this.logger.debug(`Handling command: all,force=${dto.force}`);
+
+    switch (dto.command) {
+      case JobCommand.START:
+        await this.startAll(dto);
+        break;
+
+      case JobCommand.PAUSE:
+        await this.jobRepository.pauseAll();
+        break;
+
+      case JobCommand.RESUME:
+        await this.jobRepository.resumeAll();
+        break;
+
+      case JobCommand.EMPTY:
+        await this.jobRepository.emptyAll();
+        break;
+    }
+
+    return this.getAllJobsStatus();
+  }
+
   async getJobStatus(queueName: QueueName): Promise<JobStatusDto> {
     const [jobCounts, queueStatus] = await Promise.all([
       this.jobRepository.getJobCounts(queueName),
@@ -100,6 +124,28 @@ export class JobService {
       default:
         throw new BadRequestException(`Invalid job name: ${name}`);
     }
+  }
+
+  async startAll(dto: JobCommandDto): Promise<void> {
+    const supportedJobs = [
+      QueueName.VIDEO_CONVERSION,
+      QueueName.STORAGE_TEMPLATE_MIGRATION,
+      QueueName.OBJECT_TAGGING,
+      QueueName.CLIP_ENCODING,
+      QueueName.METADATA_EXTRACTION,
+      QueueName.SIDECAR,
+      QueueName.THUMBNAIL_GENERATION,
+      QueueName.RECOGNIZE_FACES,
+    ];
+
+    Promise.all(
+      supportedJobs.map(async (queueName) => {
+        const { isActive } = await this.jobRepository.getQueueStatus(queueName);
+        if (!isActive) {
+          await this.start(queueName, dto);
+        }
+      }),
+    );
   }
 
   async registerHandlers(jobHandlers: Record<JobName, JobHandler>) {

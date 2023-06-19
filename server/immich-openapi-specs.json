@@ -2387,6 +2387,48 @@
         ]
       }
     },
+    "/jobs/all": {
+      "post": {
+        "operationId": "sendAllJobsCommand",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobCommandDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AllJobStatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Job"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/jobs/{id}": {
       "put": {
         "operationId": "sendJobCommand",
