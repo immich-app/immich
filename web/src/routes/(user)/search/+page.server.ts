@@ -1,10 +1,11 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { AppRoute } from '$lib/constants';
 
 export const load = (async ({ locals, parent, url }) => {
 	const { user } = await parent();
 	if (!user) {
-		throw redirect(302, '/auth/login');
+		throw redirect(302, AppRoute.AUTH_LOGIN);
 	}
 
 	const term = url.searchParams.get('q') || url.searchParams.get('query') || undefined;
