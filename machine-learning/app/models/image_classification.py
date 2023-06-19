@@ -30,12 +30,7 @@ class ImageClassifier(InferenceModel):
         )
 
     def predict(self, image: Image) -> list[str]:
-        predictions = self.model(image)
-        tags = [
-            tag
-            for pred in predictions
-            for tag in pred["label"].split(", ")
-            if pred["score"] >= self.min_score
-        ]
+        predictions: list[dict[str, Any]] = self.model(image)  # type: ignore
+        tags = [tag for pred in predictions for tag in pred["label"].split(", ") if pred["score"] >= self.min_score]
 
         return tags

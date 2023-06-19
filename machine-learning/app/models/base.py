@@ -52,7 +52,7 @@ class InferenceModel(ABC):
 
     @classmethod
     def from_model_type(
-        cls, model_type: ModelType, model_name, **model_kwargs
+        cls, model_type: ModelType, model_name: str, **model_kwargs: Any
     ) -> InferenceModel:
         subclasses = {
             subclass._model_type: subclass for subclass in cls.__subclasses__()

@@ -32,9 +32,9 @@ class TestImageClassifier:
     def test_min_score(self, mock_classifier_pipeline: mock.Mock, pil_image: Image.Image) -> None:
         classifier = ImageClassifier("test_model_name", min_score=0.0)
         classifier.min_score = 0.0
-        all_labels = classifier.classify(pil_image)
+        all_labels = classifier.predict(pil_image)
         classifier.min_score = 0.5
-        filtered_labels = classifier.classify(pil_image)
+        filtered_labels = classifier.predict(pil_image)
 
         assert all_labels == [
             "that's an image alright",
@@ -69,23 +69,9 @@ class TestCLIP:
 
         mock_st.assert_called_once_with("test_model_name", cache_folder="test_cache")
 
-    def test_different_models(self, mock_st: mock.Mock) -> None:
-        CLIPSTEncoder(
-            "vision_model_name",
-            "text_model_name",
-            cache_dir="test_cache",
-        )
-
-        mock_st.assert_has_calls(
-            [
-                mock.call("vision_model_name", cache_folder="test_cache"),
-                mock.call("text_model_name", cache_folder="test_cache"),
-            ]
-        )
-
     def test_basic_image(self, pil_image: Image.Image, mock_st: mock.Mock) -> None:
-        clip_encoder = CLIPSTEncoder("test_model_name", vision_cache_dir="test_cache")
-        embedding = clip_encoder.encode_image(pil_image)
+        clip_encoder = CLIPSTEncoder("test_model_name", cache_dir="test_cache")
+        embedding = clip_encoder.predict(pil_image)
 
         assert isinstance(embedding, list)
         assert len(embedding) == 512
@@ -93,8 +79,8 @@ class TestCLIP:
         mock_st.assert_called_once()
 
     def test_basic_text(self, mock_st: mock.Mock) -> None:
-        clip_encoder = CLIPSTEncoder("test_model_name", vision_cache_dir="test_cache")
-        embedding = clip_encoder.encode_text("test search query")
+        clip_encoder = CLIPSTEncoder("test_model_name", cache_dir="test_cache")
+        embedding = clip_encoder.predict("test search query")
 
         assert isinstance(embedding, list)
         assert len(embedding) == 512
@@ -138,7 +124,7 @@ class TestFaceRecognition:
 
     def test_basic(self, cv_image: cv2.Mat, mock_faceanalysis: mock.Mock) -> None:
         face_recognizer = FaceRecognizer("test_model_name", min_score=0.0, cache_dir="test_cache")
-        faces = face_recognizer.recognize(cv_image)
+        faces = face_recognizer.predict(cv_image)
 
         assert len(faces) == 2
         for face in faces:

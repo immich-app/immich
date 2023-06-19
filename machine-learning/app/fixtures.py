@@ -6,6 +6,8 @@ import numpy as np
 import pytest
 from PIL import Image
 
+from .main import init_state
+
 ndarray: TypeAlias = np.ndarray[int, np.dtype[np.float32]]
 
 
@@ -61,7 +63,9 @@ def face_preds() -> list[SimpleNamespace]:
 def mock_classifier_pipeline(classifier_preds: list[dict[str, Any]]) -> Iterator[mock.Mock]:
     with mock.patch("app.models.image_classification.pipeline") as model:
 
-        def forward(inputs: Image.Image | list[Image.Image], **kwargs: Any) -> list[dict[str, Any]]:
+        def forward(
+            inputs: Image.Image | list[Image.Image], **kwargs: Any
+        ) -> list[dict[str, Any]] | list[list[dict[str, Any]]]:
             if isinstance(inputs, list) and not all([isinstance(img, Image.Image) for img in inputs]):
                 raise TypeError
             elif not isinstance(inputs, Image.Image):
@@ -112,3 +116,8 @@ def mock_faceanalysis(face_preds: list[SimpleNamespace]) -> Iterator[mock.Mock]:
         mocked.get = get
         model.return_value = mocked
         yield model
+
+
+@pytest.fixture(autouse=True)
+def startup() -> None:
+    init_state()
