@@ -76,7 +76,7 @@ When `DB_URL` is defined, the other database (`DB_*`) variables are ignored.
 | Variable         | Description    |    Default     | Services              |
 | :--------------- | :------------- | :------------: | :-------------------- |
 | `REDIS_URL`      | Redis URL      |                | server, microservices |
-| `REDIS_HOST`     | Redis Host     | `immich_redis` | server, microservices |
+| `REDIS_HOSTNAME` | Redis Host     | `immich_redis` | server, microservices |
 | `REDIS_PORT`     | Redis Port     |     `6379`     | server, microservices |
 | `REDIS_DBINDEX`  | Redis DB Index |      `0`       | server, microservices |
 | `REDIS_USERNAME` | Redis Username |                | server, microservices |
