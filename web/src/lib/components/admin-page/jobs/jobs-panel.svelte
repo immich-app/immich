@@ -3,21 +3,24 @@
 		notificationController,
 		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
+	import { AppRoute } from '$lib/constants';
 	import { handleError } from '$lib/utils/handle-error';
 	import { AllJobStatusResponseDto, api, JobCommand, JobCommandDto, JobName } from '@api';
 	import type { ComponentType } from 'svelte';
-	import Icon from 'svelte-material-icons/DotsVertical.svelte';
+	import type Icon from 'svelte-material-icons/DotsVertical.svelte';
 	import FaceRecognition from 'svelte-material-icons/FaceRecognition.svelte';
 	import FileJpgBox from 'svelte-material-icons/FileJpgBox.svelte';
-	import FolderMove from 'svelte-material-icons/FolderMove.svelte';
-	import Table from 'svelte-material-icons/Table.svelte';
 	import FileXmlBox from 'svelte-material-icons/FileXmlBox.svelte';
+	import FolderMove from 'svelte-material-icons/FolderMove.svelte';
+	import CogIcon from 'svelte-material-icons/Cog.svelte';
+	import Table from 'svelte-material-icons/Table.svelte';
 	import TagMultiple from 'svelte-material-icons/TagMultiple.svelte';
 	import VectorCircle from 'svelte-material-icons/VectorCircle.svelte';
 	import Video from 'svelte-material-icons/Video.svelte';
 	import ConfirmDialogue from '../../shared-components/confirm-dialogue.svelte';
 	import JobTile from './job-tile.svelte';
 	import StorageMigrationDescription from './storage-migration-description.svelte';
+	import Button from '../../elements/buttons/button.svelte';
 
 	export let jobs: AllJobStatusResponseDto;
 
@@ -45,52 +48,52 @@
 
 	const onFaceConfirm = () => {
 		faceConfirm = false;
-		handleCommand(JobName.RecognizeFacesQueue, { command: JobCommand.Start, force: true });
+		handleCommand(JobName.RecognizeFaces, { command: JobCommand.Start, force: true });
 	};
 
 	const jobDetails: Partial<Record<JobName, JobDetails>> = {
-		[JobName.ThumbnailGenerationQueue]: {
+		[JobName.ThumbnailGeneration]: {
 			icon: FileJpgBox,
-			title: 'Generate Thumbnails',
+			title: api.getJobName(JobName.ThumbnailGeneration),
 			subtitle: 'Regenerate JPEG and WebP thumbnails'
 		},
-		[JobName.MetadataExtractionQueue]: {
+		[JobName.MetadataExtraction]: {
 			icon: Table,
-			title: 'Extract Metadata',
+			title: api.getJobName(JobName.MetadataExtraction),
 			subtitle: 'Extract metadata information i.e. GPS, resolution...etc'
 		},
-		[JobName.SidecarQueue]: {
-			title: 'Sidecar Metadata',
+		[JobName.Sidecar]: {
+			title: api.getJobName(JobName.Sidecar),
 			icon: FileXmlBox,
 			subtitle: 'Discover or synchronize sidecar metadata from the filesystem',
 			allText: 'SYNC',
 			missingText: 'DISCOVER'
 		},
-		[JobName.ObjectTaggingQueue]: {
+		[JobName.ObjectTagging]: {
 			icon: TagMultiple,
-			title: 'Tag Objects',
+			title: api.getJobName(JobName.ObjectTagging),
 			subtitle:
 				'Run machine learning to tag objects\nNote that some assets may not have any objects detected'
 		},
-		[JobName.ClipEncodingQueue]: {
+		[JobName.ClipEncoding]: {
 			icon: VectorCircle,
-			title: 'Encode Clip',
+			title: api.getJobName(JobName.ClipEncoding),
 			subtitle: 'Run machine learning to generate clip embeddings'
 		},
-		[JobName.RecognizeFacesQueue]: {
+		[JobName.RecognizeFaces]: {
 			icon: FaceRecognition,
-			title: 'Recognize Faces',
+			title: api.getJobName(JobName.RecognizeFaces),
 			subtitle: 'Run machine learning to recognize faces',
 			handleCommand: handleFaceCommand
 		},
-		[JobName.VideoConversionQueue]: {
+		[JobName.VideoConversion]: {
 			icon: Video,
-			title: 'Transcode Videos',
+			title: api.getJobName(JobName.VideoConversion),
 			subtitle: 'Transcode videos not in the desired format'
 		},
-		[JobName.StorageTemplateMigrationQueue]: {
+		[JobName.StorageTemplateMigration]: {
 			icon: FolderMove,
-			title: 'Storage Template Migration',
+			title: api.getJobName(JobName.StorageTemplateMigration),
 			allowForceCommand: false,
 			component: StorageMigrationDescription
 		}
@@ -102,7 +105,7 @@
 		const title = jobDetails[jobId]?.title;
 
 		try {
-			const { data } = await api.jobApi.sendJobCommand({ jobId, jobCommandDto: jobCommand });
+			const { data } = await api.jobApi.sendJobCommand({ id: jobId, jobCommandDto: jobCommand });
 			jobs[jobId] = data;
 
 			switch (jobCommand.command) {
@@ -128,6 +131,14 @@
 {/if}
 
 <div class="flex flex-col gap-7">
+	<div class="flex justify-end">
+		<a href="{AppRoute.ADMIN_SETTINGS}?open=job-settings">
+			<Button size="sm">
+				<CogIcon size="18" />
+				<span class="pl-2">Manage Concurrency</span>
+			</Button>
+		</a>
+	</div>
 	{#each jobDetailsArray as [jobName, { title, subtitle, allText, missingText, allowForceCommand, icon, component, handleCommand: handleCommandOverride }]}
 		{@const { jobCounts, queueStatus } = jobs[jobName]}
 		<JobTile
@@ -141,7 +152,9 @@
 			{queueStatus}
 			on:command={({ detail }) => (handleCommandOverride || handleCommand)(jobName, detail)}
 		>
-			<svelte:component this={component} />
+			{#if component}
+				<svelte:component this={component} slot="description" />
+			{/if}
 		</JobTile>
 	{/each}
 </div>

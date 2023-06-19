@@ -276,28 +276,33 @@ class GalleryViewerPage extends HookConsumerWidget {
               (showAppBar.value && !isZoomed.value)) &&
           !isPlayingVideo.value;
 
-      return AnimatedOpacity(
-        duration: const Duration(milliseconds: 100),
-        opacity: show ? 1.0 : 0.0,
-        child: Container(
-          color: Colors.black.withOpacity(0.4),
-          child: TopControlAppBar(
-            isPlayingMotionVideo: isPlayingMotionVideo.value,
-            asset: asset(),
-            isFavorite: asset().isFavorite,
-            onMoreInfoPressed: showInfo,
-            onFavorite: asset().isRemote ? () => toggleFavorite(asset()) : null,
-            onDownloadPressed: asset().storage == AssetState.local
-                ? null
-                : () =>
-                    ref.watch(imageViewerStateProvider.notifier).downloadAsset(
-                          asset(),
-                          context,
-                        ),
-            onToggleMotionVideo: (() {
-              isPlayingMotionVideo.value = !isPlayingMotionVideo.value;
-            }),
-            onAddToAlbumPressed: () => addToAlbum(asset()),
+      return IgnorePointer(
+        ignoring: !show,
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 100),
+          opacity: show ? 1.0 : 0.0,
+          child: Container(
+            color: Colors.black.withOpacity(0.4),
+            child: TopControlAppBar(
+              isPlayingMotionVideo: isPlayingMotionVideo.value,
+              asset: asset(),
+              isFavorite: asset().isFavorite,
+              onMoreInfoPressed: showInfo,
+              onFavorite:
+                  asset().isRemote ? () => toggleFavorite(asset()) : null,
+              onDownloadPressed: asset().isLocal
+                  ? null
+                  : () => ref
+                      .watch(imageViewerStateProvider.notifier)
+                      .downloadAsset(
+                        asset(),
+                        context,
+                      ),
+              onToggleMotionVideo: (() {
+                isPlayingMotionVideo.value = !isPlayingMotionVideo.value;
+              }),
+              onAddToAlbumPressed: () => addToAlbum(asset()),
+            ),
           ),
         ),
       );
@@ -307,53 +312,57 @@ class GalleryViewerPage extends HookConsumerWidget {
       final show = (showAppBar.value || // onTap has the final say
               (showAppBar.value && !isZoomed.value)) &&
           !isPlayingVideo.value;
-      return AnimatedOpacity(
-        duration: const Duration(milliseconds: 100),
-        opacity: show ? 1.0 : 0.0,
-        child: BottomNavigationBar(
-          backgroundColor: Colors.black.withOpacity(0.4),
-          unselectedIconTheme: const IconThemeData(color: Colors.white),
-          selectedIconTheme: const IconThemeData(color: Colors.white),
-          unselectedLabelStyle: const TextStyle(color: Colors.black),
-          selectedLabelStyle: const TextStyle(color: Colors.black),
-          showSelectedLabels: false,
-          showUnselectedLabels: false,
-          items: [
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.ios_share_rounded),
-              label: 'control_bottom_app_bar_share'.tr(),
-              tooltip: 'control_bottom_app_bar_share'.tr(),
-            ),
-            asset().isArchived
-                ? BottomNavigationBarItem(
-                    icon: const Icon(Icons.unarchive_rounded),
-                    label: 'control_bottom_app_bar_unarchive'.tr(),
-                    tooltip: 'control_bottom_app_bar_unarchive'.tr(),
-                  )
-                : BottomNavigationBarItem(
-                    icon: const Icon(Icons.archive_outlined),
-                    label: 'control_bottom_app_bar_archive'.tr(),
-                    tooltip: 'control_bottom_app_bar_archive'.tr(),
-                  ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.delete_outline),
-              label: 'control_bottom_app_bar_delete'.tr(),
-              tooltip: 'control_bottom_app_bar_delete'.tr(),
-            ),
-          ],
-          onTap: (index) {
-            switch (index) {
-              case 0:
-                shareAsset();
-                break;
-              case 1:
-                handleArchive(asset());
-                break;
-              case 2:
-                handleDelete(asset());
-                break;
-            }
-          },
+
+      return IgnorePointer(
+        ignoring: !show,
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 100),
+          opacity: show ? 1.0 : 0.0,
+          child: BottomNavigationBar(
+            backgroundColor: Colors.black.withOpacity(0.4),
+            unselectedIconTheme: const IconThemeData(color: Colors.white),
+            selectedIconTheme: const IconThemeData(color: Colors.white),
+            unselectedLabelStyle: const TextStyle(color: Colors.black),
+            selectedLabelStyle: const TextStyle(color: Colors.black),
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            items: [
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.ios_share_rounded),
+                label: 'control_bottom_app_bar_share'.tr(),
+                tooltip: 'control_bottom_app_bar_share'.tr(),
+              ),
+              asset().isArchived
+                  ? BottomNavigationBarItem(
+                      icon: const Icon(Icons.unarchive_rounded),
+                      label: 'control_bottom_app_bar_unarchive'.tr(),
+                      tooltip: 'control_bottom_app_bar_unarchive'.tr(),
+                    )
+                  : BottomNavigationBarItem(
+                      icon: const Icon(Icons.archive_outlined),
+                      label: 'control_bottom_app_bar_archive'.tr(),
+                      tooltip: 'control_bottom_app_bar_archive'.tr(),
+                    ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.delete_outline),
+                label: 'control_bottom_app_bar_delete'.tr(),
+                tooltip: 'control_bottom_app_bar_delete'.tr(),
+              ),
+            ],
+            onTap: (index) {
+              switch (index) {
+                case 0:
+                  shareAsset();
+                  break;
+                case 1:
+                  handleArchive(asset());
+                  break;
+                case 2:
+                  handleDelete(asset());
+                  break;
+              }
+            },
+          ),
         ),
       );
     }

@@ -76,7 +76,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfoState> {
     return {
       "major": int.parse(major),
       "minor": int.parse(minor),
-      "patch": int.parse(patch),
+      "patch": int.parse(patch.replaceAll("-DEBUG", "")),
     };
   }
 }

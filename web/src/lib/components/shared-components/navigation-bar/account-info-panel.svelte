@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { UserResponseDto } from '@api';
+	import Button from '$lib/components/elements/buttons/button.svelte';
+	import { AppRoute } from '$lib/constants';
+	import type { UserResponseDto } from '@api';
 	import { createEventDispatcher } from 'svelte';
-	import { fade } from 'svelte/transition';
 	import Cog from 'svelte-material-icons/Cog.svelte';
 	import Logout from 'svelte-material-icons/Logout.svelte';
-	import Button from '$lib/components/elements/buttons/button.svelte';
+	import { fade } from 'svelte/transition';
 	import UserAvatar from '../user-avatar.svelte';
-	import { AppRoute } from '$lib/constants';
 
 	export let user: UserResponseDto;
 
@@ -25,7 +25,7 @@
 		<UserAvatar size="lg" {user} />
 
 		<div>
-			<p class="text-lg text-immich-primary dark:text-immich-dark-primary font-medium">
+			<p class="text-lg text-immich-primary dark:text-immich-dark-primary font-medium text-center">
 				{user.firstName}
 				{user.lastName}
 			</p>

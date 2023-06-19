@@ -6,9 +6,10 @@
 		"build": "vite build",
 		"package": "svelte-kit package",
 		"preview": "vite preview",
-		"check": "svelte-check --no-tsconfig --fail-on-warnings --ignore \"src/api/open-api\"",
-		"check:watch": "npm run check -- --watch",
-		"check:code": "npm run format && npm run lint && npm run check",
+		"check:svelte": "svelte-check --no-tsconfig --fail-on-warnings --ignore \"src/api/open-api\"",
+		"check:typescript": "tsc --noEmit",
+		"check:watch": "npm run check:svelte -- --watch",
+		"check:code": "npm run format && npm run lint && npm run check:svelte && npm run check:typescript",
 		"check:all": "npm run check:code && npm run test:cov",
 		"lint": "eslint . --max-warnings 0",
 		"lint:fix": "npm run lint -- --fix",
@@ -61,13 +62,15 @@
 		"axios": "^0.27.2",
 		"copy-image-clipboard": "^2.1.2",
 		"handlebars": "^4.7.7",
+		"justified-layout": "^4.1.0",
 		"leaflet": "^1.9.3",
 		"leaflet.markercluster": "^1.5.3",
 		"lodash-es": "^4.17.21",
 		"luxon": "^3.2.1",
 		"rxjs": "^7.8.0",
 		"socket.io-client": "^4.6.1",
-		"svelte-local-storage-store": "^0.4.0",
-		"svelte-material-icons": "^3.0.4"
+		"svelte-local-storage-store": "^0.5.0",
+		"svelte-material-icons": "^3.0.4",
+		"unlazy": "^0.8.9"
 	}
 }

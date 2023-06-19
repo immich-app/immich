@@ -138,7 +138,7 @@
 			$downloadAssets[imageFileName] = 0;
 
 			const { data, status } = await api.assetApi.downloadFile(
-				{ assetId, key },
+				{ id: assetId, key },
 				{
 					responseType: 'blob',
 					onDownloadProgress: (progressEvent) => {
@@ -216,7 +216,7 @@
 
 	const toggleFavorite = async () => {
 		const { data } = await api.assetApi.updateAsset({
-			assetId: asset.id,
+			id: asset.id,
 			updateAssetDto: {
 				isFavorite: !asset.isFavorite
 			}
@@ -269,7 +269,7 @@
 	const toggleArchive = async () => {
 		try {
 			const { data } = await api.assetApi.updateAsset({
-				assetId: asset.id,
+				id: asset.id,
 				updateAssetDto: {
 					isArchived: !asset.isArchived
 				}

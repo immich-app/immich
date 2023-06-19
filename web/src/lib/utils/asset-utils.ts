@@ -125,28 +125,33 @@ export function getAssetFilename(asset: AssetResponseDto): string {
  * Returns the MIME type of the file and an empty string when not found.
  */
 export function getFileMimeType(file: File): string {
-	if (file.type !== '') {
-		// Return the MIME type determined by the browser.
-		return file.type;
-	}
+	const mimeTypes: Record<string, string> = {
+		'3gp': 'video/3gpp',
+		arw: 'image/x-sony-arw',
+		dng: 'image/dng',
+		heic: 'image/heic',
+		heif: 'image/heif',
+		insp: 'image/jpeg',
+		insv: 'video/mp4',
+		nef: 'image/x-nikon-nef',
+		raf: 'image/x-fuji-raf',
+		srw: 'image/x-samsung-srw'
+	};
+	// Return the MIME type determined by the browser or the MIME type based on the file extension.
+	return file.type || (mimeTypes[getFilenameExtension(file.name)] ?? '');
+}
 
-	// Return MIME type based on the file extension.
-	switch (getFilenameExtension(file.name)) {
-		case 'heic':
-			return 'image/heic';
-		case 'heif':
-			return 'image/heif';
-		case 'dng':
-			return 'image/dng';
-		case '3gp':
-			return 'video/3gpp';
-		case 'nef':
-			return 'image/x-nikon-nef';
-		case 'raf':
-			return 'image/x-fuji-raf';
-		case 'srw':
-			return 'image/x-samsung-srw';
-		default:
-			return '';
+/**
+ * Returns aspect ratio for the asset
+ */
+export function getAssetRatio(asset: AssetResponseDto) {
+	let height = asset.exifInfo?.exifImageHeight || 235;
+	let width = asset.exifInfo?.exifImageWidth || 235;
+	const orientation = Number(asset.exifInfo?.orientation);
+	if (orientation) {
+		if (orientation == 6 || orientation == -90) {
+			[width, height] = [height, width];
+		}
 	}
+	return { width, height };
 }

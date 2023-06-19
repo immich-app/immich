@@ -33,6 +33,7 @@
 	import CreateSharedLinkModal from '../shared-components/create-share-link-modal/create-shared-link-modal.svelte';
 	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
 	import ImmichLogo from '../shared-components/immich-logo.svelte';
+	import SelectAll from 'svelte-material-icons/SelectAll.svelte';
 	import {
 		NotificationType,
 		notificationController
@@ -42,6 +43,7 @@
 	import ShareInfoModal from './share-info-modal.svelte';
 	import ThumbnailSelection from './thumbnail-selection.svelte';
 	import UserSelectionModal from './user-selection-modal.svelte';
+	import { handleError } from '../../utils/handle-error';
 
 	export let album: AlbumResponseDto;
 	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
@@ -84,7 +86,7 @@
 	afterNavigate(({ from }) => {
 		backUrl = from?.url.pathname ?? '/albums';
 
-		if (from?.url.pathname === '/sharing') {
+		if (from?.url.pathname === '/sharing' && album.sharedUsers.length === 0) {
 			isCreatingSharedAlbum = true;
 		}
 	});
@@ -195,19 +197,16 @@
 		if (userId == 'me') {
 			isShowShareInfoModal = false;
 			goto(backUrl);
+			return;
 		}
 
 		try {
 			const { data } = await api.albumApi.getAlbumInfo({ id: album.id });
 
 			album = data;
-			isShowShareInfoModal = false;
+			isShowShareInfoModal = data.sharedUsers.length >= 1;
 		} catch (e) {
-			console.error('Error [sharedUserDeletedHandler] ', e);
-			notificationController.show({
-				type: NotificationType.Error,
-				message: 'Error deleting share users, check console for more details'
-			});
+			handleError(e, 'Error deleting share users');
 		}
 	};
 
@@ -334,6 +333,10 @@
 		isShowShareUserSelection = false;
 		isShowShareLinkModal = true;
 	};
+
+	const handleSelectAll = () => {
+		multiSelectAsset = new Set(album.assets);
+	};
 </script>
 
 <section class="bg-immich-bg dark:bg-immich-dark-bg" class:hidden={isShowThumbnailSelection}>
@@ -343,6 +346,7 @@
 			assets={multiSelectAsset}
 			clearSelect={() => (multiSelectAsset = new Set())}
 		>
+			<CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll} />
 			<DownloadAction filename={album.albumName} sharedLinkKey={sharedLink?.key} />
 			{#if isOwned}
 				<RemoveFromAlbum bind:album />

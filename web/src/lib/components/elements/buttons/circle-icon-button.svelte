@@ -7,16 +7,17 @@
 	export let size = '24';
 	export let title = '';
 	export let isOpacity = false;
+	export let forceDark = false;
 </script>
 
 <button
 	{title}
 	style:background-color={backgroundColor}
 	style:--immich-icon-button-hover-color={hoverColor}
-	class="dark:text-immich-dark-fg rounded-full p-3 flex place-items-center place-content-center transition-all
-	{isOpacity
-		? 'hover:bg-immich-bg/30'
-		: 'immich-circle-icon-button hover:dark:text-immich-dark-gray'}"
+	class:dark:text-immich-dark-fg={!forceDark}
+	class="rounded-full p-3 flex place-items-center place-content-center transition-all
+	{isOpacity ? 'hover:bg-immich-bg/30' : 'immich-circle-icon-button hover:dark:text-immich-dark-gray'}
+  {forceDark && 'hover:text-black'}"
 	on:click
 >
 	<svelte:component this={logo} {size} />

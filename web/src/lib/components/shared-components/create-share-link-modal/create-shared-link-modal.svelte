@@ -1,23 +1,23 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte';
-	import BaseModal from '../base-modal.svelte';
-	import Link from 'svelte-material-icons/Link.svelte';
-	import {
-		AlbumResponseDto,
-		api,
-		AssetResponseDto,
-		SharedLinkResponseDto,
-		SharedLinkType
-	} from '@api';
-	import { notificationController, NotificationType } from '../notification/notification';
-	import { ImmichDropDownOption } from '../dropdown-button.svelte';
-	import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
-	import DropdownButton from '../dropdown-button.svelte';
 	import SettingInputField, {
 		SettingInputFieldType
 	} from '$lib/components/admin-page/settings/setting-input-field.svelte';
-	import { handleError } from '$lib/utils/handle-error';
+	import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
 	import Button from '$lib/components/elements/buttons/button.svelte';
+	import { handleError } from '$lib/utils/handle-error';
+	import {
+		AlbumResponseDto,
+		AssetResponseDto,
+		SharedLinkResponseDto,
+		SharedLinkType,
+		api
+	} from '@api';
+	import { createEventDispatcher, onMount } from 'svelte';
+	import Link from 'svelte-material-icons/Link.svelte';
+	import BaseModal from '../base-modal.svelte';
+	import type { ImmichDropDownOption } from '../dropdown-button.svelte';
+	import DropdownButton from '../dropdown-button.svelte';
+	import { NotificationType, notificationController } from '../notification/notification';
 
 	export let shareType: SharedLinkType;
 	export let sharedAssets: AssetResponseDto[] = [];
@@ -137,7 +137,7 @@
 					? new Date(currentTime + expirationTime).toISOString()
 					: null;
 
-				await api.shareApi.editSharedLink({
+				await api.shareApi.updateSharedLink({
 					id: editingLink.id,
 					editSharedLinkDto: {
 						description,

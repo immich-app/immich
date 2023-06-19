@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { APIKeyResponseDto } from '@api';
+	import type { APIKeyResponseDto } from '@api';
 	import { createEventDispatcher } from 'svelte';
 	import KeyVariant from 'svelte-material-icons/KeyVariant.svelte';
-	import FullScreenModal from '../shared-components/full-screen-modal.svelte';
 	import Button from '../elements/buttons/button.svelte';
+	import FullScreenModal from '../shared-components/full-screen-modal.svelte';
 
 	export let apiKey: Partial<APIKeyResponseDto>;
 	export let title = 'API Key';

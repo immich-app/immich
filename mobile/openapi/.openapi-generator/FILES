@@ -25,6 +25,8 @@ doc/AssetCountByTimeBucket.md
 doc/AssetCountByTimeBucketResponseDto.md
 doc/AssetCountByUserIdResponseDto.md
 doc/AssetFileUploadResponseDto.md
+doc/AssetIdsDto.md
+doc/AssetIdsResponseDto.md
 doc/AssetResponseDto.md
 doc/AssetTypeEnum.md
 doc/AuthDeviceResponseDto.md
@@ -55,11 +57,13 @@ doc/JobCommand.md
 doc/JobCommandDto.md
 doc/JobCountsDto.md
 doc/JobName.md
+doc/JobSettingsDto.md
 doc/JobStatusDto.md
 doc/LoginCredentialDto.md
 doc/LoginResponseDto.md
 doc/LogoutResponseDto.md
 doc/MapMarkerResponseDto.md
+doc/MemoryLaneResponseDto.md
 doc/OAuthApi.md
 doc/OAuthCallbackDto.md
 doc/OAuthConfigDto.md
@@ -93,6 +97,7 @@ doc/SmartInfoResponseDto.md
 doc/SystemConfigApi.md
 doc/SystemConfigDto.md
 doc/SystemConfigFFmpegDto.md
+doc/SystemConfigJobDto.md
 doc/SystemConfigOAuthDto.md
 doc/SystemConfigPasswordLoginDto.md
 doc/SystemConfigStorageTemplateDto.md
@@ -154,6 +159,8 @@ lib/model/asset_count_by_time_bucket.dart
 lib/model/asset_count_by_time_bucket_response_dto.dart
 lib/model/asset_count_by_user_id_response_dto.dart
 lib/model/asset_file_upload_response_dto.dart
+lib/model/asset_ids_dto.dart
+lib/model/asset_ids_response_dto.dart
 lib/model/asset_response_dto.dart
 lib/model/asset_type_enum.dart
 lib/model/auth_device_response_dto.dart
@@ -182,11 +189,13 @@ lib/model/job_command.dart
 lib/model/job_command_dto.dart
 lib/model/job_counts_dto.dart
 lib/model/job_name.dart
+lib/model/job_settings_dto.dart
 lib/model/job_status_dto.dart
 lib/model/login_credential_dto.dart
 lib/model/login_response_dto.dart
 lib/model/logout_response_dto.dart
 lib/model/map_marker_response_dto.dart
+lib/model/memory_lane_response_dto.dart
 lib/model/o_auth_callback_dto.dart
 lib/model/o_auth_config_dto.dart
 lib/model/o_auth_config_response_dto.dart
@@ -213,6 +222,7 @@ lib/model/sign_up_dto.dart
 lib/model/smart_info_response_dto.dart
 lib/model/system_config_dto.dart
 lib/model/system_config_f_fmpeg_dto.dart
+lib/model/system_config_job_dto.dart
 lib/model/system_config_o_auth_dto.dart
 lib/model/system_config_password_login_dto.dart
 lib/model/system_config_storage_template_dto.dart
@@ -252,6 +262,8 @@ test/asset_count_by_time_bucket_response_dto_test.dart
 test/asset_count_by_time_bucket_test.dart
 test/asset_count_by_user_id_response_dto_test.dart
 test/asset_file_upload_response_dto_test.dart
+test/asset_ids_dto_test.dart
+test/asset_ids_response_dto_test.dart
 test/asset_response_dto_test.dart
 test/asset_type_enum_test.dart
 test/auth_device_response_dto_test.dart
@@ -282,11 +294,13 @@ test/job_command_dto_test.dart
 test/job_command_test.dart
 test/job_counts_dto_test.dart
 test/job_name_test.dart
+test/job_settings_dto_test.dart
 test/job_status_dto_test.dart
 test/login_credential_dto_test.dart
 test/login_response_dto_test.dart
 test/logout_response_dto_test.dart
 test/map_marker_response_dto_test.dart
+test/memory_lane_response_dto_test.dart
 test/o_auth_api_test.dart
 test/o_auth_callback_dto_test.dart
 test/o_auth_config_dto_test.dart
@@ -320,6 +334,7 @@ test/smart_info_response_dto_test.dart
 test/system_config_api_test.dart
 test/system_config_dto_test.dart
 test/system_config_f_fmpeg_dto_test.dart
+test/system_config_job_dto_test.dart
 test/system_config_o_auth_dto_test.dart
 test/system_config_password_login_dto_test.dart
 test/system_config_storage_template_dto_test.dart

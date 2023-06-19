@@ -1,0 +1,57 @@
+[tool.poetry]
+name = "machine-learning"
+version = "1.59.1"
+description = ""
+authors = ["Hau Tran <alex.tran1502@gmail.com>"]
+readme = "README.md"
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+torch = [
+    {markers = "platform_machine == 'arm64' or platform_machine == 'aarch64'", version = "=2.0.1", source = "pypi"},
+    {markers = "platform_machine == 'amd64' or platform_machine == 'x86_64'", version = "=2.0.1", source = "pytorch-cpu"}
+]
+transformers = "^4.29.2"
+sentence-transformers = "^2.2.2"
+onnxruntime = "^1.15.0"
+insightface = "^0.7.3"
+opencv-python-headless = "^4.7.0.72"
+pillow = "^9.5.0"
+fastapi = "^0.95.2"
+uvicorn = {extras = ["standard"], version = "^0.22.0"}
+pydantic = "^1.10.8"
+aiocache = "^0.12.1"
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.3.0"
+black = "^23.3.0"
+pytest = "^7.3.1"
+
+[[tool.poetry.source]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "explicit"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.flake8]
+max-line-length = 120
+
+[tool.mypy]
+python_version = "3.11"
+plugins = "pydantic.mypy"
+follow_imports = "silent"
+warn_redundant_casts = true
+disallow_any_generics = true
+check_untyped_defs = true
+no_implicit_reexport = true
+disallow_untyped_defs = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+warn_untyped_fields = true

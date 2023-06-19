@@ -1,15 +1,6 @@
-<script lang="ts" context="module">
-	export interface MapSettings {
-		allowDarkMode: boolean;
-		onlyFavorites: boolean;
-		relativeDate: string;
-		dateAfter: string;
-		dateBefore: string;
-	}
-</script>
-
 <script lang="ts">
 	import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+	import type { MapSettings } from '$lib/stores/preferences.store';
 	import { Duration } from 'luxon';
 	import { createEventDispatcher } from 'svelte';
 	import { fly } from 'svelte/transition';
@@ -86,23 +77,23 @@
 								text: 'All'
 							},
 							{
-								value: Duration.fromObject({ hours: 24 }).toISO(),
+								value: Duration.fromObject({ hours: 24 }).toISO() || '',
 								text: 'Past 24 hours'
 							},
 							{
-								value: Duration.fromObject({ days: 7 }).toISO(),
+								value: Duration.fromObject({ days: 7 }).toISO() || '',
 								text: 'Past 7 days'
 							},
 							{
-								value: Duration.fromObject({ days: 30 }).toISO(),
+								value: Duration.fromObject({ days: 30 }).toISO() || '',
 								text: 'Past 30 days'
 							},
 							{
-								value: Duration.fromObject({ years: 1 }).toISO(),
+								value: Duration.fromObject({ years: 1 }).toISO() || '',
 								text: 'Past year'
 							},
 							{
-								value: Duration.fromObject({ years: 3 }).toISO(),
+								value: Duration.fromObject({ years: 3 }).toISO() || '',
 								text: 'Past 3 years'
 							}
 						]}

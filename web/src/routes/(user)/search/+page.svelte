@@ -12,12 +12,14 @@
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
 	import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
 	import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
-	import { AssetResponseDto } from '@api';
+	import type { AssetResponseDto } from '@api';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
 	import ImageOffOutline from 'svelte-material-icons/ImageOffOutline.svelte';
 	import Plus from 'svelte-material-icons/Plus.svelte';
 	import type { PageData } from './$types';
+	import SelectAll from 'svelte-material-icons/SelectAll.svelte';
+	import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
 	export let data: PageData;
 
@@ -44,12 +46,16 @@
 	const onAssetDelete = (assetId: string) => {
 		searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => a.id !== assetId);
 	};
+	const handleSelectAll = () => {
+		selectedAssets = new Set(searchResultAssets);
+	};
 </script>
 
 <section>
 	{#if isMultiSelectionMode}
 		<AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
 			<CreateSharedLink />
+			<CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll} />
 			<AssetSelectContextMenu icon={Plus} title="Add">
 				<AddToAlbum />
 				<AddToAlbum shared />

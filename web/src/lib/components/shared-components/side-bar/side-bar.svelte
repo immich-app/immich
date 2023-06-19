@@ -30,7 +30,10 @@
 
 	const getFavoriteCount = async () => {
 		try {
-			const { data: assets } = await api.assetApi.getAllAssets({ isFavorite: true });
+			const { data: assets } = await api.assetApi.getAllAssets({
+				isFavorite: true,
+				withoutThumbs: true
+			});
 
 			return {
 				favorites: assets.length
@@ -44,18 +47,10 @@
 
 	const getAlbumCount = async () => {
 		try {
-			const { data: albumCount } = await api.albumApi.getAlbumCountByUserId();
-			return {
-				shared: albumCount.shared,
-				sharing: albumCount.sharing,
-				owned: albumCount.owned
-			};
+			const { data: albumCount } = await api.albumApi.getAlbumCount();
+			return albumCount;
 		} catch {
-			return {
-				shared: 0,
-				sharing: 0,
-				owned: 0
-			};
+			return { owned: 0, shared: 0, notShared: 0 };
 		}
 	};
 
@@ -130,7 +125,7 @@
 					<LoadingSpinner />
 				{:then data}
 					<div>
-						<p>{(data.shared + data.sharing).toLocaleString($locale)} Albums</p>
+						<p>{data.shared.toLocaleString($locale)} Albums</p>
 					</div>
 				{/await}
 			</svelte:fragment>

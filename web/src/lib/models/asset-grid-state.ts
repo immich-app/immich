@@ -1,4 +1,11 @@
-import { AssetResponseDto } from '@api';
+import type { AssetResponseDto } from '@api';
+
+export enum BucketPosition {
+	Above = 'above',
+	Below = 'below',
+	Visible = 'visible',
+	Unknown = 'unknown'
+}
 
 export class AssetBucket {
 	/**
@@ -9,6 +16,7 @@ export class AssetBucket {
 	bucketDate!: string;
 	assets!: AssetResponseDto[];
 	cancelToken!: AbortController;
+	position!: BucketPosition;
 }
 
 export class AssetGridState {

@@ -15,36 +15,36 @@ class AlbumCountResponseDto {
   AlbumCountResponseDto({
     required this.owned,
     required this.shared,
-    required this.sharing,
+    required this.notShared,
   });
 
   int owned;
 
   int shared;
 
-  int sharing;
+  int notShared;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AlbumCountResponseDto &&
      other.owned == owned &&
      other.shared == shared &&
-     other.sharing == sharing;
+     other.notShared == notShared;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (owned.hashCode) +
     (shared.hashCode) +
-    (sharing.hashCode);
+    (notShared.hashCode);
 
   @override
-  String toString() => 'AlbumCountResponseDto[owned=$owned, shared=$shared, sharing=$sharing]';
+  String toString() => 'AlbumCountResponseDto[owned=$owned, shared=$shared, notShared=$notShared]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'owned'] = this.owned;
       json[r'shared'] = this.shared;
-      json[r'sharing'] = this.sharing;
+      json[r'notShared'] = this.notShared;
     return json;
   }
 
@@ -69,7 +69,7 @@ class AlbumCountResponseDto {
       return AlbumCountResponseDto(
         owned: mapValueOfType<int>(json, r'owned')!,
         shared: mapValueOfType<int>(json, r'shared')!,
-        sharing: mapValueOfType<int>(json, r'sharing')!,
+        notShared: mapValueOfType<int>(json, r'notShared')!,
       );
     }
     return null;
@@ -119,7 +119,7 @@ class AlbumCountResponseDto {
   static const requiredKeys = <String>{
     'owned',
     'shared',
-    'sharing',
+    'notShared',
   };
 }
 

@@ -219,6 +219,10 @@ class ApiClient {
           return AssetCountByUserIdResponseDto.fromJson(value);
         case 'AssetFileUploadResponseDto':
           return AssetFileUploadResponseDto.fromJson(value);
+        case 'AssetIdsDto':
+          return AssetIdsDto.fromJson(value);
+        case 'AssetIdsResponseDto':
+          return AssetIdsResponseDto.fromJson(value);
         case 'AssetResponseDto':
           return AssetResponseDto.fromJson(value);
         case 'AssetTypeEnum':
@@ -275,6 +279,8 @@ class ApiClient {
           return JobCountsDto.fromJson(value);
         case 'JobName':
           return JobNameTypeTransformer().decode(value);
+        case 'JobSettingsDto':
+          return JobSettingsDto.fromJson(value);
         case 'JobStatusDto':
           return JobStatusDto.fromJson(value);
         case 'LoginCredentialDto':
@@ -285,6 +291,8 @@ class ApiClient {
           return LogoutResponseDto.fromJson(value);
         case 'MapMarkerResponseDto':
           return MapMarkerResponseDto.fromJson(value);
+        case 'MemoryLaneResponseDto':
+          return MemoryLaneResponseDto.fromJson(value);
         case 'OAuthCallbackDto':
           return OAuthCallbackDto.fromJson(value);
         case 'OAuthConfigDto':
@@ -337,6 +345,8 @@ class ApiClient {
           return SystemConfigDto.fromJson(value);
         case 'SystemConfigFFmpegDto':
           return SystemConfigFFmpegDto.fromJson(value);
+        case 'SystemConfigJobDto':
+          return SystemConfigJobDto.fromJson(value);
         case 'SystemConfigOAuthDto':
           return SystemConfigOAuthDto.fromJson(value);
         case 'SystemConfigPasswordLoginDto':
