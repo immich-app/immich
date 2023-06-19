@@ -2,14 +2,14 @@
 
 ## General
 
-| Variable                      | Description                                  |                   Default                   | Services                                |
-| :---------------------------- | :------------------------------------------- | :-----------------------------------------: | :-------------------------------------- |
-| `TZ`                          | Timezone                                     |                                             | microservices                           |
-| `NODE_ENV`                    | Environment (production, development)        |                `production`                 | server, microservices, machine learning |
-| `LOG_LEVEL`                   | Log Level (verbose, debug, log, warn, error) |                    `log`                    | server, microservices                   |
-| `DISABLE_REVERSE_GEOCODING`   | Disable Reverse Geocoding Precision          |                   `false`                   | microservices                           |
-| `REVERSE_GEOCODING_PRECISION` | Reverse Geocoding Precision                  |                     `3`                     | microservices                           |
-| `PUBLIC_LOGIN_PAGE_MESSAGE`   | Public Login Page Message                    |                                             | web                                     |
+| Variable                      | Description                                  |                   Default                   | Services                                     |
+| :---------------------------- | :------------------------------------------- | :-----------------------------------------: | :------------------------------------------- |
+| `TZ`                          | Timezone                                     |                                             | microservices                                |
+| `NODE_ENV`                    | Environment (production, development)        |                `production`                 | server, microservices, machine learning, web |
+| `LOG_LEVEL`                   | Log Level (verbose, debug, log, warn, error) |                    `log`                    | server, microservices                        |
+| `DISABLE_REVERSE_GEOCODING`   | Disable Reverse Geocoding Precision          |                   `false`                   | microservices                                |
+| `REVERSE_GEOCODING_PRECISION` | Reverse Geocoding Precision                  |                     `3`                     | microservices                                |
+| `PUBLIC_LOGIN_PAGE_MESSAGE`   | Public Login Page Message                    |                                             | web                                          |
 
 :::tip
 
