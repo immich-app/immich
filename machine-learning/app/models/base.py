@@ -15,11 +15,11 @@ class InferenceModel(ABC):
     _model_type: ModelType
 
     def __init__(
-        self, model_name: str, cache_dir: Path | None = None, **model_kwargs
+        self, model_name: str, cache_dir: Path | str | None = None, **model_kwargs
     ) -> None:
         self.model_name = model_name
         self._cache_dir = (
-            cache_dir
+            Path(cache_dir)
             if cache_dir is not None
             else get_cache_dir(model_name, self.model_type)
         )
