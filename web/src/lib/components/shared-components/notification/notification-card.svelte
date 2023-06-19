@@ -5,9 +5,9 @@
 	import { fade } from 'svelte/transition';
 
 	import {
-	  ImmichNotification,
-	  notificationController,
-	  NotificationType
+		ImmichNotification,
+		notificationController,
+		NotificationType
 	} from '$lib/components/shared-components/notification/notification';
 	import { onMount } from 'svelte';
 
@@ -15,7 +15,7 @@
 
 	let infoPrimaryColor = '#4250AF';
 	let errorPrimaryColor = '#E64132';
-	let warningPrimaryColor = "#D08613"
+	let warningPrimaryColor = '#D08613';
 
 	$: icon =
 		notificationInfo.type === NotificationType.Error ? CloseCircleOutline : InformationOutline;
@@ -29,8 +29,8 @@
 			return '#FBE8E6';
 		}
 
-		if(notificationInfo.type === NotificationType.Warning){
-			return '#FDE7A3'
+		if (notificationInfo.type === NotificationType.Warning) {
+			return '#FDE7A3';
 		}
 	};
 
@@ -58,7 +58,7 @@
 		}
 
 		if (notificationInfo.type === NotificationType.Warning) {
-			return warningPrimaryColor
+			return warningPrimaryColor;
 		}
 	};
 
