@@ -61,4 +61,6 @@ class FaceResponse(BaseModel):
 class ModelType(Enum):
     IMAGE_CLASSIFICATION = "image-classification"
     CLIP = "clip"
+    CLIP_VISION = "clip-vision"
+    CLIP_TEXT = "clip-text"
     FACIAL_RECOGNITION = "facial-recognition"

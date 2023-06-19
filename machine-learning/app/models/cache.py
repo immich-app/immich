@@ -1,14 +1,11 @@
 import asyncio
-from typing import Any
 
 from aiocache.backends.memory import SimpleMemoryCache
 from aiocache.lock import OptimisticLock
 from aiocache.plugins import BasePlugin, TimingPlugin
 
 from ..schemas import ModelType
-from .clip import CLIPSTEncoder
-from .facial_recognition import FaceRecognizer
-from .image_classification import ImageClassifier
+from .base import InferenceModel
 
 
 class ModelCache:
@@ -41,7 +38,9 @@ class ModelCache:
             ttl=ttl, timeout=timeout, plugins=plugins, namespace=None
         )
 
-    async def get(self, model_name: str, model_type: ModelType, **model_kwargs) -> Any:
+    async def get(
+        self, model_name: str, model_type: ModelType, **model_kwargs
+    ) -> InferenceModel:
         """
         Args:
             model_name: Name of model in the model hub used for the task.
@@ -56,7 +55,10 @@ class ModelCache:
         if model is None:
             async with OptimisticLock(self.cache, key) as lock:
                 model = await asyncio.get_running_loop().run_in_executor(
-                    None, lambda: get_model(model_name, model_type, **model_kwargs)
+                    None,
+                    lambda: InferenceModel.from_model_type(
+                        model_type, model_name, **model_kwargs
+                    ),
                 )
                 await lock.cas(model, ttl=self.ttl)
         return model
@@ -88,15 +90,3 @@ class RevalidationPlugin(BasePlugin):
                 key = client.build_key(key, namespace)
             if val is not None and key in client._handlers:
                 await client.expire(key, client.ttl)
-
-
-def get_model(model_name: str, model_type: ModelType, **kwargs) -> Any:
-    match model_type:
-        case ModelType.IMAGE_CLASSIFICATION:
-            return ImageClassifier(model_name, **kwargs)
-        case ModelType.CLIP:
-            return CLIPSTEncoder(model_name, **kwargs)
-        case ModelType.FACIAL_RECOGNITION:
-            return FaceRecognizer(model_name, **kwargs)
-        case _:
-            raise ValueError(f"Unsupported model type: {model_type}")

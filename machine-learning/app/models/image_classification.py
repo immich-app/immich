@@ -1,33 +1,33 @@
 from pathlib import Path
-from typing import Any
 
 from PIL.Image import Image
 from transformers.pipelines import pipeline
 
-from ..config import get_cache_dir, settings
+from ..config import settings
 from ..schemas import ModelType
+from .base import InferenceModel
 
 
-class ImageClassifier:
+class ImageClassifier(InferenceModel):
+    _model_type = ModelType.IMAGE_CLASSIFICATION
+
     def __init__(
         self,
         model_name: str,
-        min_score: float | None = None,
+        min_score: float = settings.min_tag_score,
         cache_dir: Path | None = None,
         **model_kwargs,
     ):
-        self.model_name = model_name
-        self.min_score = min_score if min_score is not None else settings.min_tag_score
-        if cache_dir is None:
-            cache_dir = get_cache_dir(model_name, ModelType.IMAGE_CLASSIFICATION)
+        super().__init__(model_name, cache_dir)
+        self.min_score = min_score
 
         self.model = pipeline(
-            ModelType.IMAGE_CLASSIFICATION.value,
+            self.model_type.value,
             self.model_name,
-            model_kwargs={"cache_dir": cache_dir, **model_kwargs},
+            model_kwargs={"cache_dir": self.cache_dir, **model_kwargs},
         )
 
-    def classify(self, image: Image) -> list[str]:
+    def predict(self, image: Image) -> list[str]:
         predictions = self.model(image)
         tags = list(
             {

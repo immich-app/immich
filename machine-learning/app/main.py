@@ -5,11 +5,12 @@ from typing import Any
 import cv2
 import numpy as np
 import uvicorn
-from fastapi import Body, Depends, FastAPI, HTTPException
+from fastapi import Body, Depends, FastAPI
 from PIL import Image
 
 from .config import settings
-from .models.cache import ModelCache, get_model
+from .models.base import InferenceModel
+from .models.cache import ModelCache
 from .schemas import (
     EmbeddingResponse,
     FaceResponse,
@@ -20,33 +21,28 @@ from .schemas import (
     TextResponse,
 )
 
-_model_cache: Any = None
-
 app = FastAPI()
 
 
 @app.on_event("startup")
 async def startup_event() -> None:
-    global _model_cache
-    _model_cache = ModelCache(ttl=settings.model_ttl, revalidate=True)
+    app.state.model_cache = ModelCache(ttl=settings.model_ttl, revalidate=True)
+    same_clip = settings.clip_image_model == settings.clip_text_model
+    app.state.clip_vision_type = ModelType.CLIP if same_clip else ModelType.CLIP_VISION
+    app.state.clip_text_type = ModelType.CLIP if same_clip else ModelType.CLIP_TEXT
     models = [
         (settings.classification_model, ModelType.IMAGE_CLASSIFICATION),
-        (settings.clip_image_model, ModelType.CLIP),
-        (settings.clip_text_model, ModelType.CLIP),
+        (settings.clip_image_model, app.state.clip_vision_type),
+        (settings.clip_text_model, app.state.clip_text_type),
         (settings.facial_recognition_model, ModelType.FACIAL_RECOGNITION),
     ]
 
     # Get all models
     for model_name, model_type in models:
         if settings.eager_startup:
-            await _model_cache.get(model_name, model_type)
+            await app.state.model_cache.get(model_name, model_type)
         else:
-            get_model(model_name, model_type)
-
-
-def dep_model_cache():
-    if _model_cache is None:
-        raise HTTPException(status_code=500, detail="Unable to load model.")
+            InferenceModel.from_model_type(model_type, model_name)
 
 
 def dep_pil_image(byte_image: bytes = Body(...)) -> Image.Image:
@@ -72,33 +68,29 @@ def ping() -> str:
     "/image-classifier/tag-image",
     response_model=TagResponse,
     status_code=200,
-    dependencies=[Depends(dep_model_cache)],
 )
 async def image_classification(
     image: Image.Image = Depends(dep_pil_image),
 ) -> list[str]:
-    try:
-        model = await _model_cache.get(
-            settings.classification_model, ModelType.IMAGE_CLASSIFICATION
-        )
-        labels = model.classify(image)
-    except Exception as ex:
-        raise HTTPException(status_code=500, detail=str(ex))
-    else:
-        return labels
+    model = await app.state.model_cache.get(
+        settings.classification_model, ModelType.IMAGE_CLASSIFICATION
+    )
+    labels = model.predict(image)
+    return labels
 
 
 @app.post(
     "/sentence-transformer/encode-image",
     response_model=EmbeddingResponse,
     status_code=200,
-    dependencies=[Depends(dep_model_cache)],
 )
 async def clip_encode_image(
     image: Image.Image = Depends(dep_pil_image),
 ) -> list[float]:
-    model = await _model_cache.get(settings.clip_image_model, ModelType.CLIP)
-    embedding = model.encode_image(image)
+    model = await app.state.model_cache.get(
+        settings.clip_image_model, app.state.clip_vision_type
+    )
+    embedding = model.predict(image)
     return embedding
 
 
@@ -106,11 +98,12 @@ async def clip_encode_image(
     "/sentence-transformer/encode-text",
     response_model=EmbeddingResponse,
     status_code=200,
-    dependencies=[Depends(dep_model_cache)],
 )
 async def clip_encode_text(payload: TextModelRequest) -> list[float]:
-    model = await _model_cache.get(settings.clip_text_model, ModelType.CLIP)
-    embedding = model.encode_image(payload.text)
+    model = await app.state.model_cache.get(
+        settings.clip_text_model, app.state.clip_text_type
+    )
+    embedding = model.predict(payload.text)
     return embedding
 
 
@@ -118,15 +111,14 @@ async def clip_encode_text(payload: TextModelRequest) -> list[float]:
     "/facial-recognition/detect-faces",
     response_model=FaceResponse,
     status_code=200,
-    dependencies=[Depends(dep_model_cache)],
 )
 async def facial_recognition(
     image: cv2.Mat = Depends(dep_cv_image),
 ) -> list[dict[str, Any]]:
-    model = await _model_cache.get(
+    model = await app.state.model_cache.get(
         settings.facial_recognition_model, ModelType.FACIAL_RECOGNITION
     )
-    faces = model.recognize(image)
+    faces = model.predict(image)
     return faces
 
 

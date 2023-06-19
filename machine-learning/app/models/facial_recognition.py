@@ -1,28 +1,29 @@
 from pathlib import Path
+from typing import Any
 
 import cv2
 from insightface.app import FaceAnalysis
 
-from ..config import get_cache_dir, settings
+from ..config import settings
 from ..schemas import ModelType
+from .base import InferenceModel
 
 
-class FaceRecognizer:
+class FaceRecognizer(InferenceModel):
+    _model_type = ModelType.FACIAL_RECOGNITION
+
     def __init__(
         self,
         model_name: str,
-        min_score: float | None = None,
+        min_score: float = settings.min_face_score,
         cache_dir: Path | None = None,
         **model_kwargs,
     ):
-        if model_name is not None:
-            self.model_name = model_name
-        self.min_score = min_score if min_score is not None else settings.min_face_score
-        if cache_dir is None:
-            cache_dir = get_cache_dir(model_name, ModelType.FACIAL_RECOGNITION)
+        super().__init__(model_name, cache_dir)
+        self.min_score = min_score
         model = FaceAnalysis(
             name=self.model_name,
-            root=cache_dir.as_posix(),
+            root=self.cache_dir.as_posix(),
             allowed_modules=["detection", "recognition"],
             **model_kwargs,
         )
@@ -33,7 +34,7 @@ class FaceRecognizer:
         )
         self.model = model
 
-    def recognize(self, image: cv2.Mat):
+    def predict(self, image: cv2.Mat) -> list[dict[str, Any]]:
         height, width, _ = image.shape
         results = []
         faces = self.model.get(image)
