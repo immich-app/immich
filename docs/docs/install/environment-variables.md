@@ -1,5 +1,18 @@
 # Environment Variables
 
+## Docker Compose
+
+| Variable          | Description           |  Default  | Services                                                       |
+| :---------------- | :-------------------- | :-------: | :------------------------------------------------------------- |
+| `IMMICH_VERSION`  | Image tags            | `release` | server, microservices, machine learning, web, proxy, typesense |
+| `UPLOAD_LOCATION` | Host Path for uploads |           | server, microservices                                          |
+
+:::tip
+
+These environment variables are used by the `docker-compose.yml` file and do **NOT** affect the containers directly.
+
+:::
+
 ## General
 
 | Variable                | Description                                  |   Default    | Services                                     |
