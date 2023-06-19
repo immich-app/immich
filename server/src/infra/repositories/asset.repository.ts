@@ -43,6 +43,7 @@ export class AssetRepository implements IAssetRepository {
         ownerId,
         isVisible: true,
         isArchived: false,
+        resizePath: Not(IsNull()),
         fileCreatedAt: OptionalBetween(date, DateTime.fromJSDate(date).plus({ day: 1 }).toJSDate()),
       },
       relations: {
