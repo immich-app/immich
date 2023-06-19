@@ -85,7 +85,7 @@ When `DB_URL` is defined, the other database (`DB_*`) variables are ignored.
 
 :::info
 
-`REDIS_URL` must start with `ioredis://` and a `base64` encoded JSON string.
+`REDIS_URL` must start with `ioredis://` and then include a `base64` encoded JSON string for the configuration.
 More info can be found in the upstream [ioredis](https://ioredis.readthedocs.io/en/latest/API/) documentation.
 
 - When `REDIS_URL` is defined, the other redis (`REDIS_*`) variables are ignored.
@@ -128,7 +128,7 @@ Redis (Sentinel) URL example JSON before encoding:
 
 :::info
 
-`TYPESENSE_URL` must start with `ha://` and a `base64` encoded JSON string.
+`TYPESENSE_URL` must start with `ha://` and then include a `base64` encoded JSON string for the configuration.
 
 `TYPESENSE_ENABLED`: Anything other than `false`, behaves as `true`.
 Even undefined is treated as `true`.
