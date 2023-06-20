@@ -1,6 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { plainToInstance } from 'class-transformer';
 import {
   albumStub,
   assetEntityStub,
@@ -15,6 +14,7 @@ import {
   newSearchRepositoryMock,
   searchStub,
 } from '@test';
+import { plainToInstance } from 'class-transformer';
 import { IAlbumRepository } from '../album/album.repository';
 import { IAssetRepository } from '../asset/asset.repository';
 import { IFaceRepository } from '../facial-recognition';

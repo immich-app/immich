@@ -25,7 +25,7 @@ function fileFilter(req: AuthRequest, file: any, cb: any) {
     return cb(new UnauthorizedException());
   }
 
-  if (file.mimetype.match(/\/(jpg|jpeg|png|heic|heif|dng|webp)$/)) {
+  if (file.mimetype.match(/\/(jpg|jpeg|png|heic|heif|dng|webp|avif)$/)) {
     cb(null, true);
   } else {
     cb(new BadRequestException(`Unsupported file type ${extname(file.originalname)}`), false);

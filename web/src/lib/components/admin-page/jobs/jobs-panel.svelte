@@ -105,7 +105,7 @@
 		const title = jobDetails[jobId]?.title;
 
 		try {
-			const { data } = await api.jobApi.sendJobCommand({ jobId, jobCommandDto: jobCommand });
+			const { data } = await api.jobApi.sendJobCommand({ id: jobId, jobCommandDto: jobCommand });
 			jobs[jobId] = data;
 
 			switch (jobCommand.command) {

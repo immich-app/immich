@@ -43,6 +43,7 @@ export class AssetRepository implements IAssetRepository {
         ownerId,
         isVisible: true,
         isArchived: false,
+        resizePath: Not(IsNull()),
         fileCreatedAt: OptionalBetween(date, DateTime.fromJSDate(date).plus({ day: 1 }).toJSDate()),
       },
       relations: {
@@ -135,6 +136,7 @@ export class AssetRepository implements IAssetRepository {
           { resizePath: '', isVisible: true },
           { webpPath: IsNull(), isVisible: true },
           { webpPath: '', isVisible: true },
+          { thumbhash: IsNull(), isVisible: true },
         ];
         break;
 

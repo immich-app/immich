@@ -190,7 +190,7 @@ final remoteAssetsProvider =
       .remoteIdIsNotNull()
       .filter()
       .ownerIdEqualTo(userId)
-      .sortByFileCreatedAt();
+      .sortByFileCreatedAtDesc();
   final settings = ref.watch(appSettingsServiceProvider);
   final groupBy =
       GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)];

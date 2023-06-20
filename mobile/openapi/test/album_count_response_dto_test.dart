@@ -26,8 +26,8 @@ void main() {
       // TODO
     });
 
-    // int sharing
-    test('to test the property `sharing`', () async {
+    // int notShared
+    test('to test the property `notShared`', () async {
       // TODO
     });
 

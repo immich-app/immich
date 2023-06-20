@@ -1,11 +1,10 @@
-import { AlbumEntity, AssetEntity } from '@app/infra/entities';
 import { dataSource } from '@app/infra/database.config';
+import { AlbumEntity, AssetEntity } from '@app/infra/entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
-import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 
 export interface IAlbumRepository {
@@ -13,8 +12,6 @@ export interface IAlbumRepository {
   removeAssets(album: AlbumEntity, removeAssets: RemoveAssetsDto): Promise<number>;
   addAssets(album: AlbumEntity, addAssetsDto: AddAssetsDto): Promise<AddAssetsResponseDto>;
   updateThumbnails(): Promise<number | undefined>;
-  getCountByUserId(userId: string): Promise<AlbumCountResponseDto>;
-  getSharedWithUserAlbumCount(userId: string, assetId: string): Promise<number>;
 }
 
 export const IAlbumRepository = 'IAlbumRepository';
@@ -25,14 +22,6 @@ export class AlbumRepository implements IAlbumRepository {
     @InjectRepository(AlbumEntity) private albumRepository: Repository<AlbumEntity>,
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
   ) {}
-
-  async getCountByUserId(userId: string): Promise<AlbumCountResponseDto> {
-    const ownedAlbums = await this.albumRepository.find({ where: { ownerId: userId }, relations: ['sharedUsers'] });
-    const sharedAlbums = await this.albumRepository.count({ where: { sharedUsers: { id: userId } } });
-    const sharedAlbumCount = ownedAlbums.filter((album) => album.sharedUsers?.length > 0).length;
-
-    return new AlbumCountResponseDto(ownedAlbums.length, sharedAlbums, sharedAlbumCount);
-  }
 
   async get(albumId: string): Promise<AlbumEntity | null> {
     return this.albumRepository.findOne({
@@ -139,26 +128,5 @@ export class AlbumRepository implements IAlbumRepository {
     const result = await updateAlbums.execute();
 
     return result.affected;
-  }
-
-  async getSharedWithUserAlbumCount(userId: string, assetId: string): Promise<number> {
-    return this.albumRepository.count({
-      where: [
-        {
-          ownerId: userId,
-          assets: {
-            id: assetId,
-          },
-        },
-        {
-          sharedUsers: {
-            id: userId,
-          },
-          assets: {
-            id: assetId,
-          },
-        },
-      ],
-    });
   }
 }
