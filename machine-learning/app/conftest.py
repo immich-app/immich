@@ -59,7 +59,7 @@ def face_preds() -> list[SimpleNamespace]:
     ]
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def mock_classifier_pipeline(classifier_preds: list[dict[str, Any]]) -> Iterator[mock.Mock]:
     with mock.patch("app.models.image_classification.pipeline") as model:
 
@@ -80,7 +80,7 @@ def mock_classifier_pipeline(classifier_preds: list[dict[str, Any]]) -> Iterator
         yield model
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def mock_st(clip_embedding: ndarray) -> Iterator[mock.Mock]:
     with mock.patch("app.models.clip.SentenceTransformer") as model:
 
@@ -102,7 +102,7 @@ def mock_st(clip_embedding: ndarray) -> Iterator[mock.Mock]:
         yield model
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def mock_faceanalysis(face_preds: list[SimpleNamespace]) -> Iterator[mock.Mock]:
     with mock.patch("app.models.facial_recognition.FaceAnalysis") as model:
 

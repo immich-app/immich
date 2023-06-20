@@ -7,8 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 
-from .fixtures import *
-from .main import app
+from .main import app, load_models
 from .models.clip import CLIPSTEncoder
 from .models.facial_recognition import FaceRecognizer
 from .models.image_classification import ImageClassifier
@@ -29,7 +28,7 @@ class TestImageClassifier:
             model_kwargs={"cache_dir": cache_dir},
         )
 
-    def test_min_score(self, mock_classifier_pipeline: mock.Mock, pil_image: Image.Image) -> None:
+    def test_min_score(self, pil_image: Image.Image) -> None:
         classifier = ImageClassifier("test_model_name", min_score=0.0)
         classifier.min_score = 0.0
         all_labels = classifier.predict(pil_image)
@@ -46,7 +45,7 @@ class TestImageClassifier:
         ]
         assert filtered_labels == ["that's an image alright"]
 
-    def test_endpoint(self, pil_image: Image.Image, mock_classifier_pipeline: mock.Mock) -> None:
+    def test_endpoint(self, pil_image: Image.Image) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
         headers = {"Content-Type": "image/jpg"}
@@ -58,7 +57,7 @@ class TestImageClassifier:
         assert response.status_code == 200
 
     @pytest.mark.skip(reason="Not implemented")
-    def test_model(self, pil_image: Image.Image, mock_classifier_pipeline: mock.Mock) -> None:
+    def test_model(self) -> None:
         pass
 
 
@@ -87,7 +86,7 @@ class TestCLIP:
         assert all([isinstance(num, float) for num in embedding])
         mock_st.assert_called_once()
 
-    def test_image_endpoint(self, pil_image: Image.Image, mock_st: mock.Mock) -> None:
+    def test_image_endpoint(self, pil_image: Image.Image) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
         headers = {"Content-Type": "image/jpg"}
@@ -98,16 +97,16 @@ class TestCLIP:
         )
         assert response.status_code == 200
 
-    def test_text_endpoint(self, mock_st: mock.Mock) -> None:
+    def test_text_endpoint(self) -> None:
         response = client.post("/sentence-transformer/encode-text", json={"text": "test search query"})
         assert response.status_code == 200
 
     @pytest.mark.skip(reason="Not implemented")
-    def test_image_model(self, pil_image: Image.Image, mock_st: mock.Mock) -> None:
+    def test_image_model(self) -> None:
         pass
 
     @pytest.mark.skip(reason="Not implemented")
-    def test_text_model(self, mock_st: mock.Mock) -> None:
+    def test_text_model(self) -> None:
         pass
 
 
@@ -136,7 +135,7 @@ class TestFaceRecognition:
 
         mock_faceanalysis.assert_called_once()
 
-    def test_endpoint(self, pil_image: Image.Image, mock_faceanalysis: mock.Mock) -> None:
+    def test_endpoint(self, pil_image: Image.Image) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
         headers = {"Content-Type": "image/png"}
@@ -148,5 +147,31 @@ class TestFaceRecognition:
         assert response.status_code == 200
 
     @pytest.mark.skip(reason="Not implemented")
-    def test_model(self, cv_image: cv2.Mat, mock_faceanalysis: mock.Mock) -> None:
+    def test_model(self) -> None:
         pass
+
+
+@pytest.mark.asyncio
+class TestCache:
+    async def test_eager_startup(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr("app.main.settings.eager_startup", True)
+        await load_models()
+        assert len(app.state.model_cache.cache._cache) == 3
+
+    async def test_lazy_startup(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr("app.main.settings.eager_startup", False)
+        await load_models()
+        assert len(app.state.model_cache.cache._cache) == 0
+
+    async def test_different_clip(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr("app.main.settings.eager_startup", True)
+        monkeypatch.setattr("app.main.settings.clip_text_model", "text_only_clip")
+        await load_models()
+        assert len(app.state.model_cache.cache._cache) == 4
+
+    @mock.patch("app.models.cache.OptimisticLock")
+    async def test_model_ttl(self, mock_lock_cls: mock.Mock, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr("app.main.settings.eager_startup", True)
+        monkeypatch.setattr("app.main.app.state.model_cache.ttl", 100)
+        await load_models()
+        mock_lock_cls.return_value.__aenter__.return_value.cas.assert_called_with(mock.ANY, ttl=100)

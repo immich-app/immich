@@ -28,9 +28,7 @@ def init_state() -> None:
     app.state.model_cache = ModelCache(ttl=settings.model_ttl, revalidate=True)
 
 
-@app.on_event("startup")
-async def startup_event() -> None:
-    init_state()
+async def load_models() -> None:
     models = [
         (settings.classification_model, ModelType.IMAGE_CLASSIFICATION),
         (settings.clip_image_model, ModelType.CLIP),
@@ -44,6 +42,12 @@ async def startup_event() -> None:
             await app.state.model_cache.get(model_name, model_type)
         else:
             InferenceModel.from_model_type(model_type, model_name)
+
+
+@app.on_event("startup")
+async def startup_event() -> None:
+    init_state()
+    await load_models()
 
 
 def dep_pil_image(byte_image: bytes = Body(...)) -> Image.Image:
