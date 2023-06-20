@@ -97,7 +97,7 @@ export class StorageTemplateService {
           asset.sidecarPath = sidecarDestination || null;
         } catch (error: any) {
           this.logger.warn(
-            `Unable to save new originalPath to database, undoing move for path ${asset.originalPath} - filename ${asset.originalFileName}`,
+            `Unable to save new originalPath to database, undoing move for path ${asset.originalPath} - filename ${asset.originalFileName} - id ${asset.id}`,
             error?.stack,
           );
 
