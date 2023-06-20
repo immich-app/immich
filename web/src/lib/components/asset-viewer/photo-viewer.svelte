@@ -120,7 +120,6 @@
 				class="object-contain h-full w-full"
 				draggable="false"
 			/>
-			<p>{$zoomImageWheelState.currentZoom}</p>
 		</div>
 	{/await}
 </div>
