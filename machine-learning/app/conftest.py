@@ -23,55 +23,20 @@ def cv_image(pil_image: Image.Image) -> ndarray:
 
 
 @pytest.fixture
-def classifier_preds() -> list[dict[str, Any]]:
-    return [
-        {"label": "that's an image alright", "score": 0.8},
-        {"label": "well it ends with .jpg", "score": 0.1},
-        {"label": "idk, im just seeing bytes", "score": 0.05},
-        {"label": "not sure", "score": 0.04},
-        {"label": "probably a virus", "score": 0.01},
-    ]
-
-
-@pytest.fixture
-def clip_embedding() -> ndarray:
-    return np.random.rand(512).astype(np.float32)
-
-
-@pytest.fixture
-def face_preds() -> list[SimpleNamespace]:
-    return [
-        SimpleNamespace(  # this is so these fields can be accessed through dot notation
-            **{
-                "bbox": np.random.rand(4).astype(np.float32),
-                "kps": np.random.rand(5, 2).astype(np.float32),
-                "det_score": np.array([0.67]).astype(np.float32),
-                "normed_embedding": np.random.rand(512).astype(np.float32),
-            }
-        ),
-        SimpleNamespace(
-            **{
-                "bbox": np.random.rand(4).astype(np.float32),
-                "kps": np.random.rand(5, 2).astype(np.float32),
-                "det_score": np.array([0.4]).astype(np.float32),
-                "normed_embedding": np.random.rand(512).astype(np.float32),
-            }
-        ),
-    ]
-
-
-@pytest.fixture(autouse=True)
-def mock_classifier_pipeline(
-    classifier_preds: list[dict[str, Any]]
-) -> Iterator[mock.Mock]:
+def mock_classifier_pipeline() -> Iterator[mock.Mock]:
     with mock.patch("app.models.image_classification.pipeline") as model:
+        classifier_preds = [
+            {"label": "that's an image alright", "score": 0.8},
+            {"label": "well it ends with .jpg", "score": 0.1},
+            {"label": "idk, im just seeing bytes", "score": 0.05},
+            {"label": "not sure", "score": 0.04},
+            {"label": "probably a virus", "score": 0.01},
+        ]
 
         def forward(
             inputs: Image.Image | list[Image.Image], **kwargs: Any
         ) -> list[dict[str, Any]] | list[list[dict[str, Any]]]:
-            if isinstance(inputs, list) and not all(
-                [isinstance(img, Image.Image) for img in inputs]
-            ):
+            if isinstance(inputs, list) and not all([isinstance(img, Image.Image) for img in inputs]):
                 raise TypeError
             elif not isinstance(inputs, Image.Image):
                 raise TypeError
@@ -85,27 +50,22 @@ def mock_classifier_pipeline(
         yield model
 
 
-@pytest.fixture(autouse=True)
-def mock_st(clip_embedding: ndarray) -> Iterator[mock.Mock]:
+@pytest.fixture
+def mock_st() -> Iterator[mock.Mock]:
     with mock.patch("app.models.clip.SentenceTransformer") as model:
+        embedding = np.random.rand(512).astype(np.float32)
 
-        def encode(
-            inputs: Image.Image | list[Image.Image], **kwargs: Any
-        ) -> ndarray | list[ndarray]:
+        def encode(inputs: Image.Image | list[Image.Image], **kwargs: Any) -> ndarray | list[ndarray]:
             #  mypy complains unless isinstance(inputs, list) is used explicitly
-            img_batch = isinstance(inputs, list) and all(
-                [isinstance(inst, Image.Image) for inst in inputs]
-            )
-            text_batch = isinstance(inputs, list) and all(
-                [isinstance(inst, str) for inst in inputs]
-            )
+            img_batch = isinstance(inputs, list) and all([isinstance(inst, Image.Image) for inst in inputs])
+            text_batch = isinstance(inputs, list) and all([isinstance(inst, str) for inst in inputs])
             if isinstance(inputs, list) and not any([img_batch, text_batch]):
                 raise TypeError
 
             if isinstance(inputs, list):
-                return [clip_embedding] * len(inputs)
+                return np.stack([embedding] * len(inputs))
 
-            return clip_embedding
+            return embedding
 
         mocked = mock.Mock()
         mocked.encode = encode
@@ -113,13 +73,29 @@ def mock_st(clip_embedding: ndarray) -> Iterator[mock.Mock]:
         yield model
 
 
-@pytest.fixture(autouse=True)
-def mock_faceanalysis(face_preds: list[SimpleNamespace]) -> Iterator[mock.Mock]:
+@pytest.fixture
+def mock_faceanalysis() -> Iterator[mock.Mock]:
     with mock.patch("app.models.facial_recognition.FaceAnalysis") as model:
+        face_preds = [
+            SimpleNamespace(  # this is so these fields can be accessed through dot notation
+                **{
+                    "bbox": np.random.rand(4).astype(np.float32),
+                    "kps": np.random.rand(5, 2).astype(np.float32),
+                    "det_score": np.array([0.67]).astype(np.float32),
+                    "normed_embedding": np.random.rand(512).astype(np.float32),
+                }
+            ),
+            SimpleNamespace(
+                **{
+                    "bbox": np.random.rand(4).astype(np.float32),
+                    "kps": np.random.rand(5, 2).astype(np.float32),
+                    "det_score": np.array([0.4]).astype(np.float32),
+                    "normed_embedding": np.random.rand(512).astype(np.float32),
+                }
+            ),
+        ]
 
-        def get(
-            image: np.ndarray[int, np.dtype[np.float32]], **kwargs: Any
-        ) -> list[SimpleNamespace]:
+        def get(image: np.ndarray[int, np.dtype[np.float32]], **kwargs: Any) -> list[SimpleNamespace]:
             if not isinstance(image, np.ndarray):
                 raise TypeError
 
@@ -133,9 +109,7 @@ def mock_faceanalysis(face_preds: list[SimpleNamespace]) -> Iterator[mock.Mock]:
 
 @pytest.fixture
 def mock_get_model() -> Iterator[mock.Mock]:
-    with mock.patch(
-        "app.models.cache.InferenceModel.from_model_type", autospec=True
-    ) as mocked:
+    with mock.patch("app.models.cache.InferenceModel.from_model_type", autospec=True) as mocked:
         yield mocked
 
 

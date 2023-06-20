@@ -4,6 +4,7 @@ from unittest import mock
 
 import cv2
 import pytest
+from fastapi.testclient import TestClient
 from PIL import Image
 
 from .config import settings
@@ -14,7 +15,6 @@ from .models.image_classification import ImageClassifier
 from .schemas import ModelType
 
 
-@pytest.mark.usefixtures("mock_classifier_pipeline")
 class TestImageClassifier:
     def test_init(self, mock_classifier_pipeline: mock.Mock) -> None:
         cache_dir = Path("test_cache")
@@ -27,7 +27,7 @@ class TestImageClassifier:
             model_kwargs={"cache_dir": cache_dir},
         )
 
-    def test_min_score(self, pil_image: Image.Image) -> None:
+    def test_min_score(self, pil_image: Image.Image, mock_classifier_pipeline: mock.Mock) -> None:
         classifier = ImageClassifier("test_model_name", min_score=0.0)
         classifier.min_score = 0.0
         all_labels = classifier.predict(pil_image)
@@ -45,7 +45,6 @@ class TestImageClassifier:
         assert filtered_labels == ["that's an image alright"]
 
 
-@pytest.mark.usefixtures("mock_st")
 class TestCLIP:
     def test_init(self, mock_st: mock.Mock) -> None:
         CLIPSTEncoder("test_model_name", cache_dir="test_cache")
@@ -71,7 +70,6 @@ class TestCLIP:
         mock_st.assert_called_once()
 
 
-@pytest.mark.usefixtures("mock_faceanalysis")
 class TestFaceRecognition:
     def test_init(self, mock_faceanalysis: mock.Mock) -> None:
         FaceRecognizer("test_model_name", cache_dir="test_cache")
@@ -83,9 +81,7 @@ class TestFaceRecognition:
         )
 
     def test_basic(self, cv_image: cv2.Mat, mock_faceanalysis: mock.Mock) -> None:
-        face_recognizer = FaceRecognizer(
-            "test_model_name", min_score=0.0, cache_dir="test_cache"
-        )
+        face_recognizer = FaceRecognizer("test_model_name", min_score=0.0, cache_dir="test_cache")
         faces = face_recognizer.predict(cv_image)
 
         assert len(faces) == 2
@@ -110,9 +106,7 @@ class TestCache:
 
     async def test_kwargs_used(self, mock_get_model: mock.Mock) -> None:
         model_cache = ModelCache()
-        await model_cache.get(
-            "test_model_name", ModelType.IMAGE_CLASSIFICATION, cache_dir="test_cache"
-        )
+        await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION, cache_dir="test_cache")
         mock_get_model.assert_called_once_with(
             ModelType.IMAGE_CLASSIFICATION, "test_model_name", cache_dir="test_cache"
         )
@@ -130,19 +124,13 @@ class TestCache:
         assert len(model_cache.cache._cache) == 2
 
     @mock.patch("app.models.cache.OptimisticLock", autospec=True)
-    async def test_model_ttl(
-        self, mock_lock_cls: mock.Mock, mock_get_model: mock.Mock
-    ) -> None:
+    async def test_model_ttl(self, mock_lock_cls: mock.Mock, mock_get_model: mock.Mock) -> None:
         model_cache = ModelCache(ttl=100)
         await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION)
-        mock_lock_cls.return_value.__aenter__.return_value.cas.assert_called_with(
-            mock.ANY, ttl=100
-        )
+        mock_lock_cls.return_value.__aenter__.return_value.cas.assert_called_with(mock.ANY, ttl=100)
 
     @mock.patch("app.models.cache.SimpleMemoryCache.expire")
-    async def test_revalidate(
-        self, mock_cache_expire: mock.Mock, mock_get_model: mock.Mock
-    ) -> None:
+    async def test_revalidate(self, mock_cache_expire: mock.Mock, mock_get_model: mock.Mock) -> None:
         model_cache = ModelCache(ttl=100, revalidate=True)
         await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION)
         await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION)
@@ -154,7 +142,7 @@ class TestCache:
     reason="More time-consuming since it deploys the app and loads models.",
 )
 class TestEndpoints:
-    def test_tagging_endpoint(self, pil_image: Image.Image, deployed_app) -> None:
+    def test_tagging_endpoint(self, pil_image: Image.Image, deployed_app: TestClient) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
         headers = {"Content-Type": "image/jpg"}
@@ -165,7 +153,7 @@ class TestEndpoints:
         )
         assert response.status_code == 200
 
-    def test_clip_image_endpoint(self, pil_image: Image.Image, deployed_app) -> None:
+    def test_clip_image_endpoint(self, pil_image: Image.Image, deployed_app: TestClient) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
         headers = {"Content-Type": "image/jpg"}
@@ -176,14 +164,14 @@ class TestEndpoints:
         )
         assert response.status_code == 200
 
-    def test_clip_text_endpoint(self, deployed_app) -> None:
+    def test_clip_text_endpoint(self, deployed_app: TestClient) -> None:
         response = deployed_app.post(
             "http://localhost:3003/sentence-transformer/encode-text",
             json={"text": "test search query"},
         )
         assert response.status_code == 200
 
-    def test_face_endpoint(self, pil_image: Image.Image, deployed_app) -> None:
+    def test_face_endpoint(self, pil_image: Image.Image, deployed_app: TestClient) -> None:
         byte_image = BytesIO()
         pil_image.save(byte_image, format="jpeg")
         headers = {"Content-Type": "image/jpg"}
