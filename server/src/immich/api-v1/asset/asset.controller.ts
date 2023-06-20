@@ -7,6 +7,7 @@ import {
   Header,
   Headers,
   HttpCode,
+  HttpStatus,
   Param,
   ParseFilePipe,
   Patch,
@@ -111,7 +112,7 @@ export class AssetController {
 
     const responseDto = await this.assetService.uploadFile(authUser, dto, file, livePhotoFile, sidecarFile);
     if (responseDto.duplicate) {
-      res.status(200);
+      res.status(HttpStatus.OK);
     }
 
     return responseDto;
@@ -193,6 +194,7 @@ export class AssetController {
   }
 
   @Post('/search')
+  @HttpCode(HttpStatus.OK)
   searchAsset(
     @AuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: SearchAssetDto,
@@ -201,6 +203,7 @@ export class AssetController {
   }
 
   @Post('/count-by-time-bucket')
+  @HttpCode(HttpStatus.OK)
   getAssetCountByTimeBucket(
     @AuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: GetAssetCountByTimeBucketDto,
@@ -235,6 +238,7 @@ export class AssetController {
   }
 
   @Post('/time-bucket')
+  @HttpCode(HttpStatus.OK)
   getAssetByTimeBucket(
     @AuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: GetAssetByTimeBucketDto,
@@ -284,7 +288,7 @@ export class AssetController {
    */
   @SharedLinkRoute()
   @Post('/check')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   checkDuplicateAsset(
     @AuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: CheckDuplicateAssetDto,
@@ -296,7 +300,7 @@ export class AssetController {
    * Checks if multiple assets exist on the server and returns all existing - used by background backup
    */
   @Post('/exist')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   checkExistingAssets(
     @AuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: CheckExistingAssetsDto,
@@ -308,7 +312,7 @@ export class AssetController {
    * Checks if assets exist by checksums
    */
   @Post('/bulk-upload-check')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   bulkUploadCheck(
     @AuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: AssetBulkUploadCheckDto,
