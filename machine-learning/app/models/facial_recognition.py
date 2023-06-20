@@ -4,7 +4,7 @@ from typing import Any
 import cv2
 import numpy as np
 from insightface.app import FaceAnalysis
-from insightface.utils.face_align import norm_crop
+from insightface.utils.face_align import norm_crop  # type: ignore
 
 from ..config import settings
 from ..schemas import ModelType, ndarray
