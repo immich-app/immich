@@ -29,5 +29,6 @@ declare namespace svelteHTML {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	interface HTMLAttributes<T> {
 		'on:copyImage'?: () => void;
+		'on:zoomImage'?: () => void;
 	}
 }
