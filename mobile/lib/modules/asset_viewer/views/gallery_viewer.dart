@@ -479,11 +479,10 @@ class GalleryViewerPage extends HookConsumerWidget {
                     }
                   : null,
               builder: (context, index) {
-                getAssetExif();
-                // Create image provider
-                final ImageProvider provider = imageProvider(assetList[index]);
+                final asset = loadAsset(index);
+                final ImageProvider provider = imageProvider(asset);
 
-                if (assetList[index].isImage && !isPlayingMotionVideo.value) {
+                if (asset.isImage && !isPlayingMotionVideo.value) {
                   return PhotoViewGalleryPageOptions(
                     onDragStart: (_, details, __) =>
                         localPosition = details.localPosition,
@@ -519,7 +518,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     child: VideoViewerPage(
                       onPlaying: () => isPlayingVideo.value = true,
                       onPaused: () => isPlayingVideo.value = false,
-                      asset: assetList[index],
+                      asset: asset,
                       isMotionVideo: isPlayingMotionVideo.value,
                       placeholder: Image(
                         image: provider,
