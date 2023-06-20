@@ -68,7 +68,7 @@ describe('assetUploadOption', () => {
       { mimetype: 'image/x-canon-crw', extension: 'crw' },
       { mimetype: 'image/x-canon-cr2', extension: 'cr2' },
       { mimetype: 'image/x-canon-cr3', extension: 'cr3' },
-      { mimetype: 'image/x-epson-erf', extension:  'erf' },
+      { mimetype: 'image/x-epson-erf', extension: 'erf' },
       { mimetype: 'image/x-kodak-dcr', extension: 'dcr' },
       { mimetype: 'image/x-kodak-k25', extension: 'k25' },
       { mimetype: 'image/x-kodak-kdc', extension: 'kdc' },
@@ -87,7 +87,6 @@ describe('assetUploadOption', () => {
       { mimetype: 'image/x-arriflex-ari', extension: 'ari' },
       { mimetype: 'image/x-phaseone-cap', extension: 'cap' },
       { mimetype: 'image/x-phantom-cin', extension: 'cin' },
-
       { mimetype: 'video/avi', extension: 'avi' },
       { mimetype: 'video/mov', extension: 'mov' },
       { mimetype: 'video/mp4', extension: 'mp4' },
