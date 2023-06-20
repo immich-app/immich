@@ -1,5 +1,5 @@
 from types import SimpleNamespace
-from typing import Any, Iterator, TypeAlias
+from typing import Any, Iterator
 from unittest import mock
 
 import numpy as np
@@ -7,9 +7,8 @@ import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 
-from .main import app, init_state
-
-ndarray: TypeAlias = np.ndarray[int, np.dtype[np.float32]]
+from .main import init_state
+from .schemas import ndarray
 
 
 @pytest.fixture

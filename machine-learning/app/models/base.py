@@ -32,6 +32,10 @@ class InferenceModel(ABC):
     def predict(self, inputs: Any) -> Any:
         ...
 
+    @abstractmethod
+    def predict_batch(self, inputs: list[Any]) -> list[Any]:
+        ...
+
     @property
     def model_type(self) -> ModelType:
         return self._model_type

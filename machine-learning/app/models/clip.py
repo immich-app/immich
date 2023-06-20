@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 from PIL.Image import Image
 from sentence_transformers import SentenceTransformer
 
@@ -19,4 +20,10 @@ class CLIPSTEncoder(InferenceModel):
         )
 
     def predict(self, image_or_text: Image | str) -> list[float]:
-        return self.model.encode(image_or_text).tolist()
+        return self.predict_batch([image_or_text])[0]  # type: ignore
+
+    def predict_batch(
+        self,
+        images_or_texts: list[Image] | list[str],
+    ) -> list[list[float]]:
+        return self.model.encode(images_or_texts).tolist()

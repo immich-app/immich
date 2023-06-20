@@ -31,6 +31,15 @@ class ImageClassifier(InferenceModel):
 
     def predict(self, image: Image) -> list[str]:
         predictions: list[dict[str, Any]] = self.model(image)  # type: ignore
-        tags = [tag for pred in predictions for tag in pred["label"].split(", ") if pred["score"] >= self.min_score]
+        tags = self._postprocess(predictions)
 
         return tags
+
+    def predict_batch(self, images: list[Image]) -> list[list[str]]:
+        batch_predictions: list[list[dict[str, Any]]] = self.model(images)  # type: ignore
+        results = [self._postprocess(predictions) for predictions in batch_predictions]
+
+        return results
+
+    def _postprocess(self, predictions: list[dict[str, Any]]) -> list[str]:
+        return [tag for pred in predictions for tag in pred["label"].split(", ") if pred["score"] >= self.min_score]
