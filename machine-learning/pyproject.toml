@@ -33,6 +33,7 @@ locust = "^2.15.1"
 gunicorn = "^20.1.0"
 httpx = "^0.24.1"
 isort = "^5.12.0"
+pytest-asyncio = "^0.21.0"
 
 [[tool.poetry.source]]
 name = "pytorch-cpu"

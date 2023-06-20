@@ -129,28 +129,27 @@ jobs:
         working-directory: ./machine-learning
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v4
         with:
           python-version: 3.11
+          cache: "poetry"
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install poetry
-          poetry config virtualenvs.create false
           poetry install --with dev
-      - name: Run mypy type checking
-        run: |
-          mypy --install-types --non-interactive app/
-      - name: Check black formatting
-        run: |
-          black --check app
       - name: Lint with ruff
         run: |
-          ruff check --format=github app
+          poetry run ruff check --format=github app
+      - name: Check black formatting
+        run: |
+          poetry run black --check app
+      - name: Run mypy type checking
+        run: |
+          poetry run mypy --install-types --non-interactive app/
       - name: Run tests and coverage
         run: |
-          pytest --cov app
+          poetry run pytest --cov app
 
   generated-api-up-to-date:
     name: Check generated files are up-to-date
