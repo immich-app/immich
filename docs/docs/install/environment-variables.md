@@ -15,12 +15,13 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 ## General
 
-| Variable                | Description                                  |   Default    | Services                                     |
-| :---------------------- | :------------------------------------------- | :----------: | :------------------------------------------- |
-| `TZ`                    | Timezone                                     |              | microservices                                |
-| `NODE_ENV`              | Environment (production, development)        | `production` | server, microservices, machine learning, web |
-| `LOG_LEVEL`             | Log Level (verbose, debug, log, warn, error) |    `log`     | server, microservices                        |
-| `IMMICH_MEDIA_LOCATION` | Media Location                               |  `./upload`  | server, microservices                        |
+| Variable                    | Description                                  |   Default    | Services                                     |
+| :-------------------------- | :------------------------------------------- | :----------: | :------------------------------------------- |
+| `TZ`                        | Timezone                                     |              | microservices                                |
+| `NODE_ENV`                  | Environment (production, development)        | `production` | server, microservices, machine learning, web |
+| `LOG_LEVEL`                 | Log Level (verbose, debug, log, warn, error) |    `log`     | server, microservices                        |
+| `IMMICH_MEDIA_LOCATION`     | Media Location                               |  `./upload`  | server, microservices                        |
+| `PUBLIC_LOGIN_PAGE_MESSAGE` | Public Login Page Message                    |              | web                                          |
 
 :::tip
 
@@ -36,7 +37,6 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | :--------------------------------- | :---------------------------------- | :--------------------------: | :------------ |
 | `DISABLE_REVERSE_GEOCODING`        | Disable Reverse Geocoding Precision |           `false`            | microservices |
 | `REVERSE_GEOCODING_PRECISION`      | Reverse Geocoding Precision         |             `3`              | microservices |
-| `PUBLIC_LOGIN_PAGE_MESSAGE`        | Public Login Page Message           |                              | web           |
 | `REVERSE_GEOCODING_DUMP_DIRECTORY` | Reverse Geocoding Dump Directory    | `./.reverse-geocoding-dump/` | microservices |
 
 ## Ports
