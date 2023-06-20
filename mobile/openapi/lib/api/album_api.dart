@@ -332,10 +332,10 @@ class AlbumApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /album/count-by-user-id' operation and returns the [Response].
-  Future<Response> getAlbumCountByUserIdWithHttpInfo() async {
+  /// Performs an HTTP 'GET /album/count' operation and returns the [Response].
+  Future<Response> getAlbumCountWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/album/count-by-user-id';
+    final path = r'/album/count';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -358,8 +358,8 @@ class AlbumApi {
     );
   }
 
-  Future<AlbumCountResponseDto?> getAlbumCountByUserId() async {
-    final response = await getAlbumCountByUserIdWithHttpInfo();
+  Future<AlbumCountResponseDto?> getAlbumCount() async {
+    final response = await getAlbumCountWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

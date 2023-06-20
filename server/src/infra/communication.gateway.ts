@@ -1,7 +1,7 @@
+import { AuthService } from '@app/domain';
 import { Logger } from '@nestjs/common';
 import { OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { AuthService } from '@app/domain';
 
 @WebSocketGateway({ cors: true })
 export class CommunicationGateway implements OnGatewayConnection, OnGatewayDisconnect {

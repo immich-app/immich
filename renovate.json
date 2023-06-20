@@ -1,0 +1,19 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:base"],
+  "packageRules": [
+    {
+      "matchPaths": ["mobile"],
+      "groupName": "mobile"
+    },
+    {
+      "matchPaths": ["server"],
+      "groupName": "server"
+    },
+    {
+      "matchPaths": ["web"],
+      "groupName": "web"
+    }
+  ],
+  "enabled": false
+}

@@ -7,21 +7,27 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
+import cookieParser from 'cookie';
 import { IncomingHttpHeaders } from 'http';
+import { IKeyRepository } from '../api-key';
+import { APIKeyCore } from '../api-key/api-key.core';
+import { ICryptoRepository } from '../crypto/crypto.repository';
 import { OAuthCore } from '../oauth/oauth.core';
+import { ISharedLinkRepository, SharedLinkCore } from '../shared-link';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
 import { IUserRepository, UserCore } from '../user';
+import { IUserTokenRepository, UserTokenCore } from '../user-token';
 import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_API_KEY_HEADER } from './auth.constant';
 import { AuthCore, LoginDetails } from './auth.core';
-import { ICryptoRepository } from '../crypto/crypto.repository';
 import { AuthUserDto, ChangePasswordDto, LoginCredentialDto, SignUpDto } from './dto';
-import { AdminSignupResponseDto, LoginResponseDto, LogoutResponseDto, mapAdminSignupResponse } from './response-dto';
-import { IUserTokenRepository, UserTokenCore } from '../user-token';
-import cookieParser from 'cookie';
-import { ISharedLinkRepository, SharedLinkCore } from '../shared-link';
-import { APIKeyCore } from '../api-key/api-key.core';
-import { IKeyRepository } from '../api-key';
-import { AuthDeviceResponseDto, mapUserToken } from './response-dto';
+import {
+  AdminSignupResponseDto,
+  AuthDeviceResponseDto,
+  LoginResponseDto,
+  LogoutResponseDto,
+  mapAdminSignupResponse,
+  mapUserToken,
+} from './response-dto';
 
 @Injectable()
 export class AuthService {

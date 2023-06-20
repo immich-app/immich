@@ -95,9 +95,9 @@
         ]
       }
     },
-    "/album/count-by-user-id": {
+    "/album/count": {
       "get": {
-        "operationId": "getAlbumCountByUserId",
+        "operationId": "getAlbumCount",
         "parameters": [],
         "responses": {
           "200": {
@@ -2387,12 +2387,12 @@
         ]
       }
     },
-    "/jobs/{jobId}": {
+    "/jobs/{id}": {
       "put": {
         "operationId": "sendJobCommand",
         "parameters": [
           {
-            "name": "jobId",
+            "name": "id",
             "required": true,
             "in": "path",
             "schema": {
@@ -4354,7 +4354,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.61.0",
+    "version": "1.62.1",
     "contact": {}
   },
   "tags": [],
@@ -4530,14 +4530,14 @@
           "shared": {
             "type": "integer"
           },
-          "sharing": {
+          "notShared": {
             "type": "integer"
           }
         },
         "required": [
           "owned",
           "shared",
-          "sharing"
+          "notShared"
         ]
       },
       "AlbumResponseDto": {
@@ -4865,6 +4865,11 @@
           "resized": {
             "type": "boolean"
           },
+          "thumbhash": {
+            "type": "string",
+            "nullable": true,
+            "description": "base64 encoded thumbhash"
+          },
           "fileCreatedAt": {
             "format": "date-time",
             "type": "string"
@@ -4926,6 +4931,7 @@
           "originalPath",
           "originalFileName",
           "resized",
+          "thumbhash",
           "fileCreatedAt",
           "fileModifiedAt",
           "updatedAt",

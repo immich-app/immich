@@ -1,14 +1,15 @@
 import torch
 from insightface.app import FaceAnalysis
 from pathlib import Path
-import os
 
 from transformers import pipeline, Pipeline
 from sentence_transformers import SentenceTransformer
-from typing import Any
+from typing import Any, BinaryIO
 import cv2 as cv
+import numpy as np
+from PIL import Image
+from config import settings
 
-cache_folder = os.getenv("MACHINE_LEARNING_CACHE_FOLDER", "/cache")
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
@@ -49,9 +50,9 @@ def get_model(model_name: str, model_type: str, **model_kwargs):
 
 
 def run_classification(
-    model: Pipeline, image_path: str, min_score: float | None = None
+    model: Pipeline, image: Image, min_score: float | None = None
 ):
-    predictions: list[dict[str, Any]] = model(image_path)  # type: ignore
+    predictions: list[dict[str, Any]] = model(image)  # type: ignore
     result = {
         tag
         for pred in predictions
@@ -63,9 +64,10 @@ def run_classification(
 
 
 def run_facial_recognition(
-    model: FaceAnalysis, image_path: str
+    model: FaceAnalysis, image: bytes
 ) -> list[dict[str, Any]]:
-    img = cv.imread(image_path)
+    file_bytes = np.frombuffer(image, dtype=np.uint8)
+    img = cv.imdecode(file_bytes, cv.IMREAD_COLOR)
     height, width, _ = img.shape
     results = []
     faces = model.get(img)
@@ -101,7 +103,7 @@ def _load_facial_recognition(
     if isinstance(cache_dir, Path):
         cache_dir = cache_dir.as_posix()
     if min_face_score is None:
-        min_face_score = float(os.getenv("MACHINE_LEARNING_MIN_FACE_SCORE", 0.7))
+        min_face_score = settings.min_face_score
 
     model = FaceAnalysis(
         name=model_name,
@@ -114,4 +116,4 @@ def _load_facial_recognition(
 
 
 def _get_cache_dir(model_name: str, model_type: str) -> Path:
-    return Path(cache_folder, device, model_type, model_name)
+    return Path(settings.cache_folder, device, model_type, model_name)

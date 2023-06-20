@@ -11,7 +11,7 @@ import {
 import { Body, Controller, Get, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { GetAuthUser, GetLoginDetails } from '../decorators/auth-user.decorator';
+import { AuthUser, GetLoginDetails } from '../decorators/auth-user.decorator';
 import { Authenticated, PublicRoute } from '../decorators/authenticated.decorator';
 import { UseValidation } from '../decorators/use-validation.decorator';
 
@@ -51,12 +51,12 @@ export class OAuthController {
   }
 
   @Post('link')
-  link(@GetAuthUser() authUser: AuthUserDto, @Body() dto: OAuthCallbackDto): Promise<UserResponseDto> {
+  link(@AuthUser() authUser: AuthUserDto, @Body() dto: OAuthCallbackDto): Promise<UserResponseDto> {
     return this.service.link(authUser, dto);
   }
 
   @Post('unlink')
-  unlink(@GetAuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
+  unlink(@AuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
     return this.service.unlink(authUser);
   }
 }

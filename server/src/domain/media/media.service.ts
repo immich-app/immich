@@ -37,7 +37,16 @@ export class MediaService {
 
     for await (const assets of assetPagination) {
       for (const asset of assets) {
-        await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: asset.id } });
+        if (!asset.resizePath || force) {
+          await this.jobRepository.queue({ name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: asset.id } });
+          continue;
+        }
+        if (!asset.webpPath) {
+          await this.jobRepository.queue({ name: JobName.GENERATE_WEBP_THUMBNAIL, data: { id: asset.id } });
+        }
+        if (!asset.thumbhash) {
+          await this.jobRepository.queue({ name: JobName.GENERATE_THUMBHASH_THUMBNAIL, data: { id: asset.id } });
+        }
       }
     }
 
@@ -83,6 +92,18 @@ export class MediaService {
 
     await this.mediaRepository.resize(asset.resizePath, webpPath, { size: WEBP_THUMBNAIL_SIZE, format: 'webp' });
     await this.assetRepository.save({ id: asset.id, webpPath: webpPath });
+
+    return true;
+  }
+
+  async handleGenerateThumbhashThumbnail({ id }: IEntityJob): Promise<boolean> {
+    const [asset] = await this.assetRepository.getByIds([id]);
+    if (!asset?.resizePath) {
+      return false;
+    }
+
+    const thumbhash = await this.mediaRepository.generateThumbhash(asset.resizePath);
+    await this.assetRepository.save({ id: asset.id, thumbhash });
 
     return true;
   }

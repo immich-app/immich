@@ -129,6 +129,7 @@
 						altText={asset.originalFileName}
 						widthStyle="{width}px"
 						heightStyle="{height}px"
+						thumbhash={asset.thumbhash}
 					/>
 				{:else}
 					<div class="w-full h-full p-4 flex items-center justify-center">

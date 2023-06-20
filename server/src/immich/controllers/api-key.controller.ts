@@ -8,7 +8,7 @@ import {
 } from '@app/domain';
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { GetAuthUser } from '../decorators/auth-user.decorator';
+import { AuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated } from '../decorators/authenticated.decorator';
 import { UseValidation } from '../decorators/use-validation.decorator';
 import { UUIDParamDto } from './dto/uuid-param.dto';
@@ -21,23 +21,23 @@ export class APIKeyController {
   constructor(private service: APIKeyService) {}
 
   @Post()
-  createKey(@GetAuthUser() authUser: AuthUserDto, @Body() dto: APIKeyCreateDto): Promise<APIKeyCreateResponseDto> {
+  createKey(@AuthUser() authUser: AuthUserDto, @Body() dto: APIKeyCreateDto): Promise<APIKeyCreateResponseDto> {
     return this.service.create(authUser, dto);
   }
 
   @Get()
-  getKeys(@GetAuthUser() authUser: AuthUserDto): Promise<APIKeyResponseDto[]> {
+  getKeys(@AuthUser() authUser: AuthUserDto): Promise<APIKeyResponseDto[]> {
     return this.service.getAll(authUser);
   }
 
   @Get(':id')
-  getKey(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<APIKeyResponseDto> {
+  getKey(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<APIKeyResponseDto> {
     return this.service.getById(authUser, id);
   }
 
   @Put(':id')
   updateKey(
-    @GetAuthUser() authUser: AuthUserDto,
+    @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: APIKeyUpdateDto,
   ): Promise<APIKeyResponseDto> {
@@ -45,7 +45,7 @@ export class APIKeyController {
   }
 
   @Delete(':id')
-  deleteKey(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
+  deleteKey(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(authUser, id);
   }
 }
