@@ -1,15 +1,13 @@
 import { redirect } from '@sveltejs/kit';
 export const prerender = false;
-
-import type { PageServerLoad } from './$types';
+import type { PageLoad } from './$types';
 import { AppRoute } from '$lib/constants';
 
-export const load: PageServerLoad = async ({ parent }) => {
+export const load: PageLoad = async ({ parent }) => {
 	const { user } = await parent();
-
 	if (!user) {
 		throw redirect(302, AppRoute.AUTH_LOGIN);
-	} else {
-		throw redirect(302, AppRoute.FAVORITES);
 	}
+
+	throw redirect(302, AppRoute.ARCHIVE);
 };
