@@ -804,6 +804,7 @@ export const sharedLinkStub = {
     allowDownload: true,
     showExif: true,
     album: undefined,
+    albumId: null,
     description: null,
     assets: [],
   } as SharedLinkEntity),
@@ -819,6 +820,7 @@ export const sharedLinkStub = {
     allowDownload: true,
     showExif: true,
     description: null,
+    albumId: null,
     assets: [],
   } as SharedLinkEntity),
   readonlyNoExif: Object.freeze<SharedLinkEntity>({
@@ -834,6 +836,7 @@ export const sharedLinkStub = {
     showExif: false,
     description: null,
     assets: [],
+    albumId: 'album-123',
     album: {
       id: 'album-123',
       ownerId: authStub.admin.id,
