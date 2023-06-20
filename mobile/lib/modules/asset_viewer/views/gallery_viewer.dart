@@ -52,7 +52,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     final showAppBar = useState<bool>(true);
     final isPlayingMotionVideo = useState(false);
     final isPlayingVideo = useState(false);
-    late Offset localPosition;
+    Offset? localPosition;
     final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
     final currentIndex = useState(initialIndex);
     final currentAsset = loadAsset(currentIndex.value);
@@ -246,8 +246,13 @@ class GalleryViewerPage extends HookConsumerWidget {
         return;
       }
 
+      // Guard [localPosition] null
+      if (localPosition == null) {
+        return;
+      }
+
       // Check for delta from initial down point
-      final d = details.localPosition - localPosition;
+      final d = details.localPosition - localPosition!;
       // If the magnitude of the dx swipe is large, we probably didn't mean to go down
       if (d.dx.abs() > dxThreshold) {
         return;
