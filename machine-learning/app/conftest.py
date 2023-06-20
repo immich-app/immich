@@ -4,9 +4,10 @@ from unittest import mock
 
 import numpy as np
 import pytest
+from fastapi.testclient import TestClient
 from PIL import Image
 
-from .main import init_state
+from .main import app, init_state
 
 ndarray: TypeAlias = np.ndarray[int, np.dtype[np.float32]]
 
@@ -138,6 +139,7 @@ def mock_get_model() -> Iterator[mock.Mock]:
         yield mocked
 
 
-@pytest.fixture(autouse=True)
-def startup() -> None:
+@pytest.fixture(scope="session")
+def deployed_app() -> TestClient:
     init_state()
+    return TestClient(app)

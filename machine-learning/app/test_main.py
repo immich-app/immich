@@ -4,17 +4,14 @@ from unittest import mock
 
 import cv2
 import pytest
-from fastapi.testclient import TestClient
 from PIL import Image
 
-from .main import app
+from .config import settings
 from .models.cache import ModelCache
 from .models.clip import CLIPSTEncoder
 from .models.facial_recognition import FaceRecognizer
 from .models.image_classification import ImageClassifier
 from .schemas import ModelType
-
-client = TestClient(app)
 
 
 @pytest.mark.usefixtures("mock_classifier_pipeline")
@@ -47,21 +44,6 @@ class TestImageClassifier:
         ]
         assert filtered_labels == ["that's an image alright"]
 
-    def test_endpoint(self, pil_image: Image.Image) -> None:
-        byte_image = BytesIO()
-        pil_image.save(byte_image, format="jpeg")
-        headers = {"Content-Type": "image/jpg"}
-        response = client.post(
-            "/image-classifier/tag-image",
-            content=byte_image.getvalue(),
-            headers=headers,
-        )
-        assert response.status_code == 200
-
-    @pytest.mark.skip(reason="Not implemented")
-    def test_model(self) -> None:
-        pass
-
 
 @pytest.mark.usefixtures("mock_st")
 class TestCLIP:
@@ -87,31 +69,6 @@ class TestCLIP:
         assert len(embedding) == 512
         assert all([isinstance(num, float) for num in embedding])
         mock_st.assert_called_once()
-
-    def test_image_endpoint(self, pil_image: Image.Image) -> None:
-        byte_image = BytesIO()
-        pil_image.save(byte_image, format="jpeg")
-        headers = {"Content-Type": "image/jpg"}
-        response = client.post(
-            "/sentence-transformer/encode-image",
-            content=byte_image.getvalue(),
-            headers=headers,
-        )
-        assert response.status_code == 200
-
-    def test_text_endpoint(self) -> None:
-        response = client.post(
-            "/sentence-transformer/encode-text", json={"text": "test search query"}
-        )
-        assert response.status_code == 200
-
-    @pytest.mark.skip(reason="Not implemented")
-    def test_image_model(self) -> None:
-        pass
-
-    @pytest.mark.skip(reason="Not implemented")
-    def test_text_model(self) -> None:
-        pass
 
 
 @pytest.mark.usefixtures("mock_faceanalysis")
@@ -140,21 +97,6 @@ class TestFaceRecognition:
             assert all([isinstance(num, float) for num in face["embedding"]])
 
         mock_faceanalysis.assert_called_once()
-
-    def test_endpoint(self, pil_image: Image.Image) -> None:
-        byte_image = BytesIO()
-        pil_image.save(byte_image, format="jpeg")
-        headers = {"Content-Type": "image/png"}
-        response = client.post(
-            "/facial-recognition/detect-faces",
-            content=byte_image.getvalue(),
-            headers=headers,
-        )
-        assert response.status_code == 200
-
-    @pytest.mark.skip(reason="Not implemented")
-    def test_model(self) -> None:
-        pass
 
 
 @pytest.mark.asyncio
@@ -205,3 +147,49 @@ class TestCache:
         await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION)
         await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION)
         mock_cache_expire.assert_called_once_with(mock.ANY, 100)
+
+
+@pytest.mark.skipif(
+    not settings.test_full,
+    reason="More time-consuming since it deploys the app and loads models.",
+)
+class TestEndpoints:
+    def test_tagging_endpoint(self, pil_image: Image.Image, deployed_app) -> None:
+        byte_image = BytesIO()
+        pil_image.save(byte_image, format="jpeg")
+        headers = {"Content-Type": "image/jpg"}
+        response = deployed_app.post(
+            "http://localhost:3003/image-classifier/tag-image",
+            content=byte_image.getvalue(),
+            headers=headers,
+        )
+        assert response.status_code == 200
+
+    def test_clip_image_endpoint(self, pil_image: Image.Image, deployed_app) -> None:
+        byte_image = BytesIO()
+        pil_image.save(byte_image, format="jpeg")
+        headers = {"Content-Type": "image/jpg"}
+        response = deployed_app.post(
+            "http://localhost:3003/sentence-transformer/encode-image",
+            content=byte_image.getvalue(),
+            headers=headers,
+        )
+        assert response.status_code == 200
+
+    def test_clip_text_endpoint(self, deployed_app) -> None:
+        response = deployed_app.post(
+            "http://localhost:3003/sentence-transformer/encode-text",
+            json={"text": "test search query"},
+        )
+        assert response.status_code == 200
+
+    def test_face_endpoint(self, pil_image: Image.Image, deployed_app) -> None:
+        byte_image = BytesIO()
+        pil_image.save(byte_image, format="jpeg")
+        headers = {"Content-Type": "image/jpg"}
+        response = deployed_app.post(
+            "http://localhost:3003/facial-recognition/detect-faces",
+            content=byte_image.getvalue(),
+            headers=headers,
+        )
+        assert response.status_code == 200
