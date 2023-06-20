@@ -75,9 +75,9 @@
 	};
 
 	const doZoomImage = async () => {
-	  setZoomImageWheelState({
-	    currentZoom: $zoomImageWheelState.currentZoom === 1 ? 2 : 1;
-	  });
+		setZoomImageWheelState({
+			currentZoom: $zoomImageWheelState.currentZoom === 1 ? 2 : 1
+		});
 	};
 
 	const {
