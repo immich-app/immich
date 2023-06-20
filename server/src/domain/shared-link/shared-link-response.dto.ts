@@ -1,12 +1,12 @@
 import { SharedLinkEntity, SharedLinkType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import _ from 'lodash';
-import { AlbumResponseDto, mapAlbumExcludeAssetInfo } from '../../album';
-import { AssetResponseDto, mapAsset, mapAssetWithoutExif } from '../../asset';
+import { AlbumResponseDto, mapAlbumExcludeAssetInfo } from '../album';
+import { AssetResponseDto, mapAsset, mapAssetWithoutExif } from '../asset';
 
 export class SharedLinkResponseDto {
   id!: string;
-  description?: string;
+  description!: string | null;
   userId!: string;
   key!: string;
 

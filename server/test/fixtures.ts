@@ -777,6 +777,21 @@ export const loginResponseStub = {
 };
 
 export const sharedLinkStub = {
+  individual: Object.freeze({
+    id: '123',
+    userId: authStub.admin.id,
+    user: userEntityStub.admin,
+    key: sharedLinkBytes,
+    type: SharedLinkType.INDIVIDUAL,
+    createdAt: today,
+    expiresAt: tomorrow,
+    allowUpload: true,
+    allowDownload: true,
+    showExif: true,
+    album: undefined,
+    description: null,
+    assets: [assetEntityStub.image],
+  } as SharedLinkEntity),
   valid: Object.freeze({
     id: '123',
     userId: authStub.admin.id,
@@ -789,6 +804,7 @@ export const sharedLinkStub = {
     allowDownload: true,
     showExif: true,
     album: undefined,
+    description: null,
     assets: [],
   } as SharedLinkEntity),
   expired: Object.freeze({
@@ -802,6 +818,7 @@ export const sharedLinkStub = {
     allowUpload: true,
     allowDownload: true,
     showExif: true,
+    description: null,
     assets: [],
   } as SharedLinkEntity),
   readonlyNoExif: Object.freeze<SharedLinkEntity>({
@@ -815,6 +832,7 @@ export const sharedLinkStub = {
     allowUpload: false,
     allowDownload: false,
     showExif: false,
+    description: null,
     assets: [],
     album: {
       id: 'album-123',
@@ -903,7 +921,7 @@ export const sharedLinkResponseStub = {
     allowUpload: true,
     assets: [],
     createdAt: today,
-    description: undefined,
+    description: null,
     expiresAt: tomorrow,
     id: '123',
     key: sharedLinkBytes.toString('base64url'),
@@ -917,7 +935,7 @@ export const sharedLinkResponseStub = {
     allowUpload: true,
     assets: [],
     createdAt: today,
-    description: undefined,
+    description: null,
     expiresAt: yesterday,
     id: '123',
     key: sharedLinkBytes.toString('base64url'),
@@ -932,7 +950,7 @@ export const sharedLinkResponseStub = {
     type: SharedLinkType.ALBUM,
     createdAt: today,
     expiresAt: tomorrow,
-    description: undefined,
+    description: null,
     allowUpload: false,
     allowDownload: false,
     showExif: true,
@@ -946,7 +964,7 @@ export const sharedLinkResponseStub = {
     type: SharedLinkType.ALBUM,
     createdAt: today,
     expiresAt: tomorrow,
-    description: undefined,
+    description: null,
     allowUpload: false,
     allowDownload: false,
     showExif: false,

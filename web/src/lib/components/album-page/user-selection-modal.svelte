@@ -31,7 +31,7 @@
 	});
 
 	const getSharedLinks = async () => {
-		const { data } = await api.shareApi.getAllSharedLinks();
+		const { data } = await api.sharedLinkApi.getAllSharedLinks();
 
 		sharedLinks = data.filter((link) => link.album?.id === album.id);
 	};

@@ -1,4 +1,4 @@
-import { AssetResponseDto, ImmichReadStream, SharedLinkResponseDto } from '@app/domain';
+import { AssetResponseDto, ImmichReadStream } from '@app/domain';
 import {
   Body,
   Controller,
@@ -10,7 +10,6 @@ import {
   HttpStatus,
   Param,
   ParseFilePipe,
-  Patch,
   Post,
   Put,
   Query,
@@ -28,15 +27,12 @@ import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config'
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
 import { AuthUser, AuthUserDto } from '../../decorators/auth-user.decorator';
 import { Authenticated, SharedLinkRoute } from '../../decorators/authenticated.decorator';
-import { AddAssetsDto } from '../album/dto/add-assets.dto';
-import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { AssetService } from './asset.service';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { CreateAssetDto, mapToUploadFile } from './dto/create-asset.dto';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { DeviceIdDto } from './dto/device-id.dto';
@@ -318,31 +314,5 @@ export class AssetController {
     @Body(ValidationPipe) dto: AssetBulkUploadCheckDto,
   ): Promise<AssetBulkUploadCheckResponseDto> {
     return this.assetService.bulkUploadCheck(authUser, dto);
-  }
-
-  @Post('/shared-link')
-  createAssetsSharedLink(
-    @AuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: CreateAssetsShareLinkDto,
-  ): Promise<SharedLinkResponseDto> {
-    return this.assetService.createAssetsSharedLink(authUser, dto);
-  }
-
-  @SharedLinkRoute()
-  @Patch('/shared-link/add')
-  addAssetsToSharedLink(
-    @AuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: AddAssetsDto,
-  ): Promise<SharedLinkResponseDto> {
-    return this.assetService.addAssetsToSharedLink(authUser, dto);
-  }
-
-  @SharedLinkRoute()
-  @Patch('/shared-link/remove')
-  removeAssetsFromSharedLink(
-    @AuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: RemoveAssetsDto,
-  ): Promise<SharedLinkResponseDto> {
-    return this.assetService.removeAssetsFromSharedLink(authUser, dto);
   }
 }
