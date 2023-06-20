@@ -7,10 +7,12 @@ import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 
-from .main import app, load_models
+from .main import app
+from .models.cache import ModelCache
 from .models.clip import CLIPSTEncoder
 from .models.facial_recognition import FaceRecognizer
 from .models.image_classification import ImageClassifier
+from .schemas import ModelType
 
 client = TestClient(app)
 
@@ -98,7 +100,9 @@ class TestCLIP:
         assert response.status_code == 200
 
     def test_text_endpoint(self) -> None:
-        response = client.post("/sentence-transformer/encode-text", json={"text": "test search query"})
+        response = client.post(
+            "/sentence-transformer/encode-text", json={"text": "test search query"}
+        )
         assert response.status_code == 200
 
     @pytest.mark.skip(reason="Not implemented")
@@ -122,7 +126,9 @@ class TestFaceRecognition:
         )
 
     def test_basic(self, cv_image: cv2.Mat, mock_faceanalysis: mock.Mock) -> None:
-        face_recognizer = FaceRecognizer("test_model_name", min_score=0.0, cache_dir="test_cache")
+        face_recognizer = FaceRecognizer(
+            "test_model_name", min_score=0.0, cache_dir="test_cache"
+        )
         faces = face_recognizer.predict(cv_image)
 
         assert len(faces) == 2
@@ -153,25 +159,49 @@ class TestFaceRecognition:
 
 @pytest.mark.asyncio
 class TestCache:
-    async def test_eager_startup(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr("app.main.settings.eager_startup", True)
-        await load_models()
-        assert len(app.state.model_cache.cache._cache) == 3
+    async def test_caches(self, mock_get_model: mock.Mock) -> None:
+        model_cache = ModelCache()
+        await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION)
+        await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION)
+        assert len(model_cache.cache._cache) == 1
+        mock_get_model.assert_called_once()
 
-    async def test_lazy_startup(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr("app.main.settings.eager_startup", False)
-        await load_models()
-        assert len(app.state.model_cache.cache._cache) == 0
+    async def test_kwargs_used(self, mock_get_model: mock.Mock) -> None:
+        model_cache = ModelCache()
+        await model_cache.get(
+            "test_model_name", ModelType.IMAGE_CLASSIFICATION, cache_dir="test_cache"
+        )
+        mock_get_model.assert_called_once_with(
+            ModelType.IMAGE_CLASSIFICATION, "test_model_name", cache_dir="test_cache"
+        )
 
-    async def test_different_clip(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr("app.main.settings.eager_startup", True)
-        monkeypatch.setattr("app.main.settings.clip_text_model", "text_only_clip")
-        await load_models()
-        assert len(app.state.model_cache.cache._cache) == 4
+    async def test_different_clip(self, mock_get_model: mock.Mock) -> None:
+        model_cache = ModelCache()
+        await model_cache.get("test_image_model_name", ModelType.CLIP)
+        await model_cache.get("test_text_model_name", ModelType.CLIP)
+        mock_get_model.assert_has_calls(
+            [
+                mock.call(ModelType.CLIP, "test_image_model_name"),
+                mock.call(ModelType.CLIP, "test_text_model_name"),
+            ]
+        )
+        assert len(model_cache.cache._cache) == 2
 
-    @mock.patch("app.models.cache.OptimisticLock")
-    async def test_model_ttl(self, mock_lock_cls: mock.Mock, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr("app.main.settings.eager_startup", True)
-        monkeypatch.setattr("app.main.app.state.model_cache.ttl", 100)
-        await load_models()
-        mock_lock_cls.return_value.__aenter__.return_value.cas.assert_called_with(mock.ANY, ttl=100)
+    @mock.patch("app.models.cache.OptimisticLock", autospec=True)
+    async def test_model_ttl(
+        self, mock_lock_cls: mock.Mock, mock_get_model: mock.Mock
+    ) -> None:
+        model_cache = ModelCache(ttl=100)
+        await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION)
+        mock_lock_cls.return_value.__aenter__.return_value.cas.assert_called_with(
+            mock.ANY, ttl=100
+        )
+
+    @mock.patch("app.models.cache.SimpleMemoryCache.expire")
+    async def test_revalidate(
+        self, mock_cache_expire: mock.Mock, mock_get_model: mock.Mock
+    ) -> None:
+        model_cache = ModelCache(ttl=100, revalidate=True)
+        await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION)
+        await model_cache.get("test_model_name", ModelType.IMAGE_CLASSIFICATION)
+        mock_cache_expire.assert_called_once_with(mock.ANY, 100)
