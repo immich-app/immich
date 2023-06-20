@@ -10,7 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **type** | [**SharedLinkType**](SharedLinkType.md) |  | 
 **id** | **String** |  | 
-**description** | **String** |  | [optional] 
+**description** | **String** |  | 
 **userId** | **String** |  | 
 **key** | **String** |  | 
 **createdAt** | [**DateTime**](DateTime.md) |  | 

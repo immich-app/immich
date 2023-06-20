@@ -80,7 +80,6 @@ Class | Method | HTTP request | Description
 *AlbumApi* | [**addAssetsToAlbum**](doc//AlbumApi.md#addassetstoalbum) | **PUT** /album/{id}/assets | 
 *AlbumApi* | [**addUsersToAlbum**](doc//AlbumApi.md#adduserstoalbum) | **PUT** /album/{id}/users | 
 *AlbumApi* | [**createAlbum**](doc//AlbumApi.md#createalbum) | **POST** /album | 
-*AlbumApi* | [**createAlbumSharedLink**](doc//AlbumApi.md#createalbumsharedlink) | **POST** /album/create-shared-link | 
 *AlbumApi* | [**deleteAlbum**](doc//AlbumApi.md#deletealbum) | **DELETE** /album/{id} | 
 *AlbumApi* | [**downloadArchive**](doc//AlbumApi.md#downloadarchive) | **GET** /album/{id}/download | 
 *AlbumApi* | [**getAlbumCount**](doc//AlbumApi.md#getalbumcount) | **GET** /album/count | 
@@ -89,11 +88,9 @@ Class | Method | HTTP request | Description
 *AlbumApi* | [**removeAssetFromAlbum**](doc//AlbumApi.md#removeassetfromalbum) | **DELETE** /album/{id}/assets | 
 *AlbumApi* | [**removeUserFromAlbum**](doc//AlbumApi.md#removeuserfromalbum) | **DELETE** /album/{id}/user/{userId} | 
 *AlbumApi* | [**updateAlbumInfo**](doc//AlbumApi.md#updatealbuminfo) | **PATCH** /album/{id} | 
-*AssetApi* | [**addAssetsToSharedLink**](doc//AssetApi.md#addassetstosharedlink) | **PATCH** /asset/shared-link/add | 
 *AssetApi* | [**bulkUploadCheck**](doc//AssetApi.md#bulkuploadcheck) | **POST** /asset/bulk-upload-check | 
 *AssetApi* | [**checkDuplicateAsset**](doc//AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
-*AssetApi* | [**createAssetsSharedLink**](doc//AssetApi.md#createassetssharedlink) | **POST** /asset/shared-link | 
 *AssetApi* | [**deleteAsset**](doc//AssetApi.md#deleteasset) | **DELETE** /asset | 
 *AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **GET** /asset/download/{id} | 
 *AssetApi* | [**downloadFiles**](doc//AssetApi.md#downloadfiles) | **POST** /asset/download-files | 
@@ -111,7 +108,6 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getMapMarkers**](doc//AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 *AssetApi* | [**getMemoryLane**](doc//AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 *AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
-*AssetApi* | [**removeAssetsFromSharedLink**](doc//AssetApi.md#removeassetsfromsharedlink) | **PATCH** /asset/shared-link/remove | 
 *AssetApi* | [**searchAsset**](doc//AssetApi.md#searchasset) | **POST** /asset/search | 
 *AssetApi* | [**serveFile**](doc//AssetApi.md#servefile) | **GET** /asset/file/{id} | 
 *AssetApi* | [**updateAsset**](doc//AssetApi.md#updateasset) | **PUT** /asset/{id} | 
@@ -146,11 +142,14 @@ Class | Method | HTTP request | Description
 *ServerInfoApi* | [**getServerVersion**](doc//ServerInfoApi.md#getserverversion) | **GET** /server-info/version | 
 *ServerInfoApi* | [**getStats**](doc//ServerInfoApi.md#getstats) | **GET** /server-info/stats | 
 *ServerInfoApi* | [**pingServer**](doc//ServerInfoApi.md#pingserver) | **GET** /server-info/ping | 
-*ShareApi* | [**getAllSharedLinks**](doc//ShareApi.md#getallsharedlinks) | **GET** /share | 
-*ShareApi* | [**getMySharedLink**](doc//ShareApi.md#getmysharedlink) | **GET** /share/me | 
-*ShareApi* | [**getSharedLinkById**](doc//ShareApi.md#getsharedlinkbyid) | **GET** /share/{id} | 
-*ShareApi* | [**removeSharedLink**](doc//ShareApi.md#removesharedlink) | **DELETE** /share/{id} | 
-*ShareApi* | [**updateSharedLink**](doc//ShareApi.md#updatesharedlink) | **PATCH** /share/{id} | 
+*SharedLinkApi* | [**addSharedLinkAssets**](doc//SharedLinkApi.md#addsharedlinkassets) | **PUT** /shared-link/{id}/assets | 
+*SharedLinkApi* | [**createSharedLink**](doc//SharedLinkApi.md#createsharedlink) | **POST** /shared-link | 
+*SharedLinkApi* | [**getAllSharedLinks**](doc//SharedLinkApi.md#getallsharedlinks) | **GET** /shared-link | 
+*SharedLinkApi* | [**getMySharedLink**](doc//SharedLinkApi.md#getmysharedlink) | **GET** /shared-link/me | 
+*SharedLinkApi* | [**getSharedLinkById**](doc//SharedLinkApi.md#getsharedlinkbyid) | **GET** /shared-link/{id} | 
+*SharedLinkApi* | [**removeSharedLink**](doc//SharedLinkApi.md#removesharedlink) | **DELETE** /shared-link/{id} | 
+*SharedLinkApi* | [**removeSharedLinkAssets**](doc//SharedLinkApi.md#removesharedlinkassets) | **DELETE** /shared-link/{id}/assets | 
+*SharedLinkApi* | [**updateSharedLink**](doc//SharedLinkApi.md#updatesharedlink) | **PATCH** /shared-link/{id} | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
 *SystemConfigApi* | [**getDefaults**](doc//SystemConfigApi.md#getdefaults) | **GET** /system-config/defaults | 
 *SystemConfigApi* | [**getStorageTemplateOptions**](doc//SystemConfigApi.md#getstoragetemplateoptions) | **GET** /system-config/storage-template-options | 
@@ -207,8 +206,6 @@ Class | Method | HTTP request | Description
  - [CheckExistingAssetsDto](doc//CheckExistingAssetsDto.md)
  - [CheckExistingAssetsResponseDto](doc//CheckExistingAssetsResponseDto.md)
  - [CreateAlbumDto](doc//CreateAlbumDto.md)
- - [CreateAlbumShareLinkDto](doc//CreateAlbumShareLinkDto.md)
- - [CreateAssetsShareLinkDto](doc//CreateAssetsShareLinkDto.md)
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
  - [CreateTagDto](doc//CreateTagDto.md)
  - [CreateUserDto](doc//CreateUserDto.md)
@@ -218,7 +215,6 @@ Class | Method | HTTP request | Description
  - [DeleteAssetResponseDto](doc//DeleteAssetResponseDto.md)
  - [DeleteAssetStatus](doc//DeleteAssetStatus.md)
  - [DownloadFilesDto](doc//DownloadFilesDto.md)
- - [EditSharedLinkDto](doc//EditSharedLinkDto.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [GetAssetByTimeBucketDto](doc//GetAssetByTimeBucketDto.md)
  - [GetAssetCountByTimeBucketDto](doc//GetAssetCountByTimeBucketDto.md)
@@ -253,6 +249,8 @@ Class | Method | HTTP request | Description
  - [ServerPingResponse](doc//ServerPingResponse.md)
  - [ServerStatsResponseDto](doc//ServerStatsResponseDto.md)
  - [ServerVersionReponseDto](doc//ServerVersionReponseDto.md)
+ - [SharedLinkCreateDto](doc//SharedLinkCreateDto.md)
+ - [SharedLinkEditDto](doc//SharedLinkEditDto.md)
  - [SharedLinkResponseDto](doc//SharedLinkResponseDto.md)
  - [SharedLinkType](doc//SharedLinkType.md)
  - [SignUpDto](doc//SignUpDto.md)
