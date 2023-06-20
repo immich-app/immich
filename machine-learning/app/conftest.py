@@ -1,13 +1,13 @@
-from types import SimpleNamespace
 from typing import Any, Iterator
 from unittest import mock
 
 import numpy as np
 import pytest
-from fastapi.testclient import TestClient
 from PIL import Image
+from ray import serve
+from ray.serve.handle import RayServeHandle
 
-from .main import init_state
+from .main import ingress
 from .schemas import ndarray
 
 
@@ -54,7 +54,7 @@ def mock_st() -> Iterator[mock.Mock]:
     with mock.patch("app.models.clip.SentenceTransformer") as model:
         embedding = np.random.rand(512).astype(np.float32)
 
-        def encode(inputs: Image.Image | list[Image.Image], **kwargs: Any) -> ndarray | list[ndarray]:
+        def encode(inputs: Image.Image | list[Image.Image], **kwargs: Any) -> ndarray:
             #  mypy complains unless isinstance(inputs, list) is used explicitly
             img_batch = isinstance(inputs, list) and all([isinstance(inst, Image.Image) for inst in inputs])
             text_batch = isinstance(inputs, list) and all([isinstance(inst, str) for inst in inputs])
@@ -75,34 +75,12 @@ def mock_st() -> Iterator[mock.Mock]:
 @pytest.fixture
 def mock_faceanalysis() -> Iterator[mock.Mock]:
     with mock.patch("app.models.facial_recognition.FaceAnalysis") as model:
-        face_preds = [
-            SimpleNamespace(  # this is so these fields can be accessed through dot notation
-                **{
-                    "bbox": np.random.rand(4).astype(np.float32),
-                    "kps": np.random.rand(5, 2).astype(np.float32),
-                    "det_score": np.array([0.67]).astype(np.float32),
-                    "normed_embedding": np.random.rand(512).astype(np.float32),
-                }
-            ),
-            SimpleNamespace(
-                **{
-                    "bbox": np.random.rand(4).astype(np.float32),
-                    "kps": np.random.rand(5, 2).astype(np.float32),
-                    "det_score": np.array([0.4]).astype(np.float32),
-                    "normed_embedding": np.random.rand(512).astype(np.float32),
-                }
-            ),
-        ]
+        batch_det = np.random.rand(2, 5).astype(np.float32)
+        batch_kpss = np.random.rand(2, 5, 2).astype(np.float32)
+        batch_embeddings = np.random.rand(2, 512).astype(np.float32)
 
-        def get(image: np.ndarray[int, np.dtype[np.float32]], **kwargs: Any) -> list[SimpleNamespace]:
-            if not isinstance(image, np.ndarray):
-                raise TypeError
-
-            return face_preds
-
-        mocked = mock.Mock()
-        mocked.get = get
-        model.return_value = mocked
+        model.return_value.det_model.detect.return_value = batch_det, batch_kpss
+        model.return_value.models["recognition"].get_feat.return_value = batch_embeddings
         yield model
 
 
@@ -113,6 +91,5 @@ def mock_get_model() -> Iterator[mock.Mock]:
 
 
 @pytest.fixture(scope="session")
-def deployed_app() -> TestClient:
-    init_state()
-    return TestClient(app)
+def deployed_app() -> RayServeHandle | None:
+    return serve.run(ingress, host="localhost", port=3003)

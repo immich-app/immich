@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     eager_startup: bool = True
     max_batch_size: int = 16
     batch_timeout_s: float = 0.01
+    max_concurrency: int = 256
     model_ttl: int = 300
     num_cpus: int = os.cpu_count() or 1
     host: str = "0.0.0.0"

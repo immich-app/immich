@@ -10,7 +10,7 @@ handler = ModelHandler.bind(  # type: ignore
     settings.clip_text_model,
     settings.facial_recognition_model,
 )
-ingress = ModelIngress.options(max_concurrent_queries=256).bind(handler)  # type: ignore
+ingress = ModelIngress.options(max_concurrent_queries=settings.max_concurrency).bind(handler)  # type: ignore
 
 
 if __name__ == "__main__":
