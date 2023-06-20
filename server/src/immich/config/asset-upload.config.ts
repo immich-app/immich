@@ -55,7 +55,7 @@ function fileFilter(req: AuthRequest, file: any, cb: any) {
   }
   if (
     file.mimetype.match(
-      /\/(jpg|jpeg|png|gif|avi|mov|mp4|webm|x-msvideo|quicktime|heic|heif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef|x-fuji-raf|x-samsung-srw|mpeg|x-flv|x-ms-wmv|x-matroska|x-sony-arw|arw)$/,
+      /\/(jpg|jpeg|png|gif|avi|mov|mp4|webm|x-msvideo|quicktime|heic|heif|avif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef|x-fuji-raf|x-samsung-srw|mpeg|x-flv|x-ms-wmv|x-matroska|x-sony-arw|arw|x-canon-crw|x-canon-cr2|x-canon-cr3|x-epson-erf|x-kodak-dcr|x-kodak-kdc|x-kodak-k25|x-minolta-mrw|x-olympus-orf|x-panasonic-raw|x-pentax-pef|x-sigma-x3f|x-sony-srf|x-sony-sr2|x-hasselblad-3fr|x-hasselblad-fff|x-leica-rwl|x-olympus-ori|x-phaseone-iiq|x-arriflex-ari|x-phaseone-cap|x-phantom-cin)$/,
     )
   ) {
     cb(null, true);
