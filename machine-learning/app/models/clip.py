@@ -22,6 +22,7 @@ class CLIPSTEncoder(InferenceModel):
     def predict(self, image_or_text: Image | str) -> list[float]:
         return self.predict_batch([image_or_text])[0]  # type: ignore
 
+    # TODO return as ndarray so it uses shared memory and convert to list in ingress
     def predict_batch(
         self,
         images_or_texts: list[Image] | list[str],
