@@ -10,6 +10,7 @@
 	export let album: AlbumResponseDto;
 	export let isSharingView = false;
 	export let user: UserResponseDto;
+	export let showItemCount = true;
 
 	$: imageData = album.albumThumbnailAssetId
 		? api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Webp)
@@ -101,10 +102,12 @@
 		</p>
 
 		<span class="text-sm flex gap-2 dark:text-immich-dark-fg" data-testid="album-details">
-			<p>
-				{album.assetCount.toLocaleString($locale)}
-				{album.assetCount == 1 ? `item` : `items`}
-			</p>
+			{#if showItemCount}
+				<p>
+					{album.assetCount.toLocaleString($locale)}
+					{album.assetCount == 1 ? `item` : `items`}
+				</p>
+			{/if}
 
 			{#if isSharingView || album.shared}
 				<p>·</p>
