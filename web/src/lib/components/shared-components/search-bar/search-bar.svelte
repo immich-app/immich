@@ -94,7 +94,7 @@
 			<div class="px-5 pt-5 text-xs">
 				<p>
 					Smart search is enabled by default, to search for metadata use the syntax <span
-						class="font-mono p-2 font-semibold text-immich-primary dark:text-immich-dark-primary bg-gray-100 rounded-lg dark:bg-gray-900"
+						class="font-mono p-2 font-semibold text-immich-primary dark:text-immich-dark-primary bg-gray-100 rounded-lg dark:bg-gray-900 leading-7"
 						>m:your-search-term</span
 					>
 				</p>

@@ -137,6 +137,12 @@ class FileHelper {
       case 'jxl':
         return {"type": "image", "subType": "jxl"};
 
+      case 'mts':
+        return {"type": "video", "subType": "mp2t"};
+
+      case 'm2ts':
+        return {"type": "video", "subType": "mp2t"};
+
       default:
         return {"type": "unsupport", "subType": "unsupport"};
     }

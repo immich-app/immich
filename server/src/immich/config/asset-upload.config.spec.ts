@@ -51,7 +51,6 @@ describe('assetUploadOption', () => {
 
     for (const { mimetype, extension } of [
       { mimetype: 'image/avif', extension: 'avif' },
-      { mimetype: 'image/dng', extension: 'dng' },
       { mimetype: 'image/gif', extension: 'gif' },
       { mimetype: 'image/heic', extension: 'heic' },
       { mimetype: 'image/heif', extension: 'heif' },
@@ -89,8 +88,8 @@ describe('assetUploadOption', () => {
       { mimetype: 'image/x-sony-sr2', extension: 'sr2' },
       { mimetype: 'image/x-sony-srf', extension: 'srf' },
       { mimetype: 'video/3gpp', extension: '3gp' },
-      { mimetype: 'video/avi', extension: 'avi' },
-      { mimetype: 'video/mov', extension: 'mov' },
+      { mimetype: 'video/mp2t', extension: 'm2ts' },
+      { mimetype: 'video/mp2t', extension: 'mts' },
       { mimetype: 'video/mp4', extension: 'mp4' },
       { mimetype: 'video/mpeg', extension: 'mpg' },
       { mimetype: 'video/quicktime', extension: 'mov' },
