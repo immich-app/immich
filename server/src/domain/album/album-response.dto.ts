@@ -16,6 +16,7 @@ export class AlbumResponseDto {
   owner!: UserResponseDto;
   @ApiProperty({ type: 'integer' })
   assetCount!: number;
+  lastModifiedAssetTimestamp?: Date;
 }
 
 export function mapAlbum(entity: AlbumEntity): AlbumResponseDto {
