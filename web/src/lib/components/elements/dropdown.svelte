@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import SwapVertical from 'svelte-material-icons/SwapVertical.svelte';
 	import Check from 'svelte-material-icons/Check.svelte';
 	import LinkButton from './buttons/link-button.svelte';
