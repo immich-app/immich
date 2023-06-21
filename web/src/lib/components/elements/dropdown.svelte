@@ -10,7 +10,6 @@
 	export let value = options[0];
 
 	let showMenu = false;
-	onMount(() => {});
 
 	const handleClickOutside = () => {
 		showMenu = false;
