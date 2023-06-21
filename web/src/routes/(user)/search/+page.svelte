@@ -89,7 +89,7 @@
 	<section class="overflow-y-auto relative immich-scrollbar">
 		{#if albums.length}
 			<section>
-				<div class="text-4xl font-semibold text-black/70 dark:text-white/80 ml-6">ALBUMS</div>
+				<div class="text-4xl font-medium text-black/70 dark:text-white/80 ml-6">ALBUMS</div>
 				<div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
 					{#each albums as album (album.id)}
 						<a
@@ -102,9 +102,7 @@
 					{/each}
 				</div>
 
-				<div class="m-6 text-4xl font-semibold text-black/70 dark:text-white/80">
-					PHOTOS & VIDEOS
-				</div>
+				<div class="m-6 text-4xl font-medium text-black/70 dark:text-white/80">PHOTOS & VIDEOS</div>
 			</section>
 		{/if}
 		<section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
