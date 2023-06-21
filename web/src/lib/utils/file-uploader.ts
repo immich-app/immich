@@ -23,7 +23,7 @@ export const openFileUploadDialog = async (
 			// When adding a content type that is unsupported by browsers, make sure
 			// to also add it to getFileMimeType() otherwise the upload will fail.
 			fileSelector.accept =
-				'image/*,video/*,.heic,.heif,.avif,.dng,.3gp,.nef,.srw,.crw,.cr2,.cr3,.raf,.insp,.insv,.arw,.erf,.raf,.dcr,.k25,.kdc,.mrw,.orf,.raw,.pef,.x3f,.srf,.sr2,.3fr,.fff,.rwl,.ori,.iiq,.ari,.cap,.cin';
+				'image/*,video/*,.heic,.heif,.avif,.dng,.3gp,.nef,.srw,.crw,.cr2,.cr3,.raf,.insp,.insv,.arw,.erf,.raf,.dcr,.k25,.kdc,.mrw,.orf,.raw,.pef,.x3f,.srf,.sr2,.3fr,.fff,.rwl,.ori,.iiq,.ari,.cap,.cin,.mov';
 
 			fileSelector.onchange = async (e: Event) => {
 				const target = e.target as HTMLInputElement;
