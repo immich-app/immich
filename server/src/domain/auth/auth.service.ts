@@ -82,6 +82,20 @@ export class AuthService {
     return this.authCore.createLoginResponse(user, AuthType.PASSWORD, loginDetails);
   }
 
+  public async keyLogin(
+    authUser: AuthUserDto,
+    loginDetails: LoginDetails,
+  ): Promise<{ response: LoginResponseDto; cookie: string[] }> {
+    let user = await this.userCore.get(authUser.id, false);
+
+    if (!user) {
+      this.logger.warn(`Failed key login attempt for user ${authUser.email} from ip address ${loginDetails.clientIp}`);
+      throw new BadRequestException('Incorrect email or password');
+    }
+
+    return this.authCore.createLoginResponse(user, AuthType.PASSWORD, loginDetails);
+  }
+
   public async logout(authUser: AuthUserDto, authType: AuthType): Promise<LogoutResponseDto> {
     if (authUser.accessTokenId) {
       await this.userTokenCore.delete(authUser.id, authUser.accessTokenId);

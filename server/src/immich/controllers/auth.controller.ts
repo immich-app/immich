@@ -42,6 +42,15 @@ export class AuthController {
     return response;
   }
 
+  @Get('keyLogin')
+  async keyLogin(
+    @AuthUser() authUser: AuthUserDto,
+    @GetLoginDetails() loginDetails: LoginDetails,
+  ): Promise<LoginResponseDto> {
+    const { response, cookie } = await this.service.keyLogin(authUser, loginDetails);
+    return response;
+  }
+
   @PublicRoute()
   @Post('admin-sign-up')
   @ApiBadRequestResponse({ description: 'The server already has an admin' })
