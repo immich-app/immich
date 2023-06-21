@@ -2,7 +2,7 @@
 	import { api } from '@api';
 	import { fade } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
-	import { videoViewerVolume } from '$lib/stores/asset-interaction.store';
+	import { videoViewerVolume } from '$lib/stores/preferences.store';
 	import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
 	export let assetId: string;
@@ -10,14 +10,6 @@
 
 	let isVideoLoading = true;
 	const dispatch = createEventDispatcher();
-
-	let volume: number = 1;
-
-	//subscribing to the store
-	videoViewerVolume.subscribe((value) => {
-		volume = value;
-	});
-	$: videoViewerVolume.set(volume);
 
 	const handleCanPlay = (ev: Event & { currentTarget: HTMLVideoElement }) => {
 		const playerNode = ev.currentTarget;
@@ -39,7 +31,7 @@
 		class="h-full object-contain"
 		on:canplay={handleCanPlay}
 		on:ended={() => dispatch('onVideoEnded')}
-		bind:volume
+		bind:volume={$videoViewerVolume}
 	>
 		<source src={api.getAssetFileUrl(assetId, false, true, publicSharedKey)} type="video/mp4" />
 		<track kind="captions" />
