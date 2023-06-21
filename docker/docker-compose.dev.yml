@@ -136,6 +136,7 @@ services:
       - 2283:8080
     depends_on:
       - immich-server
+      - immich-web
     restart: always
 
 volumes:

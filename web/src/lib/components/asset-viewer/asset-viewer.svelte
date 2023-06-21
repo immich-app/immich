@@ -308,6 +308,7 @@
 			{asset}
 			isMotionPhotoPlaying={shouldPlayMotionPhoto}
 			showCopyButton={canCopyImagesToClipboard && asset.type === AssetTypeEnum.Image}
+			showZoomButton={asset.type === AssetTypeEnum.Image}
 			showMotionPlayButton={!!asset.livePhotoVideoId}
 			showDownloadButton={shouldShowDownloadButton}
 			on:goBack={closeViewer}

@@ -96,7 +96,10 @@ export class StorageTemplateService {
           asset.originalPath = destination;
           asset.sidecarPath = sidecarDestination || null;
         } catch (error: any) {
-          this.logger.warn('Unable to save new originalPath to database, undoing move', error?.stack);
+          this.logger.warn(
+            `Unable to save new originalPath to database, undoing move for path ${asset.originalPath} - filename ${asset.originalFileName} - id ${asset.id}`,
+            error?.stack,
+          );
 
           // Either sidecar move failed or the save failed. Eithr way, move media back
           await this.storageRepository.moveFile(destination, source);

@@ -60,6 +60,7 @@
 	"dependencies": {
 		"@zoom-image/svelte": "^0.1.0",
 		"axios": "^0.27.2",
+		"buffer": "^6.0.3",
 		"copy-image-clipboard": "^2.1.2",
 		"handlebars": "^4.7.7",
 		"justified-layout": "^4.1.0",
@@ -71,6 +72,6 @@
 		"socket.io-client": "^4.6.1",
 		"svelte-local-storage-store": "^0.5.0",
 		"svelte-material-icons": "^3.0.4",
-		"unlazy": "^0.8.9"
+		"thumbhash": "^0.1.1"
 	}
 }

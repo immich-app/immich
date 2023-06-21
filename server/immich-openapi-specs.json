@@ -1066,7 +1066,7 @@
           }
         },
         "responses": {
-          "201": {
+          "200": {
             "description": "",
             "content": {
               "application/json": {
@@ -1595,7 +1595,7 @@
           }
         },
         "responses": {
-          "201": {
+          "200": {
             "description": "",
             "content": {
               "application/json": {
@@ -1910,7 +1910,7 @@
           }
         },
         "responses": {
-          "201": {
+          "200": {
             "description": "",
             "content": {
               "application/json": {
@@ -4354,7 +4354,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.62.0",
+    "version": "1.62.1",
     "contact": {}
   },
   "tags": [],
