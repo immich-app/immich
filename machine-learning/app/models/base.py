@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from pathlib import Path
 from typing import Any
 
@@ -8,7 +8,7 @@ from ..config import get_cache_dir
 from ..schemas import ModelType
 
 
-class InferenceModel:
+class InferenceModel(ABC):
     _model_type: ModelType
 
     def __init__(
@@ -20,7 +20,7 @@ class InferenceModel:
         self._cache_dir = (
             cache_dir
             if cache_dir is not None
-            else get_cache_dir(model_name, ModelType.FACIAL_RECOGNITION)
+            else get_cache_dir(model_name, self.model_type)
         )
 
     @abstractmethod
