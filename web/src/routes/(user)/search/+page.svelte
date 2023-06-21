@@ -38,7 +38,7 @@
 			previousRoute = from.url.href;
 		}
 
-		if (from && from.route.id === '/(user)/albums/[albumId]') {
+		if (from?.route.id === '/(user)/albums/[albumId]') {
 			previousRoute = AppRoute.EXPLORE;
 		}
 	});
