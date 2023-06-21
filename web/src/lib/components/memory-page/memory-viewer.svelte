@@ -35,6 +35,7 @@
 	$: nextAsset = currentMemory?.assets[assetIndex + 1];
 
 	$: canAdvance = !!(nextMemory || nextAsset);
+	$: canGoBack = !!(previousMemory || previousAsset);
 
 	const toNextMemory = () => goto(`?memory=${memoryIndex + 1}`);
 	const toPreviousMemory = () => goto(`?memory=${memoryIndex - 1}`);
@@ -72,6 +73,16 @@
 	// Progress should be reset when the current memory or asset changes.
 	$: memoryIndex, assetIndex, reset();
 
+	const handleKeyDown = (e: KeyboardEvent) => {
+		if (e.key === 'ArrowRight' && canAdvance) {
+			toNext();
+		} else if (e.key === 'ArrowLeft' && canGoBack) {
+			toPrevious();
+		} else if (e.key === 'Escape') {
+			goto(AppRoute.PHOTOS);
+		}
+	};
+
 	onMount(async () => {
 		if (!$memoryStore) {
 			const { data } = await api.assetApi.getMemoryLane({
@@ -79,6 +90,9 @@
 			});
 			$memoryStore = data;
 		}
+
+		document.addEventListener('keydown', handleKeyDown);
+		return () => document.removeEventListener('keydown', handleKeyDown);
 	});
 
 	let memoryGallery: HTMLElement;
@@ -190,7 +204,7 @@
 						<div class="absolute h-full flex justify-between w-full">
 							<div class="flex h-full flex-col place-content-center place-items-center ml-4">
 								<div class="inline-block">
-									{#if previousMemory || previousAsset}
+									{#if canGoBack}
 										<CircleIconButton
 											logo={ChevronLeft}
 											backgroundColor="#202123"
