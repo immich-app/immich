@@ -34,7 +34,7 @@
 	$: currentAsset = currentMemory?.assets[assetIndex];
 	$: nextAsset = currentMemory?.assets[assetIndex + 1];
 
-	$: canAdvance = !!(nextMemory || nextAsset);
+	$: canGoForward = !!(nextMemory || nextAsset);
 	$: canGoBack = !!(previousMemory || previousAsset);
 
 	const toNextMemory = () => goto(`?memory=${memoryIndex + 1}`);
@@ -62,7 +62,7 @@
 	$: paused ? pause() : play();
 
 	// Progress should be paused when it's no longer possible to advance.
-	$: paused ||= !canAdvance;
+	$: paused ||= !canGoForward;
 
 	// Advance to the next asset or memory when progress is complete.
 	$: $progress === 1 && toNext();
@@ -74,11 +74,14 @@
 	$: memoryIndex, assetIndex, reset();
 
 	const handleKeyDown = (e: KeyboardEvent) => {
-		if (e.key === 'ArrowRight' && canAdvance) {
+		if (e.key === 'ArrowRight' && canGoForward) {
+			e.preventDefault();
 			toNext();
 		} else if (e.key === 'ArrowLeft' && canGoBack) {
+			e.preventDefault();
 			toPrevious();
 		} else if (e.key === 'Escape') {
+			e.preventDefault();
 			goto(AppRoute.PHOTOS);
 		}
 	};
@@ -90,15 +93,14 @@
 			});
 			$memoryStore = data;
 		}
-
-		document.addEventListener('keydown', handleKeyDown);
-		return () => document.removeEventListener('keydown', handleKeyDown);
 	});
 
 	let memoryGallery: HTMLElement;
 	let memoryWrapper: HTMLElement;
 	let galleryInView = false;
 </script>
+
+<svelte:window on:keydown={handleKeyDown} />
 
 <section id="memory-viewer" class="w-full bg-immich-dark-gray" bind:this={memoryWrapper}>
 	{#if currentMemory}
@@ -215,7 +217,7 @@
 							</div>
 							<div class="flex h-full flex-col place-content-center place-items-center mr-4">
 								<div class="inline-block">
-									{#if canAdvance}
+									{#if canGoForward}
 										<CircleIconButton
 											logo={ChevronRight}
 											backgroundColor="#202123"
