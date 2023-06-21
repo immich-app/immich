@@ -71,6 +71,7 @@ const validMimeTypes = [
   'video/mov',
   'video/mp4',
   'video/mpeg',
+  'video/mp2t',
   'video/quicktime',
   'video/webm',
   'video/x-flv',
