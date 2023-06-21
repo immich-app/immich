@@ -42,6 +42,9 @@ export class AuthController {
     return response;
   }
 
+  /**
+   * Get user login details and a bearer token from an API key
+   */
   @Get('keyLogin')
   async keyLogin(
     @AuthUser() authUser: AuthUserDto,
