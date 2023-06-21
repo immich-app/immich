@@ -12,11 +12,15 @@
 	import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
 	import { onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
+	import Dropdown from '$lib/components/elements/dropdown.svelte';
 
 	export let data: PageData;
 
+	const sortByOptions = ['Most recent photo', 'Last modified', 'Album title'];
+	let selectedSortBy = sortByOptions[0];
+
 	const {
-		albums,
+		albums: unsortedAlbums,
 		isShowContextMenu,
 		contextMenuPosition,
 		createAlbum,
@@ -25,6 +29,28 @@
 		showAlbumContextMenu,
 		closeAlbumContextMenu
 	} = useAlbums({ albums: data.albums });
+
+	let albums = unsortedAlbums;
+
+	const sortByDate = (a: string, b: string) => {
+		const aDate = new Date(a);
+		const bDate = new Date(b);
+		return bDate.getTime() - aDate.getTime();
+	};
+
+	$: {
+		if (selectedSortBy === 'Most recent photo') {
+			$albums = $unsortedAlbums.sort((a, b) =>
+				a.lastModifiedAssetTimestamp && b.lastModifiedAssetTimestamp
+					? sortByDate(a.lastModifiedAssetTimestamp, b.lastModifiedAssetTimestamp)
+					: sortByDate(a.updatedAt, b.updatedAt)
+			);
+		} else if (selectedSortBy === 'Last modified') {
+			$albums = $unsortedAlbums.sort((a, b) => sortByDate(a.updatedAt, b.updatedAt));
+		} else if (selectedSortBy === 'Album title') {
+			$albums = $unsortedAlbums.sort((a, b) => a.albumName.localeCompare(b.albumName));
+		}
+	}
 
 	const handleCreateAlbum = async () => {
 		const newAlbum = await createAlbum();
@@ -52,13 +78,15 @@
 </script>
 
 <UserPageLayout user={data.user} title={data.meta.title}>
-	<div slot="buttons">
+	<div class="flex place-items-center gap-2" slot="buttons">
 		<LinkButton on:click={handleCreateAlbum}>
 			<div class="flex place-items-center gap-2 text-sm">
 				<PlusBoxOutline size="18" />
 				Create album
 			</div>
 		</LinkButton>
+
+		<Dropdown options={sortByOptions} bind:value={selectedSortBy} />
 	</div>
 
 	<!-- Album Card -->

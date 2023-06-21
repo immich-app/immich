@@ -24,6 +24,7 @@ class AlbumResponseDto {
     this.sharedUsers = const [],
     this.assets = const [],
     required this.owner,
+    this.lastModifiedAssetTimestamp,
   });
 
   int assetCount;
@@ -48,6 +49,14 @@ class AlbumResponseDto {
 
   UserResponseDto owner;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  DateTime? lastModifiedAssetTimestamp;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AlbumResponseDto &&
      other.assetCount == assetCount &&
@@ -60,7 +69,8 @@ class AlbumResponseDto {
      other.shared == shared &&
      other.sharedUsers == sharedUsers &&
      other.assets == assets &&
-     other.owner == owner;
+     other.owner == owner &&
+     other.lastModifiedAssetTimestamp == lastModifiedAssetTimestamp;
 
   @override
   int get hashCode =>
@@ -75,10 +85,11 @@ class AlbumResponseDto {
     (shared.hashCode) +
     (sharedUsers.hashCode) +
     (assets.hashCode) +
-    (owner.hashCode);
+    (owner.hashCode) +
+    (lastModifiedAssetTimestamp == null ? 0 : lastModifiedAssetTimestamp!.hashCode);
 
   @override
-  String toString() => 'AlbumResponseDto[assetCount=$assetCount, id=$id, ownerId=$ownerId, albumName=$albumName, createdAt=$createdAt, updatedAt=$updatedAt, albumThumbnailAssetId=$albumThumbnailAssetId, shared=$shared, sharedUsers=$sharedUsers, assets=$assets, owner=$owner]';
+  String toString() => 'AlbumResponseDto[assetCount=$assetCount, id=$id, ownerId=$ownerId, albumName=$albumName, createdAt=$createdAt, updatedAt=$updatedAt, albumThumbnailAssetId=$albumThumbnailAssetId, shared=$shared, sharedUsers=$sharedUsers, assets=$assets, owner=$owner, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -97,6 +108,11 @@ class AlbumResponseDto {
       json[r'sharedUsers'] = this.sharedUsers;
       json[r'assets'] = this.assets;
       json[r'owner'] = this.owner;
+    if (this.lastModifiedAssetTimestamp != null) {
+      json[r'lastModifiedAssetTimestamp'] = this.lastModifiedAssetTimestamp!.toUtc().toIso8601String();
+    } else {
+      // json[r'lastModifiedAssetTimestamp'] = null;
+    }
     return json;
   }
 
@@ -130,6 +146,7 @@ class AlbumResponseDto {
         sharedUsers: UserResponseDto.listFromJson(json[r'sharedUsers']),
         assets: AssetResponseDto.listFromJson(json[r'assets']),
         owner: UserResponseDto.fromJson(json[r'owner'])!,
+        lastModifiedAssetTimestamp: mapDateTime(json, r'lastModifiedAssetTimestamp', ''),
       );
     }
     return null;

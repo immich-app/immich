@@ -127,48 +127,6 @@
         ]
       }
     },
-    "/album/create-shared-link": {
-      "post": {
-        "operationId": "createAlbumSharedLink",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateAlbumShareLinkDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SharedLinkResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Album"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
     "/album/{id}": {
       "patch": {
         "operationId": "updateAlbumInfo",
@@ -1066,7 +1024,7 @@
           }
         },
         "responses": {
-          "201": {
+          "200": {
             "description": "",
             "content": {
               "application/json": {
@@ -1637,7 +1595,7 @@
           }
         },
         "responses": {
-          "201": {
+          "200": {
             "description": "",
             "content": {
               "application/json": {
@@ -1681,150 +1639,6 @@
                   "items": {
                     "type": "string"
                   }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Asset"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
-    "/asset/shared-link": {
-      "post": {
-        "operationId": "createAssetsSharedLink",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateAssetsShareLinkDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SharedLinkResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Asset"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
-    "/asset/shared-link/add": {
-      "patch": {
-        "operationId": "addAssetsToSharedLink",
-        "parameters": [
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AddAssetsDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SharedLinkResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Asset"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
-    "/asset/shared-link/remove": {
-      "patch": {
-        "operationId": "removeAssetsFromSharedLink",
-        "parameters": [
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RemoveAssetsDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SharedLinkResponseDto"
                 }
               }
             }
@@ -1952,7 +1766,7 @@
           }
         },
         "responses": {
-          "201": {
+          "200": {
             "description": "",
             "content": {
               "application/json": {
@@ -3306,7 +3120,7 @@
         ]
       }
     },
-    "/share": {
+    "/shared-link": {
       "get": {
         "operationId": "getAllSharedLinks",
         "parameters": [],
@@ -3326,7 +3140,47 @@
           }
         },
         "tags": [
-          "share"
+          "Shared Link"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createSharedLink",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedLinkCreateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Shared Link"
         ],
         "security": [
           {
@@ -3341,7 +3195,7 @@
         ]
       }
     },
-    "/share/me": {
+    "/shared-link/me": {
       "get": {
         "operationId": "getMySharedLink",
         "parameters": [
@@ -3367,7 +3221,7 @@
           }
         },
         "tags": [
-          "share"
+          "Shared Link"
         ],
         "security": [
           {
@@ -3382,7 +3236,7 @@
         ]
       }
     },
-    "/share/{id}": {
+    "/shared-link/{id}": {
       "get": {
         "operationId": "getSharedLinkById",
         "parameters": [
@@ -3409,7 +3263,7 @@
           }
         },
         "tags": [
-          "share"
+          "Shared Link"
         ],
         "security": [
           {
@@ -3441,7 +3295,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/EditSharedLinkDto"
+                "$ref": "#/components/schemas/SharedLinkEditDto"
               }
             }
           }
@@ -3459,7 +3313,7 @@
           }
         },
         "tags": [
-          "share"
+          "Shared Link"
         ],
         "security": [
           {
@@ -3492,7 +3346,131 @@
           }
         },
         "tags": [
-          "share"
+          "Shared Link"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/shared-link/{id}/assets": {
+      "put": {
+        "operationId": "addSharedLinkAssets",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetIdsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetIdsResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Shared Link"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "removeSharedLinkAssets",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetIdsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetIdsResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Shared Link"
         ],
         "security": [
           {
@@ -4396,7 +4374,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.61.0",
+    "version": "1.62.1",
     "contact": {}
   },
   "tags": [],
@@ -4626,6 +4604,10 @@
           },
           "owner": {
             "$ref": "#/components/schemas/UserResponseDto"
+          },
+          "lastModifiedAssetTimestamp": {
+            "format": "date-time",
+            "type": "string"
           }
         },
         "required": [
@@ -5127,34 +5109,6 @@
           "albumName"
         ]
       },
-      "CreateAlbumShareLinkDto": {
-        "type": "object",
-        "properties": {
-          "albumId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "expiresAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "allowUpload": {
-            "type": "boolean"
-          },
-          "allowDownload": {
-            "type": "boolean"
-          },
-          "showExif": {
-            "type": "boolean"
-          },
-          "description": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "albumId"
-        ]
-      },
       "CreateAssetDto": {
         "type": "object",
         "properties": {
@@ -5216,42 +5170,6 @@
           "fileCreatedAt",
           "fileModifiedAt",
           "isFavorite"
-        ]
-      },
-      "CreateAssetsShareLinkDto": {
-        "type": "object",
-        "properties": {
-          "assetIds": {
-            "title": "Array asset IDs to be shared",
-            "example": [
-              "bf973405-3f2a-48d2-a687-2ed4167164be",
-              "dd41870b-5d00-46d2-924e-1d8489a0aa0f",
-              "fad77c3f-deef-4e7e-9608-14c1aa4e559a"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "expiresAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "allowUpload": {
-            "type": "boolean"
-          },
-          "allowDownload": {
-            "type": "boolean"
-          },
-          "showExif": {
-            "type": "boolean"
-          },
-          "description": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "assetIds"
         ]
       },
       "CreateProfileImageDto": {
@@ -5437,28 +5355,6 @@
         "required": [
           "assetIds"
         ]
-      },
-      "EditSharedLinkDto": {
-        "type": "object",
-        "properties": {
-          "description": {
-            "type": "string"
-          },
-          "expiresAt": {
-            "format": "date-time",
-            "type": "string",
-            "nullable": true
-          },
-          "allowUpload": {
-            "type": "boolean"
-          },
-          "allowDownload": {
-            "type": "boolean"
-          },
-          "showExif": {
-            "type": "boolean"
-          }
-        }
       },
       "ExifResponseDto": {
         "type": "object",
@@ -6259,6 +6155,71 @@
           "patch"
         ]
       },
+      "SharedLinkCreateDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/SharedLinkType"
+          },
+          "assetIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "albumId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true,
+            "default": null
+          },
+          "allowUpload": {
+            "type": "boolean",
+            "default": false
+          },
+          "allowDownload": {
+            "type": "boolean",
+            "default": true
+          },
+          "showExif": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "SharedLinkEditDto": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "allowUpload": {
+            "type": "boolean"
+          },
+          "allowDownload": {
+            "type": "boolean"
+          },
+          "showExif": {
+            "type": "boolean"
+          }
+        }
+      },
       "SharedLinkResponseDto": {
         "type": "object",
         "properties": {
@@ -6269,7 +6230,8 @@
             "type": "string"
           },
           "description": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "userId": {
             "type": "string"
@@ -6308,6 +6270,7 @@
         "required": [
           "type",
           "id",
+          "description",
           "userId",
           "key",
           "createdAt",

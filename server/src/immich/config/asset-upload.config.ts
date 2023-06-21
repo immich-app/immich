@@ -1,3 +1,4 @@
+import { isSupportedFileType } from '@app/domain';
 import { StorageCore, StorageFolder } from '@app/domain/storage';
 import { BadRequestException, Logger, UnauthorizedException } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
@@ -8,7 +9,6 @@ import { extname } from 'path';
 import sanitize from 'sanitize-filename';
 import { AuthRequest, AuthUserDto } from '../decorators/auth-user.decorator';
 import { patchFormData } from '../utils/path-form-data.util';
-import { isSupportedFileType } from '@app/domain';
 
 export interface ImmichFile extends Express.Multer.File {
   /** sha1 hash of file */
@@ -54,17 +54,18 @@ function fileFilter(req: AuthRequest, file: any, cb: any) {
   if (!req.user || (req.user.isPublicUser && !req.user.isAllowUpload)) {
     return cb(new UnauthorizedException());
   }
+
   if (isSupportedFileType(file.mimetype)) {
     cb(null, true);
   } else {
-    // Additionally support XML but only for sidecar files
-    if (file.fieldname == 'sidecarData' && file.mimetype.match(/\/xml$/)) {
+    // Additionally support XML but only for sidecar files.
+    if (file.fieldname === 'sidecarData' && ['application/xml', 'text/xml'].includes(file.mimetype)) {
       return cb(null, true);
     }
-
-    logger.error(`Unsupported file type ${extname(file.originalname)} file MIME type ${file.mimetype}`);
-    cb(new BadRequestException(`Unsupported file type ${extname(file.originalname)}`), false);
   }
+
+  logger.error(`Unsupported file type ${extname(file.originalname)} file MIME type ${file.mimetype}`);
+  cb(new BadRequestException(`Unsupported file type ${extname(file.originalname)}`), false);
 }
 
 function destination(req: AuthRequest, file: Express.Multer.File, cb: any) {

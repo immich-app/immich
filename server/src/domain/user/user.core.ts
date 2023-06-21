@@ -6,7 +6,6 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { hash } from 'bcrypt';
 import { constants, createReadStream, ReadStream } from 'fs';
 import fs from 'fs/promises';
 import { AuthUserDto } from '../auth';
@@ -84,7 +83,7 @@ export class UserCore {
     try {
       const payload: Partial<UserEntity> = { ...createUserDto };
       if (payload.password) {
-        payload.password = await hash(payload.password, SALT_ROUNDS);
+        payload.password = await this.cryptoRepository.hashBcrypt(payload.password, SALT_ROUNDS);
       }
       return this.userRepository.create(payload);
     } catch (e) {

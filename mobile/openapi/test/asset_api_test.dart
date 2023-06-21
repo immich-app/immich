@@ -17,11 +17,6 @@ void main() {
   // final instance = AssetApi();
 
   group('tests for AssetApi', () {
-    //Future<SharedLinkResponseDto> addAssetsToSharedLink(AddAssetsDto addAssetsDto, { String key }) async
-    test('test addAssetsToSharedLink', () async {
-      // TODO
-    });
-
     // Checks if assets exist by checksums
     //
     //Future<AssetBulkUploadCheckResponseDto> bulkUploadCheck(AssetBulkUploadCheckDto assetBulkUploadCheckDto) async
@@ -40,11 +35,6 @@ void main() {
     //
     //Future<CheckExistingAssetsResponseDto> checkExistingAssets(CheckExistingAssetsDto checkExistingAssetsDto) async
     test('test checkExistingAssets', () async {
-      // TODO
-    });
-
-    //Future<SharedLinkResponseDto> createAssetsSharedLink(CreateAssetsShareLinkDto createAssetsShareLinkDto) async
-    test('test createAssetsSharedLink', () async {
       // TODO
     });
 
@@ -143,11 +133,6 @@ void main() {
 
     //Future<AssetFileUploadResponseDto> importFile(ImportAssetDto importAssetDto) async
     test('test importFile', () async {
-      // TODO
-    });
-
-    //Future<SharedLinkResponseDto> removeAssetsFromSharedLink(RemoveAssetsDto removeAssetsDto, { String key }) async
-    test('test removeAssetsFromSharedLink', () async {
       // TODO
     });
 

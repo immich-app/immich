@@ -52,7 +52,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     final showAppBar = useState<bool>(true);
     final isPlayingMotionVideo = useState(false);
     final isPlayingVideo = useState(false);
-    late Offset localPosition;
+    Offset? localPosition;
     final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
     final currentIndex = useState(initialIndex);
     final currentAsset = loadAsset(currentIndex.value);
@@ -246,8 +246,13 @@ class GalleryViewerPage extends HookConsumerWidget {
         return;
       }
 
+      // Guard [localPosition] null
+      if (localPosition == null) {
+        return;
+      }
+
       // Check for delta from initial down point
-      final d = details.localPosition - localPosition;
+      final d = details.localPosition - localPosition!;
       // If the magnitude of the dx swipe is large, we probably didn't mean to go down
       if (d.dx.abs() > dxThreshold) {
         return;
@@ -367,6 +372,26 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
+    ImageProvider imageProvider(Asset asset) {
+      if (asset.isLocal) {
+        return localImageProvider(asset);
+      } else {
+        if (isLoadOriginal.value) {
+          return originalImageProvider(asset);
+        } else if (isLoadPreview.value) {
+          return remoteThumbnailImageProvider(
+            asset,
+            api.ThumbnailFormat.JPEG,
+          );
+        } else {
+          return remoteThumbnailImageProvider(
+            asset,
+            api.ThumbnailFormat.WEBP,
+          );
+        }
+      }
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: WillPopScope(
@@ -460,26 +485,9 @@ class GalleryViewerPage extends HookConsumerWidget {
                   : null,
               builder: (context, index) {
                 final asset = loadAsset(index);
+                final ImageProvider provider = imageProvider(asset);
+
                 if (asset.isImage && !isPlayingMotionVideo.value) {
-                  // Show photo
-                  final ImageProvider provider;
-                  if (asset.isLocal) {
-                    provider = localImageProvider(asset);
-                  } else {
-                    if (isLoadOriginal.value) {
-                      provider = originalImageProvider(asset);
-                    } else if (isLoadPreview.value) {
-                      provider = remoteThumbnailImageProvider(
-                        asset,
-                        api.ThumbnailFormat.JPEG,
-                      );
-                    } else {
-                      provider = remoteThumbnailImageProvider(
-                        asset,
-                        api.ThumbnailFormat.WEBP,
-                      );
-                    }
-                  }
                   return PhotoViewGalleryPageOptions(
                     onDragStart: (_, details, __) =>
                         localPosition = details.localPosition,
@@ -512,18 +520,23 @@ class GalleryViewerPage extends HookConsumerWidget {
                     maxScale: 1.0,
                     minScale: 1.0,
                     basePosition: Alignment.bottomCenter,
-                    child: SafeArea(
-                      child: VideoViewerPage(
-                        onPlaying: () => isPlayingVideo.value = true,
-                        onPaused: () => isPlayingVideo.value = false,
-                        asset: asset,
-                        isMotionVideo: isPlayingMotionVideo.value,
-                        onVideoEnded: () {
-                          if (isPlayingMotionVideo.value) {
-                            isPlayingMotionVideo.value = false;
-                          }
-                        },
+                    child: VideoViewerPage(
+                      onPlaying: () => isPlayingVideo.value = true,
+                      onPaused: () => isPlayingVideo.value = false,
+                      asset: asset,
+                      isMotionVideo: isPlayingMotionVideo.value,
+                      placeholder: Image(
+                        image: provider,
+                        fit: BoxFit.fitWidth,
+                        height: MediaQuery.of(context).size.height,
+                        width: MediaQuery.of(context).size.width,
+                        alignment: Alignment.center,
                       ),
+                      onVideoEnded: () {
+                        if (isPlayingMotionVideo.value) {
+                          isPlayingMotionVideo.value = false;
+                        }
+                      },
                     ),
                   );
                 }

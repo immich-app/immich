@@ -43,6 +43,7 @@ export class AssetRepository implements IAssetRepository {
         ownerId,
         isVisible: true,
         isArchived: false,
+        resizePath: Not(IsNull()),
         fileCreatedAt: OptionalBetween(date, DateTime.fromJSDate(date).plus({ day: 1 }).toJSDate()),
       },
       relations: {
@@ -244,6 +245,13 @@ export class AssetRepository implements IAssetRepository {
     return this.repository.findOne({
       where: { albums: { id: albumId } },
       order: { fileCreatedAt: 'DESC' },
+    });
+  }
+
+  getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null> {
+    return this.repository.findOne({
+      where: { albums: { id: albumId } },
+      order: { updatedAt: 'DESC' },
     });
   }
 

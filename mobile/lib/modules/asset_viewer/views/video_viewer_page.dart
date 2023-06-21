@@ -15,6 +15,7 @@ import 'package:video_player/video_player.dart';
 class VideoViewerPage extends HookConsumerWidget {
   final Asset asset;
   final bool isMotionVideo;
+  final Widget? placeholder;
   final VoidCallback onVideoEnded;
   final VoidCallback? onPlaying;
   final VoidCallback? onPaused;
@@ -26,6 +27,7 @@ class VideoViewerPage extends HookConsumerWidget {
     required this.onVideoEnded,
     this.onPlaying,
     this.onPaused,
+    this.placeholder,
   }) : super(key: key);
 
   @override
@@ -66,6 +68,7 @@ class VideoViewerPage extends HookConsumerWidget {
           onVideoEnded: onVideoEnded,
           onPaused: onPaused,
           onPlaying: onPlaying,
+          placeholder: placeholder,
         ),
         if (downloadAssetStatus == DownloadAssetStatus.loading)
           const Center(
@@ -95,6 +98,10 @@ class VideoPlayer extends StatefulWidget {
   final Function()? onPlaying;
   final Function()? onPaused;
 
+  /// The placeholder to show while the video is loading
+  /// usually, a thumbnail of the video
+  final Widget? placeholder;
+
   const VideoPlayer({
     Key? key,
     this.url,
@@ -104,6 +111,7 @@ class VideoPlayer extends StatefulWidget {
     required this.isMotionVideo,
     this.onPlaying,
     this.onPaused,
+    this.placeholder,
   }) : super(key: key);
 
   @override
@@ -186,12 +194,18 @@ class _VideoPlayerState extends State<VideoPlayer> {
         ),
       );
     } else {
-      return const Center(
-        child: SizedBox(
-          width: 75,
-          height: 75,
-          child: CircularProgressIndicator.adaptive(
-            strokeWidth: 2,
+      return SizedBox(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        child: Center(
+          child: Stack(
+            children: [
+              if (widget.placeholder != null)
+                widget.placeholder!,
+              const Center(
+                child: ImmichLoadingIndicator(),
+              ),
+            ],
           ),
         ),
       );

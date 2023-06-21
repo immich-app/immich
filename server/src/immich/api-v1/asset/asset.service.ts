@@ -1,50 +1,45 @@
 import {
-  SharedLinkCore,
-  IAccessRepository,
-  ISharedLinkRepository,
-  IJobRepository,
-  ICryptoRepository,
-  IStorageRepository,
+  AssetResponseDto,
   AuthUserDto,
   getLivePhotoMotionFilename,
-  JobName,
+  IAccessRepository,
+  ICryptoRepository,
+  IJobRepository,
+  ImmichReadStream,
   isSupportedFileType,
-  AssetResponseDto,
+  IStorageRepository,
+  JobName,
   mapAsset,
   mapAssetWithoutExif,
-  ImmichReadStream,
-  SharedLinkResponseDto,
-  mapSharedLink,
 } from '@app/domain';
-import { DownloadService } from '@app/immich/modules/download/download.service';
-import { AssetEntity, AssetType, SharedLinkType } from '@app/infra/entities';
+import { AssetEntity, AssetType } from '@app/infra/entities';
 import {
-  Injectable,
-  Logger,
-  Inject,
   BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
   StreamableFile,
-  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { constants } from 'buffer';
-import { stat, createReadStream } from 'fs';
+import { R_OK, W_OK } from 'constants';
+import { Response as Res } from 'express';
+import { createReadStream, stat } from 'fs';
+import fs from 'fs/promises';
 import mime from 'mime';
 import path from 'path';
-import { Repository, QueryFailedError } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { promisify } from 'util';
-import { AddAssetsDto } from '../album/dto/add-assets.dto';
-import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
+import { DownloadService } from '../../modules/download/download.service';
 import { IAssetRepository } from './asset-repository';
 import { AssetCore } from './asset.core';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
-import { CreateAssetDto, UploadFile, ImportAssetDto } from './dto/create-asset.dto';
+import { CreateAssetDto, ImportAssetDto, UploadFile } from './dto/create-asset.dto';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { DownloadFilesDto } from './dto/download-files.dto';
 import { DownloadDto } from './dto/download-library.dto';
@@ -57,8 +52,8 @@ import { ServeFileDto } from './dto/serve-file.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import {
   AssetBulkUploadCheckResponseDto,
-  AssetUploadAction,
   AssetRejectReason,
+  AssetUploadAction,
 } from './response-dto/asset-check-response.dto';
 import {
   AssetCountByTimeBucketResponseDto,
@@ -71,9 +66,6 @@ import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-as
 import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
-import { R_OK, W_OK } from 'constants';
-import fs from 'fs/promises';
-import { Response as Res } from 'express';
 
 const fileInfo = promisify(stat);
 
@@ -85,22 +77,18 @@ interface ServableFile {
 @Injectable()
 export class AssetService {
   readonly logger = new Logger(AssetService.name);
-  private shareCore: SharedLinkCore;
   private assetCore: AssetCore;
 
   constructor(
     @Inject(IAccessRepository) private accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
-    @InjectRepository(AssetEntity)
-    private assetRepository: Repository<AssetEntity>,
-    private downloadService: DownloadService,
-    @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    private downloadService: DownloadService,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
-    this.shareCore = new SharedLinkCore(sharedLinkRepository, cryptoRepository);
   }
 
   public async uploadFile(
@@ -683,61 +671,9 @@ export class AssetService {
   }
 
   private checkDownloadAccess(authUser: AuthUserDto) {
-    this.shareCore.checkDownloadAccess(authUser);
-  }
-
-  async createAssetsSharedLink(authUser: AuthUserDto, dto: CreateAssetsShareLinkDto): Promise<SharedLinkResponseDto> {
-    const assets = [];
-
-    await this.checkAssetsAccess(authUser, dto.assetIds);
-    for (const assetId of dto.assetIds) {
-      const asset = await this._assetRepository.getById(assetId);
-      assets.push(asset);
-    }
-
-    const sharedLink = await this.shareCore.create(authUser.id, {
-      type: SharedLinkType.INDIVIDUAL,
-      expiresAt: dto.expiresAt,
-      allowUpload: dto.allowUpload,
-      assets,
-      description: dto.description,
-      allowDownload: dto.allowDownload,
-      showExif: dto.showExif,
-    });
-
-    return mapSharedLink(sharedLink);
-  }
-
-  async addAssetsToSharedLink(authUser: AuthUserDto, dto: AddAssetsDto): Promise<SharedLinkResponseDto> {
-    if (!authUser.sharedLinkId) {
+    if (authUser.isPublicUser && !authUser.isAllowDownload) {
       throw new ForbiddenException();
     }
-
-    const assets = [];
-
-    for (const assetId of dto.assetIds) {
-      const asset = await this._assetRepository.getById(assetId);
-      assets.push(asset);
-    }
-
-    const updatedLink = await this.shareCore.addAssets(authUser.id, authUser.sharedLinkId, assets);
-    return mapSharedLink(updatedLink);
-  }
-
-  async removeAssetsFromSharedLink(authUser: AuthUserDto, dto: RemoveAssetsDto): Promise<SharedLinkResponseDto> {
-    if (!authUser.sharedLinkId) {
-      throw new ForbiddenException();
-    }
-
-    const assets = [];
-
-    for (const assetId of dto.assetIds) {
-      const asset = await this._assetRepository.getById(assetId);
-      assets.push(asset);
-    }
-
-    const updatedLink = await this.shareCore.removeAssets(authUser.id, authUser.sharedLinkId, assets);
-    return mapSharedLink(updatedLink);
   }
 
   getExifPermission(authUser: AuthUserDto) {

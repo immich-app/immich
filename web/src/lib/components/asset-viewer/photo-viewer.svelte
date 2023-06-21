@@ -8,6 +8,7 @@
 		NotificationType
 	} from '../shared-components/notification/notification';
 	import { useZoomImageWheel } from '@zoom-image/svelte';
+	import { photoZoomState } from '$lib/stores/zoom-image.store';
 
 	export let asset: AssetResponseDto;
 	export let publicSharedKey = '';
@@ -73,7 +74,22 @@
 		}
 	};
 
-	const { createZoomImage: createZoomImageWheel } = useZoomImageWheel();
+	const doZoomImage = async () => {
+		setZoomImageWheelState({
+			currentZoom: $zoomImageWheelState.currentZoom === 1 ? 2 : 1
+		});
+	};
+
+	const {
+		createZoomImage: createZoomImageWheel,
+		zoomImageState: zoomImageWheelState,
+		setZoomImageState: setZoomImageWheelState
+	} = useZoomImageWheel();
+
+	zoomImageWheelState.subscribe((state) => {
+		photoZoomState.set(state);
+	});
+
 	$: if (imgElement) {
 		createZoomImageWheel(imgElement, {
 			wheelZoomRatio: 0.06
@@ -81,7 +97,7 @@
 	}
 </script>
 
-<svelte:window on:keydown={handleKeypress} on:copyImage={doCopy} />
+<svelte:window on:keydown={handleKeypress} on:copyImage={doCopy} on:zoomImage={doZoomImage} />
 
 <div
 	transition:fade={{ duration: 150 }}

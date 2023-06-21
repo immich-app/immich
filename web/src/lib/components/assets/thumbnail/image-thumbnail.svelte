@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { lazyLoad } from 'unlazy';
 	import { imageLoad } from '$lib/utils/image-load';
+	import { fade } from 'svelte/transition';
+	import { thumbHashToDataURL } from 'thumbhash';
+	import { Buffer } from 'buffer';
 
 	export let url: string;
 	export let altText: string;
@@ -11,48 +12,36 @@
 	export let curve = false;
 	export let shadow = false;
 	export let circle = false;
-	let loading = true;
 
-	let imageElement: HTMLImageElement;
-
-	onMount(() => {
-		if (thumbhash) {
-			lazyLoad(imageElement, {
-				hash: thumbhash,
-				hashType: 'thumbhash'
-			});
-		}
-	});
+	let complete = false;
 </script>
 
-{#if thumbhash}
-	<img
-		style:width={widthStyle}
-		style:height={heightStyle}
-		data-src={url}
-		alt={altText}
-		class="object-cover"
-		class:rounded-lg={curve}
-		class:shadow-lg={shadow}
-		class:rounded-full={circle}
-		draggable="false"
-		bind:this={imageElement}
-	/>
+<img
+	style:width={widthStyle}
+	style:height={heightStyle}
+	src={url}
+	alt={altText}
+	class="object-cover transition-opacity duration-300"
+	class:rounded-lg={curve}
+	class:shadow-lg={shadow}
+	class:rounded-full={circle}
+	class:opacity-0={!thumbhash && !complete}
+	draggable="false"
+	use:imageLoad
+	on:image-load|once={() => (complete = true)}
+/>
 
-	<!-- not everthing yet has thumbhash support so the old method is kept -->
-{:else}
+{#if thumbhash && !complete}
 	<img
 		style:width={widthStyle}
 		style:height={heightStyle}
-		src={url}
+		src={thumbHashToDataURL(Buffer.from(thumbhash, 'base64'))}
 		alt={altText}
-		class="object-cover transition-opacity duration-300"
+		class="absolute object-cover top-0"
 		class:rounded-lg={curve}
 		class:shadow-lg={shadow}
 		class:rounded-full={circle}
-		class:opacity-0={loading}
 		draggable="false"
-		use:imageLoad
-		on:image-load|once={() => (loading = false)}
+		out:fade={{ duration: 300 }}
 	/>
 {/if}
