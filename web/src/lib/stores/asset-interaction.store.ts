@@ -8,6 +8,8 @@ import { sortBy } from 'lodash-es';
 export const viewingAssetStoreState = writable<AssetResponseDto>();
 export const isViewingAssetStoreState = writable<boolean>(false);
 
+export const videoViewerVolume = writable<number>(1);
+
 // Multi-Selection mode
 export const assetsInAlbumStoreState = writable<AssetResponseDto[]>([]);
 export const selectedAssets = writable<Set<AssetResponseDto>>(new Set());
