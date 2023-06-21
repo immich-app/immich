@@ -11,6 +11,7 @@
 	export let isSharingView = false;
 	export let user: UserResponseDto;
 	export let showItemCount = true;
+	export let showContextMenu = true;
 
 	$: imageData = album.albumThumbnailAssetId
 		? api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Webp)
@@ -64,7 +65,7 @@
 	data-testid="album-card"
 >
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	{#if !isSharingView}
+	{#if showContextMenu}
 		<div
 			id={`icon-${album.id}`}
 			class="absolute top-6 right-6 z-10"

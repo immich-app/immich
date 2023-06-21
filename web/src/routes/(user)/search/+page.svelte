@@ -97,7 +97,13 @@
 							href={`albums/${album.id}`}
 							animate:flip={{ duration: 200 }}
 						>
-							<AlbumCard {album} user={data.user} isSharingView={false} showItemCount={false} />
+							<AlbumCard
+								{album}
+								user={data.user}
+								isSharingView={false}
+								showItemCount={false}
+								showContextMenu={false}
+							/>
 						</a>
 					{/each}
 				</div>
