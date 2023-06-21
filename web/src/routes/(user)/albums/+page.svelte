@@ -12,17 +12,12 @@
 	import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
 	import { onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
+	import Dropdown from '$lib/components/elements/dropdown.svelte';
 
 	export let data: PageData;
 
 	const sortByOptions = ['Most recent photo', 'Last modified', 'Album title'];
-
 	let selectedSortBy = sortByOptions[0];
-
-	const handleChangeSortBy = (e: Event) => {
-		const target = e.target as HTMLSelectElement;
-		selectedSortBy = target.value;
-	};
 
 	const {
 		albums: unsortedAlbums,
@@ -84,25 +79,14 @@
 
 <UserPageLayout user={data.user} title={data.meta.title}>
 	<div class="flex place-items-center gap-2" slot="buttons">
-		<label class="text-xs" for="sortBy">Sort by:</label>
-		<select
-			class="text-sm bg-slate-200 p-2 rounded-lg dark:bg-gray-600 hover:cursor-pointer"
-			name="sortBy"
-			id="sortBy-select"
-			bind:value={selectedSortBy}
-			on:change={handleChangeSortBy}
-		>
-			{#each sortByOptions as option}
-				<option value={option}>{option}</option>
-			{/each}
-		</select>
-
 		<LinkButton on:click={handleCreateAlbum}>
 			<div class="flex place-items-center gap-2 text-sm">
 				<PlusBoxOutline size="18" />
 				Create album
 			</div>
 		</LinkButton>
+
+		<Dropdown options={sortByOptions} bind:value={selectedSortBy} />
 	</div>
 
 	<!-- Album Card -->
