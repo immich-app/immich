@@ -115,6 +115,7 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**adminSignUp**](doc//AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
 *AuthenticationApi* | [**getAuthDevices**](doc//AuthenticationApi.md#getauthdevices) | **GET** /auth/devices | 
+*AuthenticationApi* | [**keyLogin**](doc//AuthenticationApi.md#keylogin) | **GET** /auth/keyLogin | 
 *AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | 
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
 *AuthenticationApi* | [**logoutAuthDevice**](doc//AuthenticationApi.md#logoutauthdevice) | **DELETE** /auth/devices/{id} | 

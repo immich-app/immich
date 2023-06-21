@@ -32,6 +32,11 @@ void main() {
       // TODO
     });
 
+    //Future<LoginResponseDto> keyLogin() async
+    test('test keyLogin', () async {
+      // TODO
+    });
+
     //Future<LoginResponseDto> login(LoginCredentialDto loginCredentialDto) async
     test('test login', () async {
       // TODO

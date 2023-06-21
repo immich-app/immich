@@ -12,6 +12,7 @@ Method | HTTP request | Description
 [**adminSignUp**](AuthenticationApi.md#adminsignup) | **POST** /auth/admin-sign-up | 
 [**changePassword**](AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
 [**getAuthDevices**](AuthenticationApi.md#getauthdevices) | **GET** /auth/devices | 
+[**keyLogin**](AuthenticationApi.md#keylogin) | **GET** /auth/keyLogin | 
 [**login**](AuthenticationApi.md#login) | **POST** /auth/login | 
 [**logout**](AuthenticationApi.md#logout) | **POST** /auth/logout | 
 [**logoutAuthDevice**](AuthenticationApi.md#logoutauthdevice) | **DELETE** /auth/devices/{id} | 
@@ -154,6 +155,57 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**List<AuthDeviceResponseDto>**](AuthDeviceResponseDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **keyLogin**
+> LoginResponseDto keyLogin()
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AuthenticationApi();
+
+try {
+    final result = api_instance.keyLogin();
+    print(result);
+} catch (e) {
+    print('Exception when calling AuthenticationApi->keyLogin: $e\n');
+}
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**LoginResponseDto**](LoginResponseDto.md)
 
 ### Authorization
 
