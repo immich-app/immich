@@ -86,7 +86,7 @@ export class AuthService {
     authUser: AuthUserDto,
     loginDetails: LoginDetails,
   ): Promise<{ response: LoginResponseDto; cookie: string[] }> {
-    let user = await this.userCore.get(authUser.id, false);
+    const user = await this.userCore.get(authUser.id, false);
 
     if (!user) {
       this.logger.warn(`Failed key login attempt for user ${authUser.email} from ip address ${loginDetails.clientIp}`);

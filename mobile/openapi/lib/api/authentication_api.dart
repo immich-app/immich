@@ -154,7 +154,9 @@ class AuthenticationApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /auth/keyLogin' operation and returns the [Response].
+  /// Get user login details and a bearer token from an API key
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> keyLoginWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/auth/keyLogin';
@@ -180,6 +182,7 @@ class AuthenticationApi {
     );
   }
 
+  /// Get user login details and a bearer token from an API key
   Future<LoginResponseDto?> keyLogin() async {
     final response = await keyLoginWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {

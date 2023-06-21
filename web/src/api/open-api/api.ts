@@ -7104,7 +7104,7 @@ export const AuthenticationApiAxiosParamCreator = function (configuration?: Conf
             };
         },
         /**
-         * 
+         * Get user login details and a bearer token from an API key
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -7372,7 +7372,7 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         * 
+         * Get user login details and a bearer token from an API key
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -7464,7 +7464,7 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
             return localVarFp.getAuthDevices(options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Get user login details and a bearer token from an API key
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -7612,7 +7612,7 @@ export class AuthenticationApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Get user login details and a bearer token from an API key
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AuthenticationApi

@@ -32,6 +32,8 @@ void main() {
       // TODO
     });
 
+    // Get user login details and a bearer token from an API key
+    //
     //Future<LoginResponseDto> keyLogin() async
     test('test keyLogin', () async {
       // TODO

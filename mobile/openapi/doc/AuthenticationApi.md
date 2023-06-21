@@ -172,6 +172,8 @@ This endpoint does not need any parameter.
 
 
 
+Get user login details and a bearer token from an API key
+
 ### Example
 ```dart
 import 'package:openapi/api.dart';

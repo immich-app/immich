@@ -2077,6 +2077,7 @@
     "/auth/keyLogin": {
       "get": {
         "operationId": "keyLogin",
+        "description": "Get user login details and a bearer token from an API key",
         "parameters": [],
         "responses": {
           "200": {

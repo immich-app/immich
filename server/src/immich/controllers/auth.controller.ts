@@ -50,7 +50,7 @@ export class AuthController {
     @AuthUser() authUser: AuthUserDto,
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<LoginResponseDto> {
-    const { response, cookie } = await this.service.keyLogin(authUser, loginDetails);
+    const { response } = await this.service.keyLogin(authUser, loginDetails);
     return response;
   }
 
