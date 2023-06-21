@@ -16,61 +16,6 @@ class AssetApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'PATCH /asset/shared-link/add' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [AddAssetsDto] addAssetsDto (required):
-  ///
-  /// * [String] key:
-  Future<Response> addAssetsToSharedLinkWithHttpInfo(AddAssetsDto addAssetsDto, { String? key, }) async {
-    // ignore: prefer_const_declarations
-    final path = r'/asset/shared-link/add';
-
-    // ignore: prefer_final_locals
-    Object? postBody = addAssetsDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
-    }
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'PATCH',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [AddAssetsDto] addAssetsDto (required):
-  ///
-  /// * [String] key:
-  Future<SharedLinkResponseDto?> addAssetsToSharedLink(AddAssetsDto addAssetsDto, { String? key, }) async {
-    final response = await addAssetsToSharedLinkWithHttpInfo(addAssetsDto,  key: key, );
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharedLinkResponseDto',) as SharedLinkResponseDto;
-    
-    }
-    return null;
-  }
-
   /// Checks if assets exist by checksums
   ///
   /// Note: This method returns the HTTP [Response].
@@ -230,53 +175,6 @@ class AssetApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'CheckExistingAssetsResponseDto',) as CheckExistingAssetsResponseDto;
-    
-    }
-    return null;
-  }
-
-  /// Performs an HTTP 'POST /asset/shared-link' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [CreateAssetsShareLinkDto] createAssetsShareLinkDto (required):
-  Future<Response> createAssetsSharedLinkWithHttpInfo(CreateAssetsShareLinkDto createAssetsShareLinkDto,) async {
-    // ignore: prefer_const_declarations
-    final path = r'/asset/shared-link';
-
-    // ignore: prefer_final_locals
-    Object? postBody = createAssetsShareLinkDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [CreateAssetsShareLinkDto] createAssetsShareLinkDto (required):
-  Future<SharedLinkResponseDto?> createAssetsSharedLink(CreateAssetsShareLinkDto createAssetsShareLinkDto,) async {
-    final response = await createAssetsSharedLinkWithHttpInfo(createAssetsShareLinkDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharedLinkResponseDto',) as SharedLinkResponseDto;
     
     }
     return null;
@@ -1221,61 +1119,6 @@ class AssetApi {
         .cast<String>()
         .toList();
 
-    }
-    return null;
-  }
-
-  /// Performs an HTTP 'PATCH /asset/shared-link/remove' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [RemoveAssetsDto] removeAssetsDto (required):
-  ///
-  /// * [String] key:
-  Future<Response> removeAssetsFromSharedLinkWithHttpInfo(RemoveAssetsDto removeAssetsDto, { String? key, }) async {
-    // ignore: prefer_const_declarations
-    final path = r'/asset/shared-link/remove';
-
-    // ignore: prefer_final_locals
-    Object? postBody = removeAssetsDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
-    }
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'PATCH',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [RemoveAssetsDto] removeAssetsDto (required):
-  ///
-  /// * [String] key:
-  Future<SharedLinkResponseDto?> removeAssetsFromSharedLink(RemoveAssetsDto removeAssetsDto, { String? key, }) async {
-    final response = await removeAssetsFromSharedLinkWithHttpInfo(removeAssetsDto,  key: key, );
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharedLinkResponseDto',) as SharedLinkResponseDto;
-    
     }
     return null;
   }
