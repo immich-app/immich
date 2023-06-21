@@ -134,6 +134,9 @@ class FileHelper {
       case 'cin':
         return {"type": "image", "subType": "x-phantom-cin"};
 
+      case 'jxl':
+        return {"type": "image", "subType": "jxl"};
+
       default:
         return {"type": "unsupport", "subType": "unsupport"};
     }
