@@ -49,25 +49,74 @@ export const multerUtils = { fileFilter, filename, destination };
 
 const logger = new Logger('AssetUploadConfig');
 
+const validMimeTypes = [
+  'image/avif',
+  'image/dng',
+  'image/gif',
+  'image/heic',
+  'image/heif',
+  'image/jpeg',
+  'image/jxl',
+  'image/png',
+  'image/tiff',
+  'image/webp',
+  'image/x-adobe-dng',
+  'image/x-arriflex-ari',
+  'image/x-canon-cr2',
+  'image/x-canon-cr3',
+  'image/x-canon-crw',
+  'image/x-epson-erf',
+  'image/x-fuji-raf',
+  'image/x-hasselblad-3fr',
+  'image/x-hasselblad-fff',
+  'image/x-kodak-dcr',
+  'image/x-kodak-k25',
+  'image/x-kodak-kdc',
+  'image/x-leica-rwl',
+  'image/x-minolta-mrw',
+  'image/x-nikon-nef',
+  'image/x-olympus-orf',
+  'image/x-olympus-ori',
+  'image/x-panasonic-raw',
+  'image/x-pentax-pef',
+  'image/x-phantom-cin',
+  'image/x-phaseone-cap',
+  'image/x-phaseone-iiq',
+  'image/x-samsung-srw',
+  'image/x-sigma-x3f',
+  'image/x-sony-arw',
+  'image/x-sony-sr2',
+  'image/x-sony-srf',
+  'video/3gpp',
+  'video/avi',
+  'video/mov',
+  'video/mp4',
+  'video/mpeg',
+  'video/quicktime',
+  'video/webm',
+  'video/x-flv',
+  'video/x-matroska',
+  'video/x-ms-wmv',
+  'video/x-msvideo',
+];
+
 function fileFilter(req: AuthRequest, file: any, cb: any) {
   if (!req.user || (req.user.isPublicUser && !req.user.isAllowUpload)) {
     return cb(new UnauthorizedException());
   }
-  if (
-    file.mimetype.match(
-      /\/(jpg|jpeg|png|gif|avi|mov|mp4|webm|x-msvideo|quicktime|heic|heif|avif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef|x-fuji-raf|x-samsung-srw|mpeg|x-flv|x-ms-wmv|x-matroska|x-sony-arw|arw|x-canon-crw|x-canon-cr2|x-canon-cr3|x-epson-erf|x-kodak-dcr|x-kodak-kdc|x-kodak-k25|x-minolta-mrw|x-olympus-orf|x-panasonic-raw|x-pentax-pef|x-sigma-x3f|x-sony-srf|x-sony-sr2|x-hasselblad-3fr|x-hasselblad-fff|x-leica-rwl|x-olympus-ori|x-phaseone-iiq|x-arriflex-ari|x-phaseone-cap|x-phantom-cin)$/,
-    )
-  ) {
-    cb(null, true);
-  } else {
-    // Additionally support XML but only for sidecar files
-    if (file.fieldname == 'sidecarData' && file.mimetype.match(/\/xml$/)) {
-      return cb(null, true);
-    }
 
-    logger.error(`Unsupported file type ${extname(file.originalname)} file MIME type ${file.mimetype}`);
-    cb(new BadRequestException(`Unsupported file type ${extname(file.originalname)}`), false);
+  if (validMimeTypes.includes(file.mimetype)) {
+    cb(null, true);
+    return;
   }
+
+  // Additionally support XML but only for sidecar files.
+  if (file.fieldname === 'sidecarData' && ['application/xml', 'text/xml'].includes(file.mimetype)) {
+    return cb(null, true);
+  }
+
+  logger.error(`Unsupported file type ${extname(file.originalname)} file MIME type ${file.mimetype}`);
+  cb(new BadRequestException(`Unsupported file type ${extname(file.originalname)}`), false);
 }
 
 function destination(req: AuthRequest, file: Express.Multer.File, cb: any) {

@@ -61,16 +61,40 @@ describe('get asset filename', () => {
 
 describe('get file mime type', () => {
 	for (const { extension, mimeType } of [
+		{ extension: '3fr', mimeType: 'image/x-hasselblad-3fr' },
 		{ extension: '3gp', mimeType: 'video/3gpp' },
+		{ extension: 'ari', mimeType: 'image/x-arriflex-ari' },
 		{ extension: 'arw', mimeType: 'image/x-sony-arw' },
+		{ extension: 'avif', mimeType: 'image/avif' },
+		{ extension: 'cap', mimeType: 'image/x-phaseone-cap' },
+		{ extension: 'cin', mimeType: 'image/x-phantom-cin' },
+		{ extension: 'cr2', mimeType: 'image/x-canon-cr2' },
+		{ extension: 'cr3', mimeType: 'image/x-canon-cr3' },
+		{ extension: 'crw', mimeType: 'image/x-canon-crw' },
+		{ extension: 'dcr', mimeType: 'image/x-kodak-dcr' },
 		{ extension: 'dng', mimeType: 'image/dng' },
+		{ extension: 'erf', mimeType: 'image/x-epson-erf' },
+		{ extension: 'fff', mimeType: 'image/x-hasselblad-fff' },
 		{ extension: 'heic', mimeType: 'image/heic' },
 		{ extension: 'heif', mimeType: 'image/heif' },
+		{ extension: 'iiq', mimeType: 'image/x-phaseone-iiq' },
 		{ extension: 'insp', mimeType: 'image/jpeg' },
 		{ extension: 'insv', mimeType: 'video/mp4' },
+		{ extension: 'jxl', mimeType: 'image/jxl' },
+		{ extension: 'k25', mimeType: 'image/x-kodak-k25' },
+		{ extension: 'kdc', mimeType: 'image/x-kodak-kdc' },
+		{ extension: 'mrw', mimeType: 'image/x-minolta-mrw' },
 		{ extension: 'nef', mimeType: 'image/x-nikon-nef' },
+		{ extension: 'orf', mimeType: 'image/x-olympus-orf' },
+		{ extension: 'ori', mimeType: 'image/x-olympus-ori' },
+		{ extension: 'pef', mimeType: 'image/x-pentax-pef' },
 		{ extension: 'raf', mimeType: 'image/x-fuji-raf' },
-		{ extension: 'srw', mimeType: 'image/x-samsung-srw' }
+		{ extension: 'raw', mimeType: 'image/x-panasonic-raw' },
+		{ extension: 'rwl', mimeType: 'image/x-leica-rwl' },
+		{ extension: 'sr2', mimeType: 'image/x-sony-sr2' },
+		{ extension: 'srf', mimeType: 'image/x-sony-srf' },
+		{ extension: 'srw', mimeType: 'image/x-samsung-srw' },
+		{ extension: 'x3f', mimeType: 'image/x-sigma-x3f' }
 	]) {
 		it(`returns the mime type for ${extension}`, () => {
 			expect(getFileMimeType({ name: `filename.${extension}` } as File)).toEqual(mimeType);
