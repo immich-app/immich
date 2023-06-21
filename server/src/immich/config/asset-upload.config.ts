@@ -51,7 +51,6 @@ const logger = new Logger('AssetUploadConfig');
 
 const validMimeTypes = [
   'image/avif',
-  'image/dng',
   'image/gif',
   'image/heic',
   'image/heif',
@@ -88,8 +87,7 @@ const validMimeTypes = [
   'image/x-sony-sr2',
   'image/x-sony-srf',
   'video/3gpp',
-  'video/avi',
-  'video/mov',
+  'video/mp2t',
   'video/mp4',
   'video/mpeg',
   'video/quicktime',
