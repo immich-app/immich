@@ -124,42 +124,42 @@ class UpdateUserDto {
     if (this.email != null) {
       json[r'email'] = this.email;
     } else {
-      // json[r'email'] = null;
+    //  json[r'email'] = null;
     }
     if (this.password != null) {
       json[r'password'] = this.password;
     } else {
-      // json[r'password'] = null;
+    //  json[r'password'] = null;
     }
     if (this.firstName != null) {
       json[r'firstName'] = this.firstName;
     } else {
-      // json[r'firstName'] = null;
+    //  json[r'firstName'] = null;
     }
     if (this.lastName != null) {
       json[r'lastName'] = this.lastName;
     } else {
-      // json[r'lastName'] = null;
+    //  json[r'lastName'] = null;
     }
     if (this.storageLabel != null) {
       json[r'storageLabel'] = this.storageLabel;
     } else {
-      // json[r'storageLabel'] = null;
+    //  json[r'storageLabel'] = null;
     }
     if (this.externalPath != null) {
       json[r'externalPath'] = this.externalPath;
     } else {
-      // json[r'externalPath'] = null;
+    //  json[r'externalPath'] = null;
     }
     if (this.isAdmin != null) {
       json[r'isAdmin'] = this.isAdmin;
     } else {
-      // json[r'isAdmin'] = null;
+    //  json[r'isAdmin'] = null;
     }
     if (this.shouldChangePassword != null) {
       json[r'shouldChangePassword'] = this.shouldChangePassword;
     } else {
-      // json[r'shouldChangePassword'] = null;
+    //  json[r'shouldChangePassword'] = null;
     }
     return json;
   }
@@ -170,17 +170,6 @@ class UpdateUserDto {
   static UpdateUserDto? fromJson(dynamic value) {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
-
-      // Ensure that the map contains the required keys.
-      // Note 1: the values aren't checked for validity beyond being non-null.
-      // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "UpdateUserDto[$key]" is missing from JSON.');
-          // assert(json[key] != null, 'Required key "UpdateUserDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
 
       return UpdateUserDto(
         id: mapValueOfType<String>(json, r'id')!,

@@ -53,7 +53,7 @@ class AddAssetsResponseDto {
     if (this.album != null) {
       json[r'album'] = this.album;
     } else {
-      // json[r'album'] = null;
+    //  json[r'album'] = null;
     }
     return json;
   }
@@ -64,17 +64,6 @@ class AddAssetsResponseDto {
   static AddAssetsResponseDto? fromJson(dynamic value) {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
-
-      // Ensure that the map contains the required keys.
-      // Note 1: the values aren't checked for validity beyond being non-null.
-      // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "AddAssetsResponseDto[$key]" is missing from JSON.');
-          // assert(json[key] != null, 'Required key "AddAssetsResponseDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
 
       return AddAssetsResponseDto(
         successfullyAdded: mapValueOfType<int>(json, r'successfullyAdded')!,

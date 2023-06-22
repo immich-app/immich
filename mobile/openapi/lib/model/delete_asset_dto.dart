@@ -43,17 +43,6 @@ class DeleteAssetDto {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
-      // Ensure that the map contains the required keys.
-      // Note 1: the values aren't checked for validity beyond being non-null.
-      // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "DeleteAssetDto[$key]" is missing from JSON.');
-          // assert(json[key] != null, 'Required key "DeleteAssetDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
-
       return DeleteAssetDto(
         ids: json[r'ids'] is Iterable
             ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false)

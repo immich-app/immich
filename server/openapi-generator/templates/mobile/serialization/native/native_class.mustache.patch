@@ -1,11 +1,11 @@
---- native_class.mustache	2023-06-22 12:00:16.480685565 -0500
-+++ native_class1.mustache	2023-06-22 12:01:41.772534371 -0500
+--- native_class.mustache	2023-06-22 12:56:11.090350406 -0500
++++ native_class1.mustache	2023-06-22 12:57:14.498184792 -0500
 @@ -91,14 +91,14 @@
      {{/isDateTime}}
      {{#isNullable}}
      } else {
 -      json[r'{{{baseName}}}'] = null;
-+      // json[r'{{{baseName}}}'] = null;
++    //  json[r'{{{baseName}}}'] = null;
      }
      {{/isNullable}}
      {{^isNullable}}
@@ -13,16 +13,25 @@
          {{^defaultValue}}
      } else {
 -      json[r'{{{baseName}}}'] = null;
-+      // json[r'{{{baseName}}}'] = null;
++    //  json[r'{{{baseName}}}'] = null;
      }
          {{/defaultValue}}
        {{/required}}
-@@ -120,7 +120,7 @@
-       assert(() {
-         requiredKeys.forEach((key) {
-           assert(json.containsKey(key), 'Required key "{{{classname}}}[$key]" is missing from JSON.');
+@@ -114,17 +114,6 @@
+     if (value is Map) {
+       final json = value.cast<String, dynamic>();
+ 
+-      // Ensure that the map contains the required keys.
+-      // Note 1: the values aren't checked for validity beyond being non-null.
+-      // Note 2: this code is stripped in release mode!
+-      assert(() {
+-        requiredKeys.forEach((key) {
+-          assert(json.containsKey(key), 'Required key "{{{classname}}}[$key]" is missing from JSON.');
 -          assert(json[key] != null, 'Required key "{{{classname}}}[$key]" has a null value in JSON.');
-+          // assert(json[key] != null, 'Required key "{{{classname}}}[$key]" has a null value in JSON.');
-         });
-         return true;
-       }());
+-        });
+-        return true;
+-      }());
+-
+       return {{{classname}}}(
+   {{#vars}}
+     {{#isDateTime}}
