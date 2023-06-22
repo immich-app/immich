@@ -248,6 +248,13 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
+  getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null> {
+    return this.repository.findOne({
+      where: { albums: { id: albumId } },
+      order: { updatedAt: 'DESC' },
+    });
+  }
+
   async getMapMarkers(ownerId: string, options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
     const { isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
 

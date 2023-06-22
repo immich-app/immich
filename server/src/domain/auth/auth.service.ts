@@ -13,7 +13,7 @@ import { IKeyRepository } from '../api-key';
 import { APIKeyCore } from '../api-key/api-key.core';
 import { ICryptoRepository } from '../crypto/crypto.repository';
 import { OAuthCore } from '../oauth/oauth.core';
-import { ISharedLinkRepository, SharedLinkCore } from '../shared-link';
+import { ISharedLinkRepository } from '../shared-link';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
 import { IUserRepository, UserCore } from '../user';
 import { IUserTokenRepository, UserTokenCore } from '../user-token';
@@ -35,7 +35,6 @@ export class AuthService {
   private authCore: AuthCore;
   private oauthCore: OAuthCore;
   private userCore: UserCore;
-  private shareCore: SharedLinkCore;
   private keyCore: APIKeyCore;
 
   private logger = new Logger(AuthService.name);
@@ -45,7 +44,7 @@ export class AuthService {
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) userRepository: IUserRepository,
     @Inject(IUserTokenRepository) userTokenRepository: IUserTokenRepository,
-    @Inject(ISharedLinkRepository) shareRepository: ISharedLinkRepository,
+    @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
     @Inject(IKeyRepository) keyRepository: IKeyRepository,
     @Inject(INITIAL_SYSTEM_CONFIG)
     initialConfig: SystemConfig,
@@ -54,7 +53,6 @@ export class AuthService {
     this.authCore = new AuthCore(cryptoRepository, configRepository, userTokenRepository, initialConfig);
     this.oauthCore = new OAuthCore(configRepository, initialConfig);
     this.userCore = new UserCore(userRepository, cryptoRepository);
-    this.shareCore = new SharedLinkCore(shareRepository, cryptoRepository);
     this.keyCore = new APIKeyCore(cryptoRepository, keyRepository);
   }
 
@@ -147,7 +145,7 @@ export class AuthService {
     const apiKey = (headers[IMMICH_API_KEY_HEADER] || params.apiKey) as string;
 
     if (shareKey) {
-      return this.shareCore.validate(shareKey);
+      return this.validateSharedLink(shareKey);
     }
 
     if (userToken) {
@@ -192,5 +190,30 @@ export class AuthService {
   private getCookieToken(headers: IncomingHttpHeaders): string | null {
     const cookies = cookieParser.parse(headers.cookie || '');
     return cookies[IMMICH_ACCESS_COOKIE] || null;
+  }
+
+  async validateSharedLink(key: string | string[]): Promise<AuthUserDto | null> {
+    key = Array.isArray(key) ? key[0] : key;
+
+    const bytes = Buffer.from(key, key.length === 100 ? 'hex' : 'base64url');
+    const link = await this.sharedLinkRepository.getByKey(bytes);
+    if (link) {
+      if (!link.expiresAt || new Date(link.expiresAt) > new Date()) {
+        const user = link.user;
+        if (user) {
+          return {
+            id: user.id,
+            email: user.email,
+            isAdmin: user.isAdmin,
+            isPublicUser: true,
+            sharedLinkId: link.id,
+            isAllowUpload: link.allowUpload,
+            isAllowDownload: link.allowDownload,
+            isShowExif: link.showExif,
+          };
+        }
+      }
+    }
+    throw new UnauthorizedException('Invalid share key');
   }
 }

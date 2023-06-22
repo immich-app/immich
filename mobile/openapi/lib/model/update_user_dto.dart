@@ -19,6 +19,7 @@ class UpdateUserDto {
     this.firstName,
     this.lastName,
     this.storageLabel,
+    this.externalPath,
     this.isAdmin,
     this.shouldChangePassword,
   });
@@ -71,6 +72,14 @@ class UpdateUserDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
+  String? externalPath;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   bool? isAdmin;
 
   ///
@@ -89,6 +98,7 @@ class UpdateUserDto {
      other.firstName == firstName &&
      other.lastName == lastName &&
      other.storageLabel == storageLabel &&
+     other.externalPath == externalPath &&
      other.isAdmin == isAdmin &&
      other.shouldChangePassword == shouldChangePassword;
 
@@ -101,11 +111,12 @@ class UpdateUserDto {
     (firstName == null ? 0 : firstName!.hashCode) +
     (lastName == null ? 0 : lastName!.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode) +
+    (externalPath == null ? 0 : externalPath!.hashCode) +
     (isAdmin == null ? 0 : isAdmin!.hashCode) +
     (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode);
 
   @override
-  String toString() => 'UpdateUserDto[id=$id, email=$email, password=$password, firstName=$firstName, lastName=$lastName, storageLabel=$storageLabel, isAdmin=$isAdmin, shouldChangePassword=$shouldChangePassword]';
+  String toString() => 'UpdateUserDto[id=$id, email=$email, password=$password, firstName=$firstName, lastName=$lastName, storageLabel=$storageLabel, externalPath=$externalPath, isAdmin=$isAdmin, shouldChangePassword=$shouldChangePassword]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -134,6 +145,11 @@ class UpdateUserDto {
       json[r'storageLabel'] = this.storageLabel;
     } else {
       // json[r'storageLabel'] = null;
+    }
+    if (this.externalPath != null) {
+      json[r'externalPath'] = this.externalPath;
+    } else {
+      // json[r'externalPath'] = null;
     }
     if (this.isAdmin != null) {
       json[r'isAdmin'] = this.isAdmin;
@@ -173,6 +189,7 @@ class UpdateUserDto {
         firstName: mapValueOfType<String>(json, r'firstName'),
         lastName: mapValueOfType<String>(json, r'lastName'),
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
+        externalPath: mapValueOfType<String>(json, r'externalPath'),
         isAdmin: mapValueOfType<bool>(json, r'isAdmin'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword'),
       );

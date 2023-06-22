@@ -17,11 +17,6 @@ void main() {
   // final instance = AssetApi();
 
   group('tests for AssetApi', () {
-    //Future<SharedLinkResponseDto> addAssetsToSharedLink(AddAssetsDto addAssetsDto, { String key }) async
-    test('test addAssetsToSharedLink', () async {
-      // TODO
-    });
-
     // Checks if assets exist by checksums
     //
     //Future<AssetBulkUploadCheckResponseDto> bulkUploadCheck(AssetBulkUploadCheckDto assetBulkUploadCheckDto) async
@@ -40,11 +35,6 @@ void main() {
     //
     //Future<CheckExistingAssetsResponseDto> checkExistingAssets(CheckExistingAssetsDto checkExistingAssetsDto) async
     test('test checkExistingAssets', () async {
-      // TODO
-    });
-
-    //Future<SharedLinkResponseDto> createAssetsSharedLink(CreateAssetsShareLinkDto createAssetsShareLinkDto) async
-    test('test createAssetsSharedLink', () async {
       // TODO
     });
 
@@ -141,8 +131,8 @@ void main() {
       // TODO
     });
 
-    //Future<SharedLinkResponseDto> removeAssetsFromSharedLink(RemoveAssetsDto removeAssetsDto, { String key }) async
-    test('test removeAssetsFromSharedLink', () async {
+    //Future<AssetFileUploadResponseDto> importFile(ImportAssetDto importAssetDto) async
+    test('test importFile', () async {
       // TODO
     });
 
@@ -163,7 +153,7 @@ void main() {
       // TODO
     });
 
-    //Future<AssetFileUploadResponseDto> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, String fileExtension, { String key, MultipartFile livePhotoData, MultipartFile sidecarData, bool isArchived, bool isVisible, String duration }) async
+    //Future<AssetFileUploadResponseDto> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String fileExtension, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String key, MultipartFile livePhotoData, MultipartFile sidecarData, bool isReadOnly, bool isArchived, bool isVisible, String duration }) async
     test('test uploadFile', () async {
       // TODO
     });

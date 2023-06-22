@@ -6,6 +6,7 @@ export class UserResponseDto {
   firstName!: string;
   lastName!: string;
   storageLabel!: string | null;
+  externalPath!: string | null;
   profileImagePath!: string;
   shouldChangePassword!: boolean;
   isAdmin!: boolean;
@@ -22,6 +23,7 @@ export function mapUser(entity: UserEntity): UserResponseDto {
     firstName: entity.firstName,
     lastName: entity.lastName,
     storageLabel: entity.storageLabel,
+    externalPath: entity.externalPath,
     profileImagePath: entity.profileImagePath,
     shouldChangePassword: entity.shouldChangePassword,
     isAdmin: entity.isAdmin,

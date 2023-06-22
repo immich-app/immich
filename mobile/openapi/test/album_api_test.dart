@@ -32,11 +32,6 @@ void main() {
       // TODO
     });
 
-    //Future<SharedLinkResponseDto> createAlbumSharedLink(CreateAlbumShareLinkDto createAlbumShareLinkDto) async
-    test('test createAlbumSharedLink', () async {
-      // TODO
-    });
-
     //Future deleteAlbum(String id) async
     test('test deleteAlbum', () async {
       // TODO

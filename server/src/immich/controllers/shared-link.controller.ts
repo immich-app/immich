@@ -1,13 +1,21 @@
-import { AuthUserDto, EditSharedLinkDto, SharedLinkResponseDto, SharedLinkService } from '@app/domain';
-import { Body, Controller, Delete, Get, Param, Patch } from '@nestjs/common';
+import {
+  AssetIdsDto,
+  AssetIdsResponseDto,
+  AuthUserDto,
+  SharedLinkCreateDto,
+  SharedLinkEditDto,
+  SharedLinkResponseDto,
+  SharedLinkService,
+} from '@app/domain';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthUser } from '../decorators/auth-user.decorator';
 import { Authenticated, SharedLinkRoute } from '../decorators/authenticated.decorator';
 import { UseValidation } from '../decorators/use-validation.decorator';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
-@ApiTags('share')
-@Controller('share')
+@ApiTags('Shared Link')
+@Controller('shared-link')
 @Authenticated()
 @UseValidation()
 export class SharedLinkController {
@@ -29,11 +37,16 @@ export class SharedLinkController {
     return this.service.get(authUser, id);
   }
 
+  @Post()
+  createSharedLink(@AuthUser() authUser: AuthUserDto, @Body() dto: SharedLinkCreateDto) {
+    return this.service.create(authUser, dto);
+  }
+
   @Patch(':id')
   updateSharedLink(
     @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,
-    @Body() dto: EditSharedLinkDto,
+    @Body() dto: SharedLinkEditDto,
   ): Promise<SharedLinkResponseDto> {
     return this.service.update(authUser, id, dto);
   }
@@ -41,5 +54,25 @@ export class SharedLinkController {
   @Delete(':id')
   removeSharedLink(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(authUser, id);
+  }
+
+  @SharedLinkRoute()
+  @Put(':id/assets')
+  addSharedLinkAssets(
+    @AuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: AssetIdsDto,
+  ): Promise<AssetIdsResponseDto[]> {
+    return this.service.addAssets(authUser, id, dto);
+  }
+
+  @SharedLinkRoute()
+  @Delete(':id/assets')
+  removeSharedLinkAssets(
+    @AuthUser() authUser: AuthUserDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: AssetIdsDto,
+  ): Promise<AssetIdsResponseDto[]> {
+    return this.service.removeAssets(authUser, id, dto);
   }
 }

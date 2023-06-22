@@ -1,13 +1,6 @@
-import {
-  IAccessRepository,
-  ICryptoRepository,
-  IJobRepository,
-  ISharedLinkRepository,
-  IStorageRepository,
-  JobName,
-} from '@app/domain';
+import { IAccessRepository, ICryptoRepository, IJobRepository, IStorageRepository, JobName } from '@app/domain';
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { ForbiddenException } from '@nestjs/common';
 import {
   assetEntityStub,
   authStub,
@@ -15,17 +8,13 @@ import {
   newAccessRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
-  newSharedLinkRepositoryMock,
   newStorageRepositoryMock,
-  sharedLinkResponseStub,
-  sharedLinkStub,
 } from '@test';
 import { when } from 'jest-when';
 import { QueryFailedError, Repository } from 'typeorm';
 import { DownloadService } from '../../modules/download/download.service';
 import { IAssetRepository } from './asset-repository';
 import { AssetService } from './asset.service';
-import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
 import { AssetRejectReason, AssetUploadAction } from './response-dto/asset-check-response.dto';
@@ -133,9 +122,8 @@ describe('AssetService', () => {
   let a: Repository<AssetEntity>; // TO BE DELETED AFTER FINISHED REFACTORING
   let accessMock: jest.Mocked<IAccessRepository>;
   let assetRepositoryMock: jest.Mocked<IAssetRepository>;
-  let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
-  let sharedLinkRepositoryMock: jest.Mocked<ISharedLinkRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
+  let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
   let jobMock: jest.Mocked<IJobRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
 
@@ -158,26 +146,27 @@ describe('AssetService', () => {
       getAssetCountByUserId: jest.fn(),
       getArchivedAssetCountByUserId: jest.fn(),
       getExistingAssets: jest.fn(),
+      getByOriginalPath: jest.fn(),
     };
+
+    cryptoMock = newCryptoRepositoryMock();
 
     downloadServiceMock = {
       downloadArchive: jest.fn(),
     };
 
     accessMock = newAccessRepositoryMock();
-    sharedLinkRepositoryMock = newSharedLinkRepositoryMock();
-    jobMock = newJobRepositoryMock();
     cryptoMock = newCryptoRepositoryMock();
+    jobMock = newJobRepositoryMock();
     storageMock = newStorageRepositoryMock();
 
     sut = new AssetService(
       accessMock,
       assetRepositoryMock,
       a,
-      downloadServiceMock as DownloadService,
-      sharedLinkRepositoryMock,
-      jobMock,
       cryptoMock,
+      downloadServiceMock as DownloadService,
+      jobMock,
       storageMock,
     );
 
@@ -187,77 +176,6 @@ describe('AssetService', () => {
     when(assetRepositoryMock.get)
       .calledWith(assetEntityStub.livePhotoMotionAsset.id)
       .mockResolvedValue(assetEntityStub.livePhotoMotionAsset);
-  });
-
-  describe('createAssetsSharedLink', () => {
-    it('should create an individual share link', async () => {
-      const asset1 = _getAsset_1();
-      const dto: CreateAssetsShareLinkDto = { assetIds: [asset1.id] };
-
-      assetRepositoryMock.getById.mockResolvedValue(asset1);
-      accessMock.hasOwnerAssetAccess.mockResolvedValue(true);
-      sharedLinkRepositoryMock.create.mockResolvedValue(sharedLinkStub.valid);
-
-      await expect(sut.createAssetsSharedLink(authStub.user1, dto)).resolves.toEqual(sharedLinkResponseStub.valid);
-
-      expect(assetRepositoryMock.getById).toHaveBeenCalledWith(asset1.id);
-      expect(accessMock.hasOwnerAssetAccess).toHaveBeenCalledWith(authStub.user1.id, asset1.id);
-    });
-  });
-
-  describe('updateAssetsInSharedLink', () => {
-    it('should require a valid shared link', async () => {
-      const asset1 = _getAsset_1();
-
-      const authDto = authStub.adminSharedLink;
-      const dto = { assetIds: [asset1.id] };
-
-      assetRepositoryMock.getById.mockResolvedValue(asset1);
-      sharedLinkRepositoryMock.get.mockResolvedValue(null);
-      accessMock.hasSharedLinkAssetAccess.mockResolvedValue(true);
-
-      await expect(sut.addAssetsToSharedLink(authDto, dto)).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(assetRepositoryMock.getById).toHaveBeenCalledWith(asset1.id);
-      expect(sharedLinkRepositoryMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
-      expect(sharedLinkRepositoryMock.update).not.toHaveBeenCalled();
-    });
-
-    it('should add assets to a shared link', async () => {
-      const asset1 = _getAsset_1();
-
-      const authDto = authStub.adminSharedLink;
-      const dto = { assetIds: [asset1.id] };
-
-      assetRepositoryMock.getById.mockResolvedValue(asset1);
-      sharedLinkRepositoryMock.get.mockResolvedValue(sharedLinkStub.valid);
-      accessMock.hasSharedLinkAssetAccess.mockResolvedValue(true);
-      sharedLinkRepositoryMock.update.mockResolvedValue(sharedLinkStub.valid);
-
-      await expect(sut.addAssetsToSharedLink(authDto, dto)).resolves.toEqual(sharedLinkResponseStub.valid);
-
-      expect(assetRepositoryMock.getById).toHaveBeenCalledWith(asset1.id);
-      expect(sharedLinkRepositoryMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
-      expect(sharedLinkRepositoryMock.update).toHaveBeenCalled();
-    });
-
-    it('should remove assets from a shared link', async () => {
-      const asset1 = _getAsset_1();
-
-      const authDto = authStub.adminSharedLink;
-      const dto = { assetIds: [asset1.id] };
-
-      assetRepositoryMock.getById.mockResolvedValue(asset1);
-      sharedLinkRepositoryMock.get.mockResolvedValue(sharedLinkStub.valid);
-      accessMock.hasSharedLinkAssetAccess.mockResolvedValue(true);
-      sharedLinkRepositoryMock.update.mockResolvedValue(sharedLinkStub.valid);
-
-      await expect(sut.removeAssetsFromSharedLink(authDto, dto)).resolves.toEqual(sharedLinkResponseStub.valid);
-
-      expect(assetRepositoryMock.getById).toHaveBeenCalledWith(asset1.id);
-      expect(sharedLinkRepositoryMock.get).toHaveBeenCalledWith(authDto.id, authDto.sharedLinkId);
-      expect(sharedLinkRepositoryMock.update).toHaveBeenCalled();
-    });
   });
 
   describe('uploadFile', () => {
@@ -525,6 +443,43 @@ describe('AssetService', () => {
       });
 
       expect(assetRepositoryMock.getAssetsByChecksums).toHaveBeenCalledWith(authStub.admin.id, [file1, file2]);
+    });
+  });
+
+  describe('importFile', () => {
+    it('should handle a file import', async () => {
+      assetRepositoryMock.create.mockResolvedValue(assetEntityStub.image);
+      storageMock.checkFileExists.mockResolvedValue(true);
+
+      await expect(
+        sut.importFile(authStub.external1, {
+          ..._getCreateAssetDto(),
+          assetPath: '/data/user1/fake_path/asset_1.jpeg',
+          isReadOnly: true,
+        }),
+      ).resolves.toEqual({ duplicate: false, id: 'asset-id' });
+
+      expect(assetRepositoryMock.create).toHaveBeenCalled();
+    });
+
+    it('should handle a duplicate if originalPath already exists', async () => {
+      const error = new QueryFailedError('', [], '');
+      (error as any).constraint = 'UQ_userid_checksum';
+
+      assetRepositoryMock.create.mockRejectedValue(error);
+      assetRepositoryMock.getAssetsByChecksums.mockResolvedValue([assetEntityStub.image]);
+      storageMock.checkFileExists.mockResolvedValue(true);
+      cryptoMock.hashFile.mockResolvedValue(Buffer.from('file hash', 'utf8'));
+
+      await expect(
+        sut.importFile(authStub.external1, {
+          ..._getCreateAssetDto(),
+          assetPath: '/data/user1/fake_path/asset_1.jpeg',
+          isReadOnly: true,
+        }),
+      ).resolves.toEqual({ duplicate: true, id: 'asset-id' });
+
+      expect(assetRepositoryMock.create).toHaveBeenCalled();
     });
   });
 

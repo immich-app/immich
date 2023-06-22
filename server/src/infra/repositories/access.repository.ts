@@ -95,4 +95,13 @@ export class AccessRepository implements IAccessRepository {
       }))
     );
   }
+
+  hasAlbumOwnerAccess(userId: string, albumId: string): Promise<boolean> {
+    return this.albumRepository.exist({
+      where: {
+        id: albumId,
+        ownerId: userId,
+      },
+    });
+  }
 }
