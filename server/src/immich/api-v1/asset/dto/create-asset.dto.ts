@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ImmichFile } from '../../../config/asset-upload.config';
-import { toSanitized } from '../../../utils/transform.util';
+import { toBoolean, toSanitized } from '../../../utils/transform.util';
 
 export class CreateAssetBase {
   @IsNotEmpty()
@@ -41,6 +41,7 @@ export class CreateAssetBase {
 export class CreateAssetDto extends CreateAssetBase {
   @IsOptional()
   @IsBoolean()
+  @Transform(toBoolean)
   isReadOnly?: boolean = false;
 
   @IsNotEmpty()
@@ -60,7 +61,7 @@ export class CreateAssetDto extends CreateAssetBase {
 
 export class ImportAssetDto extends CreateAssetBase {
   @IsOptional()
-  @IsBoolean()
+  @Transform(toBoolean)
   isReadOnly?: boolean = true;
 
   @IsString()
