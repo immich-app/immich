@@ -206,6 +206,8 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
           key: ValueKey(section.offset),
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (section.offset == 0 && widget.topWidget != null)
+              widget.topWidget!,
             if (section.type == RenderAssetGridElementType.monthTitle)
               _buildMonthTitle(context, section.date),
             if (section.type == RenderAssetGridElementType.groupDividerTitle ||
@@ -401,6 +403,7 @@ class ImmichAssetGridView extends StatefulWidget {
   final bool showMultiSelectIndicator;
   final void Function(ItemPosition start, ItemPosition end)?
       visibleItemsListener;
+  final Widget? topWidget;
 
   const ImmichAssetGridView({
     super.key,
@@ -416,6 +419,7 @@ class ImmichAssetGridView extends StatefulWidget {
     this.dynamicLayout = true,
     this.showMultiSelectIndicator = true,
     this.visibleItemsListener,
+    this.topWidget,
   });
 
   @override

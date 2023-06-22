@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class CuratedPeopleRow extends StatelessWidget {
   final List<CuratedContent> content;
@@ -48,8 +49,6 @@ class CuratedPeopleRow extends StatelessWidget {
       ),
       itemBuilder: (context, index) {
         final object = content[index];
-        final faceThumbnailRequestUrl =
-            '${Store.get(StoreKey.serverEndpoint)}/person/${object.id}/thumbnail';
 
         return Padding(
           padding: const EdgeInsets.only(right: 18.0),
@@ -68,7 +67,7 @@ class CuratedPeopleRow extends StatelessWidget {
                       child: CircleAvatar(
                         maxRadius: imageSize / 2,
                         backgroundImage: NetworkImage(
-                          faceThumbnailRequestUrl,
+                          getFaceThumbnailUrl(object.id),
                           headers: {
                             "Authorization":
                                 "Bearer ${Store.get(StoreKey.accessToken)}"
