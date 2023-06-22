@@ -162,7 +162,7 @@ class AssetResponseDto {
     if (this.thumbhash != null) {
       json[r'thumbhash'] = this.thumbhash;
     } else {
-      // json[r'thumbhash'] = null;
+    //  json[r'thumbhash'] = null;
     }
       json[r'fileCreatedAt'] = this.fileCreatedAt.toUtc().toIso8601String();
       json[r'fileModifiedAt'] = this.fileModifiedAt.toUtc().toIso8601String();
@@ -172,23 +172,23 @@ class AssetResponseDto {
     if (this.mimeType != null) {
       json[r'mimeType'] = this.mimeType;
     } else {
-      // json[r'mimeType'] = null;
+    //  json[r'mimeType'] = null;
     }
       json[r'duration'] = this.duration;
     if (this.exifInfo != null) {
       json[r'exifInfo'] = this.exifInfo;
     } else {
-      // json[r'exifInfo'] = null;
+    //  json[r'exifInfo'] = null;
     }
     if (this.smartInfo != null) {
       json[r'smartInfo'] = this.smartInfo;
     } else {
-      // json[r'smartInfo'] = null;
+    //  json[r'smartInfo'] = null;
     }
     if (this.livePhotoVideoId != null) {
       json[r'livePhotoVideoId'] = this.livePhotoVideoId;
     } else {
-      // json[r'livePhotoVideoId'] = null;
+    //  json[r'livePhotoVideoId'] = null;
     }
       json[r'tags'] = this.tags;
       json[r'people'] = this.people;
@@ -202,17 +202,6 @@ class AssetResponseDto {
   static AssetResponseDto? fromJson(dynamic value) {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
-
-      // Ensure that the map contains the required keys.
-      // Note 1: the values aren't checked for validity beyond being non-null.
-      // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "AssetResponseDto[$key]" is missing from JSON.');
-          // assert(json[key] != null, 'Required key "AssetResponseDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
 
       return AssetResponseDto(
         type: AssetTypeEnum.fromJson(json[r'type'])!,

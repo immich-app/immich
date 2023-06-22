@@ -99,12 +99,12 @@ class UserResponseDto {
     if (this.storageLabel != null) {
       json[r'storageLabel'] = this.storageLabel;
     } else {
-      // json[r'storageLabel'] = null;
+    //  json[r'storageLabel'] = null;
     }
     if (this.externalPath != null) {
       json[r'externalPath'] = this.externalPath;
     } else {
-      // json[r'externalPath'] = null;
+    //  json[r'externalPath'] = null;
     }
       json[r'profileImagePath'] = this.profileImagePath;
       json[r'shouldChangePassword'] = this.shouldChangePassword;
@@ -113,7 +113,7 @@ class UserResponseDto {
     if (this.deletedAt != null) {
       json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
     } else {
-      // json[r'deletedAt'] = null;
+    //  json[r'deletedAt'] = null;
     }
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
       json[r'oauthId'] = this.oauthId;
@@ -126,17 +126,6 @@ class UserResponseDto {
   static UserResponseDto? fromJson(dynamic value) {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
-
-      // Ensure that the map contains the required keys.
-      // Note 1: the values aren't checked for validity beyond being non-null.
-      // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "UserResponseDto[$key]" is missing from JSON.');
-          // assert(json[key] != null, 'Required key "UserResponseDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
 
       return UserResponseDto(
         id: mapValueOfType<String>(json, r'id')!,
