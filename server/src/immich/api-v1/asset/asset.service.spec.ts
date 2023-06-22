@@ -1,6 +1,6 @@
 import { ICryptoRepository, IJobRepository, IStorageRepository, JobName } from '@app/domain';
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
-import { ForbiddenException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import {
   assetEntityStub,
   authStub,
@@ -525,7 +525,7 @@ describe('AssetService', () => {
       accessMock.asset.hasSharedLinkAccess.mockResolvedValue(false);
       accessMock.asset.hasAlbumAccess.mockResolvedValue(false);
       await expect(sut.getAssetById(authStub.admin, assetEntityStub.image.id)).rejects.toBeInstanceOf(
-        ForbiddenException,
+        BadRequestException,
       );
       expect(assetRepositoryMock.getById).not.toHaveBeenCalled();
     });
@@ -533,7 +533,7 @@ describe('AssetService', () => {
     it('should throw an error for an invalid shared link', async () => {
       accessMock.asset.hasSharedLinkAccess.mockResolvedValue(false);
       await expect(sut.getAssetById(authStub.adminSharedLink, assetEntityStub.image.id)).rejects.toBeInstanceOf(
-        ForbiddenException,
+        BadRequestException,
       );
       expect(accessMock.asset.hasOwnerAccess).not.toHaveBeenCalled();
       expect(assetRepositoryMock.getById).not.toHaveBeenCalled();

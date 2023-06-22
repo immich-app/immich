@@ -1,7 +1,9 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import {
   albumStub,
   authStub,
+  IAccessRepositoryMock,
+  newAccessRepositoryMock,
   newAlbumRepositoryMock,
   newAssetRepositoryMock,
   newJobRepositoryMock,
@@ -17,18 +19,20 @@ import { AlbumService } from './album.service';
 
 describe(AlbumService.name, () => {
   let sut: AlbumService;
+  let accessMock: IAccessRepositoryMock;
   let albumMock: jest.Mocked<IAlbumRepository>;
   let assetMock: jest.Mocked<IAssetRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let userMock: jest.Mocked<IUserRepository>;
 
   beforeEach(async () => {
+    accessMock = newAccessRepositoryMock();
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
     jobMock = newJobRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new AlbumService(albumMock, assetMock, jobMock, userMock);
+    sut = new AlbumService(accessMock, albumMock, assetMock, jobMock, userMock);
   });
 
   it('should work', () => {
@@ -210,16 +214,16 @@ describe(AlbumService.name, () => {
     });
 
     it('should prevent updating a not owned album (shared with auth user)', async () => {
-      albumMock.getByIds.mockResolvedValue([albumStub.sharedWithAdmin]);
-
+      accessMock.album.hasOwnerAccess.mockResolvedValue(false);
       await expect(
         sut.update(authStub.admin, albumStub.sharedWithAdmin.id, {
           albumName: 'new album name',
         }),
-      ).rejects.toBeInstanceOf(ForbiddenException);
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should require a valid thumbnail asset id', async () => {
+      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getByIds.mockResolvedValue([albumStub.oneAsset]);
       albumMock.update.mockResolvedValue(albumStub.oneAsset);
       albumMock.hasAsset.mockResolvedValue(false);
@@ -235,6 +239,8 @@ describe(AlbumService.name, () => {
     });
 
     it('should allow the owner to update the album', async () => {
+      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+
       albumMock.getByIds.mockResolvedValue([albumStub.oneAsset]);
       albumMock.update.mockResolvedValue(albumStub.oneAsset);
 
@@ -256,6 +262,7 @@ describe(AlbumService.name, () => {
 
   describe('delete', () => {
     it('should throw an error for an album not found', async () => {
+      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getByIds.mockResolvedValue([]);
 
       await expect(sut.delete(authStub.admin, albumStub.sharedWithAdmin.id)).rejects.toBeInstanceOf(
@@ -266,14 +273,18 @@ describe(AlbumService.name, () => {
     });
 
     it('should not let a shared user delete the album', async () => {
+      accessMock.album.hasOwnerAccess.mockResolvedValue(false);
       albumMock.getByIds.mockResolvedValue([albumStub.sharedWithAdmin]);
 
-      await expect(sut.delete(authStub.admin, albumStub.sharedWithAdmin.id)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.delete(authStub.admin, albumStub.sharedWithAdmin.id)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
 
       expect(albumMock.delete).not.toHaveBeenCalled();
     });
 
     it('should let the owner delete an album', async () => {
+      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getByIds.mockResolvedValue([albumStub.empty]);
 
       await sut.delete(authStub.admin, albumStub.empty.id);
@@ -284,23 +295,16 @@ describe(AlbumService.name, () => {
   });
 
   describe('addUsers', () => {
-    it('should require a valid album id', async () => {
-      albumMock.getByIds.mockResolvedValue([]);
-      await expect(sut.addUsers(authStub.admin, 'album-1', { sharedUserIds: ['user-1'] })).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
-      expect(albumMock.update).not.toHaveBeenCalled();
-    });
-
-    it('should require the user to be the owner', async () => {
-      albumMock.getByIds.mockResolvedValue([albumStub.sharedWithAdmin]);
+    it('should throw an error if the auth user is not the owner', async () => {
+      accessMock.album.hasOwnerAccess.mockResolvedValue(false);
       await expect(
         sut.addUsers(authStub.admin, albumStub.sharedWithAdmin.id, { sharedUserIds: ['user-1'] }),
-      ).rejects.toBeInstanceOf(ForbiddenException);
+      ).rejects.toBeInstanceOf(BadRequestException);
       expect(albumMock.update).not.toHaveBeenCalled();
     });
 
     it('should throw an error if the userId is already added', async () => {
+      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getByIds.mockResolvedValue([albumStub.sharedWithAdmin]);
       await expect(
         sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, { sharedUserIds: [authStub.admin.id] }),
@@ -309,6 +313,7 @@ describe(AlbumService.name, () => {
     });
 
     it('should throw an error if the userId does not exist', async () => {
+      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getByIds.mockResolvedValue([albumStub.sharedWithAdmin]);
       userMock.get.mockResolvedValue(null);
       await expect(
@@ -318,6 +323,7 @@ describe(AlbumService.name, () => {
     });
 
     it('should add valid shared users', async () => {
+      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getByIds.mockResolvedValue([_.cloneDeep(albumStub.sharedWithAdmin)]);
       albumMock.update.mockResolvedValue(albumStub.sharedWithAdmin);
       userMock.get.mockResolvedValue(userEntityStub.user2);
@@ -332,12 +338,14 @@ describe(AlbumService.name, () => {
 
   describe('removeUser', () => {
     it('should require a valid album id', async () => {
+      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getByIds.mockResolvedValue([]);
       await expect(sut.removeUser(authStub.admin, 'album-1', 'user-1')).rejects.toBeInstanceOf(BadRequestException);
       expect(albumMock.update).not.toHaveBeenCalled();
     });
 
     it('should remove a shared user from an owned album', async () => {
+      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       albumMock.getByIds.mockResolvedValue([albumStub.sharedWithUser]);
 
       await expect(
@@ -353,13 +361,15 @@ describe(AlbumService.name, () => {
     });
 
     it('should prevent removing a shared user from a not-owned album (shared with auth user)', async () => {
+      accessMock.album.hasOwnerAccess.mockResolvedValue(false);
       albumMock.getByIds.mockResolvedValue([albumStub.sharedWithMultiple]);
 
       await expect(
         sut.removeUser(authStub.user1, albumStub.sharedWithMultiple.id, authStub.user2.id),
-      ).rejects.toBeInstanceOf(ForbiddenException);
+      ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(albumMock.update).not.toHaveBeenCalled();
+      expect(accessMock.album.hasOwnerAccess).toHaveBeenCalledWith(authStub.user1.id, albumStub.sharedWithMultiple.id);
     });
 
     it('should allow a shared user to remove themselves', async () => {

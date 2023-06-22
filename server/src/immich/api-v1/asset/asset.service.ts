@@ -1,4 +1,5 @@
 import {
+  AccessCore,
   AssetResponseDto,
   AuthUserDto,
   getLivePhotoMotionFilename,
@@ -12,11 +13,11 @@ import {
   JobName,
   mapAsset,
   mapAssetWithoutExif,
+  Permission,
 } from '@app/domain';
 import { AssetEntity, AssetType } from '@app/infra/entities';
 import {
   BadRequestException,
-  ForbiddenException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -79,9 +80,10 @@ interface ServableFile {
 export class AssetService {
   readonly logger = new Logger(AssetService.name);
   private assetCore: AssetCore;
+  private access: AccessCore;
 
   constructor(
-    @Inject(IAccessRepository) private accessRepository: IAccessRepository,
+    @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
@@ -90,6 +92,7 @@ export class AssetService {
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
+    this.access = new AccessCore(accessRepository);
   }
 
   public async uploadFile(
@@ -208,32 +211,20 @@ export class AssetService {
   }
 
   public async getAllAssets(authUser: AuthUserDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
-    if (dto.userId && dto.userId !== authUser.id) {
-      await this.checkUserAccess(authUser, dto.userId);
-    }
+    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, dto.userId || authUser.id);
     const assets = await this._assetRepository.getAllByUserId(dto.userId || authUser.id, dto);
-
     return assets.map((asset) => mapAsset(asset));
   }
 
-  public async getAssetByTimeBucket(
-    authUser: AuthUserDto,
-    getAssetByTimeBucketDto: GetAssetByTimeBucketDto,
-  ): Promise<AssetResponseDto[]> {
-    if (getAssetByTimeBucketDto.userId) {
-      await this.checkUserAccess(authUser, getAssetByTimeBucketDto.userId);
-    }
-
-    const assets = await this._assetRepository.getAssetByTimeBucket(
-      getAssetByTimeBucketDto.userId || authUser.id,
-      getAssetByTimeBucketDto,
-    );
-
+  public async getAssetByTimeBucket(authUser: AuthUserDto, dto: GetAssetByTimeBucketDto): Promise<AssetResponseDto[]> {
+    const userId = dto.userId || authUser.id;
+    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, userId);
+    const assets = await this._assetRepository.getAssetByTimeBucket(userId, dto);
     return assets.map((asset) => mapAsset(asset));
   }
 
   public async getAssetById(authUser: AuthUserDto, assetId: string): Promise<AssetResponseDto> {
-    await this.checkAssetsAccess(authUser, [assetId]);
+    await this.access.requirePermission(authUser, Permission.ASSET_READ, assetId);
 
     const allowExif = this.getExifPermission(authUser);
     const asset = await this._assetRepository.getById(assetId);
@@ -246,7 +237,7 @@ export class AssetService {
   }
 
   public async updateAsset(authUser: AuthUserDto, assetId: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
-    await this.checkAssetsAccess(authUser, [assetId], true);
+    await this.access.requirePermission(authUser, Permission.ASSET_UPDATE, assetId);
 
     const asset = await this._assetRepository.getById(assetId);
     if (!asset) {
@@ -261,15 +252,15 @@ export class AssetService {
   }
 
   public async downloadLibrary(authUser: AuthUserDto, dto: DownloadDto) {
-    this.checkDownloadAccess(authUser);
+    await this.access.requirePermission(authUser, Permission.LIBRARY_DOWNLOAD, authUser.id);
+
     const assets = await this._assetRepository.getAllByUserId(authUser.id, dto);
 
     return this.downloadService.downloadArchive(dto.name || `library`, assets);
   }
 
   public async downloadFiles(authUser: AuthUserDto, dto: DownloadFilesDto) {
-    this.checkDownloadAccess(authUser);
-    await this.checkAssetsAccess(authUser, [...dto.assetIds]);
+    await this.access.requirePermission(authUser, Permission.ASSET_DOWNLOAD, dto.assetIds);
 
     const assetToDownload = [];
 
@@ -289,8 +280,7 @@ export class AssetService {
   }
 
   public async downloadFile(authUser: AuthUserDto, assetId: string): Promise<ImmichReadStream> {
-    this.checkDownloadAccess(authUser);
-    await this.checkAssetsAccess(authUser, [assetId]);
+    await this.access.requirePermission(authUser, Permission.ASSET_DOWNLOAD, assetId);
 
     try {
       const asset = await this._assetRepository.get(assetId);
@@ -312,7 +302,8 @@ export class AssetService {
     res: Res,
     headers: Record<string, string>,
   ) {
-    await this.checkAssetsAccess(authUser, [assetId]);
+    await this.access.requirePermission(authUser, Permission.ASSET_VIEW, assetId);
+
     const asset = await this._assetRepository.get(assetId);
     if (!asset) {
       throw new NotFoundException('Asset not found');
@@ -338,7 +329,8 @@ export class AssetService {
     res: Res,
     headers: Record<string, string>,
   ) {
-    await this.checkAssetsAccess(authUser, [assetId]);
+    // this is not quite right as sometimes this returns the original still
+    await this.access.requirePermission(authUser, Permission.ASSET_VIEW, assetId);
 
     const allowOriginalFile = !!(!authUser.isPublicUser || authUser.isAllowDownload);
 
@@ -421,15 +413,14 @@ export class AssetService {
   }
 
   public async deleteAll(authUser: AuthUserDto, dto: DeleteAssetDto): Promise<DeleteAssetResponseDto[]> {
-    await this.checkAssetsAccess(authUser, dto.ids, true);
-
     const deleteQueue: Array<string | null> = [];
     const result: DeleteAssetResponseDto[] = [];
 
     const ids = dto.ids.slice();
     for (const id of ids) {
       const asset = await this._assetRepository.get(id);
-      if (!asset) {
+      const hasAccess = asset && (await this.access.hasPermission(authUser, Permission.ASSET_DELETE, id));
+      if (!asset || !hasAccess) {
         result.push({ id, status: DeleteAssetStatusEnum.FAILED });
         continue;
       }
@@ -605,17 +596,11 @@ export class AssetService {
 
   async getAssetCountByTimeBucket(
     authUser: AuthUserDto,
-    getAssetCountByTimeBucketDto: GetAssetCountByTimeBucketDto,
+    dto: GetAssetCountByTimeBucketDto,
   ): Promise<AssetCountByTimeBucketResponseDto> {
-    if (getAssetCountByTimeBucketDto.userId !== undefined) {
-      await this.checkUserAccess(authUser, getAssetCountByTimeBucketDto.userId);
-    }
-
-    const result = await this._assetRepository.getAssetCountByTimeBucket(
-      getAssetCountByTimeBucketDto.userId || authUser.id,
-      getAssetCountByTimeBucketDto,
-    );
-
+    const userId = dto.userId || authUser.id;
+    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, userId);
+    const result = await this._assetRepository.getAssetCountByTimeBucket(userId, dto);
     return mapAssetCountByTimeBucket(result);
   }
 
@@ -625,56 +610,6 @@ export class AssetService {
 
   getArchivedAssetCountByUserId(authUser: AuthUserDto): Promise<AssetCountByUserIdResponseDto> {
     return this._assetRepository.getArchivedAssetCountByUserId(authUser.id);
-  }
-
-  private async checkAssetsAccess(authUser: AuthUserDto, assetIds: string[], mustBeOwner = false) {
-    const sharedLinkId = authUser.sharedLinkId;
-
-    for (const assetId of assetIds) {
-      if (sharedLinkId) {
-        const canAccess = await this.accessRepository.asset.hasSharedLinkAccess(sharedLinkId, assetId);
-        if (canAccess) {
-          continue;
-        }
-
-        throw new ForbiddenException();
-      }
-
-      const isOwner = await this.accessRepository.asset.hasOwnerAccess(authUser.id, assetId);
-      if (isOwner) {
-        continue;
-      }
-
-      if (mustBeOwner) {
-        throw new ForbiddenException();
-      }
-
-      const isPartnerShared = await this.accessRepository.asset.hasPartnerAccess(authUser.id, assetId);
-      if (isPartnerShared) {
-        continue;
-      }
-
-      const isAlbumShared = await this.accessRepository.asset.hasAlbumAccess(authUser.id, assetId);
-      if (isAlbumShared) {
-        continue;
-      }
-
-      throw new ForbiddenException();
-    }
-  }
-
-  private async checkUserAccess(authUser: AuthUserDto, userId: string) {
-    // Check if userId shares assets with authUser
-    const canAccess = await this.accessRepository.library.hasPartnerAccess(authUser.id, userId);
-    if (!canAccess) {
-      throw new ForbiddenException();
-    }
-  }
-
-  private checkDownloadAccess(authUser: AuthUserDto) {
-    if (authUser.isPublicUser && !authUser.isAllowDownload) {
-      throw new ForbiddenException();
-    }
   }
 
   getExifPermission(authUser: AuthUserDto) {
