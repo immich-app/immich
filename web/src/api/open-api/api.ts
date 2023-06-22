@@ -2969,7 +2969,7 @@ export interface UserResponseDto {
      * @type {string}
      * @memberof UserResponseDto
      */
-    'deletedAt': string | null;
+    'deletedAt'?: string | null;
     /**
      * 
      * @type {string}

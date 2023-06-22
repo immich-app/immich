@@ -23,7 +23,7 @@ class UserResponseDto {
     required this.shouldChangePassword,
     required this.isAdmin,
     required this.createdAt,
-    required this.deletedAt,
+    this.deletedAt,
     required this.updatedAt,
     required this.oauthId,
   });
@@ -209,7 +209,6 @@ class UserResponseDto {
     'shouldChangePassword',
     'isAdmin',
     'createdAt',
-    'deletedAt',
     'updatedAt',
     'oauthId',
   };
