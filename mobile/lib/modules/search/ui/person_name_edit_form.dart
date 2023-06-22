@@ -3,6 +3,13 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/search/providers/people.provider.dart';
 
+class PersonNameEditFormResult {
+  final bool success;
+  final String updatedName;
+
+  PersonNameEditFormResult(this.success, this.updatedName);
+}
+
 class PersonNameEditForm extends HookConsumerWidget {
   final String personId;
   final String personName;
@@ -35,7 +42,10 @@ class PersonNameEditForm extends HookConsumerWidget {
         TextButton(
           style: TextButton.styleFrom(),
           onPressed: () {
-            Navigator.of(context, rootNavigator: true).pop('dialog');
+            Navigator.of(context, rootNavigator: true)
+                .pop<PersonNameEditFormResult>(
+              PersonNameEditFormResult(false, ''),
+            );
           },
           child: Text(
             "Cancel",
@@ -47,12 +57,16 @@ class PersonNameEditForm extends HookConsumerWidget {
         ),
         TextButton(
           onPressed: () {
-            ref.watch(
+            ref.read(
               updatePersonNameProvider(
                 UpdatePersonNameDto(personId, controller.text),
               ),
             );
-            Navigator.of(context, rootNavigator: true).pop('dialog');
+
+            Navigator.of(context, rootNavigator: true)
+                .pop<PersonNameEditFormResult>(
+              PersonNameEditFormResult(true, controller.text),
+            );
           },
           child: Text(
             "Save",

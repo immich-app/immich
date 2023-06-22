@@ -1,9 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/search/providers/people.provider.dart';
-import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/modules/search/ui/person_name_edit_form.dart';
+import 'package:immich_mobile/shared/models/store.dart' as isarStore;
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class PersonResultPage extends HookConsumerWidget {
@@ -18,6 +20,89 @@ class PersonResultPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final name = useState(personName);
+
+    showEditNameDialog() {
+      showDialog<PersonNameEditFormResult>(
+        context: context,
+        builder: (BuildContext context) {
+          return PersonNameEditForm(
+            personId: personId,
+            personName: personName,
+          );
+        },
+      ).then((result) {
+        if (result != null && result.success) {
+          name.value = result.updatedName;
+        }
+
+        Navigator.of(context).pop();
+      });
+    }
+
+    void buildBottomSheet() {
+      showModalBottomSheet(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        isScrollControlled: false,
+        context: context,
+        useSafeArea: true,
+        builder: (context) {
+          return SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.edit_outlined),
+                  title: const Text(
+                    'Edit name',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  onTap: showEditNameDialog,
+                )
+              ],
+            ),
+          );
+        },
+      );
+    }
+
+    buildTitleBlock(int totalAssets) {
+      if (name.value == "") {
+        return GestureDetector(
+          onTap: showEditNameDialog,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Add a name',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+              ),
+              Text(
+                'Find them fast by name with search',
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+            ],
+          ),
+        );
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            name.value,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          Text(
+            '$totalAssets photos',
+            style: Theme.of(context).textTheme.labelMedium,
+          ),
+        ],
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -26,7 +111,7 @@ class PersonResultPage extends HookConsumerWidget {
         ),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: buildBottomSheet,
             icon: const Icon(Icons.more_vert_rounded),
           ),
         ],
@@ -54,26 +139,13 @@ class PersonResultPage extends HookConsumerWidget {
                               getFaceThumbnailUrl(personId),
                               headers: {
                                 "Authorization":
-                                    "Bearer ${Store.get(StoreKey.accessToken)}"
+                                    "Bearer ${isarStore.Store.get(isarStore.StoreKey.accessToken)}"
                               },
                             ),
                           ),
                           Padding(
                             padding: const EdgeInsets.only(left: 16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  personName,
-                                  style: Theme.of(context).textTheme.titleLarge,
-                                ),
-                                Text(
-                                  '${data.totalAssets} photos',
-                                  style:
-                                      Theme.of(context).textTheme.labelMedium,
-                                ),
-                              ],
-                            ),
+                            child: buildTitleBlock(data.totalAssets),
                           ),
                         ],
                       ),
