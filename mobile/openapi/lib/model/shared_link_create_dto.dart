@@ -84,17 +84,17 @@ class SharedLinkCreateDto {
     if (this.albumId != null) {
       json[r'albumId'] = this.albumId;
     } else {
-      // json[r'albumId'] = null;
+    //  json[r'albumId'] = null;
     }
     if (this.description != null) {
       json[r'description'] = this.description;
     } else {
-      // json[r'description'] = null;
+    //  json[r'description'] = null;
     }
     if (this.expiresAt != null) {
       json[r'expiresAt'] = this.expiresAt!.toUtc().toIso8601String();
     } else {
-      // json[r'expiresAt'] = null;
+    //  json[r'expiresAt'] = null;
     }
       json[r'allowUpload'] = this.allowUpload;
       json[r'allowDownload'] = this.allowDownload;
@@ -108,17 +108,6 @@ class SharedLinkCreateDto {
   static SharedLinkCreateDto? fromJson(dynamic value) {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
-
-      // Ensure that the map contains the required keys.
-      // Note 1: the values aren't checked for validity beyond being non-null.
-      // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "SharedLinkCreateDto[$key]" is missing from JSON.');
-          // assert(json[key] != null, 'Required key "SharedLinkCreateDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
 
       return SharedLinkCreateDto(
         type: SharedLinkType.fromJson(json[r'type'])!,

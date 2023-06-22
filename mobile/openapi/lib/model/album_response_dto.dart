@@ -102,7 +102,7 @@ class AlbumResponseDto {
     if (this.albumThumbnailAssetId != null) {
       json[r'albumThumbnailAssetId'] = this.albumThumbnailAssetId;
     } else {
-      // json[r'albumThumbnailAssetId'] = null;
+    //  json[r'albumThumbnailAssetId'] = null;
     }
       json[r'shared'] = this.shared;
       json[r'sharedUsers'] = this.sharedUsers;
@@ -111,7 +111,7 @@ class AlbumResponseDto {
     if (this.lastModifiedAssetTimestamp != null) {
       json[r'lastModifiedAssetTimestamp'] = this.lastModifiedAssetTimestamp!.toUtc().toIso8601String();
     } else {
-      // json[r'lastModifiedAssetTimestamp'] = null;
+    //  json[r'lastModifiedAssetTimestamp'] = null;
     }
     return json;
   }
@@ -122,17 +122,6 @@ class AlbumResponseDto {
   static AlbumResponseDto? fromJson(dynamic value) {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
-
-      // Ensure that the map contains the required keys.
-      // Note 1: the values aren't checked for validity beyond being non-null.
-      // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "AlbumResponseDto[$key]" is missing from JSON.');
-          // assert(json[key] != null, 'Required key "AlbumResponseDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
 
       return AlbumResponseDto(
         assetCount: mapValueOfType<int>(json, r'assetCount')!,

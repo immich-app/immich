@@ -75,17 +75,17 @@ class OAuthConfigResponseDto {
     if (this.url != null) {
       json[r'url'] = this.url;
     } else {
-      // json[r'url'] = null;
+    //  json[r'url'] = null;
     }
     if (this.buttonText != null) {
       json[r'buttonText'] = this.buttonText;
     } else {
-      // json[r'buttonText'] = null;
+    //  json[r'buttonText'] = null;
     }
     if (this.autoLaunch != null) {
       json[r'autoLaunch'] = this.autoLaunch;
     } else {
-      // json[r'autoLaunch'] = null;
+    //  json[r'autoLaunch'] = null;
     }
     return json;
   }
@@ -96,17 +96,6 @@ class OAuthConfigResponseDto {
   static OAuthConfigResponseDto? fromJson(dynamic value) {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
-
-      // Ensure that the map contains the required keys.
-      // Note 1: the values aren't checked for validity beyond being non-null.
-      // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "OAuthConfigResponseDto[$key]" is missing from JSON.');
-          // assert(json[key] != null, 'Required key "OAuthConfigResponseDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
 
       return OAuthConfigResponseDto(
         enabled: mapValueOfType<bool>(json, r'enabled')!,

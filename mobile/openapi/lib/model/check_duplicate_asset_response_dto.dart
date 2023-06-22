@@ -47,7 +47,7 @@ class CheckDuplicateAssetResponseDto {
     if (this.id != null) {
       json[r'id'] = this.id;
     } else {
-      // json[r'id'] = null;
+    //  json[r'id'] = null;
     }
     return json;
   }
@@ -58,17 +58,6 @@ class CheckDuplicateAssetResponseDto {
   static CheckDuplicateAssetResponseDto? fromJson(dynamic value) {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
-
-      // Ensure that the map contains the required keys.
-      // Note 1: the values aren't checked for validity beyond being non-null.
-      // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "CheckDuplicateAssetResponseDto[$key]" is missing from JSON.');
-          // assert(json[key] != null, 'Required key "CheckDuplicateAssetResponseDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
 
       return CheckDuplicateAssetResponseDto(
         isExist: mapValueOfType<bool>(json, r'isExist')!,

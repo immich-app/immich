@@ -117,7 +117,7 @@ class ImportAssetDto {
     if (this.sidecarPath != null) {
       json[r'sidecarPath'] = this.sidecarPath;
     } else {
-      // json[r'sidecarPath'] = null;
+    //  json[r'sidecarPath'] = null;
     }
       json[r'deviceAssetId'] = this.deviceAssetId;
       json[r'deviceId'] = this.deviceId;
@@ -127,17 +127,17 @@ class ImportAssetDto {
     if (this.isArchived != null) {
       json[r'isArchived'] = this.isArchived;
     } else {
-      // json[r'isArchived'] = null;
+    //  json[r'isArchived'] = null;
     }
     if (this.isVisible != null) {
       json[r'isVisible'] = this.isVisible;
     } else {
-      // json[r'isVisible'] = null;
+    //  json[r'isVisible'] = null;
     }
     if (this.duration != null) {
       json[r'duration'] = this.duration;
     } else {
-      // json[r'duration'] = null;
+    //  json[r'duration'] = null;
     }
     return json;
   }
@@ -148,17 +148,6 @@ class ImportAssetDto {
   static ImportAssetDto? fromJson(dynamic value) {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
-
-      // Ensure that the map contains the required keys.
-      // Note 1: the values aren't checked for validity beyond being non-null.
-      // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "ImportAssetDto[$key]" is missing from JSON.');
-          // assert(json[key] != null, 'Required key "ImportAssetDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
 
       return ImportAssetDto(
         assetType: AssetTypeEnum.fromJson(json[r'assetType'])!,

@@ -40,12 +40,12 @@ class SmartInfoResponseDto {
     if (this.tags != null) {
       json[r'tags'] = this.tags;
     } else {
-      // json[r'tags'] = null;
+    //  json[r'tags'] = null;
     }
     if (this.objects != null) {
       json[r'objects'] = this.objects;
     } else {
-      // json[r'objects'] = null;
+    //  json[r'objects'] = null;
     }
     return json;
   }
@@ -56,17 +56,6 @@ class SmartInfoResponseDto {
   static SmartInfoResponseDto? fromJson(dynamic value) {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
-
-      // Ensure that the map contains the required keys.
-      // Note 1: the values aren't checked for validity beyond being non-null.
-      // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "SmartInfoResponseDto[$key]" is missing from JSON.');
-          // assert(json[key] != null, 'Required key "SmartInfoResponseDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
 
       return SmartInfoResponseDto(
         tags: json[r'tags'] is Iterable

@@ -59,12 +59,12 @@ class GetAssetCountByTimeBucketDto {
     if (this.userId != null) {
       json[r'userId'] = this.userId;
     } else {
-      // json[r'userId'] = null;
+    //  json[r'userId'] = null;
     }
     if (this.withoutThumbs != null) {
       json[r'withoutThumbs'] = this.withoutThumbs;
     } else {
-      // json[r'withoutThumbs'] = null;
+    //  json[r'withoutThumbs'] = null;
     }
     return json;
   }
@@ -75,17 +75,6 @@ class GetAssetCountByTimeBucketDto {
   static GetAssetCountByTimeBucketDto? fromJson(dynamic value) {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
-
-      // Ensure that the map contains the required keys.
-      // Note 1: the values aren't checked for validity beyond being non-null.
-      // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "GetAssetCountByTimeBucketDto[$key]" is missing from JSON.');
-          // assert(json[key] != null, 'Required key "GetAssetCountByTimeBucketDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
 
       return GetAssetCountByTimeBucketDto(
         timeGroup: TimeGroupEnum.fromJson(json[r'timeGroup'])!,

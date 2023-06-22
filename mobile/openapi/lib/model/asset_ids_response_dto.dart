@@ -47,7 +47,7 @@ class AssetIdsResponseDto {
     if (this.error != null) {
       json[r'error'] = this.error;
     } else {
-      // json[r'error'] = null;
+    //  json[r'error'] = null;
     }
     return json;
   }
@@ -58,17 +58,6 @@ class AssetIdsResponseDto {
   static AssetIdsResponseDto? fromJson(dynamic value) {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
-
-      // Ensure that the map contains the required keys.
-      // Note 1: the values aren't checked for validity beyond being non-null.
-      // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "AssetIdsResponseDto[$key]" is missing from JSON.');
-          // assert(json[key] != null, 'Required key "AssetIdsResponseDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
 
       return AssetIdsResponseDto(
         assetId: mapValueOfType<String>(json, r'assetId')!,
