@@ -94,9 +94,12 @@ class TabControllerPage extends HookConsumerWidget {
     }
 
     bottomNavigationBar(TabsRouter tabsRouter) {
-      return NavigationBar(
-        selectedIndex: tabsRouter.activeIndex,
-        onDestinationSelected: (index) {
+      return BottomNavigationBar(
+        selectedFontSize: 12,
+        unselectedFontSize: 12,
+        currentIndex: tabsRouter.activeIndex,
+        useLegacyColorScheme: false,
+        onTap: (index) {
           if (tabsRouter.activeIndex == 0 && index == 0) {
             // Scroll to top
             scrollToTopNotifierProvider.scrollToTop();
@@ -104,52 +107,51 @@ class TabControllerPage extends HookConsumerWidget {
           HapticFeedback.selectionClick();
           tabsRouter.setActiveIndex(index);
         },
-        destinations: [
-          NavigationDestination(
+        items: [
+          BottomNavigationBarItem(
             label: 'tab_controller_nav_photos'.tr(),
             icon: const Icon(
               Icons.photo_library_outlined,
             ),
-            selectedIcon: buildIcon(
+            activeIcon: buildIcon(
               Icon(
-                size: 24,
                 Icons.photo_library,
                 color: Theme.of(context).primaryColor,
               ),
             ),
           ),
-          NavigationDestination(
+          BottomNavigationBarItem(
             label: 'tab_controller_nav_search'.tr(),
             icon: const Icon(
               Icons.search_rounded,
             ),
-            selectedIcon: Icon(
+            activeIcon: Icon(
               Icons.search,
               color: Theme.of(context).primaryColor,
             ),
           ),
-          NavigationDestination(
+          BottomNavigationBarItem(
             label: 'tab_controller_nav_sharing'.tr(),
             icon: const Icon(
               Icons.group_outlined,
             ),
-            selectedIcon: Icon(
+            activeIcon: Icon(
               Icons.group,
               color: Theme.of(context).primaryColor,
             ),
           ),
-          NavigationDestination(
+          BottomNavigationBarItem(
             label: 'tab_controller_nav_library'.tr(),
             icon: const Icon(
               Icons.photo_album_outlined,
             ),
-            selectedIcon: buildIcon(
+            activeIcon: buildIcon(
               Icon(
                 Icons.photo_album_rounded,
                 color: Theme.of(context).primaryColor,
               ),
             ),
-          )
+          ),
         ],
       );
     }
