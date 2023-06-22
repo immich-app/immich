@@ -67,6 +67,10 @@ export class AccessCore {
       case Permission.ALBUM_READ:
         return this.repository.album.hasSharedLinkAccess(sharedLinkId, id);
 
+      case Permission.ASSET_SHARE:
+        // TODO: fix this to not use authUser.id for shared link access control
+        return this.repository.asset.hasOwnerAccess(authUser.id, id);
+
       default:
         return false;
     }
