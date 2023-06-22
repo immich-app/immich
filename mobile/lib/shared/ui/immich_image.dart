@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter_thumbhash/flutter_thumbhash.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
@@ -86,6 +87,7 @@ class ImmichImage extends StatelessWidget {
     }
     final String? token = Store.get(StoreKey.accessToken);
     final String thumbnailRequestUrl = getThumbnailUrl(asset);
+
     return CachedNetworkImage(
       imageUrl: thumbnailRequestUrl,
       httpHeaders: {"Authorization": "Bearer $token"},
@@ -98,7 +100,14 @@ class ImmichImage extends StatelessWidget {
       fit: fit,
       fadeInDuration: const Duration(milliseconds: 250),
       progressIndicatorBuilder: (context, url, downloadProgress) {
-        if (useGrayBoxPlaceholder) {
+        if (asset.thumbhash != null) {
+          return FittedBox(
+            fit: BoxFit.fill,
+            child: Image(
+              image: ThumbHash.fromBase64(asset.thumbhash!).toImage(),
+            ),
+          );
+        } else if (useGrayBoxPlaceholder) {
           return const DecoratedBox(
             decoration: BoxDecoration(color: Colors.grey),
           );

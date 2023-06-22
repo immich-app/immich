@@ -30,7 +30,8 @@ class Asset {
         exifInfo =
             remote.exifInfo != null ? ExifInfo.fromDto(remote.exifInfo!) : null,
         isFavorite = remote.isFavorite,
-        isArchived = remote.isArchived;
+        isArchived = remote.isArchived,
+        thumbhash = remote.thumbhash;
 
   Asset.local(AssetEntity local, List<int> hash)
       : localId = local.id,
@@ -74,6 +75,7 @@ class Asset {
     this.exifInfo,
     required this.isFavorite,
     required this.isArchived,
+    required this.thumbhash,
   });
 
   @ignore
@@ -107,6 +109,8 @@ class Asset {
     composite: [CompositeIndex("ownerId")],
   )
   String checksum;
+
+  String? thumbhash;
 
   @Index(unique: false, replace: false, type: IndexType.hash)
   String? remoteId;
@@ -180,6 +184,7 @@ class Asset {
     if (other is! Asset) return false;
     return id == other.id &&
         checksum == other.checksum &&
+        thumbhash == other.thumbhash &&
         remoteId == other.remoteId &&
         localId == other.localId &&
         ownerId == other.ownerId &&
@@ -202,6 +207,7 @@ class Asset {
   int get hashCode =>
       id.hashCode ^
       checksum.hashCode ^
+      thumbhash.hashCode ^
       remoteId.hashCode ^
       localId.hashCode ^
       ownerId.hashCode ^
@@ -222,6 +228,7 @@ class Asset {
   bool canUpdate(Asset a) {
     assert(isInDb);
     assert(checksum == a.checksum);
+    assert(thumbhash == a.thumbhash);
     assert(a.storage != AssetState.merged);
     return a.updatedAt.isAfter(updatedAt) ||
         a.isRemote && !isRemote ||
@@ -292,6 +299,7 @@ class Asset {
   Asset _copyWith({
     Id? id,
     String? checksum,
+    String? thumbhash,
     String? remoteId,
     String? localId,
     int? ownerId,
@@ -311,6 +319,7 @@ class Asset {
       Asset(
         id: id ?? this.id,
         checksum: checksum ?? this.checksum,
+        thumbhash: thumbhash ?? this.thumbhash,
         remoteId: remoteId ?? this.remoteId,
         localId: localId ?? this.localId,
         ownerId: ownerId ?? this.ownerId,
@@ -365,6 +374,7 @@ class Asset {
   "remoteId": "${remoteId ?? "N/A"}",
   "localId": "${localId ?? "N/A"}",
   "checksum": "$checksum",
+  "thumbhash": "$thumbhash",
   "ownerId": $ownerId, 
   "livePhotoVideoId": "${livePhotoVideoId ?? "N/A"}",
   "fileCreatedAt": "$fileCreatedAt",
