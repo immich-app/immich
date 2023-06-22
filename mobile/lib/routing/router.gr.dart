@@ -84,6 +84,7 @@ class _$AppRouter extends RootStackRouter {
           onVideoEnded: args.onVideoEnded,
           onPlaying: args.onPlaying,
           onPaused: args.onPaused,
+          placeholder: args.placeholder,
         ),
       );
     },
@@ -281,6 +282,12 @@ class _$AppRouter extends RootStackRouter {
           personId: args.personId,
           personName: args.personName,
         ),
+      );
+    },
+    AllPeopleRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const AllPeoplePage(),
       );
     },
     HomeRoute.name: (routeData) {
@@ -574,6 +581,14 @@ class _$AppRouter extends RootStackRouter {
             duplicateGuard,
           ],
         ),
+        RouteConfig(
+          AllPeopleRoute.name,
+          path: '/all-people-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
       ];
 }
 
@@ -692,6 +707,7 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
     required void Function() onVideoEnded,
     void Function()? onPlaying,
     void Function()? onPaused,
+    Widget? placeholder,
   }) : super(
           VideoViewerRoute.name,
           path: '/video-viewer-page',
@@ -702,6 +718,7 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
             onVideoEnded: onVideoEnded,
             onPlaying: onPlaying,
             onPaused: onPaused,
+            placeholder: placeholder,
           ),
         );
 
@@ -716,6 +733,7 @@ class VideoViewerRouteArgs {
     required this.onVideoEnded,
     this.onPlaying,
     this.onPaused,
+    this.placeholder,
   });
 
   final Key? key;
@@ -730,9 +748,11 @@ class VideoViewerRouteArgs {
 
   final void Function()? onPaused;
 
+  final Widget? placeholder;
+
   @override
   String toString() {
-    return 'VideoViewerRouteArgs{key: $key, asset: $asset, isMotionVideo: $isMotionVideo, onVideoEnded: $onVideoEnded, onPlaying: $onPlaying, onPaused: $onPaused}';
+    return 'VideoViewerRouteArgs{key: $key, asset: $asset, isMotionVideo: $isMotionVideo, onVideoEnded: $onVideoEnded, onPlaying: $onPlaying, onPaused: $onPaused, placeholder: $placeholder}';
   }
 }
 
@@ -1247,6 +1267,18 @@ class PersonResultRouteArgs {
   String toString() {
     return 'PersonResultRouteArgs{key: $key, personId: $personId, personName: $personName}';
   }
+}
+
+/// generated route for
+/// [AllPeoplePage]
+class AllPeopleRoute extends PageRouteInfo<void> {
+  const AllPeopleRoute()
+      : super(
+          AllPeopleRoute.name,
+          path: '/all-people-page',
+        );
+
+  static const String name = 'AllPeopleRoute';
 }
 
 /// generated route for

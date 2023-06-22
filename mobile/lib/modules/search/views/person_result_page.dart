@@ -35,8 +35,6 @@ class PersonResultPage extends HookConsumerWidget {
         if (result != null && result.success) {
           name.value = result.updatedName;
         }
-
-        Navigator.of(context).pop();
       });
     }
 

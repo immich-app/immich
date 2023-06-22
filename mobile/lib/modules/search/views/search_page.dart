@@ -74,12 +74,12 @@ class SearchPage extends HookConsumerWidget {
         child: curatedPeople.when(
           loading: () => const Center(child: ImmichLoadingIndicator()),
           error: (err, stack) => Center(child: Text('Error: $err')),
-          data: (person) => CuratedPeopleRow(
-            content: person
+          data: (people) => CuratedPeopleRow(
+            content: people
                 .map(
-                  (o) => CuratedContent(
-                    id: o.id,
-                    label: o.name,
+                  (person) => CuratedContent(
+                    id: person.id,
+                    label: person.name,
                   ),
                 )
                 .take(12)
@@ -178,7 +178,9 @@ class SearchPage extends HookConsumerWidget {
               children: [
                 SearchRowTitle(
                   title: "search_page_people".tr(),
-                  onViewAllPressed: () => {},
+                  onViewAllPressed: () => AutoRouter.of(context).push(
+                    const AllPeopleRoute(),
+                  ),
                 ),
                 buildPeople(),
                 SearchRowTitle(
