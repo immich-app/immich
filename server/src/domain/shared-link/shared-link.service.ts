@@ -44,7 +44,7 @@ export class SharedLinkService {
           throw new BadRequestException('Invalid albumId');
         }
 
-        const isAlbumOwner = await this.accessRepository.hasAlbumOwnerAccess(authUser.id, dto.albumId);
+        const isAlbumOwner = await this.accessRepository.album.hasOwnerAccess(authUser.id, dto.albumId);
         if (!isAlbumOwner) {
           throw new BadRequestException('Invalid albumId');
         }
@@ -57,7 +57,7 @@ export class SharedLinkService {
         }
 
         for (const assetId of dto.assetIds) {
-          const hasAccess = await this.accessRepository.hasOwnerAssetAccess(authUser.id, assetId);
+          const hasAccess = await this.accessRepository.asset.hasOwnerAccess(authUser.id, assetId);
           if (!hasAccess) {
             throw new BadRequestException(`No access to assetId: ${assetId}`);
           }
@@ -124,7 +124,7 @@ export class SharedLinkService {
         continue;
       }
 
-      const hasAccess = await this.accessRepository.hasOwnerAssetAccess(authUser.id, assetId);
+      const hasAccess = await this.accessRepository.asset.hasOwnerAccess(authUser.id, assetId);
       if (!hasAccess) {
         results.push({ assetId, success: false, error: AssetIdErrorReason.NO_PERMISSION });
         continue;

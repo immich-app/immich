@@ -632,7 +632,7 @@ export class AssetService {
 
     for (const assetId of assetIds) {
       if (sharedLinkId) {
-        const canAccess = await this.accessRepository.hasSharedLinkAssetAccess(sharedLinkId, assetId);
+        const canAccess = await this.accessRepository.asset.hasSharedLinkAccess(sharedLinkId, assetId);
         if (canAccess) {
           continue;
         }
@@ -640,7 +640,7 @@ export class AssetService {
         throw new ForbiddenException();
       }
 
-      const isOwner = await this.accessRepository.hasOwnerAssetAccess(authUser.id, assetId);
+      const isOwner = await this.accessRepository.asset.hasOwnerAccess(authUser.id, assetId);
       if (isOwner) {
         continue;
       }
@@ -649,12 +649,12 @@ export class AssetService {
         throw new ForbiddenException();
       }
 
-      const isPartnerShared = await this.accessRepository.hasPartnerAssetAccess(authUser.id, assetId);
+      const isPartnerShared = await this.accessRepository.asset.hasPartnerAccess(authUser.id, assetId);
       if (isPartnerShared) {
         continue;
       }
 
-      const isAlbumShared = await this.accessRepository.hasAlbumAssetAccess(authUser.id, assetId);
+      const isAlbumShared = await this.accessRepository.asset.hasAlbumAccess(authUser.id, assetId);
       if (isAlbumShared) {
         continue;
       }
@@ -665,7 +665,7 @@ export class AssetService {
 
   private async checkUserAccess(authUser: AuthUserDto, userId: string) {
     // Check if userId shares assets with authUser
-    const canAccess = await this.accessRepository.hasPartnerAccess(authUser.id, userId);
+    const canAccess = await this.accessRepository.library.hasPartnerAccess(authUser.id, userId);
     if (!canAccess) {
       throw new ForbiddenException();
     }
