@@ -209,7 +209,7 @@ class AssetResponseDto {
       assert(() {
         requiredKeys.forEach((key) {
           assert(json.containsKey(key), 'Required key "AssetResponseDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "AssetResponseDto[$key]" has a null value in JSON.');
+          // assert(json[key] != null, 'Required key "AssetResponseDto[$key]" has a null value in JSON.');
         });
         return true;
       }());

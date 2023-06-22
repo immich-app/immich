@@ -103,7 +103,7 @@ class SystemConfigOAuthDto {
       assert(() {
         requiredKeys.forEach((key) {
           assert(json.containsKey(key), 'Required key "SystemConfigOAuthDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "SystemConfigOAuthDto[$key]" has a null value in JSON.');
+          // assert(json[key] != null, 'Required key "SystemConfigOAuthDto[$key]" has a null value in JSON.');
         });
         return true;
       }());

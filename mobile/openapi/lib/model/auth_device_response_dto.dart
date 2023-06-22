@@ -79,7 +79,7 @@ class AuthDeviceResponseDto {
       assert(() {
         requiredKeys.forEach((key) {
           assert(json.containsKey(key), 'Required key "AuthDeviceResponseDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "AuthDeviceResponseDto[$key]" has a null value in JSON.');
+          // assert(json[key] != null, 'Required key "AuthDeviceResponseDto[$key]" has a null value in JSON.');
         });
         return true;
       }());

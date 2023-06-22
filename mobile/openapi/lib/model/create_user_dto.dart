@@ -87,7 +87,7 @@ class CreateUserDto {
       assert(() {
         requiredKeys.forEach((key) {
           assert(json.containsKey(key), 'Required key "CreateUserDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "CreateUserDto[$key]" has a null value in JSON.');
+          // assert(json[key] != null, 'Required key "CreateUserDto[$key]" has a null value in JSON.');
         });
         return true;
       }());

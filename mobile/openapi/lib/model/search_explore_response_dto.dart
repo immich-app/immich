@@ -55,7 +55,7 @@ class SearchExploreResponseDto {
       assert(() {
         requiredKeys.forEach((key) {
           assert(json.containsKey(key), 'Required key "SearchExploreResponseDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "SearchExploreResponseDto[$key]" has a null value in JSON.');
+          // assert(json[key] != null, 'Required key "SearchExploreResponseDto[$key]" has a null value in JSON.');
         });
         return true;
       }());

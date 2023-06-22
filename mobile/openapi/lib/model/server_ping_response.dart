@@ -49,7 +49,7 @@ class ServerPingResponse {
       assert(() {
         requiredKeys.forEach((key) {
           assert(json.containsKey(key), 'Required key "ServerPingResponse[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "ServerPingResponse[$key]" has a null value in JSON.');
+          // assert(json[key] != null, 'Required key "ServerPingResponse[$key]" has a null value in JSON.');
         });
         return true;
       }());

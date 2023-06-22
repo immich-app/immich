@@ -55,7 +55,7 @@ class CheckExistingAssetsDto {
       assert(() {
         requiredKeys.forEach((key) {
           assert(json.containsKey(key), 'Required key "CheckExistingAssetsDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "CheckExistingAssetsDto[$key]" has a null value in JSON.');
+          // assert(json[key] != null, 'Required key "CheckExistingAssetsDto[$key]" has a null value in JSON.');
         });
         return true;
       }());

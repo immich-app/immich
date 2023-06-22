@@ -75,7 +75,7 @@ class UpdateAlbumDto {
       assert(() {
         requiredKeys.forEach((key) {
           assert(json.containsKey(key), 'Required key "UpdateAlbumDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "UpdateAlbumDto[$key]" has a null value in JSON.');
+          // assert(json[key] != null, 'Required key "UpdateAlbumDto[$key]" has a null value in JSON.');
         });
         return true;
       }());

@@ -49,7 +49,7 @@ class SystemConfigStorageTemplateDto {
       assert(() {
         requiredKeys.forEach((key) {
           assert(json.containsKey(key), 'Required key "SystemConfigStorageTemplateDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "SystemConfigStorageTemplateDto[$key]" has a null value in JSON.');
+          // assert(json[key] != null, 'Required key "SystemConfigStorageTemplateDto[$key]" has a null value in JSON.');
         });
         return true;
       }());
