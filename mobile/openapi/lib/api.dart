@@ -85,6 +85,7 @@ part 'model/download_files_dto.dart';
 part 'model/exif_response_dto.dart';
 part 'model/get_asset_by_time_bucket_dto.dart';
 part 'model/get_asset_count_by_time_bucket_dto.dart';
+part 'model/import_asset_dto.dart';
 part 'model/job_command.dart';
 part 'model/job_command_dto.dart';
 part 'model/job_counts_dto.dart';

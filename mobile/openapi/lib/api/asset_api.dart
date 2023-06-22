@@ -1123,6 +1123,53 @@ class AssetApi {
     return null;
   }
 
+  /// Performs an HTTP 'POST /asset/import' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [ImportAssetDto] importAssetDto (required):
+  Future<Response> importFileWithHttpInfo(ImportAssetDto importAssetDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/asset/import';
+
+    // ignore: prefer_final_locals
+    Object? postBody = importAssetDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [ImportAssetDto] importAssetDto (required):
+  Future<AssetFileUploadResponseDto?> importFile(ImportAssetDto importAssetDto,) async {
+    final response = await importFileWithHttpInfo(importAssetDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetFileUploadResponseDto',) as AssetFileUploadResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'POST /asset/search' operation and returns the [Response].
   /// Parameters:
   ///
@@ -1307,6 +1354,8 @@ class AssetApi {
   ///
   /// * [MultipartFile] assetData (required):
   ///
+  /// * [String] fileExtension (required):
+  ///
   /// * [String] deviceAssetId (required):
   ///
   /// * [String] deviceId (required):
@@ -1317,20 +1366,20 @@ class AssetApi {
   ///
   /// * [bool] isFavorite (required):
   ///
-  /// * [String] fileExtension (required):
-  ///
   /// * [String] key:
   ///
   /// * [MultipartFile] livePhotoData:
   ///
   /// * [MultipartFile] sidecarData:
   ///
+  /// * [bool] isReadOnly:
+  ///
   /// * [bool] isArchived:
   ///
   /// * [bool] isVisible:
   ///
   /// * [String] duration:
-  Future<Response> uploadFileWithHttpInfo(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, String fileExtension, { String? key, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isArchived, bool? isVisible, String? duration, }) async {
+  Future<Response> uploadFileWithHttpInfo(AssetTypeEnum assetType, MultipartFile assetData, String fileExtension, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isReadOnly, bool? isArchived, bool? isVisible, String? duration, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/upload';
 
@@ -1368,6 +1417,14 @@ class AssetApi {
       mp.fields[r'sidecarData'] = sidecarData.field;
       mp.files.add(sidecarData);
     }
+    if (isReadOnly != null) {
+      hasFields = true;
+      mp.fields[r'isReadOnly'] = parameterToString(isReadOnly);
+    }
+    if (fileExtension != null) {
+      hasFields = true;
+      mp.fields[r'fileExtension'] = parameterToString(fileExtension);
+    }
     if (deviceAssetId != null) {
       hasFields = true;
       mp.fields[r'deviceAssetId'] = parameterToString(deviceAssetId);
@@ -1396,10 +1453,6 @@ class AssetApi {
       hasFields = true;
       mp.fields[r'isVisible'] = parameterToString(isVisible);
     }
-    if (fileExtension != null) {
-      hasFields = true;
-      mp.fields[r'fileExtension'] = parameterToString(fileExtension);
-    }
     if (duration != null) {
       hasFields = true;
       mp.fields[r'duration'] = parameterToString(duration);
@@ -1425,6 +1478,8 @@ class AssetApi {
   ///
   /// * [MultipartFile] assetData (required):
   ///
+  /// * [String] fileExtension (required):
+  ///
   /// * [String] deviceAssetId (required):
   ///
   /// * [String] deviceId (required):
@@ -1435,21 +1490,21 @@ class AssetApi {
   ///
   /// * [bool] isFavorite (required):
   ///
-  /// * [String] fileExtension (required):
-  ///
   /// * [String] key:
   ///
   /// * [MultipartFile] livePhotoData:
   ///
   /// * [MultipartFile] sidecarData:
   ///
+  /// * [bool] isReadOnly:
+  ///
   /// * [bool] isArchived:
   ///
   /// * [bool] isVisible:
   ///
   /// * [String] duration:
-  Future<AssetFileUploadResponseDto?> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, String fileExtension, { String? key, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isArchived, bool? isVisible, String? duration, }) async {
-    final response = await uploadFileWithHttpInfo(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension,  key: key, livePhotoData: livePhotoData, sidecarData: sidecarData, isArchived: isArchived, isVisible: isVisible, duration: duration, );
+  Future<AssetFileUploadResponseDto?> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String fileExtension, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isReadOnly, bool? isArchived, bool? isVisible, String? duration, }) async {
+    final response = await uploadFileWithHttpInfo(assetType, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite,  key: key, livePhotoData: livePhotoData, sidecarData: sidecarData, isReadOnly: isReadOnly, isArchived: isArchived, isVisible: isVisible, duration: duration, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

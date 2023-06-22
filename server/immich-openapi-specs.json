@@ -1430,6 +1430,48 @@
         ]
       }
     },
+    "/asset/import": {
+      "post": {
+        "operationId": "importFile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportAssetDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetFileUploadResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Asset"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/asset/map-marker": {
       "get": {
         "operationId": "getMapMarkers",
@@ -5085,6 +5127,13 @@
             "type": "string",
             "format": "binary"
           },
+          "isReadOnly": {
+            "type": "boolean",
+            "default": false
+          },
+          "fileExtension": {
+            "type": "string"
+          },
           "deviceAssetId": {
             "type": "string"
           },
@@ -5108,9 +5157,6 @@
           "isVisible": {
             "type": "boolean"
           },
-          "fileExtension": {
-            "type": "string"
-          },
           "duration": {
             "type": "string"
           }
@@ -5118,12 +5164,12 @@
         "required": [
           "assetType",
           "assetData",
+          "fileExtension",
           "deviceAssetId",
           "deviceId",
           "fileCreatedAt",
           "fileModifiedAt",
-          "isFavorite",
-          "fileExtension"
+          "isFavorite"
         ]
       },
       "CreateProfileImageDto": {
@@ -5184,6 +5230,10 @@
             "type": "string"
           },
           "storageLabel": {
+            "type": "string",
+            "nullable": true
+          },
+          "externalPath": {
             "type": "string",
             "nullable": true
           }
@@ -5459,6 +5509,59 @@
         },
         "required": [
           "timeGroup"
+        ]
+      },
+      "ImportAssetDto": {
+        "type": "object",
+        "properties": {
+          "assetType": {
+            "$ref": "#/components/schemas/AssetTypeEnum"
+          },
+          "isReadOnly": {
+            "type": "boolean",
+            "default": true
+          },
+          "assetPath": {
+            "type": "string"
+          },
+          "sidecarPath": {
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "fileCreatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fileModifiedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "isArchived": {
+            "type": "boolean"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "duration": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetType",
+          "assetPath",
+          "deviceAssetId",
+          "deviceId",
+          "fileCreatedAt",
+          "fileModifiedAt",
+          "isFavorite"
         ]
       },
       "JobCommand": {
@@ -6592,6 +6695,9 @@
           "storageLabel": {
             "type": "string"
           },
+          "externalPath": {
+            "type": "string"
+          },
           "isAdmin": {
             "type": "boolean"
           },
@@ -6665,6 +6771,10 @@
             "type": "string",
             "nullable": true
           },
+          "externalPath": {
+            "type": "string",
+            "nullable": true
+          },
           "profileImagePath": {
             "type": "string"
           },
@@ -6697,6 +6807,7 @@
           "firstName",
           "lastName",
           "storageLabel",
+          "externalPath",
           "profileImagePath",
           "shouldChangePassword",
           "isAdmin",

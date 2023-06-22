@@ -1,9 +1,13 @@
 import {
   AssetResponseDto,
+  AuthUserDto,
   getLivePhotoMotionFilename,
   IAccessRepository,
+  ICryptoRepository,
   IJobRepository,
   ImmichReadStream,
+  isSidecarFileType,
+  isSupportedFileType,
   IStorageRepository,
   JobName,
   mapAsset,
@@ -21,12 +25,14 @@ import {
   StreamableFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { R_OK, W_OK } from 'constants';
 import { Response as Res } from 'express';
-import { constants, createReadStream, stat } from 'fs';
+import { createReadStream, stat } from 'fs';
 import fs from 'fs/promises';
+import mime from 'mime-types';
+import path from 'path';
 import { QueryFailedError, Repository } from 'typeorm';
 import { promisify } from 'util';
-import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { DownloadService } from '../../modules/download/download.service';
 import { IAssetRepository } from './asset-repository';
 import { AssetCore } from './asset.core';
@@ -34,7 +40,7 @@ import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
+import { CreateAssetDto, ImportAssetDto, UploadFile } from './dto/create-asset.dto';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { DownloadFilesDto } from './dto/download-files.dto';
 import { DownloadDto } from './dto/download-library.dto';
@@ -78,6 +84,7 @@ export class AssetService {
     @Inject(IAccessRepository) private accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     private downloadService: DownloadService,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
@@ -107,7 +114,7 @@ export class AssetService {
         livePhotoAsset = await this.assetCore.create(authUser, livePhotoDto, livePhotoFile);
       }
 
-      const asset = await this.assetCore.create(authUser, dto, file, livePhotoAsset?.id, sidecarFile);
+      const asset = await this.assetCore.create(authUser, dto, file, livePhotoAsset?.id, sidecarFile?.originalPath);
 
       return { id: asset.id, duplicate: false };
     } catch (error: any) {
@@ -126,6 +133,73 @@ export class AssetService {
 
       this.logger.error(`Error uploading file ${error}`, error?.stack);
       throw new BadRequestException(`Error uploading file`, `${error}`);
+    }
+  }
+
+  public async importFile(authUser: AuthUserDto, dto: ImportAssetDto): Promise<AssetFileUploadResponseDto> {
+    dto = {
+      ...dto,
+      assetPath: path.resolve(dto.assetPath),
+      sidecarPath: dto.sidecarPath ? path.resolve(dto.sidecarPath) : undefined,
+    };
+
+    const assetPathType = mime.lookup(dto.assetPath) as string;
+    if (!isSupportedFileType(assetPathType)) {
+      throw new BadRequestException(`Unsupported file type ${assetPathType}`);
+    }
+
+    if (dto.sidecarPath) {
+      const sidecarType = mime.lookup(dto.sidecarPath) as string;
+      if (!isSidecarFileType(sidecarType)) {
+        throw new BadRequestException(`Unsupported sidecar file type ${assetPathType}`);
+      }
+    }
+
+    for (const filepath of [dto.assetPath, dto.sidecarPath]) {
+      if (!filepath) {
+        continue;
+      }
+
+      const exists = await this.storageRepository.checkFileExists(filepath, R_OK);
+      if (!exists) {
+        throw new BadRequestException('File does not exist');
+      }
+    }
+
+    if (!authUser.externalPath || !dto.assetPath.match(new RegExp(`^${authUser.externalPath}`))) {
+      throw new BadRequestException("File does not exist within user's external path");
+    }
+
+    const assetFile: UploadFile = {
+      checksum: await this.cryptoRepository.hashFile(dto.assetPath),
+      mimeType: assetPathType,
+      originalPath: dto.assetPath,
+      originalName: path.parse(dto.assetPath).name,
+    };
+
+    try {
+      const asset = await this.assetCore.create(authUser, dto, assetFile, undefined, dto.sidecarPath);
+      return { id: asset.id, duplicate: false };
+    } catch (error: QueryFailedError | Error | any) {
+      // handle duplicates with a success response
+      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_userid_checksum') {
+        const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, [assetFile.checksum]);
+        return { id: duplicate.id, duplicate: true };
+      }
+
+      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_4ed4f8052685ff5b1e7ca1058ba') {
+        const duplicate = await this._assetRepository.getByOriginalPath(dto.assetPath);
+        if (duplicate) {
+          if (duplicate.ownerId === authUser.id) {
+            return { id: duplicate.id, duplicate: true };
+          }
+
+          throw new BadRequestException('Path in use by another user');
+        }
+      }
+
+      this.logger.error(`Error importing file ${error}`, error?.stack);
+      throw new BadRequestException(`Error importing file`, `${error}`);
     }
   }
 
@@ -291,7 +365,7 @@ export class AssetService {
         let videoPath = asset.originalPath;
         let mimeType = asset.mimeType;
 
-        await fs.access(videoPath, constants.R_OK | constants.W_OK);
+        await fs.access(videoPath, R_OK | W_OK);
 
         if (asset.encodedVideoPath) {
           videoPath = asset.encodedVideoPath == '' ? String(asset.originalPath) : String(asset.encodedVideoPath);
@@ -373,13 +447,16 @@ export class AssetService {
         await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [id] } });
 
         result.push({ id, status: DeleteAssetStatusEnum.SUCCESS });
-        deleteQueue.push(
-          asset.originalPath,
-          asset.webpPath,
-          asset.resizePath,
-          asset.encodedVideoPath,
-          asset.sidecarPath,
-        );
+
+        if (!asset.isReadOnly) {
+          deleteQueue.push(
+            asset.originalPath,
+            asset.webpPath,
+            asset.resizePath,
+            asset.encodedVideoPath,
+            asset.sidecarPath,
+          );
+        }
 
         // TODO refactor this to use cascades
         if (asset.livePhotoVideoId && !ids.includes(asset.livePhotoVideoId)) {
@@ -665,7 +742,7 @@ export class AssetService {
       return;
     }
 
-    await fs.access(filepath, constants.R_OK);
+    await fs.access(filepath, R_OK);
 
     return new StreamableFile(createReadStream(filepath));
   }

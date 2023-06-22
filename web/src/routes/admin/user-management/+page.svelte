@@ -5,6 +5,8 @@
 	import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
 	import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
 	import DeleteRestore from 'svelte-material-icons/DeleteRestore.svelte';
+	import Check from 'svelte-material-icons/Check.svelte';
+	import Close from 'svelte-material-icons/Close.svelte';
 	import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
 	import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
 	import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
@@ -171,6 +173,7 @@
 				<th class="text-center w-1/4 font-medium text-sm">Email</th>
 				<th class="text-center w-1/4 font-medium text-sm">First name</th>
 				<th class="text-center w-1/4 font-medium text-sm">Last name</th>
+				<th class="text-center w-1/4 font-medium text-sm">Can import</th>
 				<th class="text-center w-1/4 font-medium text-sm">Action</th>
 			</tr>
 		</thead>
@@ -191,6 +194,15 @@
 						<td class="text-sm px-4 w-1/4 text-ellipsis">{user.email}</td>
 						<td class="text-sm px-4 w-1/4 text-ellipsis">{user.firstName}</td>
 						<td class="text-sm px-4 w-1/4 text-ellipsis">{user.lastName}</td>
+						<td class="text-sm px-4 w-1/4 text-ellipsis">
+							<div class="container flex flex-wrap mx-auto justify-center">
+								{#if user.externalPath}
+									<Check size="16" />
+								{:else}
+									<Close size="16" />
+								{/if}
+							</div>
+						</td>
 						<td class="text-sm px-4 w-1/4 text-ellipsis">
 							{#if !isDeleted(user)}
 								<button

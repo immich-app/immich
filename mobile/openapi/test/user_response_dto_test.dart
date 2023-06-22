@@ -41,6 +41,11 @@ void main() {
       // TODO
     });
 
+    // String externalPath
+    test('to test the property `externalPath`', () async {
+      // TODO
+    });
+
     // String profileImagePath
     test('to test the property `profileImagePath`', () async {
       // TODO

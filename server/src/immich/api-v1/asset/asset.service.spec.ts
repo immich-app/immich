@@ -1,4 +1,4 @@
-import { IAccessRepository, IJobRepository, IStorageRepository, JobName } from '@app/domain';
+import { IAccessRepository, ICryptoRepository, IJobRepository, IStorageRepository, JobName } from '@app/domain';
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { ForbiddenException } from '@nestjs/common';
 import {
@@ -6,6 +6,7 @@ import {
   authStub,
   fileStub,
   newAccessRepositoryMock,
+  newCryptoRepositoryMock,
   newJobRepositoryMock,
   newStorageRepositoryMock,
 } from '@test';
@@ -121,6 +122,7 @@ describe('AssetService', () => {
   let a: Repository<AssetEntity>; // TO BE DELETED AFTER FINISHED REFACTORING
   let accessMock: jest.Mocked<IAccessRepository>;
   let assetRepositoryMock: jest.Mocked<IAssetRepository>;
+  let cryptoMock: jest.Mocked<ICryptoRepository>;
   let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
   let jobMock: jest.Mocked<IJobRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
@@ -144,13 +146,17 @@ describe('AssetService', () => {
       getAssetCountByUserId: jest.fn(),
       getArchivedAssetCountByUserId: jest.fn(),
       getExistingAssets: jest.fn(),
+      getByOriginalPath: jest.fn(),
     };
+
+    cryptoMock = newCryptoRepositoryMock();
 
     downloadServiceMock = {
       downloadArchive: jest.fn(),
     };
 
     accessMock = newAccessRepositoryMock();
+    cryptoMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     storageMock = newStorageRepositoryMock();
 
@@ -158,6 +164,7 @@ describe('AssetService', () => {
       accessMock,
       assetRepositoryMock,
       a,
+      cryptoMock,
       downloadServiceMock as DownloadService,
       jobMock,
       storageMock,
@@ -436,6 +443,43 @@ describe('AssetService', () => {
       });
 
       expect(assetRepositoryMock.getAssetsByChecksums).toHaveBeenCalledWith(authStub.admin.id, [file1, file2]);
+    });
+  });
+
+  describe('importFile', () => {
+    it('should handle a file import', async () => {
+      assetRepositoryMock.create.mockResolvedValue(assetEntityStub.image);
+      storageMock.checkFileExists.mockResolvedValue(true);
+
+      await expect(
+        sut.importFile(authStub.external1, {
+          ..._getCreateAssetDto(),
+          assetPath: '/data/user1/fake_path/asset_1.jpeg',
+          isReadOnly: true,
+        }),
+      ).resolves.toEqual({ duplicate: false, id: 'asset-id' });
+
+      expect(assetRepositoryMock.create).toHaveBeenCalled();
+    });
+
+    it('should handle a duplicate if originalPath already exists', async () => {
+      const error = new QueryFailedError('', [], '');
+      (error as any).constraint = 'UQ_userid_checksum';
+
+      assetRepositoryMock.create.mockRejectedValue(error);
+      assetRepositoryMock.getAssetsByChecksums.mockResolvedValue([assetEntityStub.image]);
+      storageMock.checkFileExists.mockResolvedValue(true);
+      cryptoMock.hashFile.mockResolvedValue(Buffer.from('file hash', 'utf8'));
+
+      await expect(
+        sut.importFile(authStub.external1, {
+          ..._getCreateAssetDto(),
+          assetPath: '/data/user1/fake_path/asset_1.jpeg',
+          isReadOnly: true,
+        }),
+      ).resolves.toEqual({ duplicate: true, id: 'asset-id' });
+
+      expect(assetRepositoryMock.create).toHaveBeenCalled();
     });
   });
 

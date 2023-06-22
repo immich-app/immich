@@ -46,6 +46,11 @@ void main() {
       // TODO
     });
 
+    // String externalPath
+    test('to test the property `externalPath`', () async {
+      // TODO
+    });
+
     // bool isAdmin
     test('to test the property `isAdmin`', () async {
       // TODO

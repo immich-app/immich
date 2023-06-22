@@ -8,4 +8,5 @@ export class AuthUserDto {
   isAllowDownload?: boolean;
   isShowExif?: boolean;
   accessTokenId?: string;
+  externalPath?: string | null;
 }

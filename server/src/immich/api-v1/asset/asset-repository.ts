@@ -20,6 +20,10 @@ export interface AssetCheck {
   checksum: Buffer;
 }
 
+export interface AssetOwnerCheck extends AssetCheck {
+  ownerId: string;
+}
+
 export interface IAssetRepository {
   get(id: string): Promise<AssetEntity | null>;
   create(
@@ -39,6 +43,7 @@ export interface IAssetRepository {
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetCheck[]>;
   getExistingAssets(userId: string, checkDuplicateAssetDto: CheckExistingAssetsDto): Promise<string[]>;
+  getByOriginalPath(originalPath: string): Promise<AssetOwnerCheck | null>;
 }
 
 export const IAssetRepository = 'IAssetRepository';
@@ -349,5 +354,18 @@ export class AssetRepository implements IAssetRepository {
     }
 
     return assetCountByUserId;
+  }
+
+  getByOriginalPath(originalPath: string): Promise<AssetOwnerCheck | null> {
+    return this.assetRepository.findOne({
+      select: {
+        id: true,
+        ownerId: true,
+        checksum: true,
+      },
+      where: {
+        originalPath,
+      },
+    });
   }
 }

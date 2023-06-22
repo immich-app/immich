@@ -33,7 +33,7 @@ import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CreateAssetDto, mapToUploadFile } from './dto/create-asset.dto';
+import { CreateAssetDto, ImportAssetDto, mapToUploadFile } from './dto/create-asset.dto';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { DeviceIdDto } from './dto/device-id.dto';
 import { DownloadFilesDto } from './dto/download-files.dto';
@@ -109,6 +109,20 @@ export class AssetController {
     const responseDto = await this.assetService.uploadFile(authUser, dto, file, livePhotoFile, sidecarFile);
     if (responseDto.duplicate) {
       res.status(HttpStatus.OK);
+    }
+
+    return responseDto;
+  }
+
+  @Post('import')
+  async importFile(
+    @AuthUser() authUser: AuthUserDto,
+    @Body(new ValidationPipe()) dto: ImportAssetDto,
+    @Response({ passthrough: true }) res: Res,
+  ): Promise<AssetFileUploadResponseDto> {
+    const responseDto = await this.assetService.importFile(authUser, dto);
+    if (responseDto.duplicate) {
+      res.status(200);
     }
 
     return responseDto;

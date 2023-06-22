@@ -1,9 +1,11 @@
 import { AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ImmichFile } from '../../../config/asset-upload.config';
+import { toSanitized } from '../../../utils/transform.util';
 
-export class CreateAssetDto {
+export class CreateAssetBase {
   @IsNotEmpty()
   deviceAssetId!: string;
 
@@ -32,11 +34,17 @@ export class CreateAssetDto {
   @IsBoolean()
   isVisible?: boolean;
 
-  @IsNotEmpty()
-  fileExtension!: string;
-
   @IsOptional()
   duration?: string;
+}
+
+export class CreateAssetDto extends CreateAssetBase {
+  @IsOptional()
+  @IsBoolean()
+  isReadOnly?: boolean = false;
+
+  @IsNotEmpty()
+  fileExtension!: string;
 
   // The properties below are added to correctly generate the API docs
   // and client SDKs. Validation should be handled in the controller.
@@ -48,6 +56,23 @@ export class CreateAssetDto {
 
   @ApiProperty({ type: 'string', format: 'binary' })
   sidecarData?: any;
+}
+
+export class ImportAssetDto extends CreateAssetBase {
+  @IsOptional()
+  @IsBoolean()
+  isReadOnly?: boolean = true;
+
+  @IsString()
+  @IsNotEmpty()
+  @Transform(toSanitized)
+  assetPath!: string;
+
+  @IsString()
+  @IsOptional()
+  @IsNotEmpty()
+  @Transform(toSanitized)
+  sidecarPath?: string;
 }
 
 export interface UploadFile {

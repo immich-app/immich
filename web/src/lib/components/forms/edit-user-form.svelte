@@ -19,14 +19,15 @@
 
 	const editUser = async () => {
 		try {
-			const { id, email, firstName, lastName, storageLabel } = user;
+			const { id, email, firstName, lastName, storageLabel, externalPath } = user;
 			const { status } = await api.userApi.updateUser({
 				updateUserDto: {
 					id,
 					email,
 					firstName,
 					lastName,
-					storageLabel: storageLabel || ''
+					storageLabel: storageLabel || '',
+					externalPath: externalPath || ''
 				}
 			});
 
@@ -128,6 +129,22 @@
 					href="/admin/jobs-status"
 					class="text-immich-primary dark:text-immich-dark-primary">Storage Migration Job</a
 				>
+			</p>
+		</div>
+
+		<div class="m-4 flex flex-col gap-2">
+			<label class="immich-form-label" for="external-path">External Path</label>
+			<input
+				class="immich-form-input"
+				id="external-path"
+				name="external-path"
+				type="text"
+				bind:value={user.externalPath}
+			/>
+
+			<p>
+				Note: Absolute path of parent import directory. A user can only import files if they exist
+				at or under this path.
 			</p>
 		</div>
 

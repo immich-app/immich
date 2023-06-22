@@ -1,3 +1,4 @@
+import { isSidecarFileType, isSupportedFileType } from '@app/domain';
 import { StorageCore, StorageFolder } from '@app/domain/storage';
 import { BadRequestException, Logger, UnauthorizedException } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
@@ -49,67 +50,18 @@ export const multerUtils = { fileFilter, filename, destination };
 
 const logger = new Logger('AssetUploadConfig');
 
-const validMimeTypes = [
-  'image/avif',
-  'image/gif',
-  'image/heic',
-  'image/heif',
-  'image/jpeg',
-  'image/jxl',
-  'image/png',
-  'image/tiff',
-  'image/webp',
-  'image/x-adobe-dng',
-  'image/x-arriflex-ari',
-  'image/x-canon-cr2',
-  'image/x-canon-cr3',
-  'image/x-canon-crw',
-  'image/x-epson-erf',
-  'image/x-fuji-raf',
-  'image/x-hasselblad-3fr',
-  'image/x-hasselblad-fff',
-  'image/x-kodak-dcr',
-  'image/x-kodak-k25',
-  'image/x-kodak-kdc',
-  'image/x-leica-rwl',
-  'image/x-minolta-mrw',
-  'image/x-nikon-nef',
-  'image/x-olympus-orf',
-  'image/x-olympus-ori',
-  'image/x-panasonic-raw',
-  'image/x-pentax-pef',
-  'image/x-phantom-cin',
-  'image/x-phaseone-cap',
-  'image/x-phaseone-iiq',
-  'image/x-samsung-srw',
-  'image/x-sigma-x3f',
-  'image/x-sony-arw',
-  'image/x-sony-sr2',
-  'image/x-sony-srf',
-  'video/3gpp',
-  'video/mp2t',
-  'video/mp4',
-  'video/mpeg',
-  'video/quicktime',
-  'video/webm',
-  'video/x-flv',
-  'video/x-matroska',
-  'video/x-ms-wmv',
-  'video/x-msvideo',
-];
-
 function fileFilter(req: AuthRequest, file: any, cb: any) {
   if (!req.user || (req.user.isPublicUser && !req.user.isAllowUpload)) {
     return cb(new UnauthorizedException());
   }
 
-  if (validMimeTypes.includes(file.mimetype)) {
+  if (isSupportedFileType(file.mimetype)) {
     cb(null, true);
     return;
   }
 
   // Additionally support XML but only for sidecar files.
-  if (file.fieldname === 'sidecarData' && ['application/xml', 'text/xml'].includes(file.mimetype)) {
+  if (file.fieldname === 'sidecarData' && isSidecarFileType(file.mimetype)) {
     return cb(null, true);
   }
 
