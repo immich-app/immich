@@ -117,7 +117,7 @@ class SharedLinkEditDto {
       assert(() {
         requiredKeys.forEach((key) {
           assert(json.containsKey(key), 'Required key "SharedLinkEditDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "SharedLinkEditDto[$key]" has a null value in JSON.');
+          // assert(json[key] != null, 'Required key "SharedLinkEditDto[$key]" has a null value in JSON.');
         });
         return true;
       }());

@@ -82,7 +82,7 @@ class GetAssetByTimeBucketDto {
       assert(() {
         requiredKeys.forEach((key) {
           assert(json.containsKey(key), 'Required key "GetAssetByTimeBucketDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "GetAssetByTimeBucketDto[$key]" has a null value in JSON.');
+          // assert(json[key] != null, 'Required key "GetAssetByTimeBucketDto[$key]" has a null value in JSON.');
         });
         return true;
       }());

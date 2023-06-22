@@ -103,7 +103,7 @@ class SystemConfigJobDto {
       assert(() {
         requiredKeys.forEach((key) {
           assert(json.containsKey(key), 'Required key "SystemConfigJobDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "SystemConfigJobDto[$key]" has a null value in JSON.');
+          // assert(json[key] != null, 'Required key "SystemConfigJobDto[$key]" has a null value in JSON.');
         });
         return true;
       }());

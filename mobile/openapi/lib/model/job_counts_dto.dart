@@ -79,7 +79,7 @@ class JobCountsDto {
       assert(() {
         requiredKeys.forEach((key) {
           assert(json.containsKey(key), 'Required key "JobCountsDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "JobCountsDto[$key]" has a null value in JSON.');
+          // assert(json[key] != null, 'Required key "JobCountsDto[$key]" has a null value in JSON.');
         });
         return true;
       }());

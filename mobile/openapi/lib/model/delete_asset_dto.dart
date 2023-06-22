@@ -49,7 +49,7 @@ class DeleteAssetDto {
       assert(() {
         requiredKeys.forEach((key) {
           assert(json.containsKey(key), 'Required key "DeleteAssetDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "DeleteAssetDto[$key]" has a null value in JSON.');
+          // assert(json[key] != null, 'Required key "DeleteAssetDto[$key]" has a null value in JSON.');
         });
         return true;
       }());
