@@ -127,7 +127,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
           width: width * widthDistribution[index],
           height: width,
           margin: EdgeInsets.only(
-            top: widget.margin,
+            bottom: widget.margin,
             right: last ? 0.0 : widget.margin,
           ),
           child: _buildThumbnailOrPlaceholder(asset, absoluteOffset + index),
@@ -157,7 +157,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     final String title = monthFormat.format(date);
     return Padding(
       key: Key("month-$title"),
-      padding: const EdgeInsets.only(left: 12.0, top: 30),
+      padding: const EdgeInsets.only(left: 12.0, top: 24.0),
       child: Text(
         title,
         style: TextStyle(
@@ -179,7 +179,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
             width: width,
             height: height,
             margin: EdgeInsets.only(
-              top: widget.margin,
+              bottom: widget.margin,
               right: i + 1 == num ? 0.0 : widget.margin,
             ),
             color: Colors.grey,
