@@ -29,7 +29,7 @@ import { R_OK, W_OK } from 'constants';
 import { Response as Res } from 'express';
 import { createReadStream, stat } from 'fs';
 import fs from 'fs/promises';
-import mime from 'mime';
+import mime from 'mime-types';
 import path from 'path';
 import { QueryFailedError, Repository } from 'typeorm';
 import { promisify } from 'util';
