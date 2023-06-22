@@ -18,7 +18,7 @@ Name | Type | Description | Notes
 **shouldChangePassword** | **bool** |  | 
 **isAdmin** | **bool** |  | 
 **createdAt** | [**DateTime**](DateTime.md) |  | 
-**deletedAt** | [**DateTime**](DateTime.md) |  | [optional] 
+**deletedAt** | [**DateTime**](DateTime.md) |  | 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 
 **oauthId** | **String** |  | 
 

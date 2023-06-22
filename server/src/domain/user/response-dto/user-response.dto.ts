@@ -11,7 +11,7 @@ export class UserResponseDto {
   shouldChangePassword!: boolean;
   isAdmin!: boolean;
   createdAt!: Date;
-  deletedAt?: Date | null;
+  deletedAt!: Date | null;
   updatedAt!: Date;
   oauthId!: string;
 }

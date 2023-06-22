@@ -6812,6 +6812,7 @@
           "shouldChangePassword",
           "isAdmin",
           "createdAt",
+          "deletedAt",
           "updatedAt",
           "oauthId"
         ]
