@@ -1,23 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
-import 'package:immich_mobile/shared/providers/db.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
-import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
 
 final personServiceProvider = Provider(
   (ref) => PersonService(
     ref.watch(apiServiceProvider),
-    ref.watch(dbProvider),
   ),
 );
 
 class PersonService {
   final ApiService _apiService;
-  final Isar _db;
 
-  PersonService(this._apiService, this._db);
+  PersonService(this._apiService);
 
   Future<List<PersonResponseDto>?> getCuratedPeople() async {
     try {

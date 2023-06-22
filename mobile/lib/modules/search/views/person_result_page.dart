@@ -5,7 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/ui/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/modules/search/providers/people.provider.dart';
 import 'package:immich_mobile/modules/search/ui/person_name_edit_form.dart';
-import 'package:immich_mobile/shared/models/store.dart' as isarStore;
+import 'package:immich_mobile/shared/models/store.dart' as isar_store;
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class PersonResultPage extends HookConsumerWidget {
@@ -137,7 +137,7 @@ class PersonResultPage extends HookConsumerWidget {
                               getFaceThumbnailUrl(personId),
                               headers: {
                                 "Authorization":
-                                    "Bearer ${isarStore.Store.get(isarStore.StoreKey.accessToken)}"
+                                    "Bearer ${isar_store.Store.get(isar_store.StoreKey.accessToken)}"
                               },
                             ),
                           ),
