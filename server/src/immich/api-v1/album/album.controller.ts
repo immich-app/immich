@@ -1,19 +1,17 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, Query, Response } from '@nestjs/common';
-import { AlbumService } from './album.service';
+import { AlbumResponseDto } from '@app/domain';
+import { Body, Controller, Delete, Get, Param, Put, Query, Response } from '@nestjs/common';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { Response as Res } from 'express';
+import { handleDownload } from '../../app.utils';
+import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
+import { AuthUser, AuthUserDto } from '../../decorators/auth-user.decorator';
 import { Authenticated, SharedLinkRoute } from '../../decorators/authenticated.decorator';
-import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
+import { UseValidation } from '../../decorators/use-validation.decorator';
+import { DownloadDto } from '../asset/dto/download-library.dto';
+import { AlbumService } from './album.service';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { AlbumResponseDto } from '@app/domain';
-import { AlbumCountResponseDto } from './response-dto/album-count-response.dto';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
-import { Response as Res } from 'express';
-import { DownloadDto } from '../asset/dto/download-library.dto';
-import { CreateAlbumShareLinkDto as CreateAlbumSharedLinkDto } from './dto/create-album-shared-link.dto';
-import { UseValidation } from '../../decorators/use-validation.decorator';
-import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
-import { handleDownload } from '../../app.utils';
 
 @ApiTags('Album')
 @Controller('album')
@@ -22,15 +20,10 @@ import { handleDownload } from '../../app.utils';
 export class AlbumController {
   constructor(private readonly service: AlbumService) {}
 
-  @Get('count-by-user-id')
-  getAlbumCountByUserId(@GetAuthUser() authUser: AuthUserDto): Promise<AlbumCountResponseDto> {
-    return this.service.getCountByUserId(authUser);
-  }
-
   @SharedLinkRoute()
   @Put(':id/assets')
   addAssetsToAlbum(
-    @GetAuthUser() authUser: AuthUserDto,
+    @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: AddAssetsDto,
   ): Promise<AddAssetsResponseDto> {
@@ -41,13 +34,13 @@ export class AlbumController {
 
   @SharedLinkRoute()
   @Get(':id')
-  getAlbumInfo(@GetAuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
+  getAlbumInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
     return this.service.get(authUser, id);
   }
 
   @Delete(':id/assets')
   removeAssetFromAlbum(
-    @GetAuthUser() authUser: AuthUserDto,
+    @AuthUser() authUser: AuthUserDto,
     @Body() dto: RemoveAssetsDto,
     @Param() { id }: UUIDParamDto,
   ): Promise<AlbumResponseDto> {
@@ -58,16 +51,11 @@ export class AlbumController {
   @Get(':id/download')
   @ApiOkResponse({ content: { 'application/zip': { schema: { type: 'string', format: 'binary' } } } })
   downloadArchive(
-    @GetAuthUser() authUser: AuthUserDto,
+    @AuthUser() authUser: AuthUserDto,
     @Param() { id }: UUIDParamDto,
     @Query() dto: DownloadDto,
     @Response({ passthrough: true }) res: Res,
   ) {
     return this.service.downloadArchive(authUser, id, dto).then((download) => handleDownload(download, res));
-  }
-
-  @Post('create-shared-link')
-  createAlbumSharedLink(@GetAuthUser() authUser: AuthUserDto, @Body() dto: CreateAlbumSharedLinkDto) {
-    return this.service.createSharedLink(authUser, dto);
   }
 }

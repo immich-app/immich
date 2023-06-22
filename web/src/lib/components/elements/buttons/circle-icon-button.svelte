@@ -8,6 +8,7 @@
 	export let title = '';
 	export let isOpacity = false;
 	export let forceDark = false;
+	export let hideMobile = false;
 </script>
 
 <button
@@ -17,7 +18,8 @@
 	class:dark:text-immich-dark-fg={!forceDark}
 	class="rounded-full p-3 flex place-items-center place-content-center transition-all
 	{isOpacity ? 'hover:bg-immich-bg/30' : 'immich-circle-icon-button hover:dark:text-immich-dark-gray'}
-  {forceDark && 'hover:text-black'}"
+  {forceDark && 'hover:text-black'}
+  {hideMobile && 'hidden sm:flex'}"
 	on:click
 >
 	<svelte:component this={logo} {size} />

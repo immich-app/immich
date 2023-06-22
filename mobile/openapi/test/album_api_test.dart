@@ -32,11 +32,6 @@ void main() {
       // TODO
     });
 
-    //Future<SharedLinkResponseDto> createAlbumSharedLink(CreateAlbumShareLinkDto createAlbumShareLinkDto) async
-    test('test createAlbumSharedLink', () async {
-      // TODO
-    });
-
     //Future deleteAlbum(String id) async
     test('test deleteAlbum', () async {
       // TODO
@@ -47,8 +42,8 @@ void main() {
       // TODO
     });
 
-    //Future<AlbumCountResponseDto> getAlbumCountByUserId() async
-    test('test getAlbumCountByUserId', () async {
+    //Future<AlbumCountResponseDto> getAlbumCount() async
+    test('test getAlbumCount', () async {
       // TODO
     });
 

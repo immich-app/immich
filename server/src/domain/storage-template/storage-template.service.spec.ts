@@ -1,4 +1,3 @@
-import { when } from 'jest-when';
 import {
   assetEntityStub,
   newAssetRepositoryMock,
@@ -8,8 +7,9 @@ import {
   systemConfigStub,
   userEntityStub,
 } from '@test';
-import { IAssetRepository } from '../asset';
+import { when } from 'jest-when';
 import { StorageTemplateService } from '.';
+import { IAssetRepository } from '../asset';
 import { IStorageRepository } from '../storage/storage.repository';
 import { ISystemConfigRepository } from '../system-config';
 import { IUserRepository } from '../user';
@@ -193,6 +193,27 @@ describe(StorageTemplateService.name, () => {
         ['/original/path.ext', 'upload/library/user-id/2023/2023-02-23/asset-id.ext'],
         ['upload/library/user-id/2023/2023-02-23/asset-id.ext', '/original/path.ext'],
       ]);
+    });
+
+    it('should not move read-only asset', async () => {
+      assetMock.getAll.mockResolvedValue({
+        items: [
+          {
+            ...assetEntityStub.image,
+            originalPath: 'upload/library/user-id/2023/2023-02-23/asset-id+1.ext',
+            isReadOnly: true,
+          },
+        ],
+        hasNextPage: false,
+      });
+      assetMock.save.mockResolvedValue(assetEntityStub.image);
+      userMock.getList.mockResolvedValue([userEntityStub.user1]);
+
+      await sut.handleMigration();
+
+      expect(assetMock.getAll).toHaveBeenCalled();
+      expect(storageMock.moveFile).not.toHaveBeenCalled();
+      expect(assetMock.save).not.toHaveBeenCalled();
     });
   });
 });

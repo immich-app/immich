@@ -1,3 +1,4 @@
+import { isSidecarFileType, isSupportedFileType } from '@app/domain';
 import { StorageCore, StorageFolder } from '@app/domain/storage';
 import { BadRequestException, Logger, UnauthorizedException } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
@@ -53,21 +54,19 @@ function fileFilter(req: AuthRequest, file: any, cb: any) {
   if (!req.user || (req.user.isPublicUser && !req.user.isAllowUpload)) {
     return cb(new UnauthorizedException());
   }
-  if (
-    file.mimetype.match(
-      /\/(jpg|jpeg|png|gif|avi|mov|mp4|webm|x-msvideo|quicktime|heic|heif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef|x-fuji-raf|x-samsung-srw|mpeg|x-flv|x-ms-wmv|x-matroska|x-sony-arw|arw)$/,
-    )
-  ) {
-    cb(null, true);
-  } else {
-    // Additionally support XML but only for sidecar files
-    if (file.fieldname == 'sidecarData' && file.mimetype.match(/\/xml$/)) {
-      return cb(null, true);
-    }
 
-    logger.error(`Unsupported file type ${extname(file.originalname)} file MIME type ${file.mimetype}`);
-    cb(new BadRequestException(`Unsupported file type ${extname(file.originalname)}`), false);
+  if (isSupportedFileType(file.mimetype)) {
+    cb(null, true);
+    return;
   }
+
+  // Additionally support XML but only for sidecar files.
+  if (file.fieldname === 'sidecarData' && isSidecarFileType(file.mimetype)) {
+    return cb(null, true);
+  }
+
+  logger.error(`Unsupported file type ${extname(file.originalname)} file MIME type ${file.mimetype}`);
+  cb(new BadRequestException(`Unsupported file type ${extname(file.originalname)}`), false);
 }
 
 function destination(req: AuthRequest, file: Express.Multer.File, cb: any) {

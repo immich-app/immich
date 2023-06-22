@@ -241,10 +241,6 @@ class ApiClient {
           return CheckExistingAssetsResponseDto.fromJson(value);
         case 'CreateAlbumDto':
           return CreateAlbumDto.fromJson(value);
-        case 'CreateAlbumShareLinkDto':
-          return CreateAlbumShareLinkDto.fromJson(value);
-        case 'CreateAssetsShareLinkDto':
-          return CreateAssetsShareLinkDto.fromJson(value);
         case 'CreateProfileImageResponseDto':
           return CreateProfileImageResponseDto.fromJson(value);
         case 'CreateTagDto':
@@ -263,14 +259,14 @@ class ApiClient {
           return DeleteAssetStatusTypeTransformer().decode(value);
         case 'DownloadFilesDto':
           return DownloadFilesDto.fromJson(value);
-        case 'EditSharedLinkDto':
-          return EditSharedLinkDto.fromJson(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
         case 'GetAssetByTimeBucketDto':
           return GetAssetByTimeBucketDto.fromJson(value);
         case 'GetAssetCountByTimeBucketDto':
           return GetAssetCountByTimeBucketDto.fromJson(value);
+        case 'ImportAssetDto':
+          return ImportAssetDto.fromJson(value);
         case 'JobCommand':
           return JobCommandTypeTransformer().decode(value);
         case 'JobCommandDto':
@@ -333,6 +329,10 @@ class ApiClient {
           return ServerStatsResponseDto.fromJson(value);
         case 'ServerVersionReponseDto':
           return ServerVersionReponseDto.fromJson(value);
+        case 'SharedLinkCreateDto':
+          return SharedLinkCreateDto.fromJson(value);
+        case 'SharedLinkEditDto':
+          return SharedLinkEditDto.fromJson(value);
         case 'SharedLinkResponseDto':
           return SharedLinkResponseDto.fromJson(value);
         case 'SharedLinkType':

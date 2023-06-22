@@ -1,6 +1,5 @@
 import { UserEntity } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { when } from 'jest-when';
 import {
   newAlbumRepositoryMock,
   newAssetRepositoryMock,
@@ -9,6 +8,7 @@ import {
   newStorageRepositoryMock,
   newUserRepositoryMock,
 } from '@test';
+import { when } from 'jest-when';
 import { IAlbumRepository } from '../album';
 import { IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';
@@ -53,6 +53,7 @@ const adminUser: UserEntity = Object.freeze({
   tags: [],
   assets: [],
   storageLabel: 'admin',
+  externalPath: null,
 });
 
 const immichUser: UserEntity = Object.freeze({
@@ -71,6 +72,7 @@ const immichUser: UserEntity = Object.freeze({
   tags: [],
   assets: [],
   storageLabel: null,
+  externalPath: null,
 });
 
 const updatedImmichUser: UserEntity = Object.freeze({
@@ -89,6 +91,7 @@ const updatedImmichUser: UserEntity = Object.freeze({
   tags: [],
   assets: [],
   storageLabel: null,
+  externalPath: null,
 });
 
 const adminUserResponse = Object.freeze({
@@ -104,6 +107,7 @@ const adminUserResponse = Object.freeze({
   deletedAt: null,
   updatedAt: new Date('2021-01-01'),
   storageLabel: 'admin',
+  externalPath: null,
 });
 
 describe(UserService.name, () => {
@@ -153,6 +157,7 @@ describe(UserService.name, () => {
           deletedAt: null,
           updatedAt: new Date('2021-01-01'),
           storageLabel: 'admin',
+          externalPath: null,
         },
       ]);
     });

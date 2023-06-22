@@ -9,7 +9,6 @@ import { ICryptoRepository } from '../crypto/crypto.repository';
 import { IEntityJob, IJobRepository, JobName } from '../job';
 import { StorageCore, StorageFolder } from '../storage';
 import { IStorageRepository } from '../storage/storage.repository';
-import { IUserRepository } from './user.repository';
 import { CreateUserDto, UpdateUserDto, UserCountDto } from './dto';
 import {
   CreateProfileImageResponseDto,
@@ -20,6 +19,7 @@ import {
   UserResponseDto,
 } from './response-dto';
 import { UserCore } from './user.core';
+import { IUserRepository } from './user.repository';
 
 @Injectable()
 export class UserService {

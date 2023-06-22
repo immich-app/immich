@@ -1,7 +1,7 @@
+import { toBoolean } from '@app/immich/utils/transform.util';
 import { AssetType } from '@app/infra/entities';
 import { Transform } from 'class-transformer';
 import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { toBoolean } from '@app/immich/utils/transform.util';
 
 export class SearchDto {
   @IsString()

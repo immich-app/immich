@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
 	import { memoryStore } from '$lib/stores/memory.store';
 	import { DateTime } from 'luxon';
-	import { onDestroy, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { api } from '@api';
 	import { goto } from '$app/navigation';
 	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
@@ -19,108 +18,89 @@
 	import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 	import IntersectionObserver from '$lib/components/asset-viewer/intersection-observer.svelte';
 	import { fade } from 'svelte/transition';
+	import { tweened } from 'svelte/motion';
 
-	let memoryIndex: number;
-	$: {
-		const index = parseInt($page.url.searchParams.get('memory') ?? '') || 0;
-		memoryIndex = index < $memoryStore?.length ? index : 0;
-	}
+	const parseIndex = (s: string | null, max: number | null) =>
+		Math.max(Math.min(parseInt(s ?? '') || 0, max ?? 0), 0);
 
-	$: previousMemory = $memoryStore?.[memoryIndex - 1] || null;
-	$: currentMemory = $memoryStore?.[memoryIndex] || null;
-	$: nextMemory = $memoryStore?.[memoryIndex + 1] || null;
+	$: memoryIndex = parseIndex($page.url.searchParams.get('memory'), $memoryStore?.length - 1);
+	$: assetIndex = parseIndex($page.url.searchParams.get('asset'), currentMemory?.assets.length - 1);
 
-	let assetIndex: number;
-	$: {
-		const index = parseInt($page.url.searchParams.get('asset') ?? '') || 0;
-		assetIndex = index < currentMemory?.assets.length ? index : 0;
-	}
+	$: previousMemory = $memoryStore?.[memoryIndex - 1];
+	$: currentMemory = $memoryStore?.[memoryIndex];
+	$: nextMemory = $memoryStore?.[memoryIndex + 1];
 
-	$: previousAsset = currentMemory?.assets[assetIndex - 1] || null;
-	$: currentAsset = currentMemory?.assets[assetIndex] || null;
-	$: nextAsset = currentMemory?.assets[assetIndex + 1] || null;
+	$: previousAsset = currentMemory?.assets[assetIndex - 1];
+	$: currentAsset = currentMemory?.assets[assetIndex];
+	$: nextAsset = currentMemory?.assets[assetIndex + 1];
 
-	$: canAdvance = !!(nextMemory || nextAsset);
+	$: canGoForward = !!(nextMemory || nextAsset);
+	$: canGoBack = !!(previousMemory || previousAsset);
 
-	$: if (!canAdvance && browser) {
-		pause();
-	}
+	const toNextMemory = () => goto(`?memory=${memoryIndex + 1}`);
+	const toPreviousMemory = () => goto(`?memory=${memoryIndex - 1}`);
 
-	let memoryGallery: HTMLElement;
-	let memoryWrapper: HTMLElement;
-	let galleryInView = false;
+	const toNextAsset = () => goto(`?memory=${memoryIndex}&asset=${assetIndex + 1}`);
+	const toPreviousAsset = () => goto(`?memory=${memoryIndex}&asset=${assetIndex - 1}`);
+
+	const toNext = () => (nextAsset ? toNextAsset() : toNextMemory());
+	const toPrevious = () => (previousAsset ? toPreviousAsset() : toPreviousMemory());
+
+	const progress = tweened<number>(0, {
+		duration: (from: number, to: number) => (to ? 5000 * (to - from) : 0)
+	});
+
+	const play = () => progress.set(1);
+	const pause = () => progress.set($progress);
+
+	let resetPromise = Promise.resolve();
+	const reset = () => (resetPromise = progress.set(0));
+
+	let paused = false;
+
+	// Play or pause progress when the paused state changes.
+	$: paused ? pause() : play();
+
+	// Progress should be paused when it's no longer possible to advance.
+	$: paused ||= !canGoForward;
+
+	// Advance to the next asset or memory when progress is complete.
+	$: $progress === 1 && toNext();
+
+	// Progress should be resumed when reset and not paused.
+	$: !$progress && !paused && play();
+
+	// Progress should be reset when the current memory or asset changes.
+	$: memoryIndex, assetIndex, reset();
+
+	const handleKeyDown = (e: KeyboardEvent) => {
+		if (e.key === 'ArrowRight' && canGoForward) {
+			e.preventDefault();
+			toNext();
+		} else if (e.key === 'ArrowLeft' && canGoBack) {
+			e.preventDefault();
+			toPrevious();
+		} else if (e.key === 'Escape') {
+			e.preventDefault();
+			goto(AppRoute.PHOTOS);
+		}
+	};
 
 	onMount(async () => {
 		if (!$memoryStore) {
 			const { data } = await api.assetApi.getMemoryLane({
-				timestamp: DateTime.local().startOf('day').toISO()
+				timestamp: DateTime.local().startOf('day').toISO() || ''
 			});
 			$memoryStore = data;
 		}
 	});
 
-	onDestroy(() => browser && pause());
-
-	const toPreviousMemory = () => previousMemory && goto(`?memory=${memoryIndex - 1}`);
-
-	const toNextMemory = () => nextMemory && goto(`?memory=${memoryIndex + 1}`);
-
-	const toPreviousAsset = () =>
-		previousAsset ? goto(`?memory=${memoryIndex}&asset=${assetIndex - 1}`) : toPreviousMemory();
-
-	const toNextAsset = () =>
-		nextAsset ? goto(`?memory=${memoryIndex}&asset=${assetIndex + 1}`) : toNextMemory();
-
-	const duration = 5000; // 5 seconds
-
-	let paused = true;
-	let progress = 0;
-	let animationFrameRequest: number;
-	let start: number | null = null;
-
-	const requestDraw = () => (animationFrameRequest = requestAnimationFrame(draw));
-
-	const draw = (now: number) => {
-		requestDraw();
-
-		start ??= now - progress * duration;
-
-		const elapsed = now - start;
-		progress = Math.min(1, elapsed / duration);
-
-		if (progress !== 1) {
-			return;
-		}
-
-		toNextAsset();
-		start = now;
-	};
-
-	const play = () => {
-		if (!canAdvance) {
-			return;
-		}
-
-		paused = false;
-		requestDraw();
-	};
-
-	const pause = () => {
-		paused = true;
-		cancelAnimationFrame(animationFrameRequest);
-		resetStart();
-	};
-
-	const resetProgress = () => {
-		progress = 0;
-		resetStart();
-	};
-
-	const resetStart = () => (start = null);
-
-	// Progress should be reset when the current memory or asset changes.
-	$: memoryIndex, assetIndex, resetProgress();
+	let memoryGallery: HTMLElement;
+	let memoryWrapper: HTMLElement;
+	let galleryInView = false;
 </script>
+
+<svelte:window on:keydown={handleKeyDown} />
 
 <section id="memory-viewer" class="w-full bg-immich-dark-gray" bind:this={memoryWrapper}>
 	{#if currentMemory}
@@ -136,13 +116,28 @@
 					<CircleIconButton
 						logo={paused ? Play : Pause}
 						forceDark
-						on:click={paused ? play : pause}
+						on:click={() => (paused = !paused)}
 					/>
 
-					<div class="relative w-full">
-						<span class="absolute left-0 w-full h-[2px] bg-gray-500" />
-						<span class="absolute left-0 h-[2px] bg-white" style:width={`${progress * 100}%`} />
-					</div>
+					{#each currentMemory.assets as _, i}
+						<button
+							class="relative w-full py-2"
+							on:click={() => goto(`?memory=${memoryIndex}&asset=${i}`)}
+						>
+							<span class="absolute left-0 w-full h-[2px] bg-gray-500" />
+							{#await resetPromise}
+								<span
+									class="absolute left-0 h-[2px] bg-white"
+									style:width={`${i < assetIndex ? 100 : 0}%`}
+								/>
+							{:then}
+								<span
+									class="absolute left-0 h-[2px] bg-white"
+									style:width={`${i < assetIndex ? 100 : i > assetIndex ? 0 : $progress * 100}%`}
+								/>
+							{/await}
+						</button>
+					{/each}
 
 					<div>
 						<p class="text-small">
@@ -211,22 +206,22 @@
 						<div class="absolute h-full flex justify-between w-full">
 							<div class="flex h-full flex-col place-content-center place-items-center ml-4">
 								<div class="inline-block">
-									{#if previousMemory || previousAsset}
+									{#if canGoBack}
 										<CircleIconButton
 											logo={ChevronLeft}
 											backgroundColor="#202123"
-											on:click={toPreviousAsset}
+											on:click={toPrevious}
 										/>
 									{/if}
 								</div>
 							</div>
 							<div class="flex h-full flex-col place-content-center place-items-center mr-4">
 								<div class="inline-block">
-									{#if canAdvance}
+									{#if canGoForward}
 										<CircleIconButton
 											logo={ChevronRight}
 											backgroundColor="#202123"
-											on:click={toNextAsset}
+											on:click={toNext}
 										/>
 									{/if}
 								</div>

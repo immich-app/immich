@@ -1,5 +1,4 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
-import _ from 'lodash';
 import {
   albumStub,
   authStub,
@@ -9,6 +8,7 @@ import {
   newUserRepositoryMock,
   userEntityStub,
 } from '@test';
+import _ from 'lodash';
 import { IAssetRepository } from '../asset';
 import { IJobRepository, JobName } from '../job';
 import { IUserRepository } from '../user';
@@ -33,6 +33,23 @@ describe(AlbumService.name, () => {
 
   it('should work', () => {
     expect(sut).toBeDefined();
+  });
+
+  describe('getCount', () => {
+    it('should get the album count', async () => {
+      albumMock.getOwned.mockResolvedValue([]),
+        albumMock.getShared.mockResolvedValue([]),
+        albumMock.getNotShared.mockResolvedValue([]),
+        await expect(sut.getCount(authStub.admin)).resolves.toEqual({
+          owned: 0,
+          shared: 0,
+          notShared: 0,
+        });
+
+      expect(albumMock.getOwned).toHaveBeenCalledWith(authStub.admin.id);
+      expect(albumMock.getShared).toHaveBeenCalledWith(authStub.admin.id);
+      expect(albumMock.getNotShared).toHaveBeenCalledWith(authStub.admin.id);
+    });
   });
 
   describe('getAll', () => {
@@ -152,6 +169,7 @@ describe(AlbumService.name, () => {
           createdAt: new Date('2021-01-01'),
           deletedAt: null,
           updatedAt: new Date('2021-01-01'),
+          externalPath: null,
         },
         ownerId: 'admin_id',
         shared: false,

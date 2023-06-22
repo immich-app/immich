@@ -18,8 +18,8 @@ export class SharedLinkEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ nullable: true })
-  description?: string;
+  @Column({ type: 'varchar', nullable: true })
+  description!: string | null;
 
   @Column()
   userId!: string;
@@ -55,6 +55,9 @@ export class SharedLinkEntity {
   @Index('IDX_sharedlink_albumId')
   @ManyToOne(() => AlbumEntity, (album) => album.sharedLinks, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   album?: AlbumEntity;
+
+  @Column({ type: 'varchar', nullable: true })
+  albumId!: string | null;
 }
 
 export enum SharedLinkType {

@@ -6,7 +6,6 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { hash } from 'bcrypt';
 import { constants, createReadStream, ReadStream } from 'fs';
 import fs from 'fs/promises';
 import { AuthUserDto } from '../auth';
@@ -28,6 +27,7 @@ export class UserCore {
       // Users can never update the isAdmin property.
       delete dto.isAdmin;
       delete dto.storageLabel;
+      delete dto.externalPath;
     } else if (dto.isAdmin && authUser.id !== id) {
       // Admin cannot create another admin.
       throw new BadRequestException('The server already has an admin');
@@ -56,6 +56,10 @@ export class UserCore {
         dto.storageLabel = null;
       }
 
+      if (dto.externalPath === '') {
+        dto.externalPath = null;
+      }
+
       return this.userRepository.update(id, dto);
     } catch (e) {
       Logger.error(e, 'Failed to update user info');
@@ -79,7 +83,7 @@ export class UserCore {
     try {
       const payload: Partial<UserEntity> = { ...createUserDto };
       if (payload.password) {
-        payload.password = await hash(payload.password, SALT_ROUNDS);
+        payload.password = await this.cryptoRepository.hashBcrypt(payload.password, SALT_ROUNDS);
       }
       return this.userRepository.create(payload);
     } catch (e) {

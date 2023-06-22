@@ -89,6 +89,10 @@
 		if (from?.url.pathname === '/sharing' && album.sharedUsers.length === 0) {
 			isCreatingSharedAlbum = true;
 		}
+
+		if (from?.route.id === '/(user)/search') {
+			backUrl = from.url.href;
+		}
 	});
 
 	const albumDateFormat: Intl.DateTimeFormatOptions = {

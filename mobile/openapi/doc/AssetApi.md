@@ -9,11 +9,9 @@ All URIs are relative to */api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**addAssetsToSharedLink**](AssetApi.md#addassetstosharedlink) | **PATCH** /asset/shared-link/add | 
 [**bulkUploadCheck**](AssetApi.md#bulkuploadcheck) | **POST** /asset/bulk-upload-check | 
 [**checkDuplicateAsset**](AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 [**checkExistingAssets**](AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
-[**createAssetsSharedLink**](AssetApi.md#createassetssharedlink) | **POST** /asset/shared-link | 
 [**deleteAsset**](AssetApi.md#deleteasset) | **DELETE** /asset | 
 [**downloadFile**](AssetApi.md#downloadfile) | **GET** /asset/download/{id} | 
 [**downloadFiles**](AssetApi.md#downloadfiles) | **POST** /asset/download-files | 
@@ -31,69 +29,12 @@ Method | HTTP request | Description
 [**getMapMarkers**](AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 [**getMemoryLane**](AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 [**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
-[**removeAssetsFromSharedLink**](AssetApi.md#removeassetsfromsharedlink) | **PATCH** /asset/shared-link/remove | 
+[**importFile**](AssetApi.md#importfile) | **POST** /asset/import | 
 [**searchAsset**](AssetApi.md#searchasset) | **POST** /asset/search | 
 [**serveFile**](AssetApi.md#servefile) | **GET** /asset/file/{id} | 
 [**updateAsset**](AssetApi.md#updateasset) | **PUT** /asset/{id} | 
 [**uploadFile**](AssetApi.md#uploadfile) | **POST** /asset/upload | 
 
-
-# **addAssetsToSharedLink**
-> SharedLinkResponseDto addAssetsToSharedLink(addAssetsDto, key)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = AssetApi();
-final addAssetsDto = AddAssetsDto(); // AddAssetsDto | 
-final key = key_example; // String | 
-
-try {
-    final result = api_instance.addAssetsToSharedLink(addAssetsDto, key);
-    print(result);
-} catch (e) {
-    print('Exception when calling AssetApi->addAssetsToSharedLink: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **addAssetsDto** | [**AddAssetsDto**](AddAssetsDto.md)|  | 
- **key** | **String**|  | [optional] 
-
-### Return type
-
-[**SharedLinkResponseDto**](SharedLinkResponseDto.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **bulkUploadCheck**
 > AssetBulkUploadCheckResponseDto bulkUploadCheck(assetBulkUploadCheckDto)
@@ -256,61 +197,6 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**CheckExistingAssetsResponseDto**](CheckExistingAssetsResponseDto.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **createAssetsSharedLink**
-> SharedLinkResponseDto createAssetsSharedLink(createAssetsShareLinkDto)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = AssetApi();
-final createAssetsShareLinkDto = CreateAssetsShareLinkDto(); // CreateAssetsShareLinkDto | 
-
-try {
-    final result = api_instance.createAssetsSharedLink(createAssetsShareLinkDto);
-    print(result);
-} catch (e) {
-    print('Exception when calling AssetApi->createAssetsSharedLink: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **createAssetsShareLinkDto** | [**CreateAssetsShareLinkDto**](CreateAssetsShareLinkDto.md)|  | 
-
-### Return type
-
-[**SharedLinkResponseDto**](SharedLinkResponseDto.md)
 
 ### Authorization
 
@@ -1274,8 +1160,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **removeAssetsFromSharedLink**
-> SharedLinkResponseDto removeAssetsFromSharedLink(removeAssetsDto, key)
+# **importFile**
+> AssetFileUploadResponseDto importFile(importAssetDto)
 
 
 
@@ -1298,14 +1184,13 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = AssetApi();
-final removeAssetsDto = RemoveAssetsDto(); // RemoveAssetsDto | 
-final key = key_example; // String | 
+final importAssetDto = ImportAssetDto(); // ImportAssetDto | 
 
 try {
-    final result = api_instance.removeAssetsFromSharedLink(removeAssetsDto, key);
+    final result = api_instance.importFile(importAssetDto);
     print(result);
 } catch (e) {
-    print('Exception when calling AssetApi->removeAssetsFromSharedLink: $e\n');
+    print('Exception when calling AssetApi->importFile: $e\n');
 }
 ```
 
@@ -1313,12 +1198,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **removeAssetsDto** | [**RemoveAssetsDto**](RemoveAssetsDto.md)|  | 
- **key** | **String**|  | [optional] 
+ **importAssetDto** | [**ImportAssetDto**](ImportAssetDto.md)|  | 
 
 ### Return type
 
-[**SharedLinkResponseDto**](SharedLinkResponseDto.md)
+[**AssetFileUploadResponseDto**](AssetFileUploadResponseDto.md)
 
 ### Authorization
 
@@ -1507,7 +1391,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadFile**
-> AssetFileUploadResponseDto uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, sidecarData, isArchived, isVisible, duration)
+> AssetFileUploadResponseDto uploadFile(assetType, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration)
 
 
 
@@ -1532,21 +1416,22 @@ import 'package:openapi/api.dart';
 final api_instance = AssetApi();
 final assetType = ; // AssetTypeEnum | 
 final assetData = BINARY_DATA_HERE; // MultipartFile | 
+final fileExtension = fileExtension_example; // String | 
 final deviceAssetId = deviceAssetId_example; // String | 
 final deviceId = deviceId_example; // String | 
 final fileCreatedAt = 2013-10-20T19:20:30+01:00; // DateTime | 
 final fileModifiedAt = 2013-10-20T19:20:30+01:00; // DateTime | 
 final isFavorite = true; // bool | 
-final fileExtension = fileExtension_example; // String | 
 final key = key_example; // String | 
 final livePhotoData = BINARY_DATA_HERE; // MultipartFile | 
 final sidecarData = BINARY_DATA_HERE; // MultipartFile | 
+final isReadOnly = true; // bool | 
 final isArchived = true; // bool | 
 final isVisible = true; // bool | 
 final duration = duration_example; // String | 
 
 try {
-    final result = api_instance.uploadFile(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension, key, livePhotoData, sidecarData, isArchived, isVisible, duration);
+    final result = api_instance.uploadFile(assetType, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->uploadFile: $e\n');
@@ -1559,15 +1444,16 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **assetType** | [**AssetTypeEnum**](AssetTypeEnum.md)|  | 
  **assetData** | **MultipartFile**|  | 
+ **fileExtension** | **String**|  | 
  **deviceAssetId** | **String**|  | 
  **deviceId** | **String**|  | 
  **fileCreatedAt** | **DateTime**|  | 
  **fileModifiedAt** | **DateTime**|  | 
  **isFavorite** | **bool**|  | 
- **fileExtension** | **String**|  | 
  **key** | **String**|  | [optional] 
  **livePhotoData** | **MultipartFile**|  | [optional] 
  **sidecarData** | **MultipartFile**|  | [optional] 
+ **isReadOnly** | **bool**|  | [optional] [default to false]
  **isArchived** | **bool**|  | [optional] 
  **isVisible** | **bool**|  | [optional] 
  **duration** | **String**|  | [optional] 

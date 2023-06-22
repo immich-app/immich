@@ -1,4 +1,19 @@
-import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
+import {
+  AssetResponseDto,
+  AuthUserDto,
+  getLivePhotoMotionFilename,
+  IAccessRepository,
+  ICryptoRepository,
+  IJobRepository,
+  ImmichReadStream,
+  isSidecarFileType,
+  isSupportedFileType,
+  IStorageRepository,
+  JobName,
+  mapAsset,
+  mapAssetWithoutExif,
+} from '@app/domain';
+import { AssetEntity, AssetType } from '@app/infra/entities';
 import {
   BadRequestException,
   ForbiddenException,
@@ -10,64 +25,48 @@ import {
   StreamableFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QueryFailedError, Repository } from 'typeorm';
-import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { AssetEntity, AssetType, SharedLinkType } from '@app/infra/entities';
-import { constants, createReadStream, stat } from 'fs';
-import { ServeFileDto } from './dto/serve-file.dto';
+import { R_OK, W_OK } from 'constants';
 import { Response as Res } from 'express';
-import { promisify } from 'util';
-import { DeleteAssetDto } from './dto/delete-asset.dto';
-import { SearchAssetDto } from './dto/search-asset.dto';
+import { createReadStream, stat } from 'fs';
 import fs from 'fs/promises';
-import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
-import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import {
-  AssetResponseDto,
-  getLivePhotoMotionFilename,
-  IAccessRepository,
-  ImmichReadStream,
-  IStorageRepository,
-  JobName,
-  mapAsset,
-  mapAssetWithoutExif,
-} from '@app/domain';
-import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
-import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
-import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
-import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
+import mime from 'mime-types';
+import path from 'path';
+import { QueryFailedError, Repository } from 'typeorm';
+import { promisify } from 'util';
+import { DownloadService } from '../../modules/download/download.service';
 import { IAssetRepository } from './asset-repository';
+import { AssetCore } from './asset.core';
+import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
+import { AssetSearchDto } from './dto/asset-search.dto';
+import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
+import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
+import { CreateAssetDto, ImportAssetDto, UploadFile } from './dto/create-asset.dto';
+import { DeleteAssetDto } from './dto/delete-asset.dto';
+import { DownloadFilesDto } from './dto/download-files.dto';
+import { DownloadDto } from './dto/download-library.dto';
+import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
+import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
+import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
+import { SearchAssetDto } from './dto/search-asset.dto';
 import { SearchPropertiesDto } from './dto/search-properties.dto';
+import { ServeFileDto } from './dto/serve-file.dto';
+import { UpdateAssetDto } from './dto/update-asset.dto';
+import {
+  AssetBulkUploadCheckResponseDto,
+  AssetRejectReason,
+  AssetUploadAction,
+} from './response-dto/asset-check-response.dto';
 import {
   AssetCountByTimeBucketResponseDto,
   mapAssetCountByTimeBucket,
 } from './response-dto/asset-count-by-time-group-response.dto';
-import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
-import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
-import { AssetCore } from './asset.core';
-import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
-import { UpdateAssetDto } from './dto/update-asset.dto';
 import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
-import { ICryptoRepository, IJobRepository } from '@app/domain';
-import { DownloadService } from '../../modules/download/download.service';
-import { DownloadDto } from './dto/download-library.dto';
-import { IAlbumRepository } from '../album/album-repository';
-import { SharedLinkCore } from '@app/domain';
-import { ISharedLinkRepository } from '@app/domain';
-import { DownloadFilesDto } from './dto/download-files.dto';
-import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
-import { mapSharedLink, SharedLinkResponseDto } from '@app/domain';
-import { AssetSearchDto } from './dto/asset-search.dto';
-import { AddAssetsDto } from '../album/dto/add-assets.dto';
-import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
-import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
-import {
-  AssetUploadAction,
-  AssetRejectReason,
-  AssetBulkUploadCheckResponseDto,
-} from './response-dto/asset-check-response.dto';
+import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
+import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
+import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
+import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
+import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
 
 const fileInfo = promisify(stat);
 
@@ -79,23 +78,18 @@ interface ServableFile {
 @Injectable()
 export class AssetService {
   readonly logger = new Logger(AssetService.name);
-  private shareCore: SharedLinkCore;
   private assetCore: AssetCore;
 
   constructor(
     @Inject(IAccessRepository) private accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
-    @Inject(IAlbumRepository) private _albumRepository: IAlbumRepository,
-    @InjectRepository(AssetEntity)
-    private assetRepository: Repository<AssetEntity>,
+    @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     private downloadService: DownloadService,
-    @Inject(ISharedLinkRepository) sharedLinkRepository: ISharedLinkRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
-    this.shareCore = new SharedLinkCore(sharedLinkRepository, cryptoRepository);
   }
 
   public async uploadFile(
@@ -120,7 +114,7 @@ export class AssetService {
         livePhotoAsset = await this.assetCore.create(authUser, livePhotoDto, livePhotoFile);
       }
 
-      const asset = await this.assetCore.create(authUser, dto, file, livePhotoAsset?.id, sidecarFile);
+      const asset = await this.assetCore.create(authUser, dto, file, livePhotoAsset?.id, sidecarFile?.originalPath);
 
       return { id: asset.id, duplicate: false };
     } catch (error: any) {
@@ -139,6 +133,73 @@ export class AssetService {
 
       this.logger.error(`Error uploading file ${error}`, error?.stack);
       throw new BadRequestException(`Error uploading file`, `${error}`);
+    }
+  }
+
+  public async importFile(authUser: AuthUserDto, dto: ImportAssetDto): Promise<AssetFileUploadResponseDto> {
+    dto = {
+      ...dto,
+      assetPath: path.resolve(dto.assetPath),
+      sidecarPath: dto.sidecarPath ? path.resolve(dto.sidecarPath) : undefined,
+    };
+
+    const assetPathType = mime.lookup(dto.assetPath) as string;
+    if (!isSupportedFileType(assetPathType)) {
+      throw new BadRequestException(`Unsupported file type ${assetPathType}`);
+    }
+
+    if (dto.sidecarPath) {
+      const sidecarType = mime.lookup(dto.sidecarPath) as string;
+      if (!isSidecarFileType(sidecarType)) {
+        throw new BadRequestException(`Unsupported sidecar file type ${assetPathType}`);
+      }
+    }
+
+    for (const filepath of [dto.assetPath, dto.sidecarPath]) {
+      if (!filepath) {
+        continue;
+      }
+
+      const exists = await this.storageRepository.checkFileExists(filepath, R_OK);
+      if (!exists) {
+        throw new BadRequestException('File does not exist');
+      }
+    }
+
+    if (!authUser.externalPath || !dto.assetPath.match(new RegExp(`^${authUser.externalPath}`))) {
+      throw new BadRequestException("File does not exist within user's external path");
+    }
+
+    const assetFile: UploadFile = {
+      checksum: await this.cryptoRepository.hashFile(dto.assetPath),
+      mimeType: assetPathType,
+      originalPath: dto.assetPath,
+      originalName: path.parse(dto.assetPath).name,
+    };
+
+    try {
+      const asset = await this.assetCore.create(authUser, dto, assetFile, undefined, dto.sidecarPath);
+      return { id: asset.id, duplicate: false };
+    } catch (error: QueryFailedError | Error | any) {
+      // handle duplicates with a success response
+      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_userid_checksum') {
+        const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, [assetFile.checksum]);
+        return { id: duplicate.id, duplicate: true };
+      }
+
+      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_4ed4f8052685ff5b1e7ca1058ba') {
+        const duplicate = await this._assetRepository.getByOriginalPath(dto.assetPath);
+        if (duplicate) {
+          if (duplicate.ownerId === authUser.id) {
+            return { id: duplicate.id, duplicate: true };
+          }
+
+          throw new BadRequestException('Path in use by another user');
+        }
+      }
+
+      this.logger.error(`Error importing file ${error}`, error?.stack);
+      throw new BadRequestException(`Error importing file`, `${error}`);
     }
   }
 
@@ -304,7 +365,7 @@ export class AssetService {
         let videoPath = asset.originalPath;
         let mimeType = asset.mimeType;
 
-        await fs.access(videoPath, constants.R_OK | constants.W_OK);
+        await fs.access(videoPath, R_OK | W_OK);
 
         if (asset.encodedVideoPath) {
           videoPath = asset.encodedVideoPath == '' ? String(asset.originalPath) : String(asset.encodedVideoPath);
@@ -386,13 +447,16 @@ export class AssetService {
         await this.jobRepository.queue({ name: JobName.SEARCH_REMOVE_ASSET, data: { ids: [id] } });
 
         result.push({ id, status: DeleteAssetStatusEnum.SUCCESS });
-        deleteQueue.push(
-          asset.originalPath,
-          asset.webpPath,
-          asset.resizePath,
-          asset.encodedVideoPath,
-          asset.sidecarPath,
-        );
+
+        if (!asset.isReadOnly) {
+          deleteQueue.push(
+            asset.originalPath,
+            asset.webpPath,
+            asset.resizePath,
+            asset.encodedVideoPath,
+            asset.sidecarPath,
+          );
+        }
 
         // TODO refactor this to use cascades
         if (asset.livePhotoVideoId && !ids.includes(asset.livePhotoVideoId)) {
@@ -567,31 +631,32 @@ export class AssetService {
     const sharedLinkId = authUser.sharedLinkId;
 
     for (const assetId of assetIds) {
-      // Step 1: Check if asset is part of a public shared
       if (sharedLinkId) {
         const canAccess = await this.accessRepository.hasSharedLinkAssetAccess(sharedLinkId, assetId);
         if (canAccess) {
           continue;
         }
-      } else {
-        // Step 2: Check if user owns asset
-        if ((await this._assetRepository.countByIdAndUser(assetId, authUser.id)) == 1) {
-          continue;
-        }
 
-        // Step 3: Check if any partner owns the asset
-        const canAccess = await this.accessRepository.hasPartnerAssetAccess(authUser.id, assetId);
-        if (canAccess) {
-          continue;
-        }
+        throw new ForbiddenException();
+      }
 
-        // Avoid additional checks if ownership is required
-        if (!mustBeOwner) {
-          // Step 2: Check if asset is part of an album shared with me
-          if ((await this._albumRepository.getSharedWithUserAlbumCount(authUser.id, assetId)) > 0) {
-            continue;
-          }
-        }
+      const isOwner = await this.accessRepository.hasOwnerAssetAccess(authUser.id, assetId);
+      if (isOwner) {
+        continue;
+      }
+
+      if (mustBeOwner) {
+        throw new ForbiddenException();
+      }
+
+      const isPartnerShared = await this.accessRepository.hasPartnerAssetAccess(authUser.id, assetId);
+      if (isPartnerShared) {
+        continue;
+      }
+
+      const isAlbumShared = await this.accessRepository.hasAlbumAssetAccess(authUser.id, assetId);
+      if (isAlbumShared) {
+        continue;
       }
 
       throw new ForbiddenException();
@@ -607,61 +672,9 @@ export class AssetService {
   }
 
   private checkDownloadAccess(authUser: AuthUserDto) {
-    this.shareCore.checkDownloadAccess(authUser);
-  }
-
-  async createAssetsSharedLink(authUser: AuthUserDto, dto: CreateAssetsShareLinkDto): Promise<SharedLinkResponseDto> {
-    const assets = [];
-
-    await this.checkAssetsAccess(authUser, dto.assetIds);
-    for (const assetId of dto.assetIds) {
-      const asset = await this._assetRepository.getById(assetId);
-      assets.push(asset);
-    }
-
-    const sharedLink = await this.shareCore.create(authUser.id, {
-      type: SharedLinkType.INDIVIDUAL,
-      expiresAt: dto.expiresAt,
-      allowUpload: dto.allowUpload,
-      assets,
-      description: dto.description,
-      allowDownload: dto.allowDownload,
-      showExif: dto.showExif,
-    });
-
-    return mapSharedLink(sharedLink);
-  }
-
-  async addAssetsToSharedLink(authUser: AuthUserDto, dto: AddAssetsDto): Promise<SharedLinkResponseDto> {
-    if (!authUser.sharedLinkId) {
+    if (authUser.isPublicUser && !authUser.isAllowDownload) {
       throw new ForbiddenException();
     }
-
-    const assets = [];
-
-    for (const assetId of dto.assetIds) {
-      const asset = await this._assetRepository.getById(assetId);
-      assets.push(asset);
-    }
-
-    const updatedLink = await this.shareCore.addAssets(authUser.id, authUser.sharedLinkId, assets);
-    return mapSharedLink(updatedLink);
-  }
-
-  async removeAssetsFromSharedLink(authUser: AuthUserDto, dto: RemoveAssetsDto): Promise<SharedLinkResponseDto> {
-    if (!authUser.sharedLinkId) {
-      throw new ForbiddenException();
-    }
-
-    const assets = [];
-
-    for (const assetId of dto.assetIds) {
-      const asset = await this._assetRepository.getById(assetId);
-      assets.push(asset);
-    }
-
-    const updatedLink = await this.shareCore.removeAssets(authUser.id, authUser.sharedLinkId, assets);
-    return mapSharedLink(updatedLink);
   }
 
   getExifPermission(authUser: AuthUserDto) {
@@ -729,7 +742,7 @@ export class AssetService {
       return;
     }
 
-    await fs.access(filepath, constants.R_OK);
+    await fs.access(filepath, R_OK);
 
     return new StreamableFile(createReadStream(filepath));
   }

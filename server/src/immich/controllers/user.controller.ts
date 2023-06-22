@@ -1,34 +1,36 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Delete,
+  CreateProfileImageDto,
+  CreateProfileImageResponseDto,
+  CreateUserDto,
+  UpdateUserDto,
+  UserCountDto,
+  UserCountResponseDto,
+  UserResponseDto,
+  UserService,
+} from '@app/domain';
+import { UserIdDto } from '@app/domain/user/dto/user-id.dto';
+import {
   Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
   Param,
+  Post,
   Put,
   Query,
-  UseInterceptors,
-  UploadedFile,
   Response,
   StreamableFile,
-  Header,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { UserService } from '@app/domain';
-import { AdminRoute, Authenticated, PublicRoute } from '../decorators/authenticated.decorator';
-import { AuthUserDto, GetAuthUser } from '../decorators/auth-user.decorator';
-import { CreateUserDto } from '@app/domain';
-import { UpdateUserDto } from '@app/domain';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { profileImageUploadOption } from '../config/profile-image-upload.config';
-import { Response as Res } from 'express';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { UserResponseDto } from '@app/domain';
-import { UserCountResponseDto } from '@app/domain';
-import { CreateProfileImageDto } from '@app/domain';
-import { CreateProfileImageResponseDto } from '@app/domain';
-import { UserCountDto } from '@app/domain';
+import { Response as Res } from 'express';
+import { profileImageUploadOption } from '../config/profile-image-upload.config';
+import { AuthUser, AuthUserDto } from '../decorators/auth-user.decorator';
+import { AdminRoute, Authenticated, PublicRoute } from '../decorators/authenticated.decorator';
 import { UseValidation } from '../decorators/use-validation.decorator';
-import { UserIdDto } from '@app/domain/user/dto/user-id.dto';
 
 @ApiTags('User')
 @Controller('user')
@@ -38,7 +40,7 @@ export class UserController {
   constructor(private service: UserService) {}
 
   @Get()
-  getAllUsers(@GetAuthUser() authUser: AuthUserDto, @Query('isAll') isAll: boolean): Promise<UserResponseDto[]> {
+  getAllUsers(@AuthUser() authUser: AuthUserDto, @Query('isAll') isAll: boolean): Promise<UserResponseDto[]> {
     return this.service.getAllUsers(authUser, isAll);
   }
 
@@ -48,7 +50,7 @@ export class UserController {
   }
 
   @Get('me')
-  getMyUserInfo(@GetAuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
+  getMyUserInfo(@AuthUser() authUser: AuthUserDto): Promise<UserResponseDto> {
     return this.service.getUserInfo(authUser);
   }
 
@@ -66,18 +68,18 @@ export class UserController {
 
   @AdminRoute()
   @Delete('/:userId')
-  deleteUser(@GetAuthUser() authUser: AuthUserDto, @Param() { userId }: UserIdDto): Promise<UserResponseDto> {
+  deleteUser(@AuthUser() authUser: AuthUserDto, @Param() { userId }: UserIdDto): Promise<UserResponseDto> {
     return this.service.deleteUser(authUser, userId);
   }
 
   @AdminRoute()
   @Post('/:userId/restore')
-  restoreUser(@GetAuthUser() authUser: AuthUserDto, @Param() { userId }: UserIdDto): Promise<UserResponseDto> {
+  restoreUser(@AuthUser() authUser: AuthUserDto, @Param() { userId }: UserIdDto): Promise<UserResponseDto> {
     return this.service.restoreUser(authUser, userId);
   }
 
   @Put()
-  updateUser(@GetAuthUser() authUser: AuthUserDto, @Body() updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
+  updateUser(@AuthUser() authUser: AuthUserDto, @Body() updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
     return this.service.updateUser(authUser, updateUserDto);
   }
 
@@ -89,7 +91,7 @@ export class UserController {
   })
   @Post('/profile-image')
   createProfileImage(
-    @GetAuthUser() authUser: AuthUserDto,
+    @AuthUser() authUser: AuthUserDto,
     @UploadedFile() fileInfo: Express.Multer.File,
   ): Promise<CreateProfileImageResponseDto> {
     return this.service.createProfileImage(authUser, fileInfo);

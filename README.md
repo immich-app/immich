@@ -82,8 +82,9 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Public Sharing                               | No     | Yes |
 | Archive and Favorites                        | Yes    | Yes |
 | Global Map                                   | No     | Yes |
-| Partner Sharing                              | No     | Yes |
+| Partner Sharing                              | Yes    | Yes |
 | Facial recognition and clustering            | No     | Yes |
+| Offline support                              | Yes    | No  |
 
 # Support the project
 

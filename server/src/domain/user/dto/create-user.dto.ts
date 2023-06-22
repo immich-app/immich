@@ -1,6 +1,6 @@
+import { toEmail, toSanitized } from '@app/immich/utils/transform.util';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { toEmail, toSanitized } from '@app/immich/utils/transform.util';
 
 export class CreateUserDto {
   @IsEmail({ require_tld: false })
@@ -23,6 +23,10 @@ export class CreateUserDto {
   @IsString()
   @Transform(toSanitized)
   storageLabel?: string | null;
+
+  @IsOptional()
+  @IsString()
+  externalPath?: string | null;
 }
 
 export class CreateAdminDto {

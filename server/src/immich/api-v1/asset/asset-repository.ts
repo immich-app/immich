@@ -1,23 +1,27 @@
-import { SearchPropertiesDto } from './dto/search-properties.dto';
-import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm/repository/Repository';
-import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
-import { GetAssetCountByTimeBucketDto, TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
-import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
-import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
-import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { In } from 'typeorm/find-options/operator/In';
-import { UpdateAssetDto } from './dto/update-asset.dto';
 import { IsNull, Not } from 'typeorm';
+import { In } from 'typeorm/find-options/operator/In';
+import { Repository } from 'typeorm/repository/Repository';
 import { AssetSearchDto } from './dto/asset-search.dto';
+import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
+import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
+import { GetAssetCountByTimeBucketDto, TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
+import { SearchPropertiesDto } from './dto/search-properties.dto';
+import { UpdateAssetDto } from './dto/update-asset.dto';
+import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
+import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
+import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
+import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
 
 export interface AssetCheck {
   id: string;
   checksum: Buffer;
+}
+
+export interface AssetOwnerCheck extends AssetCheck {
+  ownerId: string;
 }
 
 export interface IAssetRepository {
@@ -39,7 +43,7 @@ export interface IAssetRepository {
   getAssetByTimeBucket(userId: string, getAssetByTimeBucketDto: GetAssetByTimeBucketDto): Promise<AssetEntity[]>;
   getAssetsByChecksums(userId: string, checksums: Buffer[]): Promise<AssetCheck[]>;
   getExistingAssets(userId: string, checkDuplicateAssetDto: CheckExistingAssetsDto): Promise<string[]>;
-  countByIdAndUser(assetId: string, userId: string): Promise<number>;
+  getByOriginalPath(originalPath: string): Promise<AssetOwnerCheck | null>;
 }
 
 export const IAssetRepository = 'IAssetRepository';
@@ -329,15 +333,6 @@ export class AssetRepository implements IAssetRepository {
     return assets.map((asset) => asset.deviceAssetId);
   }
 
-  countByIdAndUser(assetId: string, ownerId: string): Promise<number> {
-    return this.assetRepository.count({
-      where: {
-        id: assetId,
-        ownerId,
-      },
-    });
-  }
-
   private getAssetCount(items: any): AssetCountByUserIdResponseDto {
     const assetCountByUserId = new AssetCountByUserIdResponseDto();
 
@@ -359,5 +354,18 @@ export class AssetRepository implements IAssetRepository {
     }
 
     return assetCountByUserId;
+  }
+
+  getByOriginalPath(originalPath: string): Promise<AssetOwnerCheck | null> {
+    return this.assetRepository.findOne({
+      select: {
+        id: true,
+        ownerId: true,
+        checksum: true,
+      },
+      where: {
+        originalPath,
+      },
+    });
   }
 }

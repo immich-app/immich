@@ -20,18 +20,26 @@
 	import type { PageData } from './$types';
 	import SelectAll from 'svelte-material-icons/SelectAll.svelte';
 	import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+	import { AppRoute } from '$lib/constants';
+	import AlbumCard from '$lib/components/album-page/album-card.svelte';
+	import { flip } from 'svelte/animate';
 
 	export let data: PageData;
 
 	// The GalleryViewer pushes it's own history state, which causes weird
 	// behavior for history.back(). To prevent that we store the previous page
 	// manually and navigate back to that.
-	let previousRoute = '/explore';
+	let previousRoute = AppRoute.EXPLORE as string;
+	$: albums = data.results.albums.items;
 
 	afterNavigate(({ from }) => {
 		// Prevent setting previousRoute to the current page.
 		if (from && from.route.id !== $page.route.id) {
 			previousRoute = from.url.href;
+		}
+
+		if (from?.route.id === '/(user)/albums/[albumId]') {
+			previousRoute = AppRoute.EXPLORE;
 		}
 	});
 
@@ -79,6 +87,30 @@
 
 <section class="relative pt-32 mb-12 bg-immich-bg dark:bg-immich-dark-bg">
 	<section class="overflow-y-auto relative immich-scrollbar">
+		{#if albums.length}
+			<section>
+				<div class="text-4xl font-medium text-black/70 dark:text-white/80 ml-6">ALBUMS</div>
+				<div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
+					{#each albums as album (album.id)}
+						<a
+							data-sveltekit-preload-data="hover"
+							href={`albums/${album.id}`}
+							animate:flip={{ duration: 200 }}
+						>
+							<AlbumCard
+								{album}
+								user={data.user}
+								isSharingView={false}
+								showItemCount={false}
+								showContextMenu={false}
+							/>
+						</a>
+					{/each}
+				</div>
+
+				<div class="m-6 text-4xl font-medium text-black/70 dark:text-white/80">PHOTOS & VIDEOS</div>
+			</section>
+		{/if}
 		<section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
 			{#if data.results?.assets?.items.length > 0}
 				<div class="pl-4">

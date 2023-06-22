@@ -52,21 +52,19 @@ class UserResponseDto {
   String oauthId;
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is UserResponseDto &&
-          other.id == id &&
-          other.email == email &&
-          other.firstName == firstName &&
-          other.lastName == lastName &&
-          other.storageLabel == storageLabel &&
-          other.profileImagePath == profileImagePath &&
-          other.shouldChangePassword == shouldChangePassword &&
-          other.isAdmin == isAdmin &&
-          other.createdAt == createdAt &&
-          other.deletedAt == deletedAt &&
-          other.updatedAt == updatedAt &&
-          other.oauthId == oauthId;
+  bool operator ==(Object other) => identical(this, other) || other is UserResponseDto &&
+     other.id == id &&
+     other.email == email &&
+     other.firstName == firstName &&
+     other.lastName == lastName &&
+     other.storageLabel == storageLabel &&
+     other.profileImagePath == profileImagePath &&
+     other.shouldChangePassword == shouldChangePassword &&
+     other.isAdmin == isAdmin &&
+     other.createdAt == createdAt &&
+     other.deletedAt == deletedAt &&
+     other.updatedAt == updatedAt &&
+     other.oauthId == oauthId;
 
   @override
   int get hashCode =>

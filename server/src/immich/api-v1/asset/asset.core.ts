@@ -1,18 +1,18 @@
 import { AuthUserDto, IJobRepository, JobName } from '@app/domain';
 import { AssetEntity, AssetType, UserEntity } from '@app/infra/entities';
-import { IAssetRepository } from './asset-repository';
-import { CreateAssetDto, UploadFile } from './dto/create-asset.dto';
 import { parse } from 'node:path';
+import { IAssetRepository } from './asset-repository';
+import { CreateAssetDto, ImportAssetDto, UploadFile } from './dto/create-asset.dto';
 
 export class AssetCore {
   constructor(private repository: IAssetRepository, private jobRepository: IJobRepository) {}
 
   async create(
     authUser: AuthUserDto,
-    dto: CreateAssetDto,
+    dto: CreateAssetDto | ImportAssetDto,
     file: UploadFile,
     livePhotoAssetId?: string,
-    sidecarFile?: UploadFile,
+    sidecarPath?: string,
   ): Promise<AssetEntity> {
     const asset = await this.repository.create({
       owner: { id: authUser.id } as UserEntity,
@@ -35,12 +35,14 @@ export class AssetCore {
       livePhotoVideo: livePhotoAssetId != null ? ({ id: livePhotoAssetId } as AssetEntity) : null,
       resizePath: null,
       webpPath: null,
+      thumbhash: null,
       encodedVideoPath: null,
       tags: [],
       sharedLinks: [],
       originalFileName: parse(file.originalName).name,
       faces: [],
-      sidecarPath: sidecarFile?.originalPath || null,
+      sidecarPath: sidecarPath || null,
+      isReadOnly: dto.isReadOnly ?? false,
     });
 
     await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id, source: 'upload' } });

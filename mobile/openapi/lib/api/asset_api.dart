@@ -16,61 +16,6 @@ class AssetApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'PATCH /asset/shared-link/add' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [AddAssetsDto] addAssetsDto (required):
-  ///
-  /// * [String] key:
-  Future<Response> addAssetsToSharedLinkWithHttpInfo(AddAssetsDto addAssetsDto, { String? key, }) async {
-    // ignore: prefer_const_declarations
-    final path = r'/asset/shared-link/add';
-
-    // ignore: prefer_final_locals
-    Object? postBody = addAssetsDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
-    }
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'PATCH',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [AddAssetsDto] addAssetsDto (required):
-  ///
-  /// * [String] key:
-  Future<SharedLinkResponseDto?> addAssetsToSharedLink(AddAssetsDto addAssetsDto, { String? key, }) async {
-    final response = await addAssetsToSharedLinkWithHttpInfo(addAssetsDto,  key: key, );
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharedLinkResponseDto',) as SharedLinkResponseDto;
-    
-    }
-    return null;
-  }
-
   /// Checks if assets exist by checksums
   ///
   /// Note: This method returns the HTTP [Response].
@@ -230,53 +175,6 @@ class AssetApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'CheckExistingAssetsResponseDto',) as CheckExistingAssetsResponseDto;
-    
-    }
-    return null;
-  }
-
-  /// Performs an HTTP 'POST /asset/shared-link' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [CreateAssetsShareLinkDto] createAssetsShareLinkDto (required):
-  Future<Response> createAssetsSharedLinkWithHttpInfo(CreateAssetsShareLinkDto createAssetsShareLinkDto,) async {
-    // ignore: prefer_const_declarations
-    final path = r'/asset/shared-link';
-
-    // ignore: prefer_final_locals
-    Object? postBody = createAssetsShareLinkDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [CreateAssetsShareLinkDto] createAssetsShareLinkDto (required):
-  Future<SharedLinkResponseDto?> createAssetsSharedLink(CreateAssetsShareLinkDto createAssetsShareLinkDto,) async {
-    final response = await createAssetsSharedLinkWithHttpInfo(createAssetsShareLinkDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharedLinkResponseDto',) as SharedLinkResponseDto;
     
     }
     return null;
@@ -1225,33 +1123,27 @@ class AssetApi {
     return null;
   }
 
-  /// Performs an HTTP 'PATCH /asset/shared-link/remove' operation and returns the [Response].
+  /// Performs an HTTP 'POST /asset/import' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [RemoveAssetsDto] removeAssetsDto (required):
-  ///
-  /// * [String] key:
-  Future<Response> removeAssetsFromSharedLinkWithHttpInfo(RemoveAssetsDto removeAssetsDto, { String? key, }) async {
+  /// * [ImportAssetDto] importAssetDto (required):
+  Future<Response> importFileWithHttpInfo(ImportAssetDto importAssetDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/asset/shared-link/remove';
+    final path = r'/asset/import';
 
     // ignore: prefer_final_locals
-    Object? postBody = removeAssetsDto;
+    Object? postBody = importAssetDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
-
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
-    }
 
     const contentTypes = <String>['application/json'];
 
 
     return apiClient.invokeAPI(
       path,
-      'PATCH',
+      'POST',
       queryParams,
       postBody,
       headerParams,
@@ -1262,11 +1154,9 @@ class AssetApi {
 
   /// Parameters:
   ///
-  /// * [RemoveAssetsDto] removeAssetsDto (required):
-  ///
-  /// * [String] key:
-  Future<SharedLinkResponseDto?> removeAssetsFromSharedLink(RemoveAssetsDto removeAssetsDto, { String? key, }) async {
-    final response = await removeAssetsFromSharedLinkWithHttpInfo(removeAssetsDto,  key: key, );
+  /// * [ImportAssetDto] importAssetDto (required):
+  Future<AssetFileUploadResponseDto?> importFile(ImportAssetDto importAssetDto,) async {
+    final response = await importFileWithHttpInfo(importAssetDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -1274,7 +1164,7 @@ class AssetApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharedLinkResponseDto',) as SharedLinkResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetFileUploadResponseDto',) as AssetFileUploadResponseDto;
     
     }
     return null;
@@ -1464,6 +1354,8 @@ class AssetApi {
   ///
   /// * [MultipartFile] assetData (required):
   ///
+  /// * [String] fileExtension (required):
+  ///
   /// * [String] deviceAssetId (required):
   ///
   /// * [String] deviceId (required):
@@ -1474,20 +1366,20 @@ class AssetApi {
   ///
   /// * [bool] isFavorite (required):
   ///
-  /// * [String] fileExtension (required):
-  ///
   /// * [String] key:
   ///
   /// * [MultipartFile] livePhotoData:
   ///
   /// * [MultipartFile] sidecarData:
   ///
+  /// * [bool] isReadOnly:
+  ///
   /// * [bool] isArchived:
   ///
   /// * [bool] isVisible:
   ///
   /// * [String] duration:
-  Future<Response> uploadFileWithHttpInfo(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, String fileExtension, { String? key, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isArchived, bool? isVisible, String? duration, }) async {
+  Future<Response> uploadFileWithHttpInfo(AssetTypeEnum assetType, MultipartFile assetData, String fileExtension, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isReadOnly, bool? isArchived, bool? isVisible, String? duration, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/upload';
 
@@ -1525,6 +1417,14 @@ class AssetApi {
       mp.fields[r'sidecarData'] = sidecarData.field;
       mp.files.add(sidecarData);
     }
+    if (isReadOnly != null) {
+      hasFields = true;
+      mp.fields[r'isReadOnly'] = parameterToString(isReadOnly);
+    }
+    if (fileExtension != null) {
+      hasFields = true;
+      mp.fields[r'fileExtension'] = parameterToString(fileExtension);
+    }
     if (deviceAssetId != null) {
       hasFields = true;
       mp.fields[r'deviceAssetId'] = parameterToString(deviceAssetId);
@@ -1553,10 +1453,6 @@ class AssetApi {
       hasFields = true;
       mp.fields[r'isVisible'] = parameterToString(isVisible);
     }
-    if (fileExtension != null) {
-      hasFields = true;
-      mp.fields[r'fileExtension'] = parameterToString(fileExtension);
-    }
     if (duration != null) {
       hasFields = true;
       mp.fields[r'duration'] = parameterToString(duration);
@@ -1582,6 +1478,8 @@ class AssetApi {
   ///
   /// * [MultipartFile] assetData (required):
   ///
+  /// * [String] fileExtension (required):
+  ///
   /// * [String] deviceAssetId (required):
   ///
   /// * [String] deviceId (required):
@@ -1592,21 +1490,21 @@ class AssetApi {
   ///
   /// * [bool] isFavorite (required):
   ///
-  /// * [String] fileExtension (required):
-  ///
   /// * [String] key:
   ///
   /// * [MultipartFile] livePhotoData:
   ///
   /// * [MultipartFile] sidecarData:
   ///
+  /// * [bool] isReadOnly:
+  ///
   /// * [bool] isArchived:
   ///
   /// * [bool] isVisible:
   ///
   /// * [String] duration:
-  Future<AssetFileUploadResponseDto?> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, String fileExtension, { String? key, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isArchived, bool? isVisible, String? duration, }) async {
-    final response = await uploadFileWithHttpInfo(assetType, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, fileExtension,  key: key, livePhotoData: livePhotoData, sidecarData: sidecarData, isArchived: isArchived, isVisible: isVisible, duration: duration, );
+  Future<AssetFileUploadResponseDto?> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String fileExtension, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isReadOnly, bool? isArchived, bool? isVisible, String? duration, }) async {
+    final response = await uploadFileWithHttpInfo(assetType, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite,  key: key, livePhotoData: livePhotoData, sidecarData: sidecarData, isReadOnly: isReadOnly, isArchived: isArchived, isVisible: isVisible, duration: duration, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

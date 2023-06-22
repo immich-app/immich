@@ -1,13 +1,19 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import request from 'supertest';
-import { clearDb, getAuthUser, authCustom } from '../test/test-utils';
-import { CreateAlbumDto } from '@app/domain';
-import { CreateAlbumShareLinkDto } from '@app/immich/api-v1/album/dto/create-album-shared-link.dto';
-import { AuthUserDto } from '@app/immich/decorators/auth-user.decorator';
-import { AlbumResponseDto, AuthService, SharedLinkResponseDto, UserService } from '@app/domain';
-import { DataSource } from 'typeorm';
+import {
+  AlbumResponseDto,
+  AuthService,
+  CreateAlbumDto,
+  SharedLinkCreateDto,
+  SharedLinkResponseDto,
+  UserService,
+} from '@app/domain';
 import { AppModule } from '@app/immich/app.module';
+import { AuthUserDto } from '@app/immich/decorators/auth-user.decorator';
+import { SharedLinkType } from '@app/infra/entities';
+import { INestApplication } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import request from 'supertest';
+import { DataSource } from 'typeorm';
+import { authCustom, clearDb, getAuthUser } from '../test/test-utils';
 
 async function _createAlbum(app: INestApplication, data: CreateAlbumDto) {
   const res = await request(app.getHttpServer()).post('/album').send(data);
@@ -15,8 +21,10 @@ async function _createAlbum(app: INestApplication, data: CreateAlbumDto) {
   return res.body as AlbumResponseDto;
 }
 
-async function _createAlbumSharedLink(app: INestApplication, data: CreateAlbumShareLinkDto) {
-  const res = await request(app.getHttpServer()).post('/album/create-shared-link').send(data);
+async function _createAlbumSharedLink(app: INestApplication, data: Omit<SharedLinkCreateDto, 'type'>) {
+  const res = await request(app.getHttpServer())
+    .post('/shared-link')
+    .send({ ...data, type: SharedLinkType.ALBUM });
   expect(res.status).toEqual(201);
   return res.body as SharedLinkResponseDto;
 }
