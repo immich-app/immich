@@ -61,7 +61,7 @@ class PersonResponseDto {
       assert(() {
         requiredKeys.forEach((key) {
           assert(json.containsKey(key), 'Required key "PersonResponseDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "PersonResponseDto[$key]" has a null value in JSON.');
+          // assert(json[key] != null, 'Required key "PersonResponseDto[$key]" has a null value in JSON.');
         });
         return true;
       }());

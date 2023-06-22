@@ -81,7 +81,7 @@ class AssetBulkUploadCheckResult {
       assert(() {
         requiredKeys.forEach((key) {
           assert(json.containsKey(key), 'Required key "AssetBulkUploadCheckResult[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "AssetBulkUploadCheckResult[$key]" has a null value in JSON.');
+          // assert(json[key] != null, 'Required key "AssetBulkUploadCheckResult[$key]" has a null value in JSON.');
         });
         return true;
       }());

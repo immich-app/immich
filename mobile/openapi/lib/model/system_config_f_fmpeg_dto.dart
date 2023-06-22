@@ -97,7 +97,7 @@ class SystemConfigFFmpegDto {
       assert(() {
         requiredKeys.forEach((key) {
           assert(json.containsKey(key), 'Required key "SystemConfigFFmpegDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "SystemConfigFFmpegDto[$key]" has a null value in JSON.');
+          // assert(json[key] != null, 'Required key "SystemConfigFFmpegDto[$key]" has a null value in JSON.');
         });
         return true;
       }());

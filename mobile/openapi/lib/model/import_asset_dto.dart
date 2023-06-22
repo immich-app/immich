@@ -155,7 +155,7 @@ class ImportAssetDto {
       assert(() {
         requiredKeys.forEach((key) {
           assert(json.containsKey(key), 'Required key "ImportAssetDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "ImportAssetDto[$key]" has a null value in JSON.');
+          // assert(json[key] != null, 'Required key "ImportAssetDto[$key]" has a null value in JSON.');
         });
         return true;
       }());

@@ -73,7 +73,7 @@ class AdminSignupResponseDto {
       assert(() {
         requiredKeys.forEach((key) {
           assert(json.containsKey(key), 'Required key "AdminSignupResponseDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "AdminSignupResponseDto[$key]" has a null value in JSON.');
+          // assert(json[key] != null, 'Required key "AdminSignupResponseDto[$key]" has a null value in JSON.');
         });
         return true;
       }());

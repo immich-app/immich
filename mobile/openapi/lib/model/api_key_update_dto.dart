@@ -49,7 +49,7 @@ class APIKeyUpdateDto {
       assert(() {
         requiredKeys.forEach((key) {
           assert(json.containsKey(key), 'Required key "APIKeyUpdateDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "APIKeyUpdateDto[$key]" has a null value in JSON.');
+          // assert(json[key] != null, 'Required key "APIKeyUpdateDto[$key]" has a null value in JSON.');
         });
         return true;
       }());
