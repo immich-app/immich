@@ -56,7 +56,7 @@ function fileFilter(req: AuthRequest, file: any, cb: any) {
   }
 
   if (isSupportedFileType(file.mimetype)) {
-    cb(null, true);
+    return cb(null, true);
   } else {
     // Additionally support XML but only for sidecar files.
     if (file.fieldname === 'sidecarData' && ['application/xml', 'text/xml'].includes(file.mimetype)) {
@@ -65,7 +65,7 @@ function fileFilter(req: AuthRequest, file: any, cb: any) {
   }
 
   logger.error(`Unsupported file type ${extname(file.originalname)} file MIME type ${file.mimetype}`);
-  cb(new BadRequestException(`Unsupported file type ${extname(file.originalname)}`), false);
+  return cb(new BadRequestException(`Unsupported file type ${extname(file.originalname)}`), false);
 }
 
 function destination(req: AuthRequest, file: Express.Multer.File, cb: any) {
