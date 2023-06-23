@@ -69,6 +69,9 @@ We will use those values in the steps below.
       - typesense
     restart: always
 ```
+:::tip
+Internal and external path has to be identical.
+:::
 
 *Remember to bring the container down/up to register the changes. Make sure you can see the mounted path in the container.*
 
