@@ -228,7 +228,6 @@ class Asset {
   bool canUpdate(Asset a) {
     assert(isInDb);
     assert(checksum == a.checksum);
-    assert(thumbhash == a.thumbhash);
     assert(a.storage != AssetState.merged);
     return a.updatedAt.isAfter(updatedAt) ||
         a.isRemote && !isRemote ||
@@ -268,6 +267,7 @@ class Asset {
           livePhotoVideoId: livePhotoVideoId,
           isFavorite: isFavorite,
           isArchived: isArchived,
+          thumbhash: thumbhash,
         );
       }
     } else {
@@ -282,6 +282,7 @@ class Asset {
           // isFavorite + isArchived are not set by device-only assets
           isFavorite: a.isFavorite,
           isArchived: a.isArchived,
+          thumbhash: a.thumbhash,
           exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
         );
       } else {

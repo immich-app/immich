@@ -54,3 +54,5 @@ ios/fastlane/report.xml
 default.isar
 default.isar.lock
 libisar.so
+default.isar-lck 
+isar.dll
