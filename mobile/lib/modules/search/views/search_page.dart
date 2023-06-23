@@ -4,13 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/search/models/curated_content.dart';
+import 'package:immich_mobile/modules/search/providers/people.provider.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
+import 'package:immich_mobile/modules/search/ui/curated_people_row.dart';
 import 'package:immich_mobile/modules/search/ui/curated_row.dart';
 import 'package:immich_mobile/modules/search/ui/immich_search_bar.dart';
+import 'package:immich_mobile/modules/search/ui/person_name_edit_form.dart';
+import 'package:immich_mobile/modules/search/ui/search_row_title.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
-import 'package:openapi/api.dart';
 
 // ignore: must_be_immutable
 class SearchPage extends HookConsumerWidget {
@@ -21,10 +24,9 @@ class SearchPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isSearchEnabled = ref.watch(searchPageStateProvider).isSearchEnabled;
-    AsyncValue<List<CuratedLocationsResponseDto>> curatedLocation =
-        ref.watch(getCuratedLocationProvider);
-    AsyncValue<List<CuratedObjectsResponseDto>> curatedObjects =
-        ref.watch(getCuratedObjectProvider);
+    final curatedLocation = ref.watch(getCuratedLocationProvider);
+    final curatedObjects = ref.watch(getCuratedObjectProvider);
+    final curatedPeople = ref.watch(getCuratedPeopleProvider);
     var isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     double imageSize = MediaQuery.of(context).size.width / 3;
 
@@ -50,6 +52,50 @@ class SearchPage extends HookConsumerWidget {
       AutoRouter.of(context).push(
         SearchResultRoute(
           searchTerm: searchTerm,
+        ),
+      );
+    }
+
+    showNameEditModel(
+      String personId,
+      String personName,
+    ) {
+      return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return PersonNameEditForm(personId: personId, personName: personName);
+        },
+      );
+    }
+
+    buildPeople() {
+      return SizedBox(
+        height: MediaQuery.of(context).size.width / 3,
+        child: curatedPeople.when(
+          loading: () => const Center(child: ImmichLoadingIndicator()),
+          error: (err, stack) => Center(child: Text('Error: $err')),
+          data: (people) => CuratedPeopleRow(
+            content: people
+                .map(
+                  (person) => CuratedContent(
+                    id: person.id,
+                    label: person.name,
+                  ),
+                )
+                .take(12)
+                .toList(),
+            onTap: (content, index) {
+              AutoRouter.of(context).push(
+                PersonResultRoute(
+                  personId: content.id,
+                  personName: content.label,
+                ),
+              );
+            },
+            onNameTap: (person, index) => {
+              showNameEditModel(person.id, person.label),
+            },
+          ),
         ),
       );
     }
@@ -130,63 +176,25 @@ class SearchPage extends HookConsumerWidget {
           children: [
             ListView(
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 4.0,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "search_page_places",
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ).tr(),
-                      TextButton(
-                        child: Text(
-                          'search_page_view_all_button',
-                          style: TextStyle(
-                            color: Theme.of(context).primaryColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14.0,
-                          ),
-                        ).tr(),
-                        onPressed: () => AutoRouter.of(context).push(
-                          const CuratedLocationRoute(),
-                        ),
-                      ),
-                    ],
+                SearchRowTitle(
+                  title: "search_page_people".tr(),
+                  onViewAllPressed: () => AutoRouter.of(context).push(
+                    const AllPeopleRoute(),
                   ),
                 ),
-                buildPlaces(),
-                Padding(
-                  padding: const EdgeInsets.only(
-                    top: 24.0,
-                    bottom: 4.0,
-                    left: 16.0,
-                    right: 16.0,
+                buildPeople(),
+                SearchRowTitle(
+                  title: "search_page_places".tr(),
+                  onViewAllPressed: () => AutoRouter.of(context).push(
+                    const CuratedLocationRoute(),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "search_page_things",
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ).tr(),
-                      TextButton(
-                        child: Text(
-                          'search_page_view_all_button',
-                          style: TextStyle(
-                            color: Theme.of(context).primaryColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14.0,
-                          ),
-                        ).tr(),
-                        onPressed: () => AutoRouter.of(context).push(
-                          const CuratedObjectRoute(),
-                        ),
-                      ),
-                    ],
+                  top: 0,
+                ),
+                buildPlaces(),
+                SearchRowTitle(
+                  title: "search_page_things".tr(),
+                  onViewAllPressed: () => AutoRouter.of(context).push(
+                    const CuratedObjectRoute(),
                   ),
                 ),
                 buildThings(),
@@ -200,7 +208,7 @@ class SearchPage extends HookConsumerWidget {
                 ),
                 ListTile(
                   leading: Icon(
-                    Icons.favorite_border,
+                    Icons.star_outline,
                     color: categoryIconColor,
                   ),
                   title:

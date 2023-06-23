@@ -59,3 +59,7 @@ String _getThumbnailUrl(
 }) {
   return '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/$id?format=${type.value}';
 }
+
+String getFaceThumbnailUrl(final String personId) {
+  return '${Store.get(StoreKey.serverEndpoint)}/person/$personId/thumbnail';
+}
