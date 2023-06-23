@@ -103,6 +103,7 @@ class PersonResultPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        title: Text(name.value),
         leading: IconButton(
           onPressed: () => AutoRouter.of(context).pop(),
           icon: const Icon(Icons.arrow_back_ios_rounded),
