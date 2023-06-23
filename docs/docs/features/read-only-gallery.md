@@ -1,20 +1,20 @@
 # Read-only Gallery [Experimental]
 
 ## Overview
-This feature enables the user to use the existing gallery without uploading the assets to Immich.
+This feature enables users to use an existing gallery without uploading the assets to Immich.
 
 Upon syncing the file information, it will be read by Immich to generate supported files.
 
 :::caution
 
-This feature is still in experimental stage
+This feature is still in an experimental stage.
 
-This is a very primitive implementation of the read-only mechanism, enhancement of this feature will be continue developed in the future.
+This is a very primitive implementation of the read-only mechanism, enhancement of this feature will continue to be developed in the future.
 
-The current limitation of this feature are:
+The current limitations of this feature are:
 
 - Manually sync using the CLI tool, auto-sync (watch) is not supported.
-- Only new files that added to the gallery will be detected. 
+- Only new files that are added to the gallery will be detected. 
 - Deletion and moving of files will not be detected.
 
 :::
@@ -34,7 +34,7 @@ We will use those values in the steps below.
 
 ### Mount the gallery to the containers.
 
-`immich-server` and `immich-microservices` containers will need the information of the gallery. Mount the directory path as the example below
+`immich-server` and `immich-microservices` containers will need access to the gallery. Mount the directory path as in the example below
 
 ```diff title="docker-compose.yml"
   immich-server:
@@ -70,7 +70,7 @@ We will use those values in the steps below.
     restart: always
 ```
 :::tip
-Internal and external path has to be identical.
+Internal and external path have to be identical.
 :::
 
 *Remember to bring the container down/up to register the changes. Make sure you can see the mounted path in the container.*
@@ -85,12 +85,12 @@ This action is done by the admin of the instance.
 
 <img src={require('./img/me.png').default} width='33%' title='My Account Storage Path' />
 
-<img src={require('./img/my-wife.png').default} width='33%' title='My Wife Account Storage Path' />
+<img src={require('./img/my-wife.png').default} width='33%' title='My Wife's Account Storage Path' />
 
 
 ### Sync with the CLI tool.
 
-- Install or update the [CLI Tool](/docs/features/bulk-upload.md). Import feature is supported from version `v0.39.0` of the CLI
+- Install or update the [CLI Tool](/docs/features/bulk-upload.md). The import feature is supported from version `v0.39.0` of the CLI
 - Run the command below to sync the gallery with Immich. 
   
 ```bash title="Import my gallery"
@@ -102,4 +102,4 @@ immich upload --key <my-api-key> --server http://my-server-ip:2283/api /mnt/medi
 immich upload --key <my-wife-api-key> --server http://my-server-ip:2283/api /mnt/media/childhood-memory --recursive --import
 ```
 
-The `--import` flag will do the magic of importing the files to Immich.
+The `--import` flag will tell Immich to import the files by path instead of uploading them.
