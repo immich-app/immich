@@ -1,11 +1,14 @@
-# Read-only Gallery [EXPERIMENTAL]
+# Read-only Gallery [Experimental]
 
-
+## Overview
 This feature enables the user to use the existing gallery without uploading the assets to Immich.
 
 Upon syncing the file information, it will be read by Immich to generate supported files.
 
-::: warning
+:::caution
+
+This feature is still in experimental stage
+
 This is a very primitive implementation of the read-only mechanism, enhancement of this feature will be continue developed in the future.
 
 The current limitation of this feature are:
@@ -18,15 +21,55 @@ The current limitation of this feature are:
 
 ## Usage
 
-::: tip
+:::tip Example scenario
 
-Assuming my gallery is stored at `/mnt/media/precious-memory`. 
+On the VM/system that Immich is running, I have 2 galleries that I want to use with Immich.
 
-We will use this value in the steps below.
+* My gallery is stored at `/mnt/media/precious-memory`
+* My wife's gallery is stored at `/mnt/media/childhood-memory`
+
+We will use those values in the steps below.
 
 :::
 
-1. Mount the gallery to the containers.
-2. Register the path for the user.
-3. Sync with the CLI tool.
+### Mount the gallery to the containers.
+
+`immich-server` and `immich-microservices` containers will need the information of the gallery. Mount the directory path as the example below
+
+```diff title="docker-compose.yml"
+  immich-server:
+    container_name: immich_server
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
+    command: [ "start.sh", "immich" ]
+    volumes:
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
++     - /mnt/media/precious-memory:/mnt/media/precious-memory
++     - /mnt/media/childhood-memory:/mnt/media/childhood-memory
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - database
+      - typesense
+    restart: always
+
+  immich-microservices:
+    container_name: immich_microservices
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
+    command: [ "start.sh", "microservices" ]
+    volumes:
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
++     - /mnt/media/precious-memory:/mnt/media/precious-memory
++     - /mnt/media/childhood-memory:/mnt/media/childhood-memory
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - database
+      - typesense
+    restart: always
+```
+
+### Register the path for the user.
+### Sync with the CLI tool.
 
