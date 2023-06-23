@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class SearchRowTitle extends StatelessWidget {
-  final VoidCallback onViewAllPressed;
+  final Function() onViewAllPressed;
   final String title;
   final double top;
 

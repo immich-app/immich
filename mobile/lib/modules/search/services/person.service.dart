@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:openapi/api.dart';
@@ -24,9 +25,15 @@ class PersonService {
     }
   }
 
-  Future<List<AssetResponseDto>?> getPersonAssets(String id) async {
+  Future<List<Asset>?> getPersonAssets(String id) async {
     try {
-      return await _apiService.personApi.getPersonAssets(id);
+      final assets = await _apiService.personApi.getPersonAssets(id);
+
+      if (assets == null) {
+        return null;
+      }
+
+      return assets.map((e) => Asset.remote(e)).toList();
     } catch (e) {
       debugPrint("Error [getPersonAssets] ${e.toString()}");
       return null;

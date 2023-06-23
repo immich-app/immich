@@ -48,8 +48,10 @@ class CuratedPeopleRow extends StatelessWidget {
         top: 8,
       ),
       itemBuilder: (context, index) {
-        final object = content[index];
-
+        final person = content[index];
+        final headers = {
+          "Authorization": "Bearer ${Store.get(StoreKey.accessToken)}"
+        };
         return Padding(
           padding: const EdgeInsets.only(right: 18.0),
           child: SizedBox(
@@ -58,7 +60,7 @@ class CuratedPeopleRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 GestureDetector(
-                  onTap: () => onTap?.call(object, index),
+                  onTap: () => onTap?.call(person, index),
                   child: SizedBox(
                     height: imageSize,
                     child: Material(
@@ -67,19 +69,16 @@ class CuratedPeopleRow extends StatelessWidget {
                       child: CircleAvatar(
                         maxRadius: imageSize / 2,
                         backgroundImage: NetworkImage(
-                          getFaceThumbnailUrl(object.id),
-                          headers: {
-                            "Authorization":
-                                "Bearer ${Store.get(StoreKey.accessToken)}"
-                          },
+                          getFaceThumbnailUrl(person.id),
+                          headers: headers,
                         ),
                       ),
                     ),
                   ),
                 ),
-                if (object.label == "")
+                if (person.label == "")
                   GestureDetector(
-                    onTap: () => onNameTap?.call(object, index),
+                    onTap: () => onNameTap?.call(person, index),
                     child: Padding(
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
@@ -95,7 +94,7 @@ class CuratedPeopleRow extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),
                     child: Text(
-                      object.label,
+                      person.label,
                       textAlign: TextAlign.center,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(

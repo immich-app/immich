@@ -59,7 +59,7 @@ class PersonNameEditForm extends HookConsumerWidget {
           onPressed: () {
             ref.read(
               updatePersonNameProvider(
-                UpdatePersonNameDto(personId, controller.text),
+                UpdatePersonName(personId, controller.text),
               ),
             );
 
