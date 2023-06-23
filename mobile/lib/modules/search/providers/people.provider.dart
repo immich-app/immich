@@ -8,13 +8,13 @@ final personAssetsProvider = FutureProvider.family
     .autoDispose<RenderList, String>((ref, personId) async {
   final PersonService personService = ref.watch(personServiceProvider);
 
-  var assets = await personService.getPersonAssets(personId);
+  final assetDtos = await personService.getPersonAssets(personId);
 
-  if (assets == null) {
+  if (assetDtos == null) {
     return RenderList.empty();
   }
 
-  var convertToAsset = assets.map((e) => Asset.remote(e)).toList();
+  final convertToAsset = assetDtos.map((e) => Asset.remote(e)).toList();
 
   return RenderList.fromAssets(convertToAsset, GroupAssetsBy.auto);
 });
@@ -23,7 +23,7 @@ final getCuratedPeopleProvider =
     FutureProvider.autoDispose<List<PersonResponseDto>>((ref) async {
   final PersonService personService = ref.watch(personServiceProvider);
 
-  var curatedPeople = await personService.getCuratedPeople();
+  final curatedPeople = await personService.getCuratedPeople();
 
   return curatedPeople ?? [];
 });
