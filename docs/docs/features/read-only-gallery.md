@@ -85,7 +85,7 @@ This action is done by the admin of the instance.
 
 <img src={require('./img/me.png').default} width='33%' title='My Account Storage Path' />
 
-<img src={require('./img/my-wife.png').default} width='33%' title='My Wife's Account Storage Path' />
+<img src={require('./img/my-wife.png').default} width='33%' title='My Wifes Account Storage Path' />
 
 
 ### Sync with the CLI tool.
