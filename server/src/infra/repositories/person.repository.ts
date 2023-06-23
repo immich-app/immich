@@ -61,7 +61,7 @@ export class PersonRepository implements IPersonRepository {
         exifInfo: true,
       },
       order: {
-        createdAt: 'ASC',
+        fileCreatedAt: 'desc',
       },
       // TODO: remove after either (1) pagination or (2) time bucket is implemented for this query
       take: 1000,
