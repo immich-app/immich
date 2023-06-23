@@ -30,6 +30,7 @@ export function assertMachineLearningEnabled() {
 
 const validMimeTypes = [
   'image/avif',
+  'image/cr3',
   'image/gif',
   'image/heic',
   'image/heif',
