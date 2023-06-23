@@ -70,6 +70,33 @@ We will use those values in the steps below.
     restart: always
 ```
 
+*Remember to bring the container down/up to register the changes. Make sure you can see the mounted path in the container.*
+
 ### Register the path for the user.
+
+This action is done by the admin of the instance.
+
+- Navigate to `Administration > Users` page on the web. 
+- Click on the user edit button.
+- Add the gallery path to the `External Path` field for the corresponding user and confirm the changes.
+
+<img src={require('./img/me.png').default} width='33%' title='My Account Storage Path' />
+
+<img src={require('./img/my-wife.png').default} width='33%' title='My Wife Account Storage Path' />
+
+
 ### Sync with the CLI tool.
 
+- Install or update the [CLI Tool](/docs/features/bulk-upload.md). Import feature is supported from version `v0.39.0` of the CLI
+- Run the command below to sync the gallery with Immich. 
+  
+```bash title="Import my gallery"
+immich upload --key <my-api-key> --server http://my-server-ip:2283/api /mnt/media/precious-memory --recursive --import
+```
+
+
+```bash title="Import my wife gallery"
+immich upload --key <my-wife-api-key> --server http://my-server-ip:2283/api /mnt/media/childhood-memory --recursive --import
+```
+
+The `--import` flag will do the magic of importing the files to Immich.
