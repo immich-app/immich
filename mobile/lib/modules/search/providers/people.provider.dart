@@ -13,7 +13,7 @@ final personAssetsProvider = FutureProvider.family
     return RenderList.empty();
   }
 
-  return RenderList.fromAssets(assets, GroupAssetsBy.month);
+  return RenderList.fromAssets(assets, GroupAssetsBy.auto);
 });
 
 final getCuratedPeopleProvider =

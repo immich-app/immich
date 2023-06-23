@@ -64,7 +64,7 @@ class PersonResultPage extends HookConsumerWidget {
       );
     }
 
-    buildTitleBlock(int totalAssets) {
+    buildTitleBlock() {
       if (name.value == "") {
         return GestureDetector(
           onTap: showEditNameDialog,
@@ -92,10 +92,6 @@ class PersonResultPage extends HookConsumerWidget {
           Text(
             name.value,
             style: Theme.of(context).textTheme.titleLarge,
-          ),
-          Text(
-            '$totalAssets photos',
-            style: Theme.of(context).textTheme.labelMedium,
           ),
         ],
       );
@@ -129,7 +125,7 @@ class PersonResultPage extends HookConsumerWidget {
                 : ImmichAssetGrid(
                     renderList: data,
                     topWidget: Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.only(left: 8.0, top: 24),
                       child: Row(
                         children: [
                           CircleAvatar(
@@ -144,7 +140,7 @@ class PersonResultPage extends HookConsumerWidget {
                           ),
                           Padding(
                             padding: const EdgeInsets.only(left: 16.0),
-                            child: buildTitleBlock(data.totalAssets),
+                            child: buildTitleBlock(),
                           ),
                         ],
                       ),
