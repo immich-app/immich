@@ -8,15 +8,13 @@ Upon syncing the file information, it will be read by Immich to generate support
 
 :::caution
 
-This feature is still in an experimental stage.
-
-This is a very primitive implementation of the read-only mechanism, enhancement of this feature will continue to be developed in the future.
+This feature is still in an experimental stage. And this is an initial implementation and will receive improvements in the future.
 
 The current limitations of this feature are:
 
-- Manually sync using the CLI tool, auto-sync (watch) is not supported.
+- Assets are not automatically synced and must instead be manually synced with the CLI tool.
 - Only new files that are added to the gallery will be detected.
-- Deletion and moving of files will not be detected.
+- Deleted and moved files will not be detected.
 
 :::
 
