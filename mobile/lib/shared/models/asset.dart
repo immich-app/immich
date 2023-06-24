@@ -234,6 +234,7 @@ class Asset {
         a.isLocal && !isLocal ||
         width == null && a.width != null ||
         height == null && a.height != null ||
+        thumbhash == null && a.thumbhash != null ||
         livePhotoVideoId == null && a.livePhotoVideoId != null ||
         !isRemote && a.isRemote && isFavorite != a.isFavorite ||
         !isRemote && a.isRemote && isArchived != a.isArchived;
