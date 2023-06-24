@@ -42,6 +42,7 @@ immich upload --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api --recur
 | --server / -s    | Immich's server address                                             |
 | --threads / -t   | Number of threads to use (Default 5)                                |
 | --album/ -al     | Create albums for assets based on the parent folder or a given name |
+| --import/ -i     | Import gallery                                                      |
 
 ### Obtain the API Key
 
