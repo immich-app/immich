@@ -1,6 +1,7 @@
 import { SharedLinkType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsDate, IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsBoolean, IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
 import { ValidateUUID } from '../../immich/decorators/validate-uuid.decorator';
 
 export class SharedLinkCreateDto {
@@ -18,7 +19,8 @@ export class SharedLinkCreateDto {
   @IsOptional()
   description?: string;
 
-  @IsDateString()
+  @IsDate()
+  @Type(() => Date)
   @IsOptional()
   expiresAt?: Date | null = null;
 
