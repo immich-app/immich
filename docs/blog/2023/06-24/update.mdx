@@ -32,9 +32,10 @@ Thankfully, we have many great contributors and developers that want to make thi
 
 To be concise, Immich can now read in the gallery files, register the path into the database, and then generate necessary files and put them through Immich’s machine learning pipeline so you can use all the goodness of Immich without the need to upload them. Since this is the initial implementation, some actions/behavior are not yet supported, and we aim to build toward them in future releases, namely:
 
-Assets are not automatically synced and must instead be manually synced with the CLI tool.
-Only new files that are added to the gallery will be detected.
-Deleted and moved files will not be detected.
+- Assets are not automatically synced and must instead be manually synced with the CLI tool.
+- Only new files that are added to the gallery will be detected.
+- Deleted and moved files will not be detected.
+
 You can find more information on how to use the feature by reading the documentation [here](/docs/features/read-only-gallery).
 
 ## Memory feature
@@ -47,10 +48,6 @@ This memory feature is very much similar to GPhotos' implementation of “x year
   <source src={memories} />
 </video>
 
-X years since displayed on top of the timeline
-​
-
-Memories viewer with auto play mechanism and ability to navigate between memories
 This feature is now available on the web and will be ported to the mobile app in the near future.
 
 ## Support XMP Sidecar
