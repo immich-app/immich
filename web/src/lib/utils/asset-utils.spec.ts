@@ -98,7 +98,6 @@ describe('get file mime type', () => {
 		{ mimetype: 'image/x-sony-arw', extension: 'arw' },
 		{ mimetype: 'image/x-sony-sr2', extension: 'sr2' },
 		{ mimetype: 'image/x-sony-srf', extension: 'srf' },
-
 		{ mimetype: 'video/3gpp', extension: '3gp' },
 		{ mimetype: 'video/mp2t', extension: 'm2ts' },
 		{ mimetype: 'video/mp2t', extension: 'mts' },
