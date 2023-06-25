@@ -43,7 +43,14 @@
 		}
 	});
 
-	$: term = $page.url.searchParams.get('q') || data.term || '';
+	$: term = (() => {
+		let term = $page.url.searchParams.get('q') || data.term || '';
+		const isMetadataSearch = $page.url.searchParams.get('clip') === 'false';
+		if (isMetadataSearch && term !== '') {
+			term = `m:${term}`;
+		}
+		return term;
+	})();
 
 	let selectedAssets: Set<AssetResponseDto> = new Set();
 	$: isMultiSelectionMode = selectedAssets.size > 0;
