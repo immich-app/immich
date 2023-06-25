@@ -37,7 +37,6 @@ const validMimeTypes = [
   'image/cin',
   'image/cr2',
   'image/cr3',
-  'image/cr3',
   'image/crw',
   'image/dcr',
   'image/dng',
