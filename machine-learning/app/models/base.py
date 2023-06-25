@@ -5,6 +5,8 @@ from pathlib import Path
 from shutil import rmtree
 from typing import Any
 
+from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf
+
 from ..config import get_cache_dir
 from ..schemas import ModelType
 
@@ -24,7 +26,7 @@ class InferenceModel(ABC):
 
         try:
             self.load(**model_kwargs)
-        except RuntimeError:
+        except (OSError, InvalidProtobuf):
             self.clear_cache()
             self.load(**model_kwargs)
 
