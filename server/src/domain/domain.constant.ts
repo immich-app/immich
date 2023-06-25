@@ -37,6 +37,7 @@ const validMimeTypes = [
   'image/jpeg',
   'image/jxl',
   'image/png',
+  'image/dng',
   'image/tiff',
   'image/webp',
   'image/x-adobe-dng',
