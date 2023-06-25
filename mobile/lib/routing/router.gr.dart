@@ -290,6 +290,18 @@ class _$AppRouter extends RootStackRouter {
         child: const AllPeoplePage(),
       );
     },
+    VerticalRouteView.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const VerticalPageView(),
+      );
+    },
+    HorizontalRouteView.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const HorizontalPageView(),
+      );
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
         routeData: routeData,
@@ -584,6 +596,22 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           AllPeopleRoute.name,
           path: '/all-people-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          VerticalRouteView.name,
+          path: '/vertical-page-view',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          HorizontalRouteView.name,
+          path: '/horizontal-page-view',
           guards: [
             authGuard,
             duplicateGuard,
@@ -1279,6 +1307,30 @@ class AllPeopleRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'AllPeopleRoute';
+}
+
+/// generated route for
+/// [VerticalPageView]
+class VerticalRouteView extends PageRouteInfo<void> {
+  const VerticalRouteView()
+      : super(
+          VerticalRouteView.name,
+          path: '/vertical-page-view',
+        );
+
+  static const String name = 'VerticalRouteView';
+}
+
+/// generated route for
+/// [HorizontalPageView]
+class HorizontalRouteView extends PageRouteInfo<void> {
+  const HorizontalRouteView()
+      : super(
+          HorizontalRouteView.name,
+          path: '/horizontal-page-view',
+        );
+
+  static const String name = 'HorizontalRouteView';
 }
 
 /// generated route for
