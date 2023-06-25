@@ -91,7 +91,7 @@ Server Özellikleri: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CP
 
 Bu projeye bağlı kaldım ve durmayacağım. Belgeleri güncellemeye, yeni özellikler eklemeye ve hataları düzeltmeye devam edeceğim. Ancak bunu tek başıma yapamam. Bu yüzden devam etme konusunda bana motivasyon sağlamanız için yardımınıza ihtiyacım var.
 
-[selfhosted.show - In the episode 'The-organization-must-Hayırt-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) bölümünde söylendiği üzere,bu projede takımımın ve benim projeye harcadağımız büyük bir çaba var. Bir gün bunu tam zamanlı olarak yapabilmeyi çok isterim. Bunu gerçekleştirebilmek için gerçekten sizlerin desteğine ihtiyacım var.
+[selfhosted.show - In the episode 'The-organization-must-not-be-name is a Hostile Actor'](https://selfhosted.show/79?t=1418) bölümünde söylendiği üzere,bu projede takımımın ve benim projeye harcadağımız büyük bir çaba var. Bir gün bunu tam zamanlı olarak yapabilmeyi çok isterim. Bunu gerçekleştirebilmek için gerçekten sizlerin desteğine ihtiyacım var.
 
 Eğer bu size doğru bir amaç gibi geliyorsa ve uygulamanın uzun bir süre boyunca kullanacağınız bir şey olduğunu düşünüyorsanız, aşağıdaki bağlantılardan birini kullanarak bana destek olabilirsiniz.
 
