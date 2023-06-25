@@ -18,21 +18,22 @@ class FaceRecognizer(InferenceModel):
         min_score: float = settings.min_face_score,
         cache_dir: Path | None = None,
         **model_kwargs,
-    ):
-        super().__init__(model_name, cache_dir)
+    ) -> None:
         self.min_score = min_score
-        model = FaceAnalysis(
+        super().__init__(model_name, cache_dir, **model_kwargs)
+
+    def load(self, **model_kwargs: Any) -> None:
+        self.model = FaceAnalysis(
             name=self.model_name,
             root=self.cache_dir.as_posix(),
             allowed_modules=["detection", "recognition"],
             **model_kwargs,
         )
-        model.prepare(
+        self.model.prepare(
             ctx_id=0,
             det_thresh=self.min_score,
             det_size=(640, 640),
         )
-        self.model = model
 
     def predict(self, image: cv2.Mat) -> list[dict[str, Any]]:
         height, width, _ = image.shape

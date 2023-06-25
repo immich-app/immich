@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 from PIL.Image import Image
 from transformers.pipelines import pipeline
@@ -17,10 +18,11 @@ class ImageClassifier(InferenceModel):
         min_score: float = settings.min_tag_score,
         cache_dir: Path | None = None,
         **model_kwargs,
-    ):
-        super().__init__(model_name, cache_dir)
+    ) -> None:
         self.min_score = min_score
+        super().__init__(model_name, cache_dir, **model_kwargs)
 
+    def load(self, **model_kwargs: Any) -> None:
         self.model = pipeline(
             self.model_type.value,
             self.model_name,
