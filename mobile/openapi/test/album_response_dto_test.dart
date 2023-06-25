@@ -71,6 +71,11 @@ void main() {
       // TODO
     });
 
+    // DateTime lastModifiedAssetTimestamp
+    test('to test the property `lastModifiedAssetTimestamp`', () async {
+      // TODO
+    });
+
 
   });
 

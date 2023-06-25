@@ -8,6 +8,7 @@ export const userFactory = Sync.makeFactory<UserResponseDto>({
 	firstName: Sync.each(() => faker.name.firstName()),
 	lastName: Sync.each(() => faker.name.lastName()),
 	storageLabel: Sync.each(() => faker.random.alphaNumeric()),
+	externalPath: Sync.each(() => faker.random.alphaNumeric()),
 	profileImagePath: '',
 	shouldChangePassword: Sync.each(() => faker.datatype.boolean()),
 	isAdmin: true,

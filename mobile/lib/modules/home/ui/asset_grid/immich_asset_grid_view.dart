@@ -127,7 +127,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
           width: width * widthDistribution[index],
           height: width,
           margin: EdgeInsets.only(
-            top: widget.margin,
+            bottom: widget.margin,
             right: last ? 0.0 : widget.margin,
           ),
           child: _buildThumbnailOrPlaceholder(asset, absoluteOffset + index),
@@ -157,7 +157,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
     final String title = monthFormat.format(date);
     return Padding(
       key: Key("month-$title"),
-      padding: const EdgeInsets.only(left: 12.0, top: 30),
+      padding: const EdgeInsets.only(left: 12.0, top: 24.0),
       child: Text(
         title,
         style: TextStyle(
@@ -179,7 +179,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
             width: width,
             height: height,
             margin: EdgeInsets.only(
-              top: widget.margin,
+              bottom: widget.margin,
               right: i + 1 == num ? 0.0 : widget.margin,
             ),
             color: Colors.grey,
@@ -206,6 +206,8 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
           key: ValueKey(section.offset),
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (section.offset == 0 && widget.topWidget != null)
+              widget.topWidget!,
             if (section.type == RenderAssetGridElementType.monthTitle)
               _buildMonthTitle(context, section.date),
             if (section.type == RenderAssetGridElementType.groupDividerTitle ||
@@ -401,6 +403,7 @@ class ImmichAssetGridView extends StatefulWidget {
   final bool showMultiSelectIndicator;
   final void Function(ItemPosition start, ItemPosition end)?
       visibleItemsListener;
+  final Widget? topWidget;
 
   const ImmichAssetGridView({
     super.key,
@@ -416,6 +419,7 @@ class ImmichAssetGridView extends StatefulWidget {
     this.dynamicLayout = true,
     this.showMultiSelectIndicator = true,
     this.visibleItemsListener,
+    this.topWidget,
   });
 
   @override

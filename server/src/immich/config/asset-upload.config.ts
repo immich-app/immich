@@ -1,3 +1,4 @@
+import { isSidecarFileType, isSupportedFileType } from '@app/domain';
 import { StorageCore, StorageFolder } from '@app/domain/storage';
 import { BadRequestException, Logger, UnauthorizedException } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
@@ -53,21 +54,19 @@ function fileFilter(req: AuthRequest, file: any, cb: any) {
   if (!req.user || (req.user.isPublicUser && !req.user.isAllowUpload)) {
     return cb(new UnauthorizedException());
   }
-  if (
-    file.mimetype.match(
-      /\/(jpg|jpeg|png|gif|avi|mov|mp4|webm|x-msvideo|quicktime|heic|heif|avif|dng|x-adobe-dng|webp|tiff|3gpp|nef|x-nikon-nef|x-fuji-raf|x-samsung-srw|mpeg|x-flv|x-ms-wmv|x-matroska|x-sony-arw|arw|x-canon-crw|x-canon-cr2|x-canon-cr3|x-epson-erf|x-kodak-dcr|x-kodak-kdc|x-kodak-k25|x-minolta-mrw|x-olympus-orf|x-panasonic-raw|x-pentax-pef|x-sigma-x3f|x-sony-srf|x-sony-sr2|x-hasselblad-3fr|x-hasselblad-fff|x-leica-rwl|x-olympus-ori|x-phaseone-iiq|x-arriflex-ari|x-phaseone-cap|x-phantom-cin)$/,
-    )
-  ) {
-    cb(null, true);
-  } else {
-    // Additionally support XML but only for sidecar files
-    if (file.fieldname == 'sidecarData' && file.mimetype.match(/\/xml$/)) {
-      return cb(null, true);
-    }
 
-    logger.error(`Unsupported file type ${extname(file.originalname)} file MIME type ${file.mimetype}`);
-    cb(new BadRequestException(`Unsupported file type ${extname(file.originalname)}`), false);
+  if (isSupportedFileType(file.mimetype)) {
+    cb(null, true);
+    return;
   }
+
+  // Additionally support XML but only for sidecar files.
+  if (file.fieldname === 'sidecarData' && isSidecarFileType(file.mimetype)) {
+    return cb(null, true);
+  }
+
+  logger.error(`Unsupported file type ${extname(file.originalname)} file MIME type ${file.mimetype}`);
+  cb(new BadRequestException(`Unsupported file type ${extname(file.originalname)}`), false);
 }
 
 function destination(req: AuthRequest, file: Express.Multer.File, cb: any) {

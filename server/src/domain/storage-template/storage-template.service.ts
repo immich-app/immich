@@ -76,6 +76,11 @@ export class StorageTemplateService {
 
   // TODO: use asset core (once in domain)
   async moveAsset(asset: AssetEntity, metadata: MoveAssetMetadata) {
+    if (asset.isReadOnly) {
+      this.logger.verbose(`Not moving read-only asset: ${asset.originalPath}`);
+      return;
+    }
+
     const destination = await this.core.getTemplatePath(asset, metadata);
     if (asset.originalPath !== destination) {
       const source = asset.originalPath;
@@ -96,7 +101,10 @@ export class StorageTemplateService {
           asset.originalPath = destination;
           asset.sidecarPath = sidecarDestination || null;
         } catch (error: any) {
-          this.logger.warn('Unable to save new originalPath to database, undoing move', error?.stack);
+          this.logger.warn(
+            `Unable to save new originalPath to database, undoing move for path ${asset.originalPath} - filename ${asset.originalFileName} - id ${asset.id}`,
+            error?.stack,
+          );
 
           // Either sidecar move failed or the save failed. Eithr way, move media back
           await this.storageRepository.moveFile(destination, source);

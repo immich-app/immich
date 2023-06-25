@@ -4,12 +4,16 @@ import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/store.dart';
+import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class ExploreGrid extends StatelessWidget {
   final List<CuratedContent> curatedContent;
+  final bool isPeople;
+
   const ExploreGrid({
     super.key,
     required this.curatedContent,
+    this.isPeople = false,
   });
 
   @override
@@ -36,16 +40,25 @@ class ExploreGrid extends StatelessWidget {
       ),
       itemBuilder: (context, index) {
         final content = curatedContent[index];
-        final thumbnailRequestUrl =
-            '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${content.id}';
+        final thumbnailRequestUrl = isPeople
+            ? getFaceThumbnailUrl(content.id)
+            : '${Store.get(StoreKey.serverEndpoint)}/asset/thumbnail/${content.id}';
+
         return ThumbnailWithInfo(
           imageUrl: thumbnailRequestUrl,
           textInfo: content.label,
           borderRadius: 0,
           onTap: () {
-            AutoRouter.of(context).push(
-              SearchResultRoute(searchTerm: 'm:${content.label}'),
-            );
+            isPeople
+                ? AutoRouter.of(context).push(
+                    PersonResultRoute(
+                      personId: content.id,
+                      personName: content.label,
+                    ),
+                  )
+                : AutoRouter.of(context).push(
+                    SearchResultRoute(searchTerm: 'm:${content.label}'),
+                  );
           },
         );
       },

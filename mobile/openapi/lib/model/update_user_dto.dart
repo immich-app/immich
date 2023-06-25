@@ -19,6 +19,7 @@ class UpdateUserDto {
     this.firstName,
     this.lastName,
     this.storageLabel,
+    this.externalPath,
     this.isAdmin,
     this.shouldChangePassword,
   });
@@ -71,6 +72,14 @@ class UpdateUserDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
+  String? externalPath;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   bool? isAdmin;
 
   ///
@@ -89,6 +98,7 @@ class UpdateUserDto {
      other.firstName == firstName &&
      other.lastName == lastName &&
      other.storageLabel == storageLabel &&
+     other.externalPath == externalPath &&
      other.isAdmin == isAdmin &&
      other.shouldChangePassword == shouldChangePassword;
 
@@ -101,11 +111,12 @@ class UpdateUserDto {
     (firstName == null ? 0 : firstName!.hashCode) +
     (lastName == null ? 0 : lastName!.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode) +
+    (externalPath == null ? 0 : externalPath!.hashCode) +
     (isAdmin == null ? 0 : isAdmin!.hashCode) +
     (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode);
 
   @override
-  String toString() => 'UpdateUserDto[id=$id, email=$email, password=$password, firstName=$firstName, lastName=$lastName, storageLabel=$storageLabel, isAdmin=$isAdmin, shouldChangePassword=$shouldChangePassword]';
+  String toString() => 'UpdateUserDto[id=$id, email=$email, password=$password, firstName=$firstName, lastName=$lastName, storageLabel=$storageLabel, externalPath=$externalPath, isAdmin=$isAdmin, shouldChangePassword=$shouldChangePassword]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -113,37 +124,42 @@ class UpdateUserDto {
     if (this.email != null) {
       json[r'email'] = this.email;
     } else {
-      // json[r'email'] = null;
+    //  json[r'email'] = null;
     }
     if (this.password != null) {
       json[r'password'] = this.password;
     } else {
-      // json[r'password'] = null;
+    //  json[r'password'] = null;
     }
     if (this.firstName != null) {
       json[r'firstName'] = this.firstName;
     } else {
-      // json[r'firstName'] = null;
+    //  json[r'firstName'] = null;
     }
     if (this.lastName != null) {
       json[r'lastName'] = this.lastName;
     } else {
-      // json[r'lastName'] = null;
+    //  json[r'lastName'] = null;
     }
     if (this.storageLabel != null) {
       json[r'storageLabel'] = this.storageLabel;
     } else {
-      // json[r'storageLabel'] = null;
+    //  json[r'storageLabel'] = null;
+    }
+    if (this.externalPath != null) {
+      json[r'externalPath'] = this.externalPath;
+    } else {
+    //  json[r'externalPath'] = null;
     }
     if (this.isAdmin != null) {
       json[r'isAdmin'] = this.isAdmin;
     } else {
-      // json[r'isAdmin'] = null;
+    //  json[r'isAdmin'] = null;
     }
     if (this.shouldChangePassword != null) {
       json[r'shouldChangePassword'] = this.shouldChangePassword;
     } else {
-      // json[r'shouldChangePassword'] = null;
+    //  json[r'shouldChangePassword'] = null;
     }
     return json;
   }
@@ -155,17 +171,6 @@ class UpdateUserDto {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
-      // Ensure that the map contains the required keys.
-      // Note 1: the values aren't checked for validity beyond being non-null.
-      // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "UpdateUserDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "UpdateUserDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
-
       return UpdateUserDto(
         id: mapValueOfType<String>(json, r'id')!,
         email: mapValueOfType<String>(json, r'email'),
@@ -173,6 +178,7 @@ class UpdateUserDto {
         firstName: mapValueOfType<String>(json, r'firstName'),
         lastName: mapValueOfType<String>(json, r'lastName'),
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
+        externalPath: mapValueOfType<String>(json, r'externalPath'),
         isAdmin: mapValueOfType<bool>(json, r'isAdmin'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword'),
       );

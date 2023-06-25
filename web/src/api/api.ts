@@ -7,16 +7,16 @@ import {
 	Configuration,
 	ConfigurationParameters,
 	JobApi,
+	JobName,
 	OAuthApi,
-	PersonApi,
 	PartnerApi,
+	PersonApi,
 	SearchApi,
 	ServerInfoApi,
-	ShareApi,
+	SharedLinkApi,
 	SystemConfigApi,
 	UserApi,
-	UserApiFp,
-	JobName
+	UserApiFp
 } from './open-api';
 import { BASE_PATH } from './open-api/base';
 import { DUMMY_BASE_URL, toPathString } from './open-api/common';
@@ -32,7 +32,7 @@ export class ImmichApi {
 	public partnerApi: PartnerApi;
 	public searchApi: SearchApi;
 	public serverInfoApi: ServerInfoApi;
-	public shareApi: ShareApi;
+	public sharedLinkApi: SharedLinkApi;
 	public personApi: PersonApi;
 	public systemConfigApi: SystemConfigApi;
 	public userApi: UserApi;
@@ -51,7 +51,7 @@ export class ImmichApi {
 		this.partnerApi = new PartnerApi(this.config);
 		this.searchApi = new SearchApi(this.config);
 		this.serverInfoApi = new ServerInfoApi(this.config);
-		this.shareApi = new ShareApi(this.config);
+		this.sharedLinkApi = new SharedLinkApi(this.config);
 		this.personApi = new PersonApi(this.config);
 		this.systemConfigApi = new SystemConfigApi(this.config);
 		this.userApi = new UserApi(this.config);

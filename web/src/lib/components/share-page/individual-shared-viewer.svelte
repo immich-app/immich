@@ -17,6 +17,7 @@
 		notificationController,
 		NotificationType
 	} from '../shared-components/notification/notification';
+	import { handleError } from '../../utils/handle-error';
 
 	export let sharedLink: SharedLinkResponseDto;
 	export let isOwned: boolean;
@@ -26,43 +27,40 @@
 	$: assets = sharedLink.assets;
 	$: isMultiSelectionMode = selectedAssets.size > 0;
 
-	const clearMultiSelectAssetAssetHandler = () => {
-		selectedAssets = new Set();
-	};
-
 	const downloadAssets = async () => {
-		await bulkDownload('immich-shared', assets, undefined, sharedLink?.key);
+		await bulkDownload('immich-shared', assets, undefined, sharedLink.key);
 	};
 
 	const handleUploadAssets = async () => {
 		try {
-			const results = await openFileUploadDialog(undefined, sharedLink?.key);
+			const results = await openFileUploadDialog(undefined, sharedLink.key);
 
-			const assetIds = results.filter((id) => !!id) as string[];
-
-			await api.assetApi.addAssetsToSharedLink({
-				addAssetsDto: {
-					assetIds
+			const { data } = await api.sharedLinkApi.addSharedLinkAssets({
+				id: sharedLink.id,
+				assetIdsDto: {
+					assetIds: results.filter((id) => !!id) as string[]
 				},
-				key: sharedLink?.key
+				key: sharedLink.key
 			});
 
+			const added = data.filter((item) => item.success).length;
+
 			notificationController.show({
-				message: `Successfully add ${assetIds.length} to the shared link`,
+				message: `Added ${added} assets`,
 				type: NotificationType.Info
 			});
 		} catch (e) {
-			console.error('handleUploadAssets', e);
+			handleError(e, 'Unable to add assets to shared link');
 		}
 	};
 </script>
 
 <section class="bg-immich-bg dark:bg-immich-dark-bg">
 	{#if isMultiSelectionMode}
-		<AssetSelectControlBar assets={selectedAssets} clearSelect={clearMultiSelectAssetAssetHandler}>
+		<AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
 			<DownloadAction filename="immich-shared" sharedLinkKey={sharedLink.key} />
 			{#if isOwned}
-				<RemoveFromSharedLink bind:sharedLink allAssets={assets} />
+				<RemoveFromSharedLink bind:sharedLink />
 			{/if}
 		</AssetSelectControlBar>
 	{:else}

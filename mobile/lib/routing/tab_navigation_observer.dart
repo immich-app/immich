@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/album/providers/album.provider.dart';
+import 'package:immich_mobile/modules/search/providers/people.provider.dart';
 
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/album/providers/shared_album.provider.dart';
@@ -32,6 +33,7 @@ class TabNavigationObserver extends AutoRouterObserver {
       // Refresh Location State
       ref.invalidate(getCuratedLocationProvider);
       ref.invalidate(getCuratedObjectProvider);
+      ref.invalidate(getCuratedPeopleProvider);
     }
 
     if (route.name == 'SharingRoute') {

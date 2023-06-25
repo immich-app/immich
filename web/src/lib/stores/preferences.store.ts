@@ -35,3 +35,5 @@ export const mapSettings = persisted<MapSettings>('map-settings', {
 	dateAfter: '',
 	dateBefore: ''
 });
+
+export const videoViewerVolume = persisted<number>('video-viewer-volume', 1, {});

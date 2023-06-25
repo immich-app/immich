@@ -17,6 +17,7 @@ const responseDto = {
     createdAt: new Date('2021-01-01'),
     deletedAt: null,
     updatedAt: new Date('2021-01-01'),
+    externalPath: null,
   },
   user1: {
     email: 'immich@test.com',
@@ -31,6 +32,7 @@ const responseDto = {
     createdAt: new Date('2021-01-01'),
     deletedAt: null,
     updatedAt: new Date('2021-01-01'),
+    externalPath: null,
   },
 };
 

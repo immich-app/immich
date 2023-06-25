@@ -18,6 +18,7 @@ class UserResponseDto {
     required this.firstName,
     required this.lastName,
     required this.storageLabel,
+    required this.externalPath,
     required this.profileImagePath,
     required this.shouldChangePassword,
     required this.isAdmin,
@@ -36,6 +37,8 @@ class UserResponseDto {
   String lastName;
 
   String? storageLabel;
+
+  String? externalPath;
 
   String profileImagePath;
 
@@ -58,6 +61,7 @@ class UserResponseDto {
      other.firstName == firstName &&
      other.lastName == lastName &&
      other.storageLabel == storageLabel &&
+     other.externalPath == externalPath &&
      other.profileImagePath == profileImagePath &&
      other.shouldChangePassword == shouldChangePassword &&
      other.isAdmin == isAdmin &&
@@ -74,6 +78,7 @@ class UserResponseDto {
     (firstName.hashCode) +
     (lastName.hashCode) +
     (storageLabel == null ? 0 : storageLabel!.hashCode) +
+    (externalPath == null ? 0 : externalPath!.hashCode) +
     (profileImagePath.hashCode) +
     (shouldChangePassword.hashCode) +
     (isAdmin.hashCode) +
@@ -83,7 +88,7 @@ class UserResponseDto {
     (oauthId.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, storageLabel=$storageLabel, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin, createdAt=$createdAt, deletedAt=$deletedAt, updatedAt=$updatedAt, oauthId=$oauthId]';
+  String toString() => 'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, storageLabel=$storageLabel, externalPath=$externalPath, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin, createdAt=$createdAt, deletedAt=$deletedAt, updatedAt=$updatedAt, oauthId=$oauthId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -94,7 +99,12 @@ class UserResponseDto {
     if (this.storageLabel != null) {
       json[r'storageLabel'] = this.storageLabel;
     } else {
-      // json[r'storageLabel'] = null;
+    //  json[r'storageLabel'] = null;
+    }
+    if (this.externalPath != null) {
+      json[r'externalPath'] = this.externalPath;
+    } else {
+    //  json[r'externalPath'] = null;
     }
       json[r'profileImagePath'] = this.profileImagePath;
       json[r'shouldChangePassword'] = this.shouldChangePassword;
@@ -103,7 +113,7 @@ class UserResponseDto {
     if (this.deletedAt != null) {
       json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
     } else {
-      // json[r'deletedAt'] = null;
+    //  json[r'deletedAt'] = null;
     }
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
       json[r'oauthId'] = this.oauthId;
@@ -117,23 +127,13 @@ class UserResponseDto {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
-      // Ensure that the map contains the required keys.
-      // Note 1: the values aren't checked for validity beyond being non-null.
-      // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "UserResponseDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "UserResponseDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
-
       return UserResponseDto(
         id: mapValueOfType<String>(json, r'id')!,
         email: mapValueOfType<String>(json, r'email')!,
         firstName: mapValueOfType<String>(json, r'firstName')!,
         lastName: mapValueOfType<String>(json, r'lastName')!,
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
+        externalPath: mapValueOfType<String>(json, r'externalPath'),
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
@@ -193,6 +193,7 @@ class UserResponseDto {
     'firstName',
     'lastName',
     'storageLabel',
+    'externalPath',
     'profileImagePath',
     'shouldChangePassword',
     'isAdmin',

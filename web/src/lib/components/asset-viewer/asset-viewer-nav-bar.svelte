@@ -11,14 +11,18 @@
 	import Heart from 'svelte-material-icons/Heart.svelte';
 	import HeartOutline from 'svelte-material-icons/HeartOutline.svelte';
 	import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
+	import MagnifyPlusOutline from 'svelte-material-icons/MagnifyPlusOutline.svelte';
+	import MagnifyMinusOutline from 'svelte-material-icons/MagnifyMinusOutline.svelte';
 	import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
 	import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
 	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
 	import ContextMenu from '../shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '../shared-components/context-menu/menu-option.svelte';
+	import { photoZoomState } from '$lib/stores/zoom-image.store';
 
 	export let asset: AssetResponseDto;
 	export let showCopyButton: boolean;
+	export let showZoomButton: boolean;
 	export let showMotionPlayButton: boolean;
 	export let isMotionPhotoPlaying = false;
 	export let showDownloadButton: boolean;
@@ -64,6 +68,20 @@
 					on:click={() => dispatch('playMotionPhoto')}
 				/>
 			{/if}
+		{/if}
+		{#if showZoomButton}
+			<CircleIconButton
+				isOpacity={true}
+				hideMobile={true}
+				logo={$photoZoomState && $photoZoomState.currentZoom > 1
+					? MagnifyMinusOutline
+					: MagnifyPlusOutline}
+				title="Zoom Image"
+				on:click={() => {
+					const zoomImage = new CustomEvent('zoomImage');
+					window.dispatchEvent(zoomImage);
+				}}
+			/>
 		{/if}
 		{#if showCopyButton}
 			<CircleIconButton

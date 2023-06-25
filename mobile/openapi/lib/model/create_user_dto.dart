@@ -18,6 +18,7 @@ class CreateUserDto {
     required this.firstName,
     required this.lastName,
     this.storageLabel,
+    this.externalPath,
   });
 
   String email;
@@ -30,13 +31,16 @@ class CreateUserDto {
 
   String? storageLabel;
 
+  String? externalPath;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateUserDto &&
      other.email == email &&
      other.password == password &&
      other.firstName == firstName &&
      other.lastName == lastName &&
-     other.storageLabel == storageLabel;
+     other.storageLabel == storageLabel &&
+     other.externalPath == externalPath;
 
   @override
   int get hashCode =>
@@ -45,10 +49,11 @@ class CreateUserDto {
     (password.hashCode) +
     (firstName.hashCode) +
     (lastName.hashCode) +
-    (storageLabel == null ? 0 : storageLabel!.hashCode);
+    (storageLabel == null ? 0 : storageLabel!.hashCode) +
+    (externalPath == null ? 0 : externalPath!.hashCode);
 
   @override
-  String toString() => 'CreateUserDto[email=$email, password=$password, firstName=$firstName, lastName=$lastName, storageLabel=$storageLabel]';
+  String toString() => 'CreateUserDto[email=$email, password=$password, firstName=$firstName, lastName=$lastName, storageLabel=$storageLabel, externalPath=$externalPath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -59,7 +64,12 @@ class CreateUserDto {
     if (this.storageLabel != null) {
       json[r'storageLabel'] = this.storageLabel;
     } else {
-      // json[r'storageLabel'] = null;
+    //  json[r'storageLabel'] = null;
+    }
+    if (this.externalPath != null) {
+      json[r'externalPath'] = this.externalPath;
+    } else {
+    //  json[r'externalPath'] = null;
     }
     return json;
   }
@@ -71,23 +81,13 @@ class CreateUserDto {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
-      // Ensure that the map contains the required keys.
-      // Note 1: the values aren't checked for validity beyond being non-null.
-      // Note 2: this code is stripped in release mode!
-      assert(() {
-        requiredKeys.forEach((key) {
-          assert(json.containsKey(key), 'Required key "CreateUserDto[$key]" is missing from JSON.');
-          assert(json[key] != null, 'Required key "CreateUserDto[$key]" has a null value in JSON.');
-        });
-        return true;
-      }());
-
       return CreateUserDto(
         email: mapValueOfType<String>(json, r'email')!,
         password: mapValueOfType<String>(json, r'password')!,
         firstName: mapValueOfType<String>(json, r'firstName')!,
         lastName: mapValueOfType<String>(json, r'lastName')!,
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),
+        externalPath: mapValueOfType<String>(json, r'externalPath'),
       );
     }
     return null;

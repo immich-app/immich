@@ -105,6 +105,7 @@ describe('User', () => {
               updatedAt: expect.anything(),
               oauthId: '',
               storageLabel: null,
+              externalPath: null,
             },
             {
               email: userTwoEmail,
@@ -119,6 +120,7 @@ describe('User', () => {
               updatedAt: expect.anything(),
               oauthId: '',
               storageLabel: null,
+              externalPath: null,
             },
             {
               email: authUserEmail,
@@ -133,6 +135,7 @@ describe('User', () => {
               updatedAt: expect.anything(),
               oauthId: '',
               storageLabel: 'admin',
+              externalPath: null,
             },
           ]),
         );

@@ -23,6 +23,10 @@ export class CreateUserDto {
   @IsString()
   @Transform(toSanitized)
   storageLabel?: string | null;
+
+  @IsOptional()
+  @IsString()
+  externalPath?: string | null;
 }
 
 export class CreateAdminDto {

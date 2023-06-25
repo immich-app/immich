@@ -7,31 +7,31 @@
 	import { handleError } from '$lib/utils/handle-error';
 	import {
 		AlbumResponseDto,
+		api,
 		AssetResponseDto,
 		SharedLinkResponseDto,
-		SharedLinkType,
-		api
+		SharedLinkType
 	} from '@api';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import Link from 'svelte-material-icons/Link.svelte';
 	import BaseModal from '../base-modal.svelte';
 	import type { ImmichDropDownOption } from '../dropdown-button.svelte';
 	import DropdownButton from '../dropdown-button.svelte';
-	import { NotificationType, notificationController } from '../notification/notification';
+	import { notificationController, NotificationType } from '../notification/notification';
 
 	export let shareType: SharedLinkType;
 	export let sharedAssets: AssetResponseDto[] = [];
 	export let album: AlbumResponseDto | undefined = undefined;
 	export let editingLink: SharedLinkResponseDto | undefined = undefined;
 
-	let isShowSharedLink = false;
-	let expirationTime = '';
-	let isAllowUpload = false;
-	let sharedLink = '';
+	let sharedLink: string | null = null;
 	let description = '';
+	let allowDownload = true;
+	let allowUpload = false;
+	let showExif = true;
+	let expirationTime = '';
 	let shouldChangeExpirationTime = false;
-	let isAllowDownload = true;
-	let shouldShowExif = true;
+
 	const dispatch = createEventDispatcher();
 
 	const expiredDateOption: ImmichDropDownOption = {
@@ -44,9 +44,9 @@
 			if (editingLink.description) {
 				description = editingLink.description;
 			}
-			isAllowUpload = editingLink.allowUpload;
-			isAllowDownload = editingLink.allowDownload;
-			shouldShowExif = editingLink.showExif;
+			allowUpload = editingLink.allowUpload;
+			allowDownload = editingLink.allowDownload;
+			showExif = editingLink.showExif;
 		}
 	});
 
@@ -58,49 +58,32 @@
 			: undefined;
 
 		try {
-			if (shareType === SharedLinkType.Album && album) {
-				const { data } = await api.albumApi.createAlbumSharedLink({
-					createAlbumShareLinkDto: {
-						albumId: album.id,
-						expiresAt: expirationDate,
-						allowUpload: isAllowUpload,
-						description: description,
-						allowDownload: isAllowDownload,
-						showExif: shouldShowExif
-					}
-				});
-				buildSharedLink(data);
-			} else {
-				const { data } = await api.assetApi.createAssetsSharedLink({
-					createAssetsShareLinkDto: {
-						assetIds: sharedAssets.map((a) => a.id),
-						expiresAt: expirationDate,
-						allowUpload: isAllowUpload,
-						description: description,
-						allowDownload: isAllowDownload,
-						showExif: shouldShowExif
-					}
-				});
-				buildSharedLink(data);
-			}
+			const { data } = await api.sharedLinkApi.createSharedLink({
+				sharedLinkCreateDto: {
+					type: shareType,
+					albumId: album ? album.id : undefined,
+					assetIds: sharedAssets.map((a) => a.id),
+					expiresAt: expirationDate,
+					allowUpload,
+					description,
+					allowDownload,
+					showExif
+				}
+			});
+			sharedLink = `${window.location.origin}/share/${data.key}`;
 		} catch (e) {
 			handleError(e, 'Failed to create shared link');
 		}
-
-		isShowSharedLink = true;
-	};
-
-	const buildSharedLink = (createdLink: SharedLinkResponseDto) => {
-		sharedLink = `${window.location.origin}/share/${createdLink.key}`;
 	};
 
 	const handleCopy = async () => {
+		if (!sharedLink) {
+			return;
+		}
+
 		try {
 			await navigator.clipboard.writeText(sharedLink);
-			notificationController.show({
-				message: 'Copied to clipboard!',
-				type: NotificationType.Info
-			});
+			notificationController.show({ message: 'Copied to clipboard!', type: NotificationType.Info });
 		} catch (e) {
 			handleError(
 				e,
@@ -129,34 +112,36 @@
 	};
 
 	const handleEditLink = async () => {
-		if (editingLink) {
-			try {
-				const expirationTime = getExpirationTimeInMillisecond();
-				const currentTime = new Date().getTime();
-				const expirationDate: string | null = expirationTime
-					? new Date(currentTime + expirationTime).toISOString()
-					: null;
+		if (!editingLink) {
+			return;
+		}
 
-				await api.shareApi.updateSharedLink({
-					id: editingLink.id,
-					editSharedLinkDto: {
-						description,
-						expiresAt: shouldChangeExpirationTime ? expirationDate : undefined,
-						allowUpload: isAllowUpload,
-						allowDownload: isAllowDownload,
-						showExif: shouldShowExif
-					}
-				});
+		try {
+			const expirationTime = getExpirationTimeInMillisecond();
+			const currentTime = new Date().getTime();
+			const expirationDate: string | null = expirationTime
+				? new Date(currentTime + expirationTime).toISOString()
+				: null;
 
-				notificationController.show({
-					type: NotificationType.Info,
-					message: 'Edited'
-				});
+			await api.sharedLinkApi.updateSharedLink({
+				id: editingLink.id,
+				sharedLinkEditDto: {
+					description,
+					expiresAt: shouldChangeExpirationTime ? expirationDate : undefined,
+					allowUpload: allowUpload,
+					allowDownload: allowDownload,
+					showExif: showExif
+				}
+			});
 
-				dispatch('close');
-			} catch (e) {
-				handleError(e, 'Failed to edit shared link');
-			}
+			notificationController.show({
+				type: NotificationType.Info,
+				message: 'Edited'
+			});
+
+			dispatch('close');
+		} catch (e) {
+			handleError(e, 'Failed to edit shared link');
 		}
 	};
 </script>
@@ -212,15 +197,15 @@
 				</div>
 
 				<div class="my-3">
-					<SettingSwitch bind:checked={shouldShowExif} title={'Show metadata'} />
+					<SettingSwitch bind:checked={showExif} title={'Show metadata'} />
 				</div>
 
 				<div class="my-3">
-					<SettingSwitch bind:checked={isAllowDownload} title={'Allow public user to download'} />
+					<SettingSwitch bind:checked={allowDownload} title={'Allow public user to download'} />
 				</div>
 
 				<div class="my-3">
-					<SettingSwitch bind:checked={isAllowUpload} title={'Allow public user to upload'} />
+					<SettingSwitch bind:checked={allowUpload} title={'Allow public user to upload'} />
 				</div>
 
 				<div class="text-sm">
@@ -248,7 +233,7 @@
 	<hr />
 
 	<section class="m-6">
-		{#if !isShowSharedLink}
+		{#if !sharedLink}
 			{#if editingLink}
 				<div class="flex justify-end">
 					<Button size="sm" rounded="lg" on:click={handleEditLink}>Confirm</Button>
@@ -258,9 +243,7 @@
 					<Button size="sm" rounded="lg" on:click={handleCreateSharedLink}>Create link</Button>
 				</div>
 			{/if}
-		{/if}
-
-		{#if isShowSharedLink}
+		{:else}
 			<div class="flex w-full gap-4">
 				<input class="immich-form-input w-full" bind:value={sharedLink} disabled />
 

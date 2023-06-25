@@ -1,4 +1,4 @@
-import { AssetResponseDto, ImmichReadStream, SharedLinkResponseDto } from '@app/domain';
+import { AssetResponseDto, ImmichReadStream } from '@app/domain';
 import {
   Body,
   Controller,
@@ -7,9 +7,9 @@ import {
   Header,
   Headers,
   HttpCode,
+  HttpStatus,
   Param,
   ParseFilePipe,
-  Patch,
   Post,
   Put,
   Query,
@@ -27,16 +27,13 @@ import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config'
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
 import { AuthUser, AuthUserDto } from '../../decorators/auth-user.decorator';
 import { Authenticated, SharedLinkRoute } from '../../decorators/authenticated.decorator';
-import { AddAssetsDto } from '../album/dto/add-assets.dto';
-import { RemoveAssetsDto } from '../album/dto/remove-assets.dto';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { AssetService } from './asset.service';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
 import { AssetSearchDto } from './dto/asset-search.dto';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CreateAssetsShareLinkDto } from './dto/create-asset-shared-link.dto';
-import { CreateAssetDto, mapToUploadFile } from './dto/create-asset.dto';
+import { CreateAssetDto, ImportAssetDto, mapToUploadFile } from './dto/create-asset.dto';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
 import { DeviceIdDto } from './dto/device-id.dto';
 import { DownloadFilesDto } from './dto/download-files.dto';
@@ -110,6 +107,20 @@ export class AssetController {
     }
 
     const responseDto = await this.assetService.uploadFile(authUser, dto, file, livePhotoFile, sidecarFile);
+    if (responseDto.duplicate) {
+      res.status(HttpStatus.OK);
+    }
+
+    return responseDto;
+  }
+
+  @Post('import')
+  async importFile(
+    @AuthUser() authUser: AuthUserDto,
+    @Body(new ValidationPipe()) dto: ImportAssetDto,
+    @Response({ passthrough: true }) res: Res,
+  ): Promise<AssetFileUploadResponseDto> {
+    const responseDto = await this.assetService.importFile(authUser, dto);
     if (responseDto.duplicate) {
       res.status(200);
     }
@@ -193,6 +204,7 @@ export class AssetController {
   }
 
   @Post('/search')
+  @HttpCode(HttpStatus.OK)
   searchAsset(
     @AuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: SearchAssetDto,
@@ -201,6 +213,7 @@ export class AssetController {
   }
 
   @Post('/count-by-time-bucket')
+  @HttpCode(HttpStatus.OK)
   getAssetCountByTimeBucket(
     @AuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: GetAssetCountByTimeBucketDto,
@@ -235,6 +248,7 @@ export class AssetController {
   }
 
   @Post('/time-bucket')
+  @HttpCode(HttpStatus.OK)
   getAssetByTimeBucket(
     @AuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: GetAssetByTimeBucketDto,
@@ -284,7 +298,7 @@ export class AssetController {
    */
   @SharedLinkRoute()
   @Post('/check')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   checkDuplicateAsset(
     @AuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: CheckDuplicateAssetDto,
@@ -296,7 +310,7 @@ export class AssetController {
    * Checks if multiple assets exist on the server and returns all existing - used by background backup
    */
   @Post('/exist')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   checkExistingAssets(
     @AuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: CheckExistingAssetsDto,
@@ -308,37 +322,11 @@ export class AssetController {
    * Checks if assets exist by checksums
    */
   @Post('/bulk-upload-check')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   bulkUploadCheck(
     @AuthUser() authUser: AuthUserDto,
     @Body(ValidationPipe) dto: AssetBulkUploadCheckDto,
   ): Promise<AssetBulkUploadCheckResponseDto> {
     return this.assetService.bulkUploadCheck(authUser, dto);
-  }
-
-  @Post('/shared-link')
-  createAssetsSharedLink(
-    @AuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: CreateAssetsShareLinkDto,
-  ): Promise<SharedLinkResponseDto> {
-    return this.assetService.createAssetsSharedLink(authUser, dto);
-  }
-
-  @SharedLinkRoute()
-  @Patch('/shared-link/add')
-  addAssetsToSharedLink(
-    @AuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: AddAssetsDto,
-  ): Promise<SharedLinkResponseDto> {
-    return this.assetService.addAssetsToSharedLink(authUser, dto);
-  }
-
-  @SharedLinkRoute()
-  @Patch('/shared-link/remove')
-  removeAssetsFromSharedLink(
-    @AuthUser() authUser: AuthUserDto,
-    @Body(ValidationPipe) dto: RemoveAssetsDto,
-  ): Promise<SharedLinkResponseDto> {
-    return this.assetService.removeAssetsFromSharedLink(authUser, dto);
   }
 }

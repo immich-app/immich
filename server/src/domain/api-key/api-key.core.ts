@@ -19,6 +19,7 @@ export class APIKeyCore {
         isAdmin: user.isAdmin,
         isPublicUser: false,
         isAllowUpload: true,
+        externalPath: user.externalPath,
       };
     }
 

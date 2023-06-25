@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -25,6 +28,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
   final bool showMultiSelectIndicator;
   final void Function(ItemPosition start, ItemPosition end)?
       visibleItemsListener;
+  final Widget? topWidget;
 
   const ImmichAssetGrid({
     super.key,
@@ -41,6 +45,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
     this.dynamicLayout,
     this.showMultiSelectIndicator = true,
     this.visibleItemsListener,
+    this.topWidget,
   });
 
   @override
@@ -50,6 +55,12 @@ class ImmichAssetGrid extends HookConsumerWidget {
     // Needs to suppress hero animations when navigating to this widget
     final enableHeroAnimations = useState(false);
     final transitionDuration = ModalRoute.of(context)?.transitionDuration;
+
+    final perRow = useState(
+      assetsPerRow ?? settings.getSetting(AppSettingsEnum.tilesPerRow)!,
+    );
+    final scaleFactor = useState(7.0 - perRow.value);
+    final baseScaleFactor = useState(7.0 - perRow.value);
 
     useEffect(
       () {
@@ -80,22 +91,44 @@ class ImmichAssetGrid extends HookConsumerWidget {
         onWillPop: onWillPop,
         child: HeroMode(
           enabled: enableHeroAnimations.value,
-          child: ImmichAssetGridView(
-            onRefresh: onRefresh,
-            assetsPerRow: assetsPerRow ??
-                settings.getSetting(AppSettingsEnum.tilesPerRow),
-            listener: listener,
-            showStorageIndicator: showStorageIndicator ??
-                settings.getSetting(AppSettingsEnum.storageIndicator),
-            renderList: renderList,
-            margin: margin,
-            selectionActive: selectionActive,
-            preselectedAssets: preselectedAssets,
-            canDeselect: canDeselect,
-            dynamicLayout: dynamicLayout ??
-                settings.getSetting(AppSettingsEnum.dynamicLayout),
-            showMultiSelectIndicator: showMultiSelectIndicator,
-            visibleItemsListener: visibleItemsListener,
+          child: RawGestureDetector(
+            gestures: {
+              CustomScaleGestureRecognizer:
+                  GestureRecognizerFactoryWithHandlers<
+                          CustomScaleGestureRecognizer>(
+                      () => CustomScaleGestureRecognizer(),
+                      (CustomScaleGestureRecognizer scale) {
+                scale.onStart = (details) {
+                  baseScaleFactor.value = scaleFactor.value;
+                };
+
+                scale.onUpdate = (details) {
+                  scaleFactor.value =
+                      max(min(5.0, baseScaleFactor.value * details.scale), 1.0);
+                  if (7 - scaleFactor.value.toInt() != perRow.value) {
+                    perRow.value = 7 - scaleFactor.value.toInt();
+                  }
+                };
+                scale.onEnd = (details) {};
+              })
+            },
+            child: ImmichAssetGridView(
+              onRefresh: onRefresh,
+              assetsPerRow: perRow.value,
+              listener: listener,
+              showStorageIndicator: showStorageIndicator ??
+                  settings.getSetting(AppSettingsEnum.storageIndicator),
+              renderList: renderList,
+              margin: margin,
+              selectionActive: selectionActive,
+              preselectedAssets: preselectedAssets,
+              canDeselect: canDeselect,
+              dynamicLayout: dynamicLayout ??
+                  settings.getSetting(AppSettingsEnum.dynamicLayout),
+              showMultiSelectIndicator: showMultiSelectIndicator,
+              visibleItemsListener: visibleItemsListener,
+              topWidget: topWidget,
+            ),
           ),
         ),
       );
@@ -111,5 +144,13 @@ class ImmichAssetGrid extends HookConsumerWidget {
         child: ImmichLoadingIndicator(),
       ),
     );
+  }
+}
+
+/// accepts a gesture even though it should reject it (because child won)
+class CustomScaleGestureRecognizer extends ScaleGestureRecognizer {
+  @override
+  void rejectGesture(int pointer) {
+    acceptGesture(pointer);
   }
 }
