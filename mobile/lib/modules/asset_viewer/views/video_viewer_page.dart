@@ -72,7 +72,10 @@ class VideoViewerPage extends HookConsumerWidget {
         ),
         if (downloadAssetStatus == DownloadAssetStatus.loading)
           const Center(
-            child: ImmichLoadingIndicator(),
+            child: Padding(
+              padding: EdgeInsets.all(800.0),
+              child: ImmichLoadingIndicator(),
+            ),
           ),
       ],
     );
