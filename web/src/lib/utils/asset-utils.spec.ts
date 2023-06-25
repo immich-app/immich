@@ -98,7 +98,7 @@ describe('get file mime type', () => {
 		{ mimetype: 'image/x-sony-arw', extension: 'arw' },
 		{ mimetype: 'image/x-sony-sr2', extension: 'sr2' },
 		{ mimetype: 'image/x-sony-srf', extension: 'srf' },
-/*** The following MIME types are allowed for upload but not returned by getFileMimeType() ***
+		/*** The following MIME types are allowed for upload but not returned by getFileMimeType() ***
 		{ mimetype: 'image/dng', extension: 'dng' },
 		{ mimetype: 'image/ari', extension: 'ari' },
 		{ mimetype: 'image/cr2', extension: 'cr2' },
