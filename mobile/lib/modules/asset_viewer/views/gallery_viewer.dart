@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -310,9 +311,12 @@ class GalleryViewerPage extends HookConsumerWidget {
         child: Slider(
           value: playerValue.duration == Duration.zero
               ? 0.0
-              : playerValue.position.inMicroseconds /
-                  playerValue.duration.inMicroseconds *
+              : min(
+                  playerValue.position.inMicroseconds /
+                      playerValue.duration.inMicroseconds *
+                      100,
                   100,
+                ),
           min: 0,
           max: 100,
           thumbColor: Colors.white,
