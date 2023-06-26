@@ -47,6 +47,7 @@ dependencies:
   permission_handler: ^10.2.0
   device_info_plus: ^8.1.0
   crypto: ^3.0.3 # TODO remove once native crypto is used on iOS
+  wakelock: ^0.6.2
 
   openapi:
     path: openapi
