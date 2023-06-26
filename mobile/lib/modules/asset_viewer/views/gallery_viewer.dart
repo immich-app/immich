@@ -375,15 +375,15 @@ class GalleryViewerPage extends HookConsumerWidget {
           opacity: ref.watch(showControlsProvider) ? 1.0 : 0.0,
           child: Column(
             children: [
-              Padding(
-                padding:
-                    MediaQuery.of(context).orientation == Orientation.portrait
+              Visibility(
+                visible: !asset().isImage && !isPlayingMotionVideo.value,
+                child: Container(
+                  color: Colors.black.withOpacity(0.4),
+                  child: Padding(
+                    padding: MediaQuery.of(context).orientation ==
+                            Orientation.portrait
                         ? const EdgeInsets.symmetric(horizontal: 12.0)
                         : const EdgeInsets.symmetric(horizontal: 64.0),
-                child: Visibility(
-                  visible: !asset().isImage && !isPlayingMotionVideo.value,
-                  child: Container(
-                    color: Colors.black.withOpacity(0.4),
                     child: Row(
                       children: [
                         buildPosition(),
