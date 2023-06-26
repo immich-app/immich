@@ -28,8 +28,12 @@ class MemoryLane extends HookConsumerWidget {
                         padding: const EdgeInsets.only(right: 8.0, bottom: 8),
                         child: GestureDetector(
                           onTap: () {
-                            AutoRouter.of(context)
-                                .push(const VerticalRouteView());
+                            AutoRouter.of(context).push(
+                              VerticalRouteView(
+                                memories: memories,
+                                memoryIndex: index,
+                              ),
+                            );
                           },
                           child: Stack(
                             children: [

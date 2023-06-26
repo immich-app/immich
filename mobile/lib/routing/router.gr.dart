@@ -291,15 +291,14 @@ class _$AppRouter extends RootStackRouter {
       );
     },
     VerticalRouteView.name: (routeData) {
+      final args = routeData.argsAs<VerticalRouteViewArgs>();
       return MaterialPageX<dynamic>(
         routeData: routeData,
-        child: const VerticalPageView(),
-      );
-    },
-    HorizontalRouteView.name: (routeData) {
-      return MaterialPageX<dynamic>(
-        routeData: routeData,
-        child: const HorizontalPageView(),
+        child: VerticalPageView(
+          memories: args.memories,
+          memoryIndex: args.memoryIndex,
+          key: args.key,
+        ),
       );
     },
     HomeRoute.name: (routeData) {
@@ -604,14 +603,6 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           VerticalRouteView.name,
           path: '/vertical-page-view',
-          guards: [
-            authGuard,
-            duplicateGuard,
-          ],
-        ),
-        RouteConfig(
-          HorizontalRouteView.name,
-          path: '/horizontal-page-view',
           guards: [
             authGuard,
             duplicateGuard,
@@ -1311,26 +1302,41 @@ class AllPeopleRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [VerticalPageView]
-class VerticalRouteView extends PageRouteInfo<void> {
-  const VerticalRouteView()
-      : super(
+class VerticalRouteView extends PageRouteInfo<VerticalRouteViewArgs> {
+  VerticalRouteView({
+    required List<Memory> memories,
+    required int memoryIndex,
+    Key? key,
+  }) : super(
           VerticalRouteView.name,
           path: '/vertical-page-view',
+          args: VerticalRouteViewArgs(
+            memories: memories,
+            memoryIndex: memoryIndex,
+            key: key,
+          ),
         );
 
   static const String name = 'VerticalRouteView';
 }
 
-/// generated route for
-/// [HorizontalPageView]
-class HorizontalRouteView extends PageRouteInfo<void> {
-  const HorizontalRouteView()
-      : super(
-          HorizontalRouteView.name,
-          path: '/horizontal-page-view',
-        );
+class VerticalRouteViewArgs {
+  const VerticalRouteViewArgs({
+    required this.memories,
+    required this.memoryIndex,
+    this.key,
+  });
 
-  static const String name = 'HorizontalRouteView';
+  final List<Memory> memories;
+
+  final int memoryIndex;
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'VerticalRouteViewArgs{memories: $memories, memoryIndex: $memoryIndex, key: $key}';
+  }
 }
 
 /// generated route for

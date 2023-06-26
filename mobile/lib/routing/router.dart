@@ -6,8 +6,8 @@ import 'package:immich_mobile/modules/album/views/album_viewer_page.dart';
 import 'package:immich_mobile/modules/album/views/asset_selection_page.dart';
 import 'package:immich_mobile/modules/album/views/create_album_page.dart';
 import 'package:immich_mobile/modules/album/views/library_page.dart';
-import 'package:immich_mobile/modules/home/views/horizontal_page_view.dart';
-import 'package:immich_mobile/modules/home/views/vertical_page_view.dart';
+import 'package:immich_mobile/modules/memories/models/memory.dart';
+import 'package:immich_mobile/modules/memories/views/vertical_page_view.dart';
 import 'package:immich_mobile/modules/partner/views/partner_detail_page.dart';
 import 'package:immich_mobile/modules/partner/views/partner_page.dart';
 import 'package:immich_mobile/modules/album/views/select_additional_user_for_sharing_page.dart';
@@ -154,7 +154,6 @@ part 'router.gr.dart';
     ),
     AutoRoute(page: AllPeoplePage, guards: [AuthGuard, DuplicateGuard]),
     AutoRoute(page: VerticalPageView, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: HorizontalPageView, guards: [AuthGuard, DuplicateGuard]),
   ],
 )
 class AppRouter extends _$AppRouter {
