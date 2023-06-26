@@ -37,3 +37,11 @@ export const mapSettings = persisted<MapSettings>('map-settings', {
 });
 
 export const videoViewerVolume = persisted<number>('video-viewer-volume', 1, {});
+
+export interface AlbumViewSettings {
+	sortBy: string;
+}
+
+export const albumViewSettings = persisted<AlbumViewSettings>('album-view-settings', {
+	sortBy: 'Most recent photo'
+});
