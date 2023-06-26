@@ -24,6 +24,10 @@ ThemeData base = ThemeData(
   chipTheme: const ChipThemeData(
     side: BorderSide.none,
   ),
+  sliderTheme: const SliderThemeData(
+    thumbShape: RoundSliderThumbShape(enabledThumbRadius: 7),
+    trackHeight: 2.0,
+  ),
 );
 
 ThemeData immichLightTheme = ThemeData(
@@ -99,6 +103,7 @@ ThemeData immichLightTheme = ThemeData(
     ),
   ),
   chipTheme: base.chipTheme,
+  sliderTheme: base.sliderTheme,
   popupMenuTheme: const PopupMenuThemeData(
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -218,6 +223,7 @@ ThemeData immichDarkTheme = ThemeData(
     ),
   ),
   chipTheme: base.chipTheme,
+  sliderTheme: base.sliderTheme,
   popupMenuTheme: const PopupMenuThemeData(
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.all(Radius.circular(10)),
