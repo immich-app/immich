@@ -17,9 +17,13 @@ class MemoryCard extends HookConsumerWidget {
     final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
 
     return Card(
+      color: Colors.black,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(25.0),
-        side: BorderSide.none,
+        side: const BorderSide(
+          color: Colors.black,
+          width: 1.0,
+        ),
       ),
       clipBehavior: Clip.hardEdge,
       child: Stack(

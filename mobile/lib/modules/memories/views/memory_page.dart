@@ -18,7 +18,7 @@ class MemoryPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final verticalPageController = usePageController(initialPage: memoryIndex);
     final currentMemory = useState(memories[memoryIndex]);
-
+    final bgColor = Colors.grey[800];
     onMemoryChanged(int otherIndex) {
       currentMemory.value = memories[otherIndex];
     }
@@ -27,7 +27,7 @@ class MemoryPage extends HookConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.black,
       ),
-      backgroundColor: Colors.black,
+      backgroundColor: bgColor,
       body: SafeArea(
         child: PageView.builder(
           scrollDirection: Axis.vertical,
@@ -47,7 +47,7 @@ class MemoryPage extends HookConsumerWidget {
                     children: [
                       Expanded(child: MemoryCard(asset: asset)),
                       Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.all(16.0),
                         child: Row(
                           children: [
                             Column(
