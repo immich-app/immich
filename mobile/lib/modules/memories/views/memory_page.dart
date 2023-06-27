@@ -47,14 +47,6 @@ class MemoryPage extends HookConsumerWidget {
           "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}";
     }
 
-    useEffect(
-      () {
-        updateProgressText();
-        return null;
-      },
-      [],
-    );
-
     onMemoryChanged(int otherIndex) {
       currentMemory.value = memories[otherIndex];
       currentAssetPage.value = 0;
