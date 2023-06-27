@@ -14,6 +14,8 @@ import 'package:immich_mobile/modules/backup/ui/current_backup_asset_info_box.da
 import 'package:immich_mobile/modules/backup/ui/ios_debug_info_tile.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
+import 'package:immich_mobile/modules/settings/providers/app_settings.provider.dart';
+import 'package:immich_mobile/modules/settings/services/app_settings.service.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
@@ -23,6 +25,7 @@ import 'package:immich_mobile/shared/ui/confirm_dialog.dart';
 import 'package:immich_mobile/shared/ui/immich_toast.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:wakelock/wakelock.dart';
 
 class BackupControllerPage extends HookConsumerWidget {
   const BackupControllerPage({Key? key}) : super(key: key);
@@ -31,6 +34,9 @@ class BackupControllerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     BackUpState backupState = ref.watch(backupProvider);
     final settings = ref.watch(iOSBackgroundSettingsProvider.notifier).settings;
+    final settingsService = ref.watch(appSettingsServiceProvider);
+    final showBackupFix = Platform.isAndroid &&
+        settingsService.getSetting(AppSettingsEnum.advancedTroubleshooting);
 
     final appRefreshDisabled =
         Platform.isIOS && settings?.appRefreshEnabled != true;
@@ -76,7 +82,8 @@ class BackupControllerPage extends HookConsumerWidget {
         await ref.read(assetProvider.notifier).deleteAssets(assets);
         ImmichToast.show(
           context: context,
-          msg: "Deleted ${assets.length} assets on the server",
+          msg: "Deleted ${assets.length} assets on the server. "
+              "You can now start a manual backup",
           toastType: ToastType.success,
         );
       } finally {
@@ -105,6 +112,7 @@ class BackupControllerPage extends HookConsumerWidget {
           );
           return;
         }
+        Wakelock.enable();
         const limit = 100;
         final toDelete = await ref
             .read(backupVerificationServiceProvider)
@@ -124,12 +132,13 @@ class BackupControllerPage extends HookConsumerWidget {
               ok: "Delete",
               content:
                   "Found ${toDelete.length} (max $limit at once) corrupt asset backups. "
-                  "Run this check again to find more.\n"
+                  "Run the check again to find more.\n"
                   "Do you want to delete the corrupt asset backups now?",
             ),
           );
         }
       } finally {
+        Wakelock.disable();
         checkInProgress.value = false;
       }
     }
@@ -148,9 +157,8 @@ class BackupControllerPage extends HookConsumerWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Run this check only over Wi-Fi and once all assets have been backed-up.",
-            ),
+            const Text("Run this check only over Wi-Fi and once all assets "
+                "have been backed-up. The procedure might take a few minutes."),
             ElevatedButton(
               onPressed: checkInProgress.value ? null : performBackupCheck,
               child: checkInProgress.value
@@ -752,8 +760,8 @@ class BackupControllerPage extends HookConsumerWidget {
                       : buildBackgroundBackupController())
                   : buildBackgroundBackupController(),
             ),
-            if (Platform.isAndroid) const Divider(),
-            if (Platform.isAndroid) buildCheckCorruptBackups(),
+            if (showBackupFix) const Divider(),
+            if (showBackupFix) buildCheckCorruptBackups(),
             const Divider(),
             buildStorageInformation(),
             const Divider(),
