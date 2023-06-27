@@ -25,9 +25,11 @@ import 'package:immich_mobile/modules/login/views/login_page.dart';
 import 'package:immich_mobile/modules/onboarding/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/modules/onboarding/views/permission_onboarding_page.dart';
 import 'package:immich_mobile/modules/search/views/all_motion_videos_page.dart';
+import 'package:immich_mobile/modules/search/views/all_people_page.dart';
 import 'package:immich_mobile/modules/search/views/all_videos_page.dart';
 import 'package:immich_mobile/modules/search/views/curated_location_page.dart';
 import 'package:immich_mobile/modules/search/views/curated_object_page.dart';
+import 'package:immich_mobile/modules/search/views/person_result_page.dart';
 import 'package:immich_mobile/modules/search/views/recently_added_page.dart';
 import 'package:immich_mobile/modules/search/views/search_page.dart';
 import 'package:immich_mobile/modules/search/views/search_result_page.dart';
@@ -37,8 +39,8 @@ import 'package:immich_mobile/routing/duplicate_guard.dart';
 import 'package:immich_mobile/routing/gallery_permission_guard.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/album.dart';
-import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/models/logger_message.model.dart';
+import 'package:immich_mobile/shared/models/user.dart';
 import 'package:immich_mobile/shared/providers/api.provider.dart';
 import 'package:immich_mobile/shared/services/api.service.dart';
 import 'package:immich_mobile/shared/views/app_log_detail_page.dart';
@@ -140,7 +142,15 @@ part 'router.gr.dart';
       ],
     ),
     AutoRoute(page: PartnerPage, guards: [AuthGuard, DuplicateGuard]),
-    AutoRoute(page: PartnerDetailPage, guards: [AuthGuard, DuplicateGuard])
+    AutoRoute(page: PartnerDetailPage, guards: [AuthGuard, DuplicateGuard]),
+    AutoRoute(
+      page: PersonResultPage,
+      guards: [
+        AuthGuard,
+        DuplicateGuard,
+      ],
+    ),
+    AutoRoute(page: AllPeoplePage, guards: [AuthGuard, DuplicateGuard]),
   ],
 )
 class AppRouter extends _$AppRouter {

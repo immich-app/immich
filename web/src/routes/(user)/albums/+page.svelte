@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { albumViewSettings } from '$lib/stores/preferences.store';
 	import AlbumCard from '$lib/components/album-page/album-card.svelte';
 	import { goto } from '$app/navigation';
 	import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
@@ -17,7 +18,6 @@
 	export let data: PageData;
 
 	const sortByOptions = ['Most recent photo', 'Last modified', 'Album title'];
-	let selectedSortBy = sortByOptions[0];
 
 	const {
 		albums: unsortedAlbums,
@@ -39,15 +39,16 @@
 	};
 
 	$: {
-		if (selectedSortBy === 'Most recent photo') {
+		const { sortBy } = $albumViewSettings;
+		if (sortBy === 'Most recent photo') {
 			$albums = $unsortedAlbums.sort((a, b) =>
 				a.lastModifiedAssetTimestamp && b.lastModifiedAssetTimestamp
 					? sortByDate(a.lastModifiedAssetTimestamp, b.lastModifiedAssetTimestamp)
 					: sortByDate(a.updatedAt, b.updatedAt)
 			);
-		} else if (selectedSortBy === 'Last modified') {
+		} else if (sortBy === 'Last modified') {
 			$albums = $unsortedAlbums.sort((a, b) => sortByDate(a.updatedAt, b.updatedAt));
-		} else if (selectedSortBy === 'Album title') {
+		} else if (sortBy === 'Album title') {
 			$albums = $unsortedAlbums.sort((a, b) => a.albumName.localeCompare(b.albumName));
 		}
 	}
@@ -86,7 +87,7 @@
 			</div>
 		</LinkButton>
 
-		<Dropdown options={sortByOptions} bind:value={selectedSortBy} />
+		<Dropdown options={sortByOptions} bind:value={$albumViewSettings.sortBy} />
 	</div>
 
 	<!-- Album Card -->

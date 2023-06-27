@@ -21,8 +21,8 @@ ENV NODE_ENV=production \
   PYTHONDONTWRITEBYTECODE=1 \
   PYTHONUNBUFFERED=1 \
   PATH="/opt/venv/bin:$PATH" \
-  PYTHONPATH=`pwd`
+  PYTHONPATH=/usr/src
 
 COPY --from=builder /opt/venv /opt/venv
 COPY app .
-ENTRYPOINT ["python", "main.py"]
+ENTRYPOINT ["python", "-m", "app.main"]

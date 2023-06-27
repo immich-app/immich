@@ -246,7 +246,7 @@
 		{#await import('../shared-components/leaflet') then { Map, TileLayer, Marker }}
 			<Map center={latlng} zoom={14}>
 				<TileLayer
-					urlTemplate={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
+					urlTemplate={'https://tile.openstreetmap.org/{z}/{x}/{y}.png'}
 					options={{
 						attribution:
 							'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

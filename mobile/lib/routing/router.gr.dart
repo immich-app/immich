@@ -273,6 +273,23 @@ class _$AppRouter extends RootStackRouter {
         ),
       );
     },
+    PersonResultRoute.name: (routeData) {
+      final args = routeData.argsAs<PersonResultRouteArgs>();
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: PersonResultPage(
+          key: args.key,
+          personId: args.personId,
+          personName: args.personName,
+        ),
+      );
+    },
+    AllPeopleRoute.name: (routeData) {
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: const AllPeoplePage(),
+      );
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
         routeData: routeData,
@@ -556,6 +573,22 @@ class _$AppRouter extends RootStackRouter {
             duplicateGuard,
           ],
         ),
+        RouteConfig(
+          PersonResultRoute.name,
+          path: '/person-result-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          AllPeopleRoute.name,
+          path: '/all-people-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
       ];
 }
 
@@ -671,9 +704,9 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
     Key? key,
     required Asset asset,
     required bool isMotionVideo,
-    required dynamic onVideoEnded,
-    dynamic onPlaying,
-    dynamic onPaused,
+    required void Function() onVideoEnded,
+    void Function()? onPlaying,
+    void Function()? onPaused,
     Widget? placeholder,
   }) : super(
           VideoViewerRoute.name,
@@ -709,11 +742,11 @@ class VideoViewerRouteArgs {
 
   final bool isMotionVideo;
 
-  final dynamic onVideoEnded;
+  final void Function() onVideoEnded;
 
-  final dynamic onPlaying;
+  final void Function()? onPlaying;
 
-  final dynamic onPaused;
+  final void Function()? onPaused;
 
   final Widget? placeholder;
 
@@ -1195,6 +1228,57 @@ class PartnerDetailRouteArgs {
   String toString() {
     return 'PartnerDetailRouteArgs{key: $key, partner: $partner}';
   }
+}
+
+/// generated route for
+/// [PersonResultPage]
+class PersonResultRoute extends PageRouteInfo<PersonResultRouteArgs> {
+  PersonResultRoute({
+    Key? key,
+    required String personId,
+    required String personName,
+  }) : super(
+          PersonResultRoute.name,
+          path: '/person-result-page',
+          args: PersonResultRouteArgs(
+            key: key,
+            personId: personId,
+            personName: personName,
+          ),
+        );
+
+  static const String name = 'PersonResultRoute';
+}
+
+class PersonResultRouteArgs {
+  const PersonResultRouteArgs({
+    this.key,
+    required this.personId,
+    required this.personName,
+  });
+
+  final Key? key;
+
+  final String personId;
+
+  final String personName;
+
+  @override
+  String toString() {
+    return 'PersonResultRouteArgs{key: $key, personId: $personId, personName: $personName}';
+  }
+}
+
+/// generated route for
+/// [AllPeoplePage]
+class AllPeopleRoute extends PageRouteInfo<void> {
+  const AllPeopleRoute()
+      : super(
+          AllPeopleRoute.name,
+          path: '/all-people-page',
+        );
+
+  static const String name = 'AllPeopleRoute';
 }
 
 /// generated route for

@@ -1,4 +1,5 @@
 import 'package:immich_mobile/shared/services/api.service.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 
@@ -7,7 +8,7 @@ import 'package:flutter_web_auth/flutter_web_auth.dart';
 class OAuthService {
   final ApiService _apiService;
   final callbackUrlScheme = 'app.immich';
-
+  final log = Logger('OAuthService');
   OAuthService(this._apiService);
 
   Future<OAuthConfigResponseDto?> getOAuthServerConfig(
@@ -33,7 +34,8 @@ class OAuthService {
           url: result,
         ),
       );
-    } catch (e) {
+    } catch (e, stack) {
+      log.severe("Error performing oAuthLogin: ${e.toString()}", e, stack);
       return null;
     }
   }
