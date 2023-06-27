@@ -31,7 +31,7 @@
 	let showExif = true;
 	let expirationTime = '';
 	let shouldChangeExpirationTime = false;
-
+	let canCopyImagesToClipboard = true;
 	const dispatch = createEventDispatcher();
 
 	const expiredDateOption: ImmichDropDownOption = {
@@ -39,7 +39,7 @@
 		options: ['Never', '30 minutes', '1 hour', '6 hours', '1 day', '7 days', '30 days']
 	};
 
-	onMount(() => {
+	onMount(async () => {
 		if (editingLink) {
 			if (editingLink.description) {
 				description = editingLink.description;
@@ -48,6 +48,9 @@
 			allowDownload = editingLink.allowDownload;
 			showExif = editingLink.showExif;
 		}
+
+		const module = await import('copy-image-clipboard');
+		canCopyImagesToClipboard = module.canCopyImagesToClipboard();
 	});
 
 	const handleCreateSharedLink = async () => {
@@ -247,7 +250,9 @@
 			<div class="flex w-full gap-4">
 				<input class="immich-form-input w-full" bind:value={sharedLink} disabled />
 
-				<Button on:click={() => handleCopy()}>Copy</Button>
+				{#if canCopyImagesToClipboard}
+					<Button on:click={() => handleCopy()}>Copy</Button>
+				{/if}
 			</div>
 		{/if}
 	</section>
