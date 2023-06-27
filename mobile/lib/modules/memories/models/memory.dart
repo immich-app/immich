@@ -6,7 +6,7 @@ import 'package:immich_mobile/shared/models/asset.dart';
 
 class Memory {
   final String title;
-  List<Asset> assets;
+  final List<Asset> assets;
   Memory({
     required this.title,
     required this.assets,
@@ -26,11 +26,13 @@ class Memory {
   String toString() => 'Memory(title: $title, assets: $assets)';
 
   @override
-  bool operator ==(covariant Memory other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
     final listEquals = const DeepCollectionEquality().equals;
 
-    return other.title == title && listEquals(other.assets, assets);
+    return other is Memory &&
+        other.title == title &&
+        listEquals(other.assets, assets);
   }
 
   @override
