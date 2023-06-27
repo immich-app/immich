@@ -25,13 +25,3 @@ class CLIPSTEncoder(InferenceModel):
 
     def predict(self, image_or_text: Image | str) -> list[float]:
         return self.model.encode(image_or_text).tolist()
-
-
-# stubs to allow different behavior between the two in the future
-# and handle loading different image and text clip models
-class CLIPSTVisionEncoder(CLIPSTEncoder):
-    _model_type = ModelType.CLIP_VISION
-
-
-class CLIPSTTextEncoder(CLIPSTEncoder):
-    _model_type = ModelType.CLIP_TEXT
