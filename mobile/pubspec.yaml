@@ -81,6 +81,16 @@ flutter:
         - asset: fonts/WorkSans.ttf
         - asset: fonts/WorkSans-Italic.ttf
           style: italic
+        # - asset: fonts/WorkSans-Medium.ttf
+        #   weight: 500
+        # - asset: fonts/WorkSans-SemiBold.ttf
+        #   weight: 600
+        # - asset: fonts/WorkSans-Bold.ttf
+        #   weight: 700
+        # - asset: fonts/WorkSans-ExtraBold.ttf
+        #   weight: 800
+        # - asset: fonts/WorkSans-Black.ttf
+        #   weight: 900
     - family: SnowburstOne
       fonts:
         - asset: fonts/SnowburstOne.ttf
