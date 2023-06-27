@@ -16,8 +16,8 @@ class FaceRecognizer(InferenceModel):
         self,
         model_name: str,
         min_score: float = settings.min_face_score,
-        cache_dir: Path | None = None,
-        **model_kwargs,
+        cache_dir: Path | str | None = None,
+        **model_kwargs: Any,
     ) -> None:
         self.min_score = min_score
         super().__init__(model_name, cache_dir, **model_kwargs)

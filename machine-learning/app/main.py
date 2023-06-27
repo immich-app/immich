@@ -24,9 +24,11 @@ from .schemas import (
 app = FastAPI()
 
 
-@app.on_event("startup")
-async def startup_event() -> None:
+def init_state() -> None:
     app.state.model_cache = ModelCache(ttl=settings.model_ttl, revalidate=True)
+
+
+async def load_models() -> None:
     models = [
         (settings.classification_model, ModelType.IMAGE_CLASSIFICATION),
         (settings.clip_image_model, ModelType.CLIP),
@@ -40,6 +42,12 @@ async def startup_event() -> None:
             await app.state.model_cache.get(model_name, model_type)
         else:
             InferenceModel.from_model_type(model_type, model_name)
+
+
+@app.on_event("startup")
+async def startup_event() -> None:
+    init_state()
+    await load_models()
 
 
 def dep_pil_image(byte_image: bytes = Body(...)) -> Image.Image:
@@ -69,9 +77,7 @@ def ping() -> str:
 async def image_classification(
     image: Image.Image = Depends(dep_pil_image),
 ) -> list[str]:
-    model = await app.state.model_cache.get(
-        settings.classification_model, ModelType.IMAGE_CLASSIFICATION
-    )
+    model = await app.state.model_cache.get(settings.classification_model, ModelType.IMAGE_CLASSIFICATION)
     labels = model.predict(image)
     return labels
 
@@ -108,9 +114,7 @@ async def clip_encode_text(payload: TextModelRequest) -> list[float]:
 async def facial_recognition(
     image: cv2.Mat = Depends(dep_cv_image),
 ) -> list[dict[str, Any]]:
-    model = await app.state.model_cache.get(
-        settings.facial_recognition_model, ModelType.FACIAL_RECOGNITION
-    )
+    model = await app.state.model_cache.get(settings.facial_recognition_model, ModelType.FACIAL_RECOGNITION)
     faces = model.predict(image)
     return faces
 

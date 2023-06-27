@@ -4,10 +4,7 @@ from pydantic import BaseModel
 
 
 def to_lower_camel(string: str) -> str:
-    tokens = [
-        token.capitalize() if i > 0 else token
-        for i, token in enumerate(string.split("_"))
-    ]
+    tokens = [token.capitalize() if i > 0 else token for i, token in enumerate(string.split("_"))]
     return "".join(tokens)
 
 

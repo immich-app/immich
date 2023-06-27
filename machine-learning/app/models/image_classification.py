@@ -16,8 +16,8 @@ class ImageClassifier(InferenceModel):
         self,
         model_name: str,
         min_score: float = settings.min_tag_score,
-        cache_dir: Path | None = None,
-        **model_kwargs,
+        cache_dir: Path | str | None = None,
+        **model_kwargs: Any,
     ) -> None:
         self.min_score = min_score
         super().__init__(model_name, cache_dir, **model_kwargs)
@@ -30,13 +30,7 @@ class ImageClassifier(InferenceModel):
         )
 
     def predict(self, image: Image) -> list[str]:
-        predictions = self.model(image)
-        tags = list(
-            {
-                tag
-                for pred in predictions
-                for tag in pred["label"].split(", ")
-                if pred["score"] >= self.min_score
-            }
-        )
+        predictions: list[dict[str, Any]] = self.model(image)  # type: ignore
+        tags = [tag for pred in predictions for tag in pred["label"].split(", ") if pred["score"] >= self.min_score]
+
         return tags
