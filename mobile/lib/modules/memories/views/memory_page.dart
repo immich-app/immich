@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -20,17 +21,49 @@ class MemoryPage extends HookConsumerWidget {
     final memoryPageController = usePageController(initialPage: memoryIndex);
     final memoryAssetPageController = usePageController();
     final currentMemory = useState(memories[memoryIndex]);
+    final currentAssetPage = useState(0);
+    final assetProgress = useState(
+      "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}",
+    );
     const bgColor = Colors.black;
+
+    toNextMemory() {
+      memoryPageController.nextPage(
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeIn,
+      );
+    }
+
+    toNextAsset(int currentAssetIndex) {
+      (currentAssetIndex + 1 < currentMemory.value.assets.length)
+          ? memoryAssetPageController.jumpToPage(
+              (currentAssetIndex + 1),
+            )
+          : toNextMemory();
+    }
+
+    updateProgressText() {
+      assetProgress.value =
+          "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}";
+    }
+
+    useEffect(
+      () {
+        updateProgressText();
+        return null;
+      },
+      [],
+    );
 
     onMemoryChanged(int otherIndex) {
       currentMemory.value = memories[otherIndex];
+      currentAssetPage.value = 0;
+      updateProgressText();
     }
 
-    buildTopInfo() {
-      return const Text(
-        "Top Info",
-        style: TextStyle(color: Colors.white),
-      );
+    onAssetChanged(int otherIndex) {
+      currentAssetPage.value = otherIndex;
+      updateProgressText();
     }
 
     buildBottomInfo() {
@@ -67,9 +100,6 @@ class MemoryPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-      ),
       backgroundColor: bgColor,
       body: SafeArea(
         child: PageView.builder(
@@ -81,10 +111,10 @@ class MemoryPage extends HookConsumerWidget {
             // Build horizontal page
             return Column(
               children: [
-                buildTopInfo(),
                 Expanded(
                   child: PageView.builder(
                     controller: memoryAssetPageController,
+                    onPageChanged: onAssetChanged,
                     scrollDirection: Axis.horizontal,
                     itemCount: memories[mIndex].assets.length,
                     itemBuilder: (context, index) {
@@ -93,13 +123,11 @@ class MemoryPage extends HookConsumerWidget {
                         color: Colors.black,
                         child: MemoryCard(
                           asset: asset,
-                          onTap: () {
-                            (index + 1 < currentMemory.value.assets.length)
-                                ? memoryAssetPageController.jumpToPage(
-                                    (index + 1),
-                                  )
-                                : null;
-                          },
+                          onTap: () => toNextAsset(index),
+                          onClose: () => AutoRouter.of(context).pop(),
+                          rightCornerText: assetProgress.value,
+                          title: memories[mIndex].title,
+                          showTitle: index == 0,
                         ),
                       );
                     },

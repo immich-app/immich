@@ -11,13 +11,36 @@ import 'package:openapi/api.dart';
 
 class MemoryCard extends HookConsumerWidget {
   final Asset asset;
-  final Function? onTap;
+  final void Function() onTap;
+  final void Function() onClose;
+  final String title;
+  final String? rightCornerText;
+  final bool showTitle;
 
-  const MemoryCard({required this.asset, this.onTap, super.key});
+  const MemoryCard({
+    required this.asset,
+    required this.onTap,
+    required this.onClose,
+    required this.title,
+    required this.showTitle,
+    this.rightCornerText,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
+
+    buildTitle() {
+      return Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 24.0,
+        ),
+      );
+    }
 
     return Card(
       color: Colors.black,
@@ -55,7 +78,7 @@ class MemoryCard extends HookConsumerWidget {
             ),
           ),
           GestureDetector(
-            onTap: () => onTap != null ? onTap!() : null,
+            onTap: onTap,
             child: ImmichImage(
               asset,
               fit: BoxFit.fitWidth,
@@ -64,6 +87,33 @@ class MemoryCard extends HookConsumerWidget {
               type: ThumbnailFormat.JPEG,
             ),
           ),
+          Positioned(
+            top: 2.0,
+            left: 2.0,
+            child: IconButton(
+              onPressed: onClose,
+              icon: const Icon(Icons.close_rounded),
+              color: Colors.grey[400],
+            ),
+          ),
+          Positioned(
+            right: 18.0,
+            top: 18.0,
+            child: Text(
+              rightCornerText ?? "",
+              style: TextStyle(
+                color: Colors.grey[200],
+                fontSize: 12.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          if (showTitle)
+            Positioned(
+              left: 18.0,
+              bottom: 18.0,
+              child: buildTitle(),
+            )
         ],
       ),
     );
