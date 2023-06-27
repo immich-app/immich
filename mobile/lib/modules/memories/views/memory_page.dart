@@ -5,11 +5,11 @@ import 'package:immich_mobile/modules/memories/models/memory.dart';
 import 'package:immich_mobile/modules/memories/ui/memory_card.dart';
 import 'package:intl/intl.dart';
 
-class VerticalPageView extends HookConsumerWidget {
+class MemoryPage extends HookConsumerWidget {
   final List<Memory> memories;
   final int memoryIndex;
 
-  const VerticalPageView({
+  const MemoryPage({
     required this.memories,
     required this.memoryIndex,
     super.key,
@@ -58,7 +58,7 @@ class VerticalPageView extends HookConsumerWidget {
                                   style: TextStyle(
                                     color: Colors.grey[400],
                                     fontSize: 11.0,
-                                    fontWeight: FontWeight.w500,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 Text(

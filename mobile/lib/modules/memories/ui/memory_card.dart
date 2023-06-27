@@ -17,10 +17,9 @@ class MemoryCard extends HookConsumerWidget {
     final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
 
     return Card(
-      color: Colors.grey[900],
-      elevation: 3,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(25.0),
+        side: BorderSide.none,
       ),
       clipBehavior: Clip.hardEdge,
       child: Stack(
@@ -41,7 +40,7 @@ class MemoryCard extends HookConsumerWidget {
               ),
             ),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              filter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
               child: Container(
                 decoration:
                     BoxDecoration(color: Colors.black.withOpacity(0.25)),
@@ -53,7 +52,6 @@ class MemoryCard extends HookConsumerWidget {
             fit: BoxFit.fitWidth,
             height: double.infinity,
             width: double.infinity,
-            useGrayBoxPlaceholder: true,
             type: ThumbnailFormat.JPEG,
           ),
         ],

@@ -294,7 +294,7 @@ class _$AppRouter extends RootStackRouter {
       final args = routeData.argsAs<VerticalRouteViewArgs>();
       return MaterialPageX<dynamic>(
         routeData: routeData,
-        child: VerticalPageView(
+        child: MemoryPage(
           memories: args.memories,
           memoryIndex: args.memoryIndex,
           key: args.key,
@@ -1301,7 +1301,7 @@ class AllPeopleRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [VerticalPageView]
+/// [MemoryPage]
 class VerticalRouteView extends PageRouteInfo<VerticalRouteViewArgs> {
   VerticalRouteView({
     required List<Memory> memories,
