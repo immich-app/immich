@@ -5,7 +5,5 @@ import 'package:immich_mobile/modules/memories/services/memory.service.dart';
 final memoryFutureProvider = FutureProvider<List<Memory>?>((ref) async {
   final service = ref.watch(memoryServiceProvider);
 
-  final memories = await service.getMemoryLane();
-
-  return memories;
+  return await service.getMemoryLane();
 });
