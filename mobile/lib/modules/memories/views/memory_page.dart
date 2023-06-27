@@ -75,7 +75,7 @@ class MemoryPage extends HookConsumerWidget {
                   ),
                 ),
                 Text(
-                  DateFormat.yMMMMd('en_US').format(
+                  DateFormat.yMMMMd().format(
                     currentMemory.value.assets[0].fileCreatedAt,
                   ),
                   style: const TextStyle(
