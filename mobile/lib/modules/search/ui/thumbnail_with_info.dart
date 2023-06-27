@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/shared/models/store.dart';
-import 'package:immich_mobile/utils/capitalize_first_letter.dart';
+import 'package:immich_mobile/utils/capitalize.dart';
 
 // ignore: must_be_immutable
 class ThumbnailWithInfo extends StatelessWidget {
@@ -80,7 +80,7 @@ class ThumbnailWithInfo extends StatelessWidget {
             bottom: 12,
             left: 14,
             child: Text(
-              textInfo == '' ? textInfo : textInfo.capitalizeFirstLetter(),
+              textInfo == '' ? textInfo : textInfo.capitalize(),
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
