@@ -211,8 +211,9 @@ export class AssetService {
   }
 
   public async getAllAssets(authUser: AuthUserDto, dto: AssetSearchDto): Promise<AssetResponseDto[]> {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, dto.userId || authUser.id);
-    const assets = await this._assetRepository.getAllByUserId(dto.userId || authUser.id, dto);
+    const userId = dto.userId || authUser.id;
+    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, userId);
+    const assets = await this._assetRepository.getAllByUserId(userId, dto);
     return assets.map((asset) => mapAsset(asset));
   }
 
@@ -418,9 +419,14 @@ export class AssetService {
 
     const ids = dto.ids.slice();
     for (const id of ids) {
+      const hasAccess = await this.access.hasPermission(authUser, Permission.ASSET_DELETE, id);
+      if (!hasAccess) {
+        result.push({ id, status: DeleteAssetStatusEnum.FAILED });
+        continue;
+      }
+
       const asset = await this._assetRepository.get(id);
-      const hasAccess = asset && (await this.access.hasPermission(authUser, Permission.ASSET_DELETE, id));
-      if (!asset || !hasAccess) {
+      if (!asset) {
         result.push({ id, status: DeleteAssetStatusEnum.FAILED });
         continue;
       }
