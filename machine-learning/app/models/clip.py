@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 from PIL.Image import Image
 from sentence_transformers import SentenceTransformer
@@ -10,13 +11,7 @@ from .base import InferenceModel
 class CLIPSTEncoder(InferenceModel):
     _model_type = ModelType.CLIP
 
-    def __init__(
-        self,
-        model_name: str,
-        cache_dir: Path | None = None,
-        **model_kwargs,
-    ):
-        super().__init__(model_name, cache_dir)
+    def load(self, **model_kwargs: Any) -> None:
         self.model = SentenceTransformer(
             self.model_name,
             cache_folder=self.cache_dir.as_posix(),
