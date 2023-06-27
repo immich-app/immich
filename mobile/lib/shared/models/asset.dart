@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:ffi';
+import 'dart:typed_data';
 
 import 'package:immich_mobile/shared/models/exif_info.dart';
 import 'package:immich_mobile/shared/models/store.dart';
@@ -31,7 +33,8 @@ class Asset {
             remote.exifInfo != null ? ExifInfo.fromDto(remote.exifInfo!) : null,
         isFavorite = remote.isFavorite,
         isArchived = remote.isArchived,
-        thumbhash = remote.thumbhash;
+        thumbhash =
+            remote.thumbhash != null ? base64.decode(remote.thumbhash!) : null;
 
   Asset.local(AssetEntity local, List<int> hash)
       : localId = local.id,
@@ -110,7 +113,7 @@ class Asset {
   )
   String checksum;
 
-  String? thumbhash;
+  List<byte>? thumbhash;
 
   @Index(unique: false, replace: false, type: IndexType.hash)
   String? remoteId;
@@ -301,7 +304,7 @@ class Asset {
   Asset _copyWith({
     Id? id,
     String? checksum,
-    String? thumbhash,
+    List<byte>? thumbhash,
     String? remoteId,
     String? localId,
     int? ownerId,

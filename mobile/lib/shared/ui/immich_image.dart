@@ -104,7 +104,7 @@ class ImmichImage extends StatelessWidget {
           return FittedBox(
             fit: BoxFit.fill,
             child: Image(
-              image: ThumbHash.fromBase64(asset.thumbhash!).toImage(),
+              image: ThumbHash.fromIntList(asset.thumbhash!).toImage(),
             ),
           );
         } else if (useGrayBoxPlaceholder) {

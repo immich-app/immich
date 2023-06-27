@@ -84,6 +84,7 @@ class _$AppRouter extends RootStackRouter {
           onVideoEnded: args.onVideoEnded,
           onPlaying: args.onPlaying,
           onPaused: args.onPaused,
+          placeholder: args.placeholder,
         ),
       );
     },
@@ -673,6 +674,7 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
     required dynamic onVideoEnded,
     dynamic onPlaying,
     dynamic onPaused,
+    Widget? placeholder,
   }) : super(
           VideoViewerRoute.name,
           path: '/video-viewer-page',
@@ -683,6 +685,7 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
             onVideoEnded: onVideoEnded,
             onPlaying: onPlaying,
             onPaused: onPaused,
+            placeholder: placeholder,
           ),
         );
 
@@ -697,6 +700,7 @@ class VideoViewerRouteArgs {
     required this.onVideoEnded,
     this.onPlaying,
     this.onPaused,
+    this.placeholder,
   });
 
   final Key? key;
@@ -711,9 +715,11 @@ class VideoViewerRouteArgs {
 
   final dynamic onPaused;
 
+  final Widget? placeholder;
+
   @override
   String toString() {
-    return 'VideoViewerRouteArgs{key: $key, asset: $asset, isMotionVideo: $isMotionVideo, onVideoEnded: $onVideoEnded, onPlaying: $onPlaying, onPaused: $onPaused}';
+    return 'VideoViewerRouteArgs{key: $key, asset: $asset, isMotionVideo: $isMotionVideo, onVideoEnded: $onVideoEnded, onPlaying: $onPlaying, onPaused: $onPaused, placeholder: $placeholder}';
   }
 }
 
