@@ -18,9 +18,43 @@ class MemoryPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final verticalPageController = usePageController(initialPage: memoryIndex);
     final currentMemory = useState(memories[memoryIndex]);
-    final bgColor = Colors.grey[800];
+    const bgColor = Colors.black;
+
     onMemoryChanged(int otherIndex) {
       currentMemory.value = memories[otherIndex];
+    }
+
+    buildBottomInfo() {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  currentMemory.value.title,
+                  style: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: 11.0,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  DateFormat.yMMMMd('en_US').format(
+                    currentMemory.value.assets[0].fileCreatedAt,
+                  ),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
     }
 
     return Scaffold(
@@ -46,36 +80,7 @@ class MemoryPage extends HookConsumerWidget {
                   child: Column(
                     children: [
                       Expanded(child: MemoryCard(asset: asset)),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  currentMemory.value.title,
-                                  style: TextStyle(
-                                    color: Colors.grey[400],
-                                    fontSize: 11.0,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                Text(
-                                  DateFormat.yMMMMd('en_US').format(
-                                    currentMemory.value.assets[0].fileCreatedAt,
-                                  ),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12.0,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      )
+                      buildBottomInfo(),
                     ],
                   ),
                 );
@@ -84,22 +89,6 @@ class MemoryPage extends HookConsumerWidget {
           },
         ),
       ),
-      // bottomNavigationBar: BottomAppBar(
-      //   height: 50.0,
-      //   color: Colors.black,
-      //   child: Row(
-      //     children: [
-      //       Text(
-      //         currentMemory.value.title,
-      //         style: const TextStyle(
-      //           color: Colors.white,
-      //           fontSize: 12.0,
-      //           fontWeight: FontWeight.w600,
-      //         ),
-      //       ),
-      //     ],
-      //   ),
-      // ),
     );
   }
 }
