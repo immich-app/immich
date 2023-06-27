@@ -108,7 +108,7 @@ class ImmichImage extends StatelessWidget {
         }
         return Transform.scale(
           scale: 0.2,
-          child: CircularProgressIndicator(
+          child: CircularProgressIndicator.adaptive(
             value: downloadProgress.progress,
           ),
         );
