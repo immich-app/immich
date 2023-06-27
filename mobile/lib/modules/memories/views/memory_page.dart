@@ -14,14 +14,23 @@ class MemoryPage extends HookConsumerWidget {
     required this.memoryIndex,
     super.key,
   });
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final verticalPageController = usePageController(initialPage: memoryIndex);
+    final memoryPageController = usePageController(initialPage: memoryIndex);
+    final memoryAssetPageController = usePageController();
     final currentMemory = useState(memories[memoryIndex]);
     const bgColor = Colors.black;
 
     onMemoryChanged(int otherIndex) {
       currentMemory.value = memories[otherIndex];
+    }
+
+    buildTopInfo() {
+      return const Text(
+        "Top Info",
+        style: TextStyle(color: Colors.white),
+      );
     }
 
     buildBottomInfo() {
@@ -46,7 +55,7 @@ class MemoryPage extends HookConsumerWidget {
                   ),
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 12.0,
+                    fontSize: 14.0,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -65,26 +74,39 @@ class MemoryPage extends HookConsumerWidget {
       body: SafeArea(
         child: PageView.builder(
           scrollDirection: Axis.vertical,
-          controller: verticalPageController,
+          controller: memoryPageController,
           onPageChanged: onMemoryChanged,
           itemCount: memories.length,
           itemBuilder: (context, mIndex) {
             // Build horizontal page
-            return PageView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: memories[mIndex].assets.length,
-              itemBuilder: (context, index) {
-                final asset = memories[mIndex].assets[index];
-                return Container(
-                  color: Colors.black,
-                  child: Column(
-                    children: [
-                      Expanded(child: MemoryCard(asset: asset)),
-                      buildBottomInfo(),
-                    ],
+            return Column(
+              children: [
+                buildTopInfo(),
+                Expanded(
+                  child: PageView.builder(
+                    controller: memoryAssetPageController,
+                    scrollDirection: Axis.horizontal,
+                    itemCount: memories[mIndex].assets.length,
+                    itemBuilder: (context, index) {
+                      final asset = memories[mIndex].assets[index];
+                      return Container(
+                        color: Colors.black,
+                        child: MemoryCard(
+                          asset: asset,
+                          onTap: () {
+                            (index + 1 < currentMemory.value.assets.length)
+                                ? memoryAssetPageController.jumpToPage(
+                                    (index + 1),
+                                  )
+                                : null;
+                          },
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
+                ),
+                buildBottomInfo(),
+              ],
             );
           },
         ),

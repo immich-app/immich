@@ -11,7 +11,10 @@ import 'package:openapi/api.dart';
 
 class MemoryCard extends HookConsumerWidget {
   final Asset asset;
-  const MemoryCard({required this.asset, super.key});
+  final Function? onTap;
+
+  const MemoryCard({required this.asset, this.onTap, super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authToken = 'Bearer ${Store.get(StoreKey.accessToken)}';
@@ -51,12 +54,15 @@ class MemoryCard extends HookConsumerWidget {
               ),
             ),
           ),
-          ImmichImage(
-            asset,
-            fit: BoxFit.fitWidth,
-            height: double.infinity,
-            width: double.infinity,
-            type: ThumbnailFormat.JPEG,
+          GestureDetector(
+            onTap: () => onTap != null ? onTap!() : null,
+            child: ImmichImage(
+              asset,
+              fit: BoxFit.fitWidth,
+              height: double.infinity,
+              width: double.infinity,
+              type: ThumbnailFormat.JPEG,
+            ),
           ),
         ],
       ),
