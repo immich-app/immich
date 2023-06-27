@@ -22,10 +22,7 @@ class MemoryService {
   Future<List<Memory>?> getMemoryLane() async {
     try {
       final now = DateTime.now();
-
-      // TODO: remove this before merge
-      // final beginningOfDate = DateTime(now.year, now.month, now.day);
-      final beginningOfDate = DateTime(2023, 6, 26);
+      final beginningOfDate = DateTime(now.year, now.month, now.day);
       final data = await _apiService.assetApi.getMemoryLane(
         beginningOfDate,
       );
