@@ -45,9 +45,7 @@ class FaceRecognizer(InferenceModel):
         batch_cropped_images, batch_offsets = self._preprocess(images, batch_kpss)
         if batch_cropped_images:
             batch_embeddings = self._recognize(batch_cropped_images)
-            results = self._postprocess(
-                images, batch_det, batch_embeddings, batch_offsets
-            )
+            results = self._postprocess(images, batch_det, batch_embeddings, batch_offsets)
         else:
             results = self._postprocess(images, batch_det)
         return results
@@ -62,9 +60,7 @@ class FaceRecognizer(InferenceModel):
             batch_kpss.append(kpss)
         return batch_det, batch_kpss
 
-    def _preprocess(
-        self, images: list[cv2.Mat], batch_kpss: list[ndarray]
-    ) -> tuple[list[cv2.Mat], list[int]]:
+    def _preprocess(self, images: list[cv2.Mat], batch_kpss: list[ndarray]) -> tuple[list[cv2.Mat], list[int]]:
         batch_cropped_images = []
         batch_offsets = []
         total_faces = 0
@@ -76,7 +72,7 @@ class FaceRecognizer(InferenceModel):
                 batch_cropped_images.append(norm_crop(image, kps))
         return batch_cropped_images, batch_offsets
 
-    def _recognize(self, images: list[cv2.Mat]) -> np.ndarray:
+    def _recognize(self, images: list[cv2.Mat]) -> ndarray:
         embeddings = self.model.models["recognition"].get_feat(images)
         return embeddings
 

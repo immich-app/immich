@@ -42,9 +42,4 @@ class ImageClassifier(InferenceModel):
         return results
 
     def _postprocess(self, predictions: list[dict[str, Any]]) -> list[str]:
-        return [
-            tag
-            for pred in predictions
-            for tag in pred["label"].split(", ")
-            if pred["score"] >= self.min_score
-        ]
+        return [tag for pred in predictions for tag in pred["label"].split(", ") if pred["score"] >= self.min_score]

@@ -42,7 +42,7 @@ class ModelHandler:
     def encode_text(self, texts: list[str]) -> list[list[float]]:
         return self.clip_text_encoder.predict_batch(texts)
 
-    def recognize(self, images: list[cv2.Mat]) -> list[dict[str, Any]]:
+    def recognize(self, images: list[cv2.Mat]) -> list[list[dict[str, Any]]]:
         return self.face_recognizer.predict_batch(images)
 
 
@@ -55,10 +55,10 @@ class ModelHandler:
 class AsyncModelHandler:
     def __init__(
         self,
-        classification_model,
-        clip_image_model,
-        clip_text_model,
-        facial_recognition_model,
+        classification_model: str,
+        clip_image_model: str,
+        clip_text_model: str,
+        facial_recognition_model: str,
     ) -> None:
         self.model_cache = ModelCache(ttl=settings.model_ttl, revalidate=True)
         self.classification_model = classification_model

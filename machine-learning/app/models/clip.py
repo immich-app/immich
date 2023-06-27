@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 from PIL.Image import Image
 from sentence_transformers import SentenceTransformer
 
