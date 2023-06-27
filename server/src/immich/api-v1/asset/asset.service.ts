@@ -149,9 +149,8 @@ export class AssetService {
     }
 
     if (dto.sidecarPath) {
-      const sidecarType = mime.lookup(dto.sidecarPath) as string;
-      if (!isSidecarFileType(sidecarType)) {
-        throw new BadRequestException(`Unsupported sidecar file type ${assetPathType}`);
+      if (!dto.sidecarPath.toLowerCase().match(/\.xmp$/)) {
+        throw new BadRequestException(`Unsupported sidecar file type`);
       }
     }
 
