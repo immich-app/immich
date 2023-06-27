@@ -149,7 +149,7 @@ export class AssetService {
     }
 
     if (dto.sidecarPath) {
-      if (path.extname(dto.sidecarPath).toLowerCase() !== ".xmp") {
+      if (path.extname(dto.sidecarPath).toLowerCase() !== '.xmp') {
         throw new BadRequestException(`Unsupported sidecar file type`);
       }
     }
