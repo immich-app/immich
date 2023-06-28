@@ -6,7 +6,6 @@ import {
   ICryptoRepository,
   IJobRepository,
   ImmichReadStream,
-  isSidecarFileType,
   isSupportedFileType,
   IStorageRepository,
   JobName,
