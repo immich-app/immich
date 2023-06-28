@@ -1,8 +1,12 @@
-from aiocache.plugins import TimingPlugin, BasePlugin
+import asyncio
+from typing import Any
+
 from aiocache.backends.memory import SimpleMemoryCache
 from aiocache.lock import OptimisticLock
-from typing import Any
-from models import get_model
+from aiocache.plugins import BasePlugin, TimingPlugin
+
+from ..schemas import ModelType
+from .base import InferenceModel
 
 
 class ModelCache:
@@ -10,7 +14,7 @@ class ModelCache:
 
     def __init__(
         self,
-        ttl: int | None = None,
+        ttl: float | None = None,
         revalidate: bool = False,
         timeout: int | None = None,
         profiling: bool = False,
@@ -31,13 +35,9 @@ class ModelCache:
         if profiling:
             plugins.append(TimingPlugin())
 
-        self.cache = SimpleMemoryCache(
-            ttl=ttl, timeout=timeout, plugins=plugins, namespace=None
-        )
+        self.cache = SimpleMemoryCache(ttl=ttl, timeout=timeout, plugins=plugins, namespace=None)
 
-    async def get_cached_model(
-        self, model_name: str, model_type: str, **model_kwargs
-    ) -> Any:
+    async def get(self, model_name: str, model_type: ModelType, **model_kwargs: Any) -> InferenceModel:
         """
         Args:
             model_name: Name of model in the model hub used for the task.
@@ -47,11 +47,14 @@ class ModelCache:
             model: The requested model.
         """
 
-        key = self.cache.build_key(model_name, model_type)
+        key = self.cache.build_key(model_name, model_type.value)
         model = await self.cache.get(key)
         if model is None:
             async with OptimisticLock(self.cache, key) as lock:
-                model = get_model(model_name, model_type, **model_kwargs)
+                model = await asyncio.get_running_loop().run_in_executor(
+                    None,
+                    lambda: InferenceModel.from_model_type(model_type, model_name, **model_kwargs),
+                )
                 await lock.cas(model, ttl=self.ttl)
         return model
 
@@ -65,7 +68,14 @@ class ModelCache:
 class RevalidationPlugin(BasePlugin):
     """Revalidates cache item's TTL after cache hit."""
 
-    async def post_get(self, client, key, ret=None, namespace=None, **kwargs):
+    async def post_get(
+        self,
+        client: SimpleMemoryCache,
+        key: str,
+        ret: Any | None = None,
+        namespace: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         if ret is None:
             return
         if namespace is not None:
@@ -73,7 +83,14 @@ class RevalidationPlugin(BasePlugin):
         if key in client._handlers:
             await client.expire(key, client.ttl)
 
-    async def post_multi_get(self, client, keys, ret=None, namespace=None, **kwargs):
+    async def post_multi_get(
+        self,
+        client: SimpleMemoryCache,
+        keys: list[str],
+        ret: list[Any] | None = None,
+        namespace: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         if ret is None:
             return
 

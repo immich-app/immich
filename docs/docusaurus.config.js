@@ -106,6 +106,11 @@ const config = {
             label: 'API',
           },
           {
+            to: '/blog',
+            position: 'right',
+            label: 'Blog',
+          },
+          {
             href: 'https://github.com/immich-app/immich',
             label: 'GitHub',
             position: 'right',

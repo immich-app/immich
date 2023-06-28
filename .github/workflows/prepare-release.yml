@@ -34,6 +34,9 @@ jobs:
         with:
           token: ${{ secrets.ORG_RELEASE_TOKEN }}
 
+      - name: Install Poetry
+        run: pipx install poetry
+
       - name: Bump version
         run: misc/release/pump-version.sh -s "${{ inputs.serverBump }}" -m "${{ inputs.mobileBump }}"
 

@@ -82,8 +82,12 @@ class AssetService {
         _db.writeTxn(() => _db.eTags.put(ETag(id: user.id, value: newETag)));
       }
       return assets.map(Asset.remote).toList();
-    } catch (e, stack) {
-      log.severe('Error while getting remote assets', e, stack);
+    } catch (error, stack) {
+      log.severe(
+        'Error while getting remote assets: ${error.toString()}',
+        error,
+        stack,
+      );
       return null;
     }
   }
@@ -100,8 +104,8 @@ class AssetService {
 
       return await _apiService.assetApi
           .deleteAsset(DeleteAssetDto(ids: payload));
-    } catch (e) {
-      debugPrint("Error getAllAsset  ${e.toString()}");
+    } catch (error, stack) {
+      log.severe("Error deleteAssets  ${error.toString()}", error, stack);
       return null;
     }
   }

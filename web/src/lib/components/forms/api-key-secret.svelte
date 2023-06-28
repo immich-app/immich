@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import KeyVariant from 'svelte-material-icons/KeyVariant.svelte';
 	import { handleError } from '../../utils/handle-error';
 	import FullScreenModal from '../shared-components/full-screen-modal.svelte';
@@ -13,6 +13,12 @@
 
 	const dispatch = createEventDispatcher();
 	const handleDone = () => dispatch('done');
+	let canCopyImagesToClipboard = true;
+
+	onMount(async () => {
+		const module = await import('copy-image-clipboard');
+		canCopyImagesToClipboard = module.canCopyImagesToClipboard();
+	});
 	const handleCopy = async () => {
 		try {
 			await navigator.clipboard.writeText(secret);
@@ -55,7 +61,9 @@
 		</div>
 
 		<div class="flex w-full px-4 gap-4 mt-8">
-			<Button on:click={() => handleCopy()} fullwidth>Copy to Clipboard</Button>
+			{#if canCopyImagesToClipboard}
+				<Button on:click={() => handleCopy()} fullwidth>Copy to Clipboard</Button>
+			{/if}
 			<Button on:click={() => handleDone()} fullwidth>Done</Button>
 		</div>
 	</div>

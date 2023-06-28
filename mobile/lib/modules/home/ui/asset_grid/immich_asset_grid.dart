@@ -28,6 +28,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
   final bool showMultiSelectIndicator;
   final void Function(ItemPosition start, ItemPosition end)?
       visibleItemsListener;
+  final Widget? topWidget;
 
   const ImmichAssetGrid({
     super.key,
@@ -44,6 +45,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
     this.dynamicLayout,
     this.showMultiSelectIndicator = true,
     this.visibleItemsListener,
+    this.topWidget,
   });
 
   @override
@@ -125,6 +127,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
                   settings.getSetting(AppSettingsEnum.dynamicLayout),
               showMultiSelectIndicator: showMultiSelectIndicator,
               visibleItemsListener: visibleItemsListener,
+              topWidget: topWidget,
             ),
           ),
         ),

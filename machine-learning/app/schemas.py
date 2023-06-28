@@ -1,11 +1,10 @@
+from enum import Enum
+
 from pydantic import BaseModel
 
 
 def to_lower_camel(string: str) -> str:
-    tokens = [
-        token.capitalize() if i > 0 else token
-        for i, token in enumerate(string.split("_"))
-    ]
+    tokens = [token.capitalize() if i > 0 else token for i, token in enumerate(string.split("_"))]
     return "".join(tokens)
 
 
@@ -54,3 +53,9 @@ class Face(BaseModel):
 
 class FaceResponse(BaseModel):
     __root__: list[Face]
+
+
+class ModelType(Enum):
+    IMAGE_CLASSIFICATION = "image-classification"
+    CLIP = "clip"
+    FACIAL_RECOGNITION = "facial-recognition"

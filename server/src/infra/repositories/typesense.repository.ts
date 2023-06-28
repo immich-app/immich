@@ -253,6 +253,8 @@ export class TypesenseRepository implements ISearchRepository {
           'exifInfo.state',
           'exifInfo.city',
           'exifInfo.description',
+          'exifInfo.model',
+          'exifInfo.make',
           'smartInfo.tags',
           'smartInfo.objects',
           'people',

@@ -62,7 +62,7 @@
 	$: paused ? pause() : play();
 
 	// Progress should be paused when it's no longer possible to advance.
-	$: paused ||= !canGoForward;
+	$: paused ||= !canGoForward || galleryInView;
 
 	// Advance to the next asset or memory when progress is complete.
 	$: $progress === 1 && toNext();

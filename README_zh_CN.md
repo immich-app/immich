@@ -23,6 +23,7 @@
 
 <p align="center">
   <a href="README.md">English</a>
+  <a href="README_tr_TR.md">Türkçe</a>
 </p>
 
 
