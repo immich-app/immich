@@ -39,13 +39,7 @@
 			return [thumbnailWidth, thumbnailHeight];
 		}
 
-		if (asset.exifInfo?.orientation === 'Rotate 90 CW') {
-			return [176, 235];
-		} else if (asset.exifInfo?.orientation === 'Horizontal (normal)') {
-			return [313, 235];
-		} else {
-			return [235, 235];
-		}
+		return [235, 235];
 	})();
 
 	const thumbnailClickedHandler = () => {
