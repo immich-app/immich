@@ -290,6 +290,17 @@ class _$AppRouter extends RootStackRouter {
         child: const AllPeoplePage(),
       );
     },
+    VerticalRouteView.name: (routeData) {
+      final args = routeData.argsAs<VerticalRouteViewArgs>();
+      return MaterialPageX<dynamic>(
+        routeData: routeData,
+        child: MemoryPage(
+          memories: args.memories,
+          memoryIndex: args.memoryIndex,
+          key: args.key,
+        ),
+      );
+    },
     HomeRoute.name: (routeData) {
       return MaterialPageX<dynamic>(
         routeData: routeData,
@@ -584,6 +595,14 @@ class _$AppRouter extends RootStackRouter {
         RouteConfig(
           AllPeopleRoute.name,
           path: '/all-people-page',
+          guards: [
+            authGuard,
+            duplicateGuard,
+          ],
+        ),
+        RouteConfig(
+          VerticalRouteView.name,
+          path: '/vertical-page-view',
           guards: [
             authGuard,
             duplicateGuard,
@@ -1279,6 +1298,45 @@ class AllPeopleRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'AllPeopleRoute';
+}
+
+/// generated route for
+/// [MemoryPage]
+class VerticalRouteView extends PageRouteInfo<VerticalRouteViewArgs> {
+  VerticalRouteView({
+    required List<Memory> memories,
+    required int memoryIndex,
+    Key? key,
+  }) : super(
+          VerticalRouteView.name,
+          path: '/vertical-page-view',
+          args: VerticalRouteViewArgs(
+            memories: memories,
+            memoryIndex: memoryIndex,
+            key: key,
+          ),
+        );
+
+  static const String name = 'VerticalRouteView';
+}
+
+class VerticalRouteViewArgs {
+  const VerticalRouteViewArgs({
+    required this.memories,
+    required this.memoryIndex,
+    this.key,
+  });
+
+  final List<Memory> memories;
+
+  final int memoryIndex;
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'VerticalRouteViewArgs{memories: $memories, memoryIndex: $memoryIndex, key: $key}';
+  }
 }
 
 /// generated route for

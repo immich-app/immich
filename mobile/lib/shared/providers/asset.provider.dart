@@ -75,7 +75,7 @@ class AssetNotifier extends StateNotifier<bool> {
     await _syncService.syncNewAssetToDb(newAsset);
   }
 
-  Future<void> deleteAssets(Set<Asset> deleteAssets) async {
+  Future<void> deleteAssets(Iterable<Asset> deleteAssets) async {
     _deleteInProgress = true;
     state = true;
     try {
@@ -94,7 +94,9 @@ class AssetNotifier extends StateNotifier<bool> {
     }
   }
 
-  Future<List<String>> _deleteLocalAssets(Set<Asset> assetsToDelete) async {
+  Future<List<String>> _deleteLocalAssets(
+    Iterable<Asset> assetsToDelete,
+  ) async {
     final List<String> local =
         assetsToDelete.where((a) => a.isLocal).map((a) => a.localId!).toList();
     // Delete asset from device
@@ -109,7 +111,7 @@ class AssetNotifier extends StateNotifier<bool> {
   }
 
   Future<Iterable<String>> _deleteRemoteAssets(
-    Set<Asset> assetsToDelete,
+    Iterable<Asset> assetsToDelete,
   ) async {
     final Iterable<Asset> remote = assetsToDelete.where((e) => e.isRemote);
     final List<DeleteAssetResponseDto> deleteAssetResult =

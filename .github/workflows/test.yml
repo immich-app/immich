@@ -121,6 +121,36 @@ jobs:
         working-directory: ./mobile
         run: flutter test -j 1
 
+  ml-unit-tests:
+    name: Run ML unit tests and checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./machine-learning
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+          cache: "poetry"
+      - name: Install dependencies
+        run: |
+          poetry install --with dev
+      - name: Lint with ruff
+        run: |
+          poetry run ruff check --format=github app
+      - name: Check black formatting
+        run: |
+          poetry run black --check app
+      - name: Run mypy type checking
+        run: |
+          poetry run mypy --install-types --non-interactive app/
+      - name: Run tests and coverage
+        run: |
+          poetry run pytest --cov app
+
   generated-api-up-to-date:
     name: Check generated files are up-to-date
     runs-on: ubuntu-latest

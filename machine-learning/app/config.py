@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     port: int = 3003
     workers: int = 1
     min_face_score: float = 0.7
+    test_full: bool = False
 
     class Config(BaseSettings.Config):
         env_prefix = "MACHINE_LEARNING_"

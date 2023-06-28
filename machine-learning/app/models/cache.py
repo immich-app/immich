@@ -1,4 +1,5 @@
 import asyncio
+from typing import Any
 
 from aiocache.backends.memory import SimpleMemoryCache
 from aiocache.lock import OptimisticLock
@@ -34,13 +35,9 @@ class ModelCache:
         if profiling:
             plugins.append(TimingPlugin())
 
-        self.cache = SimpleMemoryCache(
-            ttl=ttl, timeout=timeout, plugins=plugins, namespace=None
-        )
+        self.cache = SimpleMemoryCache(ttl=ttl, timeout=timeout, plugins=plugins, namespace=None)
 
-    async def get(
-        self, model_name: str, model_type: ModelType, **model_kwargs
-    ) -> InferenceModel:
+    async def get(self, model_name: str, model_type: ModelType, **model_kwargs: Any) -> InferenceModel:
         """
         Args:
             model_name: Name of model in the model hub used for the task.
@@ -56,9 +53,7 @@ class ModelCache:
             async with OptimisticLock(self.cache, key) as lock:
                 model = await asyncio.get_running_loop().run_in_executor(
                     None,
-                    lambda: InferenceModel.from_model_type(
-                        model_type, model_name, **model_kwargs
-                    ),
+                    lambda: InferenceModel.from_model_type(model_type, model_name, **model_kwargs),
                 )
                 await lock.cas(model, ttl=self.ttl)
         return model
@@ -73,7 +68,14 @@ class ModelCache:
 class RevalidationPlugin(BasePlugin):
     """Revalidates cache item's TTL after cache hit."""
 
-    async def post_get(self, client, key, ret=None, namespace=None, **kwargs):
+    async def post_get(
+        self,
+        client: SimpleMemoryCache,
+        key: str,
+        ret: Any | None = None,
+        namespace: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         if ret is None:
             return
         if namespace is not None:
@@ -81,7 +83,14 @@ class RevalidationPlugin(BasePlugin):
         if key in client._handlers:
             await client.expire(key, client.ttl)
 
-    async def post_multi_get(self, client, keys, ret=None, namespace=None, **kwargs):
+    async def post_multi_get(
+        self,
+        client: SimpleMemoryCache,
+        keys: list[str],
+        ret: list[Any] | None = None,
+        namespace: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         if ret is None:
             return
 

@@ -7,6 +7,7 @@ import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:openapi/api.dart' as api;
 
 /// Renders an Asset using local data if available, else remote data
 class ImmichImage extends StatelessWidget {
@@ -16,6 +17,7 @@ class ImmichImage extends StatelessWidget {
     this.height,
     this.fit = BoxFit.cover,
     this.useGrayBoxPlaceholder = false,
+    this.type = api.ThumbnailFormat.WEBP,
     super.key,
   });
   final Asset? asset;
@@ -23,6 +25,7 @@ class ImmichImage extends StatelessWidget {
   final double? width;
   final double? height;
   final BoxFit fit;
+  final api.ThumbnailFormat type;
 
   @override
   Widget build(BuildContext context) {
@@ -86,8 +89,7 @@ class ImmichImage extends StatelessWidget {
       );
     }
     final String? token = Store.get(StoreKey.accessToken);
-    final String thumbnailRequestUrl = getThumbnailUrl(asset);
-
+    final String thumbnailRequestUrl = getThumbnailUrl(asset, type: type);
     return CachedNetworkImage(
       imageUrl: thumbnailRequestUrl,
       httpHeaders: {"Authorization": "Bearer $token"},
@@ -114,7 +116,7 @@ class ImmichImage extends StatelessWidget {
         }
         return Transform.scale(
           scale: 0.2,
-          child: CircularProgressIndicator(
+          child: CircularProgressIndicator.adaptive(
             value: downloadProgress.progress,
           ),
         );

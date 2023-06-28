@@ -6,7 +6,7 @@ import 'package:immich_mobile/modules/search/models/curated_content.dart';
 import 'package:immich_mobile/modules/search/providers/search_page_state.provider.dart';
 import 'package:immich_mobile/modules/search/ui/explore_grid.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
-import 'package:immich_mobile/utils/capitalize_first_letter.dart';
+import 'package:immich_mobile/utils/capitalize.dart';
 import 'package:openapi/api.dart';
 
 class CuratedObjectPage extends HookConsumerWidget {
@@ -43,7 +43,7 @@ class CuratedObjectPage extends HookConsumerWidget {
           curatedContent: curatedLocations
               .map(
                 (l) => CuratedContent(
-                  label: l.object.capitalizeFirstLetter(),
+                  label: l.object.capitalize(),
                   id: l.id,
                 ),
               )
