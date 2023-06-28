@@ -16,11 +16,10 @@ class ImmichTitleText extends StatelessWidget {
       'IMMICH',
       style: TextStyle(
         fontFamily: 'SnowburstOne',
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w600,
         fontSize: fontSize,
         color: color ?? Theme.of(context).primaryColor,
       ),
     );
   }
-
 }

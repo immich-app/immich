@@ -30,7 +30,7 @@ class ProfileDrawer extends HookConsumerWidget {
           style: Theme.of(context)
               .textTheme
               .labelLarge
-              ?.copyWith(fontWeight: FontWeight.bold),
+              ?.copyWith(fontWeight: FontWeight.w500),
         ).tr(),
         onTap: () async {
           bool res = await ref.watch(authenticationProvider.notifier).logout();
@@ -60,7 +60,7 @@ class ProfileDrawer extends HookConsumerWidget {
           style: Theme.of(context)
               .textTheme
               .labelLarge
-              ?.copyWith(fontWeight: FontWeight.bold),
+              ?.copyWith(fontWeight: FontWeight.w500),
         ).tr(),
         onTap: () {
           AutoRouter.of(context).push(const SettingsRoute());
@@ -83,7 +83,7 @@ class ProfileDrawer extends HookConsumerWidget {
           style: Theme.of(context)
               .textTheme
               .labelLarge
-              ?.copyWith(fontWeight: FontWeight.bold),
+              ?.copyWith(fontWeight: FontWeight.w500),
         ).tr(),
         onTap: () {
           AutoRouter.of(context).push(const AppLogRoute());

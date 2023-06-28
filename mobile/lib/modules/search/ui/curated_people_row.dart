@@ -84,7 +84,7 @@ class CuratedPeopleRow extends StatelessWidget {
                       child: Text(
                         "Add name",
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w500,
                           color: Theme.of(context).primaryColor,
                         ),
                       ),
@@ -98,8 +98,7 @@ class CuratedPeopleRow extends StatelessWidget {
                       textAlign: TextAlign.center,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13.0,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   )

@@ -35,7 +35,7 @@ class AdvancedSettings extends HookConsumerWidget {
       title: const Text(
         "advanced_settings_tile_title",
         style: TextStyle(
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w600,
         ),
       ).tr(),
       subtitle: const Text(
@@ -58,7 +58,7 @@ class AdvancedSettings extends HookConsumerWidget {
           title: Text(
             // Not translated because the levels are only English
             "Log level: $logLevel",
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(fontWeight: FontWeight.w600),
           ),
           subtitle: Slider(
             value: levelId.value.toDouble(),

@@ -69,7 +69,7 @@ class NotificationSetting extends HookConsumerWidget {
       title: const Text(
         'setting_notifications_title',
         style: TextStyle(
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w600,
         ),
       ).tr(),
       subtitle: const Text(
@@ -89,16 +89,17 @@ class NotificationSetting extends HookConsumerWidget {
                 const Text('notification_permission_list_tile_content').tr(),
                 const SizedBox(height: 8),
                 ElevatedButton(
-                  onPressed: ()
-                  => ref.watch(notificationPermissionProvider.notifier)
-                    .requestNotificationPermission().then((permission) {
-                      if (permission == PermissionStatus.permanentlyDenied) {
-                        showPermissionsDialog();
-                      }
+                  onPressed: () => ref
+                      .watch(notificationPermissionProvider.notifier)
+                      .requestNotificationPermission()
+                      .then((permission) {
+                    if (permission == PermissionStatus.permanentlyDenied) {
+                      showPermissionsDialog();
+                    }
                   }),
-                  child:
-                  const Text('notification_permission_list_tile_enable_button')
-                    .tr(),
+                  child: const Text(
+                          'notification_permission_list_tile_enable_button')
+                      .tr(),
                 ),
               ],
             ),
@@ -126,11 +127,12 @@ class NotificationSetting extends HookConsumerWidget {
           dense: true,
           title: const Text(
             'setting_notifications_notify_failures_grace_period',
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(fontWeight: FontWeight.w600),
           ).tr(args: [formattedValue]),
           subtitle: Slider(
             value: sliderValue.value,
-            onChanged: !hasPermission ? null : (double v) => sliderValue.value = v,
+            onChanged:
+                !hasPermission ? null : (double v) => sliderValue.value = v,
             onChangeEnd: (double v) => appSettingService.setSetting(
               AppSettingsEnum.uploadErrorNotificationGracePeriod,
               v.toInt(),

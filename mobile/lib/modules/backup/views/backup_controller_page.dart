@@ -151,7 +151,7 @@ class BackupControllerPage extends HookConsumerWidget {
         ),
         title: const Text(
           "Check for corrupt asset backups",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
         ),
         isThreeLine: true,
         subtitle: Column(
@@ -178,7 +178,7 @@ class BackupControllerPage extends HookConsumerWidget {
         ),
         title: const Text(
           "backup_controller_page_server_storage",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
         ).tr(),
         isThreeLine: true,
         subtitle: Padding(
@@ -228,7 +228,7 @@ class BackupControllerPage extends HookConsumerWidget {
             : const Icon(Icons.cloud_off_rounded),
         title: Text(
           backUpOption,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
         ),
         subtitle: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -249,7 +249,7 @@ class BackupControllerPage extends HookConsumerWidget {
                   child: Text(
                     backupBtnText,
                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       fontSize: 12,
                     ),
                   ),
@@ -293,13 +293,13 @@ class BackupControllerPage extends HookConsumerWidget {
                 ),
                 child: const Text(
                   "backup_controller_page_background_battery_info_link",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
                 ).tr(),
               ),
               ElevatedButton(
                 child: const Text(
                   'backup_controller_page_background_battery_info_ok',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
                 ).tr(),
                 onPressed: () {
                   Navigator.of(context).pop();
@@ -370,7 +370,7 @@ class BackupControllerPage extends HookConsumerWidget {
               isBackgroundEnabled
                   ? "backup_controller_page_background_is_on"
                   : "backup_controller_page_background_is_off",
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
             ).tr(),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,7 +428,7 @@ class BackupControllerPage extends HookConsumerWidget {
                     title: const Text(
                       'backup_controller_page_background_delay',
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                       ),
                     ).tr(
                       args: [formatBackupDelaySliderValue(triggerDelay.value)],
@@ -462,7 +462,7 @@ class BackupControllerPage extends HookConsumerWidget {
                         ? "backup_controller_page_background_turn_off"
                         : "backup_controller_page_background_turn_on",
                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       fontSize: 12,
                     ),
                   ).tr(),
@@ -501,7 +501,7 @@ class BackupControllerPage extends HookConsumerWidget {
         title: const Text(
           'backup_controller_page_background_app_refresh_disabled_title',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
             fontSize: 14,
           ),
         ).tr(),
@@ -519,7 +519,7 @@ class BackupControllerPage extends HookConsumerWidget {
               child: const Text(
                 'backup_controller_page_background_app_refresh_enable_button_text',
                 style: TextStyle(
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                   fontSize: 12,
                 ),
               ).tr(),
@@ -549,7 +549,7 @@ class BackupControllerPage extends HookConsumerWidget {
             style: TextStyle(
               color: Theme.of(context).primaryColor,
               fontSize: 12,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
             ),
           ),
         );
@@ -561,7 +561,7 @@ class BackupControllerPage extends HookConsumerWidget {
             style: TextStyle(
               color: Theme.of(context).primaryColor,
               fontSize: 12,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
             ),
           ),
         );
@@ -584,7 +584,7 @@ class BackupControllerPage extends HookConsumerWidget {
             style: TextStyle(
               color: Colors.red[300],
               fontSize: 12,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
             ),
           ),
         );
@@ -610,7 +610,7 @@ class BackupControllerPage extends HookConsumerWidget {
           minVerticalPadding: 15,
           title: const Text(
             "backup_controller_page_albums",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
           ).tr(),
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 8.0),
@@ -619,7 +619,7 @@ class BackupControllerPage extends HookConsumerWidget {
               children: [
                 const Text(
                   "backup_controller_page_to_backup",
-                  style: TextStyle(fontSize: 12),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                 ).tr(),
                 buildSelectedAlbumName(),
                 buildExcludedAlbumName()
@@ -633,7 +633,7 @@ class BackupControllerPage extends HookConsumerWidget {
             child: const Text(
               "backup_controller_page_select",
               style: TextStyle(
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
                 fontSize: 12,
               ),
             ).tr(),
@@ -670,7 +670,7 @@ class BackupControllerPage extends HookConsumerWidget {
                     "backup_controller_page_cancel",
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                     ),
                   ).tr(),
                 )
@@ -680,7 +680,7 @@ class BackupControllerPage extends HookConsumerWidget {
                     "backup_controller_page_start_backup",
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                     ),
                   ).tr(),
                 ),
@@ -702,7 +702,7 @@ class BackupControllerPage extends HookConsumerWidget {
         elevation: 0,
         title: const Text(
           "backup_controller_page_backup",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ).tr(),
         leading: IconButton(
           onPressed: () {
@@ -724,7 +724,7 @@ class BackupControllerPage extends HookConsumerWidget {
               padding: const EdgeInsets.all(8.0),
               child: const Text(
                 "backup_controller_page_info",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
               ).tr(),
             ),
             buildFolderSelectionTile(),

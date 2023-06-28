@@ -39,7 +39,7 @@ class AlbumActionOutlinedButton extends StatelessWidget {
         label: Text(
           labelText,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
               ),
         ),
         onPressed: onPressed,

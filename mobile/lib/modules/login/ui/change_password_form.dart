@@ -34,7 +34,7 @@ class ChangePasswordForm extends HookConsumerWidget {
                 'common_change_password'.tr(),
                 style: TextStyle(
                   fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                   color: Theme.of(context).primaryColor,
                 ),
               ),
@@ -176,7 +176,7 @@ class ChangePasswordButton extends ConsumerWidget {
       onPressed: onPressed,
       child: Text(
         'common_change_password'.tr(),
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       ),
     );
   }

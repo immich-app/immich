@@ -79,7 +79,7 @@ class SharingPage extends HookConsumerWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       color: isDarkMode
                           ? Theme.of(context).primaryColor
                           : Colors.black,
@@ -136,7 +136,7 @@ class SharingPage extends HookConsumerWidget {
                   "sharing_silver_appbar_create_shared_album",
                   maxLines: 1,
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     fontSize: 11,
                   ),
                 ).tr(),
@@ -154,7 +154,7 @@ class SharingPage extends HookConsumerWidget {
                 label: const Text(
                   "sharing_silver_appbar_share_partner",
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     fontSize: 11,
                   ),
                   maxLines: 1,
@@ -174,7 +174,7 @@ class SharingPage extends HookConsumerWidget {
           'IMMICH',
           style: TextStyle(
             fontFamily: 'SnowburstOne',
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
             fontSize: 22,
           ),
         ),
@@ -240,7 +240,7 @@ class SharingPage extends HookConsumerWidget {
               sliver: SliverToBoxAdapter(
                 child: const Text(
                   "partner_page_title",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ).tr(),
               ),
             ),
@@ -255,7 +255,7 @@ class SharingPage extends HookConsumerWidget {
               child: const Text(
                 "sharing_page_album",
                 style: TextStyle(
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                 ),
               ).tr(),
             ),

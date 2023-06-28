@@ -43,7 +43,7 @@ class AlbumInfoCard extends HookConsumerWidget {
             style: TextStyle(
               fontSize: 10,
               color: isDarkTheme ? Colors.black : Colors.white,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
             ),
           ).tr(),
           backgroundColor: Theme.of(context).primaryColor,
@@ -57,7 +57,7 @@ class AlbumInfoCard extends HookConsumerWidget {
             style: TextStyle(
               fontSize: 10,
               color: isDarkTheme ? Colors.black : Colors.white,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
             ),
           ).tr(),
           backgroundColor: Colors.red[300],
@@ -195,7 +195,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                           style: TextStyle(
                             fontSize: 14,
                             color: Theme.of(context).primaryColor,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         Padding(

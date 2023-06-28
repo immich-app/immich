@@ -41,7 +41,7 @@ class IosDebugInfoTile extends HookConsumerWidget {
       title: Text(
         title,
         style: TextStyle(
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w600,
           fontSize: 14,
           color: Theme.of(context).primaryColor,
         ),

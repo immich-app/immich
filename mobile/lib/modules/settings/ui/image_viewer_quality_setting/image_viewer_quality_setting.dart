@@ -30,7 +30,7 @@ class ImageViewerQualitySetting extends HookConsumerWidget {
       title: const Text(
         'theme_setting_image_viewer_quality_title',
         style: TextStyle(
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w600,
         ),
       ).tr(),
       subtitle: const Text(

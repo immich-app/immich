@@ -125,7 +125,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                 style: TextStyle(
                   fontSize: 11,
                   color: textColor,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                 ),
               ).tr(),
               buildMap(),
@@ -133,9 +133,9 @@ class ExifBottomSheet extends HookConsumerWidget {
                 text: TextSpan(
                   style: TextStyle(
                     fontSize: 12,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     color: textColor,
-                    fontFamily: 'WorkSans',
+                    fontFamily: 'Inter',
                   ),
                   children: [
                     if (exifInfo != null && exifInfo.city != null)
@@ -173,7 +173,7 @@ class ExifBottomSheet extends HookConsumerWidget {
       return Text(
         '$date • $time',
         style: const TextStyle(
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w600,
           fontSize: 14,
         ),
       );
@@ -190,7 +190,7 @@ class ExifBottomSheet extends HookConsumerWidget {
               style: TextStyle(
                 fontSize: 11,
                 color: textColor,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
               ),
             ).tr(),
           ),
@@ -204,7 +204,7 @@ class ExifBottomSheet extends HookConsumerWidget {
             title: Text(
               asset.fileName,
               style: TextStyle(
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
                 color: textColor,
               ),
             ),
@@ -222,7 +222,7 @@ class ExifBottomSheet extends HookConsumerWidget {
                 "${exifInfo!.make} ${exifInfo.model}",
                 style: TextStyle(
                   color: textColor,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               subtitle: Text(

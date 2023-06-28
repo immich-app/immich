@@ -151,7 +151,7 @@ class AddToAlbumTitleRow extends StatelessWidget {
             "common_add_to_album",
             style: TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
             ),
           ).tr(),
           TextButton.icon(
@@ -161,7 +161,7 @@ class AddToAlbumTitleRow extends StatelessWidget {
               "common_create_new_album",
               style: TextStyle(
                 color: Theme.of(context).primaryColor,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
                 fontSize: 14,
               ),
             ).tr(),

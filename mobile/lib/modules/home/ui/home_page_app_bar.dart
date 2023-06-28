@@ -71,8 +71,8 @@ class HomePageAppBar extends ConsumerWidget implements PreferredSizeWidget {
               ),
               if (serverInfoState.isVersionMismatch)
                 Positioned(
-                  bottom: 12,
-                  right: 12,
+                  bottom: 4,
+                  right: 6,
                   child: GestureDetector(
                     onTap: () => Scaffold.of(context).openDrawer(),
                     child: Material(
@@ -100,7 +100,7 @@ class HomePageAppBar extends ConsumerWidget implements PreferredSizeWidget {
         'IMMICH',
         style: TextStyle(
           fontFamily: 'SnowburstOne',
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w600,
           fontSize: 22,
         ),
       ),
@@ -158,7 +158,7 @@ class HomePageAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 child: Text(
                   '${backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length}',
                   style:
-                      const TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
+                      const TextStyle(fontSize: 9, fontWeight: FontWeight.w600),
                 ),
               ),
           ],

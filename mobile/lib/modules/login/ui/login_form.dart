@@ -238,7 +238,7 @@ class LoginForm extends HookConsumerWidget {
             icon: const Icon(Icons.arrow_forward_rounded),
             label: const Text(
               'login_form_next_button',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ).tr(),
           ),
           if (isLoadingServer.value)
@@ -523,7 +523,7 @@ class LoginButton extends ConsumerWidget {
       icon: const Icon(Icons.login_rounded),
       label: const Text(
         "login_form_button_text",
-        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       ).tr(),
     );
   }
@@ -554,7 +554,7 @@ class OAuthLoginButton extends ConsumerWidget {
       icon: const Icon(Icons.pin_rounded),
       label: Text(
         buttonLabel,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       ),
     );
   }

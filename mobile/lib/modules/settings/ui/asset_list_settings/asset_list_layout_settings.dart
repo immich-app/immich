@@ -54,7 +54,7 @@ class LayoutSettings extends HookConsumerWidget {
           title: const Text(
             "asset_list_layout_settings_dynamic_layout_title",
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 14,
             ),
           ).tr(),
           onChanged: switchChanged,
@@ -64,8 +64,8 @@ class LayoutSettings extends HookConsumerWidget {
           title: const Text(
             "asset_list_layout_settings_group_by",
             style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
             ),
           ).tr(),
         ),
@@ -74,7 +74,7 @@ class LayoutSettings extends HookConsumerWidget {
           title: const Text(
             "asset_list_layout_settings_group_by_month_day",
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 14,
             ),
           ).tr(),
           value: GroupAssetsBy.day,
@@ -87,7 +87,7 @@ class LayoutSettings extends HookConsumerWidget {
           title: const Text(
             "asset_list_layout_settings_group_by_month",
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 14,
             ),
           ).tr(),
           value: GroupAssetsBy.month,
@@ -100,7 +100,7 @@ class LayoutSettings extends HookConsumerWidget {
           title: const Text(
             "asset_list_layout_settings_group_automatically",
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 14,
             ),
           ).tr(),
           value: GroupAssetsBy.auto,

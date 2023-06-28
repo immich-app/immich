@@ -69,7 +69,7 @@ class AppLogPage extends HookConsumerWidget {
         title: Text(
           "Logs - ${logMessages.value.length}",
           style: const TextStyle(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
             fontSize: 16.0,
           ),
         ),
@@ -144,7 +144,7 @@ class AppLogPage extends HookConsumerWidget {
                           ? Colors.white70
                           : Colors.grey[600],
                       fontSize: 14.0,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   TextSpan(

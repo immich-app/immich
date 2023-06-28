@@ -116,7 +116,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
             leading: const Icon(Icons.delete_sweep_rounded),
             title: const Text(
               'album_viewer_appbar_share_remove',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ).tr(),
             onTap: () => onRemoveFromAlbumPressed(),
           );
@@ -129,7 +129,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
             leading: const Icon(Icons.delete_forever_rounded),
             title: const Text(
               'album_viewer_appbar_share_delete',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ).tr(),
             onTap: () => onDeleteAlbumPressed(),
           );
@@ -138,7 +138,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
             leading: const Icon(Icons.person_remove_rounded),
             title: const Text(
               'album_viewer_appbar_share_leave',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ).tr(),
             onTap: () => onLeaveAlbumPressed(),
           );

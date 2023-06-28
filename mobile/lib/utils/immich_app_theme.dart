@@ -38,16 +38,16 @@ ThemeData immichLightTheme = ThemeData(
   hintColor: Colors.indigo,
   focusColor: Colors.indigo,
   splashColor: Colors.indigo.withOpacity(0.15),
-  fontFamily: 'WorkSans',
+  fontFamily: 'Inter',
   scaffoldBackgroundColor: immichBackgroundColor,
   snackBarTheme: const SnackBarThemeData(
-    contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
+    contentTextStyle: TextStyle(fontFamily: 'Inter'),
   ),
   appBarTheme: AppBarTheme(
     titleTextStyle: const TextStyle(
-      fontFamily: 'WorkSans',
+      fontFamily: 'Inter',
       color: Colors.indigo,
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.w600,
       fontSize: 18,
     ),
     backgroundColor: immichBackgroundColor,
@@ -70,30 +70,30 @@ ThemeData immichLightTheme = ThemeData(
   textTheme: const TextTheme(
     displayLarge: TextStyle(
       fontSize: 26,
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.w600,
       color: Colors.indigo,
     ),
     displayMedium: TextStyle(
       fontSize: 14,
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.w600,
       color: Colors.black87,
     ),
     displaySmall: TextStyle(
       fontSize: 12,
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.w600,
       color: Colors.indigo,
     ),
     titleSmall: TextStyle(
       fontSize: 16.0,
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.w600,
     ),
     titleMedium: TextStyle(
       fontSize: 18.0,
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.w600,
     ),
     titleLarge: TextStyle(
       fontSize: 26.0,
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.w600,
     ),
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
@@ -155,9 +155,9 @@ ThemeData immichDarkTheme = ThemeData(
   primaryColor: immichDarkThemePrimaryColor,
   scaffoldBackgroundColor: immichDarkBackgroundColor,
   hintColor: Colors.grey[600],
-  fontFamily: 'WorkSans',
+  fontFamily: 'Inter',
   snackBarTheme: const SnackBarThemeData(
-    contentTextStyle: TextStyle(fontFamily: 'WorkSans'),
+    contentTextStyle: TextStyle(fontFamily: 'Inter'),
   ),
   textButtonTheme: TextButtonThemeData(
     style: TextButton.styleFrom(
@@ -166,9 +166,9 @@ ThemeData immichDarkTheme = ThemeData(
   ),
   appBarTheme: AppBarTheme(
     titleTextStyle: TextStyle(
-      fontFamily: 'WorkSans',
+      fontFamily: 'Inter',
       color: immichDarkThemePrimaryColor,
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.w600,
       fontSize: 18,
     ),
     backgroundColor: const Color.fromARGB(255, 32, 33, 35),
@@ -189,30 +189,30 @@ ThemeData immichDarkTheme = ThemeData(
   textTheme: TextTheme(
     displayLarge: const TextStyle(
       fontSize: 26,
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.w600,
       color: Color.fromARGB(255, 255, 255, 255),
     ),
     displayMedium: const TextStyle(
       fontSize: 14,
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.w600,
       color: Color.fromARGB(255, 255, 255, 255),
     ),
     displaySmall: TextStyle(
       fontSize: 12,
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.w600,
       color: immichDarkThemePrimaryColor,
     ),
     titleSmall: const TextStyle(
       fontSize: 16.0,
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.w600,
     ),
     titleMedium: const TextStyle(
       fontSize: 18.0,
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.w600,
     ),
     titleLarge: const TextStyle(
       fontSize: 26.0,
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.w600,
     ),
   ),
   cardColor: Colors.grey[900],

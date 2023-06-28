@@ -33,13 +33,13 @@ class BackupInfoCard extends StatelessWidget {
         isThreeLine: true,
         title: Text(
           title,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
         ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: Text(
             subtitle,
-            style: const TextStyle(fontSize: 12),
+            style: const TextStyle(fontSize: 13),
           ),
         ),
         trailing: Column(
@@ -47,9 +47,12 @@ class BackupInfoCard extends StatelessWidget {
           children: [
             Text(
               info,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
             ),
-            const Text("backup_info_card_assets").tr(),
+            const Text(
+              "backup_info_card_assets",
+              style: TextStyle(fontSize: 13),
+            ).tr(),
           ],
         ),
       ),

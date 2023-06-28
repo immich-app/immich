@@ -26,7 +26,10 @@ class SearchRowTitle extends StatelessWidget {
         children: [
           Text(
             title,
-            style: Theme.of(context).textTheme.titleSmall,
+            style: const TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 16.0,
+            ),
           ),
           TextButton(
             onPressed: onViewAllPressed,
@@ -34,7 +37,7 @@ class SearchRowTitle extends StatelessWidget {
               'search_page_view_all_button',
               style: TextStyle(
                 color: Theme.of(context).primaryColor,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w500,
                 fontSize: 14.0,
               ),
             ).tr(),

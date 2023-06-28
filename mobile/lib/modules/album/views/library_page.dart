@@ -36,7 +36,7 @@ class LibraryPage extends HookConsumerWidget {
           'IMMICH',
           style: TextStyle(
             fontFamily: 'SnowburstOne',
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
             fontSize: 22,
           ),
         ),
@@ -107,7 +107,7 @@ class LibraryPage extends HookConsumerWidget {
             Text(
               options[selectedAlbumSortOrder.value],
               style: TextStyle(
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
                 color: Theme.of(context).primaryColor,
                 fontSize: 12.0,
               ),
@@ -156,7 +156,7 @@ class LibraryPage extends HookConsumerWidget {
                 child: const Text(
                   'library_page_new_album',
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                   ),
                 ).tr(),
               ),
@@ -179,7 +179,7 @@ class LibraryPage extends HookConsumerWidget {
             child: Text(
               label,
               style: TextStyle(
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
                 fontSize: 13.0,
                 color: isDarkMode ? Colors.white : Colors.grey[800],
               ),
@@ -246,7 +246,7 @@ class LibraryPage extends HookConsumerWidget {
                 children: [
                   const Text(
                     'library_page_albums',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(fontWeight: FontWeight.w600),
                   ).tr(),
                   buildSortButton(),
                 ],
@@ -294,7 +294,7 @@ class LibraryPage extends HookConsumerWidget {
                 children: [
                   const Text(
                     'library_page_device_albums',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(fontWeight: FontWeight.w600),
                   ).tr(),
                 ],
               ),

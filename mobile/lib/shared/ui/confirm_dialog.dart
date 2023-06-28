@@ -31,7 +31,7 @@ class ConfirmDialog extends ConsumerWidget {
             cancel,
             style: TextStyle(
               color: Theme.of(context).primaryColor,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
             ),
           ).tr(),
         ),
@@ -44,7 +44,7 @@ class ConfirmDialog extends ConsumerWidget {
             ok,
             style: TextStyle(
               color: Colors.red[400],
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
             ),
           ).tr(),
         ),

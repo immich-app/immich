@@ -37,7 +37,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
           "backup_controller_page_failed",
           style: TextStyle(
             color: Colors.red[400],
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
             fontSize: 11,
           ),
         ).tr(
@@ -69,7 +69,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
                   child: const Text(
                     'backup_controller_page_filename',
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       fontSize: 10.0,
                     ),
                   ).tr(
@@ -91,7 +91,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
                   child: const Text(
                     "backup_controller_page_created",
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       fontSize: 10.0,
                     ),
                   ).tr(
@@ -112,7 +112,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
                   child: const Text(
                     "backup_controller_page_id",
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       fontSize: 10.0,
                     ),
                   ).tr(args: [asset.id]),
@@ -182,7 +182,7 @@ class CurrentUploadingAssetInfoBox extends HookConsumerWidget {
           children: [
             const Text(
               "backup_controller_page_uploading_file_info",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
             ).tr(),
             if (ref.watch(errorBackupListProvider).isNotEmpty) buildErrorChip(),
           ],

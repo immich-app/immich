@@ -78,7 +78,7 @@ class AdvancedBottomSheet extends HookConsumerWidget {
                             assetDetail.toString(),
                             style: const TextStyle(
                               fontSize: 12.0,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w600,
                               fontFamily: "Inconsolata",
                             ),
                             showCursor: true,

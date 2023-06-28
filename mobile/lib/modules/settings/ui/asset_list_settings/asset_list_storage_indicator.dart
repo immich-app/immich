@@ -37,7 +37,7 @@ class StorageIndicator extends HookConsumerWidget {
       title: const Text(
         "theme_setting_asset_list_storage_indicator_title",
         style: TextStyle(
-          fontSize: 12,
+          fontSize: 14,
         ),
       ).tr(),
       onChanged: switchChanged,

@@ -89,7 +89,7 @@ class PartnerPage extends HookConsumerWidget {
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
               ),
             ).tr(),
           ),
@@ -104,7 +104,7 @@ class PartnerPage extends HookConsumerWidget {
                     users[index].email,
                     style: const TextStyle(
                       fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   trailing: IconButton(

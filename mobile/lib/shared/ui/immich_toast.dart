@@ -69,7 +69,7 @@ class ImmichToast {
                 msg,
                 style: TextStyle(
                   color: getColor(toastType, context),
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                   fontSize: 15,
                 ),
               ),

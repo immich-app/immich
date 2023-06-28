@@ -16,7 +16,7 @@ class FailedBackupStatusPage extends HookConsumerWidget {
         elevation: 0,
         title: Text(
           "Failed Backup (${errorBackupList.length})",
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         leading: IconButton(
           onPressed: () {
@@ -112,7 +112,7 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
                                 fontSize: 12,
                                 color: Theme.of(context).primaryColor,
                               ),

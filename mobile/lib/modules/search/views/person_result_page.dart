@@ -53,7 +53,7 @@ class PersonResultPage extends HookConsumerWidget {
                   leading: const Icon(Icons.edit_outlined),
                   title: const Text(
                     'Edit name',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                   onTap: showEditNameDialog,
                 )

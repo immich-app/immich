@@ -78,7 +78,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
                 style: const TextStyle(
                   fontSize: 12,
                   color: Colors.black87,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -98,7 +98,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
               ),
             ).tr(),
           ),
@@ -111,7 +111,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
                   users[index].email,
                   style: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 onTap: () {
@@ -160,7 +160,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
               "share_create_album",
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
                 // color: Theme.of(context).primaryColor,
               ),
             ).tr(),

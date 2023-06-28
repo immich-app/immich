@@ -257,7 +257,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
       DateFormat.yMMMM().format(date),
       style: const TextStyle(
         color: Colors.white,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w600,
       ),
     );
   }

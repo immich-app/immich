@@ -37,7 +37,7 @@ class SearchSuggestionList extends ConsumerWidget {
                         text: 'search_suggestion_list_smart_search_hint_2'.tr(),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: Theme.of(context).primaryColor,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w600,
                             ),
                       )
                     ],

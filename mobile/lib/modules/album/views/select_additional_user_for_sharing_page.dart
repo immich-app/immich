@@ -57,7 +57,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
                 style: const TextStyle(
                   fontSize: 12,
                   color: Colors.black87,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -77,7 +77,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
               style: const TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -90,7 +90,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
                   users[index].email,
                   style: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 onTap: () {
@@ -134,7 +134,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
                 sharedUsersList.value.isEmpty ? null : addNewUsersHandler,
             child: const Text(
               "share_add",
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ).tr(),
           )
         ],

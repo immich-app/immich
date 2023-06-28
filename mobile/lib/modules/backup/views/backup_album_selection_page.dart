@@ -113,9 +113,9 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
               label: Text(
                 album.name,
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 12,
                   color: isDarkTheme ? Colors.black : Colors.white,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               backgroundColor: Theme.of(context).primaryColor,
@@ -147,9 +147,9 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
               label: Text(
                 album.name,
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 12,
                   color: isDarkTheme ? Colors.black : immichBackgroundColor,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               backgroundColor: Colors.red[300],
@@ -192,6 +192,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
             hintStyle: TextStyle(
               color: isDarkTheme ? Colors.white : Colors.grey,
               fontSize: 14.0,
+              fontWeight: FontWeight.w500,
             ),
             prefixIcon: const Icon(
               Icons.search,
@@ -216,7 +217,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
         ),
         title: const Text(
           "backup_album_selection_page_select_albums",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ).tr(),
         elevation: 0,
       ),
@@ -235,7 +236,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   child: const Text(
                     "backup_album_selection_page_selection_info",
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
                   ).tr(),
@@ -275,7 +276,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                           title: const Text(
                             "backup_album_selection_page_total_assets",
                             style: TextStyle(
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w500,
                               fontSize: 14,
                             ),
                           ).tr(),
@@ -285,7 +286,10 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                                 .allUniqueAssets
                                 .length
                                 .toString(),
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
                           ),
                         ),
                       ],
@@ -305,7 +309,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                       ],
                     ),
                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
                   ),
@@ -316,7 +320,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                       style: TextStyle(
                         fontSize: 12,
                         color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                       ),
                     ).tr(),
                   ),
@@ -341,7 +345,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                               'backup_album_selection_page_selection_info',
                               style: TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
                                 color: Theme.of(context).primaryColor,
                               ),
                             ).tr(),

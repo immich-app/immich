@@ -132,7 +132,7 @@ class CreateAlbumPage extends HookConsumerWidget {
                   'create_shared_album_page_share_select_photos',
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                         fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                       ),
                 ).tr(),
               ),
@@ -233,7 +233,7 @@ class CreateAlbumPage extends HookConsumerWidget {
               child: Text(
                 'create_shared_album_page_share'.tr(),
                 style: TextStyle(
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                   color: albumTitleController.text.isEmpty
                       ? Theme.of(context).disabledColor
                       : Theme.of(context).primaryColor,
@@ -249,7 +249,7 @@ class CreateAlbumPage extends HookConsumerWidget {
               child: Text(
                 'create_shared_album_page_create'.tr(),
                 style: const TextStyle(
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),

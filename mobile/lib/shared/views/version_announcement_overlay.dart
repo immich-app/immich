@@ -44,8 +44,8 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                               "version_announcement_overlay_title",
                               style: TextStyle(
                                 fontSize: 16,
-                                fontFamily: 'WorkSans',
-                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w600,
                                 color: Colors.indigo,
                               ),
                             ).tr(),
@@ -55,7 +55,7 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                 text: TextSpan(
                                   style: const TextStyle(
                                     fontSize: 14,
-                                    fontFamily: 'WorkSans',
+                                    fontFamily: 'Inter',
                                     color: Colors.black87,
                                     height: 1.2,
                                   ),
@@ -70,7 +70,7 @@ class VersionAnnouncementOverlay extends HookConsumerWidget {
                                       style: TextStyle(
                                         fontFamily: "SnowBurstOne",
                                         color: Colors.indigo,
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                     TextSpan(

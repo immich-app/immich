@@ -29,7 +29,7 @@ class AppLogDetailPage extends HookConsumerWidget {
                     style: TextStyle(
                       fontSize: 12.0,
                       color: Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -61,7 +61,7 @@ class AppLogDetailPage extends HookConsumerWidget {
                   stackTrace,
                   style: const TextStyle(
                     fontSize: 12.0,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     fontFamily: "Inconsolata",
                   ),
                 ),
@@ -89,7 +89,7 @@ class AppLogDetailPage extends HookConsumerWidget {
                     style: TextStyle(
                       fontSize: 12.0,
                       color: Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -120,7 +120,7 @@ class AppLogDetailPage extends HookConsumerWidget {
                   message,
                   style: const TextStyle(
                     fontSize: 12.0,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     fontFamily: "Inconsolata",
                   ),
                 ),
@@ -144,7 +144,7 @@ class AppLogDetailPage extends HookConsumerWidget {
                 style: TextStyle(
                   fontSize: 12.0,
                   color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -159,7 +159,7 @@ class AppLogDetailPage extends HookConsumerWidget {
                   context1.toString(),
                   style: const TextStyle(
                     fontSize: 12.0,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     fontFamily: "Inconsolata",
                   ),
                 ),

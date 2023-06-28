@@ -146,7 +146,7 @@ class ProfileDrawerHeader extends HookConsumerWidget {
             "${authState.firstName} ${authState.lastName}",
             style: TextStyle(
               color: Theme.of(context).primaryColor,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
               fontSize: 24,
             ),
           ),

@@ -83,7 +83,7 @@ class ThumbnailWithInfo extends StatelessWidget {
               textInfo == '' ? textInfo : textInfo.capitalize(),
               style: const TextStyle(
                 color: Colors.white,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
                 fontSize: 14,
               ),
             ),

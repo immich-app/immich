@@ -25,7 +25,7 @@ class CuratedObjectPage extends HookConsumerWidget {
           'curated_object_page_title',
           style: TextStyle(
             color: Theme.of(context).primaryColor,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
             fontSize: 16.0,
           ),
         ).tr(),

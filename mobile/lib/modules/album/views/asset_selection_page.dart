@@ -75,7 +75,7 @@ class AssetSelectionPage extends HookConsumerWidget {
               },
               child: const Text(
                 "share_add",
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(fontWeight: FontWeight.w600),
               ).tr(),
             ),
         ],

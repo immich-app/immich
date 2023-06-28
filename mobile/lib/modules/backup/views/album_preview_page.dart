@@ -37,7 +37,7 @@ class AlbumPreviewPage extends HookConsumerWidget {
           children: [
             Text(
               album.name,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 4.0),
@@ -46,7 +46,7 @@ class AlbumPreviewPage extends HookConsumerWidget {
                 style: TextStyle(
                   fontSize: 10,
                   color: Colors.grey[600],
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),

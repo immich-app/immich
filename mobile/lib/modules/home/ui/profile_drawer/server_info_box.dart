@@ -77,7 +77,7 @@ class ServerInfoBox extends HookConsumerWidget {
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.grey[500],
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   Text(
@@ -85,7 +85,7 @@ class ServerInfoBox extends HookConsumerWidget {
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.grey[500],
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -102,7 +102,7 @@ class ServerInfoBox extends HookConsumerWidget {
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.grey[500],
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   Text(
@@ -112,7 +112,7 @@ class ServerInfoBox extends HookConsumerWidget {
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.grey[500],
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],

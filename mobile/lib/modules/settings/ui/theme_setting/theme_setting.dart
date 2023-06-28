@@ -28,7 +28,7 @@ class ThemeSetting extends HookConsumerWidget {
       title: const Text(
         'theme_setting_theme_title',
         style: TextStyle(
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w600,
         ),
       ).tr(),
       subtitle: const Text(
@@ -44,7 +44,7 @@ class ThemeSetting extends HookConsumerWidget {
             'theme_setting_system_theme_switch',
             style: TextStyle(
               fontSize: 12.0,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
             ),
           ).tr(),
           value: currentTheme.value == ThemeMode.system,
@@ -81,8 +81,8 @@ class ThemeSetting extends HookConsumerWidget {
             title: const Text(
               'theme_setting_dark_mode_switch',
               style: TextStyle(
-                fontSize: 12.0,
-                fontWeight: FontWeight.bold,
+                fontSize: 14.0,
+                fontWeight: FontWeight.w500,
               ),
             ).tr(),
             value: ref.watch(immichThemeProvider) == ThemeMode.dark,

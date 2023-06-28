@@ -38,7 +38,7 @@ class LoginPage extends HookConsumerWidget {
                 'v${appVersion.value}',
                 style: const TextStyle(
                   color: Colors.grey,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                   fontFamily: "Inconsolata",
                 ),
               ),
@@ -48,7 +48,7 @@ class LoginPage extends HookConsumerWidget {
                   'Logs',
                   style: TextStyle(
                     color: Theme.of(context).primaryColor,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     fontFamily: "Inconsolata",
                   ),
                 ),

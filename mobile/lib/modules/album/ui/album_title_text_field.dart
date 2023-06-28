@@ -35,7 +35,7 @@ class AlbumTitleTextField extends ConsumerWidget {
       style: TextStyle(
         fontSize: 28,
         color: isDarkTheme ? Colors.grey[300] : Colors.grey[700],
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w600,
       ),
       controller: albumTitleController,
       onTap: () {

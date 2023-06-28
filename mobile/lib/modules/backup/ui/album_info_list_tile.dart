@@ -153,7 +153,7 @@ class AlbumInfoListTile extends HookConsumerWidget {
           albumInfo.name,
           style: const TextStyle(
             fontSize: 14,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
           ),
         ),
         subtitle: Text(assetCount.value.toString()),

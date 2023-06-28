@@ -110,7 +110,7 @@ class SearchResultPage extends HookConsumerWidget {
             borderSide: BorderSide(color: Colors.transparent),
           ),
           hintStyle: TextStyle(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
             fontSize: 16.0,
             color:
                 isDarkTheme ? Colors.grey[500] : Colors.black.withOpacity(0.5),
@@ -132,7 +132,7 @@ class SearchResultPage extends HookConsumerWidget {
               style: TextStyle(
                 color: Theme.of(context).primaryColor,
                 fontSize: 13,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
               ),
               maxLines: 1,
             ),

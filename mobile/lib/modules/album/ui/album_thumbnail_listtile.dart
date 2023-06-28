@@ -85,7 +85,7 @@ class AlbumThumbnailListTile extends StatelessWidget {
                   Text(
                     album.name,
                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   Row(

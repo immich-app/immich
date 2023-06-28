@@ -36,7 +36,7 @@ class MemoryCard extends HookConsumerWidget {
         title,
         style: const TextStyle(
           color: Colors.white,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w600,
           fontSize: 24.0,
         ),
       );
@@ -104,7 +104,7 @@ class MemoryCard extends HookConsumerWidget {
               style: TextStyle(
                 color: Colors.grey[200],
                 fontSize: 12.0,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),

@@ -31,7 +31,7 @@ class SearchPage extends HookConsumerWidget {
     double imageSize = MediaQuery.of(context).size.width / 3;
 
     TextStyle categoryTitleStyle = const TextStyle(
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.w500,
       fontSize: 14.0,
     );
 
@@ -201,9 +201,9 @@ class SearchPage extends HookConsumerWidget {
                 const SizedBox(height: 24.0),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
+                  child: const Text(
                     'search_page_your_activity',
-                    style: Theme.of(context).textTheme.titleSmall,
+                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
                   ).tr(),
                 ),
                 ListTile(
@@ -235,9 +235,9 @@ class SearchPage extends HookConsumerWidget {
                 const SizedBox(height: 24.0),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text(
+                  child: const Text(
                     'search_page_categories',
-                    style: Theme.of(context).textTheme.titleSmall,
+                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
                   ).tr(),
                 ),
                 ListTile(

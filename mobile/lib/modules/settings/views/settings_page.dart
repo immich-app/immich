@@ -28,7 +28,7 @@ class SettingsPage extends HookConsumerWidget {
           'setting_pages_app_bar_settings',
           style: TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
           ),
         ).tr(),
       ),

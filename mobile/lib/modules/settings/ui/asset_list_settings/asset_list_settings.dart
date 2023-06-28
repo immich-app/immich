@@ -16,7 +16,7 @@ class AssetListSettings extends StatelessWidget {
       title: const Text(
         'asset_list_settings_title',
         style: TextStyle(
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w600,
         ),
       ).tr(),
       subtitle: const Text(
