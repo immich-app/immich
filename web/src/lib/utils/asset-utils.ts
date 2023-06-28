@@ -189,7 +189,7 @@ export function getAssetRatio(asset: AssetResponseDto) {
 	let width = asset.exifInfo?.exifImageWidth || 235;
 	const orientation = Number(asset.exifInfo?.orientation);
 	if (orientation) {
-		if (orientation == 6 || orientation == -90) {
+		if (orientation == 6 || orientation == -90 || orientation == 8) {
 			[width, height] = [height, width];
 		}
 	}
