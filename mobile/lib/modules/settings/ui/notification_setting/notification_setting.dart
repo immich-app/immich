@@ -98,8 +98,8 @@ class NotificationSetting extends HookConsumerWidget {
                     }
                   }),
                   child: const Text(
-                          'notification_permission_list_tile_enable_button')
-                      .tr(),
+                    'notification_permission_list_tile_enable_button',
+                  ).tr(),
                 ),
               ],
             ),
