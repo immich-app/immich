@@ -40,6 +40,21 @@ export class AccessRepository implements IAccessRepository {
               id: assetId,
             },
           },
+          // still part of a live photo is in an album
+          {
+            ownerId: userId,
+            assets: {
+              livePhotoVideoId: assetId,
+            },
+          },
+          {
+            sharedUsers: {
+              id: userId,
+            },
+            assets: {
+              livePhotoVideoId: assetId,
+            },
+          },
         ],
       });
     },
@@ -75,10 +90,9 @@ export class AccessRepository implements IAccessRepository {
     },
 
     hasSharedLinkAccess: async (sharedLinkId: string, assetId: string): Promise<boolean> => {
-      return (
-        // album asset
-        (await this.sharedLinkRepository.exist({
-          where: {
+      return this.sharedLinkRepository.exist({
+        where: [
+          {
             id: sharedLinkId,
             album: {
               assets: {
@@ -86,17 +100,29 @@ export class AccessRepository implements IAccessRepository {
               },
             },
           },
-        })) ||
-        // individual asset
-        (await this.sharedLinkRepository.exist({
-          where: {
+          {
             id: sharedLinkId,
             assets: {
               id: assetId,
             },
           },
-        }))
-      );
+          // still part of a live photo is in a shared link
+          {
+            id: sharedLinkId,
+            album: {
+              assets: {
+                livePhotoVideoId: assetId,
+              },
+            },
+          },
+          {
+            id: sharedLinkId,
+            assets: {
+              livePhotoVideoId: assetId,
+            },
+          },
+        ],
+      });
     },
   };
 
