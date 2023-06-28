@@ -7,7 +7,6 @@ import {
   ICryptoRepository,
   IJobRepository,
   ImmichReadStream,
-  isSidecarFileType,
   isSupportedFileType,
   IStorageRepository,
   JobName,
@@ -152,9 +151,8 @@ export class AssetService {
     }
 
     if (dto.sidecarPath) {
-      const sidecarType = mime.lookup(dto.sidecarPath) as string;
-      if (!isSidecarFileType(sidecarType)) {
-        throw new BadRequestException(`Unsupported sidecar file type ${assetPathType}`);
+      if (path.extname(dto.sidecarPath).toLowerCase() !== '.xmp') {
+        throw new BadRequestException(`Unsupported sidecar file type`);
       }
     }
 
