@@ -91,7 +91,7 @@ describe(SmartInfoService.name, () => {
       });
     });
 
-    it('should update the smart info even if no tags were returned', async () => {
+    it('should always overwrite old tags', async () => {
       machineMock.classifyImage.mockResolvedValue([]);
 
       await sut.handleClassifyImage({ id: asset.id });
