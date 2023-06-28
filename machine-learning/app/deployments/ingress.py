@@ -42,6 +42,12 @@ app = FastAPI()
 @serve.deployment(route_prefix="/", ray_actor_options={"num_cpus": 0})
 @serve.ingress(app)
 class ModelIngress:
+    """
+    App deployment with FastAPI integration.
+    Individual requests are batched together for more efficient model inference.
+    Unlike `ModelHandler`, this deployment does not autoscale; it will always have one replica.
+    """
+
     def __init__(self, handler: Any) -> None:
         self.handler = handler
 

@@ -14,11 +14,23 @@ from ..models.cache import ModelCache
 from ..schemas import ModelType
 
 
+# `num_cpus` sets `OMP_NUM_THREADS` for the process
 @serve.deployment(
     autoscaling_config=settings.autoscaling,
     ray_actor_options={"num_cpus": settings.num_cpus, "memory": 2 ^ 31},
 )
 class ModelHandler:
+    """
+    Helper deployment to load all models in the same process.
+    Runs in a threadpool, so it can handle concurrent requests more effectively than `AsyncModelHandler`.
+
+    As a deployment, it should not be instantiated directly, but instead invoked with `ModelHandler.bind`,
+    passing the __init__ args to this call.
+
+    Note that once models are loaded, they will stay in memory until *all* models idle for the
+    model TTL duration set in `autoscaling_config`, at which point the entire process will be terminated.
+    """
+
     def __init__(
         self,
         classification_model: str = settings.classification_model,
@@ -46,13 +58,24 @@ class ModelHandler:
         return self.face_recognizer.predict_batch(images)
 
 
-# this version has stricter model TTL enforcement and built-in batching
-# but it's somewhat slower than `ModelHandler` since inference is blocking
 @serve.deployment(
     autoscaling_config=settings.autoscaling,
     ray_actor_options={"num_cpus": settings.num_cpus, "memory": 2 ^ 31},
 )
 class AsyncModelHandler:
+    """
+    Helper deployment to load all models in the same process.
+    Runs in an async event loop, allowing for stricter model TTL enforcement and built-in batching.
+    However, this comes at the cost of somewhat lower throughput than `ModelHandler` since inference is blocking.
+
+    As a deployment, it should not be instantiated directly, but instead invoked with `ModelHandler.bind`,
+    passing the __init__ args to this call.
+
+    Note that model TTL is enforced per individual model, in addition to terminating the process when all models
+    idle for the model TTL duration set in `autoscaling_config`. For example, if all models are loaded but only
+    one of them is actively used, the remaining models will be garbage collected and only reloaded if needed.
+    """
+
     def __init__(
         self,
         classification_model: str,
