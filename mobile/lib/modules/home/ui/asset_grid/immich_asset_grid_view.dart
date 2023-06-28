@@ -272,11 +272,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
   Widget _buildAssetGrid() {
     final useDragScrolling = widget.renderList.totalAssets >= 20;
 
-    void dragScrolling(bool active) {
-      setState(() {
-        _scrolling = active;
-      });
-    }
+    void dragScrolling(bool active) => _scrolling = active;
 
     final listWidget = ScrollablePositionedList.builder(
       padding: const EdgeInsets.only(
@@ -302,7 +298,6 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
             child: listWidget,
           )
         : listWidget;
-
     return widget.onRefresh == null
         ? child
         : RefreshIndicator(onRefresh: widget.onRefresh!, child: child);
