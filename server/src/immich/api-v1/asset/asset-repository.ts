@@ -260,13 +260,13 @@ export class AssetRepository implements IAssetRepository {
     asset.isArchived = dto.isArchived ?? asset.isArchived;
 
     if (asset.exifInfo != null) {
-      if (typeof dto.description !== 'undefined') {
+      if (dto.description !== undefined) {
         asset.exifInfo.description = dto.description;
       }
       await this.exifRepository.save(asset.exifInfo);
     } else {
       const exifInfo = new ExifEntity();
-      if (typeof dto.description !== 'undefined') {
+      if (dto.description !== undefined) {
         exifInfo.description = dto.description;
       }
       exifInfo.asset = asset;
