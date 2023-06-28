@@ -1,10 +1,11 @@
-import { IAccessRepository, ICryptoRepository, IJobRepository, IStorageRepository, JobName } from '@app/domain';
+import { ICryptoRepository, IJobRepository, IStorageRepository, JobName } from '@app/domain';
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
-import { ForbiddenException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import {
   assetEntityStub,
   authStub,
   fileStub,
+  IAccessRepositoryMock,
   newAccessRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
@@ -120,7 +121,7 @@ const _getArchivedAssetsCountByUserId = (): AssetCountByUserIdResponseDto => {
 describe('AssetService', () => {
   let sut: AssetService;
   let a: Repository<AssetEntity>; // TO BE DELETED AFTER FINISHED REFACTORING
-  let accessMock: jest.Mocked<IAccessRepository>;
+  let accessMock: IAccessRepositoryMock;
   let assetRepositoryMock: jest.Mocked<IAssetRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
@@ -293,7 +294,7 @@ describe('AssetService', () => {
   describe('deleteAll', () => {
     it('should return failed status when an asset is missing', async () => {
       assetRepositoryMock.get.mockResolvedValue(null);
-      accessMock.hasOwnerAssetAccess.mockResolvedValue(true);
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
 
       await expect(sut.deleteAll(authStub.user1, { ids: ['asset1'] })).resolves.toEqual([
         { id: 'asset1', status: 'FAILED' },
@@ -305,7 +306,7 @@ describe('AssetService', () => {
     it('should return failed status a delete fails', async () => {
       assetRepositoryMock.get.mockResolvedValue({ id: 'asset1' } as AssetEntity);
       assetRepositoryMock.remove.mockRejectedValue('delete failed');
-      accessMock.hasOwnerAssetAccess.mockResolvedValue(true);
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
 
       await expect(sut.deleteAll(authStub.user1, { ids: ['asset1'] })).resolves.toEqual([
         { id: 'asset1', status: 'FAILED' },
@@ -315,7 +316,7 @@ describe('AssetService', () => {
     });
 
     it('should delete a live photo', async () => {
-      accessMock.hasOwnerAssetAccess.mockResolvedValue(true);
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
 
       await expect(sut.deleteAll(authStub.user1, { ids: [assetEntityStub.livePhotoStillAsset.id] })).resolves.toEqual([
         { id: assetEntityStub.livePhotoStillAsset.id, status: 'SUCCESS' },
@@ -364,7 +365,7 @@ describe('AssetService', () => {
         .calledWith(asset2.id)
         .mockResolvedValue(asset2 as AssetEntity);
 
-      accessMock.hasOwnerAssetAccess.mockResolvedValue(true);
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
 
       await expect(sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'] })).resolves.toEqual([
         { id: 'asset1', status: 'SUCCESS' },
@@ -409,7 +410,7 @@ describe('AssetService', () => {
 
   describe('downloadFile', () => {
     it('should download a single file', async () => {
-      accessMock.hasOwnerAssetAccess.mockResolvedValue(true);
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       assetRepositoryMock.get.mockResolvedValue(_getAsset_1());
 
       await sut.downloadFile(authStub.admin, 'id_1');
@@ -485,56 +486,56 @@ describe('AssetService', () => {
 
   describe('getAssetById', () => {
     it('should allow owner access', async () => {
-      accessMock.hasOwnerAssetAccess.mockResolvedValue(true);
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       assetRepositoryMock.getById.mockResolvedValue(assetEntityStub.image);
       await sut.getAssetById(authStub.admin, assetEntityStub.image.id);
-      expect(accessMock.hasOwnerAssetAccess).toHaveBeenCalledWith(authStub.admin.id, assetEntityStub.image.id);
+      expect(accessMock.asset.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, assetEntityStub.image.id);
     });
 
     it('should allow shared link access', async () => {
-      accessMock.hasSharedLinkAssetAccess.mockResolvedValue(true);
+      accessMock.asset.hasSharedLinkAccess.mockResolvedValue(true);
       assetRepositoryMock.getById.mockResolvedValue(assetEntityStub.image);
       await sut.getAssetById(authStub.adminSharedLink, assetEntityStub.image.id);
-      expect(accessMock.hasSharedLinkAssetAccess).toHaveBeenCalledWith(
+      expect(accessMock.asset.hasSharedLinkAccess).toHaveBeenCalledWith(
         authStub.adminSharedLink.sharedLinkId,
         assetEntityStub.image.id,
       );
     });
 
     it('should allow partner sharing access', async () => {
-      accessMock.hasOwnerAssetAccess.mockResolvedValue(false);
-      accessMock.hasPartnerAssetAccess.mockResolvedValue(true);
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
+      accessMock.asset.hasPartnerAccess.mockResolvedValue(true);
       assetRepositoryMock.getById.mockResolvedValue(assetEntityStub.image);
       await sut.getAssetById(authStub.admin, assetEntityStub.image.id);
-      expect(accessMock.hasPartnerAssetAccess).toHaveBeenCalledWith(authStub.admin.id, assetEntityStub.image.id);
+      expect(accessMock.asset.hasPartnerAccess).toHaveBeenCalledWith(authStub.admin.id, assetEntityStub.image.id);
     });
 
     it('should allow shared album access', async () => {
-      accessMock.hasOwnerAssetAccess.mockResolvedValue(false);
-      accessMock.hasPartnerAssetAccess.mockResolvedValue(false);
-      accessMock.hasAlbumAssetAccess.mockResolvedValue(true);
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
+      accessMock.asset.hasPartnerAccess.mockResolvedValue(false);
+      accessMock.asset.hasAlbumAccess.mockResolvedValue(true);
       assetRepositoryMock.getById.mockResolvedValue(assetEntityStub.image);
       await sut.getAssetById(authStub.admin, assetEntityStub.image.id);
-      expect(accessMock.hasAlbumAssetAccess).toHaveBeenCalledWith(authStub.admin.id, assetEntityStub.image.id);
+      expect(accessMock.asset.hasAlbumAccess).toHaveBeenCalledWith(authStub.admin.id, assetEntityStub.image.id);
     });
 
     it('should throw an error for no access', async () => {
-      accessMock.hasOwnerAssetAccess.mockResolvedValue(false);
-      accessMock.hasPartnerAssetAccess.mockResolvedValue(false);
-      accessMock.hasSharedLinkAssetAccess.mockResolvedValue(false);
-      accessMock.hasAlbumAssetAccess.mockResolvedValue(false);
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
+      accessMock.asset.hasPartnerAccess.mockResolvedValue(false);
+      accessMock.asset.hasSharedLinkAccess.mockResolvedValue(false);
+      accessMock.asset.hasAlbumAccess.mockResolvedValue(false);
       await expect(sut.getAssetById(authStub.admin, assetEntityStub.image.id)).rejects.toBeInstanceOf(
-        ForbiddenException,
+        BadRequestException,
       );
       expect(assetRepositoryMock.getById).not.toHaveBeenCalled();
     });
 
     it('should throw an error for an invalid shared link', async () => {
-      accessMock.hasSharedLinkAssetAccess.mockResolvedValue(false);
+      accessMock.asset.hasSharedLinkAccess.mockResolvedValue(false);
       await expect(sut.getAssetById(authStub.adminSharedLink, assetEntityStub.image.id)).rejects.toBeInstanceOf(
-        ForbiddenException,
+        BadRequestException,
       );
-      expect(accessMock.hasOwnerAssetAccess).not.toHaveBeenCalled();
+      expect(accessMock.asset.hasOwnerAccess).not.toHaveBeenCalled();
       expect(assetRepositoryMock.getById).not.toHaveBeenCalled();
     });
   });
