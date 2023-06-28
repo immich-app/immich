@@ -244,9 +244,9 @@ class LibraryPage extends HookConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'library_page_albums',
-                    style: TextStyle(fontWeight: FontWeight.w600),
+                    style: Theme.of(context).textTheme.labelLarge,
                   ).tr(),
                   buildSortButton(),
                 ],
@@ -292,9 +292,9 @@ class LibraryPage extends HookConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'library_page_device_albums',
-                    style: TextStyle(fontWeight: FontWeight.w600),
+                    style: Theme.of(context).textTheme.labelLarge,
                   ).tr(),
                 ],
               ),

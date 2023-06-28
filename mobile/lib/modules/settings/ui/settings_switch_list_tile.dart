@@ -30,7 +30,10 @@ class SettingsSwitchListTile extends StatelessWidget {
             },
       activeColor: Theme.of(context).primaryColor,
       dense: true,
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+      title: Text(
+        title,
+        style: Theme.of(context).textTheme.labelLarge,
+      ),
       subtitle: subtitle != null ? Text(subtitle!) : null,
     );
   }

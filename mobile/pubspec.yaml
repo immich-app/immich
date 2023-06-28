@@ -83,8 +83,7 @@ flutter:
           weight: 500
         - asset: fonts/Inter-SemiBold.ttf
           weight: 600
-        - asset: fonts/Inter-Bold.ttf
-          weight: 700
+
     - family: SnowburstOne
       fonts:
         - asset: fonts/SnowburstOne.ttf

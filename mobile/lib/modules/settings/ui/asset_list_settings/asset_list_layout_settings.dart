@@ -51,11 +51,9 @@ class LayoutSettings extends HookConsumerWidget {
       children: [
         SwitchListTile.adaptive(
           activeColor: Theme.of(context).primaryColor,
-          title: const Text(
+          title: Text(
             "asset_list_layout_settings_dynamic_layout_title",
-            style: TextStyle(
-              fontSize: 14,
-            ),
+            style: Theme.of(context).textTheme.labelLarge,
           ).tr(),
           onChanged: switchChanged,
           value: useDynamicLayout.value,
@@ -71,11 +69,9 @@ class LayoutSettings extends HookConsumerWidget {
         ),
         RadioListTile(
           activeColor: Theme.of(context).primaryColor,
-          title: const Text(
+          title: Text(
             "asset_list_layout_settings_group_by_month_day",
-            style: TextStyle(
-              fontSize: 14,
-            ),
+            style: Theme.of(context).textTheme.labelLarge,
           ).tr(),
           value: GroupAssetsBy.day,
           groupValue: groupBy.value,
@@ -84,11 +80,9 @@ class LayoutSettings extends HookConsumerWidget {
         ),
         RadioListTile(
           activeColor: Theme.of(context).primaryColor,
-          title: const Text(
+          title: Text(
             "asset_list_layout_settings_group_by_month",
-            style: TextStyle(
-              fontSize: 14,
-            ),
+            style: Theme.of(context).textTheme.labelLarge,
           ).tr(),
           value: GroupAssetsBy.month,
           groupValue: groupBy.value,
@@ -97,11 +91,9 @@ class LayoutSettings extends HookConsumerWidget {
         ),
         RadioListTile(
           activeColor: Theme.of(context).primaryColor,
-          title: const Text(
+          title: Text(
             "asset_list_layout_settings_group_automatically",
-            style: TextStyle(
-              fontSize: 14,
-            ),
+            style: Theme.of(context).textTheme.labelLarge,
           ).tr(),
           value: GroupAssetsBy.auto,
           groupValue: groupBy.value,

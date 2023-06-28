@@ -112,12 +112,13 @@ class AlbumThumbnailCard extends StatelessWidget {
                         width: cardSize,
                         child: Text(
                           album.name,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: isDarkMode
-                                ? Theme.of(context).primaryColor
-                                : Colors.black,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.labelLarge?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: isDarkMode
+                                        ? Theme.of(context).primaryColor
+                                        : Colors.black,
+                                  ),
                         ),
                       ),
                     ),
