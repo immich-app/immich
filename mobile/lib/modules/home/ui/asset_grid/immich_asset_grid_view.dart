@@ -162,7 +162,7 @@ class ImmichAssetGridViewState extends State<ImmichAssetGridView> {
         title,
         style: TextStyle(
           fontSize: 26,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w500,
           color: Theme.of(context).textTheme.displayLarge?.color,
         ),
       ),
