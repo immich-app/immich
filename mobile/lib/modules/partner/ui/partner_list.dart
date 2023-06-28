@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -23,7 +24,13 @@ class PartnerList extends HookConsumerWidget {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 12.0),
       leading: userAvatar(context, p, radius: 30),
-      title: Text("${p.firstName} ${p.lastName}"),
+      title: Text(
+        "${p.firstName} ${p.lastName}'s photos",
+        style: Theme.of(context).textTheme.labelLarge,
+      ),
+      subtitle: const Text(
+        "partner_sharing",
+      ).tr(),
       onTap: () => AutoRouter.of(context).push(PartnerDetailRoute(partner: p)),
     );
   }
