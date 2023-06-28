@@ -130,7 +130,7 @@ export function getFileMimeType(file: File): string {
 		'3gp': 'video/3gpp',
 		ari: 'image/x-arriflex-ari',
 		arw: 'image/x-sony-arw',
-		avi: 'video/x-msvideo',
+		avi: 'video/avi',
 		avif: 'image/avif',
 		cap: 'image/x-phaseone-cap',
 		cin: 'image/x-phantom-cin',
