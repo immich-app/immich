@@ -15,6 +15,11 @@ You can use the CLI to upload an existing gallery to the Immich server
 npm i -g immich
 ```
 
+Pre-installed on the `immich-server` container and can be easily accessed through
+```
+immich
+```
+
 ## Quick Start
 
 Specify user's credential, Immich's server address and port and the directory you would like to upload videos/photos from.

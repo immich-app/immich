@@ -1,1 +1,1 @@
-node ./dist/main cli "$@"
+node ./node_modules/immich/bin/index "$@"

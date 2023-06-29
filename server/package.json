@@ -6,7 +6,8 @@
   "private": true,
   "license": "UNLICENSED",
   "bin": {
-    "immich": "./bin/cli.sh"
+    "immich": "./bin/cli.sh",
+    "immich-admin": "./bin/admin-cli.sh"
   },
   "scripts": {
     "build": "nest build",
@@ -80,7 +81,8 @@
     "thumbhash": "^0.1.1",
     "typeorm": "^0.3.11",
     "typesense": "^1.5.3",
-    "ua-parser-js": "^1.0.35"
+    "ua-parser-js": "^1.0.35",
+    "immich": "^0.39.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.1.8",
