@@ -12,6 +12,7 @@
 	import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
 	import ControlAppBar from '../shared-components/control-app-bar.svelte';
 	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
+	import SelectAll from 'svelte-material-icons/SelectAll.svelte';
 	import ImmichLogo from '../shared-components/immich-logo.svelte';
 	import {
 		notificationController,
@@ -53,12 +54,19 @@
 			handleError(e, 'Unable to add assets to shared link');
 		}
 	};
+
+	const handleSelectAll = () => {
+		selectedAssets = new Set(assets);
+	};
 </script>
 
 <section class="bg-immich-bg dark:bg-immich-dark-bg">
 	{#if isMultiSelectionMode}
 		<AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
-			<DownloadAction filename="immich-shared" sharedLinkKey={sharedLink.key} />
+			<CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll} />
+			{#if sharedLink?.allowDownload}
+				<DownloadAction filename="immich-shared" sharedLinkKey={sharedLink.key} />
+			{/if}
 			{#if isOwned}
 				<RemoveFromSharedLink bind:sharedLink />
 			{/if}
