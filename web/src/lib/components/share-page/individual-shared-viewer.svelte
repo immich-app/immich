@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { bulkDownload } from '$lib/utils/asset-utils';
-	import { openFileUploadDialog } from '$lib/utils/file-uploader';
+	import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
 	import { api, AssetResponseDto, SharedLinkResponseDto } from '@api';
+	import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
 	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
 	import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
@@ -14,6 +15,7 @@
 	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
 	import SelectAll from 'svelte-material-icons/SelectAll.svelte';
 	import ImmichLogo from '../shared-components/immich-logo.svelte';
+
 	import {
 		notificationController,
 		NotificationType
@@ -28,14 +30,25 @@
 	$: assets = sharedLink.assets;
 	$: isMultiSelectionMode = selectedAssets.size > 0;
 
+	dragAndDropFilesStore.subscribe((value) => {
+		if (value.isDragging && value.files.length > 0) {
+			handleUploadAssets(value.files);
+			dragAndDropFilesStore.set({ isDragging: false, files: [] });
+		}
+	});
+
 	const downloadAssets = async () => {
 		await bulkDownload('immich-shared', assets, undefined, sharedLink.key);
 	};
 
-	const handleUploadAssets = async () => {
+	const handleUploadAssets = async (files: File[] = []) => {
 		try {
-			const results = await openFileUploadDialog(undefined, sharedLink.key);
-
+			let results: (string | undefined)[] = [];
+			if (!files || files.length === 0 || !Array.isArray(files)) {
+				results = await openFileUploadDialog(undefined, sharedLink.key);
+			} else {
+				results = await fileUploadHandler(files, undefined, sharedLink.key);
+			}
 			const { data } = await api.sharedLinkApi.addSharedLinkAssets({
 				id: sharedLink.id,
 				assetIdsDto: {
@@ -94,7 +107,7 @@
 				{#if sharedLink?.allowUpload}
 					<CircleIconButton
 						title="Add Photos"
-						on:click={handleUploadAssets}
+						on:click={() => handleUploadAssets()}
 						logo={FileImagePlusOutline}
 					/>
 				{/if}

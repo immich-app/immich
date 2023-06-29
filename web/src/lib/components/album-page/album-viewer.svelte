@@ -2,9 +2,10 @@
 	import { browser } from '$app/environment';
 	import { afterNavigate, goto } from '$app/navigation';
 	import { albumAssetSelectionStore } from '$lib/stores/album-asset-selection.store';
+	import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
 	import { downloadAssets } from '$lib/stores/download';
 	import { locale } from '$lib/stores/preferences.store';
-	import { openFileUploadDialog } from '$lib/utils/file-uploader';
+	import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
 	import {
 		AlbumResponseDto,
 		AssetResponseDto,
@@ -79,6 +80,13 @@
 
 	$: isPublicShared = sharedLink;
 	$: isOwned = currentUser?.id == album.ownerId;
+
+	dragAndDropFilesStore.subscribe((value) => {
+		if (value.isDragging && value.files.length > 0) {
+			fileUploadHandler(value.files, album.id, sharedLink?.key);
+			dragAndDropFilesStore.set({ isDragging: false, files: [] });
+		}
+	});
 
 	let multiSelectAsset: Set<AssetResponseDto> = new Set();
 	$: isMultiSelectionMode = multiSelectAsset.size > 0;
