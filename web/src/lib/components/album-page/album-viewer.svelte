@@ -351,7 +351,9 @@
 			clearSelect={() => (multiSelectAsset = new Set())}
 		>
 			<CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll} />
-			<DownloadAction filename={album.albumName} sharedLinkKey={sharedLink?.key} />
+			{#if sharedLink?.allowDownload || !isPublicShared}
+				<DownloadAction filename={album.albumName} sharedLinkKey={sharedLink?.key} />
+			{/if}
 			{#if isOwned}
 				<RemoveFromAlbum bind:album />
 			{/if}
