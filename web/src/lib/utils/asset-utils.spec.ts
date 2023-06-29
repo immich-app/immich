@@ -98,36 +98,8 @@ describe('get file mime type', () => {
 		{ mimetype: 'image/x-sony-arw', extension: 'arw' },
 		{ mimetype: 'image/x-sony-sr2', extension: 'sr2' },
 		{ mimetype: 'image/x-sony-srf', extension: 'srf' },
-		/*** The following MIME types are allowed for upload but not returned by getFileMimeType() ***
-		{ mimetype: 'image/dng', extension: 'dng' },
-		{ mimetype: 'image/ari', extension: 'ari' },
-		{ mimetype: 'image/cr2', extension: 'cr2' },
-		{ mimetype: 'image/cr3', extension: 'cr3' },
-		{ mimetype: 'image/crw', extension: 'crw' },
-		{ mimetype: 'image/erf', extension: 'erf' },
-		{ mimetype: 'image/raf', extension: 'raf' },
-		{ mimetype: 'image/3fr', extension: '3fr' },
-		{ mimetype: 'image/fff', extension: 'fff' },
-		{ mimetype: 'image/dcr', extension: 'dcr' },
-		{ mimetype: 'image/k25', extension: 'k25' },
-		{ mimetype: 'image/kdc', extension: 'kdc' },
-		{ mimetype: 'image/rwl', extension: 'rwl' },
-		{ mimetype: 'image/mrw', extension: 'mrw' },
-		{ mimetype: 'image/nef', extension: 'nef' },
-		{ mimetype: 'image/orf', extension: 'orf' },
-		{ mimetype: 'image/ori', extension: 'ori' },
-		{ mimetype: 'image/raw', extension: 'raw' },
-		{ mimetype: 'image/pef', extension: 'pef' },
-		{ mimetype: 'image/cin', extension: 'cin' },
-		{ mimetype: 'image/cap', extension: 'cap' },
-		{ mimetype: 'image/iiq', extension: 'iiq' },
-		{ mimetype: 'image/srw', extension: 'srw' },
-		{ mimetype: 'image/x3f', extension: 'x3f' },
-		{ mimetype: 'image/arw', extension: 'arw' },
-		{ mimetype: 'image/sr2', extension: 'sr2' },
-		{ mimetype: 'image/srf', extension: 'srf' },
-**/
 		{ mimetype: 'video/3gpp', extension: '3gp' },
+		{ mimetype: 'video/avi', extension: 'avi' },
 		{ mimetype: 'video/mp2t', extension: 'm2ts' },
 		{ mimetype: 'video/mp2t', extension: 'mts' },
 		{ mimetype: 'video/mp4', extension: 'mp4' },
@@ -136,8 +108,7 @@ describe('get file mime type', () => {
 		{ mimetype: 'video/webm', extension: 'webm' },
 		{ mimetype: 'video/x-flv', extension: 'flv' },
 		{ mimetype: 'video/x-matroska', extension: 'mkv' },
-		{ mimetype: 'video/x-ms-wmv', extension: 'wmv' },
-		{ mimetype: 'video/x-msvideo', extension: 'avi' }
+		{ mimetype: 'video/x-ms-wmv', extension: 'wmv' }
 	]) {
 		it(`returns the mime type for ${extension}`, () => {
 			expect(getFileMimeType({ name: `filename.${extension}` } as File)).toEqual(mimetype);
