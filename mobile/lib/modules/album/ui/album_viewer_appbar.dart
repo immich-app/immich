@@ -21,6 +21,8 @@ class AlbumViewerAppbar extends HookConsumerWidget
     required this.selected,
     required this.selectionDisabled,
     required this.titleFocusNode,
+    this.onAddPhotos,
+    this.onAddUsers,
   }) : super(key: key);
 
   final Album album;
@@ -28,6 +30,8 @@ class AlbumViewerAppbar extends HookConsumerWidget
   final Set<Asset> selected;
   final void Function() selectionDisabled;
   final FocusNode titleFocusNode;
+  final Function(Album album)? onAddPhotos;
+  final Function(Album album)? onAddUsers;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -157,6 +161,32 @@ class AlbumViewerAppbar extends HookConsumerWidget
               mainAxisSize: MainAxisSize.min,
               children: [
                 buildBottomSheetActionButton(),
+                if (selected.isEmpty && onAddPhotos != null)
+                  ListTile(
+                    leading: const Icon(Icons.add_photo_alternate_outlined),
+                    onTap: () {
+                      Navigator.pop(context);
+                      onAddPhotos!(album);
+                    },
+                    title: const Text(
+                      "share_add_photos",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ).tr(),
+                  ),
+                if (selected.isEmpty &&
+                    onAddPhotos != null &&
+                    userId == album.ownerId)
+                  ListTile(
+                    leading: const Icon(Icons.person_add_alt_rounded),
+                    onTap: () {
+                      Navigator.pop(context);
+                      onAddUsers!(album);
+                    },
+                    title: const Text(
+                      "album_viewer_page_share_add_users",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ).tr(),
+                  ),
               ],
             ),
           );
