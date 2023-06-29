@@ -24,6 +24,7 @@
 	import VideoViewer from './video-viewer.svelte';
 
 	import { assetStore } from '$lib/stores/assets.store';
+	import { isShowDetail } from '$lib/stores/preferences.store';
 	import { addAssetsToAlbum, getFilenameExtension } from '$lib/utils/asset-utils';
 	import { browser } from '$app/environment';
 
@@ -35,7 +36,6 @@
 	const dispatch = createEventDispatcher();
 	let halfLeftHover = false;
 	let halfRightHover = false;
-	let isShowDetail = false;
 	let appearsInAlbums: AlbumResponseDto[] = [];
 	let isShowAlbumPicker = false;
 	let addToSharedAlbum = true;
@@ -81,7 +81,7 @@
 				deleteAsset();
 				return;
 			case 'i':
-				isShowDetail = !isShowDetail;
+				$isShowDetail = !$isShowDetail;
 				return;
 			case 'ArrowLeft':
 				navigateAssetBackward();
@@ -93,7 +93,7 @@
 	};
 
 	const handleCloseViewer = () => {
-		isShowDetail = false;
+		$isShowDetail = false;
 		closeViewer();
 	};
 
@@ -112,7 +112,7 @@
 	};
 
 	const showDetailInfoHandler = () => {
-		isShowDetail = !isShowDetail;
+		$isShowDetail = !$isShowDetail;
 	};
 
 	const handleDownload = () => {
@@ -401,7 +401,7 @@
 		</div>
 	{/if}
 
-	{#if isShowDetail}
+	{#if $isShowDetail}
 		<div
 			transition:fly={{ duration: 150 }}
 			id="detail-panel"
@@ -411,7 +411,7 @@
 			<DetailPanel
 				{asset}
 				albums={appearsInAlbums}
-				on:close={() => (isShowDetail = false)}
+				on:close={() => ($isShowDetail = false)}
 				on:close-viewer={handleCloseViewer}
 				on:description-focus-in={disableKeyDownEvent}
 				on:description-focus-out={enableKeyDownEvent}

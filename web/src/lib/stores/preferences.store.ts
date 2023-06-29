@@ -38,6 +38,8 @@ export const mapSettings = persisted<MapSettings>('map-settings', {
 
 export const videoViewerVolume = persisted<number>('video-viewer-volume', 1, {});
 
+export const isShowDetail = persisted<boolean>('info-opened', false, {});
+
 export interface AlbumViewSettings {
 	sortBy: string;
 }
