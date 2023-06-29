@@ -2,13 +2,14 @@
 	import { createEventDispatcher } from 'svelte';
 	import FullScreenModal from './full-screen-modal.svelte';
 	import Button from '../elements/buttons/button.svelte';
+	import type { Color } from '$lib/components/elements/buttons/button.svelte';
 
 	export let title = 'Confirm';
 	export let prompt = 'Are you sure you want to do this?';
 	export let confirmText = 'Confirm';
-	export let confirmColor = 'red';
+	export let confirmColor: Color = 'red';
 	export let cancelText = 'Cancel';
-	export let cancelColor;
+	export let cancelColor: Color = 'primary';
 	export let hideCancelButton = false;
 
 	const dispatch = createEventDispatcher();

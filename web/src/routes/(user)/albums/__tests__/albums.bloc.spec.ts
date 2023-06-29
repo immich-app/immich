@@ -12,10 +12,6 @@ jest.mock('@api');
 
 const apiMock: jest.MockedObject<typeof api> = api as jest.MockedObject<typeof api>;
 
-function mockWindowConfirm(result: boolean) {
-	jest.spyOn(global, 'confirm').mockReturnValueOnce(result);
-}
-
 describe('Albums BLoC', () => {
 	let sut: ReturnType<typeof useAlbums>;
 	const _albums = albumFactory.buildList(5);

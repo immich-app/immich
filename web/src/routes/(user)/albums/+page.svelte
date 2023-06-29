@@ -16,6 +16,7 @@
 	import Dropdown from '$lib/components/elements/dropdown.svelte';
 	import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
 	import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
+	import type { AlbumResponseDto } from '@api';
 
 	export let data: PageData;
 
@@ -33,10 +34,10 @@
 	} = useAlbums({ albums: data.albums });
 
 	let albums = unsortedAlbums;
-	let albumToDelete = null;
+	let albumToDelete: AlbumResponseDto | null;
 
 	const setAlbumToDelete = () => {
-		albumToDelete = $contextMenuTargetAlbum;
+		albumToDelete = $contextMenuTargetAlbum ?? null;
 		closeAlbumContextMenu();
 	};
 
