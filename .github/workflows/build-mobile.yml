@@ -45,7 +45,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
-          flutter-version: "3.10.0"
+          flutter-version: "3.10.5"
           cache: true
 
       - name: Create the Keystore
