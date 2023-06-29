@@ -35,11 +35,6 @@ COPY start*.sh ./
 
 RUN npm link && npm cache clean --force
 
-# Include upload/import CLI in the server image through `immich-cli`
-RUN npm install --prefix /usr/src/app/immich-cli immich
-RUN echo "node /usr/src/app/immich-cli/node_modules/immich/bin" > /usr/bin/immich-cli
-RUN chmod +x /usr/bin/immich-cli
-
 VOLUME /usr/src/app/upload
 
 EXPOSE 3001
