@@ -14,7 +14,6 @@ class ThemeSetting extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentTheme = useState<ThemeMode>(ThemeMode.system);
-    final appSettingService = ref.watch(appSettingsServiceProvider);
 
     useEffect(
       () {
