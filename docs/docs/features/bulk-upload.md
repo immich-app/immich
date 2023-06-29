@@ -16,6 +16,7 @@ npm i -g immich
 ```
 
 Pre-installed on the `immich-server` container and can be easily accessed through
+
 ```
 immich
 ```
