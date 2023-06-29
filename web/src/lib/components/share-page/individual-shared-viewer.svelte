@@ -40,7 +40,7 @@
 		await bulkDownload('immich-shared', assets, undefined, sharedLink.key);
 	};
 
-	const handleUploadAssets = async (files: File[]) => {
+	const handleUploadAssets = async (files: File[] = []) => {
 		try {
 			let results: (string | undefined)[] = [];
 			if (!files || files.length === 0 || !Array.isArray(files)) {
@@ -99,7 +99,7 @@
 				{#if sharedLink?.allowUpload}
 					<CircleIconButton
 						title="Add Photos"
-						on:click={handleUploadAssets}
+						on:click={() => handleUploadAssets()}
 						logo={FileImagePlusOutline}
 					/>
 				{/if}
