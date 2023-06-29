@@ -116,7 +116,7 @@ class SharedLinkCreateDto {
             : const [],
         albumId: mapValueOfType<String>(json, r'albumId'),
         description: mapValueOfType<String>(json, r'description'),
-        expiresAt: mapDateTime(json, r'expiresAt', ''),
+        expiresAt: mapDateTime(json, r'expiresAt', r''),
         allowUpload: mapValueOfType<bool>(json, r'allowUpload') ?? false,
         allowDownload: mapValueOfType<bool>(json, r'allowDownload') ?? true,
         showExif: mapValueOfType<bool>(json, r'showExif') ?? true,
