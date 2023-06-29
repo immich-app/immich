@@ -1,9 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/memories/providers/memory.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/ui/immich_image.dart';
+import 'package:openapi/api.dart';
 
 class MemoryLane extends HookConsumerWidget {
   const MemoryLane({super.key});
@@ -27,6 +29,7 @@ class MemoryLane extends HookConsumerWidget {
                         padding: const EdgeInsets.only(right: 8.0, bottom: 8),
                         child: GestureDetector(
                           onTap: () {
+                            HapticFeedback.heavyImpact();
                             AutoRouter.of(context).push(
                               VerticalRouteView(
                                 memories: memories,
@@ -53,6 +56,7 @@ class MemoryLane extends HookConsumerWidget {
                                     width: 130,
                                     height: 200,
                                     useGrayBoxPlaceholder: true,
+                                    type: ThumbnailFormat.JPEG,
                                   ),
                                 ),
                               ),
@@ -66,7 +70,7 @@ class MemoryLane extends HookConsumerWidget {
                                   child: Text(
                                     memory.title,
                                     style: const TextStyle(
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                       fontSize: 14,
                                     ),
