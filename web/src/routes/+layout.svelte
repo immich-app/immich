@@ -15,8 +15,12 @@
 	import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
 	import FaviconHeader from '$lib/components/shared-components/favicon-header.svelte';
 
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
+
 	let showNavigationLoadingBar = false;
 	export let data: LayoutData;
+	let albumId: string | undefined;
 
 	beforeNavigate(() => {
 		showNavigationLoadingBar = true;
@@ -33,10 +37,14 @@
 		}
 
 		const filesArray: File[] = Array.from<File>(files);
-		const albumId =
-			($page.route.id === '/(user)/albums/[albumId]' || undefined) && $page.params.albumId;
+		albumId = ($page.route.id === '/(user)/albums/[albumId]' || undefined) && $page.params.albumId;
 
-		await fileUploadHandler(filesArray, albumId);
+		const isShare = $page.route.id === '/(user)/share/[key]' || undefined;
+		if (isShare) {
+			dispatch('drag-and-drop-event', filesArray);
+		} else {
+			await fileUploadHandler(filesArray, albumId);
+		}
 	};
 </script>
 
@@ -76,7 +84,7 @@
 	<NavigationLoadingBar />
 {/if}
 
-<slot />
+<slot {albumId} />
 
 <DownloadPanel />
 <UploadPanel />
