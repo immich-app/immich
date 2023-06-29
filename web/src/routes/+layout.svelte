@@ -15,8 +15,7 @@
 	import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
 	import FaviconHeader from '$lib/components/shared-components/favicon-header.svelte';
 
-	import { createEventDispatcher } from 'svelte';
-	const dispatch = createEventDispatcher();
+	import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
 
 	let showNavigationLoadingBar = false;
 	export let data: LayoutData;
@@ -41,7 +40,7 @@
 
 		const isShare = $page.route.id === '/(user)/share/[key]' || undefined;
 		if (isShare) {
-			dispatch('drag-and-drop-event', filesArray);
+			dragAndDropFilesStore.set({ isDragging: true, files: filesArray });
 		} else {
 			await fileUploadHandler(filesArray, albumId);
 		}
