@@ -140,7 +140,9 @@ export class AccessRepository implements IAccessRepository {
       return this.albumRepository.exist({
         where: {
           id: albumId,
-          ownerId: userId,
+          sharedUsers: {
+            id: userId,
+          },
         },
       });
     },

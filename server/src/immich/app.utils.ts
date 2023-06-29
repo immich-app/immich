@@ -1,5 +1,11 @@
-import { IMMICH_ACCESS_COOKIE, IMMICH_API_KEY_HEADER, IMMICH_API_KEY_NAME, SERVER_VERSION } from '@app/domain';
-import { INestApplication } from '@nestjs/common';
+import {
+  ImmichReadStream,
+  IMMICH_ACCESS_COOKIE,
+  IMMICH_API_KEY_HEADER,
+  IMMICH_API_KEY_NAME,
+  SERVER_VERSION,
+} from '@app/domain';
+import { INestApplication, StreamableFile } from '@nestjs/common';
 import {
   DocumentBuilder,
   OpenAPIObject,
@@ -7,18 +13,12 @@ import {
   SwaggerDocumentOptions,
   SwaggerModule,
 } from '@nestjs/swagger';
-import { Response } from 'express';
 import { writeFileSync } from 'fs';
 import path from 'path';
 import { Metadata } from './decorators/authenticated.decorator';
-import { DownloadArchive } from './modules/download/download.service';
 
-export const handleDownload = (download: DownloadArchive, res: Response) => {
-  res.attachment(download.fileName);
-  res.setHeader('X-Immich-Content-Length-Hint', download.fileSize);
-  res.setHeader('X-Immich-Archive-File-Count', download.fileCount);
-  res.setHeader('X-Immich-Archive-Complete', `${download.complete}`);
-  return download.stream;
+export const asStreamableFile = ({ stream, type, length }: ImmichReadStream) => {
+  return new StreamableFile(stream, { type, length });
 };
 
 function sortKeys<T extends object>(obj: T): T {

@@ -3,7 +3,6 @@ import { AlbumEntity, UserEntity } from '@app/infra/entities';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { userEntityStub } from '@test';
 import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { DownloadService } from '../../modules/download/download.service';
 import { IAlbumRepository } from './album-repository';
 import { AlbumService } from './album.service';
 import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
@@ -11,7 +10,6 @@ import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
 describe('Album service', () => {
   let sut: AlbumService;
   let albumRepositoryMock: jest.Mocked<IAlbumRepository>;
-  let downloadServiceMock: jest.Mocked<Partial<DownloadService>>;
 
   const authUser: AuthUserDto = Object.freeze({
     id: '1111',
@@ -98,11 +96,7 @@ describe('Album service', () => {
       updateThumbnails: jest.fn(),
     };
 
-    downloadServiceMock = {
-      downloadArchive: jest.fn(),
-    };
-
-    sut = new AlbumService(albumRepositoryMock, downloadServiceMock as DownloadService);
+    sut = new AlbumService(albumRepositoryMock);
   });
 
   it('gets an owned album', async () => {

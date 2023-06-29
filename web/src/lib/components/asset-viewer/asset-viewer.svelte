@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { downloadAssets } from '$lib/stores/download';
 	import {
 		AlbumResponseDto,
 		api,
@@ -25,7 +24,7 @@
 
 	import { assetStore } from '$lib/stores/assets.store';
 	import { isShowDetail } from '$lib/stores/preferences.store';
-	import { addAssetsToAlbum, getFilenameExtension } from '$lib/utils/asset-utils';
+	import { addAssetsToAlbum, downloadFile } from '$lib/utils/asset-utils';
 	import { browser } from '$app/environment';
 
 	export let asset: AssetResponseDto;
@@ -113,75 +112,6 @@
 
 	const showDetailInfoHandler = () => {
 		$isShowDetail = !$isShowDetail;
-	};
-
-	const handleDownload = () => {
-		if (asset.livePhotoVideoId) {
-			downloadFile(asset.livePhotoVideoId, true, publicSharedKey);
-			downloadFile(asset.id, false, publicSharedKey);
-			return;
-		}
-
-		downloadFile(asset.id, false, publicSharedKey);
-	};
-
-	const downloadFile = async (assetId: string, isLivePhoto: boolean, key: string) => {
-		try {
-			const imageExtension = isLivePhoto ? 'mov' : getFilenameExtension(asset.originalPath);
-			const imageFileName = asset.originalFileName + '.' + imageExtension;
-
-			// If assets is already download -> return;
-			if ($downloadAssets[imageFileName]) {
-				return;
-			}
-
-			$downloadAssets[imageFileName] = 0;
-
-			const { data, status } = await api.assetApi.downloadFile(
-				{ id: assetId, key },
-				{
-					responseType: 'blob',
-					onDownloadProgress: (progressEvent) => {
-						if (progressEvent.lengthComputable) {
-							const total = progressEvent.total;
-							const current = progressEvent.loaded;
-							$downloadAssets[imageFileName] = Math.floor((current / total) * 100);
-						}
-					}
-				}
-			);
-
-			if (!(data instanceof Blob)) {
-				return;
-			}
-
-			if (status === 200) {
-				const fileUrl = URL.createObjectURL(data);
-				const anchor = document.createElement('a');
-				anchor.href = fileUrl;
-				anchor.download = imageFileName;
-
-				document.body.appendChild(anchor);
-				anchor.click();
-				document.body.removeChild(anchor);
-
-				URL.revokeObjectURL(fileUrl);
-
-				// Remove item from download list
-				setTimeout(() => {
-					const copy = $downloadAssets;
-					delete copy[imageFileName];
-					$downloadAssets = copy;
-				}, 2000);
-			}
-		} catch (e) {
-			$downloadAssets = {};
-			console.error('Error downloading file ', e);
-			notificationController.show({
-				type: NotificationType.Error,
-				message: 'Error downloading file, check console for more details.'
-			});
-		}
 	};
 
 	const deleteAsset = async () => {
@@ -313,7 +243,7 @@
 			showDownloadButton={shouldShowDownloadButton}
 			on:goBack={closeViewer}
 			on:showDetail={showDetailInfoHandler}
-			on:download={handleDownload}
+			on:download={() => downloadFile(asset, publicSharedKey)}
 			on:delete={deleteAsset}
 			on:favorite={toggleFavorite}
 			on:addToAlbum={() => openAlbumPicker(false)}

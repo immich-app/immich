@@ -1,21 +1,37 @@
-import { assetEntityStub, authStub, newAssetRepositoryMock } from '@test';
+import { BadRequestException } from '@nestjs/common';
+import {
+  assetEntityStub,
+  authStub,
+  IAccessRepositoryMock,
+  newAccessRepositoryMock,
+  newAssetRepositoryMock,
+  newStorageRepositoryMock,
+} from '@test';
 import { when } from 'jest-when';
-import { AssetService, IAssetRepository, mapAsset } from '.';
+import { Readable } from 'stream';
+import { IStorageRepository } from '../storage';
+import { IAssetRepository } from './asset.repository';
+import { AssetService } from './asset.service';
+import { mapAsset } from './response-dto';
 
 describe(AssetService.name, () => {
   let sut: AssetService;
+  let accessMock: IAccessRepositoryMock;
   let assetMock: jest.Mocked<IAssetRepository>;
+  let storageMock: jest.Mocked<IStorageRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
   });
 
   beforeEach(async () => {
+    accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
-    sut = new AssetService(assetMock);
+    storageMock = newStorageRepositoryMock();
+    sut = new AssetService(accessMock, assetMock, storageMock);
   });
 
-  describe('get map markers', () => {
+  describe('getMapMarkers', () => {
     it('should get geo information of assets', async () => {
       assetMock.getMapMarkers.mockResolvedValue(
         [assetEntityStub.withLocation].map((asset) => ({
@@ -76,25 +92,103 @@ describe(AssetService.name, () => {
         [authStub.admin.id, new Date('2021-06-15T05:00:00.000Z')],
       ]);
     });
+
+    it('should set the title correctly', async () => {
+      when(assetMock.getByDate)
+        .calledWith(authStub.admin.id, new Date('2022-06-15T00:00:00.000Z'))
+        .mockResolvedValue([assetEntityStub.image]);
+      when(assetMock.getByDate)
+        .calledWith(authStub.admin.id, new Date('2021-06-15T00:00:00.000Z'))
+        .mockResolvedValue([assetEntityStub.video]);
+
+      await expect(sut.getMemoryLane(authStub.admin, { timestamp: new Date(2023, 5, 15), years: 2 })).resolves.toEqual([
+        { title: '1 year since...', assets: [mapAsset(assetEntityStub.image)] },
+        { title: '2 years since...', assets: [mapAsset(assetEntityStub.video)] },
+      ]);
+
+      expect(assetMock.getByDate).toHaveBeenCalledTimes(2);
+      expect(assetMock.getByDate.mock.calls).toEqual([
+        [authStub.admin.id, new Date('2022-06-15T00:00:00.000Z')],
+        [authStub.admin.id, new Date('2021-06-15T00:00:00.000Z')],
+      ]);
+    });
   });
 
-  it('should set the title correctly', async () => {
-    when(assetMock.getByDate)
-      .calledWith(authStub.admin.id, new Date('2022-06-15T00:00:00.000Z'))
-      .mockResolvedValue([assetEntityStub.image]);
-    when(assetMock.getByDate)
-      .calledWith(authStub.admin.id, new Date('2021-06-15T00:00:00.000Z'))
-      .mockResolvedValue([assetEntityStub.video]);
+  describe('downloadFile', () => {
+    it('should require the asset.download permission', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
+      accessMock.asset.hasAlbumAccess.mockResolvedValue(false);
+      accessMock.asset.hasPartnerAccess.mockResolvedValue(false);
 
-    await expect(sut.getMemoryLane(authStub.admin, { timestamp: new Date(2023, 5, 15), years: 2 })).resolves.toEqual([
-      { title: '1 year since...', assets: [mapAsset(assetEntityStub.image)] },
-      { title: '2 years since...', assets: [mapAsset(assetEntityStub.video)] },
-    ]);
+      await expect(sut.downloadFile(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
 
-    expect(assetMock.getByDate).toHaveBeenCalledTimes(2);
-    expect(assetMock.getByDate.mock.calls).toEqual([
-      [authStub.admin.id, new Date('2022-06-15T00:00:00.000Z')],
-      [authStub.admin.id, new Date('2021-06-15T00:00:00.000Z')],
-    ]);
+      expect(accessMock.asset.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'asset-1');
+      expect(accessMock.asset.hasAlbumAccess).toHaveBeenCalledWith(authStub.admin.id, 'asset-1');
+      expect(accessMock.asset.hasPartnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'asset-1');
+    });
+
+    it('should throw an error if the asset is not found', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      assetMock.getByIds.mockResolvedValue([]);
+
+      await expect(sut.downloadFile(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(assetMock.getByIds).toHaveBeenCalledWith(['asset-1']);
+    });
+
+    it('should download a file', async () => {
+      const stream = new Readable();
+
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.image]);
+      storageMock.createReadStream.mockResolvedValue({ stream });
+
+      await expect(sut.downloadFile(authStub.admin, 'asset-1')).resolves.toEqual({ stream });
+
+      expect(storageMock.createReadStream).toHaveBeenCalledWith(
+        assetEntityStub.image.originalPath,
+        assetEntityStub.image.mimeType,
+      );
+    });
+
+    it('should download an archive', async () => {
+      const archiveMock = {
+        addFile: jest.fn(),
+        finalize: jest.fn(),
+        stream: new Readable(),
+      };
+
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.noResizePath, assetEntityStub.noWebpPath]);
+      storageMock.createZipStream.mockReturnValue(archiveMock);
+
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({
+        stream: archiveMock.stream,
+      });
+
+      expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, 'upload/library/IMG_456.jpg', 'IMG_456.jpg');
+    });
+
+    it('should handle duplicate file names', async () => {
+      const archiveMock = {
+        addFile: jest.fn(),
+        finalize: jest.fn(),
+        stream: new Readable(),
+      };
+
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.noResizePath, assetEntityStub.noResizePath]);
+      storageMock.createZipStream.mockReturnValue(archiveMock);
+
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({
+        stream: archiveMock.stream,
+      });
+
+      expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, 'upload/library/IMG_123.jpg', 'IMG_123+1.jpg');
+    });
   });
 });
