@@ -81,7 +81,6 @@ Class | Method | HTTP request | Description
 *AlbumApi* | [**addUsersToAlbum**](doc//AlbumApi.md#adduserstoalbum) | **PUT** /album/{id}/users | 
 *AlbumApi* | [**createAlbum**](doc//AlbumApi.md#createalbum) | **POST** /album | 
 *AlbumApi* | [**deleteAlbum**](doc//AlbumApi.md#deletealbum) | **DELETE** /album/{id} | 
-*AlbumApi* | [**downloadArchive**](doc//AlbumApi.md#downloadarchive) | **GET** /album/{id}/download | 
 *AlbumApi* | [**getAlbumCount**](doc//AlbumApi.md#getalbumcount) | **GET** /album/count | 
 *AlbumApi* | [**getAlbumInfo**](doc//AlbumApi.md#getalbuminfo) | **GET** /album/{id} | 
 *AlbumApi* | [**getAllAlbums**](doc//AlbumApi.md#getallalbums) | **GET** /album | 
@@ -92,9 +91,8 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**checkDuplicateAsset**](doc//AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 *AssetApi* | [**checkExistingAssets**](doc//AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 *AssetApi* | [**deleteAsset**](doc//AssetApi.md#deleteasset) | **DELETE** /asset | 
-*AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **GET** /asset/download/{id} | 
-*AssetApi* | [**downloadFiles**](doc//AssetApi.md#downloadfiles) | **POST** /asset/download-files | 
-*AssetApi* | [**downloadLibrary**](doc//AssetApi.md#downloadlibrary) | **GET** /asset/download-library | 
+*AssetApi* | [**downloadArchive**](doc//AssetApi.md#downloadarchive) | **POST** /asset/download | 
+*AssetApi* | [**downloadFile**](doc//AssetApi.md#downloadfile) | **POST** /asset/download/{id} | 
 *AssetApi* | [**getAllAssets**](doc//AssetApi.md#getallassets) | **GET** /asset | 
 *AssetApi* | [**getArchivedAssetCountByUserId**](doc//AssetApi.md#getarchivedassetcountbyuserid) | **GET** /asset/stat/archive | 
 *AssetApi* | [**getAssetById**](doc//AssetApi.md#getassetbyid) | **GET** /asset/assetById/{id} | 
@@ -105,6 +103,7 @@ Class | Method | HTTP request | Description
 *AssetApi* | [**getAssetThumbnail**](doc//AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
 *AssetApi* | [**getCuratedLocations**](doc//AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 *AssetApi* | [**getCuratedObjects**](doc//AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
+*AssetApi* | [**getDownloadInfo**](doc//AssetApi.md#getdownloadinfo) | **GET** /asset/download | 
 *AssetApi* | [**getMapMarkers**](doc//AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 *AssetApi* | [**getMemoryLane**](doc//AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 *AssetApi* | [**getUserAssetsByDeviceId**](doc//AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
@@ -215,7 +214,8 @@ Class | Method | HTTP request | Description
  - [DeleteAssetDto](doc//DeleteAssetDto.md)
  - [DeleteAssetResponseDto](doc//DeleteAssetResponseDto.md)
  - [DeleteAssetStatus](doc//DeleteAssetStatus.md)
- - [DownloadFilesDto](doc//DownloadFilesDto.md)
+ - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
+ - [DownloadResponseDto](doc//DownloadResponseDto.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [GetAssetByTimeBucketDto](doc//GetAssetByTimeBucketDto.md)
  - [GetAssetCountByTimeBucketDto](doc//GetAssetCountByTimeBucketDto.md)
