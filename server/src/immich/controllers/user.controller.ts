@@ -98,7 +98,7 @@ export class UserController {
   }
 
   @Get('/profile-image/:userId')
-  @Header('Cache-Control', 'max-age=600')
+  @Header('Cache-Control', 'private, max-age=86400, no-transform')
   async getProfileImage(@Param() { userId }: UserIdDto, @Response({ passthrough: true }) res: Res): Promise<any> {
     const readableStream = await this.service.getUserProfileImage(userId);
     res.header('Content-Type', 'image/jpeg');
