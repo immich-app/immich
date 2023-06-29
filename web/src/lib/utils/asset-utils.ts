@@ -181,6 +181,14 @@ export function getFileMimeType(file: File): string {
 	return file.type || (mimeTypes[getFilenameExtension(file.name)] ?? '');
 }
 
+function isRotated90CW(orientation: number) {
+	return orientation == 6 || orientation == 90;
+}
+
+function isRotated270CW(orientation: number) {
+	return orientation == 8 || orientation == -90;
+}
+
 /**
  * Returns aspect ratio for the asset
  */
@@ -189,8 +197,7 @@ export function getAssetRatio(asset: AssetResponseDto) {
 	let width = asset.exifInfo?.exifImageWidth || 235;
 	const orientation = Number(asset.exifInfo?.orientation);
 	if (orientation) {
-		// 6 - Rotate 90 CW, 8 - Rotate 270 CW
-		if (orientation == 6 || orientation == 8) {
+		if (isRotated90CW(orientation) || isRotated270CW(orientation)) {
 			[width, height] = [height, width];
 		}
 	}
