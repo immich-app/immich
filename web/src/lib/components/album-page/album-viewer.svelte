@@ -45,7 +45,6 @@
 	import ThumbnailSelection from './thumbnail-selection.svelte';
 	import UserSelectionModal from './user-selection-modal.svelte';
 	import { handleError } from '../../utils/handle-error';
-	
 
 	export let album: AlbumResponseDto;
 	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
