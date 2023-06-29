@@ -14,6 +14,8 @@
 	import { onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import Dropdown from '$lib/components/elements/dropdown.svelte';
+	import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
+	import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
 
 	export let data: PageData;
 
@@ -23,14 +25,35 @@
 		albums: unsortedAlbums,
 		isShowContextMenu,
 		contextMenuPosition,
+		contextMenuTargetAlbum,
 		createAlbum,
 		deleteAlbum,
-		deleteSelectedContextAlbum,
 		showAlbumContextMenu,
 		closeAlbumContextMenu
 	} = useAlbums({ albums: data.albums });
 
 	let albums = unsortedAlbums;
+	let albumToDelete = null;
+
+	const setAlbumToDelete = () => {
+		albumToDelete = $contextMenuTargetAlbum;
+		closeAlbumContextMenu();
+	};
+
+	const deleteSelectedAlbum = async () => {
+		if (albumToDelete) {
+			try {
+				await deleteAlbum(albumToDelete);
+			} catch {
+				notificationController.show({
+					message: 'Error deleting album',
+					type: NotificationType.Error
+				});
+			} finally {
+				albumToDelete = null;
+			}
+		}
+	};
 
 	const sortByDate = (a: string, b: string) => {
 		const aDate = new Date(a);
@@ -69,7 +92,6 @@
 			for (const album of $albums) {
 				if (album.assetCount == 0 && album.albumName == 'Untitled') {
 					await deleteAlbum(album);
-					$albums = $albums.filter((a) => a.id !== album.id);
 				}
 			}
 		} catch (error) {
@@ -120,11 +142,25 @@
 <!-- Context Menu -->
 {#if $isShowContextMenu}
 	<ContextMenu {...$contextMenuPosition} on:outclick={closeAlbumContextMenu}>
-		<MenuOption on:click={deleteSelectedContextAlbum}>
+		<MenuOption on:click={() => setAlbumToDelete()}>
 			<span class="flex place-items-center place-content-center gap-2">
 				<DeleteOutline size="18" />
 				<p>Delete album</p>
 			</span>
 		</MenuOption>
 	</ContextMenu>
+{/if}
+
+{#if albumToDelete}
+	<ConfirmDialogue
+		title="Delete Album"
+		confirmText="Delete"
+		on:confirm={deleteSelectedAlbum}
+		on:cancel={() => (albumToDelete = null)}
+	>
+		<svelte:fragment slot="prompt">
+			<p>Are you sure you want to delete the album <b>{albumToDelete.albumName}</b>?</p>
+			<p>If this album is shared, other users will not be able to access it anymore.</p>
+		</svelte:fragment>
+	</ConfirmDialogue>
 {/if}

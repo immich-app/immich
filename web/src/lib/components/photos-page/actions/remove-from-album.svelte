@@ -7,32 +7,45 @@
 	import { AlbumResponseDto, api } from '@api';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 	import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+	import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
 
 	export let album: AlbumResponseDto;
 
 	const { getAssets, clearSelect } = getAssetControlContext();
 
-	const handleRemoveFromAlbum = async () => {
-		if (window.confirm('Do you want to remove selected assets from the album?')) {
-			try {
-				const { data } = await api.albumApi.removeAssetFromAlbum({
-					id: album.id,
-					removeAssetsDto: {
-						assetIds: Array.from(getAssets()).map((a) => a.id)
-					}
-				});
+	let isShowConfirmation = false;
 
-				album = data;
-				clearSelect();
-			} catch (e) {
-				console.error('Error [album-viewer] [removeAssetFromAlbum]', e);
-				notificationController.show({
-					type: NotificationType.Error,
-					message: 'Error removing assets from album, check console for more details'
-				});
-			}
+	const removeFromAlbum = async () => {
+		try {
+			const { data } = await api.albumApi.removeAssetFromAlbum({
+				id: album.id,
+				removeAssetsDto: {
+					assetIds: Array.from(getAssets()).map((a) => a.id)
+				}
+			});
+
+			album = data;
+			clearSelect();
+		} catch (e) {
+			console.error('Error [album-viewer] [removeAssetFromAlbum]', e);
+			notificationController.show({
+				type: NotificationType.Error,
+				message: 'Error removing assets from album, check console for more details'
+			});
+		} finally {
+			isShowConfirmation = false;
 		}
 	};
 </script>
 
-<CircleIconButton title="Remove from album" on:click={handleRemoveFromAlbum} logo={DeleteOutline} />
+<CircleIconButton title="Remove from album" on:click={() => (isShowConfirmation = true)} logo={DeleteOutline} />
+
+{#if isShowConfirmation}
+	<ConfirmDialogue
+		title="Remove Assets"
+		confirmText="Remove"
+		prompt="Are you sure you want to remove the selected assets from the album?"
+		on:confirm={() => {removeFromAlbum}}
+		on:cancel={() => (isShowConfirmation = false)}
+	/>
+{/if}

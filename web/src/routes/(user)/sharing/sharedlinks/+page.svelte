@@ -98,7 +98,7 @@
 {#if deleteLinkId}
 	<ConfirmDialogue
 		title="Delete Shared Link"
-		prompt="Are you want to delete this shared link?"
+		prompt="Are you sure you want to delete this shared link?"
 		confirmText="Delete"
 		on:confirm={() => handleDeleteLink()}
 		on:cancel={() => (deleteLinkId = null)}

@@ -22,6 +22,7 @@
 	import DetailPanel from './detail-panel.svelte';
 	import PhotoViewer from './photo-viewer.svelte';
 	import VideoViewer from './video-viewer.svelte';
+	import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
 
 	import { assetStore } from '$lib/stores/assets.store';
 	import { isShowDetail } from '$lib/stores/preferences.store';
@@ -38,6 +39,7 @@
 	let halfRightHover = false;
 	let appearsInAlbums: AlbumResponseDto[] = [];
 	let isShowAlbumPicker = false;
+	let isShowDeleteConfirmation = false;
 	let addToSharedAlbum = true;
 	let shouldPlayMotionPhoto = false;
 	let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : true;
@@ -78,7 +80,7 @@
 				closeViewer();
 				return;
 			case 'Delete':
-				deleteAsset();
+				isShowDeleteConfirmation = true;
 				return;
 			case 'i':
 				$isShowDetail = !$isShowDetail;
@@ -186,23 +188,17 @@
 
 	const deleteAsset = async () => {
 		try {
-			if (
-				window.confirm(
-					`Caution! Are you sure you want to delete this asset? This step also deletes this asset in the album(s) to which it belongs. You can not undo this action!`
-				)
-			) {
-				const { data: deletedAssets } = await api.assetApi.deleteAsset({
-					deleteAssetDto: {
-						ids: [asset.id]
-					}
-				});
+			const { data: deletedAssets } = await api.assetApi.deleteAsset({
+				deleteAssetDto: {
+					ids: [asset.id]
+				}
+			});
 
-				navigateAssetForward();
+			navigateAssetForward();
 
-				for (const asset of deletedAssets) {
-					if (asset.status == 'SUCCESS') {
-						assetStore.removeAsset(asset.id);
-					}
+			for (const asset of deletedAssets) {
+				if (asset.status == 'SUCCESS') {
+					assetStore.removeAsset(asset.id);
 				}
 			}
 		} catch (e) {
@@ -210,7 +206,9 @@
 				type: NotificationType.Error,
 				message: 'Error deleting this asset, check console for more details'
 			});
-			console.error('Error deleteSelectedAssetHandler', e);
+			console.error('Error deleteAsset', e);
+		} finally {
+			isShowDeleteConfirmation = false;
 		}
 	};
 
@@ -297,6 +295,17 @@
 			});
 		}
 	};
+
+	const getAssetType = () => {
+		switch (asset.type) {
+			case 'IMAGE':
+				return 'Photo';
+			case 'VIDEO':
+				return 'Video';
+			default:
+				return 'Asset';
+		}
+	}
 </script>
 
 <section
@@ -314,7 +323,7 @@
 			on:goBack={closeViewer}
 			on:showDetail={showDetailInfoHandler}
 			on:download={handleDownload}
-			on:delete={deleteAsset}
+			on:delete={() => (isShowDeleteConfirmation = true)}
 			on:favorite={toggleFavorite}
 			on:addToAlbum={() => openAlbumPicker(false)}
 			on:addToSharedAlbum={() => openAlbumPicker(true)}
@@ -427,6 +436,20 @@
 			on:album={handleAddToAlbum}
 			on:close={() => (isShowAlbumPicker = false)}
 		/>
+	{/if}
+
+	{#if isShowDeleteConfirmation}
+		<ConfirmDialogue
+			title="Delete {getAssetType()}"
+			confirmText="Delete"
+			on:confirm={deleteAsset}
+			on:cancel={() => (isShowDeleteConfirmation = false)}
+		>
+			<svelte:fragment slot="prompt">
+				<p>Are you sure you want to delete this {getAssetType().toLowerCase()}? This will also remove it from the album(s) to which it belongs.</p>
+				<p><b>You cannot undo this action!</b></p>
+			</svelte:fragment>
+		</ConfirmDialogue>
 	{/if}
 </section>
 
