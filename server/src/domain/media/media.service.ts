@@ -222,7 +222,8 @@ export class MediaService {
       `-acodec ${ffmpeg.targetAudioCodec}`,
       // Makes a second pass moving the moov atom to the beginning of
       // the file for improved playback speed.
-      `-movflags faststart`,
+      '-movflags faststart',
+      '-fps_mode passthrough',
     ];
 
     // video dimensions
