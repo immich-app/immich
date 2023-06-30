@@ -55,7 +55,7 @@ class MemoryCard extends HookConsumerWidget {
       child: Stack(
         children: [
           ImageFiltered(
-            imageFilter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
+            imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
             child: Container(
               decoration: BoxDecoration(
                 image: DecorationImage(
@@ -71,7 +71,7 @@ class MemoryCard extends HookConsumerWidget {
                   fit: BoxFit.cover,
                 ),
               ),
-              child: Container(color: Colors.black.withOpacity(0.4)),
+              child: Container(color: Colors.black.withOpacity(0.2)),
             ),
           ),
           GestureDetector(
