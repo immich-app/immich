@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_thumbhash/flutter_thumbhash.dart';
 import 'package:image_fade/image_fade.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
