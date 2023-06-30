@@ -112,7 +112,7 @@ export class UserCore {
     if (!user.profileImagePath) {
       throw new NotFoundException('User does not have a profile image');
     }
-    await fs.access(user.profileImagePath, constants.R_OK | constants.W_OK);
+    await fs.access(user.profileImagePath, constants.R_OK);
     return createReadStream(user.profileImagePath);
   }
 
