@@ -58,7 +58,7 @@ export class AssetService {
   }
 
   async getDownloadInfo(authUser: AuthUserDto, dto: DownloadDto): Promise<DownloadResponseDto> {
-    const targetSize = dto.archiveSize || HumanReadableSize.MiB * 500;
+    const targetSize = dto.archiveSize || HumanReadableSize.GiB * 4;
     const archives: DownloadArchiveInfo[] = [];
     let archive: DownloadArchiveInfo = { size: 0, assetIds: [] };
 
