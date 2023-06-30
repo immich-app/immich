@@ -23,7 +23,7 @@ export class FilesystemProvider implements IStorageRepository {
 
   async createReadStream(filepath: string, mimeType?: string | null): Promise<ImmichReadStream> {
     const { size } = await fs.stat(filepath);
-    await fs.access(filepath, constants.R_OK | constants.W_OK);
+    await fs.access(filepath, constants.R_OK);
     return {
       stream: createReadStream(filepath),
       length: size,

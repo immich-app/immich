@@ -24,9 +24,8 @@ import {
   StreamableFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { R_OK, W_OK } from 'constants';
 import { Response as Res } from 'express';
-import { createReadStream, stat } from 'fs';
+import { constants, createReadStream, stat } from 'fs';
 import fs from 'fs/promises';
 import mime from 'mime-types';
 import path from 'path';
@@ -156,7 +155,7 @@ export class AssetService {
         continue;
       }
 
-      const exists = await this.storageRepository.checkFileExists(filepath, R_OK);
+      const exists = await this.storageRepository.checkFileExists(filepath, constants.R_OK);
       if (!exists) {
         throw new BadRequestException('File does not exist');
       }
@@ -307,7 +306,7 @@ export class AssetService {
         let videoPath = asset.originalPath;
         let mimeType = asset.mimeType;
 
-        await fs.access(videoPath, R_OK | W_OK);
+        await fs.access(videoPath, constants.R_OK);
 
         if (asset.encodedVideoPath) {
           videoPath = asset.encodedVideoPath == '' ? String(asset.originalPath) : String(asset.encodedVideoPath);
@@ -355,8 +354,8 @@ export class AssetService {
         }
 
         return this.streamFile(videoPath, res, headers, mimeType);
-      } catch (e) {
-        this.logger.error(`Error serving VIDEO asset=${asset.id}`);
+      } catch (e: Error | any) {
+        this.logger.error(`Error serving VIDEO asset=${asset.id}`, e?.stack);
         throw new InternalServerErrorException(`Failed to serve video asset ${e}`, 'ServeFile');
       }
     }
@@ -632,7 +631,7 @@ export class AssetService {
       return;
     }
 
-    await fs.access(filepath, R_OK);
+    await fs.access(filepath, constants.R_OK);
 
     return new StreamableFile(createReadStream(filepath));
   }
