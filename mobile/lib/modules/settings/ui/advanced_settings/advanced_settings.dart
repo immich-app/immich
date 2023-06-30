@@ -16,6 +16,8 @@ class AdvancedSettings extends HookConsumerWidget {
     final isEnabled =
         useState(AppSettingsEnum.advancedTroubleshooting.defaultValue);
     final levelId = useState(AppSettingsEnum.logLevel.defaultValue);
+    final preferRemote =
+        useState(AppSettingsEnum.preferRemoteImage.defaultValue);
 
     useEffect(
       () {
@@ -23,6 +25,8 @@ class AdvancedSettings extends HookConsumerWidget {
           AppSettingsEnum.advancedTroubleshooting,
         );
         levelId.value = appSettingService.getSetting(AppSettingsEnum.logLevel);
+        preferRemote.value =
+            appSettingService.getSetting(AppSettingsEnum.preferRemoteImage);
         return null;
       },
       [],
@@ -76,6 +80,13 @@ class AdvancedSettings extends HookConsumerWidget {
             label: logLevel,
             activeColor: Theme.of(context).primaryColor,
           ),
+        ),
+        SettingsSwitchListTile(
+          appSettingService: appSettingService,
+          valueNotifier: preferRemote,
+          settingsEnum: AppSettingsEnum.preferRemoteImage,
+          title: "advanced_settings_prefer_remote_title".tr(),
+          subtitle: "advanced_settings_prefer_remote_subtitle".tr(),
         ),
       ],
     );

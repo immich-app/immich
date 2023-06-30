@@ -5,6 +5,8 @@
   "advanced_settings_tile_title": "Advanced",
   "advanced_settings_troubleshooting_subtitle": "Enable additional features for troubleshooting",
   "advanced_settings_troubleshooting_title": "Troubleshooting",
+  "advanced_settings_prefer_remote_title": "Prefer remote images",
+  "advanced_settings_prefer_remote_subtitle": "Some devices are painfully slow to load thumbnails from assets on the device. Activate this setting to load remote images instead.",
   "album_info_card_backup_album_excluded": "EXCLUDED",
   "album_info_card_backup_album_included": "INCLUDED",
   "album_thumbnail_card_item": "1 item",
