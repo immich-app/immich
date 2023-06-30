@@ -7,6 +7,7 @@
 		NotificationType
 	} from '../shared-components/notification/notification';
 	import Button from '../elements/buttons/button.svelte';
+	import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
 	import { handleError } from '../../utils/handle-error';
 
 	export let user: UserResponseDto;
@@ -14,6 +15,8 @@
 
 	let error: string;
 	let success: string;
+
+	let isShowResetPasswordConfirmation = false;
 
 	const dispatch = createEventDispatcher();
 
@@ -41,20 +44,18 @@
 
 	const resetPassword = async () => {
 		try {
-			if (window.confirm('Do you want to reset the user password?')) {
-				const defaultPassword = 'password';
+			const defaultPassword = 'password';
 
-				const { status } = await api.userApi.updateUser({
-					updateUserDto: {
-						id: user.id,
-						password: defaultPassword,
-						shouldChangePassword: true
-					}
-				});
-
-				if (status == 200) {
-					dispatch('reset-password-success');
+			const { status } = await api.userApi.updateUser({
+				updateUserDto: {
+					id: user.id,
+					password: defaultPassword,
+					shouldChangePassword: true
 				}
+			});
+
+			if (status == 200) {
+				dispatch('reset-password-success');
 			}
 		} catch (e) {
 			console.error('Error reseting user password', e);
@@ -62,6 +63,8 @@
 				message: 'Error reseting user password, check console for more details',
 				type: NotificationType.Error
 			});
+		} finally {
+			isShowResetPasswordConfirmation = false;
 		}
 	};
 </script>
@@ -125,9 +128,9 @@
 			/>
 
 			<p>
-				Note: To apply the Storage Label to previously uploaded assets, run the <a
-					href="/admin/jobs-status"
-					class="text-immich-primary dark:text-immich-dark-primary">Storage Migration Job</a
+				Note: To apply the Storage Label to previously uploaded assets, run the
+				<a href="/admin/jobs-status" class="text-immich-primary dark:text-immich-dark-primary">
+					Storage Migration Job</a
 				>
 			</p>
 		</div>
@@ -157,9 +160,28 @@
 		{/if}
 		<div class="flex w-full px-4 gap-4 mt-8">
 			{#if canResetPassword}
-				<Button color="light-red" fullwidth on:click={resetPassword}>Reset password</Button>
+				<Button
+					color="light-red"
+					fullwidth
+					on:click={() => (isShowResetPasswordConfirmation = true)}>Reset password</Button
+				>
 			{/if}
 			<Button type="submit" fullwidth>Confirm</Button>
 		</div>
 	</form>
 </div>
+
+{#if isShowResetPasswordConfirmation}
+	<ConfirmDialogue
+		title="Reset Password"
+		confirmText="Reset"
+		on:confirm={resetPassword}
+		on:cancel={() => (isShowResetPasswordConfirmation = false)}
+	>
+		<svelte:fragment slot="prompt">
+			<p>
+				Are you sure you want to reset <b>{user.firstName} {user.lastName}</b>'s password?
+			</p>
+		</svelte:fragment>
+	</ConfirmDialogue>
+{/if}

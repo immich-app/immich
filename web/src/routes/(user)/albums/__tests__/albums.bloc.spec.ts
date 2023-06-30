@@ -12,10 +12,6 @@ jest.mock('@api');
 
 const apiMock: jest.MockedObject<typeof api> = api as jest.MockedObject<typeof api>;
 
-function mockWindowConfirm(result: boolean) {
-	jest.spyOn(global, 'confirm').mockReturnValueOnce(result);
-}
-
 describe('Albums BLoC', () => {
 	let sut: ReturnType<typeof useAlbums>;
 	const _albums = albumFactory.buildList(5);
@@ -115,8 +111,6 @@ describe('Albums BLoC', () => {
 			statusText: ''
 		});
 
-		mockWindowConfirm(true);
-
 		const albumToDelete = get(sut.albums)[2]; // delete third album
 		const albumToDeleteId = albumToDelete.id;
 		const contextMenuCoords = { x: 100, y: 150 };
@@ -125,52 +119,15 @@ describe('Albums BLoC', () => {
 		sut.showAlbumContextMenu(contextMenuCoords, albumToDelete);
 		expect(get(sut.contextMenuPosition)).toEqual(contextMenuCoords);
 		expect(get(sut.isShowContextMenu)).toBe(true);
+		expect(get(sut.contextMenuTargetAlbum)).toEqual(albumToDelete);
 
-		await sut.deleteSelectedContextAlbum();
+		await sut.deleteAlbum(albumToDelete);
 		const updatedAlbums = get(sut.albums);
 
 		expect(apiMock.albumApi.deleteAlbum).toHaveBeenCalledTimes(1);
 		expect(apiMock.albumApi.deleteAlbum).toHaveBeenCalledWith({ id: albumToDeleteId });
 		expect(updatedAlbums).toHaveLength(4);
 		expect(updatedAlbums).not.toContain(albumToDelete);
-		expect(get(sut.isShowContextMenu)).toBe(false);
-	});
-
-	it('shows error message when it fails deleting an album', async () => {
-		mockWindowConfirm(true);
-
-		const albumToDelete = get(sut.albums)[2]; // delete third album
-		const contextMenuCoords = { x: 100, y: 150 };
-
-		apiMock.albumApi.deleteAlbum.mockRejectedValueOnce({});
-
-		sut.showAlbumContextMenu(contextMenuCoords, albumToDelete);
-		const newAlbum = await sut.deleteSelectedContextAlbum();
-		const notifications = get(notificationController.notificationList);
-
-		expect(apiMock.albumApi.deleteAlbum).toHaveBeenCalledTimes(1);
-		expect(newAlbum).not.toBeDefined();
-		expect(notifications).toHaveLength(1);
-		expect(notifications[0].type).toEqual(NotificationType.Error);
-	});
-
-	it('prevents deleting an album when rejecting confirm dialog', async () => {
-		const albumToDelete = get(sut.albums)[2]; // delete third album
-
-		mockWindowConfirm(false);
-
-		sut.showAlbumContextMenu({ x: 100, y: 150 }, albumToDelete);
-		await sut.deleteSelectedContextAlbum();
-
-		expect(apiMock.albumApi.deleteAlbum).not.toHaveBeenCalled();
-	});
-
-	it('prevents deleting an album when not previously selected', async () => {
-		mockWindowConfirm(true);
-
-		await sut.deleteSelectedContextAlbum();
-
-		expect(apiMock.albumApi.deleteAlbum).not.toHaveBeenCalled();
 	});
 
 	it('closes album context menu, deselecting album', () => {

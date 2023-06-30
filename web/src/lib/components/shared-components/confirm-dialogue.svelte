@@ -2,18 +2,29 @@
 	import { createEventDispatcher } from 'svelte';
 	import FullScreenModal from './full-screen-modal.svelte';
 	import Button from '../elements/buttons/button.svelte';
+	import type { Color } from '$lib/components/elements/buttons/button.svelte';
 
 	export let title = 'Confirm';
 	export let prompt = 'Are you sure you want to do this?';
 	export let confirmText = 'Confirm';
+	export let confirmColor: Color = 'red';
 	export let cancelText = 'Cancel';
+	export let cancelColor: Color = 'primary';
+	export let hideCancelButton = false;
 
 	const dispatch = createEventDispatcher();
+
+	let isConfirmButtonDisabled = false;
+
 	const handleCancel = () => dispatch('cancel');
-	const handleConfirm = () => dispatch('confirm');
+
+	const handleConfirm = () => {
+		isConfirmButtonDisabled = true;
+		dispatch('confirm');
+	};
 </script>
 
-<FullScreenModal on:clickOutside={() => handleCancel()}>
+<FullScreenModal on:clickOutside={handleCancel}>
 	<div
 		class="border bg-immich-bg dark:bg-immich-dark-gray dark:border-immich-dark-gray p-4 shadow-sm w-[500px] max-w-[95vw] rounded-3xl py-8 dark:text-immich-dark-fg"
 	>
@@ -25,13 +36,26 @@
 			</h1>
 		</div>
 		<div>
-			<slot name="prompt">
-				<p class="ml-4 text-md py-5 text-center">{prompt}</p>
-			</slot>
+			<div class="px-4 py-5 text-md text-center">
+				<slot name="prompt">
+					<p>{prompt}</p>
+				</slot>
+			</div>
 
 			<div class="flex w-full px-4 gap-4 mt-4">
-				<Button fullwidth on:click={() => handleCancel()}>{cancelText}</Button>
-				<Button color="red" fullwidth on:click={() => handleConfirm()}>{confirmText}</Button>
+				{#if !hideCancelButton}
+					<Button color={cancelColor} fullwidth on:click={handleCancel}>
+						{cancelText}
+					</Button>
+				{/if}
+				<Button
+					color={confirmColor}
+					fullwidth
+					on:click={handleConfirm}
+					disabled={isConfirmButtonDisabled}
+				>
+					{confirmText}
+				</Button>
 			</div>
 		</div>
 	</div>

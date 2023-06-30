@@ -126,23 +126,21 @@
 	{/if}
 
 	{#if shouldShowDeleteConfirmDialog}
-		<FullScreenModal on:clickOutside={() => (shouldShowDeleteConfirmDialog = false)}>
-			<DeleteConfirmDialog
-				user={selectedUser}
-				on:user-delete-success={onUserDeleteSuccess}
-				on:user-delete-fail={onUserDeleteFail}
-			/>
-		</FullScreenModal>
+		<DeleteConfirmDialog
+			user={selectedUser}
+			on:user-delete-success={onUserDeleteSuccess}
+			on:user-delete-fail={onUserDeleteFail}
+			on:cancel={() => (shouldShowDeleteConfirmDialog = false)}
+		/>
 	{/if}
 
 	{#if shouldShowRestoreDialog}
-		<FullScreenModal on:clickOutside={() => (shouldShowRestoreDialog = false)}>
-			<RestoreDialogue
-				user={selectedUser}
-				on:user-restore-success={onUserRestoreSuccess}
-				on:user-restore-fail={onUserRestoreFail}
-			/>
-		</FullScreenModal>
+		<RestoreDialogue
+			user={selectedUser}
+			on:user-restore-success={onUserRestoreSuccess}
+			on:user-restore-fail={onUserRestoreFail}
+			on:cancel={() => (shouldShowRestoreDialog = false)}
+		/>
 	{/if}
 
 	{#if shouldShowInfoPanel}

@@ -43,6 +43,7 @@
 	import ShareInfoModal from './share-info-modal.svelte';
 	import ThumbnailSelection from './thumbnail-selection.svelte';
 	import UserSelectionModal from './user-selection-modal.svelte';
+	import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
 	import { handleError } from '../../utils/handle-error';
 	import { downloadArchive } from '../../utils/asset-utils';
 
@@ -71,6 +72,7 @@
 	let isShowShareInfoModal = false;
 	let isShowAlbumOptions = false;
 	let isShowThumbnailSelection = false;
+	let isShowDeleteConfirmation = false;
 
 	let backUrl = '/albums';
 	let currentAlbumName = '';
@@ -223,21 +225,17 @@
 	};
 
 	const removeAlbum = async () => {
-		if (
-			window.confirm(
-				`Are you sure you want to delete album ${album.albumName}? If the album is shared, other users will not be able to access it.`
-			)
-		) {
-			try {
-				await api.albumApi.deleteAlbum({ id: album.id });
-				goto(backUrl);
-			} catch (e) {
-				console.error('Error [userDeleteMenu] ', e);
-				notificationController.show({
-					type: NotificationType.Error,
-					message: 'Error deleting album, check console for more details'
-				});
-			}
+		try {
+			await api.albumApi.deleteAlbum({ id: album.id });
+			goto(backUrl);
+		} catch (e) {
+			console.error('Error [userDeleteMenu] ', e);
+			notificationController.show({
+				type: NotificationType.Error,
+				message: 'Error deleting album, check console for more details'
+			});
+		} finally {
+			isShowDeleteConfirmation = false;
 		}
 	};
 
@@ -348,7 +346,11 @@
 							on:click={() => (isShowShareUserSelection = true)}
 							logo={ShareVariantOutline}
 						/>
-						<CircleIconButton title="Remove album" on:click={removeAlbum} logo={DeleteOutline} />
+						<CircleIconButton
+							title="Remove album"
+							on:click={() => (isShowDeleteConfirmation = true)}
+							logo={DeleteOutline}
+						/>
 					{/if}
 				{/if}
 
@@ -514,4 +516,18 @@
 		on:close={() => (isShowThumbnailSelection = false)}
 		on:thumbnail-selected={setAlbumThumbnailHandler}
 	/>
+{/if}
+
+{#if isShowDeleteConfirmation}
+	<ConfirmDialogue
+		title="Delete Album"
+		confirmText="Delete"
+		on:confirm={removeAlbum}
+		on:cancel={() => (isShowDeleteConfirmation = false)}
+	>
+		<svelte:fragment slot="prompt">
+			<p>Are you sure you want to delete the album <b>{album.albumName}</b>?</p>
+			<p>If this album is shared, other users will not be able to access it anymore.</p>
+		</svelte:fragment>
+	</ConfirmDialogue>
 {/if}

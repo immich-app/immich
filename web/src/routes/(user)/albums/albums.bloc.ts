@@ -24,8 +24,6 @@ export const useAlbums = (props: AlbumsProps) => {
 				if (album.albumName === 'Untitled' && album.assetCount === 0) {
 					setTimeout(async () => {
 						await deleteAlbum(album);
-						const _albums = get(albums);
-						albums.set(_albums.filter((a) => a.id !== album.id));
 					}, 500);
 				}
 			}
@@ -54,8 +52,13 @@ export const useAlbums = (props: AlbumsProps) => {
 		}
 	}
 
-	async function deleteAlbum(album: AlbumResponseDto): Promise<void> {
-		await api.albumApi.deleteAlbum({ id: album.id });
+	async function deleteAlbum(albumToDelete: AlbumResponseDto): Promise<void> {
+		await api.albumApi.deleteAlbum({ id: albumToDelete.id });
+		albums.set(
+			get(albums).filter(({ id }) => {
+				return id !== albumToDelete.id;
+			})
+		);
 	}
 
 	async function showAlbumContextMenu(
@@ -74,40 +77,15 @@ export const useAlbums = (props: AlbumsProps) => {
 		contextMenuTargetAlbum.set(undefined);
 	}
 
-	async function deleteSelectedContextAlbum(): Promise<void> {
-		const albumToDelete = get(contextMenuTargetAlbum);
-		if (!albumToDelete) {
-			return;
-		}
-		if (
-			window.confirm(
-				`Are you sure you want to delete album ${albumToDelete.albumName}? If the album is shared, other users will not be able to access it.`
-			)
-		) {
-			try {
-				await api.albumApi.deleteAlbum({ id: albumToDelete.id });
-				const _albums = get(albums);
-				albums.set(_albums.filter((a) => a.id !== albumToDelete.id));
-			} catch {
-				notificationController.show({
-					message: 'Error deleting album',
-					type: NotificationType.Error
-				});
-			}
-		}
-
-		closeAlbumContextMenu();
-	}
-
 	return {
 		albums,
 		isShowContextMenu,
 		contextMenuPosition,
+		contextMenuTargetAlbum,
 		loadAlbums,
 		createAlbum,
 		deleteAlbum,
 		showAlbumContextMenu,
-		closeAlbumContextMenu,
-		deleteSelectedContextAlbum
+		closeAlbumContextMenu
 	};
 };

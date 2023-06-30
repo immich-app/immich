@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { api, UserResponseDto } from '@api';
 	import { createEventDispatcher } from 'svelte';
-	import Button from '../elements/buttons/button.svelte';
+	import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
 	import { handleError } from '../../utils/handle-error';
 
 	export let user: UserResponseDto;
@@ -23,25 +23,14 @@
 	};
 </script>
 
-<div
-	class="border bg-immich-bg dark:bg-immich-dark-gray dark:border-immich-dark-gray p-4 shadow-sm w-[500px] max-w-[95vw] rounded-3xl py-8 dark:text-immich-dark-fg"
->
-	<div
-		class="flex flex-col place-items-center place-content-center gap-4 px-4 text-immich-primary dark:text-immich-dark-primary"
-	>
-		<h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium">
-			Confirm User Deletion
-		</h1>
-	</div>
-	<div>
-		<p class="ml-4 text-md py-5 text-center">
-			{user.firstName}
-			{user.lastName} account and assets along will be marked to delete completely after 7 days. are
-			you sure you want to proceed ?
-		</p>
-
-		<div class="flex w-full px-4 gap-4 mt-8">
-			<Button fullwidth color="red" on:click={deleteUser}>Confirm</Button>
+<ConfirmDialogue title="Delete User" confirmText="Delete" on:confirm={deleteUser} on:cancel>
+	<svelte:fragment slot="prompt">
+		<div class="flex flex-col gap-4">
+			<p>
+				<b>{user.firstName} {user.lastName}</b>'s account and assets will be permanently deleted
+				after 7 days.
+			</p>
+			<p>Are you sure you want to continue?</p>
 		</div>
-	</div>
-</div>
+	</svelte:fragment>
+</ConfirmDialogue>

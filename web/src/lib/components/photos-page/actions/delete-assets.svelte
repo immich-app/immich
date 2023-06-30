@@ -13,7 +13,7 @@
 	export let onAssetDelete: OnAssetDelete;
 	const { getAssets, clearSelect } = getAssetControlContext();
 
-	let confirm = false;
+	let isShowConfirmation = false;
 
 	const handleDelete = async () => {
 		try {
@@ -32,24 +32,43 @@
 				}
 			}
 
-			notificationController.show({ message: `Deleted ${count}`, type: NotificationType.Info });
+			notificationController.show({
+				message: `Deleted ${count}`,
+				type: NotificationType.Info
+			});
 
 			clearSelect();
 		} catch (e) {
 			handleError(e, 'Error deleting assets');
+		} finally {
+			isShowConfirmation = false;
 		}
 	};
 </script>
 
-<CircleIconButton title="Delete" logo={DeleteOutline} on:click={() => (confirm = true)} />
+<CircleIconButton
+	title="Delete"
+	logo={DeleteOutline}
+	on:click={() => (isShowConfirmation = true)}
+/>
 
-{#if confirm}
+{#if isShowConfirmation}
 	<ConfirmDialogue
-		prompt="Are you sure you want to delete {getAssets()
-			.size} assets? This step also deletes assets in the album(s) to which they belong. You can not undo this action!"
-		title="Delete assets?"
+		title="Delete Asset{getAssets().size > 1 ? 's' : ''}"
 		confirmText="Delete"
 		on:confirm={handleDelete}
-		on:cancel={() => (confirm = false)}
-	/>
+		on:cancel={() => (isShowConfirmation = false)}
+	>
+		<svelte:fragment slot="prompt">
+			<p>
+				Are you sure you want to delete
+				{#if getAssets().size > 1}
+					these <b>{getAssets().size}</b> assets? This will also remove them from their album(s).
+				{:else}
+					this asset? This will also remove it from its album(s).
+				{/if}
+			</p>
+			<p><b>You cannot undo this action!</b></p>
+		</svelte:fragment>
+	</ConfirmDialogue>
 {/if}
