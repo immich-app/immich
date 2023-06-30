@@ -396,6 +396,7 @@ describe(MediaService.name, () => {
             '-preset ultrafast',
             '-crf 23',
             '-maxrate 4500k',
+            '-bufsize 9000k',
           ],
           twoPass: false,
         },
