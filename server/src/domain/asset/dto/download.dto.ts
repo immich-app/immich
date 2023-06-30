@@ -1,6 +1,6 @@
 import { ValidateUUID } from '@app/immich/decorators/validate-uuid.decorator';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsPositive } from 'class-validator';
+import { IsInt, IsOptional, IsPositive } from 'class-validator';
 
 export class DownloadDto {
   @ValidateUUID({ each: true, optional: true })
@@ -14,6 +14,7 @@ export class DownloadDto {
 
   @IsInt()
   @IsPositive()
+  @IsOptional()
   archiveSize?: number;
 }
 
