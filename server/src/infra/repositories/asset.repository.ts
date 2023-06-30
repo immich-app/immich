@@ -93,7 +93,6 @@ export class AssetRepository implements IAssetRepository {
         isVisible: true,
       },
       relations: {
-        albums: true,
         exifInfo: true,
       },
     });

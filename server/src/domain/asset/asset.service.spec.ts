@@ -261,10 +261,10 @@ describe(AssetService.name, () => {
           archiveSize: 30_000,
         }),
       ).resolves.toEqual({
-        totalSize: 251456,
+        totalSize: 251_456,
         archives: [
           { assetIds: ['asset-1', 'asset-2'], size: 105_000 },
-          { assetIds: ['asset-3', 'asset-4'], size: 146456 },
+          { assetIds: ['asset-3', 'asset-4'], size: 146_456 },
         ],
       });
     });

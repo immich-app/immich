@@ -31,6 +31,20 @@ export const addAssetsToAlbum = async (
 			return dto;
 		});
 
+const downloadBlob = (data: Blob, filename: string) => {
+	const url = URL.createObjectURL(data);
+
+	const anchor = document.createElement('a');
+	anchor.href = url;
+	anchor.download = filename;
+
+	document.body.appendChild(anchor);
+	anchor.click();
+	document.body.removeChild(anchor);
+
+	URL.revokeObjectURL(url);
+};
+
 export const downloadArchive = async (
 	fileName: string,
 	options: Omit<AssetApiGetDownloadInfoRequest, 'key'>,
@@ -72,16 +86,7 @@ export const downloadArchive = async (
 				}
 			);
 
-			const fileUrl = URL.createObjectURL(data);
-			const anchor = document.createElement('a');
-			anchor.href = fileUrl;
-			anchor.download = archiveName;
-
-			document.body.appendChild(anchor);
-			anchor.click();
-			document.body.removeChild(anchor);
-
-			URL.revokeObjectURL(fileUrl);
+			downloadBlob(data, archiveName);
 		} catch (e) {
 			handleError(e, 'Unable to download files');
 			clearDownload(downloadKey);
@@ -104,7 +109,7 @@ export const downloadFile = async (asset: AssetResponseDto, key?: string) => {
 		try {
 			updateDownload(filename, 0);
 
-			const { data, status } = await api.assetApi.downloadFile(
+			const { data } = await api.assetApi.downloadFile(
 				{ id: asset.id, key },
 				{
 					responseType: 'blob',
@@ -116,28 +121,11 @@ export const downloadFile = async (asset: AssetResponseDto, key?: string) => {
 				}
 			);
 
-			if (!(data instanceof Blob)) {
-				continue;
-			}
-
-			if (status === 200) {
-				const fileUrl = URL.createObjectURL(data);
-				const anchor = document.createElement('a');
-				anchor.href = fileUrl;
-				anchor.download = filename;
-
-				document.body.appendChild(anchor);
-				anchor.click();
-				document.body.removeChild(anchor);
-
-				URL.revokeObjectURL(fileUrl);
-
-				// Remove item from download list
-				setTimeout(() => clearDownload(filename), 2000);
-			}
+			downloadBlob(data, filename);
 		} catch (e) {
-			clearDownload(filename);
 			handleError(e, `Error downloading ${filename}`);
+		} finally {
+			setTimeout(() => clearDownload(filename), 3_000);
 		}
 	}
 };
