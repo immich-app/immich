@@ -50,6 +50,7 @@ dependencies:
   crypto: ^3.0.3 # TODO remove once native crypto is used on iOS
   wakelock: ^0.6.2
   flutter_thumbhash: 0.1.0+1
+  image_fade: 0.6.2
 
   openapi:
     path: openapi

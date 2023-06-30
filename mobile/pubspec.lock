@@ -591,6 +591,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.3.0"
+  image_fade:
+    dependency: "direct main"
+    description:
+      name: image_fade
+      sha256: "7296c9c53cd5de98e675ef1e27bdaa4035d6c3a45cf5b86094b2e545689b4ea6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.2"
   image_picker:
     dependency: "direct main"
     description:

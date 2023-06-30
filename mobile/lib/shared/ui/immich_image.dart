@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_thumbhash/flutter_thumbhash.dart';
+import 'package:image_fade/image_fade.dart';
 import 'package:immich_mobile/shared/models/asset.dart';
 import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
@@ -90,44 +91,36 @@ class ImmichImage extends StatelessWidget {
     }
     final String? token = Store.get(StoreKey.accessToken);
     final String thumbnailRequestUrl = getThumbnailUrl(asset, type: type);
-    return CachedNetworkImage(
-      imageUrl: thumbnailRequestUrl,
-      httpHeaders: {"Authorization": "Bearer $token"},
-      cacheKey: getThumbnailCacheKey(asset, type: type),
+    Widget placeholderWidget;
+    if (asset.thumbhash != null) {
+      placeholderWidget = FittedBox(
+        fit: BoxFit.fill,
+        child: Image(
+          image: ThumbHash.fromIntList(asset.thumbhash!).toImage(),
+        ),
+      );
+    } else if (useGrayBoxPlaceholder) {
+      placeholderWidget = const DecoratedBox(
+        decoration: BoxDecoration(color: Colors.grey),
+      );
+    } else {
+      placeholderWidget = Transform.scale(
+        scale: 0.2,
+        child: const CircularProgressIndicator(),
+      );
+    }
+
+    return ImageFade(
       width: width,
       height: height,
-      // keeping memCacheWidth, memCacheHeight, maxWidthDiskCache and
-      // maxHeightDiskCache = null allows to simply store the webp thumbnail
-      // from the server and use it for all rendered thumbnail sizes
+      image: CachedNetworkImageProvider(
+        thumbnailRequestUrl,
+        headers: {"Authorization": "Bearer $token"},
+        cacheKey: getThumbnailCacheKey(asset, type: type),
+      ),
       fit: fit,
-      fadeInDuration: const Duration(milliseconds: 250),
-      progressIndicatorBuilder: (context, url, downloadProgress) {
-        if (asset.thumbhash != null) {
-          return FittedBox(
-            fit: BoxFit.fill,
-            child: Image(
-              image: ThumbHash.fromIntList(asset.thumbhash!).toImage(),
-            ),
-          );
-        } else if (useGrayBoxPlaceholder) {
-          return const DecoratedBox(
-            decoration: BoxDecoration(color: Colors.grey),
-          );
-        }
-        return Transform.scale(
-          scale: 0.2,
-          child: CircularProgressIndicator.adaptive(
-            value: downloadProgress.progress,
-          ),
-        );
-      },
-      errorWidget: (context, url, error) {
-        if (error is HttpExceptionWithStatus &&
-            error.statusCode >= 400 &&
-            error.statusCode < 500) {
-          debugPrint("Evicting thumbnail '$url' from cache: $error");
-          CachedNetworkImage.evictFromCache(url);
-        }
+      placeholder: placeholderWidget,
+      errorBuilder: (context, error) {
         return Icon(
           Icons.image_not_supported_outlined,
           color: Theme.of(context).primaryColor,
