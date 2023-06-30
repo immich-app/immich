@@ -42,17 +42,18 @@
 	};
 
 	const deleteSelectedAlbum = async () => {
-		if (albumToDelete) {
-			try {
-				await deleteAlbum(albumToDelete);
-			} catch {
-				notificationController.show({
-					message: 'Error deleting album',
-					type: NotificationType.Error
-				});
-			} finally {
-				albumToDelete = null;
-			}
+		if (!albumToDelete) {
+			return;
+		}
+		try {
+			await deleteAlbum(albumToDelete);
+		} catch {
+			notificationController.show({
+				message: 'Error deleting album',
+				type: NotificationType.Error
+			});
+		} finally {
+			albumToDelete = null;
 		}
 	};
 

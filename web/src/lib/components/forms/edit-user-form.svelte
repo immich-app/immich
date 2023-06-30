@@ -171,8 +171,11 @@
 	<ConfirmDialogue
 		title="Reset Password"
 		confirmText="Reset"
-		prompt="Are you sure you want to reset this user's password?"
 		on:confirm={resetPassword}
 		on:cancel={() => (isShowResetPasswordConfirmation = false)}
-	/>
+	>
+		<svelte:fragment slot="prompt">
+			<p>Are you sure you want to reset <b>{user.firstName} {user.lastName}</b>'s password?</p>
+		</svelte:fragment>
+	</ConfirmDialogue>
 {/if}

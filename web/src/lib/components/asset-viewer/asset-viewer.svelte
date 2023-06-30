@@ -446,7 +446,10 @@
 			on:cancel={() => (isShowDeleteConfirmation = false)}
 		>
 			<svelte:fragment slot="prompt">
-				<p>Are you sure you want to delete this {getAssetType().toLowerCase()}? This will also remove it from the album(s) to which it belongs.</p>
+				<p>
+					Are you sure you want to delete this {getAssetType().toLowerCase()}?
+					This will also remove it from its album(s).
+				</p>
 				<p><b>You cannot undo this action!</b></p>
 			</svelte:fragment>
 		</ConfirmDialogue>

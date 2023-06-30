@@ -42,10 +42,21 @@
 
 {#if isShowConfirmation}
 	<ConfirmDialogue
-		title="Remove Assets"
+		title="Remove Asset{getAssets().size > 1 ? 's' : ''}"
 		confirmText="Remove"
-		prompt="Are you sure you want to remove the selected assets from the album?"
-		on:confirm={() => {removeFromAlbum}}
+		on:confirm={removeFromAlbum}
 		on:cancel={() => (isShowConfirmation = false)}
-	/>
+	>
+		<svelte:fragment slot="prompt">
+			<p>
+				Are you sure you want to remove
+				{#if getAssets().size > 1}
+					these <b>{getAssets().size}</b> assets
+				{:else}
+					this asset
+				{/if}
+				from the album?
+			</p>
+		</svelte:fragment>
+	</ConfirmDialogue>
 {/if}

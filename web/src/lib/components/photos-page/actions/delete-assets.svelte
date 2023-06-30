@@ -47,13 +47,20 @@
 
 {#if isShowConfirmation}
 	<ConfirmDialogue
-		title="Delete Assets"
+		title="Delete Asset{getAssets().size > 1 ? 's' : ''}"
 		confirmText="Delete"
 		on:confirm={handleDelete}
 		on:cancel={() => (isShowConfirmation = false)}
 	>
 		<svelte:fragment slot="prompt">
-			<p>Are you sure you want to delete these <b>{getAssets().size}</b> assets? This will also remove them from the album(s) to which they belong.</p>
+			<p>
+				Are you sure you want to delete
+				{#if getAssets().size > 1}
+					these <b>{getAssets().size}</b> assets? This will also remove them from their album(s).
+				{:else}
+					this asset? This will also remove it from its album(s).
+				{/if}
+			</p>
 			<p><b>You cannot undo this action!</b></p>
 		</svelte:fragment>
 	</ConfirmDialogue>
