@@ -38,7 +38,11 @@
 	};
 </script>
 
-<CircleIconButton title="Remove from album" on:click={() => (isShowConfirmation = true)} logo={DeleteOutline} />
+<CircleIconButton
+	title="Remove from album"
+	on:click={() => (isShowConfirmation = true)}
+	logo={DeleteOutline}
+/>
 
 {#if isShowConfirmation}
 	<ConfirmDialogue

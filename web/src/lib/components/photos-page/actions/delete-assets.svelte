@@ -32,7 +32,10 @@
 				}
 			}
 
-			notificationController.show({ message: `Deleted ${count}`, type: NotificationType.Info });
+			notificationController.show({
+				message: `Deleted ${count}`,
+				type: NotificationType.Info
+			});
 
 			clearSelect();
 		} catch (e) {
@@ -43,7 +46,11 @@
 	};
 </script>
 
-<CircleIconButton title="Delete" logo={DeleteOutline} on:click={() => (isShowConfirmation = true)} />
+<CircleIconButton
+	title="Delete"
+	logo={DeleteOutline}
+	on:click={() => (isShowConfirmation = true)}
+/>
 
 {#if isShowConfirmation}
 	<ConfirmDialogue

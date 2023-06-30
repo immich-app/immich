@@ -15,7 +15,10 @@
 	import { flip } from 'svelte/animate';
 	import Dropdown from '$lib/components/elements/dropdown.svelte';
 	import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
-	import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
+	import {
+		notificationController,
+		NotificationType
+	} from '$lib/components/shared-components/notification/notification';
 	import type { AlbumResponseDto } from '@api';
 
 	export let data: PageData;

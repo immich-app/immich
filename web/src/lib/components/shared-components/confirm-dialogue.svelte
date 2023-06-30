@@ -44,9 +44,18 @@
 
 			<div class="flex w-full px-4 gap-4 mt-4">
 				{#if !hideCancelButton}
-					<Button color={cancelColor} fullwidth on:click={handleCancel}>{cancelText}</Button>
+					<Button color={cancelColor} fullwidth on:click={handleCancel}>
+						{cancelText}
+					</Button>
 				{/if}
-				<Button color={confirmColor} fullwidth on:click={handleConfirm} disabled={isConfirmButtonDisabled}>{confirmText}</Button>
+				<Button
+					color={confirmColor}
+					fullwidth
+					on:click={handleConfirm}
+					disabled={isConfirmButtonDisabled}
+				>
+					{confirmText}
+				</Button>
 			</div>
 		</div>
 	</div>

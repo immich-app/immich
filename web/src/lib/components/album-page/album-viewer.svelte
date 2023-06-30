@@ -261,7 +261,10 @@
 						onDownloadProgress: function (progressEvent) {
 							const request = this as XMLHttpRequest;
 							if (!total) {
-								total = Number(request.getResponseHeader('X-Immich-Content-Length-Hint')) || 0;
+								total =
+									Number(
+										request.getResponseHeader('X-Immich-Content-Length-Hint')
+									) || 0;
 							}
 
 							if (total) {
@@ -383,7 +386,9 @@
 						href="https://immich.app"
 					>
 						<ImmichLogo height={30} width={30} />
-						<h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">
+						<h1
+							class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary"
+						>
 							IMMICH
 						</h1>
 					</a>
@@ -412,7 +417,11 @@
 							on:click={() => (isShowShareUserSelection = true)}
 							logo={ShareVariantOutline}
 						/>
-						<CircleIconButton title="Remove album" on:click={() => (isShowDeleteConfirmation = true)} logo={DeleteOutline} />
+						<CircleIconButton
+							title="Remove album"
+							on:click={() => (isShowDeleteConfirmation = true)}
+							logo={DeleteOutline}
+						/>
 					{/if}
 				{/if}
 
@@ -487,7 +496,10 @@
 		/>
 
 		{#if album.assetCount > 0}
-			<span class="flex gap-2 my-4 text-sm text-gray-500 font-medium" data-testid="album-details">
+			<span
+				class="flex gap-2 my-4 text-sm text-gray-500 font-medium"
+				data-testid="album-details"
+			>
 				<p class="">{getDateRange()}</p>
 				<p>·</p>
 				<p>{album.assetCount} items</p>
@@ -520,7 +532,10 @@
 			/>
 		{:else}
 			<!-- Album is empty - Show asset selectection buttons -->
-			<section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
+			<section
+				id="empty-album"
+				class=" mt-[200px] flex place-content-center place-items-center"
+			>
 				<div class="w-[300px]">
 					<p class="text-xs dark:text-immich-dark-fg">ADD PHOTOS</p>
 					<button
