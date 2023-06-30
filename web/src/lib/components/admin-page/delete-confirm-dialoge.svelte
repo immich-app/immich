@@ -23,15 +23,13 @@
 	};
 </script>
 
-<ConfirmDialogue
-	title="Delete User"
-	confirmText="Delete"
-	on:confirm={deleteUser}
-	on:cancel
->
+<ConfirmDialogue title="Delete User" confirmText="Delete" on:confirm={deleteUser} on:cancel>
 	<svelte:fragment slot="prompt">
 		<div class="flex flex-col gap-4">
-			<p><b>{user.firstName} {user.lastName}</b>'s account and assets will be permanently deleted after 7 days.</p>
+			<p>
+				<b>{user.firstName} {user.lastName}</b>'s account and assets will be permanently
+				deleted after 7 days.
+			</p>
 			<p>Are you sure you want to continue?</p>
 		</div>
 	</svelte:fragment>
