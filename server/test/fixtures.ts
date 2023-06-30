@@ -262,6 +262,9 @@ export const assetEntityStub = {
     faces: [],
     sidecarPath: null,
     isReadOnly: false,
+    exifInfo: {
+      fileSizeInByte: 123_000,
+    } as ExifEntity,
   }),
   noThumbhash: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -324,6 +327,9 @@ export const assetEntityStub = {
     originalFileName: 'asset-id.ext',
     faces: [],
     sidecarPath: null,
+    exifInfo: {
+      fileSizeInByte: 5_000,
+    } as ExifEntity,
   }),
   video: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -355,6 +361,9 @@ export const assetEntityStub = {
     sharedLinks: [],
     faces: [],
     sidecarPath: null,
+    exifInfo: {
+      fileSizeInByte: 100_000,
+    } as ExifEntity,
   }),
   livePhotoMotionAsset: Object.freeze({
     id: 'live-photo-motion-asset',
@@ -364,6 +373,9 @@ export const assetEntityStub = {
     isVisible: false,
     fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
     fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
+    exifInfo: {
+      fileSizeInByte: 100_000,
+    },
   } as AssetEntity),
 
   livePhotoStillAsset: Object.freeze({
@@ -375,6 +387,9 @@ export const assetEntityStub = {
     isVisible: true,
     fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
     fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
+    exifInfo: {
+      fileSizeInByte: 25_000,
+    },
   } as AssetEntity),
 
   withLocation: Object.freeze<AssetEntity>({
@@ -410,6 +425,7 @@ export const assetEntityStub = {
     exifInfo: {
       latitude: 100,
       longitude: 100,
+      fileSizeInByte: 23_456,
     } as ExifEntity,
   }),
   sidecar: Object.freeze<AssetEntity>({

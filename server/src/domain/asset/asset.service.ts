@@ -58,42 +58,11 @@ export class AssetService {
   }
 
   async getDownloadInfo(authUser: AuthUserDto, dto: DownloadDto): Promise<DownloadResponseDto> {
-    const MAX_ARCHIVE_FILES = 1000;
-    const MAX_ARCHIVE_SIZE = HumanReadableSize.MiB * 500;
-    const PAGE_SIZE = 1000;
-
-    let assetPagination: AsyncGenerator<AssetEntity[]> | null = null;
-
-    if (dto.assetIds) {
-      const assetIds = dto.assetIds;
-      await this.access.requirePermission(authUser, Permission.ASSET_DOWNLOAD, assetIds);
-      const assets = await this.assetRepository.getByIds(assetIds);
-      assetPagination = (async function* () {
-        yield assets;
-      })();
-    }
-
-    if (dto.albumId) {
-      const albumId = dto.albumId;
-      await this.access.requirePermission(authUser, Permission.ALBUM_DOWNLOAD, albumId);
-      assetPagination = usePagination(PAGE_SIZE, (pagination) =>
-        this.assetRepository.getByAlbumId(pagination, albumId),
-      );
-    }
-
-    if (dto.userId) {
-      const userId = dto.userId;
-      await this.access.requirePermission(authUser, Permission.LIBRARY_DOWNLOAD, userId);
-      assetPagination = usePagination(PAGE_SIZE, (pagination) => this.assetRepository.getByUserId(pagination, userId));
-    }
-
-    if (!assetPagination) {
-      throw new BadRequestException('No assets');
-    }
-
+    const targetSize = dto.archiveSize || HumanReadableSize.MiB * 500;
     const archives: DownloadArchiveInfo[] = [];
     let archive: DownloadArchiveInfo = { size: 0, assetIds: [] };
 
+    const assetPagination = await this.getDownloadAssets(authUser, dto);
     for await (const assets of assetPagination) {
       // motion part of live photos
       const motionIds = assets.map((asset) => asset.livePhotoVideoId).filter<string>((id): id is string => !!id);
@@ -105,7 +74,7 @@ export class AssetService {
         archive.size += Number(asset.exifInfo?.fileSizeInByte || 0);
         archive.assetIds.push(asset.id);
 
-        if (archive.assetIds.length > MAX_ARCHIVE_FILES || archive.size > MAX_ARCHIVE_SIZE) {
+        if (archive.size > targetSize) {
           archives.push(archive);
           archive = { size: 0, assetIds: [] };
         }
@@ -126,9 +95,7 @@ export class AssetService {
     await this.access.requirePermission(authUser, Permission.ASSET_DOWNLOAD, dto.assetIds);
 
     const zip = this.storageRepository.createZipStream();
-
     const assets = await this.assetRepository.getByIds(dto.assetIds);
-
     const paths: Record<string, boolean> = {};
 
     for (const { originalPath, originalFileName } of assets) {
@@ -148,5 +115,32 @@ export class AssetService {
     zip.finalize();
 
     return { stream: zip.stream };
+  }
+
+  private async getDownloadAssets(authUser: AuthUserDto, dto: DownloadDto): Promise<AsyncGenerator<AssetEntity[]>> {
+    const PAGINATION_SIZE = 2500;
+
+    if (dto.assetIds) {
+      const assetIds = dto.assetIds;
+      await this.access.requirePermission(authUser, Permission.ASSET_DOWNLOAD, assetIds);
+      const assets = await this.assetRepository.getByIds(assetIds);
+      return (async function* () {
+        yield assets;
+      })();
+    }
+
+    if (dto.albumId) {
+      const albumId = dto.albumId;
+      await this.access.requirePermission(authUser, Permission.ALBUM_DOWNLOAD, albumId);
+      return usePagination(PAGINATION_SIZE, (pagination) => this.assetRepository.getByAlbumId(pagination, albumId));
+    }
+
+    if (dto.userId) {
+      const userId = dto.userId;
+      await this.access.requirePermission(authUser, Permission.LIBRARY_DOWNLOAD, userId);
+      return usePagination(PAGINATION_SIZE, (pagination) => this.assetRepository.getByUserId(pagination, userId));
+    }
+
+    throw new BadRequestException('assetIds, albumId, or userId is required');
   }
 }

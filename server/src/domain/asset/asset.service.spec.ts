@@ -12,7 +12,18 @@ import { Readable } from 'stream';
 import { IStorageRepository } from '../storage';
 import { IAssetRepository } from './asset.repository';
 import { AssetService } from './asset.service';
+import { DownloadResponseDto } from './index';
 import { mapAsset } from './response-dto';
+
+const downloadResponse: DownloadResponseDto = {
+  totalSize: 105_000,
+  archives: [
+    {
+      assetIds: ['asset-id', 'asset-id'],
+      size: 105_000,
+    },
+  ],
+};
 
 describe(AssetService.name, () => {
   let sut: AssetService;
@@ -189,6 +200,94 @@ describe(AssetService.name, () => {
       expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
       expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
       expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, 'upload/library/IMG_123.jpg', 'IMG_123+1.jpg');
+    });
+  });
+
+  describe('getDownloadInfo', () => {
+    it('should throw an error for an invalid dto', async () => {
+      await expect(sut.getDownloadInfo(authStub.admin, {})).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should return a list of archives (assetIds)', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      assetMock.getByIds.mockResolvedValue([assetEntityStub.image, assetEntityStub.video]);
+
+      const assetIds = ['asset-1', 'asset-2'];
+      await expect(sut.getDownloadInfo(authStub.admin, { assetIds })).resolves.toEqual(downloadResponse);
+
+      expect(assetMock.getByIds).toHaveBeenCalledWith(['asset-1', 'asset-2']);
+    });
+
+    it('should return a list of archives (albumId)', async () => {
+      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
+      assetMock.getByAlbumId.mockResolvedValue({
+        items: [assetEntityStub.image, assetEntityStub.video],
+        hasNextPage: false,
+      });
+
+      await expect(sut.getDownloadInfo(authStub.admin, { albumId: 'album-1' })).resolves.toEqual(downloadResponse);
+
+      expect(accessMock.album.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, 'album-1');
+      expect(assetMock.getByAlbumId).toHaveBeenCalledWith({ take: 2500, skip: 0 }, 'album-1');
+    });
+
+    it('should return a list of archives (userId)', async () => {
+      assetMock.getByUserId.mockResolvedValue({
+        items: [assetEntityStub.image, assetEntityStub.video],
+        hasNextPage: false,
+      });
+
+      await expect(sut.getDownloadInfo(authStub.admin, { userId: authStub.admin.id })).resolves.toEqual(
+        downloadResponse,
+      );
+
+      expect(assetMock.getByUserId).toHaveBeenCalledWith({ take: 2500, skip: 0 }, authStub.admin.id);
+    });
+
+    it('should split archives by size', async () => {
+      assetMock.getByUserId.mockResolvedValue({
+        items: [
+          { ...assetEntityStub.image, id: 'asset-1' },
+          { ...assetEntityStub.video, id: 'asset-2' },
+          { ...assetEntityStub.withLocation, id: 'asset-3' },
+          { ...assetEntityStub.noWebpPath, id: 'asset-4' },
+        ],
+        hasNextPage: false,
+      });
+
+      await expect(
+        sut.getDownloadInfo(authStub.admin, {
+          userId: authStub.admin.id,
+          archiveSize: 30_000,
+        }),
+      ).resolves.toEqual({
+        totalSize: 251456,
+        archives: [
+          { assetIds: ['asset-1', 'asset-2'], size: 105_000 },
+          { assetIds: ['asset-3', 'asset-4'], size: 146456 },
+        ],
+      });
+    });
+
+    it('should include the video portion of a live photo', async () => {
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
+      when(assetMock.getByIds)
+        .calledWith([assetEntityStub.livePhotoStillAsset.id])
+        .mockResolvedValue([assetEntityStub.livePhotoStillAsset]);
+      when(assetMock.getByIds)
+        .calledWith([assetEntityStub.livePhotoMotionAsset.id])
+        .mockResolvedValue([assetEntityStub.livePhotoMotionAsset]);
+
+      const assetIds = [assetEntityStub.livePhotoStillAsset.id];
+      await expect(sut.getDownloadInfo(authStub.admin, { assetIds })).resolves.toEqual({
+        totalSize: 125_000,
+        archives: [
+          {
+            assetIds: [assetEntityStub.livePhotoStillAsset.id, assetEntityStub.livePhotoMotionAsset.id],
+            size: 125_000,
+          },
+        ],
+      });
     });
   });
 });

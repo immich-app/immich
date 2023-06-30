@@ -1121,6 +1121,14 @@
             }
           },
           {
+            "name": "archiveSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
             "name": "key",
             "required": false,
             "in": "query",
