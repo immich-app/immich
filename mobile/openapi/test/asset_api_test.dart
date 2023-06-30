@@ -43,20 +43,13 @@ void main() {
       // TODO
     });
 
+    //Future<MultipartFile> downloadArchive(AssetIdsDto assetIdsDto, { String key }) async
+    test('test downloadArchive', () async {
+      // TODO
+    });
+
     //Future<MultipartFile> downloadFile(String id, { String key }) async
     test('test downloadFile', () async {
-      // TODO
-    });
-
-    //Future<MultipartFile> downloadFiles(DownloadFilesDto downloadFilesDto, { String key }) async
-    test('test downloadFiles', () async {
-      // TODO
-    });
-
-    // Current this is not used in any UI element
-    //
-    //Future<MultipartFile> downloadLibrary({ String name, num skip, String key }) async
-    test('test downloadLibrary', () async {
       // TODO
     });
 
@@ -111,6 +104,11 @@ void main() {
 
     //Future<List<CuratedObjectsResponseDto>> getCuratedObjects() async
     test('test getCuratedObjects', () async {
+      // TODO
+    });
+
+    //Future<DownloadResponseDto> getDownloadInfo({ List<String> assetIds, String albumId, String userId, num archiveSize, String key }) async
+    test('test getDownloadInfo', () async {
       // TODO
     });
 

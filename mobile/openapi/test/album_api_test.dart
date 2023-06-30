@@ -37,11 +37,6 @@ void main() {
       // TODO
     });
 
-    //Future<MultipartFile> downloadArchive(String id, { String name, num skip, String key }) async
-    test('test downloadArchive', () async {
-      // TODO
-    });
-
     //Future<AlbumCountResponseDto> getAlbumCount() async
     test('test getAlbumCount', () async {
       // TODO

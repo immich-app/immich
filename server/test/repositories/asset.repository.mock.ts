@@ -4,6 +4,8 @@ export const newAssetRepositoryMock = (): jest.Mocked<IAssetRepository> => {
   return {
     getByDate: jest.fn(),
     getByIds: jest.fn().mockResolvedValue([]),
+    getByAlbumId: jest.fn(),
+    getByUserId: jest.fn(),
     getWithout: jest.fn(),
     getWith: jest.fn(),
     getFirstAssetForAlbumId: jest.fn(),

@@ -9,3 +9,18 @@ export const isDownloading = derived(downloadAssets, ($downloadAssets) => {
 
 	return true;
 });
+
+const update = (key: string, value: number | null) => {
+	downloadAssets.update((state) => {
+		const newState = { ...state };
+		if (value === null) {
+			delete newState[key];
+		} else {
+			newState[key] = value;
+		}
+		return newState;
+	});
+};
+
+export const clearDownload = (key: string) => update(key, null);
+export const updateDownload = (key: string, value: number) => update(key, value);

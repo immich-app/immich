@@ -3,7 +3,6 @@
 	import { afterNavigate, goto } from '$app/navigation';
 	import { albumAssetSelectionStore } from '$lib/stores/album-asset-selection.store';
 	import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
-	import { downloadAssets } from '$lib/stores/download';
 	import { locale } from '$lib/stores/preferences.store';
 	import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
 	import {
@@ -46,6 +45,7 @@
 	import UserSelectionModal from './user-selection-modal.svelte';
 	import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
 	import { handleError } from '../../utils/handle-error';
+	import { downloadArchive } from '../../utils/asset-utils';
 
 	export let album: AlbumResponseDto;
 	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
@@ -240,78 +240,12 @@
 	};
 
 	const downloadAlbum = async () => {
-		try {
-			let skip = 0;
-			let count = 0;
-			let done = false;
-
-			while (!done) {
-				count++;
-
-				const fileName = album.albumName + `${count === 1 ? '' : count}.zip`;
-
-				$downloadAssets[fileName] = 0;
-
-				let total = 0;
-
-				const { data, status, headers } = await api.albumApi.downloadArchive(
-					{ id: album.id, skip: skip || undefined, key: sharedLink?.key },
-					{
-						responseType: 'blob',
-						onDownloadProgress: function (progressEvent) {
-							const request = this as XMLHttpRequest;
-							if (!total) {
-								total = Number(request.getResponseHeader('X-Immich-Content-Length-Hint')) || 0;
-							}
-
-							if (total) {
-								const current = progressEvent.loaded;
-								$downloadAssets[fileName] = Math.floor((current / total) * 100);
-							}
-						}
-					}
-				);
-
-				const isNotComplete = headers['x-immich-archive-complete'] === 'false';
-				const fileCount = Number(headers['x-immich-archive-file-count']) || 0;
-				if (isNotComplete && fileCount > 0) {
-					skip += fileCount;
-				} else {
-					done = true;
-				}
-
-				if (!(data instanceof Blob)) {
-					return;
-				}
-
-				if (status === 200) {
-					const fileUrl = URL.createObjectURL(data);
-					const anchor = document.createElement('a');
-					anchor.href = fileUrl;
-					anchor.download = fileName;
-
-					document.body.appendChild(anchor);
-					anchor.click();
-					document.body.removeChild(anchor);
-
-					URL.revokeObjectURL(fileUrl);
-
-					// Remove item from download list
-					setTimeout(() => {
-						const copy = $downloadAssets;
-						delete copy[fileName];
-						$downloadAssets = copy;
-					}, 2000);
-				}
-			}
-		} catch (e) {
-			$downloadAssets = {};
-			console.error('Error downloading file ', e);
-			notificationController.show({
-				type: NotificationType.Error,
-				message: 'Error downloading file, check console for more details.'
-			});
-		}
+		await downloadArchive(
+			`${album.albumName}.zip`,
+			{ albumId: album.id },
+			undefined,
+			sharedLink?.key
+		);
 	};
 
 	const showAlbumOptionsMenu = ({ x, y }: MouseEvent) => {
@@ -358,7 +292,7 @@
 		>
 			<CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll} />
 			{#if sharedLink?.allowDownload || !isPublicShared}
-				<DownloadAction filename={album.albumName} sharedLinkKey={sharedLink?.key} />
+				<DownloadAction filename="{album.albumName}.zip" sharedLinkKey={sharedLink?.key} />
 			{/if}
 			{#if isOwned}
 				<RemoveFromAlbum bind:album />

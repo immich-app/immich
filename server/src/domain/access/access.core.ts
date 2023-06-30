@@ -16,6 +16,7 @@ export enum Permission {
   ALBUM_UPDATE = 'album.update',
   ALBUM_DELETE = 'album.delete',
   ALBUM_SHARE = 'album.share',
+  ALBUM_DOWNLOAD = 'album.download',
 
   LIBRARY_READ = 'library.read',
   LIBRARY_DOWNLOAD = 'library.download',
@@ -67,6 +68,10 @@ export class AccessCore {
       case Permission.ASSET_SHARE:
         // TODO: fix this to not use authUser.id for shared link access control
         return this.repository.asset.hasOwnerAccess(authUser.id, id);
+
+      case Permission.ALBUM_DOWNLOAD: {
+        return !!authUser.isAllowDownload && (await this.repository.album.hasSharedLinkAccess(sharedLinkId, id));
+      }
 
       // case Permission.ALBUM_READ:
       //   return this.repository.album.hasSharedLinkAccess(sharedLinkId, id);
@@ -121,6 +126,12 @@ export class AccessCore {
 
       case Permission.ALBUM_SHARE:
         return this.repository.album.hasOwnerAccess(authUser.id, id);
+
+      case Permission.ALBUM_DOWNLOAD:
+        return (
+          (await this.repository.album.hasOwnerAccess(authUser.id, id)) ||
+          (await this.repository.album.hasSharedAlbumAccess(authUser.id, id))
+        );
 
       case Permission.LIBRARY_READ:
         return authUser.id === id || (await this.repository.library.hasPartnerAccess(authUser.id, id));

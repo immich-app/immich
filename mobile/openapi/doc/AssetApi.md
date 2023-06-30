@@ -13,9 +13,8 @@ Method | HTTP request | Description
 [**checkDuplicateAsset**](AssetApi.md#checkduplicateasset) | **POST** /asset/check | 
 [**checkExistingAssets**](AssetApi.md#checkexistingassets) | **POST** /asset/exist | 
 [**deleteAsset**](AssetApi.md#deleteasset) | **DELETE** /asset | 
-[**downloadFile**](AssetApi.md#downloadfile) | **GET** /asset/download/{id} | 
-[**downloadFiles**](AssetApi.md#downloadfiles) | **POST** /asset/download-files | 
-[**downloadLibrary**](AssetApi.md#downloadlibrary) | **GET** /asset/download-library | 
+[**downloadArchive**](AssetApi.md#downloadarchive) | **POST** /asset/download | 
+[**downloadFile**](AssetApi.md#downloadfile) | **POST** /asset/download/{id} | 
 [**getAllAssets**](AssetApi.md#getallassets) | **GET** /asset | 
 [**getArchivedAssetCountByUserId**](AssetApi.md#getarchivedassetcountbyuserid) | **GET** /asset/stat/archive | 
 [**getAssetById**](AssetApi.md#getassetbyid) | **GET** /asset/assetById/{id} | 
@@ -26,6 +25,7 @@ Method | HTTP request | Description
 [**getAssetThumbnail**](AssetApi.md#getassetthumbnail) | **GET** /asset/thumbnail/{id} | 
 [**getCuratedLocations**](AssetApi.md#getcuratedlocations) | **GET** /asset/curated-locations | 
 [**getCuratedObjects**](AssetApi.md#getcuratedobjects) | **GET** /asset/curated-objects | 
+[**getDownloadInfo**](AssetApi.md#getdownloadinfo) | **GET** /asset/download | 
 [**getMapMarkers**](AssetApi.md#getmapmarkers) | **GET** /asset/map-marker | 
 [**getMemoryLane**](AssetApi.md#getmemorylane) | **GET** /asset/memory-lane | 
 [**getUserAssetsByDeviceId**](AssetApi.md#getuserassetsbydeviceid) | **GET** /asset/{deviceId} | 
@@ -264,6 +264,63 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **downloadArchive**
+> MultipartFile downloadArchive(assetIdsDto, key)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final assetIdsDto = AssetIdsDto(); // AssetIdsDto | 
+final key = key_example; // String | 
+
+try {
+    final result = api_instance.downloadArchive(assetIdsDto, key);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->downloadArchive: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **assetIdsDto** | [**AssetIdsDto**](AssetIdsDto.md)|  | 
+ **key** | **String**|  | [optional] 
+
+### Return type
+
+[**MultipartFile**](MultipartFile.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/octet-stream
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **downloadFile**
 > MultipartFile downloadFile(id, key)
 
@@ -304,124 +361,6 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **String**|  | 
- **key** | **String**|  | [optional] 
-
-### Return type
-
-[**MultipartFile**](MultipartFile.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/octet-stream
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **downloadFiles**
-> MultipartFile downloadFiles(downloadFilesDto, key)
-
-
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = AssetApi();
-final downloadFilesDto = DownloadFilesDto(); // DownloadFilesDto | 
-final key = key_example; // String | 
-
-try {
-    final result = api_instance.downloadFiles(downloadFilesDto, key);
-    print(result);
-} catch (e) {
-    print('Exception when calling AssetApi->downloadFiles: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **downloadFilesDto** | [**DownloadFilesDto**](DownloadFilesDto.md)|  | 
- **key** | **String**|  | [optional] 
-
-### Return type
-
-[**MultipartFile**](MultipartFile.md)
-
-### Authorization
-
-[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/octet-stream
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **downloadLibrary**
-> MultipartFile downloadLibrary(name, skip, key)
-
-
-
-Current this is not used in any UI element
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-// TODO Configure API key authorization: cookie
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
-// TODO Configure API key authorization: api_key
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
-// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
-// TODO Configure HTTP Bearer authorization: bearer
-// Case 1. Use String Token
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
-// Case 2. Use Function which generate token.
-// String yourTokenGeneratorFunction() { ... }
-//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
-
-final api_instance = AssetApi();
-final name = name_example; // String | 
-final skip = 8.14; // num | 
-final key = key_example; // String | 
-
-try {
-    final result = api_instance.downloadLibrary(name, skip, key);
-    print(result);
-} catch (e) {
-    print('Exception when calling AssetApi->downloadLibrary: $e\n');
-}
-```
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **name** | **String**|  | [optional] 
- **skip** | **num**|  | [optional] 
  **key** | **String**|  | [optional] 
 
 ### Return type
@@ -977,6 +916,69 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**List<CuratedObjectsResponseDto>**](CuratedObjectsResponseDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie), [api_key](../README.md#api_key), [bearer](../README.md#bearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getDownloadInfo**
+> DownloadResponseDto getDownloadInfo(assetIds, albumId, userId, archiveSize, key)
+
+
+
+### Example
+```dart
+import 'package:openapi/api.dart';
+// TODO Configure API key authorization: cookie
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('cookie').apiKeyPrefix = 'Bearer';
+// TODO Configure API key authorization: api_key
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKey = 'YOUR_API_KEY';
+// uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//defaultApiClient.getAuthentication<ApiKeyAuth>('api_key').apiKeyPrefix = 'Bearer';
+// TODO Configure HTTP Bearer authorization: bearer
+// Case 1. Use String Token
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken('YOUR_ACCESS_TOKEN');
+// Case 2. Use Function which generate token.
+// String yourTokenGeneratorFunction() { ... }
+//defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
+
+final api_instance = AssetApi();
+final assetIds = []; // List<String> | 
+final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final archiveSize = 8.14; // num | 
+final key = key_example; // String | 
+
+try {
+    final result = api_instance.getDownloadInfo(assetIds, albumId, userId, archiveSize, key);
+    print(result);
+} catch (e) {
+    print('Exception when calling AssetApi->getDownloadInfo: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **assetIds** | [**List<String>**](String.md)|  | [optional] [default to const []]
+ **albumId** | **String**|  | [optional] 
+ **userId** | **String**|  | [optional] 
+ **archiveSize** | **num**|  | [optional] 
+ **key** | **String**|  | [optional] 
+
+### Return type
+
+[**DownloadResponseDto**](DownloadResponseDto.md)
 
 ### Authorization
 

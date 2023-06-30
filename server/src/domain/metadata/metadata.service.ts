@@ -42,7 +42,7 @@ export class MetadataService {
     }
 
     const sidecarPath = `${asset.originalPath}.xmp`;
-    const exists = await this.storageRepository.checkFileExists(sidecarPath, constants.W_OK);
+    const exists = await this.storageRepository.checkFileExists(sidecarPath, constants.R_OK);
     if (!exists) {
       return false;
     }

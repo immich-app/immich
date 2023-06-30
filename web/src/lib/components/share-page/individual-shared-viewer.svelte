@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { bulkDownload } from '$lib/utils/asset-utils';
 	import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
+	import { downloadArchive } from '$lib/utils/asset-utils';
 	import { api, AssetResponseDto, SharedLinkResponseDto } from '@api';
 	import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
 	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
@@ -38,7 +38,12 @@
 	});
 
 	const downloadAssets = async () => {
-		await bulkDownload('immich-shared', assets, undefined, sharedLink.key);
+		await downloadArchive(
+			`immich-shared.zip`,
+			{ assetIds: assets.map((asset) => asset.id) },
+			undefined,
+			sharedLink.key
+		);
 	};
 
 	const handleUploadAssets = async (files: File[] = []) => {
@@ -78,7 +83,7 @@
 		<AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
 			<CircleIconButton title="Select all" logo={SelectAll} on:click={handleSelectAll} />
 			{#if sharedLink?.allowDownload}
-				<DownloadAction filename="immich-shared" sharedLinkKey={sharedLink.key} />
+				<DownloadAction filename="immich-shared.zip" sharedLinkKey={sharedLink.key} />
 			{/if}
 			{#if isOwned}
 				<RemoveFromSharedLink bind:sharedLink />
