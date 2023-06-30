@@ -929,7 +929,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getDownloadInfo**
-> DownloadResponseDto getDownloadInfo(assetIds, albumId, userId, key)
+> DownloadResponseDto getDownloadInfo(assetIds, albumId, userId, archiveSize, key)
 
 
 
@@ -955,10 +955,11 @@ final api_instance = AssetApi();
 final assetIds = []; // List<String> | 
 final albumId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final archiveSize = 8.14; // num | 
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.getDownloadInfo(assetIds, albumId, userId, key);
+    final result = api_instance.getDownloadInfo(assetIds, albumId, userId, archiveSize, key);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->getDownloadInfo: $e\n');
@@ -972,6 +973,7 @@ Name | Type | Description  | Notes
  **assetIds** | [**List<String>**](String.md)|  | [optional] [default to const []]
  **albumId** | **String**|  | [optional] 
  **userId** | **String**|  | [optional] 
+ **archiveSize** | **num**|  | [optional] 
  **key** | **String**|  | [optional] 
 
 ### Return type

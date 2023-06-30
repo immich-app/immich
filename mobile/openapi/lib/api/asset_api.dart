@@ -884,8 +884,10 @@ class AssetApi {
   ///
   /// * [String] userId:
   ///
+  /// * [num] archiveSize:
+  ///
   /// * [String] key:
-  Future<Response> getDownloadInfoWithHttpInfo({ List<String>? assetIds, String? albumId, String? userId, String? key, }) async {
+  Future<Response> getDownloadInfoWithHttpInfo({ List<String>? assetIds, String? albumId, String? userId, num? archiveSize, String? key, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/download';
 
@@ -904,6 +906,9 @@ class AssetApi {
     }
     if (userId != null) {
       queryParams.addAll(_queryParams('', 'userId', userId));
+    }
+    if (archiveSize != null) {
+      queryParams.addAll(_queryParams('', 'archiveSize', archiveSize));
     }
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
@@ -931,9 +936,11 @@ class AssetApi {
   ///
   /// * [String] userId:
   ///
+  /// * [num] archiveSize:
+  ///
   /// * [String] key:
-  Future<DownloadResponseDto?> getDownloadInfo({ List<String>? assetIds, String? albumId, String? userId, String? key, }) async {
-    final response = await getDownloadInfoWithHttpInfo( assetIds: assetIds, albumId: albumId, userId: userId, key: key, );
+  Future<DownloadResponseDto?> getDownloadInfo({ List<String>? assetIds, String? albumId, String? userId, num? archiveSize, String? key, }) async {
+    final response = await getDownloadInfoWithHttpInfo( assetIds: assetIds, albumId: albumId, userId: userId, archiveSize: archiveSize, key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

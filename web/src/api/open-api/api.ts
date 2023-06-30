@@ -5214,11 +5214,12 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {Array<string>} [assetIds] 
          * @param {string} [albumId] 
          * @param {string} [userId] 
+         * @param {number} [archiveSize] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getDownloadInfo: async (assetIds?: Array<string>, albumId?: string, userId?: string, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getDownloadInfo: async (assetIds?: Array<string>, albumId?: string, userId?: string, archiveSize?: number, key?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/asset/download`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -5250,6 +5251,10 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
 
             if (userId !== undefined) {
                 localVarQueryParameter['userId'] = userId;
+            }
+
+            if (archiveSize !== undefined) {
+                localVarQueryParameter['archiveSize'] = archiveSize;
             }
 
             if (key !== undefined) {
@@ -5920,12 +5925,13 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {Array<string>} [assetIds] 
          * @param {string} [albumId] 
          * @param {string} [userId] 
+         * @param {number} [archiveSize] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getDownloadInfo(assetIds?: Array<string>, albumId?: string, userId?: string, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DownloadResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getDownloadInfo(assetIds, albumId, userId, key, options);
+        async getDownloadInfo(assetIds?: Array<string>, albumId?: string, userId?: string, archiveSize?: number, key?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DownloadResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getDownloadInfo(assetIds, albumId, userId, archiveSize, key, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -6193,12 +6199,13 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @param {Array<string>} [assetIds] 
          * @param {string} [albumId] 
          * @param {string} [userId] 
+         * @param {number} [archiveSize] 
          * @param {string} [key] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getDownloadInfo(assetIds?: Array<string>, albumId?: string, userId?: string, key?: string, options?: any): AxiosPromise<DownloadResponseDto> {
-            return localVarFp.getDownloadInfo(assetIds, albumId, userId, key, options).then((request) => request(axios, basePath));
+        getDownloadInfo(assetIds?: Array<string>, albumId?: string, userId?: string, archiveSize?: number, key?: string, options?: any): AxiosPromise<DownloadResponseDto> {
+            return localVarFp.getDownloadInfo(assetIds, albumId, userId, archiveSize, key, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6552,6 +6559,13 @@ export interface AssetApiGetDownloadInfoRequest {
      * @memberof AssetApiGetDownloadInfo
      */
     readonly userId?: string
+
+    /**
+     * 
+     * @type {number}
+     * @memberof AssetApiGetDownloadInfo
+     */
+    readonly archiveSize?: number
 
     /**
      * 
@@ -6999,7 +7013,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public getDownloadInfo(requestParameters: AssetApiGetDownloadInfoRequest = {}, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).getDownloadInfo(requestParameters.assetIds, requestParameters.albumId, requestParameters.userId, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).getDownloadInfo(requestParameters.assetIds, requestParameters.albumId, requestParameters.userId, requestParameters.archiveSize, requestParameters.key, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
