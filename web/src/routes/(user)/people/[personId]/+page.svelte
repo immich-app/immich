@@ -67,7 +67,7 @@
 		</AssetSelectContextMenu>
 		<DeleteAssets {onAssetDelete} />
 		<AssetSelectContextMenu icon={DotsVertical} title="Add">
-			<DownloadAction menuItem />
+			<DownloadAction menuItem filename="{data.person.name || 'immich'}.zip" />
 			<FavoriteAction menuItem removeFavorite={isAllFavorite} />
 			<ArchiveAction
 				menuItem

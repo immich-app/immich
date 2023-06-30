@@ -45,7 +45,8 @@ doc/CuratedObjectsResponseDto.md
 doc/DeleteAssetDto.md
 doc/DeleteAssetResponseDto.md
 doc/DeleteAssetStatus.md
-doc/DownloadFilesDto.md
+doc/DownloadArchiveInfo.md
+doc/DownloadResponseDto.md
 doc/ExifResponseDto.md
 doc/GetAssetByTimeBucketDto.md
 doc/GetAssetCountByTimeBucketDto.md
@@ -178,7 +179,8 @@ lib/model/curated_objects_response_dto.dart
 lib/model/delete_asset_dto.dart
 lib/model/delete_asset_response_dto.dart
 lib/model/delete_asset_status.dart
-lib/model/download_files_dto.dart
+lib/model/download_archive_info.dart
+lib/model/download_response_dto.dart
 lib/model/exif_response_dto.dart
 lib/model/get_asset_by_time_bucket_dto.dart
 lib/model/get_asset_count_by_time_bucket_dto.dart
@@ -282,7 +284,8 @@ test/curated_objects_response_dto_test.dart
 test/delete_asset_dto_test.dart
 test/delete_asset_response_dto_test.dart
 test/delete_asset_status_test.dart
-test/download_files_dto_test.dart
+test/download_archive_info_test.dart
+test/download_response_dto_test.dart
 test/exif_response_dto_test.dart
 test/get_asset_by_time_bucket_dto_test.dart
 test/get_asset_count_by_time_bucket_dto_test.dart

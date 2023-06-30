@@ -1,4 +1,5 @@
-import { DiskUsage, ImmichReadStream, IStorageRepository } from '@app/domain';
+import { DiskUsage, ImmichReadStream, ImmichZipStream, IStorageRepository } from '@app/domain';
+import archiver from 'archiver';
 import { constants, createReadStream, existsSync, mkdirSync } from 'fs';
 import fs from 'fs/promises';
 import mv from 'mv';
@@ -8,13 +9,25 @@ import path from 'path';
 const moveFile = promisify<string, string, mv.Options>(mv);
 
 export class FilesystemProvider implements IStorageRepository {
-  async createReadStream(filepath: string, mimeType: string): Promise<ImmichReadStream> {
+  createZipStream(): ImmichZipStream {
+    const archive = archiver('zip', { store: true });
+
+    const addFile = (input: string, filename: string) => {
+      archive.file(input, { name: filename });
+    };
+
+    const finalize = () => archive.finalize();
+
+    return { stream: archive, addFile, finalize };
+  }
+
+  async createReadStream(filepath: string, mimeType?: string | null): Promise<ImmichReadStream> {
     const { size } = await fs.stat(filepath);
     await fs.access(filepath, constants.R_OK | constants.W_OK);
     return {
       stream: createReadStream(filepath),
       length: size,
-      type: mimeType,
+      type: mimeType || undefined,
     };
   }
 

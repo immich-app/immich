@@ -1,9 +1,16 @@
-import { api, AddAssetsResponseDto, AssetResponseDto } from '@api';
 import {
 	notificationController,
 	NotificationType
 } from '$lib/components/shared-components/notification/notification';
-import { downloadAssets } from '$lib/stores/download';
+import { clearDownload, updateDownload } from '$lib/stores/download';
+import {
+	AddAssetsResponseDto,
+	api,
+	AssetApiGetDownloadInfoRequest,
+	AssetResponseDto,
+	DownloadResponseDto
+} from '@api';
+import { handleError } from './handle-error';
 
 export const addAssetsToAlbum = async (
 	albumId: string,
@@ -24,84 +31,104 @@ export const addAssetsToAlbum = async (
 			return dto;
 		});
 
-export async function bulkDownload(
+const downloadBlob = (data: Blob, filename: string) => {
+	const url = URL.createObjectURL(data);
+
+	const anchor = document.createElement('a');
+	anchor.href = url;
+	anchor.download = filename;
+
+	document.body.appendChild(anchor);
+	anchor.click();
+	document.body.removeChild(anchor);
+
+	URL.revokeObjectURL(url);
+};
+
+export const downloadArchive = async (
 	fileName: string,
-	assets: AssetResponseDto[],
+	options: Omit<AssetApiGetDownloadInfoRequest, 'key'>,
 	onDone?: () => void,
 	key?: string
-) {
-	const assetIds = assets.map((asset) => asset.id);
+) => {
+	let downloadInfo: DownloadResponseDto | null = null;
 
 	try {
-		// let skip = 0;
-		let count = 0;
-		let done = false;
+		const { data } = await api.assetApi.getDownloadInfo({ ...options, key });
+		downloadInfo = data;
+	} catch (error) {
+		handleError(error, 'Unable to download files');
+		return;
+	}
 
-		while (!done) {
-			count++;
+	// TODO: prompt for big download
+	// const total = downloadInfo.totalSize;
 
-			const downloadFileName = fileName + `${count === 1 ? '' : count}.zip`;
-			downloadAssets.set({ [downloadFileName]: 0 });
+	for (let i = 0; i < downloadInfo.archives.length; i++) {
+		const archive = downloadInfo.archives[i];
+		const suffix = downloadInfo.archives.length === 1 ? '' : `+${i + 1}`;
+		const archiveName = fileName.replace('.zip', `${suffix}.zip`);
 
-			let total = 0;
+		let downloadKey = `${archiveName}`;
+		if (downloadInfo.archives.length > 1) {
+			downloadKey = `${archiveName} (${i + 1}/${downloadInfo.archives.length})`;
+		}
 
-			const { data, status, headers } = await api.assetApi.downloadFiles(
-				{ downloadFilesDto: { assetIds }, key },
+		updateDownload(downloadKey, 0);
+
+		try {
+			const { data } = await api.assetApi.downloadArchive(
+				{ assetIdsDto: { assetIds: archive.assetIds }, key },
 				{
 					responseType: 'blob',
-					onDownloadProgress: function (progressEvent) {
-						const request = this as XMLHttpRequest;
-						if (!total) {
-							total = Number(request.getResponseHeader('X-Immich-Content-Length-Hint')) || 0;
-						}
+					onDownloadProgress: (event) =>
+						updateDownload(downloadKey, Math.floor((event.loaded / archive.size) * 100))
+				}
+			);
 
-						if (total) {
-							const current = progressEvent.loaded;
-							downloadAssets.set({ [downloadFileName]: Math.floor((current / total) * 100) });
+			downloadBlob(data, archiveName);
+		} catch (e) {
+			handleError(e, 'Unable to download files');
+			clearDownload(downloadKey);
+			return;
+		} finally {
+			setTimeout(() => clearDownload(downloadKey), 3_000);
+		}
+	}
+
+	onDone?.();
+};
+
+export const downloadFile = async (asset: AssetResponseDto, key?: string) => {
+	const filenames = [`${asset.originalFileName}.${getFilenameExtension(asset.originalPath)}`];
+	if (asset.livePhotoVideoId) {
+		filenames.push(`${asset.originalFileName}.mov`);
+	}
+
+	for (const filename of filenames) {
+		try {
+			updateDownload(filename, 0);
+
+			const { data } = await api.assetApi.downloadFile(
+				{ id: asset.id, key },
+				{
+					responseType: 'blob',
+					onDownloadProgress: (event: ProgressEvent) => {
+						if (event.lengthComputable) {
+							updateDownload(filename, Math.floor((event.loaded / event.total) * 100));
 						}
 					}
 				}
 			);
 
-			const isNotComplete = headers['x-immich-archive-complete'] === 'false';
-			const fileCount = Number(headers['x-immich-archive-file-count']) || 0;
-			if (isNotComplete && fileCount > 0) {
-				// skip += fileCount;
-			} else {
-				onDone?.();
-				done = true;
-			}
-
-			if (!(data instanceof Blob)) {
-				return;
-			}
-
-			if (status === 201) {
-				const fileUrl = URL.createObjectURL(data);
-				const anchor = document.createElement('a');
-				anchor.href = fileUrl;
-				anchor.download = downloadFileName;
-
-				document.body.appendChild(anchor);
-				anchor.click();
-				document.body.removeChild(anchor);
-
-				URL.revokeObjectURL(fileUrl);
-
-				// Remove item from download list
-				setTimeout(() => {
-					downloadAssets.set({});
-				}, 2000);
-			}
+			downloadBlob(data, filename);
+		} catch (e) {
+			handleError(e, `Error downloading ${filename}`);
+		} finally {
+			setTimeout(() => clearDownload(filename), 3_000);
 		}
-	} catch (e) {
-		console.error('Error downloading file ', e);
-		notificationController.show({
-			type: NotificationType.Error,
-			message: 'Error downloading file, check console for more details.'
-		});
 	}
-}
+};
 
 /**
  * Returns the lowercase filename extension without a dot (.) and

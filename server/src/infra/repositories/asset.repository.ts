@@ -72,6 +72,32 @@ export class AssetRepository implements IAssetRepository {
     await this.repository.delete({ ownerId });
   }
 
+  getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity> {
+    return paginate(this.repository, pagination, {
+      where: {
+        albums: {
+          id: albumId,
+        },
+      },
+      relations: {
+        albums: true,
+        exifInfo: true,
+      },
+    });
+  }
+
+  getByUserId(pagination: PaginationOptions, userId: string): Paginated<AssetEntity> {
+    return paginate(this.repository, pagination, {
+      where: {
+        ownerId: userId,
+        isVisible: true,
+      },
+      relations: {
+        exifInfo: true,
+      },
+    });
+  }
+
   getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
     return paginate(this.repository, pagination, {
       where: {

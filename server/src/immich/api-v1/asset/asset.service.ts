@@ -6,7 +6,6 @@ import {
   IAccessRepository,
   ICryptoRepository,
   IJobRepository,
-  ImmichReadStream,
   isSupportedFileType,
   IStorageRepository,
   JobName,
@@ -33,7 +32,6 @@ import mime from 'mime-types';
 import path from 'path';
 import { QueryFailedError, Repository } from 'typeorm';
 import { promisify } from 'util';
-import { DownloadService } from '../../modules/download/download.service';
 import { IAssetRepository } from './asset-repository';
 import { AssetCore } from './asset.core';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
@@ -42,8 +40,6 @@ import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
 import { CreateAssetDto, ImportAssetDto, UploadFile } from './dto/create-asset.dto';
 import { DeleteAssetDto } from './dto/delete-asset.dto';
-import { DownloadFilesDto } from './dto/download-files.dto';
-import { DownloadDto } from './dto/download-library.dto';
 import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
 import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
 import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
@@ -86,7 +82,6 @@ export class AssetService {
     @Inject(IAssetRepository) private _assetRepository: IAssetRepository,
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    private downloadService: DownloadService,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
@@ -248,50 +243,6 @@ export class AssetService {
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: [assetId] } });
 
     return mapAsset(updatedAsset);
-  }
-
-  public async downloadLibrary(authUser: AuthUserDto, dto: DownloadDto) {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_DOWNLOAD, authUser.id);
-
-    const assets = await this._assetRepository.getAllByUserId(authUser.id, dto);
-
-    return this.downloadService.downloadArchive(dto.name || `library`, assets);
-  }
-
-  public async downloadFiles(authUser: AuthUserDto, dto: DownloadFilesDto) {
-    await this.access.requirePermission(authUser, Permission.ASSET_DOWNLOAD, dto.assetIds);
-
-    const assetToDownload = [];
-
-    for (const assetId of dto.assetIds) {
-      const asset = await this._assetRepository.getById(assetId);
-      assetToDownload.push(asset);
-
-      // Get live photo asset
-      if (asset.livePhotoVideoId) {
-        const livePhotoAsset = await this._assetRepository.getById(asset.livePhotoVideoId);
-        assetToDownload.push(livePhotoAsset);
-      }
-    }
-
-    const now = new Date().toISOString();
-    return this.downloadService.downloadArchive(`immich-${now}`, assetToDownload);
-  }
-
-  public async downloadFile(authUser: AuthUserDto, assetId: string): Promise<ImmichReadStream> {
-    await this.access.requirePermission(authUser, Permission.ASSET_DOWNLOAD, assetId);
-
-    try {
-      const asset = await this._assetRepository.get(assetId);
-      if (asset && asset.originalPath && asset.mimeType) {
-        return this.storageRepository.createReadStream(asset.originalPath, asset.mimeType);
-      }
-    } catch (e) {
-      Logger.error(`Error download asset ${e}`, 'downloadFile');
-      throw new InternalServerErrorException(`Failed to download asset ${e}`, 'DownloadFile');
-    }
-
-    throw new NotFoundException();
   }
 
   async getAssetThumbnail(

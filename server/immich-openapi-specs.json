@@ -370,73 +370,6 @@
         ]
       }
     },
-    "/album/{id}/download": {
-      "get": {
-        "operationId": "downloadArchive",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "name",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "skip",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/zip": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "tags": [
-          "Album"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
     "/album/{id}/user/{userId}": {
       "delete": {
         "operationId": "removeUserFromAlbum",
@@ -1153,10 +1086,48 @@
         ]
       }
     },
-    "/asset/download-files": {
-      "post": {
-        "operationId": "downloadFiles",
+    "/asset/download": {
+      "get": {
+        "operationId": "getDownloadInfo",
         "parameters": [
+          {
+            "name": "assetIds",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "albumId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "archiveSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
           {
             "name": "key",
             "required": false,
@@ -1166,30 +1137,16 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DownloadFilesDto"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
+            "description": "",
             "content": {
-              "application/octet-stream": {
+              "application/json": {
                 "schema": {
-                  "type": "string",
-                  "format": "binary"
+                  "$ref": "#/components/schemas/DownloadResponseDto"
                 }
               }
-            },
-            "description": ""
-          },
-          "201": {
-            "description": ""
+            }
           }
         },
         "tags": [
@@ -1206,29 +1163,10 @@
             "api_key": []
           }
         ]
-      }
-    },
-    "/asset/download-library": {
-      "get": {
-        "operationId": "downloadLibrary",
-        "description": "Current this is not used in any UI element",
+      },
+      "post": {
+        "operationId": "downloadArchive",
         "parameters": [
-          {
-            "name": "name",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "skip",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
           {
             "name": "key",
             "required": false,
@@ -1238,6 +1176,16 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetIdsDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "content": {
@@ -1268,7 +1216,7 @@
       }
     },
     "/asset/download/{id}": {
-      "get": {
+      "post": {
         "operationId": "downloadFile",
         "parameters": [
           {
@@ -5341,11 +5289,13 @@
           "FAILED"
         ]
       },
-      "DownloadFilesDto": {
+      "DownloadArchiveInfo": {
         "type": "object",
         "properties": {
+          "size": {
+            "type": "integer"
+          },
           "assetIds": {
-            "title": "Array of asset ids to be downloaded",
             "type": "array",
             "items": {
               "type": "string"
@@ -5353,7 +5303,26 @@
           }
         },
         "required": [
+          "size",
           "assetIds"
+        ]
+      },
+      "DownloadResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalSize": {
+            "type": "integer"
+          },
+          "archives": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DownloadArchiveInfo"
+            }
+          }
+        },
+        "required": [
+          "totalSize",
+          "archives"
         ]
       },
       "ExifResponseDto": {

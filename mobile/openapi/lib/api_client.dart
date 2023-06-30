@@ -257,8 +257,10 @@ class ApiClient {
           return DeleteAssetResponseDto.fromJson(value);
         case 'DeleteAssetStatus':
           return DeleteAssetStatusTypeTransformer().decode(value);
-        case 'DownloadFilesDto':
-          return DownloadFilesDto.fromJson(value);
+        case 'DownloadArchiveInfo':
+          return DownloadArchiveInfo.fromJson(value);
+        case 'DownloadResponseDto':
+          return DownloadResponseDto.fromJson(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
         case 'GetAssetByTimeBucketDto':
