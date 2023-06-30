@@ -129,10 +129,7 @@
 
 			<p>
 				Note: To apply the Storage Label to previously uploaded assets, run the
-				<a
-					href="/admin/jobs-status"
-					class="text-immich-primary dark:text-immich-dark-primary"
-				>
+				<a href="/admin/jobs-status" class="text-immich-primary dark:text-immich-dark-primary">
 					Storage Migration Job</a
 				>
 			</p>
@@ -149,8 +146,8 @@
 			/>
 
 			<p>
-				Note: Absolute path of parent import directory. A user can only import files if they
-				exist at or under this path.
+				Note: Absolute path of parent import directory. A user can only import files if they exist
+				at or under this path.
 			</p>
 		</div>
 

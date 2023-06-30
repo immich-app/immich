@@ -447,8 +447,8 @@
 		>
 			<svelte:fragment slot="prompt">
 				<p>
-					Are you sure you want to delete this {getAssetType().toLowerCase()}? This will
-					also remove it from its album(s).
+					Are you sure you want to delete this {getAssetType().toLowerCase()}? This will also remove
+					it from its album(s).
 				</p>
 				<p><b>You cannot undo this action!</b></p>
 			</svelte:fragment>
