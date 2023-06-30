@@ -242,7 +242,12 @@
 	};
 
 	const downloadAlbum = async () => {
-		await downloadArchive(`${album.albumName}.zip`, { albumId: album.id });
+		await downloadArchive(
+			`${album.albumName}.zip`,
+			{ albumId: album.id },
+			undefined,
+			sharedLink?.key
+		);
 	};
 
 	const showAlbumOptionsMenu = ({ x, y }: MouseEvent) => {

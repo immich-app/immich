@@ -14,7 +14,8 @@
 	const handleDownloadFiles = async () => {
 		const assets = Array.from(getAssets());
 		if (assets.length === 1) {
-			downloadFile(assets[0], sharedLinkKey);
+			await downloadFile(assets[0], sharedLinkKey);
+			clearSelect();
 			return;
 		}
 

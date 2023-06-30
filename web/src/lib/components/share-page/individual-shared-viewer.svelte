@@ -39,7 +39,7 @@
 
 	const downloadAssets = async () => {
 		await downloadArchive(
-			`immich-share.zip`,
+			`immich-shared.zip`,
 			{ assetIds: assets.map((asset) => asset.id) },
 			undefined,
 			sharedLink.key
