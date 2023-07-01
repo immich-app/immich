@@ -1,17 +1,28 @@
-A new immich cli
+A command-line interface for interfacing with Immich
 
-# DONE:
+# Usage
 
-- Login
-- Logout
-- Upload
+    $ ts-node cli/src
 
-# TODO:
+To start using the CLI, you need to login with an API key first:
 
-- Hashing + deduplication
+    $ ts-node cli/src login-key https://your-immich-instance/api your-api-key
+
+NOTE: This will store your api key under ~/.config/immich/auth.yml
+
+Next, you can run commands:
+
+    $ ts-node cli/src server-info
+
+When you're done, log out to remove the credentials from your filesystem
+
+    $ ts-node cli/src logout
+
+# Todo
+
 - Sidecar should check both .jpg.xmp and .xmp
 - Sidecar check could be case-insensitive
 
-# ISSUES
+# Known issues
 
 - Upload can't use sdk due to multiple issues
