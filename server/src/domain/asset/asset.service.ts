@@ -96,19 +96,17 @@ export class AssetService {
 
     const zip = this.storageRepository.createZipStream();
     const assets = await this.assetRepository.getByIds(dto.assetIds);
-    const paths: Record<string, boolean> = {};
+    const paths: Record<string, number> = {};
 
     for (const { originalPath, originalFileName } of assets) {
       const ext = extname(originalPath);
       let filename = `${originalFileName}${ext}`;
-      for (let i = 0; i < 10_000; i++) {
-        if (!paths[filename]) {
-          break;
-        }
-        filename = `${originalFileName}+${i + 1}${ext}`;
+      const count = paths[filename] || 0;
+      paths[filename] = count + 1;
+      if (count !== 0) {
+        filename = `${originalFileName}+${count}${ext}`;
       }
 
-      paths[filename] = true;
       zip.addFile(originalPath, filename);
     }
 
