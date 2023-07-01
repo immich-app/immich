@@ -3,9 +3,8 @@ import { AssetResponseDto, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
 import { IJobRepository, JobName } from '../job';
 import { ImmichReadStream, IStorageRepository } from '../storage';
-import { PersonUpdateDto } from './dto';
+import { mapPerson, PersonResponseDto, PersonUpdateDto } from './person.dto';
 import { IPersonRepository } from './person.repository';
-import { mapPerson, PersonResponseDto } from './response-dto';
 
 @Injectable()
 export class PersonService {

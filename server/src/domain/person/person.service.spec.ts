@@ -9,9 +9,9 @@ import {
 } from '@test';
 import { IJobRepository, JobName } from '..';
 import { IStorageRepository } from '../storage';
+import { PersonResponseDto } from './person.dto';
 import { IPersonRepository } from './person.repository';
 import { PersonService } from './person.service';
-import { PersonResponseDto } from './response-dto';
 
 const responseDto: PersonResponseDto = {
   id: 'person-1',
