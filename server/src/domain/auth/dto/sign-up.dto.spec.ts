@@ -1,6 +1,6 @@
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
-import { SignUpDto } from './sign-up.dto';
+import { SignUpDto } from './sign-up.dto.js';
 
 describe('SignUpDto', () => {
   it('should require all fields', () => {

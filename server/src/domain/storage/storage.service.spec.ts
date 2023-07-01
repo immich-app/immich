@@ -1,6 +1,6 @@
-import { newStorageRepositoryMock } from '@test';
-import { IStorageRepository } from '.';
-import { StorageService } from './storage.service';
+import { newStorageRepositoryMock } from '@test/index.js';
+import { IStorageRepository } from './index.js';
+import { StorageService } from './storage.service.js';
 
 describe(StorageService.name, () => {
   let sut: StorageService;

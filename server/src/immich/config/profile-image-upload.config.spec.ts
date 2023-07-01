@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import * as fs from 'fs';
-import { AuthRequest } from '../decorators/auth-user.decorator';
-import { multerUtils } from './profile-image-upload.config';
+import { AuthRequest } from '../decorators/auth-user.decorator.js';
+import { multerUtils } from './profile-image-upload.config.js';
 
 const { fileFilter, destination, filename } = multerUtils;
 

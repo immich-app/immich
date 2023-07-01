@@ -1,9 +1,14 @@
-import { assetEntityStub, newAssetRepositoryMock, newJobRepositoryMock, newStorageRepositoryMock } from '@test';
+import {
+  assetEntityStub,
+  newAssetRepositoryMock,
+  newJobRepositoryMock,
+  newStorageRepositoryMock,
+} from '@test/index.js';
 import { constants } from 'fs/promises';
-import { IAssetRepository, WithoutProperty, WithProperty } from '../asset';
-import { IJobRepository, JobName } from '../job';
-import { IStorageRepository } from '../storage';
-import { MetadataService } from './metadata.service';
+import { IAssetRepository, WithoutProperty, WithProperty } from '../asset/index.js';
+import { IJobRepository, JobName } from '../job/index.js';
+import { IStorageRepository } from '../storage/index.js';
+import { MetadataService } from './metadata.service.js';
 
 describe(MetadataService.name, () => {
   let sut: MetadataService;

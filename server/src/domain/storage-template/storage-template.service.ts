@@ -1,13 +1,13 @@
-import { AssetEntity, SystemConfig } from '@app/infra/entities';
+import { AssetEntity, SystemConfig } from '@app/infra/entities/index.js';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { IAssetRepository } from '../asset/asset.repository';
-import { APP_MEDIA_LOCATION } from '../domain.constant';
-import { getLivePhotoMotionFilename, usePagination } from '../domain.util';
-import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE } from '../job';
-import { IStorageRepository } from '../storage/storage.repository';
-import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
-import { IUserRepository } from '../user/user.repository';
-import { StorageTemplateCore } from './storage-template.core';
+import { IAssetRepository } from '../asset/asset.repository.js';
+import { APP_MEDIA_LOCATION } from '../domain.constant.js';
+import { getLivePhotoMotionFilename, usePagination } from '../domain.util.js';
+import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE } from '../job/index.js';
+import { IStorageRepository } from '../storage/storage.repository.js';
+import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config/index.js';
+import { IUserRepository } from '../user/user.repository.js';
+import { StorageTemplateCore } from './storage-template.core.js';
 
 export interface MoveAssetMetadata {
   storageLabel: string | null;

@@ -1,4 +1,4 @@
-import { SystemConfig } from '@app/infra/entities';
+import { SystemConfig } from '@app/infra/entities/index.js';
 import { BadRequestException } from '@nestjs/common';
 import {
   asyncTick,
@@ -6,12 +6,12 @@ import {
   newCommunicationRepositoryMock,
   newJobRepositoryMock,
   newSystemConfigRepositoryMock,
-} from '@test';
-import { IJobRepository, JobCommand, JobHandler, JobItem, JobName, JobService, QueueName } from '.';
-import { IAssetRepository } from '../asset';
-import { ICommunicationRepository } from '../communication';
-import { ISystemConfigRepository } from '../system-config';
-import { SystemConfigCore } from '../system-config/system-config.core';
+} from '@test/index.js';
+import { IAssetRepository } from '../asset/index.js';
+import { ICommunicationRepository } from '../communication/index.js';
+import { IJobRepository, JobCommand, JobHandler, JobItem, JobName, JobService, QueueName } from '../index.js';
+import { ISystemConfigRepository } from '../system-config/index.js';
+import { SystemConfigCore } from '../system-config/system-config.core.js';
 
 const makeMockHandlers = (success: boolean) => {
   const mock = jest.fn().mockResolvedValue(success);

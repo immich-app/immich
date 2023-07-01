@@ -1,13 +1,13 @@
-import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra/entities';
+import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra/entities/index.js';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { IAssetRepository, mapAsset } from '../asset';
-import { AuthUserDto } from '../auth';
-import { AccessCore, IAccessRepository, Permission } from '../index';
-import { IJobRepository, JobName } from '../job';
-import { IUserRepository } from '../user';
-import { AlbumCountResponseDto, AlbumResponseDto, mapAlbum } from './album-response.dto';
-import { IAlbumRepository } from './album.repository';
-import { AddUsersDto, CreateAlbumDto, GetAlbumsDto, UpdateAlbumDto } from './dto';
+import { IAssetRepository, mapAsset } from '../asset/index.js';
+import { AuthUserDto } from '../auth/index.js';
+import { AccessCore, IAccessRepository, Permission } from '../index.js';
+import { IJobRepository, JobName } from '../job/index.js';
+import { IUserRepository } from '../user/index.js';
+import { AlbumCountResponseDto, AlbumResponseDto, mapAlbum } from './album-response.dto.js';
+import { IAlbumRepository } from './album.repository.js';
+import { AddUsersDto, CreateAlbumDto, GetAlbumsDto, UpdateAlbumDto } from './dto/index.js';
 
 @Injectable()
 export class AlbumService {

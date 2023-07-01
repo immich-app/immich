@@ -1,3 +1,3 @@
-export * from './machine-learning.interface';
-export * from './smart-info.repository';
-export * from './smart-info.service';
+export * from './machine-learning.interface.js';
+export * from './smart-info.repository.js';
+export * from './smart-info.service.js';

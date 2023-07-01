@@ -1,11 +1,11 @@
 import { AlbumResponseDto, mapUser } from '@app/domain';
-import { AlbumEntity, UserEntity } from '@app/infra/entities';
+import { AlbumEntity, UserEntity } from '@app/infra/entities/index.js';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { userEntityStub } from '@test';
-import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { IAlbumRepository } from './album-repository';
-import { AlbumService } from './album.service';
-import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
+import { userEntityStub } from '@test/index.js';
+import { AuthUserDto } from '../../decorators/auth-user.decorator.js';
+import { IAlbumRepository } from './album-repository.js';
+import { AlbumService } from './album.service.js';
+import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto.js';
 
 describe('Album service', () => {
   let sut: AlbumService;

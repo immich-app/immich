@@ -1,1 +1,1 @@
-export * from './communication.repository';
+export * from './communication.repository.js';

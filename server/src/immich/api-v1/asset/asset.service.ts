@@ -13,7 +13,7 @@ import {
   mapAssetWithoutExif,
   Permission,
 } from '@app/domain';
-import { AssetEntity, AssetType } from '@app/infra/entities';
+import { AssetEntity, AssetType } from '@app/infra/entities/index.js';
 import {
   BadRequestException,
   Inject,
@@ -31,37 +31,37 @@ import mime from 'mime-types';
 import path from 'path';
 import { QueryFailedError, Repository } from 'typeorm';
 import { promisify } from 'util';
-import { IAssetRepository } from './asset-repository';
-import { AssetCore } from './asset.core';
-import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';
-import { AssetSearchDto } from './dto/asset-search.dto';
-import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
-import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto';
-import { CreateAssetDto, ImportAssetDto, UploadFile } from './dto/create-asset.dto';
-import { DeleteAssetDto } from './dto/delete-asset.dto';
-import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto';
-import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto';
-import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto';
-import { SearchAssetDto } from './dto/search-asset.dto';
-import { SearchPropertiesDto } from './dto/search-properties.dto';
-import { ServeFileDto } from './dto/serve-file.dto';
-import { UpdateAssetDto } from './dto/update-asset.dto';
+import { IAssetRepository } from './asset-repository.js';
+import { AssetCore } from './asset.core.js';
+import { AssetBulkUploadCheckDto } from './dto/asset-check.dto.js';
+import { AssetSearchDto } from './dto/asset-search.dto.js';
+import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto.js';
+import { CheckExistingAssetsDto } from './dto/check-existing-assets.dto.js';
+import { CreateAssetDto, ImportAssetDto, UploadFile } from './dto/create-asset.dto.js';
+import { DeleteAssetDto } from './dto/delete-asset.dto.js';
+import { GetAssetByTimeBucketDto } from './dto/get-asset-by-time-bucket.dto.js';
+import { GetAssetCountByTimeBucketDto } from './dto/get-asset-count-by-time-bucket.dto.js';
+import { GetAssetThumbnailDto, GetAssetThumbnailFormatEnum } from './dto/get-asset-thumbnail.dto.js';
+import { SearchAssetDto } from './dto/search-asset.dto.js';
+import { SearchPropertiesDto } from './dto/search-properties.dto.js';
+import { ServeFileDto } from './dto/serve-file.dto.js';
+import { UpdateAssetDto } from './dto/update-asset.dto.js';
 import {
   AssetBulkUploadCheckResponseDto,
   AssetRejectReason,
   AssetUploadAction,
-} from './response-dto/asset-check-response.dto';
+} from './response-dto/asset-check-response.dto.js';
 import {
   AssetCountByTimeBucketResponseDto,
   mapAssetCountByTimeBucket,
-} from './response-dto/asset-count-by-time-group-response.dto';
-import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
-import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto';
-import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto';
-import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto';
-import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto';
-import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto';
-import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto';
+} from './response-dto/asset-count-by-time-group-response.dto.js';
+import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto.js';
+import { AssetFileUploadResponseDto } from './response-dto/asset-file-upload-response.dto.js';
+import { CheckDuplicateAssetResponseDto } from './response-dto/check-duplicate-asset-response.dto.js';
+import { CheckExistingAssetsResponseDto } from './response-dto/check-existing-assets-response.dto.js';
+import { CuratedLocationsResponseDto } from './response-dto/curated-locations-response.dto.js';
+import { CuratedObjectsResponseDto } from './response-dto/curated-objects-response.dto.js';
+import { DeleteAssetResponseDto, DeleteAssetStatusEnum } from './response-dto/delete-asset-response.dto.js';
 
 const fileInfo = promisify(stat);
 

@@ -1,4 +1,4 @@
-import { toEmail, toSanitized } from '@app/immich/utils/transform.util';
+import { toEmail, toSanitized } from '@app/immich/utils/transform.util.js';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';

@@ -1,14 +1,14 @@
 import { AlbumResponseDto } from '@app/domain';
 import { Body, Controller, Delete, Get, Param, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
-import { AuthUser, AuthUserDto } from '../../decorators/auth-user.decorator';
-import { Authenticated, SharedLinkRoute } from '../../decorators/authenticated.decorator';
-import { UseValidation } from '../../decorators/use-validation.decorator';
-import { AlbumService } from './album.service';
-import { AddAssetsDto } from './dto/add-assets.dto';
-import { RemoveAssetsDto } from './dto/remove-assets.dto';
-import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
+import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto.js';
+import { AuthUser, AuthUserDto } from '../../decorators/auth-user.decorator.js';
+import { Authenticated, SharedLinkRoute } from '../../decorators/authenticated.decorator.js';
+import { UseValidation } from '../../decorators/use-validation.decorator.js';
+import { AlbumService } from './album.service.js';
+import { AddAssetsDto } from './dto/add-assets.dto.js';
+import { RemoveAssetsDto } from './dto/remove-assets.dto.js';
+import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto.js';
 
 @ApiTags('Album')
 @Controller('album')

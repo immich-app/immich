@@ -18,10 +18,10 @@ import {
 import { Body, Controller, Delete, Get, Param, Post, Req, Res } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { AuthUser, GetLoginDetails } from '../decorators/auth-user.decorator';
-import { Authenticated, PublicRoute } from '../decorators/authenticated.decorator';
-import { UseValidation } from '../decorators/use-validation.decorator';
-import { UUIDParamDto } from './dto/uuid-param.dto';
+import { AuthUser, GetLoginDetails } from '../decorators/auth-user.decorator.js';
+import { Authenticated, PublicRoute } from '../decorators/authenticated.decorator.js';
+import { UseValidation } from '../decorators/use-validation.decorator.js';
+import { UUIDParamDto } from './dto/uuid-param.dto.js';
 
 @ApiTags('Authentication')
 @Controller('auth')

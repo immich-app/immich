@@ -1,10 +1,10 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { IAssetRepository, WithoutProperty } from '../asset';
-import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
-import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
-import { IMachineLearningRepository } from './machine-learning.interface';
-import { ISmartInfoRepository } from './smart-info.repository';
+import { IAssetRepository, WithoutProperty } from '../asset/index.js';
+import { MACHINE_LEARNING_ENABLED } from '../domain.constant.js';
+import { usePagination } from '../domain.util.js';
+import { IBaseJob, IEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job/index.js';
+import { IMachineLearningRepository } from './machine-learning.interface.js';
+import { ISmartInfoRepository } from './smart-info.repository.js';
 
 @Injectable()
 export class SmartInfoService {

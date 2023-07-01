@@ -1,4 +1,4 @@
-import { AssetResponseDto } from '../../asset';
+import { AssetResponseDto } from '../../asset/index.js';
 
 class SearchExploreItem {
   value!: string;

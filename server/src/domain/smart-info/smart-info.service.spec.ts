@@ -1,16 +1,16 @@
-import { AssetEntity } from '@app/infra/entities';
+import { AssetEntity } from '@app/infra/entities/index.js';
 import {
   assetEntityStub,
   newAssetRepositoryMock,
   newJobRepositoryMock,
   newMachineLearningRepositoryMock,
   newSmartInfoRepositoryMock,
-} from '@test';
-import { IAssetRepository, WithoutProperty } from '../asset';
-import { IJobRepository, JobName } from '../job';
-import { IMachineLearningRepository } from './machine-learning.interface';
-import { ISmartInfoRepository } from './smart-info.repository';
-import { SmartInfoService } from './smart-info.service';
+} from '@test/index.js';
+import { IAssetRepository, WithoutProperty } from '../asset/index.js';
+import { IJobRepository, JobName } from '../job/index.js';
+import { IMachineLearningRepository } from './machine-learning.interface.js';
+import { ISmartInfoRepository } from './smart-info.repository.js';
+import { SmartInfoService } from './smart-info.service.js';
 
 const asset = {
   id: 'asset-1',

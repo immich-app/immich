@@ -1,9 +1,9 @@
-import { UserEntity, UserTokenEntity } from '@app/infra/entities';
+import { UserEntity, UserTokenEntity } from '@app/infra/entities/index.js';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { LoginDetails } from '../auth';
-import { ICryptoRepository } from '../crypto';
-import { IUserTokenRepository } from './user-token.repository';
+import { LoginDetails } from '../auth/index.js';
+import { ICryptoRepository } from '../crypto/index.js';
+import { IUserTokenRepository } from './user-token.repository.js';
 
 @Injectable()
 export class UserTokenCore {

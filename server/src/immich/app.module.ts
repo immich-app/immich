@@ -3,9 +3,9 @@ import { InfraModule } from '@app/infra';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
-import { AlbumModule } from './api-v1/album/album.module';
-import { AssetModule } from './api-v1/asset/asset.module';
-import { AppService } from './app.service';
+import { AlbumModule } from './api-v1/album/album.module.js';
+import { AssetModule } from './api-v1/asset/asset.module.js';
+import { AppService } from './app.service.js';
 import {
   AlbumController,
   APIKeyController,
@@ -22,8 +22,8 @@ import {
   SystemConfigController,
   TagController,
   UserController,
-} from './controllers';
-import { AuthGuard } from './middlewares/auth.guard';
+} from './controllers/index.js';
+import { AuthGuard } from './middlewares/auth.guard.js';
 
 @Module({
   imports: [

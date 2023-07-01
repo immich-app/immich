@@ -1,4 +1,4 @@
-import { SystemConfig, UserEntity } from '@app/infra/entities';
+import { SystemConfig, UserEntity } from '@app/infra/entities/index.js';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import {
   authStub,
@@ -14,19 +14,19 @@ import {
   systemConfigStub,
   userEntityStub,
   userTokenEntityStub,
-} from '@test';
+} from '@test/index.js';
 import { IncomingHttpHeaders } from 'http';
 import { generators, Issuer } from 'openid-client';
 import { Socket } from 'socket.io';
-import { IKeyRepository } from '../api-key';
-import { ICryptoRepository } from '../crypto/crypto.repository';
-import { ISharedLinkRepository } from '../shared-link';
-import { ISystemConfigRepository } from '../system-config';
-import { IUserRepository } from '../user';
-import { IUserTokenRepository } from '../user-token';
-import { AuthType } from './auth.constant';
-import { AuthService } from './auth.service';
-import { AuthUserDto, SignUpDto } from './dto';
+import { IKeyRepository } from '../api-key/index.js';
+import { ICryptoRepository } from '../crypto/crypto.repository.js';
+import { ISharedLinkRepository } from '../shared-link/index.js';
+import { ISystemConfigRepository } from '../system-config/index.js';
+import { IUserTokenRepository } from '../user-token/index.js';
+import { IUserRepository } from '../user/index.js';
+import { AuthType } from './auth.constant.js';
+import { AuthService } from './auth.service.js';
+import { AuthUserDto, SignUpDto } from './dto/index.js';
 
 // const token = Buffer.from('my-api-key', 'utf8').toString('base64');
 

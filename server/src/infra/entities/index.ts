@@ -1,29 +1,29 @@
-import { AlbumEntity } from './album.entity';
-import { APIKeyEntity } from './api-key.entity';
-import { AssetFaceEntity } from './asset-face.entity';
-import { AssetEntity } from './asset.entity';
-import { PartnerEntity } from './partner.entity';
-import { PersonEntity } from './person.entity';
-import { SharedLinkEntity } from './shared-link.entity';
-import { SmartInfoEntity } from './smart-info.entity';
-import { SystemConfigEntity } from './system-config.entity';
-import { TagEntity } from './tag.entity';
-import { UserTokenEntity } from './user-token.entity';
-import { UserEntity } from './user.entity';
+import { AlbumEntity } from './album.entity.js';
+import { APIKeyEntity } from './api-key.entity.js';
+import { AssetFaceEntity } from './asset-face.entity.js';
+import { AssetEntity } from './asset.entity.js';
+import { PartnerEntity } from './partner.entity.js';
+import { PersonEntity } from './person.entity.js';
+import { SharedLinkEntity } from './shared-link.entity.js';
+import { SmartInfoEntity } from './smart-info.entity.js';
+import { SystemConfigEntity } from './system-config.entity.js';
+import { TagEntity } from './tag.entity.js';
+import { UserTokenEntity } from './user-token.entity.js';
+import { UserEntity } from './user.entity.js';
 
-export * from './album.entity';
-export * from './api-key.entity';
-export * from './asset-face.entity';
-export * from './asset.entity';
-export * from './exif.entity';
-export * from './partner.entity';
-export * from './person.entity';
-export * from './shared-link.entity';
-export * from './smart-info.entity';
-export * from './system-config.entity';
-export * from './tag.entity';
-export * from './user-token.entity';
-export * from './user.entity';
+export * from './album.entity.js';
+export * from './api-key.entity.js';
+export * from './asset-face.entity.js';
+export * from './asset.entity.js';
+export * from './exif.entity.js';
+export * from './partner.entity.js';
+export * from './person.entity.js';
+export * from './shared-link.entity.js';
+export * from './smart-info.entity.js';
+export * from './system-config.entity.js';
+export * from './tag.entity.js';
+export * from './user-token.entity.js';
+export * from './user.entity.js';
 
 export const databaseEntities = [
   AlbumEntity,

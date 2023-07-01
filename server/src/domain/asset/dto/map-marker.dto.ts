@@ -1,4 +1,4 @@
-import { toBoolean } from '@app/immich/utils/transform.util';
+import { toBoolean } from '@app/immich/utils/transform.util.js';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsOptional } from 'class-validator';

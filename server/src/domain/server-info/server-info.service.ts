@@ -1,9 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { serverVersion } from '../domain.constant';
-import { asHumanReadable } from '../domain.util';
-import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
-import { IUserRepository, UserStatsQueryResponse } from '../user';
-import { ServerInfoResponseDto, ServerPingResponse, ServerStatsResponseDto, UsageByUserDto } from './response-dto';
+import { serverVersion } from '../domain.constant.js';
+import { asHumanReadable } from '../domain.util.js';
+import { IStorageRepository, StorageCore, StorageFolder } from '../storage/index.js';
+import { IUserRepository, UserStatsQueryResponse } from '../user/index.js';
+import {
+  ServerInfoResponseDto,
+  ServerPingResponse,
+  ServerStatsResponseDto,
+  UsageByUserDto,
+} from './response-dto/index.js';
 
 @Injectable()
 export class ServerInfoService {

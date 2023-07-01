@@ -16,7 +16,7 @@
     "start": "npm run start:dev",
     "nest": "nest",
     "start:dev": "nest start --watch --",
-    "start:debug": "nest start --debug 0.0.0.0:9230 --watch --",
+    "start:debug": "nest start --exec 'node -r tsconfig-paths/register -r ts-node/register ./dist/main.js' --debug 0.0.0.0:9230 --watch --",
     "lint": "eslint \"src/**/*.ts\" --max-warnings 0",
     "lint:fix": "npm run lint -- --fix",
     "check": "tsc --noEmit",
@@ -53,7 +53,7 @@
     "@socket.io/redis-adapter": "^8.0.1",
     "@types/mime-types": "^2.1.1",
     "archiver": "^5.3.1",
-    "axios": "^0.26.0",
+    "axios": "^1.4.0",
     "bcrypt": "^5.0.1",
     "bullmq": "^3.14.1",
     "class-transformer": "^0.5.1",
@@ -64,12 +64,13 @@
     "fluent-ffmpeg": "^2.1.2",
     "handlebars": "^4.7.7",
     "i18n-iso-countries": "^7.5.0",
-    "ioredis": "^5.3.1",
+    "ioredis": "^5.3.2",
     "joi": "^17.5.0",
-    "local-reverse-geocoder": "0.12.5",
+    "local-reverse-geocoder": "^0.16.4",
     "lodash": "^4.17.21",
     "luxon": "^3.0.3",
     "mime-types": "^2.1.35",
+    "module-alias": "^2.2.3",
     "mv": "^2.1.1",
     "nest-commander": "^3.3.0",
     "openid-client": "^5.2.1",
@@ -81,8 +82,7 @@
     "thumbhash": "^0.1.1",
     "typeorm": "^0.3.11",
     "typesense": "^1.5.3",
-    "ua-parser-js": "^1.0.35",
-    "immich": "^0.39.0"
+    "ua-parser-js": "^1.0.35"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.1.8",
@@ -121,7 +121,7 @@
     "ts-jest": "^27.0.3",
     "ts-loader": "^9.2.3",
     "ts-node": "^10.0.0",
-    "tsconfig-paths": "^3.10.1",
+    "tsconfig-paths": "^3.14.2",
     "typescript": "^4.9.4"
   },
   "jest": {
@@ -160,5 +160,32 @@
       "^@app/domain(|/.*)$": "<rootDir>/src/domain/$1"
     },
     "globalSetup": "<rootDir>/test/global-setup.js"
+  },
+  "type": "module",
+  "_moduleAliases": {
+    "@test": [
+      "test"
+    ],
+    "@test/*": [
+      "test/*"
+    ],
+    "@app/immich": [
+      "src/immich/index.js"
+    ],
+    "@app/immich/*": [
+      "src/immich/*"
+    ],
+    "@app/infra": [
+      "src/infra/index.js"
+    ],
+    "@app/infra/*": [
+      "src/infra/*"
+    ],
+    "@app/domain": [
+      "src/domain/index.js"
+    ],
+    "@app/domain/*": [
+      "src/domain/*"
+    ]
   }
 }

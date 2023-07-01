@@ -1,11 +1,11 @@
 import { AlbumResponseDto, mapAlbum } from '@app/domain';
-import { AlbumEntity } from '@app/infra/entities';
+import { AlbumEntity } from '@app/infra/entities/index.js';
 import { BadRequestException, ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { AuthUserDto } from '../../decorators/auth-user.decorator';
-import { IAlbumRepository } from './album-repository';
-import { AddAssetsDto } from './dto/add-assets.dto';
-import { RemoveAssetsDto } from './dto/remove-assets.dto';
-import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
+import { AuthUserDto } from '../../decorators/auth-user.decorator.js';
+import { IAlbumRepository } from './album-repository.js';
+import { AddAssetsDto } from './dto/add-assets.dto.js';
+import { RemoveAssetsDto } from './dto/remove-assets.dto.js';
+import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto.js';
 
 @Injectable()
 export class AlbumService {

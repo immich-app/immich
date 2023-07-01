@@ -1,1 +1,1 @@
-export * from './system-config-template-storage-option.dto';
+export * from './system-config-template-storage-option.dto.js';

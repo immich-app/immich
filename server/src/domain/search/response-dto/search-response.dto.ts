@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { AlbumResponseDto } from '../../album';
-import { AssetResponseDto } from '../../asset';
+import { AlbumResponseDto } from '../../album/index.js';
+import { AssetResponseDto } from '../../asset/index.js';
 
 class SearchFacetCountResponseDto {
   @ApiProperty({ type: 'integer' })

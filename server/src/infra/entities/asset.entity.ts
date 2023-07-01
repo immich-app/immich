@@ -13,13 +13,13 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
-import { AlbumEntity } from './album.entity';
-import { AssetFaceEntity } from './asset-face.entity';
-import { ExifEntity } from './exif.entity';
-import { SharedLinkEntity } from './shared-link.entity';
-import { SmartInfoEntity } from './smart-info.entity';
-import { TagEntity } from './tag.entity';
-import { UserEntity } from './user.entity';
+import { AlbumEntity } from './album.entity.js';
+import { AssetFaceEntity } from './asset-face.entity.js';
+import { ExifEntity } from './exif.entity.js';
+import { SharedLinkEntity } from './shared-link.entity.js';
+import { SmartInfoEntity } from './smart-info.entity.js';
+import { TagEntity } from './tag.entity.js';
+import { UserEntity } from './user.entity.js';
 
 @Entity('assets')
 @Unique('UQ_userid_checksum', ['owner', 'checksum'])

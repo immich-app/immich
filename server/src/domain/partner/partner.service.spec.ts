@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
-import { authStub, newPartnerRepositoryMock, partnerStub } from '@test';
-import { IPartnerRepository, PartnerDirection } from './partner.repository';
-import { PartnerService } from './partner.service';
+import { authStub, newPartnerRepositoryMock, partnerStub } from '@test/index.js';
+import { IPartnerRepository, PartnerDirection } from './partner.repository.js';
+import { PartnerService } from './partner.service.js';
 
 const responseDto = {
   admin: {

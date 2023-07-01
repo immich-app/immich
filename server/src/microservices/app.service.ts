@@ -14,7 +14,7 @@ import {
   UserService,
 } from '@app/domain';
 import { Injectable, Logger } from '@nestjs/common';
-import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
+import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor.js';
 
 @Injectable()
 export class AppService {

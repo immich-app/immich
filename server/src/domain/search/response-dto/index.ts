@@ -1,3 +1,3 @@
-export * from './search-config-response.dto';
-export * from './search-explore.response.dto';
-export * from './search-response.dto';
+export * from './search-config-response.dto.js';
+export * from './search-explore.response.dto.js';
+export * from './search-response.dto.js';

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UsageByUserDto } from './usage-by-user-response.dto';
+import { UsageByUserDto } from './usage-by-user-response.dto.js';
 
 export class ServerStatsResponseDto {
   @ApiProperty({ type: 'integer' })

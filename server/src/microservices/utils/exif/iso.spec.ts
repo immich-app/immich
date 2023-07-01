@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { parseISO } from './iso';
+import { parseISO } from './iso.js';
 
 describe('parsing ISO values', () => {
   it('returns null for invalid values', () => {

@@ -1,4 +1,4 @@
-import { AlbumEntity, AssetEntity, AssetFaceEntity, AssetType } from '@app/infra/entities';
+import { AlbumEntity, AssetEntity, AssetFaceEntity, AssetType } from '@app/infra/entities/index.js';
 
 export enum SearchCollection {
   ASSETS = 'assets',

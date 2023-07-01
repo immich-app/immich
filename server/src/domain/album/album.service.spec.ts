@@ -9,13 +9,13 @@ import {
   newJobRepositoryMock,
   newUserRepositoryMock,
   userEntityStub,
-} from '@test';
+} from '@test/index.js';
 import _ from 'lodash';
-import { IAssetRepository } from '../asset';
-import { IJobRepository, JobName } from '../job';
-import { IUserRepository } from '../user';
-import { IAlbumRepository } from './album.repository';
-import { AlbumService } from './album.service';
+import { IAssetRepository } from '../asset/index.js';
+import { IJobRepository, JobName } from '../job/index.js';
+import { IUserRepository } from '../user/index.js';
+import { IAlbumRepository } from './album.repository.js';
+import { AlbumService } from './album.service.js';
 
 describe(AlbumService.name, () => {
   let sut: AlbumService;

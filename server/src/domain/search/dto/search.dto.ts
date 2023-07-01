@@ -1,5 +1,5 @@
-import { toBoolean } from '@app/immich/utils/transform.util';
-import { AssetType } from '@app/infra/entities';
+import { toBoolean } from '@app/immich/utils/transform.util.js';
+import { AssetType } from '@app/infra/entities/index.js';
 import { Transform } from 'class-transformer';
 import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 

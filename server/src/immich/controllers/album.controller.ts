@@ -1,3 +1,4 @@
+import { GetAlbumsDto } from '@app/domain/album/dto/get-albums.dto.js';
 import {
   AddUsersDto,
   AlbumCountResponseDto,
@@ -6,14 +7,13 @@ import {
   CreateAlbumDto,
   UpdateAlbumDto,
 } from '@app/domain';
-import { GetAlbumsDto } from '@app/domain/album/dto/get-albums.dto';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { ParseMeUUIDPipe } from '../api-v1/validation/parse-me-uuid-pipe';
-import { AuthUser } from '../decorators/auth-user.decorator';
-import { Authenticated } from '../decorators/authenticated.decorator';
-import { UseValidation } from '../decorators/use-validation.decorator';
-import { UUIDParamDto } from './dto/uuid-param.dto';
+import { ParseMeUUIDPipe } from '../api-v1/validation/parse-me-uuid-pipe.js';
+import { AuthUser } from '../decorators/auth-user.decorator.js';
+import { Authenticated } from '../decorators/authenticated.decorator.js';
+import { UseValidation } from '../decorators/use-validation.decorator.js';
+import { UUIDParamDto } from './dto/uuid-param.dto.js';
 
 @ApiTags('Album')
 @Controller('album')

@@ -1,5 +1,5 @@
-import { ValidateUUID } from '@app/immich/decorators/validate-uuid.decorator';
-import { toBoolean } from '@app/immich/utils/transform.util';
+import { ValidateUUID } from '@app/immich/decorators/validate-uuid.decorator.js';
+import { toBoolean } from '@app/immich/utils/transform.util.js';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsOptional } from 'class-validator';

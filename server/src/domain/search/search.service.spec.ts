@@ -13,17 +13,17 @@ import {
   newMachineLearningRepositoryMock,
   newSearchRepositoryMock,
   searchStub,
-} from '@test';
+} from '@test/index.js';
 import { plainToInstance } from 'class-transformer';
-import { IAlbumRepository } from '../album/album.repository';
-import { IAssetRepository } from '../asset/asset.repository';
-import { IFaceRepository } from '../facial-recognition';
-import { JobName } from '../job';
-import { IJobRepository } from '../job/job.repository';
-import { IMachineLearningRepository } from '../smart-info';
-import { SearchDto } from './dto';
-import { ISearchRepository } from './search.repository';
-import { SearchService } from './search.service';
+import { IAlbumRepository } from '../album/album.repository.js';
+import { IAssetRepository } from '../asset/asset.repository.js';
+import { IFaceRepository } from '../facial-recognition/index.js';
+import { JobName } from '../job/index.js';
+import { IJobRepository } from '../job/job.repository.js';
+import { IMachineLearningRepository } from '../smart-info/index.js';
+import { SearchDto } from './dto/index.js';
+import { ISearchRepository } from './search.repository.js';
+import { SearchService } from './search.service.js';
 
 jest.useFakeTimers();
 

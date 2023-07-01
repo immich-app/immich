@@ -1,12 +1,12 @@
-import { AssetEntity, SharedLinkEntity, SharedLinkType } from '@app/infra/entities';
+import { AssetEntity, SharedLinkEntity, SharedLinkType } from '@app/infra/entities/index.js';
 import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
-import { AccessCore, IAccessRepository, Permission } from '../access';
-import { AssetIdErrorReason, AssetIdsDto, AssetIdsResponseDto } from '../asset';
-import { AuthUserDto } from '../auth';
-import { ICryptoRepository } from '../crypto';
-import { mapSharedLink, mapSharedLinkWithNoExif, SharedLinkResponseDto } from './shared-link-response.dto';
-import { SharedLinkCreateDto, SharedLinkEditDto } from './shared-link.dto';
-import { ISharedLinkRepository } from './shared-link.repository';
+import { AccessCore, IAccessRepository, Permission } from '../access/index.js';
+import { AssetIdErrorReason, AssetIdsDto, AssetIdsResponseDto } from '../asset/index.js';
+import { AuthUserDto } from '../auth/index.js';
+import { ICryptoRepository } from '../crypto/index.js';
+import { mapSharedLink, mapSharedLinkWithNoExif, SharedLinkResponseDto } from './shared-link-response.dto.js';
+import { SharedLinkCreateDto, SharedLinkEditDto } from './shared-link.dto.js';
+import { ISharedLinkRepository } from './shared-link.repository.js';
 
 @Injectable()
 export class SharedLinkService {

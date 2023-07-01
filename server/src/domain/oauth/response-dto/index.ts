@@ -1,1 +1,1 @@
-export * from './oauth-config-response.dto';
+export * from './oauth-config-response.dto.js';

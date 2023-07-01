@@ -1,13 +1,13 @@
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
-import { IAssetRepository, mapAsset } from '../asset';
-import { CommunicationEvent, ICommunicationRepository } from '../communication';
-import { assertMachineLearningEnabled } from '../domain.constant';
-import { ISystemConfigRepository } from '../system-config';
-import { SystemConfigCore } from '../system-config/system-config.core';
-import { JobCommandDto } from './dto';
-import { JobCommand, JobName, QueueName } from './job.constants';
-import { IJobRepository, JobHandler, JobItem } from './job.repository';
-import { AllJobStatusResponseDto, JobStatusDto } from './response-dto';
+import { IAssetRepository, mapAsset } from '../asset/index.js';
+import { CommunicationEvent, ICommunicationRepository } from '../communication/index.js';
+import { assertMachineLearningEnabled } from '../domain.constant.js';
+import { ISystemConfigRepository } from '../system-config/index.js';
+import { SystemConfigCore } from '../system-config/system-config.core.js';
+import { JobCommandDto } from './dto/index.js';
+import { JobCommand, JobName, QueueName } from './job.constants.js';
+import { IJobRepository, JobHandler, JobItem } from './job.repository.js';
+import { AllJobStatusResponseDto, JobStatusDto } from './response-dto/index.js';
 
 @Injectable()
 export class JobService {

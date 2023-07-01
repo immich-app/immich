@@ -9,13 +9,13 @@ import {
   newSharedLinkRepositoryMock,
   sharedLinkResponseStub,
   sharedLinkStub,
-} from '@test';
+} from '@test/index.js';
 import { when } from 'jest-when';
 import _ from 'lodash';
-import { SharedLinkType } from '../../infra/entities/shared-link.entity';
-import { AssetIdErrorReason, ICryptoRepository } from '../index';
-import { ISharedLinkRepository } from './shared-link.repository';
-import { SharedLinkService } from './shared-link.service';
+import { SharedLinkType } from '../../infra/entities/shared-link.entity.js';
+import { AssetIdErrorReason, ICryptoRepository } from '../index.js';
+import { ISharedLinkRepository } from './shared-link.repository.js';
+import { SharedLinkService } from './shared-link.service.js';
 
 describe(SharedLinkService.name, () => {
   let sut: SharedLinkService;

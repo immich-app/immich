@@ -1,3 +1,3 @@
-export * from './storage.core';
-export * from './storage.repository';
-export * from './storage.service';
+export * from './storage.core.js';
+export * from './storage.repository.js';
+export * from './storage.service.js';

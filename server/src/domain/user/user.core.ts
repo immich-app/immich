@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/infra/entities';
+import { UserEntity } from '@app/infra/entities/index.js';
 import {
   BadRequestException,
   ForbiddenException,
@@ -8,10 +8,10 @@ import {
 } from '@nestjs/common';
 import { constants, createReadStream, ReadStream } from 'fs';
 import fs from 'fs/promises';
-import { AuthUserDto } from '../auth';
-import { ICryptoRepository } from '../crypto';
-import { CreateAdminDto, CreateUserDto, CreateUserOAuthDto } from './dto/create-user.dto';
-import { IUserRepository, UserListFilter } from './user.repository';
+import { AuthUserDto } from '../auth/index.js';
+import { ICryptoRepository } from '../crypto/index.js';
+import { CreateAdminDto, CreateUserDto, CreateUserOAuthDto } from './dto/create-user.dto.js';
+import { IUserRepository, UserListFilter } from './user.repository.js';
 
 const SALT_ROUNDS = 10;
 

@@ -1,16 +1,16 @@
 import { BadRequestException, Inject } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { extname } from 'path';
-import { AssetEntity } from '../../infra/entities/asset.entity';
-import { AuthUserDto } from '../auth';
-import { HumanReadableSize, usePagination } from '../domain.util';
-import { AccessCore, IAccessRepository, Permission } from '../index';
-import { ImmichReadStream, IStorageRepository } from '../storage';
-import { IAssetRepository } from './asset.repository';
-import { AssetIdsDto, DownloadArchiveInfo, DownloadDto, DownloadResponseDto, MemoryLaneDto } from './dto';
-import { MapMarkerDto } from './dto/map-marker.dto';
-import { mapAsset, MapMarkerResponseDto } from './response-dto';
-import { MemoryLaneResponseDto } from './response-dto/memory-lane-response.dto';
+import { AssetEntity } from '../../infra/entities/asset.entity.js';
+import { AuthUserDto } from '../auth/index.js';
+import { HumanReadableSize, usePagination } from '../domain.util.js';
+import { AccessCore, IAccessRepository, Permission } from '../index.js';
+import { ImmichReadStream, IStorageRepository } from '../storage/index.js';
+import { IAssetRepository } from './asset.repository.js';
+import { AssetIdsDto, DownloadArchiveInfo, DownloadDto, DownloadResponseDto, MemoryLaneDto } from './dto/index.js';
+import { MapMarkerDto } from './dto/map-marker.dto.js';
+import { mapAsset, MapMarkerResponseDto } from './response-dto/index.js';
+import { MemoryLaneResponseDto } from './response-dto/memory-lane-response.dto.js';
 
 export class AssetService {
   private access: AccessCore;

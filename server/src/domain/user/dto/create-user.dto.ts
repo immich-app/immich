@@ -1,4 +1,4 @@
-import { toEmail, toSanitized } from '@app/immich/utils/transform.util';
+import { toEmail, toSanitized } from '@app/immich/utils/transform.util.js';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 

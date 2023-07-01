@@ -1,6 +1,6 @@
 import { UserService } from '@app/domain';
 import { Command, CommandRunner } from 'nest-commander';
-import { CLI_USER } from '../constants';
+import { CLI_USER } from '../constants.js';
 
 @Command({
   name: 'list-users',

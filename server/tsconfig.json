@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "node16",
     "strict": true,
     "declaration": true,
     "removeComments": true,
@@ -15,17 +15,20 @@
     "incremental": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "baseUrl": "./",
+    "baseUrl": ".",
     "paths": {
       "@test": ["test"],
       "@test/*": ["test/*"],
-      "@app/immich": ["src/immich"],
+      "@app/immich": ["src/immich/index.js"],
       "@app/immich/*": ["src/immich/*"],
-      "@app/infra": ["src/infra"],
+      "@app/infra": ["src/infra/index.js"],
       "@app/infra/*": ["src/infra/*"],
-      "@app/domain": ["src/domain"],
+      "@app/domain": ["src/domain/index.js"],
       "@app/domain/*": ["src/domain/*"]
     }
   },
-  "exclude": ["dist", "node_modules", "upload"]
+  "exclude": ["dist", "node_modules", "upload"],
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
+  }
 }

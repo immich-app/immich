@@ -4,13 +4,13 @@ import {
   SystemConfigKey,
   SystemConfigValue,
   TranscodePreset,
-} from '@app/infra/entities';
+} from '@app/infra/entities/index.js';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import * as _ from 'lodash';
 import { Subject } from 'rxjs';
 import { DeepPartial } from 'typeorm';
-import { QueueName } from '../job/job.constants';
-import { ISystemConfigRepository } from './system-config.repository';
+import { QueueName } from '../job/job.constants.js';
+import { ISystemConfigRepository } from './system-config.repository.js';
 
 export type SystemConfigValidator = (config: SystemConfig) => void | Promise<void>;
 

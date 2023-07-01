@@ -2,7 +2,7 @@ import { IPartnerRepository, PartnerIds } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PartnerEntity } from '../entities';
+import { PartnerEntity } from '../entities/index.js';
 
 @Injectable()
 export class PartnerRepository implements IPartnerRepository {

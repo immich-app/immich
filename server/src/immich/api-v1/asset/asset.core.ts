@@ -1,8 +1,8 @@
 import { AuthUserDto, IJobRepository, JobName } from '@app/domain';
-import { AssetEntity, AssetType, UserEntity } from '@app/infra/entities';
+import { AssetEntity, AssetType, UserEntity } from '@app/infra/entities/index.js';
 import { parse } from 'node:path';
-import { IAssetRepository } from './asset-repository';
-import { CreateAssetDto, ImportAssetDto, UploadFile } from './dto/create-asset.dto';
+import { IAssetRepository } from './asset-repository.js';
+import { CreateAssetDto, ImportAssetDto, UploadFile } from './dto/create-asset.dto.js';
 
 export class AssetCore {
   constructor(private repository: IAssetRepository, private jobRepository: IJobRepository) {}

@@ -1,14 +1,14 @@
-import { AssetEntity, AssetType, TranscodePreset } from '@app/infra/entities';
+import { AssetEntity, AssetType, TranscodePreset } from '@app/infra/entities/index.js';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { join } from 'path';
-import { IAssetRepository, WithoutProperty } from '../asset';
-import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
-import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
-import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config';
-import { SystemConfigCore } from '../system-config/system-config.core';
-import { JPEG_THUMBNAIL_SIZE, WEBP_THUMBNAIL_SIZE } from './media.constant';
-import { AudioStreamInfo, IMediaRepository, VideoStreamInfo } from './media.repository';
+import { IAssetRepository, WithoutProperty } from '../asset/index.js';
+import { usePagination } from '../domain.util.js';
+import { IBaseJob, IEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job/index.js';
+import { IStorageRepository, StorageCore, StorageFolder } from '../storage/index.js';
+import { ISystemConfigRepository, SystemConfigFFmpegDto } from '../system-config/index.js';
+import { SystemConfigCore } from '../system-config/system-config.core.js';
+import { JPEG_THUMBNAIL_SIZE, WEBP_THUMBNAIL_SIZE } from './media.constant.js';
+import { AudioStreamInfo, IMediaRepository, VideoStreamInfo } from './media.repository.js';
 
 @Injectable()
 export class MediaService {

@@ -1,9 +1,9 @@
-import { APIKeyEntity } from '@app/infra/entities';
+import { APIKeyEntity } from '@app/infra/entities/index.js';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { AuthUserDto } from '../auth';
-import { ICryptoRepository } from '../crypto';
-import { APIKeyCreateDto, APIKeyCreateResponseDto, APIKeyResponseDto } from './api-key.dto';
-import { IKeyRepository } from './api-key.repository';
+import { AuthUserDto } from '../auth/index.js';
+import { ICryptoRepository } from '../crypto/index.js';
+import { APIKeyCreateDto, APIKeyCreateResponseDto, APIKeyResponseDto } from './api-key.dto.js';
+import { IKeyRepository } from './api-key.repository.js';
 
 @Injectable()
 export class APIKeyService {

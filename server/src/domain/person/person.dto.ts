@@ -1,4 +1,4 @@
-import { AssetFaceEntity, PersonEntity } from '@app/infra/entities';
+import { AssetFaceEntity, PersonEntity } from '@app/infra/entities/index.js';
 import { IsNotEmpty, IsString } from 'class-validator';
 
 export class PersonUpdateDto {

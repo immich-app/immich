@@ -1,4 +1,4 @@
-import { isNumberInRange } from '../numbers';
+import { isNumberInRange } from '../numbers.js';
 
 export function parseLatitude(input: string | number): number | null {
   const latitude = typeof input === 'string' ? Number.parseFloat(input) : input;

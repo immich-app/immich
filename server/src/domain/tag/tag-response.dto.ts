@@ -1,4 +1,4 @@
-import { TagEntity, TagType } from '@app/infra/entities';
+import { TagEntity, TagType } from '@app/infra/entities/index.js';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class TagResponseDto {

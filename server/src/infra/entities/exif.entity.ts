@@ -1,7 +1,7 @@
 import { Index, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
-import { Column } from 'typeorm/decorator/columns/Column';
-import { Entity } from 'typeorm/decorator/entity/Entity';
-import { AssetEntity } from './asset.entity';
+import { Column } from 'typeorm/decorator/columns/Column.js';
+import { Entity } from 'typeorm/decorator/entity/Entity.js';
+import { AssetEntity } from './asset.entity.js';
 
 @Entity('exif')
 export class ExifEntity {

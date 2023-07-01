@@ -1,4 +1,4 @@
-import { SystemConfig } from '@app/infra/entities';
+import { SystemConfig } from '@app/infra/entities/index.js';
 import {
   BadRequestException,
   Inject,
@@ -9,16 +9,16 @@ import {
 } from '@nestjs/common';
 import cookieParser from 'cookie';
 import { IncomingHttpHeaders } from 'http';
-import { IKeyRepository } from '../api-key';
-import { ICryptoRepository } from '../crypto/crypto.repository';
-import { OAuthCore } from '../oauth/oauth.core';
-import { ISharedLinkRepository } from '../shared-link';
-import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
-import { IUserRepository, UserCore } from '../user';
-import { IUserTokenRepository, UserTokenCore } from '../user-token';
-import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_API_KEY_HEADER } from './auth.constant';
-import { AuthCore, LoginDetails } from './auth.core';
-import { AuthUserDto, ChangePasswordDto, LoginCredentialDto, SignUpDto } from './dto';
+import { IKeyRepository } from '../api-key/index.js';
+import { ICryptoRepository } from '../crypto/crypto.repository.js';
+import { OAuthCore } from '../oauth/oauth.core.js';
+import { ISharedLinkRepository } from '../shared-link/index.js';
+import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config/index.js';
+import { IUserRepository, UserCore } from '../user/index.js';
+import { IUserTokenRepository, UserTokenCore } from '../user-token/index.js';
+import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_API_KEY_HEADER } from './auth.constant.js';
+import { AuthCore, LoginDetails } from './auth.core.js';
+import { AuthUserDto, ChangePasswordDto, LoginCredentialDto, SignUpDto } from './dto/index.js';
 import {
   AdminSignupResponseDto,
   AuthDeviceResponseDto,
@@ -26,7 +26,7 @@ import {
   LogoutResponseDto,
   mapAdminSignupResponse,
   mapUserToken,
-} from './response-dto';
+} from './response-dto/index.js';
 
 @Injectable()
 export class AuthService {
@@ -189,7 +189,7 @@ export class AuthService {
     return cookies[IMMICH_ACCESS_COOKIE] || null;
   }
 
-  private async validateSharedLink(key: string | string[]): Promise<AuthUserDto> {
+  private async validateSharedLink(key: string | string[]): Promise<AuthUserDto | null> {
     key = Array.isArray(key) ? key[0] : key;
 
     const bytes = Buffer.from(key, key.length === 100 ? 'hex' : 'base64url');

@@ -1,7 +1,7 @@
 import { IAccessRepository } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AlbumEntity, AssetEntity, PartnerEntity, SharedLinkEntity } from '../entities';
+import { AlbumEntity, AssetEntity, PartnerEntity, SharedLinkEntity } from '../entities/index.js';
 
 export class AccessRepository implements IAccessRepository {
   constructor(

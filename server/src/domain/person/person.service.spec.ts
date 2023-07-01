@@ -6,12 +6,12 @@ import {
   newPersonRepositoryMock,
   newStorageRepositoryMock,
   personStub,
-} from '@test';
-import { IJobRepository, JobName } from '..';
-import { IStorageRepository } from '../storage';
-import { PersonResponseDto } from './person.dto';
-import { IPersonRepository } from './person.repository';
-import { PersonService } from './person.service';
+} from '@test/index.js';
+import { IStorageRepository } from '../index.js';
+import { PersonResponseDto } from './person.dto.js';
+import { IPersonRepository } from './person.repository.js';
+import { PersonService } from './person.service.js';
+import { PersonResponseDto } from './response-dto/index.js';
 
 const responseDto: PersonResponseDto = {
   id: 'person-1',

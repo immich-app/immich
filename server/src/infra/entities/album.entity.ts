@@ -9,9 +9,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { AssetEntity } from './asset.entity';
-import { SharedLinkEntity } from './shared-link.entity';
-import { UserEntity } from './user.entity';
+import { AssetEntity } from './asset.entity.js';
+import { SharedLinkEntity } from './shared-link.entity.js';
+import { UserEntity } from './user.entity.js';
 
 @Entity('albums')
 export class AlbumEntity {

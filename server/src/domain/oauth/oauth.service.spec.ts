@@ -1,4 +1,4 @@
-import { SystemConfig, UserEntity } from '@app/infra/entities';
+import { SystemConfig, UserEntity } from '@app/infra/entities/index.js';
 import { BadRequestException } from '@nestjs/common';
 import {
   authStub,
@@ -10,14 +10,14 @@ import {
   systemConfigStub,
   userEntityStub,
   userTokenEntityStub,
-} from '@test';
+} from '@test/index.js';
 import { generators, Issuer } from 'openid-client';
-import { OAuthService } from '.';
-import { LoginDetails } from '../auth';
-import { ICryptoRepository } from '../crypto';
-import { ISystemConfigRepository } from '../system-config';
-import { IUserRepository } from '../user';
-import { IUserTokenRepository } from '../user-token';
+import { LoginDetails } from '../auth/index.js';
+import { ICryptoRepository } from '../crypto/index.js';
+import { ISystemConfigRepository } from '../system-config/index.js';
+import { IUserTokenRepository } from '../user-token/index.js';
+import { IUserRepository } from '../user/index.js';
+import { OAuthService } from './index.js';
 
 const email = 'user@immich.com';
 const sub = 'my-auth-user-sub';

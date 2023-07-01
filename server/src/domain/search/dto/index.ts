@@ -1,1 +1,1 @@
-export * from './search.dto';
+export * from './search.dto.js';

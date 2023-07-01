@@ -1,8 +1,8 @@
 import { AllJobStatusResponseDto, JobCommandDto, JobIdDto, JobService, JobStatusDto } from '@app/domain';
 import { Body, Controller, Get, Param, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Authenticated } from '../decorators/authenticated.decorator';
-import { UseValidation } from '../decorators/use-validation.decorator';
+import { Authenticated } from '../decorators/authenticated.decorator.js';
+import { UseValidation } from '../decorators/use-validation.decorator.js';
 
 @ApiTags('Job')
 @Controller('jobs')

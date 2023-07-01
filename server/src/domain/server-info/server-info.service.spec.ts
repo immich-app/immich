@@ -1,8 +1,8 @@
-import { newStorageRepositoryMock, newUserRepositoryMock } from '@test';
-import { serverVersion } from '../domain.constant';
-import { IStorageRepository } from '../storage';
-import { IUserRepository } from '../user';
-import { ServerInfoService } from './server-info.service';
+import { newStorageRepositoryMock, newUserRepositoryMock } from '@test/index.js';
+import { serverVersion } from '../domain.constant.js';
+import { IStorageRepository } from '../storage/index.js';
+import { IUserRepository } from '../user/index.js';
+import { ServerInfoService } from './server-info.service.js';
 
 describe(ServerInfoService.name, () => {
   let sut: ServerInfoService;

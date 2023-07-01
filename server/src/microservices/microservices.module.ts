@@ -1,10 +1,10 @@
 import { DomainModule } from '@app/domain';
+import { ExifEntity } from '@app/infra/entities/index.js';
 import { InfraModule } from '@app/infra';
-import { ExifEntity } from '@app/infra/entities';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppService } from './app.service';
-import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
+import { AppService } from './app.service.js';
+import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor.js';
 
 @Module({
   imports: [

@@ -13,9 +13,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DateTime } from 'luxon';
 import { FindOptionsRelations, FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
-import { AssetEntity, AssetType } from '../entities';
-import OptionalBetween from '../utils/optional-between.util';
-import { paginate } from '../utils/pagination.util';
+import { AssetEntity, AssetType } from '../entities/index.js';
+import OptionalBetween from '../utils/optional-between.util.js';
+import { paginate } from '../utils/pagination.util.js';
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {

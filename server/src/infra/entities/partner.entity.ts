@@ -1,6 +1,6 @@
 import { CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
-import { UserEntity } from './user.entity';
+import { UserEntity } from './user.entity.js';
 
 @Entity('partners')
 export class PartnerEntity {

@@ -1,15 +1,22 @@
 import { Inject, Logger } from '@nestjs/common';
 import { join } from 'path';
-import { IAssetRepository, WithoutProperty } from '../asset';
-import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
-import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IFaceThumbnailJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
-import { CropOptions, FACE_THUMBNAIL_SIZE, IMediaRepository } from '../media';
-import { IPersonRepository } from '../person/person.repository';
-import { ISearchRepository } from '../search/search.repository';
-import { IMachineLearningRepository } from '../smart-info';
-import { IStorageRepository, StorageCore, StorageFolder } from '../storage';
-import { AssetFaceId, IFaceRepository } from './face.repository';
+import { IAssetRepository, WithoutProperty } from '../asset/index.js';
+import { MACHINE_LEARNING_ENABLED } from '../domain.constant.js';
+import { usePagination } from '../domain.util.js';
+import {
+  IBaseJob,
+  IEntityJob,
+  IFaceThumbnailJob,
+  IJobRepository,
+  JobName,
+  JOBS_ASSET_PAGINATION_SIZE,
+} from '../job/index.js';
+import { CropOptions, FACE_THUMBNAIL_SIZE, IMediaRepository } from '../media/index.js';
+import { IPersonRepository } from '../person/person.repository.js';
+import { ISearchRepository } from '../search/search.repository.js';
+import { IMachineLearningRepository } from '../smart-info/index.js';
+import { IStorageRepository, StorageCore, StorageFolder } from '../storage/index.js';
+import { AssetFaceId, IFaceRepository } from './face.repository.js';
 
 export class FacialRecognitionService {
   private logger = new Logger(FacialRecognitionService.name);

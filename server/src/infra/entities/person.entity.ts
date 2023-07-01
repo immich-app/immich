@@ -7,8 +7,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { AssetFaceEntity } from './asset-face.entity';
-import { UserEntity } from './user.entity';
+import { AssetFaceEntity } from './asset-face.entity.js';
+import { UserEntity } from './user.entity.js';
 
 @Entity('person')
 export class PersonEntity {

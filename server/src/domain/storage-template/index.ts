@@ -1,2 +1,2 @@
-export * from './storage-template.core';
-export * from './storage-template.service';
+export * from './storage-template.core.js';
+export * from './storage-template.service.js';

@@ -1,2 +1,2 @@
-export * from './geocoding.repository';
-export * from './metadata.service';
+export * from './geocoding.repository.js';
+export * from './metadata.service.js';

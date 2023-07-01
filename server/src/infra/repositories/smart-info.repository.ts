@@ -2,7 +2,7 @@ import { ISmartInfoRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { SmartInfoEntity } from '../entities';
+import { SmartInfoEntity } from '../entities/index.js';
 
 @Injectable()
 export class SmartInfoRepository implements ISmartInfoRepository {

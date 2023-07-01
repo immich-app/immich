@@ -6,13 +6,13 @@ import {
   newUserRepositoryMock,
   systemConfigStub,
   userEntityStub,
-} from '@test';
+} from '@test/index.js';
 import { when } from 'jest-when';
-import { StorageTemplateService } from '.';
-import { IAssetRepository } from '../asset';
-import { IStorageRepository } from '../storage/storage.repository';
-import { ISystemConfigRepository } from '../system-config';
-import { IUserRepository } from '../user';
+import { IAssetRepository } from '../asset/index.js';
+import { IStorageRepository } from '../storage/storage.repository.js';
+import { ISystemConfigRepository } from '../system-config/index.js';
+import { IUserRepository } from '../user/index.js';
+import { StorageTemplateService } from './index.js';
 
 describe(StorageTemplateService.name, () => {
   let sut: StorageTemplateService;

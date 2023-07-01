@@ -1,4 +1,4 @@
-import { validMimeTypes } from './domain.constant';
+import { validMimeTypes } from './domain.constant.js';
 
 describe('valid mime types', () => {
   it('should be a sorted list', () => {

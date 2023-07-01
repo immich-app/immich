@@ -1,9 +1,17 @@
-import { IJobRepository, JobCounts, JobItem, JobName, JOBS_TO_QUEUE, QueueName, QueueStatus } from '@app/domain';
+import {
+  IJobRepository,
+  JobCounts,
+  JobItem,
+  JobName,
+  JOBS_TO_QUEUE,
+  QueueName,
+  QueueStatus,
+} from '@app/domain';
 import { getQueueToken } from '@nestjs/bullmq';
 import { Injectable, Logger } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Job, JobsOptions, Processor, Queue, Worker, WorkerOptions } from 'bullmq';
-import { bullConfig } from '../infra.config';
+import { bullConfig } from '../infra.config.js';
 
 @Injectable()
 export class JobRepository implements IJobRepository {

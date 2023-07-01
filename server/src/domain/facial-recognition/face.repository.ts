@@ -1,4 +1,4 @@
-import { AssetFaceEntity } from '@app/infra/entities';
+import { AssetFaceEntity } from '@app/infra/entities/index.js';
 
 export const IFaceRepository = 'IFaceRepository';
 

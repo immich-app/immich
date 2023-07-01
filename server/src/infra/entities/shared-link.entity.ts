@@ -8,9 +8,9 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
-import { AlbumEntity } from './album.entity';
-import { AssetEntity } from './asset.entity';
-import { UserEntity } from './user.entity';
+import { AlbumEntity } from './album.entity.js';
+import { AssetEntity } from './asset.entity.js';
+import { UserEntity } from './user.entity.js';
 
 @Entity('shared_links')
 @Unique('UQ_sharedlink_key', ['key'])

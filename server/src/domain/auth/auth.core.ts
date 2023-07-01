@@ -1,10 +1,10 @@
-import { SystemConfig, UserEntity } from '@app/infra/entities';
-import { ICryptoRepository } from '../crypto/crypto.repository';
-import { ISystemConfigRepository } from '../system-config';
-import { SystemConfigCore } from '../system-config/system-config.core';
-import { IUserTokenRepository, UserTokenCore } from '../user-token';
-import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE } from './auth.constant';
-import { LoginResponseDto, mapLoginResponse } from './response-dto';
+import { SystemConfig, UserEntity } from '@app/infra/entities/index.js';
+import { ICryptoRepository } from '../crypto/crypto.repository.js';
+import { ISystemConfigRepository } from '../system-config/index.js';
+import { SystemConfigCore } from '../system-config/system-config.core.js';
+import { IUserTokenRepository, UserTokenCore } from '../user-token/index.js';
+import { AuthType, IMMICH_ACCESS_COOKIE, IMMICH_AUTH_TYPE_COOKIE } from './auth.constant.js';
+import { LoginResponseDto, mapLoginResponse } from './response-dto/index.js';
 
 export interface LoginDetails {
   isSecure: boolean;

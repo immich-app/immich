@@ -1,4 +1,4 @@
-import { QueueName } from '@app/domain/job/job.constants';
+import { QueueName } from '@app/domain/job/job.constants.js';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('system_config')

@@ -26,10 +26,10 @@ import { BullModule } from '@nestjs/bullmq';
 import { Global, Module, Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CommunicationGateway } from './communication.gateway';
-import { databaseConfig } from './database.config';
-import { databaseEntities } from './entities';
-import { bullConfig, bullQueues } from './infra.config';
+import { CommunicationGateway } from './communication.gateway.js';
+import { databaseConfig } from './database.config.js';
+import { databaseEntities } from './entities/index.js';
+import { bullConfig, bullQueues } from './infra.config.js';
 import {
   AccessRepository,
   AlbumRepository,
@@ -52,7 +52,7 @@ import {
   TypesenseRepository,
   UserRepository,
   UserTokenRepository,
-} from './repositories';
+} from './repositories/index.js';
 
 const providers: Provider[] = [
   { provide: IAccessRepository, useClass: AccessRepository },

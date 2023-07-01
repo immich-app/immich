@@ -1,4 +1,4 @@
-import { UserEntity } from '@app/infra/entities';
+import { UserEntity } from '@app/infra/entities/index.js';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import {
   newAlbumRepositoryMock,
@@ -7,17 +7,17 @@ import {
   newJobRepositoryMock,
   newStorageRepositoryMock,
   newUserRepositoryMock,
-} from '@test';
+} from '@test/index.js';
 import { when } from 'jest-when';
-import { IAlbumRepository } from '../album';
-import { IAssetRepository } from '../asset';
-import { AuthUserDto } from '../auth';
-import { ICryptoRepository } from '../crypto';
-import { IJobRepository, JobName } from '../job';
-import { IStorageRepository } from '../storage';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { IUserRepository } from './user.repository';
-import { UserService } from './user.service';
+import { IAlbumRepository } from '../album/index.js';
+import { IAssetRepository } from '../asset/index.js';
+import { AuthUserDto } from '../auth/index.js';
+import { ICryptoRepository } from '../crypto/index.js';
+import { IJobRepository, JobName } from '../job/index.js';
+import { IStorageRepository } from '../storage/index.js';
+import { UpdateUserDto } from './dto/update-user.dto.js';
+import { IUserRepository } from './user.repository.js';
+import { UserService } from './user.service.js';
 
 const makeDeletedAt = (daysAgo: number) => {
   const deletedAt = new Date();

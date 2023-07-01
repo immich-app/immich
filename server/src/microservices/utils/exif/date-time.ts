@@ -1,5 +1,5 @@
 import { ExifDateTime } from 'exiftool-vendored';
-import { isDecimalNumber } from '../numbers';
+import { isDecimalNumber } from '../numbers.js';
 
 export function exifToDate(exifDate: string | Date | ExifDateTime | undefined): Date | null {
   if (!exifDate) {

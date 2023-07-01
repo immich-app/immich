@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { parseLatitude, parseLongitude } from './coordinates';
+import { parseLatitude, parseLongitude } from './coordinates.js';
 
 describe('parsing latitude from string input', () => {
   it('returns null for invalid inputs', () => {

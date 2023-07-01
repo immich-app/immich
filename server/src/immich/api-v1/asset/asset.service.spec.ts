@@ -1,5 +1,5 @@
 import { ICryptoRepository, IJobRepository, IStorageRepository, JobName } from '@app/domain';
-import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
+import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities/index.js';
 import { BadRequestException } from '@nestjs/common';
 import {
   assetEntityStub,
@@ -10,16 +10,16 @@ import {
   newCryptoRepositoryMock,
   newJobRepositoryMock,
   newStorageRepositoryMock,
-} from '@test';
+} from '@test/index.js';
 import { when } from 'jest-when';
 import { QueryFailedError, Repository } from 'typeorm';
-import { IAssetRepository } from './asset-repository';
-import { AssetService } from './asset.service';
-import { CreateAssetDto } from './dto/create-asset.dto';
-import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto';
-import { AssetRejectReason, AssetUploadAction } from './response-dto/asset-check-response.dto';
-import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto';
-import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto';
+import { IAssetRepository } from './asset-repository.js';
+import { AssetService } from './asset.service.js';
+import { CreateAssetDto } from './dto/create-asset.dto.js';
+import { TimeGroupEnum } from './dto/get-asset-count-by-time-bucket.dto.js';
+import { AssetRejectReason, AssetUploadAction } from './response-dto/asset-check-response.dto.js';
+import { AssetCountByTimeBucket } from './response-dto/asset-count-by-time-group-response.dto.js';
+import { AssetCountByUserIdResponseDto } from './response-dto/asset-count-by-user-id-response.dto.js';
 
 const _getCreateAssetDto = (): CreateAssetDto => {
   const createAssetDto = new CreateAssetDto();

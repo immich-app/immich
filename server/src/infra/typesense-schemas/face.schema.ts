@@ -1,4 +1,4 @@
-import { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
+import { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections.js';
 
 export const faceSchemaVersion = 1;
 export const faceSchema: CollectionCreateSchema = {

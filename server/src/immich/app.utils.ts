@@ -15,7 +15,7 @@ import {
 } from '@nestjs/swagger';
 import { writeFileSync } from 'fs';
 import path from 'path';
-import { Metadata } from './decorators/authenticated.decorator';
+import { Metadata } from './decorators/authenticated.decorator.js';
 
 export const asStreamableFile = ({ stream, type, length }: ImmichReadStream) => {
   return new StreamableFile(stream, { type, length });

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { QueueName } from '../job.constants';
+import { QueueName } from '../job.constants.js';
 
 export class JobCountsDto {
   @ApiProperty({ type: 'integer' })

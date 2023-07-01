@@ -1,4 +1,4 @@
-import { TagType } from '@app/infra/entities';
+import { TagType } from '@app/infra/entities/index.js';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 

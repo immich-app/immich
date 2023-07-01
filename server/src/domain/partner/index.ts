@@ -1,2 +1,2 @@
-export * from './partner.repository';
-export * from './partner.service';
+export * from './partner.repository.js';
+export * from './partner.service.js';

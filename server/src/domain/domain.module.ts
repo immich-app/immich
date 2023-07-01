@@ -1,24 +1,24 @@
 import { DynamicModule, Global, Module, ModuleMetadata, OnApplicationShutdown, Provider } from '@nestjs/common';
-import { AlbumService } from './album';
-import { APIKeyService } from './api-key';
-import { AssetService } from './asset';
-import { AuthService } from './auth';
-import { FacialRecognitionService } from './facial-recognition';
-import { JobService } from './job';
-import { MediaService } from './media';
-import { MetadataService } from './metadata';
-import { OAuthService } from './oauth';
-import { PartnerService } from './partner';
-import { PersonService } from './person';
-import { SearchService } from './search';
-import { ServerInfoService } from './server-info';
-import { SharedLinkService } from './shared-link';
-import { SmartInfoService } from './smart-info';
-import { StorageService } from './storage';
-import { StorageTemplateService } from './storage-template';
-import { INITIAL_SYSTEM_CONFIG, SystemConfigService } from './system-config';
-import { TagService } from './tag';
-import { UserService } from './user';
+import { AlbumService } from './album/index.js';
+import { APIKeyService } from './api-key/index.js';
+import { AssetService } from './asset/index.js';
+import { AuthService } from './auth/index.js';
+import { FacialRecognitionService } from './facial-recognition/index.js';
+import { JobService } from './job/index.js';
+import { MediaService } from './media/index.js';
+import { MetadataService } from './metadata/index.js';
+import { OAuthService } from './oauth/index.js';
+import { PartnerService } from './partner/index.js';
+import { PersonService } from './person/index.js';
+import { SearchService } from './search/index.js';
+import { ServerInfoService } from './server-info/index.js';
+import { SharedLinkService } from './shared-link/index.js';
+import { SmartInfoService } from './smart-info/index.js';
+import { StorageTemplateService } from './storage-template/index.js';
+import { StorageService } from './storage/index.js';
+import { INITIAL_SYSTEM_CONFIG, SystemConfigService } from './system-config/index.js';
+import { TagService } from './tag/index.js';
+import { UserService } from './user/index.js';
 
 const providers: Provider[] = [
   AlbumService,

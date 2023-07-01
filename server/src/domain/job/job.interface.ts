@@ -1,4 +1,4 @@
-import { BoundingBox } from '../smart-info';
+import { BoundingBox } from '../smart-info/index.js';
 
 export interface IBaseJob {
   force?: boolean;

@@ -1,14 +1,14 @@
 import { isSidecarFileType, isSupportedFileType } from '@app/domain';
-import { StorageCore, StorageFolder } from '@app/domain/storage';
+import { StorageCore, StorageFolder } from '@app/domain/storage/index.js';
 import { BadRequestException, Logger, UnauthorizedException } from '@nestjs/common';
-import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
+import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface.js';
 import { createHash, randomUUID } from 'crypto';
 import { existsSync, mkdirSync } from 'fs';
 import { diskStorage, StorageEngine } from 'multer';
 import { extname } from 'path';
 import sanitize from 'sanitize-filename';
-import { AuthRequest, AuthUserDto } from '../decorators/auth-user.decorator';
-import { patchFormData } from '../utils/path-form-data.util';
+import { AuthRequest, AuthUserDto } from '../decorators/auth-user.decorator.js';
+import { patchFormData } from '../utils/path-form-data.util.js';
 
 export interface ImmichFile extends Express.Multer.File {
   /** sha1 hash of file */

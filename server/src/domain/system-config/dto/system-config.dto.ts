@@ -1,11 +1,11 @@
-import { SystemConfig } from '@app/infra/entities';
+import { SystemConfig } from '@app/infra/entities/index.js';
 import { Type } from 'class-transformer';
 import { IsObject, ValidateNested } from 'class-validator';
-import { SystemConfigFFmpegDto } from './system-config-ffmpeg.dto';
-import { SystemConfigJobDto } from './system-config-job.dto';
-import { SystemConfigOAuthDto } from './system-config-oauth.dto';
-import { SystemConfigPasswordLoginDto } from './system-config-password-login.dto';
-import { SystemConfigStorageTemplateDto } from './system-config-storage-template.dto';
+import { SystemConfigFFmpegDto } from './system-config-ffmpeg.dto.js';
+import { SystemConfigJobDto } from './system-config-job.dto.js';
+import { SystemConfigOAuthDto } from './system-config-oauth.dto.js';
+import { SystemConfigPasswordLoginDto } from './system-config-password-login.dto.js';
+import { SystemConfigStorageTemplateDto } from './system-config-storage-template.dto.js';
 
 export class SystemConfigDto {
   @Type(() => SystemConfigFFmpegDto)

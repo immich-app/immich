@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ISystemConfigRepository } from '.';
-import { IJobRepository, JobName } from '../job';
-import { mapConfig, SystemConfigDto } from './dto/system-config.dto';
-import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto';
+import { IJobRepository, JobName } from '../job/index.js';
+import { mapConfig, SystemConfigDto } from './dto/system-config.dto.js';
+import { ISystemConfigRepository } from './index.js';
+import { SystemConfigTemplateStorageOptionDto } from './response-dto/system-config-template-storage-option.dto.js';
 import {
   supportedDayTokens,
   supportedHourTokens,
@@ -11,8 +11,8 @@ import {
   supportedPresetTokens,
   supportedSecondTokens,
   supportedYearTokens,
-} from './system-config.constants';
-import { SystemConfigCore, SystemConfigValidator } from './system-config.core';
+} from './system-config.constants.js';
+import { SystemConfigCore, SystemConfigValidator } from './system-config.core.js';
 
 @Injectable()
 export class SystemConfigService {

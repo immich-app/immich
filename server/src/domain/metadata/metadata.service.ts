@@ -1,9 +1,9 @@
 import { Inject } from '@nestjs/common';
 import { constants } from 'fs/promises';
-import { IAssetRepository, WithoutProperty, WithProperty } from '../asset';
-import { usePagination } from '../domain.util';
-import { IBaseJob, IEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
-import { IStorageRepository } from '../storage';
+import { IAssetRepository, WithoutProperty, WithProperty } from '../asset/index.js';
+import { usePagination } from '../domain.util.js';
+import { IBaseJob, IEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job/index.js';
+import { IStorageRepository } from '../storage/index.js';
 
 export class MetadataService {
   constructor(

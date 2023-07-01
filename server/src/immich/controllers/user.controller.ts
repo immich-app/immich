@@ -8,7 +8,7 @@ import {
   UserResponseDto,
   UserService,
 } from '@app/domain';
-import { UserIdDto } from '@app/domain/user/dto/user-id.dto';
+import { UserIdDto } from '@app/domain/user/dto/user-id.dto.js';
 import {
   Body,
   Controller,
@@ -27,10 +27,10 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Response as Res } from 'express';
-import { profileImageUploadOption } from '../config/profile-image-upload.config';
-import { AuthUser, AuthUserDto } from '../decorators/auth-user.decorator';
-import { AdminRoute, Authenticated, PublicRoute } from '../decorators/authenticated.decorator';
-import { UseValidation } from '../decorators/use-validation.decorator';
+import { profileImageUploadOption } from '../config/profile-image-upload.config.js';
+import { AuthUser, AuthUserDto } from '../decorators/auth-user.decorator.js';
+import { AdminRoute, Authenticated, PublicRoute } from '../decorators/authenticated.decorator.js';
+import { UseValidation } from '../decorators/use-validation.decorator.js';
 
 @ApiTags('User')
 @Controller('user')

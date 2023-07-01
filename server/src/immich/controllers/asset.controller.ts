@@ -1,3 +1,5 @@
+import { MapMarkerDto } from '@app/domain/asset/dto/map-marker.dto.js';
+import { MemoryLaneResponseDto } from '@app/domain/asset/response-dto/memory-lane-response.dto.js';
 import {
   AssetIdsDto,
   AssetService,
@@ -7,15 +9,13 @@ import {
   MapMarkerResponseDto,
   MemoryLaneDto,
 } from '@app/domain';
-import { MapMarkerDto } from '@app/domain/asset/dto/map-marker.dto';
-import { MemoryLaneResponseDto } from '@app/domain/asset/response-dto/memory-lane-response.dto';
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { asStreamableFile } from '../app.utils';
-import { AuthUser } from '../decorators/auth-user.decorator';
-import { Authenticated, SharedLinkRoute } from '../decorators/authenticated.decorator';
-import { UseValidation } from '../decorators/use-validation.decorator';
-import { UUIDParamDto } from './dto/uuid-param.dto';
+import { asStreamableFile } from '../app.utils.js';
+import { AuthUser } from '../decorators/auth-user.decorator.js';
+import { Authenticated, SharedLinkRoute } from '../decorators/authenticated.decorator.js';
+import { UseValidation } from '../decorators/use-validation.decorator.js';
+import { UUIDParamDto } from './dto/uuid-param.dto.js';
 
 @ApiTags('Asset')
 @Controller('asset')

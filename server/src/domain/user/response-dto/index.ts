@@ -1,3 +1,3 @@
-export * from './create-profile-image-response.dto';
-export * from './user-count-response.dto';
-export * from './user-response.dto';
+export * from './create-profile-image-response.dto.js';
+export * from './user-count-response.dto.js';
+export * from './user-response.dto.js';

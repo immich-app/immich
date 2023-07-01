@@ -2,7 +2,7 @@ import { ISharedLinkRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { SharedLinkEntity } from '../entities';
+import { SharedLinkEntity } from '../entities/index.js';
 
 @Injectable()
 export class SharedLinkRepository implements ISharedLinkRepository {

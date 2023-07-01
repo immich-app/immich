@@ -8,10 +8,10 @@ import {
 } from '@app/domain';
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthUser } from '../decorators/auth-user.decorator';
-import { Authenticated } from '../decorators/authenticated.decorator';
-import { UseValidation } from '../decorators/use-validation.decorator';
-import { UUIDParamDto } from './dto/uuid-param.dto';
+import { AuthUser } from '../decorators/auth-user.decorator.js';
+import { Authenticated } from '../decorators/authenticated.decorator.js';
+import { UseValidation } from '../decorators/use-validation.decorator.js';
+import { UUIDParamDto } from './dto/uuid-param.dto.js';
 
 @ApiTags('API Key')
 @Controller('api-key')

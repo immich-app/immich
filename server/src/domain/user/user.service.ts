@@ -1,15 +1,15 @@
-import { UserEntity } from '@app/infra/entities';
+import { UserEntity } from '@app/infra/entities/index.js';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { ReadStream } from 'fs';
-import { IAlbumRepository } from '../album/album.repository';
-import { IAssetRepository } from '../asset/asset.repository';
-import { AuthUserDto } from '../auth';
-import { ICryptoRepository } from '../crypto/crypto.repository';
-import { IEntityJob, IJobRepository, JobName } from '../job';
-import { StorageCore, StorageFolder } from '../storage';
-import { IStorageRepository } from '../storage/storage.repository';
-import { CreateUserDto, UpdateUserDto, UserCountDto } from './dto';
+import { IAlbumRepository } from '../album/album.repository.js';
+import { IAssetRepository } from '../asset/asset.repository.js';
+import { AuthUserDto } from '../auth/index.js';
+import { ICryptoRepository } from '../crypto/crypto.repository.js';
+import { IEntityJob, IJobRepository, JobName } from '../job/index.js';
+import { StorageCore, StorageFolder } from '../storage/index.js';
+import { IStorageRepository } from '../storage/storage.repository.js';
+import { CreateUserDto, UpdateUserDto, UserCountDto } from './dto/index.js';
 import {
   CreateProfileImageResponseDto,
   mapCreateProfileImageResponse,
@@ -17,9 +17,9 @@ import {
   mapUserCountResponse,
   UserCountResponseDto,
   UserResponseDto,
-} from './response-dto';
-import { UserCore } from './user.core';
-import { IUserRepository } from './user.repository';
+} from './response-dto/index.js';
+import { UserCore } from './user.core.js';
+import { IUserRepository } from './user.repository.js';
 
 @Injectable()
 export class UserService {

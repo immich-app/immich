@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 import { ExifDateTime } from 'exiftool-vendored';
-import { exifTimeZone, exifToDate } from './date-time';
+import { exifTimeZone, exifToDate } from './date-time.js';
 
 describe('converts exif date to JS date', () => {
   it('returns null for invalid inputs', () => {

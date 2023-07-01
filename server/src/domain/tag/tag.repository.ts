@@ -1,4 +1,4 @@
-import { AssetEntity, TagEntity } from '@app/infra/entities';
+import { AssetEntity, TagEntity } from '@app/infra/entities/index.js';
 
 export const ITagRepository = 'ITagRepository';
 

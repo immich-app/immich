@@ -1,2 +1,2 @@
-export * from './access.core';
-export * from './access.repository';
+export * from './access.core.js';
+export * from './access.repository.js';

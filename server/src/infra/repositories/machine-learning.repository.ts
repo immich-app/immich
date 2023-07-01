@@ -1,4 +1,9 @@
-import { DetectFaceResult, IMachineLearningRepository, MachineLearningInput, MACHINE_LEARNING_URL } from '@app/domain';
+import {
+  DetectFaceResult,
+  IMachineLearningRepository,
+  MachineLearningInput,
+  MACHINE_LEARNING_URL,
+} from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { createReadStream } from 'fs';

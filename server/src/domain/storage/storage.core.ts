@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { APP_MEDIA_LOCATION } from '../domain.constant';
+import { APP_MEDIA_LOCATION } from '../domain.constant.js';
 
 export enum StorageFolder {
   ENCODED_VIDEO = 'encoded-video',

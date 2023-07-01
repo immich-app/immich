@@ -1,4 +1,4 @@
-import { TranscodePreset } from '@app/infra/entities';
+import { TranscodePreset } from '@app/infra/entities/index.js';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsInt, IsString, Max, Min } from 'class-validator';

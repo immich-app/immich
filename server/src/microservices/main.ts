@@ -2,8 +2,8 @@ import { getLogLevels, SERVER_VERSION } from '@app/domain';
 import { RedisIoAdapter } from '@app/infra';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppService } from './app.service';
-import { MicroservicesModule } from './microservices.module';
+import { AppService } from './app.service.js';
+import { MicroservicesModule } from './microservices.module.js';
 
 const logger = new Logger('ImmichMicroservice');
 const port = Number(process.env.MICROSERVICES_PORT) || 3002;

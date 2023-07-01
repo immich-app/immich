@@ -1,10 +1,10 @@
-import { AssetEntity, AssetType, SystemConfig } from '@app/infra/entities';
+import { AssetEntity, AssetType, SystemConfig } from '@app/infra/entities/index.js';
 import { Logger } from '@nestjs/common';
 import handlebar from 'handlebars';
 import * as luxon from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
-import { IStorageRepository, StorageCore } from '../storage';
+import { IStorageRepository, StorageCore } from '../storage/index.js';
 import {
   ISystemConfigRepository,
   supportedDayTokens,
@@ -13,9 +13,9 @@ import {
   supportedMonthTokens,
   supportedSecondTokens,
   supportedYearTokens,
-} from '../system-config';
-import { SystemConfigCore } from '../system-config/system-config.core';
-import { MoveAssetMetadata } from './storage-template.service';
+} from '../system-config/index.js';
+import { SystemConfigCore } from '../system-config/system-config.core.js';
+import { MoveAssetMetadata } from './storage-template.service.js';
 
 export class StorageTemplateCore {
   private logger = new Logger(StorageTemplateCore.name);

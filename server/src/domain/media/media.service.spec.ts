@@ -1,4 +1,4 @@
-import { AssetType, SystemConfigKey } from '@app/infra/entities';
+import { AssetType, SystemConfigKey } from '@app/infra/entities/index.js';
 import {
   assetEntityStub,
   newAssetRepositoryMock,
@@ -7,13 +7,13 @@ import {
   newStorageRepositoryMock,
   newSystemConfigRepositoryMock,
   probeStub,
-} from '@test';
-import { IAssetRepository, WithoutProperty } from '../asset';
-import { IJobRepository, JobName } from '../job';
-import { IStorageRepository } from '../storage';
-import { ISystemConfigRepository } from '../system-config';
-import { IMediaRepository } from './media.repository';
-import { MediaService } from './media.service';
+} from '@test/index.js';
+import { IAssetRepository, WithoutProperty } from '../asset/index.js';
+import { IJobRepository, JobName } from '../job/index.js';
+import { IStorageRepository } from '../storage/index.js';
+import { ISystemConfigRepository } from '../system-config/index.js';
+import { IMediaRepository } from './media.repository.js';
+import { MediaService } from './media.service.js';
 
 describe(MediaService.name, () => {
   let sut: MediaService;

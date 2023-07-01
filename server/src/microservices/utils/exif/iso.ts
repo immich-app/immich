@@ -1,4 +1,4 @@
-import { isNumberInRange } from '../numbers';
+import { isNumberInRange } from '../numbers.js';
 
 export function parseISO(input: string): number | null {
   const values = input.split(',');

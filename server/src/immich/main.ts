@@ -5,9 +5,9 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { json } from 'body-parser';
 import cookieParser from 'cookie-parser';
-import { AppModule } from './app.module';
-import { AppService } from './app.service';
-import { useSwagger } from './app.utils';
+import { AppModule } from './app.module.js';
+import { AppService } from './app.service.js';
+import { useSwagger } from './app.utils.js';
 
 const logger = new Logger('ImmichServer');
 const envName = (process.env.NODE_ENV || 'development').toUpperCase();

@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { isDecimalNumber, isNumberInRange, toNumberOrNull } from './numbers';
+import { isDecimalNumber, isNumberInRange, toNumberOrNull } from './numbers.js';
 
 describe('checks if a number is a decimal number', () => {
   it('returns false for non-decimal numbers', () => {

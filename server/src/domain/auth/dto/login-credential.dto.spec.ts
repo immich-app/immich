@@ -1,6 +1,6 @@
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
-import { LoginCredentialDto } from './login-credential.dto';
+import { LoginCredentialDto } from './login-credential.dto.js';
 
 describe('LoginCredentialDto', () => {
   it('should allow emails without a tld', () => {

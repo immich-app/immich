@@ -1,18 +1,18 @@
-import { AlbumEntity, AssetEntity, AssetFaceEntity } from '@app/infra/entities';
+import { AlbumEntity, AssetEntity, AssetFaceEntity } from '@app/infra/entities/index.js';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { mapAlbum } from '../album';
-import { IAlbumRepository } from '../album/album.repository';
-import { AssetResponseDto, mapAsset } from '../asset';
-import { IAssetRepository } from '../asset/asset.repository';
-import { AuthUserDto } from '../auth';
-import { MACHINE_LEARNING_ENABLED } from '../domain.constant';
-import { usePagination } from '../domain.util';
-import { AssetFaceId, IFaceRepository } from '../facial-recognition';
-import { IAssetFaceJob, IBulkEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job';
-import { IMachineLearningRepository } from '../smart-info';
-import { SearchDto } from './dto';
-import { SearchConfigResponseDto, SearchResponseDto } from './response-dto';
+import { IAlbumRepository } from '../album/album.repository.js';
+import { mapAlbum } from '../album/index.js';
+import { IAssetRepository } from '../asset/asset.repository.js';
+import { AssetResponseDto, mapAsset } from '../asset/index.js';
+import { AuthUserDto } from '../auth/index.js';
+import { MACHINE_LEARNING_ENABLED } from '../domain.constant.js';
+import { usePagination } from '../domain.util.js';
+import { AssetFaceId, IFaceRepository } from '../facial-recognition/index.js';
+import { IAssetFaceJob, IBulkEntityJob, IJobRepository, JobName, JOBS_ASSET_PAGINATION_SIZE } from '../job/index.js';
+import { IMachineLearningRepository } from '../smart-info/index.js';
+import { SearchDto } from './dto/index.js';
+import { SearchConfigResponseDto, SearchResponseDto } from './response-dto/index.js';
 import {
   ISearchRepository,
   OwnedFaceEntity,
@@ -20,7 +20,7 @@ import {
   SearchExploreItem,
   SearchResult,
   SearchStrategy,
-} from './search.repository';
+} from './search.repository.js';
 
 interface SyncQueue {
   upsert: Set<string>;

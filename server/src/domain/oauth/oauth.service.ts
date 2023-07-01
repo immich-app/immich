@@ -1,15 +1,15 @@
-import { SystemConfig } from '@app/infra/entities';
+import { SystemConfig } from '@app/infra/entities/index.js';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
-import { AuthType, AuthUserDto, LoginResponseDto } from '../auth';
-import { AuthCore, LoginDetails } from '../auth/auth.core';
-import { ICryptoRepository } from '../crypto';
-import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
-import { IUserRepository, UserCore, UserResponseDto } from '../user';
-import { IUserTokenRepository } from '../user-token';
-import { OAuthCallbackDto, OAuthConfigDto } from './dto';
-import { MOBILE_REDIRECT } from './oauth.constants';
-import { OAuthCore } from './oauth.core';
-import { OAuthConfigResponseDto } from './response-dto';
+import { AuthCore, LoginDetails } from '../auth/auth.core.js';
+import { AuthType, AuthUserDto, LoginResponseDto } from '../auth/index.js';
+import { ICryptoRepository } from '../crypto/index.js';
+import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config/index.js';
+import { IUserTokenRepository } from '../user-token/index.js';
+import { IUserRepository, UserCore, UserResponseDto } from '../user/index.js';
+import { OAuthCallbackDto, OAuthConfigDto } from './dto/index.js';
+import { MOBILE_REDIRECT } from './oauth.constants.js';
+import { OAuthCore } from './oauth.core.js';
+import { OAuthConfigResponseDto } from './response-dto/index.js';
 
 @Injectable()
 export class OAuthService {

@@ -1,4 +1,4 @@
-import { AssetEntity, PersonEntity } from '@app/infra/entities';
+import { AssetEntity, PersonEntity } from '@app/infra/entities/index.js';
 
 export const IPersonRepository = 'IPersonRepository';
 

@@ -1,8 +1,8 @@
-import { SharedLinkType } from '@app/infra/entities';
+import { SharedLinkType } from '@app/infra/entities/index.js';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
-import { ValidateUUID } from '../../immich/decorators/validate-uuid.decorator';
+import { ValidateUUID } from '../../immich/decorators/validate-uuid.decorator.js';
 
 export class SharedLinkCreateDto {
   @IsEnum(SharedLinkType)

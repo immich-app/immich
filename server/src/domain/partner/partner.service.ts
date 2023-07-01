@@ -1,8 +1,8 @@
-import { PartnerEntity } from '@app/infra/entities';
+import { PartnerEntity } from '@app/infra/entities/index.js';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { IPartnerRepository, PartnerDirection, PartnerIds } from '.';
-import { AuthUserDto } from '../auth';
-import { mapUser, UserResponseDto } from '../user';
+import { AuthUserDto } from '../auth/index.js';
+import { mapUser, UserResponseDto } from '../user/index.js';
+import { IPartnerRepository, PartnerDirection, PartnerIds } from './index.js';
 
 @Injectable()
 export class PartnerService {

@@ -1,11 +1,11 @@
-import { SystemConfig } from '@app/infra/entities';
+import { SystemConfig } from '@app/infra/entities/index.js';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ClientMetadata, custom, generators, Issuer, UserinfoResponse } from 'openid-client';
-import { ISystemConfigRepository } from '../system-config';
-import { SystemConfigCore } from '../system-config/system-config.core';
-import { OAuthConfigDto } from './dto';
-import { MOBILE_REDIRECT } from './oauth.constants';
-import { OAuthConfigResponseDto } from './response-dto';
+import { ISystemConfigRepository } from '../system-config/index.js';
+import { SystemConfigCore } from '../system-config/system-config.core.js';
+import { OAuthConfigDto } from './dto/index.js';
+import { MOBILE_REDIRECT } from './oauth.constants.js';
+import { OAuthConfigResponseDto } from './response-dto/index.js';
 
 type OAuthProfile = UserinfoResponse & {
   email: string;

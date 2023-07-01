@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
-import { JobCommand } from '../job.constants';
+import { JobCommand } from '../job.constants.js';
 
 export class JobCommandDto {
   @IsNotEmpty()

@@ -1,11 +1,11 @@
-import { dataSource } from '@app/infra/database.config';
-import { AlbumEntity, AssetEntity } from '@app/infra/entities';
+import { dataSource } from '@app/infra/database.config.js';
+import { AlbumEntity, AssetEntity } from '@app/infra/entities/index.js';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AddAssetsDto } from './dto/add-assets.dto';
-import { RemoveAssetsDto } from './dto/remove-assets.dto';
-import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto';
+import { AddAssetsDto } from './dto/add-assets.dto.js';
+import { RemoveAssetsDto } from './dto/remove-assets.dto.js';
+import { AddAssetsResponseDto } from './response-dto/add-assets-response.dto.js';
 
 export interface IAlbumRepository {
   get(albumId: string): Promise<AlbumEntity | null>;

@@ -10,16 +10,16 @@ import {
   newSearchRepositoryMock,
   newStorageRepositoryMock,
   personStub,
-} from '@test';
-import { IAssetRepository, WithoutProperty } from '../asset';
-import { IJobRepository, JobName } from '../job';
-import { IMediaRepository } from '../media';
-import { IPersonRepository } from '../person';
-import { ISearchRepository } from '../search';
-import { IMachineLearningRepository } from '../smart-info';
-import { IStorageRepository } from '../storage';
-import { IFaceRepository } from './face.repository';
-import { FacialRecognitionService } from './facial-recognition.services';
+} from '@test/index.js';
+import { IAssetRepository, WithoutProperty } from '../asset/index.js';
+import { IJobRepository, JobName } from '../job/index.js';
+import { IMediaRepository } from '../media/index.js';
+import { IPersonRepository } from '../person/index.js';
+import { ISearchRepository } from '../search/index.js';
+import { IMachineLearningRepository } from '../smart-info/index.js';
+import { IStorageRepository } from '../storage/index.js';
+import { IFaceRepository } from './face.repository.js';
+import { FacialRecognitionService } from './facial-recognition.services.js';
 
 const croppedFace = Buffer.from('Cropped Face');
 

@@ -1,5 +1,5 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
-import { AssetEntity } from './asset.entity';
+import { AssetEntity } from './asset.entity.js';
 
 @Entity('smart_info')
 export class SmartInfoEntity {

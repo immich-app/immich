@@ -8,9 +8,9 @@ import {
 } from '@app/domain';
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthUser } from '../decorators/auth-user.decorator';
-import { Authenticated } from '../decorators/authenticated.decorator';
-import { UseValidation } from '../decorators/use-validation.decorator';
+import { AuthUser } from '../decorators/auth-user.decorator.js';
+import { Authenticated } from '../decorators/authenticated.decorator.js';
+import { UseValidation } from '../decorators/use-validation.decorator.js';
 
 @ApiTags('Search')
 @Controller('search')

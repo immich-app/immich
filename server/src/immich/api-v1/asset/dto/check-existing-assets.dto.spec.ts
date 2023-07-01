@@ -1,6 +1,6 @@
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
-import { CheckExistingAssetsDto } from './check-existing-assets.dto';
+import { CheckExistingAssetsDto } from './check-existing-assets.dto.js';
 
 describe('CheckExistingAssetsDto', () => {
   it('should fail with an empty list', () => {

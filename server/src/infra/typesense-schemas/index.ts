@@ -1,3 +1,3 @@
-export * from './album.schema';
-export * from './asset.schema';
-export * from './face.schema';
+export * from './album.schema.js';
+export * from './asset.schema.js';
+export * from './face.schema.js';

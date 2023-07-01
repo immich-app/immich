@@ -1,7 +1,7 @@
 import { IPersonRepository, PersonSearchOptions } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
+import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities/index.js';
 
 export class PersonRepository implements IPersonRepository {
   constructor(

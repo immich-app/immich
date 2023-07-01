@@ -6,14 +6,14 @@ import {
   newAccessRepositoryMock,
   newAssetRepositoryMock,
   newStorageRepositoryMock,
-} from '@test';
+} from '@test/index.js';
 import { when } from 'jest-when';
 import { Readable } from 'stream';
-import { IStorageRepository } from '../storage';
-import { IAssetRepository } from './asset.repository';
-import { AssetService } from './asset.service';
-import { DownloadResponseDto } from './index';
-import { mapAsset } from './response-dto';
+import { IStorageRepository } from '../storage/index.js';
+import { IAssetRepository } from './asset.repository.js';
+import { AssetService } from './asset.service.js';
+import { DownloadResponseDto } from './index.js';
+import { mapAsset } from './response-dto/index.js';
 
 const downloadResponse: DownloadResponseDto = {
   totalSize: 105_000,

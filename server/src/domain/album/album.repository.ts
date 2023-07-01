@@ -1,4 +1,4 @@
-import { AlbumEntity } from '@app/infra/entities';
+import { AlbumEntity } from '@app/infra/entities/index.js';
 
 export const IAlbumRepository = 'IAlbumRepository';
 

@@ -1,7 +1,7 @@
-import { AlbumEntity } from '@app/infra/entities';
+import { AlbumEntity } from '@app/infra/entities/index.js';
 import { ApiProperty } from '@nestjs/swagger';
-import { AssetResponseDto, mapAsset } from '../asset';
-import { mapUser, UserResponseDto } from '../user';
+import { AssetResponseDto, mapAsset } from '../asset/index.js';
+import { mapUser, UserResponseDto } from '../user/index.js';
 
 export class AlbumResponseDto {
   id!: string;

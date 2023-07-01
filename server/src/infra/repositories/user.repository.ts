@@ -2,7 +2,7 @@ import { IUserRepository, UserListFilter, UserStatsQueryResponse } from '@app/do
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
-import { UserEntity } from '../entities';
+import { UserEntity } from '../entities/index.js';
 
 @Injectable()
 export class UserRepository implements IUserRepository {

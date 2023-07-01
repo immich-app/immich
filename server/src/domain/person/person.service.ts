@@ -1,10 +1,10 @@
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { AssetResponseDto, mapAsset } from '../asset';
-import { AuthUserDto } from '../auth';
-import { IJobRepository, JobName } from '../job';
-import { ImmichReadStream, IStorageRepository } from '../storage';
-import { mapPerson, PersonResponseDto, PersonUpdateDto } from './person.dto';
-import { IPersonRepository } from './person.repository';
+import { AssetResponseDto, mapAsset } from '../asset/index.js';
+import { AuthUserDto } from '../auth/index.js';
+import { IJobRepository, JobName } from '../job/index.js';
+import { ImmichReadStream, IStorageRepository } from '../storage/index.js';
+import { mapPerson, PersonResponseDto, PersonUpdateDto } from './person.dto.js';
+import { IPersonRepository } from './person.repository.js';
 
 @Injectable()
 export class PersonService {

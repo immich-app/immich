@@ -1,6 +1,6 @@
 import { Column, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
-import { AssetEntity } from './asset.entity';
-import { UserEntity } from './user.entity';
+import { AssetEntity } from './asset.entity.js';
+import { UserEntity } from './user.entity.js';
 
 @Entity('tags')
 @Unique('UQ_tag_name_userId', ['name', 'userId'])

@@ -1,4 +1,4 @@
-import { JobName, QueueName } from './job.constants';
+import { JobName, QueueName } from './job.constants.js';
 import {
   IAssetFaceJob,
   IBaseJob,
@@ -6,7 +6,7 @@ import {
   IDeleteFilesJob,
   IEntityJob,
   IFaceThumbnailJob,
-} from './job.interface';
+} from './job.interface.js';
 
 export interface JobCounts {
   active: number;

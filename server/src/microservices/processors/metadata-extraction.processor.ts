@@ -10,7 +10,7 @@ import {
   usePagination,
   WithoutProperty,
 } from '@app/domain';
-import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
+import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities/index.js';
 import { Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -20,12 +20,12 @@ import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { Duration } from 'luxon';
 import fs from 'node:fs';
 import sharp from 'sharp';
-import { Repository } from 'typeorm/repository/Repository';
+import { Repository } from 'typeorm/repository/Repository.js';
 import { promisify } from 'util';
-import { parseLatitude, parseLongitude } from '../utils/exif/coordinates';
-import { exifTimeZone, exifToDate } from '../utils/exif/date-time';
-import { parseISO } from '../utils/exif/iso';
-import { toNumberOrNull } from '../utils/numbers';
+import { parseLatitude, parseLongitude } from '../utils/exif/coordinates.js';
+import { exifTimeZone, exifToDate } from '../utils/exif/date-time.js';
+import { parseISO } from '../utils/exif/iso.js';
+import { toNumberOrNull } from '../utils/numbers.js';
 
 const ffprobe = promisify<string, FfprobeData>(ffmpeg.ffprobe);
 

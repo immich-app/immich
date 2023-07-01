@@ -12,11 +12,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import _, { Dictionary } from 'lodash';
 import { catchError, filter, firstValueFrom, from, map, mergeMap, of, toArray } from 'rxjs';
 import { Client } from 'typesense';
-import { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
-import { DocumentSchema, SearchResponse } from 'typesense/lib/Typesense/Documents';
-import { AlbumEntity, AssetEntity, AssetFaceEntity } from '../entities';
-import { typesenseConfig } from '../infra.config';
-import { albumSchema, assetSchema, faceSchema } from '../typesense-schemas';
+import { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections.js';
+import { DocumentSchema, SearchResponse } from 'typesense/lib/Typesense/Documents.js';
+import { AlbumEntity, AssetEntity, AssetFaceEntity } from '../entities/index.js';
+import { typesenseConfig } from '../infra.config.js';
+import { albumSchema, assetSchema, faceSchema } from '../typesense-schemas/index.js';
 
 function removeNil<T extends Dictionary<any>>(item: T): T {
   _.forOwn(item, (value, key) => {

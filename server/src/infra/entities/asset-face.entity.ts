@@ -1,6 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
-import { AssetEntity } from './asset.entity';
-import { PersonEntity } from './person.entity';
+import { AssetEntity } from './asset.entity.js';
+import { PersonEntity } from './person.entity.js';
 
 @Entity('asset_faces')
 export class AssetFaceEntity {

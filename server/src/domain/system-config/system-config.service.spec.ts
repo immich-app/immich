@@ -1,10 +1,10 @@
-import { SystemConfig, SystemConfigEntity, SystemConfigKey, TranscodePreset } from '@app/infra/entities';
+import { SystemConfig, SystemConfigEntity, SystemConfigKey, TranscodePreset } from '@app/infra/entities/index.js';
 import { BadRequestException } from '@nestjs/common';
-import { newJobRepositoryMock, newSystemConfigRepositoryMock, systemConfigStub } from '@test';
-import { IJobRepository, JobName, QueueName } from '../job';
-import { SystemConfigValidator } from './system-config.core';
-import { ISystemConfigRepository } from './system-config.repository';
-import { SystemConfigService } from './system-config.service';
+import { newJobRepositoryMock, newSystemConfigRepositoryMock, systemConfigStub } from '@test/index.js';
+import { IJobRepository, JobName, QueueName } from '../job/index.js';
+import { SystemConfigValidator } from './system-config.core.js';
+import { ISystemConfigRepository } from './system-config.repository.js';
+import { SystemConfigService } from './system-config.service.js';
 
 const updates: SystemConfigEntity[] = [
   { key: SystemConfigKey.FFMPEG_CRF, value: 30 },
