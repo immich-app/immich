@@ -66,6 +66,8 @@ export class PersonService {
     return mapPerson(person);
   }
 
+  async updateFaceThumbnail(authUser: AuthUserDto, personId: string, assetId: string) {}
+
   async handlePersonCleanup() {
     const people = await this.repository.getAllWithoutFaces();
     for (const person of people) {

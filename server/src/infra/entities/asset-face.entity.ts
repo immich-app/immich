@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 import { AssetEntity } from './asset.entity';
 import { PersonEntity } from './person.entity';
@@ -16,6 +17,27 @@ export class AssetFaceEntity {
     nullable: true,
   })
   embedding!: number[] | null;
+
+  @Column({ default: 0, type: 'int' })
+  imageWidth!: number;
+
+  @Column({ default: 0, type: 'int' })
+  imageHeight!: number;
+
+  @Column({ default: 0, type: 'int' })
+  boundingBoxX1!: number;
+
+  @Column({ default: 0, type: 'int' })
+  boundingBoxY1!: number;
+
+  @Column({ default: 0, type: 'int' })
+  boundingBoxX2!: number;
+
+  @Column({ default: 0, type: 'int' })
+  boundingBoxY2!: number;
+
+  @Column({ default: 0, type: 'int' })
+  score!: number;
 
   @ManyToOne(() => AssetEntity, (asset) => asset.faces, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   asset!: AssetEntity;
