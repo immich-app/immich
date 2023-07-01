@@ -59,7 +59,9 @@
     "build": "shx rm -rf dist && tsc -b",
     "lint": "eslint . --ext .ts --config .eslintrc",
     "prepack": "yarn build ",
-    "test": "jest"
+    "test": "jest",
+    "test:cov": "jest --coverage",
+    "format": "prettier --check ."
   },
   "engines": {
     "node": ">=12.0.0"
