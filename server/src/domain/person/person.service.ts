@@ -1,5 +1,6 @@
+import { AssetFaceId } from '@app/domain';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { AssetResponseDto, mapAsset } from '../asset';
+import { AssetResponseDto, IAssetRepository, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
 import { IJobRepository, JobName } from '../job';
 import { ImmichReadStream, IStorageRepository } from '../storage';
@@ -66,7 +67,30 @@ export class PersonService {
     return mapPerson(person);
   }
 
-  async updateFaceThumbnail(authUser: AuthUserDto, personId: string, assetId: string) {}
+  async updateFaceThumbnail(authUser: AuthUserDto, personId: string, assetId: string) {
+    const exists = await this.repository.getById(authUser.id, personId);
+    if (!exists) {
+      throw new BadRequestException();
+    }
+
+    const face = await this.repository.getFaceByAssetId({ assetId, personId });
+
+    await this.jobRepository.queue({
+      name: JobName.GENERATE_FACE_THUMBNAIL,
+      data: {
+        assetId: assetId,
+        personId,
+        boundingBox: {
+          x1: face.boundingBoxX1,
+          x2: face.boundingBoxX2,
+          y1: face.boundingBoxY1,
+          y2: face.boundingBoxY2,
+        },
+        imageHeight: face.imageHeight,
+        imageWidth: face.imageWidth,
+      },
+    });
+  }
 
   async handlePersonCleanup() {
     const people = await this.repository.getAllWithoutFaces();
