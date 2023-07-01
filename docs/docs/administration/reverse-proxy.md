@@ -15,7 +15,34 @@ While the reverse proxy provided by Immich works well for basic deployments, som
 
 ## Adding a Custom Reverse Proxy
 
-Users can deploy a custom reverse proxy that forwards requests to Immich's reverse proxy. This way, the new reverse proxy can handle TLS termination, load balancing, or other advanced features, while still delegating routing decisions to Immich's reverse proxy. All reverse proxies between Immich and the user must forward all headers and set the `Host`, `X-Forwarded-Host`, `X-Forwarded-Proto` and `X-Forwarded-For` headers to their appropriate values. By following these practices, you ensure that all custom reverse proxies are fully compatible with Immich.
+Users can deploy a custom reverse proxy that forwards requests to Immich's reverse proxy. This way, the new reverse proxy can handle TLS termination, load balancing, or other advanced features, while still delegating routing decisions to Immich's reverse proxy. All reverse proxies between Immich and the user must forward all headers and set the `Host`, `X-Forwarded-Host`, `X-Forwarded-Proto` and `X-Forwarded-For` headers to their appropriate values. Additionally, your reverse proxy should allow for big enough uploads. By following these practices, you ensure that all custom reverse proxies are fully compatible with Immich.
+
+### Nginx example config
+
+Below is an example config for nginx:
+
+```nginx
+server {
+    server_name <snip>
+
+    # https://github.com/immich-app/immich/blob/main/nginx/templates/default.conf.template#L28
+    client_max_body_size 50000M;
+
+    location / {
+        proxy_pass http://<snip>/2283;
+        proxy_set_header Host              $http_host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # http://nginx.org/en/docs/http/websocket.html
+        proxy_http_version 1.1;
+        proxy_set_header   Upgrade    $http_upgrade;
+        proxy_set_header   Connection "upgrade";
+        proxy_redirect off;
+    }
+}
+```
 
 ## Replacing the Default Reverse Proxy
 
