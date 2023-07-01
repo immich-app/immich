@@ -1,6 +1,6 @@
 import { AssetEntity, SharedLinkEntity, SharedLinkType } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
-import { IAccessRepository } from '../access';
+import { AccessCore, IAccessRepository, Permission } from '../access';
 import { AssetIdErrorReason, AssetIdsDto, AssetIdsResponseDto } from '../asset';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
@@ -10,11 +10,15 @@ import { ISharedLinkRepository } from './shared-link.repository';
 
 @Injectable()
 export class SharedLinkService {
+  private access: AccessCore;
+
   constructor(
-    @Inject(IAccessRepository) private accessRepository: IAccessRepository,
+    @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(ISharedLinkRepository) private repository: ISharedLinkRepository,
-  ) {}
+  ) {
+    this.access = new AccessCore(accessRepository);
+  }
 
   getAll(authUser: AuthUserDto): Promise<SharedLinkResponseDto[]> {
     return this.repository.getAll(authUser.id).then((links) => links.map(mapSharedLink));
@@ -43,12 +47,7 @@ export class SharedLinkService {
         if (!dto.albumId) {
           throw new BadRequestException('Invalid albumId');
         }
-
-        const isAlbumOwner = await this.accessRepository.hasAlbumOwnerAccess(authUser.id, dto.albumId);
-        if (!isAlbumOwner) {
-          throw new BadRequestException('Invalid albumId');
-        }
-
+        await this.access.requirePermission(authUser, Permission.ALBUM_SHARE, dto.albumId);
         break;
 
       case SharedLinkType.INDIVIDUAL:
@@ -56,12 +55,7 @@ export class SharedLinkService {
           throw new BadRequestException('Invalid assetIds');
         }
 
-        for (const assetId of dto.assetIds) {
-          const hasAccess = await this.accessRepository.hasOwnerAssetAccess(authUser.id, assetId);
-          if (!hasAccess) {
-            throw new BadRequestException(`No access to assetId: ${assetId}`);
-          }
-        }
+        await this.access.requirePermission(authUser, Permission.ASSET_SHARE, dto.assetIds);
 
         break;
     }
@@ -124,7 +118,7 @@ export class SharedLinkService {
         continue;
       }
 
-      const hasAccess = await this.accessRepository.hasOwnerAssetAccess(authUser.id, assetId);
+      const hasAccess = await this.access.hasPermission(authUser, Permission.ASSET_SHARE, assetId);
       if (!hasAccess) {
         results.push({ assetId, success: false, error: AssetIdErrorReason.NO_PERMISSION });
         continue;

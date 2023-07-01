@@ -3,6 +3,7 @@ import {
   albumStub,
   assetEntityStub,
   authStub,
+  IAccessRepositoryMock,
   newAccessRepositoryMock,
   newCryptoRepositoryMock,
   newSharedLinkRepositoryMock,
@@ -12,13 +13,13 @@ import {
 import { when } from 'jest-when';
 import _ from 'lodash';
 import { SharedLinkType } from '../../infra/entities/shared-link.entity';
-import { AssetIdErrorReason, IAccessRepository, ICryptoRepository } from '../index';
+import { AssetIdErrorReason, ICryptoRepository } from '../index';
 import { ISharedLinkRepository } from './shared-link.repository';
 import { SharedLinkService } from './shared-link.service';
 
 describe(SharedLinkService.name, () => {
   let sut: SharedLinkService;
-  let accessMock: jest.Mocked<IAccessRepository>;
+  let accessMock: IAccessRepositoryMock;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let shareMock: jest.Mocked<ISharedLinkRepository>;
 
@@ -89,7 +90,7 @@ describe(SharedLinkService.name, () => {
     });
 
     it('should not allow non-owners to create album shared links', async () => {
-      accessMock.hasAlbumOwnerAccess.mockResolvedValue(false);
+      accessMock.album.hasOwnerAccess.mockResolvedValue(false);
       await expect(
         sut.create(authStub.admin, { type: SharedLinkType.ALBUM, assetIds: [], albumId: 'album-1' }),
       ).rejects.toBeInstanceOf(BadRequestException);
@@ -102,19 +103,19 @@ describe(SharedLinkService.name, () => {
     });
 
     it('should require asset ownership to make an individual shared link', async () => {
-      accessMock.hasOwnerAssetAccess.mockResolvedValue(false);
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(false);
       await expect(
         sut.create(authStub.admin, { type: SharedLinkType.INDIVIDUAL, assetIds: ['asset-1'] }),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should create an album shared link', async () => {
-      accessMock.hasAlbumOwnerAccess.mockResolvedValue(true);
+      accessMock.album.hasOwnerAccess.mockResolvedValue(true);
       shareMock.create.mockResolvedValue(sharedLinkStub.valid);
 
       await sut.create(authStub.admin, { type: SharedLinkType.ALBUM, albumId: albumStub.oneAsset.id });
 
-      expect(accessMock.hasAlbumOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, albumStub.oneAsset.id);
+      expect(accessMock.album.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, albumStub.oneAsset.id);
       expect(shareMock.create).toHaveBeenCalledWith({
         type: SharedLinkType.ALBUM,
         userId: authStub.admin.id,
@@ -130,7 +131,7 @@ describe(SharedLinkService.name, () => {
     });
 
     it('should create an individual shared link', async () => {
-      accessMock.hasOwnerAssetAccess.mockResolvedValue(true);
+      accessMock.asset.hasOwnerAccess.mockResolvedValue(true);
       shareMock.create.mockResolvedValue(sharedLinkStub.individual);
 
       await sut.create(authStub.admin, {
@@ -141,7 +142,7 @@ describe(SharedLinkService.name, () => {
         allowUpload: true,
       });
 
-      expect(accessMock.hasOwnerAssetAccess).toHaveBeenCalledWith(authStub.admin.id, assetEntityStub.image.id);
+      expect(accessMock.asset.hasOwnerAccess).toHaveBeenCalledWith(authStub.admin.id, assetEntityStub.image.id);
       expect(shareMock.create).toHaveBeenCalledWith({
         type: SharedLinkType.INDIVIDUAL,
         userId: authStub.admin.id,
@@ -206,8 +207,8 @@ describe(SharedLinkService.name, () => {
       shareMock.get.mockResolvedValue(_.cloneDeep(sharedLinkStub.individual));
       shareMock.create.mockResolvedValue(sharedLinkStub.individual);
 
-      when(accessMock.hasOwnerAssetAccess).calledWith(authStub.admin.id, 'asset-2').mockResolvedValue(false);
-      when(accessMock.hasOwnerAssetAccess).calledWith(authStub.admin.id, 'asset-3').mockResolvedValue(true);
+      when(accessMock.asset.hasOwnerAccess).calledWith(authStub.admin.id, 'asset-2').mockResolvedValue(false);
+      when(accessMock.asset.hasOwnerAccess).calledWith(authStub.admin.id, 'asset-3').mockResolvedValue(true);
 
       await expect(
         sut.addAssets(authStub.admin, 'link-1', { assetIds: [assetEntityStub.image.id, 'asset-2', 'asset-3'] }),
@@ -217,7 +218,7 @@ describe(SharedLinkService.name, () => {
         { assetId: 'asset-3', success: true },
       ]);
 
-      expect(accessMock.hasOwnerAssetAccess).toHaveBeenCalledTimes(2);
+      expect(accessMock.asset.hasOwnerAccess).toHaveBeenCalledTimes(2);
       expect(shareMock.update).toHaveBeenCalledWith({
         ...sharedLinkStub.individual,
         assets: [assetEntityStub.image, { id: 'asset-3' }],

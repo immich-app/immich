@@ -15,6 +15,12 @@ You can use the CLI to upload an existing gallery to the Immich server
 npm i -g immich
 ```
 
+Pre-installed on the `immich-server` container and can be easily accessed through
+
+```
+immich
+```
+
 ### Options
 
 | Parameter        | Description                                                         |

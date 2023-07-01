@@ -41,10 +41,6 @@ export class SmartInfoService {
     }
 
     const tags = await this.machineLearning.classifyImage({ imagePath: asset.resizePath });
-    if (tags.length === 0) {
-      return false;
-    }
-
     await this.repository.upsert({ assetId: asset.id, tags });
 
     return true;

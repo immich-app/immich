@@ -92,7 +92,7 @@ class ImmichImage extends StatelessWidget {
     return CachedNetworkImage(
       imageUrl: thumbnailRequestUrl,
       httpHeaders: {"Authorization": "Bearer $token"},
-      cacheKey: getThumbnailCacheKey(asset),
+      cacheKey: getThumbnailCacheKey(asset, type: type),
       width: width,
       height: height,
       // keeping memCacheWidth, memCacheHeight, maxWidthDiskCache and

@@ -70,7 +70,7 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Multi-user support                           | Yes    | Yes |
 | Album and Shared albums                      | Yes    | Yes |
 | Scrubbable/draggable scrollbar               | Yes    | Yes |
-| Support RAW (HEIC, HEIF, DNG, Apple ProRaw)  | Yes    | Yes |
+| Support raw formats                          | Yes    | Yes |
 | Metadata view (EXIF, map)                    | Yes    | Yes |
 | Search by metadata, objects, faces, and CLIP | Yes    | Yes |
 | Administrative functions (user management)   | No     | Yes |
@@ -84,8 +84,10 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 | Archive and Favorites                        | Yes    | Yes |
 | Global Map                                   | No     | Yes |
 | Partner Sharing                              | Yes    | Yes |
-| Facial recognition and clustering            | No     | Yes |
+| Facial recognition and clustering            | Yes    | Yes |
+| Memories (x years ago)                       | Yes    | Yes |
 | Offline support                              | Yes    | No  |
+| Read-only gallery                            | Yes    | Yes |
 
 # Support the project
 

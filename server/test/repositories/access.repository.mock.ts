@@ -1,14 +1,28 @@
 import { IAccessRepository } from '@app/domain';
 
-export const newAccessRepositoryMock = (): jest.Mocked<IAccessRepository> => {
+export type IAccessRepositoryMock = {
+  asset: jest.Mocked<IAccessRepository['asset']>;
+  album: jest.Mocked<IAccessRepository['album']>;
+  library: jest.Mocked<IAccessRepository['library']>;
+};
+
+export const newAccessRepositoryMock = (): IAccessRepositoryMock => {
   return {
-    hasPartnerAccess: jest.fn(),
+    asset: {
+      hasOwnerAccess: jest.fn(),
+      hasAlbumAccess: jest.fn(),
+      hasPartnerAccess: jest.fn(),
+      hasSharedLinkAccess: jest.fn(),
+    },
 
-    hasAlbumAssetAccess: jest.fn(),
-    hasOwnerAssetAccess: jest.fn(),
-    hasPartnerAssetAccess: jest.fn(),
-    hasSharedLinkAssetAccess: jest.fn(),
+    album: {
+      hasOwnerAccess: jest.fn(),
+      hasSharedAlbumAccess: jest.fn(),
+      hasSharedLinkAccess: jest.fn(),
+    },
 
-    hasAlbumOwnerAccess: jest.fn(),
+    library: {
+      hasPartnerAccess: jest.fn(),
+    },
   };
 };

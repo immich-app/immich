@@ -39,7 +39,7 @@ class TilesPerRow extends HookConsumerWidget {
           title: const Text(
             "theme_setting_asset_list_tiles_per_row_title",
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
           ).tr(args: ["${itemsValue.value.toInt()}"]),
