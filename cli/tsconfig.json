@@ -11,6 +11,5 @@
     "esModuleInterop": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*", "__mocks__"],
-  "exclude": ["node_modules", "**/*.spec.ts"]
+  "exclude": ["dist", "node_modules", "upload"]
 }
