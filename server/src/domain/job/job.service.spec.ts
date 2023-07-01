@@ -7,11 +7,13 @@ import {
   newJobRepositoryMock,
   newSystemConfigRepositoryMock,
 } from '@test';
-import { IJobRepository, JobCommand, JobHandler, JobItem, JobName, JobService, QueueName } from '.';
 import { IAssetRepository } from '../asset';
 import { ICommunicationRepository } from '../communication';
 import { ISystemConfigRepository } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
+import { JobCommand, JobName, QueueName } from './job.constants';
+import { IJobRepository, JobHandler, JobItem } from './job.repository';
+import { JobService } from './job.service';
 
 const makeMockHandlers = (success: boolean) => {
   const mock = jest.fn().mockResolvedValue(success);

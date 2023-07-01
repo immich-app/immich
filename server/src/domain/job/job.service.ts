@@ -4,10 +4,9 @@ import { CommunicationEvent, ICommunicationRepository } from '../communication';
 import { assertMachineLearningEnabled } from '../domain.constant';
 import { ISystemConfigRepository } from '../system-config';
 import { SystemConfigCore } from '../system-config/system-config.core';
-import { JobCommandDto } from './dto';
 import { JobCommand, JobName, QueueName } from './job.constants';
+import { AllJobStatusResponseDto, JobCommandDto, JobStatusDto } from './job.dto';
 import { IJobRepository, JobHandler, JobItem } from './job.repository';
-import { AllJobStatusResponseDto, JobStatusDto } from './response-dto';
 
 @Injectable()
 export class JobService {
