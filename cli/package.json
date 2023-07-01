@@ -1,20 +1,5 @@
 {
-  "name": "immich",
-  "version": "0.30.0",
-  "description": "Immich CLI Utilities",
-  "author": "Alex Tran",
-  "bin": {
-    "immich": "./bin/run"
-  },
-  "homepage": "https://github.com/immich-app/CLI",
-  "license": "MIT",
-  "main": "dist/index.js",
-  "repository": "immich-app/CLI",
-  "files": [
-    "/bin",
-    "/dist",
-    "/npm-shrinkwrap.json"
-  ],
+  "name": "immich-cli",
   "dependencies": {
     "axios": "^1.4.0",
     "form-data": "^4.0.0",
@@ -60,10 +45,5 @@
     "test": "jest",
     "test:cov": "jest --coverage",
     "format": "prettier --check ."
-  },
-  "engines": {
-    "node": ">=12.0.0"
-  },
-  "bugs": "https://github.com/immich-app/immichissues",
-  "types": "dist/index.d.ts"
+  }
 }
