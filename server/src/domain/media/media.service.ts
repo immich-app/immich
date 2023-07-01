@@ -284,7 +284,14 @@ export class MediaService {
     } else if (constrainMaximumBitrate || isVP9) {
       // for vp9, these flags work for both one-pass and two-pass
       options.push(`-crf ${ffmpeg.crf}`);
-      options.push(`${isVP9 ? '-b:v' : '-maxrate'} ${maxBitrateValue}${bitrateUnit}`);
+      if (isVP9) {
+        options.push(`-b:v ${maxBitrateValue}${bitrateUnit}`);
+      } else {
+        options.push(`-maxrate ${maxBitrateValue}${bitrateUnit}`);
+        // -bufsize is the peak possible bitrate at any moment, while -maxrate is the max rolling average bitrate
+        // needed for -maxrate to be enforced
+        options.push(`-bufsize ${maxBitrateValue * 2}${bitrateUnit}`);
+      }
     } else {
       options.push(`-crf ${ffmpeg.crf}`);
     }
