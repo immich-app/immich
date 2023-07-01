@@ -8,6 +8,7 @@ import 'package:immich_mobile/shared/models/store.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:openapi/api.dart' as api;
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 /// Renders an Asset using local data if available, else remote data
 class ImmichImage extends StatelessWidget {
@@ -120,6 +121,13 @@ class ImmichImage extends StatelessWidget {
       fit: fit,
       placeholder: placeholderWidget,
       errorBuilder: (context, error) {
+        if (error is HttpExceptionWithStatus &&
+            error.statusCode >= 400 &&
+            error.statusCode < 500) {
+          debugPrint(
+              "Evicting thumbnail '$thumbnailRequestUrl' from cache: $error");
+          CachedNetworkImage.evictFromCache(thumbnailRequestUrl);
+        }
         return Icon(
           Icons.image_not_supported_outlined,
           color: Theme.of(context).primaryColor,
