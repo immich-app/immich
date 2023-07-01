@@ -28,7 +28,6 @@ npm i -g immich
 | --album/ -al     | Create albums for assets based on the parent folder or a given name |
 | --import/ -i     | Import gallery (assets are not uploaded)                            |
 
-
 ## Quick Start
 
 Specify user's credential, Immich's server address and port and the directory you would like to upload videos/photos from.
@@ -115,12 +114,12 @@ If you do not wish to upload files into the server, existing files can be import
 ```
 immich upload --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api --recursive directory/ --import
 ```
+
 ```
 immich upload --key HFEJ38DNSDUEG --server http://192.168.1.216:2283/api file1.jpg file2.jpg --import
 ```
 
 The `immich-server` and `immich-microservices` containers must be able to access the files, or directories at the path referenced in the command. The directories referenced must be set under a user's `External Path` setting. More detailed instructions can be found [here](/docs/features/read-only-gallery).
-
 
 :::tip Matching volume references
 The import command is most easily run on the machine running the immich service, as the path to the files on the machine running the command and the server much match identically.
