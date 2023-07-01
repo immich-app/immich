@@ -1,22 +1,22 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
-	import { api } from '@api';
-	import ServerStatsPanel from '$lib/components/admin-page/server-stats/server-stats-panel.svelte';
-	import type { PageData } from './$types';
+  import { onMount, onDestroy } from 'svelte';
+  import { api } from '@api';
+  import ServerStatsPanel from '$lib/components/admin-page/server-stats/server-stats-panel.svelte';
+  import type { PageData } from './$types';
 
-	export let data: PageData;
-	let setIntervalHandler: NodeJS.Timer;
+  export let data: PageData;
+  let setIntervalHandler: NodeJS.Timer;
 
-	onMount(async () => {
-		setIntervalHandler = setInterval(async () => {
-			const { data: stats } = await api.serverInfoApi.getStats();
-			data.stats = stats;
-		}, 5000);
-	});
+  onMount(async () => {
+    setIntervalHandler = setInterval(async () => {
+      const { data: stats } = await api.serverInfoApi.getStats();
+      data.stats = stats;
+    }, 5000);
+  });
 
-	onDestroy(() => {
-		clearInterval(setIntervalHandler);
-	});
+  onDestroy(() => {
+    clearInterval(setIntervalHandler);
+  });
 </script>
 
 <ServerStatsPanel stats={data.stats} />

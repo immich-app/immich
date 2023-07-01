@@ -2,6 +2,6 @@
 import { writable } from 'svelte/store';
 
 export const dragAndDropFilesStore = writable({
-	isDragging: false as boolean,
-	files: [] as File[]
+  isDragging: false as boolean,
+  files: [] as File[],
 });
