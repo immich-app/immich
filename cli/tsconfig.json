@@ -1,15 +1,26 @@
 {
   "compilerOptions": {
-    "declaration": true,
-    "importHelpers": true,
     "module": "commonjs",
-    "outDir": "dist",
-    "rootDir": "src",
     "strict": true,
-    "target": "es2019",
-    "composite": true,
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "target": "es2017",
+    "moduleResolution": "node16",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "src",
+    "incremental": true,
+    "skipLibCheck": true,
     "esModuleInterop": true,
-    "resolveJsonModule": true
+    "baseUrl": "./",
+    "paths": {
+      "@test": ["test"],
+      "@test/*": ["test/*"]
+    }
   },
   "exclude": ["dist", "node_modules", "upload"]
 }

@@ -12,6 +12,7 @@
     "moduleResolution": "node16",
     "sourceMap": true,
     "outDir": "./dist",
+    "rootDir": "src",
     "incremental": true,
     "skipLibCheck": true,
     "esModuleInterop": true,

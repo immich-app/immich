@@ -1,11 +1,7 @@
 import { UploadService } from './upload.service';
 import mockfs from 'mock-fs';
-
-import axios, { AxiosRequestConfig } from 'axios';
-import { AssetTypeEnum } from 'immich-sdk';
+import axios from 'axios';
 import mockAxios from 'jest-mock-axios';
-import { UploadTarget } from '../cores/models/upload-target';
-import { ImmichApi } from '../api/client';
 import FormData from 'form-data';
 import { ApiConfiguration } from '../cores/api-configuration';
 

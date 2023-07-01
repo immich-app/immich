@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { CrawlService } from './crawl.service';
 import mockfs from 'mock-fs';
 import { toIncludeSameMembers } from 'jest-extended';
