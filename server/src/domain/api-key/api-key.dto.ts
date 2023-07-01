@@ -12,3 +12,15 @@ export class APIKeyUpdateDto {
   @IsNotEmpty()
   name!: string;
 }
+
+export class APIKeyCreateResponseDto {
+  secret!: string;
+  apiKey!: APIKeyResponseDto;
+}
+
+export class APIKeyResponseDto {
+  id!: string;
+  name!: string;
+  createdAt!: Date;
+  updatedAt!: Date;
+}
