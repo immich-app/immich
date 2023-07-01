@@ -36,9 +36,6 @@ export class AssetFaceEntity {
   @Column({ default: 0, type: 'int' })
   boundingBoxY2!: number;
 
-  @Column({ default: 0, type: 'int' })
-  score!: number;
-
   @ManyToOne(() => AssetEntity, (asset) => asset.faces, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   asset!: AssetEntity;
 
