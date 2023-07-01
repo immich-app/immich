@@ -1,96 +1,90 @@
 <script lang="ts">
-	import { quintOut } from 'svelte/easing';
-	import { fly } from 'svelte/transition';
+  import { quintOut } from 'svelte/easing';
+  import { fly } from 'svelte/transition';
 
-	export let title: string;
-	export let subtitle = '';
-	export let checked = false;
-	export let disabled = false;
-	export let isEdited = false;
+  export let title: string;
+  export let subtitle = '';
+  export let checked = false;
+  export let disabled = false;
+  export let isEdited = false;
 </script>
 
 <div class="flex justify-between place-items-center">
-	<div>
-		<div class="flex place-items-center gap-1 h-[26px]">
-			<label class="immich-form-label text-sm" for={title}>
-				{title}
-			</label>
-			{#if isEdited}
-				<div
-					transition:fly={{ x: 10, duration: 200, easing: quintOut }}
-					class="bg-orange-100 px-2 rounded-full text-orange-900 text-[10px]"
-				>
-					Unsaved change
-				</div>
-			{/if}
-		</div>
+  <div>
+    <div class="flex place-items-center gap-1 h-[26px]">
+      <label class="immich-form-label text-sm" for={title}>
+        {title}
+      </label>
+      {#if isEdited}
+        <div
+          transition:fly={{ x: 10, duration: 200, easing: quintOut }}
+          class="bg-orange-100 px-2 rounded-full text-orange-900 text-[10px]"
+        >
+          Unsaved change
+        </div>
+      {/if}
+    </div>
 
-		<p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
-	</div>
+    <p class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
+  </div>
 
-	<label class="relative inline-block flex-none w-[36px] h-[10px]">
-		<input
-			class="opacity-0 w-0 h-0 disabled::cursor-not-allowed"
-			type="checkbox"
-			bind:checked
-			on:click
-			{disabled}
-		/>
+  <label class="relative inline-block flex-none w-[36px] h-[10px]">
+    <input class="opacity-0 w-0 h-0 disabled::cursor-not-allowed" type="checkbox" bind:checked on:click {disabled} />
 
-		{#if disabled}
-			<span class="slider-disable" />
-		{:else}
-			<span class="slider" />
-		{/if}
-	</label>
+    {#if disabled}
+      <span class="slider-disable" />
+    {:else}
+      <span class="slider" />
+    {/if}
+  </label>
 </div>
 
 <style>
-	.slider,
-	.slider-disable {
-		position: absolute;
-		cursor: pointer;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background-color: #ccc;
-		-webkit-transition: 0.4s;
-		transition: 0.4s;
-		border-radius: 34px;
-	}
+  .slider,
+  .slider-disable {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: 0.4s;
+    transition: 0.4s;
+    border-radius: 34px;
+  }
 
-	input:disabled {
-		cursor: not-allowed;
-	}
+  input:disabled {
+    cursor: not-allowed;
+  }
 
-	.slider:before,
-	.slider-disable:before {
-		position: absolute;
-		content: '';
-		height: 20px;
-		width: 20px;
-		left: 0px;
-		right: 0px;
-		bottom: -4px;
-		background-color: gray;
-		-webkit-transition: 0.4s;
-		transition: 0.4s;
-		border-radius: 50%;
-	}
+  .slider:before,
+  .slider-disable:before {
+    position: absolute;
+    content: '';
+    height: 20px;
+    width: 20px;
+    left: 0px;
+    right: 0px;
+    bottom: -4px;
+    background-color: gray;
+    -webkit-transition: 0.4s;
+    transition: 0.4s;
+    border-radius: 50%;
+  }
 
-	input:checked + .slider-disable {
-		background-color: gray;
-	}
+  input:checked + .slider-disable {
+    background-color: gray;
+  }
 
-	input:checked + .slider {
-		background-color: #adcbfa;
-	}
+  input:checked + .slider {
+    background-color: #adcbfa;
+  }
 
-	input:checked + .slider:before {
-		-webkit-transform: translateX(18px);
-		-ms-transform: translateX(18px);
-		transform: translateX(18px);
-		background-color: #4250af;
-	}
+  input:checked + .slider:before {
+    -webkit-transform: translateX(18px);
+    -ms-transform: translateX(18px);
+    transform: translateX(18px);
+    background-color: #4250af;
+  }
 </style>

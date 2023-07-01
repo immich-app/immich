@@ -3,93 +3,93 @@
 @tailwind utilities;
 
 @font-face {
-	font-family: 'Work Sans';
-	src: url('$lib/assets/fonts/WorkSans-VariableFont_wght.ttf') format('truetype-variations');
-	font-weight: 1 999;
+  font-family: 'Work Sans';
+  src: url('$lib/assets/fonts/WorkSans-VariableFont_wght.ttf') format('truetype-variations');
+  font-weight: 1 999;
 }
 
 @font-face {
-	font-family: 'Snowburst One';
-	src: url('$lib/assets/fonts/SnowburstOne-Regular.ttf') format('truetype');
+  font-family: 'Snowburst One';
+  src: url('$lib/assets/fonts/SnowburstOne-Regular.ttf') format('truetype');
 }
 
 :root {
-	font-family: 'Work Sans', sans-serif;
+  font-family: 'Work Sans', sans-serif;
 }
 
 html {
-	height: 100%;
-	width: 100%;
+  height: 100%;
+  width: 100%;
 }
 
 html::-webkit-scrollbar {
-	width: 8px;
+  width: 8px;
 }
 
 /* Track */
 html::-webkit-scrollbar-track {
-	background: #f1f1f1;
-	border-radius: 16px;
+  background: #f1f1f1;
+  border-radius: 16px;
 }
 
 /* Handle */
 html::-webkit-scrollbar-thumb {
-	background: rgba(85, 86, 87, 0.408);
-	border-radius: 16px;
+  background: rgba(85, 86, 87, 0.408);
+  border-radius: 16px;
 }
 
 /* Handle on hover */
 html::-webkit-scrollbar-thumb:hover {
-	background: #4250afad;
-	border-radius: 16px;
+  background: #4250afad;
+  border-radius: 16px;
 }
 
 body {
-	margin: 0;
-	color: #5f6368;
+  margin: 0;
+  color: #5f6368;
 }
 
 input:focus-visible {
-	outline-offset: 0px !important;
-	outline: none !important;
+  outline-offset: 0px !important;
+  outline: none !important;
 }
 
 @layer utilities {
-	.immich-form-input {
-		@apply bg-slate-200 p-4 rounded-xl focus:border-immich-primary text-sm dark:bg-gray-600 dark:text-immich-dark-fg disabled:bg-gray-400 dark:disabled:bg-gray-800 disabled:cursor-not-allowed disabled:text-gray-200;
-	}
+  .immich-form-input {
+    @apply bg-slate-200 p-4 rounded-xl focus:border-immich-primary text-sm dark:bg-gray-600 dark:text-immich-dark-fg disabled:bg-gray-400 dark:disabled:bg-gray-800 disabled:cursor-not-allowed disabled:text-gray-200;
+  }
 
-	.immich-form-label {
-		@apply font-medium text-gray-500 dark:text-gray-300;
-	}
+  .immich-form-label {
+    @apply font-medium text-gray-500 dark:text-gray-300;
+  }
 
-	/* width */
-	.immich-scrollbar::-webkit-scrollbar {
-		width: 8px;
-	}
+  /* width */
+  .immich-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
 
-	/* Track */
-	.immich-scrollbar::-webkit-scrollbar-track {
-		background: #f1f1f1;
-		border-radius: 16px;
-	}
+  /* Track */
+  .immich-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 16px;
+  }
 
-	/* Handle */
-	.immich-scrollbar::-webkit-scrollbar-thumb {
-		background: rgba(85, 86, 87, 0.408);
-		border-radius: 16px;
-	}
+  /* Handle */
+  .immich-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(85, 86, 87, 0.408);
+    border-radius: 16px;
+  }
 
-	/* Handle on hover */
-	.immich-scrollbar::-webkit-scrollbar-thumb:hover {
-		background: #4250afad;
-		border-radius: 16px;
-	}
+  /* Handle on hover */
+  .immich-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #4250afad;
+    border-radius: 16px;
+  }
 
-	/* Hidden scrollbar */
-	/* width */
-	.scrollbar-hidden::-webkit-scrollbar {
-		display: none;
-		scrollbar-width: none;
-	}
+  /* Hidden scrollbar */
+  /* width */
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+    scrollbar-width: none;
+  }
 }

@@ -1,5 +1,5 @@
 export class SegmentScrollbarLayout {
-	height!: number;
-	timeGroup!: string;
-	count!: number;
+  height!: number;
+  timeGroup!: string;
+  count!: number;
 }

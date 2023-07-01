@@ -3,14 +3,14 @@ import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals: { user } }) => {
-	if (!user) {
-		throw redirect(302, AppRoute.AUTH_LOGIN);
-	}
+  if (!user) {
+    throw redirect(302, AppRoute.AUTH_LOGIN);
+  }
 
-	return {
-		user,
-		meta: {
-			title: 'Shared Links'
-		}
-	};
+  return {
+    user,
+    meta: {
+      title: 'Shared Links',
+    },
+  };
 }) satisfies PageServerLoad;
