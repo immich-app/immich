@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as mime from 'mime-types';
 import { basename } from 'node:path';
 import * as path from 'path';
+import crypto from 'crypto';
 
 export class UploadTarget {
   public path: string;
@@ -63,8 +64,6 @@ export class UploadTarget {
   }
 
   public async hash(): Promise<string> {
-    const crypto = require('crypto');
-
     const hash = crypto.createHash('sha1');
 
     const sha1 = (filePath: string) =>

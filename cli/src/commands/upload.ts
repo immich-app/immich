@@ -4,14 +4,12 @@ import { CrawlService, UploadService } from '../services';
 import * as si from 'systeminformation';
 import FormData from 'form-data';
 import { UploadOptionsDto } from '../cores/dto/upload-options-dto';
-import { exit } from 'process';
-import { AxiosError } from 'axios';
 
 export default class Upload extends BaseCommand {
   private crawlService = new CrawlService();
   private uploadService!: UploadService;
   deviceId!: string;
-  uploadCounter: number = 0;
+  uploadCounter = 0;
   uploadLength!: number;
 
   public async run(paths: string[], options: UploadOptionsDto): Promise<void> {
@@ -39,7 +37,7 @@ export default class Upload extends BaseCommand {
       console.log('Import successful');
     } else if (options.delete) {
       console.log('Upload successful, deleting uploaded assets');
-      let deletionCounter: number = 0;
+      let deletionCounter = 0;
 
       for (const target of uploadTargets) {
         await target.delete();
@@ -55,7 +53,7 @@ export default class Upload extends BaseCommand {
   private async uploadTarget(target: UploadTarget, skipHash: boolean) {
     await target.read();
 
-    let skipUpload: boolean = false;
+    let skipUpload = false;
     if (skipHash) {
       const checksum: string = await target.hash();
 

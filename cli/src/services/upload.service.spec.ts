@@ -14,10 +14,6 @@ jest.mock('immich-sdk');
 describe('UploadService', () => {
   let uploadService: UploadService;
 
-  const api = new ImmichApi('', 'b');
-
-  let target: UploadTarget;
-
   beforeAll(() => {
     // Write a dummy output before mock-fs to prevent some annoying errors
     console.log();

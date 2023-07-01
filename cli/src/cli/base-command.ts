@@ -4,6 +4,7 @@ import path from 'node:path';
 import { SessionService } from '../services/session.service';
 import { LoginError } from '../cores/errors/login-error';
 import { exit } from 'node:process';
+import os from 'os';
 
 export abstract class BaseCommand {
   protected sessionService!: SessionService;
@@ -16,7 +17,6 @@ export abstract class BaseCommand {
   protected authPath;
 
   constructor() {
-    const os = require('os');
     const userHomeDir = os.homedir();
     this.configDir = path.join(userHomeDir, '.config/immich/');
     this.sessionService = new SessionService(this.configDir);

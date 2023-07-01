@@ -1,7 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import FormData from 'form-data';
 import { ApiConfiguration } from '../cores/api-configuration';
-import { exit } from 'process';
 
 export class UploadService {
   private readonly uploadConfig: AxiosRequestConfig<any>;
