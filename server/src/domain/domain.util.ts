@@ -1,4 +1,39 @@
+import { applyDecorators } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsArray, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 import { basename, extname } from 'node:path';
+import sanitize from 'sanitize-filename';
+
+export type Options = {
+  optional?: boolean;
+  each?: boolean;
+};
+
+export function ValidateUUID({ optional, each }: Options = { optional: false, each: false }) {
+  return applyDecorators(
+    IsUUID('4', { each }),
+    ApiProperty({ format: 'uuid' }),
+    optional ? IsOptional() : IsNotEmpty(),
+    each ? IsArray() : IsString(),
+  );
+}
+
+interface IValue {
+  value?: string;
+}
+
+export const toBoolean = ({ value }: IValue) => {
+  if (value == 'true') {
+    return true;
+  } else if (value == 'false') {
+    return false;
+  }
+  return value;
+};
+
+export const toEmail = ({ value }: IValue) => value?.toLowerCase();
+
+export const toSanitized = ({ value }: IValue) => sanitize((value || '').replace(/\./g, ''));
 
 export function getFileNameWithoutExtension(path: string): string {
   return basename(path, extname(path));

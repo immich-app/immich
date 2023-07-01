@@ -15,11 +15,28 @@ import {
 } from '@nestjs/swagger';
 import { writeFileSync } from 'fs';
 import path from 'path';
-import { Metadata } from './decorators/authenticated.decorator';
+
+import { applyDecorators, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Metadata } from './app.guard';
+
+export function UseValidation() {
+  return applyDecorators(
+    UsePipes(
+      new ValidationPipe({
+        transform: true,
+        whitelist: true,
+      }),
+    ),
+  );
+}
 
 export const asStreamableFile = ({ stream, type, length }: ImmichReadStream) => {
   return new StreamableFile(stream, { type, length });
 };
+
+export function patchFormData(latin1: string) {
+  return Buffer.from(latin1, 'latin1').toString('utf8');
+}
 
 function sortKeys<T extends object>(obj: T): T {
   if (!obj) {

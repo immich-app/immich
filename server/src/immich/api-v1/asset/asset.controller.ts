@@ -1,4 +1,4 @@
-import { AssetResponseDto } from '@app/domain';
+import { AssetResponseDto, AuthUserDto } from '@app/domain';
 import {
   Body,
   Controller,
@@ -21,10 +21,9 @@ import {
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response as Res } from 'express';
+import { Authenticated, AuthUser, SharedLinkRoute } from '../../app.guard';
 import { assetUploadOption, ImmichFile } from '../../config/asset-upload.config';
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
-import { AuthUser, AuthUserDto } from '../../decorators/auth-user.decorator';
-import { Authenticated, SharedLinkRoute } from '../../decorators/authenticated.decorator';
 import FileNotEmptyValidator from '../validation/file-not-empty-validator';
 import { AssetService } from './asset.service';
 import { AssetBulkUploadCheckDto } from './dto/asset-check.dto';

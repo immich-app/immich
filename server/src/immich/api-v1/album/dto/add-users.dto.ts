@@ -1,4 +1,4 @@
-import { ValidateUUID } from '@app/immich/decorators/validate-uuid.decorator';
+import { ValidateUUID } from '@app/domain';
 
 export class AddUsersDto {
   @ValidateUUID({ each: true })

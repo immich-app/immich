@@ -11,9 +11,8 @@ import {
 import { Body, Controller, Get, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { AuthUser, GetLoginDetails } from '../decorators/auth-user.decorator';
-import { Authenticated, PublicRoute } from '../decorators/authenticated.decorator';
-import { UseValidation } from '../decorators/use-validation.decorator';
+import { Authenticated, AuthUser, GetLoginDetails, PublicRoute } from '../app.guard';
+import { UseValidation } from '../app.utils';
 
 @ApiTags('OAuth')
 @Controller('oauth')

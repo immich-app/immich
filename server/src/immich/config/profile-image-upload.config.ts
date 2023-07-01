@@ -1,12 +1,12 @@
-import { StorageCore, StorageFolder } from '@app/domain/storage';
+import { AuthUserDto, StorageCore, StorageFolder } from '@app/domain';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import { existsSync, mkdirSync } from 'fs';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import sanitize from 'sanitize-filename';
-import { AuthRequest, AuthUserDto } from '../decorators/auth-user.decorator';
-import { patchFormData } from '../utils/path-form-data.util';
+import { AuthRequest } from '../app.guard';
+import { patchFormData } from '../app.utils';
 
 export const profileImageUploadOption: MulterOptions = {
   fileFilter,
