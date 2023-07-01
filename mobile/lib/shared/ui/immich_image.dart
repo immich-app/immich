@@ -125,7 +125,8 @@ class ImmichImage extends StatelessWidget {
             error.statusCode >= 400 &&
             error.statusCode < 500) {
           debugPrint(
-              "Evicting thumbnail '$thumbnailRequestUrl' from cache: $error");
+            "Evicting thumbnail '$thumbnailRequestUrl' from cache: $error",
+          );
           CachedNetworkImage.evictFromCache(thumbnailRequestUrl);
         }
         return Icon(
