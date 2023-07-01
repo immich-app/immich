@@ -29,7 +29,7 @@ server {
     client_max_body_size 50000M;
 
     location / {
-        proxy_pass http://<snip>/2283;
+        proxy_pass http://<snip>:2283;
         proxy_set_header Host              $http_host;
         proxy_set_header X-Real-IP         $remote_addr;
         proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
