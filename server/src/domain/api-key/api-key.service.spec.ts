@@ -56,6 +56,7 @@ describe(APIKeyService.name, () => {
 
     it('should update a key', async () => {
       keyMock.getById.mockResolvedValue(keyStub.admin);
+      keyMock.update.mockResolvedValue(keyStub.admin);
 
       await sut.update(authStub.admin, 'random-guid', { name: 'New Name' });
 
