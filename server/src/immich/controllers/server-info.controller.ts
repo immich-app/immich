@@ -7,8 +7,8 @@ import {
 } from '@app/domain';
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AdminRoute, Authenticated, PublicRoute } from '../decorators/authenticated.decorator';
-import { UseValidation } from '../decorators/use-validation.decorator';
+import { AdminRoute, Authenticated, PublicRoute } from '../app.guard';
+import { UseValidation } from '../app.utils';
 
 @ApiTags('Server Info')
 @Controller('server-info')

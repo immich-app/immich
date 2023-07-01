@@ -1,7 +1,6 @@
-import { AlbumResponseDto, mapAlbum } from '@app/domain';
+import { AlbumResponseDto, AuthUserDto, mapAlbum } from '@app/domain';
 import { AlbumEntity } from '@app/infra/entities';
 import { BadRequestException, ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { AuthUserDto } from '../../decorators/auth-user.decorator';
 import { IAlbumRepository } from './album-repository';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';

@@ -1,10 +1,9 @@
-import { AlbumResponseDto } from '@app/domain';
+import { AlbumResponseDto, AuthUserDto } from '@app/domain';
 import { Body, Controller, Delete, Get, Param, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Authenticated, AuthUser, SharedLinkRoute } from '../../app.guard';
+import { UseValidation } from '../../app.utils';
 import { UUIDParamDto } from '../../controllers/dto/uuid-param.dto';
-import { AuthUser, AuthUserDto } from '../../decorators/auth-user.decorator';
-import { Authenticated, SharedLinkRoute } from '../../decorators/authenticated.decorator';
-import { UseValidation } from '../../decorators/use-validation.decorator';
 import { AlbumService } from './album.service';
 import { AddAssetsDto } from './dto/add-assets.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';

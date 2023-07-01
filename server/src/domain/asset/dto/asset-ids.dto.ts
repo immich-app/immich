@@ -1,4 +1,4 @@
-import { ValidateUUID } from '@app/immich/decorators/validate-uuid.decorator';
+import { ValidateUUID } from '../../domain.util';
 
 export class AssetIdsDto {
   @ValidateUUID({ each: true })
