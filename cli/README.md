@@ -1,6 +1,6 @@
 A command-line interface for interfacing with Immich
 
-# Usage
+# Getting started
 
     $ ts-node cli/src
 
@@ -17,6 +17,24 @@ Next, you can run commands:
 When you're done, log out to remove the credentials from your filesystem
 
     $ ts-node cli/src logout
+
+# Usage
+
+```
+Usage: immich [options] [command]
+
+Immich command line interface
+
+Options:
+  -h, --help                        display help for command
+
+Commands:
+  upload [options] [paths...]       Upload assets
+  import [options] [paths...]       Import existing assets
+  server-info                       Display server information
+  login-key [instanceUrl] [apiKey]  Login using an API key
+  help [command]                    display help for command
+```
 
 # Todo
 
