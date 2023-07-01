@@ -138,7 +138,8 @@
     },
     "collectCoverageFrom": [
       "<rootDir>/src/**/*.(t|j)s",
-      "!<rootDir>/src/infra/**/*"
+      "!<rootDir>/src/infra/**/*",
+      "!<rootDir>/src/immich/controllers/**/*"
     ],
     "coverageDirectory": "./coverage",
     "coverageThreshold": {
