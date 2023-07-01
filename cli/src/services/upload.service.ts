@@ -7,10 +7,7 @@ export class UploadService {
   private readonly checkAssetExistenceConfig: AxiosRequestConfig<any>;
   private readonly importConfig: AxiosRequestConfig<any>;
 
-  private readonly apiConfiguration: ApiConfiguration;
-
   constructor(apiConfiguration: ApiConfiguration) {
-    this.apiConfiguration = apiConfiguration;
     this.uploadConfig = {
       method: 'post',
       maxRedirects: 0,

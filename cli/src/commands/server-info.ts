@@ -1,4 +1,4 @@
-import { ServerVersionReponseDto } from 'immich-sdk';
+import { ServerVersionReponseDto } from 'src/api/open-api';
 import { BaseCommand } from '../cli/base-command';
 
 export default class ServerInfo extends BaseCommand {

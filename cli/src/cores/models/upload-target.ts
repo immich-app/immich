@@ -1,9 +1,9 @@
-import { AssetTypeEnum } from 'immich-sdk';
 import * as fs from 'fs';
 import * as mime from 'mime-types';
 import { basename } from 'node:path';
 import * as path from 'path';
 import crypto from 'crypto';
+import { AssetTypeEnum } from 'src/api/open-api';
 
 export class UploadTarget {
   public path: string;

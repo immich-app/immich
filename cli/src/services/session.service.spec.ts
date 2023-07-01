@@ -7,10 +7,10 @@ import { LoginError } from '../cores/errors/login-error';
 const mockPingServer = jest.fn(() => Promise.resolve({ data: { res: 'pong' } }));
 const mockUserInfo = jest.fn(() => Promise.resolve({ data: { email: 'admin@example.com' } }));
 
-jest.mock('immich-sdk', () => {
+jest.mock('../api/open-api', () => {
   return {
     __esModule: true,
-    ...jest.requireActual('immich-sdk'),
+    ...jest.requireActual('../api/open-api'),
     UserApi: jest.fn().mockImplementation(() => {
       return { getMyUserInfo: mockUserInfo };
     }),

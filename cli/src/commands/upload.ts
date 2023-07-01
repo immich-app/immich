@@ -21,6 +21,11 @@ export default class Upload extends BaseCommand {
 
     const crawledFiles: string[] = await this.crawlService.crawl(paths, options.recursive);
 
+    if (crawledFiles.length === 0) {
+      console.log('No assets found, exiting');
+      return;
+    }
+
     const uploadTargets = crawledFiles.map((path) => new UploadTarget(path));
 
     this.uploadLength = uploadTargets.length;

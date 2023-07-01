@@ -1,10 +1,10 @@
-import { ServerVersionReponseDto, UserResponseDto } from 'immich-sdk/dist/api';
 import { ImmichApi } from '../api/client';
 import path from 'node:path';
 import { SessionService } from '../services/session.service';
 import { LoginError } from '../cores/errors/login-error';
 import { exit } from 'node:process';
 import os from 'os';
+import { ServerVersionReponseDto, UserResponseDto } from 'src/api/open-api';
 
 export abstract class BaseCommand {
   protected sessionService!: SessionService;

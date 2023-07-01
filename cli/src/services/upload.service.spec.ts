@@ -5,8 +5,6 @@ import mockAxios from 'jest-mock-axios';
 import FormData from 'form-data';
 import { ApiConfiguration } from '../cores/api-configuration';
 
-jest.mock('immich-sdk');
-
 describe('UploadService', () => {
   let uploadService: UploadService;
 
