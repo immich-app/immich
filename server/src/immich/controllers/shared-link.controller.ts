@@ -9,9 +9,8 @@ import {
 } from '@app/domain';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthUser } from '../decorators/auth-user.decorator';
-import { Authenticated, SharedLinkRoute } from '../decorators/authenticated.decorator';
-import { UseValidation } from '../decorators/use-validation.decorator';
+import { Authenticated, AuthUser, SharedLinkRoute } from '../app.guard';
+import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Shared Link')

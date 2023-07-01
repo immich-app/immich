@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import * as fs from 'fs';
-import { AuthRequest } from '../decorators/auth-user.decorator';
+import { AuthRequest } from '../app.guard';
 import { multerUtils } from './asset-upload.config';
 
 const { fileFilter, destination, filename } = multerUtils;

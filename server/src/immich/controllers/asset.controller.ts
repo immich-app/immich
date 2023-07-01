@@ -11,10 +11,8 @@ import { MapMarkerDto } from '@app/domain/asset/dto/map-marker.dto';
 import { MemoryLaneResponseDto } from '@app/domain/asset/response-dto/memory-lane-response.dto';
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { asStreamableFile } from '../app.utils';
-import { AuthUser } from '../decorators/auth-user.decorator';
-import { Authenticated, SharedLinkRoute } from '../decorators/authenticated.decorator';
-import { UseValidation } from '../decorators/use-validation.decorator';
+import { Authenticated, AuthUser, SharedLinkRoute } from '../app.guard';
+import { asStreamableFile, UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
 
 @ApiTags('Asset')
