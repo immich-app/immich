@@ -28,6 +28,7 @@ export class PersonRepository implements IPersonRepository {
       .orderBy('COUNT(face.assetId)', 'DESC')
       .having('COUNT(face.assetId) >= :faces', { faces: options?.minimumFaceCount || 1 })
       .groupBy('person.id')
+      .limit(500)
       .getMany();
   }
 
