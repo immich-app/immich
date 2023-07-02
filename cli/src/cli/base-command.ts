@@ -30,6 +30,8 @@ export abstract class BaseCommand {
       if (error instanceof LoginError) {
         console.log(error.message);
         exit(1);
+      } else {
+        throw error;
       }
     }
   }

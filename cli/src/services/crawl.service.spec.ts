@@ -3,6 +3,7 @@
 import { CrawlService } from './crawl.service';
 import mockfs from 'mock-fs';
 import { toIncludeSameMembers } from 'jest-extended';
+import { CrawlOptionsDto } from '../cores/dto/crawl-options-dto';
 
 const matchers = require('jest-extended');
 expect.extend(matchers);
@@ -15,12 +16,58 @@ describe('CrawlService', () => {
     console.log();
   });
 
-  it('should crawl a single path with trailing slash', async () => {
+  it('should crawl a single path', async () => {
     mockfs({
       '/photos/image.jpg': '',
     });
-    const paths: string[] = await crawlService.crawl(['/photos/'], false);
+
+    const options = new CrawlOptionsDto();
+    options.pathsToCrawl = ['/photos/'];
+    const paths: string[] = await crawlService.crawl(options);
     expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
+  });
+
+  it('should exclude by file extension', async () => {
+    mockfs({
+      '/photos/image.jpg': '',
+      '/photos/image.tif': '',
+    });
+
+    const options = new CrawlOptionsDto();
+    options.pathsToCrawl = ['/photos/'];
+    options.excludePatterns = ['**/*.tif'];
+    const paths: string[] = await crawlService.crawl(options);
+    expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
+  });
+
+  it('should exclude by file extension without case sensitivity', async () => {
+    mockfs({
+      '/photos/image.jpg': '',
+      '/photos/image.tif': '',
+    });
+
+    const options = new CrawlOptionsDto();
+    options.pathsToCrawl = ['/photos/'];
+    options.excludePatterns = ['**/*.TIF'];
+    const paths: string[] = await crawlService.crawl(options);
+    expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
+  });
+
+  it('should exclude by folder', async () => {
+    mockfs({
+      '/photos/image.jpg': '',
+      '/photos/raw/image.jpg': '',
+      '/photos/raw2/image.jpg': '',
+      '/photos/folder/raw/image.jpg': '',
+      '/photos/crawl/image.jpg': '',
+    });
+
+    const options = new CrawlOptionsDto();
+    options.pathsToCrawl = ['/photos/'];
+    options.excludePatterns = ['**/raw/**'];
+    options.recursive = true;
+    const paths: string[] = await crawlService.crawl(options);
+    expect(paths).toIncludeSameMembers(['/photos/image.jpg', '/photos/raw2/image.jpg', '/photos/crawl/image.jpg']);
   });
 
   it('should crawl multiple paths', async () => {
@@ -29,7 +76,10 @@ describe('CrawlService', () => {
       '/images/image2.jpg': '',
       '/albums/image3.jpg': '',
     });
-    const paths: string[] = await crawlService.crawl(['/photos/', '/images/', '/albums/'], false);
+    const options = new CrawlOptionsDto();
+    options.pathsToCrawl = ['/photos/', '/images/', '/albums/'];
+    options.recursive = false;
+    const paths: string[] = await crawlService.crawl(options);
     expect(paths).toIncludeSameMembers(['/photos/image1.jpg', '/images/image2.jpg', '/albums/image3.jpg']);
   });
 
@@ -37,7 +87,9 @@ describe('CrawlService', () => {
     mockfs({
       '/photos/image.jpg': '',
     });
-    const paths: string[] = await crawlService.crawl(['/photos'], false);
+    const options = new CrawlOptionsDto();
+    options.pathsToCrawl = ['/photos'];
+    const paths: string[] = await crawlService.crawl(options);
     expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
   });
 
@@ -48,7 +100,10 @@ describe('CrawlService', () => {
       '/photos/subfolder/image2.jpg': '',
       '/image1.jpg': '',
     });
-    const paths: string[] = await crawlService.crawl(['/photos/'], false);
+
+    const options = new CrawlOptionsDto();
+    options.pathsToCrawl = ['/photos/'];
+    const paths: string[] = await crawlService.crawl(options);
     expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
   });
 
@@ -59,7 +114,10 @@ describe('CrawlService', () => {
       '/photos/subfolder/image2.jpg': '',
       '/image1.jpg': '',
     });
-    const paths: string[] = await crawlService.crawl(['/photos/'], true);
+    const options = new CrawlOptionsDto();
+    options.pathsToCrawl = ['/photos/'];
+    options.recursive = true;
+    const paths: string[] = await crawlService.crawl(options);
     expect(paths).toIncludeSameMembers([
       '/photos/image.jpg',
       '/photos/subfolder/image1.jpg',
@@ -73,7 +131,9 @@ describe('CrawlService', () => {
       '/photos/image.txt': '',
       '/photos/1': '',
     });
-    const paths: string[] = await crawlService.crawl(['/photos/'], false);
+    const options = new CrawlOptionsDto();
+    options.pathsToCrawl = ['/photos/'];
+    const paths: string[] = await crawlService.crawl(options);
     expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
   });
 
@@ -94,7 +154,11 @@ describe('CrawlService', () => {
       '/videos/video.mov': '',
       '/videos/video.webm': '',
     });
-    const paths: string[] = await crawlService.crawl(['/photos/', '/videos/'], false);
+
+    const options = new CrawlOptionsDto();
+    options.pathsToCrawl = ['/photos/', '/videos/'];
+    const paths: string[] = await crawlService.crawl(options);
+
     expect(paths).toIncludeSameMembers([
       '/photos/image.jpg',
       '/photos/image.jpeg',
@@ -125,7 +189,10 @@ describe('CrawlService', () => {
       '/photos/image.dng': '',
       '/photos/image.NEF': '',
     });
-    const paths: string[] = await crawlService.crawl(['/photos/'], false);
+
+    const options = new CrawlOptionsDto();
+    options.pathsToCrawl = ['/photos/'];
+    const paths: string[] = await crawlService.crawl(options);
     expect(paths).toIncludeSameMembers([
       '/photos/image.jpg',
       '/photos/image.Jpg',

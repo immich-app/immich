@@ -1,6 +1,8 @@
 export class UploadOptionsDto {
-  recursive!: boolean;
-  skipHash!: boolean;
-  delete!: boolean;
-  import!: boolean;
+  recursive = false;
+  excludePatterns!: string[];
+  dryRun = false;
+  skipHash = false;
+  delete = false;
+  import = false;
 }

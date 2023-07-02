@@ -1,8 +1,12 @@
+import { CrawlOptionsDto } from 'src/cores/dto/crawl-options-dto';
 import { ACCEPTED_FILE_EXTENSIONS } from '../cores';
 import { glob } from 'glob';
+import { options } from 'axios';
 
 export class CrawlService {
-  public async crawl(pathsToCrawl: string[], recursive: boolean): Promise<string[]> {
+  public async crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
+    const pathsToCrawl = crawlOptions.pathsToCrawl;
+
     let paths: string;
     if (pathsToCrawl.length === 1) {
       paths = pathsToCrawl[0];
@@ -10,11 +14,11 @@ export class CrawlService {
       paths = '{' + pathsToCrawl.join(',') + '}';
     }
 
-    if (recursive) {
+    if (crawlOptions.recursive) {
       paths = paths + '/**/';
     }
 
     paths = paths + '/*.{' + ACCEPTED_FILE_EXTENSIONS.join(',') + '}';
-    return await glob(paths, { nocase: true, nodir: true });
+    return await glob(paths, { nocase: true, nodir: true, ignore: crawlOptions.excludePatterns });
   }
 }

@@ -4,6 +4,8 @@ import { CrawlService, UploadService } from '../services';
 import * as si from 'systeminformation';
 import FormData from 'form-data';
 import { UploadOptionsDto } from '../cores/dto/upload-options-dto';
+import { CrawlOptionsDto } from '../cores/dto/crawl-options-dto';
+import { log } from 'console';
 
 export default class Upload extends BaseCommand {
   private crawlService = new CrawlService();
@@ -11,6 +13,7 @@ export default class Upload extends BaseCommand {
   deviceId!: string;
   uploadCounter = 0;
   uploadLength!: number;
+  dryRun = false;
 
   public async run(paths: string[], options: UploadOptionsDto): Promise<void> {
     await this.connect();
@@ -19,7 +22,14 @@ export default class Upload extends BaseCommand {
     this.deviceId = uuid.os || 'CLI';
     this.uploadService = new UploadService(this.immichApi.apiConfiguration);
 
-    const crawledFiles: string[] = await this.crawlService.crawl(paths, options.recursive);
+    this.dryRun = options.dryRun;
+
+    const crawlOptions = new CrawlOptionsDto();
+    crawlOptions.pathsToCrawl = paths;
+    crawlOptions.recursive = options.recursive;
+    crawlOptions.excludePatterns = options.excludePatterns;
+
+    const crawledFiles: string[] = await this.crawlService.crawl(crawlOptions);
 
     if (crawledFiles.length === 0) {
       console.log('No assets found, exiting');
@@ -45,21 +55,27 @@ export default class Upload extends BaseCommand {
       let deletionCounter = 0;
 
       for (const target of uploadTargets) {
-        await target.delete();
-        deletionCounter++;
-        console.log(deletionCounter + '/' + this.uploadLength + ' deleted: ' + target.path);
+        if (this.dryRun) {
+          deletionCounter++;
+          console.log(deletionCounter + '/' + this.uploadLength + ' would have been deleted: ' + target.path);
+        } else {
+          await target.delete();
+          deletionCounter++;
+          console.log(deletionCounter + '/' + this.uploadLength + ' deleted: ' + target.path);
+        }
       }
+
       console.log('Process complete');
     } else {
       console.log('Upload successful');
     }
   }
 
-  private async uploadTarget(target: UploadTarget, skipHash: boolean) {
+  private async uploadTarget(target: UploadTarget, skipHash = false) {
     await target.read();
 
     let skipUpload = false;
-    if (skipHash) {
+    if (!skipHash) {
       const checksum: string = await target.hash();
 
       const checkResponse = await this.uploadService.checkIfAssetAlreadyExists(target.path, checksum);
@@ -85,16 +101,27 @@ export default class Upload extends BaseCommand {
         });
       }
 
-      await this.uploadService.upload(uploadFormData);
-      this.uploadCounter++;
-      let finishMessage: string;
-      if (skipUpload) {
+      if (!this.dryRun) {
+        await this.uploadService.upload(uploadFormData);
+      }
+    }
+
+    this.uploadCounter++;
+    let finishMessage: string;
+    if (skipUpload) {
+      if (this.dryRun) {
+        finishMessage = ' would have been skipped: ';
+      } else {
         finishMessage = ' skipped: ';
+      }
+    } else {
+      if (this.dryRun) {
+        finishMessage = ' would have been uploaded: ';
       } else {
         finishMessage = ' uploaded: ';
       }
-      console.log(this.uploadCounter + '/' + this.uploadLength + finishMessage + target.path);
     }
+    console.log(this.uploadCounter + '/' + this.uploadLength + finishMessage + target.path);
   }
 
   private async importTarget(target: UploadTarget) {
@@ -110,9 +137,18 @@ export default class Upload extends BaseCommand {
       isFavorite: false,
     };
 
-    await this.uploadService.import(importData);
-
+    if (!this.dryRun) {
+      await this.uploadService.import(importData);
+    }
     this.uploadCounter++;
-    console.log(this.uploadCounter + '/' + this.uploadLength + ' imported: ' + target.path);
+
+    let finishMessage: string;
+    if (this.dryRun) {
+      finishMessage = ' would have been imported: ';
+    } else {
+      finishMessage = ' imported: ';
+    }
+
+    console.log(this.uploadCounter + '/' + this.uploadLength + finishMessage + target.path);
   }
 }

@@ -37,6 +37,7 @@ export class SessionService {
     this.api = new ImmichApi(instanceUrl, apiKey);
 
     await this.ping();
+
     return this.api;
   }
 

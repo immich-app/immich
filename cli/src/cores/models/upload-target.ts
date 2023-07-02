@@ -42,7 +42,7 @@ export class UploadTarget {
     this.assetType = mimeType.split('/')[0].toUpperCase() as AssetTypeEnum;
     this.fileCreatedAt = stats.ctime.toISOString();
     this.fileModifiedAt = stats.mtime.toISOString();
-    this.fileExtension = path.extname(this.path);
+    this.fileExtension = path.extname(this.path).substring(1);
     let hasSidecar = true;
 
     // TODO: doesn't xmp replace the file extension? Will need investigation
