@@ -257,8 +257,8 @@ export class AssetService {
     }
 
     try {
-      const thumbnailPath = this.getThumbnailPath(asset, query.format);
-      return this.streamFile(thumbnailPath, res, headers, `image/${query.format.toLowerCase()}`);
+      const [thumbnailPath, format] = this.getThumbnailPath(asset, query.format);
+      return this.streamFile(thumbnailPath, res, headers, `image/${format.toLowerCase()}`);
     } catch (e) {
       res.header('Cache-Control', 'none');
       this.logger.error(`Cannot create read stream for asset ${asset.id}`, 'getAssetThumbnail');
@@ -521,20 +521,25 @@ export class AssetService {
   }
 
   private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
+    if (!Object.values(GetAssetThumbnailFormatEnum).includes(format)) {
+      throw new UnsupportedMediaTypeException(`Unsupported thumbnail format requested: ${format}`);
+    }
+
     switch (format) {
       case GetAssetThumbnailFormatEnum.WEBP:
-        if (!asset.webpPath) {
-          throw new NotFoundException(`No ${format} thumbnail found for asset ${asset.id}`);
+        if (asset.webpPath) {
+          return [asset.webpPath, GetAssetThumbnailFormatEnum.WEBP];
         }
-        return asset.webpPath;
 
       case GetAssetThumbnailFormatEnum.JPEG:
-        if (!asset.resizePath) {
-          throw new NotFoundException(`No ${format} thumbnail found for asset ${asset.id}`);
-        }
-        return asset.resizePath;
       default:
-        throw new UnsupportedMediaTypeException(`Unsupported thumbnail format requested: ${format}`);
+        if (!asset.resizePath) {
+          throw new NotFoundException(`No thumbnail found for asset ${asset.id}`);
+        }
+        if (format != GetAssetThumbnailFormatEnum.JPEG) {
+          this.logger.warn(`${format} thumbnail requested but not found for asset ${asset.id}, falling back to JPEG`);
+        }
+        return [asset.resizePath, GetAssetThumbnailFormatEnum.JPEG];
     }
   }
 
