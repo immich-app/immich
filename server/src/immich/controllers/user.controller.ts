@@ -97,6 +97,14 @@ export class UserController {
     return this.service.createProfileImage(authUser, fileInfo);
   }
 
+  @Post('/profile-image-by-assetid')
+  createProfileImageByAssetId(
+    @AuthUser() authUser: AuthUserDto,
+    assetId: string,
+  ): Promise<CreateProfileImageResponseDto> {
+    return this.service.createProfileImageByAssetId(authUser, assetId);
+  }
+
   @Get('/profile-image/:userId')
   @Header('Cache-Control', 'private, max-age=86400, no-transform')
   async getProfileImage(@Param() { userId }: UserIdDto, @Response({ passthrough: true }) res: Res): Promise<any> {

@@ -112,6 +112,16 @@ export class UserService {
     return mapCreateProfileImageResponse(updatedUser.id, updatedUser.profileImagePath);
   }
 
+  async createProfileImageByAssetId(authUser: AuthUserDto, assetId: string): Promise<CreateProfileImageResponseDto> {
+    const asset = await this.assetRepository.getByIds([assetId]);
+    if (!asset[0]) {
+      throw new BadRequestException('Asset not found');
+    }
+
+    const updatedUser = await this.userCore.createProfileImage(authUser, asset[0].originalPath);
+    return mapCreateProfileImageResponse(updatedUser.id, updatedUser.profileImagePath);
+  }
+
   async getUserProfileImage(userId: string): Promise<ReadStream> {
     const user = await this.userCore.get(userId);
     if (!user) {
