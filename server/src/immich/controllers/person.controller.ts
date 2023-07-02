@@ -7,7 +7,7 @@ import {
   PersonUpdateDto,
 } from '@app/domain';
 import { Body, Controller, Get, Param, Put, StreamableFile } from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Authenticated, AuthUser } from '../app.guard';
 import { UseValidation } from '../app.utils';
 import { UUIDParamDto } from './dto/uuid-param.dto';
@@ -43,7 +43,6 @@ export class PersonController {
   }
 
   @Get(':id/thumbnail')
-  @ApiOkResponse({ content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } })
   getPersonThumbnail(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
     return this.service.getThumbnail(authUser, id).then(asStreamableFile);
   }
