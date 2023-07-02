@@ -142,16 +142,16 @@
 </section>
 
 <!-- Gallery Block -->
-<section class="relative pt-8 sm:px-4 mb-12 bg-immich-bg dark:bg-immich-dark-bg">
-  <section class="overflow-y-auto relative immich-scrollbar">
-    <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
-      <GalleryViewer assets={data.assets} viewFrom="search-page" showArchiveIcon={true} bind:selectedAssets />
+{#if !isSelectingFace}
+  <section class="relative pt-8 sm:px-4 mb-12 bg-immich-bg dark:bg-immich-dark-bg">
+    <section class="overflow-y-auto relative immich-scrollbar">
+      <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
+        <GalleryViewer assets={data.assets} viewFrom="search-page" showArchiveIcon={true} bind:selectedAssets />
+      </section>
     </section>
   </section>
-</section>
+{/if}
 
 {#if isSelectingFace}
-  <FullScreenModal>
-    <FaceThumbnailSelector assets={data.assets} on:go-back={handleSelectFeaturePhoto} />
-  </FullScreenModal>
+  <FaceThumbnailSelector assets={data.assets} on:go-back={handleSelectFeaturePhoto} />
 {/if}
