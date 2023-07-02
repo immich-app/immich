@@ -1157,6 +1157,16 @@ export const personStub = {
     thumbnailPath: '',
     faces: [],
   }),
+  newThumbnail: Object.freeze<PersonEntity>({
+    id: 'person-1',
+    createdAt: new Date('2021-01-01'),
+    updatedAt: new Date('2021-01-01'),
+    ownerId: userEntityStub.admin.id,
+    owner: userEntityStub.admin,
+    name: '',
+    thumbnailPath: '/new/path/to/thumbnail',
+    faces: [],
+  }),
 };
 
 export const partnerStub = {
@@ -1185,6 +1195,12 @@ export const faceStub = {
     personId: personStub.withName.id,
     person: personStub.withName,
     embedding: [1, 2, 3, 4],
+    boundingBoxX1: 0,
+    boundingBoxY1: 0,
+    boundingBoxX2: 1,
+    boundingBoxY2: 1,
+    imageHeight: 1024,
+    imageWidth: 1024,
   }),
 };
 

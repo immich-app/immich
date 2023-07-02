@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import {
   assetEntityStub,
   authStub,
+  faceStub,
   newJobRepositoryMock,
   newPersonRepositoryMock,
   newStorageRepositoryMock,
@@ -106,6 +107,36 @@ describe(PersonService.name, () => {
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.SEARCH_INDEX_ASSET,
         data: { ids: [assetEntityStub.image.id] },
+      });
+    });
+
+    it("should update a person's thumbnailPath", async () => {
+      personMock.getById.mockResolvedValue(personStub.withName);
+      personMock.getFaceById.mockResolvedValue(faceStub.face1);
+
+      await expect(
+        sut.update(authStub.admin, 'person-1', { featureFaceAssetId: faceStub.face1.assetId }),
+      ).resolves.toEqual(responseDto);
+
+      expect(personMock.getById).toHaveBeenCalledWith('admin_id', 'person-1');
+      expect(personMock.getFaceById).toHaveBeenCalledWith({
+        assetId: faceStub.face1.assetId,
+        personId: 'person-1',
+      });
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.GENERATE_FACE_THUMBNAIL,
+        data: {
+          assetId: faceStub.face1.assetId,
+          personId: 'person-1',
+          boundingBox: {
+            x1: faceStub.face1.boundingBoxX1,
+            x2: faceStub.face1.boundingBoxX2,
+            y1: faceStub.face1.boundingBoxY1,
+            y2: faceStub.face1.boundingBoxY2,
+          },
+          imageHeight: faceStub.face1.imageHeight,
+          imageWidth: faceStub.face1.imageWidth,
+        },
       });
     });
   });

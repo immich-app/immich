@@ -22,10 +22,17 @@
   import type { PageData } from './$types';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import SelectAll from 'svelte-material-icons/SelectAll.svelte';
+  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import FaceThumbnailSelector from '$lib/components/faces-page/face-thumbnail-selector.svelte';
+  import {
+    NotificationType,
+    notificationController,
+  } from '$lib/components/shared-components/notification/notification';
 
   export let data: PageData;
 
-  let isEditName = false;
+  let isEditingName = false;
+  let isSelectingFace = false;
   let previousRoute: string = AppRoute.EXPLORE;
   let selectedAssets: Set<AssetResponseDto> = new Set();
   $: isMultiSelectionMode = selectedAssets.size > 0;
@@ -41,7 +48,7 @@
 
   const handleNameChange = async (name: string) => {
     try {
-      isEditName = false;
+      isEditingName = false;
       data.person.name = name;
       await api.personApi.updatePerson({ id: data.person.id, personUpdateDto: { name } });
     } catch (error) {
@@ -54,6 +61,25 @@
   };
   const handleSelectAll = () => {
     selectedAssets = new Set(data.assets);
+  };
+
+  const handleSelectFeaturePhoto = async (event: CustomEvent) => {
+    isSelectingFace = false;
+
+    const { selectedAsset }: { selectedAsset: AssetResponseDto | undefined } = event.detail;
+
+    if (selectedAsset) {
+      await api.personApi.updatePerson({
+        id: data.person.id,
+        personUpdateDto: { featureFaceAssetId: selectedAsset.id },
+      });
+
+      // TODO: Replace by Websocket in the future
+      notificationController.show({
+        message: 'Feature photo updated, refresh page to see changes',
+        type: NotificationType.Info,
+      });
+    }
   };
 </script>
 
@@ -73,30 +99,39 @@
     </AssetSelectContextMenu>
   </AssetSelectControlBar>
 {:else}
-  <ControlAppBar showBackButton backIcon={ArrowLeft} on:close-button-click={() => goto(previousRoute)} />
+  <ControlAppBar showBackButton backIcon={ArrowLeft} on:close-button-click={() => goto(previousRoute)}>
+    <svelte:fragment slot="trailing">
+      <AssetSelectContextMenu icon={DotsVertical} title="Menu">
+        <MenuOption text="Change feature photo" on:click={() => (isSelectingFace = true)} />
+      </AssetSelectContextMenu>
+    </svelte:fragment>
+  </ControlAppBar>
 {/if}
 
 <!-- Face information block -->
 <section class="pt-24 px-4 sm:px-6 flex place-items-center">
-  {#if isEditName}
+  {#if isEditingName}
     <EditNameInput
       person={data.person}
       on:change={(event) => handleNameChange(event.detail)}
-      on:cancel={() => (isEditName = false)}
+      on:cancel={() => (isEditingName = false)}
     />
   {:else}
-    <ImageThumbnail
-      circle
-      shadow
-      url={api.getPeopleThumbnailUrl(data.person.id)}
-      altText={data.person.name}
-      widthStyle="3.375rem"
-      heightStyle="3.375rem"
-    />
+    <button on:click={() => (isSelectingFace = true)}>
+      <ImageThumbnail
+        circle
+        shadow
+        url={api.getPeopleThumbnailUrl(data.person.id)}
+        altText={data.person.name}
+        widthStyle="3.375rem"
+        heightStyle="3.375rem"
+      />
+    </button>
+
     <button
       title="Edit name"
       class="px-4 text-immich-primary dark:text-immich-dark-primary"
-      on:click={() => (isEditName = true)}
+      on:click={() => (isEditingName = true)}
     >
       {#if data.person.name}
         <p class="font-medium py-2">{data.person.name}</p>
@@ -109,10 +144,16 @@
 </section>
 
 <!-- Gallery Block -->
-<section class="relative pt-8 sm:px-4 mb-12 bg-immich-bg dark:bg-immich-dark-bg">
-  <section class="overflow-y-auto relative immich-scrollbar">
-    <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
-      <GalleryViewer assets={data.assets} viewFrom="search-page" showArchiveIcon={true} bind:selectedAssets />
+{#if !isSelectingFace}
+  <section class="relative pt-8 sm:px-4 mb-12 bg-immich-bg dark:bg-immich-dark-bg">
+    <section class="overflow-y-auto relative immich-scrollbar">
+      <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
+        <GalleryViewer assets={data.assets} viewFrom="search-page" showArchiveIcon={true} bind:selectedAssets />
+      </section>
     </section>
   </section>
-</section>
+{/if}
+
+{#if isSelectingFace}
+  <FaceThumbnailSelector assets={data.assets} on:go-back={handleSelectFeaturePhoto} />
+{/if}

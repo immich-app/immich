@@ -1,3 +1,4 @@
+import { PersonEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AssetResponseDto, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
@@ -52,18 +53,54 @@ export class PersonService {
   }
 
   async update(authUser: AuthUserDto, personId: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
-    const exists = await this.repository.getById(authUser.id, personId);
-    if (!exists) {
+    let person = await this.repository.getById(authUser.id, personId);
+    if (!person) {
       throw new BadRequestException();
     }
 
-    const person = await this.repository.update({ id: personId, name: dto.name });
+    if (dto.name) {
+      person = await this.updateName(authUser, personId, dto.name);
+    }
+
+    if (dto.featureFaceAssetId) {
+      await this.updateFaceThumbnail(personId, dto.featureFaceAssetId);
+    }
+
+    return mapPerson(person);
+  }
+
+  private async updateName(authUser: AuthUserDto, personId: string, name: string): Promise<PersonEntity> {
+    const person = await this.repository.update({ id: personId, name });
 
     const relatedAsset = await this.getAssets(authUser, personId);
     const assetIds = relatedAsset.map((asset) => asset.id);
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: assetIds } });
 
-    return mapPerson(person);
+    return person;
+  }
+
+  private async updateFaceThumbnail(personId: string, assetId: string): Promise<void> {
+    const face = await this.repository.getFaceById({ assetId, personId });
+
+    if (!face) {
+      throw new BadRequestException();
+    }
+
+    return await this.jobRepository.queue({
+      name: JobName.GENERATE_FACE_THUMBNAIL,
+      data: {
+        assetId: assetId,
+        personId,
+        boundingBox: {
+          x1: face.boundingBoxX1,
+          x2: face.boundingBoxX2,
+          y1: face.boundingBoxY1,
+          y2: face.boundingBoxY2,
+        },
+        imageHeight: face.imageHeight,
+        imageWidth: face.imageWidth,
+      },
+    });
   }
 
   async handlePersonCleanup() {

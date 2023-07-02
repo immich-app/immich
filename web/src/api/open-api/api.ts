@@ -1772,11 +1772,17 @@ export interface PersonResponseDto {
  */
 export interface PersonUpdateDto {
     /**
-     * 
+     * Person name.
      * @type {string}
      * @memberof PersonUpdateDto
      */
-    'name': string;
+    'name'?: string;
+    /**
+     * Asset is used to get the feature face thumbnail.
+     * @type {string}
+     * @memberof PersonUpdateDto
+     */
+    'featureFaceAssetId'?: string;
 }
 /**
  * 
