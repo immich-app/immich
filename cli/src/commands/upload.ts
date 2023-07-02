@@ -5,7 +5,6 @@ import * as si from 'systeminformation';
 import FormData from 'form-data';
 import { UploadOptionsDto } from '../cores/dto/upload-options-dto';
 import { CrawlOptionsDto } from '../cores/dto/crawl-options-dto';
-import { log } from 'console';
 
 export default class Upload extends BaseCommand {
   private crawlService = new CrawlService();
