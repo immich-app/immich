@@ -22,6 +22,7 @@ import {
   Logger,
   NotFoundException,
   StreamableFile,
+  UnsupportedMediaTypeException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Response as Res } from 'express';
@@ -573,16 +574,18 @@ export class AssetService {
   private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
     switch (format) {
       case GetAssetThumbnailFormatEnum.WEBP:
-        if (asset.webpPath && asset.webpPath.length > 0) {
-          return asset.webpPath;
+        if (!asset.webpPath) {
+          throw new NotFoundException(`No ${format} thumbnail found for asset ${asset.id}`);
         }
+        return asset.webpPath;
 
       case GetAssetThumbnailFormatEnum.JPEG:
-      default:
         if (!asset.resizePath) {
-          throw new NotFoundException('resizePath not set');
+          throw new NotFoundException(`No ${format} thumbnail found for asset ${asset.id}`);
         }
         return asset.resizePath;
+      default:
+        throw new UnsupportedMediaTypeException(`Unsupported thumbnail format requested: ${format}`);
     }
   }
 
