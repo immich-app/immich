@@ -12,6 +12,6 @@ export const newPersonRepositoryMock = (): jest.Mocked<IPersonRepository> => {
     deleteAll: jest.fn(),
     delete: jest.fn(),
 
-    getFaceByAssetId: jest.fn(),
+    getFaceById: jest.fn(),
   };
 };

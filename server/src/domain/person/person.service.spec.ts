@@ -112,14 +112,14 @@ describe(PersonService.name, () => {
 
     it("should update a person's thumbnailPath", async () => {
       personMock.getById.mockResolvedValue(personStub.withName);
-      personMock.getFaceByAssetId.mockResolvedValue(faceStub.face1);
+      personMock.getFaceById.mockResolvedValue(faceStub.face1);
 
       await expect(
         sut.update(authStub.admin, 'person-1', { featureFaceAssetId: faceStub.face1.assetId }),
       ).resolves.toEqual(responseDto);
 
       expect(personMock.getById).toHaveBeenCalledWith('admin_id', 'person-1');
-      expect(personMock.getFaceByAssetId).toHaveBeenCalledWith({
+      expect(personMock.getFaceById).toHaveBeenCalledWith({
         assetId: faceStub.face1.assetId,
         personId: 'person-1',
       });

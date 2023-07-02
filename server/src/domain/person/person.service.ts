@@ -80,7 +80,11 @@ export class PersonService {
   }
 
   private async updateFaceThumbnail(personId: string, assetId: string): Promise<void> {
-    const face = await this.repository.getFaceByAssetId({ assetId, personId });
+    const face = await this.repository.getFaceById({ assetId, personId });
+
+    if (!face) {
+      throw new BadRequestException();
+    }
 
     return await this.jobRepository.queue({
       name: JobName.GENERATE_FACE_THUMBNAIL,

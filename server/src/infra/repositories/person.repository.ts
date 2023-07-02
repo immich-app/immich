@@ -77,7 +77,7 @@ export class PersonRepository implements IPersonRepository {
     return this.personRepository.findOneByOrFail({ id });
   }
 
-  async getFaceByAssetId({ personId, assetId }: AssetFaceId): Promise<AssetFaceEntity> {
-    return this.assetFaceRepository.findOneByOrFail({ assetId, personId });
+  async getFaceById({ personId, assetId }: AssetFaceId): Promise<AssetFaceEntity | null> {
+    return this.assetFaceRepository.findOneBy({ assetId, personId });
   }
 }
