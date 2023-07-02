@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { AssetResponseDto } from '@api';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
