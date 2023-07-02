@@ -260,7 +260,7 @@ export class AssetService {
 
     try {
       const thumbnailPath = this.getThumbnailPath(asset, query.format);
-      return this.streamFile(thumbnailPath, res, headers);
+      return this.streamFile(thumbnailPath, res, headers, asset.mimeType);
     } catch (e) {
       res.header('Cache-Control', 'none');
       Logger.error(`Cannot create read stream for asset ${asset.id}`, 'getAssetThumbnail');
