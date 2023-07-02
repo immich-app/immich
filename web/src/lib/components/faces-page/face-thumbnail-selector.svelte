@@ -28,7 +28,7 @@
   class="absolute top-0 left-0 w-full h-full bg-immich-bg dark:bg-immich-dark-bg z-[9999]"
 >
   <ControlAppBar on:close-button-click={onClose}>
-    <svelte:fragment slot="leading">Select photo</svelte:fragment>
+    <svelte:fragment slot="leading">Select feature photo</svelte:fragment>
   </ControlAppBar>
   <section class="pt-[100px] pl-[70px] bg-immich-bg dark:bg-immich-dark-bg">
     <AssetSelectionViewer {assets} on:select={handleSelectedAsset} />

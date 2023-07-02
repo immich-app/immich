@@ -117,14 +117,17 @@
       on:cancel={() => (isEditingName = false)}
     />
   {:else}
-    <ImageThumbnail
-      circle
-      shadow
-      url={api.getPeopleThumbnailUrl(data.person.id)}
-      altText={data.person.name}
-      widthStyle="3.375rem"
-      heightStyle="3.375rem"
-    />
+    <button on:click={() => (isSelectingFace = true)}>
+      <ImageThumbnail
+        circle
+        shadow
+        url={api.getPeopleThumbnailUrl(data.person.id)}
+        altText={data.person.name}
+        widthStyle="3.375rem"
+        heightStyle="3.375rem"
+      />
+    </button>
+
     <button
       title="Edit name"
       class="px-4 text-immich-primary dark:text-immich-dark-primary"
