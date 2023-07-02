@@ -1,5 +1,6 @@
 <script lang="ts">
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
+  import { getThumbnailSize } from '$lib/utils/thumbnail-util';
   import { AssetResponseDto, ThumbnailFormat } from '@api';
   import { createEventDispatcher } from 'svelte';
   import { flip } from 'svelte/animate';
@@ -8,20 +9,9 @@
   export let selectedAssets: Set<AssetResponseDto> = new Set();
 
   let viewWidth: number;
-  let thumbnailSize = 300;
+  $: thumbnailSize = getThumbnailSize(assets.length, viewWidth);
 
   let dispatch = createEventDispatcher();
-  $: {
-    if (assets.length < 6) {
-      thumbnailSize = Math.min(320, Math.floor(viewWidth / assets.length - assets.length));
-    } else {
-      if (viewWidth > 600) thumbnailSize = Math.floor(viewWidth / 7 - 7);
-      else if (viewWidth > 400) thumbnailSize = Math.floor(viewWidth / 4 - 6);
-      else if (viewWidth > 300) thumbnailSize = Math.floor(viewWidth / 2 - 6);
-      else if (viewWidth > 200) thumbnailSize = Math.floor(viewWidth / 2 - 6);
-      else if (viewWidth > 100) thumbnailSize = Math.floor(viewWidth / 1 - 6);
-    }
-  }
 
   const selectAssetHandler = (event: CustomEvent) => {
     const { asset }: { asset: AssetResponseDto } = event.detail;

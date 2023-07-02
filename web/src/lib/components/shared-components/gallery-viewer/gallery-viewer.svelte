@@ -10,6 +10,7 @@
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
   import { flip } from 'svelte/animate';
   import { archivedAsset } from '$lib/stores/archived-asset.store';
+  import { getThumbnailSize } from '$lib/utils/thumbnail-util';
 
   export let assets: AssetResponseDto[];
   export let sharedLink: SharedLinkResponseDto | undefined = undefined;
@@ -24,21 +25,9 @@
   let currentViewAssetIndex = 0;
 
   let viewWidth: number;
-  let thumbnailSize = 300;
+  $: thumbnailSize = getThumbnailSize(assets.length, viewWidth);
 
   $: isMultiSelectionMode = selectedAssets.size > 0;
-
-  $: {
-    if (assets.length < 6) {
-      thumbnailSize = Math.min(320, Math.floor(viewWidth / assets.length - assets.length));
-    } else {
-      if (viewWidth > 600) thumbnailSize = Math.floor(viewWidth / 7 - 7);
-      else if (viewWidth > 400) thumbnailSize = Math.floor(viewWidth / 4 - 6);
-      else if (viewWidth > 300) thumbnailSize = Math.floor(viewWidth / 2 - 6);
-      else if (viewWidth > 200) thumbnailSize = Math.floor(viewWidth / 2 - 6);
-      else if (viewWidth > 100) thumbnailSize = Math.floor(viewWidth / 1 - 6);
-    }
-  }
 
   const viewAssetHandler = (event: CustomEvent) => {
     const { asset }: { asset: AssetResponseDto } = event.detail;
