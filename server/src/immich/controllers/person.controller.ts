@@ -34,7 +34,11 @@ export class PersonController {
   }
 
   @Put(':id/update-face/:assetId')
-  updateFaceThumbnail(@AuthUser() authUser: AuthUserDto, @Param('id') id: string, @Param('assetId') assetId: string) {
+  updateFaceThumbnail(
+    @AuthUser() authUser: AuthUserDto,
+    @Param('id') id: string,
+    @Param('assetId') assetId: string,
+  ): Promise<void> {
     return this.service.updateFaceThumbnail(authUser, id, assetId);
   }
 

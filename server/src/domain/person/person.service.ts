@@ -1,4 +1,4 @@
-import { AssetFaceId } from '@app/domain';
+import { AssetFaceId, FacialRecognitionService } from '@app/domain';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AssetResponseDto, IAssetRepository, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
@@ -67,7 +67,7 @@ export class PersonService {
     return mapPerson(person);
   }
 
-  async updateFaceThumbnail(authUser: AuthUserDto, personId: string, assetId: string) {
+  async updateFaceThumbnail(authUser: AuthUserDto, personId: string, assetId: string): Promise<void> {
     const exists = await this.repository.getById(authUser.id, personId);
     if (!exists) {
       throw new BadRequestException();
@@ -75,7 +75,7 @@ export class PersonService {
 
     const face = await this.repository.getFaceByAssetId({ assetId, personId });
 
-    await this.jobRepository.queue({
+    return await this.jobRepository.queue({
       name: JobName.GENERATE_FACE_THUMBNAIL,
       data: {
         assetId: assetId,
