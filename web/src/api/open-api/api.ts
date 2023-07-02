@@ -1772,11 +1772,17 @@ export interface PersonResponseDto {
  */
 export interface PersonUpdateDto {
     /**
-     * 
+     * Person name.
      * @type {string}
      * @memberof PersonUpdateDto
      */
-    'name': string;
+    'name'?: string;
+    /**
+     * Asset is used to get the feature face thumbnail.
+     * @type {string}
+     * @memberof PersonUpdateDto
+     */
+    'featureFaceAssetId'?: string;
 }
 /**
  * 
@@ -8817,52 +8823,6 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
         /**
          * 
          * @param {string} id 
-         * @param {string} assetId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        updateFaceThumbnail: async (id: string, assetId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('updateFaceThumbnail', 'id', id)
-            // verify required parameter 'assetId' is not null or undefined
-            assertParamExists('updateFaceThumbnail', 'assetId', assetId)
-            const localVarPath = `/person/{id}/update-face/{assetId}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)))
-                .replace(`{${"assetId"}}`, encodeURIComponent(String(assetId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication cookie required
-
-            // authentication api_key required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-            // authentication bearer required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {string} id 
          * @param {PersonUpdateDto} personUpdateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -8960,17 +8920,6 @@ export const PersonApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {string} id 
-         * @param {string} assetId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async updateFaceThumbnail(id: string, assetId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateFaceThumbnail(id, assetId, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
-         * @param {string} id 
          * @param {PersonUpdateDto} personUpdateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -9027,16 +8976,6 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
         /**
          * 
          * @param {string} id 
-         * @param {string} assetId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        updateFaceThumbnail(id: string, assetId: string, options?: any): AxiosPromise<void> {
-            return localVarFp.updateFaceThumbnail(id, assetId, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {string} id 
          * @param {PersonUpdateDto} personUpdateDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -9087,27 +9026,6 @@ export interface PersonApiGetPersonThumbnailRequest {
      * @memberof PersonApiGetPersonThumbnail
      */
     readonly id: string
-}
-
-/**
- * Request parameters for updateFaceThumbnail operation in PersonApi.
- * @export
- * @interface PersonApiUpdateFaceThumbnailRequest
- */
-export interface PersonApiUpdateFaceThumbnailRequest {
-    /**
-     * 
-     * @type {string}
-     * @memberof PersonApiUpdateFaceThumbnail
-     */
-    readonly id: string
-
-    /**
-     * 
-     * @type {string}
-     * @memberof PersonApiUpdateFaceThumbnail
-     */
-    readonly assetId: string
 }
 
 /**
@@ -9179,17 +9097,6 @@ export class PersonApi extends BaseAPI {
      */
     public getPersonThumbnail(requestParameters: PersonApiGetPersonThumbnailRequest, options?: AxiosRequestConfig) {
         return PersonApiFp(this.configuration).getPersonThumbnail(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {PersonApiUpdateFaceThumbnailRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof PersonApi
-     */
-    public updateFaceThumbnail(requestParameters: PersonApiUpdateFaceThumbnailRequest, options?: AxiosRequestConfig) {
-        return PersonApiFp(this.configuration).updateFaceThumbnail(requestParameters.id, requestParameters.assetId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

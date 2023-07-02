@@ -207,51 +207,6 @@ class PersonApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /person/{id}/update-face/{assetId}' operation and returns the [Response].
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [String] assetId (required):
-  Future<Response> updateFaceThumbnailWithHttpInfo(String id, String assetId,) async {
-    // ignore: prefer_const_declarations
-    final path = r'/person/{id}/update-face/{assetId}'
-      .replaceAll('{id}', id)
-      .replaceAll('{assetId}', assetId);
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'PUT',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [String] assetId (required):
-  Future<void> updateFaceThumbnail(String id, String assetId,) async {
-    final response = await updateFaceThumbnailWithHttpInfo(id, assetId,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
-
   /// Performs an HTTP 'PUT /person/{id}' operation and returns the [Response].
   /// Parameters:
   ///

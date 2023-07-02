@@ -1,4 +1,6 @@
+import { PersonEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { map } from 'lodash';
 import { AssetResponseDto, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
 import { IJobRepository, JobName } from '../job';
@@ -52,26 +54,33 @@ export class PersonService {
   }
 
   async update(authUser: AuthUserDto, personId: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
-    const exists = await this.repository.getById(authUser.id, personId);
-    if (!exists) {
+    let person = await this.repository.getById(authUser.id, personId);
+    if (!person) {
       throw new BadRequestException();
     }
 
-    const person = await this.repository.update({ id: personId, name: dto.name });
+    if (dto.name) {
+      person = await this.updateName(authUser, personId, dto.name);
+    }
+
+    if (dto.featureFaceAssetId) {
+      await this.updateFaceThumbnail(personId, dto.featureFaceAssetId);
+    }
+
+    return mapPerson(person);
+  }
+
+  private async updateName(authUser: AuthUserDto, personId: string, name: string): Promise<PersonEntity> {
+    const person = await this.repository.update({ id: personId, name });
 
     const relatedAsset = await this.getAssets(authUser, personId);
     const assetIds = relatedAsset.map((asset) => asset.id);
     await this.jobRepository.queue({ name: JobName.SEARCH_INDEX_ASSET, data: { ids: assetIds } });
 
-    return mapPerson(person);
+    return person;
   }
 
-  async updateFaceThumbnail(authUser: AuthUserDto, personId: string, assetId: string): Promise<void> {
-    const exists = await this.repository.getById(authUser.id, personId);
-    if (!exists) {
-      throw new BadRequestException();
-    }
-
+  private async updateFaceThumbnail(personId: string, assetId: string): Promise<void> {
     const face = await this.repository.getFaceByAssetId({ assetId, personId });
 
     return await this.jobRepository.queue({

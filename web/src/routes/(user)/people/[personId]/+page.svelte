@@ -69,9 +69,9 @@
     const { selectedAsset }: { selectedAsset: AssetResponseDto | undefined } = event.detail;
 
     if (selectedAsset) {
-      await api.personApi.updateFaceThumbnail({
-        assetId: selectedAsset.id,
+      await api.personApi.updatePerson({
         id: data.person.id,
+        personUpdateDto: { featureFaceAssetId: selectedAsset.id },
       });
 
       // TODO: Replace by Websocket in the future

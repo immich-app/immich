@@ -33,15 +33,6 @@ export class PersonController {
     return this.service.getById(authUser, id);
   }
 
-  @Put(':id/update-face/:assetId')
-  updateFaceThumbnail(
-    @AuthUser() authUser: AuthUserDto,
-    @Param('id') id: string,
-    @Param('assetId') assetId: string,
-  ): Promise<void> {
-    return this.service.updateFaceThumbnail(authUser, id, assetId);
-  }
-
   @Put(':id')
   updatePerson(
     @AuthUser() authUser: AuthUserDto,

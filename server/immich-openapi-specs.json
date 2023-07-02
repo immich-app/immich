@@ -2730,48 +2730,6 @@
         ]
       }
     },
-    "/person/{id}/update-face/{assetId}": {
-      "put": {
-        "operationId": "updateFaceThumbnail",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "assetId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Person"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
     "/search": {
       "get": {
         "operationId": "search",
@@ -5858,12 +5816,14 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Person name."
+          },
+          "featureFaceAssetId": {
+            "type": "string",
+            "description": "Asset is used to get the feature face thumbnail."
           }
-        },
-        "required": [
-          "name"
-        ]
+        }
       },
       "QueueStatusDto": {
         "type": "object",

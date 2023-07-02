@@ -37,11 +37,6 @@ void main() {
       // TODO
     });
 
-    //Future updateFaceThumbnail(String id, String assetId) async
-    test('test updateFaceThumbnail', () async {
-      // TODO
-    });
-
     //Future<PersonResponseDto> updatePerson(String id, PersonUpdateDto personUpdateDto) async
     test('test updatePerson', () async {
       // TODO
