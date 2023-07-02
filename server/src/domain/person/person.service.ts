@@ -1,6 +1,5 @@
-import { AssetFaceId, FacialRecognitionService } from '@app/domain';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { AssetResponseDto, IAssetRepository, mapAsset } from '../asset';
+import { AssetResponseDto, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
 import { IJobRepository, JobName } from '../job';
 import { ImmichReadStream, IStorageRepository } from '../storage';

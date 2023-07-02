@@ -1,4 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 import { AssetEntity } from './asset.entity';
 import { PersonEntity } from './person.entity';
