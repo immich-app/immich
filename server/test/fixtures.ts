@@ -1185,6 +1185,12 @@ export const faceStub = {
     personId: personStub.withName.id,
     person: personStub.withName,
     embedding: [1, 2, 3, 4],
+    boundingBoxX1: 0,
+    boundingBoxY1: 0,
+    boundingBoxX2: 1,
+    boundingBoxY2: 1,
+    imageHeight: 1024,
+    imageWidth: 1024,
   }),
 };
 
