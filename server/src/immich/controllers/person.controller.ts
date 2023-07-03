@@ -2,11 +2,12 @@ import {
   AssetResponseDto,
   AuthUserDto,
   ImmichReadStream,
+  MergePersonDto,
   PersonResponseDto,
   PersonService,
   PersonUpdateDto,
 } from '@app/domain';
-import { Body, Controller, Get, Param, Put, StreamableFile } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Authenticated, AuthUser } from '../app.guard';
 import { UseValidation } from '../app.utils';
@@ -51,5 +52,10 @@ export class PersonController {
   @Get(':id/assets')
   getPersonAssets(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto[]> {
     return this.service.getAssets(authUser, id);
+  }
+
+  @Post(':id/merge')
+  mergePerson(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: MergePersonDto) {
+    return this.service.mergePerson(authUser, id, dto);
   }
 }

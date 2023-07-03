@@ -81,4 +81,8 @@ export class PersonRepository implements IPersonRepository {
   async getFaceById({ personId, assetId }: AssetFaceId): Promise<AssetFaceEntity | null> {
     return this.assetFaceRepository.findOneBy({ assetId, personId });
   }
+
+  getAssetsCount(personId: string): Promise<number> {
+    return this.assetRepository.count({ where: { faces: { personId } } });
+  }
 }

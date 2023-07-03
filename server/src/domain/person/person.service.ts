@@ -4,7 +4,7 @@ import { AssetResponseDto, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
 import { IJobRepository, JobName } from '../job';
 import { ImmichReadStream, IStorageRepository } from '../storage';
-import { mapPerson, PersonResponseDto, PersonUpdateDto } from './person.dto';
+import { mapPerson, MergePersonDto, PersonResponseDto, PersonUpdateDto } from './person.dto';
 import { IPersonRepository } from './person.repository';
 
 @Injectable()
@@ -116,5 +116,9 @@ export class PersonService {
     }
 
     return true;
+  }
+
+  async mergePerson(authUser: AuthUserDto, personId: string, dto: MergePersonDto) {
+    console.log(dto);
   }
 }

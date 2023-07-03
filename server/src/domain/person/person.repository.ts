@@ -11,6 +11,7 @@ export interface IPersonRepository {
   getAllWithoutFaces(): Promise<PersonEntity[]>;
   getById(userId: string, personId: string): Promise<PersonEntity | null>;
   getAssets(userId: string, id: string): Promise<AssetEntity[]>;
+  getAssetsCount(personId: string): Promise<number>;
 
   create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   update(entity: Partial<PersonEntity>): Promise<PersonEntity>;
