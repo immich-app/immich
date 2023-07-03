@@ -9,7 +9,7 @@ export class CrawledAsset {
   public path: string;
 
   public assetType?: AssetTypeEnum;
-  public assetData?: Buffer;
+  public assetData?: fs.ReadStream;
   public deviceAssetId?: string;
   public fileCreatedAt?: string;
   public fileModifiedAt?: string;
@@ -24,7 +24,7 @@ export class CrawledAsset {
   }
 
   async readData() {
-    this.assetData = await fs.promises.readFile(this.path);
+    this.assetData = fs.createReadStream(this.path);
   }
 
   async process() {
