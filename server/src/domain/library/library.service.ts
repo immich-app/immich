@@ -71,7 +71,10 @@ export class LibraryService {
       return;
     }
 
-    const crawledAssetPaths = await this.crawler.findAllMedia({ pathsToCrawl: libraryEntity.importPaths });
+    const crawledAssetPaths = await this.crawler.findAllMedia({
+      pathsToCrawl: libraryEntity.importPaths,
+      excludePatterns: ['**/Original/**'],
+    });
     for (const assetPath of crawledAssetPaths) {
       const libraryJobData: ILibraryJob = {
         assetPath: assetPath,

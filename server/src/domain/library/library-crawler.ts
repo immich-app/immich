@@ -72,8 +72,6 @@ export class LibraryCrawler {
 
     paths = paths + '/*.{' + ACCEPTED_FILE_EXTENSIONS.join(',') + '}';
 
-    console.log(paths);
-
     return await glob(paths, { nocase: true, nodir: true, ignore: crawlOptions.excludePatterns }).then((crawledPaths) =>
       crawledPaths.sort(),
     );
