@@ -120,8 +120,16 @@ export class PersonService {
 
   async mergePerson(authUser: AuthUserDto, personId: string, dto: MergePersonDto) {
     const ids = [...dto.ids, personId];
-    const parentId = await this.getPersonWithMostAssets(ids);
-    const childIds = dto.ids.filter((id) => id !== parentId);
+
+    for (const id of ids) {
+      const person = await this.repository.getById(authUser.id, id);
+      if (!person) {
+        throw new BadRequestException();
+      }
+    }
+
+    const primaryPerson = await this.getPersonWithMostAssets(ids);
+    const mergeIds = dto.ids.filter((id) => id !== primaryPerson);
   }
 
   private async getPersonWithMostAssets(ids: string[]): Promise<string> {
@@ -140,5 +148,10 @@ export class PersonService {
     });
 
     return sorted[0].keys().next().value;
+  }
+
+  private mergePersonAssets(primaryPersonId: string, mergeIds: string[]) {
+    // Delete assets with mergeId and primaryPersonId
+    // Delete from typesense
   }
 }
