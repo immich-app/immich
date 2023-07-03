@@ -23,7 +23,7 @@ describe('CrawlService', () => {
 
     const options = new CrawlOptionsDto();
     options.pathsToCrawl = ['/photos/'];
-    const paths: string[] = await crawler.crawl(options);
+    const paths: string[] = await crawler.findAllMedia(options);
     expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
   });
 
@@ -36,7 +36,7 @@ describe('CrawlService', () => {
     const options = new CrawlOptionsDto();
     options.pathsToCrawl = ['/photos/'];
     options.excludePatterns = ['**/*.tif'];
-    const paths: string[] = await crawler.crawl(options);
+    const paths: string[] = await crawler.findAllMedia(options);
     expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
   });
 
@@ -49,7 +49,7 @@ describe('CrawlService', () => {
     const options = new CrawlOptionsDto();
     options.pathsToCrawl = ['/photos/'];
     options.excludePatterns = ['**/*.TIF'];
-    const paths: string[] = await crawler.crawl(options);
+    const paths: string[] = await crawler.findAllMedia(options);
     expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
   });
 
@@ -66,7 +66,7 @@ describe('CrawlService', () => {
     options.pathsToCrawl = ['/photos/'];
     options.excludePatterns = ['**/raw/**'];
     options.recursive = true;
-    const paths: string[] = await crawler.crawl(options);
+    const paths: string[] = await crawler.findAllMedia(options);
     expect(paths).toIncludeSameMembers(['/photos/image.jpg', '/photos/raw2/image.jpg', '/photos/crawl/image.jpg']);
   });
 
@@ -79,7 +79,7 @@ describe('CrawlService', () => {
     const options = new CrawlOptionsDto();
     options.pathsToCrawl = ['/photos/', '/images/', '/albums/'];
     options.recursive = false;
-    const paths: string[] = await crawler.crawl(options);
+    const paths: string[] = await crawler.findAllMedia(options);
     expect(paths).toIncludeSameMembers(['/photos/image1.jpg', '/images/image2.jpg', '/albums/image3.jpg']);
   });
 
@@ -89,7 +89,7 @@ describe('CrawlService', () => {
     });
     const options = new CrawlOptionsDto();
     options.pathsToCrawl = ['/photos'];
-    const paths: string[] = await crawler.crawl(options);
+    const paths: string[] = await crawler.findAllMedia(options);
     expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
   });
 
@@ -103,7 +103,7 @@ describe('CrawlService', () => {
 
     const options = new CrawlOptionsDto();
     options.pathsToCrawl = ['/photos/'];
-    const paths: string[] = await crawler.crawl(options);
+    const paths: string[] = await crawler.findAllMedia(options);
     expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
   });
 
@@ -117,7 +117,7 @@ describe('CrawlService', () => {
     const options = new CrawlOptionsDto();
     options.pathsToCrawl = ['/photos/'];
     options.recursive = true;
-    const paths: string[] = await crawler.crawl(options);
+    const paths: string[] = await crawler.findAllMedia(options);
     expect(paths).toIncludeSameMembers([
       '/photos/image.jpg',
       '/photos/subfolder/image1.jpg',
@@ -133,7 +133,7 @@ describe('CrawlService', () => {
     });
     const options = new CrawlOptionsDto();
     options.pathsToCrawl = ['/photos/'];
-    const paths: string[] = await crawler.crawl(options);
+    const paths: string[] = await crawler.findAllMedia(options);
     expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
   });
 
@@ -157,7 +157,7 @@ describe('CrawlService', () => {
 
     const options = new CrawlOptionsDto();
     options.pathsToCrawl = ['/photos/', '/videos/'];
-    const paths: string[] = await crawler.crawl(options);
+    const paths: string[] = await crawler.findAllMedia(options);
 
     expect(paths).toIncludeSameMembers([
       '/photos/image.jpg',
@@ -192,7 +192,7 @@ describe('CrawlService', () => {
 
     const options = new CrawlOptionsDto();
     options.pathsToCrawl = ['/photos/'];
-    const paths: string[] = await crawler.crawl(options);
+    const paths: string[] = await crawler.findAllMedia(options);
     expect(paths).toIncludeSameMembers([
       '/photos/image.jpg',
       '/photos/image.Jpg',

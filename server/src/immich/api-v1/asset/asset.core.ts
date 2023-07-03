@@ -8,14 +8,14 @@ export class AssetCore {
   constructor(private repository: IAssetRepository, private jobRepository: IJobRepository) {}
 
   async create(
-    authUser: AuthUserDto,
+    userId: string,
     dto: CreateAssetDto | ImportAssetDto,
     file: UploadFile,
     livePhotoAssetId?: string,
     sidecarPath?: string,
   ): Promise<AssetEntity> {
     const asset = await this.repository.create({
-      owner: { id: authUser.id } as UserEntity,
+      owner: { id: userId } as UserEntity,
 
       library: { id: dto.libraryId } as LibraryEntity,
 

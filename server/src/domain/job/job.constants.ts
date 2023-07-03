@@ -52,6 +52,11 @@ export enum JobName {
   GENERATE_FACE_THUMBNAIL = 'generate-face-thumbnail',
   PERSON_CLEANUP = 'person-cleanup',
 
+  // library managment
+  ADD_LIBRARY_FILE = 'add-library-file',
+  REFRESH_LIBRARY_FILE = 'refresh-library-file',
+  REMOVE_LIBRARY_FILE = 'remove-library-file',
+
   // cleanup
   DELETE_FILES = 'delete-files',
 

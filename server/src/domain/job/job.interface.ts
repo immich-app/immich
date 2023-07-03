@@ -22,6 +22,12 @@ export interface IEntityJob extends IBaseJob {
   source?: 'upload';
 }
 
+export interface ILibraryJob extends IBaseJob {
+  libraryId: string;
+  ownerId: string;
+  assetPath: string;
+}
+
 export interface IBulkEntityJob extends IBaseJob {
   ids: string[];
 }

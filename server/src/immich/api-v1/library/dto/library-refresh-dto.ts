@@ -6,8 +6,8 @@ export class LibraryRefreshDto {
   @ApiProperty({ format: 'uuid' })
   libraryId!: string;
 
-  // Forces all files to be re-read (slow)
+  // Forces all files to be re-read no matter the timestamp
   @IsOptional()
   @IsBoolean()
-  refreshMetadata?: boolean = false;
+  forceRefresh?: boolean = false;
 }

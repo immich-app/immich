@@ -70,6 +70,11 @@ export type JobItem =
   // Asset Deletion
   | { name: JobName.PERSON_CLEANUP; data?: IBaseJob }
 
+  // Library Managment
+  | { name: JobName.ADD_LIBRARY_FILE; data?: IBaseJob }
+  | { name: JobName.REFRESH_LIBRARY_FILE; data?: IBaseJob }
+  | { name: JobName.REMOVE_LIBRARY_FILE; data?: IBaseJob }
+
   // Search
   | { name: JobName.SEARCH_INDEX_ASSETS; data?: IBaseJob }
   | { name: JobName.SEARCH_INDEX_ASSET; data: IBulkEntityJob }

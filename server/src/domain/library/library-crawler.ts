@@ -58,7 +58,28 @@ export const ACCEPTED_FILE_EXTENSIONS = [
 ];
 
 export class LibraryCrawler {
-  public async crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
+  public async findAllMedia(crawlOptions: CrawlOptionsDto): Promise<string[]> {
+    const pathsToCrawl = crawlOptions.pathsToCrawl;
+
+    let paths: string;
+    if (pathsToCrawl.length === 1) {
+      paths = pathsToCrawl[0];
+    } else {
+      paths = '{' + pathsToCrawl.join(',') + '}';
+    }
+
+    if (crawlOptions.recursive) {
+      paths = paths + '/**/';
+    }
+
+    paths = paths + '/*.{' + ACCEPTED_FILE_EXTENSIONS.join(',') + '}';
+
+    return await glob(paths, { nocase: true, nodir: true, ignore: crawlOptions.excludePatterns }).then((crawledPaths) =>
+      crawledPaths.sort(),
+    );
+  }
+
+  public async readMediaInformation(files: string[]): Promise<string[]> {
     const pathsToCrawl = crawlOptions.pathsToCrawl;
 
     let paths: string;

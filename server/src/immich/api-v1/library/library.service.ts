@@ -65,6 +65,8 @@ export class LibraryService {
       return;
     }
 
-    const crawledAssets = this.crawler.crawl({ pathsToCrawl: libraryEntity.importPaths });
+    const crawledAssets = this.crawler.findAllMedia({ pathsToCrawl: libraryEntity.importPaths });
+
+    // Upload all crawled assets
   }
 }

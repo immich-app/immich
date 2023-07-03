@@ -5,9 +5,12 @@ import {
   getLivePhotoMotionFilename,
   IAccessRepository,
   ICryptoRepository,
+  IEntityJob,
   IJobRepository,
+  ILibraryJob,
   isSupportedFileType,
   IStorageRepository,
+  IUserRepository,
   JobName,
   mapAsset,
   mapAssetWithoutExif,
@@ -27,7 +30,7 @@ import { Response as Res } from 'express';
 import { constants, createReadStream } from 'fs';
 import fs from 'fs/promises';
 import mime from 'mime-types';
-import path from 'path';
+import path, { basename } from 'path';
 import { pipeline } from 'stream/promises';
 import { QueryFailedError, Repository } from 'typeorm';
 import { IAssetRepository } from './asset-repository';
@@ -80,6 +83,7 @@ export class AssetService {
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+    @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
     this.access = new AccessCore(accessRepository);
@@ -104,10 +108,10 @@ export class AssetService {
     try {
       if (livePhotoFile) {
         const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false };
-        livePhotoAsset = await this.assetCore.create(authUser, livePhotoDto, livePhotoFile);
+        livePhotoAsset = await this.assetCore.create(authUser.id, livePhotoDto, livePhotoFile);
       }
 
-      const asset = await this.assetCore.create(authUser, dto, file, livePhotoAsset?.id, sidecarFile?.originalPath);
+      const asset = await this.assetCore.create(authUser.id, dto, file, livePhotoAsset?.id, sidecarFile?.originalPath);
 
       return { id: asset.id, duplicate: false };
     } catch (error: any) {
@@ -129,7 +133,60 @@ export class AssetService {
     }
   }
 
+  async handleAddLibraryFile(job: ILibraryJob) {
+    const stats = await fs.stat(job.assetPath);
+
+    const importAssetDto = new ImportAssetDto();
+    importAssetDto.deviceAssetId = `${basename(job.assetPath)}-${stats.size}`.replace(/\s+/g, '');
+    importAssetDto.deviceId = 'Library Import';
+
+    // TODO: Determine file type from extension only
+    const mimeType = mime.lookup(job.assetPath);
+    if (!mimeType) {
+      throw Error('Cannot determine mime type of asset: ' + job.assetPath);
+    }
+    importAssetDto.assetType = mimeType.split('/')[0].toUpperCase() as AssetType;
+    importAssetDto.fileCreatedAt = stats.ctime;
+    importAssetDto.fileModifiedAt = stats.mtime;
+
+    let hasSidecar = true;
+
+    // TODO: doesn't xmp replace the file extension? Will need investigation
+    const sideCarPath = `${job.assetPath}.xmp`;
+    try {
+      await fs.access(sideCarPath, fs.constants.R_OK);
+    } catch (error) {
+      // No sidecar file
+      hasSidecar = false;
+    }
+    if (hasSidecar) {
+      importAssetDto.sidecarPath = sideCarPath;
+    }
+
+    await this.addFile(job.ownerId, importAssetDto);
+
+    return true;
+  }
+
+  async handleRefreshLibraryFile(job: ILibraryJob) {
+    // TODO
+    return true;
+  }
+
+  async handleRemoveLibraryFile(job: ILibraryJob) {
+    // TODO
+    return true;
+  }
+
   public async importFile(authUser: AuthUserDto, dto: ImportAssetDto): Promise<AssetFileUploadResponseDto> {
+    if (!authUser.externalPath || !dto.assetPath.match(new RegExp(`^${authUser.externalPath}`))) {
+      throw new BadRequestException("File does not exist within user's external path");
+    }
+
+    return await this.addFile(authUser.id, dto);
+  }
+
+  public async addFile(userId: string, dto: ImportAssetDto): Promise<AssetFileUploadResponseDto> {
     dto = {
       ...dto,
       assetPath: path.resolve(dto.assetPath),
@@ -158,11 +215,6 @@ export class AssetService {
       }
     }
 
-    // TODO: This check is not needed for local libraries
-    if (!authUser.externalPath || !dto.assetPath.match(new RegExp(`^${authUser.externalPath}`))) {
-      throw new BadRequestException("File does not exist within user's external path");
-    }
-
     const assetFile: UploadFile = {
       checksum: await this.cryptoRepository.hashFile(dto.assetPath),
       mimeType: assetPathType,
@@ -171,12 +223,12 @@ export class AssetService {
     };
 
     try {
-      const asset = await this.assetCore.create(authUser, dto, assetFile, undefined, dto.sidecarPath);
+      const asset = await this.assetCore.create(userId, dto, assetFile, undefined, dto.sidecarPath);
       return { id: asset.id, duplicate: false };
     } catch (error: QueryFailedError | Error | any) {
       // handle duplicates with a success response
       if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_owner_library_checksum') {
-        const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, [assetFile.checksum]);
+        const [duplicate] = await this._assetRepository.getAssetsByChecksums(userId, [assetFile.checksum]);
         return { id: duplicate.id, duplicate: true };
       }
 
