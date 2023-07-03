@@ -56,7 +56,7 @@ export class SessionService {
       fs.mkdirSync(this.configDir, { recursive: true });
     }
 
-    fs.writeFileSync(this.authPath, yaml.stringify({ instanceUrl: instanceUrl, apiKey: apiKey }));
+    fs.writeFileSync(this.authPath, yaml.stringify({ instanceUrl, apiKey }));
 
     console.log('Wrote auth info to ' + this.authPath);
     return this.api;

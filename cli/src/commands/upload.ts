@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-
 import { BaseCommand } from '../cli/base-command';
 import { CrawledAsset } from '../cores/models/crawled-asset';
 import { CrawlService, UploadService } from '../services';
