@@ -32,6 +32,7 @@ export class AssetResponseDto {
   people?: PersonResponseDto[];
   /**base64 encoded sha1 hash */
   checksum!: string;
+  isPanorama!: boolean;
 }
 
 export function mapAsset(entity: AssetEntity): AssetResponseDto {
@@ -58,6 +59,7 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     tags: entity.tags?.map(mapTag),
     people: entity.faces?.map(mapFace),
     checksum: entity.checksum.toString('base64'),
+    isPanorama: entity.isPanorama,
   };
 }
 
@@ -85,5 +87,6 @@ export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
     tags: entity.tags?.map(mapTag),
     people: entity.faces?.map(mapFace),
     checksum: entity.checksum.toString('base64'),
+    isPanorama: entity.isPanorama,
   };
 }

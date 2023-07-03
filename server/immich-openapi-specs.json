@@ -4892,6 +4892,9 @@
           "checksum": {
             "type": "string",
             "description": "base64 encoded sha1 hash"
+          },
+          "isPanorama": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -4911,7 +4914,8 @@
           "isArchived",
           "mimeType",
           "duration",
-          "checksum"
+          "checksum",
+          "isPanorama"
         ]
       },
       "AssetTypeEnum": {
@@ -5099,6 +5103,9 @@
           "isFavorite": {
             "type": "boolean"
           },
+          "isPanorama": {
+            "type": "boolean"
+          },
           "isArchived": {
             "type": "boolean"
           },
@@ -5117,7 +5124,8 @@
           "deviceId",
           "fileCreatedAt",
           "fileModifiedAt",
-          "isFavorite"
+          "isFavorite",
+          "isPanorama"
         ]
       },
       "CreateProfileImageDto": {
@@ -5513,6 +5521,9 @@
           "isFavorite": {
             "type": "boolean"
           },
+          "isPanorama": {
+            "type": "boolean"
+          },
           "isArchived": {
             "type": "boolean"
           },
@@ -5530,7 +5541,8 @@
           "deviceId",
           "fileCreatedAt",
           "fileModifiedAt",
-          "isFavorite"
+          "isFavorite",
+          "isPanorama"
         ]
       },
       "JobCommand": {

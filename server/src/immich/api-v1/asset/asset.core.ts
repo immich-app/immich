@@ -29,6 +29,7 @@ export class AssetCore {
 
       type: dto.assetType,
       isFavorite: dto.isFavorite,
+      isPanorama: dto.isPanorama,
       isArchived: dto.isArchived ?? false,
       duration: dto.duration || null,
       isVisible: dto.isVisible ?? true,

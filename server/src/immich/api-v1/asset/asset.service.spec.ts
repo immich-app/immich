@@ -29,6 +29,7 @@ const _getCreateAssetDto = (): CreateAssetDto => {
   createAssetDto.fileCreatedAt = new Date('2022-06-19T23:41:36.910Z');
   createAssetDto.fileModifiedAt = new Date('2022-06-19T23:41:36.910Z');
   createAssetDto.isFavorite = false;
+  createAssetDto.isPanorama = false;
   createAssetDto.isArchived = false;
   createAssetDto.duration = '0:00:00.000000';
 
@@ -49,6 +50,7 @@ const _getAsset_1 = () => {
   asset_1.fileCreatedAt = new Date('2022-06-19T23:41:36.910Z');
   asset_1.updatedAt = new Date('2022-06-19T23:41:36.910Z');
   asset_1.isFavorite = false;
+  asset_1.isPanorama = false;
   asset_1.isArchived = false;
   asset_1.mimeType = 'image/jpeg';
   asset_1.webpPath = '';
@@ -74,6 +76,7 @@ const _getAsset_2 = () => {
   asset_2.fileCreatedAt = new Date('2022-06-19T23:41:36.910Z');
   asset_2.updatedAt = new Date('2022-06-19T23:41:36.910Z');
   asset_2.isFavorite = false;
+  asset_2.isPanorama = false;
   asset_2.isArchived = false;
   asset_2.mimeType = 'image/jpeg';
   asset_2.webpPath = '';

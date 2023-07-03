@@ -85,6 +85,9 @@ export class AssetEntity {
   @Index()
   checksum!: Buffer; // sha1 checksum
 
+  @Column({ type: 'boolean', default: false })
+  isPanorama!: boolean;
+
   @Column({ type: 'varchar', nullable: true })
   duration!: string | null;
 

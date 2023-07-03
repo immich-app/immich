@@ -12,6 +12,7 @@
   import DetailPanel from './detail-panel.svelte';
   import PhotoViewer from './photo-viewer.svelte';
   import VideoViewer from './video-viewer.svelte';
+  import PanoramaViewer from './panorama-viewer.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
 
   import { assetStore } from '$lib/stores/assets.store';
@@ -293,6 +294,8 @@
             on:close={closeViewer}
             on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
           />
+        {:else if asset.isPanorama}
+          <PanoramaViewer {publicSharedKey} {asset} />
         {:else}
           <PhotoViewer {publicSharedKey} {asset} on:close={closeViewer} />
         {/if}
