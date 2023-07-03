@@ -1,5 +1,5 @@
-import { AssetEntity, PersonEntity } from '@app/infra/entities';
-
+import { AssetFaceId } from '@app/domain';
+import { AssetEntity, AssetFaceEntity, PersonEntity } from '@app/infra/entities';
 export const IPersonRepository = 'IPersonRepository';
 
 export interface PersonSearchOptions {
@@ -16,4 +16,6 @@ export interface IPersonRepository {
   update(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   delete(entity: PersonEntity): Promise<PersonEntity | null>;
   deleteAll(): Promise<number>;
+
+  getFaceById(payload: AssetFaceId): Promise<AssetFaceEntity | null>;
 }

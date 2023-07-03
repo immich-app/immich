@@ -5816,12 +5816,14 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Person name."
+          },
+          "featureFaceAssetId": {
+            "type": "string",
+            "description": "Asset is used to get the feature face thumbnail."
           }
-        },
-        "required": [
-          "name"
-        ]
+        }
       },
       "QueueStatusDto": {
         "type": "object",
