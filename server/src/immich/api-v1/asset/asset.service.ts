@@ -21,7 +21,6 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
-  UnsupportedMediaTypeException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Response as Res } from 'express';
