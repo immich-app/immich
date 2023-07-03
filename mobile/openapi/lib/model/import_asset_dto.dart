@@ -22,6 +22,7 @@ class ImportAssetDto {
     required this.fileCreatedAt,
     required this.fileModifiedAt,
     required this.isFavorite,
+    required this.isPanorama,
     this.isArchived,
     this.isVisible,
     this.duration,
@@ -50,6 +51,8 @@ class ImportAssetDto {
   DateTime fileModifiedAt;
 
   bool isFavorite;
+
+  bool isPanorama;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -86,6 +89,7 @@ class ImportAssetDto {
      other.fileCreatedAt == fileCreatedAt &&
      other.fileModifiedAt == fileModifiedAt &&
      other.isFavorite == isFavorite &&
+     other.isPanorama == isPanorama &&
      other.isArchived == isArchived &&
      other.isVisible == isVisible &&
      other.duration == duration;
@@ -102,12 +106,13 @@ class ImportAssetDto {
     (fileCreatedAt.hashCode) +
     (fileModifiedAt.hashCode) +
     (isFavorite.hashCode) +
+    (isPanorama.hashCode) +
     (isArchived == null ? 0 : isArchived!.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
     (duration == null ? 0 : duration!.hashCode);
 
   @override
-  String toString() => 'ImportAssetDto[assetType=$assetType, isReadOnly=$isReadOnly, assetPath=$assetPath, sidecarPath=$sidecarPath, deviceAssetId=$deviceAssetId, deviceId=$deviceId, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, isFavorite=$isFavorite, isArchived=$isArchived, isVisible=$isVisible, duration=$duration]';
+  String toString() => 'ImportAssetDto[assetType=$assetType, isReadOnly=$isReadOnly, assetPath=$assetPath, sidecarPath=$sidecarPath, deviceAssetId=$deviceAssetId, deviceId=$deviceId, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, isFavorite=$isFavorite, isPanorama=$isPanorama, isArchived=$isArchived, isVisible=$isVisible, duration=$duration]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -124,6 +129,7 @@ class ImportAssetDto {
       json[r'fileCreatedAt'] = this.fileCreatedAt.toUtc().toIso8601String();
       json[r'fileModifiedAt'] = this.fileModifiedAt.toUtc().toIso8601String();
       json[r'isFavorite'] = this.isFavorite;
+      json[r'isPanorama'] = this.isPanorama;
     if (this.isArchived != null) {
       json[r'isArchived'] = this.isArchived;
     } else {
@@ -159,6 +165,7 @@ class ImportAssetDto {
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
+        isPanorama: mapValueOfType<bool>(json, r'isPanorama')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
         duration: mapValueOfType<String>(json, r'duration'),
@@ -216,6 +223,7 @@ class ImportAssetDto {
     'fileCreatedAt',
     'fileModifiedAt',
     'isFavorite',
+    'isPanorama',
   };
 }
 

@@ -17,6 +17,7 @@ Name | Type | Description | Notes
 **fileCreatedAt** | [**DateTime**](DateTime.md) |  | 
 **fileModifiedAt** | [**DateTime**](DateTime.md) |  | 
 **isFavorite** | **bool** |  | 
+**isPanorama** | **bool** |  | 
 **isArchived** | **bool** |  | [optional] 
 **isVisible** | **bool** |  | [optional] 
 **duration** | **String** |  | [optional] 

@@ -35,6 +35,7 @@ class AssetResponseDto {
     this.tags = const [],
     this.people = const [],
     required this.checksum,
+    required this.isPanorama,
   });
 
   AssetTypeEnum type;
@@ -95,6 +96,8 @@ class AssetResponseDto {
   /// base64 encoded sha1 hash
   String checksum;
 
+  bool isPanorama;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
      other.type == type &&
@@ -118,7 +121,8 @@ class AssetResponseDto {
      other.livePhotoVideoId == livePhotoVideoId &&
      other.tags == tags &&
      other.people == people &&
-     other.checksum == checksum;
+     other.checksum == checksum &&
+     other.isPanorama == isPanorama;
 
   @override
   int get hashCode =>
@@ -144,10 +148,11 @@ class AssetResponseDto {
     (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
     (tags.hashCode) +
     (people.hashCode) +
-    (checksum.hashCode);
+    (checksum.hashCode) +
+    (isPanorama.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, originalFileName=$originalFileName, resized=$resized, thumbhash=$thumbhash, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, updatedAt=$updatedAt, isFavorite=$isFavorite, isArchived=$isArchived, mimeType=$mimeType, duration=$duration, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags, people=$people, checksum=$checksum]';
+  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, originalFileName=$originalFileName, resized=$resized, thumbhash=$thumbhash, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, updatedAt=$updatedAt, isFavorite=$isFavorite, isArchived=$isArchived, mimeType=$mimeType, duration=$duration, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags, people=$people, checksum=$checksum, isPanorama=$isPanorama]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -193,6 +198,7 @@ class AssetResponseDto {
       json[r'tags'] = this.tags;
       json[r'people'] = this.people;
       json[r'checksum'] = this.checksum;
+      json[r'isPanorama'] = this.isPanorama;
     return json;
   }
 
@@ -226,6 +232,7 @@ class AssetResponseDto {
         tags: TagResponseDto.listFromJson(json[r'tags']),
         people: PersonResponseDto.listFromJson(json[r'people']),
         checksum: mapValueOfType<String>(json, r'checksum')!,
+        isPanorama: mapValueOfType<bool>(json, r'isPanorama')!,
       );
     }
     return null;
@@ -290,6 +297,7 @@ class AssetResponseDto {
     'mimeType',
     'duration',
     'checksum',
+    'isPanorama',
   };
 }
 

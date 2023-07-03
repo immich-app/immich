@@ -128,6 +128,11 @@ void main() {
       // TODO
     });
 
+    // bool isPanorama
+    test('to test the property `isPanorama`', () async {
+      // TODO
+    });
+
 
   });
 

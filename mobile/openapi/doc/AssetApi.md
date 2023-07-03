@@ -1393,7 +1393,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadFile**
-> AssetFileUploadResponseDto uploadFile(assetType, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration)
+> AssetFileUploadResponseDto uploadFile(assetType, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, isPanorama, key, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration)
 
 
 
@@ -1424,6 +1424,7 @@ final deviceId = deviceId_example; // String |
 final fileCreatedAt = 2013-10-20T19:20:30+01:00; // DateTime | 
 final fileModifiedAt = 2013-10-20T19:20:30+01:00; // DateTime | 
 final isFavorite = true; // bool | 
+final isPanorama = true; // bool | 
 final key = key_example; // String | 
 final livePhotoData = BINARY_DATA_HERE; // MultipartFile | 
 final sidecarData = BINARY_DATA_HERE; // MultipartFile | 
@@ -1433,7 +1434,7 @@ final isVisible = true; // bool |
 final duration = duration_example; // String | 
 
 try {
-    final result = api_instance.uploadFile(assetType, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration);
+    final result = api_instance.uploadFile(assetType, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, isPanorama, key, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->uploadFile: $e\n');
@@ -1452,6 +1453,7 @@ Name | Type | Description  | Notes
  **fileCreatedAt** | **DateTime**|  | 
  **fileModifiedAt** | **DateTime**|  | 
  **isFavorite** | **bool**|  | 
+ **isPanorama** | **bool**|  | 
  **key** | **String**|  | [optional] 
  **livePhotoData** | **MultipartFile**|  | [optional] 
  **sidecarData** | **MultipartFile**|  | [optional] 
