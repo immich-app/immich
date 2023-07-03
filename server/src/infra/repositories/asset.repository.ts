@@ -21,6 +21,12 @@ import { paginate } from '../utils/pagination.util';
 export class AssetRepository implements IAssetRepository {
   constructor(@InjectRepository(AssetEntity) private repository: Repository<AssetEntity>) {}
 
+  create(
+    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'livePhotoVideoId'>,
+  ): Promise<AssetEntity> {
+    return this.repository.save(asset);
+  }
+
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]> {
     // For reference of a correct approach although slower
 

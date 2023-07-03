@@ -6,15 +6,9 @@ import mime from 'mime';
 import { basename, extname, parse } from 'path';
 import { AssetEntity, AssetType } from '../../infra/entities/asset.entity';
 import { AuthUserDto } from '../auth';
+import { ICryptoRepository } from '../crypto';
 import { HumanReadableSize, usePagination } from '../domain.util';
-import {
-  AccessCore,
-  IAccessRepository,
-  ICryptoRepository,
-  ILibraryJob,
-  isSupportedFileType,
-  Permission,
-} from '../index';
+import { AccessCore, IAccessRepository, ILibraryJob, isSupportedFileType, Permission } from '../index';
 import { ImmichReadStream, IStorageRepository } from '../storage';
 import { IAssetRepository } from './asset.repository';
 import { AssetIdsDto, DownloadArchiveInfo, DownloadDto, DownloadResponseDto, MemoryLaneDto } from './dto';
@@ -175,6 +169,7 @@ export class AssetService {
       sidecarPath = `${job.assetPath}.xmp`;
     } catch (error) {}
 
+    // TODO: In wait of refactoring the domain asset service, this function is just manually written like this
     await this.assetRepository.create({
       owner: { id: job.ownerId } as UserEntity,
 
@@ -208,7 +203,6 @@ export class AssetService {
       isReadOnly: true,
       isOffline: false,
     });
-
     return true;
   }
 
