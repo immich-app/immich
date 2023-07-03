@@ -8,7 +8,6 @@
   },
   "devDependencies": {
     "@types/chai": "^4.3.5",
-    "@types/chokidar": "^2.1.3",
     "@types/jest": "^29.5.2",
     "@types/js-yaml": "^4.0.5",
     "@types/mime-types": "^2.1.1",
