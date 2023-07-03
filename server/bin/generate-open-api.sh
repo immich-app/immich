@@ -37,7 +37,7 @@ if [[ $1 == 'mobile' ]]; then
 elif [[ $1 == 'web' ]]; then
   web
 elif [[ $1 == 'cli' ]]; then
-  web
+  cli
 else
   mobile
   web
