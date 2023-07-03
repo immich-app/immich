@@ -5,12 +5,9 @@ import {
   getLivePhotoMotionFilename,
   IAccessRepository,
   ICryptoRepository,
-  IEntityJob,
   IJobRepository,
-  ILibraryJob,
   isSupportedFileType,
   IStorageRepository,
-  IUserRepository,
   JobName,
   mapAsset,
   mapAssetWithoutExif,
@@ -30,7 +27,7 @@ import { Response as Res } from 'express';
 import { constants, createReadStream } from 'fs';
 import fs from 'fs/promises';
 import mime from 'mime-types';
-import path, { basename } from 'path';
+import path from 'path';
 import { pipeline } from 'stream/promises';
 import { QueryFailedError, Repository } from 'typeorm';
 import { IAssetRepository } from './asset-repository';

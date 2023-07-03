@@ -1,4 +1,12 @@
-import { AccessCore, AuthUserDto, IAccessRepository, Permission } from '@app/domain';
+import {
+  AccessCore,
+  AuthUserDto,
+  IAccessRepository,
+  IJobRepository,
+  ILibraryJob,
+  JobName,
+  Permission,
+} from '@app/domain';
 import { LibraryEntity, LibraryType, UserEntity } from '@app/infra/entities';
 import { Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 
@@ -6,8 +14,8 @@ import { LibraryCrawler } from '@app/domain/library/library-crawler';
 import { LibraryResponseDto, mapLibrary } from '@app/domain/library/response-dto/library-response.dto';
 import { CreateLibraryDto } from '../../immich/api-v1/library/dto/create-library-dto';
 import { ILibraryRepository } from '../../immich/api-v1/library/library-repository';
-import { LibraryRefreshDto } from './dto/library-refresh-dto';
 import { LibrarySearchDto } from './dto/library-search-dto';
+import { ScanLibraryDto } from './dto/scan-library-dto';
 
 @Injectable()
 export class LibraryService {
@@ -18,6 +26,7 @@ export class LibraryService {
   constructor(
     @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     this.access = new AccessCore(accessRepository);
     this.crawler = new LibraryCrawler();
@@ -46,10 +55,10 @@ export class LibraryService {
     return await this.libraryRepository.getById(libraryId);
   }
 
-  public async refreshLibrary(authUser: AuthUserDto, dto: LibraryRefreshDto) {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, dto.libraryId);
+  public async scanLibrary(authUser: AuthUserDto, scanLibraryDto: ScanLibraryDto) {
+    //await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, dto.libraryId);
 
-    const libraryEntity = await this.libraryRepository.getById(dto.libraryId);
+    const libraryEntity = await this.libraryRepository.getById(scanLibraryDto.libraryId);
 
     if (libraryEntity.type != LibraryType.IMPORT) {
       Logger.error('Only imported libraries can be refreshed');
@@ -61,8 +70,18 @@ export class LibraryService {
       return;
     }
 
-    const crawledAssets = this.crawler.findAllMedia({ pathsToCrawl: libraryEntity.importPaths });
+    const crawledAssetPaths = await this.crawler.findAllMedia({ pathsToCrawl: libraryEntity.importPaths });
+    for (const assetPath of crawledAssetPaths) {
+      const libraryJobData: ILibraryJob = {
+        assetPath: assetPath,
+        ownerId: authUser.id,
+        libraryId: scanLibraryDto.libraryId,
+      };
 
-    // Upload all crawled assets
+      await this.jobRepository.queue({
+        name: JobName.ADD_LIBRARY_FILE,
+        data: libraryJobData,
+      });
+    }
   }
 }

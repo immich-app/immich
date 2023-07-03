@@ -6,6 +6,7 @@ import {
   IDeleteFilesJob,
   IEntityJob,
   IFaceThumbnailJob,
+  ILibraryJob,
 } from './job.interface';
 
 export interface JobCounts {
@@ -71,9 +72,9 @@ export type JobItem =
   | { name: JobName.PERSON_CLEANUP; data?: IBaseJob }
 
   // Library Managment
-  | { name: JobName.ADD_LIBRARY_FILE; data?: IBaseJob }
-  | { name: JobName.REFRESH_LIBRARY_FILE; data?: IBaseJob }
-  | { name: JobName.REMOVE_LIBRARY_FILE; data?: IBaseJob }
+  | { name: JobName.ADD_LIBRARY_FILE; data?: ILibraryJob }
+  | { name: JobName.REFRESH_LIBRARY_FILE; data?: ILibraryJob }
+  | { name: JobName.REMOVE_LIBRARY_FILE; data?: ILibraryJob }
 
   // Search
   | { name: JobName.SEARCH_INDEX_ASSETS; data?: IBaseJob }

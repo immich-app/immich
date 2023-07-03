@@ -8,7 +8,8 @@ import { AssetEntity, AssetType } from '../../infra/entities/asset.entity';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { HumanReadableSize, usePagination } from '../domain.util';
-import { AccessCore, IAccessRepository, ILibraryJob, isSupportedFileType, Permission } from '../index';
+import { AccessCore, IAccessRepository, ILibraryJob, isSupportedFileType, JobName, Permission } from '../index';
+import { IJobRepository } from '../job';
 import { ImmichReadStream, IStorageRepository } from '../storage';
 import { IAssetRepository } from './asset.repository';
 import { AssetIdsDto, DownloadArchiveInfo, DownloadDto, DownloadResponseDto, MemoryLaneDto } from './dto';
@@ -24,6 +25,7 @@ export class AssetService {
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
     this.access = new AccessCore(accessRepository);
   }
@@ -148,6 +150,7 @@ export class AssetService {
   }
 
   async handleAddLibraryFile(job: ILibraryJob) {
+    console.log('Importing file ' + job.assetPath);
     // TODO: Determine file type from extension only
     const mimeType = mime.lookup(job.assetPath);
     if (!mimeType) {
@@ -170,7 +173,7 @@ export class AssetService {
     } catch (error) {}
 
     // TODO: In wait of refactoring the domain asset service, this function is just manually written like this
-    await this.assetRepository.create({
+    const addedAsset = await this.assetRepository.create({
       owner: { id: job.ownerId } as UserEntity,
 
       library: { id: job.libraryId } as LibraryEntity,
@@ -203,6 +206,15 @@ export class AssetService {
       isReadOnly: true,
       isOffline: false,
     });
+
+    await this.jobRepository.queue({
+      name: JobName.METADATA_EXTRACTION,
+      data: { id: addedAsset.id, source: 'upload' },
+    });
+    if (addedAsset.type === AssetType.VIDEO) {
+      await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: addedAsset.id } });
+    }
+
     return true;
   }
 

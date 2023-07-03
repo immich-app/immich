@@ -1,4 +1,5 @@
 import { AuthUserDto } from '@app/domain';
+import { ScanLibraryDto  } from '@app/domain/library/dto/scan-library-dto';
 import { LibraryService } from '@app/domain/library/library.service';
 import { LibraryResponseDto } from '@app/domain/library/response-dto/library-response.dto';
 import { AdminRoute, Authenticated, AuthUser } from '@app/immich/app.guard';
@@ -21,5 +22,12 @@ export class LibraryController {
     @Body() createLibraryDto: CreateLibraryDto,
   ): Promise<LibraryResponseDto> {
     return this.service.createLibrary(authUser, createLibraryDto);
+  }
+
+  @AdminRoute()
+  @Post('/scan')
+  // TODO: use dto here
+  scan(@AuthUser() authUser: AuthUserDto, @Body() scanLibraryDto: ScanLibraryDto) {
+    return this.service.scanLibrary(authUser, scanLibraryDto);
   }
 }

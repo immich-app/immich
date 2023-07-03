@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsOptional, IsUUID } from 'class-validator';
 
-export class LibraryRefreshDto {
+export class ScanLibraryDto {
   @IsUUID('4')
   @ApiProperty({ format: 'uuid' })
   libraryId!: string;

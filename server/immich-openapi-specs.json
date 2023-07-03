@@ -2284,6 +2284,41 @@
         ]
       }
     },
+    "/library/scan": {
+      "post": {
+        "operationId": "scan",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScanLibraryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Library"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/oauth/callback": {
       "post": {
         "operationId": "callback",
@@ -5969,6 +6004,18 @@
         },
         "required": [
           "assetIds"
+        ]
+      },
+      "ScanLibraryDto": {
+        "type": "object",
+        "properties": {
+          "libraryId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "libraryId"
         ]
       },
       "SearchAlbumResponseDto": {
