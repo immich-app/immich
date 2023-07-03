@@ -119,6 +119,26 @@ export class PersonService {
   }
 
   async mergePerson(authUser: AuthUserDto, personId: string, dto: MergePersonDto) {
-    console.log(dto);
+    const ids = [...dto.ids, personId];
+    const parentId = await this.getPersonWithMostAssets(ids);
+    const childIds = dto.ids.filter((id) => id !== parentId);
+  }
+
+  private async getPersonWithMostAssets(ids: string[]): Promise<string> {
+    const result: Map<string, number>[] = [];
+
+    for (const personId of ids) {
+      const count = await this.repository.getAssetsCount(personId);
+      result.push(new Map([[personId, count]]));
+    }
+
+    // Find the person with the most assets
+    const sorted = result.sort((a, b) => {
+      const aCount = a.values().next().value;
+      const bCount = b.values().next().value;
+      return bCount - aCount;
+    });
+
+    return sorted[0].keys().next().value;
   }
 }
