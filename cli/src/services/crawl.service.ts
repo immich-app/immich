@@ -32,7 +32,7 @@ export class CrawlService {
       searchPattern = searchPattern + '/**/';
     }
 
-    searchPattern = searchPattern + '/*.{' + ACCEPTED_FILE_EXTENSIONS.join(',') + '}';
+    searchPattern = `${searchPattern}/*.{${ACCEPTED_FILE_EXTENSIONS.join(',')}}`;
 
     const globbedFiles = await glob(searchPattern, {
       nocase: true,
