@@ -572,10 +572,6 @@ export class AssetService {
   }
 
   private getThumbnailPath(asset: AssetEntity, format: GetAssetThumbnailFormatEnum) {
-    if (!Object.values(GetAssetThumbnailFormatEnum).includes(format)) {
-      throw new UnsupportedMediaTypeException(`Unsupported thumbnail format requested: ${format}`);
-    }
-
     switch (format) {
       case GetAssetThumbnailFormatEnum.WEBP:
         if (asset.webpPath) {
