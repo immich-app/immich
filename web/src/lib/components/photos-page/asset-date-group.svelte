@@ -14,6 +14,7 @@
   import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
   import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
   import { fly } from 'svelte/transition';
+  import { DateTime, Interval } from 'luxon';
   import { getAssetRatio } from '$lib/utils/asset-utils';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import { createEventDispatcher } from 'svelte';
@@ -155,6 +156,41 @@
     // Show multi select icon on hover on date group
     hoveredDateGroup = dateGroupTitle;
   };
+
+  const formatGroupTitle = (date: DateTime): string => {
+    const today = DateTime.now().startOf('day');
+
+    // Today
+    if (today.hasSame(date, 'day')) {
+      return 'Today';
+    }
+
+    // Yesterday
+    if (Interval.fromDateTimes(date, today).length('days') == 1) {
+      return 'Yesterday';
+    }
+
+    // Last week
+    if (Interval.fromDateTimes(date, today).length('weeks') < 1) {
+      return date.toLocaleString({ weekday: 'long' });
+    }
+
+    // This year
+    if (today.hasSame(date, 'year')) {
+      return date.toLocaleString({
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+      });
+    }
+
+    return date.toLocaleString({
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
 </script>
 
 <section
@@ -164,7 +200,7 @@
   bind:clientWidth={viewportWidth}
 >
   {#each assetsGroupByDate as assetsInDateGroup, groupIndex (assetsInDateGroup[0].id)}
-    {@const dateGroupTitle = new Date(assetsInDateGroup[0].fileCreatedAt).toLocaleDateString($locale, groupDateFormat)}
+    {@const dateGroupTitle = formatGroupTitle(DateTime.fromISO(assetsInDateGroup[0].fileCreatedAt).startOf('day'))}
     <!-- Asset Group By Date -->
 
     <div
@@ -195,7 +231,7 @@
           </div>
         {/if}
 
-        <span class="truncate" title={dateGroupTitle}>
+        <span class="first-letter:capitalize truncate" title={dateGroupTitle}>
           {dateGroupTitle}
         </span>
       </p>
