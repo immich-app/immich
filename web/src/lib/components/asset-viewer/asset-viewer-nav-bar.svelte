@@ -126,6 +126,7 @@
                   text={asset.isArchived ? 'Unarchive' : 'Archive'}
                 />
               {/if}
+              <MenuOption on:click={() => onMenuClick('asProfileImage')} text="As profile picture" />
             </ContextMenu>
           {/if}
         </CircleIconButton>
