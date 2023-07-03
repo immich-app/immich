@@ -36,6 +36,11 @@ export class CreateAssetBase {
 
   @IsOptional()
   duration?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(toBoolean)
+  isOffline?: boolean = false;
 }
 
 export class CreateAssetDto extends CreateAssetBase {
@@ -46,6 +51,10 @@ export class CreateAssetDto extends CreateAssetBase {
 
   @IsNotEmpty()
   fileExtension!: string;
+
+  @IsUUID('4')
+  @ApiProperty({ format: 'uuid' })
+  libraryId!: string;
 
   // The properties below are added to correctly generate the API docs
   // and client SDKs. Validation should be handled in the controller.
@@ -64,10 +73,9 @@ export class ImportAssetDto extends CreateAssetBase {
   @Transform(toBoolean)
   isReadOnly?: boolean = true;
 
-  @IsOptional()
   @IsUUID('4')
   @ApiProperty({ format: 'uuid' })
-  libraryId?: string;
+  libraryId!: string;
 
   @IsString()
   @IsNotEmpty()

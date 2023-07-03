@@ -1,10 +1,11 @@
 import { AccessCore, AuthUserDto, IAccessRepository, IAssetRepository, IEntityJob, Permission } from '@app/domain';
-import { AssetEntity, LibraryEntity } from '@app/infra/entities';
+import { AssetEntity, LibraryEntity, UserEntity } from '@app/infra/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { LibraryResponseDto, mapLibrary } from '@app/domain/library/response-dto/library-response.dto';
+import { CreateLibraryDto } from './dto/create-library-dto';
 import { LibrarySearchDto } from './dto/library-search-dto';
 import { ILibraryRepository } from './library-repository';
 
@@ -20,6 +21,17 @@ export class LibraryService {
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
   ) {
     this.access = new AccessCore(accessRepository);
+  }
+
+  public async createLibrary(authUser: AuthUserDto, dto: CreateLibraryDto): Promise<LibraryEntity> {
+    await this.access.requirePermission(authUser, Permission.LIBRARY_CREATE, authUser.id);
+    return await this._libraryRepository.create({
+      owner: { id: authUser.id } as UserEntity,
+      name: dto.name,
+      assets: [],
+      type: dto.libraryType,
+      isVisible: dto.isVisible ?? true,
+    });
   }
 
   public async getAllLibraries(authUser: AuthUserDto, dto: LibrarySearchDto): Promise<LibraryResponseDto[]> {

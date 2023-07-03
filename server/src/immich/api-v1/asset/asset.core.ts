@@ -1,5 +1,5 @@
 import { AuthUserDto, IJobRepository, JobName } from '@app/domain';
-import { AssetEntity, AssetType, UserEntity } from '@app/infra/entities';
+import { AssetEntity, AssetType, LibraryEntity, UserEntity } from '@app/infra/entities';
 import { parse } from 'node:path';
 import { IAssetRepository } from './asset-repository';
 import { CreateAssetDto, ImportAssetDto, UploadFile } from './dto/create-asset.dto';
@@ -16,6 +16,8 @@ export class AssetCore {
   ): Promise<AssetEntity> {
     const asset = await this.repository.create({
       owner: { id: authUser.id } as UserEntity,
+
+      library: { id: dto.libraryId } as LibraryEntity,
 
       mimeType: file.mimeType,
       checksum: file.checksum,
@@ -43,6 +45,7 @@ export class AssetCore {
       faces: [],
       sidecarPath: sidecarPath || null,
       isReadOnly: dto.isReadOnly ?? false,
+      isOffline: dto.isOffline ?? false,
     });
 
     await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id, source: 'upload' } });

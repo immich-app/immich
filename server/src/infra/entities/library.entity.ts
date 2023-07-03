@@ -5,6 +5,7 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
@@ -18,10 +19,10 @@ export class LibraryEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column()
+  @Column({ default: '' })
   name!: string;
 
-  @ManyToMany(() => AssetEntity, (asset) => asset.library)
+  @OneToMany(() => AssetEntity, (asset) => asset.library)
   @JoinTable()
   assets!: AssetEntity[];
 
@@ -43,8 +44,8 @@ export class LibraryEntity {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz' })
-  refreshedAt!: Date;
+  @Column({ type: 'timestamptz' })
+  refreshedAt?: Date;
 
   @Column({ type: 'boolean', default: true })
   isVisible!: boolean;
