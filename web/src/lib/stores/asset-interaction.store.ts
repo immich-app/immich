@@ -1,6 +1,5 @@
 import { AssetGridState, BucketPosition } from '$lib/models/asset-grid-state';
 import { api, AssetResponseDto } from '@api';
-import { sortBy } from 'lodash-es';
 import { derived, writable } from 'svelte/store';
 import { assetGridState, assetStore } from './assets.store';
 
@@ -20,8 +19,6 @@ function createAssetInteractionStore() {
   let _selectedAssets: Set<AssetResponseDto>;
   let _selectedGroup: Set<string>;
   let _assetsInAlbums: AssetResponseDto[];
-  let savedAssetLength = 0;
-  let assetSortedByDate: AssetResponseDto[] = [];
 
   // Subscriber
   assetGridState.subscribe((state) => {
@@ -64,40 +61,31 @@ function createAssetInteractionStore() {
   };
 
   const navigateAsset = async (direction: 'next' | 'previous') => {
-    // Flatten and sort the asset by date if there are new assets
-    if (assetSortedByDate.length === 0 || savedAssetLength !== _assetGridState.assets.length) {
-      assetSortedByDate = sortBy(_assetGridState.assets, (a) => a.fileCreatedAt);
-      savedAssetLength = _assetGridState.assets.length;
-    }
+    let index = _assetGridState.assets.findIndex(({ id }) => id === _viewingAssetStoreState.id);
 
-    // Find the index of the current asset
-    const currentIndex = assetSortedByDate.findIndex((a) => a.id === _viewingAssetStoreState.id);
+    index = direction === 'next' ? index + 1 : index - 1;
 
-    // Get the next or previous asset
-    const nextIndex = direction === 'previous' ? currentIndex + 1 : currentIndex - 1;
+    const needMoreAbove = index < 0;
+    const needMoreBelow = index >= _assetGridState.assets.length;
 
-    // Run out of asset, this might be because there is no asset in the next bucket.
-    if (nextIndex == -1) {
-      let nextBucket = '';
-      // Find next bucket that doesn't have all assets loaded
-
+    // Try to load more assets if we're at the end.
+    if (needMoreAbove || needMoreBelow) {
       for (const bucket of _assetGridState.buckets) {
         if (bucket.assets.length === 0) {
-          nextBucket = bucket.bucketDate;
+          await assetStore.getAssetsByBucket(
+            bucket.bucketDate,
+            needMoreAbove ? BucketPosition.Above : BucketPosition.Below,
+          );
+          navigateAsset(direction);
           break;
         }
-      }
-
-      if (nextBucket !== '') {
-        await assetStore.getAssetsByBucket(nextBucket, BucketPosition.Below);
-        navigateAsset(direction);
       }
       return;
     }
 
-    const nextAsset = assetSortedByDate[nextIndex];
-    if (nextAsset) {
-      setViewingAsset(nextAsset);
+    const asset = _assetGridState.assets[index];
+    if (asset) {
+      setViewingAsset(asset);
     }
   };
 
