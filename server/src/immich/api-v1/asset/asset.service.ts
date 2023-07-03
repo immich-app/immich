@@ -22,7 +22,6 @@ import {
   Logger,
   NotFoundException,
   StreamableFile,
-  UnsupportedMediaTypeException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Response as Res } from 'express';
