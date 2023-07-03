@@ -29,7 +29,6 @@ const _getCreateAssetDto = (): CreateAssetDto => {
   createAssetDto.fileCreatedAt = new Date('2022-06-19T23:41:36.910Z');
   createAssetDto.fileModifiedAt = new Date('2022-06-19T23:41:36.910Z');
   createAssetDto.isFavorite = false;
-  createAssetDto.isPanorama = false;
   createAssetDto.isArchived = false;
   createAssetDto.duration = '0:00:00.000000';
 

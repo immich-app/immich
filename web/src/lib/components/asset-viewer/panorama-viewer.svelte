@@ -36,7 +36,7 @@
     <LoadingSpinner />
   {:then assetData}
     {#if assetData}
-      <View360 autoResize={true} projection={new EquirectProjection({ src: assetData })} />
+      <View360 autoResize={true} initialZoom={0.5} projection={new EquirectProjection({ src: assetData })} />
     {:else}
       <p>{errorMessage}</p>
     {/if}
