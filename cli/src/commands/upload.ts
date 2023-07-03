@@ -39,13 +39,51 @@ export default class Upload extends BaseCommand {
 
     this.uploadLength = uploadTargets.length;
 
+    const cliProgress = require('cli-progress');
+    const byteSize = require('byte-size');
+
+    const progressBar = new cliProgress.SingleBar(
+      {
+        format: '{bar} | {percentage}% | ETA: {eta_formatted} | {value_formatted}/{total_formatted}: {filename}',
+      },
+      cliProgress.Presets.shades_classic,
+    );
+
+    let totalSize = 0;
+    let currentSize = 0;
+
     for (const target of uploadTargets) {
-      if (options.import) {
-        await this.importTarget(target);
-      } else {
-        await this.uploadTarget(target, options.skipHash);
-      }
+      // Compute total size first
+      await target.process();
+      totalSize += target.fileSize;
     }
+
+    progressBar.start(totalSize);
+
+    for (const target of uploadTargets) {
+      if (this.uploadCounter === 0) {
+        progressBar.update(0, {
+          filename: target.path,
+          value_formatted: 0,
+          total_formatted: byteSize(totalSize),
+        });
+      }
+      try {
+        if (options.import) {
+          await this.importTarget(target);
+        } else {
+          await this.uploadTarget(target, options.skipHash);
+        }
+      } catch (error) {
+        progressBar.stop();
+        throw error;
+      }
+      currentSize += target.fileSize;
+
+      progressBar.update(currentSize, { filename: target.path, value_formatted: byteSize(currentSize) });
+    }
+
+    progressBar.stop();
 
     if (options.import) {
       console.log('Import successful');
@@ -71,7 +109,7 @@ export default class Upload extends BaseCommand {
   }
 
   private async uploadTarget(target: UploadTarget, skipHash = false) {
-    await target.read();
+    await target.readData();
 
     let skipUpload = false;
     if (!skipHash) {
@@ -120,12 +158,10 @@ export default class Upload extends BaseCommand {
         finishMessage = ' uploaded: ';
       }
     }
-    console.log(this.uploadCounter + '/' + this.uploadLength + finishMessage + target.path);
+    //  console.log(this.uploadCounter + '/' + this.uploadLength + finishMessage + target.path);
   }
 
   private async importTarget(target: UploadTarget) {
-    await target.import();
-
     const importData = {
       assetPath: target.path,
       deviceAssetId: target.deviceAssetId,

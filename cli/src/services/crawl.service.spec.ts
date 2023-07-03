@@ -16,7 +16,7 @@ describe('CrawlService', () => {
     console.log();
   });
 
-  it('should crawl a single path', async () => {
+  it('should crawl a single directory', async () => {
     mockfs({
       '/photos/image.jpg': '',
     });
@@ -25,6 +25,29 @@ describe('CrawlService', () => {
     options.pathsToCrawl = ['/photos/'];
     const paths: string[] = await crawlService.crawl(options);
     expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
+  });
+
+  it('should crawl a single file', async () => {
+    mockfs({
+      '/photos/image.jpg': '',
+    });
+
+    const options = new CrawlOptionsDto();
+    options.pathsToCrawl = ['/photos/image.jpg'];
+    const paths: string[] = await crawlService.crawl(options);
+    expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
+  });
+
+  it('should crawl a file and a directory', async () => {
+    mockfs({
+      '/photos/image.jpg': '',
+      '/images/photo.jpg': '',
+    });
+
+    const options = new CrawlOptionsDto();
+    options.pathsToCrawl = ['/photos/image.jpg', '/images/'];
+    const paths: string[] = await crawlService.crawl(options);
+    expect(paths).toIncludeSameMembers(['/photos/image.jpg', '/images/photo.jpg']);
   });
 
   it('should exclude by file extension', async () => {

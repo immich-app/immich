@@ -16,22 +16,18 @@ export class UploadTarget {
   public fileExtension?: string;
   public sidecarData?: Buffer;
   public sidecarPath?: string;
+  public fileSize!: number;
 
   constructor(path: string) {
     this.path = path;
   }
 
-  async read() {
+  async readData() {
     this.assetData = await fs.promises.readFile(this.path);
-    await this.process();
   }
 
-  async import() {
-    await this.process();
-  }
-
-  private async process() {
-    const stats = fs.statSync(this.path);
+  async process() {
+    const stats = await fs.promises.stat(this.path);
     this.deviceAssetId = `${basename(this.path)}-${stats.size}`.replace(/\s+/g, '');
 
     // TODO: Determine file type from extension only
@@ -43,6 +39,8 @@ export class UploadTarget {
     this.fileCreatedAt = stats.ctime.toISOString();
     this.fileModifiedAt = stats.mtime.toISOString();
     this.fileExtension = path.extname(this.path);
+    this.fileSize = stats.size;
+
     let hasSidecar = true;
 
     // TODO: doesn't xmp replace the file extension? Will need investigation

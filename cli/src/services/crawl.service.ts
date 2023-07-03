@@ -1,25 +1,47 @@
 import { CrawlOptionsDto } from 'src/cores/dto/crawl-options-dto';
 import { ACCEPTED_FILE_EXTENSIONS } from '../cores';
 import { glob } from 'glob';
+import * as fs from 'fs';
+
 export class CrawlService {
   public async crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
-    const pathsToCrawl = crawlOptions.pathsToCrawl;
+    const pathsToCrawl: string[] = crawlOptions.pathsToCrawl;
 
-    let paths: string;
-    if (pathsToCrawl.length === 1) {
-      paths = pathsToCrawl[0];
+    const directories: string[] = [];
+    const crawledFiles: string[] = [];
+
+    for await (const currentPath of pathsToCrawl) {
+      const stats = await fs.promises.stat(currentPath);
+      if (stats.isFile() || stats.isSymbolicLink()) {
+        crawledFiles.push(currentPath);
+      } else {
+        directories.push(currentPath);
+      }
+    }
+
+    let searchPattern: string;
+    if (directories.length === 1) {
+      searchPattern = directories[0];
+    } else if (directories.length === 0) {
+      return crawledFiles;
     } else {
-      paths = '{' + pathsToCrawl.join(',') + '}';
+      searchPattern = '{' + directories.join(',') + '}';
     }
 
     if (crawlOptions.recursive) {
-      paths = paths + '/**/';
+      searchPattern = searchPattern + '/**/';
     }
 
-    paths = paths + '/*.{' + ACCEPTED_FILE_EXTENSIONS.join(',') + '}';
+    searchPattern = searchPattern + '/*.{' + ACCEPTED_FILE_EXTENSIONS.join(',') + '}';
 
-    return await glob(paths, { nocase: true, nodir: true, ignore: crawlOptions.excludePatterns }).then((crawledPaths) =>
-      crawledPaths.sort(),
-    );
+    const globbedFiles = await glob(searchPattern, {
+      nocase: true,
+      nodir: true,
+      ignore: crawlOptions.excludePatterns,
+    });
+
+    const returnedFiles = crawledFiles.concat(globbedFiles);
+    returnedFiles.sort();
+    return returnedFiles;
   }
 }
