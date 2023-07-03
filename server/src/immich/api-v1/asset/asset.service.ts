@@ -83,7 +83,6 @@ export class AssetService {
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(IUserRepository) private userRepository: IUserRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
     this.access = new AccessCore(accessRepository);
@@ -131,51 +130,6 @@ export class AssetService {
       this.logger.error(`Error uploading file ${error}`, error?.stack);
       throw new BadRequestException(`Error uploading file`, `${error}`);
     }
-  }
-
-  async handleAddLibraryFile(job: ILibraryJob) {
-    const stats = await fs.stat(job.assetPath);
-
-    const importAssetDto = new ImportAssetDto();
-    importAssetDto.deviceAssetId = `${basename(job.assetPath)}-${stats.size}`.replace(/\s+/g, '');
-    importAssetDto.deviceId = 'Library Import';
-
-    // TODO: Determine file type from extension only
-    const mimeType = mime.lookup(job.assetPath);
-    if (!mimeType) {
-      throw Error('Cannot determine mime type of asset: ' + job.assetPath);
-    }
-    importAssetDto.assetType = mimeType.split('/')[0].toUpperCase() as AssetType;
-    importAssetDto.fileCreatedAt = stats.ctime;
-    importAssetDto.fileModifiedAt = stats.mtime;
-
-    let hasSidecar = true;
-
-    // TODO: doesn't xmp replace the file extension? Will need investigation
-    const sideCarPath = `${job.assetPath}.xmp`;
-    try {
-      await fs.access(sideCarPath, fs.constants.R_OK);
-    } catch (error) {
-      // No sidecar file
-      hasSidecar = false;
-    }
-    if (hasSidecar) {
-      importAssetDto.sidecarPath = sideCarPath;
-    }
-
-    await this.addFile(job.ownerId, importAssetDto);
-
-    return true;
-  }
-
-  async handleRefreshLibraryFile(job: ILibraryJob) {
-    // TODO
-    return true;
-  }
-
-  async handleRemoveLibraryFile(job: ILibraryJob) {
-    // TODO
-    return true;
   }
 
   public async importFile(authUser: AuthUserDto, dto: ImportAssetDto): Promise<AssetFileUploadResponseDto> {

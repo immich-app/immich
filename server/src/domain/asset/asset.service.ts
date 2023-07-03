@@ -1,10 +1,20 @@
+import { LibraryEntity, UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject } from '@nestjs/common';
+import fs from 'fs';
 import { DateTime } from 'luxon';
-import { extname } from 'path';
-import { AssetEntity } from '../../infra/entities/asset.entity';
+import mime from 'mime';
+import { basename, extname, parse } from 'path';
+import { AssetEntity, AssetType } from '../../infra/entities/asset.entity';
 import { AuthUserDto } from '../auth';
 import { HumanReadableSize, usePagination } from '../domain.util';
-import { AccessCore, IAccessRepository, Permission } from '../index';
+import {
+  AccessCore,
+  IAccessRepository,
+  ICryptoRepository,
+  ILibraryJob,
+  isSupportedFileType,
+  Permission,
+} from '../index';
 import { ImmichReadStream, IStorageRepository } from '../storage';
 import { IAssetRepository } from './asset.repository';
 import { AssetIdsDto, DownloadArchiveInfo, DownloadDto, DownloadResponseDto, MemoryLaneDto } from './dto';
@@ -19,6 +29,7 @@ export class AssetService {
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
   ) {
     this.access = new AccessCore(accessRepository);
   }
@@ -142,5 +153,72 @@ export class AssetService {
     throw new BadRequestException('assetIds, albumId, or userId is required');
   }
 
-  
+  async handleAddLibraryFile(job: ILibraryJob) {
+    // TODO: Determine file type from extension only
+    const mimeType = mime.lookup(job.assetPath);
+    if (!mimeType) {
+      throw Error(`Cannot determine mime type of asset: ${job.assetPath}`);
+    }
+    if (!isSupportedFileType(mimeType)) {
+      throw new BadRequestException(`Unsupported file type ${mimeType}`);
+    }
+
+    const stats = await fs.promises.stat(job.assetPath);
+    const checksum = await this.cryptoRepository.hashFile(job.assetPath);
+    const deviceAssetId = `${basename(job.assetPath)}-${stats.size}`.replace(/\s+/g, '');
+    const assetType = mimeType.split('/')[0].toUpperCase() as AssetType;
+
+    // TODO: doesn't xmp replace the file extension? Will need investigation
+    let sidecarPath: string | null = null;
+    try {
+      fs.accessSync(`${job.assetPath}.xmp`, fs.constants.R_OK);
+      sidecarPath = `${job.assetPath}.xmp`;
+    } catch (error) {}
+
+    await this.assetRepository.create({
+      owner: { id: job.ownerId } as UserEntity,
+
+      library: { id: job.libraryId } as LibraryEntity,
+
+      mimeType: mimeType,
+      checksum: checksum,
+      originalPath: job.assetPath,
+
+      deviceAssetId: deviceAssetId,
+      deviceId: 'Library Import',
+
+      fileCreatedAt: stats.ctime,
+      fileModifiedAt: stats.mtime,
+
+      type: assetType,
+      isFavorite: false,
+      isArchived: false,
+      duration: null,
+      isVisible: true,
+      livePhotoVideo: null,
+      resizePath: null,
+      webpPath: null,
+      thumbhash: null,
+      encodedVideoPath: null,
+      tags: [],
+      sharedLinks: [],
+      originalFileName: parse(job.assetPath).name,
+      faces: [],
+      sidecarPath: sidecarPath,
+      isReadOnly: true,
+      isOffline: false,
+    });
+
+    return true;
+  }
+
+  async handleRefreshLibraryFile(job: ILibraryJob) {
+    // TODO
+    return true;
+  }
+
+  async handleRemoveLibraryFile(job: ILibraryJob) {
+    // TODO
+    return true;
+  }
 }

@@ -42,6 +42,9 @@ export enum WithProperty {
 export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
+  create(
+    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'livePhotoVideoId'>,
+  ): Promise<AssetEntity>;
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]>;
   getByIds(ids: string[]): Promise<AssetEntity[]>;
   getByAlbumId(pagination: PaginationOptions, albumId: string): Paginated<AssetEntity>;

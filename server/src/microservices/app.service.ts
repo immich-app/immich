@@ -1,4 +1,5 @@
 import {
+  AssetService,
   FacialRecognitionService,
   IDeleteFilesJob,
   JobName,
@@ -15,7 +16,6 @@ import {
 } from '@app/domain';
 
 import { Injectable, Logger } from '@nestjs/common';
-import { AssetService } from '../immich/api-v1/asset/asset.service';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 
 @Injectable()
