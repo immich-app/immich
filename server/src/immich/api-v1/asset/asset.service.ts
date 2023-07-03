@@ -525,14 +525,12 @@ export class AssetService {
         if (asset.webpPath) {
           return [asset.webpPath, 'image/webp'];
         }
+        this.logger.warn(`WebP thumbnail requested but not found for asset ${asset.id}, falling back to JPEG`);
 
       case GetAssetThumbnailFormatEnum.JPEG:
       default:
         if (!asset.resizePath) {
           throw new NotFoundException(`No thumbnail found for asset ${asset.id}`);
-        }
-        if (format != GetAssetThumbnailFormatEnum.JPEG) {
-          this.logger.warn(`${format} thumbnail requested but not found for asset ${asset.id}, falling back to JPEG`);
         }
         return [asset.resizePath, 'image/jpeg'];
     }
