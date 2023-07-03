@@ -116,6 +116,7 @@ export class ImmichApi {
       [JobName.StorageTemplateMigration]: 'Storage Template Migration',
       [JobName.BackgroundTask]: 'Background Tasks',
       [JobName.Search]: 'Search',
+      [JobName.Library]: 'Library',
     };
 
     return names[jobName];
