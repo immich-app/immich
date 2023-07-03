@@ -55,17 +55,17 @@ export class CrawledAsset {
     return fs.promises.unlink(this.path);
   }
 
-  hashFunction = crypto.createHash('sha1');
-
-  sha1 = (filePath: string) =>
-    new Promise<string>((resolve, reject) => {
-      const rs = fs.createReadStream(filePath);
-      rs.on('error', reject);
-      rs.on('data', (chunk) => this.hashFunction.update(chunk));
-      rs.on('end', () => resolve(this.hashFunction.digest('hex')));
-    });
-
   public async hash(): Promise<string> {
-    return await this.sha1(this.path);
+    const sha1 = (filePath: string) => {
+      const hash = crypto.createHash('sha1');
+      return new Promise<string>((resolve, reject) => {
+        const rs = fs.createReadStream(filePath);
+        rs.on('error', reject);
+        rs.on('data', (chunk) => hash.update(chunk));
+        rs.on('end', () => resolve(hash.digest('hex')));
+      });
+    };
+
+    return await sha1(this.path);
   }
 }
