@@ -5,7 +5,7 @@ import * as path from 'path';
 import crypto from 'crypto';
 import { AssetTypeEnum } from 'src/api/open-api';
 
-export class UploadTarget {
+export class CrawledAsset {
   public path: string;
 
   public assetType?: AssetTypeEnum;

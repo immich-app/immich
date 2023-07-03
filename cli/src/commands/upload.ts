@@ -1,5 +1,5 @@
 import { BaseCommand } from '../cli/base-command';
-import { UploadTarget } from '../cores';
+import { CrawledAsset } from '../cores';
 import { CrawlService, UploadService } from '../services';
 import * as si from 'systeminformation';
 import FormData from 'form-data';
@@ -35,9 +35,9 @@ export default class Upload extends BaseCommand {
       return;
     }
 
-    const uploadTargets = crawledFiles.map((path) => new UploadTarget(path));
+    const assetsToUpload = crawledFiles.map((path) => new CrawledAsset(path));
 
-    this.uploadLength = uploadTargets.length;
+    this.uploadLength = assetsToUpload.length;
 
     const cliProgress = require('cli-progress');
     const byteSize = require('byte-size');
@@ -52,35 +52,35 @@ export default class Upload extends BaseCommand {
     let totalSize = 0;
     let currentSize = 0;
 
-    for (const target of uploadTargets) {
+    for (const asset of assetsToUpload) {
       // Compute total size first
-      await target.process();
-      totalSize += target.fileSize;
+      await asset.process();
+      totalSize += asset.fileSize;
     }
 
     progressBar.start(totalSize);
 
-    for (const target of uploadTargets) {
+    for (const asset of assetsToUpload) {
       if (this.uploadCounter === 0) {
         progressBar.update(0, {
-          filename: target.path,
+          filename: asset.path,
           value_formatted: 0,
           total_formatted: byteSize(totalSize),
         });
       }
       try {
         if (options.import) {
-          await this.importTarget(target);
+          await this.importAsset(asset);
         } else {
-          await this.uploadTarget(target, options.skipHash);
+          await this.uploadAsset(asset, options.skipHash);
         }
       } catch (error) {
         progressBar.stop();
         throw error;
       }
-      currentSize += target.fileSize;
+      currentSize += asset.fileSize;
 
-      progressBar.update(currentSize, { filename: target.path, value_formatted: byteSize(currentSize) });
+      progressBar.update(currentSize, { filename: asset.path, value_formatted: byteSize(currentSize) });
     }
 
     progressBar.stop();
@@ -91,14 +91,14 @@ export default class Upload extends BaseCommand {
       console.log('Upload successful, deleting uploaded assets');
       let deletionCounter = 0;
 
-      for (const target of uploadTargets) {
+      for (const asset of assetsToUpload) {
         if (this.dryRun) {
           deletionCounter++;
-          console.log(deletionCounter + '/' + this.uploadLength + ' would have been deleted: ' + target.path);
+          console.log(deletionCounter + '/' + this.uploadLength + ' would have been deleted: ' + asset.path);
         } else {
-          await target.delete();
+          await asset.delete();
           deletionCounter++;
-          console.log(deletionCounter + '/' + this.uploadLength + ' deleted: ' + target.path);
+          console.log(deletionCounter + '/' + this.uploadLength + ' deleted: ' + asset.path);
         }
       }
 
@@ -108,32 +108,32 @@ export default class Upload extends BaseCommand {
     }
   }
 
-  private async uploadTarget(target: UploadTarget, skipHash = false) {
-    await target.readData();
+  private async uploadAsset(asset: CrawledAsset, skipHash = false) {
+    await asset.readData();
 
     let skipUpload = false;
     if (!skipHash) {
-      const checksum: string = await target.hash();
+      const checksum: string = await asset.hash();
 
-      const checkResponse = await this.uploadService.checkIfAssetAlreadyExists(target.path, checksum);
+      const checkResponse = await this.uploadService.checkIfAssetAlreadyExists(asset.path, checksum);
       skipUpload = checkResponse.data.results[0].action === 'reject';
     }
 
     if (!skipUpload) {
       const uploadFormData = new FormData();
 
-      uploadFormData.append('assetType', target.assetType);
-      uploadFormData.append('assetData', target.assetData, { filename: target.path });
-      uploadFormData.append('deviceAssetId', target.deviceAssetId);
+      uploadFormData.append('assetType', asset.assetType);
+      uploadFormData.append('assetData', asset.assetData, { filename: asset.path });
+      uploadFormData.append('deviceAssetId', asset.deviceAssetId);
       uploadFormData.append('deviceId', this.deviceId);
-      uploadFormData.append('fileCreatedAt', target.fileCreatedAt);
-      uploadFormData.append('fileModifiedAt', target.fileModifiedAt);
+      uploadFormData.append('fileCreatedAt', asset.fileCreatedAt);
+      uploadFormData.append('fileModifiedAt', asset.fileModifiedAt);
       uploadFormData.append('isFavorite', String(false));
-      uploadFormData.append('fileExtension', target.fileExtension);
+      uploadFormData.append('fileExtension', asset.fileExtension);
 
-      if (target.sidecarData) {
-        uploadFormData.append('sidecarData', target.sidecarData, {
-          filename: target.sidecarPath,
+      if (asset.sidecarData) {
+        uploadFormData.append('sidecarData', asset.sidecarData, {
+          filename: asset.sidecarPath,
           contentType: 'application/xml',
         });
       }
@@ -144,31 +144,16 @@ export default class Upload extends BaseCommand {
     }
 
     this.uploadCounter++;
-    let finishMessage: string;
-    if (skipUpload) {
-      if (this.dryRun) {
-        finishMessage = ' would have been skipped: ';
-      } else {
-        finishMessage = ' skipped: ';
-      }
-    } else {
-      if (this.dryRun) {
-        finishMessage = ' would have been uploaded: ';
-      } else {
-        finishMessage = ' uploaded: ';
-      }
-    }
-    //  console.log(this.uploadCounter + '/' + this.uploadLength + finishMessage + target.path);
   }
 
-  private async importTarget(target: UploadTarget) {
+  private async importAsset(asset: CrawledAsset) {
     const importData = {
-      assetPath: target.path,
-      deviceAssetId: target.deviceAssetId,
-      assetType: target.assetType,
+      assetPath: asset.path,
+      deviceAssetId: asset.deviceAssetId,
+      assetType: asset.assetType,
       deviceId: this.deviceId,
-      fileCreatedAt: target.fileCreatedAt,
-      fileModifiedAt: target.fileModifiedAt,
+      fileCreatedAt: asset.fileCreatedAt,
+      fileModifiedAt: asset.fileModifiedAt,
       isFavorite: false,
     };
 
@@ -176,14 +161,5 @@ export default class Upload extends BaseCommand {
       await this.uploadService.import(importData);
     }
     this.uploadCounter++;
-
-    let finishMessage: string;
-    if (this.dryRun) {
-      finishMessage = ' would have been imported: ';
-    } else {
-      finishMessage = ' imported: ';
-    }
-
-    console.log(this.uploadCounter + '/' + this.uploadLength + finishMessage + target.path);
   }
 }
