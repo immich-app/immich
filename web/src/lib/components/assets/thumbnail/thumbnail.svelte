@@ -124,6 +124,7 @@
             widthStyle="{width}px"
             heightStyle="{height}px"
             thumbhash={asset.thumbhash}
+            displayPanoramaArrow={asset.type === AssetTypeEnum.Image && asset.isPanorama}
           />
         {:else}
           <div class="w-full h-full p-4 flex items-center justify-center">
