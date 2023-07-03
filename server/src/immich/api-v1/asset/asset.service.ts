@@ -21,7 +21,6 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
-  StreamableFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Response as Res } from 'express';
@@ -29,6 +28,7 @@ import { constants, createReadStream, stat } from 'fs';
 import fs from 'fs/promises';
 import mime from 'mime-types';
 import path from 'path';
+import { pipeline } from 'stream/promises';
 import { QueryFailedError, Repository } from 'typeorm';
 import { promisify } from 'util';
 import { IAssetRepository } from './asset-repository';
@@ -348,9 +348,7 @@ export class AssetService {
             'Content-Type': mimeType,
           });
 
-          const videoStream = createReadStream(videoPath, { start, end });
-
-          return new StreamableFile(videoStream);
+          return this.streamFile(videoPath, res, headers, mimeType, start, end);
         }
 
         return this.streamFile(videoPath, res, headers, mimeType);
@@ -617,7 +615,14 @@ export class AssetService {
     return { filepath: asset.resizePath, contentType: 'image/jpeg' };
   }
 
-  private async streamFile(filepath: string, res: Res, headers: Record<string, string>, contentType?: string | null) {
+  private async streamFile(
+    filepath: string,
+    res: Res,
+    headers: Record<string, string>,
+    contentType?: string | null,
+    start?: number | null,
+    end?: number | null,
+  ) {
     if (contentType) {
       res.header('Content-Type', contentType);
     }
@@ -632,7 +637,16 @@ export class AssetService {
     }
 
     await fs.access(filepath, constants.R_OK);
-
-    return new StreamableFile(createReadStream(filepath));
+    let stream;
+    if (start != null && end != null) {
+      stream = createReadStream(filepath, { start, end });
+    } else {
+      stream = createReadStream(filepath);
+    }
+    return await pipeline(stream, res).catch((err) => {
+      if (err.code !== 'ERR_STREAM_PREMATURE_CLOSE') {
+        this.logger.error(err);
+      }
+    });
   }
 }
