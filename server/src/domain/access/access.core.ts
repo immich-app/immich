@@ -19,6 +19,7 @@ export enum Permission {
   ALBUM_DOWNLOAD = 'album.download',
 
   LIBRARY_CREATE = 'library.create',
+  LIBRARY_UPDATE = 'library.update',
   LIBRARY_READ = 'library.read',
   LIBRARY_DOWNLOAD = 'library.download',
 }
