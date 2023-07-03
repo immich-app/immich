@@ -7,7 +7,9 @@
     "systeminformation": "^5.18.4"
   },
   "devDependencies": {
+    "@types/byte-size": "^8.1.0",
     "@types/chai": "^4.3.5",
+    "@types/cli-progress": "^3.11.0",
     "@types/jest": "^29.5.2",
     "@types/js-yaml": "^4.0.5",
     "@types/mime-types": "^2.1.1",

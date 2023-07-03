@@ -6,6 +6,9 @@ import FormData from 'form-data';
 import { UploadOptionsDto } from '../cores/dto/upload-options-dto';
 import { CrawlOptionsDto } from '../cores/dto/crawl-options-dto';
 
+import cliProgress from 'cli-progress';
+import byteSize from 'byte-size';
+
 export default class Upload extends BaseCommand {
   private crawlService = new CrawlService();
   private uploadService!: UploadService;
@@ -35,9 +38,6 @@ export default class Upload extends BaseCommand {
     }
 
     const assetsToUpload = crawledFiles.map((path) => new CrawledAsset(path));
-
-    const cliProgress = require('cli-progress');
-    const byteSize = require('byte-size');
 
     const uploadProgress = new cliProgress.SingleBar(
       {
