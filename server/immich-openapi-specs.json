@@ -5103,9 +5103,6 @@
           "isFavorite": {
             "type": "boolean"
           },
-          "isPanorama": {
-            "type": "boolean"
-          },
           "isArchived": {
             "type": "boolean"
           },
@@ -5124,8 +5121,7 @@
           "deviceId",
           "fileCreatedAt",
           "fileModifiedAt",
-          "isFavorite",
-          "isPanorama"
+          "isFavorite"
         ]
       },
       "CreateProfileImageDto": {
@@ -5521,9 +5517,6 @@
           "isFavorite": {
             "type": "boolean"
           },
-          "isPanorama": {
-            "type": "boolean"
-          },
           "isArchived": {
             "type": "boolean"
           },
@@ -5541,8 +5534,7 @@
           "deviceId",
           "fileCreatedAt",
           "fileModifiedAt",
-          "isFavorite",
-          "isPanorama"
+          "isFavorite"
         ]
       },
       "JobCommand": {

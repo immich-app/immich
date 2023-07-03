@@ -3,7 +3,7 @@
   import { fade } from 'svelte/transition';
   import { thumbHashToDataURL } from 'thumbhash';
   import { Buffer } from 'buffer';
-  import PanoramaArrow from './360arrow.svg';
+  import Rotate360Icon from 'svelte-material-icons/Rotate360.svelte';
 
   export let url: string;
   export let altText: string;
@@ -21,7 +21,7 @@
 {#if displayPanoramaArrow}
   <div class="absolute right-0 top-0 text-white text-xs font-medium flex gap-1 place-items-center z-20">
     <span class="pt-2 pr-2">
-      <img src={PanoramaArrow} alt="" width="24" height="24" />
+      <svelte:component this={Rotate360Icon} size="24" />
     </span>
   </div>
 {/if}
