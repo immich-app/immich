@@ -9,6 +9,8 @@ export enum QueueName {
   STORAGE_TEMPLATE_MIGRATION = 'storageTemplateMigration',
   SEARCH = 'search',
   SIDECAR = 'sidecar',
+  REFRESH_LIBRARY = 'REFRESH_LIBRARY',
+  EMPTY_LIBRARY_TRASH = 'EMPTY_LIBRARY_TRASH',
 }
 
 export enum JobCommand {
@@ -51,6 +53,10 @@ export enum JobName {
   RECOGNIZE_FACES = 'recognize-faces',
   GENERATE_FACE_THUMBNAIL = 'generate-face-thumbnail',
   PERSON_CLEANUP = 'person-cleanup',
+
+  // libraries
+  REFRESH_LIBRARY = 'refresh-library',
+  EMPTY_LIBRARY_TRASH = 'empty-library-trash',
 
   // cleanup
   DELETE_FILES = 'delete-files',
@@ -112,6 +118,10 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.QUEUE_RECOGNIZE_FACES]: QueueName.RECOGNIZE_FACES,
   [JobName.RECOGNIZE_FACES]: QueueName.RECOGNIZE_FACES,
   [JobName.GENERATE_FACE_THUMBNAIL]: QueueName.RECOGNIZE_FACES,
+
+  // library
+  [JobName.REFRESH_LIBRARY]: QueueName.REFRESH_LIBRARY,
+  [JobName.EMPTY_LIBRARY_TRASH]: QueueName.EMPTY_LIBRARY_TRASH,
 
   // clip
   [JobName.QUEUE_ENCODE_CLIP]: QueueName.CLIP_ENCODING,

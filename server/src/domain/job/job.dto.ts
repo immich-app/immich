@@ -78,4 +78,8 @@ export class AllJobStatusResponseDto implements Record<QueueName, JobStatusDto> 
 
   @ApiProperty({ type: JobStatusDto })
   [QueueName.SIDECAR]!: JobStatusDto;
+
+  @ApiProperty({ type: JobStatusDto })
+  [QueueName.REFRESH_LIBRARY]!: JobStatusDto;
+  [QueueName.EMPTY_LIBRARY_TRASH]!: JobStatusDto;
 }

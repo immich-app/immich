@@ -29,3 +29,11 @@ export interface IBulkEntityJob extends IBaseJob {
 export interface IDeleteFilesJob extends IBaseJob {
   files: Array<string | null | undefined>;
 }
+
+export interface IRefreshLibraryJob extends IBaseJob {
+  ids: string[];
+}
+
+export interface IEmptyLibraryTrashJob extends IBaseJob {
+  ids: string[];
+}
