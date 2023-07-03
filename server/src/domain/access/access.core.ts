@@ -18,6 +18,7 @@ export enum Permission {
   ALBUM_SHARE = 'album.share',
   ALBUM_DOWNLOAD = 'album.download',
 
+  LIBRARY_CREATE = 'library.create',
   LIBRARY_READ = 'library.read',
   LIBRARY_DOWNLOAD = 'library.download',
 }
