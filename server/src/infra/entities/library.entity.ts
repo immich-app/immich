@@ -6,15 +6,20 @@ import {
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { AssetEntity } from './asset.entity';
 import { UserEntity } from './user.entity';
 
 @Entity('libraries')
+@Unique('UQ_owner_name', ['owner', 'name'])
 export class LibraryEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
+
+  @Column()
+  name!: string;
 
   @ManyToMany(() => AssetEntity, (asset) => asset.library)
   @JoinTable()
