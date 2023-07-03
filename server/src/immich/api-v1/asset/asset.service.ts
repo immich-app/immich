@@ -185,7 +185,10 @@ export class AssetService {
     }
   }
 
-  public async setAssetOfflineStatus(authUser: AuthUserDto, offlineStatus: boolean) {}
+  public async setAssetOfflineStatus(authUser: AuthUserDto, offlineStatus: boolean) {
+    // TODO
+    return;
+  }
 
   public async getUserAssetsByDeviceId(authUser: AuthUserDto, deviceId: string) {
     return this._assetRepository.getAllByDeviceId(authUser.id, deviceId);

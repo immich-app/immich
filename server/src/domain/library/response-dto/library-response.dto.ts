@@ -10,7 +10,7 @@ export class LibraryResponseDto {
 
   createdAt!: Date;
   updatedAt!: Date;
-  refreshedAt!: Date;
+  refreshedAt?: Date;
 }
 
 export function mapLibrary(entity: LibraryEntity): LibraryResponseDto {
