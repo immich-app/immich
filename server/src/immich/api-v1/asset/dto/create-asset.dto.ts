@@ -26,9 +26,6 @@ export class CreateAssetBase {
   @IsNotEmpty()
   isFavorite!: boolean;
 
-  @IsNotEmpty()
-  isPanorama!: boolean;
-
   @IsOptional()
   @IsBoolean()
   isArchived?: boolean;

@@ -200,8 +200,19 @@ export class MetadataExtractionProcessor {
       }
     }
 
+    // Determine if the image is a panorama
+    let isPanorama = false;
+    if (newExif.exifImageHeight && newExif.exifImageWidth) {
+      const aspectRatio = newExif.exifImageWidth / newExif.exifImageHeight;
+      isPanorama = aspectRatio >= 2; // This is a standard way to determine if an image is a panorama
+    }
+
     await this.exifRepository.upsert(newExif, { conflictPaths: ['assetId'] });
-    await this.assetRepository.save({ id: asset.id, fileCreatedAt: fileCreatedAt || undefined });
+    await this.assetRepository.save({
+      id: asset.id,
+      fileCreatedAt: fileCreatedAt || undefined,
+      isPanorama: isPanorama,
+    });
 
     return true;
   }
