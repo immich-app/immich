@@ -1,4 +1,4 @@
-import { AccessCore, AuthUserDto, IAccessRepository, IAssetRepository, Permission } from '@app/domain';
+import { AccessCore, AuthUserDto, IAccessRepository, IAssetRepository, IEntityJob, Permission } from '@app/domain';
 import { AssetEntity, LibraryEntity } from '@app/infra/entities';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -22,10 +22,6 @@ export class LibraryService {
     this.access = new AccessCore(accessRepository);
   }
 
-  public async crawl(authUser: AuthUserDto, libraryId: string): Promise<void> {
-    return;
-  }
-
   public async getAllLibraries(authUser: AuthUserDto, dto: LibrarySearchDto): Promise<LibraryResponseDto[]> {
     const userId = dto.userId || authUser.id;
     await this.access.requirePermission(authUser, Permission.LIBRARY_READ, userId);
@@ -37,5 +33,15 @@ export class LibraryService {
     await this.access.requirePermission(authUser, Permission.ASSET_READ, libraryId);
 
     return await this._libraryRepository.getById(libraryId);
+  }
+
+  async handleLibraryRefresh({ id }: IEntityJob) {
+    // TODO
+    return true;
+  }
+
+  async handleEmptyTrash({ id }: IEntityJob) {
+    // TODO
+    return true;
   }
 }

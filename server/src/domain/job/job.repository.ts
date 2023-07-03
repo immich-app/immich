@@ -6,8 +6,6 @@ import {
   IDeleteFilesJob,
   IEntityJob,
   IFaceThumbnailJob,
-  IRefreshLibraryJob,
-  IEmptyLibraryTrashJob,
 } from './job.interface';
 
 export interface JobCounts {
@@ -68,10 +66,6 @@ export type JobItem =
 
   // Filesystem
   | { name: JobName.DELETE_FILES; data: IDeleteFilesJob }
-
-  // Library
-  | { name: JobName.REFRESH_LIBRARY; data: IRefreshLibraryJob }
-  | { name: JobName.EMPTY_LIBRARY_TRASH; data: IRefreshLibraryJob }
 
   // Asset Deletion
   | { name: JobName.PERSON_CLEANUP; data?: IBaseJob }

@@ -13,6 +13,7 @@ import {
   SystemConfigService,
   UserService,
 } from '@app/domain';
+import { LibraryService } from '@app/immich/api-v1/library/library.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 
@@ -35,6 +36,7 @@ export class AppService {
     private storageService: StorageService,
     private systemConfigService: SystemConfigService,
     private userService: UserService,
+    private libraryService: LibraryService,
   ) {}
 
   async init() {
