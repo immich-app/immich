@@ -17,6 +17,7 @@ export class CrawledAsset {
   public sidecarData?: Buffer;
   public sidecarPath?: string;
   public fileSize!: number;
+  public skipped = false;
 
   constructor(path: string) {
     this.path = path;

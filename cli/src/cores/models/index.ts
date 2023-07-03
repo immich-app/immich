@@ -1,1 +1,1 @@
-export * from './upload-target';
+export * from './crawled-asset';

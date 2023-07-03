@@ -1,5 +1,5 @@
 import { BaseCommand } from '../cli/base-command';
-import { CrawledAsset } from '../cores';
+import { CrawledAsset } from '../cores/models/crawled-asset';
 import { CrawlService, UploadService } from '../services';
 import * as si from 'systeminformation';
 import FormData from 'form-data';
@@ -10,7 +10,6 @@ export default class Upload extends BaseCommand {
   private crawlService = new CrawlService();
   private uploadService!: UploadService;
   deviceId!: string;
-  uploadCounter = 0;
   uploadLength!: number;
   dryRun = false;
 
@@ -37,12 +36,10 @@ export default class Upload extends BaseCommand {
 
     const assetsToUpload = crawledFiles.map((path) => new CrawledAsset(path));
 
-    this.uploadLength = assetsToUpload.length;
-
     const cliProgress = require('cli-progress');
     const byteSize = require('byte-size');
 
-    const progressBar = new cliProgress.SingleBar(
+    const uploadProgress = new cliProgress.SingleBar(
       {
         format: '{bar} | {percentage}% | ETA: {eta_formatted} | {value_formatted}/{total_formatted}: {filename}',
       },
@@ -50,7 +47,10 @@ export default class Upload extends BaseCommand {
     );
 
     let totalSize = 0;
-    let currentSize = 0;
+    let sizeSoFar = 0;
+
+    let totalSizeUploaded = 0;
+    let uploadCounter = 0;
 
     for (const asset of assetsToUpload) {
       // Compute total size first
@@ -58,16 +58,14 @@ export default class Upload extends BaseCommand {
       totalSize += asset.fileSize;
     }
 
-    progressBar.start(totalSize);
+    uploadProgress.start(totalSize);
+    uploadProgress.update({ value_formatted: 0, total_formatted: byteSize(totalSize) });
 
     for (const asset of assetsToUpload) {
-      if (this.uploadCounter === 0) {
-        progressBar.update(0, {
-          filename: asset.path,
-          value_formatted: 0,
-          total_formatted: byteSize(totalSize),
-        });
-      }
+      uploadProgress.update({
+        filename: asset.path,
+      });
+
       try {
         if (options.import) {
           await this.importAsset(asset);
@@ -75,36 +73,55 @@ export default class Upload extends BaseCommand {
           await this.uploadAsset(asset, options.skipHash);
         }
       } catch (error) {
-        progressBar.stop();
+        uploadProgress.stop();
         throw error;
       }
-      currentSize += asset.fileSize;
 
-      progressBar.update(currentSize, { filename: asset.path, value_formatted: byteSize(currentSize) });
-    }
-
-    progressBar.stop();
-
-    if (options.import) {
-      console.log('Import successful');
-    } else if (options.delete) {
-      console.log('Upload successful, deleting uploaded assets');
-      let deletionCounter = 0;
-
-      for (const asset of assetsToUpload) {
-        if (this.dryRun) {
-          deletionCounter++;
-          console.log(deletionCounter + '/' + this.uploadLength + ' would have been deleted: ' + asset.path);
-        } else {
-          await asset.delete();
-          deletionCounter++;
-          console.log(deletionCounter + '/' + this.uploadLength + ' deleted: ' + asset.path);
-        }
+      sizeSoFar += asset.fileSize;
+      if (!asset.skipped) {
+        totalSizeUploaded += asset.fileSize;
+        uploadCounter++;
       }
 
-      console.log('Process complete');
+      uploadProgress.update(sizeSoFar, { value_formatted: byteSize(sizeSoFar) });
+    }
+
+    uploadProgress.stop();
+
+    if (options.import) {
+      if (this.dryRun) {
+        console.log(`Would have imported ${uploadCounter} assets (${byteSize(totalSizeUploaded)})`);
+      } else {
+        console.log(`Successfully imported ${uploadCounter} assets (${byteSize(totalSizeUploaded)})`);
+      }
     } else {
-      console.log('Upload successful');
+      if (uploadCounter === 0) {
+        console.log('All assets were already uploaded, nothing to do.');
+      } else {
+        if (this.dryRun) {
+          console.log(`Would have uploaded ${uploadCounter} assets (${byteSize(totalSizeUploaded)})`);
+        } else {
+          console.log(`Successfully uploaded ${uploadCounter} assets (${byteSize(totalSizeUploaded)})`);
+        }
+      }
+      if (options.delete) {
+        if (this.dryRun) {
+          console.log(`Would now have deleted assets, but skipped due to dry run`);
+        } else {
+          console.log('Deleting assets that have been uploaded...');
+          const deletionProgress = new cliProgress.SingleBar(cliProgress.Presets.shades_classic);
+          deletionProgress.start(crawledFiles.length);
+
+          for (const asset of assetsToUpload) {
+            if (!this.dryRun) {
+              await asset.delete();
+            }
+            deletionProgress.increment();
+          }
+          deletionProgress.stop();
+          console.log('Deletion complete');
+        }
+      }
     }
   }
 
@@ -119,7 +136,9 @@ export default class Upload extends BaseCommand {
       skipUpload = checkResponse.data.results[0].action === 'reject';
     }
 
-    if (!skipUpload) {
+    if (skipUpload) {
+      asset.skipped = true;
+    } else {
       const uploadFormData = new FormData();
 
       uploadFormData.append('assetType', asset.assetType);
@@ -142,8 +161,6 @@ export default class Upload extends BaseCommand {
         await this.uploadService.upload(uploadFormData);
       }
     }
-
-    this.uploadCounter++;
   }
 
   private async importAsset(asset: CrawledAsset) {
@@ -160,6 +177,5 @@ export default class Upload extends BaseCommand {
     if (!this.dryRun) {
       await this.uploadService.import(importData);
     }
-    this.uploadCounter++;
   }
 }
