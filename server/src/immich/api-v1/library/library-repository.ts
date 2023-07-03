@@ -1,8 +1,8 @@
+import { LibrarySearchDto } from '@app/domain/library/dto/library-search-dto';
 import { LibraryEntity } from '@app/infra/entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';
-import { LibrarySearchDto } from './dto/library-search-dto';
 
 export interface ILibraryRepository {
   get(id: string): Promise<LibraryEntity | null>;

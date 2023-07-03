@@ -4,7 +4,7 @@ import { IsBoolean, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateLibraryDto {
   @IsNotEmpty()
-  @IsEnum(AssetType)
+  @IsEnum(LibraryType)
   @ApiProperty({ enumName: 'LibraryTypeEnum', enum: LibraryType })
   libraryType!: LibraryType;
 

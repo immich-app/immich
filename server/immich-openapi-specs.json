@@ -2242,6 +2242,48 @@
         ]
       }
     },
+    "/library": {
+      "post": {
+        "operationId": "createLibrary",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLibraryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LibraryResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Library"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/oauth/callback": {
       "post": {
         "operationId": "callback",
@@ -5133,6 +5175,17 @@
           "isFavorite"
         ]
       },
+      "CreateLibraryDto": {
+        "type": "object",
+        "properties": {
+          "libraryType": {
+            "$ref": "#/components/schemas/LibraryTypeEnum"
+          }
+        },
+        "required": [
+          "libraryType"
+        ]
+      },
       "CreateProfileImageDto": {
         "type": "object",
         "properties": {
@@ -5650,6 +5703,46 @@
         "required": [
           "jobCounts",
           "queueStatus"
+        ]
+      },
+      "LibraryResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/LibraryTypeEnum"
+          },
+          "id": {
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "refreshedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "ownerId",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "LibraryTypeEnum": {
+        "type": "string",
+        "enum": [
+          "UPLOAD",
+          "IMPORT"
         ]
       },
       "LoginCredentialDto": {
