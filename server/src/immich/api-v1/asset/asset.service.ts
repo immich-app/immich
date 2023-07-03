@@ -232,6 +232,17 @@ export class AssetService {
         return { id: duplicate.id, duplicate: true };
       }
 
+      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_owner_library_originalpath') {
+        const duplicate = await this._assetRepository.getByOriginalPath(dto.assetPath);
+        if (duplicate) {
+          if (duplicate.ownerId === userId) {
+            return { id: duplicate.id, duplicate: true };
+          }
+
+          throw new BadRequestException('Path in use by another user');
+        }
+      }
+
       this.logger.error(`Error importing file ${error}`, error?.stack);
       throw new BadRequestException(`Error importing file`, `${error}`);
     }
