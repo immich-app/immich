@@ -24,12 +24,12 @@ export class LibraryService {
   }
 
   public async createLibrary(authUser: AuthUserDto, dto: CreateLibraryDto): Promise<LibraryEntity> {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_CREATE, authUser.id);
     return await this.libraryRepository.create({
       owner: { id: authUser.id } as UserEntity,
       name: dto.name,
       assets: [],
       type: dto.libraryType,
+      importPaths: [],
       isVisible: dto.isVisible ?? true,
     });
   }

@@ -20,6 +20,7 @@ export class AccessRepository implements IAccessRepository {
         },
       });
     },
+    
   };
 
   asset = {

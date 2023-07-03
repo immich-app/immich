@@ -138,6 +138,10 @@ export class AccessCore {
       case Permission.LIBRARY_READ:
         return authUser.id === id || (await this.repository.library.hasPartnerAccess(authUser.id, id));
 
+      case Permission.LIBRARY_CREATE:
+        // TODO
+        return authUser.id === id || (await this.repository.library.hasPartnerAccess(authUser.id, id));
+
       case Permission.LIBRARY_DOWNLOAD:
         return authUser.id === id;
     }
