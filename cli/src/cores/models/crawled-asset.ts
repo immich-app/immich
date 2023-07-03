@@ -42,37 +42,30 @@ export class CrawledAsset {
     this.fileExtension = path.extname(this.path);
     this.fileSize = stats.size;
 
-    let hasSidecar = true;
-
     // TODO: doesn't xmp replace the file extension? Will need investigation
     const sideCarPath = `${this.path}.xmp`;
     try {
       fs.accessSync(sideCarPath, fs.constants.R_OK);
-    } catch (error) {
-      // No sidecar file
-      hasSidecar = false;
-    }
-    if (hasSidecar) {
-      this.sidecarPath = `${this.path}.xmp`;
-      this.sidecarData = await fs.promises.readFile(this.sidecarPath);
-    }
+      this.sidecarData = await fs.promises.readFile(sideCarPath);
+      this.sidecarPath = sideCarPath;
+    } catch (error) {}
   }
 
   async delete(): Promise<void> {
     return fs.promises.unlink(this.path);
   }
 
+  hashFunction = crypto.createHash('sha1');
+
+  sha1 = (filePath: string) =>
+    new Promise<string>((resolve, reject) => {
+      const rs = fs.createReadStream(filePath);
+      rs.on('error', reject);
+      rs.on('data', (chunk) => this.hashFunction.update(chunk));
+      rs.on('end', () => resolve(this.hashFunction.digest('hex')));
+    });
+
   public async hash(): Promise<string> {
-    const hash = crypto.createHash('sha1');
-
-    const sha1 = (filePath: string) =>
-      new Promise<string>((resolve, reject) => {
-        const rs = fs.createReadStream(filePath);
-        rs.on('error', reject);
-        rs.on('data', (chunk) => hash.update(chunk));
-        rs.on('end', () => resolve(hash.digest('hex')));
-      });
-
-    return await sha1(this.path);
+    return await this.sha1(this.path);
   }
 }
