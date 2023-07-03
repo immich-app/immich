@@ -1,6 +1,5 @@
 import { AssetGridState, BucketPosition } from '$lib/models/asset-grid-state';
 import { api, AssetCountByTimeBucketResponseDto } from '@api';
-import { flatMap, sumBy } from 'lodash-es';
 import { writable } from 'svelte/store';
 
 /**
@@ -60,7 +59,7 @@ function createAssetStore() {
 
     // Update timeline height based on calculated bucket height
     assetGridState.update((state) => {
-      state.timelineHeight = sumBy(state.buckets, (d) => d.bucketHeight);
+      state.timelineHeight = state.buckets.reduce((acc, b) => acc + b.bucketHeight, 0);
       return state;
     });
   };
@@ -101,7 +100,7 @@ function createAssetStore() {
         const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucket);
         state.buckets[bucketIndex].assets = assets;
         state.buckets[bucketIndex].position = position;
-        state.assets = flatMap(state.buckets, (b) => b.assets);
+        state.assets = state.buckets.flatMap((b) => b.assets);
         return state;
       });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -123,7 +122,7 @@ function createAssetStore() {
       if (state.buckets[bucketIndex].assets.length === 0) {
         _removeBucket(state.buckets[bucketIndex].bucketDate);
       }
-      state.assets = flatMap(state.buckets, (b) => b.assets);
+      state.assets = state.buckets.flatMap((b) => b.assets);
       return state;
     });
   };
@@ -132,7 +131,7 @@ function createAssetStore() {
     assetGridState.update((state) => {
       const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucketDate);
       state.buckets.splice(bucketIndex, 1);
-      state.assets = flatMap(state.buckets, (b) => b.assets);
+      state.assets = state.buckets.flatMap((b) => b.assets);
       return state;
     });
   };
@@ -180,7 +179,7 @@ function createAssetStore() {
       const assetIndex = state.buckets[bucketIndex].assets.findIndex((a) => a.id === assetId);
       state.buckets[bucketIndex].assets[assetIndex].isFavorite = isFavorite;
 
-      state.assets = flatMap(state.buckets, (b) => b.assets);
+      state.assets = state.buckets.flatMap((b) => b.assets);
       return state;
     });
   };

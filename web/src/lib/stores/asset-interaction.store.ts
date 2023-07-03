@@ -12,6 +12,7 @@ export const assetsInAlbumStoreState = writable<AssetResponseDto[]>([]);
 export const selectedAssets = writable<Set<AssetResponseDto>>(new Set());
 export const selectedGroup = writable<Set<string>>(new Set());
 export const isMultiSelectStoreState = derived(selectedAssets, ($selectedAssets) => $selectedAssets.size > 0);
+export const assetSelectionCandidates = writable<Set<AssetResponseDto>>(new Set());
 
 function createAssetInteractionStore() {
   let _assetGridState = new AssetGridState();
@@ -19,6 +20,7 @@ function createAssetInteractionStore() {
   let _selectedAssets: Set<AssetResponseDto>;
   let _selectedGroup: Set<string>;
   let _assetsInAlbums: AssetResponseDto[];
+  let _assetSelectionCandidates: Set<AssetResponseDto>;
 
   // Subscriber
   assetGridState.subscribe((state) => {
@@ -39,6 +41,10 @@ function createAssetInteractionStore() {
 
   assetsInAlbumStoreState.subscribe((assets) => {
     _assetsInAlbums = assets;
+  });
+
+  assetSelectionCandidates.subscribe((assets) => {
+    _assetSelectionCandidates = assets;
   });
 
   // Methods
@@ -117,14 +123,26 @@ function createAssetInteractionStore() {
     selectedGroup.set(_selectedGroup);
   };
 
+  const setAssetSelectionCandidates = (assets: AssetResponseDto[]) => {
+    _assetSelectionCandidates = new Set(assets);
+    assetSelectionCandidates.set(_assetSelectionCandidates);
+  };
+
+  const clearAssetSelectionCandidates = () => {
+    _assetSelectionCandidates.clear();
+    assetSelectionCandidates.set(_assetSelectionCandidates);
+  };
+
   const clearMultiselect = () => {
     _selectedAssets.clear();
     _selectedGroup.clear();
+    _assetSelectionCandidates.clear();
     _assetsInAlbums = [];
 
     selectedAssets.set(_selectedAssets);
     selectedGroup.set(_selectedGroup);
     assetsInAlbumStoreState.set(_assetsInAlbums);
+    assetSelectionCandidates.set(_assetSelectionCandidates);
   };
 
   return {
@@ -136,6 +154,8 @@ function createAssetInteractionStore() {
     removeAssetFromMultiselectGroup,
     addGroupToMultiselectGroup,
     removeGroupFromMultiselectGroup,
+    setAssetSelectionCandidates,
+    clearAssetSelectionCandidates,
     clearMultiselect,
   };
 }
