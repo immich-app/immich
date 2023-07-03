@@ -13,7 +13,9 @@ import {
   SystemConfigService,
   UserService,
 } from '@app/domain';
+
 import { Injectable, Logger } from '@nestjs/common';
+import { AssetService } from '../immich/api-v1/asset/asset.service';
 import { MetadataExtractionProcessor } from './processors/metadata-extraction.processor';
 
 @Injectable()
@@ -35,6 +37,7 @@ export class AppService {
     private storageService: StorageService,
     private systemConfigService: SystemConfigService,
     private userService: UserService,
+    private assetService: AssetService,
   ) {}
 
   async init() {
@@ -73,9 +76,9 @@ export class AppService {
       [JobName.QUEUE_SIDECAR]: (data) => this.metadataService.handleQueueSidecar(data),
       [JobName.SIDECAR_DISCOVERY]: (data) => this.metadataService.handleSidecarDiscovery(data),
       [JobName.SIDECAR_SYNC]: () => this.metadataService.handleSidecarSync(),
-      [JobName.ADD_LIBRARY_FILE]: () => this.assetService.handleAddLibraryFile(),
-      [JobName.REFRESH_LIBRARY_FILE]: () => this.assetService.handleAddLibraryFile(),
-      [JobName.REMOVE_LIBRARY_FILE]: () => this.assetService.handleAddLibraryFile(),
+      [JobName.ADD_LIBRARY_FILE]: (data) => this.assetService.handleAddLibraryFile(data),
+      [JobName.REFRESH_LIBRARY_FILE]: (data) => this.assetService.handleRefreshLibraryFile(data),
+      [JobName.REMOVE_LIBRARY_FILE]: (data) => this.assetService.handleRemoveLibraryFile(data),
     });
 
     process.on('uncaughtException', (error: Error | any) => {

@@ -9,6 +9,7 @@ export enum QueueName {
   STORAGE_TEMPLATE_MIGRATION = 'storageTemplateMigration',
   SEARCH = 'search',
   SIDECAR = 'sidecar',
+  LIBRARY = 'library',
 }
 
 export enum JobCommand {
@@ -141,4 +142,9 @@ export const JOBS_TO_QUEUE: Record<JobName, QueueName> = {
   [JobName.QUEUE_SIDECAR]: QueueName.SIDECAR,
   [JobName.SIDECAR_DISCOVERY]: QueueName.SIDECAR,
   [JobName.SIDECAR_SYNC]: QueueName.SIDECAR,
+
+  // Library managment
+  [JobName.ADD_LIBRARY_FILE]: QueueName.LIBRARY,
+  [JobName.REFRESH_LIBRARY_FILE]: QueueName.LIBRARY,
+  [JobName.REMOVE_LIBRARY_FILE]: QueueName.LIBRARY,
 };

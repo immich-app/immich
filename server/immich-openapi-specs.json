@@ -4604,6 +4604,9 @@
           },
           "sidecar": {
             "$ref": "#/components/schemas/JobStatusDto"
+          },
+          "library": {
+            "$ref": "#/components/schemas/JobStatusDto"
           }
         },
         "required": [
@@ -4616,7 +4619,8 @@
           "backgroundTask",
           "search",
           "recognizeFaces",
-          "sidecar"
+          "sidecar",
+          "library"
         ]
       },
       "AssetBulkUploadCheckDto": {
@@ -5063,6 +5067,10 @@
           "assetType": {
             "$ref": "#/components/schemas/AssetTypeEnum"
           },
+          "libraryId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "assetData": {
             "type": "string",
             "format": "binary"
@@ -5107,10 +5115,15 @@
           },
           "duration": {
             "type": "string"
+          },
+          "isOffline": {
+            "type": "boolean",
+            "default": false
           }
         },
         "required": [
           "assetType",
+          "libraryId",
           "assetData",
           "fileExtension",
           "deviceAssetId",
@@ -5486,6 +5499,10 @@
           "assetType": {
             "$ref": "#/components/schemas/AssetTypeEnum"
           },
+          "libraryId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "isReadOnly": {
             "type": "boolean",
             "default": true
@@ -5521,10 +5538,15 @@
           },
           "duration": {
             "type": "string"
+          },
+          "isOffline": {
+            "type": "boolean",
+            "default": false
           }
         },
         "required": [
           "assetType",
+          "libraryId",
           "assetPath",
           "deviceAssetId",
           "deviceId",
@@ -5600,7 +5622,8 @@
           "backgroundTask",
           "storageTemplateMigration",
           "search",
-          "sidecar"
+          "sidecar",
+          "library"
         ]
       },
       "JobSettingsDto": {
@@ -6413,6 +6436,9 @@
           },
           "sidecar": {
             "$ref": "#/components/schemas/JobSettingsDto"
+          },
+          "library": {
+            "$ref": "#/components/schemas/JobSettingsDto"
           }
         },
         "required": [
@@ -6425,7 +6451,8 @@
           "backgroundTask",
           "search",
           "recognizeFaces",
-          "sidecar"
+          "sidecar",
+          "library"
         ]
       },
       "SystemConfigOAuthDto": {

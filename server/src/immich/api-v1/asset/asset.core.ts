@@ -1,4 +1,4 @@
-import { AuthUserDto, IJobRepository, JobName } from '@app/domain';
+import { IJobRepository, JobName } from '@app/domain';
 import { AssetEntity, AssetType, LibraryEntity, UserEntity } from '@app/infra/entities';
 import { parse } from 'node:path';
 import { IAssetRepository } from './asset-repository';
