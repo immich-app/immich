@@ -83,6 +83,9 @@ export class AssetEntity {
   @Column({ type: 'boolean', default: false })
   isReadOnly!: boolean;
 
+  @Column({ type: 'boolean', default: false })
+  isOffline!: boolean;
+
   @Column({ type: 'varchar', nullable: true })
   mimeType!: string | null;
 

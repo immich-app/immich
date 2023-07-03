@@ -2,7 +2,7 @@ import { toBoolean, toSanitized } from '@app/domain';
 import { AssetType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 import { ImmichFile } from '../../../config/asset-upload.config';
 
 export class CreateAssetBase {
@@ -63,6 +63,11 @@ export class ImportAssetDto extends CreateAssetBase {
   @IsOptional()
   @Transform(toBoolean)
   isReadOnly?: boolean = true;
+
+  @IsOptional()
+  @IsUUID('4')
+  @ApiProperty({ format: 'uuid' })
+  libraryId?: string;
 
   @IsString()
   @IsNotEmpty()

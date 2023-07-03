@@ -192,7 +192,7 @@ describe('AssetService', () => {
       };
       const dto = _getCreateAssetDto();
       const error = new QueryFailedError('', [], '');
-      (error as any).constraint = 'UQ_userid_checksum';
+      (error as any).constraint = 'UQ_owner_library_checksum';
 
       assetRepositoryMock.create.mockRejectedValue(error);
       assetRepositoryMock.getAssetsByChecksums.mockResolvedValue([_getAsset_1()]);
@@ -209,7 +209,7 @@ describe('AssetService', () => {
     it('should handle a live photo', async () => {
       const dto = _getCreateAssetDto();
       const error = new QueryFailedError('', [], '');
-      (error as any).constraint = 'UQ_userid_checksum';
+      (error as any).constraint = 'UQ_owner_library_checksum';
 
       assetRepositoryMock.create.mockResolvedValueOnce(assetEntityStub.livePhotoMotionAsset);
       assetRepositoryMock.create.mockResolvedValueOnce(assetEntityStub.livePhotoStillAsset);
@@ -430,7 +430,7 @@ describe('AssetService', () => {
 
     it('should handle a duplicate if originalPath already exists', async () => {
       const error = new QueryFailedError('', [], '');
-      (error as any).constraint = 'UQ_userid_checksum';
+      (error as any).constraint = 'UQ_owner_library_checksum';
 
       assetRepositoryMock.create.mockRejectedValue(error);
       assetRepositoryMock.getAssetsByChecksums.mockResolvedValue([assetEntityStub.image]);
