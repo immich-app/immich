@@ -62,6 +62,12 @@
       title: api.getJobName(JobName.MetadataExtraction),
       subtitle: 'Extract metadata information i.e. GPS, resolution...etc',
     },
+    [JobName.Library]: {
+      icon: FileXmlBox,
+      title: api.getJobName(JobName.Library),
+      subtitle: 'Perform library tasks',
+      handleCommand: handleFaceCommand,
+    },
     [JobName.Sidecar]: {
       title: api.getJobName(JobName.Sidecar),
       icon: FileXmlBox,

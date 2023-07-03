@@ -1361,6 +1361,8 @@ class AssetApi {
   ///
   /// * [AssetTypeEnum] assetType (required):
   ///
+  /// * [String] libraryId (required):
+  ///
   /// * [MultipartFile] assetData (required):
   ///
   /// * [String] fileExtension (required):
@@ -1388,7 +1390,9 @@ class AssetApi {
   /// * [bool] isVisible:
   ///
   /// * [String] duration:
-  Future<Response> uploadFileWithHttpInfo(AssetTypeEnum assetType, MultipartFile assetData, String fileExtension, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isReadOnly, bool? isArchived, bool? isVisible, String? duration, }) async {
+  ///
+  /// * [bool] isOffline:
+  Future<Response> uploadFileWithHttpInfo(AssetTypeEnum assetType, String libraryId, MultipartFile assetData, String fileExtension, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isReadOnly, bool? isArchived, bool? isVisible, String? duration, bool? isOffline, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/upload';
 
@@ -1410,6 +1414,10 @@ class AssetApi {
     if (assetType != null) {
       hasFields = true;
       mp.fields[r'assetType'] = parameterToString(assetType);
+    }
+    if (libraryId != null) {
+      hasFields = true;
+      mp.fields[r'libraryId'] = parameterToString(libraryId);
     }
     if (assetData != null) {
       hasFields = true;
@@ -1466,6 +1474,10 @@ class AssetApi {
       hasFields = true;
       mp.fields[r'duration'] = parameterToString(duration);
     }
+    if (isOffline != null) {
+      hasFields = true;
+      mp.fields[r'isOffline'] = parameterToString(isOffline);
+    }
     if (hasFields) {
       postBody = mp;
     }
@@ -1484,6 +1496,8 @@ class AssetApi {
   /// Parameters:
   ///
   /// * [AssetTypeEnum] assetType (required):
+  ///
+  /// * [String] libraryId (required):
   ///
   /// * [MultipartFile] assetData (required):
   ///
@@ -1512,8 +1526,10 @@ class AssetApi {
   /// * [bool] isVisible:
   ///
   /// * [String] duration:
-  Future<AssetFileUploadResponseDto?> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String fileExtension, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isReadOnly, bool? isArchived, bool? isVisible, String? duration, }) async {
-    final response = await uploadFileWithHttpInfo(assetType, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite,  key: key, livePhotoData: livePhotoData, sidecarData: sidecarData, isReadOnly: isReadOnly, isArchived: isArchived, isVisible: isVisible, duration: duration, );
+  ///
+  /// * [bool] isOffline:
+  Future<AssetFileUploadResponseDto?> uploadFile(AssetTypeEnum assetType, String libraryId, MultipartFile assetData, String fileExtension, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isReadOnly, bool? isArchived, bool? isVisible, String? duration, bool? isOffline, }) async {
+    final response = await uploadFileWithHttpInfo(assetType, libraryId, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite,  key: key, livePhotoData: livePhotoData, sidecarData: sidecarData, isReadOnly: isReadOnly, isArchived: isArchived, isVisible: isVisible, duration: duration, isOffline: isOffline, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

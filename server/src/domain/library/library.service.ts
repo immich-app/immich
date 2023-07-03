@@ -56,6 +56,7 @@ export class LibraryService {
   }
 
   public async scanLibrary(authUser: AuthUserDto, scanLibraryDto: ScanLibraryDto) {
+    // TODO:
     //await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, dto.libraryId);
 
     const libraryEntity = await this.libraryRepository.getById(scanLibraryDto.libraryId);

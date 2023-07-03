@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // String libraryId
+    test('to test the property `libraryId`', () async {
+      // TODO
+    });
+
     // bool isReadOnly (default value: true)
     test('to test the property `isReadOnly`', () async {
       // TODO
@@ -73,6 +78,11 @@ void main() {
 
     // String duration
     test('to test the property `duration`', () async {
+      // TODO
+    });
+
+    // bool isOffline (default value: false)
+    test('to test the property `isOffline`', () async {
       // TODO
     });
 

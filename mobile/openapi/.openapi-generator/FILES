@@ -37,6 +37,7 @@ doc/CheckDuplicateAssetResponseDto.md
 doc/CheckExistingAssetsDto.md
 doc/CheckExistingAssetsResponseDto.md
 doc/CreateAlbumDto.md
+doc/CreateLibraryDto.md
 doc/CreateProfileImageResponseDto.md
 doc/CreateTagDto.md
 doc/CreateUserDto.md
@@ -58,6 +59,9 @@ doc/JobCountsDto.md
 doc/JobName.md
 doc/JobSettingsDto.md
 doc/JobStatusDto.md
+doc/LibraryApi.md
+doc/LibraryResponseDto.md
+doc/LibraryTypeEnum.md
 doc/LoginCredentialDto.md
 doc/LoginResponseDto.md
 doc/LogoutResponseDto.md
@@ -73,6 +77,7 @@ doc/PersonResponseDto.md
 doc/PersonUpdateDto.md
 doc/QueueStatusDto.md
 doc/RemoveAssetsDto.md
+doc/ScanLibraryDto.md
 doc/SearchAlbumResponseDto.md
 doc/SearchApi.md
 doc/SearchAssetDto.md
@@ -124,6 +129,7 @@ lib/api/api_key_api.dart
 lib/api/asset_api.dart
 lib/api/authentication_api.dart
 lib/api/job_api.dart
+lib/api/library_api.dart
 lib/api/o_auth_api.dart
 lib/api/partner_api.dart
 lib/api/person_api.dart
@@ -171,6 +177,7 @@ lib/model/check_duplicate_asset_response_dto.dart
 lib/model/check_existing_assets_dto.dart
 lib/model/check_existing_assets_response_dto.dart
 lib/model/create_album_dto.dart
+lib/model/create_library_dto.dart
 lib/model/create_profile_image_response_dto.dart
 lib/model/create_tag_dto.dart
 lib/model/create_user_dto.dart
@@ -191,6 +198,8 @@ lib/model/job_counts_dto.dart
 lib/model/job_name.dart
 lib/model/job_settings_dto.dart
 lib/model/job_status_dto.dart
+lib/model/library_response_dto.dart
+lib/model/library_type_enum.dart
 lib/model/login_credential_dto.dart
 lib/model/login_response_dto.dart
 lib/model/logout_response_dto.dart
@@ -203,6 +212,7 @@ lib/model/person_response_dto.dart
 lib/model/person_update_dto.dart
 lib/model/queue_status_dto.dart
 lib/model/remove_assets_dto.dart
+lib/model/scan_library_dto.dart
 lib/model/search_album_response_dto.dart
 lib/model/search_asset_dto.dart
 lib/model/search_asset_response_dto.dart
@@ -276,6 +286,7 @@ test/check_duplicate_asset_response_dto_test.dart
 test/check_existing_assets_dto_test.dart
 test/check_existing_assets_response_dto_test.dart
 test/create_album_dto_test.dart
+test/create_library_dto_test.dart
 test/create_profile_image_response_dto_test.dart
 test/create_tag_dto_test.dart
 test/create_user_dto_test.dart
@@ -297,6 +308,9 @@ test/job_counts_dto_test.dart
 test/job_name_test.dart
 test/job_settings_dto_test.dart
 test/job_status_dto_test.dart
+test/library_api_test.dart
+test/library_response_dto_test.dart
+test/library_type_enum_test.dart
 test/login_credential_dto_test.dart
 test/login_response_dto_test.dart
 test/logout_response_dto_test.dart
@@ -312,6 +326,7 @@ test/person_response_dto_test.dart
 test/person_update_dto_test.dart
 test/queue_status_dto_test.dart
 test/remove_assets_dto_test.dart
+test/scan_library_dto_test.dart
 test/search_album_response_dto_test.dart
 test/search_api_test.dart
 test/search_asset_dto_test.dart

@@ -357,6 +357,12 @@ export interface AllJobStatusResponseDto {
      * @memberof AllJobStatusResponseDto
      */
     'sidecar': JobStatusDto;
+    /**
+     * 
+     * @type {JobStatusDto}
+     * @memberof AllJobStatusResponseDto
+     */
+    'library': JobStatusDto;
 }
 /**
  * 
@@ -906,6 +912,21 @@ export interface CreateAlbumDto {
 /**
  * 
  * @export
+ * @interface CreateLibraryDto
+ */
+export interface CreateLibraryDto {
+    /**
+     * 
+     * @type {LibraryTypeEnum}
+     * @memberof CreateLibraryDto
+     */
+    'libraryType': LibraryTypeEnum;
+}
+
+
+/**
+ * 
+ * @export
  * @interface CreateProfileImageResponseDto
  */
 export interface CreateProfileImageResponseDto {
@@ -1339,6 +1360,12 @@ export interface ImportAssetDto {
     'assetType': AssetTypeEnum;
     /**
      * 
+     * @type {string}
+     * @memberof ImportAssetDto
+     */
+    'libraryId': string;
+    /**
+     * 
      * @type {boolean}
      * @memberof ImportAssetDto
      */
@@ -1403,6 +1430,12 @@ export interface ImportAssetDto {
      * @memberof ImportAssetDto
      */
     'duration'?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ImportAssetDto
+     */
+    'isOffline'?: boolean;
 }
 
 
@@ -1502,7 +1535,8 @@ export const JobName = {
     BackgroundTask: 'backgroundTask',
     StorageTemplateMigration: 'storageTemplateMigration',
     Search: 'search',
-    Sidecar: 'sidecar'
+    Sidecar: 'sidecar',
+    Library: 'library'
 } as const;
 
 export type JobName = typeof JobName[keyof typeof JobName];
@@ -1540,6 +1574,65 @@ export interface JobStatusDto {
      */
     'queueStatus': QueueStatusDto;
 }
+/**
+ * 
+ * @export
+ * @interface LibraryResponseDto
+ */
+export interface LibraryResponseDto {
+    /**
+     * 
+     * @type {LibraryTypeEnum}
+     * @memberof LibraryResponseDto
+     */
+    'type': LibraryTypeEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof LibraryResponseDto
+     */
+    'id': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof LibraryResponseDto
+     */
+    'ownerId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof LibraryResponseDto
+     */
+    'createdAt': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof LibraryResponseDto
+     */
+    'updatedAt': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof LibraryResponseDto
+     */
+    'refreshedAt'?: string;
+}
+
+
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export const LibraryTypeEnum = {
+    Upload: 'UPLOAD',
+    Import: 'IMPORT'
+} as const;
+
+export type LibraryTypeEnum = typeof LibraryTypeEnum[keyof typeof LibraryTypeEnum];
+
+
 /**
  * 
  * @export
@@ -1815,6 +1908,19 @@ export interface RemoveAssetsDto {
      * @memberof RemoveAssetsDto
      */
     'assetIds': Array<string>;
+}
+/**
+ * 
+ * @export
+ * @interface ScanLibraryDto
+ */
+export interface ScanLibraryDto {
+    /**
+     * 
+     * @type {string}
+     * @memberof ScanLibraryDto
+     */
+    'libraryId': string;
 }
 /**
  * 
@@ -2530,6 +2636,12 @@ export interface SystemConfigJobDto {
      * @memberof SystemConfigJobDto
      */
     'sidecar': JobSettingsDto;
+    /**
+     * 
+     * @type {JobSettingsDto}
+     * @memberof SystemConfigJobDto
+     */
+    'library': JobSettingsDto;
 }
 /**
  * 
@@ -5620,6 +5732,7 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * 
          * @param {AssetTypeEnum} assetType 
+         * @param {string} libraryId 
          * @param {File} assetData 
          * @param {string} fileExtension 
          * @param {string} deviceAssetId 
@@ -5634,12 +5747,15 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
          * @param {boolean} [isArchived] 
          * @param {boolean} [isVisible] 
          * @param {string} [duration] 
+         * @param {boolean} [isOffline] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadFile: async (assetType: AssetTypeEnum, assetData: File, fileExtension: string, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, key?: string, livePhotoData?: File, sidecarData?: File, isReadOnly?: boolean, isArchived?: boolean, isVisible?: boolean, duration?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        uploadFile: async (assetType: AssetTypeEnum, libraryId: string, assetData: File, fileExtension: string, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, key?: string, livePhotoData?: File, sidecarData?: File, isReadOnly?: boolean, isArchived?: boolean, isVisible?: boolean, duration?: string, isOffline?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'assetType' is not null or undefined
             assertParamExists('uploadFile', 'assetType', assetType)
+            // verify required parameter 'libraryId' is not null or undefined
+            assertParamExists('uploadFile', 'libraryId', libraryId)
             // verify required parameter 'assetData' is not null or undefined
             assertParamExists('uploadFile', 'assetData', assetData)
             // verify required parameter 'fileExtension' is not null or undefined
@@ -5683,6 +5799,10 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
 
             if (assetType !== undefined) { 
                 localVarFormParams.append('assetType', new Blob([JSON.stringify(assetType)], { type: "application/json", }));
+            }
+    
+            if (libraryId !== undefined) { 
+                localVarFormParams.append('libraryId', libraryId as any);
             }
     
             if (assetData !== undefined) { 
@@ -5735,6 +5855,10 @@ export const AssetApiAxiosParamCreator = function (configuration?: Configuration
     
             if (duration !== undefined) { 
                 localVarFormParams.append('duration', duration as any);
+            }
+    
+            if (isOffline !== undefined) { 
+                localVarFormParams.append('isOffline', isOffline as any);
             }
     
     
@@ -6019,6 +6143,7 @@ export const AssetApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {AssetTypeEnum} assetType 
+         * @param {string} libraryId 
          * @param {File} assetData 
          * @param {string} fileExtension 
          * @param {string} deviceAssetId 
@@ -6033,11 +6158,12 @@ export const AssetApiFp = function(configuration?: Configuration) {
          * @param {boolean} [isArchived] 
          * @param {boolean} [isVisible] 
          * @param {string} [duration] 
+         * @param {boolean} [isOffline] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadFile(assetType: AssetTypeEnum, assetData: File, fileExtension: string, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, key?: string, livePhotoData?: File, sidecarData?: File, isReadOnly?: boolean, isArchived?: boolean, isVisible?: boolean, duration?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetFileUploadResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(assetType, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration, options);
+        async uploadFile(assetType: AssetTypeEnum, libraryId: string, assetData: File, fileExtension: string, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, key?: string, livePhotoData?: File, sidecarData?: File, isReadOnly?: boolean, isArchived?: boolean, isVisible?: boolean, duration?: string, isOffline?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetFileUploadResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadFile(assetType, libraryId, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration, isOffline, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -6285,6 +6411,7 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
         /**
          * 
          * @param {AssetTypeEnum} assetType 
+         * @param {string} libraryId 
          * @param {File} assetData 
          * @param {string} fileExtension 
          * @param {string} deviceAssetId 
@@ -6299,11 +6426,12 @@ export const AssetApiFactory = function (configuration?: Configuration, basePath
          * @param {boolean} [isArchived] 
          * @param {boolean} [isVisible] 
          * @param {string} [duration] 
+         * @param {boolean} [isOffline] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadFile(assetType: AssetTypeEnum, assetData: File, fileExtension: string, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, key?: string, livePhotoData?: File, sidecarData?: File, isReadOnly?: boolean, isArchived?: boolean, isVisible?: boolean, duration?: string, options?: any): AxiosPromise<AssetFileUploadResponseDto> {
-            return localVarFp.uploadFile(assetType, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration, options).then((request) => request(axios, basePath));
+        uploadFile(assetType: AssetTypeEnum, libraryId: string, assetData: File, fileExtension: string, deviceAssetId: string, deviceId: string, fileCreatedAt: string, fileModifiedAt: string, isFavorite: boolean, key?: string, livePhotoData?: File, sidecarData?: File, isReadOnly?: boolean, isArchived?: boolean, isVisible?: boolean, duration?: string, isOffline?: boolean, options?: any): AxiosPromise<AssetFileUploadResponseDto> {
+            return localVarFp.uploadFile(assetType, libraryId, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration, isOffline, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -6736,6 +6864,13 @@ export interface AssetApiUploadFileRequest {
 
     /**
      * 
+     * @type {string}
+     * @memberof AssetApiUploadFile
+     */
+    readonly libraryId: string
+
+    /**
+     * 
      * @type {File}
      * @memberof AssetApiUploadFile
      */
@@ -6831,6 +6966,13 @@ export interface AssetApiUploadFileRequest {
      * @memberof AssetApiUploadFile
      */
     readonly duration?: string
+
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AssetApiUploadFile
+     */
+    readonly isOffline?: boolean
 }
 
 /**
@@ -7107,7 +7249,7 @@ export class AssetApi extends BaseAPI {
      * @memberof AssetApi
      */
     public uploadFile(requestParameters: AssetApiUploadFileRequest, options?: AxiosRequestConfig) {
-        return AssetApiFp(this.configuration).uploadFile(requestParameters.assetType, requestParameters.assetData, requestParameters.fileExtension, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.fileCreatedAt, requestParameters.fileModifiedAt, requestParameters.isFavorite, requestParameters.key, requestParameters.livePhotoData, requestParameters.sidecarData, requestParameters.isReadOnly, requestParameters.isArchived, requestParameters.isVisible, requestParameters.duration, options).then((request) => request(this.axios, this.basePath));
+        return AssetApiFp(this.configuration).uploadFile(requestParameters.assetType, requestParameters.libraryId, requestParameters.assetData, requestParameters.fileExtension, requestParameters.deviceAssetId, requestParameters.deviceId, requestParameters.fileCreatedAt, requestParameters.fileModifiedAt, requestParameters.isFavorite, requestParameters.key, requestParameters.livePhotoData, requestParameters.sidecarData, requestParameters.isReadOnly, requestParameters.isArchived, requestParameters.isVisible, requestParameters.duration, requestParameters.isOffline, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -7942,6 +8084,220 @@ export class JobApi extends BaseAPI {
      */
     public sendJobCommand(requestParameters: JobApiSendJobCommandRequest, options?: AxiosRequestConfig) {
         return JobApiFp(this.configuration).sendJobCommand(requestParameters.id, requestParameters.jobCommandDto, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+/**
+ * LibraryApi - axios parameter creator
+ * @export
+ */
+export const LibraryApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {CreateLibraryDto} createLibraryDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createLibrary: async (createLibraryDto: CreateLibraryDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'createLibraryDto' is not null or undefined
+            assertParamExists('createLibrary', 'createLibraryDto', createLibraryDto)
+            const localVarPath = `/library`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(createLibraryDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {ScanLibraryDto} scanLibraryDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        scan: async (scanLibraryDto: ScanLibraryDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'scanLibraryDto' is not null or undefined
+            assertParamExists('scan', 'scanLibraryDto', scanLibraryDto)
+            const localVarPath = `/library/scan`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(scanLibraryDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * LibraryApi - functional programming interface
+ * @export
+ */
+export const LibraryApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = LibraryApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {CreateLibraryDto} createLibraryDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async createLibrary(createLibraryDto: CreateLibraryDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LibraryResponseDto>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.createLibrary(createLibraryDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {ScanLibraryDto} scanLibraryDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async scan(scanLibraryDto: ScanLibraryDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.scan(scanLibraryDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * LibraryApi - factory interface
+ * @export
+ */
+export const LibraryApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = LibraryApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {CreateLibraryDto} createLibraryDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createLibrary(createLibraryDto: CreateLibraryDto, options?: any): AxiosPromise<LibraryResponseDto> {
+            return localVarFp.createLibrary(createLibraryDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {ScanLibraryDto} scanLibraryDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        scan(scanLibraryDto: ScanLibraryDto, options?: any): AxiosPromise<void> {
+            return localVarFp.scan(scanLibraryDto, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * Request parameters for createLibrary operation in LibraryApi.
+ * @export
+ * @interface LibraryApiCreateLibraryRequest
+ */
+export interface LibraryApiCreateLibraryRequest {
+    /**
+     * 
+     * @type {CreateLibraryDto}
+     * @memberof LibraryApiCreateLibrary
+     */
+    readonly createLibraryDto: CreateLibraryDto
+}
+
+/**
+ * Request parameters for scan operation in LibraryApi.
+ * @export
+ * @interface LibraryApiScanRequest
+ */
+export interface LibraryApiScanRequest {
+    /**
+     * 
+     * @type {ScanLibraryDto}
+     * @memberof LibraryApiScan
+     */
+    readonly scanLibraryDto: ScanLibraryDto
+}
+
+/**
+ * LibraryApi - object-oriented interface
+ * @export
+ * @class LibraryApi
+ * @extends {BaseAPI}
+ */
+export class LibraryApi extends BaseAPI {
+    /**
+     * 
+     * @param {LibraryApiCreateLibraryRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LibraryApi
+     */
+    public createLibrary(requestParameters: LibraryApiCreateLibraryRequest, options?: AxiosRequestConfig) {
+        return LibraryApiFp(this.configuration).createLibrary(requestParameters.createLibraryDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {LibraryApiScanRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LibraryApi
+     */
+    public scan(requestParameters: LibraryApiScanRequest, options?: AxiosRequestConfig) {
+        return LibraryApiFp(this.configuration).scan(requestParameters.scanLibraryDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

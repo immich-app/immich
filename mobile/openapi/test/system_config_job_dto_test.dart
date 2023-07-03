@@ -66,6 +66,11 @@ void main() {
       // TODO
     });
 
+    // JobSettingsDto library_
+    test('to test the property `library_`', () async {
+      // TODO
+    });
+
 
   });
 

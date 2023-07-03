@@ -18,6 +18,7 @@ Name | Type | Description | Notes
 **search** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **recognizeFaces** | [**JobStatusDto**](JobStatusDto.md) |  | 
 **sidecar** | [**JobStatusDto**](JobStatusDto.md) |  | 
+**library_** | [**JobStatusDto**](JobStatusDto.md) |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

@@ -23,6 +23,7 @@ class SystemConfigJobDto {
     required this.search,
     required this.recognizeFaces,
     required this.sidecar,
+    required this.library_,
   });
 
   JobSettingsDto thumbnailGeneration;
@@ -45,6 +46,8 @@ class SystemConfigJobDto {
 
   JobSettingsDto sidecar;
 
+  JobSettingsDto library_;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigJobDto &&
      other.thumbnailGeneration == thumbnailGeneration &&
@@ -56,7 +59,8 @@ class SystemConfigJobDto {
      other.backgroundTask == backgroundTask &&
      other.search == search &&
      other.recognizeFaces == recognizeFaces &&
-     other.sidecar == sidecar;
+     other.sidecar == sidecar &&
+     other.library_ == library_;
 
   @override
   int get hashCode =>
@@ -70,10 +74,11 @@ class SystemConfigJobDto {
     (backgroundTask.hashCode) +
     (search.hashCode) +
     (recognizeFaces.hashCode) +
-    (sidecar.hashCode);
+    (sidecar.hashCode) +
+    (library_.hashCode);
 
   @override
-  String toString() => 'SystemConfigJobDto[thumbnailGeneration=$thumbnailGeneration, metadataExtraction=$metadataExtraction, videoConversion=$videoConversion, objectTagging=$objectTagging, clipEncoding=$clipEncoding, storageTemplateMigration=$storageTemplateMigration, backgroundTask=$backgroundTask, search=$search, recognizeFaces=$recognizeFaces, sidecar=$sidecar]';
+  String toString() => 'SystemConfigJobDto[thumbnailGeneration=$thumbnailGeneration, metadataExtraction=$metadataExtraction, videoConversion=$videoConversion, objectTagging=$objectTagging, clipEncoding=$clipEncoding, storageTemplateMigration=$storageTemplateMigration, backgroundTask=$backgroundTask, search=$search, recognizeFaces=$recognizeFaces, sidecar=$sidecar, library_=$library_]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -87,6 +92,7 @@ class SystemConfigJobDto {
       json[r'search'] = this.search;
       json[r'recognizeFaces'] = this.recognizeFaces;
       json[r'sidecar'] = this.sidecar;
+      json[r'library'] = this.library_;
     return json;
   }
 
@@ -108,6 +114,7 @@ class SystemConfigJobDto {
         search: JobSettingsDto.fromJson(json[r'search'])!,
         recognizeFaces: JobSettingsDto.fromJson(json[r'recognizeFaces'])!,
         sidecar: JobSettingsDto.fromJson(json[r'sidecar'])!,
+        library_: JobSettingsDto.fromJson(json[r'library'])!,
       );
     }
     return null;
@@ -165,6 +172,7 @@ class SystemConfigJobDto {
     'search',
     'recognizeFaces',
     'sidecar',
+    'library',
   };
 }
 

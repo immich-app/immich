@@ -14,6 +14,7 @@ class ImportAssetDto {
   /// Returns a new [ImportAssetDto] instance.
   ImportAssetDto({
     required this.assetType,
+    required this.libraryId,
     this.isReadOnly = true,
     required this.assetPath,
     this.sidecarPath,
@@ -25,9 +26,12 @@ class ImportAssetDto {
     this.isArchived,
     this.isVisible,
     this.duration,
+    this.isOffline = false,
   });
 
   AssetTypeEnum assetType;
+
+  String libraryId;
 
   bool isReadOnly;
 
@@ -75,9 +79,12 @@ class ImportAssetDto {
   ///
   String? duration;
 
+  bool isOffline;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ImportAssetDto &&
      other.assetType == assetType &&
+     other.libraryId == libraryId &&
      other.isReadOnly == isReadOnly &&
      other.assetPath == assetPath &&
      other.sidecarPath == sidecarPath &&
@@ -88,12 +95,14 @@ class ImportAssetDto {
      other.isFavorite == isFavorite &&
      other.isArchived == isArchived &&
      other.isVisible == isVisible &&
-     other.duration == duration;
+     other.duration == duration &&
+     other.isOffline == isOffline;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (assetType.hashCode) +
+    (libraryId.hashCode) +
     (isReadOnly.hashCode) +
     (assetPath.hashCode) +
     (sidecarPath == null ? 0 : sidecarPath!.hashCode) +
@@ -104,14 +113,16 @@ class ImportAssetDto {
     (isFavorite.hashCode) +
     (isArchived == null ? 0 : isArchived!.hashCode) +
     (isVisible == null ? 0 : isVisible!.hashCode) +
-    (duration == null ? 0 : duration!.hashCode);
+    (duration == null ? 0 : duration!.hashCode) +
+    (isOffline.hashCode);
 
   @override
-  String toString() => 'ImportAssetDto[assetType=$assetType, isReadOnly=$isReadOnly, assetPath=$assetPath, sidecarPath=$sidecarPath, deviceAssetId=$deviceAssetId, deviceId=$deviceId, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, isFavorite=$isFavorite, isArchived=$isArchived, isVisible=$isVisible, duration=$duration]';
+  String toString() => 'ImportAssetDto[assetType=$assetType, libraryId=$libraryId, isReadOnly=$isReadOnly, assetPath=$assetPath, sidecarPath=$sidecarPath, deviceAssetId=$deviceAssetId, deviceId=$deviceId, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, isFavorite=$isFavorite, isArchived=$isArchived, isVisible=$isVisible, duration=$duration, isOffline=$isOffline]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'assetType'] = this.assetType;
+      json[r'libraryId'] = this.libraryId;
       json[r'isReadOnly'] = this.isReadOnly;
       json[r'assetPath'] = this.assetPath;
     if (this.sidecarPath != null) {
@@ -139,6 +150,7 @@ class ImportAssetDto {
     } else {
     //  json[r'duration'] = null;
     }
+      json[r'isOffline'] = this.isOffline;
     return json;
   }
 
@@ -151,6 +163,7 @@ class ImportAssetDto {
 
       return ImportAssetDto(
         assetType: AssetTypeEnum.fromJson(json[r'assetType'])!,
+        libraryId: mapValueOfType<String>(json, r'libraryId')!,
         isReadOnly: mapValueOfType<bool>(json, r'isReadOnly') ?? true,
         assetPath: mapValueOfType<String>(json, r'assetPath')!,
         sidecarPath: mapValueOfType<String>(json, r'sidecarPath'),
@@ -162,6 +175,7 @@ class ImportAssetDto {
         isArchived: mapValueOfType<bool>(json, r'isArchived'),
         isVisible: mapValueOfType<bool>(json, r'isVisible'),
         duration: mapValueOfType<String>(json, r'duration'),
+        isOffline: mapValueOfType<bool>(json, r'isOffline') ?? false,
       );
     }
     return null;
@@ -210,6 +224,7 @@ class ImportAssetDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'assetType',
+    'libraryId',
     'assetPath',
     'deviceAssetId',
     'deviceId',
