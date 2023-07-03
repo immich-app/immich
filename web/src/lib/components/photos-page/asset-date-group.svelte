@@ -1,6 +1,7 @@
 <script lang="ts">
   import {
     assetInteractionStore,
+    assetSelectionCandidates,
     assetsInAlbumStoreState,
     isMultiSelectStoreState,
     selectedAssets,
@@ -8,15 +9,15 @@
   } from '$lib/stores/asset-interaction.store';
   import { assetStore } from '$lib/stores/assets.store';
   import { locale } from '$lib/stores/preferences.store';
+  import { getAssetRatio } from '$lib/utils/asset-utils';
   import type { AssetResponseDto } from '@api';
   import justifiedLayout from 'justified-layout';
   import lodash from 'lodash-es';
+  import { createEventDispatcher } from 'svelte';
   import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
   import CircleOutline from 'svelte-material-icons/CircleOutline.svelte';
   import { fly } from 'svelte/transition';
-  import { getAssetRatio } from '$lib/utils/asset-utils';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
-  import { createEventDispatcher } from 'svelte';
 
   export let assets: AssetResponseDto[];
   export let bucketDate: string;
@@ -130,18 +131,19 @@
     dateGroupTitle: string,
   ) => {
     if ($selectedAssets.has(asset)) {
+      for (const candidate of $assetSelectionCandidates || []) {
+        assetInteractionStore.removeAssetFromMultiselectGroup(candidate);
+      }
       assetInteractionStore.removeAssetFromMultiselectGroup(asset);
     } else {
+      for (const candidate of $assetSelectionCandidates || []) {
+        assetInteractionStore.addAssetToMultiselectGroup(candidate);
+      }
       assetInteractionStore.addAssetToMultiselectGroup(asset);
     }
 
     // Check if all assets are selected in a group to toggle the group selection's icon
-    let selectedAssetsInGroupCount = 0;
-    assetsInDateGroup.forEach((asset) => {
-      if ($selectedAssets.has(asset)) {
-        selectedAssetsInGroupCount++;
-      }
-    });
+    let selectedAssetsInGroupCount = assetsInDateGroup.filter((asset) => $selectedAssets.has(asset)).length;
 
     // if all assets are selected in a group, add the group to selected group
     if (selectedAssetsInGroupCount == assetsInDateGroup.length) {
@@ -151,9 +153,13 @@
     }
   };
 
-  const assetMouseEventHandler = (dateGroupTitle: string) => {
+  const assetMouseEventHandler = (dateGroupTitle: string, asset: AssetResponseDto | null) => {
     // Show multi select icon on hover on date group
     hoveredDateGroup = dateGroupTitle;
+
+    if ($isMultiSelectStoreState) {
+      dispatch('selectAssetCandidates', { asset });
+    }
   };
 </script>
 
@@ -171,9 +177,12 @@
       class="flex flex-col mt-5"
       on:mouseenter={() => {
         isMouseOverGroup = true;
-        assetMouseEventHandler(dateGroupTitle);
+        assetMouseEventHandler(dateGroupTitle, null);
       }}
-      on:mouseleave={() => (isMouseOverGroup = false)}
+      on:mouseleave={() => {
+        isMouseOverGroup = false;
+        assetMouseEventHandler(dateGroupTitle, null);
+      }}
     >
       <!-- Date group title -->
       <p
@@ -216,9 +225,10 @@
               {groupIndex}
               on:click={() => assetClickHandler(asset, assetsInDateGroup, dateGroupTitle)}
               on:select={() => assetSelectHandler(asset, assetsInDateGroup, dateGroupTitle)}
-              on:mouse-event={() => assetMouseEventHandler(dateGroupTitle)}
-              selected={$selectedAssets.has(asset) || $assetsInAlbumStoreState.findIndex((a) => a.id == asset.id) != -1}
-              disabled={$assetsInAlbumStoreState.findIndex((a) => a.id == asset.id) != -1}
+              on:mouse-event={() => assetMouseEventHandler(dateGroupTitle, asset)}
+              selected={$selectedAssets.has(asset) || $assetsInAlbumStoreState.some(({ id }) => id === asset.id)}
+              selectionCandidate={$assetSelectionCandidates.has(asset)}
+              disabled={$assetsInAlbumStoreState.some(({ id }) => id === asset.id)}
               thumbnailWidth={box.width}
               thumbnailHeight={box.height}
             />
