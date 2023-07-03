@@ -58,6 +58,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@egjs/svelte-view360": "^4.0.0-beta.7",
 		"@zoom-image/svelte": "^0.1.0",
 		"axios": "^0.27.2",
 		"buffer": "^6.0.3",
