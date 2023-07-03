@@ -100,21 +100,20 @@ export default class Upload extends BaseCommand {
 
     uploadProgress.stop();
 
+    let messageStart;
+    if (this.dryRun) {
+      messageStart = 'Would have ';
+    } else {
+      messageStart = 'Successfully ';
+    }
+
     if (options.import) {
-      if (this.dryRun) {
-        console.log(`Would have imported ${uploadCounter} assets (${byteSize(totalSizeUploaded)})`);
-      } else {
-        console.log(`Successfully imported ${uploadCounter} assets (${byteSize(totalSizeUploaded)})`);
-      }
+      console.log(`${messageStart} imported ${uploadCounter} assets (${byteSize(totalSizeUploaded)})`);
     } else {
       if (uploadCounter === 0) {
         console.log('All assets were already uploaded, nothing to do.');
       } else {
-        if (this.dryRun) {
-          console.log(`Would have uploaded ${uploadCounter} assets (${byteSize(totalSizeUploaded)})`);
-        } else {
-          console.log(`Successfully uploaded ${uploadCounter} assets (${byteSize(totalSizeUploaded)})`);
-        }
+        console.log(`${messageStart} uploaded ${uploadCounter} assets (${byteSize(totalSizeUploaded)})`);
       }
       if (options.delete) {
         if (this.dryRun) {
