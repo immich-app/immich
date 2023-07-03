@@ -21,7 +21,7 @@
 {#if displayPanoramaArrow}
   <div class="absolute right-0 top-0 text-white text-xs font-medium flex gap-1 place-items-center z-20">
     <span class="pt-2 pr-2">
-      <svelte:component this={Rotate360Icon} size="24" />
+      <Rotate360Icon size="24" />
     </span>
   </div>
 {/if}
