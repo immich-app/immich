@@ -54,8 +54,8 @@ export class PersonController {
     return this.service.getAssets(authUser, id);
   }
 
-  @Post(':id/merge')
-  mergePerson(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: MergePersonDto) {
-    return this.service.mergePerson(authUser, id, dto);
+  @Post('merge')
+  mergePerson(@AuthUser() authUser: AuthUserDto, @Body() dto: MergePersonDto) {
+    return this.service.mergePerson(authUser, dto);
   }
 }

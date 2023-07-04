@@ -10,6 +10,31 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
   ) {}
 
+  /**
+   * Find the assets that containers faces from both persons.
+   * Normally, this shouldn't happen, however there are some edge cases, where your photo is taken
+   * with an older version of your self, and the face detection algorithm detects both faces as different.
+   * @param ids Array of personId.
+   * @returns sAn array of assetId that contains faces from both persons.
+   */
+  async getIdenticalAssets(ids: string[]): Promise<string[]> {
+    const result = await this.assetFaceRepository
+      .createQueryBuilder('af')
+      .select('af."assetId"')
+      .where(`af."personId" IN (:...ids)`, {
+        ids,
+      })
+      .groupBy('af."assetId"')
+      .having('COUNT(af."personId") > 1')
+      .getRawMany();
+
+    return result.map((r) => r.assetId);
+  }
+
+  deleteAsset(entity: AssetFaceEntity): Promise<AssetFaceEntity> {
+    return this.assetFaceRepository.remove(entity);
+  }
+
   delete(entity: PersonEntity): Promise<PersonEntity | null> {
     return this.personRepository.remove(entity);
   }

@@ -2550,6 +2550,41 @@
         ]
       }
     },
+    "/person/merge": {
+      "post": {
+        "operationId": "mergePerson",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MergePersonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Person"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/person/{id}": {
       "get": {
         "operationId": "getPerson",
@@ -2669,51 +2704,6 @@
                 }
               }
             }
-          }
-        },
-        "tags": [
-          "Person"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
-    "/person/{id}/merge": {
-      "post": {
-        "operationId": "mergePerson",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MergePersonDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
           }
         },
         "tags": [

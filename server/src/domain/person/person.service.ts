@@ -118,18 +118,20 @@ export class PersonService {
     return true;
   }
 
-  async mergePerson(authUser: AuthUserDto, personId: string, dto: MergePersonDto) {
-    const ids = [...dto.ids, personId];
-
-    for (const id of ids) {
+  async mergePerson(authUser: AuthUserDto, dto: MergePersonDto) {
+    for (const id of dto.ids) {
       const person = await this.repository.getById(authUser.id, id);
       if (!person) {
         throw new BadRequestException();
       }
     }
 
-    const primaryPerson = await this.getPersonWithMostAssets(ids);
-    const mergeIds = dto.ids.filter((id) => id !== primaryPerson);
+    const primaryPersonId = await this.getPersonWithMostAssets(dto.ids);
+    const mergeIds = dto.ids.filter((id) => id !== primaryPersonId);
+
+    for (const id of mergeIds) {
+      await this.repository.getIdenticalAssets([primaryPersonId, id]);
+    }
   }
 
   private async getPersonWithMostAssets(ids: string[]): Promise<string> {
