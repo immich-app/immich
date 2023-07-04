@@ -3,7 +3,7 @@
   import { fade } from 'svelte/transition';
   import { thumbHashToDataURL } from 'thumbhash';
   import { Buffer } from 'buffer';
- 
+
   export let url: string;
   export let altText: string;
   export let heightStyle: string | undefined = undefined;
@@ -15,7 +15,6 @@
 
   let complete = false;
 </script>
-
 
 <img
   style:width={widthStyle}
