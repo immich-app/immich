@@ -1,4 +1,5 @@
 import { AssetFaceId, IPersonRepository, PersonSearchOptions } from '@app/domain';
+import { BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
@@ -31,7 +32,18 @@ export class PersonRepository implements IPersonRepository {
     return result.map((r) => r.assetId);
   }
 
-  deleteAsset(entity: AssetFaceEntity): Promise<AssetFaceEntity> {
+  async deleteAsset(personId: string, assetId: string): Promise<AssetFaceEntity> {
+    const entity = await this.assetFaceRepository.findOne({
+      where: {
+        personId,
+        assetId,
+      },
+    });
+
+    if (!entity) {
+      throw new BadRequestException('Asset face not found');
+    }
+
     return this.assetFaceRepository.remove(entity);
   }
 

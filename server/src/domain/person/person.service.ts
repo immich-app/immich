@@ -129,8 +129,9 @@ export class PersonService {
     const primaryPersonId = await this.getPersonWithMostAssets(dto.ids);
     const mergeIds = dto.ids.filter((id) => id !== primaryPersonId);
 
+    // Find and remove duplicated entry in asset_faces table
     for (const id of mergeIds) {
-      await this.repository.getIdenticalAssets([primaryPersonId, id]);
+      const assetIds = await this.repository.getIdenticalAssets([primaryPersonId, id]);
     }
   }
 
