@@ -68,16 +68,10 @@ export class LibraryCrawler {
       paths = '{' + pathsToCrawl.join(',') + '}';
     }
 
-    paths = paths + '/**/';
-
-    paths = paths + '/*.{' + ACCEPTED_FILE_EXTENSIONS.join(',') + '}';
+    paths = paths + '/**/*.{' + ACCEPTED_FILE_EXTENSIONS.join(',') + '}';
 
     return await glob(paths, { nocase: true, nodir: true, ignore: crawlOptions.excludePatterns }).then((crawledPaths) =>
       crawledPaths.sort(),
     );
-  }
-
-  public async readMediaInformation(files: string[]) {
-    // TODO
   }
 }

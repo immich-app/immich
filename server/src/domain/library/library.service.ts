@@ -13,7 +13,7 @@ import { Inject, Injectable, InternalServerErrorException, Logger } from '@nestj
 import { LibraryCrawler } from '@app/domain/library/library-crawler';
 import { LibraryResponseDto, mapLibrary } from '@app/domain/library/response-dto/library-response.dto';
 import { CreateLibraryDto } from '../../immich/api-v1/library/dto/create-library-dto';
-import { ILibraryRepository } from '../../immich/api-v1/library/library-repository';
+import { ILibraryRepository } from '../../immich/api-v1/library/library.repository';
 import { LibrarySearchDto } from './dto/library-search-dto';
 import { ScanLibraryDto } from './dto/scan-library-dto';
 

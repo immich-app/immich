@@ -23,7 +23,12 @@ import { TagEntity } from './tag.entity';
 import { UserEntity } from './user.entity';
 
 @Entity('assets')
-@Unique('UQ_owner_library_checksum', ['owner', 'library', 'checksum'])
+// For uploaded assets, each checksum must be unique per user and library
+@Index('UQ_uploaded_owner_library_checksum', ['owner', 'library', 'checksum'], {
+  unique: true,
+  where: '"isReadOnly" IS false',
+})
+// For all other assets, each originalpath must be unique per user and library
 @Unique('UQ_owner_library_originalpath', ['owner', 'library', 'originalPath'])
 export class AssetEntity {
   @PrimaryGeneratedColumn('uuid')

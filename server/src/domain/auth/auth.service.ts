@@ -27,6 +27,7 @@ import {
   mapAdminSignupResponse,
   mapUserToken,
 } from './response-dto';
+import { ILibraryRepository } from '../library';
 
 @Injectable()
 export class AuthService {
@@ -41,6 +42,7 @@ export class AuthService {
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(ISystemConfigRepository) configRepository: ISystemConfigRepository,
     @Inject(IUserRepository) userRepository: IUserRepository,
+    @Inject(ILibraryRepository) libraryRepository: ILibraryRepository,
     @Inject(IUserTokenRepository) userTokenRepository: IUserTokenRepository,
     @Inject(ISharedLinkRepository) private sharedLinkRepository: ISharedLinkRepository,
     @Inject(IKeyRepository) private keyRepository: IKeyRepository,
@@ -50,7 +52,7 @@ export class AuthService {
     this.userTokenCore = new UserTokenCore(cryptoRepository, userTokenRepository);
     this.authCore = new AuthCore(cryptoRepository, configRepository, userTokenRepository, initialConfig);
     this.oauthCore = new OAuthCore(configRepository, initialConfig);
-    this.userCore = new UserCore(userRepository, cryptoRepository);
+    this.userCore = new UserCore(userRepository, libraryRepository, cryptoRepository);
   }
 
   public async login(
