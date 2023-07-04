@@ -12,7 +12,7 @@
   import domtoimage from 'dom-to-image';
   import type { UserResponseDto } from '@api';
   import { notificationController, NotificationType } from './notification/notification';
-  import { isUpdateProfilePicture } from '$lib/stores/preferences.store';
+  import { lastUpdatedProfilePicture } from '$lib/stores/preferences.store';
   onMount(() => {
     console.log(asset);
   });
@@ -27,14 +27,16 @@
     domtoimage.toBlob(div).then(function (blob: Blob) {
       const file: File = new File([blob], 'profile-picture.png', { type: 'image/png' });
       try {
-        api.userApi.createProfileImage({ file });
-        //set store to update profile picture
-        isUpdateProfilePicture.set(true);
-        dispatch('close');
-        notificationController.show({
-          type: NotificationType.Info,
-          message: 'Profile picture set.',
-          timeout: 3000,
+        api.userApi.createProfileImage({ file }).then((res) => {
+          console.log(res);
+          //set store to update profile picture
+          lastUpdatedProfilePicture.set(Date.now());
+          dispatch('close');
+          notificationController.show({
+            type: NotificationType.Info,
+            message: 'Profile picture set.',
+            timeout: 3000,
+          });
         });
       } catch (err) {
         console.error('Error [profile-image-cropper]:', err);

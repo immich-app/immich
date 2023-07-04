@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
 import { persisted } from 'svelte-local-storage-store';
+import { writable } from 'svelte/store';
 
 const initialTheme = browser && !window.matchMedia('(prefers-color-scheme: dark)').matches ? 'light' : 'dark';
 
@@ -46,3 +47,6 @@ export interface AlbumViewSettings {
 export const albumViewSettings = persisted<AlbumViewSettings>('album-view-settings', {
   sortBy: 'Most recent photo',
 });
+
+
+export const lastUpdatedProfilePicture = persisted<Number>('last-updated-profile-picture', 0, {});
