@@ -11,6 +11,7 @@
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
   import ImageBrokenVariant from 'svelte-material-icons/ImageBrokenVariant.svelte';
+  import Rotate360Icon from 'svelte-material-icons/Rotate360.svelte';
 
   const dispatch = createEventDispatcher();
 
@@ -117,6 +118,14 @@
           </div>
         {/if}
 
+        {#if asset.type === AssetTypeEnum.Image && asset.isPanorama}
+          <div class="absolute right-0 top-0 text-white text-xs font-medium flex gap-1 place-items-center z-20">
+            <span class="pt-2 pr-2">
+              <Rotate360Icon size="24" />
+            </span>
+          </div>
+        {/if}
+
         {#if asset.resized}
           <ImageThumbnail
             url={api.getAssetThumbnailUrl(asset.id, format, publicSharedKey)}
@@ -124,7 +133,6 @@
             widthStyle="{width}px"
             heightStyle="{height}px"
             thumbhash={asset.thumbhash}
-            displayPanoramaArrow={asset.type === AssetTypeEnum.Image && asset.isPanorama}
           />
         {:else}
           <div class="w-full h-full p-4 flex items-center justify-center">

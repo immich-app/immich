@@ -3,8 +3,7 @@
   import { fade } from 'svelte/transition';
   import { thumbHashToDataURL } from 'thumbhash';
   import { Buffer } from 'buffer';
-  import Rotate360Icon from 'svelte-material-icons/Rotate360.svelte';
-
+ 
   export let url: string;
   export let altText: string;
   export let heightStyle: string | undefined = undefined;
@@ -13,18 +12,10 @@
   export let curve = false;
   export let shadow = false;
   export let circle = false;
-  export let displayPanoramaArrow = false;
 
   let complete = false;
 </script>
 
-{#if displayPanoramaArrow}
-  <div class="absolute right-0 top-0 text-white text-xs font-medium flex gap-1 place-items-center z-20">
-    <span class="pt-2 pr-2">
-      <Rotate360Icon size="24" />
-    </span>
-  </div>
-{/if}
 
 <img
   style:width={widthStyle}
