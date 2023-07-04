@@ -34,7 +34,7 @@
   let shouldPlayMotionPhoto = false;
   let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : true;
   let canCopyImagesToClipboard: boolean;
-  const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key);
+  const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key, keyInfo.shiftKey);
 
   onMount(async () => {
     document.addEventListener('keydown', onKeyboardPress);
@@ -64,22 +64,33 @@
     }
   };
 
-  const handleKeyboardPress = (key: string) => {
+  const handleKeyboardPress = (key: string, shiftKey: boolean) => {
     switch (key) {
-      case 'Escape':
-        closeViewer();
-        return;
-      case 'Delete':
-        isShowDeleteConfirmation = true;
-        return;
-      case 'i':
-        $isShowDetail = !$isShowDetail;
+      case 'a':
+      case 'A':
+        if (shiftKey) toggleArchive();
         return;
       case 'ArrowLeft':
         navigateAssetBackward();
         return;
       case 'ArrowRight':
         navigateAssetForward();
+        return;
+      case 'd':
+      case 'D':
+        if (shiftKey) downloadFile(asset, publicSharedKey);
+        return;
+      case 'Delete':
+        deleteAsset();
+        return;
+      case 'Escape':
+        closeViewer();
+        return;
+      case 'f':
+        toggleFavorite();
+        return;
+      case 'i':
+        $isShowDetail = !$isShowDetail;
         return;
     }
   };
