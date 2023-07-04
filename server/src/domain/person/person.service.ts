@@ -144,6 +144,10 @@ export class PersonService {
         });
       }
     }
+
+    // Delete merge person
+
+    // Update assets of merge person to primary person
   }
 
   private async getPersonWithMostAssets(ids: string[]): Promise<string> {
