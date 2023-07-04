@@ -16,7 +16,7 @@ export class AddLibraries1688392120838 implements MigrationInterface {
       `ALTER TABLE "assets" ADD CONSTRAINT "UQ_owner_library_originalpath" UNIQUE ("ownerId", "libraryId", "originalPath")`,
     );
     await queryRunner.query(
-      `CREATE UNIQUE INDEX "UQ_uploaded_owner_library_checksum" on "assets" ("ownerId", "libraryId", checksum) WHERE ("isReadOnly" IS FALSE)`,
+      `CREATE UNIQUE INDEX "UQ_assets_uploaded_owner_library_checksum" on "assets" ("ownerId", "libraryId", checksum) WHERE ("isReadOnly" IS FALSE)`,
     );
     await queryRunner.query(
       `ALTER TABLE "libraries" ADD CONSTRAINT "FK_0f6fc2fb195f24d19b0fb0d57c1" FOREIGN KEY ("ownerId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE`,
@@ -42,7 +42,7 @@ export class AddLibraries1688392120838 implements MigrationInterface {
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`ALTER TABLE "assets" DROP CONSTRAINT "FK_9977c3c1de01c3d848039a6b90c"`);
     await queryRunner.query(`ALTER TABLE "libraries" DROP CONSTRAINT "FK_0f6fc2fb195f24d19b0fb0d57c1"`);
-    await queryRunner.query(`ALTER TABLE "assets" DROP INDEX "UQ_uploaded_owner_library_checksum"`);
+    await queryRunner.query(`DROP INDEX "UQ_assets_uploaded_owner_library_checksum"`);
     await queryRunner.query(`ALTER TABLE "assets" DROP CONSTRAINT "UQ_owner_library_originalpath"`);
     await queryRunner.query(
       `ALTER TABLE "assets" ADD CONSTRAINT "UQ_4ed4f8052685ff5b1e7ca1058ba" UNIQUE ("originalPath")`,

@@ -24,7 +24,7 @@ import { UserEntity } from './user.entity';
 
 @Entity('assets')
 // For uploaded assets, each checksum must be unique per user and library
-@Index('UQ_uploaded_owner_library_checksum', ['owner', 'library', 'checksum'], {
+@Index('UQ_assets_uploaded_owner_library_checksum', ['owner', 'library', 'checksum'], {
   unique: true,
   where: '"isReadOnly" IS false',
 })
