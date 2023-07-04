@@ -128,6 +128,54 @@
       }
     },
     "/album/{id}": {
+      "get": {
+        "operationId": "getAlbumInfo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlbumResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Album"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      },
       "patch": {
         "operationId": "updateAlbumInfo",
         "parameters": [
@@ -210,54 +258,6 @@
             "api_key": []
           }
         ]
-      },
-      "get": {
-        "operationId": "getAlbumInfo",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AlbumResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Album"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
       }
     },
     "/album/{id}/assets": {
@@ -287,7 +287,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddAssetsDto"
+                "$ref": "#/components/schemas/AssetIdsDto"
               }
             }
           }
@@ -298,7 +298,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AddAssetsResponseDto"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetIdsResponseDto"
+                  }
                 }
               }
             }
@@ -337,7 +340,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RemoveAssetsDto"
+                "$ref": "#/components/schemas/AssetIdsDto"
               }
             }
           }
@@ -348,7 +351,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AlbumResponseDto"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AssetIdsResponseDto"
+                  }
                 }
               }
             }
@@ -4535,42 +4541,6 @@
           "name"
         ]
       },
-      "AddAssetsDto": {
-        "type": "object",
-        "properties": {
-          "assetIds": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        },
-        "required": [
-          "assetIds"
-        ]
-      },
-      "AddAssetsResponseDto": {
-        "type": "object",
-        "properties": {
-          "successfullyAdded": {
-            "type": "integer"
-          },
-          "alreadyInAlbum": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "album": {
-            "$ref": "#/components/schemas/AlbumResponseDto"
-          }
-        },
-        "required": [
-          "successfullyAdded",
-          "alreadyInAlbum"
-        ]
-      },
       "AddUsersDto": {
         "type": "object",
         "properties": {
@@ -6053,21 +6023,6 @@
         "required": [
           "isActive",
           "isPaused"
-        ]
-      },
-      "RemoveAssetsDto": {
-        "type": "object",
-        "properties": {
-          "assetIds": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        },
-        "required": [
-          "assetIds"
         ]
       },
       "SearchAlbumResponseDto": {

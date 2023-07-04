@@ -8,6 +8,7 @@ export interface AlbumAssetCount {
 }
 
 export interface IAlbumRepository {
+  getById(id: string): Promise<AlbumEntity | null>;
   getByIds(ids: string[]): Promise<AlbumEntity[]>;
   getByAssetId(ownerId: string, assetId: string): Promise<AlbumEntity[]>;
   hasAsset(id: string, assetId: string): Promise<boolean>;
@@ -21,4 +22,5 @@ export interface IAlbumRepository {
   create(album: Partial<AlbumEntity>): Promise<AlbumEntity>;
   update(album: Partial<AlbumEntity>): Promise<AlbumEntity>;
   delete(album: AlbumEntity): Promise<void>;
+  updateThumbnails(): Promise<number | undefined>;
 }
