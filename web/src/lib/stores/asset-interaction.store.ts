@@ -83,12 +83,11 @@ function createAssetInteractionStore() {
     }
 
     const nextBucket = _assetGridState.buckets[nextBucketIndex];
+    await assetStore.getAssetsByBucket(nextBucket.bucketDate, BucketPosition.Below);
+
     if (nextBucket.assets.length !== 0) {
       return nextBucket.assets[0];
     }
-
-    await assetStore.getAssetsByBucket(nextBucket.bucketDate, BucketPosition.Below);
-    navigateAsset('next');
 
     return null;
   };
@@ -110,12 +109,11 @@ function createAssetInteractionStore() {
     }
 
     const prevBucket = _assetGridState.buckets[prevBucketIndex];
+    await assetStore.getAssetsByBucket(prevBucket.bucketDate, BucketPosition.Above);
+
     if (prevBucket.assets.length !== 0) {
       return prevBucket.assets[prevBucket.assets.length - 1];
     }
-
-    await assetStore.getAssetsByBucket(prevBucket.bucketDate, BucketPosition.Above);
-    navigateAsset('previous');
 
     return null;
   };
