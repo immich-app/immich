@@ -67,31 +67,60 @@ function createAssetInteractionStore() {
   };
 
   const navigateAsset = async (direction: 'next' | 'previous') => {
-    let index = _assetGridState.assets.findIndex(({ id }) => id === _viewingAssetStoreState.id);
-
-    index = direction === 'next' ? index + 1 : index - 1;
-
-    const needMoreAbove = index < 0;
-    const needMoreBelow = index >= _assetGridState.assets.length;
-
-    // Try to load more assets if we're at the end.
-    if (needMoreAbove || needMoreBelow) {
-      for (const bucket of _assetGridState.buckets) {
-        if (bucket.assets.length === 0) {
-          await assetStore.getAssetsByBucket(
-            bucket.bucketDate,
-            needMoreAbove ? BucketPosition.Above : BucketPosition.Below,
-          );
-          navigateAsset(direction);
-          break;
-        }
-      }
+    const currentBucketIndex = _assetGridState.loadedAssets[_viewingAssetStoreState.id];
+    if (currentBucketIndex < 0 || currentBucketIndex >= _assetGridState.buckets.length) {
       return;
     }
 
-    const asset = _assetGridState.assets[index];
-    if (asset) {
-      setViewingAsset(asset);
+    const currentBucket = _assetGridState.buckets[currentBucketIndex];
+
+    const index = currentBucket.assets.findIndex((a) => a.id == _viewingAssetStoreState.id);
+    if (index == -1) {
+      return;
+    }
+
+    if (direction === 'next') {
+      if (index + 1 < currentBucket.assets.length) {
+        const asset = currentBucket.assets[index + 1];
+        if (asset) {
+          setViewingAsset(asset);
+        }
+      } else {
+        const nextBucketIndex = currentBucketIndex + 1;
+        if (nextBucketIndex < _assetGridState.buckets.length) {
+          const nextBucket = _assetGridState.buckets[nextBucketIndex];
+          if (nextBucket.assets.length == 0) {
+            await assetStore.getAssetsByBucket(nextBucket.bucketDate, BucketPosition.Below);
+            navigateAsset(direction);
+          } else {
+            const asset = nextBucket.assets[0];
+            if (asset) {
+              setViewingAsset(asset);
+            }
+          }
+        }
+      }
+    } else {
+      if (index > 0) {
+        const asset = currentBucket.assets[index - 1];
+        if (asset) {
+          setViewingAsset(asset);
+        }
+      } else {
+        const prevBucketIndex = currentBucketIndex - 1;
+        if (prevBucketIndex >= 0) {
+          const prevBucket = _assetGridState.buckets[prevBucketIndex];
+          if (prevBucket.assets.length == 0) {
+            await assetStore.getAssetsByBucket(prevBucket.bucketDate, BucketPosition.Above);
+            navigateAsset(direction);
+          } else {
+            const asset = prevBucket.assets[prevBucket.assets.length - 1];
+            if (asset) {
+              setViewingAsset(asset);
+            }
+          }
+        }
+      }
     }
   };
 
