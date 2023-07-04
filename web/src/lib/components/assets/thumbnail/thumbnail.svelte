@@ -3,15 +3,18 @@
   import { timeToSeconds } from '$lib/utils/time-to-seconds';
   import { api, AssetResponseDto, AssetTypeEnum, ThumbnailFormat } from '@api';
   import { createEventDispatcher } from 'svelte';
+  import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
   import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
+  import Heart from 'svelte-material-icons/Heart.svelte';
+  import ImageBrokenVariant from 'svelte-material-icons/ImageBrokenVariant.svelte';
   import MotionPauseOutline from 'svelte-material-icons/MotionPauseOutline.svelte';
   import MotionPlayOutline from 'svelte-material-icons/MotionPlayOutline.svelte';
-  import Heart from 'svelte-material-icons/Heart.svelte';
-  import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
+  import { fade } from 'svelte/transition';
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
   import ImageBrokenVariant from 'svelte-material-icons/ImageBrokenVariant.svelte';
   import Rotate360Icon from 'svelte-material-icons/Rotate360.svelte';
+
 
   const dispatch = createEventDispatcher();
 
@@ -22,6 +25,7 @@
   export let thumbnailHeight: number | undefined = undefined;
   export let format: ThumbnailFormat = ThumbnailFormat.Webp;
   export let selected = false;
+  export let selectionCandidate = false;
   export let disabled = false;
   export let readonly = false;
   export let publicSharedKey: string | undefined = undefined;
@@ -31,7 +35,7 @@
 
   $: dispatch('mouse-event', { isMouseOver: mouseOver, selectedGroupIndex: groupIndex });
 
-  $: [width, height] = (() => {
+  $: [width, height] = ((): [number, number] => {
     if (thumbnailSize) {
       return [thumbnailSize, thumbnailSize];
     }
@@ -43,9 +47,16 @@
     return [235, 235];
   })();
 
-  const thumbnailClickedHandler = () => {
+  const thumbnailClickedHandler = (e: Event) => {
     if (!disabled) {
+      e.preventDefault();
       dispatch('click', { asset });
+    }
+  };
+
+  const thumbnailKeyDownHandler = (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      thumbnailClickedHandler(e);
     }
   };
 
@@ -69,21 +80,23 @@
     on:mouseenter={() => (mouseOver = true)}
     on:mouseleave={() => (mouseOver = false)}
     on:click={thumbnailClickedHandler}
-    on:keydown={thumbnailClickedHandler}
+    on:keydown={thumbnailKeyDownHandler}
   >
     {#if intersecting}
       <div class="absolute w-full h-full z-20">
         <!-- Select asset button  -->
-        {#if !readonly}
+        {#if !readonly && (mouseOver || selected || selectionCandidate)}
           <button
             on:click={onIconClickedHandler}
-            class="absolute p-2 group-hover:block"
-            class:group-hover:block={!disabled}
-            class:hidden={!selected}
+            on:keydown|preventDefault
+            on:keyup|preventDefault
+            class="absolute p-2"
             class:cursor-not-allowed={disabled}
             role="checkbox"
             aria-checked={selected}
             {disabled}
+            in:fade={{ duration: 100 }}
+            out:fade={{ duration: 100 }}
           >
             {#if disabled}
               <CheckCircle size="24" class="text-zinc-800" />
@@ -162,6 +175,13 @@
           </div>
         {/if}
       </div>
+      {#if selectionCandidate}
+        <div
+          class="absolute w-full h-full top-0 bg-immich-primary opacity-40"
+          in:fade={{ duration: 100 }}
+          out:fade={{ duration: 100 }}
+        />
+      {/if}
     {/if}
   </div>
 </IntersectionObserver>
