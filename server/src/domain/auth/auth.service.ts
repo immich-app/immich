@@ -11,6 +11,7 @@ import cookieParser from 'cookie';
 import { IncomingHttpHeaders } from 'http';
 import { IKeyRepository } from '../api-key';
 import { ICryptoRepository } from '../crypto/crypto.repository';
+import { ILibraryRepository } from '../library';
 import { OAuthCore } from '../oauth/oauth.core';
 import { ISharedLinkRepository } from '../shared-link';
 import { INITIAL_SYSTEM_CONFIG, ISystemConfigRepository } from '../system-config';
@@ -27,7 +28,6 @@ import {
   mapAdminSignupResponse,
   mapUserToken,
 } from './response-dto';
-import { ILibraryRepository } from '../library';
 
 @Injectable()
 export class AuthService {
