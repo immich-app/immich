@@ -8,7 +8,7 @@
   export let asset: AssetResponseDto;
   export let publicSharedKey = '';
 
-  let assetData = '';
+  let dataUrl = '';
   let errorMessage = '';
 
   const loadAssetData = async () => {
@@ -19,8 +19,8 @@
       );
 
       if (data instanceof Blob) {
-        assetData = URL.createObjectURL(data);
-        return assetData;
+        dataUrl = URL.createObjectURL(data);
+        return dataUrl;
       } else {
         throw new Error('Invalid data format');
       }
