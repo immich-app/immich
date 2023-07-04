@@ -211,7 +211,7 @@ export class MetadataExtractionProcessor {
     await this.assetRepository.save({
       id: asset.id,
       fileCreatedAt: fileCreatedAt || undefined,
-      isPanorama: isPanorama,
+      isPanorama,
     });
 
     return true;
