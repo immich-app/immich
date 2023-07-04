@@ -1,22 +1,15 @@
-import {
-  AccessCore,
-  AuthUserDto,
-  IAccessRepository,
-  IJobRepository,
-  ILibraryJob,
-  JobName,
-  Permission,
-} from '@app/domain';
-import { LibraryEntity, LibraryType, UserEntity } from '@app/infra/entities';
+import { LibraryType, UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 
-import { LibraryCrawler } from '@app/domain/library/library-crawler';
-import { LibraryResponseDto, mapLibrary } from '@app/domain/library/response-dto/library-response.dto';
-import { ILibraryRepository } from '../../immich/api-v1/library/library.repository';
+import { ILibraryRepository } from '@app/infra/repositories';
+import { LibraryResponseDto, mapLibrary } from '.';
+import { AuthUserDto } from '..';
+import { AccessCore, IAccessRepository, Permission } from '../access';
+import { IJobRepository, ILibraryJob, JobName } from '../job';
 import { CreateLibraryDto } from './dto/create-library.dto';
 import { GetLibrariesDto } from './dto/get-libraries-dto';
-import { LibrarySearchDto } from './dto/library-search-dto';
 import { ScanLibraryDto } from './dto/scan-library-dto';
+import { LibraryCrawler } from './library-crawler';
 
 @Injectable()
 export class LibraryService {
@@ -38,16 +31,15 @@ export class LibraryService {
   }
 
   public async createLibrary(authUser: AuthUserDto, dto: CreateLibraryDto): Promise<LibraryResponseDto> {
-    return await this.libraryRepository
-      .create({
-        owner: { id: authUser.id } as UserEntity,
-        name: dto.name,
-        assets: [],
-        type: dto.libraryType,
-        importPaths: [],
-        isVisible: dto.isVisible ?? true,
-      })
-      .map((library) => mapLibrary(library));
+    const libraryEntity = await this.libraryRepository.create({
+      owner: { id: authUser.id } as UserEntity,
+      name: dto.name,
+      assets: [],
+      type: dto.libraryType,
+      importPaths: [],
+      isVisible: dto.isVisible ?? true,
+    });
+    return mapLibrary(libraryEntity);
   }
 
   public async getAll(authUser: AuthUserDto, dto: GetLibrariesDto): Promise<LibraryResponseDto[]> {
@@ -62,7 +54,8 @@ export class LibraryService {
   public async getLibraryById(authUser: AuthUserDto, libraryId: string): Promise<LibraryResponseDto> {
     await this.access.requirePermission(authUser, Permission.LIBRARY_READ, libraryId);
 
-    return await this.libraryRepository.getById(libraryId);
+    const libraryEntity = await this.libraryRepository.getById(libraryId);
+    return mapLibrary(libraryEntity);
   }
 
   public async scanLibrary(authUser: AuthUserDto, scanLibraryDto: ScanLibraryDto) {

@@ -1,5 +1,4 @@
 import { GetLibrariesDto } from '@app/domain/library/dto/get-libraries-dto';
-import { LibrarySearchDto } from '@app/domain/library/dto/library-search-dto';
 import { LibraryEntity } from '@app/infra/entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';

@@ -5,7 +5,6 @@ import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AlbumModule } from './api-v1/album/album.module';
 import { AssetModule } from './api-v1/asset/asset.module';
-import { LibraryModule } from './api-v1/library/library.module';
 import { AppGuard } from './app.guard';
 import { AppService } from './app.service';
 import {
@@ -33,7 +32,6 @@ import {
     DomainModule.register({ imports: [InfraModule] }),
     AssetModule,
     AlbumModule,
-    LibraryModule,
     ScheduleModule.forRoot(),
   ],
   controllers: [

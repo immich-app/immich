@@ -11,8 +11,6 @@ Name | Type | Description | Notes
 **type** | [**LibraryTypeEnum**](LibraryTypeEnum.md) |  | 
 **id** | **String** |  | 
 **ownerId** | **String** |  | 
-**name** | **String** |  | 
-**assetCount** | **num** |  | 
 **createdAt** | [**DateTime**](DateTime.md) |  | 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 
 **refreshedAt** | [**DateTime**](DateTime.md) |  | [optional] 

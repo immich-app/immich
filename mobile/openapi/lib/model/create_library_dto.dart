@@ -13,42 +13,26 @@ part of openapi.api;
 class CreateLibraryDto {
   /// Returns a new [CreateLibraryDto] instance.
   CreateLibraryDto({
-    required this.name,
-    this.isVisible,
+    required this.libraryType,
   });
 
-  String name;
-
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isVisible;
+  LibraryTypeEnum libraryType;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateLibraryDto &&
-     other.name == name &&
-     other.isVisible == isVisible;
+     other.libraryType == libraryType;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (name.hashCode) +
-    (isVisible == null ? 0 : isVisible!.hashCode);
+    (libraryType.hashCode);
 
   @override
-  String toString() => 'CreateLibraryDto[name=$name, isVisible=$isVisible]';
+  String toString() => 'CreateLibraryDto[libraryType=$libraryType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'name'] = this.name;
-    if (this.isVisible != null) {
-      json[r'isVisible'] = this.isVisible;
-    } else {
-    //  json[r'isVisible'] = null;
-    }
+      json[r'libraryType'] = this.libraryType;
     return json;
   }
 
@@ -60,8 +44,7 @@ class CreateLibraryDto {
       final json = value.cast<String, dynamic>();
 
       return CreateLibraryDto(
-        name: mapValueOfType<String>(json, r'name')!,
-        isVisible: mapValueOfType<bool>(json, r'isVisible'),
+        libraryType: LibraryTypeEnum.fromJson(json[r'libraryType'])!,
       );
     }
     return null;
@@ -109,7 +92,7 @@ class CreateLibraryDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'name',
+    'libraryType',
   };
 }
 

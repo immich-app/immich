@@ -16,8 +16,6 @@ class LibraryResponseDto {
     required this.type,
     required this.id,
     required this.ownerId,
-    required this.name,
-    required this.assetCount,
     required this.createdAt,
     required this.updatedAt,
     this.refreshedAt,
@@ -28,10 +26,6 @@ class LibraryResponseDto {
   String id;
 
   String ownerId;
-
-  String name;
-
-  num assetCount;
 
   DateTime createdAt;
 
@@ -50,8 +44,6 @@ class LibraryResponseDto {
      other.type == type &&
      other.id == id &&
      other.ownerId == ownerId &&
-     other.name == name &&
-     other.assetCount == assetCount &&
      other.createdAt == createdAt &&
      other.updatedAt == updatedAt &&
      other.refreshedAt == refreshedAt;
@@ -62,22 +54,18 @@ class LibraryResponseDto {
     (type.hashCode) +
     (id.hashCode) +
     (ownerId.hashCode) +
-    (name.hashCode) +
-    (assetCount.hashCode) +
     (createdAt.hashCode) +
     (updatedAt.hashCode) +
     (refreshedAt == null ? 0 : refreshedAt!.hashCode);
 
   @override
-  String toString() => 'LibraryResponseDto[type=$type, id=$id, ownerId=$ownerId, name=$name, assetCount=$assetCount, createdAt=$createdAt, updatedAt=$updatedAt, refreshedAt=$refreshedAt]';
+  String toString() => 'LibraryResponseDto[type=$type, id=$id, ownerId=$ownerId, createdAt=$createdAt, updatedAt=$updatedAt, refreshedAt=$refreshedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'type'] = this.type;
       json[r'id'] = this.id;
       json[r'ownerId'] = this.ownerId;
-      json[r'name'] = this.name;
-      json[r'assetCount'] = this.assetCount;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     if (this.refreshedAt != null) {
@@ -99,8 +87,6 @@ class LibraryResponseDto {
         type: LibraryTypeEnum.fromJson(json[r'type'])!,
         id: mapValueOfType<String>(json, r'id')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        name: mapValueOfType<String>(json, r'name')!,
-        assetCount: num.parse('${json[r'assetCount']}'),
         createdAt: mapDateTime(json, r'createdAt', r'')!,
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
         refreshedAt: mapDateTime(json, r'refreshedAt', r''),
@@ -154,8 +140,6 @@ class LibraryResponseDto {
     'type',
     'id',
     'ownerId',
-    'name',
-    'assetCount',
     'createdAt',
     'updatedAt',
   };

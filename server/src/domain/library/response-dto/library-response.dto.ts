@@ -27,6 +27,6 @@ export function mapLibrary(entity: LibraryEntity): LibraryResponseDto {
     updatedAt: entity.updatedAt,
     refreshedAt: entity.refreshedAt,
 
-    assetCountt: entity.assets.size
+    assetCount: entity.assets.length,
   };
 }

@@ -26,10 +26,7 @@ export class LibraryController {
   }
 
   @Get()
-  getAllLibrariesasdf(
-    @AuthUser() authUser: AuthUserDto,
-    @Query() query: GetLibrariesDto,
-  ): Promise<LibraryResponseDto[]> {
+  getAllLibraries(@AuthUser() authUser: AuthUserDto, @Query() query: GetLibrariesDto): Promise<LibraryResponseDto[]> {
     return this.service.getAll(authUser, query);
   }
 

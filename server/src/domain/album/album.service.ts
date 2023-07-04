@@ -1,8 +1,8 @@
 import { AlbumEntity, AssetEntity, UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { AccessCore, IAccessRepository, Permission } from '../access';
 import { IAssetRepository, mapAsset } from '../asset';
 import { AuthUserDto } from '../auth';
-import { AccessCore, IAccessRepository, Permission } from '../index';
 import { IJobRepository, JobName } from '../job';
 import { IUserRepository } from '../user';
 import { AlbumCountResponseDto, AlbumResponseDto, mapAlbum } from './album-response.dto';
