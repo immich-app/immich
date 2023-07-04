@@ -87,7 +87,10 @@ export class MediaRepository implements IMediaRepository {
         ffmpeg(input, { niceness: 10 })
           .outputOptions(options.outputOptions)
           .output(output)
-          .on('error', reject)
+          .on('error', (err, stdout, stderr) => {
+            console.log(stderr);
+            reject(err);
+          })
           .on('end', resolve)
           .run();
       });
@@ -102,7 +105,10 @@ export class MediaRepository implements IMediaRepository {
         .addOptions('-passlogfile', output)
         .addOptions('-f null')
         .output('/dev/null') // first pass output is not saved as only the .log file is needed
-        .on('error', reject)
+        .on('error', (err, stdout, stderr) => {
+          console.log(stderr);
+          reject(err);
+        })
         .on('end', () => {
           // second pass
           ffmpeg(input, { niceness: 10 })
@@ -110,7 +116,10 @@ export class MediaRepository implements IMediaRepository {
             .addOptions('-pass', '2')
             .addOptions('-passlogfile', output)
             .output(output)
-            .on('error', reject)
+            .on('error', (err, stdout, stderr) => {
+              console.log(stderr);
+              reject(err);
+            })
             .on('end', () => fs.unlink(`${output}-0.log`))
             .on('end', () => fs.rm(`${output}-0.log.mbtree`, { force: true }))
             .on('end', resolve)
