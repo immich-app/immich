@@ -123,6 +123,8 @@ Class | Method | HTTP request | Description
 *JobApi* | [**getAllJobsStatus**](doc//JobApi.md#getalljobsstatus) | **GET** /jobs | 
 *JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{id} | 
 *LibraryApi* | [**createLibrary**](doc//LibraryApi.md#createlibrary) | **POST** /library | 
+*LibraryApi* | [**getAllLibraries**](doc//LibraryApi.md#getalllibraries) | **GET** /library | 
+*LibraryApi* | [**getLibraryCount**](doc//LibraryApi.md#getlibrarycount) | **GET** /library/count | 
 *LibraryApi* | [**scan**](doc//LibraryApi.md#scan) | **POST** /library/scan | 
 *OAuthApi* | [**callback**](doc//OAuthApi.md#callback) | **POST** /oauth/callback | 
 *OAuthApi* | [**generateConfig**](doc//OAuthApi.md#generateconfig) | **POST** /oauth/config | 

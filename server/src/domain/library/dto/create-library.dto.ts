@@ -1,4 +1,4 @@
-import { AssetType, LibraryType } from '@app/infra/entities';
+import { LibraryType } from '@app/infra/entities';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 

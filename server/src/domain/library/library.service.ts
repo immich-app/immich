@@ -8,12 +8,13 @@ import {
   Permission,
 } from '@app/domain';
 import { LibraryEntity, LibraryType, UserEntity } from '@app/infra/entities';
-import { Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 
 import { LibraryCrawler } from '@app/domain/library/library-crawler';
 import { LibraryResponseDto, mapLibrary } from '@app/domain/library/response-dto/library-response.dto';
-import { CreateLibraryDto } from '../../immich/api-v1/library/dto/create-library-dto';
 import { ILibraryRepository } from '../../immich/api-v1/library/library.repository';
+import { CreateLibraryDto } from './dto/create-library.dto';
+import { GetLibrariesDto } from './dto/get-libraries-dto';
 import { LibrarySearchDto } from './dto/library-search-dto';
 import { ScanLibraryDto } from './dto/scan-library-dto';
 
@@ -32,20 +33,29 @@ export class LibraryService {
     this.crawler = new LibraryCrawler();
   }
 
-  public async createLibrary(authUser: AuthUserDto, dto: CreateLibraryDto): Promise<LibraryEntity> {
-    return await this.libraryRepository.create({
-      owner: { id: authUser.id } as UserEntity,
-      name: dto.name,
-      assets: [],
-      type: dto.libraryType,
-      importPaths: [],
-      isVisible: dto.isVisible ?? true,
-    });
+  async getCount(authUser: AuthUserDto): Promise<number> {
+    return this.libraryRepository.getCountForUser(authUser.id);
   }
 
-  public async getAllLibraries(authUser: AuthUserDto, dto: LibrarySearchDto): Promise<LibraryResponseDto[]> {
-    const userId = dto.userId || authUser.id;
-    const libraries = await this.libraryRepository.getAllByUserId(userId, dto);
+  public async createLibrary(authUser: AuthUserDto, dto: CreateLibraryDto): Promise<LibraryResponseDto> {
+    return await this.libraryRepository
+      .create({
+        owner: { id: authUser.id } as UserEntity,
+        name: dto.name,
+        assets: [],
+        type: dto.libraryType,
+        importPaths: [],
+        isVisible: dto.isVisible ?? true,
+      })
+      .map((library) => mapLibrary(library));
+  }
+
+  public async getAll(authUser: AuthUserDto, dto: GetLibrariesDto): Promise<LibraryResponseDto[]> {
+    if (dto.assetId) {
+      // TODO
+      throw new BadRequestException('Not implemented yet');
+    }
+    const libraries = await this.libraryRepository.getAllByUserId(authUser.id, dto);
     return libraries.map((library) => mapLibrary(library));
   }
 

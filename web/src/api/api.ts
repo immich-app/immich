@@ -1,5 +1,6 @@
 import {
   AlbumApi,
+  LibraryApi,
   APIKeyApi,
   AssetApi,
   AssetApiFp,
@@ -24,6 +25,7 @@ import type { ApiParams } from './types';
 
 export class ImmichApi {
   public albumApi: AlbumApi;
+  public libraryApi: LibraryApi;
   public assetApi: AssetApi;
   public authenticationApi: AuthenticationApi;
   public jobApi: JobApi;
@@ -43,6 +45,7 @@ export class ImmichApi {
     this.config = new Configuration(params);
 
     this.albumApi = new AlbumApi(this.config);
+    this.libraryApi = new LibraryApi(this.config);
     this.assetApi = new AssetApi(this.config);
     this.authenticationApi = new AuthenticationApi(this.config);
     this.jobApi = new JobApi(this.config);

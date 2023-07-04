@@ -4,9 +4,12 @@ import { ApiProperty } from '@nestjs/swagger';
 export class LibraryResponseDto {
   id!: string;
   ownerId!: string;
+  name!: string;
 
   @ApiProperty({ enumName: 'LibraryTypeEnum', enum: LibraryType })
   type!: LibraryType;
+
+  assetCount!: number;
 
   createdAt!: Date;
   updatedAt!: Date;
@@ -18,9 +21,12 @@ export function mapLibrary(entity: LibraryEntity): LibraryResponseDto {
     id: entity.id,
     ownerId: entity.ownerId,
     type: entity.type,
+    name: entity.name,
 
     createdAt: entity.createdAt,
     updatedAt: entity.updatedAt,
     refreshedAt: entity.refreshedAt,
+
+    assetCountt: entity.assets.size
   };
 }

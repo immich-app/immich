@@ -22,6 +22,16 @@ void main() {
       // TODO
     });
 
+    //Future<List<LibraryResponseDto>> getAllLibraries(String assetId) async
+    test('test getAllLibraries', () async {
+      // TODO
+    });
+
+    //Future<num> getLibraryCount() async
+    test('test getLibraryCount', () async {
+      // TODO
+    });
+
     //Future scan(ScanLibraryDto scanLibraryDto) async
     test('test scan', () async {
       // TODO

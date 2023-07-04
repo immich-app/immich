@@ -1,12 +1,13 @@
 import { AuthUserDto } from '@app/domain';
-import { ScanLibraryDto  } from '@app/domain/library/dto/scan-library-dto';
+import { CreateLibraryDto } from '@app/domain/library/dto/create-library.dto';
+import { GetLibrariesDto } from '@app/domain/library/dto/get-libraries-dto';
+import { ScanLibraryDto } from '@app/domain/library/dto/scan-library-dto';
 import { LibraryService } from '@app/domain/library/library.service';
 import { LibraryResponseDto } from '@app/domain/library/response-dto/library-response.dto';
 import { AdminRoute, Authenticated, AuthUser } from '@app/immich/app.guard';
 import { UseValidation } from '@app/immich/app.utils';
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { CreateLibraryDto } from './dto/create-library-dto';
 
 @ApiTags('Library')
 @Controller('library')
@@ -22,6 +23,19 @@ export class LibraryController {
     @Body() createLibraryDto: CreateLibraryDto,
   ): Promise<LibraryResponseDto> {
     return this.service.createLibrary(authUser, createLibraryDto);
+  }
+
+  @Get()
+  getAllLibrariesasdf(
+    @AuthUser() authUser: AuthUserDto,
+    @Query() query: GetLibrariesDto,
+  ): Promise<LibraryResponseDto[]> {
+    return this.service.getAll(authUser, query);
+  }
+
+  @Get('count')
+  getLibraryCount(@AuthUser() authUser: AuthUserDto): Promise<number> {
+    return this.service.getCount(authUser);
   }
 
   @AdminRoute()

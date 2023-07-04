@@ -31,6 +31,16 @@ void main() {
       // TODO
     });
 
+    // String name
+    test('to test the property `name`', () async {
+      // TODO
+    });
+
+    // num assetCount
+    test('to test the property `assetCount`', () async {
+      // TODO
+    });
+
     // DateTime createdAt
     test('to test the property `createdAt`', () async {
       // TODO

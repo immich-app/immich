@@ -13,26 +13,42 @@ part of openapi.api;
 class CreateLibraryDto {
   /// Returns a new [CreateLibraryDto] instance.
   CreateLibraryDto({
-    required this.libraryType,
+    required this.name,
+    this.isVisible,
   });
 
-  LibraryTypeEnum libraryType;
+  String name;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isVisible;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateLibraryDto &&
-     other.libraryType == libraryType;
+     other.name == name &&
+     other.isVisible == isVisible;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (libraryType.hashCode);
+    (name.hashCode) +
+    (isVisible == null ? 0 : isVisible!.hashCode);
 
   @override
-  String toString() => 'CreateLibraryDto[libraryType=$libraryType]';
+  String toString() => 'CreateLibraryDto[name=$name, isVisible=$isVisible]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'libraryType'] = this.libraryType;
+      json[r'name'] = this.name;
+    if (this.isVisible != null) {
+      json[r'isVisible'] = this.isVisible;
+    } else {
+    //  json[r'isVisible'] = null;
+    }
     return json;
   }
 
@@ -44,7 +60,8 @@ class CreateLibraryDto {
       final json = value.cast<String, dynamic>();
 
       return CreateLibraryDto(
-        libraryType: LibraryTypeEnum.fromJson(json[r'libraryType'])!,
+        name: mapValueOfType<String>(json, r'name')!,
+        isVisible: mapValueOfType<bool>(json, r'isVisible'),
       );
     }
     return null;
@@ -92,7 +109,7 @@ class CreateLibraryDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'libraryType',
+    'name',
   };
 }
 

@@ -4,6 +4,7 @@
   import AccountMultipleOutline from 'svelte-material-icons/AccountMultipleOutline.svelte';
   import AccountMultiple from 'svelte-material-icons/AccountMultiple.svelte';
   import ImageAlbum from 'svelte-material-icons/ImageAlbum.svelte';
+  import ImageLibrary from 'svelte-material-icons/Bookshelf.svelte';
   import ImageMultipleOutline from 'svelte-material-icons/ImageMultipleOutline.svelte';
   import ImageMultiple from 'svelte-material-icons/ImageMultiple.svelte';
   import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
@@ -49,6 +50,15 @@
     try {
       const { data: albumCount } = await api.albumApi.getAlbumCount();
       return albumCount;
+    } catch {
+      return { owned: 0, shared: 0, notShared: 0 };
+    }
+  };
+
+  const getLibraryCount = async () => {
+    try {
+      const { data: libraryCount } = await api.libraryApi.getLibraryCount();
+      return libraryCount;
     } catch {
       return { owned: 0, shared: 0, notShared: 0 };
     }
@@ -134,6 +144,24 @@
         {:then data}
           <div>
             <p>{data.favorites} Favorites</p>
+          </div>
+        {/await}
+      </svelte:fragment>
+    </SideBarButton>
+  </a>
+  <a data-sveltekit-preload-data="hover" href={AppRoute.LIBRARIES} draggable="false">
+    <SideBarButton
+      title="Libraries"
+      logo={ImageLibrary}
+      flippedLogo={true}
+      isSelected={$page.route.id === '/(user)/libraries'}
+    >
+      <svelte:fragment slot="moreInformation">
+        {#await getLibraryCount()}
+          <LoadingSpinner />
+        {:then data}
+          <div>
+            <p>{data.toLocaleString($locale)} Libraries</p>
           </div>
         {/await}
       </svelte:fragment>
