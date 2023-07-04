@@ -1,9 +1,10 @@
 import { LibraryService } from '@app/domain/library/library.service';
 import { LibraryController } from '@app/immich/controllers';
 import { LibraryEntity } from '@app/infra/entities';
+import { LibraryRepository } from '@app/infra/repositories/library.repository';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ILibraryRepository, LibraryRepository } from './library.repository';
+import { ILibraryRepository } from './library.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([LibraryEntity])],
