@@ -130,8 +130,19 @@ export class PersonService {
     const mergeIds = dto.ids.filter((id) => id !== primaryPersonId);
 
     // Find and remove duplicated entry in asset_faces table
-    for (const id of mergeIds) {
-      const assetIds = await this.repository.getIdenticalAssets([primaryPersonId, id]);
+    for (const mergePersonId of mergeIds) {
+      const assetIds = await this.repository.getIdenticalAssets([primaryPersonId, mergePersonId]);
+
+      // Remove record of duplicated entry in asset_faces table
+      // and Typesense database belong to merge person
+      for (const assetId of assetIds) {
+        await this.repository.deleteAsset(mergePersonId, assetId);
+
+        await this.jobRepository.queue({
+          name: JobName.SEARCH_REMOVE_FACE,
+          data: { assetId, personId: mergePersonId },
+        });
+      }
     }
   }
 
