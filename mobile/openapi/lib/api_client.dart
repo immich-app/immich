@@ -291,6 +291,8 @@ class ApiClient {
           return MapMarkerResponseDto.fromJson(value);
         case 'MemoryLaneResponseDto':
           return MemoryLaneResponseDto.fromJson(value);
+        case 'MergePersonDto':
+          return MergePersonDto.fromJson(value);
         case 'OAuthCallbackDto':
           return OAuthCallbackDto.fromJson(value);
         case 'OAuthConfigDto':

@@ -1680,6 +1680,19 @@ export interface MemoryLaneResponseDto {
 /**
  * 
  * @export
+ * @interface MergePersonDto
+ */
+export interface MergePersonDto {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof MergePersonDto
+     */
+    'ids': Array<string>;
+}
+/**
+ * 
+ * @export
  * @interface OAuthCallbackDto
  */
 export interface OAuthCallbackDto {
@@ -8822,6 +8835,50 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
         },
         /**
          * 
+         * @param {MergePersonDto} mergePersonDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        mergePerson: async (mergePersonDto: MergePersonDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'mergePersonDto' is not null or undefined
+            assertParamExists('mergePerson', 'mergePersonDto', mergePersonDto)
+            const localVarPath = `/person/merge`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(mergePersonDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {string} id 
          * @param {PersonUpdateDto} personUpdateDto 
          * @param {*} [options] Override http request option.
@@ -8919,6 +8976,16 @@ export const PersonApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {MergePersonDto} mergePersonDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async mergePerson(mergePersonDto: MergePersonDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.mergePerson(mergePersonDto, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {string} id 
          * @param {PersonUpdateDto} personUpdateDto 
          * @param {*} [options] Override http request option.
@@ -8975,6 +9042,15 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
         },
         /**
          * 
+         * @param {MergePersonDto} mergePersonDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        mergePerson(mergePersonDto: MergePersonDto, options?: any): AxiosPromise<void> {
+            return localVarFp.mergePerson(mergePersonDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {string} id 
          * @param {PersonUpdateDto} personUpdateDto 
          * @param {*} [options] Override http request option.
@@ -9026,6 +9102,20 @@ export interface PersonApiGetPersonThumbnailRequest {
      * @memberof PersonApiGetPersonThumbnail
      */
     readonly id: string
+}
+
+/**
+ * Request parameters for mergePerson operation in PersonApi.
+ * @export
+ * @interface PersonApiMergePersonRequest
+ */
+export interface PersonApiMergePersonRequest {
+    /**
+     * 
+     * @type {MergePersonDto}
+     * @memberof PersonApiMergePerson
+     */
+    readonly mergePersonDto: MergePersonDto
 }
 
 /**
@@ -9097,6 +9187,17 @@ export class PersonApi extends BaseAPI {
      */
     public getPersonThumbnail(requestParameters: PersonApiGetPersonThumbnailRequest, options?: AxiosRequestConfig) {
         return PersonApiFp(this.configuration).getPersonThumbnail(requestParameters.id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {PersonApiMergePersonRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PersonApi
+     */
+    public mergePerson(requestParameters: PersonApiMergePersonRequest, options?: AxiosRequestConfig) {
+        return PersonApiFp(this.configuration).mergePerson(requestParameters.mergePersonDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
