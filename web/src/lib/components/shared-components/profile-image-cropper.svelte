@@ -13,40 +13,32 @@
   import type { UserResponseDto } from '@api';
   import { notificationController, NotificationType } from './notification/notification';
   import { lastUpdatedProfilePicture } from '$lib/stores/preferences.store';
-  onMount(() => {
-    console.log(asset);
-  });
 
   let user: UserResponseDto;
+  let profilePicture: HTMLDivElement;
 
   const handleSetProfilePicture = async () => {
-    const div: HTMLElement | null = document.getElementById('profile-picture')?.childNodes[0] as HTMLElement;
-    if (!div) {
-      return;
-    }
-    domtoimage.toBlob(div).then(function (blob: Blob) {
-      const file: File = new File([blob], 'profile-picture.png', { type: 'image/png' });
-      try {
-        api.userApi.createProfileImage({ file }).then((res) => {
-          console.log(res);
-          //set store to update profile picture
-          lastUpdatedProfilePicture.set(Date.now());
-          dispatch('close');
-          notificationController.show({
-            type: NotificationType.Info,
-            message: 'Profile picture set.',
-            timeout: 3000,
-          });
-        });
-      } catch (err) {
-        console.error('Error [profile-image-cropper]:', err);
+    const div = profilePicture.childNodes[0] as HTMLDivElement;
+    const blob: Blob = await domtoimage.toBlob(div);
+    const file: File = new File([blob], 'profile-picture.png', { type: 'image/png' });
+    try {
+      api.userApi.createProfileImage({ file }).then((res) => {
+        lastUpdatedProfilePicture.set(Date.now());
+        dispatch('close');
         notificationController.show({
-          type: NotificationType.Error,
-          message: 'Error setting profile picture.',
+          type: NotificationType.Info,
+          message: 'Profile picture set.',
           timeout: 3000,
         });
-      }
-    });
+      });
+    } catch (err) {
+      console.error('Error [profile-image-cropper]:', err);
+      notificationController.show({
+        type: NotificationType.Error,
+        message: 'Error setting profile picture.',
+        timeout: 3000,
+      });
+    }
   };
 </script>
 
@@ -58,13 +50,12 @@
   </svelte:fragment>
   <div class="flex justify-center place-items-center items-center">
     <div
-      id="profile-picture"
+      bind:this={profilePicture}
       class="w-1/2 aspect-square rounded-full overflow-hidden relative flex border-immich-primary border-4"
     >
-      <PhotoViewer {publicSharedKey} {asset} on:close={() => console.log('close')} />
+      <PhotoViewer {publicSharedKey} {asset} />
     </div>
   </div>
-  <div id="output" />
   <span class="p-4 flex justify-end">
     <Button on:click={handleSetProfilePicture}>
       <p class="">Set as profile picture</p>

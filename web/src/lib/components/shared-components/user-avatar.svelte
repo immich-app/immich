@@ -19,7 +19,6 @@
   let appendix = '';
 
   lastUpdatedProfilePicture.subscribe((value) => {
-    console.log('isUpdateProfilePicture', value);
     if (value) {
       appendix = '?d=' + value;
     }
