@@ -81,7 +81,7 @@
         if (shiftKey) downloadFile(asset, publicSharedKey);
         return;
       case 'Delete':
-        deleteAsset();
+        isShowDeleteConfirmation = true;
         return;
       case 'Escape':
         closeViewer();
