@@ -12,7 +12,6 @@ export interface IPersonRepository {
   getById(userId: string, personId: string): Promise<PersonEntity | null>;
 
   getAssets(userId: string, personId: string): Promise<AssetEntity[]>;
-  getAssetsCount(personId: string): Promise<number>;
   deleteIdenticalAssets(primaryPersonId: string, mergePersonId: string): Promise<string[]>;
   reassignFaces(oldId: string, newId: string): Promise<number>;
 
