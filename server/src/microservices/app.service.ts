@@ -76,9 +76,8 @@ export class AppService {
       [JobName.QUEUE_SIDECAR]: (data) => this.metadataService.handleQueueSidecar(data),
       [JobName.SIDECAR_DISCOVERY]: (data) => this.metadataService.handleSidecarDiscovery(data),
       [JobName.SIDECAR_SYNC]: () => this.metadataService.handleSidecarSync(),
-      [JobName.ADD_LIBRARY_FILE]: (data) => this.assetService.handleAddLibraryFile(data),
-      [JobName.REFRESH_LIBRARY_FILE]: (data) => this.assetService.handleRefreshLibraryFile(data),
-      [JobName.REMOVE_LIBRARY_FILE]: (data) => this.assetService.handleRemoveLibraryFile(data),
+      [JobName.REFRESH_LIBRARY_FILE]: (data) => this.assetService.handleRefreshAsset(data),
+      [JobName.OFFLINE_LIBRARY_FILE]: (data) => this.assetService.handleOfflineAsset(data),
     });
 
     process.on('uncaughtException', (error: Error | any) => {

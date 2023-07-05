@@ -1,7 +1,6 @@
-import { LibraryEntity, LibraryType, UserEntity } from '@app/infra/entities';
+import { LibraryType, UserEntity } from '@app/infra/entities';
 import {
   BadRequestException,
-  ForbiddenException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -9,7 +8,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
+import path from 'node:path';
 import { AccessCore, IAccessRepository, Permission } from '../access';
+import { IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';
 import { IJobRepository, ILibraryJob, JobName } from '../job';
 import { LibraryCrawler } from './library-crawler';
@@ -31,6 +32,7 @@ export class LibraryService {
 
   constructor(
     @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
+    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
@@ -107,6 +109,9 @@ export class LibraryService {
     // TODO:
     //await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, dto.libraryId);
 
+    const forceRefresh = dto.forceRefresh;
+    const emptyTrash = dto.emptyTrash;
+
     const library = await this.libraryRepository.getById(libraryId);
 
     if (library.type != LibraryType.IMPORT) {
@@ -119,18 +124,41 @@ export class LibraryService {
       return;
     }
 
-    const crawledAssetPaths = await this.crawler.findAllMedia({
-      pathsToCrawl: library.importPaths,
-      excludePatterns: ['**/Original/**'],
-    });
+    const crawledAssetPaths = (
+      await this.crawler.findAllMedia({
+        pathsToCrawl: library.importPaths,
+        excludePatterns: ['**/Original/**'], //TODO: this is just for testing
+      })
+    ).map(path.normalize);
+
     for (const assetPath of crawledAssetPaths) {
       const libraryJobData: ILibraryJob = {
-        assetPath: assetPath,
+        assetPath: path.normalize(assetPath),
         ownerId: authUser.id,
         libraryId: libraryId,
+        forceRefresh: dto.forceRefresh ?? false,
+        emptyTrash: dto.emptyTrash ?? false,
       };
 
-      await this.jobRepository.queue({ name: JobName.ADD_LIBRARY_FILE, data: libraryJobData });
+      await this.jobRepository.queue({ name: JobName.REFRESH_LIBRARY_FILE, data: libraryJobData });
+    }
+    const assetsInLibrary = await this.assetRepository.getByLibraryId([libraryId]);
+
+    const offlineAssets = assetsInLibrary
+      .map((asset) => asset.originalPath)
+      .map(path.normalize)
+      .filter((assetPath) => !crawledAssetPaths.includes(assetPath));
+
+    for (const offlineAssetPath of offlineAssets) {
+      const libraryJobData: ILibraryJob = {
+        assetPath: offlineAssetPath,
+        ownerId: authUser.id,
+        libraryId: libraryId,
+        forceRefresh: false,
+        emptyTrash: dto.emptyTrash ?? false,
+      };
+
+      await this.jobRepository.queue({ name: JobName.OFFLINE_LIBRARY_FILE, data: libraryJobData });
     }
   }
 }

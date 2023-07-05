@@ -1,9 +1,10 @@
 import { AssetEntity, AssetType, LibraryEntity, UserEntity } from '@app/infra/entities';
-import { BadRequestException, Inject } from '@nestjs/common';
+import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
 import fs from 'fs';
 import { DateTime } from 'luxon';
 import mime from 'mime';
 import { basename, extname, parse } from 'path';
+import { NotFoundError } from 'rxjs';
 import { AccessCore, IAccessRepository, Permission } from '../access';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
@@ -149,8 +150,8 @@ export class AssetService {
     throw new BadRequestException('assetIds, albumId, or userId is required');
   }
 
-  async handleAddLibraryFile(job: ILibraryJob) {
-    console.log('Importing file ' + job.assetPath);
+  async handleRefreshAsset(job: ILibraryJob) {
+    console.log('Refreshing file ' + job.assetPath);
     // TODO: Determine file type from extension only
     const mimeType = mime.lookup(job.assetPath);
     if (!mimeType) {
@@ -160,7 +161,33 @@ export class AssetService {
       throw new BadRequestException(`Unsupported file type ${mimeType}`);
     }
 
-    const stats = await fs.promises.stat(job.assetPath);
+    const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, job.assetPath);
+
+    let stats: fs.Stats;
+    try {
+      stats = await fs.promises.stat(job.assetPath);
+    } catch (error) {
+      // Can't access file, probably offline
+      if (job.emptyTrash && existingAssetEntity) {
+        // Remove asset from database
+        await this.assetRepository.remove(existingAssetEntity);
+        return true;
+      } else if (existingAssetEntity) {
+        // Mark asset as offline
+        existingAssetEntity.isOffline = true;
+        await this.assetRepository.save(existingAssetEntity);
+        return true;
+      } else {
+        throw new BadRequestException(error, "Can't access file");
+      }
+    }
+
+    if (stats.mtime == existingAssetEntity.fileModifiedAt && !job.forceRefresh) {
+      // File last modified time matches database entry
+      // Unless we're forcing a refresh, exit here
+      return true;
+    }
+
     const checksum = await this.cryptoRepository.hashFile(job.assetPath);
     const deviceAssetId = `${basename(job.assetPath)}-${stats.size}`.replace(/\s+/g, '');
     const assetType = mimeType.split('/')[0].toUpperCase() as AssetType;
@@ -218,12 +245,7 @@ export class AssetService {
     return true;
   }
 
-  async handleRefreshLibraryFile(job: ILibraryJob) {
-    // TODO
-    return true;
-  }
-
-  async handleRemoveLibraryFile(job: ILibraryJob) {
+  async handleOfflineAsset(job: ILibraryJob) {
     // TODO
     return true;
   }

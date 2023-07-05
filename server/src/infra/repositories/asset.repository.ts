@@ -74,6 +74,7 @@ export class AssetRepository implements IAssetRepository {
       },
     });
   }
+
   async deleteAll(ownerId: string): Promise<void> {
     await this.repository.delete({ ownerId });
   }
@@ -102,6 +103,22 @@ export class AssetRepository implements IAssetRepository {
         exifInfo: true,
       },
     });
+  }
+
+  getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]> {
+    return this.repository.find({
+      where: { library: { id: In(libraryIds) } },
+    });
+  }
+
+  getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity> {
+    return this.repository.findOneOrFail({
+      where: { library: { id: libraryId }, originalPath: originalPath },
+    });
+  }
+
+  async remove(asset: AssetEntity): Promise<AssetEntity> {
+    return this.repository.remove(asset);
   }
 
   getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {
