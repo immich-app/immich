@@ -88,7 +88,6 @@
             on:keydown|preventDefault
             on:keyup|preventDefault
             class="absolute p-2"
-            class:group-hover:block={!disabled}
             class:cursor-not-allowed={disabled}
             role="checkbox"
             aria-checked={selected}
