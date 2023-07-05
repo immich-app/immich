@@ -122,7 +122,7 @@ export class PersonService {
     for (const id of dto.ids) {
       const person = await this.repository.getById(authUser.id, id);
       if (!person) {
-        throw new BadRequestException();
+        throw new BadRequestException('Person not found');
       }
     }
 
