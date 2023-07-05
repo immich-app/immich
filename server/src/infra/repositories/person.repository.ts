@@ -1,7 +1,7 @@
 import { AssetFaceId, IPersonRepository, PersonSearchOptions } from '@app/domain';
 import { BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
 
 export class PersonRepository implements IPersonRepository {
@@ -10,6 +10,17 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(PersonEntity) private personRepository: Repository<PersonEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
   ) {}
+
+  async updateAssetsId(personId: string, assetIds: string[]): Promise<number> {
+    const result = await this.assetFaceRepository
+      .createQueryBuilder()
+      .update()
+      .set({ personId })
+      .where({ assetId: In(assetIds) })
+      .execute();
+
+    return result.affected ?? 0;
+  }
 
   /**
    * Find the assets that containers faces from both persons.

@@ -10,9 +10,12 @@ export interface IPersonRepository {
   getAll(userId: string, options: PersonSearchOptions): Promise<PersonEntity[]>;
   getAllWithoutFaces(): Promise<PersonEntity[]>;
   getById(userId: string, personId: string): Promise<PersonEntity | null>;
-  getAssets(userId: string, id: string): Promise<AssetEntity[]>;
+
+  getAssets(userId: string, personId: string): Promise<AssetEntity[]>;
   getAssetsCount(personId: string): Promise<number>;
   getIdenticalAssets(ids: string[]): Promise<string[]>;
+  updateAssetsId(personId: string, assetIds: string[]): Promise<number>;
+  deleteAsset(personId: string, assetId: string): Promise<AssetFaceEntity | null>;
 
   create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   update(entity: Partial<PersonEntity>): Promise<PersonEntity>;
@@ -20,5 +23,4 @@ export interface IPersonRepository {
   deleteAll(): Promise<number>;
 
   getFaceById(payload: AssetFaceId): Promise<AssetFaceEntity | null>;
-  deleteAsset(personId: string, assetId: string): Promise<AssetFaceEntity | null>;
 }

@@ -126,7 +126,16 @@ export class PersonService {
       }
     }
 
+    /**
+     * The person with the most assets will be indicated as the primary (correct) person.
+     * Other people with less assets will be merged into the primary person.
+     */
     const primaryPersonId = await this.getPersonWithMostAssets(dto.ids);
+    const primaryPerson = await this.repository.getById(authUser.id, primaryPersonId);
+    if (!primaryPerson) {
+      throw new BadRequestException();
+    }
+
     const mergeIds = dto.ids.filter((id) => id !== primaryPersonId);
 
     for (const mergePersonId of mergeIds) {
@@ -143,17 +152,28 @@ export class PersonService {
           data: { assetId, personId: mergePersonId },
         });
       }
+      this.logger.debug(`Deleted ${assetIds.length} duplicated assets`);
 
-      // Delete merge person
       const mergePerson = await this.repository.getById(authUser.id, mergePersonId);
       if (!mergePerson) {
         throw new BadRequestException();
       }
 
-      await this.repository.delete(mergePerson);
-    }
+      const assetsToUpdate = await this.repository.getAssets(authUser.id, mergePersonId);
+      const assetsToUpdateIds = assetsToUpdate.map((asset) => asset.id);
+      console.log(assetsToUpdateIds);
+      const affectedUpdate = await this.repository.updateAssetsId(primaryPersonId, assetsToUpdateIds);
 
-    // Update assets of merge person to primary person
+      this.logger.debug(
+        `Merged person ${mergePerson.name ?? mergePersonId} into ${
+          primaryPerson.name == '' ? primaryPerson.id : primaryPerson.name
+        } - ${affectedUpdate} assets updated`,
+      );
+
+      // Delete merge person
+      await this.repository.delete(mergePerson);
+      this.logger.debug(`Deleted person ${mergePersonId} (${mergePerson.name})`);
+    }
   }
 
   private async getPersonWithMostAssets(ids: string[]): Promise<string> {
