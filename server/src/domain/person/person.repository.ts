@@ -14,7 +14,7 @@ export interface IPersonRepository {
   getAssets(userId: string, personId: string): Promise<AssetEntity[]>;
   getAssetsCount(personId: string): Promise<number>;
   deleteIdenticalAssets(primaryPersonId: string, mergePersonId: string): Promise<string[]>;
-  updateAssetsId(primaryPersonId: string, mergePersonId: string): Promise<number>;
+  reassignFaces(oldId: string, newId: string): Promise<number>;
 
   create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   update(entity: Partial<PersonEntity>): Promise<PersonEntity>;

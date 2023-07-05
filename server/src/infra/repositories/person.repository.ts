@@ -10,12 +10,12 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
   ) {}
 
-  async updateAssetsId(primaryPersonId: string, mergePersonId: string): Promise<number> {
+  async reassignFaces(oldId: string, newId: string): Promise<number> {
     const result = await this.assetFaceRepository
       .createQueryBuilder()
       .update()
-      .set({ personId: primaryPersonId })
-      .where({ personId: mergePersonId })
+      .set({ personId: oldId })
+      .where({ personId: newId })
       .execute();
 
     return result.affected ?? 0;

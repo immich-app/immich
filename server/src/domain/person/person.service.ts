@@ -153,7 +153,7 @@ export class PersonService {
         throw new BadRequestException();
       }
 
-      const affectedUpdate = await this.repository.updateAssetsId(primaryPersonId, mergePersonId);
+      const affectedUpdate = await this.repository.reassignFaces(primaryPersonId, mergePersonId);
 
       this.logger.debug(
         `Merged person ${mergePerson.name ?? mergePersonId} into ${
