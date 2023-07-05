@@ -37,10 +37,12 @@ export class AddLibraries1688392120838 implements MigrationInterface {
       await queryRunner.manager.update(AssetEntity, { ownerId: user.id }, { library: libraryEntity });
     }
 
-    await queryRunner.query(`ALTER TABLE "assets" ADD "libraryId" uuid NOT NULL`);
+    await queryRunner.query(`ALTER TABLE "assets" ALTER COLUMN "libraryId" SET NOT NULL`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`ALTER TABLE "assets" ALTER COLUMN "libraryId" DROP NOT NULL`);
+
     await queryRunner.query(`ALTER TABLE "assets" DROP CONSTRAINT "FK_9977c3c1de01c3d848039a6b90c"`);
     await queryRunner.query(`ALTER TABLE "libraries" DROP CONSTRAINT "FK_0f6fc2fb195f24d19b0fb0d57c1"`);
     await queryRunner.query(`DROP INDEX "UQ_assets_uploaded_owner_library_checksum"`);
