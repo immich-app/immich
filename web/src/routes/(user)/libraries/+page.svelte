@@ -1,37 +1,23 @@
 <script lang="ts">
   import LibraryCard from '$lib/components/libraries/library-card.svelte';
   import { goto } from '$app/navigation';
-  import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
-  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
   import type { PageData } from './$types';
   import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
   import { useLibraries } from './libraries.bloc';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import { flip } from 'svelte/animate';
-  import type { LibraryResponseDto } from '@api';
 
   export let data: PageData;
 
   const {
     libraries: unsortedLibraries,
-    isShowContextMenu,
-    contextMenuPosition,
-    contextMenuTargetLibrary,
     createUploadLibrary,
     createImportLibrary,
     showLibraryContextMenu,
-    closeLibraryContextMenu,
   } = useLibraries({ libraries: data.libraries });
 
   let libraries = unsortedLibraries;
-  let libraryToDelete: LibraryResponseDto | null;
-
-  const setLibraryToDelete = () => {
-    libraryToDelete = $contextMenuTargetLibrary ?? null;
-    closeLibraryContextMenu();
-  };
 
   const handleCreateUploadLibrary = async () => {
     const newLibrary = await createUploadLibrary();
@@ -73,15 +59,3 @@
     {/each}
   </div>
 </UserPageLayout>
-
-<!-- Context Menu -->
-{#if $isShowContextMenu}
-  <ContextMenu {...$contextMenuPosition} on:outclick={closeLibraryContextMenu}>
-    <MenuOption on:click={() => setLibraryToDelete()}>
-      <span class="flex place-items-center place-content-center gap-2">
-        <DeleteOutline size="18" />
-        <p>Delete Library</p>
-      </span>
-    </MenuOption>
-  </ContextMenu>
-{/if}
