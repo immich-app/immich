@@ -104,10 +104,10 @@ export class AssetService {
     try {
       if (livePhotoFile) {
         const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false };
-        livePhotoAsset = await this.assetCore.create(authUser.id, livePhotoDto, livePhotoFile);
+        livePhotoAsset = await this.assetCore.create(authUser, livePhotoDto, livePhotoFile);
       }
 
-      const asset = await this.assetCore.create(authUser.id, dto, file, livePhotoAsset?.id, sidecarFile?.originalPath);
+      const asset = await this.assetCore.create(authUser, dto, file, livePhotoAsset?.id, sidecarFile?.originalPath);
 
       return { id: asset.id, duplicate: false };
     } catch (error: any) {
@@ -118,7 +118,10 @@ export class AssetService {
       });
 
       // handle duplicates with a success response
-      if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_owner_library_checksum') {
+      if (
+        error instanceof QueryFailedError &&
+        (error as any).constraint === 'UQ_assets_uploaded_owner_library_checksum'
+      ) {
         const checksums = [file.checksum, livePhotoFile?.checksum].filter((checksum): checksum is Buffer => !!checksum);
         const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, checksums);
         return { id: duplicate.id, duplicate: true };
@@ -134,10 +137,6 @@ export class AssetService {
       throw new BadRequestException("File does not exist within user's external path");
     }
 
-    return await this.addFile(authUser.id, dto);
-  }
-
-  public async addFile(userId: string, dto: ImportAssetDto): Promise<AssetFileUploadResponseDto> {
     dto = {
       ...dto,
       assetPath: path.resolve(dto.assetPath),
@@ -174,19 +173,19 @@ export class AssetService {
     };
 
     try {
-      const asset = await this.assetCore.create(userId, dto, assetFile, undefined, dto.sidecarPath);
+      const asset = await this.assetCore.create(authUser, dto, assetFile, undefined, dto.sidecarPath);
       return { id: asset.id, duplicate: false };
     } catch (error: QueryFailedError | Error | any) {
       // handle duplicates with a success response
       if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_owner_library_checksum') {
-        const [duplicate] = await this._assetRepository.getAssetsByChecksums(userId, [assetFile.checksum]);
+        const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser, [assetFile.checksum]);
         return { id: duplicate.id, duplicate: true };
       }
 
       if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_owner_library_originalpath') {
         const duplicate = await this._assetRepository.getByOriginalPath(dto.assetPath);
         if (duplicate) {
-          if (duplicate.ownerId === userId) {
+          if (duplicate.ownerId === authUser.id) {
             return { id: duplicate.id, duplicate: true };
           }
 
