@@ -1,5 +1,4 @@
 import { AssetFaceId, IPersonRepository, PersonSearchOptions } from '@app/domain';
-import { BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
@@ -11,51 +10,43 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
   ) {}
 
-  async updateAssetsId(primaryPersonId: string, mergePersonId: string, assetIds: string[]): Promise<number> {
+  async updateAssetsId(primaryPersonId: string, mergePersonId: string): Promise<number> {
     const result = await this.assetFaceRepository
       .createQueryBuilder()
       .update()
       .set({ personId: primaryPersonId })
-      .where({ assetId: In(assetIds), personId: mergePersonId })
+      .where({ personId: mergePersonId })
       .execute();
 
     return result.affected ?? 0;
   }
 
   /**
-   * Find the assets that containers faces from both persons.
+   * Delete the assets that containers faces from both persons.
    * Normally, this shouldn't happen, however there are some edge cases, where your photo is taken
    * with an older version of your self, and the face detection algorithm detects both faces as different.
    * @param ids Array of personId.
    * @returns sAn array of assetId that contains faces from both persons.
    */
-  async getIdenticalAssets(ids: string[]): Promise<string[]> {
-    const result = await this.assetFaceRepository
+  async deleteIdenticalAssets(primaryPersonId: string, mergePersonId: string): Promise<string[]> {
+    const duplicatedAssets = await this.assetFaceRepository
       .createQueryBuilder('af')
       .select('af."assetId"')
       .where(`af."personId" IN (:...ids)`, {
-        ids,
+        ids: [primaryPersonId, mergePersonId],
       })
       .groupBy('af."assetId"')
       .having('COUNT(af."personId") > 1')
       .getRawMany();
 
-    return result.map((r) => r.assetId);
-  }
+    const deleteIds = duplicatedAssets.map((r) => r.assetId);
 
-  async deleteAsset(personId: string, assetId: string): Promise<AssetFaceEntity | null> {
-    const entity = await this.assetFaceRepository.findOne({
-      where: {
-        personId,
-        assetId,
-      },
+    await this.assetFaceRepository.delete({
+      assetId: In(deleteIds),
+      personId: mergePersonId,
     });
 
-    if (!entity) {
-      return null;
-    }
-
-    return this.assetFaceRepository.remove(entity);
+    return deleteIds;
   }
 
   delete(entity: PersonEntity): Promise<PersonEntity | null> {

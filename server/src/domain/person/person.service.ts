@@ -118,7 +118,7 @@ export class PersonService {
     return true;
   }
 
-  async mergePerson(authUser: AuthUserDto, dto: MergePersonDto) {
+  async mergePerson(authUser: AuthUserDto, primaryPersonId: string, dto: MergePersonDto) {
     for (const id of dto.ids) {
       const person = await this.repository.getById(authUser.id, id);
       if (!person) {
@@ -126,42 +126,34 @@ export class PersonService {
       }
     }
 
-    /**
-     * The person with the most assets will be indicated as the primary (correct) person.
-     * Other people with less assets will be merged into the primary person.
-     */
-    const primaryPersonId = await this.getPersonWithMostAssets(dto.ids);
     const primaryPerson = await this.repository.getById(authUser.id, primaryPersonId);
     if (!primaryPerson) {
       throw new BadRequestException();
     }
 
-    const mergeIds = dto.ids.filter((id) => id !== primaryPersonId);
-
+    const mergeIds = dto.ids;
     for (const mergePersonId of mergeIds) {
       // Find and remove duplicated entry in asset_faces table
-      const assetIds = await this.repository.getIdenticalAssets([primaryPersonId, mergePersonId]);
+      const identicalAssetIds = await this.repository.deleteIdenticalAssets(primaryPersonId, mergePersonId);
 
       // Remove record of duplicated entry in asset_faces table
       // and Typesense database belong to merge person
-      for (const assetId of assetIds) {
-        await this.repository.deleteAsset(mergePersonId, assetId);
-
-        await this.jobRepository.queue({
-          name: JobName.SEARCH_REMOVE_FACE,
-          data: { assetId, personId: mergePersonId },
-        });
+      if (identicalAssetIds.length > 0) {
+        for (const assetId of identicalAssetIds) {
+          await this.jobRepository.queue({
+            name: JobName.SEARCH_REMOVE_FACE,
+            data: { assetId, personId: mergePersonId },
+          });
+        }
+        this.logger.debug(`Deleted ${identicalAssetIds.length} duplicated assets`);
       }
-      this.logger.debug(`Deleted ${assetIds.length} duplicated assets`);
 
       const mergePerson = await this.repository.getById(authUser.id, mergePersonId);
       if (!mergePerson) {
         throw new BadRequestException();
       }
 
-      const assetsToUpdate = await this.repository.getAssets(authUser.id, mergePersonId);
-      const assetsToUpdateIds = assetsToUpdate.map((asset) => asset.id);
-      const affectedUpdate = await this.repository.updateAssetsId(primaryPersonId, mergePersonId, assetsToUpdateIds);
+      const affectedUpdate = await this.repository.updateAssetsId(primaryPersonId, mergePersonId);
 
       this.logger.debug(
         `Merged person ${mergePerson.name ?? mergePersonId} into ${
@@ -173,23 +165,5 @@ export class PersonService {
       await this.repository.delete(mergePerson);
       this.logger.debug(`Deleted person ${mergePersonId} (${mergePerson.name})`);
     }
-  }
-
-  private async getPersonWithMostAssets(ids: string[]): Promise<string> {
-    const result: Map<string, number>[] = [];
-
-    for (const personId of ids) {
-      const count = await this.repository.getAssetsCount(personId);
-      result.push(new Map([[personId, count]]));
-    }
-
-    // Find the person with the most assets
-    const sorted = result.sort((a, b) => {
-      const aCount = a.values().next().value;
-      const bCount = b.values().next().value;
-      return bCount - aCount;
-    });
-
-    return sorted[0].keys().next().value;
   }
 }
