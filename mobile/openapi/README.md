@@ -127,7 +127,7 @@ Class | Method | HTTP request | Description
 *LibraryApi* | [**getImportPaths**](doc//LibraryApi.md#getimportpaths) | **GET** /library/{id}/importPaths | 
 *LibraryApi* | [**getLibraryCount**](doc//LibraryApi.md#getlibrarycount) | **GET** /library/count | 
 *LibraryApi* | [**getLibraryInfo**](doc//LibraryApi.md#getlibraryinfo) | **GET** /library/{id} | 
-*LibraryApi* | [**scanLibrary**](doc//LibraryApi.md#scanlibrary) | **POST** /library/{id}/scan | 
+*LibraryApi* | [**refreshLibrary**](doc//LibraryApi.md#refreshlibrary) | **POST** /library/refresh/{id} | 
 *LibraryApi* | [**setImportPaths**](doc//LibraryApi.md#setimportpaths) | **POST** /library/{id}/importPaths | 
 *OAuthApi* | [**callback**](doc//OAuthApi.md#callback) | **POST** /oauth/callback | 
 *OAuthApi* | [**generateConfig**](doc//OAuthApi.md#generateconfig) | **POST** /oauth/config | 

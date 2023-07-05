@@ -14,25 +14,31 @@ class ScanLibraryDto {
   /// Returns a new [ScanLibraryDto] instance.
   ScanLibraryDto({
     this.forceRefresh = false,
+    this.emptyTrash = false,
   });
 
   bool forceRefresh;
 
+  bool emptyTrash;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ScanLibraryDto &&
-     other.forceRefresh == forceRefresh;
+     other.forceRefresh == forceRefresh &&
+     other.emptyTrash == emptyTrash;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (forceRefresh.hashCode);
+    (forceRefresh.hashCode) +
+    (emptyTrash.hashCode);
 
   @override
-  String toString() => 'ScanLibraryDto[forceRefresh=$forceRefresh]';
+  String toString() => 'ScanLibraryDto[forceRefresh=$forceRefresh, emptyTrash=$emptyTrash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'forceRefresh'] = this.forceRefresh;
+      json[r'emptyTrash'] = this.emptyTrash;
     return json;
   }
 
@@ -45,6 +51,7 @@ class ScanLibraryDto {
 
       return ScanLibraryDto(
         forceRefresh: mapValueOfType<bool>(json, r'forceRefresh') ?? false,
+        emptyTrash: mapValueOfType<bool>(json, r'emptyTrash') ?? false,
       );
     }
     return null;

@@ -18,7 +18,7 @@ import {
   GetLibrariesDto,
   LibraryResponseDto,
   mapLibrary,
-  ScanLibraryDto,
+  ScanLibraryDto as RefreshLibraryDto,
   SetImportPathsDto,
 } from './library.dto';
 import { ILibraryRepository } from './library.repository';
@@ -103,7 +103,7 @@ export class LibraryService {
     return mapLibrary(updatedEntity);
   }
 
-  async scan(authUser: AuthUserDto, libraryId: string, dto: ScanLibraryDto) {
+  async refresh(authUser: AuthUserDto, libraryId: string, dto: RefreshLibraryDto) {
     // TODO:
     //await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, dto.libraryId);
 

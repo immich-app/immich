@@ -37,7 +37,7 @@ export class AddLibraries1688392120838 implements MigrationInterface {
       await queryRunner.manager.update(AssetEntity, { ownerId: user.id }, { library: libraryEntity });
     }
 
-    await queryRunner.query(`ALTER TABLE "assets" ADD "libraryId" uuid`);
+    await queryRunner.query(`ALTER TABLE "assets" ADD "libraryId" uuid NOT NULL`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

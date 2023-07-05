@@ -259,15 +259,15 @@ class LibraryApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /library/{id}/scan' operation and returns the [Response].
+  /// Performs an HTTP 'POST /library/refresh/{id}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] id (required):
   ///
   /// * [ScanLibraryDto] scanLibraryDto (required):
-  Future<Response> scanLibraryWithHttpInfo(String id, ScanLibraryDto scanLibraryDto,) async {
+  Future<Response> refreshLibraryWithHttpInfo(String id, ScanLibraryDto scanLibraryDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/library/{id}/scan'
+    final path = r'/library/refresh/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -296,11 +296,19 @@ class LibraryApi {
   /// * [String] id (required):
   ///
   /// * [ScanLibraryDto] scanLibraryDto (required):
-  Future<void> scanLibrary(String id, ScanLibraryDto scanLibraryDto,) async {
-    final response = await scanLibraryWithHttpInfo(id, scanLibraryDto,);
+  Future<Object?> refreshLibrary(String id, ScanLibraryDto scanLibraryDto,) async {
+    final response = await refreshLibraryWithHttpInfo(id, scanLibraryDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
+    
+    }
+    return null;
   }
 
   /// Performs an HTTP 'POST /library/{id}/importPaths' operation and returns the [Response].

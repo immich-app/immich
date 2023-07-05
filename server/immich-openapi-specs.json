@@ -2360,6 +2360,58 @@
         ]
       }
     },
+    "/library/refresh/{id}": {
+      "post": {
+        "operationId": "refreshLibrary",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScanLibraryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Library"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/library/{id}": {
       "get": {
         "operationId": "getLibraryInfo",
@@ -2479,51 +2531,6 @@
                 }
               }
             }
-          }
-        },
-        "tags": [
-          "Library"
-        ],
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ]
-      }
-    },
-    "/library/{id}/scan": {
-      "post": {
-        "operationId": "scanLibrary",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ScanLibraryDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
           }
         },
         "tags": [
@@ -6255,6 +6262,10 @@
         "type": "object",
         "properties": {
           "forceRefresh": {
+            "type": "boolean",
+            "default": false
+          },
+          "emptyTrash": {
             "type": "boolean",
             "default": false
           }

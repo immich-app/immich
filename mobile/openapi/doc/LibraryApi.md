@@ -14,7 +14,7 @@ Method | HTTP request | Description
 [**getImportPaths**](LibraryApi.md#getimportpaths) | **GET** /library/{id}/importPaths | 
 [**getLibraryCount**](LibraryApi.md#getlibrarycount) | **GET** /library/count | 
 [**getLibraryInfo**](LibraryApi.md#getlibraryinfo) | **GET** /library/{id} | 
-[**scanLibrary**](LibraryApi.md#scanlibrary) | **POST** /library/{id}/scan | 
+[**refreshLibrary**](LibraryApi.md#refreshlibrary) | **POST** /library/refresh/{id} | 
 [**setImportPaths**](LibraryApi.md#setimportpaths) | **POST** /library/{id}/importPaths | 
 
 
@@ -289,8 +289,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **scanLibrary**
-> scanLibrary(id, scanLibraryDto)
+# **refreshLibrary**
+> Object refreshLibrary(id, scanLibraryDto)
 
 
 
@@ -317,9 +317,10 @@ final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String |
 final scanLibraryDto = ScanLibraryDto(); // ScanLibraryDto | 
 
 try {
-    api_instance.scanLibrary(id, scanLibraryDto);
+    final result = api_instance.refreshLibrary(id, scanLibraryDto);
+    print(result);
 } catch (e) {
-    print('Exception when calling LibraryApi->scanLibrary: $e\n');
+    print('Exception when calling LibraryApi->refreshLibrary: $e\n');
 }
 ```
 
@@ -332,7 +333,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-void (empty response body)
+[**Object**](Object.md)
 
 ### Authorization
 
@@ -341,7 +342,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

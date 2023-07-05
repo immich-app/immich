@@ -1,5 +1,5 @@
 <script lang="ts">
-  import LibraryCard from '$lib/components/library-page/library-card.svelte';
+  import LibraryCard from '$lib/components/libraries/library-card.svelte';
   import { goto } from '$app/navigation';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';

@@ -44,6 +44,10 @@ export class ScanLibraryDto {
   @IsBoolean()
   @IsOptional()
   forceRefresh?: boolean = false;
+
+  @IsBoolean()
+  @IsOptional()
+  emptyTrash?: boolean = false;
 }
 
 export class SetImportPathsDto {

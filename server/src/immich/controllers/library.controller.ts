@@ -4,7 +4,7 @@ import {
   GetLibrariesDto,
   LibraryResponseDto,
   LibraryService,
-  ScanLibraryDto,
+  ScanLibraryDto as RefreshLibraryDto,
   SetImportPathsDto,
 } from '@app/domain';
 import { Body, ConsoleLogger, Controller, Get, Param, Post, Query } from '@nestjs/common';
@@ -54,9 +54,8 @@ export class LibraryController {
     return this.libraryService.setImportPaths(authUser, id, dto);
   }
 
-  @AdminRoute()
-  @Post(':id/scan')
-  scanLibrary(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: ScanLibraryDto) {
-    return this.libraryService.scan(authUser, id, dto);
+  @Post('refresh/:id')
+  refreshLibrary(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: RefreshLibraryDto) {
+    return this.libraryService.refresh(authUser, id, dto);
   }
 }

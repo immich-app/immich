@@ -21,6 +21,11 @@ void main() {
       // TODO
     });
 
+    // bool emptyTrash (default value: false)
+    test('to test the property `emptyTrash`', () async {
+      // TODO
+    });
+
 
   });
 
