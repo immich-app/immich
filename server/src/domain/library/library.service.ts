@@ -27,7 +27,6 @@ import { ILibraryRepository } from './library.repository';
 @Injectable()
 export class LibraryService {
   readonly logger = new Logger(LibraryService.name);
-  private access: AccessCore;
   private readonly crawler: LibraryCrawler;
 
   constructor(
@@ -36,7 +35,6 @@ export class LibraryService {
     @Inject(IAccessRepository) accessRepository: IAccessRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
   ) {
-    this.access = new AccessCore(accessRepository);
     this.crawler = new LibraryCrawler();
   }
 
