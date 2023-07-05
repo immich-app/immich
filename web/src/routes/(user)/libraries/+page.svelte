@@ -26,7 +26,6 @@
     contextMenuTargetLibrary,
     createUploadLibrary,
     createImportLibrary,
-    deleteLibrary,
     showLibraryContextMenu,
     closeLibraryContextMenu,
   } = useLibraries({ libraries: data.libraries });
@@ -37,22 +36,6 @@
   const setLibraryToDelete = () => {
     libraryToDelete = $contextMenuTargetLibrary ?? null;
     closeLibraryContextMenu();
-  };
-
-  const deleteSelectedLibrary = async () => {
-    if (!libraryToDelete) {
-      return;
-    }
-    try {
-      await deleteLibrary(libraryToDelete);
-    } catch {
-      notificationController.show({
-        message: 'Error deleting Library',
-        type: NotificationType.Error,
-      });
-    } finally {
-      libraryToDelete = null;
-    }
   };
 
   const handleCreateUploadLibrary = async () => {
@@ -106,18 +89,4 @@
       </span>
     </MenuOption>
   </ContextMenu>
-{/if}
-
-{#if libraryToDelete}
-  <ConfirmDialogue
-    title="Delete Library"
-    confirmText="Delete"
-    on:confirm={deleteSelectedLibrary}
-    on:cancel={() => (libraryToDelete = null)}
-  >
-    <svelte:fragment slot="prompt">
-      <p>Are you sure you want to delete the Library <b>{libraryToDelete.name}</b>?</p>
-      <p>If this Library is shared, other users will not be able to access it anymore.</p>
-    </svelte:fragment>
-  </ConfirmDialogue>
 {/if}
