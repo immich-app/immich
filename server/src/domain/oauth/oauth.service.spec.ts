@@ -11,10 +11,12 @@ import {
   userEntityStub,
   userTokenEntityStub,
 } from '@test';
+import { newLibraryRepositoryMock } from '@test/repositories/library.repository.mock';
 import { generators, Issuer } from 'openid-client';
 import { OAuthService } from '.';
 import { LoginDetails } from '../auth';
 import { ICryptoRepository } from '../crypto';
+import { ILibraryRepository } from '../library';
 import { ISystemConfigRepository } from '../system-config';
 import { IUserRepository } from '../user';
 import { IUserTokenRepository } from '../user-token';
@@ -31,6 +33,7 @@ const loginDetails: LoginDetails = {
 describe('OAuthService', () => {
   let sut: OAuthService;
   let userMock: jest.Mocked<IUserRepository>;
+  let libraryMock: jest.Mocked<ILibraryRepository>;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let userTokenMock: jest.Mocked<IUserTokenRepository>;
@@ -58,10 +61,12 @@ describe('OAuthService', () => {
 
     cryptoMock = newCryptoRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
+    libraryMock = newLibraryRepositoryMock();
     userMock = newUserRepositoryMock();
+
     userTokenMock = newUserTokenRepositoryMock();
 
-    create = (config) => new OAuthService(cryptoMock, configMock, userMock, userTokenMock, config);
+    create = (config) => new OAuthService(cryptoMock, configMock, userMock, libraryMock, userTokenMock, config);
 
     sut = create(systemConfigStub.disabled);
   });

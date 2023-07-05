@@ -96,6 +96,7 @@ describe(JobService.name, () => {
         [QueueName.VIDEO_CONVERSION]: expectedJobStatus,
         [QueueName.RECOGNIZE_FACES]: expectedJobStatus,
         [QueueName.SIDECAR]: expectedJobStatus,
+        [QueueName.LIBRARY]: expectedJobStatus,
       });
     });
   });

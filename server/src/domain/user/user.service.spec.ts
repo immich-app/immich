@@ -8,12 +8,14 @@ import {
   newStorageRepositoryMock,
   newUserRepositoryMock,
 } from '@test';
+import { newLibraryRepositoryMock } from '@test/repositories/library.repository.mock';
 import { when } from 'jest-when';
 import { IAlbumRepository } from '../album';
 import { IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { IJobRepository, JobName } from '../job';
+import { ILibraryRepository } from '../library';
 import { IStorageRepository } from '../storage';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { IUserRepository } from './user.repository';
@@ -118,6 +120,7 @@ describe(UserService.name, () => {
   let albumMock: jest.Mocked<IAlbumRepository>;
   let assetMock: jest.Mocked<IAssetRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
+  let libraryMock: jest.Mocked<ILibraryRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
 
   beforeEach(async () => {
@@ -125,10 +128,11 @@ describe(UserService.name, () => {
     albumMock = newAlbumRepositoryMock();
     assetMock = newAssetRepositoryMock();
     jobMock = newJobRepositoryMock();
+    libraryMock = newLibraryRepositoryMock();
     storageMock = newStorageRepositoryMock();
     userMock = newUserRepositoryMock();
 
-    sut = new UserService(userMock, cryptoRepositoryMock, albumMock, assetMock, jobMock, storageMock);
+    sut = new UserService(userMock, cryptoRepositoryMock, libraryMock, albumMock, assetMock, jobMock, storageMock);
 
     when(userMock.get).calledWith(adminUser.id).mockResolvedValue(adminUser);
     when(userMock.get).calledWith(adminUser.id, undefined).mockResolvedValue(adminUser);

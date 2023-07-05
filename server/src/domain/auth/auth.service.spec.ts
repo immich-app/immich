@@ -15,11 +15,13 @@ import {
   userEntityStub,
   userTokenEntityStub,
 } from '@test';
+import { newLibraryRepositoryMock } from '@test/repositories/library.repository.mock';
 import { IncomingHttpHeaders } from 'http';
 import { generators, Issuer } from 'openid-client';
 import { Socket } from 'socket.io';
 import { IKeyRepository } from '../api-key';
 import { ICryptoRepository } from '../crypto/crypto.repository';
+import { ILibraryRepository } from '../library';
 import { ISharedLinkRepository } from '../shared-link';
 import { ISystemConfigRepository } from '../system-config';
 import { IUserRepository } from '../user';
@@ -50,6 +52,7 @@ describe('AuthService', () => {
   let sut: AuthService;
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let userMock: jest.Mocked<IUserRepository>;
+  let libraryMock: jest.Mocked<ILibraryRepository>;
   let configMock: jest.Mocked<ISystemConfigRepository>;
   let userTokenMock: jest.Mocked<IUserTokenRepository>;
   let shareMock: jest.Mocked<ISharedLinkRepository>;
@@ -82,12 +85,14 @@ describe('AuthService', () => {
 
     cryptoMock = newCryptoRepositoryMock();
     userMock = newUserRepositoryMock();
+    libraryMock = newLibraryRepositoryMock();
     configMock = newSystemConfigRepositoryMock();
     userTokenMock = newUserTokenRepositoryMock();
     shareMock = newSharedLinkRepositoryMock();
     keyMock = newKeyRepositoryMock();
 
-    create = (config) => new AuthService(cryptoMock, configMock, userMock, userTokenMock, shareMock, keyMock, config);
+    create = (config) =>
+      new AuthService(cryptoMock, configMock, userMock, libraryMock, userTokenMock, shareMock, keyMock, config);
 
     sut = create(systemConfigStub.enabled);
   });
