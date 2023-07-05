@@ -85,11 +85,7 @@ function createAssetInteractionStore() {
     const nextBucket = _assetGridState.buckets[nextBucketIndex];
     await assetStore.getAssetsByBucket(nextBucket.bucketDate, BucketPosition.Below);
 
-    if (nextBucket.assets.length !== 0) {
-      return nextBucket.assets[0];
-    }
-
-    return null;
+    return nextBucket.assets[0] ?? null;
   };
 
   const getPrevAsset = async (currentBucketIndex: number, assetId: string): Promise<AssetResponseDto | null> => {
@@ -111,11 +107,7 @@ function createAssetInteractionStore() {
     const prevBucket = _assetGridState.buckets[prevBucketIndex];
     await assetStore.getAssetsByBucket(prevBucket.bucketDate, BucketPosition.Above);
 
-    if (prevBucket.assets.length !== 0) {
-      return prevBucket.assets[prevBucket.assets.length - 1];
-    }
-
-    return null;
+    return prevBucket.assets[prevBucket.assets.length - 1] ?? null;
   };
 
   const navigateAsset = async (direction: 'next' | 'previous') => {
