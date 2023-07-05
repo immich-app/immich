@@ -11,12 +11,12 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
   ) {}
 
-  async updateAssetsId(personId: string, assetIds: string[]): Promise<number> {
+  async updateAssetsId(primaryPersonId: string, mergePersonId: string, assetIds: string[]): Promise<number> {
     const result = await this.assetFaceRepository
       .createQueryBuilder()
       .update()
-      .set({ personId })
-      .where({ assetId: In(assetIds) })
+      .set({ personId: primaryPersonId })
+      .where({ assetId: In(assetIds), personId: mergePersonId })
       .execute();
 
     return result.affected ?? 0;

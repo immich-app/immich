@@ -162,7 +162,7 @@ export class PersonService {
       const assetsToUpdate = await this.repository.getAssets(authUser.id, mergePersonId);
       const assetsToUpdateIds = assetsToUpdate.map((asset) => asset.id);
       console.log(assetsToUpdateIds);
-      const affectedUpdate = await this.repository.updateAssetsId(primaryPersonId, assetsToUpdateIds);
+      const affectedUpdate = await this.repository.updateAssetsId(primaryPersonId, mergePersonId, assetsToUpdateIds);
 
       this.logger.debug(
         `Merged person ${mergePerson.name ?? mergePersonId} into ${
