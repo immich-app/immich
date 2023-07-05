@@ -1,6 +1,6 @@
 import type { OnShowContextMenuDetail } from '$lib/components/library-page/library-card';
 import { notificationController, NotificationType } from '$lib/components/shared-components/notification/notification';
-import { LibraryResponseDto, api } from '@api';
+import { LibraryResponseDto, LibraryType, api } from '@api';
 import { derived, get, writable } from 'svelte/store';
 
 type LibrariesProps = { libraries: LibraryResponseDto[] };
@@ -23,13 +23,20 @@ export const useLibraries = (props: LibrariesProps) => {
     }
   }
 
-  async function createLibrary(): Promise<LibraryResponseDto | undefined> {
+  async function createUploadLibrary(): Promise<LibraryResponseDto | undefined> {
+    return createLibrary(LibraryType.Upload);
+  }
+
+  async function createImportLibrary(): Promise<LibraryResponseDto | undefined> {
+    return createLibrary(LibraryType.Import);
+  }
+
+  async function createLibrary(libraryType: LibraryType): Promise<LibraryResponseDto | undefined> {
     try {
       const { data: newLibrary } = await api.libraryApi.createLibrary({
         createLibraryDto: {
-          // TODO library type
-
           name: 'Untitled',
+          libraryType: libraryType,
         },
       });
 
@@ -64,7 +71,8 @@ export const useLibraries = (props: LibrariesProps) => {
     contextMenuPosition,
     contextMenuTargetLibrary,
     loadLibraries,
-    createLibrary,
+    createUploadLibrary,
+    createImportLibrary,
     showLibraryContextMenu,
     closeLibraryContextMenu,
   };

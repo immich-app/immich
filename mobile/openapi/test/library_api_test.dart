@@ -32,7 +32,7 @@ void main() {
       // TODO
     });
 
-    //Future<Object> scanLibrary(String id, ScanLibraryDto scanLibraryDto) async
+    //Future scanLibrary(String id, ScanLibraryDto scanLibraryDto) async
     test('test scanLibrary', () async {
       // TODO
     });

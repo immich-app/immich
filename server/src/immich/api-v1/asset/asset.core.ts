@@ -1,5 +1,5 @@
 import { IJobRepository, JobName } from '@app/domain';
-import { AssetEntity, AssetType, LibraryEntity, UserEntity } from '@app/infra/entities';
+import { AssetEntity, LibraryEntity, UserEntity } from '@app/infra/entities';
 import { parse } from 'node:path';
 import { IAssetRepository } from './asset-repository';
 import { CreateAssetDto, ImportAssetDto, UploadFile } from './dto/create-asset.dto';
@@ -49,9 +49,6 @@ export class AssetCore {
     });
 
     await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id, source: 'upload' } });
-    if (asset.type === AssetType.VIDEO) {
-      await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: asset.id } });
-    }
 
     return asset;
   }

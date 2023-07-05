@@ -2386,14 +2386,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -4492,7 +4485,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.65.0",
+    "version": "1.66.1",
     "contact": {}
   },
   "tags": [],
