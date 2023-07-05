@@ -182,6 +182,11 @@ export class AssetService {
     }
 
     if (existingAssetEntity && stats.mtime == existingAssetEntity.fileModifiedAt && !job.forceRefresh) {
+      if (existingAssetEntity.isOffline) {
+        // Asset is back online
+        existingAssetEntity.isOffline = false;
+        await this.assetRepository.save(existingAssetEntity);
+      }
       // File last modified time matches database entry
       // Unless we're forcing a refresh, exit here
       return true;
