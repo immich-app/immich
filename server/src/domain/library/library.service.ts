@@ -43,7 +43,8 @@ export class LibraryService {
   }
 
   async get(authUser: AuthUserDto, libraryId: string): Promise<LibraryResponseDto> {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, libraryId);
+    // TODO authorization
+    //await this.access.requirePermission(authUser, Permission.LIBRARY_READ, libraryId);
 
     const library = await this.libraryRepository.get(libraryId);
     if (!library) {

@@ -11,6 +11,7 @@ export const load = (async ({ params, locals: { api, user } }) => {
 
   try {
     const { data: library } = await api.libraryApi.getLibraryInfo({ id: libraryId });
+
     return {
       library,
       user,
@@ -19,6 +20,7 @@ export const load = (async ({ params, locals: { api, user } }) => {
       },
     };
   } catch (e) {
+    console.log(e);
     throw redirect(302, AppRoute.LIBRARIES);
   }
 }) satisfies PageServerLoad;

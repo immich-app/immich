@@ -11,7 +11,7 @@ export const load = (async ({ locals: { api, user } }) => {
     const { data: libraries } = await api.libraryApi.getAllLibraries();
 
     return {
-      user: user,
+      user,
       libraries: libraries,
       meta: {
         title: 'Libraries',
