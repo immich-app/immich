@@ -30,6 +30,15 @@ function createAssetStore() {
     return height;
   };
 
+  const refreshLoadedAssets = (state: AssetGridState): void => {
+    state.loadedAssets = {};
+    state.buckets.forEach((bucket, bucketIndex) =>
+      bucket.assets.map((asset) => {
+        state.loadedAssets[asset.id] = bucketIndex;
+      }),
+    );
+  };
+
   /**
    * Set initial state
    * @param viewportHeight
@@ -54,6 +63,7 @@ function createAssetStore() {
         position: BucketPosition.Unknown,
       })),
       assets: [],
+      loadedAssets: {},
       userId,
     });
 
@@ -101,6 +111,7 @@ function createAssetStore() {
         state.buckets[bucketIndex].assets = assets;
         state.buckets[bucketIndex].position = position;
         state.assets = state.buckets.flatMap((b) => b.assets);
+        refreshLoadedAssets(state);
         return state;
       });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -123,6 +134,7 @@ function createAssetStore() {
         _removeBucket(state.buckets[bucketIndex].bucketDate);
       }
       state.assets = state.buckets.flatMap((b) => b.assets);
+      refreshLoadedAssets(state);
       return state;
     });
   };
@@ -132,6 +144,7 @@ function createAssetStore() {
       const bucketIndex = state.buckets.findIndex((b) => b.bucketDate === bucketDate);
       state.buckets.splice(bucketIndex, 1);
       state.assets = state.buckets.flatMap((b) => b.assets);
+      refreshLoadedAssets(state);
       return state;
     });
   };
@@ -180,6 +193,7 @@ function createAssetStore() {
       state.buckets[bucketIndex].assets[assetIndex].isFavorite = isFavorite;
 
       state.assets = state.buckets.flatMap((b) => b.assets);
+      refreshLoadedAssets(state);
       return state;
     });
   };
