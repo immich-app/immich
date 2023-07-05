@@ -128,6 +128,11 @@ export class PersonService {
     for (const mergeId of mergeIds) {
       const mergePerson = await this.findOrFail(authUser, mergeId);
 
+      this.logger.debug(
+        `Start merge ${mergePerson.name == '' ? mergePerson.id : mergePerson.name} into ${
+          primaryPerson.name ?? primaryPerson.id
+        }`,
+      );
       // Find and remove duplicated entry in asset_faces table
       const identicalAssetIds = await this.repository.deleteFacesForSharedAssets({
         oldPersonId: mergeId,
