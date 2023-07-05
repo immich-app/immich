@@ -85,9 +85,10 @@
         {#if !readonly && (mouseOver || selected || selectionCandidate)}
           <button
             on:click={onIconClickedHandler}
-            class="absolute p-2 group-hover:block"
+            on:keydown|preventDefault
+            on:keyup|preventDefault
+            class="absolute p-2"
             class:group-hover:block={!disabled}
-            class:hidden={!selected}
             class:cursor-not-allowed={disabled}
             role="checkbox"
             aria-checked={selected}
