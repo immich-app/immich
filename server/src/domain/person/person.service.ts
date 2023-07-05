@@ -129,8 +129,8 @@ export class PersonService {
     const primaryPersonId = await this.getPersonWithMostAssets(dto.ids);
     const mergeIds = dto.ids.filter((id) => id !== primaryPersonId);
 
-    // Find and remove duplicated entry in asset_faces table
     for (const mergePersonId of mergeIds) {
+      // Find and remove duplicated entry in asset_faces table
       const assetIds = await this.repository.getIdenticalAssets([primaryPersonId, mergePersonId]);
 
       // Remove record of duplicated entry in asset_faces table
@@ -143,9 +143,15 @@ export class PersonService {
           data: { assetId, personId: mergePersonId },
         });
       }
-    }
 
-    // Delete merge person
+      // Delete merge person
+      const mergePerson = await this.repository.getById(authUser.id, mergePersonId);
+      if (!mergePerson) {
+        throw new BadRequestException();
+      }
+
+      await this.repository.delete(mergePerson);
+    }
 
     // Update assets of merge person to primary person
   }
@@ -166,10 +172,5 @@ export class PersonService {
     });
 
     return sorted[0].keys().next().value;
-  }
-
-  private mergePersonAssets(primaryPersonId: string, mergeIds: string[]) {
-    // Delete assets with mergeId and primaryPersonId
-    // Delete from typesense
   }
 }

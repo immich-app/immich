@@ -20,5 +20,5 @@ export interface IPersonRepository {
   deleteAll(): Promise<number>;
 
   getFaceById(payload: AssetFaceId): Promise<AssetFaceEntity | null>;
-  deleteAsset(personId: string, assetId: string): Promise<AssetFaceEntity>;
+  deleteAsset(personId: string, assetId: string): Promise<AssetFaceEntity | null>;
 }

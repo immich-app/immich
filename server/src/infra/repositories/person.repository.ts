@@ -32,7 +32,7 @@ export class PersonRepository implements IPersonRepository {
     return result.map((r) => r.assetId);
   }
 
-  async deleteAsset(personId: string, assetId: string): Promise<AssetFaceEntity> {
+  async deleteAsset(personId: string, assetId: string): Promise<AssetFaceEntity | null> {
     const entity = await this.assetFaceRepository.findOne({
       where: {
         personId,
@@ -41,7 +41,7 @@ export class PersonRepository implements IPersonRepository {
     });
 
     if (!entity) {
-      throw new BadRequestException('Asset face not found');
+      return null;
     }
 
     return this.assetFaceRepository.remove(entity);
