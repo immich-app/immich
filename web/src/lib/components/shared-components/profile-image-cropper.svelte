@@ -1,20 +1,16 @@
 <script lang="ts">
   import { AssetResponseDto, api } from '@api';
-  import { createEventDispatcher, onMount } from 'svelte';
-  import Plus from 'svelte-material-icons/Plus.svelte';
+  import { createEventDispatcher } from 'svelte';
   import PhotoViewer from '../asset-viewer/photo-viewer.svelte';
   import BaseModal from './base-modal.svelte';
-  import { stringify } from 'postcss';
   import Button from '../elements/buttons/button.svelte';
   const dispatch = createEventDispatcher();
   export let asset: AssetResponseDto;
   export let publicSharedKey = '';
   import domtoimage from 'dom-to-image';
-  import type { UserResponseDto } from '@api';
   import { notificationController, NotificationType } from './notification/notification';
   import { lastUpdatedProfilePicture } from '$lib/stores/preferences.store';
 
-  let user: UserResponseDto;
   let profilePicture: HTMLDivElement;
 
   const handleSetProfilePicture = async () => {
@@ -22,14 +18,13 @@
     const blob: Blob = await domtoimage.toBlob(div);
     const file: File = new File([blob], 'profile-picture.png', { type: 'image/png' });
     try {
-      api.userApi.createProfileImage({ file }).then((res) => {
-        lastUpdatedProfilePicture.set(Date.now());
-        dispatch('close');
-        notificationController.show({
-          type: NotificationType.Info,
-          message: 'Profile picture set.',
-          timeout: 3000,
-        });
+      await api.userApi.createProfileImage({ file });
+      lastUpdatedProfilePicture.set(Date.now());
+      dispatch('close');
+      notificationController.show({
+        type: NotificationType.Info,
+        message: 'Profile picture set.',
+        timeout: 3000,
       });
     } catch (err) {
       console.error('Error [profile-image-cropper]:', err);
