@@ -178,7 +178,7 @@ export class AssetService {
     } catch (error: QueryFailedError | Error | any) {
       // handle duplicates with a success response
       if (error instanceof QueryFailedError && (error as any).constraint === 'UQ_owner_library_checksum') {
-        const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser, [assetFile.checksum]);
+        const [duplicate] = await this._assetRepository.getAssetsByChecksums(authUser.id, [assetFile.checksum]);
         return { id: duplicate.id, duplicate: true };
       }
 
