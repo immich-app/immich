@@ -6,6 +6,7 @@ import {
   IAccessRepository,
   ICryptoRepository,
   IJobRepository,
+  ILibraryRepository,
   isSupportedFileType,
   IStorageRepository,
   JobName,
@@ -13,7 +14,7 @@ import {
   mapAssetWithoutExif,
   Permission,
 } from '@app/domain';
-import { AssetEntity, AssetType } from '@app/infra/entities';
+import { AssetEntity, AssetType, LibraryType } from '@app/infra/entities';
 import {
   BadRequestException,
   Inject,
@@ -79,6 +80,7 @@ export class AssetService {
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
+    @Inject(ILibraryRepository) private libraryRepository: ILibraryRepository,
     @Inject(IStorageRepository) private storageRepository: IStorageRepository,
   ) {
     this.assetCore = new AssetCore(_assetRepository, jobRepository);
@@ -105,6 +107,18 @@ export class AssetService {
       if (livePhotoFile) {
         const livePhotoDto = { ...dto, assetType: AssetType.VIDEO, isVisible: false };
         livePhotoAsset = await this.assetCore.create(authUser, livePhotoDto, livePhotoFile);
+      }
+      console.log(dto);
+
+      if (!dto.libraryId) {
+        // No library given, fall back to default upload library
+        const defaultUploadLibrary = await this.libraryRepository.getDefaultUploadLibrary(authUser.id);
+
+        if (!defaultUploadLibrary) {
+          throw new InternalServerErrorException('Cannot find default upload library for user ' + authUser.id);
+        }
+        console.log(defaultUploadLibrary);
+        dto.libraryId = defaultUploadLibrary.id;
       }
 
       const asset = await this.assetCore.create(authUser, dto, file, livePhotoAsset?.id, sidecarFile?.originalPath);
@@ -330,6 +344,11 @@ export class AssetService {
 
       const asset = await this._assetRepository.get(id);
       if (!asset) {
+        result.push({ id, status: DeleteAssetStatusEnum.FAILED });
+        continue;
+      }
+
+      if (asset.library.type === LibraryType.IMPORT) {
         result.push({ id, status: DeleteAssetStatusEnum.FAILED });
         continue;
       }

@@ -1393,7 +1393,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **uploadFile**
-> AssetFileUploadResponseDto uploadFile(assetType, libraryId, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration, isOffline)
+> AssetFileUploadResponseDto uploadFile(assetType, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, libraryId, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration, isOffline)
 
 
 
@@ -1417,7 +1417,6 @@ import 'package:openapi/api.dart';
 
 final api_instance = AssetApi();
 final assetType = ; // AssetTypeEnum | 
-final libraryId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final assetData = BINARY_DATA_HERE; // MultipartFile | 
 final fileExtension = fileExtension_example; // String | 
 final deviceAssetId = deviceAssetId_example; // String | 
@@ -1426,6 +1425,7 @@ final fileCreatedAt = 2013-10-20T19:20:30+01:00; // DateTime |
 final fileModifiedAt = 2013-10-20T19:20:30+01:00; // DateTime | 
 final isFavorite = true; // bool | 
 final key = key_example; // String | 
+final libraryId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final livePhotoData = BINARY_DATA_HERE; // MultipartFile | 
 final sidecarData = BINARY_DATA_HERE; // MultipartFile | 
 final isReadOnly = true; // bool | 
@@ -1435,7 +1435,7 @@ final duration = duration_example; // String |
 final isOffline = true; // bool | 
 
 try {
-    final result = api_instance.uploadFile(assetType, libraryId, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration, isOffline);
+    final result = api_instance.uploadFile(assetType, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite, key, libraryId, livePhotoData, sidecarData, isReadOnly, isArchived, isVisible, duration, isOffline);
     print(result);
 } catch (e) {
     print('Exception when calling AssetApi->uploadFile: $e\n');
@@ -1447,7 +1447,6 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **assetType** | [**AssetTypeEnum**](AssetTypeEnum.md)|  | 
- **libraryId** | **String**|  | 
  **assetData** | **MultipartFile**|  | 
  **fileExtension** | **String**|  | 
  **deviceAssetId** | **String**|  | 
@@ -1456,6 +1455,7 @@ Name | Type | Description  | Notes
  **fileModifiedAt** | **DateTime**|  | 
  **isFavorite** | **bool**|  | 
  **key** | **String**|  | [optional] 
+ **libraryId** | **String**|  | [optional] 
  **livePhotoData** | **MultipartFile**|  | [optional] 
  **sidecarData** | **MultipartFile**|  | [optional] 
  **isReadOnly** | **bool**|  | [optional] [default to false]

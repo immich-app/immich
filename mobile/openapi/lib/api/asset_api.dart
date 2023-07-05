@@ -1361,8 +1361,6 @@ class AssetApi {
   ///
   /// * [AssetTypeEnum] assetType (required):
   ///
-  /// * [String] libraryId (required):
-  ///
   /// * [MultipartFile] assetData (required):
   ///
   /// * [String] fileExtension (required):
@@ -1379,6 +1377,8 @@ class AssetApi {
   ///
   /// * [String] key:
   ///
+  /// * [String] libraryId:
+  ///
   /// * [MultipartFile] livePhotoData:
   ///
   /// * [MultipartFile] sidecarData:
@@ -1392,7 +1392,7 @@ class AssetApi {
   /// * [String] duration:
   ///
   /// * [bool] isOffline:
-  Future<Response> uploadFileWithHttpInfo(AssetTypeEnum assetType, String libraryId, MultipartFile assetData, String fileExtension, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isReadOnly, bool? isArchived, bool? isVisible, String? duration, bool? isOffline, }) async {
+  Future<Response> uploadFileWithHttpInfo(AssetTypeEnum assetType, MultipartFile assetData, String fileExtension, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, String? libraryId, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isReadOnly, bool? isArchived, bool? isVisible, String? duration, bool? isOffline, }) async {
     // ignore: prefer_const_declarations
     final path = r'/asset/upload';
 
@@ -1497,8 +1497,6 @@ class AssetApi {
   ///
   /// * [AssetTypeEnum] assetType (required):
   ///
-  /// * [String] libraryId (required):
-  ///
   /// * [MultipartFile] assetData (required):
   ///
   /// * [String] fileExtension (required):
@@ -1515,6 +1513,8 @@ class AssetApi {
   ///
   /// * [String] key:
   ///
+  /// * [String] libraryId:
+  ///
   /// * [MultipartFile] livePhotoData:
   ///
   /// * [MultipartFile] sidecarData:
@@ -1528,8 +1528,8 @@ class AssetApi {
   /// * [String] duration:
   ///
   /// * [bool] isOffline:
-  Future<AssetFileUploadResponseDto?> uploadFile(AssetTypeEnum assetType, String libraryId, MultipartFile assetData, String fileExtension, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isReadOnly, bool? isArchived, bool? isVisible, String? duration, bool? isOffline, }) async {
-    final response = await uploadFileWithHttpInfo(assetType, libraryId, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite,  key: key, livePhotoData: livePhotoData, sidecarData: sidecarData, isReadOnly: isReadOnly, isArchived: isArchived, isVisible: isVisible, duration: duration, isOffline: isOffline, );
+  Future<AssetFileUploadResponseDto?> uploadFile(AssetTypeEnum assetType, MultipartFile assetData, String fileExtension, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, bool isFavorite, { String? key, String? libraryId, MultipartFile? livePhotoData, MultipartFile? sidecarData, bool? isReadOnly, bool? isArchived, bool? isVisible, String? duration, bool? isOffline, }) async {
+    final response = await uploadFileWithHttpInfo(assetType, assetData, fileExtension, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, isFavorite,  key: key, libraryId: libraryId, livePhotoData: livePhotoData, sidecarData: sidecarData, isReadOnly: isReadOnly, isArchived: isArchived, isVisible: isVisible, duration: duration, isOffline: isOffline, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

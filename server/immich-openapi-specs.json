@@ -5427,7 +5427,6 @@
         },
         "required": [
           "assetType",
-          "libraryId",
           "assetData",
           "fileExtension",
           "deviceAssetId",

@@ -20,6 +20,17 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
+  getDefaultUploadLibrary(ownerId: string): Promise<LibraryEntity | null> {
+    return this.libraryRepository.findOneOrFail({
+      where: {
+        ownerId: ownerId,
+      },
+      order: {
+        createdAt: 'ASC',
+      },
+    });
+  }
+
   getById(libraryId: string): Promise<LibraryEntity> {
     return this.libraryRepository.findOneOrFail({
       where: {

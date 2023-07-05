@@ -52,9 +52,10 @@ export class CreateAssetDto extends CreateAssetBase {
   @IsNotEmpty()
   fileExtension!: string;
 
+  @IsOptional()
   @IsUUID('4')
   @ApiProperty({ format: 'uuid' })
-  libraryId!: string;
+  libraryId?: string;
 
   // The properties below are added to correctly generate the API docs
   // and client SDKs. Validation should be handled in the controller.
