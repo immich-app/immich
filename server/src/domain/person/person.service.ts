@@ -118,7 +118,7 @@ export class PersonService {
     return true;
   }
 
-  async mergePerson(authUser: AuthUserDto, primaryPersonId: string, dto: MergePersonDto) {
+  async mergePerson(authUser: AuthUserDto, personId: string, dto: MergePersonDto) {
     for (const id of dto.ids) {
       const person = await this.repository.getById(authUser.id, id);
       if (!person) {
