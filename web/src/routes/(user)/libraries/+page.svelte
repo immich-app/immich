@@ -1,19 +1,15 @@
 <script lang="ts">
-  import { LibraryViewSettings } from '$lib/stores/preferences.store';
-  import LibraryCard from '$lib/components/Library-page/Library-card.svelte';
+  import LibraryCard from '$lib/components/library-page/library-card.svelte';
   import { goto } from '$app/navigation';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
   import type { PageData } from './$types';
   import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
-  import { useLibraries } from './Libraries.bloc';
-  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import { useLibraries } from './libraries.bloc';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-  import { onMount } from 'svelte';
   import { flip } from 'svelte/animate';
-  import Dropdown from '$lib/components/elements/dropdown.svelte';
   import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
   import {
     notificationController,
@@ -23,121 +19,81 @@
 
   export let data: PageData;
 
-  const sortByOptions = ['Most recent photo', 'Last modified', 'Library title'];
-
   const {
-    Libraries: unsortedLibraries,
+    libraries: unsortedLibraries,
     isShowContextMenu,
     contextMenuPosition,
     contextMenuTargetLibrary,
-    createLibrary,
+    createUploadLibrary,
+    createImportLibrary,
     deleteLibrary,
     showLibraryContextMenu,
     closeLibraryContextMenu,
-  } = useLibraries({ Libraries: data.Libraries });
+  } = useLibraries({ libraries: data.libraries });
 
-  let Libraries = unsortedLibraries;
-  let LibraryToDelete: LibraryResponseDto | null;
+  let libraries = unsortedLibraries;
+  let libraryToDelete: LibraryResponseDto | null;
 
   const setLibraryToDelete = () => {
-    LibraryToDelete = $contextMenuTargetLibrary ?? null;
+    libraryToDelete = $contextMenuTargetLibrary ?? null;
     closeLibraryContextMenu();
   };
 
   const deleteSelectedLibrary = async () => {
-    if (!LibraryToDelete) {
+    if (!libraryToDelete) {
       return;
     }
     try {
-      await deleteLibrary(LibraryToDelete);
+      await deleteLibrary(libraryToDelete);
     } catch {
       notificationController.show({
         message: 'Error deleting Library',
         type: NotificationType.Error,
       });
     } finally {
-      LibraryToDelete = null;
+      libraryToDelete = null;
     }
   };
 
-  const sortByDate = (a: string, b: string) => {
-    const aDate = new Date(a);
-    const bDate = new Date(b);
-    return bDate.getTime() - aDate.getTime();
-  };
-
-  $: {
-    const { sortBy } = $LibraryViewSettings;
-    if (sortBy === 'Most recent photo') {
-      $Libraries = $unsortedLibraries.sort((a, b) =>
-        a.lastModifiedAssetTimestamp && b.lastModifiedAssetTimestamp
-          ? sortByDate(a.lastModifiedAssetTimestamp, b.lastModifiedAssetTimestamp)
-          : sortByDate(a.updatedAt, b.updatedAt),
-      );
-    } else if (sortBy === 'Last modified') {
-      $Libraries = $unsortedLibraries.sort((a, b) => sortByDate(a.updatedAt, b.updatedAt));
-    } else if (sortBy === 'Library title') {
-      $Libraries = $unsortedLibraries.sort((a, b) => a.LibraryName.localeCompare(b.LibraryName));
-    }
-  }
-
-  const handleCreateLibrary = async () => {
-    const newLibrary = await createLibrary();
+  const handleCreateUploadLibrary = async () => {
+    const newLibrary = await createUploadLibrary();
     if (newLibrary) {
-      goto('/Libraries/' + newLibrary.id);
+      goto('/libraries/' + newLibrary.id);
     }
   };
 
-  onMount(() => {
-    removeLibrariesIfEmpty();
-  });
-
-  const removeLibrariesIfEmpty = async () => {
-    try {
-      for (const Library of $Libraries) {
-        if (Library.assetCount == 0 && Library.LibraryName == 'Untitled') {
-          await deleteLibrary(Library);
-        }
-      }
-    } catch (error) {
-      console.log(error);
+  const handleCreateImportLibrary = async () => {
+    const newLibrary = await createImportLibrary();
+    if (newLibrary) {
+      goto('/libraries/' + newLibrary.id);
     }
   };
 </script>
 
 <UserPageLayout user={data.user} title={data.meta.title}>
   <div class="flex place-items-center gap-2" slot="buttons">
-    <LinkButton on:click={handleCreateLibrary}>
+    <LinkButton on:click={handleCreateUploadLibrary}>
       <div class="flex place-items-center gap-2 text-sm">
         <PlusBoxOutline size="18" />
-        Create Library
+        Create Upload Library
       </div>
     </LinkButton>
-
-    <Dropdown options={sortByOptions} bind:value={$LibraryViewSettings.sortBy} />
+    <LinkButton on:click={handleCreateImportLibrary}>
+      <div class="flex place-items-center gap-2 text-sm">
+        <PlusBoxOutline size="18" />
+        Create Import Library
+      </div>
+    </LinkButton>
   </div>
 
   <!-- Library Card -->
   <div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
-    {#each $Libraries as Library (Library.id)}
-      <a data-sveltekit-preload-data="hover" href={`Libraries/${Library.id}`} animate:flip={{ duration: 200 }}>
-        <LibraryCard
-          {Library}
-          on:showLibrarycontextmenu={(e) => showLibraryContextMenu(e.detail, Library)}
-          user={data.user}
-        />
+    {#each $libraries as library (library.id)}
+      <a data-sveltekit-preload-data="hover" href={`libraries/${library.id}`} animate:flip={{ duration: 200 }}>
+        <LibraryCard {library} on:showLibrarycontextmenu={(e) => showLibraryContextMenu(e.detail, library)} />
       </a>
     {/each}
   </div>
-
-  <!-- Empty Message -->
-  {#if $Libraries.length === 0}
-    <EmptyPlaceholder
-      text="Create an Library to organize your photos and videos"
-      actionHandler={handleCreateLibrary}
-      alt="Empty Libraries"
-    />
-  {/if}
 </UserPageLayout>
 
 <!-- Context Menu -->
@@ -152,15 +108,15 @@
   </ContextMenu>
 {/if}
 
-{#if LibraryToDelete}
+{#if libraryToDelete}
   <ConfirmDialogue
     title="Delete Library"
     confirmText="Delete"
     on:confirm={deleteSelectedLibrary}
-    on:cancel={() => (LibraryToDelete = null)}
+    on:cancel={() => (libraryToDelete = null)}
   >
     <svelte:fragment slot="prompt">
-      <p>Are you sure you want to delete the Library <b>{LibraryToDelete.LibraryName}</b>?</p>
+      <p>Are you sure you want to delete the Library <b>{libraryToDelete.name}</b>?</p>
       <p>If this Library is shared, other users will not be able to access it anymore.</p>
     </svelte:fragment>
   </ConfirmDialogue>

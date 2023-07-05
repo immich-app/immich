@@ -1,7 +1,7 @@
-import type { AlbumResponseDto } from '@api';
+import type { LibraryResponseDto } from '@api';
 
 export type OnShowContextMenu = {
-  showalbumcontextmenu: OnShowContextMenuDetail;
+  showlibrarycontextmenu: OnShowContextMenuDetail;
 };
 
 export type OnClick = {
@@ -9,4 +9,4 @@ export type OnClick = {
 };
 
 export type OnShowContextMenuDetail = { x: number; y: number };
-export type OnClickDetail = AlbumResponseDto;
+export type OnClickDetail = LibraryResponseDto;

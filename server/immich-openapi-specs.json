@@ -2360,6 +2360,48 @@
         ]
       }
     },
+    "/library/{id}": {
+      "get": {
+        "operationId": "getLibraryInfo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LibraryResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Library"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
     "/library/{id}/scan": {
       "post": {
         "operationId": "scanLibrary",

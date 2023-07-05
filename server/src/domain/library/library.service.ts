@@ -1,5 +1,14 @@
-import { LibraryType, UserEntity } from '@app/infra/entities';
-import { BadRequestException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { LibraryEntity, LibraryType, UserEntity } from '@app/infra/entities';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+
 import { AccessCore, IAccessRepository, Permission } from '../access';
 import { AuthUserDto } from '../auth';
 import { IJobRepository, ILibraryJob, JobName } from '../job';
@@ -24,6 +33,17 @@ export class LibraryService {
 
   async getCount(authUser: AuthUserDto): Promise<number> {
     return this.libraryRepository.getCountForUser(authUser.id);
+  }
+
+  async get(authUser: AuthUserDto, libraryId: string): Promise<LibraryResponseDto> {
+    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, libraryId);
+
+    const library = await this.libraryRepository.get(libraryId);
+    if (!library) {
+      throw new NotFoundException('Library Not Found');
+    }
+
+    return mapLibrary(library);
   }
 
   async create(authUser: AuthUserDto, dto: CreateLibraryDto): Promise<LibraryResponseDto> {

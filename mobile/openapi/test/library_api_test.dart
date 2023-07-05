@@ -32,6 +32,11 @@ void main() {
       // TODO
     });
 
+    //Future<LibraryResponseDto> getLibraryInfo(String id) async
+    test('test getLibraryInfo', () async {
+      // TODO
+    });
+
     //Future scanLibrary(String id, ScanLibraryDto scanLibraryDto) async
     test('test scanLibrary', () async {
       // TODO

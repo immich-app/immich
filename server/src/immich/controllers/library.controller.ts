@@ -38,6 +38,11 @@ export class LibraryController {
     return this.service.getCount(authUser);
   }
 
+  @Get(':id')
+  getLibraryInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
+    return this.service.get(authUser, id);
+  }
+
   @AdminRoute()
   @Post(':id/scan')
   // TODO: use dto here

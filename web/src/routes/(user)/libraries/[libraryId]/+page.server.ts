@@ -7,17 +7,17 @@ export const load = (async ({ params, locals: { api, user } }) => {
     throw redirect(302, AppRoute.AUTH_LOGIN);
   }
 
-  const albumId = params['albumId'];
+  const libraryId = params['libraryId'];
 
   try {
-    const { data: album } = await api.albumApi.getAlbumInfo({ id: albumId });
+    const { data: library } = await api.libraryApi.getLibraryInfo({ id: libraryId });
     return {
-      album,
+      library,
       meta: {
-        title: album.albumName,
+        title: library.name,
       },
     };
   } catch (e) {
-    throw redirect(302, AppRoute.ALBUMS);
+    throw redirect(302, AppRoute.LIBRARIES);
   }
 }) satisfies PageServerLoad;

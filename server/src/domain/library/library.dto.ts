@@ -63,6 +63,10 @@ export class LibraryResponseDto {
 }
 
 export function mapLibrary(entity: LibraryEntity): LibraryResponseDto {
+  let assetCount = 0;
+  if (entity.assets) {
+    assetCount = entity.assets.length;
+  }
   return {
     id: entity.id,
     ownerId: entity.ownerId,
@@ -71,6 +75,6 @@ export function mapLibrary(entity: LibraryEntity): LibraryResponseDto {
     createdAt: entity.createdAt,
     updatedAt: entity.updatedAt,
     refreshedAt: entity.refreshedAt,
-    assetCount: entity.assets.length,
+    assetCount: assetCount,
   };
 }

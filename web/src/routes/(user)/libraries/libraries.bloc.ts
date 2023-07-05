@@ -3,9 +3,9 @@ import { notificationController, NotificationType } from '$lib/components/shared
 import { LibraryResponseDto, LibraryType, api } from '@api';
 import { derived, get, writable } from 'svelte/store';
 
-type LibrariesProps = { libraries: LibraryResponseDto[] };
+type LibraryProps = { libraries: LibraryResponseDto[] };
 
-export const useLibraries = (props: LibrariesProps) => {
+export const useLibraries = (props: LibraryProps) => {
   const libraries = writable([...props.libraries]);
   const contextMenuPosition = writable<OnShowContextMenuDetail>({ x: 0, y: 0 });
   const contextMenuTargetLibrary = writable<LibraryResponseDto | undefined>();
@@ -49,6 +49,16 @@ export const useLibraries = (props: LibrariesProps) => {
     }
   }
 
+  async function deleteLibrary(libraryToDelete: LibraryResponseDto): Promise<void> {
+    // TODO
+    // await api.albumApi.deleteAlbum({ id: albumToDelete.id });
+    // albums.set(
+    //   get(albums).filter(({ id }) => {
+    //     return id !== albumToDelete.id;
+    //   }),
+    // );
+  }
+
   async function showLibraryContextMenu(
     contextMenuDetail: OnShowContextMenuDetail,
     library: LibraryResponseDto,
@@ -73,6 +83,7 @@ export const useLibraries = (props: LibrariesProps) => {
     loadLibraries,
     createUploadLibrary,
     createImportLibrary,
+    deleteLibrary,
     showLibraryContextMenu,
     closeLibraryContextMenu,
   };

@@ -125,6 +125,7 @@ Class | Method | HTTP request | Description
 *LibraryApi* | [**createLibrary**](doc//LibraryApi.md#createlibrary) | **POST** /library | 
 *LibraryApi* | [**getAllLibraries**](doc//LibraryApi.md#getalllibraries) | **GET** /library | 
 *LibraryApi* | [**getLibraryCount**](doc//LibraryApi.md#getlibrarycount) | **GET** /library/count | 
+*LibraryApi* | [**getLibraryInfo**](doc//LibraryApi.md#getlibraryinfo) | **GET** /library/{id} | 
 *LibraryApi* | [**scanLibrary**](doc//LibraryApi.md#scanlibrary) | **POST** /library/{id}/scan | 
 *OAuthApi* | [**callback**](doc//OAuthApi.md#callback) | **POST** /oauth/callback | 
 *OAuthApi* | [**generateConfig**](doc//OAuthApi.md#generateconfig) | **POST** /oauth/config | 
