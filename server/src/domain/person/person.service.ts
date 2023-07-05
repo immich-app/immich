@@ -30,6 +30,7 @@ export class PersonService {
   }
 
   async getById(authUser: AuthUserDto, personId: string): Promise<PersonResponseDto> {
+    // TODO: clean up with findorFail
     const person = await this.repository.getById(authUser.id, personId);
     if (!person) {
       throw new BadRequestException();
@@ -39,6 +40,7 @@ export class PersonService {
   }
 
   async getThumbnail(authUser: AuthUserDto, personId: string): Promise<ImmichReadStream> {
+    // TODO: clean up with findorFail
     const person = await this.repository.getById(authUser.id, personId);
     if (!person || !person.thumbnailPath) {
       throw new NotFoundException();
@@ -53,6 +55,7 @@ export class PersonService {
   }
 
   async update(authUser: AuthUserDto, personId: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
+    // TODO: clean up with findorFail
     let person = await this.repository.getById(authUser.id, personId);
     if (!person) {
       throw new BadRequestException();
@@ -119,20 +122,12 @@ export class PersonService {
   }
 
   async mergePerson(authUser: AuthUserDto, personId: string, dto: MergePersonDto) {
-    for (const id of dto.ids) {
-      const person = await this.repository.getById(authUser.id, id);
-      if (!person) {
-        throw new BadRequestException('Person not found');
-      }
-    }
-
-    const primaryPerson = await this.repository.getById(authUser.id, personId);
-    if (!primaryPerson) {
-      throw new BadRequestException();
-    }
-
     const mergeIds = dto.ids;
+    const primaryPerson = await this.findOrFail(authUser, personId);
+
     for (const mergeId of mergeIds) {
+      const mergePerson = await this.findOrFail(authUser, mergeId);
+
       // Find and remove duplicated entry in asset_faces table
       const identicalAssetIds = await this.repository.deleteFacesForSharedAssets({
         oldPersonId: mergeId,
@@ -151,11 +146,6 @@ export class PersonService {
         this.logger.debug(`Deleted ${identicalAssetIds.length} faces preparing for person merge`);
       }
 
-      const mergePerson = await this.repository.getById(authUser.id, mergeId);
-      if (!mergePerson) {
-        throw new BadRequestException();
-      }
-
       const affectedUpdate = await this.repository.reassignFaces({
         oldPersonId: mergeId,
         newPersonId: personId,
@@ -171,5 +161,13 @@ export class PersonService {
       await this.repository.delete(mergePerson);
       this.logger.debug(`Deleted person ${mergeId} (${mergePerson.name})`);
     }
+  }
+
+  private async findOrFail(authUser: AuthUserDto, id: string) {
+    const person = await this.repository.getById(authUser.id, id);
+    if (!person) {
+      throw new BadRequestException('Person not found');
+    }
+    return person;
   }
 }
