@@ -8,6 +8,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
+import { job } from 'cron';
 import path from 'node:path';
 import { AccessCore, IAccessRepository, Permission } from '../access';
 import { IAssetRepository } from '../asset';
@@ -109,9 +110,6 @@ export class LibraryService {
     // TODO:
     //await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, dto.libraryId);
 
-    const forceRefresh = dto.forceRefresh;
-    const emptyTrash = dto.emptyTrash;
-
     const library = await this.libraryRepository.getById(libraryId);
 
     if (library.type != LibraryType.IMPORT) {
@@ -119,15 +117,10 @@ export class LibraryService {
       throw new InternalServerErrorException('Only imported libraries can be refreshed');
     }
 
-    if (!library.importPaths) {
-      // No paths to crawl
-      return;
-    }
-
     const crawledAssetPaths = (
       await this.crawler.findAllMedia({
         pathsToCrawl: library.importPaths,
-        excludePatterns: ['**/Original/**'], //TODO: this is just for testing
+        excludePatterns: ['**/Original/**'], //TODO: this exclusion pattern is just for testing
       })
     ).map(path.normalize);
 

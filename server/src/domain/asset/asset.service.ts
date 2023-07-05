@@ -246,7 +246,15 @@ export class AssetService {
   }
 
   async handleOfflineAsset(job: ILibraryJob) {
-    // TODO
+    const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, job.assetPath);
+
+    if (job.emptyTrash) {
+      // Remove asset from database
+      await this.assetRepository.remove(existingAssetEntity);
+    } else {
+      existingAssetEntity.isOffline = true;
+      await this.assetRepository.save(existingAssetEntity);
+    }
     return true;
   }
 }
