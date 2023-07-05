@@ -23,6 +23,7 @@
 
   import { AppRoute } from '$lib/constants';
   import { goto } from '$app/navigation';
+  import { browser } from '$app/environment';
 
   export let user: UserResponseDto | undefined = undefined;
   export let isAlbumSelectionMode = false;
@@ -68,6 +69,7 @@
   });
 
   onDestroy(() => {
+    if (browser) document.removeEventListener('keydown', handleKeyboardPress);
     assetStore.setInitialState(0, 0, { totalCount: 0, buckets: [] }, undefined);
   });
 
