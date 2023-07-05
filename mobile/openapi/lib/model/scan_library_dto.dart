@@ -13,26 +13,26 @@ part of openapi.api;
 class ScanLibraryDto {
   /// Returns a new [ScanLibraryDto] instance.
   ScanLibraryDto({
-    required this.libraryId,
+    this.forceRefresh = false,
   });
 
-  String libraryId;
+  bool forceRefresh;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ScanLibraryDto &&
-     other.libraryId == libraryId;
+     other.forceRefresh == forceRefresh;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (libraryId.hashCode);
+    (forceRefresh.hashCode);
 
   @override
-  String toString() => 'ScanLibraryDto[libraryId=$libraryId]';
+  String toString() => 'ScanLibraryDto[forceRefresh=$forceRefresh]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'libraryId'] = this.libraryId;
+      json[r'forceRefresh'] = this.forceRefresh;
     return json;
   }
 
@@ -44,7 +44,7 @@ class ScanLibraryDto {
       final json = value.cast<String, dynamic>();
 
       return ScanLibraryDto(
-        libraryId: mapValueOfType<String>(json, r'libraryId')!,
+        forceRefresh: mapValueOfType<bool>(json, r'forceRefresh') ?? false,
       );
     }
     return null;
@@ -92,7 +92,6 @@ class ScanLibraryDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'libraryId',
   };
 }
 

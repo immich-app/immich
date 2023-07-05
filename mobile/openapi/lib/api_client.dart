@@ -285,8 +285,8 @@ class ApiClient {
           return JobStatusDto.fromJson(value);
         case 'LibraryResponseDto':
           return LibraryResponseDto.fromJson(value);
-        case 'LibraryTypeEnum':
-          return LibraryTypeEnumTypeTransformer().decode(value);
+        case 'LibraryType':
+          return LibraryTypeTypeTransformer().decode(value);
         case 'LoginCredentialDto':
           return LoginCredentialDto.fromJson(value);
         case 'LoginResponseDto':

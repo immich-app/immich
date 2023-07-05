@@ -22,8 +22,18 @@ void main() {
       // TODO
     });
 
-    //Future scan(ScanLibraryDto scanLibraryDto) async
-    test('test scan', () async {
+    //Future<List<LibraryResponseDto>> getAllLibraries({ String assetId }) async
+    test('test getAllLibraries', () async {
+      // TODO
+    });
+
+    //Future<num> getLibraryCount() async
+    test('test getLibraryCount', () async {
+      // TODO
+    });
+
+    //Future<Object> scanLibrary(String id, ScanLibraryDto scanLibraryDto) async
+    test('test scanLibrary', () async {
       // TODO
     });
 

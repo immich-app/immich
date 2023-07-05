@@ -14,18 +14,24 @@ class LibraryResponseDto {
   /// Returns a new [LibraryResponseDto] instance.
   LibraryResponseDto({
     required this.type,
+    required this.assetCount,
     required this.id,
     required this.ownerId,
+    required this.name,
     required this.createdAt,
     required this.updatedAt,
     this.refreshedAt,
   });
 
-  LibraryTypeEnum type;
+  LibraryType type;
+
+  int assetCount;
 
   String id;
 
   String ownerId;
+
+  String name;
 
   DateTime createdAt;
 
@@ -42,8 +48,10 @@ class LibraryResponseDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is LibraryResponseDto &&
      other.type == type &&
+     other.assetCount == assetCount &&
      other.id == id &&
      other.ownerId == ownerId &&
+     other.name == name &&
      other.createdAt == createdAt &&
      other.updatedAt == updatedAt &&
      other.refreshedAt == refreshedAt;
@@ -52,20 +60,24 @@ class LibraryResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (type.hashCode) +
+    (assetCount.hashCode) +
     (id.hashCode) +
     (ownerId.hashCode) +
+    (name.hashCode) +
     (createdAt.hashCode) +
     (updatedAt.hashCode) +
     (refreshedAt == null ? 0 : refreshedAt!.hashCode);
 
   @override
-  String toString() => 'LibraryResponseDto[type=$type, id=$id, ownerId=$ownerId, createdAt=$createdAt, updatedAt=$updatedAt, refreshedAt=$refreshedAt]';
+  String toString() => 'LibraryResponseDto[type=$type, assetCount=$assetCount, id=$id, ownerId=$ownerId, name=$name, createdAt=$createdAt, updatedAt=$updatedAt, refreshedAt=$refreshedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'type'] = this.type;
+      json[r'assetCount'] = this.assetCount;
       json[r'id'] = this.id;
       json[r'ownerId'] = this.ownerId;
+      json[r'name'] = this.name;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     if (this.refreshedAt != null) {
@@ -84,9 +96,11 @@ class LibraryResponseDto {
       final json = value.cast<String, dynamic>();
 
       return LibraryResponseDto(
-        type: LibraryTypeEnum.fromJson(json[r'type'])!,
+        type: LibraryType.fromJson(json[r'type'])!,
+        assetCount: mapValueOfType<int>(json, r'assetCount')!,
         id: mapValueOfType<String>(json, r'id')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
+        name: mapValueOfType<String>(json, r'name')!,
         createdAt: mapDateTime(json, r'createdAt', r'')!,
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
         refreshedAt: mapDateTime(json, r'refreshedAt', r''),
@@ -138,8 +152,10 @@ class LibraryResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'type',
+    'assetCount',
     'id',
     'ownerId',
+    'name',
     'createdAt',
     'updatedAt',
   };

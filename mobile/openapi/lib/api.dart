@@ -96,7 +96,7 @@ part 'model/job_name.dart';
 part 'model/job_settings_dto.dart';
 part 'model/job_status_dto.dart';
 part 'model/library_response_dto.dart';
-part 'model/library_type_enum.dart';
+part 'model/library_type.dart';
 part 'model/login_credential_dto.dart';
 part 'model/login_response_dto.dart';
 part 'model/logout_response_dto.dart';

@@ -61,7 +61,7 @@ doc/JobSettingsDto.md
 doc/JobStatusDto.md
 doc/LibraryApi.md
 doc/LibraryResponseDto.md
-doc/LibraryTypeEnum.md
+doc/LibraryType.md
 doc/LoginCredentialDto.md
 doc/LoginResponseDto.md
 doc/LogoutResponseDto.md
@@ -199,7 +199,7 @@ lib/model/job_name.dart
 lib/model/job_settings_dto.dart
 lib/model/job_status_dto.dart
 lib/model/library_response_dto.dart
-lib/model/library_type_enum.dart
+lib/model/library_type.dart
 lib/model/login_credential_dto.dart
 lib/model/login_response_dto.dart
 lib/model/logout_response_dto.dart
@@ -310,7 +310,7 @@ test/job_settings_dto_test.dart
 test/job_status_dto_test.dart
 test/library_api_test.dart
 test/library_response_dto_test.dart
-test/library_type_enum_test.dart
+test/library_type_test.dart
 test/login_credential_dto_test.dart
 test/login_response_dto_test.dart
 test/logout_response_dto_test.dart

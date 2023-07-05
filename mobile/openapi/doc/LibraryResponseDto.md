@@ -8,9 +8,11 @@ import 'package:openapi/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**type** | [**LibraryTypeEnum**](LibraryTypeEnum.md) |  | 
+**type** | [**LibraryType**](LibraryType.md) |  | 
+**assetCount** | **int** |  | 
 **id** | **String** |  | 
 **ownerId** | **String** |  | 
+**name** | **String** |  | 
 **createdAt** | [**DateTime**](DateTime.md) |  | 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 
 **refreshedAt** | [**DateTime**](DateTime.md) |  | [optional] 

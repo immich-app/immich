@@ -16,8 +16,13 @@ void main() {
   // final instance = LibraryResponseDto();
 
   group('test LibraryResponseDto', () {
-    // LibraryTypeEnum type
+    // LibraryType type
     test('to test the property `type`', () async {
+      // TODO
+    });
+
+    // int assetCount
+    test('to test the property `assetCount`', () async {
       // TODO
     });
 
@@ -28,6 +33,11 @@ void main() {
 
     // String ownerId
     test('to test the property `ownerId`', () async {
+      // TODO
+    });
+
+    // String name
+    test('to test the property `name`', () async {
       // TODO
     });
 

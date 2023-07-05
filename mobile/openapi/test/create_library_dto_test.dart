@@ -16,8 +16,18 @@ void main() {
   // final instance = CreateLibraryDto();
 
   group('test CreateLibraryDto', () {
-    // LibraryTypeEnum libraryType
+    // LibraryType libraryType
     test('to test the property `libraryType`', () async {
+      // TODO
+    });
+
+    // String name
+    test('to test the property `name`', () async {
+      // TODO
+    });
+
+    // bool isVisible
+    test('to test the property `isVisible`', () async {
       // TODO
     });
 

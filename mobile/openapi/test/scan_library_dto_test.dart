@@ -16,8 +16,8 @@ void main() {
   // final instance = ScanLibraryDto();
 
   group('test ScanLibraryDto', () {
-    // String libraryId
-    test('to test the property `libraryId`', () async {
+    // bool forceRefresh (default value: false)
+    test('to test the property `forceRefresh`', () async {
       // TODO
     });
 

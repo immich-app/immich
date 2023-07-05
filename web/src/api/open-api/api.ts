@@ -917,10 +917,22 @@ export interface CreateAlbumDto {
 export interface CreateLibraryDto {
     /**
      * 
-     * @type {LibraryTypeEnum}
+     * @type {LibraryType}
      * @memberof CreateLibraryDto
      */
-    'libraryType': LibraryTypeEnum;
+    'libraryType': LibraryType;
+    /**
+     * 
+     * @type {string}
+     * @memberof CreateLibraryDto
+     */
+    'name': string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof CreateLibraryDto
+     */
+    'isVisible'?: boolean;
 }
 
 
@@ -1582,10 +1594,16 @@ export interface JobStatusDto {
 export interface LibraryResponseDto {
     /**
      * 
-     * @type {LibraryTypeEnum}
+     * @type {LibraryType}
      * @memberof LibraryResponseDto
      */
-    'type': LibraryTypeEnum;
+    'type': LibraryType;
+    /**
+     * 
+     * @type {number}
+     * @memberof LibraryResponseDto
+     */
+    'assetCount': number;
     /**
      * 
      * @type {string}
@@ -1598,6 +1616,12 @@ export interface LibraryResponseDto {
      * @memberof LibraryResponseDto
      */
     'ownerId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof LibraryResponseDto
+     */
+    'name': string;
     /**
      * 
      * @type {string}
@@ -1625,12 +1649,12 @@ export interface LibraryResponseDto {
  * @enum {string}
  */
 
-export const LibraryTypeEnum = {
+export const LibraryType = {
     Upload: 'UPLOAD',
     Import: 'IMPORT'
 } as const;
 
-export type LibraryTypeEnum = typeof LibraryTypeEnum[keyof typeof LibraryTypeEnum];
+export type LibraryType = typeof LibraryType[keyof typeof LibraryType];
 
 
 /**
@@ -1917,10 +1941,10 @@ export interface RemoveAssetsDto {
 export interface ScanLibraryDto {
     /**
      * 
-     * @type {string}
+     * @type {boolean}
      * @memberof ScanLibraryDto
      */
-    'libraryId': string;
+    'forceRefresh'?: boolean;
 }
 /**
  * 
@@ -8140,14 +8164,99 @@ export const LibraryApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @param {string} [assetId] Only returns albums that contain the asset undefined: get all albums
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAllLibraries: async (assetId?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/library`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (assetId !== undefined) {
+                localVarQueryParameter['assetId'] = assetId;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getLibraryCount: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/library/count`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookie required
+
+            // authentication api_key required
+            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
+
+            // authentication bearer required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
          * @param {ScanLibraryDto} scanLibraryDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        scan: async (scanLibraryDto: ScanLibraryDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        scanLibrary: async (id: string, scanLibraryDto: ScanLibraryDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('scanLibrary', 'id', id)
             // verify required parameter 'scanLibraryDto' is not null or undefined
-            assertParamExists('scan', 'scanLibraryDto', scanLibraryDto)
-            const localVarPath = `/library/scan`;
+            assertParamExists('scanLibrary', 'scanLibraryDto', scanLibraryDto)
+            const localVarPath = `/library/{id}/scan`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -8204,12 +8313,32 @@ export const LibraryApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {string} [assetId] Only returns albums that contain the asset undefined: get all albums
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getAllLibraries(assetId?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<LibraryResponseDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllLibraries(assetId, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getLibraryCount(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<number>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getLibraryCount(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @param {string} id 
          * @param {ScanLibraryDto} scanLibraryDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async scan(scanLibraryDto: ScanLibraryDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.scan(scanLibraryDto, options);
+        async scanLibrary(id: string, scanLibraryDto: ScanLibraryDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.scanLibrary(id, scanLibraryDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
     }
@@ -8233,12 +8362,30 @@ export const LibraryApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @param {string} [assetId] Only returns albums that contain the asset undefined: get all albums
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAllLibraries(assetId?: string, options?: any): AxiosPromise<Array<LibraryResponseDto>> {
+            return localVarFp.getAllLibraries(assetId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getLibraryCount(options?: any): AxiosPromise<number> {
+            return localVarFp.getLibraryCount(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
          * @param {ScanLibraryDto} scanLibraryDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        scan(scanLibraryDto: ScanLibraryDto, options?: any): AxiosPromise<void> {
-            return localVarFp.scan(scanLibraryDto, options).then((request) => request(axios, basePath));
+        scanLibrary(id: string, scanLibraryDto: ScanLibraryDto, options?: any): AxiosPromise<object> {
+            return localVarFp.scanLibrary(id, scanLibraryDto, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -8258,15 +8405,36 @@ export interface LibraryApiCreateLibraryRequest {
 }
 
 /**
- * Request parameters for scan operation in LibraryApi.
+ * Request parameters for getAllLibraries operation in LibraryApi.
  * @export
- * @interface LibraryApiScanRequest
+ * @interface LibraryApiGetAllLibrariesRequest
  */
-export interface LibraryApiScanRequest {
+export interface LibraryApiGetAllLibrariesRequest {
+    /**
+     * Only returns albums that contain the asset undefined: get all albums
+     * @type {string}
+     * @memberof LibraryApiGetAllLibraries
+     */
+    readonly assetId?: string
+}
+
+/**
+ * Request parameters for scanLibrary operation in LibraryApi.
+ * @export
+ * @interface LibraryApiScanLibraryRequest
+ */
+export interface LibraryApiScanLibraryRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof LibraryApiScanLibrary
+     */
+    readonly id: string
+
     /**
      * 
      * @type {ScanLibraryDto}
-     * @memberof LibraryApiScan
+     * @memberof LibraryApiScanLibrary
      */
     readonly scanLibraryDto: ScanLibraryDto
 }
@@ -8291,13 +8459,34 @@ export class LibraryApi extends BaseAPI {
 
     /**
      * 
-     * @param {LibraryApiScanRequest} requestParameters Request parameters.
+     * @param {LibraryApiGetAllLibrariesRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof LibraryApi
      */
-    public scan(requestParameters: LibraryApiScanRequest, options?: AxiosRequestConfig) {
-        return LibraryApiFp(this.configuration).scan(requestParameters.scanLibraryDto, options).then((request) => request(this.axios, this.basePath));
+    public getAllLibraries(requestParameters: LibraryApiGetAllLibrariesRequest = {}, options?: AxiosRequestConfig) {
+        return LibraryApiFp(this.configuration).getAllLibraries(requestParameters.assetId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LibraryApi
+     */
+    public getLibraryCount(options?: AxiosRequestConfig) {
+        return LibraryApiFp(this.configuration).getLibraryCount(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {LibraryApiScanLibraryRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LibraryApi
+     */
+    public scanLibrary(requestParameters: LibraryApiScanLibraryRequest, options?: AxiosRequestConfig) {
+        return LibraryApiFp(this.configuration).scanLibrary(requestParameters.id, requestParameters.scanLibraryDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
