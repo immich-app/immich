@@ -10,7 +10,7 @@ import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { isSupportedFileType } from '../domain.constant';
 import { HumanReadableSize, usePagination } from '../domain.util';
-import { IJobRepository, ILibraryJob, JobName } from '../job';
+import { IJobRepository, ILibraryJob, JobName, JobService } from '../job';
 import { ImmichReadStream, IStorageRepository } from '../storage';
 import { IAssetRepository } from './asset.repository';
 import { AssetIdsDto, DownloadArchiveInfo, DownloadDto, DownloadResponseDto, MemoryLaneDto } from './dto';
@@ -182,7 +182,7 @@ export class AssetService {
       }
     }
 
-    if (stats.mtime == existingAssetEntity.fileModifiedAt && !job.forceRefresh) {
+    if (existingAssetEntity && stats.mtime == existingAssetEntity.fileModifiedAt && !job.forceRefresh) {
       // File last modified time matches database entry
       // Unless we're forcing a refresh, exit here
       return true;
@@ -248,13 +248,17 @@ export class AssetService {
   async handleOfflineAsset(job: ILibraryJob) {
     const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, job.assetPath);
 
-    if (job.emptyTrash) {
+    // Can't access file, probably offline
+    if (job.emptyTrash && existingAssetEntity) {
       // Remove asset from database
       await this.assetRepository.remove(existingAssetEntity);
-    } else {
+      console.log('Removed offline file ' + job.assetPath);
+    } else if (existingAssetEntity) {
+      // Mark asset as offline
       existingAssetEntity.isOffline = true;
       await this.assetRepository.save(existingAssetEntity);
     }
+
     return true;
   }
 }

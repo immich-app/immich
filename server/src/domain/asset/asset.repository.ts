@@ -54,7 +54,7 @@ export interface IAssetRepository {
   getFirstAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   getByLibraryId(libraryIds: string[]): Promise<AssetEntity[]>;
-  getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity>;
+  getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null>;
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
   save(asset: Partial<AssetEntity>): Promise<AssetEntity>;
