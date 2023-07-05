@@ -43,7 +43,7 @@ services:
       - NODE_ENV=development
     depends_on:
       - database
-    restart: always
+    restart: unless-stopped
 
   immich-microservices:
     container_name: immich_microservices
@@ -88,7 +88,7 @@ services:
     volumes:
       - ../web:/usr/src/app
       - /usr/src/app/node_modules
-    restart: always
+    restart: unless-stopped
     depends_on:
       - immich-server
 
@@ -137,7 +137,7 @@ services:
     depends_on:
       - immich-server
       - immich-web
-    restart: always
+    restart: unless-stopped
 
 volumes:
   pgdata:
