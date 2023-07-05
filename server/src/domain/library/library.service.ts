@@ -1,15 +1,14 @@
 import { LibraryType, UserEntity } from '@app/infra/entities';
-import { BadRequestException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
-
 import { ILibraryRepository } from '@app/infra/repositories';
-import { LibraryResponseDto, mapLibrary } from '.';
-import { AuthUserDto } from '..';
+import { BadRequestException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { AccessCore, IAccessRepository, Permission } from '../access';
+import { AuthUserDto } from '../auth';
 import { IJobRepository, ILibraryJob, JobName } from '../job';
 import { CreateLibraryDto } from './dto/create-library.dto';
 import { GetLibrariesDto } from './dto/get-libraries-dto';
 import { ScanLibraryDto } from './dto/scan-library-dto';
 import { LibraryCrawler } from './library-crawler';
+import { LibraryResponseDto, mapLibrary } from './response-dto';
 
 @Injectable()
 export class LibraryService {
