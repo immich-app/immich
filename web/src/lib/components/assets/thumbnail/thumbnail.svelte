@@ -85,15 +85,13 @@
         {#if !readonly && (mouseOver || selected || selectionCandidate)}
           <button
             on:click={onIconClickedHandler}
-            on:keydown|preventDefault
-            on:keyup|preventDefault
-            class="absolute p-2"
+            class="absolute p-2 group-hover:block"
+            class:group-hover:block={!disabled}
+            class:hidden={!selected}
             class:cursor-not-allowed={disabled}
             role="checkbox"
             aria-checked={selected}
             {disabled}
-            in:fade={{ duration: 100 }}
-            out:fade={{ duration: 100 }}
           >
             {#if disabled}
               <CheckCircle size="24" class="text-zinc-800" />
