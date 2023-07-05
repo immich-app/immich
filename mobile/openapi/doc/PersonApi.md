@@ -13,7 +13,7 @@ Method | HTTP request | Description
 [**getPerson**](PersonApi.md#getperson) | **GET** /person/{id} | 
 [**getPersonAssets**](PersonApi.md#getpersonassets) | **GET** /person/{id}/assets | 
 [**getPersonThumbnail**](PersonApi.md#getpersonthumbnail) | **GET** /person/{id}/thumbnail | 
-[**mergePerson**](PersonApi.md#mergeperson) | **POST** /person/merge | 
+[**mergePerson**](PersonApi.md#mergeperson) | **POST** /person/{id}/merge | 
 [**updatePerson**](PersonApi.md#updateperson) | **PUT** /person/{id} | 
 
 
@@ -234,7 +234,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **mergePerson**
-> mergePerson(mergePersonDto)
+> mergePerson(id, mergePersonDto)
 
 
 
@@ -257,10 +257,11 @@ import 'package:openapi/api.dart';
 //defaultApiClient.getAuthentication<HttpBearerAuth>('bearer').setAccessToken(yourTokenGeneratorFunction);
 
 final api_instance = PersonApi();
+final id = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
 final mergePersonDto = MergePersonDto(); // MergePersonDto | 
 
 try {
-    api_instance.mergePerson(mergePersonDto);
+    api_instance.mergePerson(id, mergePersonDto);
 } catch (e) {
     print('Exception when calling PersonApi->mergePerson: $e\n');
 }
@@ -270,6 +271,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
+ **id** | **String**|  | 
  **mergePersonDto** | [**MergePersonDto**](MergePersonDto.md)|  | 
 
 ### Return type

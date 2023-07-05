@@ -207,13 +207,16 @@ class PersonApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /person/merge' operation and returns the [Response].
+  /// Performs an HTTP 'POST /person/{id}/merge' operation and returns the [Response].
   /// Parameters:
   ///
+  /// * [String] id (required):
+  ///
   /// * [MergePersonDto] mergePersonDto (required):
-  Future<Response> mergePersonWithHttpInfo(MergePersonDto mergePersonDto,) async {
+  Future<Response> mergePersonWithHttpInfo(String id, MergePersonDto mergePersonDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/person/merge';
+    final path = r'/person/{id}/merge'
+      .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody = mergePersonDto;
@@ -238,9 +241,11 @@ class PersonApi {
 
   /// Parameters:
   ///
+  /// * [String] id (required):
+  ///
   /// * [MergePersonDto] mergePersonDto (required):
-  Future<void> mergePerson(MergePersonDto mergePersonDto,) async {
-    final response = await mergePersonWithHttpInfo(mergePersonDto,);
+  Future<void> mergePerson(String id, MergePersonDto mergePersonDto,) async {
+    final response = await mergePersonWithHttpInfo(id, mergePersonDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

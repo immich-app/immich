@@ -8835,14 +8835,18 @@ export const PersonApiAxiosParamCreator = function (configuration?: Configuratio
         },
         /**
          * 
+         * @param {string} id 
          * @param {MergePersonDto} mergePersonDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        mergePerson: async (mergePersonDto: MergePersonDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        mergePerson: async (id: string, mergePersonDto: MergePersonDto, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('mergePerson', 'id', id)
             // verify required parameter 'mergePersonDto' is not null or undefined
             assertParamExists('mergePerson', 'mergePersonDto', mergePersonDto)
-            const localVarPath = `/person/merge`;
+            const localVarPath = `/person/{id}/merge`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -8976,12 +8980,13 @@ export const PersonApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {string} id 
          * @param {MergePersonDto} mergePersonDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async mergePerson(mergePersonDto: MergePersonDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.mergePerson(mergePersonDto, options);
+        async mergePerson(id: string, mergePersonDto: MergePersonDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.mergePerson(id, mergePersonDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -9042,12 +9047,13 @@ export const PersonApiFactory = function (configuration?: Configuration, basePat
         },
         /**
          * 
+         * @param {string} id 
          * @param {MergePersonDto} mergePersonDto 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        mergePerson(mergePersonDto: MergePersonDto, options?: any): AxiosPromise<void> {
-            return localVarFp.mergePerson(mergePersonDto, options).then((request) => request(axios, basePath));
+        mergePerson(id: string, mergePersonDto: MergePersonDto, options?: any): AxiosPromise<void> {
+            return localVarFp.mergePerson(id, mergePersonDto, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9110,6 +9116,13 @@ export interface PersonApiGetPersonThumbnailRequest {
  * @interface PersonApiMergePersonRequest
  */
 export interface PersonApiMergePersonRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof PersonApiMergePerson
+     */
+    readonly id: string
+
     /**
      * 
      * @type {MergePersonDto}
@@ -9197,7 +9210,7 @@ export class PersonApi extends BaseAPI {
      * @memberof PersonApi
      */
     public mergePerson(requestParameters: PersonApiMergePersonRequest, options?: AxiosRequestConfig) {
-        return PersonApiFp(this.configuration).mergePerson(requestParameters.mergePersonDto, options).then((request) => request(this.axios, this.basePath));
+        return PersonApiFp(this.configuration).mergePerson(requestParameters.id, requestParameters.mergePersonDto, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

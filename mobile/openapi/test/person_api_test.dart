@@ -37,7 +37,7 @@ void main() {
       // TODO
     });
 
-    //Future mergePerson(MergePersonDto mergePersonDto) async
+    //Future mergePerson(String id, MergePersonDto mergePersonDto) async
     test('test mergePerson', () async {
       // TODO
     });
