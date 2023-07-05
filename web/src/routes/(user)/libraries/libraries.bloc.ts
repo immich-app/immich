@@ -49,16 +49,6 @@ export const useLibraries = (props: LibraryProps) => {
     }
   }
 
-  async function deleteLibrary(libraryToDelete: LibraryResponseDto): Promise<void> {
-    // TODO
-    // await api.albumApi.deleteAlbum({ id: albumToDelete.id });
-    // albums.set(
-    //   get(albums).filter(({ id }) => {
-    //     return id !== albumToDelete.id;
-    //   }),
-    // );
-  }
-
   async function showLibraryContextMenu(
     contextMenuDetail: OnShowContextMenuDetail,
     library: LibraryResponseDto,
