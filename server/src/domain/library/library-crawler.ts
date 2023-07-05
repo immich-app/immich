@@ -1,5 +1,5 @@
 import { glob } from 'glob';
-import { CrawlOptionsDto } from './dto/crawl-options-dto';
+import { CrawlOptionsDto } from './library.dto';
 
 // TODO: these extensions should be moved to somewhere else
 const videos = ['mp4', 'webm', 'mov', '3gp', 'avi', 'm2ts', 'mts', 'mpg', 'flv', 'mkv', 'wmv'];

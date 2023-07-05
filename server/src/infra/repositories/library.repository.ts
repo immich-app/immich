@@ -1,38 +1,27 @@
-import { GetLibrariesDto } from '@app/domain/library/dto/get-libraries-dto';
-import { LibraryEntity } from '@app/infra/entities';
+import { ILibraryRepository } from '@app/domain';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';
-
-export interface ILibraryRepository {
-  get(id: string): Promise<LibraryEntity | null>;
-  getCountForUser(ownerId: string): Promise<number>;
-  getById(libraryId: string): Promise<LibraryEntity>;
-  getAllByUserId(userId: string, dto: GetLibrariesDto): Promise<LibraryEntity[]>;
-  create(library: Omit<LibraryEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId'>): Promise<LibraryEntity>;
-  remove(library: LibraryEntity): Promise<void>;
-}
-
-export const ILibraryRepository = 'ILibraryRepository';
+import { LibraryEntity } from '../entities';
 
 @Injectable()
 export class LibraryRepository implements ILibraryRepository {
-  constructor(@InjectRepository(LibraryEntity) private libraryRepository: Repository<LibraryEntity>) {}
+  constructor(@InjectRepository(LibraryEntity) private repository: Repository<LibraryEntity>) {}
 
   get(id: string): Promise<LibraryEntity | null> {
-    return this.libraryRepository.findOne({
+    return this.repository.findOne({
       where: { id },
     });
   }
 
   getCountForUser(ownerId: string): Promise<number> {
-    return this.libraryRepository.countBy({
+    return this.repository.countBy({
       ownerId: ownerId,
     });
   }
 
   getById(libraryId: string): Promise<LibraryEntity> {
-    return this.libraryRepository.findOneOrFail({
+    return this.repository.findOneOrFail({
       where: {
         id: libraryId,
       },
@@ -40,7 +29,7 @@ export class LibraryRepository implements ILibraryRepository {
   }
 
   getAllByUserId(ownerId: string): Promise<LibraryEntity[]> {
-    return this.libraryRepository.find({
+    return this.repository.find({
       where: {
         ownerId,
         isVisible: true,
@@ -49,10 +38,10 @@ export class LibraryRepository implements ILibraryRepository {
   }
 
   create(library: Omit<LibraryEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId'>): Promise<LibraryEntity> {
-    return this.libraryRepository.save(library);
+    return this.repository.save(library);
   }
 
   async remove(library: LibraryEntity): Promise<void> {
-    await this.libraryRepository.remove(library);
+    await this.repository.remove(library);
   }
 }

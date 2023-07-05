@@ -10,7 +10,7 @@ export class AddLibraries1688392120838 implements MigrationInterface {
       `CREATE TABLE "libraries" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying NOT NULL DEFAULT '', "ownerId" uuid NOT NULL, "type" character varying NOT NULL, "importPaths" text array NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "refreshedAt" TIMESTAMP WITH TIME ZONE, "isVisible" boolean NOT NULL DEFAULT true, CONSTRAINT "UQ_owner_name" UNIQUE ("ownerId", "name"), CONSTRAINT "PK_505fedfcad00a09b3734b4223de" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(`ALTER TABLE "assets" ADD "isOffline" boolean NOT NULL DEFAULT false`);
-    await queryRunner.query(`ALTER TABLE "assets" ADD "libraryId" uuid NOT NULL`);
+    await queryRunner.query(`ALTER TABLE "assets" ADD "libraryId" uuid`);
     await queryRunner.query(`ALTER TABLE "assets" DROP CONSTRAINT "UQ_4ed4f8052685ff5b1e7ca1058ba"`);
     await queryRunner.query(
       `ALTER TABLE "assets" ADD CONSTRAINT "UQ_owner_library_originalpath" UNIQUE ("ownerId", "libraryId", "originalPath")`,
@@ -25,18 +25,19 @@ export class AddLibraries1688392120838 implements MigrationInterface {
       `ALTER TABLE "assets" ADD CONSTRAINT "FK_9977c3c1de01c3d848039a6b90c" FOREIGN KEY ("libraryId") REFERENCES "libraries"("id") ON DELETE CASCADE ON UPDATE CASCADE`,
     );
 
-    // Create default library
-    const adminUser = await queryRunner.manager.findOne(UserEntity, { where: { isAdmin: true } });
-
-    if (adminUser) {
+    // Create default library for each user
+    const users = await queryRunner.manager.find(UserEntity);
+    for (const user of users) {
       const libraryEntity = await queryRunner.manager.save(LibraryEntity, {
         name: 'Default Library',
-        owner: adminUser,
+        owner: user,
         type: LibraryType.UPLOAD,
         importPaths: [],
       });
-      await queryRunner.manager.update(AssetEntity, {}, { library: libraryEntity });
+      await queryRunner.manager.update(AssetEntity, { ownerId: user.id }, { library: libraryEntity });
     }
+
+    await queryRunner.query(`ALTER TABLE "assets" ADD "libraryId" uuid`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

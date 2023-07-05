@@ -2282,12 +2282,98 @@
             "api_key": []
           }
         ]
+      },
+      "get": {
+        "operationId": "getAllLibraries",
+        "parameters": [
+          {
+            "name": "assetId",
+            "required": false,
+            "in": "query",
+            "description": "Only returns albums that contain the asset\nundefined: get all albums",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LibraryResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Library"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
       }
     },
-    "/library/scan": {
-      "post": {
-        "operationId": "scan",
+    "/library/count": {
+      "get": {
+        "operationId": "getLibraryCount",
         "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Library"
+        ],
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/library/{id}/scan": {
+      "post": {
+        "operationId": "scanLibrary",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -2300,7 +2386,14 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -5214,11 +5307,18 @@
         "type": "object",
         "properties": {
           "libraryType": {
-            "$ref": "#/components/schemas/LibraryTypeEnum"
+            "$ref": "#/components/schemas/LibraryType"
+          },
+          "name": {
+            "type": "string"
+          },
+          "isVisible": {
+            "type": "boolean"
           }
         },
         "required": [
-          "libraryType"
+          "libraryType",
+          "name"
         ]
       },
       "CreateProfileImageDto": {
@@ -5744,12 +5844,18 @@
         "type": "object",
         "properties": {
           "type": {
-            "$ref": "#/components/schemas/LibraryTypeEnum"
+            "$ref": "#/components/schemas/LibraryType"
+          },
+          "assetCount": {
+            "type": "integer"
           },
           "id": {
             "type": "string"
           },
           "ownerId": {
+            "type": "string"
+          },
+          "name": {
             "type": "string"
           },
           "createdAt": {
@@ -5767,13 +5873,15 @@
         },
         "required": [
           "type",
+          "assetCount",
           "id",
           "ownerId",
+          "name",
           "createdAt",
           "updatedAt"
         ]
       },
-      "LibraryTypeEnum": {
+      "LibraryType": {
         "type": "string",
         "enum": [
           "UPLOAD",
@@ -6009,14 +6117,11 @@
       "ScanLibraryDto": {
         "type": "object",
         "properties": {
-          "libraryId": {
-            "type": "string",
-            "format": "uuid"
+          "forceRefresh": {
+            "type": "boolean",
+            "default": false
           }
-        },
-        "required": [
-          "libraryId"
-        ]
+        }
       },
       "SearchAlbumResponseDto": {
         "type": "object",
