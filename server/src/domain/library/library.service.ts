@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 
 import path from 'node:path';
-import { AccessCore, IAccessRepository } from '../access';
+import { IAccessRepository } from '../access';
 import { IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';
 import { IJobRepository, ILibraryJob, JobName } from '../job';
