@@ -1,4 +1,4 @@
-import { ICryptoRepository, IJobRepository, IStorageRepository, JobName } from '@app/domain';
+import { ICryptoRepository, IJobRepository, ILibraryRepository, IStorageRepository, JobName } from '@app/domain';
 import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
@@ -11,6 +11,7 @@ import {
   newJobRepositoryMock,
   newStorageRepositoryMock,
 } from '@test';
+import { newLibraryRepositoryMock } from '@test/repositories/library.repository.mock';
 import { when } from 'jest-when';
 import { QueryFailedError, Repository } from 'typeorm';
 import { IAssetRepository } from './asset-repository';
@@ -31,6 +32,7 @@ const _getCreateAssetDto = (): CreateAssetDto => {
   createAssetDto.isFavorite = false;
   createAssetDto.isArchived = false;
   createAssetDto.duration = '0:00:00.000000';
+  createAssetDto.libraryId = 'libraryId';
 
   return createAssetDto;
 };
@@ -125,6 +127,7 @@ describe('AssetService', () => {
   let cryptoMock: jest.Mocked<ICryptoRepository>;
   let jobMock: jest.Mocked<IJobRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let libraryMock: jest.Mocked<ILibraryRepository>;
 
   beforeEach(() => {
     assetRepositoryMock = {
@@ -154,8 +157,9 @@ describe('AssetService', () => {
     cryptoMock = newCryptoRepositoryMock();
     jobMock = newJobRepositoryMock();
     storageMock = newStorageRepositoryMock();
+    libraryMock = newLibraryRepositoryMock();
 
-    sut = new AssetService(accessMock, assetRepositoryMock, a, cryptoMock, jobMock, storageMock);
+    sut = new AssetService(accessMock, assetRepositoryMock, a, cryptoMock, jobMock, libraryMock, storageMock);
 
     when(assetRepositoryMock.get)
       .calledWith(assetEntityStub.livePhotoStillAsset.id)
@@ -421,6 +425,7 @@ describe('AssetService', () => {
           ..._getCreateAssetDto(),
           assetPath: '/data/user1/fake_path/asset_1.jpeg',
           isReadOnly: true,
+          libraryId: 'library-id',
         }),
       ).resolves.toEqual({ duplicate: false, id: 'asset-id' });
 
@@ -441,6 +446,7 @@ describe('AssetService', () => {
           ..._getCreateAssetDto(),
           assetPath: '/data/user1/fake_path/asset_1.jpeg',
           isReadOnly: true,
+          libraryId: 'library-id',
         }),
       ).resolves.toEqual({ duplicate: true, id: 'asset-id' });
 

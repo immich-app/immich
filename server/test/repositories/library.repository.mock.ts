@@ -9,5 +9,6 @@ export const newLibraryRepositoryMock = (): jest.Mocked<ILibraryRepository> => {
     getAllByUserId: jest.fn(),
     create: jest.fn(),
     remove: jest.fn(),
+    getDefaultUploadLibrary: jest.fn(),
   };
 };
