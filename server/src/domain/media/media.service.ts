@@ -128,7 +128,7 @@ export class MediaService {
 
   async handleVideoConversion({ id }: IEntityJob) {
     const [asset] = await this.assetRepository.getByIds([id]);
-    if (!asset) {
+    if (!asset || asset.type !== AssetType.VIDEO) {
       return false;
     }
 

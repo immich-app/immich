@@ -1,3 +1,4 @@
+import { AssetType } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { IAssetRepository, mapAsset } from '../asset';
 import { CommunicationEvent, ICommunicationRepository } from '../communication';
@@ -163,9 +164,15 @@ export class JobService {
         await this.jobRepository.queue({ name: JobName.CLASSIFY_IMAGE, data: item.data });
         await this.jobRepository.queue({ name: JobName.ENCODE_CLIP, data: item.data });
         await this.jobRepository.queue({ name: JobName.RECOGNIZE_FACES, data: item.data });
+        if (item.data.source !== 'upload') {
+          break;
+        }
 
         const [asset] = await this.assetRepository.getByIds([item.data.id]);
         if (asset) {
+          if (asset.type === AssetType.VIDEO) {
+            await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: item.data });
+          }
           this.communicationRepository.send(CommunicationEvent.UPLOAD_SUCCESS, asset.ownerId, mapAsset(asset));
         }
         break;
