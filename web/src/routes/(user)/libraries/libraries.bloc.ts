@@ -73,7 +73,6 @@ export const useLibraries = (props: LibraryProps) => {
     loadLibraries,
     createUploadLibrary,
     createImportLibrary,
-    deleteLibrary,
     showLibraryContextMenu,
     closeLibraryContextMenu,
   };
