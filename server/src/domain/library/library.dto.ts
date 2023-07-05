@@ -47,6 +47,8 @@ export class ScanLibraryDto {
 }
 
 export class SetImportPathsDto {
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
   importPaths!: string[];
 }
 
@@ -60,6 +62,8 @@ export class LibraryResponseDto {
 
   @ApiProperty({ type: 'integer' })
   assetCount!: number;
+
+  importPaths!: string[];
 
   createdAt!: Date;
   updatedAt!: Date;
@@ -80,5 +84,6 @@ export function mapLibrary(entity: LibraryEntity): LibraryResponseDto {
     updatedAt: entity.updatedAt,
     refreshedAt: entity.refreshedAt,
     assetCount: assetCount,
+    importPaths: entity.importPaths,
   };
 }

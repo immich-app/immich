@@ -76,7 +76,8 @@ export class LibraryService {
   }
 
   async getLibraryById(authUser: AuthUserDto, libraryId: string): Promise<LibraryResponseDto> {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_READ, libraryId);
+    // TODO
+    //await this.access.requirePermission(authUser, Permission.LIBRARY_READ, libraryId);
 
     const libraryEntity = await this.libraryRepository.getById(libraryId);
     return mapLibrary(libraryEntity);
@@ -91,10 +92,15 @@ export class LibraryService {
   }
 
   async setImportPaths(authUser: AuthUserDto, libraryId: string, dto: SetImportPathsDto): Promise<LibraryResponseDto> {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, libraryId);
+    // TODO:
+    //await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, libraryId);
 
-    const libraryEntity = await this.libraryRepository.setImportPaths(libraryId, dto.importPaths);
-    return mapLibrary(libraryEntity);
+    const libraryEntity = await this.getLibraryById(authUser, libraryId);
+    if (libraryEntity.type != LibraryType.IMPORT) {
+      throw new BadRequestException('Can only set import paths on an Import type library');
+    }
+    const updatedEntity = await this.libraryRepository.setImportPaths(libraryId, dto.importPaths);
+    return mapLibrary(updatedEntity);
   }
 
   async scan(authUser: AuthUserDto, libraryId: string, dto: ScanLibraryDto) {

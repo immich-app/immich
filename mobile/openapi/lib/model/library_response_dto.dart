@@ -18,6 +18,7 @@ class LibraryResponseDto {
     required this.id,
     required this.ownerId,
     required this.name,
+    this.importPaths = const [],
     required this.createdAt,
     required this.updatedAt,
     this.refreshedAt,
@@ -32,6 +33,8 @@ class LibraryResponseDto {
   String ownerId;
 
   String name;
+
+  List<String> importPaths;
 
   DateTime createdAt;
 
@@ -52,6 +55,7 @@ class LibraryResponseDto {
      other.id == id &&
      other.ownerId == ownerId &&
      other.name == name &&
+     other.importPaths == importPaths &&
      other.createdAt == createdAt &&
      other.updatedAt == updatedAt &&
      other.refreshedAt == refreshedAt;
@@ -64,12 +68,13 @@ class LibraryResponseDto {
     (id.hashCode) +
     (ownerId.hashCode) +
     (name.hashCode) +
+    (importPaths.hashCode) +
     (createdAt.hashCode) +
     (updatedAt.hashCode) +
     (refreshedAt == null ? 0 : refreshedAt!.hashCode);
 
   @override
-  String toString() => 'LibraryResponseDto[type=$type, assetCount=$assetCount, id=$id, ownerId=$ownerId, name=$name, createdAt=$createdAt, updatedAt=$updatedAt, refreshedAt=$refreshedAt]';
+  String toString() => 'LibraryResponseDto[type=$type, assetCount=$assetCount, id=$id, ownerId=$ownerId, name=$name, importPaths=$importPaths, createdAt=$createdAt, updatedAt=$updatedAt, refreshedAt=$refreshedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -78,6 +83,7 @@ class LibraryResponseDto {
       json[r'id'] = this.id;
       json[r'ownerId'] = this.ownerId;
       json[r'name'] = this.name;
+      json[r'importPaths'] = this.importPaths;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     if (this.refreshedAt != null) {
@@ -101,6 +107,9 @@ class LibraryResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         name: mapValueOfType<String>(json, r'name')!,
+        importPaths: json[r'importPaths'] is Iterable
+            ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         createdAt: mapDateTime(json, r'createdAt', r'')!,
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
         refreshedAt: mapDateTime(json, r'refreshedAt', r''),
@@ -156,6 +165,7 @@ class LibraryResponseDto {
     'id',
     'ownerId',
     'name',
+    'importPaths',
     'createdAt',
     'updatedAt',
   };

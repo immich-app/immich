@@ -1624,6 +1624,12 @@ export interface LibraryResponseDto {
     'name': string;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof LibraryResponseDto
+     */
+    'importPaths': Array<string>;
+    /**
+     * 
      * @type {string}
      * @memberof LibraryResponseDto
      */

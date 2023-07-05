@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { LibraryResponseDto, api } from '@api';
+  import { LibraryResponseDto, SetImportPathsDto, api } from '@api';
   import Close from 'svelte-material-icons/Close.svelte';
   import Button from '../elements/buttons/button.svelte';
   import { handleError } from '../../utils/handle-error';
@@ -11,12 +11,14 @@
   export let library: LibraryResponseDto;
 
   let importPaths: string[] = [];
-
-  let addImportPath = false;
+  let addPath = false;
   let importPathToAdd: string;
   let removeImportPath: string | null = null;
 
-  const refreshPaths = () => api.libraryApi.getImportPaths({ id: library.id }).then(({ data }) => (importPaths = data));
+  const refreshPaths = async () => {
+    const { data } = await api.libraryApi.getImportPaths({ id: library.id });
+    importPaths = data;
+  };
 
   const handleRemoveImportPath = async () => {
     if (!removeImportPath) {
@@ -27,33 +29,32 @@
       importPaths = importPaths.filter((path) => path != removeImportPath);
 
       removeImportPath = null;
-      await handleSetImportPaths();
+      await setImportPaths();
     } catch (error) {
       handleError(error, 'Unable to remove path');
     }
   };
 
   const handleAddImportPath = async () => {
-    if (!addImportPath) {
+    if (!addPath) {
       return;
     }
 
     try {
       importPaths.push(importPathToAdd);
-
-      addImportPath = false;
-      await handleSetImportPaths();
+      addPath = false;
+      await setImportPaths();
     } catch (error) {
       handleError(error, 'Unable to remove path');
     }
   };
 
-  const handleSetImportPaths = async () => {
+  const setImportPaths = async () => {
     try {
-      await api.libraryApi.setImportPaths({ id: library.id, setImportPathsDto: { importPaths: importPaths } });
+      let a: SetImportPathsDto = { importPaths: importPaths };
 
-      await refreshPaths();
-      addImportPath = false;
+      const { data } = await api.libraryApi.setImportPaths({ id: library.id, setImportPathsDto: a });
+      importPaths = data.importPaths;
     } catch (error) {
       handleError(error, 'Unable to add paths');
     }
@@ -70,7 +71,7 @@
       {#each importPaths as importPath}
         <div class="flex rounded-lg gap-4 py-4 px-5 transition-all">
           <div class="text-left">
-            <p class="text-immich-fg dark:text-immich-dark-fg">path</p>
+            <p class="text-immich-fg dark:text-immich-dark-fg">{importPath}</p>
           </div>
           <CircleIconButton
             on:click={() => (removeImportPath = importPath)}
@@ -83,17 +84,17 @@
     </div>
   {/if}
   <div class="flex justify-end">
-    <Button size="sm" on:click={() => (addImportPath = true)}>Add path</Button>
+    <Button size="sm" on:click={() => (addPath = true)}>Add path</Button>
   </div>
 </section>
 
-{#if addImportPath}
+{#if addPath}
   <LibraryImportPathForm
     title="Add Library Import Path"
     submitText="Add"
-    importPath={importPathToAdd}
-    on:close={() => (addImportPath = false)}
-    on:add-import-paths={() => handleAddImportPath()}
+    bind:importPath={importPathToAdd}
+    on:submit={handleAddImportPath}
+    on:cancel={() => (addPath = false)}
   />
 {/if}
 

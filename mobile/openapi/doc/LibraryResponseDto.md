@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **id** | **String** |  | 
 **ownerId** | **String** |  | 
 **name** | **String** |  | 
+**importPaths** | **List<String>** |  | [default to const []]
 **createdAt** | [**DateTime**](DateTime.md) |  | 
 **updatedAt** | [**DateTime**](DateTime.md) |  | 
 **refreshedAt** | [**DateTime**](DateTime.md) |  | [optional] 

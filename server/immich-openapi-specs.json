@@ -5988,6 +5988,12 @@
           "name": {
             "type": "string"
           },
+          "importPaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -6007,6 +6013,7 @@
           "id",
           "ownerId",
           "name",
+          "importPaths",
           "createdAt",
           "updatedAt"
         ]
