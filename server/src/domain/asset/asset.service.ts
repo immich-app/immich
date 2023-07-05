@@ -1,10 +1,9 @@
-import { LibraryEntity, UserEntity } from '@app/infra/entities';
+import { AssetEntity, AssetType, LibraryEntity, UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject } from '@nestjs/common';
 import fs from 'fs';
 import { DateTime } from 'luxon';
 import mime from 'mime';
 import { basename, extname, parse } from 'path';
-import { AssetEntity, AssetType } from '../../infra/entities/asset.entity';
 import { AccessCore, IAccessRepository, Permission } from '../access';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
