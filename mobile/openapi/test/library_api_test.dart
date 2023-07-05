@@ -27,6 +27,11 @@ void main() {
       // TODO
     });
 
+    //Future<List<String>> getImportPaths(String id) async
+    test('test getImportPaths', () async {
+      // TODO
+    });
+
     //Future<num> getLibraryCount() async
     test('test getLibraryCount', () async {
       // TODO
@@ -39,6 +44,11 @@ void main() {
 
     //Future scanLibrary(String id, ScanLibraryDto scanLibraryDto) async
     test('test scanLibrary', () async {
+      // TODO
+    });
+
+    //Future<LibraryResponseDto> setImportPaths(String id, SetImportPathsDto setImportPathsDto) async
+    test('test setImportPaths', () async {
       // TODO
     });
 

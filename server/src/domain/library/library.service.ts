@@ -13,7 +13,14 @@ import { AccessCore, IAccessRepository, Permission } from '../access';
 import { AuthUserDto } from '../auth';
 import { IJobRepository, ILibraryJob, JobName } from '../job';
 import { LibraryCrawler } from './library-crawler';
-import { CreateLibraryDto, GetLibrariesDto, LibraryResponseDto, mapLibrary, ScanLibraryDto } from './library.dto';
+import {
+  CreateLibraryDto,
+  GetLibrariesDto,
+  LibraryResponseDto,
+  mapLibrary,
+  ScanLibraryDto,
+  SetImportPathsDto,
+} from './library.dto';
 import { ILibraryRepository } from './library.repository';
 
 @Injectable()
@@ -74,11 +81,25 @@ export class LibraryService {
     return mapLibrary(libraryEntity);
   }
 
-  async scan(authUser: AuthUserDto, id: string, dto: ScanLibraryDto) {
+  async getImportPaths(authUser: AuthUserDto, libraryId: string): Promise<string[]> {
+    await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, libraryId);
+
+    const libraryEntity = await this.libraryRepository.getById(libraryId);
+    return libraryEntity.importPaths;
+  }
+
+  async setImportPaths(authUser: AuthUserDto, libraryId: string, dto: SetImportPathsDto): Promise<LibraryResponseDto> {
+    await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, libraryId);
+
+    const libraryEntity = await this.libraryRepository.setImportPaths(libraryId, dto.importPaths);
+    return mapLibrary(libraryEntity);
+  }
+
+  async scan(authUser: AuthUserDto, libraryId: string, dto: ScanLibraryDto) {
     // TODO:
     //await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, dto.libraryId);
 
-    const library = await this.libraryRepository.getById(id);
+    const library = await this.libraryRepository.getById(libraryId);
 
     if (library.type != LibraryType.IMPORT) {
       Logger.error('Only imported libraries can be refreshed');
@@ -98,7 +119,7 @@ export class LibraryService {
       const libraryJobData: ILibraryJob = {
         assetPath: assetPath,
         ownerId: authUser.id,
-        libraryId: id,
+        libraryId: libraryId,
       };
 
       await this.jobRepository.queue({ name: JobName.ADD_LIBRARY_FILE, data: libraryJobData });

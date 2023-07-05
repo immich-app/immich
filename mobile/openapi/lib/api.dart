@@ -123,6 +123,7 @@ part 'model/server_info_response_dto.dart';
 part 'model/server_ping_response.dart';
 part 'model/server_stats_response_dto.dart';
 part 'model/server_version_reponse_dto.dart';
+part 'model/set_import_paths_dto.dart';
 part 'model/shared_link_create_dto.dart';
 part 'model/shared_link_edit_dto.dart';
 part 'model/shared_link_response_dto.dart';

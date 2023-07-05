@@ -13,6 +13,7 @@ export const load = (async ({ params, locals: { api, user } }) => {
     const { data: library } = await api.libraryApi.getLibraryInfo({ id: libraryId });
     return {
       library,
+      user,
       meta: {
         title: library.name,
       },

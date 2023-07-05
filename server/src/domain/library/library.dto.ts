@@ -46,6 +46,10 @@ export class ScanLibraryDto {
   forceRefresh?: boolean = false;
 }
 
+export class SetImportPathsDto {
+  importPaths!: string[];
+}
+
 export class LibraryResponseDto {
   id!: string;
   ownerId!: string;

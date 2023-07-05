@@ -5,6 +5,7 @@ import {
   LibraryResponseDto,
   LibraryService,
   ScanLibraryDto,
+  SetImportPathsDto,
 } from '@app/domain';
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
@@ -17,7 +18,7 @@ import { UUIDParamDto } from './dto/uuid-param.dto';
 @Authenticated()
 @UseValidation()
 export class LibraryController {
-  constructor(private service: LibraryService) {}
+  constructor(private libraryService: LibraryService) {}
 
   @AdminRoute()
   @Post()
@@ -25,28 +26,37 @@ export class LibraryController {
     @AuthUser() authUser: AuthUserDto,
     @Body() createLibraryDto: CreateLibraryDto,
   ): Promise<LibraryResponseDto> {
-    return this.service.create(authUser, createLibraryDto);
+    return this.libraryService.create(authUser, createLibraryDto);
   }
 
   @Get()
   getAllLibraries(@AuthUser() authUser: AuthUserDto, @Query() dto: GetLibrariesDto): Promise<LibraryResponseDto[]> {
-    return this.service.getAll(authUser, dto);
+    return this.libraryService.getAll(authUser, dto);
   }
 
   @Get('count')
   getLibraryCount(@AuthUser() authUser: AuthUserDto): Promise<number> {
-    return this.service.getCount(authUser);
+    return this.libraryService.getCount(authUser);
   }
 
   @Get(':id')
   getLibraryInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
-    return this.service.get(authUser, id);
+    return this.libraryService.get(authUser, id);
+  }
+
+  @Get(':id/importPaths')
+  getImportPaths(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<string[]> {
+    return this.libraryService.getImportPaths(authUser, id);
+  }
+
+  @Post(':id/importPaths')
+  setImportPaths(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: SetImportPathsDto) {
+    return this.libraryService.setImportPaths(authUser, id, dto);
   }
 
   @AdminRoute()
   @Post(':id/scan')
-  // TODO: use dto here
   scanLibrary(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto, @Body() dto: ScanLibraryDto) {
-    return this.service.scan(authUser, id, dto);
+    return this.libraryService.scan(authUser, id, dto);
   }
 }

@@ -1,10 +1,10 @@
 <script lang="ts">
-  import LibraryViewer from '$lib/components/library-page/library-viewer.svelte';
+  import LibrarySettings from '$lib/components/library-page/library-settings.svelte';
   import type { PageData } from './$types';
 
   export let data: PageData;
 </script>
 
 <div class="immich-scrollbar">
-  <LibraryViewer library={data.library} />
+  <LibrarySettings library={data.library} />
 </div>

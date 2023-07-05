@@ -124,9 +124,11 @@ Class | Method | HTTP request | Description
 *JobApi* | [**sendJobCommand**](doc//JobApi.md#sendjobcommand) | **PUT** /jobs/{id} | 
 *LibraryApi* | [**createLibrary**](doc//LibraryApi.md#createlibrary) | **POST** /library | 
 *LibraryApi* | [**getAllLibraries**](doc//LibraryApi.md#getalllibraries) | **GET** /library | 
+*LibraryApi* | [**getImportPaths**](doc//LibraryApi.md#getimportpaths) | **GET** /library/{id}/importPaths | 
 *LibraryApi* | [**getLibraryCount**](doc//LibraryApi.md#getlibrarycount) | **GET** /library/count | 
 *LibraryApi* | [**getLibraryInfo**](doc//LibraryApi.md#getlibraryinfo) | **GET** /library/{id} | 
 *LibraryApi* | [**scanLibrary**](doc//LibraryApi.md#scanlibrary) | **POST** /library/{id}/scan | 
+*LibraryApi* | [**setImportPaths**](doc//LibraryApi.md#setimportpaths) | **POST** /library/{id}/importPaths | 
 *OAuthApi* | [**callback**](doc//OAuthApi.md#callback) | **POST** /oauth/callback | 
 *OAuthApi* | [**generateConfig**](doc//OAuthApi.md#generateconfig) | **POST** /oauth/config | 
 *OAuthApi* | [**link**](doc//OAuthApi.md#link) | **POST** /oauth/link | 
@@ -260,6 +262,7 @@ Class | Method | HTTP request | Description
  - [ServerPingResponse](doc//ServerPingResponse.md)
  - [ServerStatsResponseDto](doc//ServerStatsResponseDto.md)
  - [ServerVersionReponseDto](doc//ServerVersionReponseDto.md)
+ - [SetImportPathsDto](doc//SetImportPathsDto.md)
  - [SharedLinkCreateDto](doc//SharedLinkCreateDto.md)
  - [SharedLinkEditDto](doc//SharedLinkEditDto.md)
  - [SharedLinkResponseDto](doc//SharedLinkResponseDto.md)

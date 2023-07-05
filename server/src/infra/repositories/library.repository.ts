@@ -6,22 +6,22 @@ import { LibraryEntity } from '../entities';
 
 @Injectable()
 export class LibraryRepository implements ILibraryRepository {
-  constructor(@InjectRepository(LibraryEntity) private repository: Repository<LibraryEntity>) {}
+  constructor(@InjectRepository(LibraryEntity) private libraryRepository: Repository<LibraryEntity>) {}
 
   get(id: string): Promise<LibraryEntity | null> {
-    return this.repository.findOne({
+    return this.libraryRepository.findOne({
       where: { id },
     });
   }
 
   getCountForUser(ownerId: string): Promise<number> {
-    return this.repository.countBy({
+    return this.libraryRepository.countBy({
       ownerId: ownerId,
     });
   }
 
   getById(libraryId: string): Promise<LibraryEntity> {
-    return this.repository.findOneOrFail({
+    return this.libraryRepository.findOneOrFail({
       where: {
         id: libraryId,
       },
@@ -29,7 +29,7 @@ export class LibraryRepository implements ILibraryRepository {
   }
 
   getAllByUserId(ownerId: string): Promise<LibraryEntity[]> {
-    return this.repository.find({
+    return this.libraryRepository.find({
       where: {
         ownerId,
         isVisible: true,
@@ -37,11 +37,23 @@ export class LibraryRepository implements ILibraryRepository {
     });
   }
 
+  async setImportPaths(libraryId: string, importPaths: string[]): Promise<LibraryEntity> {
+    await this.libraryRepository.update(libraryId, {
+      importPaths: importPaths,
+    });
+
+    return this.libraryRepository.findOneOrFail({
+      where: {
+        id: libraryId,
+      },
+    });
+  }
+
   create(library: Omit<LibraryEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId'>): Promise<LibraryEntity> {
-    return this.repository.save(library);
+    return this.libraryRepository.save(library);
   }
 
   async remove(library: LibraryEntity): Promise<void> {
-    await this.repository.remove(library);
+    await this.libraryRepository.remove(library);
   }
 }
