@@ -10,11 +10,6 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import { flip } from 'svelte/animate';
-  import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import type { LibraryResponseDto } from '@api';
 
   export let data: PageData;
