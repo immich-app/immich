@@ -20,6 +20,8 @@ import {
   AssetFaceEntity,
   AssetType,
   ExifEntity,
+  LibraryEntity,
+  LibraryType,
   PartnerEntity,
   PersonEntity,
   SharedLinkEntity,
@@ -185,6 +187,48 @@ export const userEntityStub = {
   }),
 };
 
+export const libraryEntityStub = {
+  library1: Object.freeze<LibraryEntity>({
+    id: 'library-id',
+    name: 'test_library',
+    assets: [],
+    owner: userEntityStub.user1,
+    ownerId: 'user-id',
+    type: LibraryType.UPLOAD,
+    importPaths: [],
+    createdAt: new Date('2021-01-01'),
+    updatedAt: new Date('2021-01-01'),
+    refreshedAt: null,
+    isVisible: true,
+  }),
+  library2: Object.freeze<LibraryEntity>({
+    id: 'library-id',
+    name: 'test_library',
+    assets: [],
+    owner: userEntityStub.user1,
+    ownerId: 'user-id',
+    type: LibraryType.UPLOAD,
+    importPaths: [],
+    createdAt: new Date('2022-01-01'),
+    updatedAt: new Date('2022-01-01'),
+    refreshedAt: null,
+    isVisible: true,
+  }),
+  library3: Object.freeze<LibraryEntity>({
+    id: 'library-id',
+    name: 'test_library',
+    assets: [],
+    owner: userEntityStub.user1,
+    ownerId: 'user-id',
+    type: LibraryType.UPLOAD,
+    importPaths: [],
+    createdAt: new Date('2023-01-01'),
+    updatedAt: new Date('2023-01-01'),
+    refreshedAt: null,
+    isVisible: true,
+  }),
+};
+
 export const fileStub = {
   livePhotoStill: Object.freeze({
     originalPath: 'fake_path/asset_1.jpeg',
@@ -231,6 +275,9 @@ export const assetEntityStub = {
     faces: [],
     sidecarPath: null,
     isReadOnly: false,
+    isOffline: false,
+    libraryId: 'library-id',
+    library: libraryEntityStub.library1,
   }),
   noWebpPath: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -265,6 +312,9 @@ export const assetEntityStub = {
     exifInfo: {
       fileSizeInByte: 123_000,
     } as ExifEntity,
+    isOffline: true,
+    libraryId: 'library-id2',
+    library: libraryEntityStub.library3,
   }),
   noThumbhash: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -296,6 +346,9 @@ export const assetEntityStub = {
     originalFileName: 'asset-id.ext',
     faces: [],
     sidecarPath: null,
+    isOffline: true,
+    libraryId: 'library-id2',
+    library: libraryEntityStub.library2,
   }),
   image: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -330,6 +383,9 @@ export const assetEntityStub = {
     exifInfo: {
       fileSizeInByte: 5_000,
     } as ExifEntity,
+    isOffline: true,
+    libraryId: 'library-id2',
+    library: libraryEntityStub.library1,
   }),
   video: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -364,6 +420,9 @@ export const assetEntityStub = {
     exifInfo: {
       fileSizeInByte: 100_000,
     } as ExifEntity,
+    isOffline: true,
+    libraryId: 'library-id6',
+    library: libraryEntityStub.library1,
   }),
   livePhotoMotionAsset: Object.freeze({
     id: 'live-photo-motion-asset',
@@ -427,6 +486,9 @@ export const assetEntityStub = {
       longitude: 100,
       fileSizeInByte: 23_456,
     } as ExifEntity,
+    isOffline: true,
+    libraryId: 'library-id',
+    library: libraryEntityStub.library1,
   }),
   sidecar: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -458,6 +520,9 @@ export const assetEntityStub = {
     originalFileName: 'asset-id.ext',
     faces: [],
     sidecarPath: '/original/path.ext.xmp',
+    isOffline: false,
+    libraryId: 'library-id2',
+    library: libraryEntityStub.library2,
   }),
 };
 
@@ -630,6 +695,7 @@ const assetResponse: AssetResponseDto = {
   tags: [],
   people: [],
   checksum: 'ZmlsZSBoYXNo',
+  libraryId: 'library-id',
 };
 
 const albumResponse: AlbumResponseDto = {
@@ -954,6 +1020,9 @@ export const sharedLinkStub = {
           sharedLinks: [],
           faces: [],
           sidecarPath: null,
+          isOffline: true,
+          libraryId: 'library-id',
+          library: libraryEntityStub.library1,
         },
       ],
     },

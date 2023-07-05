@@ -44,7 +44,7 @@ export class LibraryEntity {
   updatedAt!: Date;
 
   @Column({ type: 'timestamptz', nullable: true })
-  refreshedAt?: Date;
+  refreshedAt?: Date | null;
 
   @Column({ type: 'boolean', default: true })
   isVisible!: boolean;

@@ -5132,6 +5132,9 @@
           "deviceId": {
             "type": "string"
           },
+          "libraryId": {
+            "type": "string"
+          },
           "originalPath": {
             "type": "string"
           },
@@ -5204,6 +5207,7 @@
           "deviceAssetId",
           "ownerId",
           "deviceId",
+          "libraryId",
           "originalPath",
           "originalFileName",
           "resized",
@@ -6004,7 +6008,8 @@
           },
           "refreshedAt": {
             "format": "date-time",
-            "type": "string"
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [

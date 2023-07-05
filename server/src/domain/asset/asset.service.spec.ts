@@ -5,10 +5,14 @@ import {
   IAccessRepositoryMock,
   newAccessRepositoryMock,
   newAssetRepositoryMock,
+  newCryptoRepositoryMock,
+  newJobRepositoryMock,
   newStorageRepositoryMock,
 } from '@test';
 import { when } from 'jest-when';
 import { Readable } from 'stream';
+import { ICryptoRepository } from '../crypto';
+import { IJobRepository } from '../job';
 import { IStorageRepository } from '../storage';
 import { IAssetRepository } from './asset.repository';
 import { AssetService } from './asset.service';
@@ -30,6 +34,8 @@ describe(AssetService.name, () => {
   let accessMock: IAccessRepositoryMock;
   let assetMock: jest.Mocked<IAssetRepository>;
   let storageMock: jest.Mocked<IStorageRepository>;
+  let cryptoMock: jest.Mocked<ICryptoRepository>;
+  let jobMock: jest.Mocked<IJobRepository>;
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -39,7 +45,9 @@ describe(AssetService.name, () => {
     accessMock = newAccessRepositoryMock();
     assetMock = newAssetRepositoryMock();
     storageMock = newStorageRepositoryMock();
-    sut = new AssetService(accessMock, assetMock, storageMock);
+    cryptoMock = newCryptoRepositoryMock();
+    jobMock = newJobRepositoryMock();
+    sut = new AssetService(accessMock, assetMock, storageMock, cryptoMock, jobMock);
   });
 
   describe('getMapMarkers', () => {

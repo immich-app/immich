@@ -43,7 +43,7 @@ export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
   create(
-    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'livePhotoVideoId'>,
+    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'libraryId' | 'livePhotoVideoId'>,
   ): Promise<AssetEntity>;
   getByDate(ownerId: string, date: Date): Promise<AssetEntity[]>;
   getByIds(ids: string[]): Promise<AssetEntity[]>;

@@ -10,6 +10,7 @@ export class AssetResponseDto {
   deviceAssetId!: string;
   ownerId!: string;
   deviceId!: string;
+  libraryId!: string;
 
   @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type!: AssetType;
@@ -40,6 +41,7 @@ export function mapAsset(entity: AssetEntity): AssetResponseDto {
     deviceAssetId: entity.deviceAssetId,
     ownerId: entity.ownerId,
     deviceId: entity.deviceId,
+    libraryId: entity.libraryId,
     type: entity.type,
     originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,
@@ -67,6 +69,7 @@ export function mapAssetWithoutExif(entity: AssetEntity): AssetResponseDto {
     deviceAssetId: entity.deviceAssetId,
     ownerId: entity.ownerId,
     deviceId: entity.deviceId,
+    libraryId: entity.libraryId,
     type: entity.type,
     originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,

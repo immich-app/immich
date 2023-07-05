@@ -27,7 +27,7 @@ export interface AssetOwnerCheck extends AssetCheck {
 export interface IAssetRepository {
   get(id: string): Promise<AssetEntity | null>;
   create(
-    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'livePhotoVideoId'>,
+    asset: Omit<AssetEntity, 'id' | 'createdAt' | 'updatedAt' | 'ownerId' | 'libraryId' | 'livePhotoVideoId'>,
   ): Promise<AssetEntity>;
   remove(asset: AssetEntity): Promise<void>;
   update(userId: string, asset: AssetEntity, dto: UpdateAssetDto): Promise<AssetEntity>;

@@ -47,6 +47,9 @@ export class AssetEntity {
   library!: LibraryEntity;
 
   @Column()
+  libraryId!: string;
+
+  @Column()
   deviceId!: string;
 
   @Column()
