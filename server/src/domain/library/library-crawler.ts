@@ -62,7 +62,10 @@ export class LibraryCrawler {
     const pathsToCrawl = crawlOptions.pathsToCrawl;
 
     let paths: string;
-    if (pathsToCrawl.length === 1) {
+    if (!pathsToCrawl) {
+      // No paths to crawl, return empty list
+      return [];
+    } else if (pathsToCrawl.length === 1) {
       paths = pathsToCrawl[0];
     } else {
       paths = '{' + pathsToCrawl.join(',') + '}';

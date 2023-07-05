@@ -2,8 +2,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { toIncludeSameMembers } from 'jest-extended';
 import mockfs from 'mock-fs';
-import { CrawlOptionsDto } from './dto/crawl-options-dto';
 import { LibraryCrawler } from './library-crawler';
+import { CrawlOptionsDto } from './library.dto';
 
 const matchers = require('jest-extended');
 expect.extend(matchers);
@@ -14,6 +14,13 @@ describe('CrawlService', () => {
   beforeAll(() => {
     // Write a dummy output before mock-fs to prevent some annoying errors
     console.log();
+  });
+
+  it('should return empty wnen crawling an empty path list', async () => {
+    const options = new CrawlOptionsDto();
+    options.pathsToCrawl = [];
+    const paths: string[] = await crawler.findAllMedia(options);
+    expect(paths).toBeEmpty();
   });
 
   it('should crawl a single path', async () => {
@@ -65,7 +72,6 @@ describe('CrawlService', () => {
     const options = new CrawlOptionsDto();
     options.pathsToCrawl = ['/photos/'];
     options.excludePatterns = ['**/raw/**'];
-    options.recursive = true;
     const paths: string[] = await crawler.findAllMedia(options);
     expect(paths).toIncludeSameMembers(['/photos/image.jpg', '/photos/raw2/image.jpg', '/photos/crawl/image.jpg']);
   });
@@ -78,7 +84,6 @@ describe('CrawlService', () => {
     });
     const options = new CrawlOptionsDto();
     options.pathsToCrawl = ['/photos/', '/images/', '/albums/'];
-    options.recursive = false;
     const paths: string[] = await crawler.findAllMedia(options);
     expect(paths).toIncludeSameMembers(['/photos/image1.jpg', '/images/image2.jpg', '/albums/image3.jpg']);
   });
@@ -93,21 +98,9 @@ describe('CrawlService', () => {
     expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
   });
 
-  it('should crawl a single path without recursion', async () => {
-    mockfs({
-      '/photos/image.jpg': '',
-      '/photos/subfolder/image1.jpg': '',
-      '/photos/subfolder/image2.jpg': '',
-      '/image1.jpg': '',
-    });
+  // TODO: test for hidden paths (not yet implemented)
 
-    const options = new CrawlOptionsDto();
-    options.pathsToCrawl = ['/photos/'];
-    const paths: string[] = await crawler.findAllMedia(options);
-    expect(paths).toIncludeSameMembers(['/photos/image.jpg']);
-  });
-
-  it('should crawl a single path with recursion', async () => {
+  it('should crawl a single path', async () => {
     mockfs({
       '/photos/image.jpg': '',
       '/photos/subfolder/image1.jpg': '',
@@ -116,7 +109,6 @@ describe('CrawlService', () => {
     });
     const options = new CrawlOptionsDto();
     options.pathsToCrawl = ['/photos/'];
-    options.recursive = true;
     const paths: string[] = await crawler.findAllMedia(options);
     expect(paths).toIncludeSameMembers([
       '/photos/image.jpg',
