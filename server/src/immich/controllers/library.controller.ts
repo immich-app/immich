@@ -40,7 +40,7 @@ export class LibraryController {
   }
 
   @Get(':id')
-  getLibraryInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto) {
+  getLibraryInfo(@AuthUser() authUser: AuthUserDto, @Param() { id }: UUIDParamDto): Promise<LibraryResponseDto> {
     return this.libraryService.get(authUser, id);
   }
 

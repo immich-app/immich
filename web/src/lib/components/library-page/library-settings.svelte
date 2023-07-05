@@ -6,7 +6,6 @@
   export let library: LibraryResponseDto;
 </script>
 
-<SettingAccordion title="Library Paths" subtitle="Manage your library paths">
-  <LibraryImportPaths />
-  {library}
+<SettingAccordion title="Library Import Paths" subtitle="Manage your library import paths">
+  <LibraryImportPaths {library} />
 </SettingAccordion>

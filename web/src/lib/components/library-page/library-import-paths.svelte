@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { LibraryResponseDto, UserResponseDto, api } from '@api';
+  import { LibraryResponseDto, api } from '@api';
   import Close from 'svelte-material-icons/Close.svelte';
   import Button from '../elements/buttons/button.svelte';
   import { handleError } from '../../utils/handle-error';
@@ -8,7 +8,7 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import LibraryImportPathForm from '../forms/library-import-path-form.svelte';
 
-  let library: LibraryResponseDto;
+  export let library: LibraryResponseDto;
 
   let importPaths: string[] = [];
 

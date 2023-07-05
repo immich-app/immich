@@ -83,7 +83,8 @@ export class LibraryService {
   }
 
   async getImportPaths(authUser: AuthUserDto, libraryId: string): Promise<string[]> {
-    await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, libraryId);
+    // TODO:
+    //await this.access.requirePermission(authUser, Permission.LIBRARY_UPDATE, libraryId);
 
     const libraryEntity = await this.libraryRepository.getById(libraryId);
     return libraryEntity.importPaths;
