@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **deviceAssetId** | **String** |  | 
 **ownerId** | **String** |  | 
 **deviceId** | **String** |  | 
+**libraryId** | **String** |  | 
 **originalPath** | **String** |  | 
 **originalFileName** | **String** |  | 
 **resized** | **bool** |  | 

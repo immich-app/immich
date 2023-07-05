@@ -636,6 +636,12 @@ export interface AssetResponseDto {
      * @type {string}
      * @memberof AssetResponseDto
      */
+    'libraryId': string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AssetResponseDto
+     */
     'originalPath': string;
     /**
      * 
@@ -1645,7 +1651,7 @@ export interface LibraryResponseDto {
      * @type {string}
      * @memberof LibraryResponseDto
      */
-    'refreshedAt'?: string;
+    'refreshedAt'?: string | null;
 }
 
 

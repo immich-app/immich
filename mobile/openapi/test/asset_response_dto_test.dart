@@ -41,6 +41,11 @@ void main() {
       // TODO
     });
 
+    // String libraryId
+    test('to test the property `libraryId`', () async {
+      // TODO
+    });
+
     // String originalPath
     test('to test the property `originalPath`', () async {
       // TODO
