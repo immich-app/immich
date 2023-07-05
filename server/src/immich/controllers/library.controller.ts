@@ -1,8 +1,6 @@
-import { AuthUserDto } from '@app/domain';
-import { CreateLibraryDto } from '@app/domain/library/dto/create-library.dto';
+import { AuthUserDto, CreateLibraryDto, LibraryService } from '@app/domain';
 import { GetLibrariesDto } from '@app/domain/library/dto/get-libraries-dto';
 import { ScanLibraryDto } from '@app/domain/library/dto/scan-library-dto';
-import { LibraryService } from '@app/domain/library/library.service';
 import { LibraryResponseDto } from '@app/domain/library/response-dto/library-response.dto';
 import { AdminRoute, Authenticated, AuthUser } from '@app/immich/app.guard';
 import { UseValidation } from '@app/immich/app.utils';
