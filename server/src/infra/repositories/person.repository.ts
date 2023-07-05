@@ -1,4 +1,4 @@
-import { AssetFaceId, IPersonRepository, PersonSearchOptions } from '@app/domain';
+import { AssetFaceId, IPersonRepository, PersonSearchOptions, updateFacesData } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
@@ -10,12 +10,12 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
   ) {}
 
-  async reassignFaces(oldId: string, newId: string): Promise<number> {
+  async reassignFaces({ oldPersonId, newPersonId }: updateFacesData): Promise<number> {
     const result = await this.assetFaceRepository
       .createQueryBuilder()
       .update()
-      .set({ personId: oldId })
-      .where({ personId: newId })
+      .set({ personId: oldPersonId })
+      .where({ personId: newPersonId })
       .execute();
 
     return result.affected ?? 0;
@@ -28,12 +28,12 @@ export class PersonRepository implements IPersonRepository {
    * @param ids Array of personId.
    * @returns sAn array of assetId that contains faces from both persons.
    */
-  async deleteIdenticalAssets(primaryPersonId: string, mergePersonId: string): Promise<string[]> {
+  async deleteFacesForSharedAssets({ oldPersonId, newPersonId }: updateFacesData): Promise<string[]> {
     const duplicatedAssets = await this.assetFaceRepository
       .createQueryBuilder('af')
       .select('af."assetId"')
       .where(`af."personId" IN (:...ids)`, {
-        ids: [primaryPersonId, mergePersonId],
+        ids: [oldPersonId, newPersonId],
       })
       .groupBy('af."assetId"')
       .having('COUNT(af."personId") > 1')
@@ -43,7 +43,7 @@ export class PersonRepository implements IPersonRepository {
 
     await this.assetFaceRepository.delete({
       assetId: In(deleteIds),
-      personId: mergePersonId,
+      personId: oldPersonId,
     });
 
     return deleteIds;

@@ -6,14 +6,19 @@ export interface PersonSearchOptions {
   minimumFaceCount: number;
 }
 
+export interface updateFacesData {
+  oldPersonId: string;
+  newPersonId: string;
+}
+
 export interface IPersonRepository {
   getAll(userId: string, options: PersonSearchOptions): Promise<PersonEntity[]>;
   getAllWithoutFaces(): Promise<PersonEntity[]>;
   getById(userId: string, personId: string): Promise<PersonEntity | null>;
 
   getAssets(userId: string, personId: string): Promise<AssetEntity[]>;
-  deleteIdenticalAssets(primaryPersonId: string, mergePersonId: string): Promise<string[]>;
-  reassignFaces(oldId: string, newId: string): Promise<number>;
+  deleteFacesForSharedAssets(data: updateFacesData): Promise<string[]>;
+  reassignFaces(data: updateFacesData): Promise<number>;
 
   create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   update(entity: Partial<PersonEntity>): Promise<PersonEntity>;

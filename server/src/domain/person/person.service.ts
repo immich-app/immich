@@ -126,15 +126,18 @@ export class PersonService {
       }
     }
 
-    const primaryPerson = await this.repository.getById(authUser.id, primaryPersonId);
+    const primaryPerson = await this.repository.getById(authUser.id, personId);
     if (!primaryPerson) {
       throw new BadRequestException();
     }
 
     const mergeIds = dto.ids;
-    for (const mergePersonId of mergeIds) {
+    for (const mergeId of mergeIds) {
       // Find and remove duplicated entry in asset_faces table
-      const identicalAssetIds = await this.repository.deleteIdenticalAssets(primaryPersonId, mergePersonId);
+      const identicalAssetIds = await this.repository.deleteFacesForSharedAssets({
+        oldPersonId: mergeId,
+        newPersonId: personId,
+      });
 
       // Remove record of duplicated entry in asset_faces table
       // and Typesense database belong to merge person
@@ -142,28 +145,31 @@ export class PersonService {
         for (const assetId of identicalAssetIds) {
           await this.jobRepository.queue({
             name: JobName.SEARCH_REMOVE_FACE,
-            data: { assetId, personId: mergePersonId },
+            data: { assetId, personId: mergeId },
           });
         }
-        this.logger.debug(`Deleted ${identicalAssetIds.length} duplicated assets`);
+        this.logger.debug(`Deleted ${identicalAssetIds.length} faces preparing for person merge`);
       }
 
-      const mergePerson = await this.repository.getById(authUser.id, mergePersonId);
+      const mergePerson = await this.repository.getById(authUser.id, mergeId);
       if (!mergePerson) {
         throw new BadRequestException();
       }
 
-      const affectedUpdate = await this.repository.reassignFaces(primaryPersonId, mergePersonId);
+      const affectedUpdate = await this.repository.reassignFaces({
+        oldPersonId: mergeId,
+        newPersonId: personId,
+      });
 
       this.logger.debug(
-        `Merged person ${mergePerson.name ?? mergePersonId} into ${
+        `Merged person ${mergePerson.name ?? mergeId} into ${
           primaryPerson.name == '' ? primaryPerson.id : primaryPerson.name
         } - ${affectedUpdate} assets updated`,
       );
 
       // Delete merge person
       await this.repository.delete(mergePerson);
-      this.logger.debug(`Deleted person ${mergePersonId} (${mergePerson.name})`);
+      this.logger.debug(`Deleted person ${mergeId} (${mergePerson.name})`);
     }
   }
 }
