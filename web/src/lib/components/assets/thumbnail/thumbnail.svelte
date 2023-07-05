@@ -92,8 +92,6 @@
             role="checkbox"
             aria-checked={selected}
             {disabled}
-            in:fade={{ duration: 100 }}
-            out:fade={{ duration: 100 }}
           >
             {#if disabled}
               <CheckCircle size="24" class="text-zinc-800" />
