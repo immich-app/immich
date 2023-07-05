@@ -83,7 +83,7 @@ function createAssetInteractionStore() {
     }
 
     const nextBucket = _assetGridState.buckets[nextBucketIndex];
-    await assetStore.getAssetsByBucket(nextBucket.bucketDate, BucketPosition.Below);
+    await assetStore.getAssetsByBucket(nextBucket.bucketDate, BucketPosition.Unknown);
 
     return nextBucket.assets[0] ?? null;
   };
@@ -105,7 +105,7 @@ function createAssetInteractionStore() {
     }
 
     const prevBucket = _assetGridState.buckets[prevBucketIndex];
-    await assetStore.getAssetsByBucket(prevBucket.bucketDate, BucketPosition.Above);
+    await assetStore.getAssetsByBucket(prevBucket.bucketDate, BucketPosition.Unknown);
 
     return prevBucket.assets[prevBucket.assets.length - 1] ?? null;
   };
