@@ -8514,7 +8514,7 @@ export const LibraryApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async refreshLibrary(id: string, scanLibraryDto: ScanLibraryDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+        async refreshLibrary(id: string, scanLibraryDto: ScanLibraryDto, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.refreshLibrary(id, scanLibraryDto, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -8590,7 +8590,7 @@ export const LibraryApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        refreshLibrary(id: string, scanLibraryDto: ScanLibraryDto, options?: any): AxiosPromise<object> {
+        refreshLibrary(id: string, scanLibraryDto: ScanLibraryDto, options?: any): AxiosPromise<void> {
             return localVarFp.refreshLibrary(id, scanLibraryDto, options).then((request) => request(axios, basePath));
         },
         /**

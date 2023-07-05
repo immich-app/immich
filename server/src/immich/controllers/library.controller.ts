@@ -7,7 +7,7 @@ import {
   ScanLibraryDto as RefreshLibraryDto,
   SetImportPathsDto,
 } from '@app/domain';
-import { Body, ConsoleLogger, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AdminRoute, Authenticated, AuthUser } from '../app.guard';
 import { UseValidation } from '../app.utils';

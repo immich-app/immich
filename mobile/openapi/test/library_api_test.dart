@@ -42,7 +42,7 @@ void main() {
       // TODO
     });
 
-    //Future<Object> refreshLibrary(String id, ScanLibraryDto scanLibraryDto) async
+    //Future refreshLibrary(String id, ScanLibraryDto scanLibraryDto) async
     test('test refreshLibrary', () async {
       // TODO
     });

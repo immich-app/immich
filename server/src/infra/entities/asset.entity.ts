@@ -28,7 +28,7 @@ import { UserEntity } from './user.entity';
   unique: true,
   where: '"isReadOnly" IS false',
 })
-// For all other assets, each originalpath must be unique per user and library
+// For all assets, each originalpath must be unique per user and library
 @Unique('UQ_owner_library_originalpath', ['owner', 'library', 'originalPath'])
 export class AssetEntity {
   @PrimaryGeneratedColumn('uuid')

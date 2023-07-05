@@ -1,16 +1,15 @@
 import { AssetEntity, AssetType, LibraryEntity, UserEntity } from '@app/infra/entities';
-import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject } from '@nestjs/common';
 import fs from 'fs';
 import { DateTime } from 'luxon';
 import mime from 'mime';
 import { basename, extname, parse } from 'path';
-import { NotFoundError } from 'rxjs';
 import { AccessCore, IAccessRepository, Permission } from '../access';
 import { AuthUserDto } from '../auth';
 import { ICryptoRepository } from '../crypto';
 import { isSupportedFileType } from '../domain.constant';
 import { HumanReadableSize, usePagination } from '../domain.util';
-import { IJobRepository, ILibraryJob, JobName, JobService } from '../job';
+import { IJobRepository, ILibraryJob, JobName } from '../job';
 import { ImmichReadStream, IStorageRepository } from '../storage';
 import { IAssetRepository } from './asset.repository';
 import { AssetIdsDto, DownloadArchiveInfo, DownloadDto, DownloadResponseDto, MemoryLaneDto } from './dto';

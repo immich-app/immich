@@ -8,9 +8,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { job } from 'cron';
 import path from 'node:path';
-import { AccessCore, IAccessRepository, Permission } from '../access';
+import { AccessCore, IAccessRepository } from '../access';
 import { IAssetRepository } from '../asset';
 import { AuthUserDto } from '../auth';
 import { IJobRepository, ILibraryJob, JobName } from '../job';
