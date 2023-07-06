@@ -275,7 +275,7 @@ describe(AssetService.name, () => {
       }).rejects.toThrowError('Unsupported file type image/potato');
     });
 
-    it('should add a new asset', async () => {
+    it('should add a new image', async () => {
       mock({
         '/import/photo.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
       });
@@ -313,6 +313,48 @@ describe(AssetService.name, () => {
         name: JobName.VIDEO_CONVERSION,
         data: {
           id: assetEntityStub.image.id,
+        },
+      });
+    });
+
+    it('should add a new video', async () => {
+      mock({
+        '/import/video.mp4': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+      });
+
+      jest.mock('mime', () => ({
+        lookup: jest.fn().mockReturnValue('video/mp4'),
+      }));
+
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { AssetService } = require('./asset.service');
+      sut = new AssetService(accessMock, assetMock, storageMock, cryptoMock, jobMock);
+
+      const mockLibraryJob: ILibraryJob = {
+        libraryId: libraryEntityStub.importLibrary.id,
+        ownerId: userEntityStub.admin.id,
+        assetPath: '/import/video.mp4',
+        forceRefresh: false,
+        emptyTrash: false,
+      };
+
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
+      assetMock.create.mockResolvedValue(assetEntityStub.video);
+
+      await expect(sut.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
+
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.METADATA_EXTRACTION,
+        data: {
+          id: assetEntityStub.video.id,
+          source: 'upload',
+        },
+      });
+
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.VIDEO_CONVERSION,
+        data: {
+          id: assetEntityStub.video.id,
         },
       });
     });

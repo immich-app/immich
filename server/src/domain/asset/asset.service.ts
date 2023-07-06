@@ -188,6 +188,7 @@ export class AssetService {
     }
 
     if (!doImport) {
+      // If we don't import, exit early
       return true;
     }
 
@@ -207,7 +208,7 @@ export class AssetService {
     // TODO: doesn't xmp replace the file extension? Will need investigation
     let sidecarPath: string | null = null;
     try {
-      fs.accessSync(`${job.assetPath}.xmp`, fs.constants.R_OK);
+      await fs.promises.access(`${job.assetPath}.xmp`, fs.constants.R_OK);
       sidecarPath = `${job.assetPath}.xmp`;
     } catch (error) {}
 
@@ -250,6 +251,7 @@ export class AssetService {
       name: JobName.METADATA_EXTRACTION,
       data: { id: addedAsset.id, source: 'upload' },
     });
+
     if (addedAsset.type === AssetType.VIDEO) {
       await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: addedAsset.id } });
     }
@@ -260,14 +262,16 @@ export class AssetService {
   async handleOfflineAsset(job: ILibraryJob) {
     const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, job.assetPath);
 
-    // Can't access file, probably offline
+    if (!existingAssetEntity) {
+      throw new BadRequestException(`Asset does not exist in database: ${job.assetPath}`);
+    }
+
     if (job.emptyTrash && existingAssetEntity) {
       // Remove asset from database
       await this.assetRepository.remove(existingAssetEntity);
     } else if (existingAssetEntity) {
       // Mark asset as offline
-      existingAssetEntity.isOffline = true;
-      await this.assetRepository.save(existingAssetEntity);
+      await this.assetRepository.update({ id: existingAssetEntity.id, isOffline: true });
     }
 
     return true;
