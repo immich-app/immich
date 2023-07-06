@@ -6,7 +6,7 @@ export interface PersonSearchOptions {
   minimumFaceCount: number;
 }
 
-export interface updateFacesData {
+export interface UpdateFacesData {
   oldPersonId: string;
   newPersonId: string;
 }
@@ -17,8 +17,8 @@ export interface IPersonRepository {
   getById(userId: string, personId: string): Promise<PersonEntity | null>;
 
   getAssets(userId: string, personId: string): Promise<AssetEntity[]>;
-  deleteFacesForSharedAssets(data: updateFacesData): Promise<string[]>;
-  reassignFaces(data: updateFacesData): Promise<number>;
+  deleteFacesForSharedAssets(data: UpdateFacesData): Promise<string[]>;
+  reassignFaces(data: UpdateFacesData): Promise<number>;
 
   create(entity: Partial<PersonEntity>): Promise<PersonEntity>;
   update(entity: Partial<PersonEntity>): Promise<PersonEntity>;

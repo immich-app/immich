@@ -1,4 +1,4 @@
-import { AssetFaceId, IPersonRepository, PersonSearchOptions, updateFacesData } from '@app/domain';
+import { AssetFaceId, IPersonRepository, PersonSearchOptions, UpdateFacesData } from '@app/domain';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { AssetEntity, AssetFaceEntity, PersonEntity } from '../entities';
@@ -10,7 +10,7 @@ export class PersonRepository implements IPersonRepository {
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
   ) {}
 
-  async reassignFaces({ oldPersonId, newPersonId }: updateFacesData): Promise<number> {
+  async reassignFaces({ oldPersonId, newPersonId }: UpdateFacesData): Promise<number> {
     const result = await this.assetFaceRepository
       .createQueryBuilder()
       .update()
@@ -28,7 +28,7 @@ export class PersonRepository implements IPersonRepository {
    * @param ids Array of personId.
    * @returns sAn array of assetId that contains faces from both persons.
    */
-  async deleteFacesForSharedAssets({ oldPersonId, newPersonId }: updateFacesData): Promise<string[]> {
+  async deleteFacesForSharedAssets({ oldPersonId, newPersonId }: UpdateFacesData): Promise<string[]> {
     const duplicatedAssets = await this.assetFaceRepository
       .createQueryBuilder('af')
       .select('af."assetId"')

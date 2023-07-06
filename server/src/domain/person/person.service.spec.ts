@@ -11,7 +11,7 @@ import {
 import { IJobRepository, JobName } from '..';
 import { IStorageRepository } from '../storage';
 import { PersonResponseDto } from './person.dto';
-import { IPersonRepository } from './person.repository';
+import { IPersonRepository, UpdateFacesData } from './person.repository';
 import { PersonService } from './person.service';
 
 const responseDto: PersonResponseDto = {
@@ -151,6 +151,47 @@ describe(PersonService.name, () => {
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.DELETE_FILES,
         data: { files: ['/path/to/thumbnail'] },
+      });
+    });
+  });
+
+  describe('mergePerson', () => {
+    it('should merge two people', async () => {
+      personMock.getById.mockResolvedValue(personStub.primaryPerson);
+      personMock.getById.mockResolvedValue(personStub.mergePerson);
+      personMock.deleteFacesForSharedAssets.mockResolvedValue([]);
+      personMock.delete.mockResolvedValue(personStub.mergePerson);
+
+      await sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] });
+
+      expect(personMock.deleteFacesForSharedAssets).toHaveBeenCalledWith({
+        newPersonId: personStub.primaryPerson.id,
+        oldPersonId: personStub.mergePerson.id,
+      });
+
+      expect(personMock.reassignFaces).toHaveBeenCalledWith({
+        newPersonId: personStub.primaryPerson.id,
+        oldPersonId: personStub.mergePerson.id,
+      });
+
+      expect(personMock.delete).toHaveBeenCalledWith(personStub.mergePerson);
+    });
+
+    it('Should delete identical assets', async () => {
+      personMock.getById.mockResolvedValue(personStub.primaryPerson);
+      personMock.getById.mockResolvedValue(personStub.mergePerson);
+      personMock.deleteFacesForSharedAssets.mockResolvedValue([assetEntityStub.image.id]);
+
+      await sut.mergePerson(authStub.admin, 'person-1', { ids: ['person-2'] });
+
+      expect(personMock.deleteFacesForSharedAssets).toHaveBeenCalledWith({
+        newPersonId: personStub.primaryPerson.id,
+        oldPersonId: personStub.mergePerson.id,
+      });
+
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.SEARCH_REMOVE_FACE,
+        data: { assetId: assetEntityStub.image.id, personId: personStub.mergePerson.id },
       });
     });
   });
