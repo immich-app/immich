@@ -44,16 +44,15 @@
     return [235, 235];
   })();
 
-  const thumbnailClickedHandler = (e: Event) => {
+  const thumbnailClickedHandler = () => {
     if (!disabled) {
-      e.preventDefault();
       dispatch('click', { asset });
     }
   };
 
   const thumbnailKeyDownHandler = (e: KeyboardEvent) => {
     if (e.key === 'Enter') {
-      thumbnailClickedHandler(e);
+      thumbnailClickedHandler();
     }
   };
 
