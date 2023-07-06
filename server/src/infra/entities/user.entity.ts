@@ -42,9 +42,6 @@ export class UserEntity {
   @Column({ default: '' })
   profileImagePath!: string;
 
-  @Column({ default: '' })
-  profileImageHash!: string;
-
   @Column({ default: true })
   shouldChangePassword!: boolean;
 

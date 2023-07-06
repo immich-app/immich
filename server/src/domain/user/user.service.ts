@@ -1,6 +1,6 @@
 import { UserEntity } from '@app/infra/entities';
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { createHash, randomBytes } from 'crypto';
+import { randomBytes } from 'crypto';
 import { ReadStream } from 'fs';
 import { IAlbumRepository } from '../album/album.repository';
 import { IAssetRepository } from '../asset/asset.repository';
@@ -108,8 +108,7 @@ export class UserService {
     authUser: AuthUserDto,
     fileInfo: Express.Multer.File,
   ): Promise<CreateProfileImageResponseDto> {
-    const hash = createHash('md5').update(fileInfo.buffer).digest('hex');
-    const updatedUser = await this.userCore.createProfileImage(authUser, fileInfo.path, hash);
+    const updatedUser = await this.userCore.createProfileImage(authUser, fileInfo.path);
     return mapCreateProfileImageResponse(updatedUser.id, updatedUser.profileImagePath);
   }
 
@@ -119,14 +118,6 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
     return this.userCore.getUserProfileImage(user);
-  }
-
-  async getUserProfileImageHash(userId: string): Promise<string> {
-    const user = await this.userCore.get(userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    return this.userCore.getUserProfileImageHash(user);
   }
 
   async resetAdminPassword(ask: (admin: UserResponseDto) => Promise<string | undefined>) {

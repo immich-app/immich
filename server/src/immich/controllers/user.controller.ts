@@ -102,7 +102,6 @@ export class UserController {
   async getProfileImage(@Param() { userId }: UserIdDto, @Response({ passthrough: true }) res: Res): Promise<any> {
     const readableStream = await this.service.getUserProfileImage(userId);
     res.header('Content-Type', 'image/jpeg');
-    res.header('ETag', await this.service.getUserProfileImageHash(userId));
     return new StreamableFile(readableStream);
   }
 }
