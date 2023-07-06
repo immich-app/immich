@@ -38,7 +38,7 @@
         {#if data.people.length > MAX_ITEMS}
           <a
             href={AppRoute.PEOPLE}
-            class="font-medium hover:text-immich-primary dark:hover:text-immich-dark-primary dark:text-immich-dark-fg"
+            class="font-medium text-sm pr-4 hover:text-immich-primary dark:hover:text-immich-dark-primary dark:text-immich-dark-fg"
             draggable="false">View All</a
           >
         {/if}
