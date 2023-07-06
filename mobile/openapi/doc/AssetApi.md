@@ -768,7 +768,7 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getAssetThumbnail**
-> MultipartFile getAssetThumbnail(id, format, key)
+> getAssetThumbnail(id, format, key)
 
 
 
@@ -796,8 +796,7 @@ final format = ; // ThumbnailFormat |
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.getAssetThumbnail(id, format, key);
-    print(result);
+    api_instance.getAssetThumbnail(id, format, key);
 } catch (e) {
     print('Exception when calling AssetApi->getAssetThumbnail: $e\n');
 }
@@ -813,7 +812,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**MultipartFile**](MultipartFile.md)
+void (empty response body)
 
 ### Authorization
 
@@ -822,7 +821,7 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: image/jpeg, image/webp
+ - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -1273,7 +1272,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **serveFile**
-> MultipartFile serveFile(id, isThumb, isWeb, key)
+> serveFile(id, isThumb, isWeb, key)
 
 
 
@@ -1302,8 +1301,7 @@ final isWeb = true; // bool |
 final key = key_example; // String | 
 
 try {
-    final result = api_instance.serveFile(id, isThumb, isWeb, key);
-    print(result);
+    api_instance.serveFile(id, isThumb, isWeb, key);
 } catch (e) {
     print('Exception when calling AssetApi->serveFile: $e\n');
 }
@@ -1320,7 +1318,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**MultipartFile**](MultipartFile.md)
+void (empty response body)
 
 ### Authorization
 
@@ -1329,7 +1327,7 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/octet-stream
+ - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

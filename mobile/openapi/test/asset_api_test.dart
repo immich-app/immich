@@ -92,7 +92,7 @@ void main() {
       // TODO
     });
 
-    //Future<MultipartFile> getAssetThumbnail(String id, { ThumbnailFormat format, String key }) async
+    //Future getAssetThumbnail(String id, { ThumbnailFormat format, String key }) async
     test('test getAssetThumbnail', () async {
       // TODO
     });
@@ -139,7 +139,7 @@ void main() {
       // TODO
     });
 
-    //Future<MultipartFile> serveFile(String id, { bool isThumb, bool isWeb, String key }) async
+    //Future serveFile(String id, { bool isThumb, bool isWeb, String key }) async
     test('test serveFile', () async {
       // TODO
     });
