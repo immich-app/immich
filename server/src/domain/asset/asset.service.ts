@@ -150,15 +150,6 @@ export class AssetService {
   }
 
   async handleRefreshAsset(job: ILibraryJob) {
-    // TODO: Determine file type from extension only
-    const mimeType = mime.lookup(job.assetPath);
-    if (!mimeType) {
-      throw Error(`Cannot determine mime type of asset: ${job.assetPath}`);
-    }
-    if (!isSupportedFileType(mimeType)) {
-      throw new BadRequestException(`Unsupported file type ${mimeType}`);
-    }
-
     const existingAssetEntity = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, job.assetPath);
 
     let stats: fs.Stats;
@@ -189,6 +180,15 @@ export class AssetService {
       // File last modified time matches database entry
       // Unless we're forcing a refresh, exit here
       return true;
+    }
+
+    // TODO: Determine file type from extension only
+    const mimeType = mime.lookup(job.assetPath);
+    if (!mimeType) {
+      throw Error(`Cannot determine mime type of asset: ${job.assetPath}`);
+    }
+    if (!isSupportedFileType(mimeType)) {
+      throw new BadRequestException(`Unsupported file type ${mimeType}`);
     }
 
     const checksum = await this.cryptoRepository.hashFile(job.assetPath);
