@@ -1,6 +1,7 @@
 import { SystemConfig } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
+  assetEntityStub,
   asyncTick,
   newAssetRepositoryMock,
   newCommunicationRepositoryMock,
@@ -272,6 +273,17 @@ describe(JobService.name, () => {
         ],
       },
       {
+        item: { name: JobName.GENERATE_JPEG_THUMBNAIL, data: { id: 'asset-1', source: 'upload' } },
+        jobs: [
+          JobName.GENERATE_WEBP_THUMBNAIL,
+          JobName.CLASSIFY_IMAGE,
+          JobName.ENCODE_CLIP,
+          JobName.RECOGNIZE_FACES,
+          JobName.GENERATE_THUMBHASH_THUMBNAIL,
+          JobName.VIDEO_CONVERSION,
+        ],
+      },
+      {
         item: { name: JobName.CLASSIFY_IMAGE, data: { id: 'asset-1' } },
         jobs: [JobName.SEARCH_INDEX_ASSET],
       },
@@ -287,7 +299,11 @@ describe(JobService.name, () => {
 
     for (const { item, jobs } of tests) {
       it(`should queue ${jobs.length} jobs when a ${item.name} job finishes successfully`, async () => {
-        assetMock.getByIds.mockResolvedValue([]);
+        if (item.name === JobName.GENERATE_JPEG_THUMBNAIL && item.data.source === 'upload') {
+          assetMock.getByIds.mockResolvedValue([assetEntityStub.livePhotoMotionAsset]);
+        } else {
+          assetMock.getByIds.mockResolvedValue([]);
+        }
 
         await sut.registerHandlers(makeMockHandlers(true));
         await jobMock.addHandler.mock.calls[0][2](item);

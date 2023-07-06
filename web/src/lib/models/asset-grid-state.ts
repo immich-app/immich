@@ -47,6 +47,11 @@ export class AssetGridState {
   assets: AssetResponseDto[] = [];
 
   /**
+   * Total assets that have been loaded along with additional data
+   */
+  loadedAssets: Record<string, number> = {};
+
+  /**
    * User that owns assets
    */
   userId: string | undefined;
