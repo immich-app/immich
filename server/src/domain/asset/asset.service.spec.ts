@@ -1,4 +1,3 @@
-import { AssetEntity, AssetType, ExifEntity } from '@app/infra/entities';
 import { BadRequestException } from '@nestjs/common';
 import {
   assetEntityStub,
