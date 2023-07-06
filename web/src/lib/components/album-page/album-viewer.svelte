@@ -92,6 +92,7 @@
 
   let multiSelectAsset: Set<AssetResponseDto> = new Set();
   $: isMultiSelectionMode = multiSelectAsset.size > 0;
+  $: isMultiSelectionUserOwned = Array.from(multiSelectAsset).every((asset) => asset.ownerId === currentUser?.id);
 
   afterNavigate(({ from }) => {
     backUrl = from?.url.pathname ?? '/albums';
@@ -309,7 +310,7 @@
       {#if sharedLink?.allowDownload || !isPublicShared}
         <DownloadAction filename="{album.albumName}.zip" sharedLinkKey={sharedLink?.key} />
       {/if}
-      {#if isOwned}
+      {#if isOwned || isMultiSelectionUserOwned}
         <RemoveFromAlbum bind:album />
       {/if}
     </AssetSelectControlBar>
