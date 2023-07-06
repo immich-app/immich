@@ -120,6 +120,14 @@ export class UserService {
     return this.userCore.getUserProfileImage(user);
   }
 
+  async getUserProfileImageHash(userId: string): Promise<string> {
+    const user = await this.userCore.get(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return this.userCore.getUserProfileImageHash(user);
+  }
+
   async resetAdminPassword(ask: (admin: UserResponseDto) => Promise<string | undefined>) {
     const admin = await this.userCore.getAdmin();
     if (!admin) {

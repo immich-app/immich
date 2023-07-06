@@ -116,6 +116,14 @@ export class UserCore {
     return createReadStream(user.profileImagePath);
   }
 
+  async getUserProfileImageHash(user: UserEntity): Promise<string> {
+    if (!user.profileImageHash) {
+      throw new NotFoundException('User does not have a profile image');
+    }
+    return user.profileImageHash; 
+
+
+
   async getList(filter?: UserListFilter): Promise<UserEntity[]> {
     return this.userRepository.getList(filter);
   }
