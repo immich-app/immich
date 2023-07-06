@@ -371,6 +371,81 @@ describe(AssetService.name, () => {
         exifInfo: {
           fileSizeInByte: 5_000,
         } as ExifEntity,
+        isOffline: false,
+        libraryId: 'library-id2',
+        library: libraryEntityStub.library1,
+      };
+
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(mockAsset);
+      assetMock.create.mockResolvedValue(mockAsset);
+
+      await expect(sut.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
+
+      const savedAsset = assetMock.save.mock.calls[0][0];
+      expect(savedAsset.isOffline).toBe(true);
+
+      expect(jobMock.queue).not.toHaveBeenCalled();
+    });
+
+    it('should online a previously-offline asset', async () => {
+      mock({
+        '/import/photo.jpg': mock.file({
+          content: Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+          ctime: new Date(1),
+          mtime: new Date(1),
+        }),
+      });
+
+      jest.mock('mime', () => ({
+        lookup: jest.fn().mockReturnValue('image/jpeg'),
+      }));
+
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { AssetService } = require('./asset.service');
+      sut = new AssetService(accessMock, assetMock, storageMock, cryptoMock, jobMock);
+
+      const mockLibraryJob: ILibraryJob = {
+        libraryId: libraryEntityStub.importLibrary.id,
+        ownerId: userEntityStub.admin.id,
+        assetPath: '/import/photo.jpg',
+        forceRefresh: false,
+        emptyTrash: false,
+      };
+
+      // Need an unfrozen asset for this to work
+      const mockAsset: AssetEntity = {
+        id: 'asset-id',
+        deviceAssetId: 'device-asset-id',
+        fileModifiedAt: new Date(1),
+        fileCreatedAt: new Date(1),
+        owner: userEntityStub.user1,
+        ownerId: 'user-id',
+        deviceId: 'device-id',
+        originalPath: '/original/path.ext',
+        resizePath: '/uploads/user-id/thumbs/path.ext',
+        checksum: Buffer.from('file hash', 'utf8'),
+        type: AssetType.IMAGE,
+        webpPath: '/uploads/user-id/webp/path.ext',
+        thumbhash: Buffer.from('blablabla', 'base64'),
+        encodedVideoPath: null,
+        createdAt: new Date('2023-02-23T05:06:29.716Z'),
+        updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+        mimeType: null,
+        isFavorite: true,
+        isArchived: false,
+        isReadOnly: false,
+        duration: null,
+        isVisible: true,
+        livePhotoVideo: null,
+        livePhotoVideoId: null,
+        tags: [],
+        sharedLinks: [],
+        originalFileName: 'asset-id.ext',
+        faces: [],
+        sidecarPath: null,
+        exifInfo: {
+          fileSizeInByte: 5_000,
+        } as ExifEntity,
         isOffline: true,
         libraryId: 'library-id2',
         library: libraryEntityStub.library1,
@@ -381,11 +456,187 @@ describe(AssetService.name, () => {
 
       await expect(sut.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
 
-      expect(jobMock.queue).not.toHaveBeenCalled();
+      const savedAsset = assetMock.save.mock.calls[0][0];
+      expect(savedAsset.isOffline).toBe(false);
+
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.METADATA_EXTRACTION,
+        data: {
+          id: mockAsset.id,
+          source: 'upload',
+        },
+      });
+
+      expect(jobMock.queue).not.toHaveBeenCalledWith({
+        name: JobName.VIDEO_CONVERSION,
+        data: {
+          id: mockAsset.id,
+        },
+      });
+    });
+
+    it('should refresh an existing asset with modified mtime', async () => {
+      mock({
+        '/import/photo.jpg': mock.file({
+          content: Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+          ctime: new Date(1),
+          mtime: new Date(2),
+        }),
+      });
+
+      jest.mock('mime', () => ({
+        lookup: jest.fn().mockReturnValue('image/jpeg'),
+      }));
+
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { AssetService } = require('./asset.service');
+      sut = new AssetService(accessMock, assetMock, storageMock, cryptoMock, jobMock);
+
+      const mockLibraryJob: ILibraryJob = {
+        libraryId: libraryEntityStub.importLibrary.id,
+        ownerId: userEntityStub.admin.id,
+        assetPath: '/import/photo.jpg',
+        forceRefresh: false,
+        emptyTrash: false,
+      };
+
+      // Need an unfrozen asset for this to work
+      const mockAsset: AssetEntity = {
+        id: 'asset-id',
+        deviceAssetId: 'device-asset-id',
+        fileModifiedAt: new Date(1),
+        fileCreatedAt: new Date(1),
+        owner: userEntityStub.user1,
+        ownerId: 'user-id',
+        deviceId: 'device-id',
+        originalPath: '/original/path.ext',
+        resizePath: '/uploads/user-id/thumbs/path.ext',
+        checksum: Buffer.from('file hash', 'utf8'),
+        type: AssetType.IMAGE,
+        webpPath: '/uploads/user-id/webp/path.ext',
+        thumbhash: Buffer.from('blablabla', 'base64'),
+        encodedVideoPath: null,
+        createdAt: new Date('2023-02-23T05:06:29.716Z'),
+        updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+        mimeType: null,
+        isFavorite: true,
+        isArchived: false,
+        isReadOnly: false,
+        duration: null,
+        isVisible: true,
+        livePhotoVideo: null,
+        livePhotoVideoId: null,
+        tags: [],
+        sharedLinks: [],
+        originalFileName: 'asset-id.ext',
+        faces: [],
+        sidecarPath: null,
+        exifInfo: {
+          fileSizeInByte: 5_000,
+        } as ExifEntity,
+        isOffline: false,
+        libraryId: 'library-id2',
+        library: libraryEntityStub.library1,
+      };
+
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(mockAsset);
+      assetMock.create.mockResolvedValue(mockAsset);
+
+      await expect(sut.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
+      const savedAsset = assetMock.save.mock.calls[0][0];
+
+      expect(savedAsset.fileModifiedAt).toBe(new Date(2));
+    });
+    it('should online a previously-offline asset', async () => {
+      mock({
+        '/import/photo.jpg': mock.file({
+          content: Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+          ctime: new Date(1),
+          mtime: new Date(1),
+        }),
+      });
+
+      jest.mock('mime', () => ({
+        lookup: jest.fn().mockReturnValue('image/jpeg'),
+      }));
+
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { AssetService } = require('./asset.service');
+      sut = new AssetService(accessMock, assetMock, storageMock, cryptoMock, jobMock);
+
+      const mockLibraryJob: ILibraryJob = {
+        libraryId: libraryEntityStub.importLibrary.id,
+        ownerId: userEntityStub.admin.id,
+        assetPath: '/import/photo.jpg',
+        forceRefresh: false,
+        emptyTrash: false,
+      };
+
+      // Need an unfrozen asset for this to work
+      const mockAsset: AssetEntity = {
+        id: 'asset-id',
+        deviceAssetId: 'device-asset-id',
+        fileModifiedAt: new Date(1),
+        fileCreatedAt: new Date(1),
+        owner: userEntityStub.user1,
+        ownerId: 'user-id',
+        deviceId: 'device-id',
+        originalPath: '/original/path.ext',
+        resizePath: '/uploads/user-id/thumbs/path.ext',
+        checksum: Buffer.from('file hash', 'utf8'),
+        type: AssetType.IMAGE,
+        webpPath: '/uploads/user-id/webp/path.ext',
+        thumbhash: Buffer.from('blablabla', 'base64'),
+        encodedVideoPath: null,
+        createdAt: new Date('2023-02-23T05:06:29.716Z'),
+        updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+        mimeType: null,
+        isFavorite: true,
+        isArchived: false,
+        isReadOnly: false,
+        duration: null,
+        isVisible: true,
+        livePhotoVideo: null,
+        livePhotoVideoId: null,
+        tags: [],
+        sharedLinks: [],
+        originalFileName: 'asset-id.ext',
+        faces: [],
+        sidecarPath: null,
+        exifInfo: {
+          fileSizeInByte: 5_000,
+        } as ExifEntity,
+        isOffline: true,
+        libraryId: 'library-id2',
+        library: libraryEntityStub.library1,
+      };
+
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(mockAsset);
+      assetMock.create.mockResolvedValue(mockAsset);
+
+      await expect(sut.handleRefreshAsset(mockLibraryJob)).resolves.toBe(true);
+
+      const savedAsset = assetMock.save.mock.calls[0][0];
+      expect(savedAsset.isOffline).toBe(false);
+
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.METADATA_EXTRACTION,
+        data: {
+          id: mockAsset.id,
+          source: 'upload',
+        },
+      });
+
+      expect(jobMock.queue).not.toHaveBeenCalledWith({
+        name: JobName.VIDEO_CONVERSION,
+        data: {
+          id: mockAsset.id,
+        },
+      });
     });
 
     it('should error when asset does not exist', async () => {
-      mock();
+      mock({});
 
       jest.mock('mime', () => ({
         lookup: jest.fn().mockReturnValue('image/jpeg'),

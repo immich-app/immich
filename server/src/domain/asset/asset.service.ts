@@ -171,11 +171,24 @@ export class AssetService {
       }
     }
 
-    if (existingAssetEntity && stats.mtime == existingAssetEntity.fileModifiedAt && !job.forceRefresh) {
+    if (
+      existingAssetEntity &&
+      stats.mtime.getDate() === existingAssetEntity.fileModifiedAt.getDate() &&
+      !job.forceRefresh
+    ) {
       if (existingAssetEntity.isOffline) {
         // Asset is back online
         existingAssetEntity.isOffline = false;
         await this.assetRepository.save(existingAssetEntity);
+
+        // Refresh the file
+        await this.jobRepository.queue({
+          name: JobName.METADATA_EXTRACTION,
+          data: { id: existingAssetEntity.id, source: 'upload' },
+        });
+        if (existingAssetEntity.type === AssetType.VIDEO) {
+          await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: existingAssetEntity.id } });
+        }
       }
       // File last modified time matches database entry
       // Unless we're forcing a refresh, exit here
