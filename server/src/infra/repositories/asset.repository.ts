@@ -117,8 +117,12 @@ export class AssetRepository implements IAssetRepository {
     });
   }
 
-  async remove(asset: AssetEntity): Promise<AssetEntity> {
+  remove(asset: AssetEntity): Promise<AssetEntity> {
     return this.repository.remove(asset);
+  }
+
+  update(asset: Partial<AssetEntity>): Promise<AssetEntity> {
+    return this.repository.save(asset);
   }
 
   getAll(pagination: PaginationOptions, options: AssetSearchOptions = {}): Paginated<AssetEntity> {

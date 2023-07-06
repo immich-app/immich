@@ -383,7 +383,7 @@ export const assetEntityStub = {
     exifInfo: {
       fileSizeInByte: 5_000,
     } as ExifEntity,
-    isOffline: true,
+    isOffline: false,
     libraryId: 'library-id2',
     library: libraryEntityStub.library1,
   }),
@@ -438,7 +438,6 @@ export const assetEntityStub = {
     libraryId: 'library-id',
     library: libraryEntityStub.uploadLibrary,
   } as AssetEntity),
-
   livePhotoStillAsset: Object.freeze({
     id: 'live-photo-still-asset',
     originalPath: fileStub.livePhotoStill.originalPath,
@@ -454,7 +453,6 @@ export const assetEntityStub = {
     libraryId: 'library-id',
     library: libraryEntityStub.uploadLibrary,
   } as AssetEntity),
-
   withLocation: Object.freeze<AssetEntity>({
     id: 'asset-with-favorite-id',
     deviceAssetId: 'device-asset-id',
@@ -527,6 +525,43 @@ export const assetEntityStub = {
     isOffline: false,
     libraryId: 'library-id2',
     library: libraryEntityStub.uploadLibrary,
+  }),
+  offlineImage: Object.freeze<AssetEntity>({
+    id: 'offline-asset-id',
+    deviceAssetId: 'device-asset-id',
+    fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    owner: userEntityStub.user1,
+    ownerId: 'user-id',
+    deviceId: 'device-id',
+    originalPath: '/original/path.ext',
+    resizePath: '/uploads/user-id/thumbs/path.ext',
+    checksum: Buffer.from('file hash', 'utf8'),
+    type: AssetType.IMAGE,
+    webpPath: '/uploads/user-id/webp/path.ext',
+    thumbhash: Buffer.from('blablabla', 'base64'),
+    encodedVideoPath: null,
+    createdAt: new Date('2023-02-23T05:06:29.716Z'),
+    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    mimeType: null,
+    isFavorite: true,
+    isArchived: false,
+    isReadOnly: false,
+    duration: null,
+    isVisible: true,
+    livePhotoVideo: null,
+    livePhotoVideoId: null,
+    tags: [],
+    sharedLinks: [],
+    originalFileName: 'asset-id.ext',
+    faces: [],
+    sidecarPath: null,
+    exifInfo: {
+      fileSizeInByte: 5_000,
+    } as ExifEntity,
+    isOffline: true,
+    libraryId: 'library-id2',
+    library: libraryEntityStub.library1,
   }),
 };
 

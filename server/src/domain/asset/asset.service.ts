@@ -157,41 +157,37 @@ export class AssetService {
       stats = await fs.promises.stat(job.assetPath);
     } catch (error) {
       // Can't access file, probably offline
-      if (job.emptyTrash && existingAssetEntity) {
-        // Remove asset from database
-        await this.assetRepository.remove(existingAssetEntity);
-        return true;
-      } else if (existingAssetEntity) {
+      if (existingAssetEntity) {
         // Mark asset as offline
-        existingAssetEntity.isOffline = true;
-        await this.assetRepository.save(existingAssetEntity);
+        await this.assetRepository.update({ id: existingAssetEntity.id, isOffline: true });
         return true;
       } else {
+        // File can't be accessed and does not already exist in db
         throw new BadRequestException(error, "Can't access file");
       }
     }
 
-    if (
-      existingAssetEntity &&
-      stats.mtime.getDate() === existingAssetEntity.fileModifiedAt.getDate() &&
-      !job.forceRefresh
-    ) {
-      if (existingAssetEntity.isOffline) {
-        // Asset is back online
-        existingAssetEntity.isOffline = false;
-        await this.assetRepository.save(existingAssetEntity);
+    let doImport = false;
 
-        // Refresh the file
-        await this.jobRepository.queue({
-          name: JobName.METADATA_EXTRACTION,
-          data: { id: existingAssetEntity.id, source: 'upload' },
-        });
-        if (existingAssetEntity.type === AssetType.VIDEO) {
-          await this.jobRepository.queue({ name: JobName.VIDEO_CONVERSION, data: { id: existingAssetEntity.id } });
-        }
-      }
-      // File last modified time matches database entry
-      // Unless we're forcing a refresh, exit here
+    if (job.forceRefresh) {
+      // Force refresh was requested, re-read from disk
+      doImport = true;
+    }
+
+    if (!existingAssetEntity) {
+      // This asset is new to us, read it from disk
+      doImport = true;
+    } else if (stats.mtime !== existingAssetEntity.fileModifiedAt) {
+      // File modification time has changed since last time we checked, re-read fro disk
+      doImport = true;
+    }
+
+    if (existingAssetEntity?.isOffline) {
+      // File was previously offline but is now online
+      await this.assetRepository.update({ id: existingAssetEntity.id, isOffline: false });
+    }
+
+    if (!doImport) {
       return true;
     }
 

@@ -61,4 +61,5 @@ export interface IAssetRepository {
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
   getMapMarkers(ownerId: string, options?: MapMarkerSearchOptions): Promise<MapMarker[]>;
   remove(asset: AssetEntity): Promise<AssetEntity>;
+  update(asset: Partial<AssetEntity>): Promise<AssetEntity>;
 }
