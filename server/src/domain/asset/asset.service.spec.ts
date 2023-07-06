@@ -23,10 +23,6 @@ import { AssetService } from './asset.service';
 import { DownloadResponseDto } from './index';
 import { mapAsset } from './response-dto';
 
-jest.mock('mime', () => ({
-  lookup: jest.fn().mockReturnValue('image/jpeg'),
-}));
-
 const downloadResponse: DownloadResponseDto = {
   totalSize: 105_000,
   archives: [
@@ -224,10 +220,74 @@ describe(AssetService.name, () => {
       mock.restore();
     });
 
+    beforeEach(() => {
+      jest.resetModules();
+    });
+
+    it('should reject an unknown mime type', async () => {
+      jest.mock('mime', () => ({
+        lookup: jest.fn().mockReturnValue(null),
+      }));
+
+      mock({
+        '/import/photo.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { AssetService } = require('./asset.service');
+      sut = new AssetService(accessMock, assetMock, storageMock, cryptoMock, jobMock);
+
+      const mockLibraryJob: ILibraryJob = {
+        libraryId: libraryEntityStub.importLibrary.id,
+        ownerId: userEntityStub.admin.id,
+        assetPath: '/import/photo.jpg',
+        forceRefresh: false,
+        emptyTrash: false,
+      };
+
+      await expect(async () => {
+        await sut.handleRefreshAsset(mockLibraryJob);
+      }).rejects.toThrowError('Cannot determine mime type of asset: /import/photo.jpg');
+    });
+
+    it('should reject an invalid mime type', async () => {
+      jest.mock('mime', () => ({
+        lookup: jest.fn().mockReturnValue('image/potato'),
+      }));
+
+      mock({
+        '/import/photo.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { AssetService } = require('./asset.service');
+      sut = new AssetService(accessMock, assetMock, storageMock, cryptoMock, jobMock);
+
+      const mockLibraryJob: ILibraryJob = {
+        libraryId: libraryEntityStub.importLibrary.id,
+        ownerId: userEntityStub.admin.id,
+        assetPath: '/import/photo.jpg',
+        forceRefresh: false,
+        emptyTrash: false,
+      };
+
+      await expect(async () => {
+        await sut.handleRefreshAsset(mockLibraryJob);
+      }).rejects.toThrowError('Unsupported file type image/potato');
+    });
+
     it('should add a new asset', async () => {
       mock({
         '/import/photo.jpg': Buffer.from([8, 6, 7, 5, 3, 0, 9]),
       });
+
+      jest.mock('mime', () => ({
+        lookup: jest.fn().mockReturnValue('image/jpeg'),
+      }));
+
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { AssetService } = require('./asset.service');
+      sut = new AssetService(accessMock, assetMock, storageMock, cryptoMock, jobMock);
 
       const mockLibraryJob: ILibraryJob = {
         libraryId: libraryEntityStub.importLibrary.id,
@@ -256,6 +316,33 @@ describe(AssetService.name, () => {
           id: assetEntityStub.image.id,
         },
       });
+    });
+
+    it('should error when asset does not exist', async () => {
+      mock();
+
+      jest.mock('mime', () => ({
+        lookup: jest.fn().mockReturnValue('image/jpeg'),
+      }));
+
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { AssetService } = require('./asset.service');
+      sut = new AssetService(accessMock, assetMock, storageMock, cryptoMock, jobMock);
+
+      const mockLibraryJob: ILibraryJob = {
+        libraryId: libraryEntityStub.importLibrary.id,
+        ownerId: userEntityStub.admin.id,
+        assetPath: '/import/photo.jpg',
+        forceRefresh: false,
+        emptyTrash: false,
+      };
+
+      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
+      assetMock.create.mockResolvedValue(assetEntityStub.image);
+
+      await expect(async () => {
+        await sut.handleRefreshAsset(mockLibraryJob);
+      }).rejects.toThrowError("ENOENT, no such file or directory '/import/photo.jpg'");
     });
   });
 

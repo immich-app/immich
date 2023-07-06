@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import pkg from 'src/../../package.json';
+import pkg from '../../package.json';
 
 const [major, minor, patch] = pkg.version.split('.');
 

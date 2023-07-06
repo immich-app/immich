@@ -375,7 +375,6 @@ export class AssetService {
           ids.push(asset.livePhotoVideoId);
         }
       } catch (error) {
-        console.log(error);
         result.push({ id, status: DeleteAssetStatusEnum.FAILED });
       }
     }

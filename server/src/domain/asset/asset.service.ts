@@ -164,7 +164,6 @@ export class AssetService {
     let stats: fs.Stats;
     try {
       stats = await fs.promises.stat(job.assetPath);
-      console.log('Before stat2');
     } catch (error) {
       // Can't access file, probably offline
       if (job.emptyTrash && existingAssetEntity) {
