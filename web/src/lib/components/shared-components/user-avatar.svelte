@@ -6,7 +6,6 @@
 <script lang="ts">
   import { imageLoad } from '$lib/utils/image-load';
   import { api, UserResponseDto } from '@api';
-  import { lastUpdatedProfilePicture } from '$lib/stores/preferences.store';
 
   export let user: UserResponseDto;
   export let color: Color = 'primary';
@@ -16,13 +15,6 @@
   export let showTitle = true;
   export let autoColor = false;
   let showFallback = true;
-  let appendix = '';
-
-  lastUpdatedProfilePicture.subscribe((value) => {
-    if (value) {
-      appendix = '?d=' + value;
-    }
-  });
 
   const colorClasses: Record<Color, string> = {
     primary: 'bg-immich-primary dark:bg-immich-dark-primary text-immich-dark-fg dark:text-immich-fg',
@@ -63,7 +55,7 @@
 >
   {#if user.profileImagePath}
     <img
-      src={api.getProfileImageUrl(user.id) + appendix}
+      src={api.getProfileImageUrl(user.id)}
       alt="Profile image of {title}"
       class="object-cover w-full h-full"
       class:hidden={showFallback}

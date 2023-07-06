@@ -9,7 +9,6 @@
   export let publicSharedKey = '';
   import domtoimage from 'dom-to-image';
   import { notificationController, NotificationType } from './notification/notification';
-  import { lastUpdatedProfilePicture } from '$lib/stores/preferences.store';
 
   let profilePicture: HTMLDivElement;
 
@@ -19,7 +18,6 @@
     const file: File = new File([blob], 'profile-picture.png', { type: 'image/png' });
     try {
       await api.userApi.createProfileImage({ file });
-      lastUpdatedProfilePicture.set(Date.now());
       dispatch('close');
       notificationController.show({
         type: NotificationType.Info,

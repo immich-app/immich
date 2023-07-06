@@ -46,5 +46,3 @@ export interface AlbumViewSettings {
 export const albumViewSettings = persisted<AlbumViewSettings>('album-view-settings', {
   sortBy: 'Most recent photo',
 });
-
-export const lastUpdatedProfilePicture = persisted<number>('last-updated-profile-picture', 0, {});
