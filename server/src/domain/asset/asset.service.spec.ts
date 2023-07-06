@@ -8,7 +8,6 @@ import {
   newAssetRepositoryMock,
   newCryptoRepositoryMock,
   newJobRepositoryMock,
-  newLibraryRepositoryMock,
   newStorageRepositoryMock,
   userEntityStub,
 } from '@test';
